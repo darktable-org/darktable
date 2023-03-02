@@ -124,6 +124,19 @@ typedef unsigned int u_int;
 
 #endif /* _OPENMP */
 
+#ifndef _RELEASE
+#include "common/poison.h"
+#endif
+
+#include "common/usermanual_url.h"
+
+// for signal debugging symbols
+#include "control/signal.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
@@ -143,21 +156,12 @@ typedef unsigned int u_int;
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
-#ifndef _RELEASE
-#include "common/poison.h"
-#endif
-
-#include "common/usermanual_url.h"
-
-// for signal debugging symbols
-#include "control/signal.h"
-
 #define DT_MODULE_VERSION 23 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 12
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 13
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -274,7 +278,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_TILING         = 1 << 23,
   DT_DEBUG_VERBOSE        = 1 << 24,
   DT_DEBUG_PIPE           = 1 << 25,
-  DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE
+  DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
+  DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -342,6 +347,10 @@ typedef struct darktable_t
   char *tmpdir;
   char *configdir;
   char *cachedir;
+  char *dump_pfm_module;
+  char *dump_pfm_pipe;
+  char *tmp_directory;
+  char *bench_module;
   dt_lua_state_t lua_state;
   GList *guides;
   double start_wtime;
@@ -370,6 +379,10 @@ void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...) __attribute__(
 int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
+
+void dt_dump_pfm_file(const char *pipe, const void *data, const int width, const int height, const int bpp, const char *modname, const char *head, const gboolean input, const gboolean output, const gboolean cpu);
+void dt_dump_pfm(const char *filename, const void* data, const int width, const int height, const int bpp, const char *modname);
+void dt_dump_pipe_pfm(const char *mod, const void* data, const int width, const int height, const int bpp, const gboolean input, const char *pipe);
 
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline void* dt_calloc_align(size_t alignment, size_t size)
@@ -502,6 +515,15 @@ gboolean dt_supported_image(const gchar *filename);
 static inline size_t dt_get_num_threads()
 {
 #ifdef _OPENMP
+  return (size_t)CLAMP(omp_get_num_procs(), 1, darktable.num_openmp_threads);
+#else
+  return 1;
+#endif
+}
+
+static inline size_t dt_get_num_procs()
+{
+#ifdef _OPENMP
   // we can safely assume omp_get_num_procs is > 0
   return (size_t)omp_get_num_procs();
 #else
@@ -568,23 +590,13 @@ static inline float *dt_calloc_perthread_float(const size_t n, size_t* padded_si
 // a hint to vectorize a loop.  Uncomment the following line if such a combination is the compilation target.
 //#define DT_NO_SIMD_HINTS
 
-// copy the RGB channels of a pixel using nontemporal stores if possible; includes the 'alpha' channel as well
-// if faster due to vectorization, but subsequent code should ignore the value of the alpha unless explicitly
-// set afterwards (since it might not have been copied).  NOTE: nontemporal stores will actually be *slower*
-// if we immediately access the pixel again.  This function should only be used when processing an entire
-// image before doing anything else with the destination buffer.
-static inline void copy_pixel_nontemporal(float *const __restrict__ out, const float *const __restrict__ in)
-{
-#if (__clang__+0 > 7) && (__clang__+0 < 10)
-  for_each_channel(k,aligned(in,out:16)) __builtin_nontemporal_store(in[k],out[k]);
-#else
-  for_each_channel(k,aligned(in,out:16) dt_omp_nontemporal(out)) out[k] = in[k];
-#endif
-}
-
 // copy the RGB channels of a pixel; includes the 'alpha' channel as well if faster due to vectorization, but
 // subsequent code should ignore the value of the alpha unless explicitly set afterwards (since it might not have
 // been copied)
+
+// When writing sequentially to an output buffer, consider using
+// copy_pixel_nontemporal (defined in develop/imageop.h) to avoid the overhead
+// of loading the cache lines from RAM before then completely overwriting them
 static inline void copy_pixel(float *const __restrict__ out, const float *const __restrict__ in)
 {
   for_each_channel(k,aligned(in,out:16)) out[k] = in[k];
@@ -622,6 +634,7 @@ static inline const GList *g_list_prev_wraparound(const GList *list)
   return g_list_previous(list) ? g_list_previous(list) : g_list_last((GList*)list);
 }
 
+// checks internally for DT_DEBUG_MEMORY
 void dt_print_mem_usage();
 
 void dt_configure_runtime_performance(const int version, char *config_info);
@@ -690,6 +703,10 @@ static inline const gchar *NQ_(const gchar *String)
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

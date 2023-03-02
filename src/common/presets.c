@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -322,6 +322,53 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
     }
   }
   return TRUE;
+}
+
+gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect)
+{
+  sqlite3_stmt *stmt;
+  // if we sort by writeprotect DESC then in case user copied the writeprotected preset
+  // then the preset name returned will be writeprotected and thus not deletable
+  // sorting ASC prefers user created presets.
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+    dt_database_get(darktable.db),
+     "SELECT name, op_params, blendop_params, enabled, writeprotect"
+     " FROM data.presets"
+     " WHERE operation=?1 AND op_version=?2"
+     " ORDER BY writeprotect ASC, LOWER(name), rowid",
+     -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+
+  gchar *name = NULL;
+  *writeprotect = FALSE;
+
+  // collect all presets for op from db
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *op_params = (void *)sqlite3_column_blob(stmt, 1);
+    const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+    const void *blendop_params = (void *)sqlite3_column_blob(stmt, 2);
+    const int32_t bl_params_size = sqlite3_column_bytes(stmt, 2);
+    const int enabled = sqlite3_column_int(stmt, 3);
+
+    if(((op_params_size == 0
+         && !memcmp(module->default_params, module->params, module->params_size))
+        || ((op_params_size > 0
+             && !memcmp(module->params, op_params, MIN(op_params_size, module->params_size)))))
+       && !memcmp(module->blend_params, blendop_params,
+                  MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
+       && module->enabled == enabled)
+    {
+      name = g_strdup((char *)sqlite3_column_text(stmt, 0));
+      *writeprotect = sqlite3_column_int(stmt, 4);
+      break;
+    }
+  }
+  sqlite3_finalize(stmt);
+  return name;
 }
 
 char *dt_presets_get_name(const char *module_name,

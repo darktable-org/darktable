@@ -181,7 +181,7 @@ int dt_imageio_large_thumbnail(const char *filename,
 
     if(!image)
     {
-      fprintf(stderr, "[dt_imageio_large_thumbnail GM] thumbnail not found?\n");
+      dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_large_thumbnail GM] thumbnail not found?\n");
       goto error_gm;
     }
 
@@ -201,14 +201,14 @@ int dt_imageio_large_thumbnail(const char *filename,
 
       if(gm_ret != MagickPass)
       {
-        fprintf(stderr, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
+        dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
         dt_free_align(*buffer);
         *buffer = NULL;
         goto error_gm;
       }
     }
 
-    // fprintf(stderr, "[dt_imageio_large_thumbnail GM] successfully decoded thumbnail\n");
+    // dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_large_thumbnail GM] successfully decoded thumbnail\n");
     res = 0;
 
   error_gm:
@@ -224,7 +224,7 @@ int dt_imageio_large_thumbnail(const char *filename,
 	mret = MagickReadImageBlob(image, buf, bufsize);
     if(mret != MagickTrue)
     {
-      fprintf(stderr, "[dt_imageio_large_thumbnail IM] thumbnail not found?\n");
+      dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_large_thumbnail IM] thumbnail not found?\n");
       goto error_im;
     }
 
@@ -235,7 +235,7 @@ int dt_imageio_large_thumbnail(const char *filename,
       *color_space = DT_COLORSPACE_SRGB;
       break;
     default:
-      fprintf(stderr,
+      dt_print(DT_DEBUG_ALWAYS,
           "[dt_imageio_large_thumbnail IM] could not map colorspace, using sRGB");
       *color_space = DT_COLORSPACE_SRGB;
       break;
@@ -248,7 +248,7 @@ int dt_imageio_large_thumbnail(const char *filename,
     if(mret != MagickTrue) {
       free(*buffer);
       *buffer = NULL;
-      fprintf(stderr,
+      dt_print(DT_DEBUG_ALWAYS,
           "[dt_imageio_large_thumbnail IM] error while reading thumbnail\n");
       goto error_im;
     }
@@ -259,7 +259,7 @@ error_im:
     DestroyMagickWand(image);
     if(res != 0) goto error;
 #else
-    fprintf(stderr,
+    dt_print(DT_DEBUG_ALWAYS,
       "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
       "JPEG format, and DT was built without neither GraphicsMagick or "
       "ImageMagick. Please rebuild DT with GraphicsMagick or ImageMagick "
@@ -463,35 +463,19 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img,
 {
   // if buf is NULL, don't proceed
   if(!buf) return DT_IMAGEIO_OK;
-  // needed to alloc correct buffer size:
-  img->buf_dsc.channels = 4;
-  img->buf_dsc.datatype = TYPE_FLOAT;
-  img->buf_dsc.cst = IOP_CS_RGB;
-  dt_imageio_retval_t ret;
-  dt_image_loader_t loader;
-#ifdef HAVE_OPENEXR
-  loader = LOADER_EXR;
-  ret = dt_imageio_open_exr(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-#endif
-  loader = LOADER_RGBE;
-  ret = dt_imageio_open_rgbe(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-  loader = LOADER_PFM;
-  ret = dt_imageio_open_pfm(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 
-return_label:
-  if(ret == DT_IMAGEIO_OK)
-  {
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_LDR;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags |= DT_IMAGE_HDR;
-    img->loader = loader;
-  }
-  return ret;
+  dt_imageio_retval_t ret;
+#ifdef HAVE_OPENEXR
+  ret = dt_imageio_open_exr(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+#endif
+  ret = dt_imageio_open_rgbe(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  ret = dt_imageio_open_pfm(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  return DT_IMAGEIO_LOAD_FAILED;
 }
 
 /* magic data: exclusion,offset,length, xx, yy, ...
@@ -576,7 +560,7 @@ gboolean dt_imageio_is_ldr(const char *filename)
       if(_imageio_ldr_magic[offset + 2] > sizeof(block)
         || offset + 3 + _imageio_ldr_magic[offset + 2] > sizeof(_imageio_ldr_magic))
       {
-        fprintf(stderr, "error: buffer in %s is too small!\n", __FUNCTION__);
+        dt_print(DT_DEBUG_ALWAYS, "error: buffer in %s is too small!\n", __FUNCTION__);
         return FALSE;
       }
       if(memcmp(_imageio_ldr_magic + offset + 3, block + _imageio_ldr_magic[offset + 1],
@@ -620,85 +604,26 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img,
   dt_imageio_retval_t ret;
 
   ret = dt_imageio_open_jpeg(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.cst = IOP_CS_RGB; // jpeg is always RGB
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_JPEG;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 
   ret = dt_imageio_open_tiff(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    // cst is set by dt_imageio_open_tiff()
-    img->buf_dsc.filters = 0u;
-    // TIFF can be HDR or LDR. corresponding flags are set in dt_imageio_open_tiff()
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->loader = LOADER_TIFF;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 
 #ifdef HAVE_WEBP
   ret = dt_imageio_open_webp(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.cst = IOP_CS_RGB;
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_WEBP;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 #endif
 
   ret = dt_imageio_open_png(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.cst = IOP_CS_RGB; // png is always RGB
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_PNG;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 
 #ifdef HAVE_OPENJPEG
   ret = dt_imageio_open_j2k(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.cst = IOP_CS_RGB; // j2k is always RGB
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_J2K;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 #endif
 
   ret = dt_imageio_open_pnm(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.cst = IOP_CS_RGB; // pnm is always RGB
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_PNM;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 
   return DT_IMAGEIO_LOAD_FAILED;
 }
@@ -792,7 +717,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
 
   if(!buf.buf || !buf.width || !buf.height)
   {
-    fprintf(stderr, "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed\n", filename);
     dt_control_log(_("image `%s' is not available!"), img->filename);
     goto error_early;
   }
@@ -854,7 +779,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
         }
         else
         {
-          fprintf(stderr,
+          dt_print(DT_DEBUG_ALWAYS,
                   "[dt_imageio_export_with_flags] cannot find module %s for style\n",
                   st_item->operation);
           ok = FALSE;
@@ -881,13 +806,13 @@ int dt_imageio_export_with_flags(const int32_t imgid,
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   if(darktable.unmuted & DT_DEBUG_IMAGEIO)
   {
-    fprintf(stderr,"[dt_imageio_export_with_flags] ");
+    dt_print(DT_DEBUG_ALWAYS,"[dt_imageio_export_with_flags] ");
     if(use_style)
     {
-      if(appending) fprintf(stderr,"appending style `%s'\n", format_params->style);
-      else          fprintf(stderr,"overwrite style `%s'\n", format_params->style);
+      if(appending) dt_print(DT_DEBUG_ALWAYS,"appending style `%s'\n", format_params->style);
+      else          dt_print(DT_DEBUG_ALWAYS,"overwrite style `%s'\n", format_params->style);
     }
-    else fprintf(stderr,"\n");
+    else dt_print(DT_DEBUG_ALWAYS,"\n");
     int cnt = 0;
     for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))
     {
@@ -895,10 +820,10 @@ int dt_imageio_export_with_flags(const int32_t imgid,
       if(piece->enabled)
       {
         cnt++;
-        fprintf(stderr," %s", piece->module->op);
+        dt_print(DT_DEBUG_ALWAYS," %s", piece->module->op);
       }
     }
-    fprintf(stderr," (%i)\n", cnt);
+    dt_print(DT_DEBUG_ALWAYS," (%i)\n", cnt);
   }
 
   if(filter)
@@ -1215,28 +1140,10 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img,
   if(!buf) return DT_IMAGEIO_OK;
 #ifdef HAVE_GRAPHICSMAGICK
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.cst = IOP_CS_RGB;
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_GM;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 #elif HAVE_IMAGEMAGICK
   dt_imageio_retval_t ret = dt_imageio_open_im(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_IM;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 #endif
 
   return DT_IMAGEIO_LOAD_FAILED;
@@ -1330,8 +1237,8 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,        // non-const * means
   if((ret == DT_IMAGEIO_OK) && (was_bw != dt_image_monochrome_flags(img)))
     dt_imageio_update_monochrome_workflow_tag(img->id, dt_image_monochrome_flags(img));
 
-  img->p_width = img->width - img->crop_x - img->crop_width;
-  img->p_height = img->height - img->crop_y - img->crop_height;
+  img->p_width = img->width - img->crop_x - img->crop_right;
+  img->p_height = img->height - img->crop_y - img->crop_bottom;
 
   return ret;
 }

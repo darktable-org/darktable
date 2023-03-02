@@ -22,6 +22,10 @@
 #include <string.h>
 #include <librsvg/rsvg.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /** dynamically allocate and concatenate string */
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...) __attribute__((format(printf, 2, 3)));
 
@@ -50,6 +54,8 @@ gchar *dt_util_foo_to_utf8(const char *string);
 guint dt_util_string_count_char(const char *text, const char needle);
 /* helper function to convert en float numbers to local based numbers for scanf */
 void dt_util_str_to_loc_numbers_format(char *data);
+/* helper function to search for a string in a comma seperated string */
+gboolean dt_str_commasubstring(const char *list, const char *search);
 
 typedef enum dt_logo_season_t
 {
@@ -118,6 +124,10 @@ gboolean dt_is_scene_referred(void);
 
 // returns true if current settings is display-referred
 gboolean dt_is_display_referred(void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

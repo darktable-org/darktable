@@ -18,9 +18,6 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include <assert.h>
 #include <stdlib.h>
 
@@ -31,7 +28,8 @@
 
 typedef void((*_histogram_worker)(const dt_dev_histogram_collection_params_t *const params,
                                   const void *const restrict pixel,
-                                  uint32_t *const restrict histogram, const int j,
+                                  uint32_t *const restrict histogram,
+                                  const int j,
                                   const dt_iop_order_iccprofile_info_t *const profile));
 
 static inline void _clamp_bin(const dt_aligned_pixel_t vals,
@@ -53,14 +51,16 @@ static inline void _clamp_bin(const dt_aligned_pixel_t vals,
 //------------------------------------------------------------------------------
 
 static inline void _bin_raw(const dt_dev_histogram_collection_params_t *const params,
-                            const void *pixel, uint32_t *histogram, int j,
+                            const void *pixel,
+                            uint32_t *histogram,
+                            const int j,
                             const dt_iop_order_iccprofile_info_t *const profile)
 {
   const dt_histogram_roi_t *roi = params->roi;
   uint16_t *in = (uint16_t *)pixel + roi->width * j + roi->crop_x;
   const size_t max_bin = params->bins_count - 1;
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     // WARNING: you must ensure that bins_count is big enough
     // e.g. 2^16 if you expect 16 bit raw files
@@ -72,14 +72,15 @@ static inline void _bin_raw(const dt_dev_histogram_collection_params_t *const pa
 
 static inline void _bin_rgb(const dt_dev_histogram_collection_params_t *const params,
                             const void *const restrict pixel,
-                            uint32_t *const restrict histogram, const int j,
+                            uint32_t *const restrict histogram,
+                            const int j,
                             const dt_iop_order_iccprofile_info_t *const profile)
 {
   const dt_histogram_roi_t *roi = params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
   const float max_bin = params->bins_count - 1;
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
@@ -88,16 +89,18 @@ static inline void _bin_rgb(const dt_dev_histogram_collection_params_t *const pa
   }
 }
 
-static inline void _bin_rgb_compensated(const dt_dev_histogram_collection_params_t *const params,
-                                        const void *const pixel,
-                                        uint32_t *const restrict histogram, const int j,
-                                        const dt_iop_order_iccprofile_info_t *const profile)
+static inline void _bin_rgb_compensated
+  (const dt_dev_histogram_collection_params_t *const params,
+   const void *const pixel,
+   uint32_t *const restrict histogram,
+   const int j,
+   const dt_iop_order_iccprofile_info_t *const profile)
 {
   const dt_histogram_roi_t *roi = params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
   const float max_bin = params->bins_count - 1;
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
@@ -110,7 +113,8 @@ static inline void _bin_rgb_compensated(const dt_dev_histogram_collection_params
 
 static inline void _bin_Lab(const dt_dev_histogram_collection_params_t *const params,
                             const void *const restrict pixel,
-                            uint32_t *const restrict histogram, const int j,
+                            uint32_t *const restrict histogram,
+                            const int j,
                             const dt_iop_order_iccprofile_info_t *const profile)
 {
   const dt_histogram_roi_t *roi = params->roi;
@@ -121,7 +125,7 @@ static inline void _bin_Lab(const dt_dev_histogram_collection_params_t *const pa
                                      max_bin / 256.0f, 0.0f };
   const dt_aligned_pixel_t shift = { 0.0f, 128.0f, 128.0f, 0.0f };
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b,scale,shift:16))
@@ -132,7 +136,8 @@ static inline void _bin_Lab(const dt_dev_histogram_collection_params_t *const pa
 
 static inline void _bin_Lab_LCh(const dt_dev_histogram_collection_params_t *const params,
                                 const void *const restrict pixel,
-                                uint32_t *const restrict histogram, const int j,
+                                uint32_t *const restrict histogram,
+                                const int j,
                                 const dt_iop_order_iccprofile_info_t *const profile)
 {
   const dt_histogram_roi_t *roi = params->roi;
@@ -142,9 +147,10 @@ static inline void _bin_Lab_LCh(const dt_dev_histogram_collection_params_t *cons
                                      max_bin / (128.0f * sqrtf(2.0f)),
                                      max_bin, 0.0f };
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
-    dt_aligned_pixel_t LCh, b;
+    dt_aligned_pixel_t LCh = { 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t b;
     dt_Lab_2_LCH(in + i*4, LCh);
     for_each_channel(k,aligned(LCh,b,scale:16))
       b[k] = scale[k] * LCh[k];
@@ -155,8 +161,10 @@ static inline void _bin_Lab_LCh(const dt_dev_histogram_collection_params_t *cons
 //==============================================================================
 
 void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
-                  dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
-                  uint32_t **histogram, const _histogram_worker Worker,
+                  dt_dev_histogram_stats_t *histogram_stats,
+                  const void *const pixel,
+                  uint32_t **histogram,
+                  const _histogram_worker Worker,
                   const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const size_t bins_total = (size_t)(histogram_stats->ch == 1 ? 1 : 4)
@@ -185,14 +193,14 @@ void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
   reduction(+:working_hist[:bins_total])                                \
   schedule(static)
 #endif
-  for(int j = roi->crop_y; j < roi->height - roi->crop_height; j++)
+  for(int j = roi->crop_y; j < roi->height - roi->crop_bottom; j++)
   {
     Worker(histogram_params, pixel, working_hist, j, profile_info);
   }
 
   histogram_stats->bins_count = histogram_params->bins_count;
-  histogram_stats->pixels = (roi->width - roi->crop_width - roi->crop_x)
-                            * (roi->height - roi->crop_height - roi->crop_y);
+  histogram_stats->pixels = (roi->width - roi->crop_right - roi->crop_x)
+                            * (roi->height - roi->crop_bottom - roi->crop_y);
 }
 
 //------------------------------------------------------------------------------
@@ -202,7 +210,8 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                          const dt_iop_colorspace_type_t cst,
                          const dt_iop_colorspace_type_t cst_to,
                          const void *pixel,
-                         uint32_t **histogram, uint32_t *histogram_max,
+                         uint32_t **histogram,
+                         uint32_t *histogram_max,
                          const gboolean compensate_middle_grey,
                          const dt_iop_order_iccprofile_info_t *const profile_info)
 {
@@ -285,8 +294,12 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_get_times(&end_time);
-    fprintf(stderr, "histogram calculation %u bins %d -> %d compensate %d %u channels %u pixels took %.3f secs (%.3f CPU)\n",
-            histogram_params->bins_count, cst, cst_to, compensate_middle_grey && profile_info, histogram_stats->ch, histogram_stats->pixels,
+    fprintf(stderr,
+            "histogram calculation %u bins %d -> %d"
+            " compensate %d %u channels %u pixels took %.3f secs (%.3f CPU)\n",
+            histogram_params->bins_count, cst, cst_to,
+            compensate_middle_grey && profile_info, histogram_stats->ch,
+            histogram_stats->pixels,
             end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 }

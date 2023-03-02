@@ -89,11 +89,11 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.2.0 (stable)
+4.2.1 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.2.0/darktable-4.2.0-win64.exe)
-* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.2.0/darktable-4.2.0_x86_64.dmg)
-* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.2.0/darktable-4.2.0_arm64.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1_x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1_arm64.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -263,7 +263,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.2.0
+4.2.1
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
 Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
@@ -273,7 +273,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.2.0
+git checkout tags/release-4.2.1
 ```
 
 ### Get submodules

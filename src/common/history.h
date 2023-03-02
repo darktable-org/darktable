@@ -23,6 +23,10 @@
 #include <sqlite3.h>
 #include "develop/imageop.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct dt_develop_t;
 struct dt_iop_module_t;
 
@@ -135,13 +139,18 @@ char *dt_history_get_items_as_string(int32_t imgid);
 char *dt_history_item_as_string(const char *name, gboolean enabled);
 
 /* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists(int32_t imgid, const char *operation, gboolean enabled);
+gboolean dt_history_check_module_exists(int32_t imgid,
+                                        const char *operation,
+                                        const gboolean enabled);
 
 /* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists_list(GList *hist, const char *operation, gboolean enabled);
+gboolean dt_history_check_module_exists_list(GList *hist,
+                                             const char *operation,
+                                             const gboolean enabled);
 
 /** calculate history hash and save it to database*/
-void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type);
+void dt_history_hash_write_from_history(const int32_t imgid,
+                                        const dt_history_hash_t type);
 
 /** return the hash history status */
 dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
@@ -157,6 +166,10 @@ void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash);
 
 /** read hash values from db */
 void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

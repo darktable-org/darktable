@@ -22,6 +22,7 @@ brew upgrade
 # Define homebrew dependencies
 hbDependencies="adwaita-icon-theme \
     cmake \
+    pkg-config \
     cmocka \
     curl \
     desktop-file-utils \
@@ -46,7 +47,6 @@ hbDependencies="adwaita-icon-theme \
     libomp \
     librsvg \
     libsecret \
-    libsoup@2 \
     little-cms2 \
     llvm \
     lua \

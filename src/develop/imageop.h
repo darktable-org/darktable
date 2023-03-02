@@ -23,20 +23,35 @@
 #include <sched.h>
 #include <stdint.h>
 
-/** region of interest */
+#include "common/darktable.h"
+#include "common/introspection.h"
+#include "common/opencl.h"
+#include "common/action.h"
+#include "control/settings.h"
+
+/** region of interest, needed by pixelpipe.h */
 typedef struct dt_iop_roi_t
 {
   int x, y, width, height;
   float scale;
 } dt_iop_roi_t;
 
-#include "common/darktable.h"
-#include "common/introspection.h"
-#include "common/opencl.h"
-#include "common/action.h"
-#include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
+
+#if defined(__SSE__)
+#include <xmmintrin.h> // needed for _mm_stream_ps
+#else
+#ifdef __cplusplus
+#include <atomic>
+#else
+#include <stdatomic.h>
+#endif
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
@@ -50,6 +65,7 @@ typedef enum dt_iop_module_header_icons_t
   IOP_MODULE_SWITCH = 0,
   IOP_MODULE_ICON,
   IOP_MODULE_LABEL,
+  IOP_MODULE_INSTANCE_NAME,
   IOP_MODULE_INSTANCE,
   IOP_MODULE_RESET,
   IOP_MODULE_PRESETS,
@@ -124,8 +140,9 @@ typedef enum dt_iop_module_state_t
 
 typedef struct dt_iop_gui_data_t
 {
-  // "base type" for all dt_iop_XXXX_gui_data_t types used by iops
-  // to avoid compiler error about different sizes of empty structs between C and C++, we need at least one member
+  // "base type" for all dt_iop_XXXX_gui_data_t types used by iops to
+  // avoid compiler error about different sizes of empty structs
+  // between C and C++, we need at least one member
   int dummy;
 } dt_iop_gui_data_t;
 
@@ -139,7 +156,8 @@ typedef enum dt_dev_request_colorpick_flags_t
   DT_REQUEST_COLORPICK_MODULE = 1 // requested by module (should take precedence)
 } dt_dev_request_colorpick_flags_t;
 
-/** colorspace enums, must be in synch with dt_iop_colorspace_type_t in color_conversion.cl */
+/** colorspace enums, must be in synch with dt_iop_colorspace_type_t
+ * in color_conversion.cl */
 typedef enum dt_iop_colorspace_type_t
 {
   IOP_CS_NONE = -1,
@@ -163,18 +181,17 @@ typedef struct dt_iop_module_so_t
   GModule *module;
   /** string identifying this operation. */
   dt_dev_operation_t op;
-  /** other stuff that may be needed by the module, not only in gui mode. inited only once, has to be
-   * read-only then. */
+  /** other stuff that may be needed by the module, not only in gui
+   * mode. inited only once, has to be read-only then. */
   dt_iop_global_data_t *data;
-  /** gui is also only inited once at startup. */
-//  dt_iop_gui_data_t *gui_data;
-  /** which results in this widget here, too. */
   /** button used to show/hide this module in the plugin list. */
   dt_iop_module_state_t state;
 
-  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                      const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                      const struct dt_iop_roi_t *const roi_out);
+  void (*process_plain)(struct dt_iop_module_t *self,
+                        struct dt_dev_pixelpipe_iop_t *piece,
+                        const void *const i, void *const o,
+                        const struct dt_iop_roi_t *const roi_in,
+                        const struct dt_iop_roi_t *const roi_out);
 
   // introspection related data
   gboolean have_introspection;
@@ -197,19 +214,23 @@ typedef struct dt_iop_module_t
   int iop_order;
   /** module sets this if the enable checkbox should be hidden. */
   int32_t hide_enable_button;
-  /** set to DT_REQUEST_COLORPICK_MODULE if you want an input color picked during next eval. gui mode only. */
+  /** set to DT_REQUEST_COLORPICK_MODULE if you want an input color
+   * picked during next eval. gui mode only. */
   dt_dev_request_colorpick_flags_t request_color_pick;
   /** (bitwise) set if you want an histogram generated during next eval */
   dt_dev_request_flags_t request_histogram;
-  /** set to 1 if you want the mask to be transferred into alpha channel during next eval. gui mode only. */
+  /** set to 1 if you want the mask to be transferred into alpha
+   * channel during next eval. gui mode only. */
   int request_mask_display;
-  /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
+  /** set to 1 if you want the blendif mask to be suppressed in the
+   * module in focus. gui mode only. */
   int32_t suppress_mask;
   /** place to store the picked color of module input. */
   dt_aligned_pixel_t picked_color, picked_color_min, picked_color_max;
   /** place to store the picked color of module output (before blending). */
   dt_aligned_pixel_t picked_output_color, picked_output_color_min, picked_output_color_max;
-  /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
+  /** pointer to pre-module histogram data; if available:
+   * histogram_bins_count bins with 4 channels each */
   uint32_t *histogram;
   /** stats of captured histogram */
   dt_dev_histogram_stats_t histogram_stats;
@@ -241,15 +262,17 @@ typedef struct dt_iop_module_t
   gpointer blend_data;
   struct {
     struct {
-      /** if this module generates a mask, is it used later on? needed to decide if the mask should be stored.
-          maps dt_iop_module_t* -> id
+      /** if this module generates a mask, is it used later on? needed
+          to decide if the mask should be stored.  maps
+          dt_iop_module_t* -> id
       */
       GHashTable *users;
       /** the masks this module has to offer. maps id -> name */
       GHashTable *masks;
     } source;
     struct {
-      /** the module that provides the raster mask (if any). keep in sync with blend_params! */
+      /** the module that provides the raster mask (if any). keep in
+       * sync with blend_params! */
       struct dt_iop_module_t *source;
       int id;
     } sink;
@@ -260,6 +283,8 @@ typedef struct dt_iop_module_t
   GtkDarktableToggleButton *off;
   /** this is the module header, contains label and buttons */
   GtkWidget *header;
+  GtkWidget *label;
+  GtkWidget *instance_name;
   /** this is the module mask indicator, inside header */
   GtkWidget *mask_indicator;
   /** expander containing the widget and flag to store expanded state */
@@ -272,7 +297,8 @@ typedef struct dt_iop_module_t
   /** fusion slider */
   GtkWidget *fusion_slider;
 
-  /* list of instance widgets and associated actions. Bauhaus with field pointer at end, starting from widget_list_bh */
+  /* list of instance widgets and associated actions. Bauhaus with
+   * field pointer at end, starting from widget_list_bh */
   GSList *widget_list;
   GSList *widget_list_bh;
 
@@ -280,7 +306,8 @@ typedef struct dt_iop_module_t
   GtkWidget *guides_toggle;
   GtkWidget *guides_combo;
 
-  /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
+  /** flag in case the module has troubles (bad settings) - if TRUE,
+   * show a warning sign next to module label */
   gboolean has_trouble;
   /** the corresponding SO object */
   dt_iop_module_so_t *so;
@@ -468,7 +495,8 @@ dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module);
 // initializes memory.darktable_iop_names
 void dt_iop_set_darktable_iop_table();
 
-/** adds keyboard accels to the first module in the pipe to handle where there are multiple instances */
+/** adds keyboard accels to the first module in the pipe to handle
+ * where there are multiple instances */
 void dt_iop_connect_accels_multi(dt_iop_module_so_t *module);
 
 /** adds keyboard accels for all modules in the pipe */
@@ -477,7 +505,8 @@ void dt_iop_connect_accels_all();
 /** get the module that accelerators are attached to for the current so */
 dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
 
-/** queue a refresh of the center (FULL), preview, or second-preview windows, rerunning the pixelpipe from */
+/** queue a refresh of the center (FULL), preview, or second-preview
+ * windows, rerunning the pixelpipe from */
 /** the given module */
 void dt_iop_refresh_center(dt_iop_module_t *module);
 void dt_iop_refresh_preview(dt_iop_module_t *module);
@@ -498,9 +527,11 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
 /** add/remove mask indicator to iop module header */
 void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
 
-/** Set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
- ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that
- ** message when the module does not have a warning-label widget (use %s for the module's name).  **/
+/** Set the trouble message for the module.  If non-empty, also flag
+ ** the module as being in trouble; if empty or NULL, clear the
+ ** trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a
+ ** toast with that message when the module does not have a
+ ** warning-label widget (use %s for the module's name).  **/
 void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
                                        const char *const trouble_msg,
                                        const char *const trouble_tooltip,
@@ -527,11 +558,9 @@ static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t 
 #define IOP_GUI_FREE \
   dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){dt_free_align(self->gui_data);} self->gui_data = NULL
 
-/* return a warning message, prefixed by the special character ⚠ */
-char *dt_iop_warning_message(const char *message);
-
-/** check whether we have the required number of channels in the input data; if not, copy the input buffer to the
- ** output buffer, set the module's trouble message, and return FALSE */
+/** check whether we have the required number of channels in the input
+ ** data; if not, copy the input buffer to the output buffer, set the
+ ** module's trouble message, and return FALSE */
 gboolean dt_iop_have_required_input_format(const int required_ch,
                                            struct dt_iop_module_t *const module,
                                            const int actual_pipe_ch,
@@ -544,6 +573,64 @@ gboolean dt_iop_have_required_input_format(const int required_ch,
 void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
+
+// copy the RGB channels of a pixel using nontemporal stores if
+// possible; includes the 'alpha' channel as well if faster due to
+// vectorization, but subsequent code should ignore the value of the
+// alpha unless explicitly set afterwards (since it might not have
+// been copied).  NOTE: nontemporal stores will actually be *slower*
+// if we immediately access the pixel again.  This function should
+// only be used when processing an entire image before doing anything
+// else with the destination buffer.
+static inline void copy_pixel_nontemporal(
+	float *const __restrict__ out,
+        const float *const __restrict__ in)
+{
+#if defined(__SSE__)
+  _mm_stream_ps(out, *((__m128*)in));
+#elif (__clang__+0 > 7) && (__clang__+0 < 10)
+  for_each_channel(k,aligned(in,out:16)) __builtin_nontemporal_store(in[k],out[k]);
+#else
+  for_each_channel(k,aligned(in,out:16) dt_omp_nontemporal(out)) out[k] = in[k];
+#endif
+}
+
+// after writing data using copy_pixel_nontemporal, it is necessary to
+// ensure that the writes have completed before attempting reads from
+// a different core.  This function produces the required memmory
+// fence to ensure proper visibility
+static inline void dt_sfence()
+{
+#if defined(__SSE__)
+  _mm_sfence();
+#else
+  // the following generates an MFENCE instruction on x86/x64.  We
+  // only really need SFENCE, which is less expensive, but none of the
+  // other memory orders generate *any* fence instructions on x64.
+#ifdef __cplusplus
+  std::atomic_thread_fence(std::memory_order_seq_cst);
+#else
+  atomic_thread_fence(memory_order_seq_cst);
+#endif
+#endif
+}
+
+// if the copy_pixel_nontemporal() writes were inside an OpenMP
+// parallel loop, the OpenMP parallelization will have performed a
+// memory fence before resuming single-threaded operation, so a
+// dt_sfence would be superfluous.  But if compiled without OpenMP
+// parallelization, we should play it safe and emit a memory fence.
+// This function should be used right after a parallelized for loop,
+// where it will produce a barrier only if needed.
+#ifdef _OPENMP
+#define dt_omploop_sfence()
+#else
+#define dt_omploop_sfence() dt_sfence()
+#endif
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

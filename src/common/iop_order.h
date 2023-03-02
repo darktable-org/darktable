@@ -117,12 +117,15 @@
          This is done by using the dt_ioppr_get_iop_order.
  */
 
-#ifndef DT_IOP_ORDER_H
-#define DT_IOP_ORDER_H
+#pragma once
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 struct dt_iop_module_t;
 struct dt_develop_t;
@@ -277,7 +280,10 @@ void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg);
 void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg);
 void dt_ioppr_print_iop_order(GList *iop_order_list, const char *msg);
 
-#endif
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -21,6 +21,10 @@
 #include <stdint.h>
 #include "image.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct dt_dng_gain_map_t
 {
   uint32_t top;
@@ -43,3 +47,13 @@ typedef struct dt_dng_gain_map_t
 
 void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t size, dt_image_t *img);
 void dt_dng_opcode_process_opcode_list_3(uint8_t *buf, uint32_t size, dt_image_t *img);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

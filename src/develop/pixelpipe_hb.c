@@ -611,7 +611,12 @@ static void _histogram_collect(
   if(histogram_params.roi == NULL)
   {
     histogram_roi = (dt_histogram_roi_t){
-      .width = roi->width, .height = roi->height, .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0
+      .width = roi->width,
+      .height = roi->height,
+      .crop_x = 0,
+      .crop_y = 0,
+      .crop_right = 0,
+      .crop_bottom = 0
     };
 
     histogram_params.roi = &histogram_roi;
@@ -667,8 +672,12 @@ static void _histogram_collect_cl(
   if(histogram_params.roi == NULL)
   {
     histogram_roi = (dt_histogram_roi_t){
-      .width = roi->width, .height = roi->height,
-      .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0
+      .width = roi->width,
+      .height = roi->height,
+      .crop_x = 0,
+      .crop_y = 0,
+      .crop_right = 0,
+      .crop_bottom = 0
     };
 
     histogram_params.roi = &histogram_roi;
@@ -741,18 +750,19 @@ static int _pixelpipe_picker_box(
   box[2] = fmaxf(fbox[0], fbox[2]);
   box[3] = fmaxf(fbox[1], fbox[3]);
 
-  if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-  {
-    // if we are sampling one point, make sure that we actually sample it.
-    for(int k = 2; k < 4; k++) box[k] += 1;
-  }
+  // make sure we sample at least one point
+  box[2] = fmaxf(box[2], box[0] + 1);
+  box[3] = fmaxf(box[3], box[1] + 1);
 
   // do not continue if box is completely outside of roi
+  // FIXME: on invalid box, caller should set sample to something like NaN to flag it as invalid
   if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return 1;
 
   // clamp bounding box to roi
-  for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
-  for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
+  box[0] = CLAMP(box[0], 0, width - 1);
+  box[1] = CLAMP(box[1], 0, height - 1);
+  box[2] = CLAMP(box[2], 1, width);
+  box[3] = CLAMP(box[3], 1, height);
 
   // safety check: area needs to have minimum 1 pixel width and height
   if(box[2] - box[0] < 1 || box[3] - box[1] < 1) return 1;
@@ -1016,7 +1026,8 @@ static void _collect_histogram_on_CPU(
 }
 
 static int pixelpipe_process_on_CPU(
-             dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
+             dt_dev_pixelpipe_t *pipe,
+             dt_develop_t *dev,
              float *input,
              dt_iop_buffer_dsc_t *input_format,
              const dt_iop_roi_t *roi_in,
@@ -1030,6 +1041,10 @@ static int pixelpipe_process_on_CPU(
 {
   if(dt_atomic_get_int(&pipe->shutdown))
     return 1;
+
+  // the data buffers must always have a 64 alignment
+  if((((uintptr_t)input) & 63) || (((uintptr_t)*output) & 63))
+    dt_print(DT_DEBUG_ALWAYS, "[pixelpipe_process_on_CPU] buffer aligment problem: IN=%p OUT=%p\n", input, *output);
 
   // Fetch RGB working profile
   // if input is RAW, we can't color convert because RAW is not in a color space
@@ -1060,10 +1075,21 @@ static int pixelpipe_process_on_CPU(
                                           tiling->factor, tiling->overhead);
 
   /* process module on cpu. use tiling if needed and possible. */
+
+  const gboolean pfm_dump = darktable.dump_pfm_pipe && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
+
   if(!fitting && piece->process_tiling_ready)
   {
     dt_print_pipe(DT_DEBUG_PIPE, "process TILE", piece->pipe, module->so->op, roi_in, roi_out, "\n");
+
+    if(pfm_dump)
+      dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
+
+    if(pfm_dump)
+      dt_dump_pipe_pfm(module->so->op, *output, roi_out->width, roi_out->height, bpp, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
   }
@@ -1074,7 +1100,53 @@ static int pixelpipe_process_on_CPU(
          "Warning: processed without tiling even if memory requirements are not met\n");
 
     dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_process_on_CPU", piece->pipe, module->so->op, roi_in, roi_out, "\n");
+
+    if(pfm_dump)
+      dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
+    // this code section is for simplistic benchmarking via --bench-module
+    if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT)) && darktable.bench_module)
+    {
+      if(dt_str_commasubstring(darktable.bench_module, module->so->op))
+      {
+        dt_times_t start;
+        dt_times_t end;
+        const int old_muted = darktable.unmuted;
+        darktable.unmuted = 0;
+        const gboolean full = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+        const int counter = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) ? 100 : 50;
+        const float mpix = (roi_out->width * roi_out->height) / 1.0e6;
+
+#if defined(__SSE__)
+        if(module->process_sse2)
+        {
+          dt_get_times(&start);
+          for(int i = 0; i < counter; i++)
+            module->process_sse2(module, piece, input, *output, roi_in, roi_out);
+          dt_get_times(&end);
+          const float clock = (end.clock - start.clock) / (float) counter;
+          dt_print(DT_DEBUG_ALWAYS, "[bench module SSE2]  [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
+                full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
+        }
+#endif
+        if(module->process_plain)
+        {
+          dt_get_times(&start);
+          for(int i = 0; i < counter; i++)
+            module->process_plain(module, piece, input, *output, roi_in, roi_out);
+          dt_get_times(&end);
+          const float clock = (end.clock - start.clock) / (float) counter;
+          dt_print(DT_DEBUG_ALWAYS, "[bench module plain] [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
+                full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
+        }
+        darktable.unmuted = old_muted;
+      }
+    }
     module->process(module, piece, input, *output, roi_in, roi_out);
+
+    if(pfm_dump)
+      dt_dump_pipe_pfm(module->so->op, *output, roi_out->width, roi_out->height, bpp, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
   }
@@ -1614,7 +1686,45 @@ static int dt_dev_pixelpipe_process_rec(
         if(success_opencl)
         {
           dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_process_CL", piece->pipe, module->so->op, &roi_in, roi_out, "\n");
+
+          // this code section is for simplistic benchmarking via --bench-module
+          if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT)) && darktable.bench_module)
+          {
+            if(dt_str_commasubstring(darktable.bench_module, module->so->op))
+            {
+              dt_times_t bench;
+              dt_times_t end;
+              const int old_muted = darktable.unmuted;
+              darktable.unmuted = 0;;
+              const gboolean full = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+              const float mpix = (roi_out->width * roi_out->height) / 1.0e6;
+              gboolean success = TRUE;
+              dt_get_times(&bench);
+              for(int i = 0; i < 100; i++)
+              {
+                if(success) success = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+              }
+              if(success)
+              {
+                dt_get_times(&end);
+                const float clock = (end.clock - bench.clock) / 100.0f;
+                dt_print(DT_DEBUG_ALWAYS, "[bench module GPU]   [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
+                    full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
+              }
+              else
+                dt_print(DT_DEBUG_ALWAYS, "[bench module GPU] [%s] `%s' finished without sucess\n",
+                    full ? "full" : "export", module->so->op);
+              darktable.unmuted = old_muted;
+            }
+          }
+          const gboolean pfm_dump = darktable.dump_pfm_pipe && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
+          if(pfm_dump)
+            dt_opencl_dump_pipe_pfm(module->so->op, pipe->devid, cl_mem_input, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
           success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+          if(success_opencl && pfm_dump)
+            dt_opencl_dump_pipe_pfm(module->so->op, pipe->devid, *cl_mem_output, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
 
@@ -2263,11 +2373,8 @@ int dt_dev_pixelpipe_process(
 
   dt_dev_pixelpipe_cache_checkmem(pipe);
 
-  if(darktable.unmuted & DT_DEBUG_MEMORY)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[memory] before pixelpipe process\n");
-    dt_print_mem_usage();
-  }
+  dt_print(DT_DEBUG_MEMORY, "[memory] before pixelpipe process\n");
+  dt_print_mem_usage();
 
   if(pipe->devid >= 0) dt_opencl_events_reset(pipe->devid);
 
@@ -2490,15 +2597,22 @@ float *dt_dev_get_raster_mask(
             {
               float *transformed_mask = dt_alloc_align_float((size_t)module->processed_roi_out.width
                                                               * module->processed_roi_out.height);
-              module->module->distort_mask(module->module,
-                                          module,
-                                          raster_mask,
-                                          transformed_mask,
-                                          &module->processed_roi_in,
-                                          &module->processed_roi_out);
-              if(*free_mask) dt_free_align(raster_mask);
-              *free_mask = TRUE;
-              raster_mask = transformed_mask;
+              if(transformed_mask)
+              {
+                module->module->distort_mask(module->module,
+                                             module,
+                                             raster_mask,
+                                             transformed_mask,
+                                             &module->processed_roi_in,
+                                             &module->processed_roi_out);
+                if(*free_mask) dt_free_align(raster_mask);
+                *free_mask = TRUE;
+                raster_mask = transformed_mask;
+              }
+              else
+              {
+                dt_print(DT_DEBUG_ALWAYS,"skipped transforming mask due to lack of memory\n");
+              }
             }
             else if(!module->module->distort_mask &&
                     (module->processed_roi_in.width != module->processed_roi_out.width ||

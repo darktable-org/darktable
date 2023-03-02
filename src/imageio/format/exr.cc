@@ -29,7 +29,6 @@
 #include <OpenEXR/ImfThreading.h>
 #include <OpenEXR/ImfOutputFile.h>
 
-extern "C" {
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
@@ -39,7 +38,6 @@ extern "C" {
 #include "imageio/imageio_exr.h"
 #include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
-}
 #include "imageio/imageio_exr.hh"
 
 #ifdef __cplusplus
@@ -217,7 +215,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
 icc_error:
   dt_control_log("%s", _("the selected output profile doesn't work well with exr"));
-  fprintf(stderr, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong "
+  dt_print(DT_DEBUG_ALWAYS, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong "
                   "results when opening the image\n");
 icc_end:
 

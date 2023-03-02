@@ -32,9 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include <time.h>
 
 typedef struct dt_module_param_t
@@ -157,7 +154,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       }
       else
       {
-        gchar *str = dt_util_str_replace(f->header.field_name, "_", " ");
+        gchar *str = dt_util_str_replace(param, "_", " ");
 
         dt_bauhaus_widget_set_label(slider,  section, str);
 
@@ -203,7 +200,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     _store_intro_section(f, section);
 
     str = *f->header.description ? g_strdup(f->header.description)
-                                 : dt_util_str_replace(f->header.field_name, "_", " ");
+                                 : dt_util_str_replace(param, "_", " ");
 
     dt_action_t *action = dt_bauhaus_widget_set_label(combobox, section, str);
 
@@ -215,17 +212,12 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_ENUM)
     {
-      for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter && iter->name; iter++)
-      {
-        // we do not want to support a context as it break all translations see #5498
-        // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
-        if(*iter->description)
-          dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
-      }
+      dt_bauhaus_combobox_add_introspection(combobox,
+                                            action,
+                                            f->Enum.values,
+                                            f->Enum.values[0].value,
+                                            f->Enum.values[f->Enum.entries - 1].value);
       dt_bauhaus_combobox_set_default(combobox, *(int*)((uint8_t *)d + f->header.offset));
-
-      if(action && f->Enum.values)
-        g_hash_table_insert(darktable.control->combo_introspection, action, f->Enum.values);
     }
   }
   else
@@ -259,7 +251,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
     str = *f->header.description
         ? g_strdup(f->header.description)
-        : dt_util_str_replace(f->header.field_name, "_", " ");
+        : dt_util_str_replace(param, "_", " ");
 
     GtkWidget *label = gtk_label_new(_(str));
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);

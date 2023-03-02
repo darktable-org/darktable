@@ -4,8 +4,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-# Keep in sync with manualrun.yml!
-
 on:
   push:
     branches:
@@ -42,183 +40,27 @@ permissions:
 
 jobs:
 
-  Linux-minimal:
-    name: Linux-minimal.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
-    runs-on: ${{ matrix.os.label }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os:
-          - { label: ubuntu-20.04, code: focal }
-        compiler:
-          - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
-          - { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
-        btype:
-          - RelWithDebInfo
-          #- Release
-        target:
-          #- build
-          - nofeatures
-          - nofeatures_nosse
-        generator:
-          #- Unix Makefiles
-          - Ninja
-    env:
-      CC: ${{ matrix.compiler.CC }}
-      CXX: ${{ matrix.compiler.CXX }}
-      SRC_DIR: ${{ github.workspace }}/src
-      BUILD_DIR: ${{ github.workspace }}/build
-      INSTALL_PREFIX: ${{ github.workspace }}/install
-      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: ${{ matrix.generator }}
-      TARGET: ${{ matrix.target }}
-      DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
-    steps:
-      - name: Install compiler ${{ matrix.compiler.compiler }}
-        run: |
-          # Remove azure mirror because it is unreliable and sometimes unpredictably leads to failed CI
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo add-apt-repository -y universe
-          sudo add-apt-repository -y multiverse
-          sudo apt-get update
-          sudo apt-get -y install \
-            ${{ matrix.compiler.packages }}
-      - name: Install Base Dependencies
-        run: |
-          sudo apt-get -y install \
-            build-essential \
-            appstream-util \
-            desktop-file-utils \
-            gettext \
-            git \
-            gdb \
-            intltool \
-            libatk1.0-dev \
-            libcairo2-dev \
-            libcolord-dev \
-            libcolord-gtk-dev \
-            libcmocka-dev \
-            libcups2-dev \
-            libcurl4-gnutls-dev \
-            libexiv2-dev \
-            libgdk-pixbuf2.0-dev \
-            libglib2.0-dev \
-            libgphoto2-dev \
-            libgraphicsmagick1-dev \
-            libgtk-3-dev \
-            libheif-dev \
-            libjpeg-dev \
-            libjson-glib-dev \
-            liblcms2-dev \
-            liblensfun-dev \
-            liblua5.3-dev \
-            libopenexr-dev \
-            libopenjp2-7-dev \
-            libosmgpsmap-1.0-dev \
-            libpango1.0-dev \
-            libpng-dev \
-            libpugixml-dev \
-            librsvg2-dev \
-            libsaxon-java \
-            libsecret-1-dev \
-            libsoup2.4-dev \
-            libsqlite3-dev \
-            libtiff5-dev \
-            libwebp-dev \
-            libx11-dev \
-            libxml2-dev \
-            libxml2-utils \
-            ninja-build \
-            perl \
-            po4a \
-            python3-jsonschema \
-            xsltproc \
-            zlib1g-dev;
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          path: src
-      - name: Build and Install
-        run: |
-          cmake -E make_directory "${BUILD_DIR}";
-          cmake -E make_directory "${INSTALL_PREFIX}";
-          ./src/.ci/ci-script.sh;
-      - name: Check if it runs
-        if: ${{ matrix.target != 'usermanual' }}
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
-
   Linux:
     name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
-    needs: Linux-minimal
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
       matrix:
         os:
-          - { label: ubuntu-20.04, code: focal }
+          - { label: ubuntu-latest, code: latest }
         compiler:
-          #- { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
-          - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
           - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
           - { compiler: GNU11,  CC: gcc-11,   CXX: g++-11,     packages: gcc-11 g++-11 }
-          #- { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
-          #- { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
-          # - { compiler: LLVM11, CC: clang-11, CXX: clang++-11, packages: clang-11 libomp-11-dev libclang-common-11-dev llvm-11-dev clang++-11 libc++-11-dev lld-11}
-          - { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
+          - { compiler: GNU12,  CC: gcc-12,   CXX: g++-12,     packages: gcc-12 g++-12 }
+          - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
         btype:
-          - RelWithDebInfo
           - Release
         target:
           - build
-          - nofeatures
           - nofeatures_nosse
         generator:
           #- Unix Makefiles
           - Ninja
-        include:
-          - os: { label: ubuntu-latest, code: latest }
-            btype: Debug
-            compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
-            target: skiptest
-            generator: Ninja
-          - os: { label: ubuntu-latest, code: latest }
-            btype: Debug
-            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
-            target: skiptest
-            generator: Ninja
-        exclude:
-          - os: { label: ubuntu-20.04, code: focal }
-            btype: RelWithDebInfo
-            compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
-            target: nofeatures
-            generator: Ninja
-          - os: { label: ubuntu-20.04, code: focal }
-            btype: RelWithDebInfo
-            compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
-            target: nofeatures_nosse
-            generator: Ninja
-          - os: { label: ubuntu-20.04, code: focal }
-            btype: RelWithDebInfo
-            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
-            target: nofeatures
-            generator: Ninja
-          - os: { label: ubuntu-20.04, code: focal }
-            btype: RelWithDebInfo
-            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
-            target: nofeatures_nosse
-            generator: Ninja
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -251,6 +93,7 @@ jobs:
             gdb \
             intltool \
             libatk1.0-dev \
+            libavif-dev \
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
@@ -260,6 +103,7 @@ jobs:
             libexiv2-dev \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
+            libgmic-dev \
             libgphoto2-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
@@ -268,7 +112,7 @@ jobs:
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
-            liblua5.3-dev \
+            liblua5.4-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
@@ -280,7 +124,6 @@ jobs:
             libsaxon-java \
             libsdl2-dev \
             libsecret-1-dev \
-            libsoup2.4-dev \
             libsqlite3-dev \
             libtiff5-dev \
             libwebp-dev \
@@ -324,31 +167,19 @@ jobs:
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
-    needs: Linux-minimal
     runs-on: windows-latest
     strategy:
       fail-fast: true
       matrix:
         btype:
-          - RelWithDebInfo
+          - Debug
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
-          #- { compiler: LLVM, CC: clang, CXX: clang++ }
         target:
           - skiptest
-          - nofeatures
         generator:
           #- MSYS Makefiles
           - Ninja
-        include:
-          #- btype: Release
-          #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-          #  eco: -DBINARY_PACKAGE_BUILD=ON
-          #  target: skiptest
-          - btype: Debug
-            compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
-            target: skiptest
-            generator: Ninja
     defaults:
       run:
         shell: msys2 {0}
@@ -371,21 +202,23 @@ jobs:
             base-devel
             git
             intltool
+            po4a
           pacboy: >-
             cc:p
             cmake:p
             cmocka:p
-            gcc-libs:p
             ninja:p
             nsis:p
-            omp:p
+            python-jsonschema:p
             dbus-glib:p
             drmingw:p
             exiv2:p
+            gcc-libs:p
             gettext:p
             gmic:p
             graphicsmagick:p
             gtk3:p
+            icu:p
             iso-codes:p
             lcms2:p
             lensfun:p
@@ -396,20 +229,18 @@ jobs:
             libjpeg-turbo:p
             libjxl:p
             libsecret:p
-            libsoup:p
+            libtiff:p
             libwebp:p
             libxml2:p
             libxslt:p
             lua:p
+            omp:p
             openexr:p
             openjpeg2:p
             osm-gps-map:p
             portmidi:p
             pugixml:p
-            python3:p
-            python3-jsonschema:p
-            python3-setuptools:p
-            python3-six:p
+            SDL2:p
             sqlite3:p
             zlib:p
           update: true
@@ -444,7 +275,6 @@ jobs:
 
   macOS:
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.generator }}
-    needs: Linux-minimal
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
@@ -455,10 +285,9 @@ jobs:
           - { os: macos-12,    xcode: 13.4,   deployment: 12.3 }
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
-        btype: [ RelWithDebInfo ]
+        btype: [ Debug ]
         target:
           - skiptest
-          - nofeatures
         generator:
           - Ninja
     env:
@@ -480,10 +309,11 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          brew upgrade || true
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
           brew tap Homebrew/bundle
           cd src/.ci
-          brew bundle --verbose
+          export HOMEBREW_NO_INSTALL_UPGRADE=1
+          brew bundle --verbose || true
           brew link --force libomp # fix for keg-only libomp
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it

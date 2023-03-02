@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,12 +51,6 @@ enum border_mode
 // !! Make sure to sync this with the filter array !!
 #define MAX_HALF_FILTER_WIDTH 3
 
-// Add code for timing resampling function
-#define DEBUG_RESAMPLING_TIMING 0
-
-// Add debug info messages to stderr
-#define DEBUG_PRINT_INFO 0
-
 // Add *verbose* (like one msg per pixel out) debug message to stderr
 #define DEBUG_PRINT_VERBOSE 0
 
@@ -64,19 +58,19 @@ enum border_mode
  * Debug helpers
  * ------------------------------------------------------------------------*/
 
-#if DEBUG_RESAMPLING_TIMING
-#include <sys/time.h>
-#endif
-
-#if DEBUG_PRINT_INFO
-#define debug_info(...)                                                                                      \
-  do                                                                                                         \
-  {                                                                                                          \
-    fprintf(stderr, __VA_ARGS__);                                                                            \
-  } while(0)
-#else
-#define debug_info(...)
-#endif
+static void _show_2_times(const dt_times_t *start, const dt_times_t *mid,
+                          const char *prefix)
+{
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end;
+    dt_get_times(&end);
+    dt_print(DT_DEBUG_PERF,
+             "[%s] plan %.3f secs (%.3f CPU) resample %.3f secs (%.3f CPU)\n",
+             prefix, mid->clock - start->clock, mid->user - start->user,
+             end.clock - mid->clock, end.user - mid->user);
+  }
+}
 
 #if DEBUG_PRINT_VERBOSE
 #define debug_extra(...)                                                                                     \
@@ -86,15 +80,6 @@ enum border_mode
   } while(0)
 #else
 #define debug_extra(...)
-#endif
-
-#if DEBUG_RESAMPLING_TIMING
-static inline int64_t getts()
-{
-  struct timeval t;
-  gettimeofday(&t, NULL);
-  return t.tv_sec * INT64_C(1000000) + t.tv_usec;
-}
 #endif
 
 /* --------------------------------------------------------------------------
@@ -122,21 +107,26 @@ static inline int clip(int i, int min, int max, enum border_mode mode)
     case BORDER_MIRROR:
       if(i < min)
       {
-        i = min - i;
+        // i == min - 1  -->  min + 1
+        // i == min - 2  -->  min + 2, etc.
+        // but as min == 0 in all current cases, this really optimizes to i = -i
+        i = min + (min - i);
       }
       else if(i > max)
       {
-        i = 2 * max - i;
+        // i == max + 1  -->  max - 1
+        // i == max + 2  -->  max - 2, etc.
+        i = max - (i - max);
       }
       break;
     case BORDER_WRAP:
       if(i < min)
       {
-        i = max - (min - i);
+        i = 1 + max - (min - i);
       }
       else if(i > max)
       {
-        i = min + (i - max);
+        i = min + (i - max) - 1;
       }
       break;
     case BORDER_CLAMP:
@@ -543,7 +533,8 @@ static inline void compute_upsampling_kernel_sse(const struct dt_interpolation *
 static inline void compute_upsampling_kernel(const struct dt_interpolation *itor, float *kernel, float *norm,
                                              int *first, float t)
 {
-  if(darktable.codepath.OPENMP_SIMD) return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
+  if(darktable.codepath.OPENMP_SIMD)
+    return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
 #if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
     return compute_upsampling_kernel_sse(itor, kernel, norm, first, t);
@@ -1395,17 +1386,15 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
   const int32_t out_stride_floats = out_stride / sizeof(float);
   int r;
 
-  debug_info("resampling %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n", in, roi_in->width,
-             roi_in->height, roi_in->x, roi_in->y, roi_in->scale, out, roi_out->width, roi_out->height,
-             roi_out->x, roi_out->y, roi_out->scale);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_plain", NULL, itor->name, roi_in, roi_out, "\n");
+  dt_times_t start = { 0 }, mid = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
   {
     const int x0 = roi_out->x * 4 * sizeof(float);
-#if DEBUG_RESAMPLING_TIMING
-    int64_t ts_resampling = getts();
-#endif
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0) \
@@ -1417,18 +1406,14 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
              (char *)in + (size_t)in_stride * (y + roi_out->y) + x0,
              out_stride);
     }
-#if DEBUG_RESAMPLING_TIMING
-    ts_resampling = getts() - ts_resampling;
-    fprintf(stderr, "resampling %p plan:0us resampling:%" PRId64 "us\n", in, ts_resampling);
-#endif
+
+    dt_show_times_f(&start, "[resample_plain]", "1:1 copy/crop of %dx%d pixels",
+                    roi_in->width, roi_in->height);
     // All done, so easy case
     return;
   }
 
-// Generic non 1:1 case... much more complicated :D
-#if DEBUG_RESAMPLING_TIMING
-  int64_t ts_plan = getts();
-#endif
+  // Generic non 1:1 case... much more complicated :D
 
   // Prepare resampling plans once and for all
   r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale,
@@ -1445,15 +1430,9 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
     goto exit;
   }
 
-#if DEBUG_RESAMPLING_TIMING
-  ts_plan = getts() - ts_plan;
-#endif
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
 
-#if DEBUG_RESAMPLING_TIMING
-  int64_t ts_resampling = getts();
-#endif
-
-// Process each output line
+  // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out) \
@@ -1528,17 +1507,13 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
     }
   }
 
-#if DEBUG_RESAMPLING_TIMING
-  ts_resampling = getts() - ts_resampling;
-  fprintf(stderr, "resampling %p plan:%" PRId64 "us resampling:%" PRId64 "us\n", in, ts_plan, ts_resampling);
-#endif
-
 exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
   dt_free_align(hlength);
   dt_free_align(vlength);
+  _show_2_times(&start, &mid, "resample_plain");
 }
 
 #if defined(__SSE2__)
@@ -1557,17 +1532,15 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
 
   int r;
 
-  debug_info("resampling %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n", in, roi_in->width,
-             roi_in->height, roi_in->x, roi_in->y, roi_in->scale, out, roi_out->width, roi_out->height,
-             roi_out->x, roi_out->y, roi_out->scale);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_sse", NULL, itor->name, roi_in, roi_out, "\n");
+  dt_times_t start = { 0 }, mid = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
   {
     const int x0 = roi_out->x * 4 * sizeof(float);
-#if DEBUG_RESAMPLING_TIMING
-    int64_t ts_resampling = getts();
-#endif
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0) \
@@ -1579,18 +1552,14 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
       float *o = (float *)((char *)out + (size_t)out_stride * y);
       memcpy(o, i, out_stride);
     }
-#if DEBUG_RESAMPLING_TIMING
-    ts_resampling = getts() - ts_resampling;
-    fprintf(stderr, "resampling %p plan:0us resampling:%" PRId64 "us\n", in, ts_resampling);
-#endif
+
+    dt_show_times_f(&start, "[resample_sse]", "1:1 copy/crop of %dx%d pixels",
+                    roi_in->width, roi_in->height);
     // All done, so easy case
     return;
   }
 
-// Generic non 1:1 case... much more complicated :D
-#if DEBUG_RESAMPLING_TIMING
-  int64_t ts_plan = getts();
-#endif
+  // Generic non 1:1 case... much more complicated :D
 
   // Prepare resampling plans once and for all
   r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale,
@@ -1607,15 +1576,9 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
     goto exit;
   }
 
-#if DEBUG_RESAMPLING_TIMING
-  ts_plan = getts() - ts_plan;
-#endif
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
 
-#if DEBUG_RESAMPLING_TIMING
-  int64_t ts_resampling = getts();
-#endif
-
-// Process each output line
+  // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
@@ -1693,17 +1656,13 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
 
   _mm_sfence();
 
-#if DEBUG_RESAMPLING_TIMING
-  ts_resampling = getts() - ts_resampling;
-  fprintf(stderr, "resampling %p plan:%" PRId64 "us resampling:%" PRId64 "us\n", in, ts_plan, ts_resampling);
-#endif
-
 exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
   dt_free_align(hlength);
   dt_free_align(vlength);
+  _show_2_times(&start, &mid, "resample_sse");
 }
 #endif
 
@@ -1717,7 +1676,7 @@ void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
 {
   if(out == NULL)
   {
-    dt_print(DT_DEBUG_MEMORY, "[dt_interpolation_resample] no valid output buffer\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_interpolation_resample] no valid output buffer\n");
     return;
   }
 
@@ -1808,16 +1767,13 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   cl_mem dev_vkernel = NULL;
   cl_mem dev_vmeta = NULL;
 
-  debug_info("resampling_cl %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n", (void *)dev_in,
-             roi_in->width, roi_in->height, roi_in->x, roi_in->y, roi_in->scale, (void *)dev_out,
-             roi_out->width, roi_out->height, roi_out->x, roi_out->y, roi_out->scale);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_cl", NULL, itor->name, roi_in, roi_out, "\n");
+  dt_times_t start = { 0 }, mid = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
   {
-#if DEBUG_RESAMPLING_TIMING
-    int64_t ts_resampling = getts();
-#endif
     size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
     size_t oorigin[] = { 0, 0, 0 };
     size_t region[] = { roi_out->width, roi_out->height, 1 };
@@ -1826,18 +1782,13 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
     if(err != CL_SUCCESS) goto error;
 
-#if DEBUG_RESAMPLING_TIMING
-    ts_resampling = getts() - ts_resampling;
-    fprintf(stderr, "resampling_cl %p plan:0us resampling:%" PRId64 "us\n", (void *)dev_in, ts_resampling);
-#endif
+    dt_show_times_f(&start, "[resample_cl]", "1:1 copy/crop of %dx%d pixels",
+                    roi_in->width, roi_in->height);
     // All done, so easy case
     return CL_SUCCESS;
   }
 
 // Generic non 1:1 case... much more complicated :D
-#if DEBUG_RESAMPLING_TIMING
-  int64_t ts_plan = getts();
-#endif
 
   // Prepare resampling plans once and for all
   r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale,
@@ -1854,17 +1805,11 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
     goto error;
   }
 
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
+
   int hmaxtaps = -1, vmaxtaps = -1;
   for(int k = 0; k < roi_out->width; k++) hmaxtaps = MAX(hmaxtaps, hlength[k]);
   for(int k = 0; k < roi_out->height; k++) vmaxtaps = MAX(vmaxtaps, vlength[k]);
-
-#if DEBUG_RESAMPLING_TIMING
-  ts_plan = getts() - ts_plan;
-#endif
-
-#if DEBUG_RESAMPLING_TIMING
-  int64_t ts_resampling = getts();
-#endif
 
   // strategy: process image column-wise (local[0] = 1). For each row generate
   // a number of parallel work items each taking care of one horizontal convolution,
@@ -1894,9 +1839,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
     // our strategy does not work: the vertical number of taps exceeds the vertical workgroupsize;
     // there is no point in continuing on the GPU - that would be way too slow; let's delegate the stuff to
     // the CPU then.
-    dt_print(
-        DT_DEBUG_OPENCL,
-        "[opencl_resampling] resampling plan cannot efficiently be run on the GPU - fall back to CPU.\n");
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_interpolation_resample_cl] resampling plan cannot efficiently be run on the GPU - fall back to CPU.\n");
     goto error;
   }
 
@@ -1938,12 +1882,6 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
-#if DEBUG_RESAMPLING_TIMING
-  ts_resampling = getts() - ts_resampling;
-  fprintf(stderr, "resampling_cl %p plan:%" PRId64 "us resampling:%" PRId64 "us\n", (void *)dev_in, ts_plan,
-          ts_resampling);
-#endif
-
   dt_opencl_release_mem_object(dev_hindex);
   dt_opencl_release_mem_object(dev_hlength);
   dt_opencl_release_mem_object(dev_hkernel);
@@ -1954,6 +1892,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   dt_opencl_release_mem_object(dev_vmeta);
   dt_free_align(hlength);
   dt_free_align(vlength);
+
+  _show_2_times(&start, &mid, "resample_cl");
   return CL_SUCCESS;
 
 error:
@@ -1967,7 +1907,7 @@ error:
   dt_opencl_release_mem_object(dev_vmeta);
   dt_free_align(hlength);
   dt_free_align(vlength);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  dt_print(DT_DEBUG_ALWAYS, "[dt_interpolation_resample_cl] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return err;
 }
 
@@ -2004,17 +1944,14 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
 
   int r;
 
-  debug_info("resampling %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n", in, roi_in->width,
-             roi_in->height, roi_in->x, roi_in->y, roi_in->scale, out, roi_out->width, roi_out->height,
-             roi_out->x, roi_out->y, roi_out->scale);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_1c_plain", NULL, itor->name, roi_in, roi_out, "\n");
+  dt_times_t start = { 0 }, mid = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
   {
     const int x0 = roi_out->x * sizeof(float);
-#if DEBUG_RESAMPLING_TIMING
-    int64_t ts_resampling = getts();
-#endif
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0) \
@@ -2026,18 +1963,13 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
       float *o = (float *)((char *)out + (size_t)out_stride * y);
       memcpy(o, i, out_stride);
     }
-#if DEBUG_RESAMPLING_TIMING
-    ts_resampling = getts() - ts_resampling;
-    fprintf(stderr, "resampling %p plan:0us resampling:%" PRId64 "us\n", in, ts_resampling);
-#endif
+    dt_show_times_f(&start, "[resample_1c_plain]", "1:1 copy/crop of %dx%d pixels",
+                    roi_in->width, roi_in->height);
     // All done, so easy case
     return;
   }
 
   // Generic non 1:1 case... much more complicated :D
-#if DEBUG_RESAMPLING_TIMING
-  int64_t ts_plan = getts();
-#endif
 
   // Prepare resampling plans once and for all
   r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale,
@@ -2054,13 +1986,7 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
     goto exit;
   }
 
-#if DEBUG_RESAMPLING_TIMING
-  ts_plan = getts() - ts_plan;
-#endif
-
-#if DEBUG_RESAMPLING_TIMING
-  int64_t ts_resampling = getts();
-#endif
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
 
   // Process each output line
 #ifdef _OPENMP
@@ -2132,17 +2058,13 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
     }
   }
 
-#if DEBUG_RESAMPLING_TIMING
-  ts_resampling = getts() - ts_resampling;
-  fprintf(stderr, "resampling %p plan:%" PRId64 "us resampling:%" PRId64 "us\n", in, ts_plan, ts_resampling);
-#endif
-
   exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
   dt_free_align(hlength);
   dt_free_align(vlength);
+  _show_2_times(&start, &mid, "resample_1c_plain");
 }
 
 /** Applies resampling (re-scaling) on *full* input and output buffers.

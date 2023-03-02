@@ -23,6 +23,7 @@
 #include "common/darktable.h"
 #include "common/iop_profile.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "common/matrices.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -1166,8 +1167,7 @@ void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_i
      && strcmp(profile_info_from->filename, profile_info_to->filename) == 0)
   {
     if(image_in != image_out)
-      memcpy(image_out, image_in, sizeof(float) * 4 * width * height);
-
+      dt_iop_image_copy_by_size(image_out, image_in, width, height, 4);
     return;
   }
 

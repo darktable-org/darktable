@@ -14,7 +14,7 @@ in stdenv.mkDerivation rec {
       ilmbase intltool lcms2 lensfun libX11 libexif
       libgphoto2 libjpeg libpng
       librsvg libtiff libxcb openexr pixman pkgconfig sqlite libxslt
-      libsoup graphicsmagick json_glib openjpeg lua5_3 pugixml
+      graphicsmagick json_glib openjpeg lua5_3 pugixml
       colord colord-gtk libxshmfence libxkbcommon at_spi2_core
       libwebp libsecret wrapGAppsHook gnome3.adwaita-icon-theme
       osm-gps-map

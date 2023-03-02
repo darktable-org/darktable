@@ -61,6 +61,9 @@ void dt_exif_set_exiv2_taglist();
 /** must not be freed */
 const GList* dt_exif_get_exiv2_taglist();
 
+/** ensure DateTime string is in canonical EXIF format */
+void dt_exif_sanitize_datetime(char *datetime);
+
 /** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image
  * struct. returns 0 on success. */
 int dt_exif_read(dt_image_t *img, const char *path);

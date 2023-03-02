@@ -666,7 +666,7 @@ static int gtk_wrap(lua_State*L)
     g_cond_init(&communication.end_cond);
     communication.L = L;
     g_mutex_lock(&communication.end_mutex);
-    g_main_context_invoke(NULL,dt_lua_gtk_wrap_callback,&communication);
+    g_main_context_invoke_full(NULL,G_PRIORITY_HIGH_IDLE, dt_lua_gtk_wrap_callback,&communication, NULL);
     g_cond_wait(&communication.end_cond,&communication.end_mutex);
     g_mutex_unlock(&communication.end_mutex);
     g_mutex_clear(&communication.end_mutex);

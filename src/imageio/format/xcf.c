@@ -63,7 +63,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     profile = malloc(profile_len);
     if(!profile)
     {
-      fprintf(stderr, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
+      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
       return 1;
     }
     cmsSaveProfileToMem(out_profile, profile, &profile_len);
@@ -86,7 +86,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   if(!xcf)
   {
-    fprintf(stderr, "[xcf] error: can't open `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't open `%s'\n", filename);
     goto exit;
   }
 
@@ -102,7 +102,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_F_32_L : XCF_PRECISION_F_32_G);
   else
   {
-    fprintf(stderr, "[xcf] error: bpp of %d is not supported\n", d->bpp);
+    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: bpp of %d is not supported\n", d->bpp);
     goto exit;
   }
 
@@ -132,7 +132,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     uint8_t *exif_buf = g_malloc0(exif_len + 6);
     if(!exif_buf)
     {
-      fprintf(stderr, "[xcf] error: can't allocate %d bytes of memory\n", exif_len + 6);
+      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %d bytes of memory\n", exif_len + 6);
       goto exit;
     }
     memcpy(exif_buf, "Exif\0\0", 6);
@@ -177,7 +177,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
         if(!raster_mask)
         {
           // this should never happen
-          fprintf(stderr, "error: can't get raster mask from `%s'\n", piece->module->name());
+          dt_print(DT_DEBUG_ALWAYS, "error: can't get raster mask from `%s'\n", piece->module->name());
           goto exit;
         }
 
@@ -196,15 +196,25 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
         {
           channel_data = malloc(sizeof(uint8_t) * d->global.width * d->global.height);
           uint8_t *ch = (uint8_t *)channel_data;
-          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; i++)
-            ch[i] = CLAMP((int)(raster_mask[i] * 255.0), 0, 255);
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(ch, d, raster_mask) \
+  schedule(simd:static)
+#endif
+          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; ++i)
+            ch[i] = (uint8_t)roundf(CLIP(raster_mask[i]) * 255.0f);
         }
         else if(d->bpp == 16)
         {
           channel_data = malloc(sizeof(uint16_t) * d->global.width * d->global.height);
           uint16_t *ch = (uint16_t *)channel_data;
-          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; i++)
-            ch[i] = CLAMP((int)(raster_mask[i] * 65535.0), 0, 65535);
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(ch, d, raster_mask) \
+  schedule(simd:static)
+#endif
+          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; ++i)
+            ch[i] = (uint16_t)roundf(CLIP(raster_mask[i]) * 65535.0f);
         }
         else if(d->bpp == 32)
         {

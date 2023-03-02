@@ -1240,35 +1240,16 @@ static void zoom_key_accel(dt_action_t *action)
   dt_develop_t *dev = darktable.develop;
   int zoom, closeup;
   float zoom_x, zoom_y;
-  if(!strcmp(action->id, "zoom close-up"))
-  {
-      zoom = dt_control_get_dev_zoom();
-      zoom_x = dt_control_get_dev_zoom_x();
-      zoom_y = dt_control_get_dev_zoom_y();
-      closeup = dt_control_get_dev_closeup();
-      if(zoom == DT_ZOOM_1) closeup = (closeup > 0) ^ 1; // flip closeup/no closeup, no difference whether it was 1 or larger
-      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, closeup, NULL, NULL);
-      dt_control_set_dev_zoom(DT_ZOOM_1);
-      dt_control_set_dev_zoom_x(zoom_x);
-      dt_control_set_dev_zoom_y(zoom_y);
-      dt_control_set_dev_closeup(closeup);
-  }
-  else if(!strcmp(action->id, "zoom fill"))
-  {
-      zoom_x = zoom_y = 0.0f;
-      dt_control_set_dev_zoom(DT_ZOOM_FILL);
-      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
-      dt_control_set_dev_zoom_x(zoom_x);
-      dt_control_set_dev_zoom_y(zoom_y);
-      dt_control_set_dev_closeup(0);
-  }
-  else if(!strcmp(action->id, "zoom fit"))
-  {
-      dt_control_set_dev_zoom(DT_ZOOM_FIT);
-      dt_control_set_dev_zoom_x(0);
-      dt_control_set_dev_zoom_y(0);
-      dt_control_set_dev_closeup(0);
-  }
+  zoom = dt_control_get_dev_zoom();
+  zoom_x = dt_control_get_dev_zoom_x();
+  zoom_y = dt_control_get_dev_zoom_y();
+  closeup = dt_control_get_dev_closeup();
+  if(zoom == DT_ZOOM_1) closeup = (closeup > 0) ^ 1; // flip closeup/no closeup, no difference whether it was 1 or larger
+  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, closeup, NULL, NULL);
+  dt_control_set_dev_zoom(DT_ZOOM_1);
+  dt_control_set_dev_zoom_x(zoom_x);
+  dt_control_set_dev_zoom_y(zoom_y);
+  dt_control_set_dev_closeup(closeup);
 
   dt_dev_invalidate(dev);
   dt_control_queue_redraw_center();
@@ -1320,7 +1301,7 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
   /* create favorites menu and popup */
   dt_gui_favorite_presets_menu_show();
 
-  /* if we got any styles, lets popup menu for selection */
+  /* if we got any favorite presets, lets popup menu for selection */
   if(darktable.gui->presets_popup_menu)
   {
     dt_gui_menu_popup(darktable.gui->presets_popup_menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
@@ -1329,9 +1310,22 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     dt_control_log(_("no userdefined presets for favorite modules were found"));
 }
 
-static void _darkroom_ui_apply_style_activate_callback(const gchar *name)
+static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem, gchar *name)
 {
-  dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+  if(gtk_get_current_event()->type == GDK_KEY_PRESS)
+    dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+}
+
+static gboolean _darkroom_ui_apply_style_button_callback(GtkMenuItem *menuitem,
+                                                         GdkEventButton *event,
+                                                         gchar *name)
+{
+  if(event->button == 1)
+    dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+  else
+    dt_shortcut_copy_lua(NULL, name);
+
+  return FALSE;
 }
 
 gboolean _styles_tooltip_callback(GtkWidget* self,
@@ -1351,11 +1345,10 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   dt_dev_write_history(dev);
 
   GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
-  gtk_widget_show_all(ht);
 
-  gtk_tooltip_set_custom(tooltip, ht);
+  g_object_set_data_full(G_OBJECT(self), "dt-preset-name", g_strdup(name), g_free);
 
-  return TRUE;
+  return dt_shortcut_tooltip_callback(self, x, y, keyboard_mode, tooltip, ht);
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
@@ -1439,7 +1432,12 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       g_signal_connect_data(G_OBJECT(mi), "activate",
                             G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
-                            g_strdup(style->name), (GClosureNotify)g_free, G_CONNECT_SWAPPED);
+                            g_strdup(style->name), (GClosureNotify)g_free, 0);
+
+      g_signal_connect_data(G_OBJECT(mi), "button-press-event",
+                            G_CALLBACK(_darkroom_ui_apply_style_button_callback),
+                            g_strdup(style->name), (GClosureNotify)g_free, 0);
+
       gtk_widget_show(mi);
 
       g_strfreev(split);
@@ -2654,8 +2652,6 @@ void gui_init(dt_view_t *self)
 
   // Zoom shortcuts
   dt_action_register(DT_ACTION(self), N_("zoom close-up"), zoom_key_accel, GDK_KEY_1, GDK_MOD1_MASK);
-  dt_action_register(DT_ACTION(self), N_("zoom fill"), zoom_key_accel, GDK_KEY_2, GDK_MOD1_MASK);
-  dt_action_register(DT_ACTION(self), N_("zoom fit"), zoom_key_accel, GDK_KEY_3, GDK_MOD1_MASK);
 
   // zoom in/out
   dt_action_register(DT_ACTION(self), N_("zoom in"), zoom_in_callback, GDK_KEY_plus, GDK_CONTROL_MASK);

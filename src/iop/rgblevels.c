@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2022 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -653,7 +653,7 @@ static gboolean _area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, 
 
   if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
-  const float interval = 0.002; // Distance moved for each scroll event
+  const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, event->state); // Distance moved for each scroll event
   int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
@@ -965,7 +965,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
       const float new_position = p->levels[c->channel][element] + interval * move_size;
       _rgblevels_move_handle(self, element, new_position, p->levels[c->channel], c->drag_start_percentage);
     default:
-      fprintf(stderr, "[_action_process_tabs] unknown shortcut effect (%d) for levels\n", effect);
+      dt_print(DT_DEBUG_ALWAYS, "[_action_process_tabs] unknown shortcut effect (%d) for levels\n", effect);
       break;
     }
 
@@ -1377,7 +1377,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
-        fprintf(stderr, "[rgblevels process_cl] error allocating memory for temp table 1\n");
+        dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory for temp table 1\n");
         err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
         goto cleanup;
       }
@@ -1385,7 +1385,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_in, width, height, ch * sizeof(float));
       if(err != CL_SUCCESS)
       {
-        fprintf(stderr, "[rgblevels process_cl] error allocating memory for temp table 2\n");
+        dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory for temp table 2\n");
         goto cleanup;
       }
 
@@ -1414,21 +1414,21 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_lutr = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
   if(dev_lutr == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 1\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 1\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
   dev_lutg = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
   if(dev_lutg == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 2\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 2\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
   dev_lutb = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if(dev_lutb == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 3\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 3\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1436,7 +1436,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_levels = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->params.levels);
   if(dev_levels == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 4\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1444,7 +1444,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_inv_gamma = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, (float *)d->inv_gamma);
   if(dev_inv_gamma == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 5\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 5\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1459,7 +1459,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "[rgblevels process_cl] error %i enqueue kernel\n", err);
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error %i enqueue kernel\n", err);
     goto cleanup;
   }
 

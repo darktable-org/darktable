@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ typedef struct dt_pos_t
 typedef struct dt_iop_segmentation_t
 {
   int *data;      // holding segment id's for every location
-  int *size;      // size of each segment      
+  int *size;      // size of each segment
   int *xmin;      // bounding rectangle for each segment
   int *xmax;
   int *ymin;
@@ -67,7 +67,7 @@ static inline void _push_stack(int xpos, int ypos, dt_ff_stack_t *stack)
   const int i = stack->pos;
   if(i >= stack->size - 1)
   {
-    fprintf(stderr, "[segmentation stack overflow] %i\n", stack->size);
+    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack overflow] %i\n", stack->size);
     return;
   }
   stack->el[i].xpos = xpos;
@@ -80,7 +80,7 @@ static inline dt_pos_t * _pop_stack(dt_ff_stack_t *stack)
   if(stack->pos > 0)
     stack->pos--;
   else
-    fprintf(stderr, "[segmentation stack underflow]\n");
+    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack underflow]\n");
   return &stack->el[stack->pos];
 }
 
@@ -88,7 +88,7 @@ static inline int _get_segment_id(dt_iop_segmentation_t *seg, const size_t loc)
 {
   if(loc >= (size_t)(seg->width * seg->height))
   {
-    fprintf(stderr, "[_get_segment_id] out of range access loc=%lu in %ix%i\n", loc, seg->width, seg->height);
+    dt_print(DT_DEBUG_ALWAYS, "[_get_segment_id] out of range access loc=%zu in %ix%i\n", loc, seg->width, seg->height);
     return 0;
   }
   return seg->data[loc] & (DT_SEG_ID_MASK-1);
@@ -202,7 +202,12 @@ static inline int _test_dilate(const int *img, const size_t i, const size_t w1, 
   return retval;
 }
 
-static inline void _dilating(const int *img, int *o, const int w1, const int height, const int border, const int radius)
+static inline void _dilating(const int *img,
+                             int *o,
+                             const int w1,
+                             const int height,
+                             const int border,
+                             const int radius)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -326,7 +331,12 @@ static inline int _test_erode(const int *img, const size_t i, const size_t w1, c
   return retval;
 }
 
-static inline void _eroding(const int *img, int *o, const int w1, const int height, const int border, const int radius)
+static inline void _eroding(const int *img,
+                            int *o,
+                            const int w1,
+                            const int height,
+                            const int border,
+                            const int radius)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -341,9 +351,13 @@ static inline void _eroding(const int *img, int *o, const int w1, const int heig
   }
 }
 
-static inline void _intimage_borderfill(int *d, const int width, const int height, const int val, const int border)
+static inline void _intimage_borderfill(int *d,
+                                        const int width,
+                                        const int height,
+                                        const int val,
+                                        const int border)
 {
-  for(size_t i = 0; i < border * width; i++)                            
+  for(size_t i = 0; i < border * width; i++)
     d[i] = val;
   for(size_t i = (height - border - 1) * width; i < width*height; i++)
     d[i] = val;
@@ -356,7 +370,13 @@ static inline void _intimage_borderfill(int *d, const int width, const int heigh
   }
 }
 
-static gboolean _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, const int w, const int h, const int id, dt_ff_stack_t *stack)
+static gboolean _floodfill_segmentize(int yin,
+                                      int xin,
+                                      dt_iop_segmentation_t *seg,
+                                      const int w,
+                                      const int h,
+                                      const int id,
+                                      dt_ff_stack_t *stack)
 {
   if(id >= seg->slots - 2) return FALSE;
 
@@ -413,7 +433,7 @@ static gboolean _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *s
           d[rp] = DT_SEG_ID_MASK + id;
         }
       }
-      
+
       if(yDown < h-border && d[yDown*w+x] == 1)
       {
         _push_stack(x, yDown, stack); firstXDown = lastXDown = TRUE;
@@ -432,7 +452,7 @@ static gboolean _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *s
           d[rp] = DT_SEG_ID_MASK + id;
         }
       }
-      
+
       int xr = x + 1;
       while(xr < w-border && d[y*w+xr] == 1)
       {
@@ -596,7 +616,7 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   stack.el = dt_alloc_align(64, stack.size * sizeof(dt_pos_t));
   if(!stack.el)
   {
-    fprintf(stderr, "[segmentize_plane] can't allocate segmentation stack\n");
+    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] can't allocate segmentation stack\n");
     return;
   }
   const size_t border = seg->border;
@@ -616,7 +636,7 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   finish:
 
   if(id >= (seg->slots - 2))
-    fprintf(stderr, "[segmentize_plane] %ix%i number of segments exceeds maximum=%i\n",
+    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] %ix%i number of segments exceeds maximum=%i\n",
       (int)width, (int)height, seg->slots);
 
   dt_free_align(stack.el);
@@ -674,11 +694,15 @@ void dt_segments_transform_closing(dt_iop_segmentation_t *seg, const int radius)
   _eroding(seg->tmp, img, width, height, border, radius);
 }
 
-void dt_segmentation_init_struct(dt_iop_segmentation_t *seg, const int width, const int height, const int border, const int wanted_slots)
+void dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
+                                 const int width,
+                                 const int height,
+                                 const int border,
+                                 const int wanted_slots)
 {
   const int slots = MIN(wanted_slots, DT_SEG_ID_MASK - 2);
   if(slots != wanted_slots)
-    fprintf(stderr, "number of wanted seg slots %i exceeds maximum %i\n", wanted_slots, DT_SEG_ID_MASK - 2);
+    dt_print(DT_DEBUG_ALWAYS, "number of wanted seg slots %i exceeds maximum %i\n", wanted_slots, DT_SEG_ID_MASK - 2);
 
   seg->nr = 2;
   seg->data =   dt_alloc_align(64, width * height * sizeof(int));
@@ -711,3 +735,8 @@ void dt_segmentation_free_struct(dt_iop_segmentation_t *seg)
   dt_free_align(seg->tmp);
 }
 
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

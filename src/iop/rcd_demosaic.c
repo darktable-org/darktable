@@ -69,12 +69,6 @@
   #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
-#ifdef __GNUC__
-  #define INLINE __inline
-#else
-  #define INLINE inline
-#endif
-
 #define RCD_BORDER 9          // avoid tile-overlap errors
 #define RCD_MARGIN 6          // for the outermost tiles we can have a smaller outer border
 #define RCD_TILEVALID (RCD_TILESIZE - 2 * RCD_BORDER)
@@ -86,23 +80,20 @@
 #define eps 1e-5f              // Tolerance to avoid dividing by zero
 #define epssq 1e-10f
 
-static INLINE float intp(float a, float b, float c)
-{   // taken from rt code
-    // calculate a * b + (1 - a) * c
-    // following is valid:
-    // intp(a, b+x, c+x) = intp(a, b, c) + x
-    // intp(a, b*x, c*x) = intp(a, b, c) * x
-    return a * (b - c) + c;
-}
-
 // We might have negative data in input and also want to normalise
-static INLINE float safe_in(float a, float scale)
+static inline float _safe_in(float a, float scale)
 {
   return fmaxf(0.0f, a) * scale;
 }
 
 /** This is basically ppg adopted to only write data to RCD_MARGIN */
-static void rcd_ppg_border(float *const out, const float *const in, const int width, const int height, const uint32_t filters, const int margin)
+static void rcd_ppg_border(
+        float *const out,
+        const float *const in,
+        const int width,
+        const int height,
+        const uint32_t filters,
+        const int margin)
 {
   const int border = margin + 3;
   // write approximatad 3-pixel border region to out
@@ -293,8 +284,13 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
 #ifdef _OPENMP
   #pragma omp declare simd aligned(in, out)
 #endif
-static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict out, const float *const restrict in, dt_iop_roi_t *const roi_out,
-                                   const dt_iop_roi_t *const roi_in, const uint32_t filters)
+static void rcd_demosaic(
+        dt_dev_pixelpipe_iop_t *piece,
+        float *const restrict out,
+        const float *const restrict in,
+        dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint32_t filters)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -364,7 +360,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
           const int c1 = FC(row, colStart + 1, filters);
           for(int col = colStart, indx = (row - rowStart) * RCD_TILESIZE, in_indx = row * width + colStart; col < colEnd; col++, indx++, in_indx++)
           {
-            cfa[indx] = rgb[c0][indx] = rgb[c1][indx] = safe_in(in[in_indx], revscaler);
+            cfa[indx] = rgb[c0][indx] = rgb[c1][indx] = _safe_in(in[in_indx], revscaler);
           }
         }
 
@@ -450,7 +446,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
             const float VH_Disc = (fabs(0.5f - VH_Central_Value) < fabs(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
 
-            rgb[1][indx] = intp(VH_Disc, H_Est, V_Est);
+            rgb[1][indx] = interpolatef(VH_Disc, H_Est, V_Est);
           }
         }
 
@@ -504,7 +500,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
             // R@B and B@R interpolation
-            rgb[c][indx] = rgb[1][indx] + intp(PQ_Disc, Q_Est, P_Est);
+            rgb[c][indx] = rgb[1][indx] + interpolatef(PQ_Disc, Q_Est, P_Est);
           }
         }
 
@@ -550,7 +546,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
               const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
 
               // R@G and B@G interpolation
-              rgb[c][indx] = rgb1 + intp(VH_Disc, H_Est, V_Est);
+              rgb[c][indx] = rgb1 + interpolatef(VH_Disc, H_Est, V_Est);
             }
           }
         }
