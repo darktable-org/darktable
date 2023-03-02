@@ -242,14 +242,16 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module,
               || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
-    if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
+    if(form->type & DT_MASKS_CLONE)
+      dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
 
     return 1;
   }
   else
   {
     // we create the circle
-    dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
+    dt_masks_point_circle_t *circle =
+      (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
 
     // we change the center value
     const float wd = darktable.develop->preview_pipe->backbuf_width;
@@ -329,23 +331,32 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module,
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
     }
     //spot and retouch manage creation_continuous in their own way
-    if(crea_module
-       && gui->creation_continuous
-       && !dt_iop_module_is(crea_module->so, "spots")
-       && !dt_iop_module_is(crea_module->so, "retouch"))
+    if(gui->creation_continuous)
     {
-      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)crea_module->blend_data;
-      for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
-        if(bd->masks_type[n] == form->type)
-          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
+      if(crea_module
+         && !dt_iop_module_is(crea_module->so, "spots")
+         && !dt_iop_module_is(crea_module->so, "retouch"))
+      {
+        dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)crea_module->blend_data;
+        for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
+          if(bd->masks_type[n] == form->type)
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
 
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
-      dt_masks_form_t *newform = dt_masks_create(form->type);
-      dt_masks_change_form_gui(newform);
-      darktable.develop->form_gui->creation_module = crea_module;
-      darktable.develop->form_gui->creation_continuous = TRUE;
-      darktable.develop->form_gui->creation_continuous_module = crea_module;
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+        dt_masks_form_t *newform = dt_masks_create(form->type);
+        dt_masks_change_form_gui(newform);
+        darktable.develop->form_gui->creation_module = crea_module;
+        darktable.develop->form_gui->creation_continuous = TRUE;
+        darktable.develop->form_gui->creation_continuous_module = crea_module;
+      }
+      else
+      {
+        dt_masks_form_t *form_new = dt_masks_create(form->type);
+        dt_masks_change_form_gui(form_new);
+        darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
+      }
     }
+
     return 1;
   }
   return 0;
