@@ -243,6 +243,24 @@ The following is a summary of the main features added to darktable
   is selected via an element, hold or toggle via an effect. All mapped
   shortcuts are shown in the tooltip of the preview layout button.
 
+- Read Exif metadata from AVIF, HEIC and JPEG XL images using native
+  libraries if Exiv2 does not support it.
+
+- Write Exif data to eXIf PNG chunk if using Exiv2 version >
+  27.x. This is the new way to store Exif data in PNG.
+
+- Makes laplacian highlights recovery mode less memory hangry (save
+  around 40%) and allow for a large speed up. This makes this recovery
+  mode lot more usable and allows for more recovery iterations.
+
+- Add support for embedded DNG lens corrections metadata. By reading
+  the rectilinear and vignette_radial metadata it is now possible to
+  make lens correction.
+
+- Add support for MaxApertureValue metadata to complement the already
+  supported ApertureValue. The new metadata is used by Leica M
+  Monochrom, M8, M9 & M10 DNGs.
+
 ## Bug Fixes
 
 - Remove the commit button from the crop module has it was not used
