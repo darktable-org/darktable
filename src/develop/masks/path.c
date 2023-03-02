@@ -1339,7 +1339,8 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
       dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
       gui->creation_module = NULL;
 
-      if(gui->creation_continuous)
+      if(crea_module
+         && gui->creation_continuous)
       {
         //spot and retouch manage creation_continuous in their own way
         if(strcmp(crea_module->so->op, "spots") != 0
