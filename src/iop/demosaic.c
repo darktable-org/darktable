@@ -490,7 +490,7 @@ static void green_equilibration_lavg(
                           + fabsf(o2_3 - o2_4) + fabsf(o2_2 - o2_4)) / 6.0f;
         if((in[j * width + i] < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
         {
-          out[j * width + i] = in[j * width + i] * m1 / m2;
+          out[j * width + i] = fmaxf(0.0f, in[j * width + i] * m1 / m2);
         }
       }
     }
@@ -544,7 +544,7 @@ static void green_equilibration_favg(
   {
     for(int i = oi; i < (width - 1 - g2_offset); i += 2)
     {
-      out[(size_t)j * width + i] = in[(size_t)j * width + i] * gr_ratio;
+      out[(size_t)j * width + i] = fmaxf(0.0f, in[(size_t)j * width + i] * gr_ratio);
     }
   }
 }
