@@ -2314,6 +2314,14 @@ static void lin_interpolate(
    I've extended the basic idea to work with non-Bayer filter arrays.
    Gradients are numbered clockwise from NW=0 to W=7.
 */
+static inline void _ensure_abovezero(void *to, void *from, int num)
+{
+  float *in = from;
+  float *out = to;
+  for(int i=0; i < num; i++)
+    out[i] = fmaxf(0.0f, in[i]);
+}
+
 static void vng_interpolate(
         float *out,
         const float *const in,
@@ -2475,13 +2483,13 @@ static void vng_interpolate(
       }
     }
     if(row > 3) /* Write buffer to image */
-      memcpy(out + 4 * ((row - 2) * width + 2), brow[0] + 2, sizeof(*out) * 4 * (width - 4));
+      _ensure_abovezero(out + 4 * ((row - 2) * width + 2), brow[0] + 2, 4 * (width - 4));
     // rotate ring buffer
     for(int g = 0; g < 4; g++) brow[(g - 1) & 3] = brow[g];
   }
   // copy the final two rows to the image
-  memcpy(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, sizeof(*out) * 4 * (width - 4));
-  memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, sizeof(*out) * 4 * (width - 4));
+  _ensure_abovezero(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, 4 * (width - 4));
+  _ensure_abovezero(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, 4 * (width - 4));
   dt_free_align(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
