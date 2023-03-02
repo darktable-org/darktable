@@ -1003,7 +1003,8 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
     for(const GList *l = dev->iop; l; l = g_list_next(l))
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
-      if(strcmp(module->op, mod->op) == 0) base_multi_priority = MIN(base_multi_priority, mod->multi_priority);
+      if(dt_iop_module_is(module->so, mod->op))
+        base_multi_priority = MIN(base_multi_priority, mod->multi_priority);
     }
 
     if(module->multi_priority == base_multi_priority) // if the module is the "base" instance, we keep it
@@ -1105,7 +1106,7 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      if(!strcmp(module->op, active_plugin))
+      if(dt_iop_module_is(module->so, active_plugin))
       {
         valid = TRUE;
         dt_conf_set_string("plugins/darkroom/active", active_plugin);
@@ -2054,9 +2055,11 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
   dt_develop_t *dev = dt_action_view(action)->data;
   dt_iop_module_t *mod = dev->gui_module;
 
-  //retouch and spot removal module use masks differently and have different buttons associated
-  //keep the shortcuts independent
-  if(mod && strcmp(mod->so->op, "spots") != 0 && strcmp(mod->so->op, "retouch") != 0)
+  //retouch and spot removal module use masks differently and have
+  //different buttons associated keep the shortcuts independent
+  if(mod
+     && !dt_iop_module_is(mod->so, "spots")
+     && !dt_iop_module_is(mod->so, "retouch"))
   {
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)mod->blend_data;
 
@@ -2064,7 +2067,8 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
 
     dt_iop_color_picker_reset(mod, TRUE);
 
-    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, mod->blend_params->mask_id);
+    dt_masks_form_t *grp =
+      dt_masks_get_from_id(darktable.develop, mod->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
       if(bd->masks_shown == DT_MASKS_EDIT_OFF)
@@ -2072,7 +2076,8 @@ static void _toggle_mask_visibility_callback(dt_action_t *action)
       else
         bd->masks_shown = DT_MASKS_EDIT_OFF;
 
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
       dt_masks_set_edit_mode(mod, bd->masks_shown);
 
       // set all add shape buttons to inactive
@@ -3115,7 +3120,8 @@ void enter(dt_view_t *self)
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      if(!strcmp(module->op, active_plugin)) dt_iop_request_focus(module);
+      if(dt_iop_module_is(module->so, active_plugin))
+        dt_iop_request_focus(module);
     }
   }
 

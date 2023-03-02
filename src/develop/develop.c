@@ -1128,7 +1128,7 @@ void dt_dev_add_masks_history_item_ext(
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
-      if(strcmp(mod->op, "mask_manager") == 0)
+      if(dt_iop_module_is(mod->so, "mask_manager"))
       {
         module = mod;
         break;
@@ -1549,7 +1549,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
           // For new edits the temperature will be added back
           // depending on the chromatic adaptation the standard way.
 
-          if(!strcmp(module->op, "temperature")
+          if(dt_iop_module_is(module->so, "temperature")
              && (image->change_timestamp == -1))
           {
             // it is important to recover temperature in this case
@@ -1602,11 +1602,11 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-      if(((auto_apply_exposure && strcmp(module->op, "exposure") == 0)
-          || (auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
-          || (auto_apply_sigmoid && strcmp(module->op, "sigmoid") == 0)
-          || (auto_apply_basecurve && strcmp(module->op, "basecurve") == 0)
-          || (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
+      if(((auto_apply_exposure && dt_iop_module_is(module->so, "exposure"))
+          || (auto_apply_filmic && dt_iop_module_is(module->so, "filmicrgb"))
+          || (auto_apply_sigmoid && dt_iop_module_is(module->so, "sigmoid"))
+          || (auto_apply_basecurve && dt_iop_module_is(module->so, "basecurve"))
+          || (auto_apply_cat && dt_iop_module_is(module->so, "channelmixerrgb")))
          && !dt_history_check_module_exists(imgid, module->op, FALSE)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
@@ -2078,7 +2078,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-      if(!strcmp(module->op, module_name))
+      if(dt_iop_module_is(module->so, module_name))
       {
         if(module->multi_priority == multi_priority)
         {
@@ -2129,8 +2129,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     if(is_workflow_none && hist->module->enabled)
     {
-      if(!strcmp(hist->module->op, "temperature"))     temperature = hist->module;
-      if(!strcmp(hist->module->op, "channelmixerrgb")) channelmixerrgb = hist->module;
+      if(dt_iop_module_is(hist->module->so, "temperature"))
+        temperature = hist->module;
+      if(dt_iop_module_is(hist->module->so, "channelmixerrgb"))
+        channelmixerrgb = hist->module;
     }
 
     // module has no user params and won't bother us in GUI - exit early, we are done
@@ -2224,7 +2226,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       }
       else
       {
-        if(!strcmp(hist->module->op, "spots") && modversion == 1)
+        if(dt_iop_module_is(hist->module->so, "spots")
+           && modversion == 1)
         {
           // quick and dirty hack to handle spot removal legacy_params
           memcpy(hist->blend_params, hist->module->blend_params,
@@ -2239,7 +2242,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
        * by default, so if it is disabled, enable it, and replace params with
        * default_params. if user want to, he can disable it.
        */
-      if(!strcmp(hist->module->op, "flip") && hist->enabled == 0 && labs(modversion) == 1)
+      if(dt_iop_module_is(hist->module->so, "flip")
+         && hist->enabled == 0
+         && labs(modversion) == 1)
       {
         memcpy(hist->params, hist->module->default_params, hist->module->params_size);
         hist->enabled = 1;

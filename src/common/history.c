@@ -230,7 +230,7 @@ static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev,
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
-    if(strcmp(hist->module->op, module->op) == 0)
+    if(dt_iop_module_is(hist->module->so, module->op))
     {
       hist_mod = hist;
       break;

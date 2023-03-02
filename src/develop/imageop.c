@@ -1716,7 +1716,7 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
     for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iter->data;
-      if(!strcmp(m->op, blendop_params->raster_mask_source))
+      if(dt_iop_module_is(m->so, blendop_params->raster_mask_source))
       {
         if(m->multi_priority == blendop_params->raster_mask_instance)
         {
@@ -2899,7 +2899,7 @@ dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op)
   for(GList *modules = iop_list; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-    if(strcmp(mod->op, op) == 0)
+    if(dt_iop_module_is(mod->so, op))
     {
       result = mod;
       break;
@@ -2920,7 +2920,8 @@ int dt_iop_get_module_flags(const char *op)
   while(modules)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
-    if(!strcmp(module->op, op)) return module->flags();
+    if(dt_iop_module_is(module, op))
+      return module->flags();
     modules = g_list_next(modules);
   }
   return 0;
@@ -3154,7 +3155,7 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)m->data;
 
-    if(strcmp(mod->op, operation) == 0
+    if(dt_iop_module_is(mod->so, operation)
        && (mod->multi_priority == multi_priority || multi_priority == -1))
     {
       mod_ret = mod;
@@ -3271,7 +3272,7 @@ dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules,
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)m->data;
 
-    if((strcmp(mod->op, operation) == 0)
+    if((dt_iop_module_is(mod->so, operation))
        && ((multi_name == NULL) || (strcmp(mod->multi_name, multi_name) == 0)))
     {
       mod_ret = mod;
@@ -3306,7 +3307,7 @@ gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module)
   while(iop)
   {
     dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-    if(!strcmp(m->op, module->op))
+    if(dt_iop_module_is(m->so, module->op))
     {
       is_first = (m == module);
       break;

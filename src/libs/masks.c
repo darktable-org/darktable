@@ -1447,7 +1447,7 @@ gboolean _find_mask_iter_by_values(GtkTreeModel *model,
     _lib_masks_get_values(model, iter, &mod, NULL, &fid);
     gboolean found = (fid == formid)
       && ((level == 1)
-          || (module == NULL || (mod && (!g_strcmp0(module->op, mod->op)))));
+          || (module == NULL || (mod && dt_iop_module_is(module->so, mod->op))));
     if(found) return found;
 
     GtkTreeIter child, parent = *iter;
@@ -1707,7 +1707,7 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
 
     if((id == selectid)
        && ((level == 1)
-           || (module == NULL || (mod && (!g_strcmp0(module->op, mod->op))))))
+           || (module == NULL || (mod && dt_iop_module_is(module->so, mod->op)))))
     {
       gtk_tree_selection_select_iter(selection, &i);
       found = TRUE;
