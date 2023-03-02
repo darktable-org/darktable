@@ -818,7 +818,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int 
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
       const dt_iop_module_so_t *module = (const dt_iop_module_so_t *)(modules->data);
-      if(!strcmp(module->op, "colorin"))
+      if(dt_iop_module_is(module, "colorin"))
       {
         colorin = module;
         break;
@@ -870,7 +870,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
       const dt_iop_module_so_t *module = (const dt_iop_module_so_t *)(modules->data);
-      if(!strcmp(module->op, "colorout"))
+      if(dt_iop_module_is(module, "colorout"))
       {
         colorout = module;
         break;
@@ -2445,4 +2445,3 @@ void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

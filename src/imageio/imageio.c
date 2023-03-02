@@ -934,7 +934,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
       for(const GList *nodes = g_list_last(pipe.nodes); nodes; nodes = g_list_previous(nodes))
       {
         dt_dev_pixelpipe_iop_t *node = (dt_dev_pixelpipe_iop_t *)(nodes->data);
-        if(!strcmp(node->module->op, "finalscale"))
+        if(dt_iop_module_is(node->module->so, "finalscale"))
         {
           finalscale = node;
           break;
