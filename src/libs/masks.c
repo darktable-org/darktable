@@ -878,14 +878,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   // we reset all "show mask" icon of iops
   dt_masks_reset_show_masks_icons();
 
-  // if selection empty, we hide all
   const int nb = gtk_tree_selection_count_selected_rows(selection);
-  if(nb == 0)
-  {
-    dt_masks_change_form_gui(NULL);
-    dt_control_queue_redraw_center();
-    return;
-  }
 
   // else, we create a new form group with the selection and display it
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(self->treeview));
