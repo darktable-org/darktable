@@ -323,6 +323,7 @@ static float *partition(float *first, float *last, float val)
 // is less than any of the elements in the range [first, nth)
 void quick_select(float *first, float *nth, float *last)
 {
+//DBG  double start = dt_get_wtime(); size_t n_elem = (last - first);
   if(first == last) return;
   for(;;)
   {
@@ -343,8 +344,25 @@ void quick_select(float *first, float *nth, float *last)
     else
       first = pivot + 1;
   }
+//DBG  fprintf(stderr,"qs(%zd): %f ms\n",n_elem,1000.0*(dt_get_wtime()-start));
 }
 
+
+// TODO: dedup this and the equivalent in common/eaw.c
+typedef struct _aligned_pixel {
+  union {
+    dt_aligned_pixel_t v;
+  };
+} _aligned_pixel;
+#ifdef _OPENMP
+static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newval)
+{
+  for_four_channels(c) acc.v[c] += newval.v[c];
+  return acc;
+}
+#pragma omp declare reduction(vsum:_aligned_pixel:omp_out=add_float4(omp_out,omp_in)) \
+  initializer(omp_priv = { .v = { 0.0f, 0.0f, 0.0f, 0.0f } })
+#endif
 
 // calculate diffusive ambient light and the maximal depth in the image
 // depth is estimated by the local amount of haze and given in units of the
@@ -382,7 +400,7 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   free_gray_image(&bright_hazy);
   // average over the brightest pixels among the most hazy pixels to
   // estimate the diffusive ambient light
-  float A0_r = 0, A0_g = 0, A0_b = 0;
+  _aligned_pixel A0 = { .v = { 0.0f, 0.0f, 0.0f, 0.0f } };
   size_t N_bright_hazy = 0;
   const float *const restrict data = dark_ch.data;
   const float *const restrict in_data = img.data;
@@ -390,28 +408,26 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(crit_brightness, crit_haze_level, data, in_data, size) \
   schedule(static) \
-  reduction(+ : N_bright_hazy, A0_r, A0_g, A0_b)
+  reduction(vsum : A0) reduction(+ : N_bright_hazy)
 #endif
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel_in = in_data + 4*i;
     if((data[i] >= crit_haze_level) && (pixel_in[0] + pixel_in[1] + pixel_in[2] >= crit_brightness))
     {
-      A0_r += pixel_in[0];
-      A0_g += pixel_in[1];
-      A0_b += pixel_in[2];
+      for_each_channel(c,aligned(pixel_in))
+        A0.v[c] += pixel_in[c];
       N_bright_hazy++;
     }
   }
   if(N_bright_hazy > 0)
   {
-    A0_r /= N_bright_hazy;
-    A0_g /= N_bright_hazy;
-    A0_b /= N_bright_hazy;
+    for_each_channel(c)
+      A0.v[c] /= N_bright_hazy;
   }
-  (*pA0)[0] = A0_r;
-  (*pA0)[1] = A0_g;
-  (*pA0)[2] = A0_b;
+  (*pA0)[0] = A0.v[0];
+  (*pA0)[1] = A0.v[1];
+  (*pA0)[2] = A0.v[2];
   free_gray_image(&dark_ch);
   // for almost haze free images it may happen that crit_haze_level=0, this means
   // there is a very large image depth, in this case a large number is returned, that
