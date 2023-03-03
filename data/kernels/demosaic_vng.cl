@@ -110,7 +110,7 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
     const int yy = yul + bufidx / stride;
     buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy)).x;
   }
-  
+
   // center buffer around current x,y-Pixel
   buffer += mad24(ylid + 1, stride, xlid + 1);
 
@@ -141,10 +141,10 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
   // for each interpolated color, load it into the pixel
   for(int i = 0; i < colors - 1; i++, ip += 2)
   {
-    o[ip[0]] = sum[ip[0]] / ip[1];
+    o[ip[0]] = fmax(0.0f, sum[ip[0]] / ip[1]);
   }
 
-  o[ip[0]] = buffer[0];
+  o[ip[0]] = fmax(0.0f, buffer[0]);
 
   write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
@@ -187,7 +187,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
     float4 pixel = read_imagef(in, sampleri, (int2)(xx, yy));
     vstore4(pixel, bufidx, buffer);
   }
-  
+
   // center buffer around current x,y-Pixel
   buffer += 4 * mad24(ylid + 2, stride, xlid + 2);
 
@@ -242,7 +242,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
   if(gmax == 0.0f)
   {
-    write_imagef(out, (int2)(x, y), (float4)(buffer[0], buffer[1], buffer[2], buffer[3]));
+    write_imagef(out, (int2)(x, y), (float4)(fmax(0.0f, buffer[0]), fmax(0.0f, buffer[1]), fmax(0.0f, buffer[2]), fmax(0.0f, buffer[3])));
     return;
   }
 
@@ -260,12 +260,12 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
       const int x0 = (short)(offset0 & 0xffffu);
       const int y0 = (short)(offset0 >> 16);
       const int idx0 = 4 * mad24(y0, stride, x0);
-    
+
       const int offset1 = ip[1];
       const int x1 = (short)(offset1 & 0xffffu);
       const int y1 = (short)(offset1 >> 16);
       const int idx1 = 4 * mad24(y1, stride, x1);
-    
+
       const int c1 = ip[2];
 
       for(int c = 0; c < colors; c++)
@@ -289,9 +289,9 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
   {
     float tot = buffer[color];
     if(c != color) tot += (sum[c] - sum[color]) / num;
-    o[c] = tot;
+    o[c] = fmax(0.0f, tot);
   }
-  
+
   write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
 
