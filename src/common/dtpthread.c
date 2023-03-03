@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,13 +53,9 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
     fprintf(stderr, "[dt_pthread_create] error: pthread_attr_getstacksize() returned %i\n", ret);
   }
 
-  if(ret != 0 || stacksize < WANTED_THREADS_STACK_SIZE /*|| 1*/)
+  if(ret != 0 || stacksize < WANTED_THREADS_STACK_SIZE)
   {
     // looks like we need to bump/set it...
-
-    fprintf(stderr, "[dt_pthread_create] info: bumping pthread's stacksize from %zu to %"PRIuMAX"\n", stacksize,
-            (uintmax_t)WANTED_THREADS_STACK_SIZE);
-
     ret = pthread_attr_setstacksize(&attr, WANTED_THREADS_STACK_SIZE);
     if(ret != 0)
     {

@@ -239,7 +239,7 @@ END
   print $OUT " ";
   foreach(@ast::varnames)
   {
-    print $OUT " if(!strcmp(name, \"@$_[1]\"))\n    return &(introspection_linear[@$_[0]]);\n  else";
+    print $OUT " if(!g_ascii_strcasecmp(name, \"@$_[1]\"))\n    return &(introspection_linear[@$_[0]]);\n  else";
   }
   print $OUT <<END;
 

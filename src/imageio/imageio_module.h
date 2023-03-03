@@ -34,6 +34,10 @@
 #include "lua/types.h"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 
 /** Flag for the format modules */
 typedef enum dt_imageio_format_flags_t
@@ -151,6 +155,10 @@ void dt_imageio_remove_storage(dt_imageio_module_storage_t *storage);
 // and improve the readability of the displayed string itself in the "scale" field
 // of the settings export.
 gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

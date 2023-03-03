@@ -28,6 +28,10 @@
 
 #define DEVELOP_MASKS_VERSION (6)
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /**forms types */
 typedef enum dt_masks_type_t
 {
@@ -652,6 +656,10 @@ int dt_masks_roundup(int num, int mult)
   (type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? "plugins/darkroom/spots/" #shape "_" #param : "plugins/darkroom/masks/" #shape "/" #param)
 
 void dt_masks_draw_anchor(cairo_t *cr, gboolean selected, const float zoom_scale, const float x, const float y);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

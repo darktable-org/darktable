@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2022 darktable developers.
+    Copyright (C) 2021-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,6 +146,13 @@ const model_map_t modelMap[] = {
   },
   {
     .exif_make = "Canon",
+    .exif_model = "Canon EOS Kiss X10",
+    .clean_make = "Canon",
+    .clean_model = "EOS 250D",
+    .clean_alias = "EOS Kiss X10"
+  },
+  {
+    .exif_make = "Canon",
     .exif_model = "Canon EOS Rebel SL3",
     .clean_make = "Canon",
     .clean_model = "EOS 250D",
@@ -164,6 +171,13 @@ const model_map_t modelMap[] = {
     .clean_make = "Canon",
     .clean_model = "EOS 850D",
     .clean_alias = "EOS 850D"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS Kiss X10i",
+    .clean_make = "Canon",
+    .clean_model = "EOS 850D",
+    .clean_alias = "EOS Kiss X10i"
   },
   {
     .exif_make = "Canon",
@@ -208,15 +222,31 @@ const model_map_t modelMap[] = {
 
 static gboolean _supported_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "cr3", NULL };
-  char *ext = g_strrstr(filename, ".");
+  // At the moment of writing this code CR3 files are not supported by RawSpeed,
+  // so they are always processed by LibRaw.
+  gchar *extensions_whitelist;
+  const gchar *always_by_libraw = "cr3";
+
+  gchar *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
   ext++;
-  for(const char **i = extensions_whitelist; *i != NULL; i++)
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
-    {
-      return TRUE;
-    }
+
+  if(dt_conf_key_not_empty("libraw_extensions"))
+    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), NULL);
+  else
+    extensions_whitelist = g_strdup(always_by_libraw);
+
+  fprintf(stderr, "[libraw_open] extensions whitelist: `%s'\n", extensions_whitelist);
+
+  gchar *ext_lowercased = g_ascii_strdown(ext,-1);
+  if(g_strstr_len(extensions_whitelist,-1,ext_lowercased))
+  {
+    g_free(ext_lowercased);
+    g_free(extensions_whitelist);
+    return TRUE;
+  }
+  g_free(ext_lowercased);
+  g_free(extensions_whitelist);
   return FALSE;
 }
 
@@ -267,7 +297,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   // are not populated into libraw structure, or image is not of CFA type.
   if(raw->rawdata.color.cam_mul[0] == 0.0f || isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
   {
-    fprintf(stderr, "[libraw_open] detected unsupported image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] detected unsupported image `%s'\n", img->filename);
     goto error;
   }
 
@@ -296,8 +326,8 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   libraw_raw_inset_crop_t *ric = &raw->rawdata.sizes.raw_inset_crops[0];
   img->crop_x = ric->cleft;
   img->crop_y = ric->ctop;
-  img->crop_width = raw->rawdata.sizes.raw_width - ric->cwidth - ric->cleft;
-  img->crop_height = raw->rawdata.sizes.raw_height - ric->cheight - ric->ctop;
+  img->crop_right = raw->rawdata.sizes.raw_width - ric->cwidth - ric->cleft;
+  img->crop_bottom = raw->rawdata.sizes.raw_height - ric->cheight - ric->ctop;
 
   // We can reuse the libraw filters property, it's already well-handled in dt.
   // It contains (for CR3) the Bayer pattern, but we have to undo some LibRaw logic.
@@ -326,7 +356,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    fprintf(stderr, "[libraw_open] could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] could not alloc full buffer for image `%s'\n", img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
@@ -375,7 +405,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
 
 error:
   if(libraw_err != LIBRAW_SUCCESS)
-    fprintf(stderr, "[libraw_open] `%s': %s\n", img->filename, libraw_strerror(libraw_err));
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] `%s': %s\n", img->filename, libraw_strerror(libraw_err));
   libraw_close(raw);
   return err;
 }

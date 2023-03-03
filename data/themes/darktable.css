@@ -595,6 +595,21 @@ dialog .sidebar row:selected:hover label,
   font-size: 1.1em;
 }
 
+#iop-module-name
+{
+  font-weight: lighter;
+  font-family: sans-serif;
+  font-size: 0.8em;
+}
+
+#iop-module-name-error
+{
+  font-weight: bold;
+  font-size: 1.1em;
+  padding-left: 0.5em;
+  color: red;
+}
+
 .dt_module_focus #iop-panel-label/* set focus mode */
 {
   color: shade(@plugin_label_color, 1.2);
@@ -1465,6 +1480,19 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 #navigation-module
 {
   background-color: @graph_bg;
+}
+
+#nav-zoom
+{
+  background-color: alpha(@darkroom_bg_color, 0.25);
+  color: @graph_fg_active;
+  border-top-left-radius: 0.21em;
+  margin: 0;
+}
+
+#nav-zoom:hover
+{
+  background-color: alpha(@darkroom_bg_color, 0.5);
 }
 
 /* search boxes (background color is set on collect module part above ; to be the same as other filters in quick filter bar) */

@@ -155,7 +155,7 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("affect color, brightness and contrast"),
+  return dt_iop_set_description(self, _("shift colors selectively by luminance range"),
                                       _("corrective or creative"),
                                       _("linear, Lab, scene-referred"),
                                       _("non-linear, RGB"),
@@ -1709,9 +1709,9 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   const gchar *short_label_lgg[] = { C_("color", "lift"), C_("color", "gamma"), C_("color", "gain") };
   const gchar **short_label = (p->mode == SLOPE_OFFSET_POWER) ? short_label_ops : short_label_lgg;
   const gchar *long_label[]
-     = { N_("shadows: lift / offset"),
-         N_("mid-tones: gamma / power"),
-         N_("highlights: gain / slope") };
+    = { NC_("section", "shadows: lift / offset"),
+        NC_("section", "mid-tones: gamma / power"),
+        NC_("section", "highlights: gain / slope") };
 
   gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
 
@@ -1725,7 +1725,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
         gtk_label_set_text(GTK_LABEL(g->main_label), _(long_label[0]));
       else
       {
-        GtkWidget *label = dt_ui_section_label_new(_(long_label[i]));
+        GtkWidget *label = dt_ui_section_label_new(Q_(long_label[i]));
         gtk_container_add(GTK_CONTAINER(new_container), label);
         if(old_container) gtk_widget_show(label);
       }
@@ -1850,7 +1850,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->master_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(g->master_box), dt_ui_section_label_new(_("master")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->master_box), dt_ui_section_label_new(C_("section", "master")), FALSE, FALSE, 0);
 
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_soft_range(g->saturation, 0.5f, 1.5f);
@@ -2028,7 +2028,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->optimizer_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("auto optimizers")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "auto optimizers")), FALSE, FALSE, 0);
 
   g->auto_luma = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                  dt_bauhaus_combobox_new(self));
@@ -2067,4 +2067,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

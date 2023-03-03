@@ -41,10 +41,6 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 #define MAX_RADIUS 32
 
 DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)

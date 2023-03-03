@@ -466,11 +466,8 @@ static gboolean dt_bauhaus_popup_leave_notify(GtkWidget *widget, GdkEventCrossin
 
 static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  int delay = 0;
-  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
-
   if(darktable.bauhaus->current && (darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX)
-     && (event->button == 1) && (event->time >= darktable.bauhaus->opentime + delay) && !darktable.bauhaus->hiding)
+     && (event->button == 1) && dt_gui_long_click(event->time, darktable.bauhaus->opentime) && !darktable.bauhaus->hiding)
   {
     gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_ACTIVE, TRUE);
 
@@ -503,12 +500,10 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
     return TRUE;
   }
 
-  int delay = 0;
-  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
   if(event->button == 1)
   {
     if(darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX
-       && event->time < darktable.bauhaus->opentime + delay)
+       && !dt_gui_long_click(event->time, darktable.bauhaus->opentime))
     {
       // counts as double click, reset:
       const dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
@@ -1115,11 +1110,10 @@ void dt_bauhaus_widget_press_quad(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->quad_toggle)
-  {
     w->quad_paint_flags ^= CPF_ACTIVE;
-  }
   else
     w->quad_paint_flags |= CPF_ACTIVE;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
 
   g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
 }
@@ -1278,9 +1272,32 @@ void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const 
   if(action)
     g_hash_table_insert(darktable.control->combo_list, action, texts);
 
+  int item = 0;
   while(texts && *texts)
-    dt_bauhaus_combobox_add_full(widget, Q_(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
+    dt_bauhaus_combobox_add_full(widget, Q_(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(item++), NULL, TRUE);
 }
+
+gboolean dt_bauhaus_combobox_add_introspection(GtkWidget *widget,
+                                               dt_action_t *action,
+                                               const dt_introspection_type_enum_tuple_t *list,
+                                               const int start,
+                                               const int end)
+{
+  dt_introspection_type_enum_tuple_t *item = (dt_introspection_type_enum_tuple_t *)list;
+
+  if(action)
+    g_hash_table_insert(darktable.control->combo_introspection, action, (gpointer)list);
+
+  while(item->name && item->value != start) item++;
+  for(; item->name; item++)
+  {
+    dt_bauhaus_combobox_add_full(widget, Q_(item->description ? item->description : item->name),
+                                 DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(item->value), NULL, TRUE);
+    if(item->value == end) return TRUE;
+  }
+  return FALSE;
+}
+
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 {
@@ -1450,6 +1467,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
   if(!d || !d->editable) return;
 
   g_strlcpy(d->text, text, DT_BAUHAUS_COMBO_MAX_TEXT);
+  gtk_widget_queue_draw(GTK_WIDGET(widget));
 }
 
 static void _bauhaus_combobox_set(dt_bauhaus_widget_t *w, const int pos, const gboolean mute)
@@ -3187,7 +3205,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
               : DT_ACTION_ELEMENT_FORCE;
   }
   else
-    darktable.control->element = DT_ACTION_ELEMENT_BUTTON;
+    darktable.control->element = w->quad_paint ? DT_ACTION_ELEMENT_BUTTON : DT_ACTION_ELEMENT_VALUE;
 
   return TRUE;
 }
@@ -3198,7 +3216,7 @@ static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMot
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
-  darktable.control->element = event->x <= allocation.width - _widget_get_quad_width(w)
+  darktable.control->element = event->x <= allocation.width - _widget_get_quad_width(w) || !w->quad_paint
                                    ? DT_ACTION_ELEMENT_SELECTION
                                    : DT_ACTION_ELEMENT_BUTTON;
 
@@ -3309,9 +3327,14 @@ static void _action_process_button(GtkWidget *widget, dt_action_effect_t effect)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(effect != (w->quad_paint_flags & CPF_ACTIVE ? DT_ACTION_EFFECT_ON : DT_ACTION_EFFECT_OFF))
+  {
     dt_bauhaus_widget_press_quad(widget);
+    dt_bauhaus_widget_release_quad(widget);
+  }
 
-  gchar *text = w->quad_paint_flags & CPF_ACTIVE ? _("button on") : _("button off");
+  gchar *text = w->quad_toggle
+              ? w->quad_paint_flags & CPF_ACTIVE ? _("button on") : _("button off")
+              : _("button pressed")  ;
   dt_action_widget_toast(w->module, widget, text);
 
   gtk_widget_queue_draw(widget);
@@ -3459,7 +3482,12 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       break;
     default:
       value = effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1;
-      dt_bauhaus_combobox_set(widget, value);
+      dt_introspection_type_enum_tuple_t *values
+        = g_hash_table_lookup(darktable.control->combo_introspection, dt_action_widget(target));
+      if(values)
+        value = values[value].value;
+
+      dt_bauhaus_combobox_set_from_value(widget, value);
       break;
     }
 
@@ -3578,17 +3606,17 @@ static const dt_action_def_t _action_def_combo
       _action_fallbacks_combo };
 
 static const dt_action_def_t _action_def_focus_slider
-  = { N_("slider"),
+  = { N_("sliders"),
       _action_process_focus_slider,
       DT_ACTION_ELEMENTS_NUM(value),
       NULL, TRUE };
 static const dt_action_def_t _action_def_focus_combo
-  = { N_("dropdown"),
+  = { N_("dropdowns"),
       _action_process_focus_combo,
       DT_ACTION_ELEMENTS_NUM(selection),
       NULL, TRUE };
 static const dt_action_def_t _action_def_focus_button
-  = { N_("button"),
+  = { N_("buttons"),
       _action_process_focus_button,
       DT_ACTION_ELEMENTS_NUM(toggle),
       NULL, TRUE };

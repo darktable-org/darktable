@@ -380,7 +380,7 @@ static void _develop_blend_process_feather(const float *const guide, float *cons
   float *const restrict mask_bak = dt_alloc_align_float(width * height);
   if(mask_bak)
   {
-    memcpy(mask_bak, mask, sizeof(float) * width * height);
+    dt_iop_image_copy_by_size(mask_bak, mask, width, height, 1);
     guided_filter(guide, mask_bak, mask, width, height, ch, w, sqrt_eps, guide_weight, 0.f, 1.f);
     dt_free_align(mask_bak);
   }

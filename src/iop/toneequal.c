@@ -120,8 +120,8 @@ DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
 #define MIN_FLOAT exp2f(-16.0f)
 
 /**
- * Build the exposures octaves : 
- * band-pass filters with gaussian windows spaced by 1 EV
+ * Build the exposures octaves :
+ * band-pass filters with gaussian windows spaced by 1 EV
 **/
 
 #define CHANNELS 9
@@ -136,7 +136,7 @@ static const float centers_ops[PIXEL_CHAN] DT_ALIGNED_ARRAY = {-56.0f / 7.0f, //
                                                                -24.0f / 7.0f,
                                                                -16.0f / 7.0f,
                                                                 -8.0f / 7.0f,
-                                                                 0.0f / 7.0f}; // split 8 EV into 7 evenly-spaced channels
+                                                                 0.0f / 7.0f}; // split 8 EV into 7 evenly-spaced channels
 
 static const float centers_params[CHANNELS] DT_ALIGNED_ARRAY = { -8.0f, -7.0f, -6.0f, -5.0f,
                                                                  -4.0f, -3.0f, -2.0f, -1.0f, 0.0f};
@@ -147,8 +147,8 @@ typedef enum dt_iop_toneequalizer_filter_t
   DT_TONEEQ_NONE = 0,   // $DESCRIPTION: "no"
   DT_TONEEQ_AVG_GUIDED, // $DESCRIPTION: "averaged guided filter"
   DT_TONEEQ_GUIDED,     // $DESCRIPTION: "guided filter"
-  DT_TONEEQ_AVG_EIGF,   // $DESCRIPTION: "averaged eigf"
-  DT_TONEEQ_EIGF        // $DESCRIPTION: "eigf"
+  DT_TONEEQ_AVG_EIGF,   // $DESCRIPTION: "averaged EIGF"
+  DT_TONEEQ_EIGF        // $DESCRIPTION: "EIGF"
 } dt_iop_toneequalizer_filter_t;
 
 
@@ -282,7 +282,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   int luminance_valid;      // TRUE if the luminance cache is ready
   int histogram_valid;      // TRUE if the histogram cache and stats are ready
   int lut_valid;            // TRUE if the gui_lut is ready
-  int graph_valid;          // TRUE if the UI graph view is ready
+  int graph_valid;          // TRUE if the UI graph view is ready
   int user_param_valid;     // TRUE if users params set in interactive view are in bounds
   int factors_valid;        // TRUE if radial-basis coeffs are ready
 
@@ -457,11 +457,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.details = DT_TONEEQ_EIGF;
   p.feathering = 20.0f;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): strong"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (EIGF): strong"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): strong"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (GF): strong"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
@@ -469,11 +469,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.feathering = 7.0f;
   p.iterations = 3;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): medium"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (EIGF): medium"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): medium"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (GF): medium"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
@@ -481,11 +481,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.feathering = 1.0f;
   p.iterations = 1;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): soft"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (EIGF): soft"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): soft"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (GF): soft"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // build the 1D contrast curves that revert the local compression of contrast above
@@ -939,7 +939,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(!sanity_check(self))
   {
     // if module just got disabled by sanity checks, due to pipe position, just pass input through
-    dt_simd_memcpy(in, out, num_elem * ch);
+    dt_iop_image_copy_by_size(out, in, width, height, ch);
     return;
   }
 
@@ -1009,7 +1009,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
   else
   {
-    // no interactive editing/caching : just allocate a local temp buffer
+    // no interactive editing/caching : just allocate a local temp buffer
     luminance = dt_alloc_sse_ps(num_elem);
   }
 
@@ -1023,7 +1023,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // Compute the luminance mask
   if(cached)
   {
-    // caching path : store the luminance mask for GUI access
+    // caching path : store the luminance mask for GUI access
 
     if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
     {
@@ -1286,7 +1286,7 @@ static void gui_cache_init(struct dt_iop_module_t *self)
   g->luminance_valid = FALSE;      // TRUE if the luminance cache is ready
   g->histogram_valid = FALSE;      // TRUE if the histogram cache and stats are ready
   g->lut_valid = FALSE;            // TRUE if the gui_lut is ready
-  g->graph_valid = FALSE;          // TRUE if the UI graph view is ready
+  g->graph_valid = FALSE;          // TRUE if the UI graph view is ready
   g->user_param_valid = FALSE;     // TRUE if users params set in interactive view are in bounds
   g->factors_valid = TRUE;         // TRUE if radial-basis coeffs are ready
 
@@ -1540,7 +1540,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // but the actual regularization params applied in guided filter behaves the other way
   d->feathering = 1.f / (p->feathering);
 
-  // UI params are in log2 offsets (EV) : convert to linear factors
+  // UI params are in log2 offsets (EV) : convert to linear factors
   d->contrast_boost = exp2f(p->contrast_boost);
   d->exposure_boost = exp2f(p->exposure_boost);
 
@@ -1965,8 +1965,8 @@ static void switch_cursors(struct dt_iop_module_t *self)
 
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
-  // Whenever the mouse moves over the picture preview, store its coordinates in the GUI struct
-  // for later use. This works only if dev->preview_pipe perfectly overlaps with the UI preview
+  // Whenever the mouse moves over the picture preview, store its coordinates in the GUI struct
+  // for later use. This works only if dev->preview_pipe perfectly overlaps with the UI preview
   // meaning all distortions, cropping, rotations etc. are applied before this module in the pipe.
 
   dt_develop_t *dev = self->dev;
@@ -2085,7 +2085,7 @@ static inline int set_new_params_interactive(const float control_exposure, const
   }
   else
   {
-    // Reset the GUI copy of user params
+    // Reset the GUI copy of user params
     get_channels_factors(factors, p);
     dt_simd_memcpy(factors, g->temp_user_params, CHANNELS);
     g->user_param_valid = 1;
@@ -2112,7 +2112,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
 
   if(in_mask_editing(self)) return 0;
 
-  // if GUI buffers not ready, exit but still handle the cursor
+  // if GUI buffers not ready, exit but still handle the cursor
   dt_iop_gui_enter_critical_section(self);
   const int fail = (!g->cursor_valid || !g->luminance_valid || !g->interpolation_valid || !g->user_param_valid || dev->pipe->processing || !g->has_focus);
   dt_iop_gui_leave_critical_section(self);
@@ -2190,7 +2190,7 @@ void cairo_draw_hatches(cairo_t *cr, double center[2], double span[2], int insta
 
 static void get_shade_from_luminance(cairo_t *cr, const float luminance, const float alpha)
 {
-  // TODO: fetch screen gamma from ICC display profile
+  // TODO: fetch screen gamma from ICC display profile
   const float gamma = 1.0f / 2.2f;
   const float shade = powf(luminance, gamma);
   cairo_set_source_rgba(cr, shade, shade, shade, alpha);
@@ -3181,8 +3181,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->details, _("'no' affects global and local contrast (safe if you only add contrast)\n"
                                             "'guided filter' only affects global contrast and tries to preserve local contrast\n"
                                             "'averaged guided filter' is a geometric mean of 'no' and 'guided filter' methods\n"
-                                            "'eigf' (exposure-independent guided filter) is a guided filter that is exposure-independent, it smooths shadows and highlights the same way (contrary to guided filter which smooths less the highlights)\n"
-                                            "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided filter' methods"));
+                                            "'EIGF' (exposure-independent guided filter) is a guided filter that is exposure-independent, it smooths shadows and highlights the same way (contrary to guided filter which smooths less the highlights)\n"
+                                            "'averaged EIGF' is a geometric mean of 'no' and 'exposure-independent guided filter' methods"));
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   dt_bauhaus_slider_set_soft_max(g->iterations, 5);
@@ -3204,7 +3204,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                "lower values give smoother gradients and better smoothing\n"
                                                "but may lead to inaccurate edges taping and halos"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask post-processing")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "mask post-processing")), FALSE, FALSE, 0);
 
   g->bar = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_widget_set_size_request(GTK_WIDGET(g->bar), -1, 4);

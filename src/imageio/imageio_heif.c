@@ -1,6 +1,6 @@
 /*
  * This file is part of darktable,
- * Copyright (C) 2021-2022 darktable developers.
+ * Copyright (C) 2021-2023 darktable developers.
  *
  *  darktable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     if(err.code == heif_error_Unsupported_feature && err.subcode == heif_suberror_Unsupported_codec)
     {
       /* we want to feedback this to the user, so output to stderr */
-      fprintf(stderr,
+      dt_print(DT_DEBUG_ALWAYS,
               "[imageio_heif] Unsupported codec for `%s'. Check if your libheif is built with HEVC and/or AV1 decoding support.\n",
               filename);
     }

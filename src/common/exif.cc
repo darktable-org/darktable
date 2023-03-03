@@ -18,7 +18,6 @@
 
 #define __STDC_FORMAT_MACROS
 
-extern "C" {
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -33,7 +32,6 @@ extern "C" {
 #include <zlib.h>
 
 #include "control/control.h"
-}
 
 #include <array>
 #include <cassert>
@@ -56,7 +54,6 @@ extern "C" {
 
 using namespace std;
 
-extern "C" {
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -77,7 +74,6 @@ extern "C" {
 #include "develop/masks.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"
-}
 
 #define DT_XMP_EXIF_VERSION 5
 
@@ -467,7 +463,7 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterat
 // e.g. "2017:10:23 12:34:56" to "2017-10-23T12:34:54" (ISO)
 // and some vendors incorrectly use "2017/10/23"
 // revert this to the format expected by exif and darktable
-static void _sanitize_datetime(char *datetime)
+void dt_exif_sanitize_datetime(char *datetime)
 {
   // replace 'T' by ' ' (space)
   char *c;
@@ -615,7 +611,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal"))
     {
       char *datetime = strdup(pos->toString().c_str());
-      _sanitize_datetime(datetime);
+      dt_exif_sanitize_datetime(datetime);
       dt_datetime_exif_to_img(img, datetime);
       free(datetime);
     }
@@ -743,6 +739,7 @@ static bool _check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
 {
   gboolean has_opcodes = FALSE;
+
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList2"));
   // DNGs without an embedded preview have the opcodes under Exif.Image instead of Exif.SubImage1
   if(pos == exifData.end())
@@ -756,6 +753,18 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
     has_opcodes = TRUE;
   }
 
+  Exiv2::ExifData::const_iterator posb = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList3"));
+  // DNGs without an embedded preview have the opcodes under Exif.Image instead of Exif.SubImage1
+  if(posb == exifData.end())
+    posb = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList3"));
+  if(posb != exifData.end())
+  {
+    uint8_t *data = (uint8_t *)g_malloc(posb->size());
+    posb->copy(data, Exiv2::invalidByteOrder);
+    dt_dng_opcode_process_opcode_list_3(data, posb->size(), img);
+    g_free(data);
+    has_opcodes = TRUE;
+  }
   return has_opcodes;
 }
 
@@ -859,7 +868,7 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
      && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
     dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
-    _sanitize_datetime(exif_datetime_taken);
+    dt_exif_sanitize_datetime(exif_datetime_taken);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
        && pos->size() > 1)
     {
@@ -945,13 +954,11 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /* Read shutter time */
     if((pos = Exiv2::exposureTime(exifData)) != exifData.end() && pos->size())
     {
-      // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat();
     }
     else if(FIND_EXIF_TAG("Exif.Photo.ShutterSpeedValue") || FIND_EXIF_TAG("Exif.Image.ShutterSpeedValue"))
     {
-      // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
-      img->exif_exposure = exp2f(-1.0f * pos->toFloat());  // convert from APEX value
+      img->exif_exposure = exp2f(-1.0f * pos->toFloat()); // convert from APEX value
     }
 
     // Read exposure bias
@@ -965,9 +972,10 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->exif_aperture = pos->toFloat();
     }
-    else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue") || FIND_EXIF_TAG("Exif.Image.ApertureValue"))
+    else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue") || FIND_EXIF_TAG("Exif.Image.ApertureValue")
+            || FIND_EXIF_TAG("Exif.Photo.MaxApertureValue") || FIND_EXIF_TAG("Exif.Image.MaxApertureValue"))
     {
-      img->exif_aperture = exp2f(pos->toFloat() / 2.0f);  // convert from APEX value
+      img->exif_aperture = exp2f(pos->toFloat() / 2.0f); // convert from APEX value
     }
 
     /* Read ISO speed - Nikon happens to return a pair for Lo and Hi modes */
@@ -1031,12 +1039,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_tag_attach(tagid, img->id, FALSE, FALSE);
     }
 
-    if(_check_dng_opcodes(exifData, img))
-    {
-      img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
-    }
-
-    if(_check_lens_correction_data(exifData, img))
+    if(_check_dng_opcodes(exifData, img) || _check_lens_correction_data(exifData, img))
     {
       img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
     }
@@ -1709,8 +1712,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_get_thumbnail] " << path << ": " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_get_thumbnail] %s: %s\n", path, e.what());
     return 1;
   }
 }
@@ -1778,8 +1780,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_read] " << path << ": " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO,"[exiv2 dt_exif_read] %s: %s\n", path, e.what());
     return 1;
   }
 }

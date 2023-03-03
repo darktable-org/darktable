@@ -353,11 +353,11 @@ static void _toggle_side_borders_accel_callback(dt_action_t *action)
 
 static void _toggle_panel_accel_callback(dt_action_t *action)
 {
-  if(!strcmp(action->id, "left"))
+  if(!g_ascii_strcasecmp(action->id, "left"))
     _panel_toggle(DT_UI_BORDER_LEFT, darktable.gui->ui);
-  else if(!strcmp(action->id, "right"))
+  else if(!g_ascii_strcasecmp(action->id, "right"))
     _panel_toggle(DT_UI_BORDER_RIGHT, darktable.gui->ui);
-  else if(!strcmp(action->id, "top"))
+  else if(!g_ascii_strcasecmp(action->id, "top"))
     _panel_toggle(DT_UI_BORDER_TOP, darktable.gui->ui);
   else
     _panel_toggle(DT_UI_BORDER_BOTTOM, darktable.gui->ui);
@@ -831,7 +831,11 @@ void dt_gui_gtk_quit()
 
 gboolean dt_gui_quit_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-  dt_control_quit();
+  if(dt_view_lighttable_preview_state(darktable.view_manager))
+    dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE);
+  else
+    dt_control_quit();
+
   return TRUE;
 }
 
@@ -3063,7 +3067,7 @@ static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
 
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
     const gint new_size = dt_conf_get_int(config_str) + increment*delta_y;
 
@@ -3090,7 +3094,7 @@ static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
 static gboolean _scroll_wrap_aspect(GtkWidget *w, GdkEventScroll *event, const char *config_str)
 {
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
     int delta_y;
     if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
@@ -3099,9 +3103,8 @@ static gboolean _scroll_wrap_aspect(GtkWidget *w, GdkEventScroll *event, const c
       const int aspect = dt_conf_get_int(config_str);
       dt_conf_set_int(config_str, aspect + delta_y);
       dtgtk_drawing_area_set_aspect_ratio(w, aspect / 100.0);
-
-      return TRUE;
     }
+    return TRUE;
   }
 
   return FALSE;
@@ -3171,6 +3174,8 @@ static gboolean _resize_wrap_leave(GtkWidget *widget, GdkEventCrossing *event, c
 GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str)
 {
   if(!w) w = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  gtk_widget_set_has_tooltip(w, TRUE);
+  g_object_set_data(G_OBJECT(w), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
   if(DTGTK_IS_DRAWING_AREA(w))
   {
     const float aspect = dt_conf_get_int(config_str);
@@ -3197,7 +3202,6 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str)
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(_resize_wrap_button), config_str);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(_resize_wrap_button), config_str);
   g_signal_connect(G_OBJECT(w), "leave-notify-event", G_CALLBACK(_resize_wrap_leave), config_str);
-  g_object_set_data(G_OBJECT(w), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
 
   return w;
 }
@@ -3215,7 +3219,7 @@ int dt_gui_container_num_children(GtkContainer *container)
 {
   g_return_val_if_fail(GTK_IS_CONTAINER(container), FALSE);
   GList *children = gtk_container_get_children(container);
-  int num_children = g_list_length(children);
+  const int num_children = g_list_length(children);
   g_list_free(children);
   return num_children;
 }
@@ -3398,6 +3402,13 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
 
   g_signal_connect(G_OBJECT(header_evb), "button-release-event",
                    G_CALLBACK(_collapse_expander_click), cs);
+}
+
+gboolean dt_gui_long_click(const int second, const int first)
+{
+  int delay = 0;
+  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
+  return second - first > delay;
 }
 
 // clang-format off

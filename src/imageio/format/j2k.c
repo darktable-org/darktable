@@ -382,7 +382,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     image = opj_image_create(numcomps, &cmptparm[0], OPJ_CLRSPC_SRGB);
     if(!image)
     {
-      fprintf(stderr, "Error: opj_image_create() failed\n");
+      dt_print(DT_DEBUG_ALWAYS, "Error: opj_image_create() failed\n");
       free(rates);
       rc = 0;
       goto exit;
@@ -417,7 +417,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 //        }
 //        break;
 //      default:
-//        fprintf(stderr, "Error: this shouldn't happen, there is no bit depth of %d for jpeg 2000 images.\n",
+//        dt_print(DT_DEBUG_ALWAYS, "Error: this shouldn't happen, there is no bit depth of %d for jpeg 2000 images.\n",
 //                prec);
 //        free(rates);
 //        opj_image_destroy(image);
@@ -465,7 +465,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   {
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
-    fprintf(stderr, "failed to create output stream\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to create output stream\n");
     rc = 0;
     goto exit;
   }
@@ -475,7 +475,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_stream_destroy(cstream);
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
-    fprintf(stderr, "failed to encode image: opj_start_compress\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to encode image: opj_start_compress\n");
     rc = 0;
     goto exit;
   }
@@ -486,7 +486,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_stream_destroy(cstream);
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
-    fprintf(stderr, "failed to encode image: opj_encode\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to encode image: opj_encode\n");
     rc = 0;
     goto exit;
   }
@@ -497,7 +497,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_stream_destroy(cstream);
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
-    fprintf(stderr, "failed to encode image: opj_end_compress\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to encode image: opj_end_compress\n");
     rc = 0;
     goto exit;
   }

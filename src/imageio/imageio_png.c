@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -178,7 +178,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     fclose(image.f);
     png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
-    fprintf(stderr, "[png_open] could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not alloc full buffer for image `%s'\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
@@ -188,32 +188,62 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     fclose(image.f);
     png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
-    fprintf(stderr, "[png_open] could not alloc intermediate buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not alloc intermediate buffer for image `%s'\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
   if(read_image(&image, (void *)buf) != 0)
   {
     dt_free_align(buf);
-    fprintf(stderr, "[png_open] could not read image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not read image `%s'\n", img->filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
-  for(size_t j = 0; j < height; j++)
+  const size_t npixels = (size_t)width * height;
+
+  if(bpp < 16)
   {
-    if(bpp < 16)
-      for(size_t i = 0; i < width; i++)
-        for(int k = 0; k < 3; k++)
-          mipbuf[4 * (j * width + i) + k] = buf[3 * (j * width + i) + k] * (1.0f / 255.0f);
-    else
-      for(size_t i = 0; i < width; i++)
-        for(int k = 0; k < 3; k++)
-          mipbuf[4 * (j * width + i) + k] = (256.0f * buf[2 * (3 * (j * width + i) + k)]
-                                             + buf[2 * (3 * (j * width + i) + k) + 1]) * (1.0f / 65535.0f);
+    const float normalizer = 1.0f / 255.0f;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, normalizer, buf) \
+  shared(mipbuf)
+#endif
+    for(size_t index = 0; index < npixels; index++)
+    {
+      mipbuf[4 * index]     = buf[3 * index]     * normalizer;
+      mipbuf[4 * index + 1] = buf[3 * index + 1] * normalizer;
+      mipbuf[4 * index + 2] = buf[3 * index + 2] * normalizer;
+    }
+  }
+  else
+  {
+    const float normalizer = 1.0f / 65535.0f;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, normalizer, buf) \
+  shared(mipbuf)
+#endif
+    for(size_t index = 0; index < npixels; index++)
+    {
+      mipbuf[4 * index]     = (buf[2 * (3 * index)]     * 256.0f + buf[2 * (3 * index)     + 1]) * normalizer;
+      mipbuf[4 * index + 1] = (buf[2 * (3 * index + 1)] * 256.0f + buf[2 * (3 * index + 1) + 1]) * normalizer;
+      mipbuf[4 * index + 2] = (buf[2 * (3 * index + 2)] * 256.0f + buf[2 * (3 * index + 1) + 1]) * normalizer;
+    }
   }
 
   dt_free_align(buf);
+
+  img->buf_dsc.cst = IOP_CS_RGB; // PNG is always RGB
+  img->buf_dsc.filters = 0u;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_S_RAW;
+  img->flags &= ~DT_IMAGE_HDR;
+  img->flags |= DT_IMAGE_LDR;
   img->loader = LOADER_PNG;
+
   return DT_IMAGEIO_OK;
 }
 

@@ -55,7 +55,6 @@ DT_MODULE(1)
 // if a preset cannot be loaded or the current preset deleted, this is the fallback preset
 
 #define PADDING 2
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 #include "modulegroups.h"
 
@@ -829,8 +828,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  if(DT_IOP_ORDER_INFO)
-    fprintf(stderr,"\n^^^^^ modulegroups");
+  dt_print(DT_DEBUG_IOPORDER, "[lib_modulegroups_update_iop_visibility] modulegroups\n");
 
   // update basic button selection too
   g_signal_handlers_block_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
@@ -867,11 +865,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     GtkWidget *w = module->expander;
 
-    if((DT_IOP_ORDER_INFO) && (module->enabled))
-    {
-      fprintf(stderr, "\n%20s %d", module->op, module->iop_order);
-      if(dt_iop_is_hidden(module)) fprintf(stderr, ", hidden");
-    }
+    if(module->enabled)
+    dt_print(DT_DEBUG_IOPORDER, "%20s %d%s",
+      module->op, module->iop_order, (dt_iop_is_hidden(module)) ? ", hidden" : "");
 
       /* skip modules without an gui */
       if(dt_iop_is_hidden(module)) continue;
@@ -981,7 +977,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
   }
-  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
+
   // now that visibility has been updated set multi-show
   dt_dev_modules_update_multishow(darktable.develop);
 
@@ -1742,6 +1738,7 @@ void init_presets(dt_lib_module_t *self)
   AM("exposure");
   AM("temperature");
   AM("bilat");
+  AM("highlights");
 
   SMG(C_("modulegroup", "color"), "color");
   AM("channelmixerrgb");
@@ -1782,11 +1779,9 @@ void init_presets(dt_lib_module_t *self)
   // this modules are deprecated in 3.4 and should be removed from this group in 3.8 (1 year later)
   SNQA();
   SMG(C_("modulegroup", "deprecated"), "basic");
-  // these modules are deprecated in 3.6 and should be removed in 4.0 (1 year later)
-  AM("spots");
-  AM("defringe");
-  // these modules are deprecated in 3.8 and should be removed in 4.1 (1 year later)
-  AM("clipping");
+  // these modules are deprecated in 4.4 and should be removed in 4.8 (1 year later)
+  AM("levels");
+  AM("colisa");
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
@@ -1812,6 +1807,7 @@ void init_presets(dt_lib_module_t *self)
 static gchar *_presets_get_minimal(dt_lib_module_t *self)
 {
   const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean wf_filmic = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
 
   // all modules
   gchar *tx = NULL;
@@ -1822,7 +1818,12 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "base"), "basic");
   if(is_scene_referred)
-    AM("filmicrgb");
+  {
+    if(wf_filmic)
+      AM("filmicrgb");
+    else
+      AM("sigmoid");
+  }
   else
     AM("basecurve");
   AM("exposure");
@@ -2226,7 +2227,7 @@ static int _lib_modulegroups_basics_module_toggle(dt_lib_module_t *self, GtkWidg
 {
   if(GTK_IS_BUTTON(widget)) return 0;
 
-  dt_action_t *action = g_hash_table_lookup(darktable.control->widgets, widget);
+  dt_action_t *action = dt_action_widget(widget);
 
   dt_action_t *owner = action;
   while(owner && owner->type >= DT_ACTION_TYPE_SECTION) owner = owner->owner;

@@ -524,10 +524,10 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus)
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 }
 
-static void _preview_set_state(dt_view_t *self, gboolean state, gboolean focus)
+static void _preview_set_state(dt_view_t *self, gboolean state, gboolean sticky, gboolean focus)
 {
   if(state)
-    _preview_enter(self, TRUE, focus);
+    _preview_enter(self, sticky, focus);
   else
     _preview_quit(self);
 }
@@ -629,52 +629,6 @@ static void _overlays_force(dt_view_t *self, const gboolean show)
   }
 }
 
-
-enum
-{
-  DT_ACTION_ELEMENT_FOCUS_DETECT = 1,
-};
-
-static float _action_process_preview(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
-{
-  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  if(!isnan(move_size))
-  {
-    if(lib->preview_state)
-    {
-      if(effect != DT_ACTION_EFFECT_ON)
-        _preview_quit(self);
-    }
-    else
-    {
-      if(effect != DT_ACTION_EFFECT_OFF)
-      {
-        if(dt_control_get_mouse_over_id() != -1)
-        {
-          gboolean focus = element == DT_ACTION_ELEMENT_FOCUS_DETECT;
-
-          _preview_enter(self, FALSE, focus);
-        }
-      }
-    }
-  }
-
-  return lib->preview_state;
-}
-
-const dt_action_element_def_t _action_elements_preview[]
-  = { { "normal", dt_action_effect_hold },
-      { "focus detection", dt_action_effect_hold },
-      { NULL } };
-
-const dt_action_def_t dt_action_def_preview
-  = { N_("preview"),
-      _action_process_preview,
-      _action_elements_preview,
-      NULL, TRUE };
-
 static float _action_process_infos(gpointer target, const dt_action_element_t element,
                                    const dt_action_effect_t effect, const float move_size)
 {
@@ -696,7 +650,7 @@ static float _action_process_infos(gpointer target, const dt_action_element_t el
   return lib->preview_state;
 }
 
-const dt_action_element_def_t _action_elements_infos[] = { { "normal", dt_action_effect_hold }, { NULL } };
+const dt_action_element_def_t _action_elements_infos[] = { { NULL, dt_action_effect_hold } };
 
 const dt_action_def_t dt_action_def_infos
     = { N_("show infos"), _action_process_infos, _action_elements_infos, NULL, TRUE };
@@ -1311,11 +1265,6 @@ void gui_init(dt_view_t *self)
 
   ac = dt_action_define(sa, N_("move"), N_("leave"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEAVE), &_action_def_move);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Escape, GDK_MOD1_MASK);
-
-  // Preview key
-  ac = dt_action_define(sa, NULL, N_("preview"), NULL, &dt_action_def_preview);
-  dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
-  dt_shortcut_register(ac, DT_ACTION_ELEMENT_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
 
   // Show infos key
   ac = dt_action_define(sa, NULL, N_("show infos"), NULL, &dt_action_def_infos);

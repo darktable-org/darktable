@@ -235,6 +235,13 @@
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>libraw_extensions</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>raw file extensions to be processed by libraw</shortdescription>
+    <longdescription>space-delimited list of raw file extensions (without a leading dot, in lowercase) to be processed by libraw instead of rawspeed.</longdescription>
+  </dtconfig>
   <dtconfig prefs="storage" section="XMP">
     <name>write_sidecar_files</name>
     <type>
@@ -2875,7 +2882,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/aspect_percent</name>
-    <type min="50" max="100">int</type>
+    <type min="50" max="150">int</type>
     <default>56</default>
     <shortdescription>aspect ratio of the scopes module</shortdescription>
     <longdescription>aspect ratio of the scopes module in the darkroom and tethering views</longdescription>
@@ -2954,10 +2961,10 @@
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
-        <option>histogram</option>
+        <option>vectorscope</option>
         <option>waveform</option>
         <option>rgb parade</option>
-        <option>vectorscope</option>
+        <option>histogram</option>
       </enum>
     </type>
     <default>histogram</default>
@@ -3066,16 +3073,10 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope/show_color_harmony</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/darkroom/histogram/vectorscope/harmony_type</name>
     <type>
       <enum>
+		<option>none</option>
 		<option>monochromatic</option>
 		<option>analogous</option>
 		<option>analogous complementary</option>
@@ -3087,7 +3088,7 @@
 		<option>square</option>
       </enum>
     </type>
-    <default>complementary</default>
+    <default>none</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -3110,6 +3111,13 @@
     </type>
     <default>normal</default>
     <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/harmony/dim</name>
+    <type min="0" max="1">float</type>
+    <default>0.7</default>
+    <shortdescription>dim pixels outside of guides</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -3354,7 +3362,7 @@
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
     <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic or sigmoid, color calibration and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve, white balance and the legacy module pipe order.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="general" restart="true">
+  <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
     <type>bool</type>
     <default>false</default>

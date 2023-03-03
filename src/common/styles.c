@@ -39,8 +39,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
-
 typedef struct
 {
   GString *name;
@@ -290,27 +288,37 @@ static void _dt_style_update_from_image(const int id,
 
     do
     {
+      const int item_included = GPOINTER_TO_INT(list->data);
+      const int item_updated = GPOINTER_TO_INT(upd->data);
+      const gboolean autoinit = item_updated < 0;
+
       query[0] = '\0';
 
       // included and update set, we then need to update the corresponding style item
-      if(GPOINTER_TO_INT(upd->data) != -1 && GPOINTER_TO_INT(list->data) != -1)
+      if(item_updated != 0 && item_included != 0)
       {
         g_strlcpy(query, "UPDATE data.style_items SET ", sizeof(query));
 
         for(int k = 0; fields[k]; k++)
         {
-          if(k != 0) g_strlcat(query, ",", sizeof(query));
-          snprintf(tmp, sizeof(tmp),
-                   "%s=(SELECT %s FROM main.history WHERE imgid=%d AND num=%d)",
-                   fields[k], fields[k], imgid, GPOINTER_TO_INT(upd->data));
+          if(autoinit && k==0)
+            snprintf(tmp, sizeof(tmp), "%s=NULL", fields[k]);
+          else
+          {
+            if(k != 0) g_strlcat(query, ",", sizeof(query));
+            snprintf(tmp, sizeof(tmp),
+                     "%s=(SELECT %s FROM main.history WHERE imgid=%d AND num=%d)",
+                     fields[k], fields[k], imgid, abs(item_updated));
+          }
           g_strlcat(query, tmp, sizeof(query));
         }
         snprintf(tmp, sizeof(tmp), " WHERE styleid=%d AND data.style_items.num=%d", id,
-                 GPOINTER_TO_INT(list->data));
+                 item_included);
         g_strlcat(query, tmp, sizeof(query));
       }
       // update only, so we want to insert the new style item
-      else if(GPOINTER_TO_INT(upd->data) != -1)
+      else if(item_updated != 0)
+      {
         // clang-format off
         snprintf(query, sizeof(query),
                  "INSERT INTO data.style_items "
@@ -321,13 +329,14 @@ static void _dt_style_update_from_image(const int id,
                  "     FROM data.style_items"
                  "     WHERE styleid=%d"
                  "     ORDER BY num DESC LIMIT 1), "
-                 "   module, operation, op_params, enabled,"
+                 "   module, operation, %s, enabled,"
                  "   blendop_params, blendop_version,"
                  "   multi_priority, multi_name, multi_name_hand_edited"
                  " FROM main.history"
                  " WHERE imgid=%d AND num=%d",
-                 id, id, imgid, GPOINTER_TO_INT(upd->data));
+                 id, id, autoinit?"NULL":"op_params", imgid, abs(item_updated));
         // clang-format on
+      }
 
       if(*query) DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
@@ -441,7 +450,7 @@ void dt_styles_update(const char *name,
   if(g_strcmp0(name, newname))
   {
     dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
-                                        (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
+                                        (gchar *[]){"styles", (gchar *)name, NULL}, FALSE);
     dt_action_rename(old, newname);
   }
 
@@ -562,27 +571,33 @@ gboolean dt_styles_create_from_image(const char *name,
     {
       char tmp[64];
       char include[2048] = { 0 };
-      g_strlcat(include, "num IN (", sizeof(include));
+      char autoinit[2048] = { 0 };
       for(GList *list = filter; list; list = g_list_next(list))
       {
         if(list != filter) g_strlcat(include, ",", sizeof(include));
-        snprintf(tmp, sizeof(tmp), "%d", GPOINTER_TO_INT(list->data));
+        const int num = GPOINTER_TO_INT(list->data);
+        snprintf(tmp, sizeof(tmp), "%d", abs(num));
         g_strlcat(include, tmp, sizeof(include));
+        if(num < 0)
+        {
+          if(autoinit[0]) g_strlcat(autoinit, ",", sizeof(autoinit));
+          g_strlcat(autoinit, tmp, sizeof(autoinit));
+        }
       }
 
-      g_strlcat(include, ")", sizeof(include));
       char query[4096] = { 0 };
       // clang-format off
       snprintf(query, sizeof(query),
                "INSERT INTO data.style_items"
                " (styleid, num, module, operation, op_params, enabled, blendop_params,"
                "  blendop_version, multi_priority, multi_name, multi_name_hand_edited)"
-               " SELECT ?1, num, module, operation, op_params, enabled,"
-               "        blendop_params, blendop_version, multi_priority,"
+               " SELECT ?1, num, module, operation,"
+               "        CASE WHEN num in (%s) THEN NULL ELSE op_params END,"
+               "        enabled, blendop_params, blendop_version, multi_priority,"
                "        multi_name, multi_name_hand_edited"
                " FROM main.history"
-               " WHERE imgid=?2 AND %s",
-               include);
+               " WHERE imgid=?2 AND NUM in (%s)",
+               autoinit, include);
       // clang-format on
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
@@ -754,7 +769,9 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
     if(dt_iop_load_module(module, mod_src->so, dev))
     {
       module = NULL;
-      fprintf(stderr, "[dt_styles_apply_style_item] can't load module %s %s\n", style_item->operation,
+      fprintf(stderr,
+              "[dt_styles_apply_style_item] can't load module %s %s\n",
+              style_item->operation,
               style_item->multi_name);
     }
     else
@@ -787,13 +804,24 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
         memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
       }
 
-      if(module->version() != style_item->module_version
-         || module->params_size != style_item->params_size
-         || strcmp(style_item->operation, module->op))
+      gboolean autoinit = FALSE;
+
+      if(style_item->params_size != 0
+         && (module->version() != style_item->module_version
+             || module->params_size != style_item->params_size
+             || strcmp(style_item->operation, module->op)))
       {
-        if(!module->legacy_params
-           || module->legacy_params(module, style_item->params, labs(style_item->module_version),
-                                          module->params, labs(module->version())))
+        int legacy_ret = 1;
+
+        if(module->legacy_params)
+          legacy_ret =
+            module->legacy_params(module, style_item->params,
+                                  labs(style_item->module_version),
+                                  module->params, labs(module->version()));
+        else
+          legacy_ret = 0;
+
+        if(legacy_ret == 1)
         {
           fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, darktable is %d.\n",
                   module->op, style_item->module_version, module->version());
@@ -801,6 +829,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
                          module->version(), style_item->module_version);
 
           do_merge = FALSE;
+        }
+        else if(legacy_ret == -1)
+        {
+          // auto-init module
+          autoinit = TRUE;
         }
         else
         {
@@ -830,11 +863,20 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
       }
       else
       {
-        memcpy(module->params, style_item->params, module->params_size);
+        if(style_item->params_size == 0)
+        {
+          /* an auto-init module, we cannot handle this here as we
+             don't have the image's default parameters. This parameter
+             must be set when loading history in the darkroom. */
+          autoinit = TRUE;
+        }
+        else
+          memcpy(module->params, style_item->params, style_item->params_size);
       }
 
       if(do_merge)
-        dt_history_merge_module_into_history(dev, NULL, module, modules_used, append);
+        dt_history_merge_module_into_history
+          (dev, NULL, module, modules_used, append, autoinit);
     }
 
     if(module)
@@ -910,8 +952,8 @@ void _styles_apply_to_image_ext(const char *name,
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
-    if(DT_IOP_ORDER_INFO)
-      fprintf(stderr,"\n^^^^^ Apply style on image %i, history size %i",imgid,dev_dest->history_end);
+    dt_print(DT_DEBUG_IOPORDER, "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
+      dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
 
     // go through all entries in style
     // clang-format off
@@ -966,8 +1008,6 @@ void _styles_apply_to_image_ext(const char *name,
     }
 
     g_list_free_full(si_list, dt_style_item_free);
-
-    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv --> look for written history below\n");
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
@@ -1086,7 +1126,7 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
     sqlite3_finalize(stmt);
 
     dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
-                                        (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
+                                        (gchar *[]){"styles", (gchar *)name, NULL}, FALSE);
     dt_action_rename(old, NULL);
 
     if(raise)
@@ -1742,7 +1782,6 @@ dt_style_t *dt_styles_get_by_name(const char *name)
   }
 }
 
-#undef DT_IOP_ORDER_INFO
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2022 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2082,7 +2082,7 @@ void gui_update(dt_iop_module_t *self)
   const dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, self->blend_params->mask_id);
   guint nb = 0;
   if(grp && (grp->type & DT_MASKS_GROUP)) nb = g_list_length(grp->points);
-  gchar *str = g_strdup_printf("%d", nb);
+  gchar *str = g_strdup_printf("%u", nb);
   gtk_label_set_text(g->label_form, str);
   g_free(str);
 
@@ -2325,7 +2325,7 @@ void gui_init(dt_iop_module_t *self)
   // preview single scale
   g->vbox_preview_scale = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *lbl_psc = dt_ui_section_label_new(_("preview single scale"));
+  GtkWidget *lbl_psc = dt_ui_section_label_new(C_("section", "preview single scale"));
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), lbl_psc, FALSE, TRUE, 0);
 
   GtkWidget *prev_lvl = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2419,7 +2419,7 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
+  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(C_("section", "retouch tools"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
 
   // shapes toolbar
@@ -2428,7 +2428,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
 
   // wavelet decompose
-  GtkWidget *lbl_wd = dt_ui_section_label_new(_("wavelet decompose"));
+  GtkWidget *lbl_wd = dt_ui_section_label_new(C_("section", "wavelet decompose"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_wd, FALSE, TRUE, 0);
 
   // wavelet decompose bar & labels
@@ -2442,7 +2442,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->vbox_preview_scale, TRUE, TRUE, 0);
 
   // shapes
-  GtkWidget *lbl_shapes = dt_ui_section_label_new(_("shapes"));
+  GtkWidget *lbl_shapes = dt_ui_section_label_new(C_("section", "shapes"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_shapes, FALSE, TRUE, 0);
 
   // shape selected
@@ -3039,7 +3039,7 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   mask_tmp = dt_alloc_align_float((size_t)roi_mask_scaled->width * roi_mask_scaled->height);
   if(mask_tmp == NULL)
   {
-    fprintf(stderr, "rt_build_scaled_mask: error allocating memory\n");
+    dt_print(DT_DEBUG_ALWAYS, "[retouch] rt_build_scaled_mask: error allocating memory\n");
     goto cleanup;
   }
   dt_iop_image_fill(mask_tmp, 0.0f, roi_mask_scaled->width, roi_mask_scaled->height, 1);
@@ -3168,7 +3168,7 @@ static void _retouch_clone(float *const in, dt_iop_roi_t *const roi_in, float *c
   float *img_src = dt_alloc_align_float((size_t)4 * roi_mask_scaled->width * roi_mask_scaled->height);
   if(img_src == NULL)
   {
-    fprintf(stderr, "retouch_clone: error allocating memory for cloning\n");
+    dt_print(DT_DEBUG_ALWAYS, "[retouch] error allocating memory for cloning\n");
     goto cleanup;
   }
 
@@ -3196,7 +3196,7 @@ static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *
   img_dest = dt_alloc_align_float((size_t)4 * roi_mask_scaled->width * roi_mask_scaled->height);
   if(img_dest == NULL)
   {
-    fprintf(stderr, "retouch_blur: error allocating memory for blurring\n");
+    dt_print(DT_DEBUG_ALWAYS, "[retouch] error allocating memory for blurring\n");
     goto cleanup;
   }
 
@@ -3267,7 +3267,7 @@ static void _retouch_heal(float *const in, dt_iop_roi_t *const roi_in, float *co
   img_dest = dt_alloc_align_float((size_t)4 * roi_mask_scaled->width * roi_mask_scaled->height);
   if((img_src == NULL) || (img_dest == NULL))
   {
-    fprintf(stderr, "retouch_heal: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "[retouch] error allocating memory for healing\n");
     goto cleanup;
   }
 
@@ -3323,21 +3323,21 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
         if(grpt == NULL)
         {
-          fprintf(stderr, "rt_process_forms: invalid form\n");
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: invalid form\n");
           continue;
         }
         const int formid = grpt->formid;
         const float form_opacity = grpt->opacity;
         if(formid == 0)
         {
-          fprintf(stderr, "rt_process_forms: form is null\n");
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: form is null\n");
           continue;
         }
         const int index = rt_get_index_from_formid(p, formid);
         if(index == -1)
         {
           // FIXME: we get this error when user go back in history, so forms are the same but the array has changed
-          fprintf(stderr, "rt_process_forms: missing form=%i from array\n", formid);
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: missing form=%i from array\n", formid);
           continue;
         }
 
@@ -3351,7 +3351,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, formid);
         if(form == NULL)
         {
-          fprintf(stderr, "rt_process_forms: missing form=%i from masks\n", formid);
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: missing form=%i from masks\n", formid);
           continue;
         }
 
@@ -3368,7 +3368,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         dt_masks_get_mask(self, piece, form, &mask, &roi_mask.width, &roi_mask.height, &roi_mask.x, &roi_mask.y);
         if(mask == NULL)
         {
-          fprintf(stderr, "rt_process_forms: error retrieving mask\n");
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: error retrieving mask\n");
           continue;
         }
 
@@ -3440,7 +3440,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
             _retouch_fill(layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity, fill_color);
           }
           else
-            fprintf(stderr, "rt_process_forms: unknown algorithm %i\n", algo);
+            dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: unknown algorithm %i\n", algo);
 
           if(mask_display)
             rt_copy_mask_to_alpha(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, form_opacity);
@@ -3478,8 +3478,11 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
   in_retouch = dt_alloc_align_float((size_t)4 * roi_rt->width * roi_rt->height);
-  if(in_retouch == NULL) goto cleanup;
-
+  if(in_retouch == NULL)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[retouch] out of memory\n");
+    goto cleanup;
+  }
   dt_iop_image_copy_by_size(in_retouch, ivoid, roi_rt->width, roi_rt->height, 4);
 
   // user data passed from the decompose routine to the one that process each scale
@@ -3606,7 +3609,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
-    fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "[retouch] error allocating memory for healing (OpenCL)\n");
     err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
@@ -3645,7 +3648,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
-    fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "[retouch] error allocating memory for healing (OpenCL)\n");
     err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
@@ -3689,7 +3692,7 @@ static cl_int rt_copy_in_to_out_cl(const int devid, cl_mem dev_in, const struct 
   dev_roi_out = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_out);
   if(dev_roi_in == NULL || dev_roi_out == NULL)
   {
-    fprintf(stderr, "rt_copy_in_to_out_cl error 1\n");
+    dt_print(DT_DEBUG_ALWAYS, "rt_copy_in_to_out_cl error 1\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -3698,7 +3701,7 @@ static cl_int rt_copy_in_to_out_cl(const int devid, cl_mem dev_in, const struct 
     CLARG(dev_in), CLARG(dev_roi_in), CLARG(dev_out), CLARG(dev_roi_out), CLARG(xoffs), CLARG(yoffs));
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "rt_copy_in_to_out_cl error 2\n");
+    dt_print(DT_DEBUG_ALWAYS, "rt_copy_in_to_out_cl error 2\n");
     goto cleanup;
   }
 
@@ -3726,7 +3729,7 @@ static cl_int rt_build_scaled_mask_cl(const int devid, float *const mask, dt_iop
       = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_mask_scaled == NULL)
   {
-    fprintf(stderr, "rt_build_scaled_mask_cl error 2\n");
+    dt_print(DT_DEBUG_ALWAYS, "rt_build_scaled_mask_cl error 2\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -3735,14 +3738,14 @@ static cl_int rt_build_scaled_mask_cl(const int devid, float *const mask, dt_iop
                                          sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height, CL_TRUE);
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "rt_build_scaled_mask_cl error 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "rt_build_scaled_mask_cl error 4\n");
     goto cleanup;
   }
 
   *p_dev_mask_scaled = dev_mask_scaled;
 
 cleanup:
-  if(err != CL_SUCCESS) fprintf(stderr, "rt_build_scaled_mask_cl error\n");
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_ALWAYS, "rt_build_scaled_mask_cl error\n");
 
   return err;
 }
@@ -3821,7 +3824,7 @@ static cl_int _retouch_clone_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t 
                                           sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_src == NULL)
   {
-    fprintf(stderr, "retouch_clone_cl error 2\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_clone_cl error 2\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -3831,7 +3834,7 @@ static cl_int _retouch_clone_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t 
                              gd->kernel_retouch_copy_buffer_to_buffer);
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "retouch_clone_cl error 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_clone_cl error 4\n");
     goto cleanup;
   }
 
@@ -3840,7 +3843,7 @@ static cl_int _retouch_clone_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t 
                                 gd->kernel_retouch_copy_buffer_to_buffer_masked);
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "retouch_clone_cl error 5\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_clone_cl error 5\n");
     goto cleanup;
   }
 
@@ -3897,7 +3900,7 @@ static cl_int _retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
     dt_opencl_alloc_device(devid, roi_mask_scaled->width, roi_mask_scaled->height, sizeof(float) * ch);
   if(dev_dest == NULL)
   {
-    fprintf(stderr, "retouch_blur_cl error 2\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_blur_cl error 2\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -3914,7 +3917,7 @@ static cl_int _retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
                              gd->kernel_retouch_copy_buffer_to_image);
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "retouch_blur_cl error 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_blur_cl error 4\n");
     goto cleanup;
   }
 
@@ -3955,7 +3958,7 @@ static cl_int _retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
                                 gd->kernel_retouch_copy_image_to_buffer_masked);
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "retouch_blur_cl error 5\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_blur_cl error 5\n");
     goto cleanup;
   }
 
@@ -3986,7 +3989,7 @@ static cl_int _retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
                                           sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_src == NULL)
   {
-    fprintf(stderr, "retouch_heal_cl: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_heal_cl: error allocating memory for healing\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -3995,7 +3998,7 @@ static cl_int _retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
                                            sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_dest == NULL)
   {
-    fprintf(stderr, "retouch_heal_cl: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_heal_cl: error allocating memory for healing\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -4004,7 +4007,7 @@ static cl_int _retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
                              gd->kernel_retouch_copy_buffer_to_buffer);
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "retouch_heal_cl error 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_heal_cl error 4\n");
     goto cleanup;
   }
 
@@ -4012,7 +4015,7 @@ static cl_int _retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
                              gd->kernel_retouch_copy_buffer_to_buffer);
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "retouch_heal_cl error 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_heal_cl error 4\n");
     goto cleanup;
   }
 
@@ -4034,7 +4037,7 @@ static cl_int _retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
                                 gd->kernel_retouch_copy_buffer_to_buffer_masked);
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "retouch_heal_cl error 6\n");
+    dt_print(DT_DEBUG_ALWAYS, "retouch_heal_cl error 6\n");
     goto cleanup;
   }
 
@@ -4087,21 +4090,21 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
         if(grpt == NULL)
         {
-          fprintf(stderr, "rt_process_forms: invalid form\n");
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: invalid form\n");
           continue;
         }
         const int formid = grpt->formid;
         const float form_opacity = grpt->opacity;
         if(formid == 0)
         {
-          fprintf(stderr, "rt_process_forms: form is null\n");
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: form is null\n");
           continue;
         }
         const int index = rt_get_index_from_formid(p, formid);
         if(index == -1)
         {
           // FIXME: we get this error when user go back in history, so forms are the same but the array has changed
-          fprintf(stderr, "rt_process_forms: missing form=%i from array\n", formid);
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: missing form=%i from array\n", formid);
           continue;
         }
 
@@ -4115,7 +4118,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, formid);
         if(form == NULL)
         {
-          fprintf(stderr, "rt_process_forms: missing form=%i from masks\n", formid);
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: missing form=%i from masks\n", formid);
           continue;
         }
 
@@ -4132,7 +4135,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         dt_masks_get_mask(self, piece, form, &mask, &roi_mask.width, &roi_mask.height, &roi_mask.x, &roi_mask.y);
         if(mask == NULL)
         {
-          fprintf(stderr, "rt_process_forms: error retrieving mask\n");
+          dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: error retrieving mask\n");
           continue;
         }
 
@@ -4218,7 +4221,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
                                    fill_color, gd);
           }
           else
-            fprintf(stderr, "rt_process_forms: unknown algorithm %i\n", algo);
+            dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: unknown algorithm %i\n", algo);
 
           if(mask_display)
             rt_copy_mask_to_alpha_cl(devid, dev_layer, roi_layer, dev_mask_scaled, &roi_mask_scaled, form_opacity,

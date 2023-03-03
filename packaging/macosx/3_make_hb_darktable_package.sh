@@ -16,7 +16,8 @@ scriptDir=$(dirname "$0")
 cd "$scriptDir"/
 
 # Define base variables
-dtPackageDir="package"
+buildDir="../../build/macosx"
+dtPackageDir="$buildDir"/package
 dtAppName="darktable"
 dtWorkingDir="$dtPackageDir"/"$dtAppName".app
 dtResourcesDir="$dtWorkingDir"/Contents/Resources
@@ -154,10 +155,10 @@ function install_share {
 }
 
 # Check for previous attempt and clean
-if [[ -d "$dtPackageDir" ]]; then
-    echo "Deleting directory $dtPackageDir ... "
-    chown -R "$USER" "$dtPackageDir"
-    rm -Rf "$dtPackageDir"
+if [[ -d "$dtWorkingDir" ]]; then
+    echo "Deleting directory $dtWorkingDir ... "
+    chown -R "$USER" "$dtWorkingDir"
+    rm -Rf "$dtWorkingDir"
 fi
 
 # Create basic structure
@@ -180,15 +181,15 @@ gtk-icon-theme-name = Adwaita
 " >"$dtResourcesDir"/etc/gtk-3.0/settings.ini
 
 # Add darktable executables
-cp bin/darktable{,-chart,-cli,-cltest,-generate-cache,-rs-identify} "$dtExecDir"/
+cp "$buildDir"/bin/darktable{,-chart,-cli,-cltest,-generate-cache,-rs-identify} "$dtExecDir"/
 
 # Add darktable tools if existent
-if [[ -d libexec/darktable/tools ]]; then
-    cp libexec/darktable/tools/* "$dtExecDir"/
+if [[ -d "$buildDir"/libexec/darktable/tools ]]; then
+    cp "$buildDir"/libexec/darktable/tools/* "$dtExecDir"/
 fi
 
 # Add darktable directories
-cp -R {lib,share} "$dtResourcesDir"/
+cp -R "$buildDir"/{lib,share} "$dtResourcesDir"/
 
 # Install homebrew dependencies of darktable executables
 for dtExecutable in $dtExecutables; do
@@ -273,10 +274,10 @@ cp open.desktop "$dtResourcesDir"/share/applications/
 # Sign app bundle
 if [ -n "$CODECERT" ]; then
     # Use certificate if one has been provided
-    find package/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
-    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" package/darktable.app
+    find ${dtWorkingDir}/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
+    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" ${dtWorkingDir}
 else
     # Use ad-hoc signing and preserve metadata
-    find package/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - \{} \;
-    codesign --deep --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - package/darktable.app
+    find ${dtWorkingDir}/Contents/Resources/lib -type f -exec codesign --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - \{} \;
+    codesign --deep --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - ${dtWorkingDir}
 fi

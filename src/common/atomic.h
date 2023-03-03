@@ -26,10 +26,7 @@
 //   4. otherwise: fall back to using Posix mutex to serialize access
 
 #if defined(__cplusplus) && __cplusplus > 201100
-// G++ throws an error on trying to use C++ atomics with C linkage
-// all of the C++ files which (indirectly) include this header do so inside an extern "C" {}, so we need to
-//   exit out of the extern statement, make our definitions, and then restart another extern block.
-} // end of extern "C" block
+
 #include <atomic>
 
 typedef std::atomic<int> dt_atomic_int;
@@ -40,8 +37,6 @@ inline int dt_atomic_sub_int(dt_atomic_int *var, int decr) { return std::atomic_
 inline int dt_atomic_exch_int(dt_atomic_int *var, int value) { return std::atomic_exchange(var,value); }
 inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
 { return std::atomic_compare_exchange_strong(var,expected,value); }
-
-extern "C" { // restart C linkage block
 
 #elif !defined(__STDC_NO_ATOMICS__)
 
@@ -56,7 +51,7 @@ inline int dt_atomic_exch_int(dt_atomic_int *var, int value) { return atomic_exc
 inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
 { return atomic_compare_exchange_strong(var,expected,value); }
 
-#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNU_MINOR__ >= 8))
+#elif defined(__GNUC__)
 // we don't have or aren't supposed to use C11 atomics, but the compiler is a recent-enough version of GCC
 // that we can use GNU intrinsics corresponding to the C11 atomics
 

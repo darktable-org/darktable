@@ -65,10 +65,10 @@ typedef enum dt_lib_histogram_highlight_t
 
 typedef enum dt_lib_histogram_scope_type_t
 {
-  DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM = 0,
+  DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE = 0,
   DT_LIB_HISTOGRAM_SCOPE_WAVEFORM,
   DT_LIB_HISTOGRAM_SCOPE_PARADE,
-  DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE,
+  DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM,
   DT_LIB_HISTOGRAM_SCOPE_N // needs to be the last one
 } dt_lib_histogram_scope_type_t;
 
@@ -96,7 +96,8 @@ typedef enum dt_lib_histogram_vectorscope_type_t
 
 typedef enum dt_lib_histogram_color_harmony_type_t
 {
-  DT_LIB_HISTOGRAM_HARMONY_MONOCHROMATIC = 0,
+  DT_LIB_HISTOGRAM_HARMONY_NONE = 0,
+  DT_LIB_HISTOGRAM_HARMONY_MONOCHROMATIC,
   DT_LIB_HISTOGRAM_HARMONY_ANALOGOUS,
   DT_LIB_HISTOGRAM_HARMONY_ANALOGOUS_COMPLEMENTARY,
   DT_LIB_HISTOGRAM_HARMONY_COMPLEMENTARY,
@@ -125,8 +126,9 @@ typedef struct dt_lib_histogram_color_harmony_t
   const float length[4];  // the radius of the sector, from 0. to 1., linear scale
 } dt_lib_histogram_color_harmony_t;
 
-const dt_lib_histogram_color_harmony_t dt_color_harmonies[DT_LIB_HISTOGRAM_HARMONY_N] =
+dt_lib_histogram_color_harmony_t dt_color_harmonies[DT_LIB_HISTOGRAM_HARMONY_N] =
 {
+  {N_("none"),                    0                                                              },
   {N_("monochromatic"),           1, { 0./12.                         }, {0.80                  }},
   {N_("analogous"),               3, {-1./12., 0./12.,  1./12.        }, {0.50, 0.80, 0.50      }},
   {N_("analogous complementary"), 4, {-1./12., 0./12.,  1./12., 6./12.}, {0.50, 0.80, 0.50, 0.50}},
@@ -139,20 +141,44 @@ const dt_lib_histogram_color_harmony_t dt_color_harmonies[DT_LIB_HISTOGRAM_HARMO
 };
 
 // FIXME: are these lists available from the enum/options in darktableconfig.xml?
-const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { N_("histogram"), N_("waveform"), N_("rgb parade"), N_("vectorscope") };
-const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] = { "logarithmic", "linear" };
-const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] = { "horizontal", "vertical" };
-const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "u*v*", "AzBz", "RYB" };
-const gchar *dt_lib_histogram_color_harmony_width_names[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] = { "normal", "large", "narrow", "line" };
+const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] =
+{ N_("vectorscope"),
+  N_("waveform"),
+  N_("rgb parade"),
+  N_("histogram")
+};
+
+const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] =
+  { "logarithmic",
+    "linear"
+  };
+
+const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] =
+  { "horizontal",
+    "vertical"
+  };
+
+const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] =
+  { "u*v*",
+    "AzBz",
+    "RYB"
+  };
+
+const gchar *dt_lib_histogram_color_harmony_width_names[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] =
+  { "normal",
+    "large",
+    "narrow",
+    "line"
+  };
 
 const float dt_lib_histogram_color_harmony_width[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] =
-    { 0.5f/12.f, 0.75f/12.f, 0.25f/12.f, 0.0f };
+  { 0.5f/12.f, 0.75f/12.f, 0.25f/12.f, 0.0f };
 
 const void *dt_lib_histogram_scope_type_icons[DT_LIB_HISTOGRAM_SCOPE_N] =
-             { dtgtk_cairo_paint_histogram_scope,
-               dtgtk_cairo_paint_waveform_scope,
-               dtgtk_cairo_paint_rgb_parade,
-               dtgtk_cairo_paint_vectorscope };
+  { dtgtk_cairo_paint_vectorscope,
+    dtgtk_cairo_paint_waveform_scope,
+    dtgtk_cairo_paint_rgb_parade,
+    dtgtk_cairo_paint_histogram_scope };
 
 typedef struct dt_lib_histogram_t
 {
@@ -175,9 +201,10 @@ typedef struct dt_lib_histogram_t
   double vectorscope_radius;
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
-  GtkWidget *button_box_main;          // GtkButtonBox -- contains scope control buttons
-  GtkWidget *button_box_opt;           // GtkButtonBox -- contains options buttons
-  GtkWidget *button_box_rgb;           // GtkButtonBox -- contains RGB channels buttons
+  GtkWidget *button_box_main;          // GtkBox -- contains scope control buttons
+  GtkWidget *button_box_opt;           // GtkBox -- contains options buttons
+  GtkWidget *button_box_rgb;           // GtkBox -- contains RGB channels buttons
+  GtkWidget *color_harmony_box;        // GtkBox -- contains color harmony buttons
   GtkWidget *scope_type_button
     [DT_LIB_HISTOGRAM_SCOPE_N];        // Array of GtkToggleButton -- histogram control
   GtkWidget *scope_view_button;        // GtkButton -- how to render the current scope
@@ -185,7 +212,8 @@ typedef struct dt_lib_histogram_t
   GtkWidget *green_channel_button;     // GtkToggleButton -- enable/disable processing G channel
   GtkWidget *blue_channel_button;      // GtkToggleButton -- enable/disable processing B channel
   GtkWidget *colorspace_button;        // GtkButton -- vectorscope colorspace
-  GtkWidget *color_harmony_button;     // GtkButton -- RYB vectorscope color harmony
+  GtkWidget *color_harmony_button
+    [DT_LIB_HISTOGRAM_HARMONY_N - 1];  // GtkButton -- RYB vectorscope color harmonies
   // drag to change parameters
   gboolean dragging;
   int32_t button_down_x, button_down_y;
@@ -202,8 +230,8 @@ typedef struct dt_lib_histogram_t
   gboolean red, green, blue;
   float *rgb2ryb_ypp;
   float *ryb2rgb_ypp;
-  gboolean show_color_harmony;
   dt_lib_histogram_color_harmony_type_t color_harmony;
+  dt_lib_histogram_color_harmony_type_t color_harmony_old;
   int harmony_rotation; // in degrees
   dt_lib_histogram_color_harmony_width_t harmony_width;
 } dt_lib_histogram_t;
@@ -235,7 +263,8 @@ int position(const dt_lib_module_t *self)
 }
 
 
-static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const float *const input,
+static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d,
+                                             const float *const input,
                                              const dt_histogram_roi_t *const roi)
 {
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
@@ -249,19 +278,25 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
   histogram_params.roi = roi;
   histogram_params.bins_count = HISTOGRAM_BINS;
 
-  // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of the graph
-  // FIXME: set up "custom" histogram worker which can do colorspace conversion on fly -- in cases that we need to do that -- may need to add from colorspace to dt_dev_histogram_collection_params_t
+  // FIXME: for point sample, calculate whole graph and the point
+  // sample values, draw these on top of the graph
+
+  // FIXME: set up "custom" histogram worker which can do colorspace
+  // conversion on fly -- in cases that we need to do that -- may need
+  // to add from colorspace to dt_dev_histogram_collection_params_t
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, IOP_CS_NONE,
                       input, &d->histogram, histogram_max, FALSE, NULL);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
 }
 
-static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const float *const input,
+static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
+                                            const float *const input,
                                             const dt_histogram_roi_t *const roi)
 {
-  // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of a dimmer graph
-  const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
-  const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
+  // FIXME: for point sample, calculate whole graph and the point
+  // sample values, draw these on top of a dimmer graph
+  const int sample_width = MAX(1, roi->width - roi->crop_right - roi->crop_x);
+  const int sample_height = MAX(1, roi->height - roi->crop_bottom - roi->crop_y);
 
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on draw to smoothly do horizontal
@@ -281,7 +316,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // will be <= 360x160x3. Hence process works with a relatively small
   // quantity of data.
   size_t bin_pad;
-  uint32_t *const restrict partial_binned = dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
+  uint32_t *const restrict partial_binned =
+    dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
 
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
@@ -312,7 +348,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
 
   // shortcut to change from linear to display gamma -- borrow hybrid log-gamma LUT
   const dt_iop_order_iccprofile_info_t *const profile =
-    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
+    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020,
+                                      "", DT_INTENT_PERCEPTUAL);
   // lut for all three channels should be the same
   const float *const restrict lut = DT_IS_ALIGNED((const float *const restrict)profile->lut_out[0]);
   const float lutmax = profile->lutsize - 1;
@@ -322,7 +359,10 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // Every bin_width x height portion of the image is being described
   // in a 1 pixel x waveform_tones portion of the histogram.
   // NOTE: if constant is decreased, will brighten output
-  // FIXME: instead of using an area-beased scale, figure out max bin count and scale to that?
+
+  // FIXME: instead of using an area-beased scale, figure out max bin
+  // count and scale to that?
+
   const float brightness = num_tones / 40.0f;
   const float scale = brightness / ((orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
   size_t nthreads = dt_get_num_threads();
@@ -377,7 +417,9 @@ static void _ryb2rgb(const dt_aligned_pixel_t ryb, dt_aligned_pixel_t rgb, const
   dt_HSV_2_RGB(HSV, rgb);
 }
 
-static void _rgb2ryb(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t ryb, const float *rgb2ryb_ypp)
+static void _rgb2ryb(const dt_aligned_pixel_t rgb,
+                     dt_aligned_pixel_t ryb,
+                     const float *rgb2ryb_ypp)
 {
   dt_aligned_pixel_t HSV;
   dt_RGB_2_HSV(rgb, HSV);
@@ -386,13 +428,13 @@ static void _rgb2ryb(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t ryb, const
   dt_HSV_2_RGB(HSV, ryb);
 }
 
-static inline float baselog(float x, float bound)
+static inline float baselog(const float x, const float bound)
 {
   // FIXME: use dt's fastlog()?
   return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / logf(VECTORSCOPE_BASE_LOG) * bound;
 }
 
-static inline void log_scale(float *x, float *y, float r)
+static inline void log_scale(float *x, float *y, const float r)
 {
   const float h = dt_fast_hypotf(*x,*y);
   // Haven't seen a zero point in practice, but it is certainly
@@ -406,11 +448,13 @@ static inline void log_scale(float *x, float *y, float r)
   }
 }
 
-static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
+static void _lib_histogram_vectorscope_bkgd
+  (dt_lib_histogram_t *d,
+   const dt_iop_order_iccprofile_info_t *const vs_prof)
 {
-  if(vs_prof == d->hue_ring_prof &&
-     d->vectorscope_scale == d->hue_ring_scale &&
-     d->vectorscope_type == d->hue_ring_colorspace)
+  if(vs_prof == d->hue_ring_prof
+     && d->vectorscope_scale == d->hue_ring_scale
+     && d->vectorscope_type == d->hue_ring_colorspace)
     return;
 
   // Calculate "hue ring" by tracing along the edges of the "RGB cube"
@@ -441,7 +485,10 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   // maps to a very small radius in CIELuv.
   cairo_pattern_t *p = cairo_pattern_create_mesh();
   // initialize to make gcc-7 happy
-  dt_aligned_pixel_t  rgb_display = { 0.f }, prev_rgb_display = { 0.f }, first_rgb_display = { 0.f };
+  dt_aligned_pixel_t rgb_display = { 0.f };
+  dt_aligned_pixel_t prev_rgb_display = { 0.f };
+  dt_aligned_pixel_t first_rgb_display = { 0.f };
+
   double px = 0., py= 0.;
 
   for(int k=0; k<6; k++)
@@ -458,8 +505,13 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       {
         case DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV:
         {
-          dt_ioppr_rgb_matrix_to_xyz(rgb_scope, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
-                                     vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+          dt_ioppr_rgb_matrix_to_xyz(rgb_scope,
+                                     XYZ_D50,
+                                     vs_prof->matrix_in_transposed,
+                                     vs_prof->lut_in,
+                                     vs_prof->unbounded_coeffs_in,
+                                     vs_prof->lutsize,
+                                     vs_prof->nonlinearlut);
           dt_aligned_pixel_t xyY;
           dt_XYZ_to_xyY(XYZ_D50, xyY);
           dt_xyY_to_Luv(xyY, chromaticity);
@@ -468,8 +520,13 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         }
         case DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ:
         {
-          dt_ioppr_rgb_matrix_to_xyz(rgb_scope, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
-                                     vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+          dt_ioppr_rgb_matrix_to_xyz(rgb_scope,
+                                     XYZ_D50,
+                                     vs_prof->matrix_in_transposed,
+                                     vs_prof->lut_in,
+                                     vs_prof->unbounded_coeffs_in,
+                                     vs_prof->lutsize,
+                                     vs_prof->nonlinearlut);
           dt_aligned_pixel_t XYZ_D65;
           dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
           dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
@@ -522,10 +579,26 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         cairo_mesh_pattern_move_to(p, 0., 0.);
         cairo_mesh_pattern_line_to(p, px, py);
         cairo_mesh_pattern_line_to(p, chromaticity[1], chromaticity[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 0, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 1, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb_display[0], rgb_display[1], rgb_display[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb_display[0], rgb_display[1], rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p,
+                                                0,
+                                                prev_rgb_display[0],
+                                                prev_rgb_display[1],
+                                                prev_rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p,
+                                                1,
+                                                prev_rgb_display[0],
+                                                prev_rgb_display[1],
+                                                prev_rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p,
+                                                2,
+                                                rgb_display[0],
+                                                rgb_display[1],
+                                                rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p,
+                                                3,
+                                                rgb_display[0],
+                                                rgb_display[1],
+                                                rgb_display[2]);
         cairo_mesh_pattern_end_patch(p);
       }
 
@@ -540,10 +613,26 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   cairo_mesh_pattern_move_to(p, 0., 0.);
   cairo_mesh_pattern_line_to(p, px, py);
   cairo_mesh_pattern_line_to(p, d->hue_ring[0][0][0], d->hue_ring[0][0][1]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 0, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 1, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 2, first_rgb_display[0], first_rgb_display[1], first_rgb_display[2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 3, first_rgb_display[0], first_rgb_display[1], first_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p,
+                                          0,
+                                          prev_rgb_display[0],
+                                          prev_rgb_display[1],
+                                          prev_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p,
+                                          1,
+                                          prev_rgb_display[0],
+                                          prev_rgb_display[1],
+                                          prev_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p,
+                                          2,
+                                          first_rgb_display[0],
+                                          first_rgb_display[1],
+                                          first_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p,
+                                          3,
+                                          first_rgb_display[0],
+                                          first_rgb_display[1],
+                                          first_rgb_display[2]);
   cairo_mesh_pattern_end_patch(p);
 
   const int diam_px = d->vectorscope_diameter_px;
@@ -651,8 +740,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const float max_radius = d->vectorscope_radius;
   const float max_diam = max_radius * 2.f;
 
-  int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
-  int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
+  int sample_width = MAX(1, roi->width - roi->crop_right - roi->crop_x);
+  int sample_height = MAX(1, roi->height - roi->crop_bottom - roi->crop_y);
   if(sample_width == 1 && sample_height == 1)
   {
     // point sample still calculates graph based on whole image
@@ -819,8 +908,12 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
 
   // FIXME: scope goes black when click histogram lib colorpicker on -- is this meant to happen?
   // FIXME: scope doesn't redraw when click histogram lib colorpicker off -- is this meant to happen?
-  dt_histogram_roi_t roi = { .width = width, .height = height,
-                             .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
+  dt_histogram_roi_t roi = { .width = width,
+                             .height = height,
+                             .crop_x = 0,
+                             .crop_y = 0,
+                             .crop_right = 0,
+                             .crop_bottom = 0 };
 
   // Constraining the area if the colorpicker is active in area mode
   // FIXME: only need to do colorspace conversion below on roi
@@ -839,15 +932,15 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
       {
         roi.crop_x = MIN(width, MAX(0, sample->box[0] * width));
         roi.crop_y = MIN(height, MAX(0, sample->box[1] * height));
-        roi.crop_width = width - MIN(width, MAX(0, sample->box[2] * width));
-        roi.crop_height = height - MIN(height, MAX(0, sample->box[3] * height));
+        roi.crop_right = width - MIN(width, MAX(0, sample->box[2] * width));
+        roi.crop_bottom = height - MIN(height, MAX(0, sample->box[3] * height));
       }
       else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
       {
         roi.crop_x = MIN(width, MAX(0, sample->point[0] * width));
         roi.crop_y = MIN(height, MAX(0, sample->point[1] * height));
-        roi.crop_width = width - MIN(width, MAX(0, sample->point[0] * width));
-        roi.crop_height = height - MIN(height, MAX(0, sample->point[1] * height));
+        roi.crop_right = width - MIN(width, MAX(0, sample->point[0] * width));
+        roi.crop_bottom = height - MIN(height, MAX(0, sample->point[1] * height));
       }
     }
   }
@@ -1134,13 +1227,14 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       darktable.lib->proxy.colorpicker.display_samples;
 
   // we draw the color harmony guidelines
-  if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB && d->show_color_harmony)
+  if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
+      d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE)
   {
     cairo_save(cr);
 
-    float hw = dt_lib_histogram_color_harmony_width[d->harmony_width];
+    const float hw = dt_lib_histogram_color_harmony_width[d->harmony_width];
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-    dt_lib_histogram_color_harmony_t hm = dt_color_harmonies[d->color_harmony];
+    const dt_lib_histogram_color_harmony_t hm = dt_color_harmonies[d->color_harmony];
     for(int i = 0; i < hm.sectors; i++)
     {
       float hr = vs_radius * hm.length[i];
@@ -1163,7 +1257,9 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       // we dim the histogram graph outside the harmony sectors
       cairo_stroke_preserve(cr);
       cairo_push_group(cr);
-      cairo_paint_with_alpha(cr, 0.3);
+      cairo_paint_with_alpha
+        (cr,
+         dt_conf_get_float("plugins/darkroom/histogram/vectorscope/harmony/dim"));
       cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
       cairo_fill(cr);
       cairo_pattern_t *harmony_pat = cairo_pop_group(cr);
@@ -1183,28 +1279,19 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       PangoRectangle ink;
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
       pango_font_description_set_weight(desc, PANGO_WEIGHT_NORMAL);
-      pango_font_description_set_absolute_size(desc, PANGO_SCALE);
+      pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
+      pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
 
-      // scale conservatively to 100% of width:
-      gchar *text = g_strdup_printf("analogous complementary\nrotation: 360°");
-      pango_layout_set_text(layout, text, -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
-      pango_font_description_set_absolute_size(desc, width * 0.9 / ink.width * PANGO_SCALE);
-      pango_layout_set_font_description(layout, desc);
-      g_free(text);
+      gchar *text = g_strdup_printf("%d°\n%s", d->harmony_rotation, _(hm.name));
 
-      text = g_strdup_printf("%s\n%s: %d°", _(hm.name), _("rotation"), d->harmony_rotation);
-
-      //cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
       set_color(cr, darktable.bauhaus->graph_fg);
       pango_layout_set_text(layout, text, -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
+      pango_layout_get_pixel_extents(layout, NULL, &ink);
       cairo_scale(cr, 1., -1.);
       cairo_rotate(cr, -d->vectorscope_angle);
-      cairo_move_to(cr, -0.48f * width, 0.48 * height - ink.height - ink.y);
-      //cairo_move_to(cr, -width * 0.48, -height * 0.5);
+      cairo_move_to(cr, 0.48f * width - ink.width - ink.x, 0.48 * height - ink.height - ink.y);
       pango_cairo_show_layout(cr, layout);
       cairo_stroke(cr);
       pango_font_description_free(desc);
@@ -1421,12 +1508,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
-      const float exposure = d->button_down_value + diff * 4.0f / (float)range;
+      const float exposure = d->button_down_value + diff * 4.0f / (float)range * dt_accel_get_speed_multiplier(widget, event->state);
       dt_dev_exposure_set_exposure(dev, exposure);
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
-      const float black = d->button_down_value - diff * .1f / (float)range;
+      const float black = d->button_down_value - diff * .1f / (float)range * dt_accel_get_speed_multiplier(widget, event->state);
       dt_dev_exposure_set_black(dev, black);
     }
   }
@@ -1441,36 +1528,45 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     const gboolean hooks_available = (cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
 
     // FIXME: make just one tooltip for the widget depending on whether it is draggable or not, and set it when enter the view
-    if(!hooks_available || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    gchar *tip = g_strdup_printf("%s\n", _(dt_lib_histogram_scope_type_names[d->scope_type]));
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
               d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
-              d->show_color_harmony)
-        gtk_widget_set_tooltip_text(widget, _("histogram\n"
-                                              "scroll to coarse-rotate color harmony guide lines\n"
-                                              "shift+scroll to fine rotate\n"
-                                              "alt+scroll to change harmony type\n"
-                                              "shift+alt+scroll to change harmony width"));
-      else gtk_widget_set_tooltip_text(widget, "histogram\n");
+              d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE)
+        tip = dt_util_dstrcat(tip, "\n%s\n%s\n%s\n%s",
+                              _("scroll to coarse-rotate"),
+                              _("ctrl+scroll to fine rotate"),
+                              _("shift+scroll to change width"),
+                              _("alt+scroll to cycle"));
     }
-    // FIXME: could a GtkRange be used to do this work?
-    else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
-            (d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM &&
-             ((posy > 7.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI) ||
-              (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
+    else if(hooks_available)
     {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-      gtk_widget_set_tooltip_text(widget, _("histogram\ndrag to change black point,\ndouble-click resets"));
+      if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
+          ((d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE) &&
+            ((posy > 7.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI) ||
+            (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
+      {
+        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
+        tip = dt_util_dstrcat(tip, "\n%s\n%s",
+                              _("drag to change black point"),
+                              _("double-click resets"));
+      }
+      else
+      {
+        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
+        tip = dt_util_dstrcat(tip, "\n%s\n%s",
+                              _("drag to change exposure"),
+                              _("double-click resets"));
+      }
     }
-    else
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-      gtk_widget_set_tooltip_text(widget, _("histogram\ndrag to change exposure,\ndouble-click resets"));
-    }
+    gtk_widget_set_tooltip_text(widget, tip);
+    g_free(tip);
+
     if(prior_highlight != d->highlight)
     {
-      dt_control_queue_redraw_widget(widget);
+      gtk_widget_queue_draw(widget);
       if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
       {
         // FIXME: should really use named cursors, and differentiate between "grab" and "grabbing"
@@ -1514,26 +1610,31 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   return TRUE;
 }
 
-static void _color_harmony_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+static void _color_harmony_button_on_off(dt_lib_histogram_color_harmony_type_t on,
+                                         dt_lib_histogram_color_harmony_type_t off,
+                                         dt_lib_histogram_t *d)
 {
-  d->show_color_harmony = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  dt_conf_set_bool("plugins/darkroom/histogram/vectorscope/show_color_harmony", d->show_color_harmony);
-  dt_control_queue_redraw_widget(d->scope_draw);
+  if(off != DT_LIB_HISTOGRAM_HARMONY_NONE)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[off - 1]), FALSE);
+  if(on != DT_LIB_HISTOGRAM_HARMONY_NONE)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[on - 1]), TRUE);
 }
 
-static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static void _color_harmony_changed(dt_lib_histogram_t *d);
+
+static gboolean _eventbox_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-  {
-    // bubble to adjusting the overall widget size
-    return FALSE;
-  }
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   int delta_y = 0;
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
+  {
+    // bubble to adjusting the overall widget size
+    gtk_widget_event(d->scope_draw, (GdkEvent*)event);
+  }
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) && delta_y != 0)
+  else if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) && delta_y != 0)
   {
     if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
     {
@@ -1542,47 +1643,44 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       {
         const float ce = dt_dev_exposure_get_exposure(dev);
-        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
+        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y * dt_accel_get_speed_multiplier(widget, event->state));
       }
       else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
       {
         const float cb = dt_dev_exposure_get_black(dev);
-        dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
+        dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y * dt_accel_get_speed_multiplier(widget, event->state));
       }
     }
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
-        d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
-        d->show_color_harmony)
+    else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
-      if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK)) // SHIFT+ALT+SCROLL
+      if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
       {
         if(d->harmony_width == 0 && delta_y < 0) d->harmony_width = DT_LIB_HISTOGRAM_HARMONY_WIDTH_N - 1;
         else d->harmony_width = (d->harmony_width +delta_y) % DT_LIB_HISTOGRAM_HARMONY_WIDTH_N;
-        dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_width", d->harmony_width);
       }
       else if(dt_modifier_is(event->state, GDK_MOD1_MASK)) // ALT+SCROLL
       {
-        if(d->color_harmony == 0 && delta_y < 0) d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1;
-        else d->color_harmony = (d->color_harmony + delta_y) % DT_LIB_HISTOGRAM_HARMONY_N;
-        dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
-                           dt_color_harmonies[d->color_harmony].name);
+        if(d->color_harmony_old == DT_LIB_HISTOGRAM_HARMONY_NONE && delta_y < 0)
+          d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1;
+        else d->color_harmony = (d->color_harmony_old + delta_y) % DT_LIB_HISTOGRAM_HARMONY_N;
+        _color_harmony_button_on_off(d->color_harmony, d->color_harmony_old, d);
+        d->color_harmony_old = d->color_harmony;
       }
       else
       {
         int a;
-        if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
+        if(dt_modifier_is(event->state, GDK_CONTROL_MASK)) // CTRL+SCROLL
           a = d->harmony_rotation + delta_y;
         else // SCROLL
-          {
-            d->harmony_rotation = (int)(d->harmony_rotation / 15.) * 15;
-            a = d->harmony_rotation + 15 * delta_y;
-          }
+        {
+          d->harmony_rotation = (int)(d->harmony_rotation / 15.) * 15;
+          a = d->harmony_rotation + 15 * delta_y;
+        }
         a %= 360;
         if(a < 0) a += 360;
         d->harmony_rotation = a;
-        dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_rotation", d->harmony_rotation);
       }
-      dt_control_queue_redraw_widget(d->scope_draw);
+      _color_harmony_changed(d);
     }
   }
   return TRUE;
@@ -1610,7 +1708,7 @@ static gboolean _drawable_leave_notify_callback(GtkWidget *widget, GdkEventCross
   {
     d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
     dt_control_change_cursor(GDK_LEFT_PTR);
-    dt_control_queue_redraw_widget(widget);
+    gtk_widget_queue_draw(widget);
   }
   // event should bubble up to the eventbox
   return FALSE;
@@ -1679,19 +1777,19 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
       gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to AzBz"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_luv, CPF_NONE, NULL);
-      gtk_widget_hide(d->color_harmony_button);
+      gtk_widget_hide(d->color_harmony_box);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ:
       gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to RYB"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_jzazbz, CPF_NONE, NULL);
-      gtk_widget_hide(d->color_harmony_button);
+      gtk_widget_hide(d->color_harmony_box);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_RYB:
       gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to u*v*"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_ryb, CPF_NONE, NULL);
-      gtk_widget_show(d->color_harmony_button);
+      gtk_widget_show(d->color_harmony_box);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_N:
       dt_unreachable_codepath();
@@ -1700,7 +1798,7 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
 
   static void _scope_type_update(dt_lib_histogram_t *d)
 {
-  gtk_widget_hide(d->color_harmony_button);
+  gtk_widget_hide(d->color_harmony_box);
 
   switch(d->scope_type)
   {
@@ -1737,7 +1835,7 @@ static void _scope_type_changed(dt_lib_histogram_t *d)
   if(d->waveform_bins)
   {
     // waveform and RGB parade both work on the same underlying data
-    dt_control_queue_redraw_widget(d->scope_draw);
+    gtk_widget_queue_draw(d->scope_draw);
   }
   else
   {
@@ -1781,7 +1879,7 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
                          dt_lib_histogram_scale_names[d->histogram_scale]);
       _histogram_scale_update(d);
       // no need to reprocess data
-      dt_control_queue_redraw_widget(d->scope_draw);
+      gtk_widget_queue_draw(d->scope_draw);
       return;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
     case DT_LIB_HISTOGRAM_SCOPE_PARADE:
@@ -1828,21 +1926,84 @@ static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->red = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_red", d->red);
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
 }
 
 static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->green = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_green", d->green);
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
 }
 
 static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->blue = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_blue", d->blue);
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
+}
+
+static void _color_harmony_changed(dt_lib_histogram_t *d)
+{
+  dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
+                     dt_color_harmonies[d->color_harmony].name);
+  dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_width",
+                  d->harmony_width);
+  dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_rotation",
+                  d->harmony_rotation);
+  gtk_widget_queue_draw(d->scope_draw);
+}
+
+static gboolean _color_harmony_clicked(GtkWidget *button, GdkEventButton *event, dt_lib_histogram_t *d)
+{
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+  {
+    // clicked on active button, we remove guidelines
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
+    d->color_harmony = d->color_harmony_old = DT_LIB_HISTOGRAM_HARMONY_NONE;
+  }
+  else
+  {
+    // find positions of clicked button
+    int pos = -1;
+    for(int i = 0; i < DT_LIB_HISTOGRAM_HARMONY_N - 1; i++)
+      if(d->color_harmony_button[i] == button)
+      {
+        pos = i;
+        break;
+      }
+    _color_harmony_button_on_off(pos + 1, d->color_harmony_old, d);
+    d->color_harmony = d->color_harmony_old = pos + 1;
+  }
+  _color_harmony_changed(d);
+  return TRUE;
+}
+
+static gboolean _color_harmony_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                 gpointer user_data)
+{
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  // find positions of entered button
+  int pos = -1;
+  for(int i = 0; i < DT_LIB_HISTOGRAM_HARMONY_N - 1; i++)
+    if(d->color_harmony_button[i] == widget)
+    {
+      pos = i;
+      break;
+    }
+  d->color_harmony_old = d->color_harmony;
+  d->color_harmony = pos + 1;
+  gtk_widget_queue_draw(d->scope_draw);
+  return TRUE;
+}
+
+static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                 gpointer user_data)
+{
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  d->color_harmony = d->color_harmony_old;
+  gtk_widget_queue_draw(d->scope_draw);
+  return TRUE;
 }
 
 static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
@@ -1979,6 +2140,16 @@ static void _lib_histogram_change_type_callback(dt_action_t *action)
   _scope_view_clicked(d->scope_view_button, d);
 }
 
+static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
+{
+  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  d->color_harmony = (d->color_harmony_old + 1) % DT_LIB_HISTOGRAM_HARMONY_N;
+  _color_harmony_button_on_off(d->color_harmony, d->color_harmony_old, d);
+  d->color_harmony_old = d->color_harmony;
+  _color_harmony_changed(d);
+}
+
 // this is only called in darkroom view
 static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
@@ -2108,10 +2279,10 @@ void gui_init(dt_lib_module_t *self)
   d->rgb2ryb_ypp = interpolate_set(sizeof(x_vtx)/sizeof(float), (float *)x_vtx, (float *)ryb_y_vtx, CUBIC_SPLINE);
   d->ryb2rgb_ypp = interpolate_set(sizeof(x_vtx)/sizeof(float), (float *)x_vtx, (float *)rgb_y_vtx, CUBIC_SPLINE);
 
-  d->show_color_harmony = dt_conf_get_bool("plugins/darkroom/histogram/vectorscope/show_color_harmony");
   str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope/harmony_type");
-  for(dt_lib_histogram_color_harmony_type_t i=0; i<DT_LIB_HISTOGRAM_HARMONY_N; i++)
-    if(g_strcmp0(str, dt_color_harmonies[i].name) == 0) d->color_harmony = i;
+  for(int i = 0; i < DT_LIB_HISTOGRAM_HARMONY_N; i++)
+    if(g_strcmp0(str, dt_color_harmonies[i].name) == 0)
+      d->color_harmony_old = d->color_harmony = i;
   d->harmony_rotation = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_rotation");
   d->harmony_width = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/harmony_width");
 
@@ -2136,16 +2307,20 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_events(d->scope_draw, GDK_ENTER_NOTIFY_MASK);
 
   // a row of control buttons, split in two button boxes, on left and right side
-  d->button_box_main = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->button_box_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_class(d->button_box_main, "button_box");
   gtk_widget_set_valign(d->button_box_main, GTK_ALIGN_START);
   gtk_widget_set_halign(d->button_box_main, GTK_ALIGN_START);
 
-  // this intermediate box is needed to make the actions on buttons work
   GtkWidget *box_left = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_valign(box_left, GTK_ALIGN_START);
   gtk_widget_set_halign(box_left, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(d->button_box_main), box_left, FALSE, FALSE, 0);
+
+  d->color_harmony_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_valign(d->color_harmony_box, GTK_ALIGN_START);
+  gtk_widget_set_halign(d->color_harmony_box, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(d->button_box_main), d->color_harmony_box, FALSE, FALSE, 0);
 
   d->button_box_opt = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   dt_gui_add_class(d->button_box_opt, "button_box");
@@ -2169,7 +2344,8 @@ void gui_init(dt_lib_module_t *self)
   {
     d->scope_type_button[i] = dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
     gtk_widget_set_tooltip_text(d->scope_type_button[i], _(dt_lib_histogram_scope_type_names[i]));
-    dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i], d->scope_type_button[i], &dt_action_def_toggle);
+    dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i],
+                     d->scope_type_button[i], &dt_action_def_toggle);
     gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(d->scope_type_button[i]), "button-press-event", G_CALLBACK(_scope_histogram_mode_clicked), d);
   }
@@ -2216,13 +2392,26 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(dark, NULL, N_("cycle vectorscope types"), d->colorspace_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(box_right), d->colorspace_button, FALSE, FALSE, 0);
 
-  d->color_harmony_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_swatch, CPF_NONE, NULL);
-  gtk_widget_set_tooltip_text(d->color_harmony_button, _("toggle color harmony guide lines"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button), d->show_color_harmony);
-  ac = dt_action_define(dark, NULL, N_("toggle color harmony guide lines"), d->color_harmony_button, &dt_action_def_toggle);
-  gtk_box_pack_end(GTK_BOX(box_right), d->color_harmony_button, FALSE, FALSE, 0);
+  // a series of buttons for color harmony guide lines
+  for(int i = 1; i < DT_LIB_HISTOGRAM_HARMONY_N; i++)
+  {
+    GtkWidget *rb = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_harmony, CPF_NONE,
+                                           &(dt_color_harmonies[i]));
+    dt_action_define(dark, N_("color harmonies"), dt_color_harmonies[i].name, rb, &dt_action_def_toggle);
+    g_signal_connect(G_OBJECT(rb), "button-press-event", G_CALLBACK(_color_harmony_clicked), d);
+    g_signal_connect(G_OBJECT(rb), "enter-notify-event",
+                     G_CALLBACK(_color_harmony_enter_notify_callback), d);
+    g_signal_connect(G_OBJECT(rb), "leave-notify-event",
+                     G_CALLBACK(_color_harmony_leave_notify_callback), d);
 
-  // will change sensitivity of channel buttons, hence must run after all buttons are declared
+    gtk_box_pack_start(GTK_BOX(d->color_harmony_box), rb, FALSE, FALSE, 0);
+    d->color_harmony_button[i-1] = rb;
+  }
+  _color_harmony_button_on_off(d->color_harmony, DT_LIB_HISTOGRAM_HARMONY_NONE, d);
+
+  dt_action_register(dark, N_("cycle color harmonies"), _lib_histogram_cycle_harmony_callback, 0, 0);
+
+  // will change visibility of buttons, hence must run after all buttons are declared
   _scope_type_update(d);
 
   // FIXME: add a brightness control (via GtkScaleButton?). Different per each mode?
@@ -2265,10 +2454,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->red_channel_button), "toggled", G_CALLBACK(_red_channel_toggle), d);
   g_signal_connect(G_OBJECT(d->green_channel_button), "toggled", G_CALLBACK(_green_channel_toggle), d);
   g_signal_connect(G_OBJECT(d->blue_channel_button), "toggled", G_CALLBACK(_blue_channel_toggle), d);
-  g_signal_connect(G_OBJECT(d->color_harmony_button), "toggled", G_CALLBACK(_color_harmony_toggle), d);
 
-  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
-                                       GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
+  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
+                                     | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
   g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_drawable_draw_callback), d);
   g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
@@ -2279,10 +2467,10 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_drawable_button_release_callback), d);
   g_signal_connect(G_OBJECT(d->scope_draw), "motion-notify-event",
                    G_CALLBACK(_drawable_motion_notify_callback), d);
-  g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event",
-                   G_CALLBACK(_drawable_scroll_callback), d);
 
-  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
+  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(eventbox), "scroll-event",
+                   G_CALLBACK(_eventbox_scroll_callback), d);
   g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
                    G_CALLBACK(_eventbox_enter_notify_callback), d);
   g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",

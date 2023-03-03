@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2022 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
   ret = MagickReadImage(image, filename);
   if(ret != MagickTrue) {
-    fprintf(stderr, "[ImageMagick_open] cannot open `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] cannot open `%s'\n", img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
@@ -89,7 +89,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
   if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
   {
-    fprintf(stderr, "[ImageMagick_open] error: CMY(K) images are not supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] error: CMY(K) images are not supported.\n");
     err =  DT_IMAGEIO_LOAD_FAILED;
     goto error;
   }
@@ -102,7 +102,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
   float *mipbuf = dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL) {
-    fprintf(stderr,
+    dt_print(DT_DEBUG_ALWAYS,
         "[ImageMagick_open] could not alloc full buffer for image `%s'\n",
         img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
@@ -111,7 +111,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
   ret = MagickExportImagePixels(image, 0, 0, img->width, img->height, "RGBP", FloatPixel, mipbuf);
   if(ret != MagickTrue) {
-    fprintf(stderr,
+    dt_print(DT_DEBUG_ALWAYS,
         "[ImageMagick_open] error reading image `%s'\n", img->filename);
     goto error;
   }
@@ -133,6 +133,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   // See https://github.com/darktable-org/darktable/issues/13090 regarding the consequences.
   DestroyMagickWand(image);
 
+  img->buf_dsc.cst = IOP_CS_RGB;
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;

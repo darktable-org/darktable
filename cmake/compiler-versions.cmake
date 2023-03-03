@@ -12,17 +12,17 @@
 # As per https://releases.llvm.org/6.0.0/tools/clang/docs/OpenMPSupport.html / https://releases.llvm.org/7.0.0/tools/clang/docs/OpenMPSupport.html
 # Clang 7 is the first one with full OpenMP 4.5 support.
 
-# As per https://gcc.gnu.org/releases.html, GCC 7.1 was first released on May 2, 2017 (4+ years ago)
+# As per https://gcc.gnu.org/releases.html, GCC 8.1 was first released on May 2, 2018 (4+ years ago)
 # As per https://releases.llvm.org/, Clang 7 was first released on 19 Sep 2018 (~3 years ago)
 
 
 # Baseline requirements.
 
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 7)
-  message(FATAL_ERROR "GNU C compiler version ${CMAKE_C_COMPILER_VERSION} is too old. Need 7+")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 8)
+  message(FATAL_ERROR "GNU C compiler version ${CMAKE_C_COMPILER_VERSION} is too old. Need 8+")
 endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
-  message(FATAL_ERROR "GNU C++ compiler version ${CMAKE_CXX_COMPILER_VERSION} is too old. Need 7+")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)
+  message(FATAL_ERROR "GNU C++ compiler version ${CMAKE_CXX_COMPILER_VERSION} is too old. Need 8+")
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 7)

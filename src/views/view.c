@@ -221,7 +221,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
     for(GList *iter = vm->views; iter; iter = g_list_next(iter))
     {
       dt_view_t *v = (dt_view_t *)iter->data;
-      if(!strcmp(v->module_name, view_name))
+      if(!g_ascii_strcasecmp(v->module_name, view_name))
       {
         new_view = v;
         break;
@@ -1040,10 +1040,10 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
     return FALSE;
 }
 
-void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean focus)
+void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean sticky, gboolean focus)
 {
   if(vm->proxy.lighttable.module)
-    vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, focus);
+    vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, sticky, focus);
 }
 
 void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid)

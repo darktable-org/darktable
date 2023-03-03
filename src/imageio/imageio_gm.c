@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   if(exception.severity != UndefinedException) CatchException(&exception);
   if(!image)
   {
-    fprintf(stderr, "[GraphicsMagick_open] image `%s' not found\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] image `%s' not found\n", img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
@@ -84,7 +84,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
 
   if(IsCMYKColorspace(image->colorspace))
   {
-    fprintf(stderr, "[GraphicsMagick_open] error: CMYK images are not supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] error: CMYK images are not supported.\n");
     err =  DT_IMAGEIO_LOAD_FAILED;
     goto error;
   }
@@ -101,7 +101,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
-    fprintf(stderr, "[GraphicsMagick_open] could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] could not alloc full buffer for image `%s'\n", img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
@@ -113,7 +113,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
     if(exception.severity != UndefinedException) CatchException(&exception);
     if(ret != MagickPass)
     {
-      fprintf(stderr, "[GraphicsMagick_open] error reading image `%s'\n", img->filename);
+      dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] error reading image `%s'\n", img->filename);
       err = DT_IMAGEIO_LOAD_FAILED;
       goto error;
     }
@@ -132,6 +132,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
 
+  img->buf_dsc.cst = IOP_CS_RGB;
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_HDR;

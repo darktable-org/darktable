@@ -295,7 +295,7 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
 
       // Print density on paper : ((1 - 10^corrected_de + black) * exposure)^gamma rewritten for FMA
       const float print_linear = -(d->exposure * fast_exp10f(corrected_de) + d->black);
-      const float print_gamma = powf(fmaxf(print_linear, 0.0f), d->gamma); // note : this is always > 0
+      const float print_gamma = powf(fmaxf(print_linear, 0.0f), d->gamma); // note : this is always > 0
 
       // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
       pix_out[c] =  (print_gamma > d->soft_clip) ? d->soft_clip + (1.0f - fast_expf(-(print_gamma - d->soft_clip) / d->soft_clip_comp)) * d->soft_clip_comp
@@ -408,7 +408,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 }
 
 
-/* Global GUI stuff */
+/* Global GUI stuff */
 
 static void setup_color_variables(dt_iop_negadoctor_gui_data_t *const g, const gint state)
 {
@@ -664,7 +664,7 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
   for(int c = 0; c < 3; c++)
     RGB_min[c] = log10f(p->Dmin[c] / fmaxf(self->picked_color[c], THRESHOLD)) / p->D_max;
 
-  const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
+  const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
   for(int c = 0; c < 3; c++) p->wb_low[c] =  RGB_v_min / RGB_min[c];
 
   ++darktable.gui->reset;
@@ -793,7 +793,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Dmin
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("color of the film base")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "color of the film base")), FALSE, FALSE, 0);
 
   GtkWidget *row1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -840,7 +840,7 @@ void gui_init(dt_iop_module_t *self)
 
   // D max and scanner bias
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("dynamic range of the film")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "dynamic range of the film")), FALSE, FALSE, 0);
 
   g->D_max = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "D_max"));
   dt_bauhaus_slider_set_format(g->D_max, " dB");
@@ -848,7 +848,7 @@ void gui_init(dt_iop_module_t *self)
                                           "this value depends on the film specifications, the developing process,\n"
                                           "the dynamic range of the scene and the scanner exposure settings."));
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("scanner exposure settings")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "scanner exposure settings")), FALSE, FALSE, 0);
 
   g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"));
   dt_bauhaus_slider_set_format(g->offset, " dB");
@@ -859,7 +859,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page2 = self->widget = dt_ui_notebook_page(g->notebook, N_("corrections"), NULL);
 
   // WB shadows
-  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("shadows color cast")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(C_("section", "shadows color cast")), FALSE, FALSE, 0);
 
   GtkWidget *row3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -896,7 +896,7 @@ void gui_init(dt_iop_module_t *self)
                                              "recovering the global white balance in difficult cases."));
 
   // WB highlights
-  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("highlights white balance")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(C_("section", "highlights white balance")), FALSE, FALSE, 0);
 
   GtkWidget *row2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -936,7 +936,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page3 = self->widget = dt_ui_notebook_page(g->notebook, N_("print properties"), NULL);
 
   // print corrections
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual paper properties")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(C_("section", "virtual paper properties")), FALSE, FALSE, 0);
 
   g->black = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "black"));
   dt_bauhaus_slider_set_digits(g->black, 4);
@@ -959,7 +959,7 @@ void gui_init(dt_iop_module_t *self)
                                               "to avoid clipping while pushing the exposure for mid-tones.\n"
                                               "this somewhat reproduces the behavior of matte paper."));
 
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual print emulation")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(C_("section", "virtual print emulation")), FALSE, FALSE, 0);
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "exposure"));
   dt_bauhaus_slider_set_hard_min(g->exposure, -1.0);
@@ -1024,7 +1024,7 @@ void gui_update(dt_iop_module_t *const self)
   dt_iop_color_picker_reset(self, TRUE);
 
 
-  dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
+  dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
   dt_bauhaus_slider_set_default(g->exposure, log2f(p->exposure)); // otherwise always showes as "changed"
 
   // Update custom stuff

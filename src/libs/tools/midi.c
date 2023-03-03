@@ -85,7 +85,8 @@ const char *note_names[] = { "C","C#","D","D#","E","F","F#","G","G#","A","A#","B
 
 gchar *key_to_string(const guint key, const gboolean display)
 {
-  return g_strdup_printf("%s%d", note_names[key % 12], key / 12 - 1);
+  // The MIDI note range is from C−1 (note #0) to G9 (note #127).
+  return g_strdup_printf("%s%d", note_names[key % 12], (int)key / 12 - 1);
 }
 
 gboolean string_to_key(const gchar *string, guint *key)
