@@ -242,6 +242,7 @@ def run_benchmark(program,image,xmp,args):
    arglist = ["--hq","1",image,xmp,outimage,"--core","--library",":memory:","--configdir",confdir,"-d","perf"]
    if args.threads:
       arglist = arglist + ["-t",args.threads]
+      os.environ["OMP_NUM_THREADS"] = str(args.threads)
    if args.cpuonly:
       arglist = arglist + ["--disable-opencl"]
    os.environ['LANG'] = 'C'
@@ -263,7 +264,7 @@ def run_benchmark(program,image,xmp,args):
    for t in trace:
       if 'GPU' in t:
          gpu = True
-      if 'to load the image' in t:
+      if ('to load the image' in t) or ('loading the image' in t and 'took' in t):
          loadtime = extract_seconds(t)
       elif 'to save the image' in t:  ## dt doesn't yet report file write times, so this does nothing right now
          savetime = extract_seconds(t)
