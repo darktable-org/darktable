@@ -398,8 +398,6 @@ void process(
                                       .norm = norm2 };
 
   nlmeans_denoise(ivoid, ovoid, roi_in, roi_out, &params);
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 void init_global(dt_iop_module_so_t *module)
