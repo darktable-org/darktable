@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "develop/blend.h"
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
@@ -3047,7 +3048,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->brightness_slider, N_("blend"), N_("mask opacity"));
     dt_bauhaus_slider_set_format(bd->brightness_slider, "%");
     gtk_widget_set_tooltip_text(bd->brightness_slider, _("shifts and tilts the tone curve of the blend mask to adjust its "
-                                                         "brightness without affecting fully transparent/fully opaque "
+                                                         "brightness\nwithout affecting fully transparent/fully opaque "
                                                          "regions"));
 
     bd->contrast_slider = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0, 0.0, 2);
@@ -3063,14 +3064,14 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->showmask = dt_iop_togglebutton_new(module, "blend`tools", N_("display mask and/or color channel"), NULL, G_CALLBACK(_blendop_blendif_showmask_clicked),
                                            FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
-    gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl+click to display mask, "
-                                                "shift+click to display channel. hover over parametric mask slider to "
+    gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel.\nctrl+click to display mask,\n"
+                                                "shift+click to display channel.\nhover over parametric mask slider to "
                                                 "select channel for display"));
     dt_gui_add_class(bd->showmask, "dt_transparent_background");
 
     bd->suppress = dt_iop_togglebutton_new(module, "blend`tools", N_("temporarily switch off blend mask"), NULL, G_CALLBACK(_blendop_blendif_suppress_toggled),
                                            FALSE, 0, 0, dtgtk_cairo_paint_eye_toggle, hbox);
-    gtk_widget_set_tooltip_text(bd->suppress, _("temporarily switch off blend mask. only for module in focus"));
+    gtk_widget_set_tooltip_text(bd->suppress, _("temporarily switch off blend mask.\nonly for module in focus"));
     dt_gui_add_class(bd->suppress, "dt_transparent_background");
 
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -3129,4 +3130,3 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
