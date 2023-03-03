@@ -837,7 +837,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
         }
         else
         {
-          if(!strcmp(module->op, "spots") && style_item->module_version == 1)
+          if(dt_iop_module_is(module->so, "spots") && style_item->module_version == 1)
           {
             // FIXME: not sure how to handle this here...
             // quick and dirty hack to handle spot removal legacy_params
@@ -853,7 +853,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
          * by default, so if it is disabled, enable it, and replace params with
          * default_params. if user want to, he can disable it.
          */
-        if(!strcmp(module->op, "flip")
+        if(dt_iop_module_is(module->so, "flip")
            && module->enabled == 0
            && labs(style_item->module_version) == 1)
         {

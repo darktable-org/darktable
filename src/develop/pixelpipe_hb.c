@@ -456,17 +456,17 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
       // Styles, presets or history copy&paste might set history items not appropriate for the image.
       // Fixing that seemed to be almost impossible after long discussions but at least we can test,
       // correct and add a problem hint here.
-      if((strcmp(piece->module->op, "demosaic") == 0)
-         || (strcmp(piece->module->op, "rawprepare") == 0))
+      if((dt_iop_module_is(piece->module->so, "demosaic"))
+         || (dt_iop_module_is(piece->module->so, "rawprepare")))
       {
         if(rawprep_img && !active)
           piece->enabled = TRUE;
         else if(!rawprep_img && active)
           piece->enabled = FALSE;
       }
-      else if((strcmp(piece->module->op, "rawdenoise") == 0)
-              || (strcmp(piece->module->op, "hotpixels") == 0)
-              || (strcmp(piece->module->op, "cacorrect") == 0))
+      else if((dt_iop_module_is(piece->module->so, "rawdenoise"))
+              || (dt_iop_module_is(piece->module->so, "hotpixels"))
+              || (dt_iop_module_is(piece->module->so, "cacorrect")))
       {
         if(!rawprep_img && active) piece->enabled = FALSE;
       }
@@ -477,13 +477,17 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
           dt_iop_set_module_trouble_message
             (piece->module,
              _("enabled as required"),
-             _("history had module disabled but it is required for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"),
+             _("history had module disabled but it is required for"
+               " this type of image.\nlikely introduced by applying a preset,"
+               " style or history copy&paste"),
              NULL);
         else
           dt_iop_set_module_trouble_message
             (piece->module,
              _("disabled as not appropriate"),
-             _("history had module enabled but it is not allowed for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"),
+             _("history had module enabled but it is not allowed for this type"
+               " of image.\nlikely introduced by applying a preset, style or"
+               " history copy&paste"),
              NULL);
         dt_print(DT_DEBUG_PARAMS,
                  "[pixelpipe_synch] [%s] enabling mismatch for module `%s' in image %i\n",
@@ -1286,7 +1290,7 @@ static int dt_dev_pixelpipe_process_rec(
   // FIXME: better yet, don't even cache the gamma output in this case -- but then we'd need to allocate a temporary output buffer and garbage collect it
   if(!(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
      || module == NULL
-     || strcmp(module->op, "gamma") != 0)
+     || !dt_iop_module_is(module->so, "gamma"))
   {
     dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
     cache_available = dt_dev_pixelpipe_cache_available(&(pipe->cache), hash, bufsize);
@@ -1426,9 +1430,9 @@ static int dt_dev_pixelpipe_process_rec(
 
   gboolean important = FALSE;
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    important = (strcmp(module->op, "colorout") == 0);
+    important = (dt_iop_module_is(module->so, "colorout"));
   else
-    important = (strcmp(module->op, "gamma") == 0);
+    important = (dt_iop_module_is(module->so, "gamma"));
 
   /*
     As the iop cache holds modules input data we check for an important hint in the current module and
@@ -1454,7 +1458,7 @@ static int dt_dev_pixelpipe_process_rec(
   // special case: user requests to see channel data in the parametric mask of a module, or the blending
   // mask. In that case we skip all modules manipulating pixel content and only process image distorting
   // modules. Finally "gamma" is responsible for displaying channel/mask data accordingly.
-  if(strcmp(module->op, "gamma") != 0
+  if(!dt_iop_module_is(module->so, "gamma")
      && (pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_ANY | DT_DEV_PIXELPIPE_DISPLAY_MASK))
      && !(module->operation_tags() & IOP_TAG_DISTORT)
      && (in_bpp == out_bpp) && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
@@ -2140,7 +2144,8 @@ static int dt_dev_pixelpipe_process_rec(
 
   // warn on NaN or infinity
 #ifndef _DEBUG
-  if((darktable.unmuted & DT_DEBUG_NAN) && strcmp(module->op, "gamma") != 0)
+  if((darktable.unmuted & DT_DEBUG_NAN)
+     && !dt_iop_module_is(module->so, "gamma"))
 #endif
   {
     if(dt_atomic_get_int(&pipe->shutdown))
@@ -2225,7 +2230,7 @@ static int dt_dev_pixelpipe_process_rec(
   }
   if(dev->gui_attached && !dev->gui_leaving
      && pipe == dev->preview_pipe
-     && (strcmp(module->op, "gamma") == 0)) // only gamma provides meaningful RGB data
+     && (dt_iop_module_is(module->so, "gamma"))) // only gamma provides meaningful RGB data
   {
     // Pick RGB/Lab for the primary colorpicker and live samples
     if(darktable.lib->proxy.colorpicker.picker_proxy || darktable.lib->proxy.colorpicker.live_samples)
@@ -2265,7 +2270,7 @@ int dt_dev_pixelpipe_process_no_gamma(
   // temporarily disable gamma mapping.
   GList *gammap = g_list_last(pipe->nodes);
   dt_dev_pixelpipe_iop_t *gamma = (dt_dev_pixelpipe_iop_t *)gammap->data;
-  while(strcmp(gamma->module->op, "gamma"))
+  while(!dt_iop_module_is(gamma->module->so, "gamma"))
   {
     gamma = NULL;
     gammap = g_list_previous(gammap);
@@ -2282,7 +2287,7 @@ void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op)
 {
   GList *nodes = g_list_last(pipe->nodes);
   dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-  while(strcmp(piece->module->op, op))
+  while(!dt_iop_module_is(piece->module->so, op))
   {
     piece->enabled = 0;
     piece = NULL;
@@ -2296,7 +2301,7 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
 {
   GList *nodes = pipe->nodes;
   dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-  while(strcmp(piece->module->op, op))
+  while(!dt_iop_module_is(piece->module->so, op))
   {
     piece->enabled = 0;
     piece = NULL;
@@ -2591,7 +2596,7 @@ float *dt_dev_get_raster_mask(
                   && (module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags())))
           {
             if(module->module->distort_mask
-              && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
+              && !(dt_iop_module_is(module->module->so, "finalscale") // hack against pipes not using finalscale
                     && module->processed_roi_in.width == 0
                     && module->processed_roi_in.height == 0))
             {
@@ -2779,12 +2784,16 @@ float *dt_dev_distort_detail_mask(
   for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
   {
     const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
-    if(((!strcmp(candidate->module->op, "demosaic")) && candidate->enabled) && (check == DT_DEV_DETAIL_MASK_DEMOSAIC))
+    if(dt_iop_module_is(candidate->module->so, "demosaic")
+       && candidate->enabled
+       && (check == DT_DEV_DETAIL_MASK_DEMOSAIC))
     {
       valid = TRUE;
       break;
     }
-    if(((!strcmp(candidate->module->op, "rawprepare")) && candidate->enabled) && (check == DT_DEV_DETAIL_MASK_RAWPREPARE))
+    if(dt_iop_module_is(candidate->module->so, "rawprepare")
+       && candidate->enabled
+       && (check == DT_DEV_DETAIL_MASK_RAWPREPARE))
     {
       valid = TRUE;
       break;
@@ -2792,8 +2801,10 @@ float *dt_dev_distort_detail_mask(
   }
 
   if(!valid) return NULL;
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE, "[dt_dev_distort_detail_mask] (%ix%i) for module %s\n",
-       pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height, target_module->op);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
+           "[dt_dev_distort_detail_mask] (%ix%i) for module %s\n",
+           pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height,
+           target_module->op);
 
   float *resmask = src;
   float *inmask  = src;
@@ -2807,7 +2818,7 @@ float *dt_dev_distort_detail_mask(
               && module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags()))
       {
         if(module->module->distort_mask
-              && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
+              && !(dt_iop_module_is(module->module->so, "finalscale") // hack against pipes not using finalscale
                     && module->processed_roi_in.width == 0
                     && module->processed_roi_in.height == 0))
         {

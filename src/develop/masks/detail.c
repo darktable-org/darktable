@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,29 +18,36 @@
 
 /* How are "detail masks" implemented?
 
-  The detail masks (DM) are used by the dual demosaicer and as a further refinement step for
-  shape / parametric masks.
-  They contain threshold weighed values of pixel-wise local signal changes so they can be
-  understood as "areas with or without local detail".
+  The detail masks (DM) are used by the dual demosaicer and as a
+  further refinement step for shape / parametric masks.  They contain
+  threshold weighed values of pixel-wise local signal changes so they
+  can be understood as "areas with or without local detail".
 
-  As the DM using algorithms (like dual demosaicing, sharpening ...) are all pixel peeping we
-  want the "original data" from the sensor to calculate it.
-  (Calculating the mask from the modules roi might not detect such regions at all because of
-  scaling / rotating artifacts, some blurring earlier in the pipeline, color changes ...)
+  As the DM using algorithms (like dual demosaicing, sharpening ...)
+  are all pixel peeping we want the "original data" from the sensor to
+  calculate it.  (Calculating the mask from the modules roi might not
+  detect such regions at all because of scaling / rotating artifacts,
+  some blurring earlier in the pipeline, color changes ...)
 
-  In all cases the user interface is pretty simple, we just pass a threshold value, which
-  is in the range of -1.0 to 1.0 by an additional slider in the masks refinement section.
-  Positive values will select regions with lots of local detail, negatives select for flat areas.
-  (The dual demosaicer only wants positives as we always look for high frequency content.)
-  A threshold value of 0.0 means bypassing.
+  In all cases the user interface is pretty simple, we just pass a
+  threshold value, which is in the range of -1.0 to 1.0 by an
+  additional slider in the masks refinement section.  Positive values
+  will select regions with lots of local detail, negatives select for
+  flat areas.  (The dual demosaicer only wants positives as we always
+  look for high frequency content.)  A threshold value of 0.0 means
+  bypassing.
 
   So the first important point is:
-  We make sure taking the input data for the DM right from the demosaicer for normal raws
-  or from rawprepare in case of monochromes. This means some additional housekeeping for the
+
+  We make sure taking the input data for the DM right from the
+  demosaicer for normal raws or from rawprepare in case of
+  monochromes. This means some additional housekeeping for the
   pixelpipe.
-  If any mask in any module selects a threshold of != 0.0 we leave a flag in the pipe struct
-  telling a) we want a DM and b) we want it from either demosaic or from rawprepare.
-  If such a flag has not been previously set we will force a pipeline reprocessing.
+
+  If any mask in any module selects a threshold of != 0.0 we leave a
+  flag in the pipe struct telling a) we want a DM and b) we want it
+  from either demosaic or from rawprepare.  If such a flag has not
+  been previously set we will force a pipeline reprocessing.
 
   gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode, const dt_aligned_pixel_t wb);
   or it's _cl equivalent write a preliminary mask holding signal-change values for every pixel.
@@ -48,43 +55,58 @@
   a) get Y0 for every pixel
   b) apply a scharr operator on it
 
-  This raw detail mask (RM) is not scaled but only cropped to the roi of the writing module (demosaic
-  or rawprepare).
-  The pipe gets roi copy of the writing module so we can later scale/distort the LM.
+  This raw detail mask (RM) is not scaled but only cropped to the roi
+  of the writing module (demosaic or rawprepare).  The pipe gets roi
+  copy of the writing module so we can later scale/distort the LM.
 
-  Calculating the RM is done for performance and lower mem pressure reasons, so we don't have to
-  pass full data to the module. Also the RM can be used by other modules.
+  Calculating the RM is done for performance and lower mem pressure
+  reasons, so we don't have to pass full data to the module. Also the
+  RM can be used by other modules.
 
-  If a mask uses the details refinement step it takes the raw details mask RM and calculates an
-  intermediate mask (IM) which is still not scaled but has the roi of the writing module.
+  If a mask uses the details refinement step it takes the raw details
+  mask RM and calculates an intermediate mask (IM) which is still not
+  scaled but has the roi of the writing module.
 
-  For every pixel we calculate the IM value via a sigmoid function with the threshold and RM as parameters.
+  For every pixel we calculate the IM value via a sigmoid function
+  with the threshold and RM as parameters.
 
-  At last the IM is slightly blurred to avoid hard transitions, as there still is no scaling we can use
-  a constant sigma. As the blur_9x9 is pretty fast both in openmp/cl code paths - much faster than dt
-  gaussians - it is used here.
-  Now we have an unscaled detail mask which requires to be transformed through the pipeline using
+  At last the IM is slightly blurred to avoid hard transitions, as
+  there still is no scaling we can use a constant sigma. As the
+  blur_9x9 is pretty fast both in openmp/cl code paths - much faster
+  than dt gaussians - it is used here.  Now we have an unscaled detail
+  mask which requires to be transformed through the pipeline using
 
   float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
 
-  returning a pointer to a distorted mask (DT) with same size as used in the module wanting the refinement.
-  This DM is finally used to refine the original mask.
+  returning a pointer to a distorted mask (DT) with same size as used
+  in the module wanting the refinement.  This DM is finally used to
+  refine the original mask.
 
   All other refinements and parametric parameters are untouched.
 
   Some additional comments:
-  1. intentionally this details mask refinement has only been implemented for raws. Especially for compressed
-     inmages like jpegs or 8bit input the algo didn't work as good because of input precision and compression artifacts.
-  2. In the gui the slider is above the rest of the refinemt sliders to emphasize that blurring & feathering use the
-     mask corrected by detail refinemnt.
-  3. Of course credit goes to Ingo @heckflosse from rt team for the original idea. (in the rt world this is knowb
-     as details mask)
+
+  1. intentionally this details mask refinement has only been
+     implemented for raws. Especially for compressed inmages like
+     jpegs or 8bit input the algo didn't work as good because of input
+     precision and compression artifacts.
+
+  2. In the gui the slider is above the rest of the refinemt sliders
+     to emphasize that blurring & feathering use the mask corrected by
+     detail refinemnt.
+
+  3. Of course credit goes to Ingo @heckflosse from rt team for the
+     original idea. (in the rt world this is knowb as details mask)
+
   4. Thanks to rawfiner for pointing out how to use Y0 and scharr for better maths.
 
   hanno@schwalm-bremen.de 21/04/29
 */
 
-void dt_masks_extend_border(float *const mask, const int width, const int height, const int border)
+void dt_masks_extend_border(float *const mask,
+                            const int width,
+                            const int height,
+                            const int border)
 {
   if(border <= 0) return;
 #ifdef _OPENMP
@@ -111,7 +133,8 @@ void dt_masks_extend_border(float *const mask, const int width, const int height
   for(size_t col = 0; col < width; col++)
   {
     const float top = mask[border * width + MIN(width - border - 1, MAX(col, border))];
-    const float bot = mask[(height - border - 1) * width + MIN(width - border - 1, MAX(col, border))];
+    const float bot = mask[(height - border - 1) * width
+                           + MIN(width - border - 1, MAX(col, border))];
     for(size_t i = 0; i < border; i++)
     {
       mask[col + i * width] = top;
@@ -120,7 +143,8 @@ void dt_masks_extend_border(float *const mask, const int width, const int height
   }
 }
 
-void _masks_blur_5x5_coeff(float *c, const float sigma)
+void _masks_blur_5x5_coeff(float *c,
+                           const float sigma)
 {
   float kernel[5][5];
   const float temp = -2.0f * sqrf(sigma);
@@ -154,11 +178,15 @@ void _masks_blur_5x5_coeff(float *c, const float sigma)
   /* c00 */ c[4]  = kernel[2][2];
 }
 #define FAST_BLUR_5 ( \
-  blurmat[0] * ((src[i - w2 - 1] + src[i - w2 + 1]) + (src[i - w1 - 2] + src[i - w1 + 2]) + (src[i + w1 - 2] + src[i + w1 + 2]) + (src[i + w2 - 1] + src[i + w2 + 1])) + \
-  blurmat[1] * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) + \
-  blurmat[2] * (src[i - w1 - 1] + src[i - w1 + 1] + src[i + w1 - 1] + src[i + w1 + 1]) + \
-  blurmat[3] * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
-  blurmat[4] * src[i] )
+  blurmat[0] * ((src[i - w2 - 1] + src[i - w2 + 1])                       \
+                 + (src[i - w1 - 2] + src[i - w1 + 2])                    \
+                 + (src[i + w1 - 2] + src[i + w1 + 2])                    \
+                 + (src[i + w2 - 1] + src[i + w2 + 1]))                   \
+    + blurmat[1] * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2])  \
+    + blurmat[2] * (src[i - w1 - 1] + src[i - w1 + 1] + src[i + w1 - 1]   \
+                    + src[i + w1 + 1])                                    \
+    + blurmat[3] * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1])  \
+    + blurmat[4] * src[i] )
 
 void dt_masks_blur_9x9_coeff(float *c, const float sigma)
 {
@@ -217,7 +245,11 @@ void dt_masks_blur_9x9_coeff(float *c, const float sigma)
   blurmat[1]  * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
   blurmat[0]  * src[i] )
 
-void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, const int width, const int height, const float sigma)
+void dt_masks_blur_9x9(float *const restrict src,
+                       float *const restrict out,
+                       const int width,
+                       const int height,
+                       const float sigma)
 {
   float blurmat[13];
   dt_masks_blur_9x9_coeff(blurmat, sigma);
@@ -312,7 +344,13 @@ void _masks_blur_13x13_coeff(float *c, const float sigma)
   blurmat[17] * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
   blurmat[18] * src[i] )
 
-int dt_masks_blur_fast(float *const restrict src, float *const restrict out, const int width, const int height, const float sigma, const float gain, const float clip)
+int dt_masks_blur_fast(float *const restrict src,
+                       float *const restrict out,
+                       const int width,
+                       const int height,
+                       const float sigma,
+                       const float gain,
+                       const float clip)
 {
   float blurmat[19];
   const size_t w1 = width;
@@ -392,8 +430,12 @@ int dt_masks_blur_fast(float *const restrict src, float *const restrict out, con
   return 6;
 }
 
-void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restrict mask, float *const restrict tmp,
-                                  const int width, const int height, const dt_aligned_pixel_t wb)
+void dt_masks_calc_rawdetail_mask(float *const restrict src,
+                                  float *const restrict mask,
+                                  float *const restrict tmp,
+                                  const int width,
+                                  const int height,
+                                  const dt_aligned_pixel_t wb)
 {
   const size_t msize = width * height;
 #ifdef _OPENMP
@@ -403,8 +445,11 @@ void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restri
 #endif
   for(size_t idx =0; idx < msize; idx++)
   {
-    const float val = 0.333333333f * (fmaxf(src[4 * idx], 0.0f) / wb[0] + fmaxf(src[4 * idx + 1], 0.0f) / wb[1] + fmaxf(src[4 * idx + 2], 0.0f) / wb[2]);
-    tmp[idx] = sqrtf(val); // add a gamma. sqrtf should make noise variance the same for all image
+    const float val = 0.333333333f
+      * (fmaxf(src[4 * idx], 0.0f) / wb[0] + fmaxf(src[4 * idx + 1], 0.0f)
+         / wb[1] + fmaxf(src[4 * idx + 2], 0.0f) / wb[2]);
+    tmp[idx] = sqrtf(val); // add a gamma. sqrtf should make noise
+                           // variance the same for all image
   }
 
   const float scale = 1.0f / 16.0f;
@@ -440,7 +485,13 @@ static inline float _calcBlendFactor(float val, float threshold)
     return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
 }
 
-void dt_masks_calc_detail_mask(float *const restrict src, float *const restrict out, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean detail)
+void dt_masks_calc_detail_mask(float *const restrict src,
+                               float *const restrict out,
+                               float *const restrict tmp,
+                               const int width,
+                               const int height,
+                               const float threshold,
+                               const gboolean detail)
 {
   const size_t msize = width * height;
 #ifdef _OPENMP
@@ -464,4 +515,3 @@ void dt_masks_calc_detail_mask(float *const restrict src, float *const restrict 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
