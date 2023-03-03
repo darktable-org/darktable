@@ -353,7 +353,7 @@ static void pre_median_b(
         for(int i = 0; i < 8; i++)
           for(int ii = i + 1; ii < 9; ii++)
             if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]);
+        pixo[0] = fmaxf(0.0f, (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]));
         // pixo[0] = med[(cnt-1)/2];
         pixo += 2;
         pixi += 2;
@@ -490,7 +490,7 @@ static void green_equilibration_lavg(
                           + fabsf(o2_3 - o2_4) + fabsf(o2_2 - o2_4)) / 6.0f;
         if((in[j * width + i] < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
         {
-          out[j * width + i] = in[j * width + i] * m1 / m2;
+          out[j * width + i] = fmaxf(0.0f, in[j * width + i] * m1 / m2);
         }
       }
     }
@@ -544,7 +544,7 @@ static void green_equilibration_favg(
   {
     for(int i = oi; i < (width - 1 - g2_offset); i += 2)
     {
-      out[(size_t)j * width + i] = in[(size_t)j * width + i] * gr_ratio;
+      out[(size_t)j * width + i] = fmaxf(0.0f, in[(size_t)j * width + i] * gr_ratio);
     }
   }
 }
@@ -2225,9 +2225,9 @@ static void lin_interpolate(
       for(int c = 0; c < colors; c++)
       {
         if(c != f && count[c] != 0)
-          out[4 * (row * roi_out->width + col) + c] = sum[c] / count[c];
+          out[4 * (row * roi_out->width + col) + c] = fmaxf(0.0f, sum[c] / count[c]);
         else
-          out[4 * (row * roi_out->width + col) + c] = in[row * roi_in->width + col];
+          out[4 * (row * roi_out->width + col) + c] = fmaxf(0.0f, in[row * roi_in->width + col]);
       }
     }
 
@@ -2292,7 +2292,7 @@ static void lin_interpolate(
       for(int i = *ip++; i--; ip += 3) sum[ip[2]] += buf_in[ip[0]] * ip[1];
       // for each interpolated color, load it into the pixel
       for(int i = colors; --i; ip += 2) buf[*ip] = sum[ip[0]] / ip[1];
-      buf[*ip] = *buf_in;
+      buf[*ip] = fmaxf(0.0f, *buf_in);
       buf += 4;
       buf_in++;
     }
@@ -2314,6 +2314,12 @@ static void lin_interpolate(
    I've extended the basic idea to work with non-Bayer filter arrays.
    Gradients are numbered clockwise from NW=0 to W=7.
 */
+static inline void _ensure_abovezero(float *to, float *from, const int floats)
+{
+  for(int i = 0; i < floats; i++)
+    to[i] = fmaxf(0.0f, from[i]);
+}
+
 static void vng_interpolate(
         float *out,
         const float *const in,
@@ -2475,13 +2481,14 @@ static void vng_interpolate(
       }
     }
     if(row > 3) /* Write buffer to image */
-      memcpy(out + 4 * ((row - 2) * width + 2), brow[0] + 2, sizeof(*out) * 4 * (width - 4));
+      _ensure_abovezero(out + 4 * ((row - 2) * width + 2), (float *)(brow[0] + 2), 4 * (width - 4));
+
     // rotate ring buffer
     for(int g = 0; g < 4; g++) brow[(g - 1) & 3] = brow[g];
   }
   // copy the final two rows to the image
-  memcpy(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, sizeof(*out) * 4 * (width - 4));
-  memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, sizeof(*out) * 4 * (width - 4));
+  _ensure_abovezero(out + (4 * ((height - 4) * width + 2)), (float *)(brow[0] + 2), 4 * (width - 4));
+  _ensure_abovezero(out + (4 * ((height - 3) * width + 2)), (float *)(brow[1] + 2), 4 * (width - 4));
   dt_free_align(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
@@ -2623,10 +2630,10 @@ static void demosaic_ppg(
       for(int c = 0; c < 3; c++)
       {
         if(c != f && sum[c + 4] > 0.0f)
-          out[4 * ((size_t)j * roi_out->width + i) + c] = sum[c] / sum[c + 4];
+          out[4 * ((size_t)j * roi_out->width + i) + c] = fmaxf(0.0f, sum[c] / sum[c + 4]);
         else
           out[4 * ((size_t)j * roi_out->width + i) + c]
-              = in[((size_t)j + roi_out->y) * roi_in->width + i + roi_out->x];
+              = fmaxf(0.0f, in[((size_t)j + roi_out->y) * roi_in->width + i + roi_out->x]);
       }
     }
   const int median = thrs > 0.0f;
@@ -2697,9 +2704,10 @@ static void demosaic_ppg(
         color[1] = pc;
 
       color[3] = 0.0f;
-      // write using MOVNTPS (write combine omitting caches)
-      // _mm_stream_ps(buf, col);
-      memcpy(buf, color, sizeof(float) * 4);
+
+      for_each_channel(k,aligned(buf,color:16)
+        dt_omp_nontemporal(buf)) buf[k] = fmaxf(0.0f, color[k]);
+
       buf += 4;
       buf_in++;
     }
@@ -2779,8 +2787,10 @@ static void demosaic_ppg(
             color[0] = (guess1 + guess2) * .25f;
         }
       }
-      // _mm_stream_ps(buf, col);
-      memcpy(buf, color, sizeof(float) * 4);
+
+      for_each_channel(k,aligned(buf,color:16)
+        dt_omp_nontemporal(buf)) buf[k] = fmaxf(0.0f, color[k]);
+
       buf += 4;
     }
   }
