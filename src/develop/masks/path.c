@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/imagebuf.h"
@@ -716,9 +717,11 @@ static int _path_get_pts_border(dt_develop_t *dev,
   {
     const int pb = dborder ? dt_masks_dynbuf_position(dborder) : 0;
     border_init[k * 6 + 2] = -pb;
-    const GList *pt2 = g_list_next_wraparound(form_points, form->points); // next, wrapping around if on last element
+    // next, wrapping around if on last element
+    const GList *pt2 = g_list_next_wraparound(form_points, form->points);
     const GList *pt3 = g_list_next_wraparound(pt2, form->points);
-    dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)form_points->data; // kth element of form->points
+    // kth element of form->points
+    dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)form_points->data;
     dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)pt2->data;
     dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)pt3->data;
     float p1[5] = { point1->corner[0] * wd - dx,
