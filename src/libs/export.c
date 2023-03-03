@@ -1238,34 +1238,30 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add intent combo
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->intent, self, NULL, N_("intent"),
-                               _("• perceptual: "
-                              "smoothly moves out-of-gamut colors into gamut,"
-                              " preserving gradations, but distorts in-gamut colors in the process."
-                              " note that perceptual is often a proprietary LUT that depends"
-                              " on the destination space."
-                              "\n\n"
+  DT_BAUHAUS_COMBOBOX_NEW_FULL
+    (d->intent, self, NULL, N_("intent"),
+      _("• perceptual: smoothly moves out-of-gamut colors into gamut, preserving gradations,\n"
+     "but distorts in-gamut colors in the process.\n"
+     "note that perceptual is often a proprietary LUT that depends on the destination space."
+     "\n\n"
 
-                              "• relative colorimetric: "
-                              "keeps luminance while reducing as little as possible saturation"
-                              " until colors fit in gamut."
-                              "\n\n"
+     "• relative colorimetric: keeps luminance while reducing as little as possible\n"
+     "saturation until colors fit in gamut."
+     "\n\n"
 
-                              "• saturation: "
-                              "designed to present eye-catching business graphics"
-                              " by preserving the saturation. (not suited for photography)."
-                              "\n\n"
+     "• saturation: designed to present eye-catching business graphics\n"
+     "by preserving the saturation. (not suited for photography)."
+     "\n\n"
 
-                              "• absolute colorimetric: "
-                              "adapt white point of the image to the white point of the"
-                              " destination medium and do nothing else. mainly used when"
-                              " proofing colors. (not suited for photography)."),
-                               0, _intent_changed, self,
-                               N_("image settings"),
-                               N_("perceptual"),
-                               N_("relative colorimetric"),
-                               NC_("rendering intent", "saturation"),
-                               N_("absolute colorimetric"));
+     "• absolute colorimetric: adapt white point of the image to the white point of the\n"
+     "destination medium and do nothing else. mainly used when proofing colors.\n"
+     "(not suited for photography)."),
+      0, _intent_changed, self,
+      N_("image settings"),
+      N_("perceptual"),
+      N_("relative colorimetric"),
+      NC_("rendering intent", "saturation"),
+      N_("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->intent, FALSE, TRUE, 0);
 
   //  Add style combo
