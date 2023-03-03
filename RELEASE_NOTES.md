@@ -324,6 +324,13 @@ The following is a summary of the main features added to darktable
   timestamp of the database entry to ensure we don't have continuous
   mismatches reported.
 
+- Fix different issues on the mask manager. It is now possible for all
+  masks kind to be added continuously. Also the brush was not properly
+  displayed after being created from the mask manager. A crash when
+  creating gradient from the mask manager has been fixed. For all
+  shapes the editable state is properly set after being created making
+  it possible to move and resize the different parts.
+
 ## Lua
 
 ### Add action support for Lua
