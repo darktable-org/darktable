@@ -894,7 +894,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     if(!strcmp(widget_name, "shortcuts_view"))
     {
       markup_text = g_markup_printf_escaped("%s\n%s\n%s",
-                                            _("press Del to delete selected shortcut"),
+                                            _("press Delete to delete selected shortcut"),
                                             _("double-click to add new shortcut"),
                                             _("start typing for incremental search"));
       GSequenceIter  *shortcut_iter = NULL;
