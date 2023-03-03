@@ -63,7 +63,7 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_hazeremoval_params_t)
 
-typedef float rgb_pixel[3];
+typedef dt_aligned_pixel_t rgb_pixel;
 
 typedef struct dt_iop_hazeremoval_params_t
 {
@@ -251,18 +251,19 @@ static inline void pointer_swap_f(float *a, float *b)
 static void dark_channel(const const_rgb_image img1, const gray_image img2, const int w)
 {
   const size_t size = (size_t)img1.height * img1.width;
+  const float *const restrict in_data = img1.data;
+  float *const restrict out_data = img2.data;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img1, img2, size) \
-  schedule(static)
+#pragma omp parallel for simd aligned(in_data, out_data: 64) default(none) \
+  dt_omp_firstprivate(in_data, out_data, size) \
+  schedule(simd:static)
 #endif
   for(size_t i = 0; i < size; i++)
   {
-    const float *pixel = img1.data + i * img1.stride;
-    float m = pixel[0];
-    m = fminf(pixel[1], m);
-    m = fminf(pixel[2], m);
-    img2.data[i] = m;
+    const float *pixel = in_data + 4*i;
+    float m = MIN(pixel[0], pixel[1]);
+    m = MIN(pixel[2], m);
+    out_data[i] = m;
   }
   dt_box_min(img2.data, img2.height, img2.width, 1, w);
 }
@@ -273,18 +274,20 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
                            const float strength)
 {
   const size_t size = (size_t)img1.height * img1.width;
+  const float *const restrict in_data = img1.data;
+  float *const restrict out_data = img2.data;
+  const dt_aligned_pixel_t A0_inv = { 1.0f / A0[0], 1.0f / A0[1], 1.0f / A0[2], 1.0f };
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(A0, img1, img2, size, strength) \
-  schedule(static)
+#pragma omp parallel for simd aligned(in_data, out_data: 64) default(none) \
+  dt_omp_firstprivate(A0_inv, in_data, out_data, size, strength) \
+  schedule(simd:static)
 #endif
   for(size_t i = 0; i < size; i++)
   {
-    const float *pixel = img1.data + i * img1.stride;
-    float m = pixel[0] / A0[0];
-    m = fminf(pixel[1] / A0[1], m);
-    m = fminf(pixel[2] / A0[2], m);
-    img2.data[i] = 1.f - m * strength;
+    const float *pixel = in_data + 4*i;
+    float m = MIN(pixel[0] * A0_inv[0], pixel[1] * A0_inv[1]);
+    m = MIN(pixel[2] * A0_inv[2], m);
+    out_data[i] = 1.f - m * strength;
   }
   dt_box_max(img2.data, img2.height, img2.width, 1, w);
 }
@@ -381,16 +384,17 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   // estimate the diffusive ambient light
   float A0_r = 0, A0_g = 0, A0_b = 0;
   size_t N_bright_hazy = 0;
-  const float *const data = dark_ch.data;
+  const float *const restrict data = dark_ch.data;
+  const float *const restrict in_data = img.data;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(crit_brightness, crit_haze_level, data, img, size) \
+  dt_omp_firstprivate(crit_brightness, crit_haze_level, data, in_data, size) \
   schedule(static) \
   reduction(+ : N_bright_hazy, A0_r, A0_g, A0_b)
 #endif
   for(size_t i = 0; i < size; i++)
   {
-    const float *pixel_in = img.data + i * img.stride;
+    const float *pixel_in = in_data + 4*i;
     if((data[i] >= crit_haze_level) && (pixel_in[0] + pixel_in[1] + pixel_in[2] >= crit_brightness))
     {
       A0_r += pixel_in[0];
@@ -422,10 +426,12 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
   dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
 
-  const int ch = piece->colors;
   const int width = roi_in->width;
   const int height = roi_in->height;
   const size_t size = (size_t)width * height;
@@ -437,14 +443,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
 
-  const const_rgb_image img_in = (const_rgb_image){ ivoid, width, height, ch };
-  const rgb_image img_out = (rgb_image){ ovoid, width, height, ch };
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+  const const_rgb_image img_in = (const_rgb_image){ in, width, height, 4 };
 
   // estimate diffusive ambient light and image depth
-  rgb_pixel A0;
-  A0[0] = NAN;
-  A0[1] = NAN;
-  A0[2] = NAN;
+  rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
   float distance_max = NAN;
 
   // hazeremoval module needs the color and the haziness (which yields
@@ -498,28 +502,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_box_min(trans_map.data, trans_map.height, trans_map.width, 1, w1);
   gray_image trans_map_filtered = new_gray_image(width, height);
   // apply guided filter with no clipping
-  guided_filter(img_in.data, trans_map.data, trans_map_filtered.data, width, height, ch, w2, eps, 1.f, -FLT_MAX,
+  guided_filter(img_in.data, trans_map.data, trans_map_filtered.data, width, height, 4, w2, eps, 1.f, -FLT_MAX,
                 FLT_MAX);
 
   // finally, calculate the haze-free image
   const float t_min
       = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
-  const float *const c_A0 = A0;
+  const dt_aligned_pixel_t c_A0 = { A0[0], A0[1], A0[2], A0[3] };
   const gray_image c_trans_map_filtered = trans_map_filtered;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(c_A0, c_trans_map_filtered, img_in, img_out, size, t_min) \
+  dt_omp_firstprivate(c_A0, c_trans_map_filtered, in, out, size, t_min) \
   schedule(static)
 #endif
   for(size_t i = 0; i < size; i++)
   {
-    float t = fmaxf(c_trans_map_filtered.data[i], t_min);
-    const float *pixel_in = img_in.data + i * img_in.stride;
-    float *pixel_out = img_out.data + i * img_out.stride;
-    pixel_out[0] = (pixel_in[0] - c_A0[0]) / t + c_A0[0];
-    pixel_out[1] = (pixel_in[1] - c_A0[1]) / t + c_A0[1];
-    pixel_out[2] = (pixel_in[2] - c_A0[2]) / t + c_A0[2];
+    float t = MAX(c_trans_map_filtered.data[i], t_min);
+    dt_aligned_pixel_t res;
+    for_each_channel(c, aligned(in))
+      res[c] =  (in[4*i + c] - c_A0[c]) / t + c_A0[c];
+    copy_pixel_nontemporal(out + 4*i, res);
   }
+  dt_omploop_sfence();
 
   free_gray_image(&trans_map);
   free_gray_image(&trans_map_filtered);
@@ -676,10 +680,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
 
   // estimate diffusive ambient light and image depth
-  rgb_pixel A0;
-  A0[0] = NAN;
-  A0[1] = NAN;
-  A0[2] = NAN;
+  rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
   float distance_max = NAN;
 
   // hazeremoval module needs the color and the haziness (which yields
