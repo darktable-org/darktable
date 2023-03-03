@@ -683,6 +683,12 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       gchar *uifullname = g_build_filename(folder, uifilename, NULL);
       gchar *fullname = g_build_filename(folder, filename, NULL);
 
+      /* g_file_info_get_is_hidden() always returns 0 on macOS,
+        so we check if the filename starts with a '.' */
+      const gboolean is_hidden = g_file_info_get_is_hidden(info) || filename[0] ==  '.';
+      if (is_hidden)
+        continue;
+
       if(recursive && filetype == G_FILE_TYPE_DIRECTORY)
       {
         nb = _import_set_file_list(fullname, folder_lgth, nb, self);
