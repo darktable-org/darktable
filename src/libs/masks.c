@@ -891,10 +891,14 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(self->treeview));
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
-  for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
+
+  for(const GList *items_iter = items;
+      items_iter;
+      items_iter = g_list_next(items_iter))
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
     GtkTreeIter iter;
+
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
       int grid = -1;
@@ -962,12 +966,12 @@ static int _tree_button_pressed(GtkWidget *treeview,
   GtkTreePath *mouse_path = NULL;
   GtkTreeIter iter;
   dt_iop_module_t *module = NULL;
-  int on_row = 0;
+  gboolean on_row = FALSE;
   if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
                                    (gint)event->x, (gint)event->y, &mouse_path, NULL,
                                    NULL, NULL))
   {
-    on_row = 1;
+    on_row = TRUE;
     // we retrieve the iter and module from path
     if(gtk_tree_model_get_iter(model, &iter, mouse_path))
     {
@@ -975,7 +979,8 @@ static int _tree_button_pressed(GtkWidget *treeview,
     }
   }
   /* single click with the right mouse button? */
-  if(event->type == GDK_BUTTON_PRESS && event->button == 1)
+  if(event->type == GDK_BUTTON_PRESS
+     && event->button == 1)
   {
     // if click on a blank space, then deselect all
     if(!on_row)
@@ -983,10 +988,12 @@ static int _tree_button_pressed(GtkWidget *treeview,
       gtk_tree_selection_unselect_all(selection);
     }
   }
-  else if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  else if(event->type == GDK_BUTTON_PRESS
+          && event->button == 3)
   {
     // if we are already inside the selection, no change
-    if(on_row && !gtk_tree_selection_path_is_selected(selection, mouse_path))
+    if(on_row
+       && !gtk_tree_selection_path_is_selected(selection, mouse_path))
     {
       if(!dt_modifier_is(event->state, GDK_CONTROL_MASK))
         gtk_tree_selection_unselect_all(selection);
