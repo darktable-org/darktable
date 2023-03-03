@@ -1403,9 +1403,6 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dt_free_align(tmp);
   dt_free_align(precond);
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, width, height);
-
 #undef MAX_MAX_SCALE
 }
 
@@ -1606,9 +1603,6 @@ static void process_nlmeans(
 
   dt_free_align(in);
   nlmeans_backtransform(d,ovoid,roi_in,scale,compensate_p,wb,aa,bb,p);
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 static void sum_rec(const size_t npixels, const float *in, float *out)

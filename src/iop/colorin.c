@@ -1116,9 +1116,6 @@ void process(struct dt_iop_module_t *self,
   {
     process_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE2__)
@@ -1398,9 +1395,6 @@ void process_sse2(struct dt_iop_module_t *self,
   {
     process_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
