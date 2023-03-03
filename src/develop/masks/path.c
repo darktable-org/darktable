@@ -1318,6 +1318,8 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
 
       _path_init_ctrl_points(form);
 
+      dt_masks_gui_form_create(form, gui, index, module);
+
       // we save the form and quit creation mode
       dt_iop_module_t *crea_module = gui->creation_module;
       dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);

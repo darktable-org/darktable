@@ -1074,16 +1074,18 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
 int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, double y, int which,
                                     uint32_t state)
 {
-  dt_masks_form_t *form = darktable.develop->form_visible;
-  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+  dt_develop_t *dev = darktable.develop;
+  dt_masks_form_t *form = dev->form_visible;
+  dt_masks_form_gui_t *gui = dev->form_gui;
   float pzx = 0.0f, pzy = 0.0f;
-  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
+  dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
 
-  if(darktable.develop->mask_form_selected_id)
-    dt_dev_masks_selection_change(darktable.develop, module,
-                                  darktable.develop->mask_form_selected_id);
+  ++darktable.gui->reset;
+  if(dev->mask_form_selected_id)
+    dt_dev_masks_selection_change(dev, module, dev->mask_form_selected_id);
+  --darktable.gui->reset;
 
   if(form->functions)
   {
@@ -1275,7 +1277,9 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   if(newform && newform->type != DT_MASKS_GROUP)
     darktable.develop->form_gui->creation = TRUE;
 
+  ++darktable.gui->reset;
   dt_dev_masks_selection_change(darktable.develop, NULL, 0);
+  --darktable.gui->reset;
 }
 
 void dt_masks_reset_form_gui(void)
@@ -1345,7 +1349,10 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
 
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
+
+  ++darktable.gui->reset;
   dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? form->formid : 0);
+  --darktable.gui->reset;
 
   if(bd->masks_support)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
@@ -1379,7 +1386,9 @@ void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module, const in
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = value;
 
+  ++darktable.gui->reset;
   dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? formid : 0);
+  --darktable.gui->reset;
 
   dt_control_queue_redraw_center();
 }
@@ -1832,7 +1841,6 @@ void dt_masks_form_move(dt_masks_form_t *grp, const int formid, const int up)
     else
       pos += 1;
     grp->points = g_list_insert(grp->points, grpt, pos);
-    dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
   }
 }
 

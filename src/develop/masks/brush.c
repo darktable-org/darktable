@@ -1660,6 +1660,8 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
       gui->guipoints_payload = NULL;
       gui->guipoints_count = 0;
 
+      dt_masks_gui_form_create(form, gui, index, module);
+
       // we save the form and quit creation mode
       dt_iop_module_t *crea_module = gui->creation_module;
 
