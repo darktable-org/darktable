@@ -127,11 +127,30 @@ void process(struct dt_iop_module_t *self,
     return;
   assert(roi_in->width == roi_out->width);
   assert(roi_in->height == roi_out->height);
+
+  const size_t width = roi_out->width;
+  const size_t height = roi_out->height;
+  const size_t npixels = width * height;
+  if (npixels > INT_MAX)
+  {
+    dt_iop_set_module_trouble_message(self, _("image too large"),
+       				      _("this module is unable to process\n"
+					 "images with more than 2 gigapixels.\n"
+					 "processing has been skipped."),
+				      "image too large, processing skipped");
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, 4);
+    return;
+  }
+  else
+  {
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+  }
+
   dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
 
   float sigma[5];
   _compute_sigmas(sigma, data, roi_in->scale, piece->iscale);
-  if(fmaxf(sigma[0], sigma[1]) < .1)
+  if(fmaxf(sigma[0], sigma[1]) < 0.1f)
   {
     dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, 4);
     return;
@@ -161,9 +180,6 @@ void process(struct dt_iop_module_t *self,
         weight += m[l * wd + k] = expf(-(l * l + k * k) / (2.f * sigma[0] * sigma[0]));
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
-
-    const size_t width = roi_out->width;
-    const size_t height = roi_out->height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -202,7 +218,7 @@ void process(struct dt_iop_module_t *self,
 	    dt_aligned_pixel_t chandiff;
 	    for_each_channel(c)
 	       chandiff[c] = (pixel[c] - inp[c]) * (pixel[c] - inp[c]) * isig2col[c];
-	    float diff = chandiff[0] + chandiff[1] + chandiff[2];
+	    const float diff = chandiff[0] + chandiff[1] + chandiff[2];
 	    float pix_weight = m[l * wd + k] * expf(-diff);
             for_each_channel(c)
 	       res[c] += inp[c] * pix_weight;
@@ -224,9 +240,6 @@ void process(struct dt_iop_module_t *self,
   {
     for(int k = 0; k < 5; k++) sigma[k] = 1.0f / sigma[k];
     
-    const size_t height = roi_in->height;
-    const size_t width = roi_in->width;
-
     const size_t grid_points = (height*sigma[0]) * (width*sigma[1]) * sigma[2] * sigma[3] * sigma[4];
     PermutohedralLattice<5, 4> lattice(width * height, dt_get_num_threads(), grid_points);
 
@@ -260,13 +273,13 @@ void process(struct dt_iop_module_t *self,
     float *const out = (float*)ovoid;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(out, height, width)	\
+    dt_omp_firstprivate(out, npixels)	\
     shared(lattice) \
     schedule(static)
 #endif
-    for(size_t index = 0; index < height*width; index++)
+    for(size_t index = 0; index < npixels; index++)
     {
-    float DT_ALIGNED_PIXEL val[4];
+    dt_aligned_pixel_t val;
     lattice.slice(val, index);
     for_each_channel(k)
        out[(size_t)4*index + k] = val[k] / val[3];
