@@ -814,17 +814,17 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
     // we reach the module, that's it
-    if(strcmp(mod->op, module->op) == 0) break;
+    if(dt_iop_module_is(mod->so, module->op)) break;
 
     // if we reach colorout means that the module is after it
-    if(strcmp(mod->op, "colorout") == 0)
+    if(dt_iop_module_is(mod->so, "colorout"))
     {
       in_between = FALSE;
       break;
     }
 
     // we reach colorin, so far we're good
-    if(strcmp(mod->op, "colorin") == 0)
+    if(dt_iop_module_is(mod->so, "colorin"))
     {
       in_between = TRUE;
       break;
@@ -980,7 +980,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
   for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
-    if(!strcmp(module_so->op, "colorin"))
+    if(dt_iop_module_is(module_so, "colorin"))
     {
       colorin_so = module_so;
       break;
@@ -991,7 +991,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      if(!strcmp(module->op, "colorin"))
+      if(dt_iop_module_is(module->so, "colorin"))
       {
         colorin = module;
         break;
@@ -1027,7 +1027,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
   for(const GList *modules = g_list_last(darktable.iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
-    if(!strcmp(module_so->op, "colorout"))
+    if(dt_iop_module_is(module_so, "colorout"))
     {
       colorout_so = module_so;
       break;
@@ -1038,7 +1038,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
     for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      if(!strcmp(module->op, "colorout"))
+      if(dt_iop_module_is(module->so, "colorout"))
       {
         colorout = module;
         break;

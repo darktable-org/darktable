@@ -405,7 +405,7 @@ gboolean dt_gui_presets_confirm_and_delete(const char *name,
     {
       dt_iop_module_so_t *mod = modules->data;
 
-      if(!strcmp(mod->op, module_name))
+      if(dt_iop_module_is(mod, module_name))
       {
         dt_action_rename_preset(&mod->actions, name, NULL);
         break;
