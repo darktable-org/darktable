@@ -51,6 +51,112 @@ DAMAGE.
  * dimensional space.                                              *
  *                                                                 *
  *******************************************************************/
+template <int VD>
+struct HashTablePermutohedralValue {
+    typedef HashTablePermutohedralValue Value;
+    HashTablePermutohedralValue() = default;
+
+    HashTablePermutohedralValue(int init)
+    {
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] = init;
+      }
+    }
+
+    HashTablePermutohedralValue(const Value &) = default; // let the compiler write the copy constructor
+
+    Value &operator=(const Value &) = default;
+
+    static void clear(float *val)
+    {
+      for(int i = 0; i < VD; i++)
+	 val[i] = 0;
+    }
+
+    void add(const Value &other)
+    {
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] += other.value[i];
+      }
+    }
+
+    void add(const float *other, float weight)
+    {
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] += weight * other[i];
+      }
+    }
+
+    void addTo(float *dest, float weight) const
+    {
+      for(int i = 0; i < VD; i++)
+      {
+        dest[i] += weight * value[i];
+      }
+    }
+
+    void mix(const Value *left, const Value *center, const Value *right)
+    {
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] = (0.25f * left->value[i] + 0.5f * center->value[i] + 0.25f * right->value[i]);
+      }
+    }
+
+    float value[VD]{};
+};
+
+template <>
+struct HashTablePermutohedralValue<4> {
+    typedef HashTablePermutohedralValue Value;
+    HashTablePermutohedralValue() = default;
+
+    HashTablePermutohedralValue(int init)
+    {
+    for_four_channels(i)
+      value[i] = init;
+    }
+
+    HashTablePermutohedralValue(const Value &) = default; // let the compiler write the copy constructor
+
+    Value &operator=(const Value &) = default;
+
+    static void clear(float *val)
+    {
+    for_four_channels(i)
+      val[i] = 0;
+    }
+
+    void add(const Value &other)
+    {
+    for_four_channels(i)
+      value[i] += other.value[i];
+    }
+
+    void add(const float *other, float weight)
+    {
+    for_four_channels(i)
+      value[i] += weight * other[i];
+    }
+
+    void addTo(float *dest, float weight) const
+    {
+    for_four_channels(i, aligned(dest))
+      dest[i] += weight * value[i];
+    }
+
+    void mix(const Value *left, const Value *center, const Value *right)
+    {
+    for_four_channels(i)
+      value[i] = (0.25f * left->value[i] + 0.5f * center->value[i] + 0.25f * right->value[i]);
+    }
+
+    dt_aligned_pixel_t value;
+};
+
 template <int KD, int VD> class HashTablePermutohedral
 {
 public:
@@ -61,7 +167,11 @@ public:
 
     Key(const Key &origin, int dim, int direction) // construct neighbor in dimension 'dim'
     {
-      for(int i = 0; i < KD; i++) key[i] = origin.key[i] + direction;
+#ifdef _OPENMP
+#pragma omp simd
+#endif
+      for(int i = 0; i < KD; i++)
+	 key[i] = origin.key[i] + direction;
       key[dim] = origin.key[dim] - direction * KD;
       setHash();
     }
@@ -102,12 +212,17 @@ public:
 
 public:
   // Struct for an associated value
+  typedef HashTablePermutohedralValue<VD> Value;
+#if 0
   struct Value
   {
     Value() = default;
 
     Value(int init)
     {
+#ifdef _OPENMP
+#pragma omp simd
+#endif
       for(int i = 0; i < VD; i++)
       {
         value[i] = init;
@@ -120,21 +235,18 @@ public:
 
     static void clear(float *val)
     {
-      for(int i = 0; i < VD; i++) val[i] = 0;
-    }
-
-    void setValue(int idx, short val)
-    {
-      value[idx] = val;
-    }
-
-    void addValue(int idx, short val)
-    {
-      value[idx] += val;
+#ifdef _OPENMP
+#pragma omp simd
+#endif
+      for(int i = 0; i < VD; i++)
+	 val[i] = 0;
     }
 
     void add(const Value &other)
     {
+#ifdef _OPENMP
+#pragma omp simd
+#endif
       for(int i = 0; i < VD; i++)
       {
         value[i] += other.value[i];
@@ -143,6 +255,9 @@ public:
 
     void add(const float *other, float weight)
     {
+#ifdef _OPENMP
+#pragma omp simd
+#endif
       for(int i = 0; i < VD; i++)
       {
         value[i] += weight * other[i];
@@ -151,6 +266,9 @@ public:
 
     void addTo(float *dest, float weight) const
     {
+#ifdef _OPENMP
+#pragma omp simd
+#endif
       for(int i = 0; i < VD; i++)
       {
         dest[i] += weight * value[i];
@@ -165,17 +283,9 @@ public:
       }
     }
 
-    Value &operator+=(const Value &other)
-    {
-      for(int i = 0; i < VD; i++)
-      {
-        value[i] += other.value[i];
-      }
-      return *this;
-    }
-
     float value[VD]{};
   };
+#endif /* 0 */
 
 public:
   /* Constructor
@@ -366,7 +476,6 @@ public:
   size_t total_alloc { 0 };
   size_t auto_grow { 0 };
 };
-
 
 /******************************************************************
  * The algorithm class that performs the filter                   *
