@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,10 +18,6 @@
 
 #define __STDC_FORMAT_MACROS
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -30,19 +26,11 @@
 
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "common/math.h"
 
 extern "C" {
-// otherwise the name will be mangled and the linker won't be able to see the function ...
-void amaze_demosaic_RT(
-    dt_dev_pixelpipe_iop_t *piece,
-    const float *const in,
-    float *out,
-    const dt_iop_roi_t *const roi_in,
-    const dt_iop_roi_t *const roi_out,
-    const int filters);
-}
 
-static __inline float clampnan(const float x, const float m, const float M)
+static inline float _clampnan(const float x, const float m, const float M)
 {
   float r;
 
@@ -58,8 +46,7 @@ static __inline float clampnan(const float x, const float m, const float M)
   return r;
 }
 
-#ifndef __SSE2__
-static __inline float xmul2f(float d)
+static inline float _xmul2f(float d)
 {
   union {
       float f;
@@ -72,9 +59,8 @@ static __inline float xmul2f(float d)
   }
   return x.f;
 }
-#endif
 
-static __inline float xdiv2f(float d)
+static inline float _xdiv2f(float d)
 {
   union {
       float f;
@@ -88,7 +74,7 @@ static __inline float xdiv2f(float d)
   return x.f;
 }
 
-static __inline float xdivf(float d, int n)
+static inline float _xdivf(float d, int n)
 {
   union {
       float f;
@@ -107,186 +93,8 @@ static __inline float xdivf(float d, int n)
  * begin raw therapee code, hg checkout of march 03, 2016 branch master.
  *==================================================================================*/
 
-
-#ifdef __SSE2__
-
-#ifdef __GNUC__
-#define INLINE __inline
-#else
-#define INLINE inline
-#endif
-
-#ifdef __GNUC__
-#if((__GNUC__ == 4 && __GNUC_MINOR__ >= 9) || __GNUC__ > 4) && (!defined(WIN32) || defined(__x86_64__))
-#define LVF(x) _mm_load_ps(&x)
-#define LVFU(x) _mm_loadu_ps(&x)
-#define STVF(x, y) _mm_store_ps(&x, y)
-#define STVFU(x, y) _mm_storeu_ps(&x, y)
-#else // there is a bug in gcc 4.7.x when using openmp and aligned memory and -O3, also need to map the
-      // aligned functions to unaligned functions for WIN32 builds
-#define LVF(x) _mm_loadu_ps(&x)
-#define LVFU(x) _mm_loadu_ps(&x)
-#define STVF(x, y) _mm_storeu_ps(&x, y)
-#define STVFU(x, y) _mm_storeu_ps(&x, y)
-#endif
-#else
-#define LVF(x) _mm_load_ps(&x)
-#define LVFU(x) _mm_loadu_ps(&x)
-#define STVF(x, y) _mm_store_ps(&x, y)
-#define STVFU(x, y) _mm_storeu_ps(&x, y)
-#endif
-
-#define STC2VFU(a, v)                                                                                        \
-  {                                                                                                          \
-    __m128 TST1V = _mm_loadu_ps(&a);                                                                         \
-    __m128 TST2V = _mm_unpacklo_ps(v, v);                                                                    \
-    vmask cmask = _mm_set_epi32(0xffffffff, 0, 0xffffffff, 0);                                               \
-    _mm_storeu_ps(&a, vself(cmask, TST1V, TST2V));                                                           \
-    TST1V = _mm_loadu_ps((&a) + 4);                                                                          \
-    TST2V = _mm_unpackhi_ps(v, v);                                                                           \
-    _mm_storeu_ps((&a) + 4, vself(cmask, TST1V, TST2V));                                                     \
-  }
-
-#define ZEROV _mm_setzero_ps()
-#define F2V(a) _mm_set1_ps((a))
-
-typedef __m128i vmask;
-typedef __m128 vfloat;
-typedef __m128i vint;
-
-static INLINE vfloat LC2VFU(float &a)
-{
-  // Load 8 floats from a and combine a[0],a[2],a[4] and a[6] into a vector of 4 floats
-  vfloat a1 = _mm_loadu_ps(&a);
-  vfloat a2 = _mm_loadu_ps((&a) + 4);
-  return _mm_shuffle_ps(a1, a2, _MM_SHUFFLE(2, 0, 2, 0));
-}
-static INLINE vfloat vmaxf(vfloat x, vfloat y)
-{
-  return _mm_max_ps(x, y);
-}
-static INLINE vfloat vminf(vfloat x, vfloat y)
-{
-  return _mm_min_ps(x, y);
-}
-static INLINE vfloat vcast_vf_f(float f)
-{
-  return _mm_set_ps(f, f, f, f);
-}
-static INLINE vmask vorm(vmask x, vmask y)
-{
-  return _mm_or_si128(x, y);
-}
-static INLINE vmask vandm(vmask x, vmask y)
-{
-  return _mm_and_si128(x, y);
-}
-static INLINE vmask vandnotm(vmask x, vmask y)
-{
-  return _mm_andnot_si128(x, y);
-}
-static INLINE vfloat vabsf(vfloat f)
-{
-  return (vfloat)vandnotm((vmask)vcast_vf_f(-0.0f), (vmask)f);
-}
-static INLINE vfloat vself(vmask mask, vfloat x, vfloat y)
-{
-  return (vfloat)vorm(vandm(mask, (vmask)x), vandnotm(mask, (vmask)y));
-}
-static INLINE vmask vmaskf_lt(vfloat x, vfloat y)
-{
-  return (__m128i)_mm_cmplt_ps(x, y);
-}
-static INLINE vmask vmaskf_gt(vfloat x, vfloat y)
-{
-  return (__m128i)_mm_cmpgt_ps(x, y);
-}
-static INLINE vfloat ULIMV(vfloat a, vfloat b, vfloat c)
-{
-  // made to clamp a in range [b,c] but in fact it's also the median of a,b,c, which means that the result is
-  // independent on order of arguments
-  // ULIMV(a,b,c) = ULIMV(a,c,b) = ULIMV(b,a,c) = ULIMV(b,c,a) = ULIMV(c,a,b) = ULIMV(c,b,a)
-  return vmaxf(vminf(a, b), vminf(vmaxf(a, b), c));
-}
-static INLINE vfloat SQRV(vfloat a)
-{
-  return a * a;
-}
-static INLINE vfloat vintpf(vfloat a, vfloat b, vfloat c)
-{
-  // calculate a * b + (1 - a) * c (interpolate two values)
-  // following is valid:
-  // vintpf(a, b+x, c+x) = vintpf(a, b, c) + x
-  // vintpf(a, b*x, c*x) = vintpf(a, b, c) * x
-  return a * (b - c) + c;
-}
-static INLINE vfloat vaddc2vfu(float &a)
-{
-  // loads a[0]..a[7] and returns { a[0]+a[1], a[2]+a[3], a[4]+a[5], a[6]+a[7] }
-  vfloat a1 = _mm_loadu_ps(&a);
-  vfloat a2 = _mm_loadu_ps((&a) + 4);
-  return _mm_shuffle_ps(a1, a2, _MM_SHUFFLE(2, 0, 2, 0)) + _mm_shuffle_ps(a1, a2, _MM_SHUFFLE(3, 1, 3, 1));
-}
-static INLINE vfloat vadivapb(vfloat a, vfloat b)
-{
-  return a / (a + b);
-}
-static INLINE vint vselc(vmask mask, vint x, vint y)
-{
-  return vorm(vandm(mask, (vmask)x), vandnotm(mask, (vmask)y));
-}
-static INLINE vint vselinotzero(vmask mask, vint x)
-{
-  // returns value of x if corresponding mask bits are 0, else returns 0
-  // faster than vselc(mask, ZEROV, x)
-  return _mm_andnot_si128(mask, x);
-}
-static INLINE vfloat vmul2f(vfloat a)
-{
-  // fastest way to multiply by 2
-  return a + a;
-}
-static INLINE vmask vmaskf_ge(vfloat x, vfloat y)
-{
-  return (__m128i)_mm_cmpge_ps(x, y);
-}
-static INLINE vmask vnotm(vmask x)
-{
-  return _mm_xor_si128(x, _mm_cmpeq_epi32(_mm_setzero_si128(), _mm_setzero_si128()));
-}
-static INLINE vfloat vdup(vfloat a)
-{
-  // returns { a[0],a[0],a[1],a[1] }
-  return _mm_unpacklo_ps(a, a);
-}
-
-#endif // __SSE2__
-
-template <typename _Tp> static inline const _Tp SQR(_Tp x)
-{
-  //      return std::pow(x,2); Slower than:
-  return (x * x);
-}
-
-template <typename _Tp> static inline const _Tp intp(const _Tp a, const _Tp b, const _Tp c)
-{
-  // calculate a * b + (1 - a) * c
-  // following is valid:
-  // intp(a, b+x, c+x) = intp(a, b, c) + x
-  // intp(a, b*x, c*x) = intp(a, b, c) * x
-  return a * (b - c) + c;
-}
-
-template <typename _Tp> static inline const _Tp LIM(const _Tp a, const _Tp b, const _Tp c)
-{
-  return std::max(b, std::min(a, c));
-}
-
-template <typename _Tp> static inline const _Tp ULIM(const _Tp a, const _Tp b, const _Tp c)
-{
-  return ((b < c) ? LIM(a, b, c) : LIM(a, c, b));
-}
-
+#define LIM(x, min, max) MAX(min, MIN(x, max))
+#define ULIM(x, y, z) ((y) < (z) ? LIM(x, y, z) : LIM(x, z, y))
 
 
 ////////////////////////////////////////////////////////////////
@@ -479,19 +287,19 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
       {
         memset(&nyquist[3 * tsh], 0, sizeof(unsigned char) * (ts - 6) * tsh);
         // location of tile bottom edge
-        int bottom = MIN(top + ts, winy + height + 16);
+        const int bottom = MIN(top + ts, winy + height + 16);
         // location of tile right edge
-        int right = MIN(left + ts, winx + width + 16);
+        const int right = MIN(left + ts, winx + width + 16);
         // tile width  (=ts except for right edge of image)
-        int rr1 = bottom - top;
+        const int rr1 = bottom - top;
         // tile height (=ts except for bottom edge of image)
-        int cc1 = right - left;
+        const int cc1 = right - left;
         // bookkeeping for borders
         // min and max row/column in the tile
-        int rrmin = top < winy ? 16 : 0;
-        int ccmin = left < winx ? 16 : 0;
-        int rrmax = bottom > (winy + height) ? winy + height - top : rr1;
-        int ccmax = right > (winx + width) ? winx + width - left : cc1;
+        const int rrmin = top < winy ? 16 : 0;
+        const int ccmin = left < winx ? 16 : 0;
+        const int rrmax = bottom > (winy + height) ? winy + height - top : rr1;
+        const int ccmax = right > (winx + width) ? winx + width - left : cc1;
 
 // rgb from input CFA data
 // rgb values should be floating point number between 0 and 1
@@ -499,53 +307,6 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
 // a 16 pixel border is added to each side of the image
 
 // begin of tile initialization
-#ifdef __SSE2__
-        // fill upper border
-        if(rrmin > 0)
-        {
-          for(int rr = 0; rr < 16; rr++)
-          {
-            int row = 32 - rr + top;
-
-            for(int cc = ccmin; cc < ccmax; cc += 4)
-            {
-              int indx1 = rr * ts + cc;
-              vfloat tempv = LVFU(in[row * width + (cc + left)]);
-              STVF(cfa[indx1], tempv);
-              STVF(rgbgreen[indx1], tempv);
-            }
-          }
-        }
-
-        // fill inner part
-        for(int rr = rrmin; rr < rrmax; rr++)
-        {
-          int row = rr + top;
-
-          for(int cc = ccmin; cc < ccmax; cc += 4)
-          {
-            int indx1 = rr * ts + cc;
-            vfloat tempv = LVFU(in[row * width + (cc + left)]);
-            STVF(cfa[indx1], tempv);
-            STVF(rgbgreen[indx1], tempv);
-          }
-        }
-
-        // fill lower border
-        if(rrmax < rr1)
-        {
-          for(int rr = 0; rr < 16; rr++)
-            for(int cc = ccmin; cc < ccmax; cc += 4)
-            {
-              int indx1 = (rrmax + rr) * ts + cc;
-              vfloat tempv = LVFU(in[(winy + height - rr - 2) * width + (left + cc)]);
-              STVF(cfa[indx1], tempv);
-              STVF(rgbgreen[indx1], tempv);
-            }
-        }
-
-#else
-
         // fill upper border
         if(rrmin > 0)
         {
@@ -560,11 +321,11 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
         // fill inner part
         for(int rr = rrmin; rr < rrmax; rr++)
         {
-          int row = rr + top;
+          const int row = rr + top;
 
           for(int cc = ccmin; cc < ccmax; cc++)
           {
-            int indx1 = rr * ts + cc;
+            const int indx1 = rr * ts + cc;
             cfa[indx1] = (in[row * width + (cc + left)]);
             rgbgreen[indx1] = cfa[indx1];
           }
@@ -580,9 +341,6 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               rgbgreen[(rrmax + rr) * ts + cc] = cfa[(rrmax + rr) * ts + cc];
             }
         }
-
-#endif
-
         // fill left border
         if(ccmin > 0)
         {
@@ -650,121 +408,18 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
 // end of tile initialization
 
 // horizontal and vertical gradients
-#ifdef __SSE2__
-        vfloat epsv = F2V(eps);
-
-        for(int rr = 2; rr < rr1 - 2; rr++)
-        {
-          for(int indx = rr * ts; indx < rr * ts + cc1; indx += 4)
-          {
-            vfloat delhv = vabsf(LVFU(cfa[indx + 1]) - LVFU(cfa[indx - 1]));
-            vfloat delvv = vabsf(LVF(cfa[indx + v1]) - LVF(cfa[indx - v1]));
-            STVF(dirwts1[indx], epsv + vabsf(LVFU(cfa[indx + 2]) - LVF(cfa[indx]))
-                                    + vabsf(LVF(cfa[indx]) - LVFU(cfa[indx - 2])) + delhv);
-            STVF(dirwts0[indx], epsv + vabsf(LVF(cfa[indx + v2]) - LVF(cfa[indx]))
-                                    + vabsf(LVF(cfa[indx]) - LVF(cfa[indx - v2])) + delvv);
-            STVF(delhvsqsum[indx], SQRV(delhv) + SQRV(delvv));
-          }
-        }
-
-#else
-
         for(int rr = 2; rr < rr1 - 2; rr++)
           for(int cc = 2, indx = (rr)*ts + cc; cc < cc1 - 2; cc++, indx++)
           {
-            float delh = fabsf(cfa[indx + 1] - cfa[indx - 1]);
-            float delv = fabsf(cfa[indx + v1] - cfa[indx - v1]);
+            const float delh = fabsf(cfa[indx + 1] - cfa[indx - 1]);
+            const float delv = fabsf(cfa[indx + v1] - cfa[indx - v1]);
             dirwts0[indx]
                 = eps + fabsf(cfa[indx + v2] - cfa[indx]) + fabsf(cfa[indx] - cfa[indx - v2]) + delv;
             dirwts1[indx] = eps + fabsf(cfa[indx + 2] - cfa[indx]) + fabsf(cfa[indx] - cfa[indx - 2]) + delh;
-            delhvsqsum[indx] = SQR(delh) + SQR(delv);
+            delhvsqsum[indx] = sqrf(delh) + sqrf(delv);
           }
-
-#endif
 
 // interpolate vertical and horizontal colour differences
-#ifdef __SSE2__
-        vfloat sgnv;
-
-        if(!(FC(4, 4, filters) & 1))
-        {
-          sgnv = _mm_set_ps(1.f, -1.f, 1.f, -1.f);
-        }
-        else
-        {
-          sgnv = _mm_set_ps(-1.f, 1.f, -1.f, 1.f);
-        }
-
-        vfloat zd5v = F2V(0.5f);
-        vfloat onev = F2V(1.f);
-        vfloat arthreshv = F2V(arthresh);
-        vfloat clip_pt8v = F2V(clip_pt8);
-
-        for(int rr = 4; rr < rr1 - 4; rr++)
-        {
-          sgnv = -sgnv;
-
-          for(int indx = rr * ts + 4; indx < rr * ts + cc1 - 7; indx += 4)
-          {
-            // colour ratios in each cardinal direction
-            vfloat cfav = LVF(cfa[indx]);
-            vfloat cruv = LVF(cfa[indx - v1]) * (LVF(dirwts0[indx - v2]) + LVF(dirwts0[indx]))
-                          / (LVF(dirwts0[indx - v2]) * (epsv + cfav)
-                             + LVF(dirwts0[indx]) * (epsv + LVF(cfa[indx - v2])));
-            vfloat crdv = LVF(cfa[indx + v1]) * (LVF(dirwts0[indx + v2]) + LVF(dirwts0[indx]))
-                          / (LVF(dirwts0[indx + v2]) * (epsv + cfav)
-                             + LVF(dirwts0[indx]) * (epsv + LVF(cfa[indx + v2])));
-            vfloat crlv = LVFU(cfa[indx - 1]) * (LVFU(dirwts1[indx - 2]) + LVF(dirwts1[indx]))
-                          / (LVFU(dirwts1[indx - 2]) * (epsv + cfav)
-                             + LVF(dirwts1[indx]) * (epsv + LVFU(cfa[indx - 2])));
-            vfloat crrv = LVFU(cfa[indx + 1]) * (LVFU(dirwts1[indx + 2]) + LVF(dirwts1[indx]))
-                          / (LVFU(dirwts1[indx + 2]) * (epsv + cfav)
-                             + LVF(dirwts1[indx]) * (epsv + LVFU(cfa[indx + 2])));
-
-            // G interpolated in vert/hor directions using Hamilton-Adams method
-            vfloat guhav = LVF(cfa[indx - v1]) + zd5v * (cfav - LVF(cfa[indx - v2]));
-            vfloat gdhav = LVF(cfa[indx + v1]) + zd5v * (cfav - LVF(cfa[indx + v2]));
-            vfloat glhav = LVFU(cfa[indx - 1]) + zd5v * (cfav - LVFU(cfa[indx - 2]));
-            vfloat grhav = LVFU(cfa[indx + 1]) + zd5v * (cfav - LVFU(cfa[indx + 2]));
-
-            // G interpolated in vert/hor directions using adaptive ratios
-            vfloat guarv = vself(vmaskf_lt(vabsf(onev - cruv), arthreshv), cfav * cruv, guhav);
-            vfloat gdarv = vself(vmaskf_lt(vabsf(onev - crdv), arthreshv), cfav * crdv, gdhav);
-            vfloat glarv = vself(vmaskf_lt(vabsf(onev - crlv), arthreshv), cfav * crlv, glhav);
-            vfloat grarv = vself(vmaskf_lt(vabsf(onev - crrv), arthreshv), cfav * crrv, grhav);
-
-            // adaptive weights for vertical/horizontal directions
-            vfloat hwtv = LVFU(dirwts1[indx - 1]) / (LVFU(dirwts1[indx - 1]) + LVFU(dirwts1[indx + 1]));
-            vfloat vwtv = LVF(dirwts0[indx - v1]) / (LVF(dirwts0[indx + v1]) + LVF(dirwts0[indx - v1]));
-
-            // interpolated G via adaptive weights of cardinal evaluations
-            vfloat Ginthhav = vintpf(hwtv, grhav, glhav);
-            vfloat Gintvhav = vintpf(vwtv, gdhav, guhav);
-
-            // interpolated colour differences
-            vfloat hcdaltv = sgnv * (Ginthhav - cfav);
-            vfloat vcdaltv = sgnv * (Gintvhav - cfav);
-            STVF(hcdalt[indx], hcdaltv);
-            STVF(vcdalt[indx], vcdaltv);
-
-            vmask clipmask = vorm(vorm(vmaskf_gt(cfav, clip_pt8v), vmaskf_gt(Gintvhav, clip_pt8v)),
-                                  vmaskf_gt(Ginthhav, clip_pt8v));
-            guarv = vself(clipmask, guhav, guarv);
-            gdarv = vself(clipmask, gdhav, gdarv);
-            glarv = vself(clipmask, glhav, glarv);
-            grarv = vself(clipmask, grhav, grarv);
-
-            // use HA if highlights are (nearly) clipped
-            STVF(vcd[indx], vself(clipmask, vcdaltv, sgnv * (vintpf(vwtv, gdarv, guarv) - cfav)));
-            STVF(hcd[indx], vself(clipmask, hcdaltv, sgnv * (vintpf(hwtv, grarv, glarv) - cfav)));
-
-            // differences of interpolations in opposite directions
-            STVF(dgintv[indx], vminf(SQRV(guhav - gdhav), SQRV(guarv - gdarv)));
-            STVF(dginth[indx], vminf(SQRV(glhav - grhav), SQRV(glarv - grarv)));
-          }
-        }
-
-#else
 
         for(int rr = 4; rr < rr1 - 4; rr++)
         {
@@ -774,20 +429,20 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
           {
 
             // colour ratios in each cardinal direction
-            float cru = cfa[indx - v1] * (dirwts0[indx - v2] + dirwts0[indx])
+            const float cru = cfa[indx - v1] * (dirwts0[indx - v2] + dirwts0[indx])
                         / (dirwts0[indx - v2] * (eps + cfa[indx]) + dirwts0[indx] * (eps + cfa[indx - v2]));
-            float crd = cfa[indx + v1] * (dirwts0[indx + v2] + dirwts0[indx])
+            const float crd = cfa[indx + v1] * (dirwts0[indx + v2] + dirwts0[indx])
                         / (dirwts0[indx + v2] * (eps + cfa[indx]) + dirwts0[indx] * (eps + cfa[indx + v2]));
-            float crl = cfa[indx - 1] * (dirwts1[indx - 2] + dirwts1[indx])
+            const float crl = cfa[indx - 1] * (dirwts1[indx - 2] + dirwts1[indx])
                         / (dirwts1[indx - 2] * (eps + cfa[indx]) + dirwts1[indx] * (eps + cfa[indx - 2]));
-            float crr = cfa[indx + 1] * (dirwts1[indx + 2] + dirwts1[indx])
+            const float crr = cfa[indx + 1] * (dirwts1[indx + 2] + dirwts1[indx])
                         / (dirwts1[indx + 2] * (eps + cfa[indx]) + dirwts1[indx] * (eps + cfa[indx + 2]));
 
             // G interpolated in vert/hor directions using Hamilton-Adams method
-            float guha = cfa[indx - v1] + xdiv2f(cfa[indx] - cfa[indx - v2]);
-            float gdha = cfa[indx + v1] + xdiv2f(cfa[indx] - cfa[indx + v2]);
-            float glha = cfa[indx - 1] + xdiv2f(cfa[indx] - cfa[indx - 2]);
-            float grha = cfa[indx + 1] + xdiv2f(cfa[indx] - cfa[indx + 2]);
+            const float guha = cfa[indx - v1] + _xdiv2f(cfa[indx] - cfa[indx - v2]);
+            const float gdha = cfa[indx + v1] + _xdiv2f(cfa[indx] - cfa[indx + v2]);
+            const float glha = cfa[indx - 1] + _xdiv2f(cfa[indx] - cfa[indx - 2]);
+            const float grha = cfa[indx + 1] + _xdiv2f(cfa[indx] - cfa[indx + 2]);
 
             // G interpolated in vert/hor directions using adaptive ratios
             float guar, gdar, glar, grar;
@@ -829,12 +484,12 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
 
             // adaptive weights for vertical/horizontal directions
-            float hwt = dirwts1[indx - 1] / (dirwts1[indx - 1] + dirwts1[indx + 1]);
-            float vwt = dirwts0[indx - v1] / (dirwts0[indx + v1] + dirwts0[indx - v1]);
+            const float hwt = dirwts1[indx - 1] / (dirwts1[indx - 1] + dirwts1[indx + 1]);
+            const float vwt = dirwts0[indx - v1] / (dirwts0[indx + v1] + dirwts0[indx - v1]);
 
             // interpolated G via adaptive weights of cardinal evaluations
-            float Gintvha = vwt * gdha + (1.f - vwt) * guha;
-            float Ginthha = hwt * grha + (1.f - hwt) * glha;
+            const float Gintvha = vwt * gdha + (1.f - vwt) * guha;
+            const float Ginthha = hwt * grha + (1.f - hwt) * glha;
 
             // interpolated colour differences
             if(fcswitch)
@@ -867,100 +522,23 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
 
             // differences of interpolations in opposite directions
-            dgintv[indx] = MIN(SQR(guha - gdha), SQR(guar - gdar));
-            dginth[indx] = MIN(SQR(glha - grha), SQR(glar - grar));
+            dgintv[indx] = MIN(sqrf(guha - gdha), sqrf(guar - gdar));
+            dginth[indx] = MIN(sqrf(glha - grha), sqrf(glar - grar));
           }
         }
-
-#endif
-
-
-
-#ifdef __SSE2__
-        vfloat clip_ptv = F2V(clip_pt);
-        vfloat sgn3v;
-
-        if(!(FC(4, 4, filters) & 1))
-        {
-          sgnv = _mm_set_ps(1.f, -1.f, 1.f, -1.f);
-        }
-        else
-        {
-          sgnv = _mm_set_ps(-1.f, 1.f, -1.f, 1.f);
-        }
-
-        sgn3v = sgnv + sgnv + sgnv;
-
-        for(int rr = 4; rr < rr1 - 4; rr++)
-        {
-          vfloat nsgnv = sgnv;
-          sgnv = -sgnv;
-          sgn3v = -sgn3v;
-
-          for(int indx = rr * ts + 4; indx < rr * ts + cc1 - 4; indx += 4)
-          {
-            vfloat hcdv = LVF(hcd[indx]);
-            vfloat hcdvarv = SQRV(LVFU(hcd[indx - 2]) - hcdv)
-                             + SQRV(LVFU(hcd[indx - 2]) - LVFU(hcd[indx + 2]))
-                             + SQRV(hcdv - LVFU(hcd[indx + 2]));
-            vfloat hcdaltv = LVF(hcdalt[indx]);
-            vfloat hcdaltvarv = SQRV(LVFU(hcdalt[indx - 2]) - hcdaltv)
-                                + SQRV(LVFU(hcdalt[indx - 2]) - LVFU(hcdalt[indx + 2]))
-                                + SQRV(hcdaltv - LVFU(hcdalt[indx + 2]));
-            vfloat vcdv = LVF(vcd[indx]);
-            vfloat vcdvarv = SQRV(LVF(vcd[indx - v2]) - vcdv)
-                             + SQRV(LVF(vcd[indx - v2]) - LVF(vcd[indx + v2]))
-                             + SQRV(vcdv - LVF(vcd[indx + v2]));
-            vfloat vcdaltv = LVF(vcdalt[indx]);
-            vfloat vcdaltvarv = SQRV(LVF(vcdalt[indx - v2]) - vcdaltv)
-                                + SQRV(LVF(vcdalt[indx - v2]) - LVF(vcdalt[indx + v2]))
-                                + SQRV(vcdaltv - LVF(vcdalt[indx + v2]));
-
-            // choose the smallest variance; this yields a smoother interpolation
-            hcdv = vself(vmaskf_lt(hcdaltvarv, hcdvarv), hcdaltv, hcdv);
-            vcdv = vself(vmaskf_lt(vcdaltvarv, vcdvarv), vcdaltv, vcdv);
-
-            // bound the interpolation in regions of high saturation
-            // vertical and horizontal G interpolations
-            vfloat Ginthv = sgnv * hcdv + LVF(cfa[indx]);
-            vfloat temp2v = sgn3v * hcdv;
-            vfloat hwtv = onev + temp2v / (epsv + Ginthv + LVF(cfa[indx]));
-            vmask hcdmask = vmaskf_gt(nsgnv * hcdv, ZEROV);
-            vfloat hcdoldv = hcdv;
-            vfloat tempv = nsgnv * (LVF(cfa[indx]) - ULIMV(Ginthv, LVFU(cfa[indx - 1]), LVFU(cfa[indx + 1])));
-            hcdv = vself(vmaskf_lt(temp2v, -(LVF(cfa[indx]) + Ginthv)), tempv, vintpf(hwtv, hcdv, tempv));
-            hcdv = vself(hcdmask, hcdv, hcdoldv);
-            hcdv = vself(vmaskf_gt(Ginthv, clip_ptv), tempv, hcdv);
-            STVF(hcd[indx], hcdv);
-
-            vfloat Gintvv = sgnv * vcdv + LVF(cfa[indx]);
-            temp2v = sgn3v * vcdv;
-            vfloat vwtv = onev + temp2v / (epsv + Gintvv + LVF(cfa[indx]));
-            vmask vcdmask = vmaskf_gt(nsgnv * vcdv, ZEROV);
-            vfloat vcdoldv = vcdv;
-            tempv = nsgnv * (LVF(cfa[indx]) - ULIMV(Gintvv, LVF(cfa[indx - v1]), LVF(cfa[indx + v1])));
-            vcdv = vself(vmaskf_lt(temp2v, -(LVF(cfa[indx]) + Gintvv)), tempv, vintpf(vwtv, vcdv, tempv));
-            vcdv = vself(vcdmask, vcdv, vcdoldv);
-            vcdv = vself(vmaskf_gt(Gintvv, clip_ptv), tempv, vcdv);
-            STVF(vcd[indx], vcdv);
-            STVFU(cddiffsq[indx], SQRV(vcdv - hcdv));
-          }
-        }
-
-#else
 
         for(int rr = 4; rr < rr1 - 4; rr++)
         {
           for(int cc = 4, indx = rr * ts + cc, c = FC(rr, cc, filters) & 1; cc < cc1 - 4; cc++, indx++)
           {
-            float hcdvar = 3.f * (SQR(hcd[indx - 2]) + SQR(hcd[indx]) + SQR(hcd[indx + 2]))
-                           - SQR(hcd[indx - 2] + hcd[indx] + hcd[indx + 2]);
-            float hcdaltvar = 3.f * (SQR(hcdalt[indx - 2]) + SQR(hcdalt[indx]) + SQR(hcdalt[indx + 2]))
-                              - SQR(hcdalt[indx - 2] + hcdalt[indx] + hcdalt[indx + 2]);
-            float vcdvar = 3.f * (SQR(vcd[indx - v2]) + SQR(vcd[indx]) + SQR(vcd[indx + v2]))
-                           - SQR(vcd[indx - v2] + vcd[indx] + vcd[indx + v2]);
-            float vcdaltvar = 3.f * (SQR(vcdalt[indx - v2]) + SQR(vcdalt[indx]) + SQR(vcdalt[indx + v2]))
-                              - SQR(vcdalt[indx - v2] + vcdalt[indx] + vcdalt[indx + v2]);
+            const float hcdvar = 3.f * (sqrf(hcd[indx - 2]) + sqrf(hcd[indx]) + sqrf(hcd[indx + 2]))
+                           - sqrf(hcd[indx - 2] + hcd[indx] + hcd[indx + 2]);
+            const float hcdaltvar = 3.f * (sqrf(hcdalt[indx - 2]) + sqrf(hcdalt[indx]) + sqrf(hcdalt[indx + 2]))
+                              - sqrf(hcdalt[indx - 2] + hcdalt[indx] + hcdalt[indx + 2]);
+            const float vcdvar = 3.f * (sqrf(vcd[indx - v2]) + sqrf(vcd[indx]) + sqrf(vcd[indx + v2]))
+                           - sqrf(vcd[indx - v2] + vcd[indx] + vcd[indx + v2]);
+            const float vcdaltvar = 3.f * (sqrf(vcdalt[indx - v2]) + sqrf(vcdalt[indx]) + sqrf(vcdalt[indx + v2]))
+                              - sqrf(vcdalt[indx - v2] + vcdalt[indx] + vcdalt[indx + v2]);
 
             // choose the smallest variance; this yields a smoother interpolation
             if(hcdaltvar < hcdvar)
@@ -990,7 +568,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                 }
                 else
                 {
-                  float hwt = 1.f - 3.f * hcd[indx] / (eps + Ginth + cfa[indx]);
+                  const float hwt = 1.f - 3.f * hcd[indx] / (eps + Ginth + cfa[indx]);
                   hcd[indx] = hwt * hcd[indx]
                               + (1.f - hwt) * (-ULIM(Ginth, cfa[indx - 1], cfa[indx + 1]) + cfa[indx]);
                 }
@@ -1004,7 +582,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                 }
                 else
                 {
-                  float vwt = 1.f - 3.f * vcd[indx] / (eps + Gintv + cfa[indx]);
+                  const float vwt = 1.f - 3.f * vcd[indx] / (eps + Gintv + cfa[indx]);
                   vcd[indx] = vwt * vcd[indx]
                               + (1.f - vwt) * (-ULIM(Gintv, cfa[indx - v1], cfa[indx + v1]) + cfa[indx]);
                 }
@@ -1048,7 +626,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                 }
                 else
                 {
-                  float vwt = 1.f + 3.f * vcd[indx] / (eps + Gintv + cfa[indx]);
+                  const float vwt = 1.f + 3.f * vcd[indx] / (eps + Gintv + cfa[indx]);
                   vcd[indx] = vwt * vcd[indx]
                               + (1.f - vwt) * (ULIM(Gintv, cfa[indx - v1], cfa[indx + v1]) - cfa[indx]);
                 }
@@ -1064,73 +642,13 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                 vcd[indx] = ULIM(Gintv, cfa[indx - v1], cfa[indx + v1]) - cfa[indx];
               }
 
-              cddiffsq[indx] = SQR(vcd[indx] - hcd[indx]);
+              cddiffsq[indx] = sqrf(vcd[indx] - hcd[indx]);
             }
 
             c = !c;
           }
         }
 
-#endif
-
-
-
-#ifdef __SSE2__
-        vfloat epssqv = F2V(epssq);
-
-        for(int rr = 6; rr < rr1 - 6; rr++)
-        {
-          for(int indx = rr * ts + 6 + (FC(rr, 2, filters) & 1); indx < rr * ts + cc1 - 6; indx += 8)
-          {
-            // compute colour difference variances in cardinal directions
-            vfloat tempv = LC2VFU(vcd[indx]);
-            vfloat uavev = tempv + LC2VFU(vcd[indx - v1]) + LC2VFU(vcd[indx - v2]) + LC2VFU(vcd[indx - v3]);
-            vfloat davev = tempv + LC2VFU(vcd[indx + v1]) + LC2VFU(vcd[indx + v2]) + LC2VFU(vcd[indx + v3]);
-            vfloat Dgrbvvaruv = SQRV(tempv - uavev) + SQRV(LC2VFU(vcd[indx - v1]) - uavev)
-                                + SQRV(LC2VFU(vcd[indx - v2]) - uavev) + SQRV(LC2VFU(vcd[indx - v3]) - uavev);
-            vfloat Dgrbvvardv = SQRV(tempv - davev) + SQRV(LC2VFU(vcd[indx + v1]) - davev)
-                                + SQRV(LC2VFU(vcd[indx + v2]) - davev) + SQRV(LC2VFU(vcd[indx + v3]) - davev);
-
-            vfloat hwtv = vadivapb(LC2VFU(dirwts1[indx - 1]), LC2VFU(dirwts1[indx + 1]));
-            vfloat vwtv = vadivapb(LC2VFU(dirwts0[indx - v1]), LC2VFU(dirwts0[indx + v1]));
-
-            tempv = LC2VFU(hcd[indx]);
-            vfloat lavev = tempv + vaddc2vfu(hcd[indx - 3]) + LC2VFU(hcd[indx - 1]);
-            vfloat ravev = tempv + vaddc2vfu(hcd[indx + 1]) + LC2VFU(hcd[indx + 3]);
-
-            vfloat Dgrbhvarlv = SQRV(tempv - lavev) + SQRV(LC2VFU(hcd[indx - 1]) - lavev)
-                                + SQRV(LC2VFU(hcd[indx - 2]) - lavev) + SQRV(LC2VFU(hcd[indx - 3]) - lavev);
-            vfloat Dgrbhvarrv = SQRV(tempv - ravev) + SQRV(LC2VFU(hcd[indx + 1]) - ravev)
-                                + SQRV(LC2VFU(hcd[indx + 2]) - ravev) + SQRV(LC2VFU(hcd[indx + 3]) - ravev);
-
-
-            vfloat vcdvarv = epssqv + vintpf(vwtv, Dgrbvvardv, Dgrbvvaruv);
-            vfloat hcdvarv = epssqv + vintpf(hwtv, Dgrbhvarrv, Dgrbhvarlv);
-
-            // compute fluctuations in up/down and left/right interpolations of colours
-            Dgrbvvaruv = LC2VFU(dgintv[indx - v1]) + LC2VFU(dgintv[indx - v2]);
-            Dgrbvvardv = LC2VFU(dgintv[indx + v1]) + LC2VFU(dgintv[indx + v2]);
-
-            Dgrbhvarlv = vaddc2vfu(dginth[indx - 2]);
-            Dgrbhvarrv = vaddc2vfu(dginth[indx + 1]);
-
-            vfloat vcdvar1v = epssqv + LC2VFU(dgintv[indx]) + vintpf(vwtv, Dgrbvvardv, Dgrbvvaruv);
-            vfloat hcdvar1v = epssqv + LC2VFU(dginth[indx]) + vintpf(hwtv, Dgrbhvarrv, Dgrbhvarlv);
-
-            // determine adaptive weights for G interpolation
-            vfloat varwtv = hcdvarv / (vcdvarv + hcdvarv);
-            vfloat diffwtv = hcdvar1v / (vcdvar1v + hcdvar1v);
-
-            // if both agree on interpolation direction, choose the one with strongest directional
-            // discrimination;
-            // otherwise, choose the u/d and l/r difference fluctuation weights
-            vmask decmask = vandm(vmaskf_gt((zd5v - varwtv) * (zd5v - diffwtv), ZEROV),
-                                  vmaskf_lt(vabsf(zd5v - diffwtv), vabsf(zd5v - varwtv)));
-            STVFU(hvwt[indx >> 1], vself(decmask, varwtv, diffwtv));
-          }
-        }
-
-#else
 
         for(int rr = 6; rr < rr1 - 6; rr++)
         {
@@ -1139,26 +657,26 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
 
             // compute colour difference variances in cardinal directions
 
-            float uave = vcd[indx] + vcd[indx - v1] + vcd[indx - v2] + vcd[indx - v3];
-            float dave = vcd[indx] + vcd[indx + v1] + vcd[indx + v2] + vcd[indx + v3];
-            float lave = hcd[indx] + hcd[indx - 1] + hcd[indx - 2] + hcd[indx - 3];
-            float rave = hcd[indx] + hcd[indx + 1] + hcd[indx + 2] + hcd[indx + 3];
+            const float uave = vcd[indx] + vcd[indx - v1] + vcd[indx - v2] + vcd[indx - v3];
+            const float dave = vcd[indx] + vcd[indx + v1] + vcd[indx + v2] + vcd[indx + v3];
+            const float lave = hcd[indx] + hcd[indx - 1] + hcd[indx - 2] + hcd[indx - 3];
+            const float rave = hcd[indx] + hcd[indx + 1] + hcd[indx + 2] + hcd[indx + 3];
 
             // colour difference (G-R or G-B) variance in up/down/left/right directions
-            float Dgrbvvaru = SQR(vcd[indx] - uave) + SQR(vcd[indx - v1] - uave) + SQR(vcd[indx - v2] - uave)
-                              + SQR(vcd[indx - v3] - uave);
-            float Dgrbvvard = SQR(vcd[indx] - dave) + SQR(vcd[indx + v1] - dave) + SQR(vcd[indx + v2] - dave)
-                              + SQR(vcd[indx + v3] - dave);
-            float Dgrbhvarl = SQR(hcd[indx] - lave) + SQR(hcd[indx - 1] - lave) + SQR(hcd[indx - 2] - lave)
-                              + SQR(hcd[indx - 3] - lave);
-            float Dgrbhvarr = SQR(hcd[indx] - rave) + SQR(hcd[indx + 1] - rave) + SQR(hcd[indx + 2] - rave)
-                              + SQR(hcd[indx + 3] - rave);
+            float Dgrbvvaru = sqrf(vcd[indx] - uave) + sqrf(vcd[indx - v1] - uave) + sqrf(vcd[indx - v2] - uave)
+                              + sqrf(vcd[indx - v3] - uave);
+            float Dgrbvvard = sqrf(vcd[indx] - dave) + sqrf(vcd[indx + v1] - dave) + sqrf(vcd[indx + v2] - dave)
+                              + sqrf(vcd[indx + v3] - dave);
+            float Dgrbhvarl = sqrf(hcd[indx] - lave) + sqrf(hcd[indx - 1] - lave) + sqrf(hcd[indx - 2] - lave)
+                              + sqrf(hcd[indx - 3] - lave);
+            float Dgrbhvarr = sqrf(hcd[indx] - rave) + sqrf(hcd[indx + 1] - rave) + sqrf(hcd[indx + 2] - rave)
+                              + sqrf(hcd[indx + 3] - rave);
 
-            float hwt = dirwts1[indx - 1] / (dirwts1[indx - 1] + dirwts1[indx + 1]);
-            float vwt = dirwts0[indx - v1] / (dirwts0[indx + v1] + dirwts0[indx - v1]);
+            const float hwt = dirwts1[indx - 1] / (dirwts1[indx - 1] + dirwts1[indx + 1]);
+            const float vwt = dirwts0[indx - v1] / (dirwts0[indx + v1] + dirwts0[indx - v1]);
 
-            float vcdvar = epssq + vwt * Dgrbvvard + (1.f - vwt) * Dgrbvvaru;
-            float hcdvar = epssq + hwt * Dgrbhvarr + (1.f - hwt) * Dgrbhvarl;
+            const float vcdvar = epssq + vwt * Dgrbvvard + (1.f - vwt) * Dgrbvvaru;
+            const float hcdvar = epssq + hwt * Dgrbhvarr + (1.f - hwt) * Dgrbhvarl;
 
             // compute fluctuations in up/down and left/right interpolations of colours
             Dgrbvvaru = (dgintv[indx]) + (dgintv[indx - v1]) + (dgintv[indx - v2]);
@@ -1170,8 +688,8 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             float hcdvar1 = epssq + hwt * Dgrbhvarr + (1.f - hwt) * Dgrbhvarl;
 
             // determine adaptive weights for G interpolation
-            float varwt = hcdvar / (vcdvar + hcdvar);
-            float diffwt = hcdvar1 / (vcdvar1 + hcdvar1);
+            const float varwt = hcdvar / (vcdvar + hcdvar);
+            const float diffwt = hcdvar1 / (vcdvar1 + hcdvar1);
 
             // if both agree on interpolation direction, choose the one with strongest directional
             // discrimination;
@@ -1187,57 +705,11 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
           }
         }
 
-#endif
-
-#ifdef __SSE2__
-        vfloat gaussg0 = F2V(gaussgrad[0]);
-        vfloat gaussg1 = F2V(gaussgrad[1]);
-        vfloat gaussg2 = F2V(gaussgrad[2]);
-        vfloat gaussg3 = F2V(gaussgrad[3]);
-        vfloat gaussg4 = F2V(gaussgrad[4]);
-        vfloat gaussg5 = F2V(gaussgrad[5]);
-        vfloat gausso0 = F2V(gaussodd[0]);
-        vfloat gausso1 = F2V(gaussodd[1]);
-        vfloat gausso2 = F2V(gaussodd[2]);
-        vfloat gausso3 = F2V(gaussodd[3]);
-
-#endif
-
         // precompute nyquist
         for(int rr = 6; rr < rr1 - 6; rr++)
         {
           int cc = 6 + (FC(rr, 2, filters) & 1);
           int indx = rr * ts + cc;
-
-#ifdef __SSE2__
-
-          for(; cc < cc1 - 7; cc += 8, indx += 8)
-          {
-            vfloat valv
-                = (gausso0 * LC2VFU(cddiffsq[indx])
-                   + gausso1 * (LC2VFU(cddiffsq[(indx - m1)]) + LC2VFU(cddiffsq[(indx + p1)])
-                                + LC2VFU(cddiffsq[(indx - p1)]) + LC2VFU(cddiffsq[(indx + m1)]))
-                   + gausso2 * (LC2VFU(cddiffsq[(indx - v2)]) + LC2VFU(cddiffsq[(indx - 2)])
-                                + LC2VFU(cddiffsq[(indx + 2)]) + LC2VFU(cddiffsq[(indx + v2)]))
-                   + gausso3 * (LC2VFU(cddiffsq[(indx - m2)]) + LC2VFU(cddiffsq[(indx + p2)])
-                                + LC2VFU(cddiffsq[(indx - p2)]) + LC2VFU(cddiffsq[(indx + m2)])))
-                  - (gaussg0 * LC2VFU(delhvsqsum[indx])
-                     + gaussg1 * (LC2VFU(delhvsqsum[indx - v1]) + LC2VFU(delhvsqsum[indx - 1])
-                                  + LC2VFU(delhvsqsum[indx + 1]) + LC2VFU(delhvsqsum[indx + v1]))
-                     + gaussg2 * (LC2VFU(delhvsqsum[indx - m1]) + LC2VFU(delhvsqsum[indx + p1])
-                                  + LC2VFU(delhvsqsum[indx - p1]) + LC2VFU(delhvsqsum[indx + m1]))
-                     + gaussg3 * (LC2VFU(delhvsqsum[indx - v2]) + LC2VFU(delhvsqsum[indx - 2])
-                                  + LC2VFU(delhvsqsum[indx + 2]) + LC2VFU(delhvsqsum[indx + v2]))
-                     + gaussg4 * (LC2VFU(delhvsqsum[indx - v2 - 1]) + LC2VFU(delhvsqsum[indx - v2 + 1])
-                                  + LC2VFU(delhvsqsum[indx - ts - 2]) + LC2VFU(delhvsqsum[indx - ts + 2])
-                                  + LC2VFU(delhvsqsum[indx + ts - 2]) + LC2VFU(delhvsqsum[indx + ts + 2])
-                                  + LC2VFU(delhvsqsum[indx + v2 - 1]) + LC2VFU(delhvsqsum[indx + v2 + 1]))
-                     + gaussg5 * (LC2VFU(delhvsqsum[indx - m2]) + LC2VFU(delhvsqsum[indx + p2])
-                                  + LC2VFU(delhvsqsum[indx - p2]) + LC2VFU(delhvsqsum[indx + m2])));
-            STVFU(nyqutest[indx >> 1], valv);
-          }
-
-#endif
 
           for(; cc < cc1 - 6; cc += 2, indx += 2)
           {
@@ -1303,37 +775,8 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
           nyendcol = std::min(cc1 - 8, nyendcol);
           memset(&nyquist2[4 * tsh], 0, sizeof(char) * (ts - 8) * tsh);
 
-#ifdef __SSE2__
-          vint fourvb = _mm_set1_epi8(4);
-          vint onevb = _mm_set1_epi8(1);
-
-#endif
-
           for(int rr = nystartrow; rr < nyendrow; rr++)
           {
-#ifdef __SSE2__
-
-            for(int indx = rr * ts; indx < rr * ts + cc1; indx += 32)
-            {
-              vint nyquisttemp1v = _mm_adds_epi8(_mm_load_si128((vint *)&nyquist[(indx - v2) >> 1]),
-                                                 _mm_loadu_si128((vint *)&nyquist[(indx - m1) >> 1]));
-              vint nyquisttemp2v = _mm_adds_epi8(_mm_loadu_si128((vint *)&nyquist[(indx + p1) >> 1]),
-                                                 _mm_loadu_si128((vint *)&nyquist[(indx - 2) >> 1]));
-              vint nyquisttemp3v = _mm_adds_epi8(_mm_loadu_si128((vint *)&nyquist[(indx + 2) >> 1]),
-                                                 _mm_loadu_si128((vint *)&nyquist[(indx - p1) >> 1]));
-              vint valv = _mm_load_si128((vint *)&nyquist[indx >> 1]);
-              vint nyquisttemp4v = _mm_adds_epi8(_mm_loadu_si128((vint *)&nyquist[(indx + m1) >> 1]),
-                                                 _mm_load_si128((vint *)&nyquist[(indx + v2) >> 1]));
-              nyquisttemp1v = _mm_adds_epi8(nyquisttemp1v, nyquisttemp3v);
-              nyquisttemp2v = _mm_adds_epi8(nyquisttemp2v, nyquisttemp4v);
-              nyquisttemp1v = _mm_adds_epi8(nyquisttemp1v, nyquisttemp2v);
-              valv = vselc(_mm_cmpgt_epi8(nyquisttemp1v, fourvb), onevb, valv);
-              valv = vselinotzero(_mm_cmplt_epi8(nyquisttemp1v, fourvb), valv);
-              _mm_store_si128((vint *)&nyquist2[indx >> 1], valv);
-            }
-
-#else
-
             for(int indx = rr * ts + nystartcol + (FC(rr, 2, filters) & 1); indx < rr * ts + nyendcol;
                 indx += 2)
             {
@@ -1344,8 +787,6 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               // if most of your neighbours are named Nyquist, it's likely that you're one too, or not
               nyquist2[indx >> 1] = nyquisttemp > 4 ? 1 : (nyquisttemp < 4 ? 0 : nyquist[indx >> 1]);
             }
-
-#endif
           }
 
           // end of Nyquist test
@@ -1374,19 +815,19 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                       sumcfa += cfatemp;
                       sumh += (cfa[indx1 - 1] + cfa[indx1 + 1]);
                       sumv += (cfa[indx1 - v1] + cfa[indx1 + v1]);
-                      sumsqh += SQR(cfatemp - cfa[indx1 - 1]) + SQR(cfatemp - cfa[indx1 + 1]);
-                      sumsqv += SQR(cfatemp - cfa[indx1 - v1]) + SQR(cfatemp - cfa[indx1 + v1]);
+                      sumsqh += sqrf(cfatemp - cfa[indx1 - 1]) + sqrf(cfatemp - cfa[indx1 + 1]);
+                      sumsqv += sqrf(cfatemp - cfa[indx1 - v1]) + sqrf(cfatemp - cfa[indx1 + v1]);
                       areawt += 1;
                     }
                   }
                 }
 
                 // horizontal and vertical colour differences, and adaptive weight
-                sumh = sumcfa - xdiv2f(sumh);
-                sumv = sumcfa - xdiv2f(sumv);
-                areawt = xdiv2f(areawt);
-                float hcdvar = epssq + fabsf(areawt * sumsqh - sumh * sumh);
-                float vcdvar = epssq + fabsf(areawt * sumsqv - sumv * sumv);
+                sumh = sumcfa - _xdiv2f(sumh);
+                sumv = sumcfa - _xdiv2f(sumv);
+                areawt = _xdiv2f(areawt);
+                const float hcdvar = epssq + fabsf(areawt * sumsqh - sumh * sumh);
+                const float vcdvar = epssq + fabsf(areawt * sumsqv - sumv * sumv);
                 hvwt[indx >> 1] = hcdvar / (vcdvar + hcdvar);
 
                 // end of area interpolation
@@ -1401,7 +842,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
           {
 
             // first ask if one gets more directional discrimination from nearby B/R sites
-            float hvwtalt = xdivf(hvwt[(indx - m1) >> 1] + hvwt[(indx + p1) >> 1] + hvwt[(indx - p1) >> 1]
+            const float hvwtalt = _xdivf(hvwt[(indx - m1) >> 1] + hvwt[(indx + p1) >> 1] + hvwt[(indx - p1) >> 1]
                                       + hvwt[(indx + m1) >> 1],
                                   2);
 
@@ -1409,16 +850,16 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                 = fabsf(0.5f - hvwt[indx >> 1]) < fabsf(0.5f - hvwtalt) ? hvwtalt : hvwt[indx >> 1];
             // a better result was obtained from the neighbours
 
-            Dgrb[0][indx >> 1] = intp(hvwt[indx >> 1], vcd[indx], hcd[indx]); // evaluate colour differences
+            Dgrb[0][indx >> 1] = interpolatef(hvwt[indx >> 1], vcd[indx], hcd[indx]); // evaluate colour differences
 
             rgbgreen[indx] = cfa[indx] + Dgrb[0][indx >> 1]; // evaluate G (finally!)
 
             // local curvature in G (preparation for nyquist refinement step)
             Dgrb2[indx >> 1].h = nyquist2[indx >> 1]
-                                     ? SQR(rgbgreen[indx] - xdiv2f(rgbgreen[indx - 1] + rgbgreen[indx + 1]))
+                                     ? sqrf(rgbgreen[indx] - _xdiv2f(rgbgreen[indx - 1] + rgbgreen[indx + 1]))
                                      : 0.f;
             Dgrb2[indx >> 1].v = nyquist2[indx >> 1]
-                                     ? SQR(rgbgreen[indx] - xdiv2f(rgbgreen[indx - v1] + rgbgreen[indx + v1]))
+                                     ? sqrf(rgbgreen[indx] - _xdiv2f(rgbgreen[indx - v1] + rgbgreen[indx + v1]))
                                      : 0.f;
           }
 
@@ -1436,7 +877,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               if(nyquist2[indx >> 1])
               {
                 // local averages (over Nyquist pixels only) of G curvature squared
-                float gvarh
+                const float gvarh
                     = epssq + (gquinc[0] * Dgrb2[indx >> 1].h
                                + gquinc[1] * (Dgrb2[(indx - m1) >> 1].h + Dgrb2[(indx + p1) >> 1].h
                                               + Dgrb2[(indx - p1) >> 1].h + Dgrb2[(indx + m1) >> 1].h)
@@ -1444,7 +885,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                                               + Dgrb2[(indx + 2) >> 1].h + Dgrb2[(indx + v2) >> 1].h)
                                + gquinc[3] * (Dgrb2[(indx - m2) >> 1].h + Dgrb2[(indx + p2) >> 1].h
                                               + Dgrb2[(indx - p2) >> 1].h + Dgrb2[(indx + m2) >> 1].h));
-                float gvarv
+                const float gvarv
                     = epssq + (gquinc[0] * Dgrb2[indx >> 1].v
                                + gquinc[1] * (Dgrb2[(indx - m1) >> 1].v + Dgrb2[(indx + p1) >> 1].v
                                               + Dgrb2[(indx - p1) >> 1].v + Dgrb2[(indx + m1) >> 1].v)
@@ -1459,45 +900,6 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
         }
 
-
-#ifdef __SSE2__
-
-        for(int rr = 6; rr < rr1 - 6; rr++)
-        {
-          if((FC(rr, 2, filters) & 1) == 0)
-          {
-            for(int cc = 6, indx = rr * ts + cc; cc < cc1 - 6; cc += 8, indx += 8)
-            {
-              vfloat tempv = LC2VFU(cfa[indx + 1]);
-              vfloat Dgrbsq1pv
-                  = (SQRV(tempv - LC2VFU(cfa[indx + 1 - p1])) + SQRV(tempv - LC2VFU(cfa[indx + 1 + p1])));
-              STVFU(delp[indx >> 1], vabsf(LC2VFU(cfa[indx + p1]) - LC2VFU(cfa[indx - p1])));
-              STVFU(delm[indx >> 1], vabsf(LC2VFU(cfa[indx + m1]) - LC2VFU(cfa[indx - m1])));
-              vfloat Dgrbsq1mv
-                  = (SQRV(tempv - LC2VFU(cfa[indx + 1 - m1])) + SQRV(tempv - LC2VFU(cfa[indx + 1 + m1])));
-              STVFU(Dgrbsq1m[indx >> 1], Dgrbsq1mv);
-              STVFU(Dgrbsq1p[indx >> 1], Dgrbsq1pv);
-            }
-          }
-          else
-          {
-            for(int cc = 6, indx = rr * ts + cc; cc < cc1 - 6; cc += 8, indx += 8)
-            {
-              vfloat tempv = LC2VFU(cfa[indx]);
-              vfloat Dgrbsq1pv
-                  = (SQRV(tempv - LC2VFU(cfa[indx - p1])) + SQRV(tempv - LC2VFU(cfa[indx + p1])));
-              STVFU(delp[indx >> 1], vabsf(LC2VFU(cfa[indx + 1 + p1]) - LC2VFU(cfa[indx + 1 - p1])));
-              STVFU(delm[indx >> 1], vabsf(LC2VFU(cfa[indx + 1 + m1]) - LC2VFU(cfa[indx + 1 - m1])));
-              vfloat Dgrbsq1mv
-                  = (SQRV(tempv - LC2VFU(cfa[indx - m1])) + SQRV(tempv - LC2VFU(cfa[indx + m1])));
-              STVFU(Dgrbsq1m[indx >> 1], Dgrbsq1mv);
-              STVFU(Dgrbsq1p[indx >> 1], Dgrbsq1pv);
-            }
-          }
-        }
-
-#else
-
         for(int rr = 6; rr < rr1 - 6; rr++)
         {
           if((FC(rr, 2, filters) & 1) == 0)
@@ -1507,135 +909,35 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               delp[indx >> 1] = fabsf(cfa[indx + p1] - cfa[indx - p1]);
               delm[indx >> 1] = fabsf(cfa[indx + m1] - cfa[indx - m1]);
               Dgrbsq1p[indx >> 1]
-                  = (SQR(cfa[indx + 1] - cfa[indx + 1 - p1]) + SQR(cfa[indx + 1] - cfa[indx + 1 + p1]));
+                  = (sqrf(cfa[indx + 1] - cfa[indx + 1 - p1]) + sqrf(cfa[indx + 1] - cfa[indx + 1 + p1]));
               Dgrbsq1m[indx >> 1]
-                  = (SQR(cfa[indx + 1] - cfa[indx + 1 - m1]) + SQR(cfa[indx + 1] - cfa[indx + 1 + m1]));
+                  = (sqrf(cfa[indx + 1] - cfa[indx + 1 - m1]) + sqrf(cfa[indx + 1] - cfa[indx + 1 + m1]));
             }
           }
           else
           {
             for(int cc = 6, indx = rr * ts + cc; cc < cc1 - 6; cc += 2, indx += 2)
             {
-              Dgrbsq1p[indx >> 1] = (SQR(cfa[indx] - cfa[indx - p1]) + SQR(cfa[indx] - cfa[indx + p1]));
-              Dgrbsq1m[indx >> 1] = (SQR(cfa[indx] - cfa[indx - m1]) + SQR(cfa[indx] - cfa[indx + m1]));
+              Dgrbsq1p[indx >> 1] = (sqrf(cfa[indx] - cfa[indx - p1]) + sqrf(cfa[indx] - cfa[indx + p1]));
+              Dgrbsq1m[indx >> 1] = (sqrf(cfa[indx] - cfa[indx - m1]) + sqrf(cfa[indx] - cfa[indx + m1]));
               delp[indx >> 1] = fabsf(cfa[indx + 1 + p1] - cfa[indx + 1 - p1]);
               delm[indx >> 1] = fabsf(cfa[indx + 1 + m1] - cfa[indx + 1 - m1]);
             }
           }
         }
 
-#endif
-
 // diagonal interpolation correction
-
-#ifdef __SSE2__
-        vfloat gausseven0v = F2V(gausseven[0]);
-        vfloat gausseven1v = F2V(gausseven[1]);
-#endif
-
         for(int rr = 8; rr < rr1 - 8; rr++)
         {
-#ifdef __SSE2__
-
-          for(int indx = rr * ts + 8 + (FC(rr, 2, filters) & 1), indx1 = indx >> 1; indx < rr * ts + cc1 - 8;
-              indx += 8, indx1 += 4)
-          {
-
-            // diagonal colour ratios
-            vfloat cfav = LC2VFU(cfa[indx]);
-
-            vfloat temp1v = LC2VFU(cfa[indx + m1]);
-            vfloat temp2v = LC2VFU(cfa[indx + m2]);
-            vfloat rbsev = vmul2f(temp1v) / (epsv + cfav + temp2v);
-            rbsev = vself(vmaskf_lt(vabsf(onev - rbsev), arthreshv), cfav * rbsev,
-                          temp1v + zd5v * (cfav - temp2v));
-
-            temp1v = LC2VFU(cfa[indx - m1]);
-            temp2v = LC2VFU(cfa[indx - m2]);
-            vfloat rbnwv = vmul2f(temp1v) / (epsv + cfav + temp2v);
-            rbnwv = vself(vmaskf_lt(vabsf(onev - rbnwv), arthreshv), cfav * rbnwv,
-                          temp1v + zd5v * (cfav - temp2v));
-
-            temp1v = epsv + LVFU(delm[indx1]);
-            vfloat wtsev = temp1v + LVFU(delm[(indx + m1) >> 1])
-                           + LVFU(delm[(indx + m2) >> 1]); // same as for wtu,wtd,wtl,wtr
-            vfloat wtnwv = temp1v + LVFU(delm[(indx - m1) >> 1]) + LVFU(delm[(indx - m2) >> 1]);
-
-            vfloat rbmv = (wtsev * rbnwv + wtnwv * rbsev) / (wtsev + wtnwv);
-
-            temp1v = ULIMV(rbmv, LC2VFU(cfa[indx - m1]), LC2VFU(cfa[indx + m1]));
-            vfloat wtv = vmul2f(cfav - rbmv) / (epsv + rbmv + cfav);
-            temp2v = vintpf(wtv, rbmv, temp1v);
-
-            temp2v = vself(vmaskf_lt(rbmv + rbmv, cfav), temp1v, temp2v);
-            temp2v = vself(vmaskf_lt(rbmv, cfav), temp2v, rbmv);
-            STVFU(rbm[indx1], vself(vmaskf_gt(temp2v, clip_ptv),
-                                    ULIMV(temp2v, LC2VFU(cfa[indx - m1]), LC2VFU(cfa[indx + m1])), temp2v));
-
-
-            temp1v = LC2VFU(cfa[indx + p1]);
-            temp2v = LC2VFU(cfa[indx + p2]);
-            vfloat rbnev = vmul2f(temp1v) / (epsv + cfav + temp2v);
-            rbnev = vself(vmaskf_lt(vabsf(onev - rbnev), arthreshv), cfav * rbnev,
-                          temp1v + zd5v * (cfav - temp2v));
-
-            temp1v = LC2VFU(cfa[indx - p1]);
-            temp2v = LC2VFU(cfa[indx - p2]);
-            vfloat rbswv = vmul2f(temp1v) / (epsv + cfav + temp2v);
-            rbswv = vself(vmaskf_lt(vabsf(onev - rbswv), arthreshv), cfav * rbswv,
-                          temp1v + zd5v * (cfav - temp2v));
-
-            temp1v = epsv + LVFU(delp[indx1]);
-            vfloat wtnev = temp1v + LVFU(delp[(indx + p1) >> 1]) + LVFU(delp[(indx + p2) >> 1]);
-            vfloat wtswv = temp1v + LVFU(delp[(indx - p1) >> 1]) + LVFU(delp[(indx - p2) >> 1]);
-
-            vfloat rbpv = (wtnev * rbswv + wtswv * rbnev) / (wtnev + wtswv);
-
-            temp1v = ULIMV(rbpv, LC2VFU(cfa[indx - p1]), LC2VFU(cfa[indx + p1]));
-            wtv = vmul2f(cfav - rbpv) / (epsv + rbpv + cfav);
-            temp2v = vintpf(wtv, rbpv, temp1v);
-
-            temp2v = vself(vmaskf_lt(rbpv + rbpv, cfav), temp1v, temp2v);
-            temp2v = vself(vmaskf_lt(rbpv, cfav), temp2v, rbpv);
-            STVFU(rbp[indx1], vself(vmaskf_gt(temp2v, clip_ptv),
-                                    ULIMV(temp2v, LC2VFU(cfa[indx - p1]), LC2VFU(cfa[indx + p1])), temp2v));
-
-            vfloat rbvarmv
-                = epssqv
-                  + (gausseven0v * (LVFU(Dgrbsq1m[(indx - v1) >> 1]) + LVFU(Dgrbsq1m[(indx - 1) >> 1])
-                                    + LVFU(Dgrbsq1m[(indx + 1) >> 1]) + LVFU(Dgrbsq1m[(indx + v1) >> 1]))
-                     + gausseven1v
-                           * (LVFU(Dgrbsq1m[(indx - v2 - 1) >> 1]) + LVFU(Dgrbsq1m[(indx - v2 + 1) >> 1])
-                              + LVFU(Dgrbsq1m[(indx - 2 - v1) >> 1]) + LVFU(Dgrbsq1m[(indx + 2 - v1) >> 1])
-                              + LVFU(Dgrbsq1m[(indx - 2 + v1) >> 1]) + LVFU(Dgrbsq1m[(indx + 2 + v1) >> 1])
-                              + LVFU(Dgrbsq1m[(indx + v2 - 1) >> 1]) + LVFU(Dgrbsq1m[(indx + v2 + 1) >> 1])));
-            STVFU(pmwt[indx1],
-                  rbvarmv / ((epssqv
-                              + (gausseven0v
-                                     * (LVFU(Dgrbsq1p[(indx - v1) >> 1]) + LVFU(Dgrbsq1p[(indx - 1) >> 1])
-                                        + LVFU(Dgrbsq1p[(indx + 1) >> 1]) + LVFU(Dgrbsq1p[(indx + v1) >> 1]))
-                                 + gausseven1v * (LVFU(Dgrbsq1p[(indx - v2 - 1) >> 1])
-                                                  + LVFU(Dgrbsq1p[(indx - v2 + 1) >> 1])
-                                                  + LVFU(Dgrbsq1p[(indx - 2 - v1) >> 1])
-                                                  + LVFU(Dgrbsq1p[(indx + 2 - v1) >> 1])
-                                                  + LVFU(Dgrbsq1p[(indx - 2 + v1) >> 1])
-                                                  + LVFU(Dgrbsq1p[(indx + 2 + v1) >> 1])
-                                                  + LVFU(Dgrbsq1p[(indx + v2 - 1) >> 1])
-                                                  + LVFU(Dgrbsq1p[(indx + v2 + 1) >> 1]))))
-                             + rbvarmv));
-          }
-
-#else
-
           for(int cc = 8 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, indx1 = indx >> 1; cc < cc1 - 8;
               cc += 2, indx += 2, indx1++)
           {
 
             // diagonal colour ratios
-            float crse = xmul2f(cfa[indx + m1]) / (eps + cfa[indx] + (cfa[indx + m2]));
-            float crnw = xmul2f(cfa[indx - m1]) / (eps + cfa[indx] + (cfa[indx - m2]));
-            float crne = xmul2f(cfa[indx + p1]) / (eps + cfa[indx] + (cfa[indx + p2]));
-            float crsw = xmul2f(cfa[indx - p1]) / (eps + cfa[indx] + (cfa[indx - p2]));
+            float crse = _xmul2f(cfa[indx + m1]) / (eps + cfa[indx] + (cfa[indx + m2]));
+            float crnw = _xmul2f(cfa[indx - m1]) / (eps + cfa[indx] + (cfa[indx - m2]));
+            float crne = _xmul2f(cfa[indx + p1]) / (eps + cfa[indx] + (cfa[indx + p2]));
+            float crsw = _xmul2f(cfa[indx - p1]) / (eps + cfa[indx] + (cfa[indx - p2]));
             // colour differences in diagonal directions
             float rbse, rbnw, rbne, rbsw;
 
@@ -1646,7 +948,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
             else
             {
-              rbse = (cfa[indx + m1]) + xdiv2f(cfa[indx] - cfa[indx + m2]);
+              rbse = (cfa[indx + m1]) + _xdiv2f(cfa[indx] - cfa[indx + m2]);
             }
 
             if(fabsf(1.f - crnw) < arthresh)
@@ -1655,7 +957,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
             else
             {
-              rbnw = (cfa[indx - m1]) + xdiv2f(cfa[indx] - cfa[indx - m2]);
+              rbnw = (cfa[indx - m1]) + _xdiv2f(cfa[indx] - cfa[indx - m2]);
             }
 
             if(fabsf(1.f - crne) < arthresh)
@@ -1664,7 +966,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
             else
             {
-              rbne = (cfa[indx + p1]) + xdiv2f(cfa[indx] - cfa[indx + p2]);
+              rbne = (cfa[indx + p1]) + _xdiv2f(cfa[indx] - cfa[indx + p2]);
             }
 
             if(fabsf(1.f - crsw) < arthresh)
@@ -1673,30 +975,28 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
             else
             {
-              rbsw = (cfa[indx - p1]) + xdiv2f(cfa[indx] - cfa[indx - p2]);
+              rbsw = (cfa[indx - p1]) + _xdiv2f(cfa[indx] - cfa[indx - p2]);
             }
 
-            float wtse = eps + delm[indx1] + delm[(indx + m1) >> 1]
+            const float wtse = eps + delm[indx1] + delm[(indx + m1) >> 1]
                          + delm[(indx + m2) >> 1]; // same as for wtu,wtd,wtl,wtr
-            float wtnw = eps + delm[indx1] + delm[(indx - m1) >> 1] + delm[(indx - m2) >> 1];
-            float wtne = eps + delp[indx1] + delp[(indx + p1) >> 1] + delp[(indx + p2) >> 1];
-            float wtsw = eps + delp[indx1] + delp[(indx - p1) >> 1] + delp[(indx - p2) >> 1];
+            const float wtnw = eps + delm[indx1] + delm[(indx - m1) >> 1] + delm[(indx - m2) >> 1];
+            const float wtne = eps + delp[indx1] + delp[(indx + p1) >> 1] + delp[(indx + p2) >> 1];
+            const float wtsw = eps + delp[indx1] + delp[(indx - p1) >> 1] + delp[(indx - p2) >> 1];
 
 
             rbm[indx1] = (wtse * rbnw + wtnw * rbse) / (wtse + wtnw);
             rbp[indx1] = (wtne * rbsw + wtsw * rbne) / (wtne + wtsw);
 
             // variance of R-B in plus/minus directions
-            float rbvarm
-                = epssq
+            const float rbvarm = epssq
                   + (gausseven[0] * (Dgrbsq1m[(indx - v1) >> 1] + Dgrbsq1m[(indx - 1) >> 1]
                                      + Dgrbsq1m[(indx + 1) >> 1] + Dgrbsq1m[(indx + v1) >> 1])
                      + gausseven[1] * (Dgrbsq1m[(indx - v2 - 1) >> 1] + Dgrbsq1m[(indx - v2 + 1) >> 1]
                                        + Dgrbsq1m[(indx - 2 - v1) >> 1] + Dgrbsq1m[(indx + 2 - v1) >> 1]
                                        + Dgrbsq1m[(indx - 2 + v1) >> 1] + Dgrbsq1m[(indx + 2 + v1) >> 1]
                                        + Dgrbsq1m[(indx + v2 - 1) >> 1] + Dgrbsq1m[(indx + v2 + 1) >> 1]));
-            pmwt[indx1]
-                = rbvarm
+            pmwt[indx1] = rbvarm
                   / ((epssq + (gausseven[0] * (Dgrbsq1p[(indx - v1) >> 1] + Dgrbsq1p[(indx - 1) >> 1]
                                                + Dgrbsq1p[(indx + 1) >> 1] + Dgrbsq1p[(indx + v1) >> 1])
                                + gausseven[1]
@@ -1710,29 +1010,27 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
 
             if(rbp[indx1] < cfa[indx])
             {
-              if(xmul2f(rbp[indx1]) < cfa[indx])
+              if(_xmul2f(rbp[indx1]) < cfa[indx])
               {
                 rbp[indx1] = ULIM(rbp[indx1], cfa[indx - p1], cfa[indx + p1]);
               }
               else
               {
-                float pwt = xmul2f(cfa[indx] - rbp[indx1]) / (eps + rbp[indx1] + cfa[indx]);
-                rbp[indx1]
-                    = pwt * rbp[indx1] + (1.f - pwt) * ULIM(rbp[indx1], cfa[indx - p1], cfa[indx + p1]);
+                const float pwt = _xmul2f(cfa[indx] - rbp[indx1]) / (eps + rbp[indx1] + cfa[indx]);
+                rbp[indx1] = pwt * rbp[indx1] + (1.f - pwt) * ULIM(rbp[indx1], cfa[indx - p1], cfa[indx + p1]);
               }
             }
 
             if(rbm[indx1] < cfa[indx])
             {
-              if(xmul2f(rbm[indx1]) < cfa[indx])
+              if(_xmul2f(rbm[indx1]) < cfa[indx])
               {
                 rbm[indx1] = ULIM(rbm[indx1], cfa[indx - m1], cfa[indx + m1]);
               }
               else
               {
-                float mwt = xmul2f(cfa[indx] - rbm[indx1]) / (eps + rbm[indx1] + cfa[indx]);
-                rbm[indx1]
-                    = mwt * rbm[indx1] + (1.f - mwt) * ULIM(rbm[indx1], cfa[indx - m1], cfa[indx + m1]);
+                const float mwt = _xmul2f(cfa[indx] - rbm[indx1]) / (eps + rbm[indx1] + cfa[indx]);
+                rbm[indx1] = mwt * rbm[indx1] + (1.f - mwt) * ULIM(rbm[indx1], cfa[indx - m1], cfa[indx + m1]);
               }
             }
 
@@ -1746,38 +1044,15 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               rbm[indx1] = ULIM(rbm[indx1], cfa[indx - m1], cfa[indx + m1]);
             }
           }
-
-#endif
         }
 
-#ifdef __SSE2__
-        vfloat zd25v = F2V(0.25f);
-#endif
-
         for(int rr = 10; rr < rr1 - 10; rr++)
-#ifdef __SSE2__
-          for(int indx = rr * ts + 10 + (FC(rr, 2, filters) & 1), indx1 = indx >> 1;
-              indx < rr * ts + cc1 - 10; indx += 8, indx1 += 4)
-          {
-
-            // first ask if one gets more directional discrimination from nearby B/R sites
-            vfloat pmwtaltv = zd25v * (LVFU(pmwt[(indx - m1) >> 1]) + LVFU(pmwt[(indx + p1) >> 1])
-                                       + LVFU(pmwt[(indx - p1) >> 1]) + LVFU(pmwt[(indx + m1) >> 1]));
-            vfloat tempv = LVFU(pmwt[indx1]);
-            tempv = vself(vmaskf_lt(vabsf(zd5v - tempv), vabsf(zd5v - pmwtaltv)), pmwtaltv, tempv);
-            STVFU(pmwt[indx1], tempv);
-            STVFU(rbint[indx1],
-                  zd5v * (LC2VFU(cfa[indx]) + vintpf(tempv, LVFU(rbp[indx1]), LVFU(rbm[indx1]))));
-          }
-
-#else
-
           for(int cc = 10 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, indx1 = indx >> 1; cc < cc1 - 10;
               cc += 2, indx += 2, indx1++)
           {
 
             // first ask if one gets more directional discrimination from nearby B/R sites
-            float pmwtalt = xdivf(pmwt[(indx - m1) >> 1] + pmwt[(indx + p1) >> 1] + pmwt[(indx - p1) >> 1]
+            const float pmwtalt = _xdivf(pmwt[(indx - m1) >> 1] + pmwt[(indx + p1) >> 1] + pmwt[(indx - p1) >> 1]
                                       + pmwt[(indx + m1) >> 1],
                                   2);
 
@@ -1786,78 +1061,11 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               pmwt[indx1] = pmwtalt; // a better result was obtained from the neighbours
             }
 
-            rbint[indx1] = xdiv2f(cfa[indx] + rbm[indx1] * (1.f - pmwt[indx1])
+            rbint[indx1] = _xdiv2f(cfa[indx] + rbm[indx1] * (1.f - pmwt[indx1])
                                   + rbp[indx1] * pmwt[indx1]); // this is R+B, interpolated
           }
 
-#endif
-
         for(int rr = 12; rr < rr1 - 12; rr++)
-#ifdef __SSE2__
-          for(int indx = rr * ts + 12 + (FC(rr, 2, filters) & 1), indx1 = indx >> 1;
-              indx < rr * ts + cc1 - 12; indx += 8, indx1 += 4)
-          {
-            vmask copymask = vmaskf_ge(vabsf(zd5v - LVFU(pmwt[indx1])), vabsf(zd5v - LVFU(hvwt[indx1])));
-
-            if(_mm_movemask_ps((vfloat)copymask))
-            { // if for any of the 4 pixels the condition is true, do the maths for all 4 pixels and mask the
-              // unused out at the end
-              // now interpolate G vertically/horizontally using R+B values
-              // unfortunately, since G interpolation cannot be done diagonally this may lead to colour shifts
-              // colour ratios for G interpolation
-              vfloat rbintv = LVFU(rbint[indx1]);
-
-              // interpolated G via adaptive ratios or Hamilton-Adams in each cardinal direction
-              vfloat cruv = vmul2f(LC2VFU(cfa[indx - v1])) / (epsv + rbintv + LVFU(rbint[(indx1 - v1)]));
-              vfloat guv = rbintv * cruv;
-              vfloat gu2v = LC2VFU(cfa[indx - v1]) + zd5v * (rbintv - LVFU(rbint[(indx1 - v1)]));
-              guv = vself(vmaskf_lt(vabsf(onev - cruv), arthreshv), guv, gu2v);
-
-              vfloat crdv = vmul2f(LC2VFU(cfa[indx + v1])) / (epsv + rbintv + LVFU(rbint[(indx1 + v1)]));
-              vfloat gdv = rbintv * crdv;
-              vfloat gd2v = LC2VFU(cfa[indx + v1]) + zd5v * (rbintv - LVFU(rbint[(indx1 + v1)]));
-              gdv = vself(vmaskf_lt(vabsf(onev - crdv), arthreshv), gdv, gd2v);
-
-              vfloat Gintvv = (LC2VFU(dirwts0[indx - v1]) * gdv + LC2VFU(dirwts0[indx + v1]) * guv)
-                              / (LC2VFU(dirwts0[indx + v1]) + LC2VFU(dirwts0[indx - v1]));
-              vfloat Gint1v = ULIMV(Gintvv, LC2VFU(cfa[indx - v1]), LC2VFU(cfa[indx + v1]));
-              vfloat vwtv = vmul2f(rbintv - Gintvv) / (epsv + Gintvv + rbintv);
-              vfloat Gint2v = vintpf(vwtv, Gintvv, Gint1v);
-              Gint1v = vself(vmaskf_lt(vmul2f(Gintvv), rbintv), Gint1v, Gint2v);
-              Gintvv = vself(vmaskf_lt(Gintvv, rbintv), Gint1v, Gintvv);
-              Gintvv = vself(vmaskf_gt(Gintvv, clip_ptv),
-                             ULIMV(Gintvv, LC2VFU(cfa[indx - v1]), LC2VFU(cfa[indx + v1])), Gintvv);
-
-              vfloat crlv = vmul2f(LC2VFU(cfa[indx - 1])) / (epsv + rbintv + LVFU(rbint[(indx1 - 1)]));
-              vfloat glv = rbintv * crlv;
-              vfloat gl2v = LC2VFU(cfa[indx - 1]) + zd5v * (rbintv - LVFU(rbint[(indx1 - 1)]));
-              glv = vself(vmaskf_lt(vabsf(onev - crlv), arthreshv), glv, gl2v);
-
-              vfloat crrv = vmul2f(LC2VFU(cfa[indx + 1])) / (epsv + rbintv + LVFU(rbint[(indx1 + 1)]));
-              vfloat grv = rbintv * crrv;
-              vfloat gr2v = LC2VFU(cfa[indx + 1]) + zd5v * (rbintv - LVFU(rbint[(indx1 + 1)]));
-              grv = vself(vmaskf_lt(vabsf(onev - crrv), arthreshv), grv, gr2v);
-
-              vfloat Ginthv = (LC2VFU(dirwts1[indx - 1]) * grv + LC2VFU(dirwts1[indx + 1]) * glv)
-                              / (LC2VFU(dirwts1[indx - 1]) + LC2VFU(dirwts1[indx + 1]));
-              vfloat Gint1h = ULIMV(Ginthv, LC2VFU(cfa[indx - 1]), LC2VFU(cfa[indx + 1]));
-              vfloat hwtv = vmul2f(rbintv - Ginthv) / (epsv + Ginthv + rbintv);
-              vfloat Gint2h = vintpf(hwtv, Ginthv, Gint1h);
-              Gint1h = vself(vmaskf_lt(vmul2f(Ginthv), rbintv), Gint1h, Gint2h);
-              Ginthv = vself(vmaskf_lt(Ginthv, rbintv), Gint1h, Ginthv);
-              Ginthv = vself(vmaskf_gt(Ginthv, clip_ptv),
-                             ULIMV(Ginthv, LC2VFU(cfa[indx - 1]), LC2VFU(cfa[indx + 1])), Ginthv);
-
-              vfloat greenv
-                  = vself(copymask, vintpf(LVFU(hvwt[indx1]), Gintvv, Ginthv), LC2VFU(rgbgreen[indx]));
-              STC2VFU(rgbgreen[indx], greenv);
-
-              STVFU(Dgrb[0][indx1], vself(copymask, greenv - LC2VFU(cfa[indx]), LVFU(Dgrb[0][indx1])));
-            }
-          }
-
-#else
-
           for(int cc = 12 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, indx1 = indx >> 1; cc < cc1 - 12;
               cc += 2, indx += 2, indx1++)
           {
@@ -1871,10 +1079,10 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             // unfortunately, since G interpolation cannot be done diagonally this may lead to colour shifts
 
             // colour ratios for G interpolation
-            float cru = cfa[indx - v1] * 2.0 / (eps + rbint[indx1] + rbint[(indx1 - v1)]);
-            float crd = cfa[indx + v1] * 2.0 / (eps + rbint[indx1] + rbint[(indx1 + v1)]);
-            float crl = cfa[indx - 1] * 2.0 / (eps + rbint[indx1] + rbint[(indx1 - 1)]);
-            float crr = cfa[indx + 1] * 2.0 / (eps + rbint[indx1] + rbint[(indx1 + 1)]);
+            const float cru = cfa[indx - v1] * 2.0 / (eps + rbint[indx1] + rbint[(indx1 - v1)]);
+            const float crd = cfa[indx + v1] * 2.0 / (eps + rbint[indx1] + rbint[(indx1 + v1)]);
+            const float crl = cfa[indx - 1] * 2.0 / (eps + rbint[indx1] + rbint[(indx1 - 1)]);
+            const float crr = cfa[indx + 1] * 2.0 / (eps + rbint[indx1] + rbint[(indx1 + 1)]);
 
             // interpolation of G in four directions
             float gu, gd, gl, gr;
@@ -1886,7 +1094,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
             else
             {
-              gu = cfa[indx - v1] + xdiv2f(rbint[indx1] - rbint[(indx1 - v1)]);
+              gu = cfa[indx - v1] + _xdiv2f(rbint[indx1] - rbint[(indx1 - v1)]);
             }
 
             if(fabsf(1.f - crd) < arthresh)
@@ -1895,7 +1103,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
             else
             {
-              gd = cfa[indx + v1] + xdiv2f(rbint[indx1] - rbint[(indx1 + v1)]);
+              gd = cfa[indx + v1] + _xdiv2f(rbint[indx1] - rbint[(indx1 + v1)]);
             }
 
             if(fabsf(1.f - crl) < arthresh)
@@ -1904,7 +1112,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
             else
             {
-              gl = cfa[indx - 1] + xdiv2f(rbint[indx1] - rbint[(indx1 - 1)]);
+              gl = cfa[indx - 1] + _xdiv2f(rbint[indx1] - rbint[(indx1 - 1)]);
             }
 
             if(fabsf(1.f - crr) < arthresh)
@@ -1913,14 +1121,14 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             }
             else
             {
-              gr = cfa[indx + 1] + xdiv2f(rbint[indx1] - rbint[(indx1 + 1)]);
+              gr = cfa[indx + 1] + _xdiv2f(rbint[indx1] - rbint[(indx1 + 1)]);
             }
 
             // interpolated G via adaptive weights of cardinal evaluations
             float Gintv = (dirwts0[indx - v1] * gd + dirwts0[indx + v1] * gu)
                           / (dirwts0[indx + v1] + dirwts0[indx - v1]);
-            float Ginth
-                = (dirwts1[indx - 1] * gr + dirwts1[indx + 1] * gl) / (dirwts1[indx - 1] + dirwts1[indx + 1]);
+            float Ginth = (dirwts1[indx - 1] * gr + dirwts1[indx + 1] * gl)
+                          / (dirwts1[indx - 1] + dirwts1[indx + 1]);
 
             // bound the interpolation in regions of high saturation
             if(Gintv < rbint[indx1])
@@ -1944,7 +1152,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               }
               else
               {
-                float hwt = 2.0 * (rbint[indx1] - Ginth) / (eps + Ginth + rbint[indx1]);
+                const float hwt = 2.0 * (rbint[indx1] - Ginth) / (eps + Ginth + rbint[indx1]);
                 Ginth = hwt * Ginth + (1.f - hwt) * ULIM(Ginth, cfa[indx - 1], cfa[indx + 1]);
               }
             }
@@ -1963,8 +1171,6 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             Dgrb[0][indx >> 1] = rgbgreen[indx] - cfa[indx];
           }
 
-#endif
-
         // end of diagonal interpolation correction
 
         // fancy chrominance interpolation
@@ -1976,66 +1182,21 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             Dgrb[0][indx1] = 0;
           }
 
-#ifdef __SSE2__
-        vfloat oned325v = F2V(1.325f);
-        vfloat zd175v = F2V(0.175f);
-        vfloat zd075v = F2V(0.075f);
-#endif
-
         for(int rr = 14; rr < rr1 - 14; rr++)
-#ifdef __SSE2__
-          for(int cc = 14 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = 1 - FC(rr, cc, filters) / 2;
-              cc < cc1 - 14; cc += 8, indx += 8)
-          {
-            vfloat tempv = epsv + vabsf(LVFU(Dgrb[c][(indx - m1) >> 1]) - LVFU(Dgrb[c][(indx + m1) >> 1]));
-            vfloat temp2v = epsv + vabsf(LVFU(Dgrb[c][(indx + p1) >> 1]) - LVFU(Dgrb[c][(indx - p1) >> 1]));
-            vfloat wtnwv
-                = onev / (tempv + vabsf(LVFU(Dgrb[c][(indx - m1) >> 1]) - LVFU(Dgrb[c][(indx - m3) >> 1]))
-                          + vabsf(LVFU(Dgrb[c][(indx + m1) >> 1]) - LVFU(Dgrb[c][(indx - m3) >> 1])));
-            vfloat wtnev
-                = onev / (temp2v + vabsf(LVFU(Dgrb[c][(indx + p1) >> 1]) - LVFU(Dgrb[c][(indx + p3) >> 1]))
-                          + vabsf(LVFU(Dgrb[c][(indx - p1) >> 1]) - LVFU(Dgrb[c][(indx + p3) >> 1])));
-            vfloat wtswv
-                = onev / (temp2v + vabsf(LVFU(Dgrb[c][(indx - p1) >> 1]) - LVFU(Dgrb[c][(indx + m3) >> 1]))
-                          + vabsf(LVFU(Dgrb[c][(indx + p1) >> 1]) - LVFU(Dgrb[c][(indx - p3) >> 1])));
-            vfloat wtsev
-                = onev / (tempv + vabsf(LVFU(Dgrb[c][(indx + m1) >> 1]) - LVFU(Dgrb[c][(indx - p3) >> 1]))
-                          + vabsf(LVFU(Dgrb[c][(indx - m1) >> 1]) - LVFU(Dgrb[c][(indx + m3) >> 1])));
-
-            STVFU(Dgrb[c][indx >> 1], (wtnwv * (oned325v * LVFU(Dgrb[c][(indx - m1) >> 1])
-                                                - zd175v * LVFU(Dgrb[c][(indx - m3) >> 1])
-                                                - zd075v * (LVFU(Dgrb[c][(indx - m1 - 2) >> 1])
-                                                            + LVFU(Dgrb[c][(indx - m1 - v2) >> 1])))
-                                       + wtnev * (oned325v * LVFU(Dgrb[c][(indx + p1) >> 1])
-                                                  - zd175v * LVFU(Dgrb[c][(indx + p3) >> 1])
-                                                  - zd075v * (LVFU(Dgrb[c][(indx + p1 + 2) >> 1])
-                                                              + LVFU(Dgrb[c][(indx + p1 + v2) >> 1])))
-                                       + wtswv * (oned325v * LVFU(Dgrb[c][(indx - p1) >> 1])
-                                                  - zd175v * LVFU(Dgrb[c][(indx - p3) >> 1])
-                                                  - zd075v * (LVFU(Dgrb[c][(indx - p1 - 2) >> 1])
-                                                              + LVFU(Dgrb[c][(indx - p1 - v2) >> 1])))
-                                       + wtsev * (oned325v * LVFU(Dgrb[c][(indx + m1) >> 1])
-                                                  - zd175v * LVFU(Dgrb[c][(indx + m3) >> 1])
-                                                  - zd075v * (LVFU(Dgrb[c][(indx + m1 + 2) >> 1])
-                                                              + LVFU(Dgrb[c][(indx + m1 + v2) >> 1]))))
-                                          / (wtnwv + wtnev + wtswv + wtsev));
-          }
-
-#else
 
           for(int cc = 14 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = 1 - FC(rr, cc, filters) / 2;
               cc < cc1 - 14; cc += 2, indx += 2)
           {
-            float wtnw = 1.f / (eps + fabsf(Dgrb[c][(indx - m1) >> 1] - Dgrb[c][(indx + m1) >> 1])
+            const float wtnw = 1.f / (eps + fabsf(Dgrb[c][(indx - m1) >> 1] - Dgrb[c][(indx + m1) >> 1])
                                 + fabsf(Dgrb[c][(indx - m1) >> 1] - Dgrb[c][(indx - m3) >> 1])
                                 + fabsf(Dgrb[c][(indx + m1) >> 1] - Dgrb[c][(indx - m3) >> 1]));
-            float wtne = 1.f / (eps + fabsf(Dgrb[c][(indx + p1) >> 1] - Dgrb[c][(indx - p1) >> 1])
+            const float wtne = 1.f / (eps + fabsf(Dgrb[c][(indx + p1) >> 1] - Dgrb[c][(indx - p1) >> 1])
                                 + fabsf(Dgrb[c][(indx + p1) >> 1] - Dgrb[c][(indx + p3) >> 1])
                                 + fabsf(Dgrb[c][(indx - p1) >> 1] - Dgrb[c][(indx + p3) >> 1]));
-            float wtsw = 1.f / (eps + fabsf(Dgrb[c][(indx - p1) >> 1] - Dgrb[c][(indx + p1) >> 1])
+            const float wtsw = 1.f / (eps + fabsf(Dgrb[c][(indx - p1) >> 1] - Dgrb[c][(indx + p1) >> 1])
                                 + fabsf(Dgrb[c][(indx - p1) >> 1] - Dgrb[c][(indx + m3) >> 1])
                                 + fabsf(Dgrb[c][(indx + p1) >> 1] - Dgrb[c][(indx - p3) >> 1]));
-            float wtse = 1.f / (eps + fabsf(Dgrb[c][(indx + m1) >> 1] - Dgrb[c][(indx - m1) >> 1])
+            const float wtse = 1.f / (eps + fabsf(Dgrb[c][(indx + m1) >> 1] - Dgrb[c][(indx - m1) >> 1])
                                 + fabsf(Dgrb[c][(indx + m1) >> 1] - Dgrb[c][(indx - p3) >> 1])
                                 + fabsf(Dgrb[c][(indx - m1) >> 1] - Dgrb[c][(indx + m3) >> 1]));
 
@@ -2054,187 +1215,11 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                   / (wtnw + wtne + wtsw + wtse);
           }
 
-#endif
-
-#ifdef __SSE2__
-        int offset;
-        vfloat twov = F2V(2.f);
-        vmask selmask;
-
-        if((FC(16, 2, filters) & 1) == 1)
-        {
-          selmask = _mm_set_epi32(0xffffffff, 0, 0xffffffff, 0);
-          offset = 1;
-        }
-        else
-        {
-          selmask = _mm_set_epi32(0, 0xffffffff, 0, 0xffffffff);
-          offset = 0;
-        }
-
-#endif
-
         for(int rr = 16; rr < rr1 - 16; rr++)
         {
           int row = rr + top;
           int col = left + 16;
           int indx = rr * ts + 16;
-#ifdef __SSE2__
-          offset = 1 - offset;
-          selmask = vnotm(selmask);
-
-          for(; indx < rr * ts + cc1 - 18 - (cc1 & 1); indx += 4, col += 4)
-          {
-            if(col < roi_out->width && row < roi_out->height)
-            {
-              vfloat greenv = LVF(rgbgreen[indx]);
-              vfloat temp00v = vdup(LVFU(hvwt[(indx - v1) >> 1]));
-              vfloat temp01v = vdup(LVFU(hvwt[(indx + v1) >> 1]));
-              vfloat tempv = onev / (temp00v + twov - vdup(LVFU(hvwt[(indx + 1 + offset) >> 1]))
-                                     - vdup(LVFU(hvwt[(indx - 1 + offset) >> 1])) + temp01v);
-
-              vfloat redv1 = greenv
-                             - (temp00v * vdup(LVFU(Dgrb[0][(indx - v1) >> 1]))
-                                + (onev - vdup(LVFU(hvwt[(indx + 1 + offset) >> 1])))
-                                      * vdup(LVFU(Dgrb[0][(indx + 1 + offset) >> 1]))
-                                + (onev - vdup(LVFU(hvwt[(indx - 1 + offset) >> 1])))
-                                      * vdup(LVFU(Dgrb[0][(indx - 1 + offset) >> 1]))
-                                + temp01v * vdup(LVFU(Dgrb[0][(indx + v1) >> 1])))
-                                   * tempv;
-              vfloat bluev1 = greenv
-                              - (temp00v * vdup(LVFU(Dgrb[1][(indx - v1) >> 1]))
-                                 + (onev - vdup(LVFU(hvwt[(indx + 1 + offset) >> 1])))
-                                       * vdup(LVFU(Dgrb[1][(indx + 1 + offset) >> 1]))
-                                 + (onev - vdup(LVFU(hvwt[(indx - 1 + offset) >> 1])))
-                                       * vdup(LVFU(Dgrb[1][(indx - 1 + offset) >> 1]))
-                                 + temp01v * vdup(LVFU(Dgrb[1][(indx + v1) >> 1])))
-                                    * tempv;
-              vfloat redv2 = greenv - vdup(LVFU(Dgrb[0][indx >> 1]));
-              vfloat bluev2 = greenv - vdup(LVFU(Dgrb[1][indx >> 1]));
-              __attribute__((aligned(64))) float _r[4];
-              __attribute__((aligned(64))) float _b[4];
-              STVF(*_r, vself(selmask, redv1, redv2));
-              STVF(*_b, vself(selmask, bluev1, bluev2));
-              for(int c = 0; c < 4; c++)
-              {
-                out[(row * roi_out->width + col + c) * 4] = clampnan(_r[c], 0.0, 1.0);
-                out[(row * roi_out->width + col + c) * 4 + 2] = clampnan(_b[c], 0.0, 1.0);
-              }
-            }
-          }
-
-          if(offset == 0)
-          {
-            for(; indx < rr * ts + cc1 - 16 - (cc1 & 1); indx++, col++)
-            {
-              if(col < roi_out->width && row < roi_out->height)
-              {
-                float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
-                                    - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
-                out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx]
-                                   - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
-                                      + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
-                                      + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[0][(indx - 1) >> 1]
-                                      + (hvwt[(indx + v1) >> 1]) * Dgrb[0][(indx + v1) >> 1])
-                                         * temp,
-                               0.0, 1.0);
-                out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx]
-                                   - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
-                                      + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
-                                      + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[1][(indx - 1) >> 1]
-                                      + (hvwt[(indx + v1) >> 1]) * Dgrb[1][(indx + v1) >> 1])
-                                         * temp,
-                               0.0, 1.0);
-              }
-
-              indx++;
-              col++;
-              if(col < roi_out->width && row < roi_out->height)
-              {
-                out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0, 1.0);
-                out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0, 1.0);
-              }
-            }
-
-            if(cc1 & 1)
-            { // width of tile is odd
-              if(col < roi_out->width && row < roi_out->height)
-              {
-                float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
-                                    - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
-                out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx]
-                                   - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
-                                      + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
-                                      + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[0][(indx - 1) >> 1]
-                                      + (hvwt[(indx + v1) >> 1]) * Dgrb[0][(indx + v1) >> 1])
-                                         * temp,
-                               0.0, 1.0);
-                out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx]
-                                   - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
-                                      + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
-                                      + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[1][(indx - 1) >> 1]
-                                      + (hvwt[(indx + v1) >> 1]) * Dgrb[1][(indx + v1) >> 1])
-                                         * temp,
-                               0.0, 1.0);
-              }
-            }
-          }
-          else
-          {
-            for(; indx < rr * ts + cc1 - 16 - (cc1 & 1); indx++, col++)
-            {
-              if(col < roi_out->width && row < roi_out->height)
-              {
-                out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0, 1.0);
-                out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0, 1.0);
-              }
-
-              indx++;
-              col++;
-              if(col < roi_out->width && row < roi_out->height)
-              {
-                float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
-                                    - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
-                out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx]
-                                   - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
-                                      + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
-                                      + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[0][(indx - 1) >> 1]
-                                      + (hvwt[(indx + v1) >> 1]) * Dgrb[0][(indx + v1) >> 1])
-                                         * temp,
-                               0.0, 1.0);
-                out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx]
-                                   - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
-                                      + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
-                                      + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[1][(indx - 1) >> 1]
-                                      + (hvwt[(indx + v1) >> 1]) * Dgrb[1][(indx + v1) >> 1])
-                                         * temp,
-                               0.0, 1.0);
-              }
-            }
-
-            if(cc1 & 1)
-            { // width of tile is odd
-              if(col < roi_out->width && row < roi_out->height)
-              {
-                out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0, 1.0);
-                out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0, 1.0);
-              }
-            }
-          }
-
-#else
 
           if((FC(rr, 2, filters) & 1) == 1)
           {
@@ -2242,18 +1227,19 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             {
               if(col < roi_out->width && row < roi_out->height)
               {
-                float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
+                const float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
                                     - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
                 out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx]
+                    = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
                                       + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
                                       + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[0][(indx - 1) >> 1]
                                       + (hvwt[(indx + v1) >> 1]) * Dgrb[0][(indx + v1) >> 1])
                                          * temp,
                                0.0, 1.0);
+ 
                 out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx]
+                    = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
                                       + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
                                       + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[1][(indx - 1) >> 1]
@@ -2267,9 +1253,9 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               if(col < roi_out->width && row < roi_out->height)
               {
                 out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0, 1.0);
+                    = _clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0, 1.0);
                 out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0, 1.0);
+                    = _clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0, 1.0);
               }
             }
 
@@ -2277,10 +1263,10 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
             { // width of tile is odd
               if(col < roi_out->width && row < roi_out->height)
               {
-                float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
+                const float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
                                     - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
                 out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx]
+                    = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
                                       + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
                                       + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[0][(indx - 1) >> 1]
@@ -2288,7 +1274,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                                          * temp,
                                0.0, 1.0);
                 out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx]
+                    = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
                                       + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
                                       + (1.f - hvwt[(indx - 1) >> 1]) * Dgrb[1][(indx - 1) >> 1]
@@ -2305,20 +1291,20 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               if(col < roi_out->width && row < roi_out->height)
               {
                 out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0f, 1.0f);
+                    = _clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0f, 1.0f);
                 out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0f, 1.0f);
+                    = _clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0f, 1.0f);
               }
 
               indx++;
               col++;
               if(col < roi_out->width && row < roi_out->height)
               {
-                float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
+                const float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
                                     - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
 
                 out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx]
+                    = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
                                       + (1.0f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
                                       + (1.0f - hvwt[(indx - 1) >> 1]) * Dgrb[0][(indx - 1) >> 1]
@@ -2327,7 +1313,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
                                0.0f, 1.0f);
 
                 out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx]
+                    = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
                                       + (1.0f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
                                       + (1.0f - hvwt[(indx - 1) >> 1]) * Dgrb[1][(indx - 1) >> 1]
@@ -2342,39 +1328,24 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
               if(col < roi_out->width && row < roi_out->height)
               {
                 out[(row * roi_out->width + col) * 4]
-                    = clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0f, 1.0f);
+                    = _clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0f, 1.0f);
                 out[(row * roi_out->width + col) * 4 + 2]
-                    = clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0f, 1.0f);
+                    = _clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0f, 1.0f);
               }
             }
           }
-
-#endif
         }
 
         // copy smoothed results back to image matrix
         for(int rr = 16; rr < rr1 - 16; rr++)
         {
-          int row = rr + top;
-          int cc = 16;
-          // TODO (darktable): we have the pixel colors interleaved so writing them in blocks using SSE2 is
-          // not possible. or is it?
-          // #ifdef __SSE2__
-          //
-          //           for(; cc < cc1 - 19; cc += 4)
-          //           {
-          //             STVFU(out[(row * roi_out->width + (cc + left))  * 4 + 1], LVF(rgbgreen[rr * ts +
-          //             cc]));
-          //           }
-          //
-          // #endif
-
-          for(; cc < cc1 - 16; cc++)
+          const int row = rr + top;
+          for(int cc = 16; cc < cc1 - 16; cc++)
           {
-            int col = cc + left;
-            int indx = rr * ts + cc;
+            const int col = cc + left;
+            const int indx = rr * ts + cc;
             if(col < roi_out->width && row < roi_out->height)
-              out[(row * roi_out->width + col) * 4 + 1] = clampnan(rgbgreen[indx], 0.0f, 1.0f);
+              out[(row * roi_out->width + col) * 4 + 1] = _clampnan(rgbgreen[indx], 0.0f, 1.0f);
           }
         }
       }
@@ -2388,7 +1359,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
 /*==================================================================================
  * end of raw therapee code
  *==================================================================================*/
-
+}
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
