@@ -862,7 +862,9 @@ void dt_shortcut_copy_lua(dt_action_t *action, gchar *preset_name)
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                       GtkTooltip *tooltip, GtkWidget *vbox)
 {
-  if(!gtk_window_is_active(GTK_WINDOW(gtk_widget_get_toplevel(widget)))) return FALSE;
+  GtkWindow *top = GTK_WINDOW(gtk_widget_get_toplevel(widget));
+  if(!gtk_window_is_active(top) && gtk_window_get_window_type(top) != GTK_WINDOW_POPUP) return FALSE;
+
   if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK)) return FALSE;
 
   gchar *markup_text = NULL;
