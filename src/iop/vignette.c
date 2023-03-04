@@ -766,8 +766,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           col[c] = unbound ? col[c] : CLIP(col[c]);
 
         // apply saturation
-        float mv = (col[0] + col[1] + col[2]) / 3.0f;
-        float wss = weight * saturation;
+        const float mv = (col[0] + col[1] + col[2]) / 3.0f;
+        const float wss = weight * saturation;
         for_each_channel(c)
         {
           col[c] = col[c] - ((mv - col[c]) * wss);
