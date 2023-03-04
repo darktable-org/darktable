@@ -156,6 +156,7 @@ The following is a summary of the main features added to darktable
   - Input Color Profile
   - Color Look up Table
   - Borders
+  - Surface Blur
   - Loader for JPEG2000 file format
 
 - Improve Highlights reconstruction "inpaint opposed" performance by
