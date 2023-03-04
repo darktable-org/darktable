@@ -1051,8 +1051,11 @@ static int _brush_get_pts_border(dt_develop_t *dev,
                                         pts, 1))
         goto fail;
 
-      dx = pts[0] - (*points)[0];
-      dy = pts[1] - (*points)[1];
+//      dx = pts[0] - (*points)[0];
+//      dy = pts[1] - (*points)[1];
+      // get the offset of first "corner" point in the brush stroke
+      dx = pts[0] - (*points)[2];
+      dy = pts[1] - (*points)[3];
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(points_count, points, dx, dy)              \
@@ -1520,8 +1523,8 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
       if(!guipt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
-      gui->dx = guipt->source[0] - gui->posx;
-      gui->dy = guipt->source[1] - gui->posy;
+      gui->dx = guipt->source[2] - gui->posx;
+      gui->dy = guipt->source[3] - gui->posy;
       return 1;
     }
     else if(gui->form_selected
