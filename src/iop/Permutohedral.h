@@ -51,62 +51,12 @@ DAMAGE.
  * dimensional space.                                              *
  *                                                                 *
  *******************************************************************/
-template <int KD, int VD> class HashTablePermutohedral
-{
-public:
-  // Struct for a key
-  struct Key
-  {
-    Key() = default;
+template <int VD>
+struct HashTablePermutohedralValue {
+    typedef HashTablePermutohedralValue Value;
+    HashTablePermutohedralValue() = default;
 
-    Key(const Key &origin, int dim, int direction) // construct neighbor in dimension 'dim'
-    {
-      for(int i = 0; i < KD; i++) key[i] = origin.key[i] + direction;
-      key[dim] = origin.key[dim] - direction * KD;
-      setHash();
-    }
-
-    Key(const Key &) = default; // let the compiler write the copy constructor
-
-    Key &operator=(const Key &) = default;
-
-    void setKey(int idx, short val)
-    {
-      key[idx] = val;
-    }
-
-    void setHash()
-    {
-      size_t k = 0;
-      for(int i = 0; i < KD; i++)
-      {
-        k += key[i];
-        k *= 2531011;
-      }
-      hash = (unsigned)k;
-    }
-
-    bool operator==(const Key &other) const
-    {
-      if(hash != other.hash) return false;
-      for(int i = 0; i < KD; i++)
-      {
-        if(key[i] != other.key[i]) return false;
-      }
-      return true;
-    }
-
-    unsigned hash{ 0 }; // cache the hash value for this key
-    short key[KD]{};    // key is a KD-dimensional vector
-  };
-
-public:
-  // Struct for an associated value
-  struct Value
-  {
-    Value() = default;
-
-    Value(int init)
+    HashTablePermutohedralValue(int init)
     {
       for(int i = 0; i < VD; i++)
       {
@@ -114,23 +64,14 @@ public:
       }
     }
 
-    Value(const Value &) = default; // let the compiler write the copy constructor
+    HashTablePermutohedralValue(const Value &) = default; // let the compiler write the copy constructor
 
     Value &operator=(const Value &) = default;
 
     static void clear(float *val)
     {
-      for(int i = 0; i < VD; i++) val[i] = 0;
-    }
-
-    void setValue(int idx, short val)
-    {
-      value[idx] = val;
-    }
-
-    void addValue(int idx, short val)
-    {
-      value[idx] += val;
+      for(int i = 0; i < VD; i++)
+	 val[i] = 0;
     }
 
     void add(const Value &other)
@@ -165,31 +106,132 @@ public:
       }
     }
 
-    Value &operator+=(const Value &other)
+    float value[VD]{};
+};
+
+template <>
+struct HashTablePermutohedralValue<4> {
+    typedef HashTablePermutohedralValue Value;
+    HashTablePermutohedralValue() = default;
+
+    HashTablePermutohedralValue(int init)
     {
-      for(int i = 0; i < VD; i++)
-      {
-        value[i] += other.value[i];
-      }
-      return *this;
+    for_four_channels(i)
+      value[i] = init;
     }
 
-    float value[VD]{};
+    HashTablePermutohedralValue(const Value &) = default; // let the compiler write the copy constructor
+
+    Value &operator=(const Value &) = default;
+
+    static void clear(float *val)
+    {
+    for_four_channels(i)
+      val[i] = 0;
+    }
+
+    void add(const Value &other)
+    {
+    for_four_channels(i)
+      value[i] += other.value[i];
+    }
+
+    void add(const float *other, float weight)
+    {
+    for_four_channels(i)
+      value[i] += weight * other[i];
+    }
+
+    void addTo(float *dest, float weight) const
+    {
+    for_four_channels(i, aligned(dest))
+      dest[i] += weight * value[i];
+    }
+
+    void mix(const Value *left, const Value *center, const Value *right)
+    {
+    for_four_channels(i)
+      value[i] = (0.25f * left->value[i] + 0.5f * center->value[i] + 0.25f * right->value[i]);
+    }
+
+    dt_aligned_pixel_t value;
+};
+
+template <int KD, int VD> class HashTablePermutohedral
+{
+public:
+  // Struct for a key
+  struct Key
+  {
+    Key() = default;
+
+    Key(const Key &origin, int dim, int direction) // construct neighbor in dimension 'dim'
+    {
+#ifdef _OPENMP
+#pragma omp simd
+#endif
+      for(int i = 0; i < KD; i++)
+	 key[i] = origin.key[i] + direction;
+      key[dim] = origin.key[dim] - direction * KD;
+      setHash();
+    }
+
+    Key(const Key &) = default; // let the compiler write the copy constructor
+
+    Key &operator=(const Key &) = default;
+
+    void setKey(int idx, short val)
+    {
+      key[idx] = val;
+    }
+
+    void setHash()
+    {
+      size_t k = 0;
+      for(int i = 0; i < KD; i++)
+      {
+        k += key[i];
+        k *= 2531011;
+      }
+      hash = (unsigned)k;
+    }
+
+    bool operator==(const Key &other) const
+    {
+      if(hash != other.hash) return false;
+#if 1
+      return memcmp(key, other.key, sizeof(key)) == 0;
+#else
+      for(int i = 0; i < KD; i++)
+      {
+        if(key[i] != other.key[i]) return false;
+      }
+      return true;
+#endif
+    }
+
+    unsigned hash;    // cache the hash value for this key
+    short key[KD];    // key is a KD-dimensional vector
   };
+
+public:
+  // Struct for an associated value
+  typedef HashTablePermutohedralValue<VD> Value;
 
 public:
   /* Constructor
    *  kd_: the dimensionality of the position vectors on the hyperplane.
    *  vd_: the dimensionality of the value vectors
    */
-  HashTablePermutohedral()
+  HashTablePermutohedral(size_t num_entries = 0)
   {
-    capacity = 1 << 15;
-    capacity_bits = 0x7fff;
+    capacity = 0;
+    capacity_bits = 1;
+    alloc_entries = 0;
     filled = 0;
-    entries = new Entry[capacity];
-    keys = new Key[maxFill()];
-    values = new Value[maxFill()]{ 0 };
+    entries = nullptr;
+    keys = nullptr;
+    values = nullptr;
   }
 
   HashTablePermutohedral(const HashTablePermutohedral &) = delete;
@@ -204,14 +246,14 @@ public:
   HashTablePermutohedral &operator=(const HashTablePermutohedral &) = delete;
 
   // Returns the number of vectors stored.
-  int size() const
+  size_t size() const
   {
     return filled;
   }
 
   size_t maxFill() const
   {
-    return capacity / 2;
+    return alloc_entries;
   }
 
   // Returns a pointer to the keys array.
@@ -274,12 +316,49 @@ public:
   /* Grows the size of the hash table */
   void grow(int order = 1)
   {
+    if(order > 0)
+    {
+      auto_grow++;
+      growExact(capacity << (order-1));
+    }
+  }
+
+  /* initialize the hash table so that it can hold exactly num_entries without resizing */
+  void setSize(size_t num_entries)
+  {
+    capacity = 1 << 15;
+    capacity_bits = 0x7fff;
+    if(num_entries == 0)
+      num_entries = capacity/2;
+    else
+    {
+      while (capacity < 2*num_entries)
+      {
+      capacity <<= 1;
+      capacity_bits = (capacity_bits << 1) | 1;
+      }
+    }
+    alloc_entries = num_entries;
+    filled = 0;
+    entries = new Entry[capacity];
+    keys = new Key[maxFill()];
+    values = new Value[maxFill()];
+    init_alloc = total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
+  }
+   
+  /* grow the size of the hash table so that it can hold exactly num_entries
+   * without requiring resizing.  The actual index array will be rounded up
+   * to the next higher power of two.
+   */
+  void growExact(size_t num_entries)
+  {
     size_t oldCapacity = capacity;
-    while(order-- > 0)
+    while(capacity < num_entries * 2)
     {
       capacity *= 2;
       capacity_bits = (capacity_bits << 1) | 1;
     }
+    alloc_entries = num_entries;
 
     // Migrate the value vectors.
     Value *newValues = new Value[maxFill()];
@@ -308,8 +387,9 @@ public:
     }
     delete[] entries;
     entries = newEntries;
+    total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
   }
-
+   
 private:
   // Private struct for the hash table entries.
   struct Entry
@@ -320,10 +400,13 @@ private:
   Key *keys;
   Value *values;
   Entry *entries;
-  size_t capacity, filled;
+  size_t capacity, filled, alloc_entries;
   unsigned long capacity_bits;
+public:
+  size_t init_alloc { 0 };
+  size_t total_alloc { 0 };
+  size_t auto_grow { 0 };
 };
-
 
 /******************************************************************
  * The algorithm class that performs the filter                   *
@@ -346,7 +429,7 @@ public:
    *    vd_ : dimensionality of value vectors
    * nData_ : number of points in the input
    */
-  PermutohedralLattice(size_t nData_, int nThreads_ = 1) : nData(nData_), nThreads(nThreads_)
+  PermutohedralLattice(size_t nData_, int nThreads_ = 1, size_t grid_points = ~0L) : nData(nData_), nThreads(nThreads_)
   {
     // Allocate storage for various arrays
     float *scaleFactorTmp = new float[D];
@@ -386,7 +469,14 @@ public:
     }
     scaleFactor = scaleFactorTmp;
 
+    size_t effective_MP = estimatedHashEntries(grid_points, nData);
+    size_t points = ((D+1) * nData) < effective_MP ? ((D+1) * nData) : effective_MP;
+
     hashTables = new HashTable[nThreads];
+    for(int i = 0; i < nThreads; i++)
+    {
+       hashTables[i].setSize(points / nThreads);
+    }
   }
 
   PermutohedralLattice(const PermutohedralLattice &) = delete;
@@ -401,13 +491,43 @@ public:
 
   PermutohedralLattice &operator=(const PermutohedralLattice &) = delete;
 
+  /* compute the expected number of hash table entries we will need */
+  static size_t estimatedHashEntries(size_t grid_points, size_t num_pixels)
+  {
+    // as the number of grid points increases, the number which
+    // actually occur in the image becomes an ever-smaller
+    // percentage.  Scale the grid points to take account of this.
+    // Empirically, it appears that the number of actually-used
+    // points roughly doubles for every order of magnitude increase
+    // in total grid points.
+    double points_per_MP = MAX(0.1, grid_points / (float)num_pixels);
+    double base_factor = 50.0; // absolute scaling factor
+    double scaled = pow(1.8,log10(points_per_MP/base_factor));
+    size_t eff_pixels = (size_t)(scaled * num_pixels);
+    return ((D+1) * num_pixels) < eff_pixels ? ((D+1) * num_pixels) : eff_pixels;
+  }
+
+  /* compute the expected bytes of storage needed */
+  static size_t estimatedBytes(size_t grid_points, size_t num_pixels)
+  {
+     size_t hash_entries = estimatedHashEntries(grid_points, num_pixels);
+     size_t round_up = 1;
+     while (round_up < 2*hash_entries) round_up <<= 1;
+     // we need to store not only the Key, Value, and Entry arrays, we
+     // also need an additional copy of the Value array while blurring
+     // and storage for the remapping array while merging
+     size_t mergesize = hash_entries * 2 * (sizeof(Value)+sizeof(Key)) + round_up * sizeof(int);
+     size_t blursize = hash_entries * (2*sizeof(Value)+sizeof(Key)) + (hash_entries+round_up) * sizeof(int);
+     return MAX(mergesize, blursize);
+  }
+
   /* Performs splatting with given position and value vectors */
   void splat(float *position, float *value, size_t replay_index, int thread_index = 0) const
   {
-    float elevated[D + 1];
-    int greedy[D + 1];
-    int rank[D + 1];
-    float barycentric[D + 2];
+    DT_ALIGNED_PIXEL float elevated[D + 1];
+    DT_ALIGNED_PIXEL int greedy[D + 1];
+    DT_ALIGNED_PIXEL int rank[D + 1];
+    DT_ALIGNED_PIXEL float barycentric[D + 2];
     Key key;
 
     // first rotate position into the (d+1)-dimensional hyperplane
@@ -421,8 +541,10 @@ public:
     constexpr float scale = 1.0f / (D + 1);
 
     // greedily search for the closest zero-colored lattice point
-    int sum = 0;
-    for(int i = 0; i <= D; i++)
+#ifdef _OPENMP
+#pragma omp simd
+#endif
+    for(size_t i = 0; i <= D; i++)
     {
       float v = elevated[i] * scale;
       float up = ceilf(v) * (D + 1);
@@ -432,9 +554,11 @@ public:
         greedy[i] = up;
       else
         greedy[i] = down;
-
-      sum += greedy[i];
     }
+    int sum = 0;
+    for(size_t i = 0; i <= D; i++)
+       sum += greedy[i];
+
     sum /= D + 1;
 
     // rank differential to find the permutation between this simplex and the canonical one.
@@ -518,33 +642,56 @@ public:
      * won't waste much space if we simply grow the destination table enough to hold the sum of the
      * entries in the individual tables
      */
+    size_t alloc_entries = hashTables[0].maxFill();
+    size_t total_bytes = 0;
+    size_t total_grows = hashTables[0].auto_grow;
+    size_t init_bytes = hashTables[0].init_alloc;
     size_t total_entries = hashTables[0].size();
-    for(int i = 1; i < nThreads; i++) total_entries += hashTables[i].size();
-    int order = 0;
-    while(total_entries > hashTables[0].maxFill())
+    for(int i = 1; i < nThreads; i++)
     {
-      order++;
-      total_entries /= 2;
+       alloc_entries += hashTables[i].maxFill();
+       total_entries += hashTables[i].size();
+       init_bytes += hashTables[i].init_alloc;
+       total_bytes += hashTables[i].total_alloc;
+       total_grows += hashTables[i].auto_grow;
     }
-    if(order > 0) hashTables[0].grow(order);
+    hashTables[0].growExact(total_entries);
+    total_bytes += hashTables[0].total_alloc;
     /* Merge the multiple hash tables into one, creating an offset remap table. */
     int **offset_remap = new int *[nThreads];
+    size_t remap_bytes = 0;
     for(int i = 1; i < nThreads; i++)
     {
       const Key *oldKeys = hashTables[i].getKeys();
       const Value *oldVals = hashTables[i].getValues();
-      const int filled = hashTables[i].size();
+      const size_t filled = hashTables[i].size();
       offset_remap[i] = new int[filled];
-      for(int j = 0; j < filled; j++)
+      remap_bytes += filled * sizeof(int);
+      for(size_t j = 0; j < filled; j++)
       {
         Value *val = hashTables[0].lookup(oldKeys[j], true);
         val->add(oldVals[j]);
         offset_remap[i][j] = val - hashTables[0].getValues();
       }
     }
+    if(darktable.unmuted & DT_DEBUG_MEMORY)
+    {
+       float fill_factor = 100.0f * total_entries / alloc_entries;
+       std::cerr << "[permutohedral] hash tables " << total_bytes << " bytes (" << init_bytes
+		 << " initially), " << total_entries << " entries" << std::endl
+		 << "[permutohedral] tables grew " << total_grows << " times, replay using "
+		 << (sizeof(ReplayEntry)*nData) << " bytes for " << nData << " pixels" << std::endl
+		 << "[permutohedral] fill factor " << fill_factor << "%, remap using "
+		 << remap_bytes << " bytes," << std::endl;
+    }
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
-    for(int i = 0; i < nData; i++)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) if(nData >= 100000) \
+   dt_omp_firstprivate(nData, replay, offset_remap) \
+   schedule(static)
+#endif
+    for(size_t i = 0; i < nData; i++)
     {
       if(replay[i].table > 0)
       {
@@ -581,15 +728,22 @@ public:
     const Value *hashTableBase = oldValue;
     const Key *keyBase = hashTables[0].getKeys();
     const Value zero{ 0 };
+    const Value *const zeroPtr = &zero;
+
+    if (darktable.unmuted & DT_DEBUG_MEMORY)
+       std::cerr << "[permutohedral] blur using " << (sizeof(Value)*hashTables[0].size())
+		 << " bytes for newValue"<<std::endl;
 
     // For each of d+1 axes,
     for(int j = 0; j <= D; j++)
     {
 #ifdef _OPENMP
-#pragma omp parallel for shared(j, oldValue, newValue)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(j, oldValue, newValue, hashTableBase, hashTables, keyBase, zeroPtr) \
+    schedule(static)
 #endif
       // For each vertex in the lattice,
-      for(int i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
+      for(size_t i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
       {
         const Key &key = keyBase[i]; // keys to current vertex
         // construct keys to the neighbors along the given axis.
@@ -599,10 +753,10 @@ public:
         const Value *oldVal = oldValue + i;
 
         const Value *vm1 = hashTables[0].lookup(neighbor1, false); // look up first neighbor
-        vm1 = vm1 ? vm1 - hashTableBase + oldValue : &zero;
+        vm1 = vm1 ? vm1 - hashTableBase + oldValue : zeroPtr;
 
         const Value *vp1 = hashTables[0].lookup(neighbor2, false); // look up second neighbor
-        vp1 = vp1 ? vp1 - hashTableBase + oldValue : &zero;
+        vp1 = vp1 ? vp1 - hashTableBase + oldValue : zeroPtr;
 
         // Mix values of the three vertices
         newValue[i].mix(vm1, oldVal, vp1);
@@ -624,7 +778,7 @@ public:
   }
 
 private:
-  int nData;
+  size_t nData;
   int nThreads;
   const float *scaleFactor;
   const int *canonical;
