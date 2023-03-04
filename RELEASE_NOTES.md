@@ -332,6 +332,9 @@ The following is a summary of the main features added to darktable
   shapes the editable state is properly set after being created making
   it possible to move and resize the different parts.
 
+- Fix brush correction tool placement as used in Retouch module, the
+  issue was more visible when the image is distorted.
+
 ## Lua
 
 ### Add action support for Lua
