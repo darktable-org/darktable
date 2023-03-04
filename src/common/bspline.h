@@ -11,13 +11,6 @@
 // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/
 #define B_SPLINE_SIGMA 1.0553651328015339f
 
-static inline float normalize_laplacian(const float sigma)
-{
-  // Normalize the wavelet scale to approximate a laplacian
-  // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Scaling-coefficient
-  return 2.f * M_PI_F / (sqrtf(M_PI_F) * sqf(sigma));
-}
-
 // Normalization scaling of the wavelet to approximate a laplacian
 // from the function above for sigma = B_SPLINE_SIGMA as a constant
 #define B_SPLINE_TO_LAPLACIAN 3.182727439285017f
