@@ -1328,55 +1328,51 @@ static int dt_dev_pixelpipe_process_rec(
     dt_times_t start;
     dt_get_times(&start);
     // we're looking for the full buffer
+    if(roi_out->scale == 1.0f
+       && roi_out->x == 0 && roi_out->y == 0
+       && pipe->iwidth == roi_out->width
+       && pipe->iheight == roi_out->height)
     {
-      if(roi_out->scale == 1.0f
-         && roi_out->x == 0 && roi_out->y == 0
-         && pipe->iwidth == roi_out->width
-         && pipe->iheight == roi_out->height)
+      *output = pipe->input;
+      dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe full data", pipe, "", &roi_in, roi_out, "\n");
+    }
+    else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, NULL, FALSE))
+    {
+      if(roi_in.scale == 1.0f)
       {
-        *output = pipe->input;
-        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe full data", pipe, "", &roi_in, roi_out, "\n");
-      }
-      else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, NULL, FALSE))
-      {
-        if(roi_in.scale == 1.0f)
+        // fast branch for 1:1 pixel copies.
+
+        // last minute clamping to catch potential out-of-bounds in roi_in and roi_out
+        const int in_x = MAX(roi_in.x, 0);
+        const int in_y = MAX(roi_in.y, 0);
+        const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
+        const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
+        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe 1:1 copy", pipe, "", &roi_in, roi_out,
+           "%s\n", (cp_width > 0) ? "copied" : "already available");
+        if(cp_width > 0)
         {
-          // fast branch for 1:1 pixel copies.
-
-          // last minute clamping to catch potential out-of-bounds in roi_in and roi_out
-
-          const int in_x = MAX(roi_in.x, 0);
-          const int in_y = MAX(roi_in.y, 0);
-          const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
-          const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
-          dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe 1:1 copy", pipe, "", &roi_in, roi_out,
-             "%s\n", (cp_width > 0) ? "copied" : "already available");
-          if(cp_width > 0)
-          {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
           dt_omp_firstprivate(bpp, cp_height, cp_width, in_x, in_y) \
           shared(pipe, roi_out, roi_in, output) \
           schedule(static)
 #endif
-            for(int j = 0; j < cp_height; j++)
-              memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
-                     ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
-                     (size_t)bpp * cp_width);
-          }
-        }
-        else
-        {
-          roi_in.x /= roi_out->scale;
-          roi_in.y /= roi_out->scale;
-          roi_in.width = pipe->iwidth;
-          roi_in.height = pipe->iheight;
-          roi_in.scale = 1.0f;
-          dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe clip&zoom", pipe, "", &roi_in, roi_out, "\n");
-          dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
+          for(int j = 0; j < cp_height; j++)
+            memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
+                   ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
+                   (size_t)bpp * cp_width);
         }
       }
-      // else found in cache.
+      else
+      {
+        roi_in.x /= roi_out->scale;
+        roi_in.y /= roi_out->scale;
+        roi_in.width = pipe->iwidth;
+        roi_in.height = pipe->iheight;
+        roi_in.scale = 1.0f;
+        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe clip&zoom", pipe, "", &roi_in, roi_out, "\n");
+        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
+      }
     }
 
     dt_show_times_f(&start, "[dev_pixelpipe]", "initing base buffer [%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
