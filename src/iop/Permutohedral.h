@@ -199,93 +199,24 @@ public:
     bool operator==(const Key &other) const
     {
       if(hash != other.hash) return false;
+#if 1
+      return memcmp(key, other.key, sizeof(key)) == 0;
+#else
       for(int i = 0; i < KD; i++)
       {
         if(key[i] != other.key[i]) return false;
       }
       return true;
+#endif
     }
 
-    unsigned hash{ 0 }; // cache the hash value for this key
-    short key[KD]{};    // key is a KD-dimensional vector
+    unsigned hash;    // cache the hash value for this key
+    short key[KD];    // key is a KD-dimensional vector
   };
 
 public:
   // Struct for an associated value
   typedef HashTablePermutohedralValue<VD> Value;
-#if 0
-  struct Value
-  {
-    Value() = default;
-
-    Value(int init)
-    {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
-      for(int i = 0; i < VD; i++)
-      {
-        value[i] = init;
-      }
-    }
-
-    Value(const Value &) = default; // let the compiler write the copy constructor
-
-    Value &operator=(const Value &) = default;
-
-    static void clear(float *val)
-    {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
-      for(int i = 0; i < VD; i++)
-	 val[i] = 0;
-    }
-
-    void add(const Value &other)
-    {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
-      for(int i = 0; i < VD; i++)
-      {
-        value[i] += other.value[i];
-      }
-    }
-
-    void add(const float *other, float weight)
-    {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
-      for(int i = 0; i < VD; i++)
-      {
-        value[i] += weight * other[i];
-      }
-    }
-
-    void addTo(float *dest, float weight) const
-    {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
-      for(int i = 0; i < VD; i++)
-      {
-        dest[i] += weight * value[i];
-      }
-    }
-
-    void mix(const Value *left, const Value *center, const Value *right)
-    {
-      for(int i = 0; i < VD; i++)
-      {
-        value[i] = (0.25f * left->value[i] + 0.5f * center->value[i] + 0.25f * right->value[i]);
-      }
-    }
-
-    float value[VD]{};
-  };
-#endif /* 0 */
 
 public:
   /* Constructor
@@ -315,7 +246,7 @@ public:
   HashTablePermutohedral &operator=(const HashTablePermutohedral &) = delete;
 
   // Returns the number of vectors stored.
-  int size() const
+  size_t size() const
   {
     return filled;
   }
@@ -411,7 +342,7 @@ public:
     filled = 0;
     entries = new Entry[capacity];
     keys = new Key[maxFill()];
-    values = new Value[maxFill()]{ 0 };
+    values = new Value[maxFill()];
     init_alloc = total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
   }
    
@@ -593,10 +524,10 @@ public:
   /* Performs splatting with given position and value vectors */
   void splat(float *position, float *value, size_t replay_index, int thread_index = 0) const
   {
-    float elevated[D + 1];
-    int greedy[D + 1];
-    int rank[D + 1];
-    float barycentric[D + 2];
+    DT_ALIGNED_PIXEL float elevated[D + 1];
+    DT_ALIGNED_PIXEL int greedy[D + 1];
+    DT_ALIGNED_PIXEL int rank[D + 1];
+    DT_ALIGNED_PIXEL float barycentric[D + 2];
     Key key;
 
     // first rotate position into the (d+1)-dimensional hyperplane
@@ -610,8 +541,10 @@ public:
     constexpr float scale = 1.0f / (D + 1);
 
     // greedily search for the closest zero-colored lattice point
-    int sum = 0;
-    for(int i = 0; i <= D; i++)
+#ifdef _OPENMP
+#pragma omp simd
+#endif
+    for(size_t i = 0; i <= D; i++)
     {
       float v = elevated[i] * scale;
       float up = ceilf(v) * (D + 1);
@@ -621,9 +554,11 @@ public:
         greedy[i] = up;
       else
         greedy[i] = down;
-
-      sum += greedy[i];
     }
+    int sum = 0;
+    for(size_t i = 0; i <= D; i++)
+       sum += greedy[i];
+
     sum /= D + 1;
 
     // rank differential to find the permutation between this simplex and the canonical one.
@@ -729,10 +664,10 @@ public:
     {
       const Key *oldKeys = hashTables[i].getKeys();
       const Value *oldVals = hashTables[i].getValues();
-      const int filled = hashTables[i].size();
+      const size_t filled = hashTables[i].size();
       offset_remap[i] = new int[filled];
       remap_bytes += filled * sizeof(int);
-      for(int j = 0; j < filled; j++)
+      for(size_t j = 0; j < filled; j++)
       {
         Value *val = hashTables[0].lookup(oldKeys[j], true);
         val->add(oldVals[j]);
@@ -808,7 +743,7 @@ public:
     schedule(static)
 #endif
       // For each vertex in the lattice,
-      for(int i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
+      for(size_t i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
       {
         const Key &key = keyBase[i]; // keys to current vertex
         // construct keys to the neighbors along the given axis.

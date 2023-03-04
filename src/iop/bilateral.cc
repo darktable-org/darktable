@@ -279,11 +279,13 @@ void process(struct dt_iop_module_t *self,
 #endif
     for(size_t index = 0; index < npixels; index++)
     {
-    dt_aligned_pixel_t val;
-    lattice.slice(val, index);
-    for_each_channel(k)
-       out[(size_t)4*index + k] = val[k] / val[3];
+      dt_aligned_pixel_t val;
+      lattice.slice(val, index);
+      for_each_channel(k)
+        val[k] /= val[3];
+      copy_pixel_nontemporal(out + 4*index, val);
     }
+    dt_omploop_sfence();
   }
 }
 
@@ -330,7 +332,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     size_t grid_points = (roi_out->height/sigma[0]) * (roi_out->width/sigma[1]) / sigma[2] / sigma[3] / sigma[4];
     size_t hash_bytes = PermutohedralLattice<5, 4>::estimatedBytes(grid_points, npixels);
     tiling->factor += (hash_bytes / (16.0f*npixels));
-    std::cerr<<"tiling->factor = "<<tiling->factor<<", hash_bytes="<<hash_bytes<<", npixels="<<npixels<<std::endl; //DEBUG
+    if(darktable.unmuted & DT_DEBUG_MEMORY)
+       std::cerr << "[bilateral] tiling factor = " << tiling->factor << ", npixels=" << npixels
+		 << ", estimated hashbytes=" << hash_bytes << std::endl;
   }
   tiling->overhead = 0;
   tiling->overlap = rad;
