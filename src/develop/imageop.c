@@ -1128,7 +1128,6 @@ static void _iop_panel_name(dt_iop_module_t *module)
   GtkLabel *iname = GTK_LABEL(module->instance_name);
   gchar *new_label = NULL;
   gchar *multi_name = NULL;
-  gboolean changed = FALSE;
 
   if(module->has_trouble && module->enabled)
   {
@@ -1154,27 +1153,30 @@ static void _iop_panel_name(dt_iop_module_t *module)
 
   gtk_label_set_text(iname, new_label);
 
-  // update corresponding history (last entry with same multi_priority)
+  // check last history item and see if we can change its label
+  // accordingly. this must be done for the proper module and
+  // corresponding multi-priority.
+  // note: do not update for trouble messages has this will create
+  //       some infinite loop with lens module.
+  const GList *history = g_list_last(darktable.develop->history);
 
-  for(const GList *history = g_list_last(darktable.develop->history);
-      history;
-      history = g_list_previous(history))
+  if(history && !module->has_trouble)
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+
     if(hitem->module == module
        && hitem->module->multi_priority == module->multi_priority)
     {
-      changed = strcmp(hitem->multi_name, multi_name);
-      g_strlcpy(hitem->multi_name, multi_name, sizeof(hitem->multi_name));
-      break;
+      const gboolean changed = g_strcmp0(hitem->multi_name, multi_name);
+      if(changed)
+      {
+        dt_dev_add_history_item(darktable.develop, module, FALSE);
+      }
     }
   }
 
   g_free(multi_name);
   g_free(new_label);
-
-  if(changed)
-    dt_dev_add_history_item(darktable.develop, module, FALSE);
 }
 
 void dt_iop_gui_update_header(dt_iop_module_t *module)
