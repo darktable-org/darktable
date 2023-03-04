@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,21 +19,18 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "develop/pixelpipe_hb.h"
 #include "external/libxcf/xcf.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 DT_MODULE(1)
-
-// TODO:
-//   - exif / xmp:
-//        GIMP uses a custom way of serializing the data. see libgimpbase/gimpmetadata.c:gimp_metadata_serialize()
 
 typedef struct dt_imageio_xcf_gui_t
 {
@@ -66,7 +63,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     profile = malloc(profile_len);
     if(!profile)
     {
-      fprintf(stderr, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
+      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
       return 1;
     }
     cmsSaveProfileToMem(out_profile, profile, &profile_len);
@@ -85,12 +82,11 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
   }
 
-
   XCF *xcf = xcf_open(filename);
 
   if(!xcf)
   {
-    fprintf(stderr, "[xcf] error: can't open `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't open `%s'\n", filename);
     goto exit;
   }
 
@@ -106,7 +102,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_F_32_L : XCF_PRECISION_F_32_G);
   else
   {
-    fprintf(stderr, "[xcf] error: bpp of %d is not supported\n", d->bpp);
+    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: bpp of %d is not supported\n", d->bpp);
     goto exit;
   }
 
@@ -130,14 +126,32 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-comment", XCF_PARASITE_PERSISTENT, strlen(comment) + 1, comment);
   g_free(comment);
 
-  // TODO: this needs to be serialized, together with the exif data
-//   char *xmp_string = dt_exif_xmp_read_string(imgid);
-//   if(xmp_string)
-//   {
-//     xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-metadata", XCF_PARASITE_PERSISTENT,
-//             strlen(xmp_string) + 1, xmp_string);
-//     g_free(xmp_string);
-//   }
+  if(exif && exif_len > 0)
+  {
+    // Prepend the libexif expected "Exif\0\0" APP1 prefix (see GIMP parasites.txt)
+    uint8_t *exif_buf = g_malloc0(exif_len + 6);
+    if(!exif_buf)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %d bytes of memory\n", exif_len + 6);
+      goto exit;
+    }
+    memcpy(exif_buf, "Exif\0\0", 6);
+    memcpy(exif_buf + 6, exif, exif_len);
+    xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "exif-data", XCF_PARASITE_PERSISTENT, exif_len + 6, exif_buf);
+    g_free(exif_buf);
+  }
+
+  // TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested
+  if(exif && exif_len > 0)
+  {
+    char *xmp_string = dt_exif_xmp_read_string(imgid);
+    size_t xmp_len;
+    if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+    {
+      xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-metadata", XCF_PARASITE_PERSISTENT, xmp_len, xmp_string);
+      g_free(xmp_string);
+    }
+  }
 
   xcf_add_layer(xcf);
   xcf_set(xcf, XCF_WIDTH, d->global.width);
@@ -163,7 +177,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
         if(!raster_mask)
         {
           // this should never happen
-          fprintf(stderr, "error: can't get raster mask from `%s'\n", piece->module->name());
+          dt_print(DT_DEBUG_ALWAYS, "error: can't get raster mask from `%s'\n", piece->module->name());
           goto exit;
         }
 
@@ -182,15 +196,25 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
         {
           channel_data = malloc(sizeof(uint8_t) * d->global.width * d->global.height);
           uint8_t *ch = (uint8_t *)channel_data;
-          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; i++)
-            ch[i] = CLAMP((int)(raster_mask[i] * 255.0), 0, 255);
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(ch, d, raster_mask) \
+  schedule(simd:static)
+#endif
+          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; ++i)
+            ch[i] = (uint8_t)roundf(CLIP(raster_mask[i]) * 255.0f);
         }
         else if(d->bpp == 16)
         {
           channel_data = malloc(sizeof(uint16_t) * d->global.width * d->global.height);
           uint16_t *ch = (uint16_t *)channel_data;
-          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; i++)
-            ch[i] = CLAMP((int)(raster_mask[i] * 65535.0), 0, 65535);
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(ch, d, raster_mask) \
+  schedule(simd:static)
+#endif
+          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; ++i)
+            ch[i] = (uint16_t)roundf(CLIP(raster_mask[i]) * 65535.0f);
         }
         else if(d->bpp == 32)
         {
@@ -214,7 +238,6 @@ exit:
   free(profile);
 
   return res;
-
 }
 
 size_t params_size(dt_imageio_module_format_t *self)

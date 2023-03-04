@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2021 darktable developers.
+    Copyright (C) 2018-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/metadata.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/tags.h"
@@ -32,6 +30,8 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
@@ -504,7 +504,7 @@ static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
     else
     {
       const gchar *errormessage = json_object_get_string_member(ui->api->response, "message");
-      fprintf(stderr, "[imageio_storage_piwigo] could not authenticate: `%s'!\n", errormessage);
+      dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] could not authenticate: `%s'!\n", errormessage);
       _piwigo_set_status(ui, _("not authenticated"), "#e07f7f");
       _piwigo_ctx_destroy(&ui->api);
     }
@@ -1133,7 +1133,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type, icc_filename,
                        icc_intent, self, sdata, num, total, metadata) != 0)
   {
-    fprintf(stderr, "[imageio_storage_piwigo] could not export to file: `%s'!\n", fname);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
     result = 1;
     goto cleanup;
@@ -1170,7 +1170,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
         status = _piwigo_api_set_info(p, author, caption, description, pwg_image_id);
         if(!status)
         {
-          fprintf(stderr, "[imageio_storage_piwigo] could not update to piwigo!\n");
+          dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] could not update to piwigo!\n");
           dt_control_log(_("could not update to piwigo!"));
           result = 1;
         }
@@ -1184,7 +1184,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
         status = _piwigo_api_upload_photo(p, fname, author, caption, description, pwg_image_id);
         if(!status)
         {
-          fprintf(stderr, "[imageio_storage_piwigo] could not upload to piwigo!\n");
+          dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] could not upload to piwigo!\n");
           dt_control_log(_("could not upload to piwigo!"));
           result = 1;
         }
@@ -1313,7 +1313,7 @@ void *get_params(dt_imageio_module_storage_t *self)
           if(p->album == NULL)
           {
             // Something went wrong...
-            fprintf(stderr, "Something went wrong.. album index %d = NULL\n", index - 2);
+            dt_print(DT_DEBUG_ALWAYS, "Something went wrong.. album index %d = NULL\n", index - 2);
             goto cleanup;
           }
 
@@ -1321,7 +1321,7 @@ void *get_params(dt_imageio_module_storage_t *self)
 
           if(!p->album_id)
           {
-            fprintf(stderr, "[imageio_storage_piwigo] cannot find album `%s'!\n", p->album);
+            dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] cannot find album `%s'!\n", p->album);
             goto cleanup;
           }
 

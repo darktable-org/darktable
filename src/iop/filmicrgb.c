@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2019-2022 darktable developers.
+   Copyright (C) 2019-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1116,7 +1116,7 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
     const float *const restrict TT_c = __builtin_assume_aligned(texture + k, 16);
 
     // synthesize the max of all RGB channels texture as a flat texture term for the whole pixel
-    // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
+    // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
     // channels
     const float grey_texture = fmaxabsf(fmaxabsf(TT_c[0], TT_c[1]), TT_c[2]);
 
@@ -1166,7 +1166,7 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
  * The ratios represent the chromaticity in image and contain low frequencies in the absence of noise or
  * aberrations, so, here, we favor them instead.
  *
- * Consequences : 
+ * Consequences :
  *  1. use min of interpolated channels details instead of max, to get smoother details
  *  4. use the max of low frequency channels instead of min, to favor achromatic solution.
  *
@@ -1189,7 +1189,7 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
     const float *const restrict TT_c = __builtin_assume_aligned(texture + k, 16);
 
     // synthesize the max of all RGB channels texture as a flat texture term for the whole pixel
-    // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
+    // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
     // channels
     const float grey_texture = fmaxabsf(fmaxabsf(TT_c[0], TT_c[1]), TT_c[2]);
 
@@ -1223,7 +1223,7 @@ static inline void init_reconstruct(const float *const restrict in, const float 
                                     float *const restrict reconstructed, const size_t width, const size_t height)
 {
 // init the reconstructed buffer with non-clipped and partially clipped pixels
-// Note : it's a simple multiplied alpha blending where mask = alpha weight
+// Note : it's a simple multiplied alpha blending where mask = alpha weight
 #ifdef _OPENMP
 #pragma omp parallel for default(none) dt_omp_firstprivate(in, mask, reconstructed, width, height) \
   schedule(static)
@@ -1322,7 +1322,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
     float *restrict LF;                 // output buffer for the current scale
     float *restrict HF_RGB_temp;        // temp buffer for HF_RBG terms before blurring
 
-    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
+    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
     if(s == 0)
     {
       detail = in;
@@ -1589,7 +1589,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in, float *co
 
 static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, dt_aligned_pixel_t Ych_final, const float saturation)
 {
-  // Note : Ych is normalized trough the LMS conversion,
+  // Note : Ych is normalized trough the LMS conversion,
   // meaning c is actually a saturation (saturation ~= chroma / brightness).
   // So copy-pasting c and h from a different Y is equivalent to
   // tonemapping with a norm, which is equivalent to doing exposure compensation :
@@ -1971,15 +1971,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   {
     // init the blown areas with noise to create particles
     float *const restrict inpainted =  dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
-    inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold, data->noise_distribution,
-                  roi_out->width, roi_out->height);
-
-    // diffuse particles with wavelets reconstruction
-    // PASS 1 on RGB channels
-    const gint success_1 = reconstruct_highlights(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
+    gint success_1 = FALSE;
     gint success_2 = TRUE;
+    if(inpainted)
+    {
+      inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold,
+                    data->noise_distribution, roi_out->width, roi_out->height);
 
-    dt_free_align(inpainted);
+      // diffuse particles with wavelets reconstruction
+      // PASS 1 on RGB channels
+      success_1 = reconstruct_highlights(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB,
+                                         ch, data, piece, roi_in, roi_out);
+      dt_free_align(inpainted);
+    }
 
     if(data->high_quality_reconstruction > 0 && success_1)
     {
@@ -2038,9 +2042,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 
   if(reconstructed) dt_free_align(reconstructed);
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -2101,7 +2102,7 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
     cl_mem detail;
     cl_mem LF;
 
-    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
+    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
     if(s == 0)
     {
       detail = in;
@@ -2981,9 +2982,10 @@ void reload_defaults(dt_iop_module_t *module)
 
   module->default_enabled = FALSE;
 
-  const gboolean is_scene_referred = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
+  const gboolean is_scene_referred = dt_is_scene_referred();
 
-  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage) && is_scene_referred)
+  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage)
+     && is_scene_referred)
   {
     // For scene-referred workflow, auto-enable and adjust based on exposure
     // TODO: fetch actual exposure in module, don't assume 1.
@@ -3220,7 +3222,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  // write the graph legend at GUI default size
+  // write the graph legend at GUI default size
   pango_font_description_set_size(desc, font_size);
   pango_layout_set_font_description(layout, desc);
   if(g->gui_mode == DT_FILMIC_GUI_LOOK)
@@ -3647,7 +3649,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     // draw the dynamic range of display
     // if white = 100%, assume -11.69 EV because of uint8 output + sRGB OETF.
     // for uint10 output, white should be set to 400%, so anything above 100% increases DR
-    // FIXME : if darktable becomes HDR-10bits compatible (for output), this needs to be updated
+    // FIXME : if darktable becomes HDR-10bits compatible (for output), this needs to be updated
     const float display_DR = 12.f + log2f(p->white_point_target / 100.f);
 
     const float y_display = g->allocation.height / 3.f + g->line_height;
@@ -3726,7 +3728,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     const float max_DR = ceilf(fmaxf(display_HL_EV, scene_HL_EV)) + ceilf(fmaxf(display_LL_EV, scene_LL_EV));
     const float EV = (column_right) / max_DR;
 
-    // all greys are aligned vertically in GUI since they are the fulcrum of the transform
+    // all greys are aligned vertically in GUI since they are the fulcrum of the transform
     // so, get their coordinates
     const float grey_EV = fmaxf(ceilf(display_HL_EV), ceilf(scene_HL_EV));
     const float grey_x = g->allocation.width - (grey_EV)*EV - darktable.bauhaus->quad_width;
@@ -4053,29 +4055,12 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
   return FALSE;
 }
 
-static gboolean area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return 1;
-  if(!self->enabled) return 0;
-
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  g->gui_hover = TRUE;
+  g->gui_hover = event->type == GDK_ENTER_NOTIFY;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  return TRUE;
-}
-
-
-static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return 1;
-  if(!self->enabled) return 0;
-
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  g->gui_hover = FALSE;
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -4152,25 +4137,6 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   }
 }
 
-static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
-{
-  if(dt_gui_ignore_scroll(event)) return FALSE;
-
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-  {
-    int delta_y;
-    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-    {
-      //adjust aspect
-      const int aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent");
-      dt_conf_set_int("plugins/darkroom/filmicrgb/aspect_percent", aspect + delta_y);
-      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
-    }
-    return TRUE; // Ensure that scrolling cannot move side panel when no delta
-  }
-  return FALSE;
-}
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = IOP_GUI_ALLOC(filmicrgb);
@@ -4181,21 +4147,16 @@ void gui_init(dt_iop_module_t *self)
   g->gui_hover = FALSE;
   g->gui_sizes_inited = FALSE;
 
-  // don't make the area square to safe some vertical space -- it's not interactive anyway
-  const float aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent") / 100.0;
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/filmicrgb/aspect_percent"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                                 | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_enter_leave_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(area_scroll_callback), self);
 
   // Init GTK notebook
   static struct dt_action_def_t notebook_def = { };
@@ -4206,7 +4167,8 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("scene"), NULL);
 
   g->grey_point_source
-      = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_point_source"));
+      = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                            dt_bauhaus_slider_from_params(self, "grey_point_source"));
   dt_bauhaus_slider_set_soft_range(g->grey_point_source, .1, 36.0);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%");
   gtk_widget_set_tooltip_text(g->grey_point_source,
@@ -4217,7 +4179,8 @@ void gui_init(dt_iop_module_t *self)
 
   // White slider
   g->white_point_source
-      = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "white_point_source"));
+      = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                            dt_bauhaus_slider_from_params(self, "white_point_source"));
   dt_bauhaus_slider_set_soft_range(g->white_point_source, 2.0, 8.0);
   dt_bauhaus_slider_set_format(g->white_point_source, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_point_source,
@@ -4227,7 +4190,8 @@ void gui_init(dt_iop_module_t *self)
 
   // Black slider
   g->black_point_source
-      = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "black_point_source"));
+      = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                            dt_bauhaus_slider_from_params(self, "black_point_source"));
   dt_bauhaus_slider_set_soft_range(g->black_point_source, -14.0, -3);
   dt_bauhaus_slider_set_format(g->black_point_source, _(" EV"));
   gtk_widget_set_tooltip_text(
@@ -4243,7 +4207,8 @@ void gui_init(dt_iop_module_t *self)
                                                     "useful to give a safety margin to extreme luminances."));
 
   // Auto tune slider
-  g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
+  g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                                       dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
@@ -4256,7 +4221,7 @@ void gui_init(dt_iop_module_t *self)
   // Page RECONSTRUCT
   self->widget = dt_ui_notebook_page(g->notebook, N_("reconstruct"), NULL);
 
-  GtkWidget *label = dt_ui_section_label_new(_("highlights clipping"));
+  GtkWidget *label = dt_ui_section_label_new(C_("section", "highlights clipping"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   g->enable_highlight_reconstruction = dt_bauhaus_toggle_from_params(self, "enable_highlight_reconstruction");
@@ -4288,7 +4253,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_class(g->show_highlight_mask, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
-  label = dt_ui_section_label_new(_("balance"));
+  label = dt_ui_section_label_new(C_("section", "balance"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   g->reconstruct_structure_vs_texture = dt_bauhaus_slider_from_params(self, "reconstruct_structure_vs_texture");

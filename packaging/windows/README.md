@@ -19,13 +19,13 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
 
 * From the MSYS terminal, install x64 developer tools, x86_64 toolchain and git:
     ```bash
-    pacman -S --needed base-devel intltool git
+    pacman -S --needed base-devel git intltool po4a
     pacman -S --needed mingw-w64-ucrt-x86_64-{cc,cmake,gcc-libs,ninja,nsis,omp}
     ```
 
 * Install required libraries and dependencies for darktable:
     ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libjxl,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libavif,libheif,libjxl,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,icu,iso-codes,python-jsonschema}
     ```
 
 * Install optional libraries and dependencies:
@@ -59,8 +59,8 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
         ```
         * If you have to set them manually you can do so by setting the variables in your `~/.bash_profile`. For example (check your version numbers first):
             ```
-            export CAMLIBS="/$MINGW_PREFIX/lib/libgphoto2/2.5.30/"
-            export IOLIBS="/$MINGW_PREFIX/lib/libgphoto2_port/0.12.1/"
+            export CAMLIBS="$MINGW_PREFIX/lib/libgphoto2/2.5.30/"
+            export IOLIBS="$MINGW_PREFIX/lib/libgphoto2_port/0.12.1/"
             ```
         * If you do so, execute the following command to activate those profile changes:
             ```bash
@@ -169,7 +169,7 @@ as root. It's also enough to install a server setup without X.
                 mingw64-libtiff mingw64-libtiff-devel mingw64-liblcms2 \
                 mingw64-liblcms2-devel mingw64-libopenjpeg1 mingw64-libopenjpeg-devel \
                 mingw64-GraphicsMagick mingw64-GraphicsMagick-devel mingw64-libexpat \
-                mingw64-libexpat-devel mingw64-libsoup mingw64-libsoup-devel
+                mingw64-libexpat-devel
 
     # the jpeg headers installed by openSUSE contain some definitions that hurt us so we have to patch these.
     # this is super ugly and needs to be redone whenever the library is updated.

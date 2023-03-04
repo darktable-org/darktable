@@ -20,10 +20,6 @@
 
 #ifdef FULL_API_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "common/introspection.h"
 
 #include <cairo/cairo.h>
@@ -37,6 +33,10 @@ extern "C" {
 
 #ifdef HAVE_OPENCL
 #include <CL/cl.h>
+#endif
+
+#if defined(__cplusplus) && !defined(INCLUDE_API_FROM_MODULE_H)
+extern "C" {
 #endif
 
 struct dt_iop_module_so_t;
@@ -228,8 +228,8 @@ OPTIONAL(void, set_preferences, void *menu, struct dt_iop_module_t *self);
 
 #pragma GCC visibility pop
 
-#ifdef __cplusplus
-}
+#if defined(__cplusplus) && !defined(INCLUDE_API_FROM_MODULE_H)
+} // extern "C"
 #endif
 
 #endif // FULL_API_H

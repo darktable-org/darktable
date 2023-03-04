@@ -361,7 +361,7 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
 
   if(!signal_description->synchronous)
   {
-    g_main_context_invoke(NULL, _signal_raise, params);
+    g_main_context_invoke_full(NULL, G_PRIORITY_HIGH_IDLE, _signal_raise, params, NULL);
   }
   else
   {
@@ -376,7 +376,7 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
       g_cond_init(&communication.end_cond);
       g_mutex_lock(&communication.end_mutex);
       communication.user_data = params;
-      g_main_context_invoke(NULL,_async_com_callback,&communication);
+      g_main_context_invoke_full(NULL,G_PRIORITY_HIGH_IDLE, _async_com_callback,&communication, NULL);
       g_cond_wait(&communication.end_cond,&communication.end_mutex);
       g_mutex_unlock(&communication.end_mutex);
       g_mutex_clear(&communication.end_mutex);

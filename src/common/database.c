@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,8 +49,8 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 37
-#define CURRENT_DATABASE_VERSION_DATA     9
+#define CURRENT_DATABASE_VERSION_LIBRARY 38
+#define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
 #define MAX_NESTED_TRANSACTIONS 0
@@ -1461,7 +1461,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // insert an history_hash entry for all images which have an history
     // note that images without history don't get hash and are considered as basic
     sqlite3_stmt *h_stmt;
-    const gboolean basecurve_auto_apply = dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
+    const gboolean basecurve_auto_apply = dt_is_display_referred();
     // clang-format off
     char *query = g_strdup_printf(
                             "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "
@@ -2158,6 +2158,14 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "[init] can't create metadata_index_value\n");
     new_version = 37;
   }
+  else if(version == 37)
+  {
+    TRY_EXEC("ALTER TABLE main.history ADD COLUMN multi_name_hand_edited INTEGER default 0",
+             "[init] can't add multi_name_hand_edited column\n");
+    TRY_EXEC("UPDATE main.history SET multi_name_hand_edited = 1 WHERE multi_name != ''",
+             "[init] can't set multi_name_hand_edited column\n");
+    new_version = 38;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2367,6 +2375,20 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     // clang-format on
     new_version = 9;
   }
+  else if(version == 9)
+  {
+    TRY_EXEC("ALTER TABLE data.style_items ADD COLUMN multi_name_hand_edited INTEGER default 0",
+             "[init] can't add multi_name_hand_edited column\n");
+    TRY_EXEC("UPDATE data.style_items SET multi_name_hand_edited = 1 WHERE multi_name != ''",
+             "[init] can't set multi_name_hand_edited column\n");
+
+    TRY_EXEC("ALTER TABLE data.presets ADD COLUMN multi_name_hand_edited INTEGER default 0",
+             "[init] can't add multi_name_hand_edited column\n");
+    TRY_EXEC("UPDATE data.presets SET multi_name_hand_edited = 1 WHERE multi_name != ''",
+             "[init] can't set multi_name_hand_edited column\n");
+
+    new_version = 10;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2476,7 +2498,7 @@ static void _create_library_schema(dt_database_t *db)
       db->handle,
       "CREATE TABLE main.history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), "
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), multi_name_hand_edited INTEGER, "
       "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_op_index ON history (imgid, operation)", NULL, NULL, NULL);
@@ -2549,9 +2571,11 @@ static void _create_data_schema(dt_database_t *db)
   ////////////////////////////// style_items
   sqlite3_exec(
       db->handle,
-      "CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
-      "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      "CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER,"
+      "                               operation VARCHAR(256), op_params BLOB, enabled INTEGER,"
+      "                               blendop_params BLOB, blendop_version INTEGER,"
+      "                               multi_priority INTEGER, multi_name VARCHAR(256),"
+      "                               multi_name_hand_edited INTEGER)",
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
@@ -2562,6 +2586,7 @@ static void _create_data_schema(dt_database_t *db)
                            "VARCHAR, op_version INTEGER, op_params BLOB, "
                            "enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, "
                            "multi_priority INTEGER, multi_name VARCHAR(256), "
+                           "multi_name_hand_edited INTEGER, "
                            "model VARCHAR, maker VARCHAR, lens VARCHAR, iso_min REAL, iso_max REAL, "
                            "exposure_min REAL, exposure_max REAL, "
                            "aperture_min REAL, aperture_max REAL, focal_length_min REAL, "
@@ -2597,14 +2622,20 @@ static void _create_memory_schema(dt_database_t *db)
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
-      "operation VARCHAR(256) UNIQUE ON CONFLICT REPLACE, op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), multi_name_hand_edited INTEGER, CONSTRAINT opprio UNIQUE (operation, multi_priority))",
+      NULL, NULL, NULL);
+  sqlite3_exec(
+      db->handle,
+      "CREATE TABLE memory.history_snapshot (id INTEGER, num INTEGER, module INTEGER, "
+      "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), multi_name_hand_edited INTEGER)",
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.undo_history (id INTEGER, imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), multi_name_hand_edited INTEGER)",
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
@@ -2637,19 +2668,16 @@ static void _sanitize_db(dt_database_t *db)
     const int id = sqlite3_column_int(stmt, 0);
     const char *tag = (const char *)sqlite3_column_text(stmt, 1);
 
-    if(!g_utf8_validate(tag, -1, NULL))
+    if(tag && !g_utf8_validate(tag, -1, NULL))
     {
       gchar *new_tag = dt_util_foo_to_utf8(tag);
       fprintf(stderr, "[init]: tag `%s' is not valid utf8, replacing it with `%s'\n", tag, new_tag);
-      if(tag)
-      {
-        sqlite3_bind_text(innerstmt, 1, new_tag, -1, SQLITE_TRANSIENT);
-        sqlite3_bind_int(innerstmt, 2, id);
-        sqlite3_step(innerstmt);
-        sqlite3_reset(innerstmt);
-        sqlite3_clear_bindings(innerstmt);
-        g_free(new_tag);
-      }
+      sqlite3_bind_text(innerstmt, 1, new_tag, -1, SQLITE_TRANSIENT);
+      sqlite3_bind_int(innerstmt, 2, id);
+      sqlite3_step(innerstmt);
+      sqlite3_reset(innerstmt);
+      sqlite3_clear_bindings(innerstmt);
+      g_free(new_tag);
     }
   }
   sqlite3_finalize(stmt);
@@ -2761,6 +2789,7 @@ void dt_database_show_error(const dt_database_t *db)
         char *lck_filename = g_strconcat(lck_dirname, "/data.db.lock", NULL);
         if(g_access(lck_filename, F_OK) != -1)
           status += remove(lck_filename);
+        g_free(lck_filename);
 
         lck_filename = g_strconcat(lck_dirname, "/library.db.lock", NULL);
         if(g_access(lck_filename, F_OK) != -1)
@@ -3653,7 +3682,6 @@ const gchar *dt_database_get_path(const struct dt_database_t *db)
 
 static void _database_migrate_to_xdg_structure()
 {
-  gchar dbfilename[PATH_MAX] = { 0 };
   gchar *conf_db = dt_conf_get_string("database");
 
   gchar datadir[PATH_MAX] = { 0 };
@@ -3662,18 +3690,19 @@ static void _database_migrate_to_xdg_structure()
   if(conf_db && conf_db[0] != '/')
   {
     const char *homedir = getenv("HOME");
-    snprintf(dbfilename, sizeof(dbfilename), "%s/%s", homedir, conf_db);
+    gchar *dbfilename = g_strdup_printf("%s/%s", homedir, conf_db);
     if(g_file_test(dbfilename, G_FILE_TEST_EXISTS))
     {
-      char destdbname[PATH_MAX] = { 0 };
-      snprintf(destdbname, sizeof(dbfilename), "%s/%s", datadir, "library.db");
+      gchar *destdbname = g_strdup_printf("%s/%s", datadir, "library.db");
       if(!g_file_test(destdbname, G_FILE_TEST_EXISTS))
       {
         fprintf(stderr, "[init] moving database into new XDG directory structure\n");
         rename(dbfilename, destdbname);
         dt_conf_set_string("database", "library.db");
       }
+      g_free(destdbname);
     }
+    g_free(dbfilename);
   }
 
   g_free(conf_db);
@@ -3852,7 +3881,6 @@ static int _backup_db(
 )
 {
   sqlite3 *dest_db;             /* Database connection opened on zFilename */
-  sqlite3_backup *sb_dest;    /* Backup handle used to copy data */
 
   /* Open the database file identified by zFilename. */
   int rc = sqlite3_open(dest_filename, &dest_db);
@@ -3860,7 +3888,7 @@ static int _backup_db(
   if(rc == SQLITE_OK)
   {
     /* Open the sqlite3_backup object used to accomplish the transfer */
-    sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
+    sqlite3_backup *sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
     if(sb_dest)
     {
       dt_print(DT_DEBUG_SQL, "[db backup] %s to %s\n", src_db_name, dest_filename);

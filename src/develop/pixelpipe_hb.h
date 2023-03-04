@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,12 +20,12 @@
 
 #include "common/atomic.h"
 #include "common/image.h"
-#include "common/imageio.h"
 #include "common/iop_order.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/pixelpipe_cache.h"
+#include "imageio/imageio_common.h"
 
 /**
  * struct used by iop modules to connect to pixelpipe.
@@ -259,6 +259,10 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
 #ifdef HAVE_OPENCL
 gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode);
 #endif
+
+/* specialized version of dt_print for pixelpipe debugging */
+void dt_print_pipe(dt_debug_thread_t thread, const char *title, dt_dev_pixelpipe_t *pipe, const char *mod,
+      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const char *msg, ...);
 
 // helper function writing the pipe-processed ctmask data to dest
 float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const struct dt_iop_module_t *target_module);

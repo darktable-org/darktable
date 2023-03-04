@@ -788,7 +788,7 @@ static void _set_mapping_mode_cursor(GtkWidget *widget)
 
   if(widget && !strcmp(gtk_widget_get_name(widget), "module-header"))
     cursor = GDK_BASED_ARROW_DOWN;
-  else if(g_hash_table_lookup(darktable.control->widgets, darktable.control->mapping_widget)
+  else if(dt_action_widget(darktable.control->mapping_widget)
           && darktable.develop)
   {
     switch(dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE))
@@ -830,7 +830,9 @@ static void _show_shortcuts_prefs(GtkWidget *w)
 
 static void _main_do_event_keymap(GdkEvent *event, gpointer data)
 {
+  dt_lib_tool_preferences_t *d = data;
   GtkWidget *event_widget = gtk_get_event_widget(event);
+  static guint click_time = 0;
 
   switch(event->type)
   {
@@ -855,7 +857,6 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     if(!gtk_window_is_active(GTK_WINDOW(main_window)))
       break;
 
-    dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)data;
     if(event_widget == d->keymap_button)
       break;
 
@@ -863,7 +864,7 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
       break;
 
     if(event->button.button == GDK_BUTTON_SECONDARY)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
+      click_time = event->button.time;
     else if(event->button.button == GDK_BUTTON_MIDDLE)
       dt_shortcut_dispatcher(event_widget, event, data);
     else if(event->button.button > 7)
@@ -886,6 +887,16 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
       _show_shortcuts_prefs(event_widget);
     }
+
+    return;
+  case GDK_BUTTON_RELEASE:
+    if(event->button.button != GDK_BUTTON_SECONDARY)
+      break;
+
+    if(dt_gui_long_click(event->button.time, click_time))
+      dt_shortcut_copy_lua(NULL, NULL);
+    else
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
 
     return;
   default:

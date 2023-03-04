@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,11 +15,13 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include "common/darktable.h"
-#include "common/imageio_pfm.h"
+#include "develop/imageop.h"         // for IOP_CS_RGB
+#include "imageio/imageio_pfm.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -36,9 +38,11 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strcasecmp(ext, ".pfm")) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(strcasecmp(ext, ".pfm")) return DT_IMAGEIO_LOAD_FAILED;
+
   FILE *f = g_fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!f) return DT_IMAGEIO_LOAD_FAILED;
+
   int ret = 0;
   int cols = 3;
   float scale_factor;
@@ -51,23 +55,28 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
     cols = 1;
   else
     goto error_corrupt;
+
   char width_string[10] = { 0 };
   char height_string[10] = { 0 };
   char scale_factor_string[64] = { 0 };
   ret = fscanf(f, "%9s %9s %63s%*[^\n]", width_string, height_string, scale_factor_string);
   if(ret != 3) goto error_corrupt;
+
   errno = 0;
   img->width = strtol(width_string, NULL, 0);
   img->height = strtol(height_string, NULL, 0);
   scale_factor = g_ascii_strtod(scale_factor_string, NULL);
   if(errno != 0) goto error_corrupt;
   if(img->width <= 0 || img->height <= 0 ) goto error_corrupt;
+
   ret = fread(&ret, sizeof(char), 1, f);
   if(ret != 1) goto error_corrupt;
   ret = 0;
 
   int swap_byte_order = (scale_factor >= 0.0) ^ (G_BYTE_ORDER == G_BIG_ENDIAN);
 
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) goto error_cache_full;
 
@@ -93,8 +102,10 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
         buf[4 * (img->width * j + i) + 2] = buf[4 * (img->width * j + i) + 1]
             = buf[4 * (img->width * j + i) + 0] = v.f;
       }
+
   float *line = (float *)calloc(4 * img->width, sizeof(float));
   if(line == NULL) goto error_cache_full;
+
   for(size_t j = 0; j < img->height / 2; j++)
   {
     memcpy(line, buf + img->width * j * 4, sizeof(float) * 4 * img->width);
@@ -102,14 +113,22 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
            sizeof(float) * 4 * img->width);
     memcpy(buf + img->width * (img->height - 1 - j) * 4, line, sizeof(float) * 4 * img->width);
   }
+
   free(line);
   fclose(f);
+
+  img->buf_dsc.cst = IOP_CS_RGB;
+  img->buf_dsc.filters = 0u;
+  img->flags &= ~DT_IMAGE_LDR;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_S_RAW;
+  img->flags |= DT_IMAGE_HDR;
   img->loader = LOADER_PFM;
   return DT_IMAGEIO_OK;
 
 error_corrupt:
   fclose(f);
-  return DT_IMAGEIO_FILE_CORRUPTED;
+  return DT_IMAGEIO_LOAD_FAILED;
 error_cache_full:
   fclose(f);
   return DT_IMAGEIO_CACHE_FULL;
@@ -120,4 +139,3 @@ error_cache_full:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

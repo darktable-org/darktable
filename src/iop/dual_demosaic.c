@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,9 +28,16 @@ static float slider2contrast(float slider)
 {
   return 0.005f * powf(slider, 1.1f);
 }
-static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict rgb_data, const float *const restrict raw_data,
-                          dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const uint32_t filters, const uint8_t (*const xtrans)[6],
-                          const gboolean dual_mask, float dual_threshold)
+static void dual_demosaic(
+        dt_dev_pixelpipe_iop_t *piece,
+        float *const restrict rgb_data,
+        const float *const restrict raw_data,
+        dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint32_t filters,
+        const uint8_t (*const xtrans)[6],
+        const gboolean dual_mask,
+        const float dual_threshold)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -50,17 +57,17 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
     dt_control_log(_("[dual demosaic] can't allocate internal buffers"));
     return;
   }
-  const gboolean info = ((darktable.unmuted & (DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF)) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
 
   vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
   color_smoothing(vng_image, roi_out, 2);
 
-  dt_times_t start_blend = { 0 }, end_blend = { 0 };
-  if(info) dt_get_times(&start_blend);
-
   const float contrastf = slider2contrast(dual_threshold);
+  const gboolean wbon = piece->pipe->dsc.temperature.enabled;
+  const dt_aligned_pixel_t wb = { wbon ? piece->pipe->dsc.temperature.coeffs[0] : 1.0f,
+                                  wbon ? piece->pipe->dsc.temperature.coeffs[1] : 1.0f,
+                                  wbon ? piece->pipe->dsc.temperature.coeffs[2] : 1.0f};
 
-  dt_masks_calc_rawdetail_mask(rgb_data, blend, tmp, width, height, piece->pipe->dsc.temperature.coeffs);
+  dt_masks_calc_rawdetail_mask(rgb_data, blend, tmp, width, height, wb);
   dt_masks_calc_detail_mask(blend, blend, tmp, width, height, contrastf, TRUE);
 
   if(dual_mask)
@@ -88,21 +95,27 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
     {
       const int oidx = 4 * idx;
       for(int c = 0; c < 4; c++)
-        rgb_data[oidx + c] = intp(blend[idx], rgb_data[oidx + c], vng_image[oidx + c]);
+        rgb_data[oidx + c] = interpolatef(blend[idx], rgb_data[oidx + c], vng_image[oidx + c]);
     }
   }
-  if(info)
-  {
-    dt_get_times(&end_blend);
-    fprintf(stderr," [demosaic] CPU dual blending %.4f secs (%.4f CPU)\n", end_blend.clock - start_blend.clock, end_blend.user - start_blend.user);
-  }
+
   dt_free_align(tmp);
   dt_free_align(blend);
   dt_free_align(vng_image);
 }
 
 #ifdef HAVE_OPENCL
-gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem detail, cl_mem blend, cl_mem high_image, cl_mem low_image, cl_mem out, const int width, const int height, const int showmask)
+gboolean dual_demosaic_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem detail,
+        cl_mem blend,
+        cl_mem high_image,
+        cl_mem low_image,
+        cl_mem out,
+        const int width,
+        const int height,
+        const int showmask)
 {
   const int devid = piece->pipe->devid;
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
@@ -113,8 +126,10 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 
   {
-    const dt_aligned_pixel_t wb = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1],
-                                    piece->pipe->dsc.temperature.coeffs[2] };
+    const gboolean wbon = piece->pipe->dsc.temperature.enabled;
+    const dt_aligned_pixel_t wb = { wbon ? piece->pipe->dsc.temperature.coeffs[0] : 1.0f,
+                                    wbon ? piece->pipe->dsc.temperature.coeffs[1] : 1.0f,
+                                    wbon ? piece->pipe->dsc.temperature.coeffs[2] : 1.0f};
     const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
     const int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
       CLARG(detail), CLARG(high_image), CLARG(width), CLARG(height), CLARG(wb[0]), CLARG(wb[1]), CLARG(wb[2]));

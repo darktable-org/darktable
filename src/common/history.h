@@ -23,6 +23,10 @@
 #include <sqlite3.h>
 #include "develop/imageop.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct dt_develop_t;
 struct dt_iop_module_t;
 
@@ -62,20 +66,30 @@ typedef struct dt_history_copy_item_t
 void dt_history_item_free(gpointer data);
 
 /** adds to dev_dest module mod_src */
-int dt_history_merge_module_into_history(struct dt_develop_t *dev_dest, struct dt_develop_t *dev_src, struct dt_iop_module_t *mod_src, GList **_modules_used, const int append);
+gboolean dt_history_merge_module_into_history(struct dt_develop_t *dev_dest,
+                                              struct dt_develop_t *dev_src,
+                                              struct dt_iop_module_t *mod_src,
+                                              GList **_modules_used,
+                                              const gboolean append,
+                                              const gboolean auto_init);
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
-int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops, gboolean copy_iop_order, const gboolean copy_full);
+gboolean dt_history_copy_and_paste_on_image(const int32_t imgid,
+                                            const int32_t dest_imgid,
+                                            const gboolean merge,
+                                            GList *ops,
+                                            const gboolean copy_iop_order,
+                                            const gboolean copy_full);
 
 /** delete all history for the given image */
-void dt_history_delete_on_image(int32_t imgid);
+void dt_history_delete_on_image(const int32_t imgid);
 
 /** as above but control whether to record undo/redo */
-void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo);
+void dt_history_delete_on_image_ext(const int32_t imgid, const gboolean undo);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
-gboolean dt_history_copy(int imgid);
-gboolean dt_history_copy_parts(int imgid);
+gboolean dt_history_copy(const int imgid);
+gboolean dt_history_copy_parts(const int imgid);
 gboolean dt_history_paste_on_list(const GList *list, gboolean undo);
 gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo);
 
@@ -85,13 +99,15 @@ static inline gboolean dt_history_module_skip_copy(const int flags)
 }
 
 /** load a dt file and applies to selected images */
-int dt_history_load_and_apply_on_list(gchar *filename, const GList *list);
+gboolean dt_history_load_and_apply_on_list(gchar *filename, const GList *list);
 
 /** load a dt file and applies to specified image */
-int dt_history_load_and_apply(int imgid, gchar *filename, int history_only);
+gboolean dt_history_load_and_apply(const int imgid,
+                                   gchar *filename,
+                                   const gboolean history_only);
 
 /** delete historystack of selected images */
-gboolean dt_history_delete_on_list(const GList *list, gboolean undo);
+gboolean dt_history_delete_on_list(const GList *list, const gboolean undo);
 
 /** compress history stack */
 int dt_history_compress_on_list(const GList *imgs);
@@ -123,13 +139,18 @@ char *dt_history_get_items_as_string(int32_t imgid);
 char *dt_history_item_as_string(const char *name, gboolean enabled);
 
 /* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists(int32_t imgid, const char *operation, gboolean enabled);
+gboolean dt_history_check_module_exists(int32_t imgid,
+                                        const char *operation,
+                                        const gboolean enabled);
 
 /* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists_list(GList *hist, const char *operation, gboolean enabled);
+gboolean dt_history_check_module_exists_list(GList *hist,
+                                             const char *operation,
+                                             const gboolean enabled);
 
 /** calculate history hash and save it to database*/
-void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type);
+void dt_history_hash_write_from_history(const int32_t imgid,
+                                        const dt_history_hash_t type);
 
 /** return the hash history status */
 dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
@@ -146,9 +167,12 @@ void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash);
 /** read hash values from db */
 void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

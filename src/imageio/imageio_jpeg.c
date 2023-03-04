@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,14 +16,13 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_jpeg.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_jpeg.h"
+
 #include <setjmp.h>
 
 // error functions
@@ -49,7 +48,7 @@ static void dt_imageio_jpeg_init_destination(j_compress_ptr cinfo)
 }
 static boolean dt_imageio_jpeg_empty_output_buffer(j_compress_ptr cinfo)
 {
-  fprintf(stderr, "[imageio_jpeg] output buffer full!\n");
+  dt_print(DT_DEBUG_ALWAYS, "[imageio_jpeg] output buffer full!\n");
   return FALSE;
 }
 static void dt_imageio_jpeg_term_destination(j_compress_ptr cinfo)
@@ -259,7 +258,10 @@ int dt_imageio_jpeg_decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
   return 0;
 }
 
-int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, const int height,
+int dt_imageio_jpeg_compress(const uint8_t *in,
+                             uint8_t *out,
+                             const int width,
+                             const int height,
                              const int quality)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
@@ -315,7 +317,9 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
  * SOI and JFIF or Adobe markers, but before all else.)
  */
 
-static void write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr, unsigned int icc_data_len)
+static void write_icc_profile(j_compress_ptr cinfo,
+                              const JOCTET *icc_data_ptr,
+                              unsigned int icc_data_len)
 {
   unsigned int num_markers; /* total number of markers we'll write */
   int cur_marker = 1;       /* per spec, counting starts at 1 */
@@ -403,7 +407,9 @@ static boolean marker_is_icc(jpeg_saved_marker_ptr marker)
  * return FALSE.  You might want to issue an error message instead.
  */
 
-static boolean read_icc_profile(j_decompress_ptr dinfo, JOCTET **icc_data_ptr, unsigned int *icc_data_len)
+static boolean read_icc_profile(const j_decompress_ptr dinfo,
+                                JOCTET **icc_data_ptr,
+                                unsigned int *icc_data_len)
 {
   jpeg_saved_marker_ptr marker;
   int num_markers = 0;
@@ -490,9 +496,14 @@ static boolean read_icc_profile(j_decompress_ptr dinfo, JOCTET **icc_data_ptr, u
 #undef MAX_SEQ_NO
 
 
-int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *in, const int width,
-                                           const int height, const int quality, const void *exif, int exif_len,
-                                           int imgid)
+int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
+                                           const uint8_t *in,
+                                           const int width,
+                                           const int height,
+                                           const int quality,
+                                           const void *exif,
+                                           const int exif_len,
+                                           const int imgid)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
   dt_imageio_jpeg_t jpg;
@@ -555,8 +566,13 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
   return 0;
 }
 
-int dt_imageio_jpeg_write(const char *filename, const uint8_t *in, const int width, const int height,
-                          const int quality, const void *exif, int exif_len)
+int dt_imageio_jpeg_write(const char *filename,
+                          const uint8_t *in,
+                          const int width,
+                          const int height,
+                          const int quality,
+                          const void *exif,
+                          const int exif_len)
 {
   return dt_imageio_jpeg_write_with_icc_profile(filename, in, width, height, quality, exif, exif_len, -1);
 }
@@ -721,21 +737,44 @@ dt_colorspaces_color_profile_type_t dt_imageio_jpeg_read_color_space(dt_imageio_
   return DT_COLORSPACE_DISPLAY; // nothing embedded
 }
 
-dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
+                                         const char *filename,
+                                         dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
+  // Sometimes there are cases when images are in JPEG format, but their file extensions do not
+  // correspond to this format. For example, there are reports of such a situation with iPhone photos:
+  // https://discuss.pixls.us/t/darktable-not-presenting-heic-files-for-selection/33699
 
-  // JFIF ("JPEG File Interchange Format") has the same container as regular JPEG, only a different metadata
-  // format (instead of the more common Exif metadata format)
-  // See https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format
-  if(g_ascii_strcasecmp(ext, ".jpg") && g_ascii_strcasecmp(ext, ".jpeg") && g_ascii_strcasecmp(ext, ".jfif"))
-    return DT_IMAGEIO_FILE_CORRUPTED;
+  // So we have to abandon pre-filtering by checking file extensions. Instead, to quickly check whether it
+  // makes sense to work with this file further (whether it's in JPEG format), we check for magic bytes.
+
+  const uint8_t jpeg_magicbytes[3] = { 0xFF, 0xD8, 0xFF };
+  uint8_t first3bytes[3] = { 0 };
+
+  FILE *f = g_fopen(filename, "rb");
+  if(!f)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[jpeg_open] Error: failed to open '%s' for reading\n", filename);
+    return DT_IMAGEIO_FILE_NOT_FOUND;
+  }
+
+  if(fread(first3bytes, 1, 3, f) != 3)
+  {
+    fclose(f);
+    dt_print(DT_DEBUG_ALWAYS, "[jpeg_open] Error: file is empty or read error.\n");
+    return DT_IMAGEIO_FILE_NOT_FOUND;
+  }
+  fclose(f);
+
+  if(memcmp(first3bytes, jpeg_magicbytes, 3) != 0)
+  {
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_LOAD_FAILED;
   img->width = jpg.width;
   img->height = jpg.height;
 
@@ -743,7 +782,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     dt_free_align(tmp);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   img->buf_dsc.channels = 4;
@@ -760,15 +799,19 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
 
   dt_free_align(tmp);
 
+  img->buf_dsc.cst = IOP_CS_RGB; // jpeg is always RGB
+  img->buf_dsc.filters = 0u;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_S_RAW;
+  img->flags &= ~DT_IMAGE_HDR;
+  img->flags |= DT_IMAGE_LDR;
   img->loader = LOADER_JPEG;
+
   return DT_IMAGEIO_OK;
 }
-
-
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

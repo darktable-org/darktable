@@ -1,8 +1,9 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2013 johannes hanika.
+    copyright (c) 2009-2013 johannes hanika.
     copyright (c) 2014 Ulrich Pegelow.
     copyright (c) 2014 LebedevRI.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -284,10 +285,16 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-kernel void
-highlights_false_color (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                    const int rx, const int ry, const int filters, global const unsigned char (*const xtrans)[6],
-                    global const float *clips)
+kernel void highlights_false_color(
+        read_only image2d_t in,
+        write_only image2d_t out,
+        const int width,
+        const int height,
+        const int rx,
+        const int ry,
+        const unsigned int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -299,6 +306,226 @@ highlights_false_color (read_only image2d_t in, write_only image2d_t out, const 
   float oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
 
   write_imagef (out, (int2)(x, y), oval);
+}
+
+static float _calc_refavg(
+        read_only image2d_t in,
+        global const unsigned char (*const xtrans)[6],
+        const unsigned int filters,
+        int row,
+        int col)
+{
+  float mean[3] = { 0.0f, 0.0f, 0.0f };
+  float sum[3] =  { 0.0f, 0.0f, 0.0f };
+  float cnt[3]  = { 0.0f, 0.0f, 0.0f };
+
+  for(int dy = -1; dy < 2; dy++)
+  {
+    for(int dx = -1; dx < 2; dx++)
+    {
+      const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(col+dx, row+dy)).x);
+      const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, xtrans) : FC(row + dy, col + dx, filters);
+      sum[c] += val;
+      cnt[c] += 1.0f;
+    }
+  }
+
+  const float onethird = 1.0f / 3.0f;
+  for(int c = 0; c < 3; c++)
+    mean[c] = pow(sum[c] / cnt[c], onethird);
+
+  const float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
+  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+  return pow(croot_refavg[color], 3.0f);
+}
+
+kernel void highlights_initmask(
+        read_only image2d_t in,
+        global char *inmask,
+        const int msize,
+        const int mwidth,
+        const int mheight,
+        const unsigned int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips)
+{
+  const int mcol = get_global_id(0);
+  const int mrow = get_global_id(1);
+
+  if((mcol >= mwidth) || (mrow >= mheight))
+    return;
+
+  const int mdx = mad24(mrow, mwidth, mcol);
+
+  if((mcol < 1) || (mrow < 1) || (mcol > mwidth -2) || (mrow > mheight-2))
+  {
+    for(int c = 0; c < 3; c++)
+      inmask[c*msize + mdx] = 0;
+    return;
+  }
+
+  char mbuff[3] = { 0, 0, 0 };
+  for(int y = -1; y < 2; y++)
+  {
+    for(int x = -1; x < 2; x++)
+    {
+      const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+x, xtrans) : FC(mrow+y, mcol+x, filters);
+      const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(3 * mcol + x, 3 * mrow + y)).x);
+      mbuff[color] += (val >= clips[color]) ? 1 : 0;
+    }
+  }
+
+  for(int c = 0; c < 3; c++)
+    inmask[c*msize + mdx] = (mbuff[c] != 0) ? 1 : 0;
+}
+
+kernel void highlights_dilatemask(
+        global char *in,
+        global char *out,
+        const int msize,
+        const int mwidth,
+        const int mheight)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+
+  if((col >= mwidth) || (row >= mheight))
+    return;
+
+  const int w1 = mwidth;
+  const int w2 = 2 * mwidth;
+  const int w3 = 3 * mwidth;
+  const int moff = mad24(row, w1, col);
+
+  if((col < 3) || (row < 3) || (col > mwidth - 4) || (row > mheight - 4))
+  {
+    out[moff] = 0;
+    out[moff + msize] = 0;
+    out[moff + 2*msize] = 0;
+    return;
+  }
+
+  int i = moff;
+  out[i] = (in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2]) ? 1 : 0;
+
+  i = msize + moff;
+  out[i] = (in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2]) ? 1 : 0;
+
+  i = 2*msize + moff;
+  out[i] = (in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2]) ? 1 : 0;
+}
+
+
+kernel void highlights_chroma(
+        read_only image2d_t in,
+        global char *mask,
+        global float *accu,
+        const int width,
+        const int height,
+        const int msize,
+        const int mwidth,
+        const unsigned int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips)
+{
+  const int row = get_global_id(0);
+
+  if((row < 3) || (row > height - 4)) return;
+
+  float sum[3] = {0.0f, 0.0f, 0.0f};
+  float cnt[3] = {0.0f, 0.0f, 0.0f};
+
+  for(int col = 3; col < width-3; col++)
+  {
+    const int idx = mad24(row, width, col);
+    const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+    const float inval = fmax(0.0f, read_imagef(in, samplerA, (int2)(col, row)).x);
+    const int px = color * msize + mad24(row/3, mwidth, col/3);
+    if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
+    {
+      const float ref = _calc_refavg(in, xtrans, filters, row, col);
+      sum[color] += inval - ref;
+      cnt[color] += 1.0f;
+    }
+  }
+
+  for(int c = 0; c < 3; c++)
+  {
+    if(cnt[c] > 0.0f)
+    {
+      accu[row*6 + 2*c] = sum[c];
+      accu[row*6 + 2*c +1] = cnt[c];
+    }
+  }
+}
+
+kernel void highlights_opposed(
+        read_only image2d_t in,
+        write_only image2d_t out,
+        const int owidth,
+        const int oheight,
+        const int iwidth,
+        const int iheight,
+        const int dx,
+        const int dy,
+        const unsigned int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips,
+        global const float *chroma)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= owidth || y >= oheight) return;
+
+  const int irow = y + dy;
+  const int icol = x + dx;
+  float val = 0.0f;
+
+  if((icol >= 0) && (icol < iwidth) && (irow >= 0) && (irow < iheight))
+  {
+    val = fmax(0.0f, read_imagef(in, samplerA, (int2)(icol, irow)).x);
+
+    if((icol > 0) && (icol < iwidth-1) && (irow > 0) && (irow < iheight-1))
+    {
+      const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+      if(val >= clips[color])
+      {
+        const float ref = _calc_refavg(in, xtrans, filters, irow, icol);
+        val = fmax(val, ref + chroma[color]);
+      }
+    }
+  }
+  write_imagef (out, (int2)(x, y), val);
 }
 
 #define SQRT3 1.7320508075688772935274463415058723669f
@@ -665,7 +892,9 @@ interpolate_and_mask(read_only image2d_t input,
 
 
 kernel void
-remosaic_and_replace(read_only image2d_t interpolated,
+remosaic_and_replace(read_only image2d_t input,
+                     read_only image2d_t interpolated,
+                     read_only image2d_t clipping_mask,
                      write_only image2d_t output,
                      constant float *wb,
                      const int filters,
@@ -680,8 +909,10 @@ remosaic_and_replace(read_only image2d_t interpolated,
   const int c = FC(i, j, filters);
   const float4 center = read_imagef(interpolated, sampleri, (int2)(j, i));
   float *rgb = (float *)&center;
-
-  write_imagef(output, (int2)(j, i), fmax(rgb[c] * wb[c], 0.f));
+  const float opacity = read_imagef(clipping_mask, sampleri, (int2)(j, i)).w;
+  const float4 pix_in = read_imagef(input, sampleri, (int2)(j, i));
+  const float4 pix_out = opacity * fmax(rgb[c] * wb[c], 0.f) + (1.f - opacity) * pix_in;
+  write_imagef(output, (int2)(j, i), pix_out);
 }
 
 kernel void
@@ -708,7 +939,53 @@ box_blur_5x5(read_only image2d_t in,
 }
 
 
+kernel void
+interpolate_bilinear(read_only image2d_t in, const int width_in, const int height_in,
+                     write_only image2d_t out, const int width_out, const int height_out, const int RGBa)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
 
+  if(x >= width_out || y >= height_out) return;
+
+  // Relative coordinates of the pixel in output space
+  const float x_out = (float)x /(float)width_out;
+  const float y_out = (float)y /(float)height_out;
+
+  // Corresponding absolute coordinates of the pixel in input space
+  const float x_in = x_out * (float)width_in;
+  const float y_in = y_out * (float)height_in;
+
+  // Nearest neighbours coordinates in input space
+  int x_prev = (int)floor(x_in);
+  int x_next = x_prev + 1;
+  int y_prev = (int)floor(y_in);
+  int y_next = y_prev + 1;
+
+  x_prev = (x_prev < width_in) ? x_prev : width_in - 1;
+  x_next = (x_next < width_in) ? x_next : width_in - 1;
+  y_prev = (y_prev < height_in) ? y_prev : height_in - 1;
+  y_next = (y_next < height_in) ? y_next : height_in - 1;
+
+  // Nearest pixels in input array (nodes in grid)
+  const float4 Q_NW = read_imagef(in, samplerA, (int2)(x_prev, y_prev));
+  const float4 Q_NE = read_imagef(in, samplerA, (int2)(x_next, y_prev));
+  const float4 Q_SE = read_imagef(in, samplerA, (int2)(x_prev, y_next));
+  const float4 Q_SW = read_imagef(in, samplerA, (int2)(x_next, y_next));
+
+  // Spatial differences between nodes
+  const float Dy_next = (float)y_next - y_in;
+  const float Dy_prev = 1.f - Dy_next; // because next - prev = 1
+  const float Dx_next = (float)x_next - x_in;
+  const float Dx_prev = 1.f - Dx_next; // because next - prev = 1
+
+  // Interpolate
+  const float4 pix_out = Dy_prev * (Q_SW * Dx_next + Q_SE * Dx_prev) +
+                         Dy_next * (Q_NW * Dx_next + Q_NE * Dx_prev);
+
+  // Full RGBa copy - 4 channels
+  write_imagef(out, (int2)(x, y), pix_out);
+}
 
 
 enum wavelets_scale_t

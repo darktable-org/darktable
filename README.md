@@ -1,4 +1,4 @@
-[![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/darktable-org/darktable/CI/master)](https://github.com/darktable-org/darktable/actions/workflows/ci.yml?query=branch%3Amaster+is%3Acompleted+event%3Apush) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
+[![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/darktable-org/darktable/ci.yml?branch=master)](https://github.com/darktable-org/darktable/actions/workflows/ci.yml?query=branch%3Amaster+is%3Acompleted+event%3Apush) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
 =========
 
 darktable is an open source photography workflow application and non-destructive raw developer - a virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images, enhance them and export them to local or remote storage.
@@ -57,7 +57,7 @@ Requirements
 
 * Linux (64-bit)
 * FreeBSD (64-bit)
-* Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c), or later
+* Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
 * macOS
 
 *Big-endian platforms are not supported.*
@@ -89,11 +89,11 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.0.1 (stable)
+4.2.1 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.0.1/darktable-4.0.1-win64.exe)
-* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.0.1/darktable-4.0.1.1_x86_64.dmg)
-* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.0.1/darktable-4.0.1.1_arm64.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1_x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1_arm64.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -157,13 +157,14 @@ Compatible compilers:
 * MinGW-w64: 6 and later
 
 Required dependencies (minimum version):
-* CMake 3.10
-* GTK 3.22
+* CMake 3.18
+* GTK 3.24.15
 * GLib 2.40
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
 * Exiv2 0.24 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 
 Required dependencies (no version requirement):
+* Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)
 * Little CMS 2
 
 Optional dependencies (minimum version):
@@ -174,12 +175,11 @@ Optional dependencies (minimum version):
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.8.2 *(for AVIF import & export)*
-* libheif 1.9.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
+* libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
 
 Optional dependencies (no version requirement):
-* Lensfun *(for automatic lens correction)*
 * colord, Xatom *(for fetching the system display color profile)*
 * G'MIC *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
@@ -263,17 +263,17 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.0.1
+4.2.1
 
-The darktable project releases two major versions every year, in mid-Summer and at Christmas, tagged with even numbers (e.g. 3.0, 3.2, 3.4, 3.6).
-Minor revisions are tagged with a third digit (e.g. 3.0.1, 3.0.2) and mostly provide bug fixes and camera support.
+The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
+Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
 You may want to compile these stable releases yourself to get better performance for your particular computer:
 
 ```bash
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.0.1
+git checkout tags/release-4.2.1
 ```
 
 ### Get submodules
@@ -316,7 +316,7 @@ This builds the software for your architecture only, with:
 If you want to have dartkable displayed along your other applications, you only need to add a symbolic link:
 
 ```bash
-ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
+ln -s /opt/darktable/share/applications/org.darktable.darktable.desktop /usr/share/applications/org.darktable.darktable.desktop
 ```
 
 Now, your custom-built darktable is ready to be used just like any pre-packaged software.
@@ -358,7 +358,7 @@ the test/unstable one will save in `~/.config/darktable-test`, and the two versi
 Simply launch it from your desktop application menu or, from a terminal, run `darktable` or `/opt/darktable/bin/darktable`. If the installation did not create a launcher in your applications menu, run:
 
 ```bash
-sudo ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
+sudo ln -s /opt/darktable/share/applications/org.darktable.darktable.desktop /usr/share/applications/org.darktable.darktable.desktop
 ```
 
 You may find darktable configuration files in `~/.config/darktable`.

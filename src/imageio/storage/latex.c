@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/variables.h"
@@ -33,6 +31,8 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -248,7 +248,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     if(*c == '/') *c = '\0';
     if(g_mkdir_with_parents(dirname, 0755))
     {
-      fprintf(stderr, "[imageio_storage_latex] could not create directory: `%s'!\n", dirname);
+      dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_latex] could not create directory: `%s'!\n", dirname);
       dt_control_log(_("could not create directory `%s'!"), dirname);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       return 1;

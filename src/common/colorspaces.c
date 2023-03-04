@@ -818,7 +818,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int 
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
       const dt_iop_module_so_t *module = (const dt_iop_module_so_t *)(modules->data);
-      if(!strcmp(module->op, "colorin"))
+      if(dt_iop_module_is(module, "colorin"))
       {
         colorin = module;
         break;
@@ -870,7 +870,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
       const dt_iop_module_so_t *module = (const dt_iop_module_so_t *)(modules->data);
-      if(!strcmp(module->op, "colorout"))
+      if(dt_iop_module_is(module, "colorout"))
       {
         colorout = module;
         break;
@@ -1296,7 +1296,7 @@ static void _update_display2_profile(guchar *tmp_data, gsize size, char *name, s
 
 static void cms_error_handler(cmsContext ContextID, cmsUInt32Number ErrorCode, const char *text)
 {
-  fprintf(stderr, "[lcms2] error %d: %s\n", ErrorCode, text);
+  dt_print(DT_DEBUG_ALWAYS, "[lcms2] error %d: %s\n", ErrorCode, text);
 }
 
 static gint _sort_profiles(gconstpointer a, gconstpointer b)
@@ -1578,7 +1578,7 @@ dt_colorspaces_t *dt_colorspaces_init()
         // bad histogram profile selected, we must reset it to sRGB
         const char *name = dt_colorspaces_get_name(prof->type, prof->filename);
         dt_control_log(_("profile `%s' not usable as histogram profile. it has been replaced by sRGB!"), name);
-        fprintf(stderr,
+        dt_print(DT_DEBUG_ALWAYS,
                 "[colorspaces] profile `%s' not usable as histogram profile. it has been replaced by sRGB!\n",
                 name);
         res->histogram_type = DT_COLORSPACE_SRGB;
@@ -2445,4 +2445,3 @@ void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2022 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,8 +58,52 @@ typedef struct dt_control_crawler_result_t
   char *image_path, *xmp_path;
 } dt_control_crawler_result_t;
 
+static void _free_crawler_result(dt_control_crawler_result_t *entry)
+{
+  g_free(entry->image_path);
+  g_free(entry->xmp_path);
+  entry->image_path = entry->xmp_path = NULL;
+}
 
-GList *dt_control_crawler_run()
+static void _set_modification_time(char *filename,
+                                   const time_t timestamp)
+{
+  GFile *gfile = g_file_new_for_path(filename);
+
+  GFileInfo *info = g_file_query_info(
+    gfile,
+    G_FILE_ATTRIBUTE_TIME_MODIFIED "," G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC,
+    G_FILE_QUERY_INFO_NONE,
+    NULL,
+    NULL);
+
+  // For reference, we could use the following lines but for some
+  // reasons there is a deprecated message raised even though this
+  // routine is not marked as deprecated in the documentation.
+  //
+  // GDateTime *datetime = g_date_time_new_from_unix_local(timestamp);
+  // g_file_info_set_modification_date_time(info, datetime);
+
+  if(info)
+  {
+    g_file_info_set_attribute_uint64
+      (info,
+       G_FILE_ATTRIBUTE_TIME_MODIFIED,
+       timestamp);
+
+    g_file_set_attributes_from_info(
+      gfile,
+      info,
+      G_FILE_QUERY_INFO_NONE,
+      NULL,
+      NULL);
+  }
+
+  g_object_unref(gfile);
+  if(info) g_clear_object(&info);
+}
+
+GList *dt_control_crawler_run(void)
 {
   sqlite3_stmt *stmt, *inner_stmt;
   GList *result = NULL;
@@ -67,11 +111,15 @@ GList *dt_control_crawler_run()
 
   // clang-format off
   sqlite3_prepare_v2(dt_database_get(darktable.db),
-                     "SELECT i.id, write_timestamp, version, folder || '" G_DIR_SEPARATOR_S "' || filename, flags "
-                     "FROM main.images i, main.film_rolls f ON i.film_id = f.id ORDER BY f.id, filename",
+                     "SELECT i.id, write_timestamp, version,"
+                     "       folder || '" G_DIR_SEPARATOR_S "' || filename, flags"
+                     " FROM main.images i, main.film_rolls f"
+                     " ON i.film_id = f.id"
+                     " ORDER BY f.id, filename",
                      -1, &stmt, NULL);
   // clang-format on
-  sqlite3_prepare_v2(dt_database_get(darktable.db), "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
+  sqlite3_prepare_v2(dt_database_get(darktable.db),
+                     "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
                      &inner_stmt, NULL);
 
   // let's wrap this into a transaction, it might make it a little faster.
@@ -113,7 +161,8 @@ GList *dt_control_crawler_run()
 #ifdef _WIN32
       // UTF8 paths fail in this context, but converting to UTF16 works
       struct _stati64 statbuf;
-      if(xmp_path_locale) // in Windows dt_util_normalize_path returns NULL if file does not exist
+      if(xmp_path_locale) // in Windows dt_util_normalize_path returns
+                          // NULL if file does not exist
       {
         wchar_t *wfilename = g_utf8_to_utf16(xmp_path_locale, -1, NULL, NULL, NULL);
         stat_res = _wstati64(wfilename, &statbuf);
@@ -139,11 +188,11 @@ GList *dt_control_crawler_run()
         item->xmp_path = g_strdup(xmp_path);
 
         result = g_list_prepend(result, item);
-        dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is a newer XMP file.\n", xmp_path, id);
+        dt_print(DT_DEBUG_CONTROL,
+                 "[crawler] `%s' (id: %d) is a newer XMP file.\n", xmp_path, id);
       }
-      // older timestamps are the case for all images after the db upgrade. better not report these
-      //       else if(timestamp > statbuf.st_mtime)
-      //         printf("`%s' (%d) has an older xmp file.\n", image_path, id);
+      // older timestamps are the case for all images after the db
+      // upgrade. better not report these
     }
 
     // step 2: check if the image has associated files (.txt, .wav)
@@ -181,8 +230,8 @@ GList *dt_control_crawler_run()
       has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
     }
 
-    // TODO: decide if we want to remove the flag for images that lost their extra file. currently we do (the
-    // else cases)
+    // TODO: decide if we want to remove the flag for images that lost
+    // their extra file. currently we do (the else cases)
     int new_flags = flags;
     if(has_txt)
       new_flags |= DT_IMAGE_HAS_TXT;
@@ -225,7 +274,9 @@ typedef struct dt_control_crawler_gui_t
 } dt_control_crawler_gui_t;
 
 // close the window and clean up
-static void dt_control_crawler_response_callback(GtkWidget *dialog, gint response_id, gpointer user_data)
+static void dt_control_crawler_response_callback(GtkWidget *dialog,
+                                                 const gint response_id,
+                                                 gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   g_object_unref(G_OBJECT(gui->model));
@@ -258,7 +309,8 @@ static void _delete_selected_rows(dt_control_crawler_gui_t *gui)
 }
 
 
-static void _select_all_callback(GtkButton *button, gpointer user_data)
+static void _select_all_callback(GtkButton *button,
+                                 gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
@@ -297,8 +349,11 @@ static void _db_update_timestamp(const int id, const time_t timestamp)
 {
   // Update DB writing timestamp with XMP file timestamp
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET write_timestamp = ?2 WHERE id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.images"
+     " SET write_timestamp = ?2"
+     " WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, timestamp);
   sqlite3_step(stmt);
@@ -306,24 +361,31 @@ static void _db_update_timestamp(const int id, const time_t timestamp)
 }
 
 
-static void _get_crawler_entry_from_model(GtkTreeModel *model, GtkTreeIter *iter,
+static void _get_crawler_entry_from_model(GtkTreeModel *model,
+                                          GtkTreeIter *iter,
                                           dt_control_crawler_result_t *entry)
 {
-  gtk_tree_model_get(model, iter, DT_CONTROL_CRAWLER_COL_IMAGE_PATH, &entry->image_path, DT_CONTROL_CRAWLER_COL_ID,
-                     &entry->id, DT_CONTROL_CRAWLER_COL_XMP_PATH, &entry->xmp_path,
-                     DT_CONTROL_CRAWLER_COL_TS_DB_INT, &entry->timestamp_db, DT_CONTROL_CRAWLER_COL_TS_XMP_INT,
-                     &entry->timestamp_xmp, -1);
+  gtk_tree_model_get(model, iter,
+                     DT_CONTROL_CRAWLER_COL_IMAGE_PATH, &entry->image_path,
+                     DT_CONTROL_CRAWLER_COL_ID,         &entry->id,
+                     DT_CONTROL_CRAWLER_COL_XMP_PATH,   &entry->xmp_path,
+                     DT_CONTROL_CRAWLER_COL_TS_DB_INT,  &entry->timestamp_db,
+                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT, &entry->timestamp_xmp, -1);
 }
 
 
-static void _append_row_to_remove(GtkTreeModel *model, GtkTreePath *path, GList **rowref_list)
+static void _append_row_to_remove(GtkTreeModel *model,
+                                  GtkTreePath *path,
+                                  GList **rowref_list)
 {
   // append TreeModel rows to the list to remove
   GtkTreeRowReference *rowref = gtk_tree_row_reference_new(model, path);
   *rowref_list = g_list_append(*rowref_list, rowref);
 }
 
-static void _log_synchronization(dt_control_crawler_gui_t *gui, gchar *pattern, gchar *filepath)
+static void _log_synchronization(dt_control_crawler_gui_t *gui,
+                                 gchar *pattern,
+                                 gchar *filepath)
 {
   gchar *message = pattern;
   gboolean to_free = FALSE;
@@ -346,18 +408,25 @@ static void _log_synchronization(dt_control_crawler_gui_t *gui, gchar *pattern, 
 }
 
 
-static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+static void sync_xmp_to_db(GtkTreeModel *model,
+                           GtkTreePath *path,
+                           GtkTreeIter *iter,
+                           gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
   _db_update_timestamp(entry.id, entry.timestamp_xmp);
-  const int error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);  // success = 0, fail = 1
+
+  const int error =
+    dt_history_load_and_apply(entry.id, entry.xmp_path, 0);  // success = 0, fail = 1
 
   if(error)
   {
     _log_synchronization(gui, _("ERROR: %s NOT synced XMP → DB"), entry.image_path);
-    _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
+    _log_synchronization(gui, _("ERROR: cannot write the database."
+                                " the destination may be full, offline or read-only."),
+                         NULL);
   }
   else
   {
@@ -365,22 +434,29 @@ static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
     _log_synchronization(gui, _("SUCCESS: %s synced XMP → DB"), entry.image_path);
   }
 
-  g_free(entry.xmp_path);
-  g_free(entry.image_path);
+  _free_crawler_result(&entry);
 }
 
 
-static void sync_db_to_xmp(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+static void sync_db_to_xmp(GtkTreeModel *model,
+                           GtkTreePath *path,
+                           GtkTreeIter *iter,
+                           gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
+
+  // write the XMP and make sure it get the last modified timestamp of the db
   const int error = dt_image_write_sidecar_file(entry.id);  // success = 0, fail = 1
+  _set_modification_time(entry.xmp_path, entry.timestamp_db);
 
   if(error)
   {
     _log_synchronization(gui, _("ERROR: %s NOT synced DB → XMP"), entry.image_path);
-    _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
+    _log_synchronization(gui,
+                         _("ERROR: cannot write %s \nthe destination may be full,"
+                           " offline or read-only."), entry.xmp_path);
   }
   else
   {
@@ -388,11 +464,13 @@ static void sync_db_to_xmp(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
     _log_synchronization(gui, _("SUCCESS: %s synced DB → XMP"), entry.image_path);
   }
 
-  g_free(entry.xmp_path);
-  g_free(entry.image_path);
+  _free_crawler_result(&entry);
 }
 
-static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+static void sync_newest_to_oldest(GtkTreeModel *model,
+                                  GtkTreePath *path,
+                                  GtkTreeIter *iter,
+                                  gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
@@ -407,27 +485,42 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
     if(error)
     {
-      _log_synchronization(gui, _("ERROR: %s NOT synced new (XMP) → old (DB)"), entry.image_path);
-      _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
+      _log_synchronization
+        (gui,
+         _("ERROR: %s NOT synced new (XMP) → old (DB)"), entry.image_path);
+      _log_synchronization
+        (gui,
+         _("ERROR: cannot write the database. the destination may be full,"
+           " offline or read-only."), NULL);
     }
     else
     {
-      _log_synchronization(gui, _("SUCCESS: %s synced new (XMP) → old (DB)"), entry.image_path);
+      _log_synchronization
+        (gui,
+         _("SUCCESS: %s synced new (XMP) → old (DB)"), entry.image_path);
     }
   }
   else if(entry.timestamp_xmp < entry.timestamp_db)
   {
-    // WRITE DB in XMP
+    // write the XMP and make sure it get the last modified timestamp of the db
     error = dt_image_write_sidecar_file(entry.id);
+    _set_modification_time(entry.xmp_path, entry.timestamp_db);
+
     fprintf(stdout, "%s synced DB (new) → XMP (old)\n", entry.image_path);
     if(error)
     {
-      _log_synchronization(gui, _("ERROR: %s NOT synced new (DB) → old (XMP)"), entry.image_path);
-      _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
+      _log_synchronization
+        (gui,
+         _("ERROR: %s NOT synced new (DB) → old (XMP)"), entry.image_path);
+      _log_synchronization
+        (gui,
+         _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."),
+         entry.xmp_path);
     }
     else
     {
-      _log_synchronization(gui, _("SUCCESS: %s synced new (DB) → old (XMP)"), entry.image_path);
+      _log_synchronization(gui, _("SUCCESS: %s synced new (DB) → old (XMP)"),
+                           entry.image_path);
     }
   }
   else
@@ -435,17 +528,20 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
     error = 1;
-    _log_synchronization(gui, _("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
+    _log_synchronization(gui, _("EXCEPTION: %s has inconsistent timestamps"),
+                         entry.image_path);
   }
 
   if(!error) _append_row_to_remove(model, path, &gui->rows_to_remove);
 
-  g_free(entry.xmp_path);
-  g_free(entry.image_path);
+  _free_crawler_result(&entry);
 }
 
 
-static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+static void sync_oldest_to_newest(GtkTreeModel *model,
+                                  GtkTreePath *path,
+                                  GtkTreeIter *iter,
+                                  gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
@@ -459,26 +555,39 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
     if(error)
     {
-      _log_synchronization(gui, _("ERROR: %s NOT synced old (XMP) → new (DB)"), entry.image_path);
-    _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
+      _log_synchronization(gui,
+                           _("ERROR: %s NOT synced old (XMP) → new (DB)"),
+                           entry.image_path);
+    _log_synchronization(gui,
+                         _("ERROR: cannot write the database."
+                           " the destination may be full, offline or read-only."), NULL);
     }
     else
     {
-      _log_synchronization(gui, _("SUCCESS: %s synced old (XMP) → new (DB)"), entry.image_path);
+      _log_synchronization(gui,
+                           _("SUCCESS: %s synced old (XMP) → new (DB)"),
+                           entry.image_path);
     }
   }
   else if(entry.timestamp_xmp > entry.timestamp_db)
   {
     // WRITE DB in XMP
     error = dt_image_write_sidecar_file(entry.id);
+    _set_modification_time(entry.xmp_path, entry.timestamp_db);
     if(error)
     {
-      _log_synchronization(gui, _("ERROR: %s NOT synced old (DB) → new (XMP)"), entry.image_path);
-      _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
+      _log_synchronization(gui,
+                           _("ERROR: %s NOT synced old (DB) → new (XMP)"),
+                           entry.image_path);
+      _log_synchronization(gui,
+                           _("ERROR: cannot write %s \nthe destination may be full,"
+                             " offline or read-only."), entry.xmp_path);
     }
     else
     {
-      _log_synchronization(gui, _("SUCCESS: %s synced old (DB) → new (XMP)"), entry.image_path);
+      _log_synchronization(gui,
+                           _("SUCCESS: %s synced old (DB) → new (XMP)"),
+                           entry.image_path);
     }
   }
   else
@@ -486,13 +595,15 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
     error = 1;
-    _log_synchronization(gui, _("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
+    _log_synchronization(gui,
+                         _("EXCEPTION: %s has inconsistent timestamps"),
+                         entry.image_path);
   }
 
-  if(!error) _append_row_to_remove(model, path, &gui->rows_to_remove);
+  if(!error)
+    _append_row_to_remove(model, path, &gui->rows_to_remove);
 
-  g_free(entry.xmp_path);
-  g_free(entry.image_path);
+  _free_crawler_result(&entry);
 }
 
 // overwrite database with xmp
@@ -565,7 +676,8 @@ void dt_control_crawler_show_image_list(GList *images)
 {
   if(!images) return;
 
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)malloc(sizeof(dt_control_crawler_gui_t));
+  dt_control_crawler_gui_t *gui =
+    (dt_control_crawler_gui_t *)malloc(sizeof(dt_control_crawler_gui_t));
 
   // a list with all the images
   GtkTreeViewColumn *column;
@@ -590,27 +702,30 @@ void dt_control_crawler_show_image_list(GList *images)
     dt_control_crawler_result_t *item = list_iter->data;
     char timestamp_db[64], timestamp_xmp[64];
     struct tm tm_stamp;
-    strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime_r(&item->timestamp_db, &tm_stamp));
-    strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime_r(&item->timestamp_xmp, &tm_stamp));
+    strftime(timestamp_db, sizeof(timestamp_db),
+             "%c", localtime_r(&item->timestamp_db, &tm_stamp));
+    strftime(timestamp_xmp, sizeof(timestamp_xmp),
+             "%c", localtime_r(&item->timestamp_xmp, &tm_stamp));
 
     const time_t time_delta = llabs(item->timestamp_db - item->timestamp_xmp);
     gchar *timestamp_delta = str_time_delta(time_delta);
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter,
-                       DT_CONTROL_CRAWLER_COL_ID, item->id,
-                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
-                       DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
-                       DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
-                       DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
-                       DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp,
-                       DT_CONTROL_CRAWLER_COL_TS_DB_INT, item->timestamp_db,
-                       DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db) ? _("XMP")
-                                                                                                 : _("database"),
-                       DT_CONTROL_CRAWLER_COL_TIME_DELTA, timestamp_delta,
-                       -1);
-    g_free(item->image_path);
-    g_free(item->xmp_path);
+    gtk_list_store_set
+      (store, &iter,
+       DT_CONTROL_CRAWLER_COL_ID, item->id,
+       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
+       DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
+       DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
+       DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
+       DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp,
+       DT_CONTROL_CRAWLER_COL_TS_DB_INT, item->timestamp_db,
+       DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db)
+                                      ? _("XMP")
+                                      : _("database"),
+       DT_CONTROL_CRAWLER_COL_TIME_DELTA, timestamp_delta,
+       -1);
+    _free_crawler_result(item);
     g_free(timestamp_delta);
   }
   g_list_free_full(images, g_free);
@@ -622,40 +737,48 @@ void dt_control_crawler_show_image_list(GList *images)
   gui->tree = GTK_TREE_VIEW(tree); // FIXME: do we need to free that later ?
 
   GtkCellRenderer *renderer_text = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("path"), renderer_text, "text",
-                                                    DT_CONTROL_CRAWLER_COL_IMAGE_PATH, NULL);
+  column = gtk_tree_view_column_new_with_attributes
+    (_("path"), renderer_text, "text",
+     DT_CONTROL_CRAWLER_COL_IMAGE_PATH, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_column_set_resizable(column, TRUE);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
   g_object_set(renderer_text, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
 
-  column = gtk_tree_view_column_new_with_attributes(_("XMP timestamp"), gtk_cell_renderer_text_new(), "text",
-                                                    DT_CONTROL_CRAWLER_COL_TS_XMP, NULL);
+  column = gtk_tree_view_column_new_with_attributes
+    (_("XMP timestamp"), gtk_cell_renderer_text_new(), "text",
+     DT_CONTROL_CRAWLER_COL_TS_XMP, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  column = gtk_tree_view_column_new_with_attributes(_("database timestamp"), gtk_cell_renderer_text_new(), "text",
-                                                    DT_CONTROL_CRAWLER_COL_TS_DB, NULL);
+  column = gtk_tree_view_column_new_with_attributes
+    (_("database timestamp"), gtk_cell_renderer_text_new(), "text",
+     DT_CONTROL_CRAWLER_COL_TS_DB, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  column = gtk_tree_view_column_new_with_attributes(_("newest"), gtk_cell_renderer_text_new(), "text",
-                                                    DT_CONTROL_CRAWLER_COL_REPORT, NULL);
+  column = gtk_tree_view_column_new_with_attributes
+    (_("newest"), gtk_cell_renderer_text_new(), "text",
+     DT_CONTROL_CRAWLER_COL_REPORT, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   GtkCellRenderer *renderer_date = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("time difference"), renderer_date, "text",
-                                                    DT_CONTROL_CRAWLER_COL_TIME_DELTA, NULL);
+  column = gtk_tree_view_column_new_with_attributes
+    (_("time difference"), renderer_date, "text",
+     DT_CONTROL_CRAWLER_COL_TIME_DELTA, NULL);
   g_object_set(renderer_date, "xalign", 1., NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   gtk_container_add(GTK_CONTAINER(scroll), tree);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   // build a dialog window that contains the list of images
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("updated XMP sidecar files found"), GTK_WINDOW(win),
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_close"),
-                                                  GTK_RESPONSE_CLOSE, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons
+    (_("updated XMP sidecar files found"), GTK_WINDOW(win),
+     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_close"),
+     GTK_RESPONSE_CLOSE, NULL);
+
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -706,10 +829,14 @@ void dt_control_crawler_show_image_list(GList *images)
   gui->log = gtk_tree_view_new();
   gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(scroll), gui->log);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(gui->log), -1, _("synchronization log"), renderer_text,
-                                               "text", 0, NULL);
+  gtk_tree_view_insert_column_with_attributes
+    (GTK_TREE_VIEW(gui->log), -1,
+     _("synchronization log"), renderer_text,
+     "text", 0, NULL);
+
   GtkListStore *store_log = gtk_list_store_new (1, G_TYPE_STRING);
   GtkTreeModel *model_log = GTK_TREE_MODEL(store_log);
   gtk_tree_view_set_model(GTK_TREE_VIEW(gui->log), model_log);
@@ -717,7 +844,8 @@ void dt_control_crawler_show_image_list(GList *images)
 
   gtk_widget_show_all(dialog);
 
-  g_signal_connect(dialog, "response", G_CALLBACK(dt_control_crawler_response_callback), gui);
+  g_signal_connect(dialog, "response",
+                   G_CALLBACK(dt_control_crawler_response_callback), gui);
 }
 
 // clang-format off
@@ -725,4 +853,3 @@ void dt_control_crawler_show_image_list(GList *images)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

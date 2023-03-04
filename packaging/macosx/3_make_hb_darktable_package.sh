@@ -16,7 +16,8 @@ scriptDir=$(dirname "$0")
 cd "$scriptDir"/
 
 # Define base variables
-dtPackageDir="package"
+buildDir="../../build/macosx"
+dtPackageDir="$buildDir"/package
 dtAppName="darktable"
 dtWorkingDir="$dtPackageDir"/"$dtAppName".app
 dtResourcesDir="$dtWorkingDir"/Contents/Resources
@@ -74,8 +75,12 @@ function reset_exec_path {
 
     # Handle libdarktable.dylib
     if [[ "$oToolLDependencies" == *"@rpath/libdarktable.dylib"* && "$1" != *"libdarktable.dylib"* ]]; then
-        echo "Resetting loader path for libdarktable.dylib of <$1>"
-        install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$1"
+        # Only need to reset binaries that live outside of lib/darktable
+        oToolLoader=$(otool -l "$1" 2>/dev/null | grep '@loader_path' | cut -d\( -f1 | sed 's/^[[:blank:]]*path[[:blank:]]*//;s/[[:blank:]]*$//' )
+        if [[ "$oToolLoader" == "@loader_path/../lib/darktable" ]]; then
+            echo "Resetting loader path for libdarktable.dylib of <$1>"
+            install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$1"
+        fi
     fi
 
     # Filter for any homebrew specific paths
@@ -150,10 +155,10 @@ function install_share {
 }
 
 # Check for previous attempt and clean
-if [[ -d "$dtPackageDir" ]]; then
-    echo "Deleting directory $dtPackageDir ... "
-    chown -R "$USER" "$dtPackageDir"
-    rm -Rf "$dtPackageDir"
+if [[ -d "$dtWorkingDir" ]]; then
+    echo "Deleting directory $dtWorkingDir ... "
+    chown -R "$USER" "$dtWorkingDir"
+    rm -Rf "$dtWorkingDir"
 fi
 
 # Create basic structure
@@ -176,15 +181,15 @@ gtk-icon-theme-name = Adwaita
 " >"$dtResourcesDir"/etc/gtk-3.0/settings.ini
 
 # Add darktable executables
-cp bin/darktable{,-chart,-cli,-cltest,-generate-cache,-rs-identify} "$dtExecDir"/
+cp "$buildDir"/bin/darktable{,-chart,-cli,-cltest,-generate-cache,-rs-identify} "$dtExecDir"/
 
 # Add darktable tools if existent
-if [[ -d libexec/darktable/tools ]]; then
-    cp libexec/darktable/tools/* "$dtExecDir"/
+if [[ -d "$buildDir"/libexec/darktable/tools ]]; then
+    cp "$buildDir"/libexec/darktable/tools/* "$dtExecDir"/
 fi
 
 # Add darktable directories
-cp -R {lib,share} "$dtResourcesDir"/
+cp -R "$buildDir"/{lib,share} "$dtResourcesDir"/
 
 # Install homebrew dependencies of darktable executables
 for dtExecutable in $dtExecutables; do
@@ -269,10 +274,10 @@ cp open.desktop "$dtResourcesDir"/share/applications/
 # Sign app bundle
 if [ -n "$CODECERT" ]; then
     # Use certificate if one has been provided
-    find package/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
-    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" package/darktable.app
+    find ${dtWorkingDir}/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
+    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" ${dtWorkingDir}
 else
     # Use ad-hoc signing and preserve metadata
-    find package/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - \{} \;
-    codesign --deep --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - package/darktable.app
+    find ${dtWorkingDir}/Contents/Resources/lib -type f -exec codesign --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - \{} \;
+    codesign --deep --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - ${dtWorkingDir}
 fi

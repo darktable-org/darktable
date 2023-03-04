@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include "gui/gtk.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,7 +133,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
-    fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);
     g_free(attachment->file);
     g_free(attachment);
@@ -234,9 +234,9 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 
   argv[argc] = NULL;
 
-  fprintf(stderr, "[email] launching '");
-  for(int k=0; k<argc; k++) fprintf(stderr, " %s", argv[k]);
-  fprintf(stderr, "'\n");
+  dt_print(DT_DEBUG_ALWAYS, "[email] launching '");
+  for(int k=0; k<argc; k++) dt_print(DT_DEBUG_ALWAYS, " %s", argv[k]);
+  dt_print(DT_DEBUG_ALWAYS, "'\n");
 
   gint exit_status = 0;
 

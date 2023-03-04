@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,9 +26,6 @@
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_dng.h"
-#include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/undo.h"
@@ -38,6 +35,9 @@
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_dng.h"
+#include "imageio/imageio_module.h"
 
 #include "gui/gtk.h"
 
@@ -506,11 +506,8 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     if(d.abort) goto end;
 
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
-
-    const gboolean is_scaling =
-      dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
-
-    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE, is_scaling,
+    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
+                                 TRUE, FALSE, TRUE, TRUE, FALSE,
                                  FALSE, "pre:rawprepare", FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
                                  NULL, num, total, NULL, -1);
 
@@ -1802,7 +1799,7 @@ static void dt_control_export_cleanup(void *p)
 }
 
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, gboolean upscale, gboolean export_masks, char *style, gboolean style_append,
+                       gboolean high_quality, gboolean upscale, gboolean dimensions_scale, gboolean export_masks, char *style, gboolean style_append,
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                        dt_iop_color_intent_t icc_intent, const gchar *metadata_export)
 {
@@ -1837,7 +1834,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->sdata = sdata;
   data->high_quality = high_quality;
   data->export_masks = export_masks;
-  data->upscale = (max_width == 0 && max_height == 0) ? FALSE : upscale;
+  data->upscale = ((max_width == 0 && max_height == 0) && !dimensions_scale) ? FALSE : upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
   data->icc_type = icc_type;

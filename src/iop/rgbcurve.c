@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -156,7 +156,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_type[DT_IOP_RGBCURVE_G] = CUBIC_SPLINE;
   p.curve_type[DT_IOP_RGBCURVE_B] = CUBIC_SPLINE;
   p.curve_autoscale = DT_S_SCALE_AUTOMATIC_RGB;
-  p.compensate_middle_grey = 1;
+  p.compensate_middle_grey = TRUE;
   p.preserve_colors = 1;
 
   float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };
@@ -675,16 +675,14 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
 
 #undef RGBCURVE_DEFAULT_STEP
 
-static gboolean _area_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _area_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  gtk_widget_queue_draw(widget);
-  return TRUE;
-}
+  dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
+  if(!(event->state & GDK_BUTTON1_MASK))
+    g->selected = -1;
 
-static gboolean _area_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
   gtk_widget_queue_draw(widget);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
@@ -864,9 +862,9 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
             // this functions need a 4c image
             for(int k = 0; k < 3; k++)
             {
-              picker_mean[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MEAN][k];
-              picker_min[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MIN][k];
-              picker_max[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MAX][k];
+              picker_mean[k] = sample->scope[DT_PICK_MEAN][k];
+              picker_min[k] = sample->scope[DT_PICK_MIN][k];
+              picker_max[k] = sample->scope[DT_PICK_MAX][k];
             }
             picker_mean[3] = picker_min[3] = picker_max[3] = 1.f;
 
@@ -1363,10 +1361,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
 
   // color pickers
-  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO, hbox);
   gtk_widget_set_tooltip_text(g->colorpicker, _("pick GUI color from image\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(g->colorpicker, "keep-active");
-  g->colorpicker_set_values = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
+  g->colorpicker_set_values = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
   dt_gui_add_class(g->colorpicker_set_values, "dt_transparent_background");
@@ -1396,7 +1394,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(_area_button_press_callback), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(_area_motion_notify_callback), self);
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(_area_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(_area_enter_notify_callback), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(_area_scrolled_callback), self);
   g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(_area_key_press_callback), self);
 
@@ -1593,9 +1590,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+  {
     piece->request_histogram |= (DT_REQUEST_ON);
+    self->histogram_middle_grey = p->compensate_middle_grey;
+  }
   else
+  {
     piece->request_histogram &= ~(DT_REQUEST_ON);
+  }
 
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
     d->curve_changed[ch]

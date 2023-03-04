@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2018-2021 darktable developers.
+   Copyright (C) 2018-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -490,9 +490,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     // sRGB -> XYZ
     dt_prophotorgb_to_Lab(rgb, out);
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
@@ -616,8 +613,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     // XYZ -> Lab
     _mm_stream_ps(out, dt_XYZ_to_Lab_sse2(XYZ));
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
@@ -1574,7 +1569,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "logarithmic shaper")), FALSE, FALSE, 0);
 
   // grey_point_source slider
   g->grey_point_source = dt_bauhaus_slider_new_with_range(self, 0.0, 100., 0, p->grey_point_source, 2);
@@ -1585,7 +1580,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the subject.\n"
                                                       "except in back-lighting situations, this should be around 18%."));
   g_signal_connect(G_OBJECT(g->grey_point_source), "value-changed", G_CALLBACK(grey_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->grey_point_source);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                      g->grey_point_source);
 
   // White slider
   g->white_point_source = dt_bauhaus_slider_new_with_range(self, 0.0, 16.0, 0, p->white_point_source, 2);
@@ -1597,7 +1593,8 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "adjust so highlights clipping is avoided"));
   g_signal_connect(G_OBJECT(g->white_point_source), "value-changed", G_CALLBACK(white_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->white_point_source);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                      g->white_point_source);
 
   // Black slider
   g->black_point_source = dt_bauhaus_slider_new_with_range(self, -16.0, -0.1, 0, p->black_point_source, 2);
@@ -1609,7 +1606,8 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "increase to get more contrast.\ndecrease to recover more details in low-lights."));
   g_signal_connect(G_OBJECT(g->black_point_source), "value-changed", G_CALLBACK(black_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->black_point_source);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                      g->black_point_source);
 
   // Security factor
   g->security_factor = dt_bauhaus_slider_new_with_range(self, -50., 50., 0, p->security_factor, 2);
@@ -1623,13 +1621,14 @@ void gui_init(dt_iop_module_t *self)
   // Auto tune slider
   g->auto_button = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->auto_button);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                      g->auto_button);
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some guessing.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
                                                 "works better for landscapes and evenly-lit pictures\nbut fails for high-keys and low-keys." ));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "filmic S curve")), FALSE, FALSE, 0);
 
   // contrast slider
   g->contrast = dt_bauhaus_slider_new_with_range(self, 0., 5., 0, p->contrast, 3);
@@ -1708,7 +1707,7 @@ void gui_init(dt_iop_module_t *self)
   // add collapsible section for those extra options that are generally not to be used
 
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  GtkWidget *destdisp = dt_ui_section_label_new(_("destination/display"));
+  GtkWidget *destdisp = dt_ui_section_label_new(C_("section", "destination/display"));
   g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
   GtkWidget *extra_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);

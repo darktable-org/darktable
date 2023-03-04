@@ -572,8 +572,10 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   }
 
   // if we leave thumbtable in favour of an inferior (a thumbnail) it's not a real leave !
-  // same if this is not a mouse move action (shortcut that activate a buuton for example)
-  if(event->detail == GDK_NOTIFY_INFERIOR || event->mode == GDK_CROSSING_GTK_GRAB) return FALSE;
+  // same if this is not a mouse move action (shortcut that activate a button for example)
+  if(event->detail == GDK_NOTIFY_INFERIOR || event->mode == GDK_CROSSING_GTK_GRAB
+     || event->mode == GDK_CROSSING_GRAB)
+    return FALSE;
 
   table->mouse_inside = FALSE;
   dt_control_set_mouse_over_id(-1);
@@ -1639,7 +1641,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   // we prefetch next/previous images
   _thumbs_prefetch(table);
 
-  // ensure one of the shown image as the focus (to avoid to keep focus to hidden image)
+  // ensure that no hidden image as the focus
   const int selid = dt_control_get_mouse_over_id();
   if(selid >= 0)
   {
@@ -1653,10 +1655,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
         break;
       }
     }
-    if(!in_list && table->list)
+    if(!in_list)
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)table->list->data;
-      dt_control_set_mouse_over_id(thumb->imgid);
+      dt_control_set_mouse_over_id(-1);
     }
   }
 
@@ -1767,6 +1768,56 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
   table->overlays = over;
   g_free(cl0);
   g_free(cl1);
+}
+
+// force the overlays to be shown
+void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
+{
+  if(!table) return;
+
+  int timeout = -1;
+
+  gchar *txt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
+  dt_thumbnail_overlay_t over = dt_conf_get_int(txt);
+  g_free(txt);
+  gchar *cl0 = _thumbs_get_overlays_class(DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK);
+  gchar *cl1 = _thumbs_get_overlays_class(over);
+
+  if(!force)
+  {
+    dt_gui_remove_class(table->widget, cl0);
+    dt_gui_add_class(table->widget, cl1);
+
+    txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+    timeout = 2;
+    if(!dt_conf_key_exists(txt))
+      timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+    else
+      timeout = dt_conf_get_int(txt);
+    g_free(txt);
+  }
+  else
+  {
+    dt_gui_remove_class(table->widget, cl1);
+    dt_gui_add_class(table->widget, cl0);
+    over = DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK;
+  }
+
+  g_free(cl0);
+  g_free(cl1);
+
+  // we need to change the overlay content if we pass from normal to extended overlays
+  // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
+  for(GList *l = table->list; l; l = g_list_next(l))
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_set_overlay(th, over, timeout);
+    // and we resize the bottom area
+    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
+    dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
+  }
+
+  table->overlays = over;
 }
 
 // clang-format off

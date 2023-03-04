@@ -20,8 +20,8 @@
 #     This should be passed to target_compile_options() if the target is not
 #     used for linking
 
-find_package(PkgConfig)
-pkg_check_modules(PKG_libraw QUIET raw)
+find_package(PkgConfig QUIET)
+pkg_check_modules(PKG_libraw QUIET libraw)
 
 set(libraw_VERSION ${PKG_libraw_VERSION})
 set(libraw_DEFINITIONS ${PKG_libraw_CFLAGS_OTHER})

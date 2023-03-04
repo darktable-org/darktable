@@ -143,8 +143,9 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
   if(rowid < 0) return;
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  dt_gui_presets_show_edit_dialog(name, minfo->plugin_name, rowid, NULL, NULL, TRUE, TRUE, FALSE,
-                                  GTK_WINDOW(window));
+  dt_gui_presets_show_edit_dialog
+    (name, minfo->plugin_name, rowid, NULL, NULL, TRUE, TRUE, FALSE,
+     GTK_WINDOW(window));
 }
 
 static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
@@ -383,11 +384,25 @@ void dt_lib_presets_update(const gchar *preset, const gchar *module_name, int mo
   sqlite3_finalize(stmt);
 }
 
-static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
+static void _menuitem_activate_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
-  // apply preset via set_params
-  const char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
-  dt_lib_presets_apply(pn, minfo->plugin_name, minfo->version);
+  if(gtk_get_current_event()->type != GDK_KEY_PRESS) return;
+
+  char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+  dt_lib_presets_apply(name, minfo->plugin_name, minfo->version);
+}
+
+static gboolean _menuitem_button_preset(GtkMenuItem *menuitem, GdkEventButton *event,
+                                        dt_lib_module_info_t *minfo)
+{
+  char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+
+  if(event->button == 1)
+    dt_lib_presets_apply(name, minfo->plugin_name, minfo->version);
+  else
+    dt_shortcut_copy_lua((dt_action_t*)minfo->module, name);
+
+  return FALSE;
 }
 
 static void free_module_info(GtkWidget *widget, gpointer user_data)
@@ -476,8 +491,12 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       mi = gtk_menu_item_new_with_label((const char *)name);
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), minfo);
+    g_object_set_data(G_OBJECT(mi), "dt-preset-module", minfo->module);
+
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_activate_preset), minfo);
+    g_signal_connect(G_OBJECT(mi), "button-press-event", G_CALLBACK(_menuitem_button_preset), minfo);
     gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
+    gtk_widget_set_has_tooltip(mi, TRUE);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt++;
   }
@@ -1141,6 +1160,13 @@ void dt_lib_colorpicker_set_point(dt_lib_t *lib, const float pos[2])
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_point) return;
   lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, pos);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+}
+
+void dt_lib_colorpicker_setup(dt_lib_t *lib, const gboolean denoise, const gboolean pick_output)
+
+{
+  if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.setup_sample) return;
+  lib->proxy.colorpicker.setup_sample(lib->proxy.colorpicker.module, denoise, pick_output);
 }
 
 dt_lib_module_t *dt_lib_get_module(const char *name)

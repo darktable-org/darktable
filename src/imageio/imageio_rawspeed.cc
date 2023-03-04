@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,17 +29,15 @@
 
 #define __STDC_LIMIT_MACROS
 
-extern "C" {
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/file_location.h"
-#include "common/imageio_rawspeed.h"
-#include "imageio.h"
 #include "common/tags.h"
 #include "develop/imageop.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_rawspeed.h"
 #include <stdint.h>
-}
 
 // define this function, it is only declared in rawspeed:
 int rawspeed_get_number_of_processor_cores()
@@ -95,7 +93,7 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   }
   catch(const std::exception &exc)
   {
-    fprintf(stderr, "[rawspeed] %s\n", exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s\n", exc.what());
   }
 
   if(!got_it_done)
@@ -116,26 +114,41 @@ uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint3
   return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
 }
 
-// CR3 files are for now handled by LibRAW, we do not want rawspeed to try to open them
-// as this issues lot of error message on the console.
+// CR3 files are for now handled by LibRaw, we do not want RawSpeed to try to open them
+// as this issues a lot of error messages on the console.
+
 static gboolean _ignore_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "cr3", NULL };
-  char *ext = g_strrstr(filename, ".");
+  gchar *extensions_whitelist;
+  const gchar *always_by_libraw = "cr3";
+
+  gchar *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
   ext++;
-  for(const char **i = extensions_whitelist; *i != NULL; i++)
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
-    {
-      return TRUE;
-    }
+
+  if(dt_conf_key_not_empty("libraw_extensions"))
+    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), (char *)NULL);
+  else
+    extensions_whitelist = g_strdup(always_by_libraw);
+
+  dt_print(DT_DEBUG_IMAGEIO, "[rawspeed_open] extensions list to ignore: `%s'\n", extensions_whitelist);
+
+  gchar *ext_lowercased = g_ascii_strdown(ext,-1);
+  if(g_strstr_len(extensions_whitelist,-1,ext_lowercased))
+  {
+    g_free(extensions_whitelist);
+    g_free(ext_lowercased);
+    return TRUE;
+  }
+  g_free(extensions_whitelist);
+  g_free(ext_lowercased);
   return FALSE;
 }
 
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
 {
-  if(_ignore_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(_ignore_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
@@ -157,7 +170,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     RawParser t(*m.get());
     d = t.getDecoder(meta);
 
-    if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
+    if(!d.get()) return DT_IMAGEIO_LOAD_FAILED;
 
     d->failOnUnknown = true;
     d->checkSupport(meta);
@@ -167,7 +180,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     const auto errors = r->getErrors();
     for(const auto &error : errors)
-      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
 
     g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
@@ -289,19 +302,19 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     }
 
     if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32))
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
 
     if((r->getBpp() != sizeof(uint16_t)) && (r->getBpp() != sizeof(float)))
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
 
     if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t)))
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
 
     if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float)))
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
 
     const float cpp = r->getCpp();
-    if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
+    if(cpp != 1) return DT_IMAGEIO_LOAD_FAILED;
 
     img->buf_dsc.channels = 1;
 
@@ -314,7 +327,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         img->buf_dsc.datatype = TYPE_FLOAT;
         break;
       default:
-        return DT_IMAGEIO_FILE_CORRUPTED;
+        return DT_IMAGEIO_LOAD_FAILED;
     }
 
     // dimensions of uncropped image
@@ -332,8 +345,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     // crop - Bottom,Right corner
     iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
-    img->crop_width = cropBR.x;
-    img->crop_height = cropBR.y;
+    img->crop_right = cropBR.x;
+    img->crop_bottom = cropBR.y;
 
     img->fuji_rotation_pos = r->metadata.fujiRotationPos;
     img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
@@ -407,16 +420,16 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   }
   catch(const std::exception &exc)
   {
-    fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, exc.what());
 
     /* if an exception is raised lets not retry or handle the
      specific ones, consider the file as corrupted */
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
   catch(...)
   {
-    fprintf(stderr, "[rawspeed] unhandled exception in imageio_rawspeed\n");
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] unhandled exception in imageio_rawspeed\n");
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   img->buf_dsc.cst = IOP_CS_RAW;
@@ -439,10 +452,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->buf_dsc.datatype = TYPE_FLOAT;
 
   if(r->getDataType() != TYPE_USHORT16 && r->getDataType() != TYPE_FLOAT32)
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
 
   const uint32_t cpp = r->getCpp();
-  if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_LOAD_FAILED;
 
   // if buf is NULL, we quit the fct here
   if(!mbuf)

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script to build and install darktable with default configuration
+# Script to build darktable with default configuration
 #
 
 # Exit in case of error
@@ -13,7 +13,8 @@ cd "$scriptDir"/
 scriptDir=$(pwd)
 
 # Set variables
-buildDir="../../build"
+buildDir="${scriptDir}/../../build"
+installDir="${buildDir}/macosx"
 
 # Check for previous attempt and clean
 if [[ -d "$buildDir" ]]; then
@@ -21,5 +22,5 @@ if [[ -d "$buildDir" ]]; then
     rm -R "$buildDir"
 fi
 
-# Clean build and install darktable here
-../../build.sh --install --build-type Release --prefix "$scriptDir"
+# Clean build here
+../../build.sh --install --build-type Release --prefix "$installDir"

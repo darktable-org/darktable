@@ -34,6 +34,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define DT_BAUHAUS_WIDGET_TYPE dt_bh_get_type()
 #define DT_BAUHAUS_WIDGET(obj) G_TYPE_CHECK_INSTANCE_CAST((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidget)
 #define DT_BAUHAUS_WIDGET_CLASS(obj) G_TYPE_CHECK_CLASS_CAST((obj), DT_BAUHAUS_WIDGET, DtBauhausWidgetClass)
@@ -368,6 +372,11 @@ void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
 int dt_bauhaus_combobox_get_default(GtkWidget *widget);
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidget *w, struct dt_iop_module_t **module));
 void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const char **texts);
+gboolean dt_bauhaus_combobox_add_introspection(GtkWidget *widget,
+                                               dt_action_t *action,
+                                               const dt_introspection_type_enum_tuple_t *list,
+                                               const int start,
+                                               const int end);
 void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget, int pos, gboolean sensitive);
 void dt_bauhaus_combobox_set_entries_ellipsis(GtkWidget *widget, PangoEllipsizeMode ellipis);
 PangoEllipsizeMode dt_bauhaus_combobox_get_entries_ellipsis(GtkWidget *widget);
@@ -383,6 +392,10 @@ static inline void set_color(cairo_t *cr, GdkRGBA color)
 {
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

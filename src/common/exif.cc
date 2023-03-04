@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2022 darktable developers.
+   Copyright (C) 2009-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 #define __STDC_FORMAT_MACROS
 
-extern "C" {
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -33,11 +32,11 @@ extern "C" {
 #include <zlib.h>
 
 #include "control/control.h"
-}
 
+#include <array>
 #include <cassert>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -55,15 +54,12 @@ extern "C" {
 
 using namespace std;
 
-extern "C" {
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/dng_opcode.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
 #include "common/exif.h"
-#include "common/imageio_jpeg.h"
 #include "common/metadata.h"
 #include "common/ratings.h"
 #include "common/tags.h"
@@ -76,7 +72,8 @@ extern "C" {
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "develop/masks.h"
-}
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_jpeg.h"
 
 #define DT_XMP_EXIF_VERSION 5
 
@@ -230,7 +227,7 @@ void dt_exif_set_exiv2_taglist()
             tagInfo++;
           }
         }
-      groupList++;
+        groupList++;
       }
     }
 
@@ -308,10 +305,12 @@ static const char *_exif_get_exiv2_tag_type(const char *tagname)
   {
     char *t = (char *)tag->data;
     if(g_str_has_prefix(t, tagname) && t[strlen(tagname)] == ',')
-    if(t)
     {
-      t += strlen(tagname) + 1;
-      return t;
+      if(t)
+      {
+        t += strlen(tagname) + 1;
+        return t;
+      }
     }
   }
   return NULL;
@@ -338,21 +337,28 @@ static void read_xmp_timestamps(Exiv2::XmpData &xmpData, dt_image_t *img, const 
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
-    = { "Xmp.dc.subject", "Xmp.lr.hierarchicalSubject", "Xmp.darktable.colorlabels", "Xmp.darktable.history",
-        "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled", "Xmp.darktable.history_end",
-        "Xmp.darktable.iop_order_version", "Xmp.darktable.iop_order_list",
-        "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params",
-        "Xmp.darktable.blendop_version", "Xmp.darktable.multi_priority", "Xmp.darktable.multi_name",
-        "Xmp.darktable.iop_order",
-        "Xmp.darktable.xmp_version", "Xmp.darktable.raw_params", "Xmp.darktable.auto_presets_applied",
-        "Xmp.darktable.mask_id", "Xmp.darktable.mask_type", "Xmp.darktable.mask_name",
-        "Xmp.darktable.masks_history", "Xmp.darktable.mask_num", "Xmp.darktable.mask_points",
-        "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
-        "Xmp.darktable.history_basic_hash", "Xmp.darktable.history_auto_hash", "Xmp.darktable.history_current_hash",
-        "Xmp.darktable.import_timestamp", "Xmp.darktable.change_timestamp",
-        "Xmp.darktable.export_timestamp", "Xmp.darktable.print_timestamp",
-        "Xmp.acdsee.notes", "Xmp.darktable.version_name",
-        "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
+    = { "Xmp.dc.subject",                     "Xmp.lr.hierarchicalSubject",
+        "Xmp.darktable.colorlabels",          "Xmp.darktable.history",
+        "Xmp.darktable.history_modversion",   "Xmp.darktable.history_enabled",
+        "Xmp.darktable.history_end",          "Xmp.darktable.iop_order_version",
+        "Xmp.darktable.iop_order_list",       "Xmp.darktable.history_operation",
+        "Xmp.darktable.history_params",       "Xmp.darktable.blendop_params",
+        "Xmp.darktable.blendop_version",      "Xmp.darktable.multi_priority",
+        "Xmp.darktable.multi_name",           "Xmp.darktable.multi_name_hand_edited",
+        "Xmp.darktable.iop_order",            "Xmp.darktable.xmp_version",
+        "Xmp.darktable.raw_params",           "Xmp.darktable.auto_presets_applied",
+        "Xmp.darktable.mask_id",              "Xmp.darktable.mask_type",
+        "Xmp.darktable.mask_name",            "Xmp.darktable.masks_history",
+        "Xmp.darktable.mask_num",             "Xmp.darktable.mask_points",
+        "Xmp.darktable.mask_version",         "Xmp.darktable.mask",
+        "Xmp.darktable.mask_nb",              "Xmp.darktable.mask_src",
+        "Xmp.darktable.history_basic_hash",   "Xmp.darktable.history_auto_hash",
+        "Xmp.darktable.history_current_hash", "Xmp.darktable.import_timestamp",
+        "Xmp.darktable.change_timestamp",     "Xmp.darktable.export_timestamp",
+        "Xmp.darktable.print_timestamp",      "Xmp.acdsee.notes",
+        "Xmp.darktable.version_name",         "Xmp.dc.creator",
+        "Xmp.dc.publisher",                   "Xmp.dc.title",
+        "Xmp.dc.description",                 "Xmp.dc.rights",
         "Xmp.xmpMM.DerivedFrom" };
 
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
@@ -457,7 +463,7 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterat
 // e.g. "2017:10:23 12:34:56" to "2017-10-23T12:34:54" (ISO)
 // and some vendors incorrectly use "2017/10/23"
 // revert this to the format expected by exif and darktable
-static void _sanitize_datetime(char *datetime)
+void dt_exif_sanitize_datetime(char *datetime)
 {
   // replace 'T' by ' ' (space)
   char *c;
@@ -465,8 +471,8 @@ static void _sanitize_datetime(char *datetime)
   {
     *c = ' ';
   }
-  // replace '-' and '/' by ':'
-  while((c = strchr(datetime, '-')) != NULL || (c = strchr(datetime, '/')) != NULL)
+  // replace '-' and '/' with ':' but limit the length to avoid replacing '-' sign before the TZ specifier
+  while((c = strpbrk(datetime, "-/")) && (c - datetime < 18))
   {
     *c = ':';
   }
@@ -511,13 +517,17 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       }
     }
 
-    if(FIND_XMP_TAG("Xmp.xmp.Rating"))
+    // If xmp file(s) are found, read the rating from here.
+    if(FIND_XMP_TAG("Xmp.darktable.xmp_version") || !dt_conf_get_bool("ui_last/ignore_exif_rating"))
     {
-      const int stars = pos->toLong();
-      dt_image_set_xmp_rating(img, stars);
+      if(FIND_XMP_TAG("Xmp.xmp.Rating"))
+      {
+        const int stars = pos->toLong();
+        dt_image_set_xmp_rating(img, stars);
+      }
+      else
+        dt_image_set_xmp_rating(img, -2);
     }
-    else
-      dt_image_set_xmp_rating(img, -2);
 
     if(!exif_read) dt_colorlabels_remove_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
@@ -601,7 +611,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal"))
     {
       char *datetime = strdup(pos->toString().c_str());
-      _sanitize_datetime(datetime);
+      dt_exif_sanitize_datetime(datetime);
       dt_datetime_exif_to_img(img, datetime);
       free(datetime);
     }
@@ -729,6 +739,7 @@ static bool _check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
 {
   gboolean has_opcodes = FALSE;
+
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList2"));
   // DNGs without an embedded preview have the opcodes under Exif.Image instead of Exif.SubImage1
   if(pos == exifData.end())
@@ -741,9 +752,18 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
     g_free(data);
     has_opcodes = TRUE;
   }
-  else
+
+  Exiv2::ExifData::const_iterator posb = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList3"));
+  // DNGs without an embedded preview have the opcodes under Exif.Image instead of Exif.SubImage1
+  if(posb == exifData.end())
+    posb = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList3"));
+  if(posb != exifData.end())
   {
-    dt_vprint(DT_DEBUG_IMAGEIO, "DNG OpcodeList2 tag not found\n");
+    uint8_t *data = (uint8_t *)g_malloc(posb->size());
+    posb->copy(data, Exiv2::invalidByteOrder);
+    dt_dng_opcode_process_opcode_list_3(data, posb->size(), img);
+    g_free(data);
+    has_opcodes = TRUE;
   }
   return has_opcodes;
 }
@@ -848,7 +868,7 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
      && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
     dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
-    _sanitize_datetime(exif_datetime_taken);
+    dt_exif_sanitize_datetime(exif_datetime_taken);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
        && pos->size() > 1)
     {
@@ -934,13 +954,11 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /* Read shutter time */
     if((pos = Exiv2::exposureTime(exifData)) != exifData.end() && pos->size())
     {
-      // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat();
     }
     else if(FIND_EXIF_TAG("Exif.Photo.ShutterSpeedValue") || FIND_EXIF_TAG("Exif.Image.ShutterSpeedValue"))
     {
-      // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
-      img->exif_exposure = exp2f(-1.0f * pos->toFloat());  // convert from APEX value
+      img->exif_exposure = exp2f(-1.0f * pos->toFloat()); // convert from APEX value
     }
 
     // Read exposure bias
@@ -954,9 +972,10 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->exif_aperture = pos->toFloat();
     }
-    else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue") || FIND_EXIF_TAG("Exif.Image.ApertureValue"))
+    else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue") || FIND_EXIF_TAG("Exif.Image.ApertureValue")
+            || FIND_EXIF_TAG("Exif.Photo.MaxApertureValue") || FIND_EXIF_TAG("Exif.Image.MaxApertureValue"))
     {
-      img->exif_aperture = exp2f(pos->toFloat() / 2.0f);  // convert from APEX value
+      img->exif_aperture = exp2f(pos->toFloat() / 2.0f); // convert from APEX value
     }
 
     /* Read ISO speed - Nikon happens to return a pair for Lo and Hi modes */
@@ -1011,21 +1030,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     if(_check_usercrop(exifData, img))
-      {
-        img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
-        guint tagid = 0;
-        char tagname[64];
-        snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
-        dt_tag_new(tagname, &tagid);
-        dt_tag_attach(tagid, img->id, FALSE, FALSE);
-      }
-
-    if(_check_dng_opcodes(exifData, img))
     {
       img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
+      guint tagid = 0;
+      char tagname[64];
+      snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
+      dt_tag_new(tagname, &tagid);
+      dt_tag_attach(tagid, img->id, FALSE, FALSE);
     }
 
-    if(_check_lens_correction_data(exifData, img))
+    if(_check_dng_opcodes(exifData, img) || _check_lens_correction_data(exifData, img))
     {
       img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
     }
@@ -1698,8 +1712,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_get_thumbnail] " << path << ": " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_get_thumbnail] %s: %s\n", path, e.what());
     return 1;
   }
 }
@@ -1767,8 +1780,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_read] " << path << ": " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO,"[exiv2 dt_exif_read] %s: %s\n", path, e.what());
     return 1;
   }
 }
@@ -2404,6 +2416,7 @@ typedef struct history_entry_t
   unsigned char *params;
   int params_len;
   char *multi_name;
+  int multi_name_hand_edited;
   int multi_priority;
   int blendop_version;
   unsigned char *blendop_params;
@@ -2605,7 +2618,9 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
   GList *history_entries = NULL;
   history_entry_t *current_entry = NULL;
 
-  for(auto history = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history")); history != xmpData.end(); history++)
+  for(auto history = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history"));
+      history != xmpData.end();
+      history++)
   {
     // TODO: support human readable params via introspection with something like this:
     // XmpText: Xmp.darktable.history[1]/darktable:settings[1]/darktable:name = width
@@ -2648,9 +2663,10 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       }
       else if(n < length)
       {
-        // AFAICT this can't happen with regular exiv2 parsed XMP data, but better safe than sorry.
-        // it can happen though when constructing things in a unusual order and then passing it to us without
-        // serializing it in between
+        // AFAICT this can't happen with regular exiv2 parsed XMP
+        // data, but better safe than sorry.  it can happen though
+        // when constructing things in a unusual order and then
+        // passing it to us without serializing it in between
         current_entry = (history_entry_t *)g_list_nth_data(history_entries, n - 1); // XMP starts counting at 1!
       }
 
@@ -2678,6 +2694,10 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
         current_entry->have_params = TRUE;
         current_entry->params = dt_exif_xmp_decode(history->value().toString().c_str(), history->value().size(),
                                                    &current_entry->params_len);
+      }
+      else if(g_str_has_prefix(key_iter, "darktable:multi_name_hand_edited"))
+      {
+        current_entry->multi_name_hand_edited = history->value().toLong() == 1;
       }
       else if(g_str_has_prefix(key_iter, "darktable:multi_name"))
       {
@@ -2764,8 +2784,13 @@ static GHashTable *read_masks(Exiv2::XmpData &xmpData, const char *filename, con
     const size_t mask_version_cnt = (size_t)mask_version->count();
     const size_t mask_id_cnt = (size_t)mask_id->count();
     const size_t mask_nb_cnt = (size_t)mask_nb->count();
-    if(cnt == mask_src_cnt && cnt == mask_name_cnt && cnt == mask_type_cnt
-       && cnt == mask_version_cnt && cnt == mask_id_cnt && cnt == mask_nb_cnt)
+
+    if(cnt == mask_src_cnt
+       && cnt == mask_name_cnt
+       && cnt == mask_type_cnt
+       && cnt == mask_version_cnt
+       && cnt == mask_id_cnt
+       && cnt == mask_nb_cnt)
     {
       for(size_t i = 0; i < cnt; i++)
       {
@@ -2910,9 +2935,11 @@ static void add_mask_entry_to_db(int imgid, mask_entry_t *entry)
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
-                              "INSERT INTO main.masks_history (imgid, num, formid, form, name, version, points, points_count, source) "
-                              "VALUES (?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-                              -1, &stmt, NULL);
+    "INSERT INTO main.masks_history"
+    " (imgid, num, formid, form, name, version, points, points_count, source)"
+    " VALUES (?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+    -1, &stmt, NULL);
+
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, entry->mask_id);
@@ -2986,8 +3013,7 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
 {
   sqlite3_stmt *stmt;
 
-  const gboolean basecurve_auto_apply =
-    dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
+  const gboolean basecurve_auto_apply = dt_is_display_referred();
 
   char query[1024] = { 0 };
 
@@ -3120,13 +3146,15 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     GList *mask_entries_v3 = NULL;
 
     // clean all old masks for this image
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM main.masks_history WHERE imgid = ?1", -1,
                                 &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    // read the masks from the file first so we can add them to the db while reading history entries
+    // read the masks from the file first so we can add them to the db
+    // while reading history entries
     if(xmp_version < 3)
       mask_entries = read_masks(xmpData, filename, xmp_version);
     else
@@ -3175,7 +3203,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
     dt_database_start_transaction(darktable.db);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM main.history WHERE imgid = ?1", -1,
                                 &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     if(sqlite3_step(stmt) != SQLITE_DONE)
@@ -3187,11 +3216,13 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
     sqlite3_finalize(stmt);
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.history"
-                                " (imgid, num, module, operation, op_params, enabled, "
-                                "  blendop_params, blendop_version, multi_priority, multi_name) "
-                                "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "INSERT INTO main.history"
+       " (imgid, num, module, operation, op_params, enabled,"
+       "  blendop_params, blendop_version, multi_priority,"
+       "  multi_name, multi_name_hand_edited)"
+       " VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)", -1, &stmt, NULL);
     // clang-format on
 
     for(GList *iter = history_entries; iter; iter = g_list_next(iter))
@@ -3234,8 +3265,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       }
       else
       {
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, "", -1, SQLITE_TRANSIENT); // "" instead of " " should be fine now
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, "", -1, SQLITE_TRANSIENT);
       }
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, entry->multi_name_hand_edited);
 
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
@@ -3251,8 +3283,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
     sqlite3_finalize(stmt);
 
-    // we now need to create and store the proper iop-order taking into account all multi-instances
-    // for previous xmp versions.
+    // we now need to create and store the proper iop-order taking
+    // into account all multi-instances for previous xmp versions.
 
     if(xmp_version < 4)
     {
@@ -3268,8 +3300,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
         if(xmp_version < 3)
         {
-          // prior to v3 there was no iop-order, all multi instances where grouped, use the multièpriority
-          // to restore the order.
+          // prior to v3 there was no iop-order, all multi instances
+          // where grouped, use the multièpriority to restore the
+          // order.
           GList *base_order = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, -1);
 
           if(base_order)
@@ -3294,8 +3327,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           e->o.iop_order_f = entry->iop_order; // legacy iop-order is used to insert item at the right location
         }
 
-        // remove a current entry from the iop-order list if found as it will be replaced, possibly with another iop-order
-        // with a new item in the history.
+        // remove a current entry from the iop-order list if found as
+        // it will be replaced, possibly with another iop-order with a
+        // new item in the history.
 
         GList *link = dt_ioppr_get_iop_order_link(iop_order_list, e->operation, e->instance);
         if(link) iop_order_list = g_list_delete_link(iop_order_list, link);
@@ -3311,10 +3345,12 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     // if masks have been read, create a mask manager entry in history
     if(xmp_version < 3)
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1", -1,
-                                  &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1", -1,
+         &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
+
       if(sqlite3_step(stmt) == SQLITE_ROW)
         num_masks = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
@@ -3322,21 +3358,24 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       if(num_masks > 0)
       {
         // make room for mask_manager entry
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE main.history SET num = num + 1 WHERE imgid = ?1", -1,
-                                    &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2
+          (dt_database_get(darktable.db),
+           "UPDATE main.history SET num = num + 1 WHERE imgid = ?1", -1,
+           &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 
         // insert mask_manager entry
         // clang-format off
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "INSERT INTO main.history"
-                                    " (imgid, num, module, operation, op_params, enabled, "
-                                    "  blendop_params, blendop_version, multi_priority, multi_name) "
-                                    "VALUES"
-                                    " (?1, 0, 1, 'mask_manager', NULL, 0, NULL, 0, 0, '')", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2
+          (dt_database_get(darktable.db),
+           "INSERT INTO main.history"
+           " (imgid, num, module, operation, op_params, enabled, "
+           "  blendop_params, blendop_version, multi_priority, multi_name) "
+           "VALUES"
+           " (?1, 0, 1, 'mask_manager', NULL, 0, NULL, 0, 0, '')",
+           -1, &stmt, NULL);
         // clang-format on
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
         if(sqlite3_step(stmt) != SQLITE_DONE)
@@ -3358,9 +3397,10 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       int history_end = MIN(pos->toLong(), num);
       if(num_masks > 0) history_end++;
       if((history_end < 1) && preset_applied) preset_applied = -1;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
-                                  &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "UPDATE main.images SET history_end = ?1 WHERE id = ?2", -1,
+         &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_end);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
       if(sqlite3_step(stmt) != SQLITE_DONE)
@@ -3555,7 +3595,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT module, operation, op_params, enabled, blendop_params, "
-      "       blendop_version, multi_priority, multi_name, num"
+      "       blendop_version, multi_priority, multi_name, num, multi_name_hand_edited"
       " FROM main.history"
       " WHERE imgid = ?1"
       " ORDER BY num",
@@ -3575,6 +3615,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
     int32_t multi_priority = sqlite3_column_int(stmt, 6);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
     int32_t hist_num = sqlite3_column_int(stmt, 8);
+    const int32_t multi_name_hand_edited = sqlite3_column_int(stmt, 9);
 
     if(!operation) continue; // no op is fatal.
 
@@ -3592,6 +3633,8 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
     xmpData[key] = params;
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_name", num);
     xmpData[key] = multi_name ? multi_name : "";
+    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_name_hand_edited", num);
+    xmpData[key] = multi_name_hand_edited;
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_priority", num);
     xmpData[key] = multi_priority;
 
@@ -4162,7 +4205,203 @@ static void dt_remove_iptc_key(Exiv2::IptcData &iptc, const char *key)
   }
 }
 
-int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata)
+enum class RegionType {MWG, MP};
+
+const std::pair<std::array<float, 4>, bool> getRegionNormalized(
+    Exiv2::XmpData &xmp,
+    const std::string &regionKey,
+    RegionType regionType,
+    int imgWidth,
+    int imgHeight)
+{
+  using Exiv2::XmpData;
+  using Exiv2::XmpKey;
+
+  XmpData::const_iterator hIt;
+  if((hIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:h"))) == xmp.end())
+  {
+    return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
+  }
+  const float h = hIt->value().toFloat() * imgHeight;
+
+  XmpData::const_iterator wIt;
+  if((wIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:w"))) == xmp.end())
+  {
+    return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
+  }
+  const float w = wIt->value().toFloat() * imgWidth;
+
+  XmpData::const_iterator xIt;
+  if((xIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:x"))) == xmp.end())
+  {
+    return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
+  }
+  float x = xIt->value().toFloat() * imgWidth;
+
+  XmpData::const_iterator yIt;
+  if((yIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:y"))) == xmp.end())
+  {
+    return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
+  }
+  float y = yIt->value().toFloat() * imgHeight;
+
+  /* MWG regions use (x,y) as the center of the region */
+  if (regionType == RegionType::MWG)
+  {
+    x -= w/2;
+    y -= h/2;
+  }
+
+  return std::make_pair(std::array<float, 4>({ x, y, x + w, y + h }), true);
+}
+
+/* Transform face tags using the pixelpipe transform, so areas are written
+ * correctly when exporting.
+ *
+ * We will make several assumptions or else we wont't do nothing:
+ *
+ * - Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions exists, has stDim:h, stDim:w and stDim:unit defined and the
+ *   latter is set to pixels.
+ * - Xmp.mwg-rs.Regions/mwg-rs:RegionList[i]./mwg-rs:Area/stArea:unit is set to "normalized" for every region.
+ *
+ * TODO: support Xmp.MP.RegionInfo/MPRI:Regions[i]/MPReg:Rectangle tags
+ */
+void dt_transform_face_tags(Exiv2::XmpData &xmp, dt_develop_t *dev, dt_dev_pixelpipe_t *pipe)
+{
+  using Exiv2::XmpData;
+  using Exiv2::XmpKey;
+  using Exiv2::XmpTextValue;
+
+  /* Finish early if we didn't get the develop struct */
+  if(dev == NULL || pipe == NULL)
+  {
+    return;
+  }
+  /* Also finish early if we don't have face tags */
+  if(xmp.findKey(XmpKey("Xmp.mwg-rs.Regions")) == xmp.end())
+  {
+    return;
+  }
+
+  /* Global properties */
+  /* Units should be specified */
+  XmpData::const_iterator unit;
+  if((unit = xmp.findKey(XmpKey("Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:unit"))) == xmp.end())
+  {
+    return;
+  }
+  /* We only know how to handle pixel units */
+  if(unit->value().toString() != "pixel")
+  {
+    return;
+  }
+
+  XmpData::const_iterator imgHeightIt;
+  if((imgHeightIt = xmp.findKey(XmpKey("Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:h"))) == xmp.end())
+  {
+    return;
+  }
+  /* TODO: assert that we actually fit an int */
+  const int imgHeight = imgHeightIt->value().toLong();
+
+  XmpData::const_iterator imgWidthIt;
+  if((imgWidthIt = xmp.findKey(XmpKey("Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:w"))) == xmp.end())
+  {
+    return;
+  }
+  /* TODO: assert that we actually fit an int */
+  const int imgWidth = imgWidthIt->value().toLong();
+
+  /* Gather the regions for transformation */
+  std::vector<std::array<float, 4> > regions;
+  std::size_t i = 0;
+  while(true)
+  {
+    /* Go for the next region (indices start at 1) */
+    i++;
+    const std::string regionKey = "Xmp.mwg-rs.Regions/mwg-rs:RegionList[" + std::to_string(i) + "]";
+    if(xmp.findKey(XmpKey(regionKey)) == xmp.end())
+    {
+      break;
+    }
+
+    XmpData::const_iterator regionUnitIt;
+    if((regionUnitIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:unit"))) == xmp.end())
+    {
+      return;
+    }
+    std::string regionUnit = regionUnitIt->value().toString();
+    if(regionUnit == "normalized")
+    {
+      const std::pair<std::array<float, 4>, bool> result
+          = getRegionNormalized(xmp, regionKey, RegionType::MWG, imgWidth, imgHeight);
+      if(result.second)
+      {
+        regions.emplace_back(result.first);
+      }
+    }
+    else
+    {
+      return;
+    }
+  }
+
+  /* Now run the regions throught the pixelpipe transformations */
+  std::vector<float> points;
+  points.reserve(8 * regions.size());
+
+  for(const auto &r : regions)
+  {
+    // bottom-left
+    points.emplace_back(r[0]);
+    points.emplace_back(r[1]);
+    // top-left
+    points.emplace_back(r[0]);
+    points.emplace_back(r[3]);
+    // top-right
+    points.emplace_back(r[2]);
+    points.emplace_back(r[3]);
+    // bottom-right
+    points.emplace_back(r[2]);
+    points.emplace_back(r[1]);
+  }
+
+  if(dt_dev_distort_transform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points.data(), 4 * regions.size())
+     != 1)
+  {
+    return;
+  }
+
+  /* Overwrite the regions with the transformed coordinates */
+  const int finalHeight = pipe->final_height;
+  const int finalWidth = pipe->final_width;
+  for(i = 0; i < regions.size(); i++)
+  {
+    const std::size_t idx = 8 * i;
+    const auto x_minmax = std::minmax({ points[idx], points[idx + 2], points[idx + 4], points[idx + 6] });
+    const auto y_minmax = std::minmax({ points[idx + 1], points[idx + 3], points[idx + 5], points[idx + 7] });
+    /* Clamp to the final image*/
+    const float x = std::max(x_minmax.first / finalWidth, 0.0f);
+    const float y = std::max(y_minmax.first / finalHeight, 0.0f);
+    const float w = std::min(x_minmax.second / finalWidth, 1.0f) - x;
+    const float h = std::min(y_minmax.second / finalHeight, 1.0f) - y;
+
+    std::string regionKey = "Xmp.mwg-rs.Regions/mwg-rs:RegionList[" + std::to_string(i + 1) + "]";
+    /* for x and y, we have to retranslate them to be the center of the region. */
+    xmp[regionKey + "/mwg-rs:Area/stArea:x"] = XmpTextValue(std::to_string(x + w/2));
+    xmp[regionKey + "/mwg-rs:Area/stArea:y"] = XmpTextValue(std::to_string(y + h/2));
+    xmp[regionKey + "/mwg-rs:Area/stArea:h"] = XmpTextValue(std::to_string(h));
+    xmp[regionKey + "/mwg-rs:Area/stArea:w"] = XmpTextValue(std::to_string(w));
+  }
+
+  /* Finally, overwrite the dimensions with the image dimensions */
+  xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:h"] = XmpTextValue(std::to_string(finalHeight));
+  xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:w"] = XmpTextValue(std::to_string(finalWidth));
+}
+
+
+int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata, dt_develop_t *dev,
+                              dt_dev_pixelpipe_t *pipe)
 {
   dt_export_metadata_t *m = (dt_export_metadata_t *)metadata;
   try
@@ -4232,7 +4471,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       Exiv2::ExifData &exifData = img->exifData();
       if(!(m->flags & DT_META_EXIF))
       {
-        for(Exiv2::ExifData::const_iterator i = exifData.begin(); i != exifData.end() ; ++i)
+        for(Exiv2::ExifData::const_iterator i = exifData.begin(); i != exifData.end(); ++i)
         {
           exifOldData[i->key()] = i->value();
         }
@@ -4262,7 +4501,9 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         gchar *formula = (gchar *)tags->data;
         if(formula[0])
         {
-          if(!(m->flags & DT_META_EXIF) && (formula[0] == '=') && g_str_has_prefix(tagname, "Exif."))
+          if(!(m->flags & DT_META_EXIF)
+             && (formula[0] == '=')
+             && g_str_has_prefix(tagname, "Exif."))
           {
             // remove this specific exif
             Exiv2::ExifData::const_iterator pos;
@@ -4364,13 +4605,16 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       dt_variables_params_destroy(params);
     }
 
+    // Transform face tags before writing them.
+    dt_transform_face_tags(xmpData, dev, pipe);
+
     try
     {
       img->writeMetadata();
     }
     catch(Exiv2::AnyError &e)
     {
-#if EXIV2_TEST_VERSION(0,27,0)
+#if EXIV2_TEST_VERSION(0, 27, 0)
       if(e.code() == Exiv2::kerTooLargeJpegSegment)
 #else
       if(e.code() == 37)

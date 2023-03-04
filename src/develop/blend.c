@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "blend.h"
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
@@ -88,7 +89,7 @@ static inline dt_develop_blend_colorspace_t _blend_default_module_blend_colorspa
 
 dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(dt_iop_module_t *module)
 {
-  const gboolean is_scene_referred = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
+  const gboolean is_scene_referred = dt_is_scene_referred();
   return _blend_default_module_blend_colorspace(module, is_scene_referred);
 }
 
@@ -380,7 +381,7 @@ static void _develop_blend_process_feather(const float *const guide, float *cons
   float *const restrict mask_bak = dt_alloc_align_float(width * height);
   if(mask_bak)
   {
-    memcpy(mask_bak, mask, sizeof(float) * width * height);
+    dt_iop_image_copy_by_size(mask_bak, mask, width, height, 1);
     guided_filter(guide, mask_bak, mask, width, height, ch, w, sqrt_eps, guide_weight, 0.f, 1.f);
     dt_free_align(mask_bak);
   }
@@ -456,7 +457,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   if(oscale != iscale || xoffs < 0 || yoffs < 0
      || ((xoffs > 0 || yoffs > 0) && (owidth + xoffs > iwidth || oheight + yoffs > iheight)))
   {
-    dt_control_log(_("skipped blending in module '%s': roi's do not match"), self->op);
+    dt_control_log(_("skipped blending in module '%s': working area mismatch"), self->op);
     return;
   }
 
@@ -842,7 +843,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   if(oscale != iscale || xoffs < 0 || yoffs < 0
      || ((xoffs > 0 || yoffs > 0) && (owidth + xoffs > iwidth || oheight + yoffs > iheight)))
   {
-    dt_control_log(_("skipped blending in module '%s': roi's do not match"), self->op);
+    dt_control_log(_("skipped blending in module '%s': working area mismatch"), self->op);
     return TRUE;
   }
 
@@ -1907,4 +1908,3 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so, const 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

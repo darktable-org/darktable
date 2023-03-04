@@ -250,6 +250,13 @@ static void _set_sample_point(dt_lib_module_t *self, const float pos[2])
   _update_size(self, DT_LIB_COLORPICKER_SIZE_POINT);
 }
 
+static void _setup_sample(dt_lib_module_t *self, const gboolean denoise, const gboolean pick_output)
+{
+  dt_lib_colorpicker_t *data = self->data;
+  data->primary_sample.denoise = denoise;
+  data->primary_sample.pick_output = pick_output;
+}
+
 static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                          GtkTooltip *tooltip, const dt_colorpicker_sample_t *sample)
 {
@@ -260,7 +267,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
                                     CLAMP(sample->label_rgb[2], 0, 255), _("RGB"));
   sample_parts[7] = g_strdup_printf("\n<big><b>%14s</b></big>", _("Lab"));
 
-  for(int i = 0; i < DT_LIB_COLORPICKER_STATISTIC_N; i++)
+  for(int i = 0; i < DT_PICK_N; i++)
   {
     sample_parts[i] = g_strdup_printf("<span background='#%02X%02X%02X'>%32s</span>",
                                       (int)roundf(CLAMP(sample->display[i][0], 0.f, 1.f) * 255.f),
@@ -281,7 +288,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   }
 
   dt_aligned_pixel_t color;
-  dt_Lab_2_LCH(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MEAN], color);
+  dt_Lab_2_LCH(sample->lab[DT_PICK_MEAN], color);
   sample_parts[11] = g_strdup_printf("\n<big><b>%14s</b></big>", _("color"));
   sample_parts[12] = g_strdup_printf("%6s", Lch_to_color_name(color));
 
@@ -435,11 +442,11 @@ static gboolean _live_sample_button(GtkWidget *widget, GdkEventButton *event, dt
 
 static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 {
-  dt_lib_colorpicker_t *data = self->data;
-  dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
-
   if(!darktable.lib->proxy.colorpicker.picker_proxy)
     return;
+
+  dt_lib_colorpicker_t *data = self->data;
+  dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
 
   memcpy(sample, &data->primary_sample, sizeof(dt_colorpicker_sample_t));
   sample->locked = FALSE;
@@ -529,6 +536,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
   darktable.lib->proxy.colorpicker.set_sample_box_area = _set_sample_box_area;
   darktable.lib->proxy.colorpicker.set_sample_point = _set_sample_point;
+  darktable.lib->proxy.colorpicker.setup_sample = _setup_sample;
 
   const char *str = dt_conf_get_string_const("ui_last/colorpicker_model"), **names;
   names = dt_lib_colorpicker_model_names;
@@ -630,13 +638,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(GTK_BOX(sample_row), data->add_sample_button, FALSE, FALSE, 0);
 
   // Adding the live samples section
-  label = dt_ui_section_label_new(_("live samples"));
+  label = dt_ui_section_label_new(C_("section", "live samples"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
 
   data->samples_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(data->samples_container, 1, "plugins/darkroom/colorpicker/windowheight"), TRUE, TRUE, 0);
+                     dt_ui_resize_wrap(data->samples_container, 1, "plugins/darkroom/colorpicker/windowheight"), TRUE, TRUE, 0);
 
   data->display_samples_check_box = gtk_check_button_new_with_label(_("display samples on image/vectorscope"));
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(data->display_samples_check_box))),
@@ -666,6 +674,7 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.update_samples = NULL;
   darktable.lib->proxy.colorpicker.set_sample_box_area = NULL;
   darktable.lib->proxy.colorpicker.set_sample_point = NULL;
+  darktable.lib->proxy.colorpicker.setup_sample = NULL;
 
   darktable.lib->proxy.colorpicker.primary_sample = NULL;
   while(darktable.lib->proxy.colorpicker.live_samples)
@@ -690,7 +699,7 @@ void gui_reset(dt_lib_module_t *self)
   // Resetting the picked colors
   for(int i = 0; i < 3; i++)
   {
-    for(int s = 0; s < DT_LIB_COLORPICKER_STATISTIC_N; s++)
+    for(int s = 0; s < DT_PICK_N; s++)
     {
       data->primary_sample.display[s][i] = 0.f;
       data->primary_sample.scope[s][i] = 0.f;

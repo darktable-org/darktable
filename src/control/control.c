@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
     Copyright (c) 2012 James C. McPherson
 
     darktable is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -32,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "imageio/imageio_common.h"
 #include "views/view.h"
 
 #include <assert.h>
@@ -106,19 +106,85 @@ const dt_action_def_t dt_action_def_modifiers
 
 void dt_control_init(dt_control_t *s)
 {
-  s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL, "global", C_("accel", "global"), .next = &s->actions_views };
-  s->actions_views = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "views", C_("accel", "views"), .next = &s->actions_libs, .target = &s->actions_thumb };
-  s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "thumbtable", C_("accel", "thumbtable"), .owner = &s->actions_views };
-  s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lib", C_("accel", "utility modules"), .next = &s->actions_iops };
-  s->actions_format = (dt_action_t){ DT_ACTION_TYPE_SECTION, "format", C_("accel", "format") };   // will be placed under lib/export
-  s->actions_storage = (dt_action_t){ DT_ACTION_TYPE_SECTION, "storage", C_("accel", "storage")}; // will be placed under lib/export
-  s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "processing modules"), .next = &s->actions_lua, .target = &s->actions_blend };
-  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND, "blend", C_("accel", "<blending>"), .owner = &s->actions_iops };
-  s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "lua scripts"), .next = &s->actions_fallbacks };
-  s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "fallbacks") };
+  s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL,
+    "global",
+    C_("accel", "global"),
+    .target = NULL,
+    .owner = NULL,
+    .next = &s->actions_views };
+
+  s->actions_views = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "views",
+    C_("accel", "views"),
+    .target = &s->actions_thumb,
+    .owner = NULL,
+    .next = &s->actions_libs };
+
+  s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "thumbtable",
+    C_("accel", "thumbtable"),
+    .target = NULL,
+    .owner = &s->actions_views,
+    .next = NULL };
+
+  s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "lib",
+    C_("accel", "utility modules"),
+    NULL,
+    NULL,
+    .next = &s->actions_iops };
+
+  s->actions_format = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+    "format",
+    C_("accel", "format"),
+    NULL,
+    NULL,
+    NULL };   // will be placed under lib/export
+
+  s->actions_storage = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+    "storage",
+    C_("accel", "storage"),
+    NULL,
+    NULL,
+    NULL }; // will be placed under lib/export
+
+  s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "iop",
+    C_("accel", "processing modules"),
+    .target = &s->actions_blend,
+    .owner = NULL,
+    .next = &s->actions_lua };
+
+  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND,
+    "blend",
+    C_("accel", "<blending>"),
+    .target = NULL,
+    .owner = &s->actions_iops,
+    .next = NULL };
+
+  s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "lua",
+    C_("accel", "lua scripts"),
+    .target = NULL,
+    .owner = NULL,
+    .next = &s->actions_fallbacks };
+
+  s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "fallbacks",
+    C_("accel", "fallbacks"),
+    NULL,
+    NULL,
+    NULL };
+
   s->actions = &s->actions_global;
 
-  s->actions_focus = (dt_action_t){ DT_ACTION_TYPE_IOP, "focus", C_("accel", "<focused>") };
+  s->actions_focus = (dt_action_t){ DT_ACTION_TYPE_IOP,
+    "focus",
+    C_("accel", "<focused>"),
+    NULL,
+    NULL,
+    NULL };
+
   dt_action_insert_sorted(&s->actions_iops, &s->actions_focus);
 
   s->widgets = g_hash_table_new(NULL, NULL);
@@ -435,10 +501,10 @@ static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
 void dt_ctl_switch_mode_to(const char *mode)
 {
   const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
-  if(current_view && !strcmp(mode, current_view->module_name))
+  if(current_view && !g_ascii_strcasecmp(mode, current_view->module_name))
   {
     // if we are not in lighttable, we switch back to that view
-    if(strcmp(current_view->module_name, "lighttable")) dt_ctl_switch_mode_to("lighttable");
+    if(g_ascii_strcasecmp(current_view->module_name, "lighttable")) dt_ctl_switch_mode_to("lighttable");
     return;
   }
 
@@ -916,4 +982,3 @@ void dt_control_set_dev_zoom(dt_dev_zoom_t value)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,8 +34,6 @@
 // the number of segments for the piecewise linear interpolation
 #define num_gamma 6
 
-//#define DEBUG_DUMP
-
 // downsample width/height to given level
 static inline int dl(int size, const int level)
 {
@@ -43,22 +41,6 @@ static inline int dl(int size, const int level)
     size = (size-1)/2+1;
   return size;
 }
-
-#ifdef DEBUG_DUMP
-static void dump_PFM(const char *filename, const float* out, const uint32_t w, const uint32_t h)
-{
-  FILE *f = g_fopen(filename, "wb");
-  fprintf(f, "PF\n%d %d\n-1.0\n", w, h);
-  for(int j=0;j<h;j++)
-    for(int i=0;i<w;i++)
-      for(int c=0;c<3;c++)
-        fwrite(out + w*j+i, 1, sizeof(float), f);
-  fclose(f);
-}
-#define debug_dump_PFM dump_PFM
-#else
-#define debug_dump_PFM(f,b,w,h)
-#endif
 
 // needs a boundary of 1 or 2px around i,j or else it will crash.
 // (translates to a 1px boundary around the corresponding pixel in the coarse buffer)
@@ -249,7 +231,6 @@ static inline void gauss_reduce(
 
   // this is the scalar (non-simd) code:
   const float w[5] = { 1.f/16.f, 4.f/16.f, 6.f/16.f, 4.f/16.f, 1.f/16.f };
-  memset(coarse, 0, sizeof(float)*cw*ch);
   // direct 5x5 stencil only on required pixels:
 #ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
@@ -262,9 +243,11 @@ static inline void gauss_reduce(
   for(int j=1;j<ch-1;j++)
     for(int i=1;i<cw-1;i++)
     {
+      float sum = 0.0f;
       for(int jj=-2;jj<=2;jj++)
         for(int ii=-2;ii<=2;ii++)
-          coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
+          sum += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
+      coarse[j*cw+i] = sum;
     }
   ll_fill_boundary1(coarse, cw, ch);
 }
@@ -373,12 +356,10 @@ static inline float *ll_pad_input(
     }
     pad_by_replication(out, *wd2, *ht2, max_supp);
   }
-#ifdef DEBUG_DUMP
-  if(b && b->mode == 2)
+  if((b && b->mode == 2) && (darktable.dump_pfm_module))
   {
-    dump_PFM("/tmp/padded.pfm",out,*wd2,*ht2);
+    dt_dump_pfm("padded", out, *wd2, *ht2, 4 * sizeof(float), "locallaplacian");
   }
-#endif
   return out;
 }
 
@@ -588,13 +569,45 @@ void local_laplacian_internal(
     padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h, 0);
 
   // allocate pyramid pointers for padded input
+  gboolean success = padded[0] != NULL;
   for(int l=1;l<=last_level;l++)
+  {
     padded[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
+    if (!padded[l])
+    {
+      success = FALSE;
+      break;
+    }
+  }
 
   // allocate pyramid pointers for output
   float *output[max_levels] = {0};
   for(int l=0;l<=last_level;l++)
+  {
     output[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
+    if (!output[l])
+    {
+      success = FALSE;
+      break;
+    }
+  }
+
+  if(!success)
+  {
+    // we can't jump to cleanup from here because it would reference a
+    // variable which hasn't been initialized yet because it is
+    // declared below.  So just free whatever we've allocated and return.
+    for(int l = 0; l <= last_level; l++)
+    {
+      dt_free_align(padded[l]);
+      dt_free_align(output[l]);
+    }
+    // copy the input buffer to the output so that we at least get a
+    // valid result
+    for(size_t k = 0; k < (size_t)4 * wd * ht; k++)
+      out[k] = input[k];
+    return;
+  }
 
   // create gauss pyramid of padded input, write coarse directly to output
 #if defined(__SSE2__)
@@ -619,9 +632,20 @@ void local_laplacian_internal(
 
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
-  for(int k=0;k<num_gamma;k++) for(int l=0;l<=last_level;l++)
-    buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
-
+  for(int k=0;k<num_gamma;k++)
+    for(int l=0;l<=last_level;l++)
+    {
+      buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
+      if(!buf[k][l])
+      {
+        // copy the input buffer to the output so that we at least get a
+        // valid result
+        for(size_t p = 0; p < (size_t)4 * wd * ht; p++)
+          out[p] = input[p];
+        goto cleanup;
+      }
+    }
+  
   // the paper says remapping only level 3 not 0 does the trick, too
   // (but i really like the additional octave of sharpness we get,
   // willing to pay the cost).
@@ -660,8 +684,11 @@ void local_laplacian_internal(
     const int pw = dl(w,last_level), ph = dl(h,last_level);
     const int pw0 = dl(b->pwd, pl0), ph0 = dl(b->pht, pl0);
     const int pw1 = dl(b->pwd, pl1), ph1 = dl(b->pht, pl1);
-    debug_dump_PFM("/tmp/coarse.pfm", b->output[pl0], pw0, ph0);
-    debug_dump_PFM("/tmp/oldcoarse.pfm", output[last_level], pw, ph);
+    if(darktable.dump_pfm_module)
+    {
+      dt_dump_pfm("coarse", b->output[pl0], pw0, ph0,  4 * sizeof(float), "locallaplacian");
+      dt_dump_pfm("oldcoarse", output[last_level], pw, ph,  4 * sizeof(float), "locallaplacian");
+    }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) collapse(2) default(shared)
 #endif
@@ -699,7 +726,8 @@ void local_laplacian_internal(
 #endif
       output[last_level][j*pw+i] = weight * c1 + (1.0f-weight) * c0;
     }
-    debug_dump_PFM("/tmp/newcoarse.pfm", output[last_level], pw, ph);
+    if(darktable.dump_pfm_module)
+      dt_dump_pfm("newcoarse", output[last_level], pw, ph,  4 * sizeof(float), "locallaplacian");
   }
 
   // assemble output pyramid coarse to fine
@@ -757,6 +785,7 @@ void local_laplacian_internal(
     for(int l=0;l<num_levels;l++) b->output[l] = output[l];
   }
   // free all buffers except the ones passed out for preview rendering
+cleanup:
   for(int l=0;l<max_levels;l++)
   {
     if(!b || b->mode != 1 || l)   dt_free_align(padded[l]);

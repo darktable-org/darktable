@@ -338,7 +338,7 @@ void _filename_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer
   }
   else
   {
-    gchar *coltext = g_strdup_printf("%s (%d)", name, count);
+    gchar *coltext = g_strdup_printf("%s (%u)", name, count);
     g_object_set(renderer, "text", coltext, NULL);
     g_free(coltext);
     g_object_set(renderer, "sensitive", TRUE, NULL);

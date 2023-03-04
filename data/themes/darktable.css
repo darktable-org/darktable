@@ -595,6 +595,21 @@ dialog .sidebar row:selected:hover label,
   font-size: 1.1em;
 }
 
+#iop-module-name
+{
+  font-weight: lighter;
+  font-family: sans-serif;
+  font-size: 0.8em;
+}
+
+#iop-module-name-error
+{
+  font-weight: bold;
+  font-size: 1.1em;
+  padding-left: 0.5em;
+  color: red;
+}
+
 .dt_module_focus #iop-panel-label/* set focus mode */
 {
   color: shade(@plugin_label_color, 1.2);
@@ -648,7 +663,7 @@ dialog .sidebar row:selected:hover label,
 /*-------------------
   - Scope/Histogram -
   -------------------*/
-#main-histogram buttonbox
+#main-histogram .button_box
 {
   margin: 0.21em;
 }
@@ -659,15 +674,8 @@ dialog .sidebar row:selected:hover label,
   min-width: 1em;
 }
 
-/* be sure all color icons have (nearly) same size ; needed has red color is in stack widget and this change how the size is rendered */
-#main-histogram #green-channel-button,
-#main-histogram #blue-channel-button
-{
-  min-width: 1.1em;
-}
-
 /* set background color and color of scope/histogram buttons */
-#main-histogram .dt_module_btn:not(.toggle)
+#main-histogram .dt_module_btn:not(.rgb_toggle)
 {
   color: alpha(@field_selected_fg, 0.56);
   background-color: alpha(darker(@button_bg),0.8);
@@ -1474,6 +1482,19 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
   background-color: @graph_bg;
 }
 
+#nav-zoom
+{
+  background-color: alpha(@darkroom_bg_color, 0.25);
+  color: @graph_fg_active;
+  border-top-left-radius: 0.21em;
+  margin: 0;
+}
+
+#nav-zoom:hover
+{
+  background-color: alpha(@darkroom_bg_color, 0.5);
+}
+
 /* search boxes (background color is set on collect module part above ; to be the same as other filters in quick filter bar) */
 #right .search  /* set only search box margin in modules panel */
 {
@@ -1654,7 +1675,8 @@ menuitem:active,
 menuitem:selected,
 messagedialog .default,  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 treeview *:selected:not(check),
-treeview *:checked:not(check)
+treeview *:checked:not(check),
+#main-histogram .dt_module_btn:checked:not(.rgb_toggle)
 {
   background-color: @field_selected_bg;
   color: @field_selected_fg;
@@ -1679,7 +1701,7 @@ radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #dt-range-date-popup .text-button:hover,
 #lens-module .text-button:hover,
-#main-histogram .dt_module_btn:hover:not(.toggle),
+#main-histogram .dt_module_btn:hover:not(.rgb_toggle),
 #non-flat:hover,
 #view-label:hover,
 #view-dropdown .combo:hover
@@ -2081,9 +2103,9 @@ Details :
 .dt_overlays_mixed #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom-label,
-.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn,
-.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn:active,
-.dt_overlays_hover_block #thumb-main:hover #thumb-bottom-label
+.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn,
+.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn:active,
+.dt_overlays_hover_block #thumb-image:hover #thumb-bottom-label
 {
   color: @thumbnail_font_color;
 }
@@ -2132,7 +2154,7 @@ Details :
 .dt_overlays_always #thumb-main:hover #thumb-star:hover,
 .dt_overlays_always_extended #thumb-main:hover #thumb-star:hover,
 .dt_overlays_mixed #thumb-main:hover #thumb-star:hover,
-.dt_overlays_hover_block #thumb-main:hover #thumb-star:hover
+.dt_overlays_hover_block #thumb-image:hover #thumb-star:hover
 {
   color: @thumbnail_star_hover_color;
   background-color: @thumbnail_star_bg_color;
@@ -2144,7 +2166,7 @@ Details :
 .dt_overlays_always #thumb-main:hover #thumb-group-audio:hover,
 .dt_overlays_always_extended #thumb-main:hover #thumb-group-audio:hover,
 .dt_overlays_mixed #thumb-main:hover #thumb-group-audio:hover,
-.dt_overlays_hover_block #thumb-main:hover #thumb-group-audio:hover
+.dt_overlays_hover_block #thumb-image:hover #thumb-group-audio:hover
 {
   color: @thumbnail_fg_color;
 }

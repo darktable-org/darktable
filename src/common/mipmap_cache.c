@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,12 +23,12 @@
 #include "common/file_location.h"
 #include "common/grealpath.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_jpeg.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "develop/imageop_math.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_jpeg.h"
+#include "imageio/imageio_module.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -42,9 +42,6 @@
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 #if !defined(_WIN32)
 #include <sys/statvfs.h>
@@ -119,11 +116,17 @@ static inline void dead_image_8(dt_mipmap_buffer_t *buf)
   dsc->iscale = 1.0f;
   dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size > 64 * sizeof(uint32_t));
-  const uint32_t X = 0xffffffffu;
-  const uint32_t o = 0u;
-  const uint32_t image[]
-      = { o, o, o, o, o, o, o, o, o, o, X, X, X, X, o, o, o, X, o, X, X, o, X, o, o, X, X, X, X, X, X, o,
-          o, o, X, o, o, X, o, o, o, o, o, o, o, o, o, o, o, o, X, X, X, X, o, o, o, o, o, o, o, o, o, o };
+  const uint32_t XX = 0xffffffffu;
+  const uint32_t __ = 0u;
+  static const uint32_t image[]
+      = { __,__,__,__,__,__,__,__,
+          __,__,XX,XX,XX,XX,__,__,
+          __,XX,__,XX,XX,__,XX,__,
+          __,XX,XX,XX,XX,XX,XX,__,
+          __,__,XX,__,__,XX,__,__,
+          __,__,__,__,__,__,__,__,
+          __,__,XX,XX,XX,XX,__,__,
+          __,__,__,__,__,__,__,__ };
   memcpy(buf->buf, image, sizeof(uint32_t) * 64);
 }
 
@@ -136,37 +139,20 @@ static inline void dead_image_f(dt_mipmap_buffer_t *buf)
   dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size > 64 * 4 * sizeof(float));
 
-  if(darktable.codepath.OPENMP_SIMD)
-  {
-    const float X = 1.0f;
-    const float o = 0.0f;
-
-    const float image[64 * 4]
-        = { o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o,
-            o, o, o, o, o, o, o, o, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, o, o, o, o, o, o, o, o,
-            o, o, o, o, X, X, X, X, o, o, o, o, X, X, X, X, X, X, X, X, o, o, o, o, X, X, X, X, o, o, o, o,
-            o, o, o, o, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, o, o, o, o,
-            o, o, o, o, o, o, o, o, X, X, X, X, o, o, o, o, o, o, o, o, X, X, X, X, o, o, o, o, o, o, o, o,
-            o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o,
-            o, o, o, o, o, o, o, o, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, o, o, o, o, o, o, o, o,
-            o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o };
-
-    memcpy(buf->buf, image, sizeof(float) * 4 * 64);
-  }
-#if defined(__SSE__)
-  else if(darktable.codepath.SSE2)
-  {
-    const __m128 X = _mm_set1_ps(1.0f);
-    const __m128 o = _mm_set1_ps(0.0f);
-    const __m128 image[]
-        = { o, o, o, o, o, o, o, o, o, o, X, X, X, X, o, o, o, X, o, X, X, o, X, o, o, X, X, X, X, X, X, o,
-            o, o, X, o, o, X, o, o, o, o, o, o, o, o, o, o, o, o, X, X, X, X, o, o, o, o, o, o, o, o, o, o };
-
-    memcpy(buf->buf, image, sizeof(__m128) * 64);
-  }
-#endif
-  else
-    dt_unreachable_codepath();
+#define XX 1.0f, 1.0f, 1.0f, 1.0f
+#define __ 0.0f, 0.0f, 0.0f, 0.0f
+  static const float image[]
+      = { __,__,__,__,__,__,__,__,
+          __,__,XX,XX,XX,XX,__,__,
+          __,XX,__,XX,XX,__,XX,__,
+          __,XX,XX,XX,XX,XX,XX,__,
+          __,__,XX,__,__,XX,__,__,
+          __,__,__,__,__,__,__,__,
+          __,__,XX,XX,XX,XX,__,__,
+          __,__,__,__,__,__,__,__ };
+#undef XX
+#undef __
+  memcpy(buf->buf, image, sizeof(image));
 }
 
 #ifndef NDEBUG
@@ -1112,6 +1098,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   else
   {
     // downsample
+    dt_print_pipe(DT_DEBUG_PIPE, "mipmap clip and zoom", NULL, "", &roi_in, &roi_out, "\n");
     dt_iop_clip_and_zoom(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width, roi_in.width);
   }
 

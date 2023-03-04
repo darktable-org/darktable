@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,9 +53,9 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -357,7 +357,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   }
 
   /* Create comment for codestream */
-  parameters.cp_comment = g_strdup_printf("Created by %s", darktable_package_string);
+  parameters.cp_comment = g_strdup_printf("Created with %s", darktable_package_string);
 
   /*Converting the image to a format suitable for encoding*/
   {
@@ -382,7 +382,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     image = opj_image_create(numcomps, &cmptparm[0], OPJ_CLRSPC_SRGB);
     if(!image)
     {
-      fprintf(stderr, "Error: opj_image_create() failed\n");
+      dt_print(DT_DEBUG_ALWAYS, "Error: opj_image_create() failed\n");
       free(rates);
       rc = 0;
       goto exit;
@@ -417,7 +417,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 //        }
 //        break;
 //      default:
-//        fprintf(stderr, "Error: this shouldn't happen, there is no bit depth of %d for jpeg 2000 images.\n",
+//        dt_print(DT_DEBUG_ALWAYS, "Error: this shouldn't happen, there is no bit depth of %d for jpeg 2000 images.\n",
 //                prec);
 //        free(rates);
 //        opj_image_destroy(image);
@@ -465,7 +465,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   {
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
-    fprintf(stderr, "failed to create output stream\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to create output stream\n");
     rc = 0;
     goto exit;
   }
@@ -475,7 +475,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_stream_destroy(cstream);
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
-    fprintf(stderr, "failed to encode image: opj_start_compress\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to encode image: opj_start_compress\n");
     rc = 0;
     goto exit;
   }
@@ -486,7 +486,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_stream_destroy(cstream);
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
-    fprintf(stderr, "failed to encode image: opj_encode\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to encode image: opj_encode\n");
     rc = 0;
     goto exit;
   }
@@ -497,7 +497,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_stream_destroy(cstream);
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
-    fprintf(stderr, "failed to encode image: opj_end_compress\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to encode image: opj_end_compress\n");
     rc = 0;
     goto exit;
   }

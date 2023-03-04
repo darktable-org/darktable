@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2021 darktable developers.
+   Copyright (C) 2010-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,18 +29,16 @@
 #include <OpenEXR/ImfThreading.h>
 #include <OpenEXR/ImfOutputFile.h>
 
-extern "C" {
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_exr.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_exr.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
-}
-#include "common/imageio_exr.hh"
+#include "imageio/imageio_exr.hh"
 
 #ifdef __cplusplus
 extern "C" {
@@ -133,7 +131,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
                      (Imf::Compression)exr->compression);
 
   char comment[1024];
-  snprintf(comment, sizeof(comment), "Developed using %s", darktable_package_string);
+  snprintf(comment, sizeof(comment), "Created with %s", darktable_package_string);
 
   header.insert("comment", Imf::StringAttribute(comment));
 
@@ -217,7 +215,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
 icc_error:
   dt_control_log("%s", _("the selected output profile doesn't work well with exr"));
-  fprintf(stderr, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong "
+  dt_print(DT_DEBUG_ALWAYS, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong "
                   "results when opening the image\n");
 icc_end:
 

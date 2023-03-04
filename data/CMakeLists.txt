@@ -56,53 +56,56 @@ if(NOT WIN32)
   if("webp" IN_LIST DT_SUPPORTED_EXTENSIONS)
     list(APPEND DESKTOP_MIME_TYPES image/webp)
   endif()
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in)
+  if("qoi" IN_LIST DT_SUPPORTED_EXTENSIONS)
+    list(APPEND DESKTOP_MIME_TYPES image/qoi)
+  endif()
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in)
   file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
   add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
-    SOURCE ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in
-    COMMAND sh -c "${intltool_merge_BIN} --desktop-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop"
-    MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop
+    SOURCE ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in
+    COMMAND sh -c "${intltool_merge_BIN} --desktop-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop"
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in
     DEPENDS ${PO_FILES}
     )
-  add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop)
+  add_custom_target(darktable.desktop_file ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop)
   if(${VALIDATE_DESKTOP_FILE})
     add_custom_target(
       validate_darktable_desktop ALL
-      COMMAND ${desktop_file_validate_BIN} --warn-kde ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+      COMMAND ${desktop_file_validate_BIN} --warn-kde ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-      COMMENT "Checking validity of darktable.desktop"
+      COMMENT "Checking validity of org.darktable.darktable.desktop"
       )
     add_dependencies(darktable.desktop_file validate_darktable_desktop)
   endif()
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications COMPONENT DTApplication)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications COMPONENT DTApplication)
+
+  if(${VALIDATE_APPDATA_FILE})
+    add_custom_command(
+      OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
+      SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/metainfo
+      COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml"
+      COMMAND ${appstream_util_BIN} validate --nonet ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
+      MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
+      DEPENDS ${PO_FILES}
+    )
+  else()
+    add_custom_command(
+      OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
+      SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/metainfo
+      COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml"
+      MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
+      DEPENDS ${PO_FILES}
+    )
+  endif()
+
+  add_custom_target(darktable.appdata_file ALL DEPENDS ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml)
+
+  install(FILES ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo COMPONENT DTApplication)
 endif(NOT WIN32)
-
-if(${VALIDATE_APPDATA_FILE})
-  add_custom_command(
-    OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml
-    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/metainfo
-    COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml"
-    COMMAND ${appstream_util_BIN} validate --nonet ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml
-    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
-    DEPENDS ${PO_FILES}
-  )
-else()
-  add_custom_command(
-    OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml
-    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/metainfo
-    COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml"
-    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
-    DEPENDS ${PO_FILES}
-  )
-endif()
-
-add_custom_target(darktable.appdata_file ALL DEPENDS ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml)
-
-install(FILES ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo COMPONENT DTApplication)
 
 #
 # Install watermarks

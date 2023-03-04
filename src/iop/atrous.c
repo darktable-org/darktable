@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -296,7 +296,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float *buf2 = tmp;
 
   // clear the output buffer, which will be accumulating all of the detail scales
-  memset(out, 0, sizeof(float) * 4 * width * height);
+  dt_iop_image_fill(out, 0.0f, width, height, 4);
 
   // now do the wavelet decomposition, immediately synthesizing the detail scale into the final output so
   // that we don't need to store it past the current scale's iteration
@@ -316,9 +316,6 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(i, o, width, height);
 
   dt_free_align(detail);
   dt_free_align(tmp);
@@ -1011,24 +1008,15 @@ void gui_update(struct dt_iop_module_t *self)
 
 // gui stuff:
 
-static gboolean area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = fabs(c->mouse_y);
-  c->in_curve = TRUE;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
-}
+  c->in_curve = event->type == GDK_ENTER_NOTIFY;
+  if(!c->dragging)
+    c->x_move = -1;
 
-static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = -fabs(c->mouse_y);
-  c->in_curve = FALSE;
   gtk_widget_queue_draw(widget);
-  return TRUE;
+  return FALSE;
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -1497,18 +1485,8 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
   int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-    {
-      //adjust aspect
-      const int aspect = dt_conf_get_int("plugins/darkroom/atrous/aspect_percent");
-      dt_conf_set_int("plugins/darkroom/atrous/aspect_percent", aspect + delta_y);
-      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
-    }
-    else
-    {
-      c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
-      gtk_widget_queue_draw(widget);
-    }
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
   }
   return TRUE;
 }
@@ -1708,23 +1686,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   // graph
-  const float aspect = dt_conf_get_int("plugins/darkroom/atrous/aspect_percent") / 100.0;
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/atrous/aspect_percent"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area),
-                        GDK_POINTER_MOTION_MASK
-                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                        | GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
-                        | darktable.gui->scroll_mask);
   g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), &_action_def_equalizer);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(area_button_release), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(area_leave_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
+  g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(area_enter_leave_notify), self);
+  g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(area_enter_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(area_scrolled), self);
 
   // mix slider

@@ -41,6 +41,7 @@ typedef struct dt_lib_snapshot_t
   dt_view_context_t ctx;
   uint32_t imgid;
   uint32_t history_end;
+  uint32_t id;
   /* snapshot cairo surface */
   cairo_surface_t *surface;
   uint32_t width, height;
@@ -151,8 +152,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(d->snap_requested && snap->ctx == ctx)
     {
       // export image with proper size
-      dt_dev_image(snap->imgid, width, height, snap->history_end,
-                   &d->params.buf, &d->params.width, &d->params.height);
+      dt_dev_image_ext(snap->imgid, width, height, snap->history_end,
+                       &d->params.buf, &d->params.width, &d->params.height,
+                       darktable.develop->border_size,
+                       darktable.develop->iso_12646.enabled,
+                       snap->id);
 
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = dt_view_create_surface(d->params.buf, d->params.width, d->params.height);
@@ -178,7 +182,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = NULL;
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
-      return;
     }
 
     float pzx, pzy;
@@ -213,7 +216,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(!d->snap_requested)
+    if(snap->surface && !d->snap_requested)
     {
       // display snapshot image surface
       dt_view_paint_surface(cri, width, height,
@@ -329,7 +332,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     return 0;
   }
 
-  if(d->selected >= 0)
+  if(d->selected >= 0 && which == 1)
   {
     if(d->on_going) return 1;
 
@@ -338,13 +341,12 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
     /* do the split rotating */
     const double hhs = HANDLE_SIZE * 0.5;
-    if(which == 1
-       && (((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs)
-            && yp > 0.5 - hhs && yp < 0.5 + hhs)
-           || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs)
-               && xp > 0.5 - hhs && xp < 0.5 + hhs)
-           || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs
-               && d->vp_yrotate <= yp + hhs )))
+    if(((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs)
+        && yp > 0.5 - hhs && yp < 0.5 + hhs)
+        || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs)
+            && xp > 0.5 - hhs && xp < 0.5 + hhs)
+        || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs
+            && d->vp_yrotate <= yp + hhs))
     {
       /* let's rotate */
       _lib_snapshot_rotation_cnt++;
@@ -360,7 +362,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       dt_control_queue_redraw_center();
     }
     /* do the dragging !? */
-    else if(which == 1)
+    else
     {
       d->dragging = TRUE;
       d->vp_ypointer = yp;
@@ -425,48 +427,21 @@ static void _clear_snapshots(dt_lib_module_t *self, const uint32_t imgid)
   d->selected = -1;
   d->snap_requested = FALSE;
 
-  uint32_t pos = 0;
-  uint32_t removed_count = 0;
-
   for(uint32_t k = 0; k < d->num_snapshots; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
 
-    if(imgid == -1 || s->imgid == imgid)
-    {
-      if(s->surface) cairo_surface_destroy(s->surface);
-      _clear_snapshot_entry(s);
-      gtk_widget_hide(s->button);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
-      removed_count++;
-    }
-    else
-    {
-      if(pos != k)
-      {
-        dt_lib_snapshot_t *n = &d->snapshot[pos];
-
-        GtkWidget *tmp = n->button;
-        n->button = s->button;
-        s->button = tmp;
-
-        n->imgid       = s->imgid;
-        n->ctx         = s->ctx;
-        n->surface     = s->surface;
-        n->history_end = s->history_end;
-        n->width       = s->width;
-        n->height      = s->height;
-
-        _clear_snapshot_entry(s);
-      }
-      pos++;
-    }
+    if(s->surface) cairo_surface_destroy(s->surface);
+    _clear_snapshot_entry(s);
+    gtk_widget_hide(s->button);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
   }
 
-  d->num_snapshots -= removed_count;
+  d->num_snapshots = 0;
+  gtk_widget_set_sensitive(d->take_button, TRUE);
 
-  if(d->num_snapshots < MAX_SNAPSHOT)
-    gtk_widget_set_sensitive(d->take_button, TRUE);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM memory.history_snapshot", NULL, NULL, NULL);
 
   dt_control_queue_redraw_center();
 }
@@ -489,13 +464,6 @@ static void _signal_profile_changed(gpointer instance, uint8_t profile_type, gpo
 
     dt_control_queue_redraw_center();
   }
-}
-
-static void _signal_history_invalidated(gpointer instance, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  // we clear the snapshots for the image whose histroy is being invalidated
-  _clear_snapshots(self, darktable.develop->image_storage.id);
 }
 
 static void _signal_image_changed(gpointer instance, gpointer user_data)
@@ -602,15 +570,13 @@ void gui_init(dt_lib_module_t *self)
 
   /* add snapshot box and take snapshot button to widget ui*/
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
+                     dt_ui_resize_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 
   dt_action_register(DT_ACTION(self), N_("toggle last snapshot"), _lib_snapshots_toggle_last, 0, 0);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                                   G_CALLBACK(_signal_profile_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED,
-                                  G_CALLBACK(_signal_history_invalidated), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                                   G_CALLBACK(_signal_image_changed), self);
 }
@@ -649,8 +615,30 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   s->history_end = darktable.develop->history_end;
   s->imgid = darktable.develop->image_storage.id;
 
+  // set new snapshot_id
+
+  s->id = d->num_snapshots;
+
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "INSERT INTO memory.history_snapshot"
+     " SELECT ?1, num, module, operation, op_params,"
+     "        enabled, blendop_params, blendop_version, multi_priority,"
+     "        multi_name, multi_name_hand_edited"
+     " FROM main.history"
+     " WHERE imgid = ?2 AND num < ?3",
+     -1, &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, s->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, s->imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, s->history_end);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   char label[64];
-  g_snprintf(label, sizeof(label), "%s (%d)", name, s->history_end);
+  g_snprintf(label, sizeof(label), "%s (%u)", name, s->history_end);
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(s->button))), label);
 
   /* update slots used */
@@ -684,15 +672,6 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
         d->selected = k;
       else
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
-
-    /* setup snapshot */
-    if(d->selected >= 0)
-    {
-      dt_lib_snapshot_t *s = &d->snapshot[d->selected];
-      s->ctx = 0;
-    }
-
-    dt_dev_invalidate(darktable.develop);
   }
 
   --darktable.gui->reset;

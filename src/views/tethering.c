@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2021 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
 #include "common/import_session.h"
 #include "common/iop_profile.h"
 #include "common/selection.h"
@@ -50,6 +49,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "imageio/imageio_common.h"
 #include "libs/lib.h"
 #include "views/view_api.h"
 
@@ -595,7 +595,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
     gchar str[20];
-    snprintf(str, sizeof(str), "%u,%u", cam->live_view_zoom_x, cam->live_view_zoom_y);
+    snprintf(str, sizeof(str), "%d,%d", cam->live_view_zoom_x, cam->live_view_zoom_y);
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();

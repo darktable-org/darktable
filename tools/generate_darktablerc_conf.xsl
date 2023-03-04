@@ -133,8 +133,22 @@ static void _insert_longdescription(const char *name, const char *value)
   item->longdesc = g_strdup(value);
 }
 
+static void _free_confgen_value(void *value)
+{
+  dt_confgen_value_t *s = (dt_confgen_value_t *)value;
+  g_free(s->def);
+  g_free(s->min);
+  g_free(s->max);
+  g_free(s->enum_values);
+  g_free(s->shortdesc);
+  g_free(s->longdesc);
+  g_free(s);
+}
+
 void dt_confgen_init()
 {
+   darktable.conf->x_confgen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _free_confgen_value);
+
 ]]></xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig">

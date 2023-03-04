@@ -38,8 +38,8 @@
 DT_MODULE(1)
 
 // the T_ macros are for the translation engine to take them into account
-#define FALLBACK_PRESET_NAME     "modules: default"
-#define T_FALLBACK_PRESET_NAME _("modules: default")
+#define FALLBACK_PRESET_NAME     "workflow: scene-referred"
+#define T_FALLBACK_PRESET_NAME _("workflow: scene-referred")
 
 #define DEPRECATED_PRESET_NAME     "modules: deprecated"
 #define T_DEPRECATED_PRESET_NAME _("modules: deprecated")
@@ -55,7 +55,6 @@ DT_MODULE(1)
 // if a preset cannot be loaded or the current preset deleted, this is the fallback preset
 
 #define PADDING 2
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 #include "modulegroups.h"
 
@@ -376,11 +375,11 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
     }
   }
   // cleanup item
-  if(item->box) gtk_widget_destroy(item->box);
-  if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
-  item->box = NULL;
-  item->temp_widget = NULL;
   item->widget = NULL;
+  if(item->box) gtk_widget_destroy(item->box);
+  item->box = NULL;
+  if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
+  item->temp_widget = NULL;
   item->old_parent = NULL;
   item->module = NULL;
   if(item->tooltip)
@@ -604,6 +603,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     g_signal_connect(item->temp_widget, "show", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(item->temp_widget, "hide", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &item->temp_widget);
+    g_signal_connect_swapped(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(_basics_remove_widget), item);
 
     _sync_visibility(item->widget, item);
   }
@@ -828,8 +828,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  if(DT_IOP_ORDER_INFO)
-    fprintf(stderr,"\n^^^^^ modulegroups");
+  dt_print(DT_DEBUG_IOPORDER, "[lib_modulegroups_update_iop_visibility] modulegroups\n");
 
   // update basic button selection too
   g_signal_handlers_block_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
@@ -854,7 +853,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     }
   }
 
-  // hide deprectade message. it will be shown after if needed
+  // hide deprecated message. it will be shown after if needed
   gtk_widget_set_visible(d->deprecated, FALSE);
 
   for(const GList *modules = darktable.develop->iop; modules; modules = g_list_next(modules))
@@ -866,11 +865,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     GtkWidget *w = module->expander;
 
-    if((DT_IOP_ORDER_INFO) && (module->enabled))
-    {
-      fprintf(stderr, "\n%20s %d", module->op, module->iop_order);
-      if(dt_iop_is_hidden(module)) fprintf(stderr, ", hidden");
-    }
+    if(module->enabled)
+    dt_print(DT_DEBUG_IOPORDER, "%20s %d%s",
+      module->op, module->iop_order, (dt_iop_is_hidden(module)) ? ", hidden" : "");
 
       /* skip modules without an gui */
       if(dt_iop_is_hidden(module)) continue;
@@ -958,10 +955,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         default:
         {
           // show deprecated module in specific group deprecated
-          gtk_widget_set_visible(d->deprecated, show_deprecated || d->force_deprecated_message);
+          gtk_widget_set_visible(d->deprecated,
+                                 show_deprecated || d->force_deprecated_message);
 
           show_module = (_lib_modulegroups_test_internal(self, d->current, module)
-                         && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled || show_deprecated));
+                         && (!(module->flags() & IOP_FLAGS_DEPRECATED)
+                             || module->enabled
+                             || show_deprecated));
         }
       }
 
@@ -977,7 +977,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
   }
-  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
+
   // now that visibility has been updated set multi-show
   dt_dev_modules_update_multishow(darktable.develop);
 
@@ -1011,6 +1011,8 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   }
   if(button == d->basic_btn) gid = DT_MODULEGROUP_BASICS;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), FALSE);
+
+  if(d->current == DT_MODULEGROUP_BASICS) dt_iop_request_focus(NULL);
 
   /* only deselect button if not currently searching else re-enable module */
   if(d->current == gid && !(text_entered && text_entered[0] != '\0'))
@@ -1493,7 +1495,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   }
 
 // start quick access
-#define SQA(is_modern, is_scene_referred)                                                                         \
+#define SQA(is_scene_referred)                                                                         \
   {                                                                                                               \
     g_free(tx);                                                                                                   \
     tx = g_strdup_printf("1|0ꬹ1||");                                                                            \
@@ -1502,9 +1504,6 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       AM("filmicrgb/white relative exposure");                                                                    \
       AM("filmicrgb/black relative exposure");                                                                    \
       AM("filmicrgb/contrast");                                                                                   \
-    }                                                                                                             \
-    if(is_modern)                                                                                                 \
-    {                                                                                                             \
       AM("channelmixerrgb/temperature");                                                                          \
       AM("channelmixerrgb/chroma");                                                                               \
       AM("channelmixerrgb/hue");                                                                                  \
@@ -1543,15 +1542,18 @@ void init_presets(dt_lib_module_t *self)
             echo "AM(\"${BN:0:16}\");" ; done
   */
 
-  const gboolean is_modern =
-    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
-  const gboolean is_scene_referred =
-    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
+  const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean wf_filmic =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
+  const gboolean wf_sigmoid =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (sigmoid)");
+  const gboolean wf_none =
+    dt_conf_is_equal("plugins/darkroom/workflow", "none");
 
   // all modules
   gchar *tx = NULL;
 
-  SQA(is_modern, is_scene_referred);
+  SQA(is_scene_referred);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
@@ -1636,13 +1638,13 @@ void init_presets(dt_lib_module_t *self)
 
   // minimal / 3 tabs
 
-  SQA(is_modern, is_scene_referred);
+  SQA(is_scene_referred);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("ashift");
 
   if(is_scene_referred)
-    AM("filmicrgb");
+    AM("sigmoid");
   else
     AM("basecurve");
 
@@ -1672,7 +1674,7 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("workflow: beginner"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   // display referred
-  SQA(is_modern, FALSE);
+  SQA(FALSE);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
@@ -1722,11 +1724,13 @@ void init_presets(dt_lib_module_t *self)
 
   // scene referred
 
-  SQA(is_modern, TRUE);
+  SQA(TRUE);
 
   SMG(C_("modulegroup", "base"), "basic");
-  AM("filmicrgb");
-  AM("sigmoid");
+  if(wf_filmic || wf_none)
+    AM("filmicrgb");
+  if(wf_sigmoid || wf_none)
+    AM("sigmoid");
   AM("toneequal");
   AM("crop");
   AM("ashift");
@@ -1734,6 +1738,7 @@ void init_presets(dt_lib_module_t *self)
   AM("exposure");
   AM("temperature");
   AM("bilat");
+  AM("highlights");
 
   SMG(C_("modulegroup", "color"), "color");
   AM("channelmixerrgb");
@@ -1765,84 +1770,6 @@ void init_presets(dt_lib_module_t *self)
 
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
-  // default / 3 tabs based on Aurélien's proposal
-
-  SQA(is_modern, is_scene_referred);
-
-  SMG(C_("modulegroup", "technical"), "technical");
-  AM("basecurve");
-  AM("bilateral");
-  AM("cacorrect");
-  AM("crop");
-  AM("ashift");
-  AM("colorchecker");
-  AM("colorin");
-  AM("colorout");
-
-  AM("colorreconstruct");
-  AM("cacorrectrgb");
-  AM("demosaic");
-  AM("denoiseprofile");
-  AM("dither");
-  AM("exposure");
-  AM("filmicrgb");
-  AM("finalscale");
-  AM("flip");
-  AM("hazeremoval");
-  AM("highlights");
-  AM("hotpixels");
-  AM("lens");
-  AM("lut3d");
-  AM("negadoctor");
-  AM("nlmeans");
-  AM("overexposed");
-  AM("rawdenoise");
-  AM("rawoverexposed");
-  AM("rotatepixels");
-  AM("temperature");
-  AM("scalepixels");
-
-  SMG(C_("modulegroup", "grading"), "grading");
-  AM("channelmixerrgb");
-  AM("colisa");
-  AM("colorbalancergb");
-  AM("colorcontrast");
-  AM("colorcorrection");
-  AM("colorize");
-  AM("colorzones");
-  AM("graduatednd");
-  AM("levels");
-  AM("rgbcurve");
-  AM("rgblevels");
-  AM("shadhi");
-  AM("splittoning");
-  AM("tonecurve");
-  AM("toneequal");
-  AM("velvia");
-
-  SMG(C_("modulegroup", "effects"), "effect");
-  AM("atrous");
-  AM("bilat");
-  AM("bloom");
-  AM("borders");
-  AM("colormapping");
-  AM("grain");
-  AM("highpass");
-  AM("liquify");
-  AM("lowlight");
-  AM("lowpass");
-  AM("monochrome");
-  AM("retouch");
-  AM("sharpen");
-  AM("soften");
-  AM("vignette");
-  AM("watermark");
-  AM("censorize");
-  AM("blurs");
-  AM("diffuse");
-
-  dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-
   // search only (only active modules visible)
   SNQA();
   dt_lib_presets_add(_("search only"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
@@ -1852,11 +1779,9 @@ void init_presets(dt_lib_module_t *self)
   // this modules are deprecated in 3.4 and should be removed from this group in 3.8 (1 year later)
   SNQA();
   SMG(C_("modulegroup", "deprecated"), "basic");
-  // these modules are deprecated in 3.6 and should be removed in 4.0 (1 year later)
-  AM("spots");
-  AM("defringe");
-  // these modules are deprecated in 3.8 and should be removed in 4.1 (1 year later)
-  AM("clipping");
+  // these modules are deprecated in 4.4 and should be removed in 4.8 (1 year later)
+  AM("levels");
+  AM("colisa");
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
@@ -1881,19 +1806,24 @@ void init_presets(dt_lib_module_t *self)
 
 static gchar *_presets_get_minimal(dt_lib_module_t *self)
 {
-  const gboolean is_modern = dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
-  const gboolean is_scene_referred = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
+  const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean wf_filmic = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
 
   // all modules
   gchar *tx = NULL;
 
-  SQA(is_modern, is_scene_referred);
+  SQA(is_scene_referred);
   AM("exposure/exposure");
   AM("colorbalancergb/contrast");
 
   SMG(C_("modulegroup", "base"), "basic");
   if(is_scene_referred)
-    AM("filmicrgb");
+  {
+    if(wf_filmic)
+      AM("filmicrgb");
+    else
+      AM("sigmoid");
+  }
   else
     AM("basecurve");
   AM("exposure");
@@ -2297,7 +2227,7 @@ static int _lib_modulegroups_basics_module_toggle(dt_lib_module_t *self, GtkWidg
 {
   if(GTK_IS_BUTTON(widget)) return 0;
 
-  dt_action_t *action = g_hash_table_lookup(darktable.control->widgets, widget);
+  dt_action_t *action = dt_action_widget(widget);
 
   dt_action_t *owner = action;
   while(owner && owner->type >= DT_ACTION_TYPE_SECTION) owner = owner->owner;

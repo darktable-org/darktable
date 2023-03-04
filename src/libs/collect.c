@@ -703,6 +703,9 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
     if(range->path1)
     {
       range->path2 = gtk_tree_path_copy(path);
+      g_free(haystack);
+      g_free(needle);
+      g_free(str);
       return TRUE;
     }
     else
@@ -1187,7 +1190,7 @@ void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeM
   }
   else
   {
-    gchar *coltext = g_strdup_printf("%s (%d)", name, count);
+    gchar *coltext = g_strdup_printf("%s (%u)", name, count);
     g_object_set(renderer, "text", coltext, NULL);
     g_free(coltext);
   }
@@ -2508,7 +2511,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
         {
           if(dt_tag_get_tag_order_by_id(tagid, &sort, &descending))
           {
-            order = g_strdup_printf("1:%d:%d$", sort, descending);
+            order = g_strdup_printf("1:%u:%d$", sort, descending);
           }
           else
           {
@@ -3297,7 +3300,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(treemodel);
 
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
+                     dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
                      TRUE, 0);
 
   // the bottom buttons for the rules

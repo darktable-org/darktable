@@ -52,17 +52,26 @@
 #include <CL/cl.h>
 // #pragma GCC diagnostic
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
 
 // use per device roundups here
 #define ROUNDUPDWD(a, b) dt_opencl_dev_roundup_width(a, b)
 #define ROUNDUPDHT(a, b) dt_opencl_dev_roundup_height(a, b)
 
-#define DT_OPENCL_DEFAULT_COMPILE_INTEL ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE_INTEL ("")
 #define DT_OPENCL_DEFAULT_COMPILE_AMD ("-cl-fast-relaxed-math")
 #define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math")
-#define DT_OPENCL_DEFAULT_COMPILE ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE ("")
 #define DT_CLDEVICE_HEAD ("cldevice_v4_")
+
+// version for current darktable cl kernels
+// this is reflected in the kernel directory and allows to
+// enforce a new kernel compilation cycle
+#define DT_OPENCL_KERNELS 1
 
 typedef enum dt_opencl_memory_t
 {
@@ -159,7 +168,7 @@ typedef struct dt_opencl_device_t
   // this can often be avoided by using indirect transfers via pinned memory,
   // other devices have more efficient direct memory transfer implementations.
   // We can't predict on solid grounds if a device belongs to the first or second group,
-  // also pinned mem transfer requires slightly more ram. 
+  // also pinned mem transfer requires slightly more video ram plus system memory. 
   // this holds a bitmask defined by dt_opencl_pinmode_t
   // the device specific conf key might hold
   // 0 -> disabled by default; might be switched on by tune for performance
@@ -371,6 +380,9 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
 int dt_opencl_enqueue_kernel_2d_args_internal(const int dev, const int kernel,
                                               const size_t w, const size_t h, ...);
 
+/** launch kernel with specified dimension and defined local size! */
+int dt_opencl_enqueue_kernel_ndim_with_local(const int dev, const int kernel, const size_t *sizes,
+                                           const size_t *local, const int dimensions);
 /** check if opencl is inited */
 int dt_opencl_is_inited(void);
 
@@ -475,6 +487,8 @@ int dt_opencl_get_image_height(cl_mem mem);
 
 int dt_opencl_get_image_element_size(cl_mem mem);
 
+void dt_opencl_dump_pipe_pfm(const char* mod, const int devid, cl_mem img, const gboolean input, const char *pipe);
+
 int dt_opencl_get_mem_context_id(cl_mem mem);
 
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
@@ -522,9 +536,18 @@ int dt_opencl_avoid_atomics(const int devid);
 int dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 #else
 #include "control/conf.h"
 #include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct dt_opencl_t
 {
   int inited;
@@ -666,6 +689,11 @@ static inline int dt_opencl_events_flush(const int devid, const int reset)
 static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
 {
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 #endif
 
 // clang-format off
