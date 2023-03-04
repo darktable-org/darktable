@@ -62,7 +62,7 @@ hbDependencies="adwaita-icon-theme \
     webp"
 
 # Dependencies that must be linked
-hbMustLink="libomp"
+hbMustLink="libomp libsoup@2"
 
 # Categorize dependency list
 standalone=
