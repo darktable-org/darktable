@@ -676,6 +676,13 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       const char *filename = g_file_info_get_name(info);
       if(!filename)
         continue;
+
+      /* g_file_info_get_is_hidden() always returns 0 on macOS,
+        so we check if the filename starts with a '.' */
+      const gboolean is_hidden = g_file_info_get_is_hidden(info) || filename[0] ==  '.';
+      if (is_hidden)
+        continue;
+
       const time_t datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
