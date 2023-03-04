@@ -346,6 +346,8 @@ def main():
    warm_up_caches(args.program,args.image,args.xmp0,args)
    total = 0.0
    pixpipe = 0.0
+   max_pp = 0.0
+   max_total = 0.0
    used_gpu = False
    reps_run = 0
    iop_times = defaultdict(float)
@@ -360,10 +362,20 @@ def main():
       pixpipe += p
       total += t
       reps_run += 1
+      if p > max_pp:
+         max_pp = p
+      if t > max_total:
+         max_total = t
       if g:
          used_gpu = True
       if args.reps > 1:
          print(f': {p:7.3f} pixpipe,  {t:7.3f} total')
+   if reps_run > 4:
+      # drop the slowest run, it's probably an outlier caused by something else
+      # running during the test
+      pixpipe -= max_pp
+      total -= max_total
+      reps_run -= 1
    total = total / reps_run if reps_run > 0 else 999.9
    pixpipe = pixpipe / reps_run if reps_run > 0 else 999.9
    print_performance(pixpipe,total,get_version(args.program),args.version,args.image_base,args.threads,used_gpu)
