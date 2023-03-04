@@ -1391,7 +1391,8 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       // need a tooltip for the signal below to be raised
       gtk_widget_set_has_tooltip(mi, TRUE);
       g_signal_connect_data(mi, "query-tooltip",
-                            G_CALLBACK(_styles_tooltip_callback), g_strdup(style->name), (GClosureNotify)g_free, 0);
+                            G_CALLBACK(_styles_tooltip_callback),
+                            g_strdup(style->name), (GClosureNotify)g_free, 0);
 
       g_free(mi_name);
 
