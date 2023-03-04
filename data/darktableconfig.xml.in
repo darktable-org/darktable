@@ -177,7 +177,7 @@
     </type>
     <default>default</default>
     <shortdescription>darktable resources</shortdescription>
-    <longdescription>defines how much darktable may take from your system resources:\n - 'default': darktable takes ~50% of your systems resources and gives darktable enough to be still performant.\n - 'small': should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - 'large': is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.\n - 'unrestricted': should only be used for developing extremely large images as darktable will take all of your systems resources\n  and thus might lead to swapping and unexpected performance drops. use with caution and not recommended for general use!</longdescription>
+    <longdescription>defines how much darktable may take from your system resources:\n - 'default': darktable takes ~50% of your systems resources and gives darktable enough to be still performant.\n - 'small': should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - 'large': is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.\n - 'unrestricted': should only be used for developing extremely large images as darktable will take all of your systems resources\n   and thus might lead to swapping and unexpected performance drops.\n   use with caution and not recommended for general use!</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>ui/performance</name>
@@ -191,14 +191,14 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>enable disk backend for thumbnail cache</shortdescription>
-    <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when browsing a lot. to generate all thumbnails of your entire collection offline, run 'darktable-generate-cache'.</longdescription>
+    <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again.\nit's safe though to delete these manually, if you want. light table performance will be increased greatly when browsing a lot.\nto generate all thumbnails of your entire collection offline, run 'darktable-generate-cache'.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>cache_disk_backend_full</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>enable disk backend for full preview cache</shortdescription>
-    <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when zooming image in full preview mode.</longdescription>
+    <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again.\nit's safe though to delete these manually, if you want.\nlight table performance will be increased greatly when zooming image in full preview mode.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>cache_color_managed</name>
@@ -299,7 +299,7 @@
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
-    <longdescription>if found, use OpenCL runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
+    <longdescription>if found, use OpenCL runtime on your system for improved processing speed.\ncan be switched on and off at any time.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl_scheduling_profile</name>
