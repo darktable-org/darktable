@@ -2017,7 +2017,8 @@ void dt_iop_gui_update(dt_iop_module_t *module)
 void dt_iop_gui_reset(dt_iop_module_t *module)
 {
   ++darktable.gui->reset;
-  if(module->gui_reset && !dt_iop_is_hidden(module)) module->gui_reset(module);
+  if(module->gui_reset && !dt_iop_is_hidden(module))
+    module->gui_reset(module);
   --darktable.gui->reset;
 }
 
