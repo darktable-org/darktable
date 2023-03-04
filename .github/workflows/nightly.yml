@@ -174,7 +174,9 @@ jobs:
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
-          brew link --force libomp # fix for keg-only libomp
+          # handle keg-only libs
+          brew link --force libomp
+          brew link --force libsoup@2
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
