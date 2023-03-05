@@ -148,78 +148,6 @@ static inline void gauss_expand(
   ll_fill_boundary2(fine, wd, ht);
 }
 
-#if defined(__SSE2__)
-static inline __m128 convolve14641_vert(const float *in, const int wd)
-{
-  const dt_aligned_pixel_t four = { 4.f, 4.f, 4.f, 4.f };
-  __m128 r0 = _mm_loadu_ps(in);
-  __m128 r1 = _mm_loadu_ps(in + wd);
-  __m128 r2 = _mm_loadu_ps(in + 2*wd);
-  __m128 r3 = _mm_loadu_ps(in + 3*wd);
-  __m128 r4 = _mm_loadu_ps(in + 4*wd);
-  _mm_prefetch(in+4,_MM_HINT_NTA);		// prefetch next column, which won't be used again afterwards
-  r0 = _mm_add_ps(r0, r4);                      // r0 = r0+r4
-  _mm_prefetch(in+4+wd,_MM_HINT_NTA);		// prefetch next column, which won't be used again afterwards
-  r1 = _mm_add_ps(_mm_add_ps(r1,r3), r2);       // r1 = r1+r2+r3
-  _mm_prefetch(in+4+2*wd,_MM_HINT_T0);
-  r0 = _mm_add_ps(r0, _mm_add_ps(r2, r2));     // r0 = r0+2*r2+r4
-  _mm_prefetch(in+4+3*wd, _MM_HINT_T0);
-  __m128 t = _mm_mul_ps(r1, _mm_load_ps(four)); // t= 4*r1+4*r2+4*r3
-  _mm_prefetch(in+4+4*wd, _MM_HINT_T0);
-  return _mm_add_ps(r0, t);                   // r0+4*r1+6*r2+4*r3+r4
-}
-#endif
-
-#if defined(__SSE2__)
-static inline void gauss_reduce_sse2(
-    const float *const input, // fine input buffer
-    float *const coarse,      // coarse scale, blurred input buf
-    const int wd,             // fine res
-    const int ht)
-{
-  // blur, store only coarse res
-  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-
-#ifdef _OPENMP
-  // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
-  // is greater than the time needed to do it sequentially
-#pragma omp parallel for default(none) if(ch*cw>1000)  \
-      dt_omp_firstprivate(cw, ch, input, wd, coarse) \
-      schedule(static)
-#endif
-  for(int j=1;j<ch-1;j++)
-  {
-    const float *base = input + 2*(j-1)*wd;
-    float *const out = coarse + j*cw + 1;
-    // prime the vertical axis
-    const __m128 kernel = _mm_setr_ps(1.f, 4.f, 6.f, 4.f);
-    __m128 left = convolve14641_vert(base,wd);
-    for(int col=0; col<cw-3; col+=2)
-    {
-      // convolve the next four pixel wide vertical slice
-      base += 4;
-      __m128 right = convolve14641_vert(base,wd);
-      // horizontal pass, generate two output values from convolving with 1 4 6 4 1
-      // the first uses pixels 0-4, the second uses 2-6
-      __m128 conv = _mm_mul_ps(left,kernel);
-      out[col] = (conv[0] + conv[1] + conv[2] + conv[3] + right[0]) / 256.f;
-      out[col+1] = (left[2] + 4*(left[3]+right[1]) + 6*right[0] + right[2]) / 256.f;
-      // shift to next pair of output columns (four input columns)
-      left = right;
-    }
-    // handle the left-over pixel if the output size is odd
-    if(cw % 2)
-    {
-      base += 4;
-      float right = base[0] + 4*(base[wd]+base[3*wd]) + 6*base[2*wd] + base[4*wd];
-      __m128 conv = _mm_mul_ps(left,kernel);
-      out[cw-3] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.f;
-    }
-  }
-  ll_fill_boundary1(coarse, cw, ch);
-}
-#endif
-
 static inline void _convolve_14641_vert(dt_aligned_pixel_t conv, const float *in, const size_t wd)
 {
   static const dt_aligned_pixel_t four = { 4.f, 4.f, 4.f, 4.f };
@@ -657,20 +585,9 @@ void local_laplacian_internal(
   }
 
   // create gauss pyramid of padded input, write coarse directly to output
-#if defined(__SSE2__)
-  if(use_sse2)
-  {
-    for(int l=1;l<last_level;l++)
-      gauss_reduce_sse2(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-    gauss_reduce_sse2(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
-  }
-  else
-#endif
-  {
-    for(int l=1;l<last_level;l++)
-      gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-    gauss_reduce(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
-  }
+  for(int l=1;l<last_level;l++)
+    gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
+  gauss_reduce(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
 
   // evenly sample brightness [0,1]:
   float gamma[num_gamma] = {0.0f};
@@ -707,12 +624,7 @@ void local_laplacian_internal(
 
     // create gaussian pyramids
     for(int l=1;l<=last_level;l++)
-#if defined(__SSE2__)
-      if(use_sse2)
-        gauss_reduce_sse2(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
-      else
-#endif
-        gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
+      gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
   }
 
   // resample output[last_level] from preview
