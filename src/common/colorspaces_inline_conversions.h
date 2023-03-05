@@ -487,12 +487,12 @@ static inline void dt_sRGB_to_linear_sRGB(const dt_aligned_pixel_t sRGB, dt_alig
 static inline void dt_XYZ_to_prophotorgb(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t rgb)
 {
   // transpose and pad the conversion matrix to enable vectorization
-  static const dt_colormatrix_t xyz_to_rgb_transpose = {
+  static const dt_colormatrix_t xyz_to_prophotorgb_transpose = {
     {  1.3459433f, -0.5445989f, 0.0000000f, 0.0f },
     { -0.2556075f,  1.5081673f, 0.0000000f, 0.0f },
     { -0.0511118f,  0.0205351f, 1.2118128f, 0.0f }
   };
-  dt_apply_transposed_color_matrix(XYZ,xyz_to_rgb_transpose,rgb);
+  dt_apply_transposed_color_matrix(XYZ,xyz_to_prophotorgb_transpose,rgb);
 }
 
 // transpose and pad the conversion matrix to enable vectorization
