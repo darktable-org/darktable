@@ -220,35 +220,82 @@ static inline void gauss_reduce_sse2(
 }
 #endif
 
+static inline void _convolve_14641_vert(dt_aligned_pixel_t conv, const float *in, const size_t wd)
+{
+  static const dt_aligned_pixel_t four = { 4.f, 4.f, 4.f, 4.f };
+  dt_aligned_pixel_t r0, r1, r2, r3, r4;
+  for_four_channels(c)
+  {
+    // 'in' is only 4-byte aligned, so we can't use copy_pixel here
+    r0[c] = in[c];
+    r1[c] = in[wd+c];
+    r2[c] = in[2*wd+c];
+    r3[c] = in[3*wd+c];
+    r4[c] = in[4*wd+c];
+  }
+  dt_aligned_pixel_t t;
+  for_four_channels(c)
+  {
+    r0[c] = r0[c] + r4[c];		// r0 = r0+r4
+    r1[c] = r1[c] + r2[c] + r3[c];	// r1 = r1+r2+r2
+    r0[c] = r0[c] + r2[c] + r2[c];	// r0 = r0 + 2*r2 * r4
+    t[c] = r1[c] * four[c];		// t = 4*r1 + 4*r2 + r*43
+    conv[c] = r0[c] + t[c];		// conv = r0 + 4*r1 + 6*r2 + 4*r3 + r4
+  }
+}
+
 static inline void gauss_reduce(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
-    const int wd,             // fine res
-    const int ht)
+    const size_t wd,             // fine res
+    const size_t ht)
 {
   // blur, store only coarse res
-  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-
-  // this is the scalar (non-simd) code:
-  const float w[5] = { 1.f/16.f, 4.f/16.f, 6.f/16.f, 4.f/16.f, 1.f/16.f };
-  // direct 5x5 stencil only on required pixels:
+  const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 #ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
-#pragma omp parallel for default(none) if(ch*cw>500)  \
-  dt_omp_firstprivate(coarse, cw, ch, input, w, wd) \
-  schedule(static) \
-  collapse(2)
+#pragma omp parallel for simd default(none) if(ch*cw>2000)  \
+  dt_omp_firstprivate(coarse, cw, ch, input, wd) \
+  schedule(simd:static)
 #endif
-  for(int j=1;j<ch-1;j++)
-    for(int i=1;i<cw-1;i++)
+  for(size_t j=1;j<ch-1;j++)
+  {
+    const float *base = input + 2*(j-1)*wd;
+    float *const out = coarse + j*cw + 1;
+    // prime the vertical axis
+    static const dt_aligned_pixel_t kernel = { 1.0f, 4.0f, 6.0f, 4.0f };
+    dt_aligned_pixel_t left;
+    _convolve_14641_vert(left,base,wd);
+    for(size_t col=0; col<cw-3; col += 2)
     {
-      float sum = 0.0f;
-      for(int jj=-2;jj<=2;jj++)
-        for(int ii=-2;ii<=2;ii++)
-          sum += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
-      coarse[j*cw+i] = sum;
+      // convolve the next four pixel wide vertical slice
+      base += 4;
+      dt_aligned_pixel_t right;
+      _convolve_14641_vert(right,base,wd);
+      // horizontal pass, generate two output values from convolving with 1 4 6 4 1
+      // the first uses pixels 0-4, the second uses 2-6
+      dt_aligned_pixel_t conv;
+      for_four_channels(c)
+        conv[c] = left[c] * kernel[c];
+      out[col] = (conv[0] + conv[1] + conv[2] + conv[3] + right[0]) / 256.0f;
+      out[col+1] = (left[2] + 4*(left[3]+right[1]) + 6.0f*right[0] + right[2]) / 256.0f;
+      // shift to next pair of output columns (four input columns)
+      copy_pixel(left, right);
     }
+    // handle the left-over pixel if the output size is odd
+    if(cw % 2)
+    {
+      base += 4;
+      // convolve the right-most column
+      float right = base[0] + 4.0f*(base[wd]+base[3*wd]) + 6.0f*base[2*wd] + base[4*wd];
+      dt_aligned_pixel_t conv;
+      for_four_channels(c)
+        conv[c] = left[c] * kernel[c];
+      out[cw-3] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.0f;
+    }    
+  }
+  dt_omploop_sfence();
   ll_fill_boundary1(coarse, cw, ch);
 }
 
