@@ -212,6 +212,20 @@ void gui_cleanup(dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
+#if 0 //TODO: implement after module version bump to accommodate quickselect fix
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  if(new_version <= old_version) return 1;
+  if(old_version == 1 && new_version == 2)
+  {
+    //FIXME: copy from old version and add compatibility flag
+    
+  }
+  return 0;
+}
+#endif
+
 //----------------------------------------------------------------------
 // module local functions and structures required by process function
 //----------------------------------------------------------------------
@@ -315,27 +329,28 @@ static float *partition(float *first, float *last, float val)
   return first;
 }
 
-
 // quick select algorithm, arranges the range [first, last) such that
 // the element pointed to by nth is the same as the element that would
 // be in that position if the entire range [first, last) had been
 // sorted, additionally, none of the elements in the range [nth, last)
 // is less than any of the elements in the range [first, nth)
-void quick_select(float *first, float *nth, float *last)
+void quick_select(float *first, float *nth, float *last, const int compatibility_mode)
 {
-//DBG  double start = dt_get_wtime(); size_t n_elem = (last - first);
   if(first == last) return;
   for(;;)
   {
     // select pivot by median of three heuristic for better performance
     float *p1 = first;
-    float *pivot = first + (last - first) / 2;
-    float *p3 = last - 1;
+    float *p3 = first + (last - first) / 2;
+    float *pivot = last - 1; // put median in last to avoid additional swap
     if(!(*p1 < *pivot)) pointer_swap_f(p1, pivot);
     if(!(*p1 < *p3)) pointer_swap_f(p1, p3);
     if(!(*pivot < *p3)) pointer_swap_f(pivot, p3);
-    pointer_swap_f(pivot, last - 1); // move pivot to end
-    partition(first, last - 1, *(last - 1));
+    float *new_pivot = partition(first, last - 1, *(last - 1));
+    if(compatibility_mode)
+      pivot = p3; // old code simply assumed pivot would end up in middle
+    else
+      pivot = new_pivot;
     pointer_swap_f(last - 1, pivot); // move pivot to its final place
     if(nth == pivot)
       break;
@@ -344,7 +359,6 @@ void quick_select(float *first, float *nth, float *last)
     else
       first = pivot + 1;
   }
-//DBG  fprintf(stderr,"qs(%zd): %f ms\n",n_elem,1000.0*(dt_get_wtime()-start));
 }
 
 
@@ -368,7 +382,10 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
 // depth is estimated by the local amount of haze and given in units of the
 // characteristic haze depth, i.e., the distance over which object light is
 // reduced by the factor exp(-1)
-static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
+static float ambient_light(const const_rgb_image img,
+                           int w1,
+                           rgb_pixel *pA0,
+                           int compatibility_mode)
 {
   const float dark_channel_quantil = 0.95f; // quantil for determining the most hazy pixels
   const float bright_quantil = 0.95f; // quantil for determining the brightest pixels among the most hazy pixels
@@ -382,21 +399,63 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   gray_image bright_hazy = new_gray_image(width, height);
   // first determine the most hazy pixels
   copy_gray_image(dark_ch, bright_hazy);
+  float *const restrict hazy_data = bright_hazy.data;
   size_t p = (size_t)(size * dark_channel_quantil);
-  quick_select(bright_hazy.data, bright_hazy.data + p, bright_hazy.data + size);
-  const float crit_haze_level = bright_hazy.data[p];
-  size_t N_most_hazy = 0;
-  for(size_t i = 0; i < size; i++)
-    if(dark_ch.data[i] >= crit_haze_level)
+  quick_select(hazy_data, hazy_data + p, hazy_data + size, compatibility_mode);
+  const float crit_haze_level = hazy_data[p];
+  const float *const restrict img_data = img.data;
+  const float *const restrict dark_data = dark_ch.data;
+  size_t N_most_hazy_start = size/2;
+  size_t N_most_hazy_end = size/2;
+#ifdef _OPENMP
+#pragma omp parallel num_threads(2) default(none)  \
+  dt_omp_firstprivate(size, crit_haze_level, img_data, dark_data, hazy_data) \
+  shared(N_most_hazy_start, N_most_hazy_end)
+#pragma omp sections
+#endif
+  {
+  for(size_t i = 0; i < size/2; i++)
+    if(dark_data[i] >= crit_haze_level)
     {
-      const float *pixel_in = img.data + i * img.stride;
-      // next line prevents parallelization via OpenMP
-      bright_hazy.data[N_most_hazy] = pixel_in[0] + pixel_in[1] + pixel_in[2];
-      N_most_hazy++;
+      const float *pixel_in = img_data + 4*i;
+      // The next line prevents full parallelization via OpenMP.  But we can use
+      // two threads by growing outward from the center
+      hazy_data[--N_most_hazy_start] = pixel_in[0] + pixel_in[1] + pixel_in[2];
     }
-  p = (size_t)(N_most_hazy * bright_quantil);
-  quick_select(bright_hazy.data, bright_hazy.data + p, bright_hazy.data + N_most_hazy);
-  const float crit_brightness = bright_hazy.data[p];
+#ifdef _OPENMP
+#pragma omp section
+#endif
+  for(size_t i = size/2; i < size; i++)
+    if(dark_data[i] >= crit_haze_level)
+    {
+      const float *pixel_in = img_data + 4*i;
+      // next line prevents full parallelization via OpenMP
+      hazy_data[N_most_hazy_end++] = pixel_in[0] + pixel_in[1] + pixel_in[2];
+    }
+  }
+  if(compatibility_mode)
+  {
+    // for backwards compatibility with the original broken
+    // quick_select, we need to put all of the items in hazy_data in
+    // the order in which they appear in the original image.  Our
+    // first loop above put them in reverse order, so un-reverse.
+    const size_t start = N_most_hazy_start;
+    const size_t end = size/2;
+    const size_t midpoint = start + (end-start)/2;
+    for(size_t i = start; i < midpoint; i++)
+    {
+      float tmp = hazy_data[i];
+      hazy_data[i] = hazy_data[(end-1) - (i-start)];
+      hazy_data[(end-1) - (i-start)] = tmp;
+    }
+  }
+  size_t N_most_hazy = N_most_hazy_end - N_most_hazy_start;
+  p = (size_t)(N_most_hazy * bright_quantil) + N_most_hazy_start;
+  quick_select(hazy_data + N_most_hazy_start,
+               hazy_data + p,
+               hazy_data + N_most_hazy_end,
+               compatibility_mode);
+  const float crit_brightness = hazy_data[p];
   free_gray_image(&bright_hazy);
   // average over the brightest pixels among the most hazy pixels to
   // estimate the diffusive ambient light
@@ -439,8 +498,12 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
@@ -458,6 +521,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
+  const int compatibility_mode = TRUE; //TODO: read from updated params in 'd' after version bump
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
@@ -496,7 +560,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_iop_gui_leave_critical_section(self);
   }
   // In all other cases we calculate distance_max and A0 here.
-  if(isnan(distance_max)) distance_max = ambient_light(img_in, w1, &A0);
+  if(isnan(distance_max)) distance_max = ambient_light(img_in, w1, &A0, compatibility_mode);
   // PREVIEW pixelpipe stores values.
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
@@ -553,7 +617,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 // reduced by the factor exp(-1)
 // some parts of the calculation are not suitable for a parallel implementation,
 // thus we copy data to host memory fall back to a cpu routine
-static float ambient_light_cl(struct dt_iop_module_t *self, int devid, cl_mem img, int w1, rgb_pixel *pA0)
+static float ambient_light_cl(struct dt_iop_module_t *self, int devid, cl_mem img, int w1, rgb_pixel *pA0,
+                              const int compatibility_mode)
 {
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
@@ -562,7 +627,7 @@ static float ambient_light_cl(struct dt_iop_module_t *self, int devid, cl_mem im
   int err = dt_opencl_read_host_from_device(devid, in, img, width, height, element_size);
   if(err != CL_SUCCESS) goto error;
   const const_rgb_image img_in = (const_rgb_image){ in, width, height, element_size / sizeof(float) };
-  const float max_depth = ambient_light(img_in, w1, pA0);
+  const float max_depth = ambient_light(img_in, w1, pA0, compatibility_mode);
   dt_free_align(in);
   return max_depth;
 error:
@@ -694,6 +759,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
+  const int compatibility_mode = TRUE; //TODO: read from updated params in 'd' after version bump
 
   // estimate diffusive ambient light and image depth
   rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
@@ -728,7 +794,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_iop_gui_leave_critical_section(self);
   }
   // In all other cases we calculate distance_max and A0 here.
-  if(isnan(distance_max)) distance_max = ambient_light_cl(self, devid, img_in, w1, &A0);
+  if(isnan(distance_max))
+    distance_max = ambient_light_cl(self, devid, img_in, w1, &A0,
+                                    compatibility_mode);
   // PREVIEW pixelpipe stores values.
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
