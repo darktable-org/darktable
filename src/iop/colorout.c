@@ -35,9 +35,6 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
@@ -557,51 +554,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     _transform_lcms(d, out, (float*)ivoid, npixels);
   }
 }
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-  const int ch = piece->colors;
-  const size_t npixels = (size_t)roi_out->width * roi_out->height;
-  float *const restrict out = (float *)ovoid;
-
-  if(d->type == DT_COLORSPACE_LAB)
-  {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
-  }
-  else if(!isnan(d->cmatrix[0][0]))
-  {
-    const float *const restrict in = (const float *const)ivoid;
-    const __m128 m0 = _mm_set_ps(0.0f, d->cmatrix[2][0], d->cmatrix[1][0], d->cmatrix[0][0]);
-    const __m128 m1 = _mm_set_ps(0.0f, d->cmatrix[2][1], d->cmatrix[1][1], d->cmatrix[0][1]);
-    const __m128 m2 = _mm_set_ps(0.0f, d->cmatrix[2][2], d->cmatrix[1][2], d->cmatrix[0][2]);
-// fprintf(stderr,"Using cmatrix codepath\n");
-// convert to rgb using matrix
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, npixels, m0, m1, m2, in, out)    \
-    schedule(static)
-#endif
-    for(int j = 0; j < ch * npixels; j += ch)
-    {
-      const __m128 xyz = dt_Lab_to_XYZ_sse2(_mm_load_ps(in + j));
-      const __m128 t = ((m0 * _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(0, 0, 0, 0))) +
-                        ((m1 * _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(1, 1, 1, 1))) +
-                         (m2 * _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(2, 2, 2, 2)))));
-      _mm_stream_ps(out + j, t);
-    }
-    _mm_sfence();
-
-    process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
-  }
-  else
-  {
-    _transform_lcms(d, out, (float*)ivoid, npixels);
-  }
-}
-#endif
 
 static cmsHPROFILE _make_clipping_profile(cmsHPROFILE profile)
 {
