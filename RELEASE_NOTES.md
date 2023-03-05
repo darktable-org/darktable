@@ -101,8 +101,8 @@ The following is a summary of the main features added to darktable
   - Tetrad
   - Square
 
-  This guides can be used to shift colors of a picture to match one of
-  the color harmony. One can see the color harmony guide a bit like
+  Those guides can be used to shift colors of a picture to match one of
+  the color harmony. One can see the color harmony guides a bit like
   the composition guides but related to colors and not to composition.
 
 ## Other Changes
