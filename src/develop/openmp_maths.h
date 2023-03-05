@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2020 - darktable developers.
+   Copyright (C) 2020-2023 - darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -60,6 +60,12 @@ extern float logf(const float x);
 
 #endif
 
+#if defined(_OPENMP) && defined(__GNUC__) && __GNUC__ >= 10
+
+#pragma omp declare simd
+extern float powf(const float x, const float y);
+
+#endif
 
 /* Bring our own optimized maths functions because Clang makes dumb shit */
 
