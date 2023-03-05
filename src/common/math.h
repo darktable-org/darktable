@@ -101,19 +101,6 @@ static inline float Kahan_sum(const float m, float *const __restrict__ c, const 
    return t2;
 }
 
-#ifdef __SSE2__
-// vectorized Kahan summation algorithm
-static inline __m128 Kahan_sum_sse(const __m128 m,
-                                   __m128 *const __restrict__ c,
-                                   const __m128 add)
-{
-   const __m128 t1 = add - (*c);
-   const __m128 t2 = m + t1;
-   *c = (t2 - m) - t1;
-   return t2;
-}
-#endif /* __SSE2__ */
-
 static inline float Log2(const float x)
 {
   return (x > 0.0f) ? (logf(x) / DT_M_LN2f) : x;
