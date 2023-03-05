@@ -25,9 +25,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#if defined(__SSE2__)
-#include <xmmintrin.h>
-#endif
 
 // the maximum number of levels for the gaussian pyramid
 #define max_levels 30
@@ -380,112 +377,10 @@ static inline float curve_scalar(
     val = g - sigma * 2.0f*mt*t + t2*(- sigma - sigma*highlights);
   }
   // midtone local contrast
-  val += clarity * c * expf(-c*c/(2.0*sigma*sigma/3.0f));
+  val += clarity * c * dt_fast_expf(-c*c/(2.0f*sigma*sigma/3.0f));
   return val;
 }
 
-#if defined(__SSE2__)
-static inline __m128 curve_vec4(
-    const __m128 x,
-    const __m128 g,
-    const __m128 sigma,
-    const __m128 shadows,
-    const __m128 highlights,
-    const __m128 clarity)
-{
-  // TODO: pull these non-data dependent constants out of the loop to see
-  // whether the compiler fail to do so
-  const __m128 const0 = _mm_set_ps1(0x3f800000u);
-  const __m128 const1 = _mm_set_ps1((float)0x402DF854u); // for e^x
-  const __m128 sign_mask = _mm_set1_ps(-0.f); // -0.f = 1 << 31
-  const __m128 one = _mm_set1_ps(1.0f);
-  const __m128 two = _mm_set1_ps(2.0f);
-  const __m128 twothirds = _mm_set1_ps(2.0f/3.0f);
-  const __m128 twosig = _mm_mul_ps(two, sigma);
-  const __m128 sigma2 = _mm_mul_ps(sigma, sigma);
-  const __m128 s22 = _mm_mul_ps(twothirds, sigma2);
-
-  const __m128 c = _mm_sub_ps(x, g);
-  const __m128 select = _mm_cmplt_ps(c, _mm_setzero_ps());
-  // select shadows or highlights as multiplier for linear part, based on c < 0
-  const __m128 shadhi = _mm_or_ps(_mm_andnot_ps(select, shadows), _mm_and_ps(select, highlights));
-  // flip sign bit of sigma based on c < 0 (c < 0 ? - sigma : sigma)
-  const __m128 ssigma = _mm_xor_ps(sigma, _mm_and_ps(select, sign_mask));
-  // this contains the linear parts valid for c > 2*sigma or c < - 2*sigma
-  const __m128 vlin = _mm_add_ps(g, _mm_add_ps(ssigma, _mm_mul_ps(shadhi, _mm_sub_ps(c, ssigma))));
-
-  const __m128 t = _mm_min_ps(one, _mm_max_ps(_mm_setzero_ps(),
-        _mm_div_ps(c, _mm_mul_ps(two, ssigma))));
-  const __m128 t2 = _mm_mul_ps(t, t);
-  const __m128 mt = _mm_sub_ps(one, t);
-
-  // midtone value fading over to linear part, without local contrast:
-  const __m128 vmid = _mm_add_ps(g,
-      _mm_add_ps(_mm_mul_ps(_mm_mul_ps(ssigma, two), _mm_mul_ps(mt, t)),
-        _mm_mul_ps(t2, _mm_add_ps(ssigma, _mm_mul_ps(ssigma, shadhi)))));
-
-  // c > 2*sigma?
-  const __m128 linselect = _mm_cmpgt_ps(_mm_andnot_ps(sign_mask, c), twosig);
-  const __m128 val = _mm_or_ps(_mm_and_ps(linselect, vlin), _mm_andnot_ps(linselect, vmid));
-
-  // midtone local contrast
-  // dt_fast_expf in sse:
-  const __m128 arg = _mm_xor_ps(sign_mask, _mm_div_ps(_mm_mul_ps(c, c), s22));
-  const __m128 k0 = _mm_add_ps(const0, _mm_mul_ps(arg, _mm_sub_ps(const1, const0)));
-  const __m128 k = _mm_max_ps(k0, _mm_setzero_ps());
-  const __m128i ki = _mm_cvtps_epi32(k);
-  const __m128 gauss = _mm_load_ps((float*)&ki);
-  const __m128 vcon = _mm_mul_ps(clarity, _mm_mul_ps(c, gauss));
-  return _mm_add_ps(val, vcon);
-}
-
-// sse (4-wide)
-void apply_curve_sse2(
-    float *const out,
-    const float *const in,
-    const uint32_t w,
-    const uint32_t h,
-    const uint32_t padding,
-    const float g,
-    const float sigma,
-    const float shadows,
-    const float highlights,
-    const float clarity)
-{
-  // TODO: do all this in avx2 8-wide (should be straight forward):
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clarity, g, h, highlights, in, out, padding, shadows, sigma, w) \
-  schedule(static)
-#endif
-  for(uint32_t j=padding;j<h-padding;j++)
-  {
-    const float *in2  = in  + j*w + padding;
-    float *out2 = out + j*w + padding;
-    // find 4-byte aligned block in the middle:
-    const float *const beg = (float *)((size_t)(out2+3)&(size_t)0x10ul);
-    const float *const end = (float *)((size_t)(out2+w-padding)&(size_t)0x10ul);
-    const float *const fin = out2+w-padding;
-    const __m128 g4 = _mm_set1_ps(g);
-    const __m128 sig4 = _mm_set1_ps(sigma);
-    const __m128 shd4 = _mm_set1_ps(shadows);
-    const __m128 hil4 = _mm_set1_ps(highlights);
-    const __m128 clr4 = _mm_set1_ps(clarity);
-    for(;out2<beg;out2++,in2++)
-      *out2 = curve_scalar(*in2, g, sigma, shadows, highlights, clarity);
-    for(;out2<end;out2+=4,in2+=4)
-      _mm_stream_ps(out2, curve_vec4(_mm_load_ps(in2), g4, sig4, shd4, hil4, clr4));
-    for(;out2<fin;out2++,in2++)
-      *out2 = curve_scalar(*in2, g, sigma, shadows, highlights, clarity);
-    out2 = out + j*w;
-    for(int i=0;i<padding;i++)   out2[i] = out2[padding];
-    for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
-  }
-  pad_by_replication(out, w, h, padding);
-}
-#endif
-
-// scalar version
 void apply_curve(
     float *const out,
     const float *const in,
@@ -525,7 +420,6 @@ void local_laplacian_internal(
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
     const float clarity,        // user param: increase clarity/local contrast
-    const int use_sse2,         // flag whether to use SSE version
     local_laplacian_boundary_t *b)
 {
   if(wd <= 1 || ht <= 1) return;
@@ -615,12 +509,7 @@ void local_laplacian_internal(
   // willing to pay the cost).
   for(int k=0;k<num_gamma;k++)
   { // process images
-#if defined(__SSE2__)
-    if(use_sse2)
-      apply_curve_sse2(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
-    else // brackets in next line needed for silly gcc warning:
-#endif
-    {apply_curve(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);}
+    apply_curve(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
 
     // create gaussian pyramids
     for(int l=1;l<=last_level;l++)
