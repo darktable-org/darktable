@@ -14,7 +14,8 @@
 
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -2622,7 +2623,7 @@ void gui_init(struct dt_iop_module_t *self)
                                            "large values bring huge performance penalties"));
 
   GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
-  gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
+  gtk_widget_set_tooltip_text(monochromes, _("this module only works with non-monochrome RAW and sRAW"));
 
   // start building top level widget
   self->widget = gtk_stack_new();
