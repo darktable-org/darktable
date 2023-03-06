@@ -759,7 +759,7 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   dt_aligned_pixel_t Lab;
   dot_product(RGB, input_profile->matrix_in, XYZ);
   dt_XYZ_to_Lab(XYZ, Lab);
-  Lab[1] = Lab[2] = 0.f; // make color grey to get only the equivalent lighness
+  Lab[1] = Lab[2] = Lab[3] = 0.f; // make color grey to get only the equivalent lighness
   dt_Lab_to_XYZ(Lab, XYZ);
   dt_XYZ_to_sRGB(XYZ, g->spot_RGB);
 
