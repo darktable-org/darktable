@@ -1039,6 +1039,7 @@ treeview header label
 }
 
 /* be sure spinbutton is displayed without alpha background on treeview */
+treeview entry,
 treeview spinbutton
 {
   background-color: @field_active_bg;
