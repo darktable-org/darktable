@@ -273,7 +273,7 @@ float curve(
     val = g + ssigma * 2.0f*mt*t + t2*(ssigma + ssigma*shadhi);
   }
   // midtone local contrast
-  val += clarity * c * native_exp(-c*c/(2.0f*sigma*sigma/3.0f));
+  val += clarity * c * dt_fast_expf(-c*c/(2.0f*sigma*sigma/3.0f));
   return val;
 }
 
