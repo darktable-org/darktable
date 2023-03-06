@@ -316,8 +316,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       // process aligned pixels four at a time
       for(; i < width - (4 - 1); i += 4)
       {
-        for_four_channels(c)
-          out[p+i+c] = CLAMP(film[c] - in[p+i+c], 0.0f, 1.0f);
+        dt_aligned_pixel_t inv;
+        for_four_channels(c, aligned(in))
+          inv[c] = CLAMP(film[c] - in[p+i+c], 0.0f, 1.0f);
+        copy_pixel_nontemporal(out + p + i, inv);
       }
 
       // process the remaining pixels
@@ -330,22 +332,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   { // non-mosaiced
-    const int ch = piece->colors;
+    assert(piece->colors == 4);
+    const size_t npixels = height * width;
+
+    const dt_aligned_pixel_t color = { d->color[0], d->color[1], d->color[2], 1.0f };
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
-    schedule(static) \
-    collapse(2)
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(in, out, npixels, color)      \
+    schedule(simd:static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < npixels; k++)
     {
-      for(int c = 0; c < 3; c++)
-      {
-        const size_t p = (size_t)k + c;
-        out[p] = d->color[c] - in[p];
-      }
+      dt_aligned_pixel_t inv;
+      for_each_channel(c)
+        inv[c] = color[c] - in[4*k+c];
+      copy_pixel_nontemporal(out + 4*k, inv);
     }
+    dt_omploop_sfence();
   }
 }
 
