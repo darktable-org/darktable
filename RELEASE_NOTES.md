@@ -348,6 +348,9 @@ The following is a summary of the main features added to darktable
 - Finalscale now properly uses same user defined scaling mode for
   image and masks.
 
+- Fix display when editing a shapes' name in masks manager. Avoid
+  overlay of the old and new name.
+
 ## Lua
 
 ### Add action support for Lua
