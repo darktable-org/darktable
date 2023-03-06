@@ -86,10 +86,6 @@
 #include <locale.h>
 #include <limits.h>
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #elif defined HAVE_IMAGEMAGICK
