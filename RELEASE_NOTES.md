@@ -157,6 +157,11 @@ The following is a summary of the main features added to darktable
   - Color Look up Table
   - Borders
   - Surface Blur
+  - Vignette
+  - Retouch
+  - Denoise Profile
+  - Invert
+  - Local Contrast with Local Laplacian
   - Loader for JPEG2000 file format
 
 - Improve Highlights reconstruction "inpaint opposed" performance by
