@@ -1690,6 +1690,11 @@ button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
   color: @field_active_fg;
 }
 
+treeview *
+{
+  background-color: @bg_color;
+}
+
 /* Hover states, some needed background only */
 .dt_history_items:hover,
 .dt_transparent_background:hover,
