@@ -2765,85 +2765,37 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 // process
 //--------------------------------------------------------------------------------------------------
 
-static void image_rgb2lab(float *img_src, const int width, const int height, const int ch, const int use_sse)
+static void image_rgb2lab(float *img_src, const int width, const int height)
 {
-  const int stride = width * height * ch;
-
-#if defined(__SSE__)
-  if(ch == 4 && use_sse)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, stride) \
-    shared(img_src) \
-    schedule(static)
-#endif
-    for(int i = 0; i < stride; i += ch)
-    {
-      // RGB -> XYZ
-      __m128 rgb = _mm_load_ps(img_src + i);
-      __m128 XYZ = dt_RGB_to_XYZ_sse2(rgb);
-      // XYZ -> Lab
-      _mm_store_ps(img_src + i, dt_XYZ_to_Lab_sse2(XYZ));
-    }
-
-    return;
-  }
-#endif
+  const size_t npixels = (size_t)width * height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, stride) \
-  shared(img_src) \
+  dt_omp_firstprivate(npixels,img_src)         \
   schedule(static)
 #endif
-  for(int i = 0; i < stride; i += ch)
+  for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t XYZ;
-
-    dt_linearRGB_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_Lab(XYZ, img_src + i);
+    dt_linearRGB_to_XYZ(img_src + 4*i, XYZ);
+    dt_XYZ_to_Lab(XYZ, img_src + 4*i);
   }
 }
 
-static void image_lab2rgb(float *img_src, const int width, const int height, const int ch, const int use_sse)
+static void image_lab2rgb(float *img_src, const int width, const int height)
 {
-  const int stride = width * height * ch;
-
-#if defined(__SSE__)
-  if(ch == 4 && use_sse)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, stride) \
-  shared(img_src) \
-  schedule(static)
-#endif
-    for(int i = 0; i < stride; i += ch)
-    {
-      // Lab -> XYZ
-      __m128 Lab = _mm_load_ps(img_src + i);
-      __m128 XYZ = dt_Lab_to_XYZ_sse2(Lab);
-      // XYZ -> RGB
-      _mm_store_ps(img_src + i, dt_XYZ_to_RGB_sse2(XYZ));
-    }
-
-    return;
-  }
-#endif
+  const size_t npixels = (size_t)width * height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, stride) \
-  shared(img_src) \
+  dt_omp_firstprivate(npixels, img_src) \
   schedule(static)
 #endif
-  for(int i = 0; i < stride; i += ch)
+  for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t XYZ;
-
-    dt_Lab_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_linearRGB(XYZ, img_src + i);
+    dt_Lab_to_XYZ(img_src + 4*i, XYZ);
+    dt_XYZ_to_linearRGB(XYZ, img_src + 4*i);
   }
 }
 
@@ -3184,7 +3136,7 @@ cleanup:
 
 static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
                           dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
-                          const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
+                          const float blur_radius, dt_dev_pixelpipe_iop_t *piece)
 {
   if(fabsf(blur_radius) <= 0.1f) return;
 
@@ -3233,7 +3185,7 @@ static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *
                                             roi_mask_scaled->height, IOP_CS_RGB, IOP_CS_LAB, &converted_cst,
                                             work_profile);
       else
-        image_rgb2lab(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, 4, use_sse);
+        image_rgb2lab(img_dest, roi_mask_scaled->width, roi_mask_scaled->height);
 
       dt_bilateral_splat(b, img_dest);
       dt_bilateral_blur(b);
@@ -3245,7 +3197,7 @@ static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *
                                             roi_mask_scaled->height, IOP_CS_LAB, IOP_CS_RGB, &converted_cst,
                                             work_profile);
       else
-        image_lab2rgb(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, 4, use_sse);
+        image_lab2rgb(img_dest, roi_mask_scaled->width, roi_mask_scaled->height);
     }
   }
 
@@ -3418,7 +3370,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
             _retouch_blur(self, layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity,
-                          p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece, wt_p->use_sse);
+                          p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece);
           }
           else if(algo == DT_IOP_RETOUCH_FILL)
           {
@@ -3455,7 +3407,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
 
 static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                              void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out, const int use_sse)
+                             const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
@@ -3498,7 +3450,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, 4, p->num_scales,
                       (!display_wavelet_scale || !(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)) ? 0 : p->curr_scale,
                       p->merge_from_scale, &usr_data,
-                      roi_in->scale / piece->iscale, use_sse);
+                      roi_in->scale / piece->iscale, FALSE);
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
@@ -3578,16 +3530,8 @@ cleanup:
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  process_internal(self, piece, ivoid, ovoid, roi_in, roi_out, 0);
+  process_internal(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  process_internal(self, piece, ivoid, ovoid, roi_in, roi_out, 1);
-}
-#endif
 
 void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
                   float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
