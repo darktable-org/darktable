@@ -218,7 +218,7 @@ static inline void gauss_reduce(
       for_four_channels(c)
         conv[c] = left[c] * kernel[c];
       out[cw-3] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.0f;
-    }    
+    }
   }
   dt_omploop_sfence();
   ll_fill_boundary1(coarse, cw, ch);
@@ -503,7 +503,7 @@ void local_laplacian_internal(
         goto cleanup;
       }
     }
-  
+
   // the paper says remapping only level 3 not 0 does the trick, too
   // (but i really like the additional octave of sharpness we get,
   // willing to pay the cost).
@@ -674,4 +674,3 @@ size_t local_laplacian_singlebuffer_size(const int width,     // width of input 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
