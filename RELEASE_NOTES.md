@@ -188,7 +188,7 @@ The following is a summary of the main features added to darktable
 
 - Add OpenMP support to XCF export for better performances.
 
-- Add support for writing metadata to XCF format.
+- Add support for writing metadata to XCF format (see notes below).
 
 - Add OpenMP support to the RGBE loader for better performances.
 
@@ -388,11 +388,11 @@ The following is a summary of the main features added to darktable
 
 ## Notes
 
-- With the support of JXL, AVIF and EXR for export, selecting specific
-  metadata (eg. geo tag, creator) is not currently possible. For
-  formats JXL, AVIF and EXR, darktable will not include the metadata
-  fields unless the user selects all of the checkboxes in the export
-  preference options.
+- When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific
+  metadata (e.g. geo tag or creator) is not currently possible. For
+  AVIF, EXR, JPEG XL, and XCF formats, darktable will not include any
+  metadata fields unless the user selects all of the checkboxes in the
+  export preference options.
 
 - In order to support the correct display of numbers in darktable, the
   minimum supported Gtk version has had to be increased to
