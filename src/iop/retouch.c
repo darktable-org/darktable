@@ -3450,7 +3450,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, 4, p->num_scales,
                       (!display_wavelet_scale || !(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)) ? 0 : p->curr_scale,
                       p->merge_from_scale, &usr_data,
-                      roi_in->scale / piece->iscale, FALSE);
+                      roi_in->scale / piece->iscale);
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
