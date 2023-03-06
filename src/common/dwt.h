@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@ typedef struct dwt_params_t
   int merge_from_scale;
   void *user_data;
   float preview_scale;
-  int use_sse;
 } dwt_params_t;
 
 /* function prototype for the layer_func on dwt_decompose() call */
@@ -46,11 +45,10 @@ typedef void(_dwt_layer_func)(float *layer, dwt_params_t *const p, const int sca
  * merge_from_scale: detail scales will be merged together before calling layer_func
  * user_data: user-supplied data to be passed to layer_func on each call
  * preview_scale: image scale (zoom factor)
- * use_sse: use SSE instructions
  */
 dwt_params_t *dt_dwt_init(float *image, const int width, const int height, const int ch, const int scales,
                           const int return_layer, const int merge_from_scale, void *user_data,
-                          const float preview_scale, const int use_sse);
+                          const float preview_scale);
 
 /* free resources used by dwt_decompose() */
 void dt_dwt_free(dwt_params_t *p);
