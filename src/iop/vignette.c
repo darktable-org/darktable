@@ -633,9 +633,12 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
+
   const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
-  const size_t ch = piece->colors;
   const gboolean unbound = data->unbound;
 
   /* Center coordinates of buf_in, these should not consider buf_in->{x,y}! */
@@ -652,14 +655,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* w/h ratio follows piece dimensions */
   if(data->autoratio)
   {
-    xscale = 2.0 / (buf_in->width * roi_out->scale);
-    yscale = 2.0 / (buf_in->height * roi_out->scale);
+    xscale = 2.0f / (buf_in->width * roi_out->scale);
+    yscale = 2.0f / (buf_in->height * roi_out->scale);
   }
   else /* specified w/h ratio, scale proportional to longest side */
   {
-    const float basis = 2.0 / (MAX(buf_in->height, buf_in->width) * roi_out->scale);
+    const float basis = 2.0f / (MAX(buf_in->height, buf_in->width) * roi_out->scale);
     // w/h ratio from 0-1 use as-is
-    if(data->whratio <= 1.0)
+    if(data->whratio <= 1.0f)
     {
       yscale = basis;
       xscale = yscale / data->whratio;
@@ -669,16 +672,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else
     {
       xscale = basis;
-      yscale = xscale / (2.0 - data->whratio);
+      yscale = xscale / (2.0f - data->whratio);
     }
   }
-  const float dscale = data->scale / 100.0;
+  const float dscale = data->scale / 100.0f;
   // A minimum falloff is used, based on the image size, to smooth out aliasing artifacts
   const float min_falloff = 100.0 / MIN(buf_in->width, buf_in->height);
-  const float fscale = MAX(data->falloff_scale, min_falloff) / 100.0;
-  const float shape = MAX(data->shape, 0.001);
-  const float exp1 = 2.0 / shape;
-  const float exp2 = shape / 2.0;
+  const float fscale = MAX(data->falloff_scale, min_falloff) / 100.0f;
+  const float shape = MAX(data->shape, 0.001f);
+  const float exp1 = 2.0f / shape;
+  const float exp2 = shape / 2.0f;
   // Pre-scale the center offset
   const dt_iop_vector_2d_t roi_center_scaled = { roi_center.x * xscale, roi_center.y * yscale };
 
@@ -698,22 +701,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
+  const float brightness = data->brightness;
+  const float saturation = data->saturation;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, dscale, exp1, exp2, fscale, ivoid, ovoid, \
-                      roi_center_scaled, roi_out, tea_states, unbound) \
-  shared(data, yscale, xscale, dither) \
+  dt_omp_firstprivate(dscale, exp1, exp2, fscale, xscale, yscale, dither, ivoid, ovoid, \
+                      roi_center_scaled, roi_out, tea_states, brightness, saturation, unbound) \
   schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    const size_t k = (size_t)ch * roi_out->width * j;
+    const size_t k = (size_t)4 * roi_out->width * j;
     const float *in = (const float *)ivoid + k;
     float *out = (float *)ovoid + k;
     unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
     tea_state[0] = j * roi_out->height; /* + dt_get_thread_num() -- do not include, makes results unreproducible */
-    for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
+    for(int i = 0; i < roi_out->width; i++)
     {
       // current pixel coord translated to local coord
       const dt_iop_vector_2d_t pv
@@ -721,60 +725,56 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       // Calculate the pixel weight in vignette
       const float cplen = powf(powf(pv.x, exp1) + powf(pv.y, exp1), exp2); // Length from center to pv
-      float weight = 0.0;
-      float dith = 0.0;
+      float weight = 0.f;
+      float dith = 0.0f;
 
       if(cplen >= dscale) // pixel is outside the inner vignette circle, lets calculate weight of vignette
       {
         weight = ((cplen - dscale) / fscale);
-        if(weight >= 1.0)
-          weight = 1.0;
-        else if(weight <= 0.0)
-          weight = 0.0;
-        else if(dither == 0.0f)
+        if(weight >= 1.0f)
+          weight = 1.0f;
+        else if(weight <= 0.0f)
+          weight = 0.0f;
+        else if(dither != 0.0f)
         {
-          // don't bother computing the random number if dithering is disabled
-          dith = 0.0f;
-        }
-        else
-        {
-          weight = 0.5 - cosf(M_PI * weight) / 2.0;
+          // only bother computing the random number if dithering is enabled
+          weight = 0.5f - cosf((float)M_PI * weight) / 2.0f;
           encrypt_tea(tea_state);
           dith = dither * tpdf(tea_state[0]);
         }
       }
 
       // Let's apply weighted effect on brightness and desaturation
-      float col0 = in[0], col1 = in[1], col2 = in[2], col3 = in[3];
-      if(weight > 0)
+      dt_aligned_pixel_t col;
+      copy_pixel(col, in + 4*i);
+      if(weight > 0.0f)
       {
         // Then apply falloff vignette
-        float falloff = (data->brightness < 0) ? (1.0f + (weight * data->brightness))
-                                               : (weight * data->brightness);
-        col0 = data->brightness < 0 ? col0 * falloff + dith : col0 + falloff + dith;
-        col1 = data->brightness < 0 ? col1 * falloff + dith : col1 + falloff + dith;
-        col2 = data->brightness < 0 ? col2 * falloff + dith : col2 + falloff + dith;
-
-        col0 = unbound ? col0 : CLIP(col0);
-        col1 = unbound ? col1 : CLIP(col1);
-        col2 = unbound ? col2 : CLIP(col2);
+        if (brightness < 0.0f)
+        {
+          const float falloff = (1.0f + (weight * brightness));
+          for_each_channel(c)
+            col[c] = col[c] * falloff + dith;
+        }
+        else
+        {
+          const float falloff = (weight * brightness);
+          for_each_channel(c)
+            col[c] = col[c] + falloff + dith;
+        }
+        for_each_channel(c)
+          col[c] = unbound ? col[c] : CLIP(col[c]);
 
         // apply saturation
-        float mv = (col0 + col1 + col2) / 3.0f;
-        float wss = weight * data->saturation;
-        col0 = col0 - ((mv - col0) * wss);
-        col1 = col1 - ((mv - col1) * wss);
-        col2 = col2 - ((mv - col2) * wss);
-
-        col0 = unbound ? col0 : CLIP(col0);
-        col1 = unbound ? col1 : CLIP(col1);
-        col2 = unbound ? col2 : CLIP(col2);
+        const float mv = (col[0] + col[1] + col[2]) / 3.0f;
+        const float wss = weight * saturation;
+        for_each_channel(c)
+        {
+          col[c] = col[c] - ((mv - col[c]) * wss);
+          col[c] = unbound ? col[c] : CLIP(col[c]);
+        }
       }
-
-      out[0] = col0;
-      out[1] = col1;
-      out[2] = col2;
-      out[3] = col3;
+      copy_pixel_nontemporal(out + 4*i, col) ;
     }
   }
 
