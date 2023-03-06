@@ -267,6 +267,8 @@ The following is a summary of the main features added to darktable
   supported ApertureValue. The new metadata is used by Leica M
   Monochrom, M8, M9 & M10 DNGs.
 
+- Export masks for EXRs as extra channels.
+
 ## Bug Fixes
 
 - Remove the commit button from the crop module has it was not used
@@ -339,6 +341,12 @@ The following is a summary of the main features added to darktable
 
 - Fix brush correction tool placement as used in Retouch module, the
   issue was more visible when the image is distorted.
+
+- Fixed CPU vs OpenCL output differences in PPG and VNG/VNG4
+  demosaicers, match greens and color smoothing.
+
+- Finalscale now properly uses same user defined scaling mode for
+  image and masks.
 
 ## Lua
 
