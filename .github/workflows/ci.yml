@@ -292,6 +292,7 @@ jobs:
           - skiptest
         generator:
           - Ninja
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
@@ -300,6 +301,7 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
