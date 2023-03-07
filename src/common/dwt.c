@@ -21,9 +21,6 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "dwt.h"
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 /* Based on the original source code of GIMP's Wavelet Decompose plugin, by Marco Rossini
  *
