@@ -585,25 +585,6 @@ exit:
   return rc;
 }
 
-#if 0
-int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
-{
-  tiff->handle = TIFFOpen(filename, "rl");
-  if( tiff->handle )
-  {
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGEWIDTH, &tiff->width);
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGELENGTH, &tiff->height);
-  }
-  return 1;
-}
-
-int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
-{
-  TIFFClose(tiff->handle);
-  return 1;
-}
-#endif
-
 size_t params_size(dt_imageio_module_format_t *self)
 {
   return sizeof(dt_imageio_tiff_t) - sizeof(TIFF *);
