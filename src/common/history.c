@@ -1394,22 +1394,6 @@ GList *dt_history_duplicate(GList *hist)
   return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
-#if 0
-// for debug
-static gchar *_hash_history_to_string(guint8 *hash, const gsize checksum_len)
-{
-  char *hash_text = NULL;
-  guint8 *p = hash;
-  for(int i=0; i<checksum_len; i++)
-  {
-    uint8_t byte = p[0];
-    hash_text = dt_util_dstrcat(hash_text, "%02x", byte);
-    p++;
-  }
-  return hash_text;
-}
-#endif
-
 // if the image has no history return 0
 static gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
 {
