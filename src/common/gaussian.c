@@ -317,12 +317,170 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
   }
 }
 
+void dt_gaussian_blur_4c_plain(dt_gaussian_t *g, const float *const in, float *const out)
+{
+  assert(g->channels == 4);
+  const size_t width = g->width;
+  const size_t height = g->height;
+
+  float a0, a1, a2, a3, b1, b2, coefp, coefn;
+
+  compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+
+  float *const temp = g->buf;
+
+  dt_aligned_pixel_t Labmin, Labmax;
+  copy_pixel(Labmin, g->min);
+  copy_pixel(Labmax, g->max);
+
+// vertical blur column by column
+#ifdef _OPENMP
+#pragma omp parallel for simd aligned(in,temp) default(none)            \
+  dt_omp_firstprivate(in, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
+  schedule(simd:static)
+#endif
+  for(size_t i = 0; i < width; i++)
+  {
+    // forward filter
+    dt_aligned_pixel_t xp;
+    dt_aligned_pixel_t yb;
+    dt_aligned_pixel_t yp;
+    for_four_channels(k)
+    {
+      xp[k] = CLAMPF(in[4*i + k], Labmin[k], Labmax[k]);
+      yb[k] = xp[k] * coefp;
+      yp[k] = yb[k];
+    }
+
+    dt_aligned_pixel_t xc;
+    dt_aligned_pixel_t xn;
+    dt_aligned_pixel_t xa;
+    for(size_t j = 0; j < height; j++)
+    {
+      size_t offset = 4 * (j * width + i);
+
+      dt_aligned_pixel_t yc;
+      for_four_channels(k)
+      {
+        xc[k] = CLAMPF(in[offset + k], Labmin[k], Labmax[k]);
+        yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
+
+        xp[k] = xc[k];
+        yb[k] = yp[k];
+        yp[k] = yc[k];
+      }
+      copy_pixel(temp + offset, yc);
+    }
+
+    // backward filter
+    dt_aligned_pixel_t yn;
+    dt_aligned_pixel_t ya;
+    for_four_channels(k)
+    {
+      xn[k] = CLAMPF(in[4*((height - 1) * width + i) + k], Labmin[k], Labmax[k]);
+      xa[k] = xn[k];
+      yn[k] = xn[k] * coefn;
+      ya[k] = yn[k];
+    }
+
+    for(size_t j = height; j > 0; j--)
+    {
+      size_t offset = 4 * ((j-1) * width + i);
+
+      dt_aligned_pixel_t yc;
+      for_four_channels(k)
+      {
+        xc[k] = CLAMPF(in[offset + k], Labmin[k], Labmax[k]);
+
+        yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+        xa[k] = xn[k];
+        xn[k] = xc[k];
+        ya[k] = yn[k];
+        yn[k] = yc[k];
+        temp[offset + k] += yc[k];
+      }
+    }
+  }
+
+// horizontal blur line by line
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(out, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
+  schedule(static)
+#endif
+  for(size_t j = 0; j < height; j++)
+  {
+    // forward filter
+    dt_aligned_pixel_t xp;
+    dt_aligned_pixel_t yb;
+    dt_aligned_pixel_t yp;
+    dt_aligned_pixel_t xc;
+    for_four_channels(k)
+    {
+      xp[k] = CLAMPF(temp[4*(j * width) + k], Labmin[k], Labmax[k]);
+      yb[k] = xp[k] * coefp;
+      yp[k] = yb[k];
+    }
+
+    for(size_t i = 0; i < width; i++)
+    {
+      size_t offset = 4 * (j * width + i);
+      dt_aligned_pixel_t yc;
+
+      for_four_channels(k)
+      {
+        xc[k] = CLAMPF(temp[offset + k], Labmin[k], Labmax[k]);
+        yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
+
+        out[offset + k] = yc[k];
+
+        xp[k] = xc[k];
+        yb[k] = yp[k];
+        yp[k] = yc[k];
+      }
+    }
+
+    // backward filter
+    dt_aligned_pixel_t xn;
+    dt_aligned_pixel_t xa;
+    dt_aligned_pixel_t ya;
+    dt_aligned_pixel_t yn;
+    for_four_channels(k)
+    {
+      xn[k] = CLAMPF(temp[4*((j + 1) * width - 1) + k], Labmin[k], Labmax[k]);
+      xa[k] = xn[k];
+      yn[k] = xn[k] * coefn;
+      ya[k] = yn[k];
+    }
+
+    for(int i = width - 1; i > -1; i--)
+    {
+      size_t offset = 4 * (j * width + i);
+
+      dt_aligned_pixel_t yc;
+      for_four_channels(k)
+      {
+        xc[k] = CLAMPF(temp[offset + k], Labmin[k], Labmax[k]);
+
+        yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+        xa[k] = xn[k];
+        xn[k] = xc[k];
+        ya[k] = yn[k];
+        yn[k] = yc[k];
+
+        out[offset + k] += yc[k];
+      }
+    }
+  }
+}
+
 
 
 #if defined(__SSE__)
 static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, float *const out)
 {
-
   const int width = g->width;
   const int height = g->height;
   const int ch = 4;
@@ -485,7 +643,7 @@ static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, flo
 
 void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const out)
 {
-  if(darktable.codepath.OPENMP_SIMD) return dt_gaussian_blur(g, in, out);
+  if(darktable.codepath.OPENMP_SIMD) return dt_gaussian_blur_4c_plain(g, in, out);
 #if defined(__SSE__)
   else if(darktable.codepath.SSE2)
     return dt_gaussian_blur_4c_sse(g, in, out);
