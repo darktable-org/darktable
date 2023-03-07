@@ -2737,34 +2737,6 @@ static void _brush_events_post_expose(cairo_t *cr,
     dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
-
-#if 0
-    //we draw the brush segment by segment
-    for(int k=0; k<nb; k++)
-    {
-      //draw the point
-      if(gui->point_border_selected == k)
-      {
-        anchor_size = 7.0f / zoom_scale;
-      }
-      else
-      {
-        anchor_size = 5.0f / zoom_scale;
-      }
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
-      cairo_rectangle(cr,
-                      gpt->border[k*6] - (anchor_size*0.5),
-                      gpt->border[k*6+1] - (anchor_size*0.5),
-                      anchor_size, anchor_size);
-      cairo_fill_preserve(cr);
-
-      if(gui->point_border_selected == k) cairo_set_line_width(cr, 2.0/zoom_scale);
-      else cairo_set_line_width(cr, 1.0/zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
-      cairo_set_dash(cr, dashed, 0, 0);
-      cairo_stroke(cr);
-    }
-#endif
   }
 
   // draw the source if needed

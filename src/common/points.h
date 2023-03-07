@@ -608,28 +608,6 @@ typedef struct dt_points_t
   unsigned int num;
 } dt_points_t;
 
-#if 0
-/*--------------------------------------
-  FILE GLOBAL VARIABLES
-  internal state, index counter and flag
-  --------------------------------------*/
-/** the 128-bit internal state array */
-static w128_t sfmt[N];
-/** the 32bit integer pointer to the 128-bit internal state array */
-static uint32_t *psfmt32 = &sfmt[0].u[0];
-#if !defined(BIG_ENDIAN64) || defined(ONLY64)
-/** the 64bit integer pointer to the 128-bit internal state array */
-static uint64_t *psfmt64 = (uint64_t *)&sfmt[0].u[0];
-#endif
-/** index counter to the 32-bit internal state array */
-static int idx;
-/** a flag: it is 0 if and only if the internal state is not yet
- * initialized. */
-static int initialized = 0;
-/** a parity check vector which certificate the period of 2^{MEXP} */
-static uint32_t parity[4] = {PARITY1, PARITY2, PARITY3, PARITY4};
-#endif
-
 /*----------------
   STATIC FUNCTIONS
   ----------------*/
@@ -644,12 +622,6 @@ static void period_certification(sfmt_state_t *s);
 #if defined(BIG_ENDIAN64) && !defined(ONLY64)
 inline static void swap(w128_t *array, int size);
 #endif
-
-/*#if defined(HAVE_ALTIVEC)
-#include "SFMT-alti.h"
-#elif defined(HAVE_SSE2)
-#include "SFMT-sse2.h"
-#endif*/
 
 /**
  * This function simulate a 64-bit index of LITTLE ENDIAN
