@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2011-2020 darktable developers.
+  Copyright (C) 2011-2023 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -147,13 +147,18 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+int default_colorspace(dt_iop_module_t *self,
+                       dt_dev_pixelpipe_t *pipe,
+                       dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void *new_params,
+                  const int new_version)
 {
   if(old_version == 1 && new_version == 4)
   {
@@ -202,8 +207,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
   dt_iop_lowpass_global_data_t *gd = (dt_iop_lowpass_global_data_t *)self->global_data;
@@ -313,8 +322,10 @@ error:
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+void tiling_callback(struct dt_iop_module_t *self,
+                     struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
   dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
@@ -353,8 +364,12 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                         ivoid, ovoid, roi_in, roi_out))
@@ -438,7 +453,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(struct dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)p1;
@@ -515,14 +532,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_estimate_exp(xl, yl, 4, d->lunbounded_coeffs);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)calloc(1, sizeof(dt_iop_lowpass_data_t));
   piece->data = (void *)d;
   for(int k = 0; k < 0x10000; k++) d->ctable[k] = d->ltable[k] = 100.0f * k / 0x10000; // identity
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
