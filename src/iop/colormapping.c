@@ -193,16 +193,6 @@ static void capture_histogram(const float *col, const int width, const int heigh
 static void invert_histogram(const int *hist, float *inv_hist)
 {
 // invert non-normalised accumulated hist
-#if 0
-  int last = 0;
-  for(int i=0; i<HISTN; i++) for(int k=last; k<HISTN; k++)
-      if(hist[k] >= i)
-      {
-        last = k;
-        inv_hist[i] = 100.0*k/(float)HISTN;
-        break;
-      }
-#else
   int last = 31;
   for(int i = 0; i <= last; i++) inv_hist[i] = 100.0f * i / (float)HISTN;
   for(int i = last + 1; i < HISTN; i++)
@@ -213,7 +203,6 @@ static void invert_histogram(const int *hist, float *inv_hist)
         inv_hist[i] = 100.0f * k / (float)HISTN;
         break;
       }
-#endif
 
   // printf("inv histogram debug:\n");
   // for(int i=0;i<100;i++) printf("%d => %f\n", i, inv_hist[hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]]);
