@@ -163,6 +163,13 @@ The following is a summary of the main features added to darktable
   - Invert
   - Local Contrast with Local Laplacian
   - Lowpass
+
+  - The gaussian generator used by many modules: Censorize, Denoise
+    Profile, Lowpass, Diffuse & Sharpen, Defringe, RAW Chromatic
+    Aberrations, Base Curve, Perspective Correction, Filmic RGB,
+    Retouch, Tone Equalizer and Zone System (deprecated). Meaning all
+    those modules have parts now running faster.
+
   - Loader for JPEG2000 file format
 
 - Improve Highlights reconstruction "inpaint opposed" performance by
