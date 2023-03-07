@@ -162,6 +162,7 @@ The following is a summary of the main features added to darktable
   - Denoise Profile
   - Invert
   - Local Contrast with Local Laplacian
+  - Lowpass
   - Loader for JPEG2000 file format
 
 - Improve Highlights reconstruction "inpaint opposed" performance by
@@ -350,6 +351,10 @@ The following is a summary of the main features added to darktable
 
 - Fix display when editing a shapes' name in masks manager. Avoid
   overlay of the old and new name.
+
+- Fix for clean Nikon camera make and model Exif info on import;
+  opening in darkroom is no longer required, and now works for non-raw
+  files as well.
 
 ## Lua
 
