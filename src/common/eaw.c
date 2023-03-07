@@ -106,13 +106,14 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
 #endif
 
 #define SUM_PIXEL_EPILOGUE                                                                                   \
+  dt_aligned_pixel_t det;                                               				     \
   for_each_channel(c)      										     \
   {													     \
     sum[c] /= wgt[c];                                                   				     \
-    pcoarse[c] = sum[c];                                                                                     \
-    const float det = (px[c] - sum[c]);									     \
-    pdetail[c] = det;    		                                              			     \
+    det[c] = (px[c] - sum[c]);									     \
   }                                                                       				     \
+  copy_pixel_nontemporal(pcoarse,sum);                                  				     \
+  copy_pixel_nontemporal(pdetail,det);                                  				     \
   px += 4;                                                                                                   \
   pdetail += 4;                                                                                              \
   pcoarse += 4;
@@ -301,27 +302,30 @@ void eaw_synthesize(float *const out, const float *const in, const float *const 
                     const float *const restrict threshold, const float *const restrict boost,
                     const int32_t width, const int32_t height)
 {
+  const dt_aligned_pixel_t thresh = { threshold[0], threshold[1], threshold[2], threshold[3] };
+  const dt_aligned_pixel_t boostval = { boost[0], boost[1], boost[2], boost[3] };
+  const size_t npixels = (size_t)width * height;
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  dt_omp_sharedconst(in, out, detail, threshold, boost) \
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out, detail, npixels, thresh, boostval)       \
   schedule(simd:static)
 #endif
-  for(size_t k = 0; k < (size_t)width * height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-#ifdef _OPENMP
-#pragma omp simd simdlen(4) aligned(detail, in, out, threshold, boost)
-#endif
-    for(size_t c = 0; c < 4; c++)
+    dt_aligned_pixel_t synth;
+    for_four_channels(c,aligned(in,detail))
     {
       // decrease the absolute magnitude of the detail by the threshold; copysignf does not vectorize, but it
       // turns out that just adding up two clamped alternatives gives exactly the same result and DOES vectorize
       //const float absamt = fmaxf(0.0f, (fabsf(detail[k + c]) - threshold[c]));
       //const float amount = copysignf(absamt, detail[k + c]);
-      const float amount = MAX(detail[4*k+c] - threshold[c], 0.0f) + MIN(detail[4*k+c] + threshold[c], 0.0f);
-      out[4*k + c] = in[4*k + c] + (boost[c] * amount);
+      const float amount = MAX(detail[4*k+c] - thresh[c], 0.0f) + MIN(detail[4*k+c] + thresh[c], 0.0f);
+      synth[c] = in[4*k + c] + (boostval[c] * amount);
     }
+    copy_pixel_nontemporal(out + 4*k, synth);
   }
+  dt_omploop_sfence();
 }
 
 #if defined(__SSE2__)
@@ -342,9 +346,9 @@ void eaw_synthesize_sse2(float *const out, const float *const in, const float *c
   for(size_t j = 0; j < (size_t)width * height; j++)
   {
     const __m128 *pin = (__m128 *)in + j;
-    const __m128 *pdetail = (__m128 *)detail + j;
-    const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_andnot_ps(*mask, *pdetail) - threshold);
-    const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
+    const __m128 pdetail = *((__m128 *)detail + j);
+    const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_andnot_ps(*mask, pdetail) - threshold);
+    const __m128 amount = _mm_or_ps(_mm_and_ps(pdetail, *mask), absamt);
     _mm_stream_ps(out + 4*j, *pin + boost * amount);
   }
   _mm_sfence();
