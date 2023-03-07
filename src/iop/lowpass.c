@@ -438,18 +438,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-#if 0 // gaussian order not user selectable
-static void
-order_changed (GtkComboBox *combo, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->order = gtk_combo_box_get_active(combo);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-#endif
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -583,11 +571,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment of lowpass filter"));
   gtk_widget_set_tooltip_text(g->saturation, _("color saturation of lowpass filter"));
   gtk_widget_set_tooltip_text(g->lowpass_algo, _("which filter to use for blurring"));
-
-#if 0 // gaussian order not user selectable
-  g_signal_connect (G_OBJECT (g->order), "changed",
-                    G_CALLBACK (order_changed), self);
-#endif
 }
 
 // clang-format off
