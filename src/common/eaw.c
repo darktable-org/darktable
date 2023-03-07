@@ -328,33 +328,6 @@ void eaw_synthesize(float *const out, const float *const in, const float *const 
   dt_omploop_sfence();
 }
 
-#if defined(__SSE2__)
-void eaw_synthesize_sse2(float *const out, const float *const in, const float *const restrict detail,
-                         const float *const restrict thrsf, const float *const restrict boostf,
-                         const int32_t width, const int32_t height)
-{
-  const __m128 threshold = _mm_load_ps(thrsf);
-  const __m128 boost = _mm_load_ps(boostf);
-  const __m128i maski = _mm_set1_epi32(0x80000000u);
-  const __m128 *mask = (__m128 *)&maski;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width, maski, mask) \
-  schedule(static)
-#endif
-  for(size_t j = 0; j < (size_t)width * height; j++)
-  {
-    const __m128 *pin = (__m128 *)in + j;
-    const __m128 pdetail = *((__m128 *)detail + j);
-    const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_andnot_ps(*mask, pdetail) - threshold);
-    const __m128 amount = _mm_or_ps(_mm_and_ps(pdetail, *mask), absamt);
-    _mm_stream_ps(out + 4*j, *pin + boost * amount);
-  }
-  _mm_sfence();
-}
-#endif
-
 // =====================================================================================
 // begin wavelet code from denoiseprofile.c
 // =====================================================================================
