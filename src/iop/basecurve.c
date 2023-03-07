@@ -1675,22 +1675,10 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   width -= 2 * inset;
   height -= 2 * inset;
 
-#if 0
-  // draw shadow around
-  float alpha = 1.0f;
-  for(int k=0; k<inset; k++)
-  {
-    cairo_rectangle(cr, -k, -k, width + 2*k, height + 2*k);
-    cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-    alpha *= 0.6f;
-    cairo_fill(cr);
-  }
-#else
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb(cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
-#endif
 
   cairo_set_source_rgb(cr, .3, .3, .3);
   cairo_rectangle(cr, 0, 0, width, height);
