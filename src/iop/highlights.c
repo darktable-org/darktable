@@ -2399,7 +2399,7 @@ void gui_update(struct dt_iop_module_t *self)
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   // enable this per default if raw or sraw if not real monochrome
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
-  self->hide_enable_button = monochrome;
+  self->hide_enable_button = !(self->default_enabled);
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "notapplicable");
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
@@ -2436,7 +2436,7 @@ void reload_defaults(dt_iop_module_t *self)
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   // enable this per default if raw or sraw if not true monochrome
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
-  self->hide_enable_button = monochrome;
+  self->hide_enable_button = !(self->default_enabled);
 
   dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
 
