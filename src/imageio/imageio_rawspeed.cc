@@ -79,10 +79,8 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   gboolean got_it_done = FALSE;
   try {
     dt_rawspeed_load_meta();
-    const Camera *cam = meta->getCamera(maker, model, "");
-    // Also look for dng cameras
-    if(!cam)
-      cam = meta->getCamera(maker, model, "dng");
+    // Look for camera in any mode available
+    const Camera *cam = meta->getCamera(maker, model);
     if(cam)
     {
       g_strlcpy(mk, cam->canonical_make.c_str(), mk_len);
