@@ -154,19 +154,16 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   snprintf(filen, sizeof(filen), "%s", filename);
   FileReader f(filen);
 
-  std::unique_ptr<RawDecoder> d;
-  std::unique_ptr<const Buffer> m;
-
   try
   {
     dt_rawspeed_load_meta();
 
     dt_pthread_mutex_lock(&darktable.readFile_mutex);
-    m = f.readFile();
+    auto [storage, storageBuf] = f.readFile();
     dt_pthread_mutex_unlock(&darktable.readFile_mutex);
 
-    RawParser t(*m.get());
-    d = t.getDecoder(meta);
+    RawParser t(storageBuf);
+    std::unique_ptr<RawDecoder> d = t.getDecoder(meta);
 
     if(!d.get()) return DT_IMAGEIO_LOAD_FAILED;
 
@@ -262,7 +259,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     /* free auto pointers on spot */
     d.reset();
-    m.reset();
+    storage.reset();
 
     // Grab the WB
     for(int i = 0; i < 4; i++)
