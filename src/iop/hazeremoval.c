@@ -275,8 +275,7 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel = in_data + 4*i;
-    float m = MIN(pixel[0], pixel[1]);
-    m = MIN(pixel[2], m);
+    float m = MIN(MIN(pixel[0], pixel[1]),pixel[2]);
     out_data[i] = m;
   }
   dt_box_min(img2.data, img2.height, img2.width, 1, w);
@@ -299,8 +298,8 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
   for(size_t i = 0; i < size; i++)
   {
     const float *pixel = in_data + 4*i;
-    float m = MIN(pixel[0] * A0_inv[0], pixel[1] * A0_inv[1]);
-    m = MIN(pixel[2] * A0_inv[2], m);
+    float m = MIN(MIN(pixel[0] * A0_inv[0], pixel[1] * A0_inv[1]),
+                  pixel[2] * A0_inv[2]);
     out_data[i] = 1.f - m * strength;
   }
   dt_box_max(img2.data, img2.height, img2.width, 1, w);
@@ -334,7 +333,7 @@ static float *partition(float *first, float *last, float val)
 // be in that position if the entire range [first, last) had been
 // sorted, additionally, none of the elements in the range [nth, last)
 // is less than any of the elements in the range [first, nth)
-void quick_select(float *first, float *nth, float *last, const int compatibility_mode)
+void quick_select(float *first, float *nth, float *last, const gboolean compatibility_mode)
 {
   if(first == last) return;
   for(;;)
@@ -383,9 +382,9 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
 // characteristic haze depth, i.e., the distance over which object light is
 // reduced by the factor exp(-1)
 static float ambient_light(const const_rgb_image img,
-                           int w1,
+                           const int w1,
                            rgb_pixel *pA0,
-                           int compatibility_mode)
+                           const gboolean compatibility_mode)
 {
   const float dark_channel_quantil = 0.95f; // quantil for determining the most hazy pixels
   const float bright_quantil = 0.95f; // quantil for determining the brightest pixels among the most hazy pixels
@@ -444,7 +443,7 @@ static float ambient_light(const const_rgb_image img,
     const size_t midpoint = start + (end-start)/2;
     for(size_t i = start; i < midpoint; i++)
     {
-      float tmp = hazy_data[i];
+      const float tmp = hazy_data[i];
       hazy_data[i] = hazy_data[(end-1) - (i-start)];
       hazy_data[(end-1) - (i-start)] = tmp;
     }
@@ -521,7 +520,7 @@ void process(struct dt_iop_module_t *self,
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
-  const int compatibility_mode = TRUE; //TODO: read from updated params in 'd' after version bump
+  const gboolean compatibility_mode = TRUE; //TODO: read from updated params in 'd' after version bump
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
@@ -618,7 +617,7 @@ void process(struct dt_iop_module_t *self,
 // some parts of the calculation are not suitable for a parallel implementation,
 // thus we copy data to host memory fall back to a cpu routine
 static float ambient_light_cl(struct dt_iop_module_t *self, int devid, cl_mem img, int w1, rgb_pixel *pA0,
-                              const int compatibility_mode)
+                              const gboolean compatibility_mode)
 {
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
@@ -759,7 +758,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
-  const int compatibility_mode = TRUE; //TODO: read from updated params in 'd' after version bump
+  const gboolean compatibility_mode = TRUE; //TODO: read from updated params in 'd' after version bump
 
   // estimate diffusive ambient light and image depth
   rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
