@@ -2314,7 +2314,9 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
       return_value = curve[node].y;
       break;
     default:
-      dt_print(DT_DEBUG_ALWAYS, "[_action_process_zones] unknown shortcut effect (%d) for color zones\n", effect);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_action_process_zones] unknown shortcut effect (%d) for color zones\n",
+               effect);
       break;
     }
 
