@@ -1743,34 +1743,6 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
   return tags;
 }
 
-gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
-                                          gboolean *descending)
-{
-  gboolean res = FALSE;
-  if(!sort  || !descending) return res;
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-          "SELECT T.flags FROM data.tags AS T "
-          "WHERE T.id = ?1",
-          -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const uint32_t flags = sqlite3_column_int(stmt, 0);
-    if((flags & (DT_TF_ORDER_SET)) == (DT_TF_ORDER_SET))
-    {
-      // the 16 upper bits of flags hold the order
-      *sort = (flags & ~DT_TF_DESCENDING) >> 16;
-      *descending = flags & DT_TF_DESCENDING;
-      res = TRUE;
-    }
-  }
-  sqlite3_finalize(stmt);
-  return res;
-}
-
 uint32_t dt_tag_get_tag_id_by_name(const char * const name)
 {
   if(!name) return 0;
@@ -1794,27 +1766,6 @@ uint32_t dt_tag_get_tag_id_by_name(const char * const name)
   }
   sqlite3_finalize(stmt);
   return tagid;
-}
-
-void dt_tag_set_tag_order_by_id(const uint32_t tagid, const uint32_t sort,
-                                const gboolean descending)
-{
-  // use the upper 16 bits of flags to store the order
-  const uint32_t flags = sort << 16 | (descending ? DT_TF_DESCENDING : 0)
-                                    | DT_TF_ORDER_SET;
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE data.tags"
-                              " SET flags = (IFNULL(flags, 0) & ?3) | ?2 "
-                              "WHERE id = ?1",
-                              -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, flags);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_TF_ALL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
 }
 
 // clang-format off
