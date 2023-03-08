@@ -1165,8 +1165,8 @@ void gui_init(struct dt_iop_module_t *self)
       if(n == 0 || d == 0)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                "invalid ratio format for `%s'. it should be \"number:number\"\n",
-                nv->key);
+                 "invalid ratio format for `%s'. it should be \"number:number\"\n",
+                 nv->key);
         dt_control_log
           (_("invalid ratio format for `%s'. it should be \"number:number\""),
            nv->key);
@@ -1181,8 +1181,8 @@ void gui_init(struct dt_iop_module_t *self)
     else
     {
       dt_print(DT_DEBUG_ALWAYS,
-              "invalid ratio format for `%s'. it should be \"number:number\"\n",
-              nv->key);
+               "invalid ratio format for `%s'. it should be \"number:number\"\n",
+               nv->key);
       dt_control_log
         (_("invalid ratio format for `%s'. it should be \"number:number\""),
          nv->key);

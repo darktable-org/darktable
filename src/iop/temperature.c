@@ -1459,8 +1459,8 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
       dt_control_log(_("failed to read camera white balance information from `%s'!"),
                      img->filename);
     dt_print(DT_DEBUG_ALWAYS,
-            "[temperature] failed to read camera white balance information from `%s'!\n",
-            img->filename);
+             "[temperature] failed to read camera white balance information from `%s'!\n",
+             img->filename);
   }
 
   double bwb[4];

@@ -522,7 +522,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
     dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface error: %s\n",
-            cairo_status_to_string(cairo_surface_status(surface)));
+             cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
@@ -567,7 +567,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS))
       {
         dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo png surface 2 error: %s\n",
-                cairo_status_to_string(cairo_surface_status(surface_two)));
+                 cairo_status_to_string(cairo_surface_status(surface_two)));
         cairo_surface_destroy(surface);
         g_free(image);
         dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
@@ -687,7 +687,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
     {
       dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface 2 error: %s\n",
-              cairo_status_to_string(cairo_surface_status(surface_two)));
+               cairo_status_to_string(cairo_surface_status(surface_two)));
       cairo_surface_destroy(surface);
       g_object_unref(svg);
       g_free(image);
