@@ -1348,7 +1348,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   else if(picker == g->auto_color)
     apply_autocolor(self);
   else
-    fprintf(stderr, "[colorbalance] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[colorbalance] unknown color picker\n");
 
   _check_tuner_picker_labels(self);
 }

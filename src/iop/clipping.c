@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1312,7 +1312,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // we show a error on stderr if we have clamped something
     if(d->cx != p->cx || d->cy != p->cy || d->cw != fabsf(p->cw) || d->ch != fabsf(p->ch))
     {
-      fprintf(stderr, "[crop&rotate] invalid crop data for %d : x=%0.04f y=%0.04f w=%0.04f h=%0.04f\n",
+      dt_print(DT_DEBUG_ALWAYS, "[crop&rotate] invalid crop data for %d : x=%0.04f y=%0.04f w=%0.04f h=%0.04f\n",
               pipe->image.id, p->cx, p->cy, p->cw, p->ch);
     }
   }
@@ -2165,7 +2165,7 @@ void gui_init(struct dt_iop_module_t *self)
       // some sanity check
       if(n == 0 || d == 0)
       {
-        fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
+        dt_print(DT_DEBUG_ALWAYS, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
         dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
         continue;
       }
@@ -2177,7 +2177,7 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else
     {
-      fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
+      dt_print(DT_DEBUG_ALWAYS, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
       dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
       continue;
     }
@@ -3118,7 +3118,7 @@ static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_
   }
   g->applied = 1;
   const gboolean changed = fabs(p->cx - old[0]) > eps || fabs(p->cy - old[1]) > eps || fabs(p->cw - old[2]) > eps || fabs(p->ch - old[3]) > eps;
-  // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+  // dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
   if(changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1381,7 +1381,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     dt_bauhaus_slider_set(g->grey_fulcrum, p->grey_fulcrum);
   }
   else
-    fprintf(stderr, "[colorbalancergb] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker\n");
   --darktable.gui->reset;
 
   gui_changed(self, picker, NULL);
