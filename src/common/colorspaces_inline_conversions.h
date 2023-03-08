@@ -495,19 +495,27 @@ static inline void dt_XYZ_to_prophotorgb(const dt_aligned_pixel_t XYZ, dt_aligne
   dt_apply_transposed_color_matrix(XYZ,xyz_to_rgb_transpose,rgb);
 }
 
+// transpose and pad the conversion matrix to enable vectorization
+static const dt_colormatrix_t prophotorgb_to_xyz_transpose = {
+  // prophoto rgb
+  { 0.7976749f, 0.2880402f, 0.0000000f, 0.0f },
+  { 0.1351917f, 0.7118741f, 0.0000000f, 0.0f },
+  { 0.0313534f, 0.0000857f, 0.8252100f, 0.0f }
+};
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, XYZ)
 #endif
 static inline void dt_prophotorgb_to_XYZ(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t XYZ)
 {
-  // transpose and pad the conversion matrix to enable vectorization
-  static const dt_colormatrix_t rgb_to_xyz_transpose = {
-    // prophoto rgb
-    { 0.7976749f, 0.2880402f, 0.0000000f, 0.0f },
-    { 0.1351917f, 0.7118741f, 0.0000000f, 0.0f },
-    { 0.0313534f, 0.0000857f, 0.8252100f, 0.0f }
-  };
-  dt_apply_transposed_color_matrix(rgb,rgb_to_xyz_transpose,XYZ);
+  dt_apply_transposed_color_matrix(rgb,prophotorgb_to_xyz_transpose,XYZ);
+}
+
+static inline float dt_prophotorgb_to_XYZ_luma(const dt_aligned_pixel_t rgb)
+{
+  return (prophotorgb_to_xyz_transpose[0][1] * rgb[0]
+          + prophotorgb_to_xyz_transpose[1][1] * rgb[1]
+          + prophotorgb_to_xyz_transpose[2][1] * rgb[2]);
 }
 
 // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
