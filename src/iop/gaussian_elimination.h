@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,7 +155,7 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
 
   if(m < n)
   {
-    fprintf(stderr, "pseudo solve: cannot cast %zu x %zu matrix\n", m, n);
+    dt_print(DT_DEBUG_ALWAYS, "pseudo solve: cannot cast %zu x %zu matrix\n", m, n);
     return 0;
   }
 

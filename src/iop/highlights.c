@@ -1555,7 +1555,7 @@ static inline gint wavelets_process(const float *const restrict in, float
   float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
   for(int s = 0; s < scales; ++s)
   {
-    //fprintf(stderr, "CPU Wavelet decompose : scale %i\n", s);
+    //dt_print(DT_DEBUG_ALWAYS, "CPU Wavelet decompose : scale %i\n", s);
     const int mult = 1 << s;
 
     const float *restrict buffer_in;
@@ -1722,7 +1722,7 @@ static inline cl_int wavelets_process_cl(const int devid,
   // the wavelets decomposition here is the same as the equalizer/atrous module,
   for(int s = 0; s < scales; ++s)
   {
-    //fprintf(stderr, "GPU Wavelet decompose : scale %i\n", s);
+    //dt_print(DT_DEBUG_ALWAYS, "GPU Wavelet decompose : scale %i\n", s);
     const int mult = 1 << s;
 
     cl_mem buffer_in;

@@ -231,7 +231,7 @@ static void _commit_box(dt_iop_module_t *self,
     || fabs(p->cw - old[2]) > eps
     || fabs(p->ch - old[3]) > eps;
 
-  // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+  // dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
 
   if(changed)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1164,7 +1164,7 @@ void gui_init(struct dt_iop_module_t *self)
       // some sanity check
       if(n == 0 || d == 0)
       {
-        fprintf(stderr,
+        dt_print(DT_DEBUG_ALWAYS,
                 "invalid ratio format for `%s'. it should be \"number:number\"\n",
                 nv->key);
         dt_control_log
@@ -1180,7 +1180,7 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else
     {
-      fprintf(stderr,
+      dt_print(DT_DEBUG_ALWAYS,
               "invalid ratio format for `%s'. it should be \"number:number\"\n",
               nv->key);
       dt_control_log

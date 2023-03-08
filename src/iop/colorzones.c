@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2314,7 +2314,7 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
       return_value = curve[node].y;
       break;
     default:
-      fprintf(stderr, "[_action_process_zones] unknown shortcut effect (%d) for color zones\n", effect);
+      dt_print(DT_DEBUG_ALWAYS, "[_action_process_zones] unknown shortcut effect (%d) for color zones\n", effect);
       break;
     }
 
