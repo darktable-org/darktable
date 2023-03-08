@@ -1137,6 +1137,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // There are currently bad interactions with Wayland (drop-downs
     // are very narrow, scroll events lost). Until this is fixed, give
     // priority to the XWayland backend for Wayland users.
+    // See also https://github.com/darktable-org/darktable/issues/13180
     gdk_set_allowed_backends("x11,*");
 #endif
     gtk_init(&argc, &argv);
