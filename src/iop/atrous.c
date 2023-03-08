@@ -1596,7 +1596,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
                                 _("x"), p->x[ch1][node]);
         break;
       default:
-        fprintf(stderr, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer node\n", effect);
+        dt_print(DT_DEBUG_ALWAYS, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer node\n", effect);
         break;
       }
 
@@ -1620,7 +1620,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
         c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * move_size), 0.25 / BANDS, 1.0);
         break;
       default:
-        fprintf(stderr, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer radius\n", effect);
+        dt_print(DT_DEBUG_ALWAYS, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer radius\n", effect);
         break;
       }
 

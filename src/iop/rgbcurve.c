@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -1650,7 +1651,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_r = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_R], 256, 256, sizeof(float));
   if(dev_r == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 1\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 1\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1658,7 +1659,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_g = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_G], 256, 256, sizeof(float));
   if(dev_g == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 2\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 2\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1666,7 +1667,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_b = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_B], 256, 256, sizeof(float));
   if(dev_b == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 3\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 3\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1674,7 +1675,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_coeffs_r = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs[0]);
   if(dev_coeffs_r == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 4\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1682,7 +1683,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_coeffs_g = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs[1]);
   if(dev_coeffs_g == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 5\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 5\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1690,7 +1691,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_coeffs_b = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 12, d->unbounded_coeffs[2]);
   if(dev_coeffs_b == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 6\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 6\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1701,7 +1702,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error %i enqueue kernel\n", err);
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error %i enqueue kernel\n", err);
     goto cleanup;
   }
 

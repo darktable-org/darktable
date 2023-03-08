@@ -189,10 +189,10 @@ static void _resolve_work_profile(dt_colorspaces_color_profile_type_t *work_type
       return;
   }
 
-  fprintf(stderr,
-          "[colorin] profile `%s' not suitable for work profile."
-          " it has been replaced by linear Rec2020 RGB!\n",
-          dt_colorspaces_get_name(*work_type, work_filename));
+  dt_print(DT_DEBUG_ALWAYS,
+           "[colorin] profile `%s' not suitable for work profile."
+           " it has been replaced by linear Rec2020 RGB!\n",
+           dt_colorspaces_get_name(*work_type, work_filename));
   *work_type = DT_COLORSPACE_LIN_REC2020;
   work_filename[0] = '\0';
 }
@@ -509,8 +509,8 @@ static void profile_changed(GtkWidget *widget, gpointer user_data)
     }
   }
   // should really never happen.
-  fprintf(stderr, "[colorin] color profile %s seems"
-          " to have disappeared!\n", dt_colorspaces_get_name(p->type, p->filename));
+  dt_print(DT_DEBUG_ALWAYS, "[colorin] color profile %s seems to have disappeared!\n",
+           dt_colorspaces_get_name(p->type, p->filename));
 }
 
 static void workicc_changed(GtkWidget *widget, gpointer user_data)
@@ -550,8 +550,8 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
        || isnan(work_profile->matrix_in[0][0])
        || isnan(work_profile->matrix_out[0][0]))
     {
-      fprintf(stderr, "[colorin] can't extract matrix from colorspace `%s',"
-              " it will be replaced by Rec2020 RGB!\n", p->filename_work);
+      dt_print(DT_DEBUG_ALWAYS, "[colorin] can't extract matrix from colorspace `%s',"
+               " it will be replaced by Rec2020 RGB!\n", p->filename_work);
       dt_control_log(_("can't extract matrix from colorspace `%s'"
                        ", it will be replaced by Rec2020 RGB!"), p->filename_work);
 
@@ -567,8 +567,8 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
   else
   {
     // should really never happen.
-    fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n",
-            dt_colorspaces_get_name(p->type_work, p->filename_work));
+    dt_print(DT_DEBUG_ALWAYS, "[colorin] color profile %s seems to have disappeared!\n",
+             dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
 }
 
@@ -710,7 +710,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self,
   dt_colormatrix_t lmatrix;
   transpose_3xSSE(d->lmatrix, lmatrix);
 
-    // fprintf(stderr, "Using cmatrix codepath\n");
+    // dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath\n");
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -836,7 +836,7 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
   transpose_3xSSE(d->nmatrix, nmatrix);
   transpose_3xSSE(d->lmatrix, lmatrix);
 
-// fprintf(stderr, "Using cmatrix codepath\n");
+// dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -901,7 +901,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
   dt_colormatrix_t lmatrix;
   transpose_3xSSE(d->lmatrix, lmatrix);
 
-// fprintf(stderr, "Using cmatrix codepath\n");
+// dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -1529,8 +1529,8 @@ void commit_params(struct dt_iop_module_t *self,
     {
       if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
-        fprintf(stderr, "[colorin] `%s' color matrix not found!\n",
-                pipe->image.camera_makermodel);
+        dt_print(DT_DEBUG_ALWAYS, "[colorin] `%s' color matrix not found!\n",
+                 pipe->image.camera_makermodel);
         dt_control_log(_("`%s' color matrix not found!"), pipe->image.camera_makermodel);
       }
       type = DT_COLORSPACE_LIN_REC709;
@@ -1569,7 +1569,7 @@ void commit_params(struct dt_iop_module_t *self,
   // should never happen, but catch that case to avoid a crash
   if(!d->input)
   {
-    fprintf(stderr, "[colorin] input profile could not be generated!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[colorin] input profile could not be generated!\n");
     dt_control_log(_("input profile could not be generated!"));
     piece->enabled = 0;
     return;
@@ -1589,11 +1589,11 @@ void commit_params(struct dt_iop_module_t *self,
       input_format = TYPE_XYZA_FLT;
       break;
     default:
-      fprintf(stderr, "[colorin] input profile color space `%c%c%c%c' not supported\n",
-              (char)(input_color_space>>24),
-              (char)(input_color_space>>16),
-              (char)(input_color_space>>8),
-              (char)(input_color_space));
+      dt_print(DT_DEBUG_ALWAYS, "[colorin] input profile color space `%c%c%c%c' not supported\n",
+               (char)(input_color_space>>24),
+               (char)(input_color_space>>16),
+               (char)(input_color_space>>8),
+               (char)(input_color_space));
       input_format = TYPE_RGBA_FLT; // this will fail later,
                                     // triggering the linear rec709
                                     // fallback
@@ -1661,11 +1661,11 @@ void commit_params(struct dt_iop_module_t *self,
   if(!d->xform_cam_Lab && isnan(d->cmatrix[0][0]))
   {
     if(p->type == DT_COLORSPACE_FILE)
-      fprintf(stderr, "[colorin] unsupported input profile `%s' has"
-              " been replaced by linear Rec709 RGB!\n", p->filename);
+      dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile `%s' has"
+               " been replaced by linear Rec709 RGB!\n", p->filename);
     else
-      fprintf(stderr, "[colorin] unsupported input profile has been"
-              " replaced by linear Rec709 RGB!\n");
+      dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile has been"
+               " replaced by linear Rec709 RGB!\n");
     dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input && d->clear_input) dt_colorspaces_cleanup_profile(d->input);
     d->nrgb = NULL;
@@ -1780,8 +1780,8 @@ void gui_update(struct dt_iop_module_t *self)
   if(idx < 0)
   {
     idx = 0;
-    fprintf(stderr, "[colorin] could not find requested working profile `%s'!\n",
-            dt_colorspaces_get_name(p->type_work, p->filename_work));
+    dt_print(DT_DEBUG_ALWAYS, "[colorin] could not find requested working profile `%s'!\n",
+             dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
   dt_bauhaus_combobox_set(g->work_combobox, idx);
 
@@ -1814,8 +1814,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
   if(p->type != DT_COLORSPACE_ENHANCED_MATRIX)
-    fprintf(stderr, "[colorin] could not find requested profile `%s'!\n",
-            dt_colorspaces_get_name(p->type, p->filename));
+    dt_print(DT_DEBUG_ALWAYS, "[colorin] could not find requested profile `%s'!\n",
+             dt_colorspaces_get_name(p->type, p->filename));
 }
 
 // FIXME: update the gui when we add/remove the eprofile or ematrix

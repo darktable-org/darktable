@@ -88,7 +88,9 @@ static inline int _get_segment_id(dt_iop_segmentation_t *seg, const size_t loc)
 {
   if(loc >= (size_t)(seg->width * seg->height))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[_get_segment_id] out of range access loc=%zu in %ix%i\n", loc, seg->width, seg->height);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[_get_segment_id] out of range access loc=%zu in %ix%i\n",
+             loc, seg->width, seg->height);
     return 0;
   }
   return seg->data[loc] & (DT_SEG_ID_MASK-1);
@@ -637,7 +639,7 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
 
   if(id >= (seg->slots - 2))
     dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] %ix%i number of segments exceeds maximum=%i\n",
-      (int)width, (int)height, seg->slots);
+             (int)width, (int)height, seg->slots);
 
   dt_free_align(stack.el);
 }
@@ -702,7 +704,8 @@ void dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
 {
   const int slots = MIN(wanted_slots, DT_SEG_ID_MASK - 2);
   if(slots != wanted_slots)
-    dt_print(DT_DEBUG_ALWAYS, "number of wanted seg slots %i exceeds maximum %i\n", wanted_slots, DT_SEG_ID_MASK - 2);
+    dt_print(DT_DEBUG_ALWAYS, "number of wanted seg slots %i exceeds maximum %i\n",
+             wanted_slots, DT_SEG_ID_MASK - 2);
 
   seg->nr = 2;
   seg->data =   dt_alloc_align(64, width * height * sizeof(int));
