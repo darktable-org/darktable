@@ -22,7 +22,7 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-Since darktable 4.0:
+Since darktable 4.2:
 
 - Almost ??? commits to darktable+rawspeed
 - ??? pull requests handled
@@ -260,8 +260,8 @@ The following is a summary of the main features added to darktable
 - Read Exif metadata from AVIF, HEIC and JPEG XL images using native
   libraries if Exiv2 does not support it.
 
-- Write Exif data to eXIf PNG chunk if using Exiv2 version >
-  27.x. This is the new way to store Exif data in PNG.
+- Write Exif data to the eXIf PNG chunk if using Exiv2 version newer
+  than 0.27.x. This is the new standard way to store Exif data in PNGs.
 
 - Makes laplacian highlights recovery mode less memory hangry (save
   around 40%) and allow for a large speed up. This makes this recovery
@@ -272,8 +272,8 @@ The following is a summary of the main features added to darktable
   make lens correction.
 
 - Add support for MaxApertureValue metadata to complement the already
-  supported ApertureValue. The new metadata is used by Leica M
-  Monochrom, M8, M9 & M10 DNGs.
+  supported ApertureValue. This is the only metadata tag available in
+  Leica M Monochrom, M8, M9 & M10 DNGs.
 
 - Export masks for EXRs as extra channels.
 
@@ -437,10 +437,16 @@ The following is a summary of the main features added to darktable
 ## RawSpeed changes
 
 
-## Camera support, compared to 4.0
+## Camera support, compared to 4.2
 
 ### Base Support
 
+
+### Missing Compression Mode Support
+
+- Fujifilm lossy
+- Nikon high efficiency
+- Sony lossless
 
 ### White Balance Presets
 
@@ -449,12 +455,6 @@ The following is a summary of the main features added to darktable
 ### Noise Profiles
 
    No data for this release.
-
-### Missing Compression Mode Support
-
-- Fujifilm "non-lossless"/lossy
-- Nikon HE
-- Sony lossless
 
 ### Suspended Support
 
