@@ -1933,10 +1933,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
              " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
              "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
              " UNION SELECT id FROM main.images"
-             "   WHERE (filename LIKE '%s' OR maker LIKE '%s' OR model LIKE '%s' OR lens LIKE '%s')"
+             "   WHERE (filename LIKE '%s' OR maker LIKE '%s' OR model LIKE '%s')"
              " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
              "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
-             escaped_text, escaped_text, escaped_text, escaped_text, escaped_text, escaped_text, escaped_text, escaped_text );
+             escaped_text, escaped_text, escaped_text, escaped_text, escaped_text, escaped_text, escaped_text );
         // clang-format on
       }
       break;
