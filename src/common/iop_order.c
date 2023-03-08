@@ -1156,7 +1156,7 @@ static void _count_iop_module(GList *iop,
   for(const GList *modules = iop; modules; modules = g_list_next(modules))
   {
     const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
-    if(!strcmp(mod->op, operation))
+    if(dt_iop_module_is(mod->so, operation))
     {
       (*count)++;
       if(*max_multi_priority < mod->multi_priority)
@@ -1207,7 +1207,7 @@ int _get_multi_priority(dt_develop_t *dev,
   for(const GList *l = dev->iop; l; l = g_list_next(l))
   {
     const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)l->data;
-    if((!only_disabled || mod->enabled == FALSE) && !strcmp(mod->op, operation))
+    if((!only_disabled || mod->enabled == FALSE) && dt_iop_module_is(mod->so, operation))
     {
       count++;
       if(count == n) return mod->multi_priority;
@@ -1630,7 +1630,8 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list,
         {
           const dt_iop_order_rule_t *const restrict rule = (dt_iop_order_rule_t *)rules->data;
 
-          if(strcmp(module->op, rule->op_prev) == 0 && strcmp(mod->op, rule->op_next) == 0)
+          if(dt_iop_module_is(module->so, rule->op_prev)
+             && dt_iop_module_is(mod->so, rule->op_next))
           {
             rule_found = 1;
             break;
@@ -1707,7 +1708,8 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list,
         {
           const dt_iop_order_rule_t *const restrict rule = (dt_iop_order_rule_t *)rules->data;
 
-          if(strcmp(mod->op, rule->op_prev) == 0 && strcmp(module->op, rule->op_next) == 0)
+          if(dt_iop_module_is(mod->so, rule->op_prev)
+             && dt_iop_module_is(module->so, rule->op_next))
           {
             rule_found = 1;
             break;
@@ -1955,7 +1957,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
       const dt_iop_order_rule_t *const restrict rule = (dt_iop_order_rule_t *)rules->data;
 
       // mod must be before rule->op_next
-      if(strcmp(mod->op, rule->op_prev) == 0)
+      if(dt_iop_module_is(mod->so, rule->op_prev))
       {
         // check if there's a rule->op_next module before mod
         for(const GList *modules_prev = g_list_previous(modules);
@@ -1973,7 +1975,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
         }
       }
       // mod must be after rule->op_prev
-      else if(strcmp(mod->op, rule->op_next) == 0)
+      else if(dt_iop_module_is(mod->so, rule->op_next))
       {
         // check if there's a rule->op_prev module after mod
         for(const GList *modules_next = g_list_next(modules); modules_next;  modules_next = g_list_next(modules_next))
@@ -2041,10 +2043,12 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev,
     {
       const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)modules->data;
 
-      if(strcmp(mod->op, "gamma") != 0)
+      if(!dt_iop_module_is(mod->so, "gamma"))
       {
         iop_order_ok = 0;
-        fprintf(stderr, "[dt_ioppr_check_iop_order] gamma is not the last iop, last is %s %s(%d) image %i (%s)\n",
+        fprintf(stderr,
+                "[dt_ioppr_check_iop_order] gamma is not the last iop,"
+                " last is %s %s(%d) image %i (%s)\n",
                 mod->op, mod->multi_name, mod->iop_order,imgid, msg);
       }
     }

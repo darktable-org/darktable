@@ -129,7 +129,7 @@
     </type>
     <default>once a week</default>
     <shortdescription>create database snapshot</shortdescription>
-    <longdescription>database snapshots are created right before closing darktable. options allow you to choose how often to make snapshots:\nnever - simply don't do snapshots. that way the only snapshots done are mandatory version-upgrade snapshots\nonce a month - create snapshot if a month has passed since last snapshot\nonce a week - create snapshot if 7 days had passed since last snapshot\nonce a day - create snapshot if over 24h passed since last snapshot\non close - create snapshot every time darktable is closed</longdescription>
+    <longdescription>database snapshots are created right before closing darktable. options allow you to choose how often to make snapshots:\n - 'never': simply don't do snapshots. that way the only snapshots done are mandatory version-upgrade snapshots\n - 'once a month': create snapshot if a month has passed since last snapshot\n - 'once a week': create snapshot if 7 days had passed since last snapshot\n - 'once a day': create snapshot if over 24h passed since last snapshot\n - 'on close': create snapshot every time darktable is closed</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="database">
     <name>database/keep_snapshots</name>
@@ -177,7 +177,7 @@
     </type>
     <default>default</default>
     <shortdescription>darktable resources</shortdescription>
-    <longdescription>defines how much darktable may take from your system resources.\n - default: darktable takes ~50% of your systems resources and gives darktable enough to be still performant.\n - small: should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - large: is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.\n - unrestricted: should only be used for developing extremely large images as darktable will take all of your systems resources and thus might lead to swapping and unexpected performance drops. use with caution and not recommended for general use!</longdescription>
+    <longdescription>defines how much darktable may take from your system resources:\n - 'default': darktable takes ~50% of your systems resources and gives darktable enough to be still performant.\n - 'small': should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - 'large': is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.\n - 'unrestricted': should only be used for developing extremely large images as darktable will take all of your systems resources\n   and thus might lead to swapping and unexpected performance drops.\n   use with caution and not recommended for general use!</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>ui/performance</name>
@@ -191,14 +191,14 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>enable disk backend for thumbnail cache</shortdescription>
-    <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when browsing a lot. to generate all thumbnails of your entire collection offline, run 'darktable-generate-cache'.</longdescription>
+    <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again.\nit's safe though to delete these manually, if you want. light table performance will be increased greatly when browsing a lot.\nto generate all thumbnails of your entire collection offline, run 'darktable-generate-cache'.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>cache_disk_backend_full</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>enable disk backend for full preview cache</shortdescription>
-    <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when zooming image in full preview mode.</longdescription>
+    <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again.\nit's safe though to delete these manually, if you want.\nlight table performance will be increased greatly when zooming image in full preview mode.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>cache_color_managed</name>
@@ -253,7 +253,7 @@
     </type>
     <default>on import</default>
     <shortdescription>write sidecar file for each image</shortdescription>
-    <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written:\n - never\n - on import: immediately after importing the image\n - after edit: after any user change on the image</longdescription>
+    <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written:\n - 'never'\n - 'on import': immediately after importing the image\n - 'after edit': after any user change on the image.</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="XMP">
     <name>compress_xmp_tags</name>
@@ -266,7 +266,7 @@
     </type>
     <default>only large entries</default>
     <shortdescription>store XMP tags in compressed format</shortdescription>
-    <longdescription>entries in XMP tags can get rather large and may exceed the available space to store the history stack in output files. this option allows XMP tags to be compressed and save space.</longdescription>
+    <longdescription>entries in XMP tags can get rather large and may exceed the available space to store the history stack in output files.\nthis option allows XMP tags to be compressed and save space.</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>
@@ -299,7 +299,7 @@
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
-    <longdescription>if found, use OpenCL runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
+    <longdescription>if found, use OpenCL runtime on your system for improved processing speed.\ncan be switched on and off at any time.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl_scheduling_profile</name>
@@ -312,7 +312,7 @@
     </type>
     <default>default</default>
     <shortdescription>OpenCL scheduling profile</shortdescription>
-    <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelpipes sequentially on the GPU.</longdescription>
+    <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems:\n - 'default': GPU processes full and CPU processes preview pipe (adaptable by config parameters),\n - 'multiple GPUs': process both pixelpipes in parallel on two different GPUs,\n - 'very fast GPU': process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl_tuning_mode</name>
@@ -326,7 +326,7 @@
     </type>
     <default>nothing</default>
     <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' uses a fixed headroom (400MB as default), 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
+    <longdescription>allows runtime tuning of OpenCL devices:\n - 'memory size': uses a fixed headroom (400MB as default),\n - 'memory transfer': tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
@@ -1252,7 +1252,7 @@
     <type>string</type>
     <default>120|400</default>
     <shortdescription>delimiters for size categories</shortdescription>
-    <longdescription>size categories are used to be able to set different overlays and css values depending of the size of the thumbnail, separated by |. for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px</longdescription>
+    <longdescription>size categories are used to be able to set different overlays and css values depending of the size of the thumbnail, separated by |.\nfor example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
@@ -1282,7 +1282,7 @@
     </type>
     <default>off</default>
     <shortdescription>pen pressure control for brush masks</shortdescription>
-    <longdescription>off - pressure reading ignored, hardness/opacity/brush size - pressure reading controls specified attribute, absolute/relative - pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
+    <longdescription> - 'off': pressure reading ignored,\n - 'hardness'/'opacity'/'brush size': pressure reading controls specified attribute,\n - 'absolute'/'relative': pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>brush_smoothing</name>
@@ -1295,7 +1295,7 @@
     </type>
     <default>medium</default>
     <shortdescription>smoothing of brush strokes</shortdescription>
-    <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
+    <longdescription>sets level for smoothing of brush strokes.\nstronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>masks_scroll_down_increases</name>
@@ -2320,7 +2320,7 @@
     </type>
     <default>default</default>
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>demosaicer when not viewing 1:1 in darkroom mode: 'bilinear' is fast but slightly blurry. 'default' uses the default demosaicer for the used sensor (RCD or Markesteijn). 'full' will use exactly the settings as for full-size export.</longdescription>
+    <longdescription>demosaicer when not viewing 1:1 in darkroom mode:\n - 'bilinear': is fast but slightly blurry.\n - 'default': uses the default demosaicer for the used sensor (RCD or Markesteijn).\n - 'full': will use exactly the settings as for full-size export.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>preview_downsampling</name>
@@ -3318,7 +3318,7 @@
     </type>
     <default>all</default>
     <shortdescription>method to use for getting the display profile</shortdescription>
-    <longdescription>this option allows to force a specific means of getting the current display profile. this is useful when one alternative gives wrong results</longdescription>
+    <longdescription>this option allows to force a specific means of getting the current display profile.\nthis is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
   <dtconfig>
     <name>metadata/resolution</name>
@@ -3550,7 +3550,7 @@
     </type>
     <default>list</default>
     <shortdescription>color balance slider block layout</shortdescription>
-    <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nlist - all sliders are shown in one long list (with headers),\ntabs - use tabs to switch between the blocks of sliders,\ncolumns - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
+    <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\n'list' - all sliders are shown in one long list (with headers),\n'tabs' - use tabs to switch between the blocks of sliders,\n'columns' - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/hide_header_buttons</name>
@@ -3568,7 +3568,7 @@
     </type>
     <default>always</default>
     <shortdescription>show right-side buttons in processing module headers</shortdescription>
-    <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\nalways - always show all buttons,\nactive - only show the buttons when the mouse is over the module,\ndim - buttons are dimmed when mouse is away,\nauto - hide the buttons when the panel is narrow,\nfade - fade out all buttons when panel narrows,\nfit - hide all the buttons if the module name doesn't fit,\nsmooth - fade out all buttons in one header simultaneously,\nglide - gradually hide individual buttons as needed</longdescription>
+    <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\n - 'always': always show all buttons,\n - 'active': only show the buttons when the mouse is over the module,\n - 'dim': buttons are dimmed when mouse is away,\n - 'auto': hide the buttons when the panel is narrow,\n - 'fade': fade out all buttons when panel narrows,\n - 'fit': hide all the buttons if the module name doesn't fit,\n - 'smooth': fade out all buttons in one header simultaneously,\n - 'glide': gradually hide individual buttons as needed</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/show_mask_indicator</name>
@@ -3683,6 +3683,6 @@
     <type>string</type>
     <default></default>
     <shortdescription>order or exclude MIDI devices</shortdescription>
-    <longdescription>comma-separated list of device name fragments that if matched load MIDI device at id given by location in list or if preceded by - prevent matching devices from loading. add encoding and number of knobs like 'BeatStep:63:16'</longdescription>
+    <longdescription>comma-separated list of device name fragments that if matched load MIDI device at id given by location in list\nor if preceded by - prevent matching devices from loading. add encoding and number of knobs like 'BeatStep:63:16'</longdescription>
   </dtconfig>
 </dtconfiglist>

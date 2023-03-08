@@ -14,7 +14,8 @@
 
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -2227,8 +2228,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                           piece->pipe->dsc.processed_maximum[2]);
     for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -2401,7 +2400,7 @@ void gui_update(struct dt_iop_module_t *self)
   // enable this per default if raw or sraw if not real monochrome
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
   self->hide_enable_button = monochrome;
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "notapplicable");
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
@@ -2445,7 +2444,7 @@ void reload_defaults(dt_iop_module_t *self)
     d->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
 
   if(self->widget)
-    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "notapplicable");
 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
@@ -2623,13 +2622,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->scales, _("increase to correct larger clipped areas.\n"
                                            "large values bring huge performance penalties"));
 
-  GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
-  gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
+  GtkWidget *notapplicable = dt_ui_label_new(_("not applicable"));
+  gtk_widget_set_tooltip_text(notapplicable, _("this module only works with non-monochrome RAW and sRAW"));
 
   // start building top level widget
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
-  gtk_stack_add_named(GTK_STACK(self->widget), monochromes, "monochrome");
+  gtk_stack_add_named(GTK_STACK(self->widget), notapplicable, "notapplicable");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "default");
 }
 

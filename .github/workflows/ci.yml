@@ -180,6 +180,7 @@ jobs:
         generator:
           #- MSYS Makefiles
           - Ninja
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     defaults:
       run:
         shell: msys2 {0}
@@ -228,6 +229,7 @@ jobs:
             libheif:p
             libjpeg-turbo:p
             libjxl:p
+            libraw:p
             libsecret:p
             libtiff:p
             libwebp:p
@@ -290,6 +292,7 @@ jobs:
           - skiptest
         generator:
           - Ninja
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
@@ -298,6 +301,7 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
@@ -314,7 +318,9 @@ jobs:
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
-          brew link --force libomp # fix for keg-only libomp
+          # handle keg-only libs
+          brew link --force libomp
+          brew link --force libsoup@2
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
@@ -333,4 +339,4 @@ jobs:
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0 || true # OpenMP builds crash for most configs
+                 --conf plugins/lighttable/export/iccintent=0

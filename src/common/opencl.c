@@ -1394,20 +1394,22 @@ static float _opencl_benchmark_cpu(
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
+  const size_t nthreads = dt_get_num_threads();
+  unsigned int *const tea_states = alloc_tea_states(nthreads);
 
   buf = dt_alloc_align(64, width * height * bpp);
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for default(none) num_threads(nthreads)    \
   dt_omp_firstprivate(height, width, tea_states) \
   shared(buf)
 #endif
   for(size_t j = 0; j < height; j++)
   {
-    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
-    tea_state[0] = j + dt_get_thread_num();
+    const size_t threadnum = dt_get_thread_num();
+    unsigned int *tea_state = get_tea_state(tea_states,threadnum);
+    tea_state[0] = j + threadnum;
     size_t index = j * 4 * width;
     for(int i = 0; i < 4 * width; i++)
     {

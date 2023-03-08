@@ -19,9 +19,6 @@
 
 #include <assert.h>
 #include <math.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include "common/gaussian.h"
 #include "common/math.h"
 #include "common/opencl.h"
@@ -317,181 +314,163 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
   }
 }
 
-
-
-#if defined(__SSE__)
-static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, float *const out)
+void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const out)
 {
-
-  const int width = g->width;
-  const int height = g->height;
-  const int ch = 4;
-
   assert(g->channels == 4);
+  const size_t width = g->width;
+  const size_t height = g->height;
 
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
   compute_gauss_params(g->sigma, g->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
-  const __m128 Labmax = _mm_set_ps(g->max[3], g->max[2], g->max[1], g->max[0]);
-  const __m128 Labmin = _mm_set_ps(g->min[3], g->min[2], g->min[1], g->min[0]);
+  float *const temp = g->buf;
 
-  float *temp = g->buf;
-
+  dt_aligned_pixel_t Labmin, Labmax;
+  copy_pixel(Labmin, g->min);
+  copy_pixel(Labmax, g->max);
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, Labmin, Labmax, width, height, ch) \
-  shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) \
-  schedule(static)
+#pragma omp parallel for simd aligned(in,temp) default(none)            \
+  dt_omp_firstprivate(in, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
+  schedule(simd:static)
 #endif
-  for(int i = 0; i < width; i++)
+  for(size_t i = 0; i < width; i++)
   {
-    __m128 xp = _mm_setzero_ps();
-    __m128 yb = _mm_setzero_ps();
-    __m128 yp = _mm_setzero_ps();
-    __m128 xc = _mm_setzero_ps();
-    __m128 yc = _mm_setzero_ps();
-    __m128 xn = _mm_setzero_ps();
-    __m128 xa = _mm_setzero_ps();
-    __m128 yn = _mm_setzero_ps();
-    __m128 ya = _mm_setzero_ps();
-
     // forward filter
-    xp = MMCLAMPPS(_mm_load_ps(in + i * ch), Labmin, Labmax);
-    yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
-    yp = yb;
-
-
-    for(int j = 0; j < height; j++)
+    dt_aligned_pixel_t xp;
+    dt_aligned_pixel_t yb;
+    dt_aligned_pixel_t yp;
+    for_four_channels(k)
     {
-      size_t offset = ((size_t)j * width + i) * ch;
+      xp[k] = CLAMPF(in[4*i + k], Labmin[k], Labmax[k]);
+      yb[k] = xp[k] * coefp;
+      yp[k] = yb[k];
+    }
 
-      xc = MMCLAMPPS(_mm_load_ps(in + offset), Labmin, Labmax);
+    dt_aligned_pixel_t xc;
+    dt_aligned_pixel_t xn;
+    dt_aligned_pixel_t xa;
+    for(size_t j = 0; j < height; j++)
+    {
+      size_t offset = 4 * (j * width + i);
 
+      dt_aligned_pixel_t yc;
+      for_four_channels(k)
+      {
+        xc[k] = CLAMPF(in[offset + k], Labmin[k], Labmax[k]);
+        yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
-      yc = _mm_add_ps(
-          _mm_mul_ps(xc, _mm_set_ps1(a0)),
-          _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-                     _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
-
-      _mm_store_ps(temp + offset, yc);
-
-      xp = xc;
-      yb = yp;
-      yp = yc;
+        xp[k] = xc[k];
+        yb[k] = yp[k];
+        yp[k] = yc[k];
+      }
+      copy_pixel(temp + offset, yc);
     }
 
     // backward filter
-    xn = MMCLAMPPS(_mm_load_ps(in + ((size_t)(height - 1) * width + i) * ch), Labmin, Labmax);
-    xa = xn;
-    yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
-    ya = yn;
-
-    for(int j = height - 1; j > -1; j--)
+    dt_aligned_pixel_t yn;
+    dt_aligned_pixel_t ya;
+    for_four_channels(k)
     {
-      size_t offset = ((size_t)j * width + i) * ch;
+      xn[k] = CLAMPF(in[4*((height - 1) * width + i) + k], Labmin[k], Labmax[k]);
+      xa[k] = xn[k];
+      yn[k] = xn[k] * coefn;
+      ya[k] = yn[k];
+    }
 
-      xc = MMCLAMPPS(_mm_load_ps(in + offset), Labmin, Labmax);
+    for(size_t j = height; j > 0; j--)
+    {
+      size_t offset = 4 * ((j-1) * width + i);
 
-      yc = _mm_add_ps(
-          _mm_mul_ps(xn, _mm_set_ps1(a2)),
-          _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-                     _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+      dt_aligned_pixel_t yc;
+      for_four_channels(k)
+      {
+        xc[k] = CLAMPF(in[offset + k], Labmin[k], Labmax[k]);
 
+        yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
-      xa = xn;
-      xn = xc;
-      ya = yn;
-      yn = yc;
-
-      _mm_store_ps(temp + offset, _mm_add_ps(_mm_load_ps(temp + offset), yc));
+        xa[k] = xn[k];
+        xn[k] = xc[k];
+        ya[k] = yn[k];
+        yn[k] = yc[k];
+        temp[offset + k] += yc[k];
+      }
     }
   }
 
 // horizontal blur line by line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, Labmin, Labmax, width, height, ch) \
-  shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) \
+  dt_omp_firstprivate(out, width, height, temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
   schedule(static)
 #endif
   for(size_t j = 0; j < height; j++)
   {
-    __m128 xp = _mm_setzero_ps();
-    __m128 yb = _mm_setzero_ps();
-    __m128 yp = _mm_setzero_ps();
-    __m128 xc = _mm_setzero_ps();
-    __m128 yc = _mm_setzero_ps();
-    __m128 xn = _mm_setzero_ps();
-    __m128 xa = _mm_setzero_ps();
-    __m128 yn = _mm_setzero_ps();
-    __m128 ya = _mm_setzero_ps();
-
     // forward filter
-    xp = MMCLAMPPS(_mm_load_ps(temp + j * width * ch), Labmin, Labmax);
-    yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
-    yp = yb;
-
-
-    for(int i = 0; i < width; i++)
+    dt_aligned_pixel_t xp;
+    dt_aligned_pixel_t yb;
+    dt_aligned_pixel_t yp;
+    dt_aligned_pixel_t xc;
+    for_four_channels(k)
     {
-      size_t offset = ((size_t)j * width + i) * ch;
+      xp[k] = CLAMPF(temp[4*(j * width) + k], Labmin[k], Labmax[k]);
+      yb[k] = xp[k] * coefp;
+      yp[k] = yb[k];
+    }
 
-      xc = MMCLAMPPS(_mm_load_ps(temp + offset), Labmin, Labmax);
+    for(size_t i = 0; i < width; i++)
+    {
+      size_t offset = 4 * (j * width + i);
+      dt_aligned_pixel_t yc;
 
-      yc = _mm_add_ps(
-          _mm_mul_ps(xc, _mm_set_ps1(a0)),
-          _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-                     _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+      for_four_channels(k)
+      {
+        xc[k] = CLAMPF(temp[offset + k], Labmin[k], Labmax[k]);
+        yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
-      _mm_store_ps(out + offset, yc);
+        out[offset + k] = yc[k];
 
-      xp = xc;
-      yb = yp;
-      yp = yc;
+        xp[k] = xc[k];
+        yb[k] = yp[k];
+        yp[k] = yc[k];
+      }
     }
 
     // backward filter
-    xn = MMCLAMPPS(_mm_load_ps(temp + ((size_t)(j + 1) * width - 1) * ch), Labmin, Labmax);
-    xa = xn;
-    yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
-    ya = yn;
-
+    dt_aligned_pixel_t xn;
+    dt_aligned_pixel_t xa;
+    dt_aligned_pixel_t ya;
+    dt_aligned_pixel_t yn;
+    for_four_channels(k)
+    {
+      xn[k] = CLAMPF(temp[4*((j + 1) * width - 1) + k], Labmin[k], Labmax[k]);
+      xa[k] = xn[k];
+      yn[k] = xn[k] * coefn;
+      ya[k] = yn[k];
+    }
 
     for(int i = width - 1; i > -1; i--)
     {
-      size_t offset = ((size_t)j * width + i) * ch;
+      size_t offset = 4 * (j * width + i);
 
-      xc = MMCLAMPPS(_mm_load_ps(temp + offset), Labmin, Labmax);
+      dt_aligned_pixel_t yc;
+      for_four_channels(k)
+      {
+        xc[k] = CLAMPF(temp[offset + k], Labmin[k], Labmax[k]);
 
-      yc = _mm_add_ps(
-          _mm_mul_ps(xn, _mm_set_ps1(a2)),
-          _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-                     _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+        yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
+        xa[k] = xn[k];
+        xn[k] = xc[k];
+        ya[k] = yn[k];
+        yn[k] = yc[k];
 
-      xa = xn;
-      xn = xc;
-      ya = yn;
-      yn = yc;
-
-      _mm_store_ps(out + offset, _mm_add_ps(_mm_load_ps(out + offset), yc));
+        out[offset + k] += yc[k];
+      }
     }
   }
-}
-#endif
-
-void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const out)
-{
-  if(darktable.codepath.OPENMP_SIMD) return dt_gaussian_blur(g, in, out);
-#if defined(__SSE__)
-  else if(darktable.codepath.SSE2)
-    return dt_gaussian_blur_4c_sse(g, in, out);
-#endif
-  else
-    dt_unreachable_codepath();
 }
 
 void dt_gaussian_free(dt_gaussian_t *g)

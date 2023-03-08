@@ -29,12 +29,20 @@
 #include "common/action.h"
 #include "control/settings.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /** region of interest, needed by pixelpipe.h */
 typedef struct dt_iop_roi_t
 {
   int x, y, width, height;
   float scale;
 } dt_iop_roi_t;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
@@ -461,6 +469,13 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
 dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules,
                                                     const char *operation,
                                                     const char *multi_name);
+/** check for module name */
+static inline gboolean dt_iop_module_is(const dt_iop_module_so_t *module,
+                                        const char*operation)
+{
+  return !g_strcmp0(module->op, operation);
+}
+
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 /** return preferred module instance for shortcuts **/

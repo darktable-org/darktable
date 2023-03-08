@@ -107,23 +107,6 @@ static inline void _print_roi(const dt_iop_roi_t *roi, const char *label)
 }
 
 
-#if 0
-static void
-_nm_constraints(double x[], int n)
-{
-  x[0] = fabs(x[0]);
-  x[1] = fabs(x[1]);
-  x[2] = fabs(x[2]);
-  x[3] = fabs(x[3]);
-
-  if(x[0] > 1.0) x[0] = 1.0 - x[0];
-  if(x[1] > 1.0) x[1] = 1.0 - x[1];
-  if(x[2] > 1.0) x[2] = 1.0 - x[2];
-  if(x[3] > 1.0) x[3] = 1.0 - x[3];
-
-}
-#endif
-
 static double _nm_fitness(double x[], void *rest[])
 {
   struct dt_iop_module_t *self = (struct dt_iop_module_t *)rest[0];

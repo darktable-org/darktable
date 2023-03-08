@@ -3095,7 +3095,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("attached tags"
-                                                  "\nDelete or double-click to detach"
+                                                  "\npress Delete or double-click to detach"
                                                   "\nright-click for other actions on attached tag,"
                                                   "\nTab to give the focus to entry"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);

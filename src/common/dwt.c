@@ -21,9 +21,6 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "dwt.h"
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 /* Based on the original source code of GIMP's Wavelet Decompose plugin, by Marco Rossini
  *
@@ -33,7 +30,7 @@
 
 dwt_params_t *dt_dwt_init(float *image, const int width, const int height, const int ch, const int scales,
                           const int return_layer, const int merge_from_scale, void *user_data,
-                          const float preview_scale, const int use_sse)
+                          const float preview_scale)
 {
   dwt_params_t *p = (dwt_params_t *)malloc(sizeof(dwt_params_t));
   if(!p) return NULL;
@@ -47,7 +44,6 @@ dwt_params_t *dt_dwt_init(float *image, const int width, const int height, const
   p->merge_from_scale = merge_from_scale;
   p->user_data = user_data;
   p->preview_scale = preview_scale;
-  p->use_sse = use_sse;
 
   return p;
 }

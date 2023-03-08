@@ -27,6 +27,10 @@
 #include "develop/pixelpipe_cache.h"
 #include "imageio/imageio_common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /**
  * struct used by iop modules to connect to pixelpipe.
  * data can be used to store whatever private data and
@@ -190,26 +194,49 @@ gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // settings.
 gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
 gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe);
-// inits the pixelpipe with settings optimized for full-image export (no history stack cache)
-gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
-                                 gboolean store_masks);
-// inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
-gboolean dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
-// inits all but the pixel caches, so you can't actually process an image (just get dimensions and
-// distortions)
-gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
-// inits the pixelpipe with given cacheline size and number of entries. returns TRUE in case of success
-gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit);
+// inits the pixelpipe with settings optimized for full-image export
+// (no history stack cache)
+gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe,
+                                      const int32_t width,
+                                      const int32_t height,
+                                      const int levels,
+                                      const gboolean store_masks);
+// inits the pixelpipe with settings optimized for thumbnail export
+// (no history stack cache)
+gboolean dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe,
+                                         const int32_t width,
+                                         const int32_t height);
+// inits all but the pixel caches, so you can't actually process an
+// image (just get dimensions and distortions)
+gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe,
+                                     const int32_t width,
+                                     const int32_t height);
+// inits the pixelpipe with given cacheline size and number of
+// entries. returns TRUE in case of success
+gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
+                                      const size_t size,
+                                      const int32_t entries,
+                                      const size_t memlimit);
 // constructs a new input buffer from given RGB float array.
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
-                                int height, float iscale);
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe,
+                                struct dt_develop_t *dev,
+                                float *input,
+                                const int width,
+                                const int height,
+                                const float iscale);
 // set some metadata for colorout to avoid race conditions.
-void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe, dt_colorspaces_color_profile_type_t icc_type,
-                              const gchar *icc_filename, dt_iop_color_intent_t icc_intent);
+void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe,
+                              const dt_colorspaces_color_profile_type_t icc_type,
+                              const gchar *icc_filename,
+                              const dt_iop_color_intent_t icc_intent);
 
 // returns the dimensions of the full image after processing.
-void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in,
-                                     int height_in, int *width, int *height);
+void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
+                                     struct dt_develop_t *dev,
+                                     const int width_in,
+                                     const int height_in,
+                                     int *width,
+                                     int *height);
 
 // destroys all allocated data.
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
@@ -217,8 +244,9 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
 // flushes all cached data. useful if input pixels unexpectedly change.
 void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe);
 
-// wrapper for cleanup_nodes, create_nodes, synch_all and synch_top, decides upon changed event which one to
-// take on. also locks dev->history_mutex.
+// wrapper for cleanup_nodes, create_nodes, synch_all and synch_top,
+// decides upon changed event which one to take on. also locks
+// dev->history_mutex.
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 // cleanup all nodes except clean input/output
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe);
@@ -232,11 +260,21 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 void dt_dev_pixelpipe_rebuild(struct dt_develop_t *dev);
 
 // process region of interest of pixels. returns 1 if pipe was altered during processing.
-int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width,
-                             int height, float scale);
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
+                             struct dt_develop_t *dev,
+                             const int x,
+                             const int y,
+                             const int width,
+                             const int height,
+                             const float scale);
 // convenience method that does not gamma-compress the image.
-int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y,
-                                      int width, int height, float scale);
+int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
+                                      struct dt_develop_t *dev,
+                                      const int x,
+                                      const int y,
+                                      const int width,
+                                      const int height,
+                                      const float scale);
 
 // disable given op and all that comes after it in the pipe:
 void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
@@ -245,31 +283,53 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 
 
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc
-void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
-void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int n);
+void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe,
+                               struct dt_develop_t *dev,
+                               const int n);
+void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe,
+                                  struct dt_develop_t *dev,
+                                  const int n);
 
 // helper function to pass a raster mask through a (so far) processed pipe
-float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const struct dt_iop_module_t *raster_mask_source,
-                              const int raster_mask_id, const struct dt_iop_module_t *target_module,
+float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe,
+                              const struct dt_iop_module_t *raster_mask_source,
+                              const int raster_mask_id,
+                              const struct dt_iop_module_t *target_module,
                               gboolean *free_mask);
 // some helper functions related to the details mask interface
 void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe);
 
-gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
+gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
+                                     float *const rgb,
+                                     const dt_iop_roi_t *const roi_in,
+                                     const int mode);
 #ifdef HAVE_OPENCL
-gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode);
+gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+                                        cl_mem in,
+                                        const dt_iop_roi_t *const roi_in,
+                                        const int mode);
 #endif
 
 /* specialized version of dt_print for pixelpipe debugging */
-void dt_print_pipe(dt_debug_thread_t thread, const char *title, dt_dev_pixelpipe_t *pipe, const char *mod,
-      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const char *msg, ...);
+void dt_print_pipe(dt_debug_thread_t thread,
+                   const char *title,
+                   dt_dev_pixelpipe_t *pipe,
+                   const char *mod,
+                   const dt_iop_roi_t *roi_in,
+                   const dt_iop_roi_t *roi_out,
+                   const char *msg, ...);
 
 // helper function writing the pipe-processed ctmask data to dest
-float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const struct dt_iop_module_t *target_module);
+float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe,
+                                  float *src,
+                                  const struct dt_iop_module_t *target_module);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

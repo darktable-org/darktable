@@ -1,44 +1,44 @@
 /*
-   This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+    This file is part of darktable,
+    Copyright (C) 2010-2023 darktable developers.
 
-   darktable is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-   darktable is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-// needs to be defined before any system header includes for control/conf.h to work in C++ code
-#define __STDC_FORMAT_MACROS
-
-#include <cstdio>
-#include <cstdlib>
-#include <memory>
-
-#include <OpenEXR/ImfChannelList.h>
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfStandardAttributes.h>
-#include <OpenEXR/ImfThreading.h>
-#include <OpenEXR/ImfOutputFile.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "control/conf.h"
+#include "develop/pixelpipe_hb.h"
 #include "imageio/imageio_common.h"
-#include "imageio/imageio_exr.h"
 #include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
+
 #include "imageio/imageio_exr.hh"
+
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfOutputFile.h>
+#include <OpenEXR/ImfStandardAttributes.h>
+#include <OpenEXR/ImfThreading.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <forward_list>
+#include <memory>
+#include <utility>
 
 #ifdef __cplusplus
 extern "C" {
@@ -225,10 +225,9 @@ icc_end:
   header.channels().insert("G", Imf::Channel(pixel_type, 1, 1, true));
   header.channels().insert("B", Imf::Channel(pixel_type, 1, 1, true));
 
-  Imf::OutputFile file(filename, header);
-
   Imf::FrameBuffer data;
   size_t stride;
+  void *out_image = NULL;
 
   if(pixel_type == Imf::PixelType::FLOAT)
   {
@@ -243,22 +242,22 @@ icc_end:
 
     data.insert("B", Imf::Slice(pixel_type, (char *)(in + 2), stride,
                                 stride * exr->global.width));
-
-    file.setFrameBuffer(data);
-    file.writePixels(exr->global.height);
   }
   else
   {
     const size_t width = exr->global.width;
     const size_t height = exr->global.height;
     stride = 3 * sizeof(unsigned short);
-    unsigned short *out = (unsigned short *)malloc(stride * width * height);
-    if(out == NULL)
+    out_image = dt_alloc_align(64, stride * width * height);
+    if(out_image == NULL)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating image conversion buffer\n");
       return 1;
+    }
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_tmp, out, width, height) \
+  dt_omp_firstprivate(in_tmp, out_image, width, height) \
   schedule(simd:static) \
   collapse(2)
 #endif
@@ -267,7 +266,7 @@ icc_end:
       for(size_t x = 0; x < width; x++)
       {
         const float *in_pixel = (const float *)in_tmp + 4 * ((y * width) + x);
-        unsigned short *out_pixel = out + 3 * ((y * width) + x);
+        unsigned short *out_pixel = (unsigned short *)out_image + 3 * ((y * width) + x);
 
         out_pixel[0] = half(in_pixel[0]).bits();
         out_pixel[1] = half(in_pixel[1]).bits();
@@ -275,19 +274,110 @@ icc_end:
       }
     }
 
-    data.insert("R", Imf::Slice(pixel_type, (char *)(out + 0), stride,
+    data.insert("R", Imf::Slice(pixel_type, (char *)out_image, stride,
                                 stride * exr->global.width));
 
-    data.insert("G", Imf::Slice(pixel_type, (char *)(out + 1), stride,
+    data.insert("G", Imf::Slice(pixel_type, (char *)((unsigned short *)out_image + 1), stride,
                                 stride * exr->global.width));
 
-    data.insert("B", Imf::Slice(pixel_type, (char *)(out + 2), stride,
+    data.insert("B", Imf::Slice(pixel_type, (char *)((unsigned short *)out_image + 2), stride,
                                 stride * exr->global.width));
+  }
 
-    file.setFrameBuffer(data);
-    file.writePixels(exr->global.height);
+  // add masks as additional channels
+  // NB: GIMP does not support multi-part EXR files as layers yet
+  //     (https://gitlab.gnome.org/GNOME/gimp/-/issues/4379)
+  std::forward_list<std::pair<gboolean, void *> > mask_bufs;
+  if(export_masks && pipe)
+  {
+    for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
+    {
+      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)iter->data;
 
-    free(out);
+      GHashTableIter rm_iter;
+      gpointer key, value;
+
+      g_hash_table_iter_init(&rm_iter, piece->raster_masks);
+      while(g_hash_table_iter_next(&rm_iter, &key, &value))
+      {
+        const char *pagename = (char *)g_hash_table_lookup(piece->module->raster_mask.source.masks, key);
+        std::string layername;
+        if(pagename)
+          layername = std::string(pagename);
+        else
+          layername = std::string(piece->module->name());
+        layername += ".Y";
+
+        header.channels().insert(layername, Imf::Channel(pixel_type, 1, 1, true));
+
+        gboolean free_mask = TRUE;
+        float *raster_mask = dt_dev_get_raster_mask(pipe, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
+
+        if(!raster_mask)
+        {
+          // this should never happen
+          dt_print(DT_DEBUG_ALWAYS, "[exr export] error: can't get raster mask from `%s'\n", piece->module->name());
+          return 1;
+        }
+
+        if(pixel_type == Imf::PixelType::FLOAT)
+        {
+          stride = sizeof(float);
+
+          data.insert(layername, Imf::Slice(pixel_type, (char *)raster_mask, stride, stride * exr->global.width));
+
+          mask_bufs.emplace_front(free_mask, raster_mask);
+        }
+        else
+        {
+          const size_t width = exr->global.width;
+          const size_t height = exr->global.height;
+          stride = sizeof(unsigned short);
+          void *out_mask = dt_alloc_align(64, stride * width * height);
+          if(out_mask == NULL)
+          {
+            dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating mask conversion buffer\n");
+            return 1;
+          }
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(raster_mask, out_mask, width, height) \
+  schedule(simd:static) \
+  collapse(2)
+#endif
+          for(size_t y = 0; y < height; y++)
+          {
+            for(size_t x = 0; x < width; x++)
+            {
+              const float *in_pixel = (const float *)raster_mask + ((y * width) + x);
+              unsigned short *out_pixel = (unsigned short *)out_mask + ((y * width) + x);
+
+              out_pixel[0] = half(in_pixel[0]).bits();
+            }
+          }
+
+          data.insert(layername, Imf::Slice(pixel_type, (char *)out_mask, stride, stride * exr->global.width));
+
+          mask_bufs.emplace_front(TRUE, out_mask);
+
+          if(free_mask) dt_free_align(raster_mask);
+        }
+      } // for all raster masks
+    } // for all pipe nodes
+  }
+
+  // write out to file
+  Imf::OutputFile file(filename, header);
+
+  file.setFrameBuffer(data);
+  file.writePixels(exr->global.height);
+
+  // clean up
+  dt_free_align(out_image);
+  for(auto &mb : mask_bufs)
+  {
+    if(mb.first) dt_free_align(mb.second);
   }
 
   return 0;
@@ -434,6 +524,11 @@ int levels(dt_imageio_module_data_t *p)
   return IMAGEIO_RGB | IMAGEIO_FLOAT;
 }
 
+int flags(dt_imageio_module_data_t *data)
+{
+  return FORMAT_FLAGS_SUPPORT_LAYERS;
+}
+
 const char *mime(dt_imageio_module_data_t *data)
 {
   return "image/x-exr";
@@ -474,6 +569,8 @@ void gui_init(dt_imageio_module_format_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp,self, NULL, N_("bit depth"), NULL,
                                (bpp_last >> 4) - EXR_PT_HALF, bpp_combobox_changed, self,
                                N_("16 bit (float)"), N_("32 bit (float)"));
+  const int bpp_default = dt_confgen_get_int("plugins/imageio/format/exr/bpp", DT_DEFAULT);
+  dt_bauhaus_combobox_set_default(gui->bpp, (bpp_default >> 4) - EXR_PT_HALF);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
 
   // Compression combo box
@@ -491,6 +588,8 @@ void gui_init(dt_imageio_module_format_t *self)
                                N_("B44A"),
                                N_("DWAA"),
                                N_("DWAB"));
+  dt_bauhaus_combobox_set_default(gui->compression,
+                                  dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
 }
 
@@ -507,11 +606,10 @@ void gui_reset(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_set(gui->compression, dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
 }
 
-
-
 #ifdef __cplusplus
-}
+} // extern "C"
 #endif
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

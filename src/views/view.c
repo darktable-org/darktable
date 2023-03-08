@@ -1040,10 +1040,10 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
     return FALSE;
 }
 
-void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean focus)
+void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean sticky, gboolean focus)
 {
   if(vm->proxy.lighttable.module)
-    vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, focus);
+    vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, sticky, focus);
 }
 
 void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid)

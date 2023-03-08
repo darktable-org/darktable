@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,9 +37,6 @@
 #include <math.h>
 #include <memory.h>
 #include <stdlib.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 //#define USE_NEW_CL  //uncomment to use the new, more memory-efficient OpenCL code (not yet finished)
 
@@ -316,9 +313,6 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(i, o, width, height);
 
   dt_free_align(detail);
   dt_free_align(tmp);

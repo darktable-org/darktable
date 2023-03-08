@@ -1038,12 +1038,6 @@ treeview header label
   padding: 0.14em;
 }
 
-/* be sure spinbutton is displayed without alpha background on treeview */
-treeview spinbutton
-{
-  background-color: @field_active_bg;
-}
-
 /* set margin around treeview (need to be applied on scrolledwindow which is a direct parent) */
 .dt_spacing_sw scrolledwindow
 {
@@ -1741,7 +1735,9 @@ button:checked cellview
 
 /* Treeviews, entries and filechoosers states */
 menuitem:not(.dt_transparent_background) check,  /* be sure transparent background is applied to preset and blend menus */
-treeview check /* set specific background color about check buttons like in copy/paste dialog window */
+treeview check, /* set specific background color about check buttons like in copy/paste dialog window */
+treeview entry, /* be sure entry is displayed without alpha background on treeview */
+treeview spinbutton /* and same thing for spinbutton */
 {
   background-color: @field_active_bg;
   border-color: @border_color;

@@ -19,9 +19,6 @@
 #include "config.h"
 #endif
 #include <stdlib.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include <cairo.h>
 
 #include "common/opencl.h"
