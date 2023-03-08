@@ -345,11 +345,12 @@ static void _process_pixel_legacy(const dt_aligned_pixel_t in,
   {
     // lift gamma gain - apply lift and gain
     rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
+    rgb[c] = MAX(rgb[c], 0.0f);
   }
   for_each_channel(c)
   {
     // lift gamma gain - apply gamma
-    rgb[c] = powf(MAX(rgb[c], 0.0f), gamma_inv[c]);
+    rgb[c] = powf(rgb[c], gamma_inv[c]);
   }
 
   // transform the result back to Lab
@@ -394,8 +395,13 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
   }
   for_each_channel(c)
   {
+    // clip away negatives
+    rgb[c] = MAX(rgb[c], 0.0f);
+  }
+  for_each_channel(c)
+  {
     // RGB gamma correction
-    rgb[c] = powf(MAX(rgb[c], 0.0f), 1.0f/2.2f);
+    rgb[c] = powf(rgb[c], 1.0f/2.2f);
   }
   for_each_channel(c)
   {
@@ -404,8 +410,13 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
   }
   for_each_channel(c)
   {
+    // clip away negatives
+    rgb[c] = MAX(rgb[c], 0.0f);
+  }
+  for_each_channel(c)
+  {
     // lift gamma gain - apply gamma
-    rgb[c] = powf(MAX(rgb[c], 0.0f), gamma_inv[c]);
+    rgb[c] = powf(rgb[c], gamma_inv[c]);
   }
   // main saturation output
   if(run_saturation_out)
@@ -420,7 +431,11 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
   if(run_contrast)
   {
     for_each_channel(c)
-      rgb[c] = powf(MAX(rgb[c], 0.0f) / grey, contrast) * grey;
+      rgb[c] = MAX(rgb[c], 0.0f) / grey;
+    for_each_channel(c)
+      rgb[c] = powf(rgb[c], contrast);
+    for_each_channel(c)
+      rgb[c] *= grey;
   }
   // transform the result back to Lab
   // ProphotoRGB -> XYZ -> Lab
@@ -436,9 +451,7 @@ static void _process_pixel_sop(const dt_aligned_pixel_t in,
                                const dt_aligned_pixel_t gain,
                                const float grey,
                                const float saturation,
-                               const int run_saturation,
                                const float saturation_out,
-                               const int run_saturation_out,
                                const float contrast,
                                const int run_contrast)
 {
@@ -454,7 +467,7 @@ static void _process_pixel_sop(const dt_aligned_pixel_t in,
   float luma = XYZ[1]; // the Y channel is the RGB luminance
 
   // do the calculation in RGB space
-  if(run_saturation)
+  if(saturation != 1.0f)
   {
     // main saturation input
     for_each_channel(c)
@@ -463,7 +476,7 @@ static void _process_pixel_sop(const dt_aligned_pixel_t in,
   apply_CDL(rgb, gain, lift, gamma);
 
   // main saturation output
-  if(run_saturation_out)
+  if(saturation_out != 1.0f)
   {
     dt_prophotorgb_to_XYZ(rgb, XYZ);
     luma = XYZ[1];
@@ -472,10 +485,14 @@ static void _process_pixel_sop(const dt_aligned_pixel_t in,
   }
 
   // fulcrum contrat
-  if(run_contrast)
+  if(contrast != 1.0f)
   {
     for_each_channel(c)
-      rgb[c] = powf(MAX(rgb[c], 0.0f) / grey, contrast) * grey;
+      rgb[c] = MAX(rgb[c], 0.0f) / grey;
+    for_each_channel(c)
+      rgb[c] = powf(rgb[c], contrast);
+    for_each_channel(c)
+      rgb[c] *= grey;
   }
 
   // transform the result back to Lab
@@ -593,8 +610,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
         float *in = ((float *)ivoid) + k;
-        _process_pixel_sop(in, out, lift, gamma, gain, grey, saturation, run_saturation,
-                           saturation_out, run_saturation_out, contrast, run_contrast);
+        _process_pixel_sop(in, out, lift, gamma, gain, grey, saturation,
+                           saturation_out, contrast, run_contrast);
       }
       dt_omploop_sfence();
       break;
