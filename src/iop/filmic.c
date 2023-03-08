@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop_math.h"
+#include "develop/openmp_maths.h"
 #include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
@@ -171,7 +172,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_DEPRECATED;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING /*| IOP_FLAGS_DEPRECATED*/;
 }
 
 const char *deprecated_msg()
@@ -371,17 +372,125 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
-static inline float gaussian(float x, float std)
+// we need to move the actual processing of each pixel into a separate
+// function to help the optimizer.  This will get inlined, but actually
+// having the code inside the loop costs us 30% extra time with GCC10.
+static void _process_pixel(const dt_aligned_pixel_t in,
+                           dt_aligned_pixel_t out,
+                           const float grey_source,
+                           const float black_source,
+                           const float inv_dynamic_range,
+                           const dt_aligned_pixel_t output_power,
+                           const float saturation,
+                           const float EPS,
+                           const int desaturate,
+                           const int preserve_color,
+                           const dt_iop_filmic_data_t *const data)
 {
-  return expf(- (x * x) / (2.0f * std * std)) / (std * powf(2.0f * M_PI, 0.5f));
+    dt_aligned_pixel_t XYZ;
+    dt_Lab_to_XYZ(in, XYZ);
+
+    dt_aligned_pixel_t input_rgb;
+    dt_XYZ_to_prophotorgb(XYZ, input_rgb);
+
+    float concavity, luma;
+
+    // Global desaturation
+    if(desaturate)
+    {
+      luma = XYZ[1];
+
+      for_each_channel(c)
+      {
+        input_rgb[c] = luma + saturation * (input_rgb[c] - luma);
+      }
+    }
+
+    dt_aligned_pixel_t rgb;
+    if(preserve_color)
+    {
+      dt_aligned_pixel_t ratios;
+      float max = dt_vector_channel_max(input_rgb);
+
+      // Save the ratios
+      for_each_channel(c)
+        ratios[c] = input_rgb[c] / max;
+
+      // Log tone-mapping
+      max = max / grey_source;
+      max = (max > EPS) ? (fastlog2(max) - black_source) * inv_dynamic_range : EPS;
+      max = CLAMP(max, 0.0f, 1.0f);
+
+      // Filmic S curve on the max RGB
+      size_t index = CLAMP(max * 0x10000ul, 0, 0xffff);
+      max = data->table[index];
+      concavity = data->grad_2[index];
+
+      // Re-apply ratios
+      for_each_channel(c)
+        rgb[c] = ratios[c] * max;
+
+      luma = max;
+    }
+    else
+    {
+      size_t DT_ALIGNED_ARRAY index[4];
+
+      for_each_channel(c)
+        input_rgb[c] /= grey_source;
+      dt_aligned_pixel_t log_rgb;
+      dt_vector_log2(input_rgb, log_rgb);
+      for_each_channel(c)
+      {
+        // Log tone-mapping on RGB
+        rgb[c] = (input_rgb[c] > EPS) ? (log_rgb[c] - black_source) * inv_dynamic_range : EPS;
+      }
+      for_each_channel(c)
+      {
+        rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
+        // Store the index of the LUT
+        index[c] = CLAMP(rgb[c] * 0x10000ul, 0, 0xffff);
+      }
+
+      // Concavity
+      const float XYZ_luma = dt_prophotorgb_to_XYZ_luma(rgb);
+      concavity = data->grad_2[(int)CLAMP(XYZ_luma * 0x10000ul, 0, 0xffff)];
+
+      // Filmic S curve
+      for_each_channel(c)
+        rgb[c] = data->table[index[c]];
+
+      luma = dt_prophotorgb_to_XYZ_luma(rgb);
+    }
+
+    // Desaturate on the non-linear parts of the curve
+    for_each_channel(c)
+    {
+      // Desaturate on the non-linear parts of the curve
+      rgb[c] = luma + concavity * (rgb[c] - luma);
+      rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
+    }
+    dt_aligned_pixel_t output_rgb;
+    dt_vector_powf(rgb, output_power, output_rgb);
+    // transform the result back to Lab
+    // sRGB -> XYZ -> Lab
+    dt_aligned_pixel_t res;
+    dt_prophotorgb_to_Lab(output_rgb, res);
+    copy_pixel_nontemporal(out, res);
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_filmic_data_t *const data = (dt_iop_filmic_data_t *)piece->data;
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
 
-  const int ch = piece->colors;
+  dt_iop_filmic_data_t *const data = (dt_iop_filmic_data_t *)piece->data;
 
   /** The log2(x) -> -INF when x -> 0
   * thus very low values (noise) will get even lower, resulting in noise negative amplification,
@@ -397,99 +506,30 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int desaturate = (data->global_saturation == 100.0f) ? FALSE : TRUE;
   const float saturation = data->global_saturation / 100.0f;
 
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+
+  const float grey_source = data->grey_source;
+  const float black_source = data->black_source;
+  const float inv_dynamic_range = 1.0f / data->dynamic_range;
+  const dt_aligned_pixel_t output_power = {
+    data->output_power, data->output_power,
+    data->output_power, data->output_power
+  };
+
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(ch, data, desaturate, ivoid, ovoid, preserve_color, roi_out, saturation, EPS) \
+  dt_omp_firstprivate(data, desaturate, in, out, npixels, grey_source, black_source, \
+                      inv_dynamic_range, output_power, preserve_color, saturation, EPS) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * ch; k += ch)
+  for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
   {
-    float *in = ((float *)ivoid) + k;
-    float *out = ((float *)ovoid) + k;
-
-    dt_aligned_pixel_t XYZ;
-    dt_Lab_to_XYZ(in, XYZ);
-
-    dt_aligned_pixel_t rgb = { 0.0f };
-    dt_XYZ_to_prophotorgb(XYZ, rgb);
-
-    float concavity, luma;
-
-    // Global desaturation
-    if(desaturate)
-    {
-      luma = XYZ[1];
-
-      for(int c = 0; c < 3; c++)
-      {
-        rgb[c] = luma + saturation * (rgb[c] - luma);
-      }
-    }
-
-    if(preserve_color)
-    {
-      int index;
-      dt_aligned_pixel_t ratios;
-      float max = fmaxf(fmaxf(rgb[0], rgb[1]), rgb[2]);
-
-      // Save the ratios
-      for(int c = 0; c < 3; ++c) ratios[c] = rgb[c] / max;
-
-      // Log tone-mapping
-      max = max / data->grey_source;
-      max = (max > EPS) ? (fastlog2(max) - data->black_source) / data->dynamic_range : EPS;
-      max = CLAMP(max, 0.0f, 1.0f);
-
-      // Filmic S curve on the max RGB
-      index = CLAMP(max * 0x10000ul, 0, 0xffff);
-      max = data->table[index];
-      concavity = data->grad_2[index];
-
-      // Re-apply ratios
-      for(int c = 0; c < 3; ++c) rgb[c] = ratios[c] * max;
-
-      luma = max;
-    }
-    else
-    {
-      int DT_ALIGNED_ARRAY index[4];
-
-      for(int c = 0; c < 3; c++)
-      {
-        // Log tone-mapping on RGB
-        rgb[c] = rgb[c] / data->grey_source;
-        rgb[c] = (rgb[c] > EPS) ? (fastlog2(rgb[c]) - data->black_source) / data->dynamic_range : EPS;
-        rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
-
-        // Store the index of the LUT
-        index[c] = CLAMP(rgb[c] * 0x10000ul, 0, 0xffff);
-      }
-
-      // Concavity
-      dt_prophotorgb_to_XYZ(rgb, XYZ);
-      concavity = data->grad_2[(int)CLAMP(XYZ[1] * 0x10000ul, 0, 0xffff)];
-
-      // Filmic S curve
-      for(int c = 0; c < 3; c++) rgb[c] = data->table[index[c]];
-
-      dt_prophotorgb_to_XYZ(rgb, XYZ);
-      luma = XYZ[1];
-    }
-
-    // Desaturate on the non-linear parts of the curve
-    for(int c = 0; c < 3; c++)
-    {
-      // Desaturate on the non-linear parts of the curve
-      rgb[c] = luma + concavity * (rgb[c] - luma);
-
-      // Apply the transfer function of the display
-      rgb[c] = powf(CLAMP(rgb[c], 0.0f, 1.0f), data->output_power);
-    }
-
-    // transform the result back to Lab
-    // sRGB -> XYZ
-    dt_prophotorgb_to_Lab(rgb, out);
+    _process_pixel(in + k, out +k, grey_source, black_source, inv_dynamic_range, output_power,
+                   saturation, EPS, desaturate, preserve_color, data);
   }
+  dt_omploop_sfence();
 }
 
 
@@ -550,7 +590,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     if(preserve_color)
     {
       // Get the max of the RGB values
-      float max = fmax(fmaxf(rgb[0], rgb[1]), rgb[2]);
+      float max = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
       __m128 max_sse = _mm_set1_ps(max);
 
       // Save the ratios
