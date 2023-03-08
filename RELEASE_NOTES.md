@@ -364,6 +364,10 @@ The following is a summary of the main features added to darktable
   opening in darkroom is no longer required, and now works for non-raw
   files as well.
 
+- Fix Canon CR3 metadata crop not being ignored; full visible sensor
+  area (as determined by LibRaw) is always being used now on new
+  imports.
+
 ## Lua
 
 ### Add action support for Lua
