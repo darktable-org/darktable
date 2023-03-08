@@ -23,6 +23,7 @@
 #include <stdint.h>
 #ifdef __SSE__
 #include <xmmintrin.h>
+#include "common/sse.h"
 #endif
 #include "common/darktable.h"
 
@@ -492,6 +493,59 @@ static inline __m128 sinf_fast_sse(const __m128 t)
   return _mm_add_ps(n4, m4);
 }
 #endif
+
+static inline void dt_vector_log2(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
+{
+#ifdef __SSE2__
+  *((__m128*)res) = _mm_log2_ps(*((__m128*)x));
+#else
+  union { float f[4]; uint32_t i[4]; } vx = { .f = { x[0], x[1], x[2], x[3] } };
+  union { uint32_t i[4]; float f[4]; } mx;
+
+#ifdef _OPENMP
+#pragma omp simd aligned(x, res)
+#endif
+  for(size_t c = 0; c < 4; c++)
+  {
+  mx.i[c] = vx.i[c] & 0x007FFFFF;
+  }
+#ifdef _OPENMP
+#pragma omp simd aligned(x, res)
+#endif
+  for(size_t c = 0; c < 4; c++)
+  {
+  float y = vx.i[c];
+  float f = mx.f[c];
+  y *= 1.1920928955078125e-7f;
+  res[c] = (y - 124.22551499f - (1.498030302f * f) - 1.72587999f / (0.3520887068f + f));
+  }
+#endif
+}
+
+static inline void dt_vector_powf(const dt_aligned_pixel_t input,
+                                  const dt_aligned_pixel_t power,
+                                  dt_aligned_pixel_t output)
+{
+#ifdef __SSE__
+    *((__m128*)output) = _mm_pow_ps(*((__m128*)input), *((__m128*)power));
+#else
+    for_four_channels(c)
+    {
+      // Apply the transfer function of the display
+      output[c] = powf(input[c], output[c]);
+    }
+#endif
+}
+
+static inline float dt_vector_channel_max(const dt_aligned_pixel_t pixel)
+{
+  dt_aligned_pixel_t swapRG = { pixel[1], pixel[0], pixel[2], pixel[3] };
+  dt_aligned_pixel_t swapRB = { pixel[2], pixel[1], pixel[0], pixel[3] };
+  dt_aligned_pixel_t maximum;
+  for_each_channel(c)
+    maximum[c] = MAX(MAX(pixel[c], swapRG[c]), swapRB[c]);
+  return maximum[0];
+}
 
 
 // clang-format off
