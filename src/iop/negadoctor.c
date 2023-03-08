@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -434,7 +435,7 @@ static void toggle_stock_controls(dt_iop_module_t *const self)
   else
   {
     // We shouldn't be there
-    fprintf(stderr, "negadoctor film stock: undefined behavior\n");
+    dt_print(DT_DEBUG_ALWAYS, "negadoctor film stock: undefined behavior\n");
   }
 }
 
@@ -774,7 +775,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   else if(picker == g->black)
     apply_auto_black(self);
   else
-    fprintf(stderr, "[negadoctor] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[negadoctor] unknown color picker\n");
 }
 
 void gui_init(dt_iop_module_t *self)

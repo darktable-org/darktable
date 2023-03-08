@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -832,7 +833,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   if(i != buf_size || i == 0)
   {
     dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - cube LUT lines number %d is not correct, should be %d\n",
-            (int)i/3, (int)buf_size/3);
+             (int)i/3, (int)buf_size/3);
     dt_control_log(_("error - cube LUT lines number %d is not correct, should be %d"),
                    (int)i/3, (int)buf_size/3);
     dt_free_align(lclut);

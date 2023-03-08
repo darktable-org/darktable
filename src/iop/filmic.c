@@ -15,6 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -843,7 +844,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   else if(picker == g->auto_button)
     apply_autotune(self);
   else
-    fprintf(stderr, "[filmic] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[filmic] unknown color picker\n");
 }
 
 static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)

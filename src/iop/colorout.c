@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -253,7 +254,9 @@ static void output_profile_changed(GtkWidget *widget, gpointer user_data)
     }
   }
 
-  fprintf(stderr, "[colorout] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type, p->filename));
+  dt_print(DT_DEBUG_ALWAYS,
+           "[colorout] color profile %s seems to have disappeared!\n",
+           dt_colorspaces_get_name(p->type, p->filename));
 }
 
 static void _signal_profile_changed(gpointer instance, gpointer user_data)
@@ -675,8 +678,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                         | DT_PROFILE_DIRECTION_DISPLAY2)
                  ->profile;
     dt_control_log(_("missing output profile has been replaced by sRGB!"));
-    fprintf(stderr, "missing output profile `%s' has been replaced by sRGB!\n",
-            dt_colorspaces_get_name(out_type, out_filename));
+    dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!\n",
+             dt_colorspaces_get_name(out_type, out_filename));
   }
 
   /* creating softproof profile if softproof is enabled */
@@ -697,9 +700,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                              | DT_PROFILE_DIRECTION_DISPLAY2)
                       ->profile;
       dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
-      fprintf(stderr, "missing softproof profile `%s' has been replaced by sRGB!\n",
-              dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
-                                      darktable.color_profiles->softproof_filename));
+      dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!\n",
+               dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
+                                       darktable.color_profiles->softproof_filename));
     }
 
     // some of our internal profiles are what lcms considers ideal profiles as they have a parametric TRC so
@@ -740,7 +743,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(!d->xform && isnan(d->cmatrix[0][0]))
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
-    fprintf(stderr, "unsupported output profile `%s' has been replaced by sRGB!\n", out_profile->name);
+    dt_print(DT_DEBUG_ALWAYS,
+             "unsupported output profile `%s' has been replaced by sRGB!\n",
+             out_profile->name);
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
 
     if(d->mode != DT_PROFILE_NORMAL
@@ -823,7 +828,9 @@ void gui_update(struct dt_iop_module_t *self)
   }
 
   dt_bauhaus_combobox_set(g->output_profile, 0);
-  fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", dt_colorspaces_get_name(p->type, p->filename));
+  dt_print(DT_DEBUG_ALWAYS,
+           "[colorout] could not find requested profile `%s'!\n",
+           dt_colorspaces_get_name(p->type, p->filename));
 }
 
 void init(dt_iop_module_t *module)
