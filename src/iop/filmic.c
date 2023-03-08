@@ -47,10 +47,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __SSE2__
-#include "common/sse.h"
-#endif
-
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
 
@@ -173,7 +169,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING /*| IOP_FLAGS_DEPRECATED*/;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_DEPRECATED;
 }
 
 const char *deprecated_msg()
@@ -532,131 +528,6 @@ void process(dt_iop_module_t *self,
   }
   dt_omploop_sfence();
 }
-
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_filmic_data_t *const data = (dt_iop_filmic_data_t *)piece->data;
-
-  const int ch = piece->colors;
-  const int preserve_color = data->preserve_color;
-
-  const float grey = data->grey_source;
-  const float black = data->black_source;
-  const float dynamic_range = data->dynamic_range;
-  const float saturation = (data->global_saturation / 100.0f);
-
-  const __m128 grey_sse = _mm_set1_ps(grey);
-  const __m128 black_sse = _mm_set1_ps(black);
-  const __m128 dynamic_range_sse = _mm_set1_ps(dynamic_range);
-  const __m128 power = _mm_set1_ps(data->output_power);
-  const __m128 saturation_sse = _mm_set1_ps(saturation);
-
-  // If saturation == 100, we have a no-op. Disable the op then.
-  const int desaturate = (data->global_saturation == 100.0f) ? FALSE : TRUE;
-
-  const float eps = powf(2.0f, -16);
-  const __m128 EPS = _mm_setr_ps(eps, eps, eps, 0.0f);
-  const __m128 zero = _mm_setzero_ps();
-  const __m128 one = _mm_set1_ps(1.0f);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(black, black_sse, ch, data, desaturate, dynamic_range, \
-                      dynamic_range_sse, EPS, grey, grey_sse, ivoid, one, \
-                      ovoid, power, preserve_color, roi_out, saturation_sse, \
-                      zero, eps) \
-  schedule(static)
-#endif
-  for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * ch; k += ch)
-  {
-    float *in = ((float *)ivoid) + k;
-    float *out = ((float *)ovoid) + k;
-
-    __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in));
-    __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
-
-    __m128 concavity;
-    __m128 luma;
-
-    // Global saturation adjustment
-    if(desaturate)
-    {
-      luma = _mm_set1_ps(XYZ[1]);
-      rgb = luma + saturation_sse * (rgb - luma);
-    }
-
-    if(preserve_color)
-    {
-      // Get the max of the RGB values
-      float max = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-      __m128 max_sse = _mm_set1_ps(max);
-
-      // Save the ratios
-      const __m128 ratios = rgb / max_sse;
-
-      // Log tone-mapping
-      max = max / grey;
-      max = (max > eps) ? (fastlog2(max) - black) / dynamic_range : eps;
-      max = CLAMP(max, 0.0f, 1.0f);
-
-      // Filmic S curve on the max RGB
-      const int index = CLAMP(max * 0x10000ul, 0, 0xffff);
-      max = data->table[index];
-      concavity = _mm_set1_ps(data->grad_2[index]);
-
-      // Re-apply ratios
-      max_sse = _mm_set1_ps(max);
-      rgb = ratios * max_sse;
-      luma = max_sse;
-    }
-    else
-    {
-      // Log tone-mapping
-      rgb = rgb / grey_sse;
-      rgb = _mm_max_ps(rgb, EPS);
-      rgb = _mm_log2_ps(rgb);
-      rgb -= black_sse;
-      rgb /=  dynamic_range_sse;
-      rgb = _mm_max_ps(rgb, zero);
-      rgb = _mm_min_ps(rgb, one);
-
-      // Store the derivative at the pixel luminance
-      XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-      concavity = _mm_set1_ps(data->grad_2[(int)CLAMP(XYZ[1] * 0x10000ul, 0, 0xffff)]);
-
-      // Unpack SSE vector to regular array
-      dt_aligned_pixel_t rgb_unpack;
-
-      // Filmic S curve
-      for(int c = 0; c < 4; ++c)
-      {
-        rgb_unpack[c] = data->table[(int)CLAMP(rgb[c] * 0x10000ul, 0, 0xffff)];
-      }
-
-      rgb = _mm_load_ps(rgb_unpack);
-      XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-      luma = _mm_set1_ps(XYZ[1]);
-    }
-
-    rgb = luma + concavity * (rgb - luma);
-    rgb = _mm_max_ps(rgb, zero);
-    rgb = _mm_min_ps(rgb, one);
-
-    // Apply the transfer function of the display
-    rgb = _mm_pow_ps(rgb, power);
-
-    // transform the result back to Lab
-    // sRGB -> XYZ
-    XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-    // XYZ -> Lab
-    _mm_stream_ps(out, dt_XYZ_to_Lab_sse2(XYZ));
-  }
-}
-#endif
-
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
