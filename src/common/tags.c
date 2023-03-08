@@ -1751,9 +1751,9 @@ uint32_t dt_tag_get_tag_id_by_name(const char * const name)
     dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "insensitive");
   // clang-format off
   const char *query = is_insensitive
-                      ? "SELECT T.id, T.flags FROM data.tags AS T "
+                      ? "SELECT T.id FROM data.tags AS T "
                         "WHERE T.name LIKE ?1"
-                      : "SELECT T.id, T.flags FROM data.tags AS T "
+                      : "SELECT T.id FROM data.tags AS T "
                         "WHERE T.name = ?1";
   // clang-format on
   sqlite3_stmt *stmt;
