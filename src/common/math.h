@@ -532,7 +532,7 @@ static inline void dt_vector_powf(const dt_aligned_pixel_t input,
     for_four_channels(c)
     {
       // Apply the transfer function of the display
-      output[c] = powf(input[c], output[c]);
+      output[c] = powf(input[c], power[c]);
     }
 #endif
 }
