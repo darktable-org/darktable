@@ -1064,7 +1064,7 @@ void toneeq_process(struct dt_iop_module_t *self,
       if(g->full_preview_buf_width != width || g->full_preview_buf_height != height)
       {
         if(g->full_preview_buf) dt_free_align(g->full_preview_buf);
-        g->full_preview_buf = dt_alloc_sse_ps(num_elem);
+        g->full_preview_buf = dt_alloc_align_float(num_elem);
         g->full_preview_buf_width = width;
         g->full_preview_buf_height = height;
       }
@@ -1084,7 +1084,7 @@ void toneeq_process(struct dt_iop_module_t *self,
       if(g->thumb_preview_buf_width != width || g->thumb_preview_buf_height != height)
       {
         if(g->thumb_preview_buf) dt_free_align(g->thumb_preview_buf);
-        g->thumb_preview_buf = dt_alloc_sse_ps(num_elem);
+        g->thumb_preview_buf = dt_alloc_align_float(num_elem);
         g->thumb_preview_buf_width = width;
         g->thumb_preview_buf_height = height;
         g->luminance_valid = FALSE;
@@ -1097,14 +1097,14 @@ void toneeq_process(struct dt_iop_module_t *self,
     }
     else // just to please GCC
     {
-      luminance = dt_alloc_sse_ps(num_elem);
+      luminance = dt_alloc_align_float(num_elem);
     }
 
   }
   else
   {
     // no interactive editing/caching : just allocate a local temp buffer
-    luminance = dt_alloc_sse_ps(num_elem);
+    luminance = dt_alloc_align_float(num_elem);
   }
 
   // Check if the luminance buffer exists

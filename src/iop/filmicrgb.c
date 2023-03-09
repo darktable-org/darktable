@@ -1272,13 +1272,17 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  float *const restrict LF_even = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height); // low-frequencies RGB
-  float *const restrict LF_odd = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);  // low-frequencies RGB
-  float *const restrict HF_RGB = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);  // high-frequencies RGB
-  float *const restrict HF_grey = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height); // high-frequencies RGB backup
+  float *const restrict LF_even
+    = dt_alloc_align_float(ch * roi_out->width * roi_out->height);  // low-frequencies RGB
+  float *const restrict LF_odd
+    = dt_alloc_align_float(ch * roi_out->width * roi_out->height);  // low-frequencies RGB
+  float *const restrict HF_RGB
+    = dt_alloc_align_float(ch * roi_out->width * roi_out->height);  // high-frequencies RGB
+  float *const restrict HF_grey
+    = dt_alloc_align_float(ch * roi_out->width * roi_out->height);  // high-frequencies RGB backup
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp = dt_alloc_sse_ps(dt_get_num_threads() * ch * roi_out->width);
+  float *const restrict temp = dt_alloc_align_float(dt_get_num_threads() * ch * roi_out->width);
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -1931,7 +1935,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   float *restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
-  float *const restrict mask = dt_alloc_sse_ps((size_t)roi_out->width * roi_out->height);
+  float *const restrict mask = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
 
   // used to adjuste noise level depending on size. Don't amplify noise if magnified > 100%
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);

@@ -948,7 +948,12 @@ static inline void _auto_detect_WB(const float *const restrict in,
    *
   */
 
-   float *const restrict temp = dt_alloc_sse_ps(width * height * ch);
+   float *const restrict temp = dt_alloc_align_float(width * height * ch);
+   if(!temp)
+   {
+     dt_print(DT_DEBUG_ALWAYS,"[auto detect WB] unable to allocate memory, skipping white balance\n");
+     return;
+   }
 
    // Convert RGB to xy
 #ifdef _OPENMP
@@ -1400,7 +1405,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
   const float radius_y = radius_x / g->checker->ratio;
 
   if(g->delta_E_in == NULL)
-    g->delta_E_in = dt_alloc_sse_ps(g->checker->patches);
+    g->delta_E_in = dt_alloc_align_float(g->checker->patches);
 
   /* Get the average color over each patch */
   for(size_t k = 0; k < g->checker->patches; k++)
@@ -1607,7 +1612,7 @@ void extract_color_checker(const float *const restrict in,
                            const dt_colormatrix_t XYZ_to_CAM,
                            const dt_adaptation_t kind)
 {
-  float *const restrict patches = dt_alloc_sse_ps(g->checker->patches * 4);
+  float *const restrict patches = dt_alloc_align_float(g->checker->patches * 4);
 
   dt_simd_memcpy(in, out, (size_t)roi_in->width * roi_in->height * 4);
 
@@ -1905,7 +1910,7 @@ void validate_color_checker(const float *const restrict in,
                             const dt_colormatrix_t XYZ_to_RGB,
                             const dt_colormatrix_t XYZ_to_CAM)
 {
-  float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
+  float *const restrict patches = dt_alloc_align_float(4 * g->checker->patches);
   extraction_result_t extraction_result =
     _extract_patches(in, roi_in, g, RGB_to_XYZ, XYZ_to_CAM, patches, FALSE);
 
