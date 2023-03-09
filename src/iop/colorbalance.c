@@ -331,40 +331,43 @@ static inline void apply_fulcrum_contrast(dt_aligned_pixel_t rgb,
     rgb[c] *= grey[c];
 }
 
-static void _process_pixel_legacy(const dt_aligned_pixel_t in,
-                                  dt_aligned_pixel_t out,
-                                  const dt_aligned_pixel_t lift,
-                                  const dt_aligned_pixel_t gamma_inv,
-                                  const dt_aligned_pixel_t gain)
+static void _process_legacy(const dt_aligned_pixel_t in,
+                            dt_aligned_pixel_t out,
+                            const size_t npixels,
+                            const dt_aligned_pixel_t lift,
+                            const dt_aligned_pixel_t gamma_inv,
+                            const dt_aligned_pixel_t gain)
 {
-
-  // transform the pixel to sRGB:
-  // Lab -> XYZ
-  dt_aligned_pixel_t XYZ = { 0.0f };
-  dt_Lab_to_XYZ(in, XYZ);
-
-  // XYZ -> sRGB
-  dt_aligned_pixel_t rgb = { 0.0f };
-  dt_XYZ_to_sRGB(XYZ, rgb);
-
-  // do the calculation in RGB space
-  for_each_channel(c)
+  for(size_t k = 0; k < npixels; k++)
   {
-    // lift gamma gain - apply lift and gain
-    rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
-    rgb[c] = MAX(rgb[c], 0.0f);
+    // transform the pixel to sRGB:
+    // Lab -> XYZ
+    dt_aligned_pixel_t XYZ = { 0.0f };
+    dt_Lab_to_XYZ(in + 4*k, XYZ);
+
+    // XYZ -> sRGB
+    dt_aligned_pixel_t rgb = { 0.0f };
+    dt_XYZ_to_sRGB(XYZ, rgb);
+
+    // do the calculation in RGB space
+    for_each_channel(c)
+    {
+      // lift gamma gain - apply lift and gain
+      rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
+      rgb[c] = MAX(rgb[c], 0.0f);
+    }
+    // lift gamma gain - apply gamma
+    dt_vector_powf(rgb, gamma_inv, rgb);
+
+    // transform the result back to Lab
+    // sRGB -> XYZ
+    dt_sRGB_to_XYZ(rgb, XYZ);
+
+    // XYZ -> Lab
+    dt_aligned_pixel_t res;
+    dt_XYZ_to_Lab(XYZ, res);
+    copy_pixel_nontemporal(out + 4*k, res);
   }
-  // lift gamma gain - apply gamma
-  dt_vector_powf(rgb, gamma_inv, rgb);
-
-  // transform the result back to Lab
-  // sRGB -> XYZ
-  dt_sRGB_to_XYZ(rgb, XYZ);
-
-  // XYZ -> Lab
-  dt_aligned_pixel_t res;
-  dt_XYZ_to_Lab(XYZ, res);
-  copy_pixel_nontemporal(out, res);
 }
 
 static void _process_lgg(const dt_aligned_pixel_t in,
@@ -528,25 +531,36 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case LEGACY:
     {
       // these are RGB values!
-      const dt_aligned_pixel_t lift = { 2.0 - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
-                                        2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
-                                        2.0 - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]) },
+      const dt_aligned_pixel_t lift = { 2.0f - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
+                                        2.0f - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
+                                        2.0f - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
+                                        0.0f },
                               gamma = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
                                         d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
-                                        d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR] },
-                          gamma_inv = { (gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
-                                        (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
-                                        (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 };
+                                        d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
+                                        1.0f },
+                          gamma_inv = { (gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f,
+                                        (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
+                                        (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f,
+                                        1.0f };
 
 #ifdef _OPENMP
+      // figure out the number of pixels each thread needs to process
+      // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+      const size_t nthreads = dt_get_num_threads();
+      const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(gain, gamma_inv, lift, in, out, npixels) \
+      dt_omp_firstprivate(gain, gamma_inv, lift, in, out, npixels, nthreads, chunksize) \
       schedule(static)
-#endif
-      for(size_t k = 0; k < 4 * npixels; k += 4)
+      for(size_t chunk = 0; chunk < nthreads; chunk++)
       {
-        _process_pixel_legacy(in + k, out + k, lift, gamma_inv, gain);
+        size_t start = chunksize * dt_get_thread_num();
+        size_t end = MIN(start + chunksize, npixels);
+        _process_legacy(in + 4*start, out + 4*start, end-start, lift, gamma_inv, gain);
       }
+#else
+      _process_legacy(in, out, npixels, lift, gamma_inv, gain);
+#endif
       dt_omploop_sfence();
       break;
     }
