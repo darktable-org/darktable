@@ -643,7 +643,7 @@ static inline void dt_sfence()
 #define dt_omploop_sfence() dt_sfence()
 #endif
 
-@ifdef __SSE2__
+#ifdef __SSE2__
 static inline unsigned int dt_mm_enable_flush_zero()
 {
   // flush denormals to zero for masking to avoid performance penalty
@@ -655,6 +655,7 @@ static inline unsigned int dt_mm_enable_flush_zero()
 
 static inline void dt_mm_restore_flush_zero(const unsigned int mode)
 {
+  _MM_SET_FLUSH_ZERO_MODE(mode);
 }
 #else
 #define dt_mm_enable_flush_zero()

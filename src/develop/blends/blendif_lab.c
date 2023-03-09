@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -269,11 +269,8 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
                       blendif, parameters, mask_inclusive, mask_inversed, global_opacity)
 #endif
     {
-#ifdef __SSE2__
       // flush denormals to zero to avoid performance penalty if there are a lot of zero values in the mask
-      const int oldMode = _MM_GET_FLUSH_ZERO_MODE();
-      _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-#endif
+      const int oldMode = dt_mm_enable_flush_zero();
 
       // initialize the parametric mask
 #ifdef _OPENMP
@@ -336,9 +333,7 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
         }
       }
 
-#ifdef __SSE2__
-      _MM_SET_FLUSH_ZERO_MODE(oldMode);
-#endif
+      dt_mm_restore_flush_zero(oldMode);
     }
 
     dt_free_align(temp_mask);
