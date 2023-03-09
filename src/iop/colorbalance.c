@@ -321,14 +321,14 @@ static inline void apply_CDL(
 }
 
 static inline void apply_fulcrum_contrast(dt_aligned_pixel_t rgb,
-                                          const float grey,
+                                          const dt_aligned_pixel_t grey,
                                           const dt_aligned_pixel_t contrast_power)
 {
   for_each_channel(c)
-    rgb[c] = MAX(rgb[c], 0.0f) / grey;
+    rgb[c] = MAX(rgb[c], 0.0f) / grey[c];
   dt_vector_powf(rgb, contrast_power, rgb);
   for_each_channel(c)
-    rgb[c] *= grey;
+    rgb[c] *= grey[c];
 }
 
 static void _process_pixel_legacy(const dt_aligned_pixel_t in,
@@ -367,71 +367,80 @@ static void _process_pixel_legacy(const dt_aligned_pixel_t in,
   copy_pixel_nontemporal(out, res);
 }
 
-static void _process_pixel_lgg(const dt_aligned_pixel_t in,
-                               dt_aligned_pixel_t out,
-                               const dt_aligned_pixel_t lift,
-                               const dt_aligned_pixel_t gamma_inv,
-                               const dt_aligned_pixel_t gain,
-                               const float grey,
-                               const float saturation,
-                               const int run_saturation,
-                               const float saturation_out,
-                               const int run_saturation_out,
-                               const int run_contrast,
-                               const dt_aligned_pixel_t contrast_power)
+static void _process_lgg(const dt_aligned_pixel_t in,
+                         dt_aligned_pixel_t out,
+                         const size_t npixels,
+                         const dt_aligned_pixel_t lift,
+                         const dt_aligned_pixel_t gamma_inv,
+                         const dt_aligned_pixel_t gain,
+                         const float grey,
+                         const float saturation,
+                         const int run_saturation,
+                         const float saturation_out,
+                         const int run_saturation_out,
+                         const int run_contrast,
+                         const dt_aligned_pixel_t contrast_power)
 {
-  // transform the pixel to ProphotoRGB:
-  // Lab -> XYZ -> RGB, return Y as luma
-  dt_aligned_pixel_t rgb;
-  float luma = dt_Lab_to_prophotorgb(in, rgb);
+  const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
+  const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
+  const dt_aligned_pixel_t saturation_out4
+    = { saturation_out, saturation_out, saturation_out, saturation_out };
 
-  // do the calculation in RGB space
-  if(run_saturation)
+  for(size_t k = 0; k < npixels; k++)
   {
-    // main saturation input
-    for_each_channel(c)
-      rgb[c] = luma + saturation * (rgb[c] - luma);
-  }
-  for_each_channel(c)
-  {
-    // clip away negatives
-    rgb[c] = MAX(rgb[c], 0.0f);
-  }
-  // RGB gamma correction
-  static const dt_aligned_pixel_t power = { 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f };
-  dt_vector_powf(rgb, power, rgb);
-  for_each_channel(c)
-  {
-    // lift gamma gain - apply lift and gain
-    rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
-  }
-  for_each_channel(c)
-  {
-    // clip away negatives
-    rgb[c] = MAX(rgb[c], 0.0f);
-  }
-  dt_vector_powf(rgb, gamma_inv, rgb);
-  // main saturation output
-  if(run_saturation_out)
-  {
-    luma = dt_prophotorgb_to_XYZ_luma(rgb);
-    for_each_channel(c)
-      rgb[c] = luma + saturation_out * (rgb[c] - luma);
-  }
+    // transform the pixel to ProphotoRGB:
+    // Lab -> XYZ -> RGB, return Y as luma
+    dt_aligned_pixel_t rgb;
+    float luma = dt_Lab_to_prophotorgb(in + 4*k, rgb);
 
-  // fulcrum contrat
-  if(run_contrast)
-  {
-    apply_fulcrum_contrast(rgb, grey, contrast_power);
+    // do the calculation in RGB space
+    if(run_saturation)
+    {
+      // main saturation input
+      for_each_channel(c)
+        rgb[c] = luma + saturation4[c] * (rgb[c] - luma);
+    }
+    for_each_channel(c)
+    {
+      // clip away negatives
+      rgb[c] = MAX(rgb[c], 0.0f);
+    }
+    // RGB gamma correction
+    static const dt_aligned_pixel_t power = { 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f };
+    dt_vector_powf(rgb, power, rgb);
+    for_each_channel(c)
+    {
+      // lift gamma gain - apply lift and gain
+      rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
+    }
+    for_each_channel(c)
+    {
+      // clip away negatives
+      rgb[c] = MAX(rgb[c], 0.0f);
+    }
+    dt_vector_powf(rgb, gamma_inv, rgb);
+    // main saturation output
+    if(run_saturation_out)
+    {
+      luma = dt_prophotorgb_to_XYZ_luma(rgb);
+      for_each_channel(c)
+        rgb[c] = luma + saturation_out4[c] * (rgb[c] - luma);
+    }
+
+    // fulcrum contrat
+    if(run_contrast)
+    {
+      apply_fulcrum_contrast(rgb, grey4, contrast_power);
+    }
+    // transform the result back to Lab
+    // ProphotoRGB -> XYZ -> Lab
+    dt_aligned_pixel_t res;
+    dt_prophotorgb_to_Lab(rgb, res);
+    copy_pixel_nontemporal(out + 4*k, res);
   }
-  // transform the result back to Lab
-  // ProphotoRGB -> XYZ -> Lab
-  dt_aligned_pixel_t res;
-  dt_prophotorgb_to_Lab(rgb, res);
-  copy_pixel_nontemporal(out, res);
 }
 
-/*static*/ void _process_pixel_sop(const dt_aligned_pixel_t in,
+/*static*/ void _process_sop(const dt_aligned_pixel_t in,
                                dt_aligned_pixel_t out,
                                const size_t npixels,
                                const dt_aligned_pixel_t lift,
@@ -443,6 +452,11 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
                                const float contrast,
                                const dt_aligned_pixel_t contrast_power)
 {
+  const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
+  const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
+  const dt_aligned_pixel_t saturation_out4
+    = { saturation_out, saturation_out, saturation_out, saturation_out };
+
   for(size_t k = 0; k < npixels; k++)
   {
     // transform the pixel to RGB:
@@ -455,7 +469,7 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
     {
       // main saturation input
       for_each_channel(c)
-        rgb[c] = luma + saturation * (rgb[c] - luma);
+        rgb[c] = luma + saturation4[c] * (rgb[c] - luma);
     }
     apply_CDL(rgb, gain, lift, gamma);
 
@@ -464,13 +478,13 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
     {
       luma = dt_prophotorgb_to_XYZ_luma(rgb);
       for_each_channel(c)
-        rgb[c] = luma + saturation_out * (rgb[c] - luma);
+        rgb[c] = luma + saturation_out4[c] * (rgb[c] - luma);
     }
 
     // fulcrum contrast
     if(contrast != 1.0f)
     {
-      apply_fulcrum_contrast(rgb, grey, contrast_power);
+      apply_fulcrum_contrast(rgb, grey4, contrast_power);
     }
 
     // transform the result back to Lab
@@ -553,17 +567,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                         1.0f };
 
 #ifdef _OPENMP
+      // figure out the number of pixels each thread needs to process
+      // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+      const size_t nthreads = dt_get_num_threads();
+      const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
 #pragma omp parallel for SIMD() default(none) \
       dt_omp_firstprivate(contrast, gain, gamma_inv, grey, in, out, lift,       \
-                          npixels, run_contrast, contrast_power, saturation, run_saturation, \
-                          saturation_out, run_saturation_out)           \
+                          nthreads, chunksize, npixels, run_contrast, contrast_power, \
+                          saturation, run_saturation, saturation_out, run_saturation_out) \
       schedule(static)
-#endif
-      for(size_t k = 0; k < 4 * npixels; k += 4)
+      for(size_t chunk = 0; chunk < nthreads; chunk++)
       {
-        _process_pixel_lgg(in + k, out + k, lift, gamma_inv, gain, grey, saturation, run_saturation,
-                           saturation_out, run_saturation_out, run_contrast, contrast_power);
+        size_t start = chunksize * dt_get_thread_num();
+        size_t end = MIN(start + chunksize, npixels);
+        _process_lgg(in + 4*start, out + 4*start, end-start, lift, gamma_inv, gain,
+                     grey, saturation, run_saturation, saturation_out, run_saturation_out,
+                     run_contrast, contrast_power);
       }
+#else
+      _process_lgg(in, out, npixels, lift, gamma_inv, gain,
+                   grey, saturation, run_saturation, saturation_out, run_saturation_out,
+                   run_contrast, contrast_power);
+#endif
       dt_omploop_sfence();
       break;
    }
@@ -594,15 +619,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         size_t start = chunksize * dt_get_thread_num();
         size_t end = MIN(start + chunksize, npixels);
-        _process_pixel_sop(in + 4*start, out + 4*start, end-start,
-                           lift, gamma, gain, grey, saturation,
-                           saturation_out, contrast, contrast_power);
+        _process_sop(in + 4*start, out + 4*start, end-start,
+                     lift, gamma, gain, grey, saturation,
+                     saturation_out, contrast, contrast_power);
       }
-      dt_omploop_sfence();
 #else /* !_OPENMP */
-      _process_pixel_sop(in, out, npixels, lift, gamma, gain, grey, saturation,
-                         saturation_out, contrast, contrast_power);
+      _process_sop(in, out, npixels, lift, gamma, gain, grey, saturation,
+                   saturation_out, contrast, contrast_power);
 #endif
+      dt_omploop_sfence();
       break;
     }
   }
