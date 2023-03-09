@@ -533,14 +533,12 @@ static inline void compute_upsampling_kernel_sse(const struct dt_interpolation *
 static inline void compute_upsampling_kernel(const struct dt_interpolation *itor, float *kernel, float *norm,
                                              int *first, float t)
 {
-  if(darktable.codepath.OPENMP_SIMD)
-    return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
 #if defined(__SSE2__)
-  else if(darktable.codepath.SSE2)
+  if(darktable.codepath.SSE2)
     return compute_upsampling_kernel_sse(itor, kernel, norm, first, t);
 #endif
   else
-    dt_unreachable_codepath();
+    return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
 }
 
 /** Computes a downsampling filtering kernel
@@ -664,14 +662,12 @@ static inline void compute_downsampling_kernel_sse(const struct dt_interpolation
 static inline void compute_downsampling_kernel(const struct dt_interpolation *itor, int *taps, int *first,
                                                float *kernel, float *norm, float outoinratio, int xout)
 {
-  if(darktable.codepath.OPENMP_SIMD)
-    return compute_downsampling_kernel_plain(itor, taps, first, kernel, norm, outoinratio, xout);
 #if defined(__SSE2__)
-  else if(darktable.codepath.SSE2)
+  if(darktable.codepath.SSE2)
     return compute_downsampling_kernel_sse(itor, taps, first, kernel, norm, outoinratio, xout);
 #endif
   else
-    dt_unreachable_codepath();
+    return compute_downsampling_kernel_plain(itor, taps, first, kernel, norm, outoinratio, xout);
 }
 
 /* --------------------------------------------------------------------------
@@ -973,14 +969,12 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const
                                       const float x, const float y, const int width, const int height,
                                       const int linestride)
 {
-  if(darktable.codepath.OPENMP_SIMD)
-    return dt_interpolation_compute_pixel4c_plain(itor, in, out, x, y, width, height, linestride);
 #if defined(__SSE2__)
-  else if(darktable.codepath.SSE2)
+  if(darktable.codepath.SSE2)
     return dt_interpolation_compute_pixel4c_sse(itor, in, out, x, y, width, height, linestride);
 #endif
   else
-    dt_unreachable_codepath();
+    return dt_interpolation_compute_pixel4c_plain(itor, in, out, x, y, width, height, linestride);
 }
 
 static void dt_interpolation_compute_pixel1c_plain(const struct dt_interpolation *itor, const float *in,
@@ -1680,14 +1674,12 @@ void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
     return;
   }
 
-  if(darktable.codepath.OPENMP_SIMD)
-    return dt_interpolation_resample_plain(itor, out, roi_out, out_stride, in, roi_in, in_stride);
 #if defined(__SSE2__)
-  else if(darktable.codepath.SSE2)
+  if(darktable.codepath.SSE2)
     return dt_interpolation_resample_sse(itor, out, roi_out, out_stride, in, roi_in, in_stride);
 #endif
   else
-    dt_unreachable_codepath();
+    return dt_interpolation_resample_plain(itor, out, roi_out, out_stride, in, roi_in, in_stride);
 }
 
 /** Applies resampling (re-scaling) on a specific region-of-interest of an image. The input

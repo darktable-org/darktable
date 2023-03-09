@@ -286,7 +286,6 @@ typedef struct dt_codepath_t
 {
   unsigned int SSE2 : 1;
   unsigned int _no_intrinsics : 1;
-  unsigned int OPENMP_SIMD : 1; // always stays the last one
 } dt_codepath_t;
 
 typedef struct dt_sys_resources_t
