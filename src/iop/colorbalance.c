@@ -320,6 +320,17 @@ static inline void apply_CDL(
   dt_vector_powf(res, power, x);
 }
 
+static inline void apply_fulcrum_contrast(dt_aligned_pixel_t rgb,
+                                          const float grey,
+                                          const dt_aligned_pixel_t contrast_power)
+{
+  for_each_channel(c)
+    rgb[c] = MAX(rgb[c], 0.0f) / grey;
+  dt_vector_powf(rgb, contrast_power, rgb);
+  for_each_channel(c)
+    rgb[c] *= grey;
+}
+
 static void _process_pixel_legacy(const dt_aligned_pixel_t in,
                                   dt_aligned_pixel_t out,
                                   const dt_aligned_pixel_t lift,
@@ -366,22 +377,17 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
                                const int run_saturation,
                                const float saturation_out,
                                const int run_saturation_out,
-                               const float contrast,
-                               const int run_contrast)
+                               const int run_contrast,
+                               const dt_aligned_pixel_t contrast_power)
 {
-  // transform the pixel to sRGB:
-  // Lab -> XYZ
-  dt_aligned_pixel_t XYZ = { 0.0f };
-  dt_Lab_to_XYZ(in, XYZ);
-
-  // XYZ -> sRGB
-  dt_aligned_pixel_t rgb = { 0.0f };
-  dt_XYZ_to_prophotorgb(XYZ, rgb);
+  // transform the pixel to ProphotoRGB:
+  // Lab -> XYZ -> RGB, return Y as luma
+  dt_aligned_pixel_t rgb;
+  float luma = dt_Lab_to_prophotorgb(in, rgb);
 
   // do the calculation in RGB space
   if(run_saturation)
   {
-    const float luma = XYZ[1]; // the Y channel is the relative luminance
     // main saturation input
     for_each_channel(c)
       rgb[c] = luma + saturation * (rgb[c] - luma);
@@ -408,8 +414,7 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
   // main saturation output
   if(run_saturation_out)
   {
-    dt_prophotorgb_to_XYZ(rgb, XYZ);
-    const float luma = XYZ[1];
+    luma = dt_prophotorgb_to_XYZ_luma(rgb);
     for_each_channel(c)
       rgb[c] = luma + saturation_out * (rgb[c] - luma);
   }
@@ -417,12 +422,7 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
   // fulcrum contrat
   if(run_contrast)
   {
-    for_each_channel(c)
-      rgb[c] = MAX(rgb[c], 0.0f) / grey;
-    dt_aligned_pixel_t contrast_power = { contrast, contrast, contrast, contrast };
-    dt_vector_powf(rgb, contrast_power, rgb);
-    for_each_channel(c)
-      rgb[c] *= grey;
+    apply_fulcrum_contrast(rgb, grey, contrast_power);
   }
   // transform the result back to Lab
   // ProphotoRGB -> XYZ -> Lab
@@ -433,6 +433,7 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
 
 /*static*/ void _process_pixel_sop(const dt_aligned_pixel_t in,
                                dt_aligned_pixel_t out,
+                               const size_t npixels,
                                const dt_aligned_pixel_t lift,
                                const dt_aligned_pixel_t gamma,
                                const dt_aligned_pixel_t gain,
@@ -440,53 +441,44 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
                                const float saturation,
                                const float saturation_out,
                                const float contrast,
-                               const int run_contrast)
+                               const dt_aligned_pixel_t contrast_power)
 {
-  // transform the pixel to RGB:
-  // Lab -> XYZ
-  dt_aligned_pixel_t XYZ;
-  dt_Lab_to_XYZ(in, XYZ);
-
-  // XYZ -> RGB
-  dt_aligned_pixel_t rgb;
-  dt_XYZ_to_prophotorgb(XYZ, rgb);
-
-  float luma = XYZ[1]; // the Y channel is the RGB luminance
-
-  // do the calculation in RGB space
-  if(saturation != 1.0f)
+  for(size_t k = 0; k < npixels; k++)
   {
-    // main saturation input
-    for_each_channel(c)
-      rgb[c] = luma + saturation * (rgb[c] - luma);
-  }
-  apply_CDL(rgb, gain, lift, gamma);
+    // transform the pixel to RGB:
+    // Lab -> XYZ -> RGB, return Y as luma
+    dt_aligned_pixel_t rgb;
+    float luma = dt_Lab_to_prophotorgb(in + 4*k, rgb);
 
-  // main saturation output
-  if(saturation_out != 1.0f)
-  {
-    dt_prophotorgb_to_XYZ(rgb, XYZ);
-    luma = XYZ[1];
-    for_each_channel(c)
-      rgb[c] = luma + saturation_out * (rgb[c] - luma);
-  }
+    // do the calculation in RGB space
+    if(saturation != 1.0f)
+    {
+      // main saturation input
+      for_each_channel(c)
+        rgb[c] = luma + saturation * (rgb[c] - luma);
+    }
+    apply_CDL(rgb, gain, lift, gamma);
 
-  // fulcrum contrat
-  if(contrast != 1.0f)
-  {
-    for_each_channel(c)
-      rgb[c] = MAX(rgb[c], 0.0f) / grey;
-    dt_aligned_pixel_t contrast_power = { contrast, contrast, contrast, contrast };
-    dt_vector_powf(rgb, contrast_power, rgb);
-    for_each_channel(c)
-      rgb[c] *= grey;
-  }
+    // main saturation output
+    if(saturation_out != 1.0f)
+    {
+      luma = dt_prophotorgb_to_XYZ_luma(rgb);
+      for_each_channel(c)
+        rgb[c] = luma + saturation_out * (rgb[c] - luma);
+    }
 
-  // transform the result back to Lab
-  // ProphotoRGB -> XYZ -> Lab
-  dt_aligned_pixel_t res;
-  dt_prophotorgb_to_Lab(rgb , res);
-  copy_pixel_nontemporal(out, res);
+    // fulcrum contrast
+    if(contrast != 1.0f)
+    {
+      apply_fulcrum_contrast(rgb, grey, contrast_power);
+    }
+
+    // transform the result back to Lab
+    // ProphotoRGB -> XYZ -> Lab
+    dt_aligned_pixel_t res;
+    dt_prophotorgb_to_Lab(rgb , res);
+    copy_pixel_nontemporal(out + 4*k, res);
+  }
 }
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
@@ -515,6 +507,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = ivoid;
   float *const restrict out = ovoid;
+  const dt_aligned_pixel_t contrast_power = { contrast, contrast, contrast, contrast };
 
   switch(d->mode)
   {
@@ -562,14 +555,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
       dt_omp_firstprivate(contrast, gain, gamma_inv, grey, in, out, lift,       \
-                          npixels, run_contrast, saturation, run_saturation, \
+                          npixels, run_contrast, contrast_power, saturation, run_saturation, \
                           saturation_out, run_saturation_out)           \
       schedule(static)
 #endif
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
         _process_pixel_lgg(in + k, out + k, lift, gamma_inv, gain, grey, saturation, run_saturation,
-                           saturation_out, run_saturation_out, contrast, run_contrast);
+                           saturation_out, run_saturation_out, run_contrast, contrast_power);
       }
       dt_omploop_sfence();
       break;
@@ -588,18 +581,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                         1.0f };
 
 #ifdef _OPENMP
+      // figure out the number of pixels each thread needs to process
+      // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+      const size_t nthreads = dt_get_num_threads();
+      const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
 #pragma omp parallel for SIMD() default(none) \
       dt_omp_firstprivate(contrast, gain, gamma, grey, lift, in, out, \
-                          npixels, run_contrast, saturation, run_saturation, \
-                          saturation_out, run_saturation_out)            \
+                          nthreads, chunksize, npixels, contrast_power, \
+                          saturation, run_saturation, saturation_out, run_saturation_out) \
       schedule(static)
-#endif
-      for(size_t k = 0; k < 4 * npixels; k += 4)
+      for(size_t chunk = 0; chunk < nthreads; chunk++)
       {
-        _process_pixel_sop(in + k, out + k, lift, gamma, gain, grey, saturation,
-                           saturation_out, contrast, run_contrast);
+        size_t start = chunksize * dt_get_thread_num();
+        size_t end = MIN(start + chunksize, npixels);
+        _process_pixel_sop(in + 4*start, out + 4*start, end-start,
+                           lift, gamma, gain, grey, saturation,
+                           saturation_out, contrast, contrast_power);
       }
       dt_omploop_sfence();
+#else /* !_OPENMP */
+      _process_pixel_sop(in, out, npixels, lift, gamma, gain, grey, saturation,
+                         saturation_out, contrast, contrast_power);
+#endif
       break;
     }
   }

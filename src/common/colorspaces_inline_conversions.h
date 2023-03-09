@@ -630,11 +630,12 @@ static inline void dt_XYZ_to_sRGB_clipped(const dt_aligned_pixel_t XYZ, dt_align
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, rgb)
 #endif
-static inline void dt_Lab_to_prophotorgb(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t rgb)
+static inline float dt_Lab_to_prophotorgb(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t rgb)
 {
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ(Lab, XYZ);
   dt_XYZ_to_prophotorgb(XYZ, rgb);
+  return XYZ[1];
 }
 
 #ifdef _OPENMP
