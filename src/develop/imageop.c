@@ -201,13 +201,12 @@ static void default_process(struct dt_iop_module_t *self,
 {
   if(roi_in->width <= 1 || roi_in->height <= 1 || roi_out->width <= 1 || roi_out->height <= 1) return;
 
-  if(darktable.codepath.OPENMP_SIMD && self->process_plain)
-    self->process_plain(self, piece, i, o, roi_in, roi_out);
 #if defined(__SSE__)
-  else if(darktable.codepath.SSE2 && self->process_sse2)
+  if(darktable.codepath.SSE2 && self->process_sse2)
     self->process_sse2(self, piece, i, o, roi_in, roi_out);
+  else
 #endif
-  else if(self->process_plain)
+  if(self->process_plain)
     self->process_plain(self, piece, i, o, roi_in, roi_out);
   else
     dt_unreachable_codepath_with_desc(self->op);

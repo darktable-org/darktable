@@ -324,18 +324,6 @@ static void dt_codepaths_init()
   // last: do we have any intrinsics sets enabled?
   darktable.codepath._no_intrinsics = !(darktable.codepath.SSE2);
 
-// if there is no SSE, we must enable plain codepath by default,
-// else, enable it conditionally.
-#if defined(__SSE__)
-  // disabled by default, needs to be manually enabled if needed.
-  // disabling all optimized codepaths enables it automatically.
-  if(dt_conf_get_bool("codepaths/openmp_simd") || darktable.codepath._no_intrinsics)
-#endif
-  {
-    darktable.codepath.OPENMP_SIMD = 1;
-    dt_print(DT_DEBUG_ALWAYS, "[dt_codepaths_init] will be using experimental plain OpenMP SIMD codepath.\n");
-  }
-
 #if defined(__SSE__)
   if(darktable.codepath._no_intrinsics)
   {
