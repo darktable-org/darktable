@@ -1282,7 +1282,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
           out[k+c] = d->lut[c][CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
         }
       }
-      out[k+3] = in[k+3];
     }
   }
   else
@@ -1324,7 +1323,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         for_each_channel(c,aligned(out:16))
           out[k+c] = 0.f;
       }
-      out[k+3] = in[k+3];
    }
   }
 }
