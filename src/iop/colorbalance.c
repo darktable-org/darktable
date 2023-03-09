@@ -26,6 +26,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "bauhaus/bauhaus.h"
 #include "common/exif.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -316,12 +317,7 @@ static inline void apply_CDL(
   dt_aligned_pixel_t res;
   for_each_channel(c)
     res[c] = MAX(slope[c] * x[c] + offset[c], 0.0f);
-#ifdef __SSE__
-  _mm_store_ps(x, _mm_pow_ps(_mm_load_ps(res), _mm_load_ps(power)));
-#else
-  for_each_channel(c)
-    x[c] = powf(res[c], power[c]);
-#endif
+  dt_vector_powf(res, power, x);
 }
 
 static void _process_pixel_legacy(const dt_aligned_pixel_t in,
@@ -347,11 +343,8 @@ static void _process_pixel_legacy(const dt_aligned_pixel_t in,
     rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
     rgb[c] = MAX(rgb[c], 0.0f);
   }
-  for_each_channel(c)
-  {
-    // lift gamma gain - apply gamma
-    rgb[c] = powf(rgb[c], gamma_inv[c]);
-  }
+  // lift gamma gain - apply gamma
+  dt_vector_powf(rgb, gamma_inv, rgb);
 
   // transform the result back to Lab
   // sRGB -> XYZ
@@ -398,11 +391,9 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
     // clip away negatives
     rgb[c] = MAX(rgb[c], 0.0f);
   }
-  for_each_channel(c)
-  {
-    // RGB gamma correction
-    rgb[c] = powf(rgb[c], 1.0f/2.2f);
-  }
+  // RGB gamma correction
+  static const dt_aligned_pixel_t power = { 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f };
+  dt_vector_powf(rgb, power, rgb);
   for_each_channel(c)
   {
     // lift gamma gain - apply lift and gain
@@ -413,11 +404,7 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
     // clip away negatives
     rgb[c] = MAX(rgb[c], 0.0f);
   }
-  for_each_channel(c)
-  {
-    // lift gamma gain - apply gamma
-    rgb[c] = powf(rgb[c], gamma_inv[c]);
-  }
+  dt_vector_powf(rgb, gamma_inv, rgb);
   // main saturation output
   if(run_saturation_out)
   {
@@ -432,8 +419,8 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
   {
     for_each_channel(c)
       rgb[c] = MAX(rgb[c], 0.0f) / grey;
-    for_each_channel(c)
-      rgb[c] = powf(rgb[c], contrast);
+    dt_aligned_pixel_t contrast_power = { contrast, contrast, contrast, contrast };
+    dt_vector_powf(rgb, contrast_power, rgb);
     for_each_channel(c)
       rgb[c] *= grey;
   }
@@ -444,7 +431,7 @@ static void _process_pixel_lgg(const dt_aligned_pixel_t in,
   copy_pixel_nontemporal(out, res);
 }
 
-static void _process_pixel_sop(const dt_aligned_pixel_t in,
+/*static*/ void _process_pixel_sop(const dt_aligned_pixel_t in,
                                dt_aligned_pixel_t out,
                                const dt_aligned_pixel_t lift,
                                const dt_aligned_pixel_t gamma,
@@ -489,8 +476,8 @@ static void _process_pixel_sop(const dt_aligned_pixel_t in,
   {
     for_each_channel(c)
       rgb[c] = MAX(rgb[c], 0.0f) / grey;
-    for_each_channel(c)
-      rgb[c] = powf(rgb[c], contrast);
+    dt_aligned_pixel_t contrast_power = { contrast, contrast, contrast, contrast };
+    dt_vector_powf(rgb, contrast_power, rgb);
     for_each_channel(c)
       rgb[c] *= grey;
   }
@@ -526,7 +513,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
-  float *const out = (float*)ovoid;
+  const float *const restrict in = ivoid;
+  float *const restrict out = ovoid;
 
   switch(d->mode)
   {
@@ -545,12 +533,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(gain, gamma_inv, lift, ivoid, out, npixels) \
+      dt_omp_firstprivate(gain, gamma_inv, lift, in, out, npixels) \
       schedule(static)
 #endif
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
-        _process_pixel_legacy(((float *)ivoid) + k, out, lift, gamma_inv, gain);
+        _process_pixel_legacy(in + k, out + k, lift, gamma_inv, gain);
       }
       dt_omploop_sfence();
       break;
@@ -573,15 +561,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(contrast, gain, gamma_inv, grey, ivoid, lift, \
-                          out, npixels, run_contrast, \
-                          saturation, run_saturation, saturation_out, run_saturation_out) \
+      dt_omp_firstprivate(contrast, gain, gamma_inv, grey, in, out, lift,       \
+                          npixels, run_contrast, saturation, run_saturation, \
+                          saturation_out, run_saturation_out)           \
       schedule(static)
 #endif
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
-        float *in = ((float *)ivoid) + k;
-        _process_pixel_lgg(in, out, lift, gamma_inv, gain, grey, saturation, run_saturation,
+        _process_pixel_lgg(in + k, out + k, lift, gamma_inv, gain, grey, saturation, run_saturation,
                            saturation_out, run_saturation_out, contrast, run_contrast);
       }
       dt_omploop_sfence();
@@ -602,15 +589,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(contrast, gain, gamma, grey, ivoid, lift, out, \
+      dt_omp_firstprivate(contrast, gain, gamma, grey, lift, in, out, \
                           npixels, run_contrast, saturation, run_saturation, \
                           saturation_out, run_saturation_out)            \
       schedule(static)
 #endif
       for(size_t k = 0; k < 4 * npixels; k += 4)
       {
-        float *in = ((float *)ivoid) + k;
-        _process_pixel_sop(in, out, lift, gamma, gain, grey, saturation,
+        _process_pixel_sop(in + k, out + k, lift, gamma, gain, grey, saturation,
                            saturation_out, contrast, run_contrast);
       }
       dt_omploop_sfence();
