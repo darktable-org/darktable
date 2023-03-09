@@ -555,7 +555,7 @@ static void _blur_horizontal_Nch_Kahan(const size_t N,
 }
 
 #ifdef __SSE2__
-static void _blur_vertical_1ch_sse(float *const restrict buf,
+/*static*/ void _blur_vertical_1ch_sse(float *const restrict buf,
     const int height,
     const int width,
     const int radius,
@@ -570,7 +570,6 @@ static void _blur_vertical_1ch_sse(float *const restrict buf,
   // add up the top half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    PREFETCH_NTA(buf + (y+16)*width);
     hits += one;
     const __m128 v = _mm_loadu_ps(buf + y*width); // use unaligned load since width is not necessarily a multiple of 4
     L += v;
@@ -582,7 +581,6 @@ static void _blur_vertical_1ch_sse(float *const restrict buf,
   {
     const size_t np = y + radius;
     hits += one;
-    PREFETCH_NTA(buf + (np+16)*width);
     const __m128 v = _mm_loadu_ps(buf+np*width);
     L += v;
     scratch[np&mask] = v;
@@ -600,7 +598,6 @@ static void _blur_vertical_1ch_sse(float *const restrict buf,
   {
     const size_t np = y + radius;
     const size_t op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
     const __m128 v = _mm_loadu_ps(buf + np*width);
     L -= scratch[op&mask];
     L += v;
@@ -622,7 +619,7 @@ static void _blur_vertical_1ch_sse(float *const restrict buf,
 #endif /* __SSE2__ */
 
 #ifdef __SSE2__
-static void _blur_vertical_4ch_sse(float *const restrict buf,
+/*static*/ void _blur_vertical_4ch_sse(float *const restrict buf,
     const size_t height,
     const size_t width,
     const size_t radius,
@@ -637,7 +634,6 @@ static void _blur_vertical_4ch_sse(float *const restrict buf,
   // add up the top half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    PREFETCH_NTA(buf + (y+16)*width);
     hits += one;
     for(size_t c = 0; c < 4; c++)
     {
@@ -652,7 +648,6 @@ static void _blur_vertical_4ch_sse(float *const restrict buf,
   {
     const size_t np = y + radius;
     hits += one;
-    PREFETCH_NTA(buf + (np+16)*width);
     for(size_t c = 0; c < 4; c++)
     {
       const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
@@ -673,7 +668,6 @@ static void _blur_vertical_4ch_sse(float *const restrict buf,
   {
     const size_t np = y + radius;
     const size_t op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+32)*width);
     for(size_t c = 0; c < 4; c++)
     {
       const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
@@ -701,7 +695,7 @@ static void _blur_vertical_4ch_sse(float *const restrict buf,
 #endif /* __SSE2__ */
 
 // invoked inside an OpenMP parallel for, so no need to parallelize
-static void _blur_vertical_1wide(float *const restrict buf,
+/*static*/ void _blur_vertical_1wide(float *const restrict buf,
     const size_t height,
     const size_t width,
     const size_t radius,
@@ -720,7 +714,6 @@ static void _blur_vertical_1wide(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    PREFETCH_NTA(buf + (y+16)*width);
     hits++;
     const float v = buf[y*width];
     L += v;
@@ -732,7 +725,6 @@ static void _blur_vertical_1wide(float *const restrict buf,
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
-    PREFETCH_NTA(buf + (np+16)*width);
     hits++;
     const float v = buf[np*width];
     L += v;
@@ -750,7 +742,6 @@ static void _blur_vertical_1wide(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
     L -= scratch[op&mask];
     const float v = buf[np*width];
     L += v;
@@ -791,7 +782,6 @@ static void _blur_vertical_1wide_Kahan(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    PREFETCH_NTA(buf + (y+16)*width);
     hits++;
     const float v = buf[y*width];
     L = Kahan_sum(L, &c, v);
@@ -804,7 +794,6 @@ static void _blur_vertical_1wide_Kahan(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    PREFETCH_NTA(buf + (np+16)*width);
     const float v = buf[np*width];
     L = Kahan_sum(L, &c, v);
     scratch[np&mask] = v;
@@ -821,7 +810,6 @@ static void _blur_vertical_1wide_Kahan(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
     L = Kahan_sum(L, &c, -scratch[op&mask]);
     const float v = buf[np*width];
     L = Kahan_sum(L, &c, v);
@@ -842,7 +830,7 @@ static void _blur_vertical_1wide_Kahan(float *const restrict buf,
 }
 
 // invoked inside an OpenMP parallel for, so no need to parallelize
-static void _blur_vertical_4wide(float *const restrict buf,
+/*static*/ void _blur_vertical_4wide(float *const restrict buf,
     const size_t height,
     const size_t width,
     const size_t radius,
@@ -869,7 +857,6 @@ static void _blur_vertical_4wide(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    DT_PREFETCH(buf + (y+16)*width);
     hits++;
     _load_add_4wide(scratch + 4*(y&mask), L, buf + y * width);
   }
@@ -880,7 +867,6 @@ static void _blur_vertical_4wide(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    DT_PREFETCH(buf + (np+16)*width);
     _load_add_4wide(scratch + 4*(np&mask), L, buf + np*width);
     store_scaled_4wide(buf + y*width, L, hits);
   }
@@ -895,7 +881,6 @@ static void _blur_vertical_4wide(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    DT_PREFETCH(buf + (np+16)*width);
     _sub_4wide(L, scratch + 4*(op&mask));
     _load_add_4wide(scratch + 4*(np&mask), L, buf + np*width);
     store_scaled_4wide(buf + y*width, L, hits);
@@ -932,7 +917,6 @@ static void _blur_vertical_4wide_Kahan(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    DT_PREFETCH(buf + (y+16)*width);
     hits++;
     _load_add_4wide_Kahan(scratch + 4*(y&mask), L, buf + y * width, comp);
   }
@@ -943,7 +927,6 @@ static void _blur_vertical_4wide_Kahan(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    DT_PREFETCH(buf + (np+16)*width);
     _load_add_4wide_Kahan(scratch + 4*(np&mask), L, buf + np*width, comp);
     store_scaled_4wide(buf + y*width, L, hits);
   }
@@ -958,7 +941,6 @@ static void _blur_vertical_4wide_Kahan(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    DT_PREFETCH(buf + (np+16)*width);
     _sub_4wide_Kahan(L, scratch + 4*(op&mask), comp);
     _load_add_4wide_Kahan(scratch + 4*(np&mask), L, buf + np*width, comp);
     store_scaled_4wide(buf + y*width, L, hits);
@@ -975,7 +957,7 @@ static void _blur_vertical_4wide_Kahan(float *const restrict buf,
 }
 
 // invoked inside an OpenMP parallel for, so no need to parallelize
-static void _blur_vertical_16wide(float *const restrict buf,
+/*static*/ void _blur_vertical_16wide(float *const restrict buf,
     const size_t height,
     const size_t width,
     const size_t radius,
@@ -1002,7 +984,6 @@ static void _blur_vertical_16wide(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    PREFETCH_NTA(buf + (y+16)*width);
     hits++;
     _load_add_16wide(scratch + 16 * (y&mask), L, buf + y*width);
   }
@@ -1013,7 +994,6 @@ static void _blur_vertical_16wide(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    PREFETCH_NTA(buf + (np+16)*width);
     _load_add_16wide(scratch + 16 * (np&mask), L, buf + np*width);
     store_scaled_16wide(buf + y*width, L, hits);
   }
@@ -1028,7 +1008,6 @@ static void _blur_vertical_16wide(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
     _sub_16wide(L, scratch + 16*(op&mask));
     _load_add_16wide(scratch + 16*(np&mask), L, buf + np*width);
     // update the means
@@ -1067,7 +1046,6 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    DT_PREFETCH(buf + (y+16)*width);
     hits++;
     _load_add_16wide_Kahan(scratch + 16 * (y&mask), L, buf + y*width, comp);
   }
@@ -1078,7 +1056,6 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    DT_PREFETCH(buf + (np+16)*width);
     _load_add_16wide_Kahan(scratch + 16 * (np&mask), L, buf + np*width, comp);
     store_scaled_16wide(buf + y*width, L, hits);
   }
@@ -1093,7 +1070,6 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    DT_PREFETCH(buf + (np+16)*width);
     _sub_16wide_Kahan(L, scratch + 16*(op&mask), comp);
     _load_add_16wide_Kahan(scratch + 16*(np&mask), L, buf + np*width, comp);
     // update the means
@@ -1111,7 +1087,7 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
   return;
 }
 
-static void _blur_vertical_1ch(float *const restrict buf,
+/*static*/ void _blur_vertical_1ch(float *const restrict buf,
                               const size_t height,
                               const size_t width,
                               const size_t radius,
@@ -1299,6 +1275,7 @@ void dt_box_mean(float *const buf,
                  const int radius,
                  const unsigned iterations)
 {
+  double start = dt_get_wtime();
   if(ch == 1)
   {
     dt_box_mean_1ch(buf,height,width,radius,iterations);
@@ -1317,6 +1294,7 @@ void dt_box_mean(float *const buf,
   }
   else
     dt_unreachable_codepath();
+  fprintf(stderr,"[box_mean %d] %.3f ms\n",ch,1000.0*(dt_get_wtime()-start));
 }
 
 void dt_box_mean_horizontal(float *const restrict buf,
