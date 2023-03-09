@@ -136,6 +136,21 @@ static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in,
 }
 
 #ifdef _OPENMP
+#pragma omp declare simd aligned(in,out)
+#endif
+static inline void dt_apply_color_matrix_by_row(const dt_aligned_pixel_t in,
+                                                const dt_aligned_pixel_t matrix_row0,
+                                                const dt_aligned_pixel_t matrix_row1,
+                                                const dt_aligned_pixel_t matrix_row2,
+                                                dt_aligned_pixel_t out)
+{
+  // using dt_aligned_pixel_t instead of float* for the function parameters gives GCC enough info to vectorize
+  // and eliminate intermediate memory writes without going through major contortions
+  for_each_channel(r)
+    out[r] = matrix_row0[r] * in[0] + matrix_row1[r] * in[1] + matrix_row2[r] * in[2];
+}
+
+#ifdef _OPENMP
 #pragma omp declare simd simdlen(4)
 #endif
 static inline float cbrt_5f(float f)
@@ -601,6 +616,17 @@ static inline void dt_prophotorgb_to_Lab(const dt_aligned_pixel_t rgb, dt_aligne
 {
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_prophotorgb_to_XYZ(rgb, XYZ);
+  dt_XYZ_to_Lab(XYZ, Lab);
+}
+
+static inline void dt_RGB_to_Lab(const dt_aligned_pixel_t rgb,
+                                 const dt_aligned_pixel_t cmatrix_row0,
+                                 const dt_aligned_pixel_t cmatrix_row1,
+                                 const dt_aligned_pixel_t cmatrix_row2,
+                                 dt_aligned_pixel_t Lab)
+{
+  dt_aligned_pixel_t XYZ;
+  dt_apply_color_matrix_by_row(rgb, cmatrix_row0, cmatrix_row1, cmatrix_row2, XYZ);
   dt_XYZ_to_Lab(XYZ, Lab);
 }
 

@@ -756,8 +756,8 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self,
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in, out: 64)
 #endif
-static void _cmatrix_fastpath_simple(float *out,
-                                     const float *in,
+static void _cmatrix_fastpath_simple(float *const restrict out,
+                                     const float *const restrict in,
                                      size_t npixels,
                                      const dt_colormatrix_t cmatrix)
 {
@@ -809,6 +809,38 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self,
 #endif
 }
 
+static inline void _cmatrix_fastpath_clipping(float *const restrict out,
+                                              const float *const restrict in,
+                                              size_t npixels,
+                                              const dt_colormatrix_t nmatrix,
+                                              const dt_colormatrix_t lmatrix)
+{
+  const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0], nmatrix[1][0], nmatrix[2][0], 0.0f };
+  const dt_aligned_pixel_t nmatrix_row1 = { nmatrix[0][1], nmatrix[1][1], nmatrix[2][1], 0.0f };
+  const dt_aligned_pixel_t nmatrix_row2 = { nmatrix[0][2], nmatrix[1][2], nmatrix[2][2], 0.0f };
+  const dt_aligned_pixel_t lmatrix_row0 = { lmatrix[0][0], lmatrix[1][0], lmatrix[2][0], 0.0f };
+  const dt_aligned_pixel_t lmatrix_row1 = { lmatrix[0][1], lmatrix[1][1], lmatrix[2][1], 0.0f };
+  const dt_aligned_pixel_t lmatrix_row2 = { lmatrix[0][2], lmatrix[1][2], lmatrix[2][2], 0.0f };
+  
+  // this function is called from inside a parallel for loop, so no need for further parallelization
+  for(size_t k = 0; k < npixels; k++)
+  {
+    dt_aligned_pixel_t nRGB;
+    dt_apply_color_matrix_by_row(in + 4*k, nmatrix_row0, nmatrix_row1, nmatrix_row2, nRGB);
+
+    // two separate clamping operations proves more efficient than
+    // either CLAMP or CLIP macros...
+    for_each_channel(c)
+      nRGB[c] = MAX(nRGB[c], 0.0f);
+    for_each_channel(c)
+      nRGB[c] = MIN(nRGB[c], 1.0f);
+
+    dt_aligned_pixel_t res;
+    dt_RGB_to_Lab(nRGB, lmatrix_row0, lmatrix_row1, lmatrix_row2, res);
+    copy_pixel_nontemporal(out + 4*k, res);
+  }
+}
+
 static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
                                               dt_dev_pixelpipe_iop_t *piece,
                                               const void *const ivoid,
@@ -819,36 +851,29 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   assert(piece->colors == 4);
 
-  dt_colormatrix_t nmatrix;
-  dt_colormatrix_t lmatrix;
-  transpose_3xSSE(d->nmatrix, nmatrix);
-  transpose_3xSSE(d->lmatrix, lmatrix);
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict  out = (float*)ovoid;
 
-// dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath\n");
-// only color matrix. use our optimized fast path!
 #ifdef _OPENMP
+  // figure out the number of pixels each thread needs to process
+  // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+  const size_t nthreads = dt_get_num_threads();
+  const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, ovoid, roi_out)      \
-  shared(nmatrix, lmatrix) \
+  dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d)  \
   schedule(static)
-#endif
-  for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
-    float *in = (float *)ivoid + (size_t)4 * k;
-    float *out = (float *)ovoid + (size_t)4 * k;
-
-    dt_aligned_pixel_t nRGB;
-    dt_apply_transposed_color_matrix(in, nmatrix, nRGB);
-
-    dt_aligned_pixel_t cRGB = { 0.0f, 0.0f, 0.0f, 0.0f };
-    for_each_channel(c)
-      cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
-
-    dt_aligned_pixel_t XYZ;
-    dt_apply_transposed_color_matrix(cRGB, lmatrix, XYZ);
-
-    dt_XYZ_to_Lab(XYZ, out);
+    size_t start = chunksize * dt_get_thread_num();
+    size_t end = MIN(start + chunksize, npixels);
+    _cmatrix_fastpath_clipping(out + 4*start, in + 4*start, end-start, d->nmatrix, d->lmatrix);
   }
+#else
+  _cmatrix_fastpath_clipping(out, in, npixels, d->nmatrix, d->lmatrix);
+#endif
+  // ensure that all nontemporal writes have been flushed to RAM before we return
+  dt_omploop_sfence();
 }
 
 static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
@@ -921,7 +946,9 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
       {
         dt_aligned_pixel_t _xyz;
         dt_apply_transposed_color_matrix(cam, cmatrix, _xyz);
-        dt_XYZ_to_Lab(_xyz, out);
+        dt_aligned_pixel_t res;
+        dt_XYZ_to_Lab(_xyz, res);
+        copy_pixel_nontemporal(out, res);
       }
       else
       {
@@ -936,10 +963,13 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
 
         dt_aligned_pixel_t XYZ;
         dt_apply_transposed_color_matrix(cRGB, lmatrix, XYZ);
-        dt_XYZ_to_Lab(XYZ, out);
+        dt_aligned_pixel_t res;
+        dt_XYZ_to_Lab(XYZ, res);
+        copy_pixel_nontemporal(out, res);
       }
     }
   }
+  dt_omploop_sfence();
 }
 
 static void process_cmatrix(struct dt_iop_module_t *self,
@@ -1228,14 +1258,13 @@ static void process_sse2_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
     float *out = (float *)ovoid + (size_t)ch * k;
 
     __m128 input = _mm_load_ps(in);
-
-    __m128 nrgb = _mm_add_ps(_mm_add_ps(_mm_mul_ps(nm0, _mm_shuffle_ps(input, input, _MM_SHUFFLE(0, 0, 0, 0))),
-                                        _mm_mul_ps(nm1, _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1)))),
-                             _mm_mul_ps(nm2, _mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2))));
+    __m128 nrgb = ((nm0 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(0, 0, 0, 0))) +
+                   (nm1 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1))) +
+                   (nm2 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2))));
     __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-    __m128 xyz = _mm_add_ps(_mm_add_ps(_mm_mul_ps(lm0, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))),
-                                       _mm_mul_ps(lm1, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1)))),
-                            _mm_mul_ps(lm2, _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
+    __m128 xyz = ((lm0 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))) +
+                  (lm1 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1))) +
+                  (lm2 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
     _mm_stream_ps(out, dt_XYZ_to_Lab_sse2(xyz));
   }
   _mm_sfence();
