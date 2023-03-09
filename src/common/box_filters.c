@@ -1119,7 +1119,6 @@ void dt_box_mean(float *const buf,
                  const int radius,
                  const unsigned iterations)
 {
-  double start = dt_get_wtime();
   if(ch == 1)
   {
     dt_box_mean_1ch(buf,height,width,radius,iterations);
@@ -1138,7 +1137,6 @@ void dt_box_mean(float *const buf,
   }
   else
     dt_unreachable_codepath();
-  fprintf(stderr,"[box_mean %d] %.3f ms\n",ch,1000.0*(dt_get_wtime()-start));
 }
 
 void dt_box_mean_horizontal(float *const restrict buf,
