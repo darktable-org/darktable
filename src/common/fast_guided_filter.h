@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -306,10 +306,10 @@ static inline void fast_surface_blur(float *const restrict image,
   const size_t num_elem_ds = ds_width * ds_height;
   const size_t num_elem = width * height;
 
-  float *const restrict ds_image = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds));
-  float *const restrict ds_mask = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds));
-  float *const restrict ds_ab = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds * 2));
-  float *const restrict ab = dt_alloc_sse_ps(dt_round_size_sse(num_elem * 2));
+  float *const restrict ds_image = dt_alloc_align_float(dt_round_size_sse(num_elem_ds));
+  float *const restrict ds_mask = dt_alloc_align_float(dt_round_size_sse(num_elem_ds));
+  float *const restrict ds_ab = dt_alloc_align_float(dt_round_size_sse(num_elem_ds * 2));
+  float *const restrict ab = dt_alloc_align_float(dt_round_size_sse(num_elem * 2));
 
   if(!ds_image || !ds_mask || !ds_ab || !ab)
   {

@@ -471,11 +471,6 @@ static inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
     return (uintptr_t)pointer % byte_count == 0;
 }
 
-static inline void * dt_alloc_sse_ps(size_t pixels)
-{
-  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
-}
-
 static inline void * dt_check_sse_aligned(void * pointer)
 {
   if(dt_is_aligned(pointer, 64))
