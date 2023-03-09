@@ -378,12 +378,49 @@ static void _process_lgg(const dt_aligned_pixel_t in,
                          const dt_aligned_pixel_t gain,
                          const float grey,
                          const float saturation,
-                         const int run_saturation,
                          const float saturation_out,
-                         const int run_saturation_out,
-                         const int run_contrast,
                          const dt_aligned_pixel_t contrast_power)
 {
+  const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
+  const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
+  const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
+  if(!run_saturation && !run_saturation_out && !run_contrast)
+  {
+    // fully neutral settings, only apply the curves
+    for(size_t k = 0; k < npixels; k++)
+    {
+      // transform the pixel to ProphotoRGB:
+      // Lab -> XYZ -> RGB, return Y as luma
+      dt_aligned_pixel_t rgb;
+      (void)dt_Lab_to_prophotorgb(in + 4*k, rgb);
+      for_each_channel(c)
+      {
+        // clip away negatives
+        rgb[c] = MAX(rgb[c], 0.0f);
+      }
+      // RGB gamma correction
+      static const dt_aligned_pixel_t power = { 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f };
+      dt_vector_powf(rgb, power, rgb);
+      for_each_channel(c)
+      {
+        // lift gamma gain - apply lift and gain
+        rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
+      }
+      for_each_channel(c)
+      {
+        // clip away negatives
+        rgb[c] = MAX(rgb[c], 0.0f);
+      }
+      dt_vector_powf(rgb, gamma_inv, rgb);
+      // transform the result back to Lab
+      // ProphotoRGB -> XYZ -> Lab
+      dt_aligned_pixel_t res;
+      dt_prophotorgb_to_Lab(rgb, res);
+      copy_pixel_nontemporal(out + 4*k, res);
+    }
+    return;
+  }
+  
   const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
   const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
   const dt_aligned_pixel_t saturation_out4
@@ -443,18 +480,40 @@ static void _process_lgg(const dt_aligned_pixel_t in,
   }
 }
 
-/*static*/ void _process_sop(const dt_aligned_pixel_t in,
-                               dt_aligned_pixel_t out,
-                               const size_t npixels,
-                               const dt_aligned_pixel_t lift,
-                               const dt_aligned_pixel_t gamma,
-                               const dt_aligned_pixel_t gain,
-                               const float grey,
-                               const float saturation,
-                               const float saturation_out,
-                               const float contrast,
-                               const dt_aligned_pixel_t contrast_power)
+static void _process_sop(const dt_aligned_pixel_t in,
+                         dt_aligned_pixel_t out,
+                         const size_t npixels,
+                         const dt_aligned_pixel_t lift,
+                         const dt_aligned_pixel_t gamma,
+                         const dt_aligned_pixel_t gain,
+                         const float grey,
+                         const float saturation,
+                         const float saturation_out,
+                         const float contrast,
+                         const dt_aligned_pixel_t contrast_power)
 {
+  const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
+  const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
+  const int run_contrast = fabsf(contrast - 1.0f) > 1e-6;
+  if(!run_saturation && !run_saturation_out && !run_contrast)
+  {
+    // fully neutral settings, only apply the curves
+    for(size_t k = 0; k < npixels; k++)
+    {
+    // transform the pixel to RGB:
+    // Lab -> XYZ -> RGB, return Y as luma
+    dt_aligned_pixel_t rgb;
+    (void)dt_Lab_to_prophotorgb(in + 4*k, rgb);
+    apply_CDL(rgb, gain, lift, gamma);
+    // transform the result back to Lab
+    // ProphotoRGB -> XYZ -> Lab
+    dt_aligned_pixel_t res;
+    dt_prophotorgb_to_Lab(rgb , res);
+    copy_pixel_nontemporal(out + 4*k, res);
+    }
+    return;
+  }
+
   const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
   const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
   const dt_aligned_pixel_t saturation_out4
@@ -468,7 +527,7 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     float luma = dt_Lab_to_prophotorgb(in + 4*k, rgb);
 
     // do the calculation in RGB space
-    if(saturation != 1.0f)
+    if(run_saturation)
     {
       // main saturation input
       for_each_channel(c)
@@ -477,7 +536,7 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     apply_CDL(rgb, gain, lift, gamma);
 
     // main saturation output
-    if(saturation_out != 1.0f)
+    if(run_saturation_out)
     {
       luma = dt_prophotorgb_to_XYZ_luma(rgb);
       for_each_channel(c)
@@ -485,7 +544,7 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     }
 
     // fulcrum contrast
-    if(contrast != 1.0f)
+    if(run_contrast)
     {
       apply_fulcrum_contrast(rgb, grey4, contrast_power);
     }
@@ -499,146 +558,137 @@ static void _process_lgg(const dt_aligned_pixel_t in,
 }
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
-  // these are RGB values!
-  const dt_aligned_pixel_t gain = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
-                                    d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
-                                    d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] };
   const float contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
               grey = d->grey / 100.0f;
   const float saturation = d->saturation;
   const float saturation_out = d->saturation_out;
-
-  // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
-  const int run_contrast = (d->contrast == 1.0f) ? 0 : 1;
-  const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
-  const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = ivoid;
   float *const restrict out = ovoid;
   const dt_aligned_pixel_t contrast_power = { contrast, contrast, contrast, contrast };
 
+  // these are RGB values!
+  const dt_aligned_pixel_t lift =
+    { 2.0f - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
+      2.0f - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
+      2.0f - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
+      0.0f };
+  const dt_aligned_pixel_t lift_sop =
+    { ( d->lift[CHANNEL_RED] + d->lift[CHANNEL_FACTOR] - 2.0f),
+      ( d->lift[CHANNEL_GREEN] + d->lift[CHANNEL_FACTOR] - 2.0f),
+      ( d->lift[CHANNEL_BLUE] + d->lift[CHANNEL_FACTOR] - 2.0f),
+      0.0f };
+  const dt_aligned_pixel_t gamma =
+    { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
+      d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
+      d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
+      1.0f };
+  const dt_aligned_pixel_t gamma_sop =
+    { (2.0f - d->gamma[CHANNEL_RED]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+      (2.0f - d->gamma[CHANNEL_GREEN]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+      (2.0f - d->gamma[CHANNEL_BLUE]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
+      1.0f };
+  const dt_aligned_pixel_t gamma_inv_legacy =
+    { (gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f,
+      (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
+      (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f,
+      1.0f };
+  const dt_aligned_pixel_t gamma_inv_lgg =
+    { 2.2f * ((gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f),
+      2.2f * ((gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f),
+      2.2f * ((gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f),
+      1.0f };
+  const dt_aligned_pixel_t gain =
+    { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
+      d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
+      d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR],
+      1.0f };
+
   switch(d->mode)
   {
     case LEGACY:
     {
-      // these are RGB values!
-      const dt_aligned_pixel_t lift = { 2.0f - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
-                                        2.0f - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
-                                        2.0f - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
-                                        0.0f },
-                              gamma = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
-                                        d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
-                                        d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
-                                        1.0f },
-                          gamma_inv = { (gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f,
-                                        (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
-                                        (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f,
-                                        1.0f };
-
 #ifdef _OPENMP
       // figure out the number of pixels each thread needs to process
       // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
       const size_t nthreads = dt_get_num_threads();
       const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(gain, gamma_inv, lift, in, out, npixels, nthreads, chunksize) \
+      dt_omp_firstprivate(gain, gamma_inv_legacy, lift, in, out, npixels, nthreads, chunksize) \
       schedule(static)
       for(size_t chunk = 0; chunk < nthreads; chunk++)
       {
         size_t start = chunksize * dt_get_thread_num();
         size_t end = MIN(start + chunksize, npixels);
-        _process_legacy(in + 4*start, out + 4*start, end-start, lift, gamma_inv, gain);
+        _process_legacy(in + 4*start, out + 4*start, end-start, lift, gamma_inv_legacy, gain);
       }
 #else
-      _process_legacy(in, out, npixels, lift, gamma_inv, gain);
+      _process_legacy(in, out, npixels, lift, gamma_inv_legacy, gain);
 #endif
       dt_omploop_sfence();
       break;
     }
     case LIFT_GAMMA_GAIN:
     {
-      // these are RGB values!
-      const dt_aligned_pixel_t lift = { 2.0f - (d->lift[CHANNEL_RED] * d->lift[CHANNEL_FACTOR]),
-                                        2.0f - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
-                                        2.0f - (d->lift[CHANNEL_BLUE] * d->lift[CHANNEL_FACTOR]),
-                                        0.0f },
-                              gamma = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
-                                        d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
-                                        d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR],
-                                        1.0f },
-                          gamma_inv = { 2.2f * ((gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f),
-                                        2.2f * ((gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f),
-                                        2.2f * ((gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f),
-                                        1.0f };
-
 #ifdef _OPENMP
       // figure out the number of pixels each thread needs to process
       // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
       const size_t nthreads = dt_get_num_threads();
       const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(contrast, gain, gamma_inv, grey, in, out, lift,       \
-                          nthreads, chunksize, npixels, run_contrast, contrast_power, \
-                          saturation, run_saturation, saturation_out, run_saturation_out) \
+      dt_omp_firstprivate(contrast, gain, gamma_inv_lgg, grey, in, out, lift,       \
+                          nthreads, chunksize, npixels, contrast_power, \
+                          saturation, saturation_out) \
       schedule(static)
       for(size_t chunk = 0; chunk < nthreads; chunk++)
       {
         size_t start = chunksize * dt_get_thread_num();
         size_t end = MIN(start + chunksize, npixels);
-        _process_lgg(in + 4*start, out + 4*start, end-start, lift, gamma_inv, gain,
-                     grey, saturation, run_saturation, saturation_out, run_saturation_out,
-                     run_contrast, contrast_power);
+        _process_lgg(in + 4*start, out + 4*start, end-start, lift, gamma_inv_lgg, gain,
+                     grey, saturation, saturation_out, contrast_power);
       }
 #else
-      _process_lgg(in, out, npixels, lift, gamma_inv, gain,
-                   grey, saturation, run_saturation, saturation_out, run_saturation_out,
-                   run_contrast, contrast_power);
+      _process_lgg(in, out, npixels, lift, gamma_inv_lgg, gain,
+                   grey, saturation, saturation_out, contrast_power);
 #endif
       dt_omploop_sfence();
       break;
    }
     case SLOPE_OFFSET_POWER:
     {
-      // these are RGB values!
-
-      const dt_aligned_pixel_t lift = { ( d->lift[CHANNEL_RED] + d->lift[CHANNEL_FACTOR] - 2.0f),
-                                        ( d->lift[CHANNEL_GREEN] + d->lift[CHANNEL_FACTOR] - 2.0f),
-                                        ( d->lift[CHANNEL_BLUE] + d->lift[CHANNEL_FACTOR] - 2.0f),
-                                        0.0f },
-                              gamma = { (2.0f - d->gamma[CHANNEL_RED]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
-                                        (2.0f - d->gamma[CHANNEL_GREEN]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
-                                        (2.0f - d->gamma[CHANNEL_BLUE]) * (2.0f - d->gamma[CHANNEL_FACTOR]),
-                                        1.0f };
-
 #ifdef _OPENMP
       // figure out the number of pixels each thread needs to process
       // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
       const size_t nthreads = dt_get_num_threads();
       const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(contrast, gain, gamma, grey, lift, in, out, \
+      dt_omp_firstprivate(contrast, gain, gamma_sop, grey, lift_sop, in, out, \
                           nthreads, chunksize, npixels, contrast_power, \
-                          saturation, run_saturation, saturation_out, run_saturation_out) \
+                          saturation, saturation_out) \
       schedule(static)
       for(size_t chunk = 0; chunk < nthreads; chunk++)
       {
         size_t start = chunksize * dt_get_thread_num();
         size_t end = MIN(start + chunksize, npixels);
         _process_sop(in + 4*start, out + 4*start, end-start,
-                     lift, gamma, gain, grey, saturation,
+                     lift_sop, gamma_sop, gain, grey, saturation,
                      saturation_out, contrast, contrast_power);
       }
 #else /* !_OPENMP */
-      _process_sop(in, out, npixels, lift, gamma, gain, grey, saturation,
+      _process_sop(in, out, npixels, lift_sop, gamma_sop, gain, grey, saturation,
                    saturation_out, contrast, contrast_power);
 #endif
       dt_omploop_sfence();

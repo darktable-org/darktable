@@ -477,8 +477,24 @@ static inline void dt_XYZ_to_Rec709_D65(const dt_aligned_pixel_t XYZ, dt_aligned
 static inline void dt_sRGB_to_linear_sRGB(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t RGB)
 {
   // gamma corrected sRGB -> linear sRGB
-  for(int c = 0; c < 3; c++)
-    RGB[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
+  dt_aligned_pixel_t toe;
+  dt_aligned_pixel_t offset_srgb;
+  dt_aligned_pixel_t scaled_srgb;
+  for_each_channel(c)
+  {
+    toe[c] = sRGB[c]/ 12.92f;
+    offset_srgb[c] = sRGB[c] + 0.055f;
+    scaled_srgb[c] = offset_srgb[c] / 1.055f;
+  }
+  static const dt_aligned_pixel_t two_point_four = { 2.4f, 2.4f, 2.4f, 2.4f };
+  dt_aligned_pixel_t linearized;
+  dt_vector_powf(scaled_srgb, two_point_four, linearized);
+  for_each_channel(c)
+  {
+    RGB[c] = (sRGB[c] <= 0.04045f) ? toe[c] : linearized[c];
+  }
+//  for(int c = 0; c < 3; c++)
+//    RGB[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
 }
 
 #ifdef _OPENMP
@@ -610,8 +626,20 @@ static inline void dt_XYZ_to_sRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel
   dt_aligned_pixel_t rgb;
   dt_XYZ_to_Rec709_D50(XYZ, rgb);
   // linear sRGB -> gamma corrected sRGB
-  for(size_t c = 0; c < 3; c++)
-    sRGB[c] = rgb[c] <= 0.0031308f ? 12.92f * rgb[c] : (1.0f + 0.055f) * powf(rgb[c], 1.0f / 2.4f) - 0.055f;
+  dt_aligned_pixel_t toe;
+  dt_aligned_pixel_t curved;
+  for_each_channel(c)
+  {
+    toe[c] = 12.92f * rgb[c];
+  }
+  static const dt_aligned_pixel_t srgb_power = { 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f };
+  dt_vector_powf(rgb, srgb_power, curved);
+  for_each_channel(c)
+  {
+    sRGB[c] = (rgb[c] <=  0.0031308f) ? toe[c] : (1.055f * curved[c] - 0.055f);
+  }
+//  for(size_t c = 0; c < 3; c++)
+//    sRGB[c] = rgb[c] <= 0.0031308f ? 12.92f * rgb[c] : (1.0f + 0.055f) * powf(rgb[c], 1.0f / 2.4f) - 0.055f;
 }
 
 /** uses D50 white point and clips the output to [0..1]. */
