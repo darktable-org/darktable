@@ -98,7 +98,7 @@ static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer 
   const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
 
   gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
-                  : zoom == DT_ZOOM_FILL ? g_strdup(_("fill"))
+                  : zoom == DT_ZOOM_FILL ? g_strdup(C_("navigationbox", "fill"))
                   : 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0)
                     == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0) ? g_strdup(_("small"))
                   : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
@@ -168,7 +168,7 @@ void gui_init(dt_lib_module_t *self)
                                -1, _zoom_changed, NULL,
                                N_("small"),
                                N_("fit"),
-                               N_("fill"),
+                               NC_("navigationbox", "fill"),
                                N_("50%"),
                                N_("100%"),
                                N_("200%"),
