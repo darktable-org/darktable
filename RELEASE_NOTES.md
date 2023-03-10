@@ -164,6 +164,7 @@ The following is a summary of the main features added to darktable
   - Local Contrast with Local Laplacian
   - Lowpass
   - Filmic (legacy)
+  - RGB Levels
 
   - The gaussian generator used by many modules: Censorize, Denoise
     Profile, Lowpass, Diffuse & Sharpen, Defringe, RAW Chromatic
