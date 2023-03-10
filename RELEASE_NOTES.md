@@ -288,6 +288,9 @@ The following is a summary of the main features added to darktable
 
 - Export masks for EXRs as extra channels.
 
+- The search filter has been improved to also search the camera's brand
+  and model.
+
 ## Bug Fixes
 
 - Remove the commit button from the crop module has it was not used
