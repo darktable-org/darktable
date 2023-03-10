@@ -1426,13 +1426,17 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
 
+  const size_t height = roi_out->height;
+  const size_t width = roi_out->width;
+
   // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out) \
-  shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
+  dt_omp_firstprivate(in, in_stride_floats, out, out_stride_floats, height, width, \
+                      hlength, hindex, hkernel, vlength, vindex, vkernel)       \
+  shared(vmeta)
 #endif
-  for(int oy = 0; oy < roi_out->height; oy++)
+  for(size_t oy = 0; oy < height; oy++)
   {
     // Initialize column resampling indexes
     int vlidx = vmeta[3 * oy + 0]; // V(ertical) L(ength) I(n)d(e)x
@@ -1442,13 +1446,12 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
     // Initialize row resampling indexes
     int hlidx = 0; // H(orizontal) L(ength) I(n)d(e)x
     int hkidx = 0; // H(orizontal) K(ernel) I(n)d(e)x
-    int hiidx = 0; // H(orizontal) I(ndex) I(n)d(e)x
 
     // Number of lines contributing to the output line
     int vl = vlength[vlidx++]; // V(ertical) L(ength)
 
     // Process each output column
-    for(int ox = 0; ox < roi_out->width; ox++)
+    for(size_t ox = 0; ox < width; ox++)
     {
       debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
 
@@ -1458,21 +1461,22 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       // Number of horizontal samples contributing to the output
       int hl = hlength[hlidx++]; // H(orizontal) L(ength)
 
-      for(int iy = 0; iy < vl; iy++)
+      for(size_t iy = 0; iy < vl; iy++)
       {
         // This is our input line
         size_t baseidx_vindex = (size_t)vindex[viidx++] * in_stride_floats;
 
         dt_aligned_pixel_t vhs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        for(int ix = 0; ix < hl; ix++)
+        for(size_t ix = 0; ix < hl; ix++)
         {
           // Apply the precomputed filter kernel
-          const size_t baseidx = baseidx_vindex + (size_t)hindex[hiidx++] * 4;
+          const size_t baseidx = baseidx_vindex + (size_t)hindex[hkidx] * 4;
           const float htap = hkernel[hkidx++];
-          // Convince gcc 10 to vectorize
-          dt_aligned_pixel_t tmp = { in[baseidx], in[baseidx+1], in[baseidx+2], in[baseidx+3] };
-          for_each_channel(c, aligned(tmp,vhs:16)) vhs[c] += tmp[c] * htap;
+          dt_aligned_pixel_t tmp;
+          copy_pixel(tmp, in + baseidx);
+          for_each_channel(c, aligned(tmp,vhs:16))
+            vhs[c] += tmp[c] * htap;
         }
 
         // Accumulate contribution from this line
@@ -1481,7 +1485,6 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 
         // Reset horizontal resampling context
         hkidx -= hl;
-        hiidx -= hl;
       }
 
       // Output pixel is ready
@@ -1489,17 +1492,20 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 
       // Clip negative RGB that may be produced by Lanczos undershooting
       // Negative RGB are invalid values no matter the RGB space (light is positive)
-      for_each_channel(c, aligned(vs:16)) out[baseidx + c] = fmaxf(vs[c], 0.f);
+      dt_aligned_pixel_t pixel;
+      for_each_channel(c, aligned(vs:16))
+        pixel[c] = MAX(vs[c], 0.f);
+      copy_pixel_nontemporal(out + baseidx, pixel);
 
       // Reset vertical resampling context
       viidx -= vl;
       vkidx -= vl;
 
       // Progress in horizontal context
-      hiidx += hl;
       hkidx += hl;
     }
   }
+  dt_omploop_sfence();
 
 exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
@@ -1509,156 +1515,6 @@ exit:
   dt_free_align(vlength);
   _show_2_times(&start, &mid, "resample_plain");
 }
-
-#if defined(__SSE2__)
-static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, float *out,
-                                          const dt_iop_roi_t *const roi_out, const int32_t out_stride,
-                                          const float *const in, const dt_iop_roi_t *const roi_in,
-                                          const int32_t in_stride)
-{
-  int *hindex = NULL;
-  int *hlength = NULL;
-  float *hkernel = NULL;
-  int *vindex = NULL;
-  int *vlength = NULL;
-  float *vkernel = NULL;
-  int *vmeta = NULL;
-
-  int r;
-
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_sse", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start = { 0 }, mid = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
-
-  // Fast code path for 1:1 copy, only cropping area can change
-  if(roi_out->scale == 1.f)
-  {
-    const int x0 = roi_out->x * 4 * sizeof(float);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0) \
-    shared(out)
-#endif
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      float *i = (float *)((char *)in + (size_t)in_stride * (y + roi_out->y) + x0);
-      float *o = (float *)((char *)out + (size_t)out_stride * y);
-      memcpy(o, i, out_stride);
-    }
-
-    dt_show_times_f(&start, "[resample_sse]", "1:1 copy/crop of %dx%d pixels",
-                    roi_in->width, roi_in->height);
-    // All done, so easy case
-    return;
-  }
-
-  // Generic non 1:1 case... much more complicated :D
-
-  // Prepare resampling plans once and for all
-  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale,
-                              &hlength, &hkernel, &hindex, NULL);
-  if(r)
-  {
-    goto exit;
-  }
-
-  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale,
-                              &vlength, &vkernel, &vindex, &vmeta);
-  if(r)
-  {
-    goto exit;
-  }
-
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
-
-  // Process each output line
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
-  shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
-#endif
-  for(int oy = 0; oy < roi_out->height; oy++)
-  {
-    // Initialize column resampling indexes
-    int vlidx = vmeta[3 * oy + 0]; // V(ertical) L(ength) I(n)d(e)x
-    int vkidx = vmeta[3 * oy + 1]; // V(ertical) K(ernel) I(n)d(e)x
-    int viidx = vmeta[3 * oy + 2]; // V(ertical) I(ndex) I(n)d(e)x
-
-    // Initialize row resampling indexes
-    int hlidx = 0; // H(orizontal) L(ength) I(n)d(e)x
-    int hkidx = 0; // H(orizontal) K(ernel) I(n)d(e)x
-    int hiidx = 0; // H(orizontal) I(ndex) I(n)d(e)x
-
-    // Number of lines contributing to the output line
-    int vl = vlength[vlidx++]; // V(ertical) L(ength)
-
-    // Process each output column
-    for(int ox = 0; ox < roi_out->width; ox++)
-    {
-      debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
-
-      // This will hold the resulting pixel
-      __m128 vs = _mm_setzero_ps();
-
-      // Number of horizontal samples contributing to the output
-      const int hl = hlength[hlidx++]; // H(orizontal) L(ength)
-
-      for(int iy = 0; iy < vl; iy++)
-      {
-        // This is our input line
-        const float *i = (float *)((char *)in + (size_t)in_stride * vindex[viidx++]);
-
-        __m128 vhs = _mm_setzero_ps();
-
-        for(int ix = 0; ix < hl; ix++)
-        {
-          // Apply the precomputed filter kernel
-          const size_t baseidx = (size_t)hindex[hiidx++] * 4;
-          const float htap = hkernel[hkidx++];
-          const __m128 vhtap = _mm_set_ps1(htap);
-          vhs = _mm_add_ps(vhs, _mm_mul_ps(*(__m128 *)&i[baseidx], vhtap));
-        }
-
-        // Accumulate contribution from this line
-        const float vtap = vkernel[vkidx++];
-        const __m128 vvtap = _mm_set_ps1(vtap);
-        vs = _mm_add_ps(vs, _mm_mul_ps(vhs, vvtap));
-
-        // Reset horizontal resampling context
-        hkidx -= hl;
-        hiidx -= hl;
-      }
-
-      // Output pixel is ready
-      float *o = (float *)((char *)out + (size_t)oy * out_stride + (size_t)ox * 4 * sizeof(float));
-
-      // Clip negative RGB that may be produced by Lanczos undershooting
-      // Negative RGB are invalid values no matter the RGB space (light is positive)
-      vs = _mm_max_ps(vs, _mm_setzero_ps());
-      _mm_stream_ps(o, vs);
-
-      // Reset vertical resampling context
-      viidx -= vl;
-      vkidx -= vl;
-
-      // Progress in horizontal context
-      hiidx += hl;
-      hkidx += hl;
-    }
-  }
-
-  _mm_sfence();
-
-exit:
-  /* Free the resampling plans. It's nasty to optimize allocs like that, but
-   * it simplifies the code :-D. The length array is in fact the only memory
-   * allocated. */
-  dt_free_align(hlength);
-  dt_free_align(vlength);
-  _show_2_times(&start, &mid, "resample_sse");
-}
-#endif
 
 /** Applies resampling (re-scaling) on *full* input and output buffers.
  *  roi_in and roi_out define the part of the buffers that is affected.
@@ -1674,12 +1530,8 @@ void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
     return;
   }
 
-#if defined(__SSE2__)
-  if(darktable.codepath.SSE2)
-    return dt_interpolation_resample_sse(itor, out, roi_out, out_stride, in, roi_in, in_stride);
-#endif
-  else
-    return dt_interpolation_resample_plain(itor, out, roi_out, out_stride, in, roi_in, in_stride);
+  return dt_interpolation_resample_plain(itor, out, roi_out, out_stride, in,
+                                         roi_in, in_stride);
 }
 
 /** Applies resampling (re-scaling) on a specific region-of-interest of an image. The input
@@ -2093,4 +1945,3 @@ void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor, float
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
