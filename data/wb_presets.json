@@ -29261,6 +29261,74 @@
           ]
         },
         {
+          "model": "X-H1",
+          "presets": [
+            {
+              "name": "Daylight",
+              "channels": [
+                1.927152,
+                1,
+                1.917219,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                2.139073,
+                1,
+                1.645695,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "channels": [
+                1.294702,
+                1,
+                2.874172,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "channels": [
+                2.039735,
+                1,
+                2.023179,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "channels": [
+                2.430464,
+                1,
+                1.645695,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "channels": [
+                1.923841,
+                1,
+                2.589404,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "channels": [
+                1.913907,
+                1,
+                1.937086,
+                0
+              ]
+            }
+          ]
+        },
+        {
           "model": "X-S10",
           "presets": [
             {
@@ -29611,8 +29679,8 @@
         },
         {
           "model": "X-T5",
-	  "presets": [
-	    {
+          "presets": [
+            {
               "name": "Daylight",
               "tuning": -9,
               "channels": [
