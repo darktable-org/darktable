@@ -511,10 +511,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         "WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
 #endif
 
-#if defined(__SSE__)
   // make everything go a lot faster.
-  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-#endif
+  dt_mm_enable_flush_zero();
 
   dt_set_signal_handlers();
 

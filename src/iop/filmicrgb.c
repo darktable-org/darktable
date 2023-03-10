@@ -30,6 +30,7 @@
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/imageop_math.h"
 #include "develop/noise_generator.h"
@@ -46,8 +47,6 @@
 #include "iop/gaussian_elimination.h"
 #include "iop/iop_api.h"
 
-
-#include "develop/imageop.h"
 #include "gui/draw.h"
 
 #include <assert.h>
@@ -1009,13 +1008,7 @@ static inline gint mask_clipped_pixels(const float *const restrict in, float *co
    */
 
   int clipped = 0;
-
-  #ifdef __SSE2__
-    // flush denormals to zero for masking to avoid performance penalty
-    // if there are a lot of zero values in the mask
-    const unsigned int oldMode = _MM_GET_FLUSH_ZERO_MODE();
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-  #endif
+  const unsigned int oldMode = dt_mm_enable_flush_zero();
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -1035,10 +1028,7 @@ static inline gint mask_clipped_pixels(const float *const restrict in, float *co
     // so we discard pixels for argument > 4. for they are not worth computing.
     clipped += (4.f > argument);
   }
-
-  #ifdef __SSE2__
-    _MM_SET_FLUSH_ZERO_MODE(oldMode);
-  #endif
+  dt_mm_restore_flush_zero(oldMode);
 
   // If clipped area is < 9 pixels, recovery is not worth the computational cost, so skip it.
   return (clipped > 9);
