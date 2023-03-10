@@ -7,6 +7,7 @@ import os
 import xml.etree.ElementTree as ET
 import subprocess
 import shlex
+import json
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -18,7 +19,7 @@ IGNORED_PRESETS = {"Auto", "Kelvin", "Measured", "AsShot", "As Shot", "Preset",
                  "Natural Auto", "Multi Auto", "Color Temperature Enhancement",
                  "One Touch WB 1", "One Touch WB 2", "One Touch WB 3",
                  "One Touch WB 4", "Custom WB 1", "Auto0", "Auto1", "Auto2",
-                 "Custom", "CWB1", "CWB2", "CWB3", "CWB4", "Black", 
+                 "Custom", "CWB1", "CWB2", "CWB3", "CWB4", "Black",
                  "Illuminator1", "Illuminator2", "Uncorrected"}
 
 FL_PRESET_REPLACE = {
@@ -54,11 +55,11 @@ FL_PRESET_REPLACE = {
   }
 
 PRESET_ORDER = ["DirectSunlight", "Daylight", "D55", "Shade","Cloudy",
-              "Tungsten", "Incandescent","Fluorescent", 
+              "Tungsten", "Incandescent","Fluorescent",
               "WarmWhiteFluorescent", "CoolWhiteFluorescent",
               "DayWhiteFluorescent","DaylightFluorescent",
               "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent",
-              "HighTempMercuryVaporFluorescent", "HTMercury", 
+              "HighTempMercuryVaporFluorescent", "HTMercury",
               "SodiumVaporFluorescent", "Underwater", "Flash", "Unknown"]
 
 PRESET_SORT_MAPPING = {}
@@ -181,10 +182,10 @@ for filename in sys.argv[1:]:
                 g = 1
             else:
                 eprint("Found RGB tag '{0}' with {1} values instead of 2, 3 or 4".format(p, len(values)))
-            
+
             if 'Fluorescent' in p:
                 fl_count += 1
-            
+
             if not p:
                 p= 'Unknown'
             if p not in IGNORED_PRESETS:
@@ -238,7 +239,7 @@ for filename in sys.argv[1:]:
     if gm_skew:
         eprint('WARNING: {0} has finetuning over GM axis! Data is skewed!'.format(filename))
 
-    # Adjust the maker/model we found with the map we generated before
+    # adjust the maker/model we found with the map we generated before
     if exif_name_map[maker,model]:
         enm = exif_name_map[maker,model]
         maker = enm[0]
@@ -255,22 +256,28 @@ for filename in sys.argv[1:]:
             preset_arrv[0] = FL_PRESET_REPLACE[preset_arrv[0]]
         if preset_arrv[0] not in IGNORED_PRESETS:
             found_presets.append(tuple([maker,model,preset_arrv[0], 0, preset_arrv[1], preset_arrv[2], preset_arrv[3]]))
-    
-    # Print out the WB value that was used in the file
+
+    # print out the WB value that was used in the file
     if not preset:
         preset = filename
-    if red and green and blue and preset not in IGNORED_PRESETS:
-        found_presets.append(tuple([maker, model, preset, int(finetune), red, green, blue]))
+    if red and green and blue:
+        if preset in IGNORED_PRESETS:
+            eprint("Ignoring preset '{0}'".format(preset))
+        else:
+            preset_name = ''
+            if preset.endswith('K'):
+                preset_name = '"'+preset+'"'
+            else:
+                preset_name = preset
+            found_presets.append(tuple([maker, model, preset, int(finetune), red, green, blue]))
 
 # get rid of duplicate presets
-
 found_presets = list(set(found_presets))
 
+# sort by maker, model, predefined preset name mapping, and fine tuning value
 def preset_to_sort(preset):
     sort_for_preset = 0
-    if preset[2] in IGNORED_PRESETS:
-        sort_for_preset = 0
-    elif preset[2] in PRESET_SORT_MAPPING:
+    if preset[2] in PRESET_SORT_MAPPING:
         sort_for_preset = PRESET_SORT_MAPPING[preset[2]]
     elif preset[2].endswith('K'):
         sort_for_preset = int(preset[2][:-1])
@@ -280,19 +287,14 @@ def preset_to_sort(preset):
 
 found_presets.sort(key=preset_to_sort)
 
-min_padding = 0
-for preset in found_presets:
-    if len(preset[2]) > min_padding:
-        min_padding = len(preset[2])
-
-#dealing with Nikon half-steps
+# deal with Nikon half-steps
 for index in range(len(found_presets)-1):
-    if (found_presets[index][0] == 'Nikon' and #case now translated
-        found_presets[index+1][0] == found_presets[index][0] and 
+    if (found_presets[index][0] == 'Nikon' and # case now translated
+        found_presets[index+1][0] == found_presets[index][0] and
         found_presets[index+1][1] == found_presets[index][1] and
         found_presets[index+1][2] == found_presets[index][2] and
         found_presets[index+1][3] == found_presets[index][3]) :
-       
+
         curr_finetune = int(found_presets[index][3])
 
         if curr_finetune < 0:
@@ -306,8 +308,8 @@ for index in range(len(found_presets)-1):
 
 # check for gaps in finetuning for half-steps (seems that nikon and sony can have half-steps)
 for index in range(len(found_presets)-1):
-    if ( (found_presets[index][0] == "Nikon" or found_presets[index][0] == "Sony") and #case now translated
-        found_presets[index+1][0] == found_presets[index][0] and ##
+    if ( (found_presets[index][0] == "Nikon" or found_presets[index][0] == "Sony") and # case now translated
+        found_presets[index+1][0] == found_presets[index][0] and
         found_presets[index+1][1] == found_presets[index][1] and
         found_presets[index+1][2] == found_presets[index][2]) :
 
@@ -317,8 +319,8 @@ for index in range(len(found_presets)-1):
         if (found_presets[index+1][3] % 2 == 0 and
             found_presets[index][3] % 2 == 0 and
             found_presets[index+1][3] == found_presets[index][3] + 2):
-    
-            #detected gap eg -12 -> -10. slicing in half to undo multiplication done earlier
+
+            # detected gap eg -12 -> -10. slicing in half to undo multiplication done earlier
             found_presets[index][3] = int(found_presets[index][3] / 2)
             found_presets[index+1][3] = int(found_presets[index+1][3] / 2)
         elif (found_presets[index+1][3] % 2 == 0 and
@@ -327,24 +329,24 @@ for index in range(len(found_presets)-1):
               (index + 2 == len(found_presets) or
                found_presets[index+2][2] != found_presets[index+1][2] ) ):
 
-            #dealing with corner case of last-halfstep not being dealth with earlier
+            # deal with corner case of last-halfstep not being dealt with earlier
             found_presets[index+1][3] = int(found_presets[index+1][3] / 2)
 
         found_presets[index] = tuple(found_presets[index])
         found_presets[index+1] = tuple(found_presets[index+1])
 
-#detect lazy finetuning (will not complain if there's no finetuning)
+# detect lazy finetuning (will not complain if there's no finetuning)
 lazy_finetuning = []
 for index in range(len(found_presets)-1):
-    if (found_presets[index+1][0] == found_presets[index][0] and ##
+    if (found_presets[index+1][0] == found_presets[index][0] and
         found_presets[index+1][1] == found_presets[index][1] and
         found_presets[index+1][2] == found_presets[index][2] and
         found_presets[index+1][3] != ((found_presets[index][3])+1) ):
-        
+
         # found gap. complain about needing to interpolate
         lazy_finetuning.append(tuple([found_presets[index][0], found_presets[index][1], found_presets[index][2]]))
 
-# Get rid of duplicate lazy finetuning reports
+# get rid of duplicate lazy finetuning reports
 lazy_finetuning = list(set(lazy_finetuning))
 
 # $stderr.puts lazy_finetuning.inspect.gsub("], ", "],\n") # debug content
@@ -352,13 +354,15 @@ lazy_finetuning = list(set(lazy_finetuning))
 for lazy in lazy_finetuning:
   eprint("Gaps detected in finetuning for {0} {1} preset {2}, dt will need to interpolate!".format(lazy[0], lazy[1], lazy[2]))
 
-for preset in found_presets:
-    if preset[2] in IGNORED_PRESETS:
-        eprint("Ignoring preset '{0}'".format(preset[2]))
-    else:
-        preset_name = ''
-        if preset[2].endswith('K'):
-            preset_name = '"'+preset[2]+'"'
-        else:
-            preset_name = preset[2]
-        print('  {{ "{0}", "{1}", {2:<{min_pad}}, {3}, {{ {4}, {5}, {6}, 0 }} }},'.format(preset[0], preset[1], preset_name, preset[3], preset[4], preset[5], preset[6], min_pad=min_padding))
+# convert to nested dictionary
+wb_dict = []
+for maker in set([p[0] for p in found_presets]):
+    maker_dict = []
+    maker_presets = [p for p in found_presets if p[0] == maker]
+    for model in set([p[1] for p in maker_presets]):
+        model_dict = [{'name':p[2], 'tuning':p[3], 'channels':[p[4], p[5], p[6], 0]} for p in maker_presets if p[1] == model]
+        maker_dict.append({'model': model, 'presets': model_dict})
+    wb_dict.append({'maker': maker, 'models': maker_dict})
+
+# print json formatted code
+print(json.dumps({'version': 1, 'wb_presets': wb_dict}, indent=2))
