@@ -1369,7 +1369,7 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
   return 0;
 }
 
-static void dt_interpolation_resample_plain(const struct dt_interpolation *itor, float *out,
+/*static*/ void dt_interpolation_resample_plain(const struct dt_interpolation *itor, float *out,
                                             const dt_iop_roi_t *const roi_out, const int32_t out_stride,
                                             const float *const in, const dt_iop_roi_t *const roi_in,
                                             const int32_t in_stride)
@@ -1432,11 +1432,12 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
 
+  const size_t width = roi_out->width;
   // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out) \
-  shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
+  dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out, width, hindex, hkernel) \
+  shared(out, hlength, vindex, vlength, vkernel, vmeta)
 #endif
   for(int oy = 0; oy < roi_out->height; oy++)
   {
@@ -1454,7 +1455,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
     int vl = vlength[vlidx++]; // V(ertical) L(ength)
 
     // Process each output column
-    for(int ox = 0; ox < roi_out->width; ox++)
+    for(size_t ox = 0; ox < width; ox++)
     {
       debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
 
@@ -1476,9 +1477,10 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
           // Apply the precomputed filter kernel
           const size_t baseidx = baseidx_vindex + (size_t)hindex[hiidx++] * 4;
           const float htap = hkernel[hkidx++];
-          // Convince gcc 10 to vectorize
-          dt_aligned_pixel_t tmp = { in[baseidx], in[baseidx+1], in[baseidx+2], in[baseidx+3] };
-          for_each_channel(c, aligned(tmp,vhs:16)) vhs[c] += tmp[c] * htap;
+          dt_aligned_pixel_t tmp;
+          copy_pixel(tmp, in + baseidx);
+          for_each_channel(c, aligned(tmp,vhs:16))
+            vhs[c] += tmp[c] * htap;
         }
 
         // Accumulate contribution from this line
@@ -1495,8 +1497,11 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 
       // Clip negative RGB that may be produced by Lanczos undershooting
       // Negative RGB are invalid values no matter the RGB space (light is positive)
-      for_each_channel(c, aligned(vs:16)) out[baseidx + c] = fmaxf(vs[c], 0.f);
-
+      dt_aligned_pixel_t pixel;
+      for_each_channel(c, aligned(vs:16))
+        pixel[c] = MAX(vs[c], 0.f);
+      copy_pixel_nontemporal(out + baseidx, pixel);
+      
       // Reset vertical resampling context
       viidx -= vl;
       vkidx -= vl;
@@ -1506,6 +1511,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       hkidx += hl;
     }
   }
+  dt_omploop_sfence();
 
 exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
