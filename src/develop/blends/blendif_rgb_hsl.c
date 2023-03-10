@@ -315,11 +315,8 @@ void dt_develop_blendif_rgb_hsl_make_mask(struct dt_dev_pixelpipe_iop_t *piece, 
                       blendif, profile, parameters, mask_inclusive, mask_inversed, global_opacity)
 #endif
     {
-#ifdef __SSE2__
       // flush denormals to zero to avoid performance penalty if there are a lot of zero values in the mask
-      const int oldMode = _MM_GET_FLUSH_ZERO_MODE();
-      _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-#endif
+      const int oldMode = dt_mm_enable_flush_zero();
 
       // initialize the parametric mask
 #ifdef _OPENMP
@@ -383,9 +380,7 @@ void dt_develop_blendif_rgb_hsl_make_mask(struct dt_dev_pixelpipe_iop_t *piece, 
         }
       }
 
-#ifdef __SSE2__
-      _MM_SET_FLUSH_ZERO_MODE(oldMode);
-#endif
+      dt_mm_restore_flush_zero(oldMode);
     }
 
     dt_free_align(temp_mask);
