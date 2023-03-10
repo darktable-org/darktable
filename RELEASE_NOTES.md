@@ -172,6 +172,15 @@ The following is a summary of the main features added to darktable
     Retouch, Tone Equalizer and Zone System (deprecated). Meaning all
     those modules have parts now running faster.
 
+  - The box blur filter used by the focus peaking, the guided filter for
+    blending, the new highlight recovery algorithms, and the Bloom,
+    Highpass, and Soften modules. Meaning all those modules and
+    features have parts now running faster.
+
+  - The Edge-Avoiding a-trous Wavelet used by those modules Contrast
+    Equalizer and Denoise(Profiled). Meaning those modules have parts
+    now running faster.
+
   - Loader for JPEG2000 file format
 
 - Improve Highlights reconstruction "inpaint opposed" performance by
