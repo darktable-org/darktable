@@ -617,84 +617,55 @@ void process(struct dt_iop_module_t *self,
       d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR],
       1.0f };
 
-  switch(d->mode)
+  const int mode = d->mode;
+#ifdef _OPENMP
+  // figure out the number of pixels each thread needs to process
+  // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+  const size_t nthreads = dt_get_num_threads();
+  const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
+#pragma omp parallel for simd default(none)                             \
+  dt_omp_firstprivate(in, out, mode, npixels, nthreads, chunksize, \
+                      grey, saturation, saturation_out, lift, lift_sop, \
+                      gamma, gamma_inv_lgg, gamma_sop, gain, \
+                      gamma_inv_legacy, contrast, contrast_power)       \
+  schedule(static)
+  for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
-    case LEGACY:
+    size_t start = chunksize * dt_get_thread_num();
+    size_t end = MIN(start + chunksize, npixels);
+    switch(mode)
     {
-#ifdef _OPENMP
-      // figure out the number of pixels each thread needs to process
-      // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
-      const size_t nthreads = dt_get_num_threads();
-      const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
-#pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(gain, gamma_inv_legacy, lift, in, out, npixels, nthreads, chunksize) \
-      schedule(static)
-      for(size_t chunk = 0; chunk < nthreads; chunk++)
-      {
-        size_t start = chunksize * dt_get_thread_num();
-        size_t end = MIN(start + chunksize, npixels);
+      case LEGACY:
         _process_legacy(in + 4*start, out + 4*start, end-start, lift, gamma_inv_legacy, gain);
-      }
-#else
-      _process_legacy(in, out, npixels, lift, gamma_inv_legacy, gain);
-#endif
-      dt_omploop_sfence();
-      break;
-    }
-    case LIFT_GAMMA_GAIN:
-    {
-#ifdef _OPENMP
-      // figure out the number of pixels each thread needs to process
-      // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
-      const size_t nthreads = dt_get_num_threads();
-      const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
-#pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(contrast, gain, gamma_inv_lgg, grey, in, out, lift,       \
-                          nthreads, chunksize, npixels, contrast_power, \
-                          saturation, saturation_out) \
-      schedule(static)
-      for(size_t chunk = 0; chunk < nthreads; chunk++)
-      {
-        size_t start = chunksize * dt_get_thread_num();
-        size_t end = MIN(start + chunksize, npixels);
+        break;
+      case LIFT_GAMMA_GAIN:
         _process_lgg(in + 4*start, out + 4*start, end-start, lift, gamma_inv_lgg, gain,
                      grey, saturation, saturation_out, contrast_power);
-      }
-#else
-      _process_lgg(in, out, npixels, lift, gamma_inv_lgg, gain,
-                   grey, saturation, saturation_out, contrast_power);
-#endif
-      dt_omploop_sfence();
-      break;
-   }
-    case SLOPE_OFFSET_POWER:
-    {
-#ifdef _OPENMP
-      // figure out the number of pixels each thread needs to process
-      // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
-      const size_t nthreads = dt_get_num_threads();
-      const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
-#pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(contrast, gain, gamma_sop, grey, lift_sop, in, out, \
-                          nthreads, chunksize, npixels, contrast_power, \
-                          saturation, saturation_out) \
-      schedule(static)
-      for(size_t chunk = 0; chunk < nthreads; chunk++)
-      {
-        size_t start = chunksize * dt_get_thread_num();
-        size_t end = MIN(start + chunksize, npixels);
+        break;
+      case SLOPE_OFFSET_POWER:
         _process_sop(in + 4*start, out + 4*start, end-start,
                      lift_sop, gamma_sop, gain, grey, saturation,
                      saturation_out, contrast, contrast_power);
-      }
-#else /* !_OPENMP */
-      _process_sop(in, out, npixels, lift_sop, gamma_sop, gain, grey, saturation,
-                   saturation_out, contrast, contrast_power);
-#endif
-      dt_omploop_sfence();
-      break;
+        break;
     }
   }
+#else
+  switch(mode)
+  {
+    case LEGACY:
+      _process_legacy(in, out, npixels, lift, gamma_inv_legacy, gain);
+      break;
+    case LIFT_GAMMA_GAIN:
+      _process_lgg(in, out, npixels, lift, gamma_inv_lgg, gain,
+                   grey, saturation, saturation_out, contrast_power);
+      break;
+    case SLOPE_OFFSET_POWER:
+      _process_sop(in, out, npixels, lift_sop, gamma_sop, gain, grey, saturation,
+                   saturation_out, contrast, contrast_power);
+      break;
+  }
+#endif
+  dt_omploop_sfence();
 }
 
 #if defined(__SSE__)
