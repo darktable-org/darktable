@@ -1432,14 +1432,17 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
 
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
 
+  const size_t height = roi_out->height;
   const size_t width = roi_out->width;
+
   // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out, width, hindex, hkernel) \
-  shared(out, hlength, vindex, vlength, vkernel, vmeta)
+  dt_omp_firstprivate(in, in_stride_floats, out, out_stride_floats, height, width, \
+                      hlength, hindex, hkernel, vlength, vindex, vkernel)       \
+  shared(vmeta)
 #endif
-  for(int oy = 0; oy < roi_out->height; oy++)
+  for(size_t oy = 0; oy < height; oy++)
   {
     // Initialize column resampling indexes
     int vlidx = vmeta[3 * oy + 0]; // V(ertical) L(ength) I(n)d(e)x
@@ -1449,7 +1452,6 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
     // Initialize row resampling indexes
     int hlidx = 0; // H(orizontal) L(ength) I(n)d(e)x
     int hkidx = 0; // H(orizontal) K(ernel) I(n)d(e)x
-    int hiidx = 0; // H(orizontal) I(ndex) I(n)d(e)x
 
     // Number of lines contributing to the output line
     int vl = vlength[vlidx++]; // V(ertical) L(ength)
@@ -1465,17 +1467,17 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
       // Number of horizontal samples contributing to the output
       int hl = hlength[hlidx++]; // H(orizontal) L(ength)
 
-      for(int iy = 0; iy < vl; iy++)
+      for(size_t iy = 0; iy < vl; iy++)
       {
         // This is our input line
         size_t baseidx_vindex = (size_t)vindex[viidx++] * in_stride_floats;
 
         dt_aligned_pixel_t vhs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        for(int ix = 0; ix < hl; ix++)
+        for(size_t ix = 0; ix < hl; ix++)
         {
           // Apply the precomputed filter kernel
-          const size_t baseidx = baseidx_vindex + (size_t)hindex[hiidx++] * 4;
+          const size_t baseidx = baseidx_vindex + (size_t)hindex[hkidx] * 4;
           const float htap = hkernel[hkidx++];
           dt_aligned_pixel_t tmp;
           copy_pixel(tmp, in + baseidx);
@@ -1489,7 +1491,6 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
 
         // Reset horizontal resampling context
         hkidx -= hl;
-        hiidx -= hl;
       }
 
       // Output pixel is ready
@@ -1507,7 +1508,6 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
       vkidx -= vl;
 
       // Progress in horizontal context
-      hiidx += hl;
       hkidx += hl;
     }
   }
@@ -1629,13 +1629,13 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
           const size_t baseidx = (size_t)hindex[hiidx++] * 4;
           const float htap = hkernel[hkidx++];
           const __m128 vhtap = _mm_set_ps1(htap);
-          vhs = _mm_add_ps(vhs, _mm_mul_ps(*(__m128 *)&i[baseidx], vhtap));
+          vhs = vhs + *(__m128 *)&i[baseidx] * vhtap;
         }
 
         // Accumulate contribution from this line
         const float vtap = vkernel[vkidx++];
         const __m128 vvtap = _mm_set_ps1(vtap);
-        vs = _mm_add_ps(vs, _mm_mul_ps(vhs, vvtap));
+        vs = vs + vhs * vvtap;
 
         // Reset horizontal resampling context
         hkidx -= hl;
