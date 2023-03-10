@@ -308,11 +308,10 @@ static inline float CDL(float x, float slope, float offset, float power)
   return out;
 }
 
-static inline void apply_CDL(
-	dt_aligned_pixel_t x,
-        const dt_aligned_pixel_t slope,
-        const dt_aligned_pixel_t offset,
-        const dt_aligned_pixel_t power)
+static inline void _apply_CDL(dt_aligned_pixel_t x,
+                              const dt_aligned_pixel_t slope,
+                              const dt_aligned_pixel_t offset,
+                              const dt_aligned_pixel_t power)
 {
   dt_aligned_pixel_t res;
   for_each_channel(c)
@@ -320,9 +319,9 @@ static inline void apply_CDL(
   dt_vector_powf(res, power, x);
 }
 
-static inline void apply_fulcrum_contrast(dt_aligned_pixel_t rgb,
-                                          const dt_aligned_pixel_t grey,
-                                          const dt_aligned_pixel_t contrast_power)
+static inline void _apply_fulcrum_contrast(dt_aligned_pixel_t rgb,
+                                           const dt_aligned_pixel_t grey,
+                                           const dt_aligned_pixel_t contrast_power)
 {
   for_each_channel(c)
     rgb[c] = MAX(rgb[c], 0.0f) / grey[c];
@@ -370,6 +369,55 @@ static void _process_legacy(const dt_aligned_pixel_t in,
   }
 }
 
+static void _apply_lgg(dt_aligned_pixel_t rgb,
+                       const dt_aligned_pixel_t lift,
+                       const dt_aligned_pixel_t gamma_inv,
+                       const dt_aligned_pixel_t gain)
+{
+  for_each_channel(c)
+  {
+    // clip away negatives
+    rgb[c] = MAX(rgb[c], 0.0f);
+  }
+  // RGB gamma correction
+  static const dt_aligned_pixel_t power = { 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f };
+  dt_vector_powf(rgb, power, rgb);
+  for_each_channel(c)
+  {
+    // lift gamma gain - apply lift and gain
+    rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
+  }
+  for_each_channel(c)
+  {
+    // clip away negatives
+    rgb[c] = MAX(rgb[c], 0.0f);
+  }
+  dt_vector_powf(rgb, gamma_inv, rgb);
+}
+
+static void _process_lgg_curveonly(const dt_aligned_pixel_t in,
+                                   dt_aligned_pixel_t out,
+                                   const size_t npixels,
+                                   const dt_aligned_pixel_t lift,
+                                   const dt_aligned_pixel_t gamma_inv,
+                                   const dt_aligned_pixel_t gain)
+{
+  // fully neutral settings, only apply the curves
+  for(size_t k = 0; k < npixels; k++)
+  {
+    // transform the pixel to ProphotoRGB:
+    // Lab -> XYZ -> RGB, return Y as luma
+    dt_aligned_pixel_t rgb;
+    (void)dt_Lab_to_prophotorgb(in + 4*k, rgb);
+    _apply_lgg(rgb, lift, gamma_inv, gain);
+    // transform the result back to Lab
+    // ProphotoRGB -> XYZ -> Lab
+    dt_aligned_pixel_t res;
+    dt_prophotorgb_to_Lab(rgb, res);
+    copy_pixel_nontemporal(out + 4*k, res);
+  }
+}
+
 static void _process_lgg(const dt_aligned_pixel_t in,
                          dt_aligned_pixel_t out,
                          const size_t npixels,
@@ -386,40 +434,16 @@ static void _process_lgg(const dt_aligned_pixel_t in,
   const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
   if(!run_saturation && !run_saturation_out && !run_contrast)
   {
-    // fully neutral settings, only apply the curves
-    for(size_t k = 0; k < npixels; k++)
-    {
-      // transform the pixel to ProphotoRGB:
-      // Lab -> XYZ -> RGB, return Y as luma
-      dt_aligned_pixel_t rgb;
-      (void)dt_Lab_to_prophotorgb(in + 4*k, rgb);
-      for_each_channel(c)
-      {
-        // clip away negatives
-        rgb[c] = MAX(rgb[c], 0.0f);
-      }
-      // RGB gamma correction
-      static const dt_aligned_pixel_t power = { 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f };
-      dt_vector_powf(rgb, power, rgb);
-      for_each_channel(c)
-      {
-        // lift gamma gain - apply lift and gain
-        rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
-      }
-      for_each_channel(c)
-      {
-        // clip away negatives
-        rgb[c] = MAX(rgb[c], 0.0f);
-      }
-      dt_vector_powf(rgb, gamma_inv, rgb);
-      // transform the result back to Lab
-      // ProphotoRGB -> XYZ -> Lab
-      dt_aligned_pixel_t res;
-      dt_prophotorgb_to_Lab(rgb, res);
-      copy_pixel_nontemporal(out + 4*k, res);
-    }
+    _process_lgg_curveonly(in, out, npixels, lift, gamma_inv, gain);
     return;
   }
+#if TODO // on removing process_sse2
+  if(darktable.codepath.SSE2)
+  {
+    _process_lgg_sse2(in, out, npixels, ...);
+    return;
+  }
+#endif
   
   const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
   const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
@@ -432,33 +456,13 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     // Lab -> XYZ -> RGB, return Y as luma
     dt_aligned_pixel_t rgb;
     float luma = dt_Lab_to_prophotorgb(in + 4*k, rgb);
-
-    // do the calculation in RGB space
     if(run_saturation)
     {
       // main saturation input
       for_each_channel(c)
         rgb[c] = luma + saturation4[c] * (rgb[c] - luma);
     }
-    for_each_channel(c)
-    {
-      // clip away negatives
-      rgb[c] = MAX(rgb[c], 0.0f);
-    }
-    // RGB gamma correction
-    static const dt_aligned_pixel_t power = { 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f };
-    dt_vector_powf(rgb, power, rgb);
-    for_each_channel(c)
-    {
-      // lift gamma gain - apply lift and gain
-      rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
-    }
-    for_each_channel(c)
-    {
-      // clip away negatives
-      rgb[c] = MAX(rgb[c], 0.0f);
-    }
-    dt_vector_powf(rgb, gamma_inv, rgb);
+    _apply_lgg(rgb, lift, gamma_inv, gain);
     // main saturation output
     if(run_saturation_out)
     {
@@ -470,7 +474,7 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     // fulcrum contrat
     if(run_contrast)
     {
-      apply_fulcrum_contrast(rgb, grey4, contrast_power);
+      _apply_fulcrum_contrast(rgb, grey4, contrast_power);
     }
     // transform the result back to Lab
     // ProphotoRGB -> XYZ -> Lab
@@ -504,7 +508,7 @@ static void _process_sop(const dt_aligned_pixel_t in,
     // Lab -> XYZ -> RGB, return Y as luma
     dt_aligned_pixel_t rgb;
     (void)dt_Lab_to_prophotorgb(in + 4*k, rgb);
-    apply_CDL(rgb, gain, lift, gamma);
+    _apply_CDL(rgb, gain, lift, gamma);
     // transform the result back to Lab
     // ProphotoRGB -> XYZ -> Lab
     dt_aligned_pixel_t res;
@@ -513,6 +517,13 @@ static void _process_sop(const dt_aligned_pixel_t in,
     }
     return;
   }
+#if TODO // on removing process_sse2
+  if(darktable.codepath.SSE2)
+  {
+    _process_sop_sse2(in, out, npixels, ...);
+    return;
+  }
+#endif
 
   const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
   const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
@@ -525,15 +536,13 @@ static void _process_sop(const dt_aligned_pixel_t in,
     // Lab -> XYZ -> RGB, return Y as luma
     dt_aligned_pixel_t rgb;
     float luma = dt_Lab_to_prophotorgb(in + 4*k, rgb);
-
-    // do the calculation in RGB space
     if(run_saturation)
     {
       // main saturation input
       for_each_channel(c)
         rgb[c] = luma + saturation4[c] * (rgb[c] - luma);
     }
-    apply_CDL(rgb, gain, lift, gamma);
+    _apply_CDL(rgb, gain, lift, gamma);
 
     // main saturation output
     if(run_saturation_out)
@@ -546,7 +555,7 @@ static void _process_sop(const dt_aligned_pixel_t in,
     // fulcrum contrast
     if(run_contrast)
     {
-      apply_fulcrum_contrast(rgb, grey4, contrast_power);
+      _apply_fulcrum_contrast(rgb, grey4, contrast_power);
     }
 
     // transform the result back to Lab
@@ -1104,7 +1113,7 @@ static void apply_autogrey(dt_iop_module_t *self)
       gain = { p->gain[CHANNEL_RED] * p->gain[CHANNEL_FACTOR], p->gain[CHANNEL_GREEN] * p->gain[CHANNEL_FACTOR],
                p->gain[CHANNEL_BLUE] * p->gain[CHANNEL_FACTOR] };
 
-  apply_CDL(rgb, gain, lift, gamma);
+  _apply_CDL(rgb, gain, lift, gamma);
   for_each_channel(c)
   {
     rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
