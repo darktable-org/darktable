@@ -62,8 +62,7 @@
 #undef DT_SUPPORTED_X86
 
 #if !defined(__SSE2__) || !defined(__SSE__)
-#pragma message "Building without SSE2 is highly experimental."
-#pragma message "Expect a LOT of functionality to be broken. You have been warned."
+#pragma message "Building without SSE2.  Some functionality will be noticeably slower."
 #endif
 
 // double check for 32-bit architecture
