@@ -132,6 +132,14 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
 void eaw_decompose(float *const restrict out, const float *const restrict in, float *const restrict detail,
                    const int scale, const float sharpen, const int32_t width, const int32_t height)
 {
+#if defined(__SSE2__)
+  if(darktable.codepath.SSE2)
+  {
+    eaw_decompose_sse2(out, in, detail, scale, sharpen, width, height);
+    return;
+  }
+#endif
+
   const int mult = 1 << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
