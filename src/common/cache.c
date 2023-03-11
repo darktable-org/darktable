@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
     dt_pthread_mutex_unlock(&cache->lock);
     double end = dt_get_wtime();
     if(end - start > 0.1)
-      fprintf(stderr, "try+ wait time %.06fs mode %c \n", end - start, mode);
+      dt_print(DT_DEBUG_ALWAYS, "try+ wait time %.06fs mode %c \n", end - start, mode);
 
     if(mode == 'w')
     {
@@ -145,7 +145,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
   dt_pthread_mutex_unlock(&cache->lock);
   double end = dt_get_wtime();
   if(end - start > 0.1)
-    fprintf(stderr, "try- wait time %.06fs\n", end - start);
+    dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs\n", end - start);
   return 0;
 }
 
@@ -215,7 +215,7 @@ restart:
   // here dies your 32-bit system:
   dt_cache_entry_t *entry = (dt_cache_entry_t *)g_slice_alloc(sizeof(dt_cache_entry_t));
   int ret = dt_pthread_rwlock_init(&entry->lock, 0);
-  if(ret) fprintf(stderr, "rwlock init: %d\n", ret);
+  if(ret) dt_print(DT_DEBUG_ALWAYS, "rwlock init: %d\n", ret);
   entry->data = 0;
   entry->data_size = cache->entry_size;
   entry->cost = 1;
@@ -250,7 +250,7 @@ restart:
   dt_pthread_mutex_unlock(&cache->lock);
   double end = dt_get_wtime();
   if(end - start > 0.1)
-    fprintf(stderr, "wait time %.06fs\n", end - start);
+    dt_print(DT_DEBUG_ALWAYS, "wait time %.06fs\n", end - start);
 
   // WARNING: do *NOT* unpoison here. it must be done by the caller!
 
