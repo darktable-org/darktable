@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2022 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -361,7 +361,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
     if(!pprof)
     {
       dt_control_log(_("cannot open printer profile `%s'"), params->p_icc_profile);
-      fprintf(stderr, "cannot open printer profile `%s'\n", params->p_icc_profile);
+      dt_print(DT_DEBUG_ALWAYS, "cannot open printer profile `%s'\n", params->p_icc_profile);
       dt_control_queue_redraw();
       return 1;
     }
@@ -370,7 +370,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
       if(!buf_profile || !buf_profile->profile)
       {
         dt_control_log(_("error getting output profile for image %d"), img->imgid);
-        fprintf(stderr, "error getting output profile for image %d\n", img->imgid);
+        dt_print(DT_DEBUG_ALWAYS, "error getting output profile for image %d\n", img->imgid);
         dt_control_queue_redraw();
         return 1;
       }
@@ -379,7 +379,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
           pprof->profile, params->p_icc_intent, params->black_point_compensation))
       {
         dt_control_log(_("cannot apply printer profile `%s'"), params->p_icc_profile);
-        fprintf(stderr, "cannot apply printer profile `%s'\n", params->p_icc_profile);
+        dt_print(DT_DEBUG_ALWAYS, "cannot apply printer profile `%s'\n", params->p_icc_profile);
         dt_control_queue_redraw();
         return 1;
       }
@@ -532,7 +532,7 @@ static int _print_job_run(dt_job_t *job)
   if(fd == -1)
   {
     dt_control_log(_("failed to create temporary pdf for printing"));
-    fprintf(stderr, "failed to create temporary pdf for printing\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to create temporary pdf for printing\n");
     return 1;
   }
   close(fd);

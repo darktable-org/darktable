@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/camera_control.h"
 #include "common/darktable.h"
@@ -515,7 +516,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
             y1 = buf.height;
             break;
           default:
-            fprintf(stderr, "OMFG, the world will collapse, this shouldn't be reachable!\n");
+            dt_print(DT_DEBUG_ALWAYS, "OMFG, the world will collapse, this shouldn't be reachable!\n");
             dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
             return;
         }

@@ -731,7 +731,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   if(!vs_prof || isnan(vs_prof->matrix_in[0][0]))
   {
-    fprintf(stderr, "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear Rec2020\n", vs_prof->type, vs_prof->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear Rec2020\n",
+             vs_prof->type, vs_prof->filename);
     vs_prof = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
   }
 

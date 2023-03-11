@@ -521,9 +521,9 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
         dt_iop_get_module_from_list(iop_list, hitem->op_name);
       if(base_module == NULL)
       {
-        fprintf(stderr,
-                "[_create_deleted_modules] can't find base module for %s\n",
-                hitem->op_name);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[_create_deleted_modules] can't find base module for %s\n",
+                 hitem->op_name);
         return changed;
       }
 
@@ -885,9 +885,9 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
     }
     break;
   default:
-    fprintf(stderr, "unsupported introspection type \"%s\" encountered"
-            " in _lib_history_change_text (field %s)\n",
-            field->header.type_name, field->header.field_name);
+    dt_print(DT_DEBUG_ALWAYS, "unsupported introspection type \"%s\" encountered"
+             " in _lib_history_change_text (field %s)\n",
+             field->header.type_name, field->header.field_name);
     break;
   }
 
