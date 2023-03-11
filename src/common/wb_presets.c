@@ -128,7 +128,8 @@ void dt_wb_presets_init(const char *alternative)
   JsonParser *parser = json_parser_new();
   if(!json_parser_load_from_file(parser, filename, &error))
   {
-    fprintf(stderr, "[wb_presets] error: parsing json from `%s' failed\n%s\n", filename, error->message);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[wb_presets] error: parsing json from `%s' failed\n%s\n", filename, error->message);
     g_error_free(error);
     g_object_unref(parser);
     return;

@@ -769,10 +769,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
     if(dt_iop_load_module(module, mod_src->so, dev))
     {
       module = NULL;
-      fprintf(stderr,
-              "[dt_styles_apply_style_item] can't load module %s %s\n",
-              style_item->operation,
-              style_item->multi_name);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_styles_apply_style_item] can't load module %s %s\n",
+               style_item->operation,
+               style_item->multi_name);
     }
     else
     {
@@ -823,8 +823,9 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
 
         if(legacy_ret == 1)
         {
-          fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, darktable is %d.\n",
-                  module->op, style_item->module_version, module->version());
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, darktable is %d.\n",
+                   module->op, style_item->module_version, module->version());
           dt_control_log(_("module `%s' version mismatch: %d != %d"), module->op,
                          module->version(), style_item->module_version);
 
@@ -952,8 +953,9 @@ void _styles_apply_to_image_ext(const char *name,
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
-    dt_print(DT_DEBUG_IOPORDER, "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
-      dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
+    dt_print(DT_DEBUG_IOPORDER,
+             "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
+             dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
 
     // go through all entries in style
     // clang-format off
@@ -1379,13 +1381,14 @@ void dt_styles_save_to_file(const char *style_name,
   xmlTextWriterPtr writer = xmlNewTextWriterFilename(stylename, 0);
   if(writer == NULL)
   {
-    fprintf(stderr, "[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
     return;
   }
   rc = xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
   if(rc < 0)
   {
-    fprintf(stderr, "[dt_styles_save_to_file]: Error on encoding setting");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_styles_save_to_file]: Error on encoding setting");
     return;
   }
   xmlTextWriterStartElement(writer, BAD_CAST "darktable_style");
