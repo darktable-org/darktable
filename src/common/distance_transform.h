@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ float dt_image_distance_transform(float *const src, float *const out, const size
       break;
     default:
       dt_iop_image_fill(out, 0.0f, width, height, 1);
-      fprintf(stderr,"[dt_image_distance_transform] called with unsupported mode %i\n", mode);
+      dt_print(DT_DEBUG_ALWAYS,"[dt_image_distance_transform] called with unsupported mode %i\n", mode);
       return 0.0f;
   }
 
