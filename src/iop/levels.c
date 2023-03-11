@@ -360,11 +360,16 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   }
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
-  const int ch = piece->colors;
-  assert(piece->colors >= 3);
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
   const dt_iop_levels_data_t *const d = (dt_iop_levels_data_t *)piece->data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
@@ -375,27 +380,30 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const float level_black = d->levels[0];
+  const float level_range = d->levels[2] - d->levels[0];
+  const float inv_gamma = d->in_inv_gamma;
+  const float *lut = d->lut;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, d) \
-  dt_omp_sharedconst(in, out, npixels) \
+  dt_omp_firstprivate(npixels, in, out, level_black, level_range, inv_gamma, lut) \
   schedule(static)
 #endif
-  for(int i = 0; i < ch * npixels; i += ch)
+  for(int i = 0; i < 4 * npixels; i += 4)
   {
     const float L_in = in[i] / 100.0f;
     float L_out;
-    if(L_in <= d->levels[0])
+    if(L_in <= level_black)
     {
       // Anything below the lower threshold just clips to zero
       L_out = 0.0f;
     }
     else
     {
-      const float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
+      const float percentage = (L_in - level_black) / level_range;
       // Within the expected input range we can use the lookup table, else we need to compute from scratch
-      L_out = percentage < 1.0f ? d->lut[(int)(percentage * 0x10000ul)] : 100.0f * powf(percentage, d->in_inv_gamma);
+      L_out = percentage < 1.0f ? lut[(int)(percentage * 0x10000ul)] : 100.0f * powf(percentage, inv_gamma);
     }
 
     // Preserving contrast
