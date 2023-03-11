@@ -537,7 +537,8 @@ int dt_ioppr_get_iop_order(GList *iop_order_list,
     iop_order = order_entry->o.iop_order;
   }
   else
-    fprintf(stderr, "cannot get iop-order for %s instance %d\n", op_name, multi_priority);
+    dt_print(DT_DEBUG_ALWAYS,
+             "cannot get iop-order for %s instance %d\n", op_name, multi_priority);
 
   return iop_order;
 }
@@ -864,7 +865,8 @@ GList *dt_ioppr_get_iop_order_list(const int32_t imgid, const gboolean sorted)
         if(!iop_order_list)
         {
           // preset not found, fall back to last built-in version, will be loaded below
-          fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list imgid %d\n", imgid);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_ioppr_get_iop_order_list] error building iop_order_list imgid %d\n", imgid);
         }
         else
         {
@@ -894,7 +896,9 @@ GList *dt_ioppr_get_iop_order_list(const int32_t imgid, const gboolean sorted)
         iop_order_list = _table_to_list(v30_jpg_order);
       }
       else
-        fprintf(stderr, "[dt_ioppr_get_iop_order_list] invalid iop order version %d for imgid %d\n", version, imgid);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[dt_ioppr_get_iop_order_list] invalid iop order version %d for imgid %d\n",
+                 version, imgid);
 
       if(iop_order_list)
       {
@@ -1489,9 +1493,10 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           else
           {
             can_move = 0;
-            fprintf(stderr,
-                    "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
-                    mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
+                     mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op,
+                     mod->multi_name, mod->iop_order);
           }
         }
         else
@@ -1502,9 +1507,10 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
 
       if(!can_move)
       {
-        fprintf(stderr,
-                "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
-                mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
+                 mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op,
+                 mod->multi_name, mod->iop_order);
       }
     }
 
@@ -1541,7 +1547,8 @@ int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list)
     if(entry == NULL)
     {
       iop_order_missing = 1;
-      fprintf(stderr, "[dt_ioppr_check_so_iop_order] missing iop_order for module %s\n", mod->op);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_ioppr_check_so_iop_order] missing iop_order for module %s\n", mod->op);
     }
   }
 
@@ -1652,8 +1659,10 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list,
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%d) and %s %s(%d) have the same iop_order\n",
-              mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_ioppr_get_iop_order_before_iop] %s %s(%d) and %s %s(%d) have the same iop_order\n",
+                   mod1->op, mod1->multi_name, mod1->iop_order, mod2->op,
+                   mod2->multi_name, mod2->iop_order);
         }
         else
         {
@@ -1662,7 +1671,9 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list,
       }
     }
     else
-      fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] can't find module %s %s\n", module->op, module->multi_name);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_ioppr_get_iop_order_before_iop] can't find module %s %s\n",
+               module->op, module->multi_name);
   }
   // module is next on the pipe
   // move it down
@@ -1730,8 +1741,10 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list,
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%d) and %s %s(%d) have the same iop_order\n",
-              mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_ioppr_get_iop_order_before_iop] %s %s(%d) and %s %s(%d) have the same iop_order\n",
+                   mod1->op, mod1->multi_name, mod1->iop_order, mod2->op,
+                   mod2->multi_name, mod2->iop_order);
         }
         else
         {
@@ -1740,12 +1753,16 @@ gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list,
       }
     }
     else
-      fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] can't find module %s %s\n", module->op, module->multi_name);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_ioppr_get_iop_order_before_iop] can't find module %s %s\n",
+               module->op, module->multi_name);
   }
   else
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
-        module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%d) and %s %s(%d) have the same iop_order\n",
+             module->op, module->multi_name, module->iop_order, module_next->op,
+             module_next->multi_name, module_next->iop_order);
   }
 
   return can_move;
@@ -1773,8 +1790,7 @@ gboolean dt_ioppr_check_can_move_after_iop(GList *iop_list,
   }
   if(module_next == NULL)
   {
-    fprintf(
-        stderr,
+    dt_print(DT_DEBUG_ALWAYS,
         "[dt_ioppr_get_iop_order_after_iop] can't find module previous to %s %s(%d) while moving %s %s(%d) after it\n",
         module_prev->op, module_prev->multi_name, module_prev->iop_order, module->op, module->multi_name,
         module->iop_order);
@@ -1845,7 +1861,7 @@ void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
-    fprintf(stderr, "[%s] module %s %s multi_priority=%i, iop_order=%d\n",
+    dt_print(DT_DEBUG_ALWAYS, "[%s] module %s %s multi_priority=%i, iop_order=%d\n",
             msg, mod->op, mod->multi_name, mod->multi_priority, mod->iop_order);
   }
 }
@@ -1856,7 +1872,7 @@ void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
-    fprintf(stderr, "[%s] module %s %s multi_priority=%i, iop_order=%d\n",
+    dt_print(DT_DEBUG_ALWAYS, "[%s] module %s %s multi_priority=%i, iop_order=%d\n",
             msg, hist->op_name, hist->multi_name, hist->multi_priority, hist->iop_order);
   }
 }
@@ -1867,7 +1883,7 @@ void dt_ioppr_print_iop_order(GList *iop_order_list, const char *msg)
   {
     dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)(iops_order->data);
 
-    fprintf(stderr, "[%s] op %20s (inst %d) iop_order=%d\n",
+    dt_print(DT_DEBUG_ALWAYS, "[%s] op %20s (inst %d) iop_order=%d\n",
             msg, order_entry->operation, order_entry->instance, order_entry->o.iop_order);
   }
 }
@@ -1930,15 +1946,18 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
     // now check if mod is between the fences
     if(fence_next && mod->iop_order > fence_next->iop_order)
     {
-      fprintf(stderr, "[_ioppr_check_rules] found fence %s %s module %s %s(%d) is after %s %s(%d) image %i (%s)\n",
-              fence_next->op, fence_next->multi_name, mod->op, mod->multi_name, mod->iop_order, fence_next->op,
-              fence_next->multi_name, fence_next->iop_order, imgid, msg);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_ioppr_check_rules] found fence %s %s module %s %s(%d) is after %s %s(%d) image %i (%s)\n",
+               fence_next->op, fence_next->multi_name, mod->op, mod->multi_name,
+               mod->iop_order, fence_next->op, fence_next->multi_name,
+               fence_next->iop_order, imgid, msg);
     }
     if(fence_prev && mod->iop_order < fence_prev->iop_order)
     {
-      fprintf(stderr, "[_ioppr_check_rules] found fence %s %s module %s %s(%d) is before %s %s(%d) image %i (%s)\n",
-              fence_prev->op, fence_prev->multi_name, mod->op, mod->multi_name, mod->iop_order, fence_prev->op,
-              fence_prev->multi_name, fence_prev->iop_order, imgid, msg);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_ioppr_check_rules] found fence %s %s module %s %s(%d) is before %s %s(%d) image %i (%s)\n",
+               fence_prev->op, fence_prev->multi_name, mod->op, mod->multi_name, mod->iop_order,
+               fence_prev->op, fence_prev->multi_name, fence_prev->iop_order, imgid, msg);
     }
   }
 
@@ -1968,9 +1987,10 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
 
           if(strcmp(mod_prev->op, rule->op_next) == 0)
           {
-            fprintf(stderr, "[_ioppr_check_rules] found rule %s %s module %s %s(%d) is after %s %s(%d) image %i (%s)\n",
-                    rule->op_prev, rule->op_next, mod->op, mod->multi_name, mod->iop_order, mod_prev->op,
-                    mod_prev->multi_name, mod_prev->iop_order, imgid, msg);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[_ioppr_check_rules] found rule %s %s module %s %s(%d) is after %s %s(%d) image %i (%s)\n",
+                     rule->op_prev, rule->op_next, mod->op, mod->multi_name, mod->iop_order,
+                     mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, imgid, msg);
           }
         }
       }
@@ -1984,9 +2004,10 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
 
           if(strcmp(mod_next->op, rule->op_prev) == 0)
           {
-            fprintf(stderr, "[_ioppr_check_rules] found rule %s %s module %s %s(%d) is before %s %s(%d) image %i (%s)\n",
-                    rule->op_prev, rule->op_next, mod->op, mod->multi_name, mod->iop_order, mod_next->op,
-                    mod_next->multi_name, mod_next->iop_order, imgid, msg);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[_ioppr_check_rules] found rule %s %s module %s %s(%d) is before %s %s(%d) image %i (%s)\n",
+                     rule->op_prev, rule->op_next, mod->op, mod->multi_name, mod->iop_order,
+                     mod_next->op, mod_next->multi_name, mod_next->iop_order, imgid, msg);
           }
         }
       }
@@ -2046,15 +2067,15 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev,
       if(!dt_iop_module_is(mod->so, "gamma"))
       {
         iop_order_ok = 0;
-        fprintf(stderr,
-                "[dt_ioppr_check_iop_order] gamma is not the last iop,"
-                " last is %s %s(%d) image %i (%s)\n",
-                mod->op, mod->multi_name, mod->iop_order,imgid, msg);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[dt_ioppr_check_iop_order] gamma is not the last iop,"
+                 " last is %s %s(%d) image %i (%s)\n",
+                 mod->op, mod->multi_name, mod->iop_order,imgid, msg);
       }
     }
     else
     {
-      // fprintf(stderr, "[dt_ioppr_check_iop_order] dev->iop is empty image %i (%s)\n",imgid, msg);
+      // dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_check_iop_order] dev->iop is empty image %i (%s)\n",imgid, msg);
     }
   }
 
@@ -2068,14 +2089,16 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev,
         if(mod->enabled)
         {
           iop_order_ok = 0;
-          fprintf(stderr, "[dt_ioppr_check_iop_order] module not used but enabled!! %s %s(%d) image %i (%s)\n",
-                  mod->op, mod->multi_name, mod->iop_order,imgid, msg);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_ioppr_check_iop_order] module not used but enabled!! %s %s(%d) image %i (%s)\n",
+                   mod->op, mod->multi_name, mod->iop_order,imgid, msg);
         }
         if(mod->multi_priority == 0)
         {
           iop_order_ok = 0;
-          fprintf(stderr, "[dt_ioppr_check_iop_order] base module set as not used %s %s(%d) image %i (%s)\n",
-                  mod->op, mod->multi_name, mod->iop_order,imgid, msg);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_ioppr_check_iop_order] base module set as not used %s %s(%d) image %i (%s)\n",
+                   mod->op, mod->multi_name, mod->iop_order,imgid, msg);
         }
       }
     }
@@ -2094,16 +2117,15 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev,
           if(mod->iop_order < mod_prev->iop_order)
           {
             iop_order_ok = 0;
-            fprintf(stderr,
-                    "[dt_ioppr_check_iop_order] module %s %s(%d) should be after %s %s(%d) image %i (%s)\n",
-                    mod->op, mod->multi_name, mod->iop_order, mod_prev->op, mod_prev->multi_name,
-                    mod_prev->iop_order, imgid, msg);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[dt_ioppr_check_iop_order] module %s %s(%d) should be after %s %s(%d) image %i (%s)\n",
+                     mod->op, mod->multi_name, mod->iop_order, mod_prev->op, mod_prev->multi_name,
+                     mod_prev->iop_order, imgid, msg);
           }
           else if(mod->iop_order == mod_prev->iop_order)
           {
             iop_order_ok = 0;
-            fprintf(
-                stderr,
+            dt_print(DT_DEBUG_ALWAYS,
                 "[dt_ioppr_check_iop_order] module %s %s(%i)(%d) and %s %s(%i)(%d) have the same order image %i (%s)\n",
                 mod->op, mod->multi_name, mod->multi_priority, mod->iop_order, mod_prev->op,
                 mod_prev->multi_name, mod_prev->multi_priority, mod_prev->iop_order, imgid, msg);
@@ -2125,14 +2147,16 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev,
       if(hist->enabled)
       {
         iop_order_ok = 0;
-        fprintf(stderr, "[dt_ioppr_check_iop_order] history module not used but enabled!! %s %s(%d) image %i (%s)\n",
-            hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[dt_ioppr_check_iop_order] history module not used but enabled!! %s %s(%d) image %i (%s)\n",
+                 hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
       }
       if(hist->multi_priority == 0)
       {
         iop_order_ok = 0;
-        fprintf(stderr, "[dt_ioppr_check_iop_order] history base module set as not used %s %s(%d) image %i (%s)\n",
-            hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[dt_ioppr_check_iop_order] history base module set as not used %s %s(%d) image %i (%s)\n",
+                 hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
       }
     }
   }
