@@ -118,14 +118,20 @@ static float lookup(const float *lut, const float i)
   return lut[bin1] * f + lut[bin0] * (1. - f);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const restrict i,
+             void *const restrict o,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         i, o, roi_in, roi_out))
+    return;
   dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)(piece->data);
-  const int ch = piece->colors;
 
   // empiric coefficient
-  const float c = 0.5f;
+  const float coeff = 0.5f;
   const float threshold = 0.01f;
 
   // scotopic white, blue saturated
@@ -134,19 +140,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
+  const float *lut = d->lut;
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, i, o, roi_out, threshold, c) \
-  shared(d, XYZ_sw) \
+  dt_omp_firstprivate(i, o, npixels, threshold, coeff, lut, XYZ_sw)        \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < (size_t)npixels; k++)
   {
-    float *in = (float *)i + ch * k;
-    float *out = (float *)o + ch * k;
+    const float *const in = (float *)i + 4 * k;
+    float *const out = (float *)o + 4 * k;
     dt_aligned_pixel_t XYZ, XYZ_s;
     float V;
-    float w;
 
     dt_Lab_to_XYZ(in, XYZ);
 
@@ -163,22 +170,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // scale using empiric coefficient and fit inside limits
-    V = fminf(1.0f, fmaxf(0.0f, c * V));
+//    V = fminf(1.0f, fmaxf(0.0f, coeff * V));
+    V = CLIP(coeff * V);
 
     // blending coefficient from curve
-    w = lookup(d->lut, in[0] / 100.f);
+    const float w = lookup(lut, in[0] / 100.f);
 
-    XYZ_s[0] = V * XYZ_sw[0];
-    XYZ_s[1] = V * XYZ_sw[1];
-    XYZ_s[2] = V * XYZ_sw[2];
+    for_each_channel(c)
+      XYZ_s[c] = V * XYZ_sw[c];
 
-    XYZ[0] = w * XYZ[0] + (1.0f - w) * XYZ_s[0];
-    XYZ[1] = w * XYZ[1] + (1.0f - w) * XYZ_s[1];
-    XYZ[2] = w * XYZ[2] + (1.0f - w) * XYZ_s[2];
+    for_each_channel(c)
+      XYZ[c] = w * XYZ[c] + (1.0f - w) * XYZ_s[c];
 
-    dt_XYZ_to_Lab(XYZ, out);
-
-    out[3] = in[3];
+    dt_aligned_pixel_t res;
+    dt_XYZ_to_Lab(XYZ, res);
+    copy_pixel_nontemporal(out, res);
   }
 }
 
