@@ -60,13 +60,6 @@ extern float logf(const float x);
 
 #endif
 
-#if defined(_OPENMP) && defined(__GNUC__) && __GNUC__ >= 10
-
-#pragma omp declare simd
-extern float powf(const float x, const float y);
-
-#endif
-
 /* Bring our own optimized maths functions because Clang makes dumb shit */
 
 #ifdef _OPENMP
