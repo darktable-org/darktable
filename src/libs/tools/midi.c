@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019-2022 darktable developers.
+    copyright (c) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -435,7 +435,7 @@ void midi_open_devices(dt_lib_module_t *self)
 {
   if(Pm_Initialize())
   {
-    fprintf(stderr, "[midi_open_devices] ERROR initialising PortMidi\n");
+    dt_print(DT_DEBUG_ALWAYS, "[midi_open_devices] ERROR initialising PortMidi\n");
     return;
   }
   else
@@ -500,12 +500,14 @@ void midi_open_devices(dt_lib_module_t *self)
 
       if(error < 0)
       {
-        fprintf(stderr, "[midi_open_devices] ERROR opening midi device '%s' via '%s'\n", info->name, info->interf);
+        dt_print(DT_DEBUG_ALWAYS, "[midi_open_devices] ERROR opening midi device '%s' via '%s'\n",
+                 info->name, info->interf);
         continue;
       }
       else
       {
-        dt_print(DT_DEBUG_INPUT, "[midi_open_devices] opened midi device '%s' via '%s' as midi%d\n", info->name, info->interf, dev);
+        dt_print(DT_DEBUG_INPUT, "[midi_open_devices] opened midi device '%s' via '%s' as midi%d\n",
+                 info->name, info->interf, dev);
       }
 
       midi_device *midi = (midi_device *)g_malloc0(sizeof(midi_device));

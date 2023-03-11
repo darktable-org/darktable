@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019--2020 Diederik ter Rahe.
+    copyright (c) 2019-2023 Diederik ter Rahe.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -264,7 +264,7 @@ void gamepad_open_devices(dt_lib_module_t *self)
 {
   if(SDL_Init(SDL_INIT_GAMECONTROLLER))
   {
-    fprintf(stderr, "[gamepad_open_devices] ERROR initialising SDL\n");
+    dt_print(DT_DEBUG_ALWAYS, "[gamepad_open_devices] ERROR initialising SDL\n");
     return;
   }
   else
@@ -280,12 +280,14 @@ void gamepad_open_devices(dt_lib_module_t *self)
 
       if(!controller)
       {
-        fprintf(stderr, "[gamepad_open_devices] ERROR opening game controller '%s'\n", SDL_GameControllerNameForIndex(i));
+        dt_print(DT_DEBUG_ALWAYS, "[gamepad_open_devices] ERROR opening game controller '%s'\n",
+                 SDL_GameControllerNameForIndex(i));
         continue;
       }
       else
       {
-        fprintf(stderr, "[gamepad_open_devices] opened game controller '%s'\n", SDL_GameControllerNameForIndex(i));
+        dt_print(DT_DEBUG_ALWAYS, "[gamepad_open_devices] opened game controller '%s'\n",
+                 SDL_GameControllerNameForIndex(i));
       }
 
       gamepad_device *gamepad = (gamepad_device *)g_malloc0(sizeof(gamepad_device));
