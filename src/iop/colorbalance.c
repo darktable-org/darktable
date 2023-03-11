@@ -418,6 +418,78 @@ static void _process_lgg_curveonly(const dt_aligned_pixel_t in,
   }
 }
 
+#ifdef __SSE2__
+static void _process_lgg_sse(const dt_aligned_pixel_t in,
+                             dt_aligned_pixel_t out,
+                             const size_t npixels,
+                             const dt_aligned_pixel_t lift_,
+                             const dt_aligned_pixel_t gamma_inv_,
+                             const dt_aligned_pixel_t gain_,
+                             const float grey,
+                             const float saturation,
+                             const float saturation_out,
+                             const dt_aligned_pixel_t contrast_power)
+{
+  const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
+  const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
+  const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
+  const __m128 zero = _mm_setzero_ps();
+  const __m128 one = _mm_set1_ps(1.0);
+  const __m128 gamma_RGB = _mm_set1_ps(2.2f);
+  const __m128 gamma_inv_RGB = _mm_set1_ps(1.0f/2.2f);
+  const __m128 lift = _mm_load_ps(lift_);
+  const __m128 gamma_inv = _mm_load_ps(gamma_inv_);
+  const __m128 gain = _mm_load_ps(gain_);
+  const __m128 contrast = _mm_load_ps(contrast_power);
+  for(size_t k = 0; k < npixels; k++)
+  {
+    // transform the pixel to sRGB:
+    // Lab -> XYZ
+    __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in + 4*k));
+    // XYZ -> sRGB
+    __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
+
+    __m128 luma;
+
+    // adjust main saturation input
+    if(run_saturation)
+    {
+      luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+      rgb = luma + saturation * (rgb - luma);
+    }
+
+    // RGB gamma adjustment
+    rgb = _mm_pow_ps(_mm_max_ps(rgb, zero), gamma_inv_RGB);
+
+    // regular lift gamma gain
+    rgb = ((rgb - one) * lift + one) * gain;
+    rgb = _mm_max_ps(rgb, zero);
+    rgb = _mm_pow_ps(rgb, gamma_inv * gamma_RGB);
+
+    // adjust main saturation output
+    if(run_saturation_out)
+    {
+      XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+      luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+      rgb = luma + saturation_out * (rgb - luma);
+    }
+
+    // fulcrum contrast
+    if(run_contrast)
+    {
+      rgb = _mm_max_ps(rgb, zero);
+      rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
+    }
+
+    // transform the result back to Lab
+    // sRGB -> XYZ
+    XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+    // XYZ -> Lab
+    _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(XYZ));
+  }
+}
+#endif
+
 static void _process_lgg(const dt_aligned_pixel_t in,
                          dt_aligned_pixel_t out,
                          const size_t npixels,
@@ -437,10 +509,11 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     _process_lgg_curveonly(in, out, npixels, lift, gamma_inv, gain);
     return;
   }
-#if TODO // on removing process_sse2
+#ifdef __SSE2__
   if(darktable.codepath.SSE2)
   {
-    _process_lgg_sse2(in, out, npixels, ...);
+    _process_lgg_sse(in, out, npixels, lift, gamma_inv, gain, grey, saturation,
+                     saturation_out, contrast_power);
     return;
   }
 #endif
@@ -484,6 +557,75 @@ static void _process_lgg(const dt_aligned_pixel_t in,
   }
 }
 
+#ifdef __SSE2__
+static void _process_sop_sse(const dt_aligned_pixel_t in,
+                             dt_aligned_pixel_t out,
+                             const size_t npixels,
+                             const dt_aligned_pixel_t lift_,
+                             const dt_aligned_pixel_t gamma_,
+                             const dt_aligned_pixel_t gain_,
+                             const float grey,
+                             const float saturation,
+                             const float saturation_out,
+                             const float contrast_amt,
+                             const dt_aligned_pixel_t contrast_power)
+{
+  const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
+  const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
+  const int run_contrast = fabsf(contrast_amt - 1.0f) > 1e-6;
+  const __m128 zero = _mm_setzero_ps();
+  const __m128 lift = _mm_load_ps(lift_);
+  const __m128 gamma = _mm_load_ps(gamma_);
+  const __m128 gain = _mm_load_ps(gain_);
+  const __m128 contrast = _mm_load_ps(contrast_power);
+  for(size_t k = 0; k < npixels; k++)
+  {
+        // transform the pixel to sRGB:
+        // Lab -> XYZ
+        __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in + 4*k));
+        // XYZ -> sRGB
+        __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
+
+        __m128 luma;
+
+        // adjust main saturation
+        if(run_saturation)
+        {
+          luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+          rgb = luma + saturation * (rgb - luma);
+        }
+
+        // slope offset
+        rgb = rgb * gain + lift;
+
+        //power
+        rgb = _mm_max_ps(rgb, zero);
+        rgb = _mm_pow_ps(rgb, gamma);
+
+        // adjust main saturation output
+        if(run_saturation_out)
+        {
+          XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+          luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+          rgb = luma + saturation_out * (rgb - luma);
+        }
+
+        // fulcrum contrast
+        if(run_contrast)
+        {
+          rgb = _mm_max_ps(rgb, zero);
+          rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
+        }
+
+        // transform the result back to Lab
+        // sRGB -> XYZ
+        XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+        // XYZ -> Lab
+        _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(XYZ));
+  }
+}
+#endif
+
 static void _process_sop(const dt_aligned_pixel_t in,
                          dt_aligned_pixel_t out,
                          const size_t npixels,
@@ -517,10 +659,11 @@ static void _process_sop(const dt_aligned_pixel_t in,
     }
     return;
   }
-#if TODO // on removing process_sse2
+#ifdef __SSE2__ 
   if(darktable.codepath.SSE2)
   {
-    _process_sop_sse2(in, out, npixels, ...);
+    _process_sop_sse(in, out, npixels, lift, gamma, gain, grey, saturation,
+                     saturation_out, contrast, contrast_power);
     return;
   }
 #endif
