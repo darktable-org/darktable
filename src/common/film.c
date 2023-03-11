@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2021 darktable developers.
+   Copyright (C) 2009-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -243,7 +243,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, film->dirname, -1, SQLITE_STATIC);
     const int rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
-      fprintf(stderr, "[film_new] failed to insert film roll! %s\n",
+      dt_print(DT_DEBUG_ALWAYS, "[film_new] failed to insert film roll! %s\n",
               sqlite3_errmsg(dt_database_get(darktable.db)));
     sqlite3_finalize(stmt);
     /* requery for filmroll and fetch new id */
@@ -315,7 +315,8 @@ int dt_film_import(const char *dirname)
   film->dir = g_dir_open(film->dirname, 0, &error);
   if(error)
   {
-    fprintf(stderr, "[film_import] failed to open directory %s: %s\n", film->dirname, error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[film_import] failed to open directory %s: %s\n",
+             film->dirname, error->message);
     g_error_free(error);
     dt_film_cleanup(film);
     free(film);
