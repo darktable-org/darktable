@@ -435,7 +435,6 @@ static void _process_lgg_sse(const dt_aligned_pixel_t in,
   const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
   const __m128 zero = _mm_setzero_ps();
   const __m128 one = _mm_set1_ps(1.0);
-  const __m128 gamma_RGB = _mm_set1_ps(2.2f);
   const __m128 gamma_inv_RGB = _mm_set1_ps(1.0f/2.2f);
   const __m128 lift = _mm_load_ps(lift_);
   const __m128 gamma_inv = _mm_load_ps(gamma_inv_);
@@ -464,7 +463,7 @@ static void _process_lgg_sse(const dt_aligned_pixel_t in,
     // regular lift gamma gain
     rgb = ((rgb - one) * lift + one) * gain;
     rgb = _mm_max_ps(rgb, zero);
-    rgb = _mm_pow_ps(rgb, gamma_inv * gamma_RGB);
+    rgb = _mm_pow_ps(rgb, gamma_inv);
 
     // adjust main saturation output
     if(run_saturation_out)
@@ -501,14 +500,6 @@ static void _process_lgg(const dt_aligned_pixel_t in,
                          const float saturation_out,
                          const dt_aligned_pixel_t contrast_power)
 {
-  const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
-  const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
-  const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
-  if(!run_saturation && !run_saturation_out && !run_contrast)
-  {
-    _process_lgg_curveonly(in, out, npixels, lift, gamma_inv, gain);
-    return;
-  }
 #ifdef __SSE2__
   if(darktable.codepath.SSE2)
   {
@@ -517,6 +508,14 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     return;
   }
 #endif
+  const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
+  const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
+  const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
+  if(!run_saturation && !run_saturation_out && !run_contrast)
+  {
+    _process_lgg_curveonly(in, out, npixels, lift, gamma_inv, gain);
+    return;
+  }
   
   const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
   const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
@@ -638,6 +637,14 @@ static void _process_sop(const dt_aligned_pixel_t in,
                          const float contrast,
                          const dt_aligned_pixel_t contrast_power)
 {
+#ifdef __SSE2__ 
+  if(darktable.codepath.SSE2)
+  {
+    _process_sop_sse(in, out, npixels, lift, gamma, gain, grey, saturation,
+                     saturation_out, contrast, contrast_power);
+    return;
+  }
+#endif
   const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
   const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
   const int run_contrast = fabsf(contrast - 1.0f) > 1e-6;
@@ -659,14 +666,6 @@ static void _process_sop(const dt_aligned_pixel_t in,
     }
     return;
   }
-#ifdef __SSE2__ 
-  if(darktable.codepath.SSE2)
-  {
-    _process_sop_sse(in, out, npixels, lift, gamma, gain, grey, saturation,
-                     saturation_out, contrast, contrast_power);
-    return;
-  }
-#endif
 
   const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
   const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
