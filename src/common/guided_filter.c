@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2021 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,11 +40,6 @@
 // processing is split into tiles of this size (or three times the filter
 // width, if greater) to keep memory use under control.
 #define GF_TILE_SIZE 512
-
-// avoid cluttering the scalar codepath with #ifdefs by hiding the dependency on SSE2
-#ifndef __SSE2__
-# define _mm_prefetch(where,hint)
-#endif
 
 // the filter does internal tiling to keep memory requirements reasonable, so this structure
 // defines the position of the tile being processed

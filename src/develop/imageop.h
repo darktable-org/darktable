@@ -657,9 +657,26 @@ static inline void dt_mm_restore_flush_zero(const unsigned int mode)
 {
   _MM_SET_FLUSH_ZERO_MODE(mode);
 }
-#else
+
+#define DT_PREFETCH(addr) _mm_prefetch(addr, _MM_HINT_T2)
+#define PREFETCH_NTA(addr) _mm_prefetch(addr, _MM_HINT_NTA)
+
+#else // no SSE2
+
 #define dt_mm_enable_flush_zero() 0
 #define dt_mm_restore_flush_zero(mode) (void)mode;
+
+#if defined(__GNUC__)
+#define DT_PREFETCH(addr) __builtin_prefetch(addr,1,1)
+#define PREFETCH_NTA(addr) __builtin_prefetch(addr,1,0)
+#else
+#define DT_PREFETCH(addr)
+#define PREFETCH_NTA(addr)
+#endif
+
+// avoid cluttering the scalar codepath with #ifdefs by hiding the dependency on SSE2
+# define _mm_prefetch(where,hint)
+
 #endif /* __SSE2__ */
 
 #ifdef __cplusplus
