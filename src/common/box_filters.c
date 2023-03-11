@@ -33,17 +33,6 @@
 #pragma GCC optimize ("finite-math-only")
 #endif
 
-#if defined(__SSE__)
-#define DT_PREFETCH(addr) _mm_prefetch(addr, _MM_HINT_T2)
-#define PREFETCH_NTA(addr) _mm_prefetch(addr, _MM_HINT_NTA)
-#elif defined(__GNUC__)
-#define DT_PREFETCH(addr) __builtin_prefetch(addr,1,1)
-#define PREFETCH_NTA(addr) __builtin_prefetch(addr,1,0)
-#else
-#define DT_PREFETCH(addr)
-#define PREFETCH_NTA(addr)
-#endif
-
 static void _blur_horizontal_1ch(float *const restrict buf,
     const int height,
     const int width,
