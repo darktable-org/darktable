@@ -220,10 +220,10 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
       }
       if(!((image->comps[0].w == 2048) | (image->comps[0].h == 1080)))
       {
-        fprintf(stdout,
-                "Image coordinates %d x %d is not 2K compliant.\nJPEG Digital Cinema Profile-3 "
-                "(2K profile) compliance requires that at least one of coordinates match 2048 x 1080\n",
-                image->comps[0].w, image->comps[0].h);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "Image coordinates %d x %d is not 2K compliant.\nJPEG Digital Cinema Profile-3 "
+                 "(2K profile) compliance requires that at least one of coordinates match 2048 x 1080\n",
+                 image->comps[0].w, image->comps[0].h);
         parameters->cp_rsiz = OPJ_STD_RSIZ;
       }
       break;
@@ -240,10 +240,10 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
       }
       if(!((image->comps[0].w == 4096) | (image->comps[0].h == 2160)))
       {
-        fprintf(stdout,
-                "Image coordinates %d x %d is not 4K compliant.\nJPEG Digital Cinema Profile-4"
-                "(4K profile) compliance requires that at least one of coordinates match 4096 x 2160\n",
-                image->comps[0].w, image->comps[0].h);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "Image coordinates %d x %d is not 4K compliant.\nJPEG Digital Cinema Profile-4"
+                 "(4K profile) compliance requires that at least one of coordinates match 4096 x 2160\n",
+                 image->comps[0].w, image->comps[0].h);
         parameters->cp_rsiz = OPJ_STD_RSIZ;
       }
       parameters->numpocs = initialise_4K_poc(parameters->POC, parameters->numresolution);
