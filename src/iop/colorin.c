@@ -678,6 +678,7 @@ static inline void apply_blue_mapping(const float *const in, float *const out)
   }
 }
 
+// legacy processing (IOP versions 1 and 2, 2014 and earlier)
 static void process_cmatrix_bm(struct dt_iop_module_t *self,
                                dt_dev_pixelpipe_iop_t *piece,
                                const void *const ivoid,
@@ -754,6 +755,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self,
 }
 
 #if defined(__SSE2__)
+// legacy processing (IOP versions 1 and 2, 2014 and earlier)
 static void process_sse2_cmatrix_bm(struct dt_iop_module_t *self,
                                     dt_dev_pixelpipe_iop_t *piece,
                                     const void *const ivoid,
@@ -1221,6 +1223,7 @@ static void process_cmatrix(struct dt_iop_module_t *self,
   }
 }
 
+// legacy processing (IOP versions 1 and 2, 2014 and earlier)
 static void process_lcms2_bm(struct dt_iop_module_t *self,
                              dt_dev_pixelpipe_iop_t *piece,
                              const void *const ivoid,
