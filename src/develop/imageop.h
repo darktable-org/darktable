@@ -658,8 +658,8 @@ static inline void dt_mm_restore_flush_zero(const unsigned int mode)
   _MM_SET_FLUSH_ZERO_MODE(mode);
 }
 #else
-#define dt_mm_enable_flush_zero()
-#define dt_mm_restore_flush_zero(mode)
+#define dt_mm_enable_flush_zero() 0
+#define dt_mm_restore_flush_zero(mode) (void)mode;
 #endif /* __SSE2__ */
 
 #ifdef __cplusplus
