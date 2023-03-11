@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "libs/lib.h"
 #include "common/debug.h"
 #include "common/module.h"
@@ -64,7 +65,7 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *vie
 {
   if(!module->views)
   {
-    fprintf(stderr, "module %s doesn't have views flags\n", module->name(module));
+    dt_print(DT_DEBUG_ALWAYS, "module %s doesn't have views flags\n", module->name(module));
     return FALSE;
   }
 
@@ -599,7 +600,8 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
       && (module->legacy_params || module->set_params || module->get_params))
      || (!module->init_presets && module->manage_presets))
   {
-    fprintf(stderr,"[dt_lib_load_module] illegal method combination in '%s'\n", module->plugin_name);
+    dt_print(DT_DEBUG_ALWAYS, "[dt_lib_load_module] illegal method combination in '%s'\n",
+             module->plugin_name);
   }
 
   if(!module->get_params || !module->set_params)
@@ -707,9 +709,9 @@ void dt_lib_init_presets(dt_lib_module_t *module)
           && (new_params = _update_params(module, op_params, op_params_size, op_version, version, &new_params_size)))
         {
           // write the updated preset back to db
-          fprintf(stderr,
-                  "[lighttable_init_presets] updating '%s' preset '%s' from version %d to version %d\n",
-                  module->plugin_name, name, op_version, version);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[lighttable_init_presets] updating '%s' preset '%s' from version %d to version %d\n",
+                   module->plugin_name, name, op_version, version);
           sqlite3_stmt *innerstmt;
           // clang-format off
           DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -727,9 +729,10 @@ void dt_lib_init_presets(dt_lib_module_t *module)
         else
         {
           // delete the preset
-          fprintf(stderr, "[lighttable_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, "
-                          "no legacy_params() implemented or unable to update\n",
-                  module->plugin_name, name, op_version, version);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[lighttable_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, "
+                   "no legacy_params() implemented or unable to update\n",
+                   module->plugin_name, name, op_version, version);
           sqlite3_stmt *innerstmt;
           // clang-format off
           DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

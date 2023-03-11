@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -391,7 +391,7 @@ static gboolean _lib_location_search(gpointer user_data)
 bail_out:
   if(err)
   {
-    fprintf(stderr, "location search: %s\n", err->message);
+    dt_print(DT_DEBUG_ALWAYS, "location search: %s\n", err->message);
     g_error_free(err);
   }
 
@@ -600,7 +600,7 @@ broken_bbox:
         else
         {
           gchar *s = g_strndup(*avalue, 100);
-          fprintf(stderr, "unsupported outline: %s%s\n", s, strlen(s) == strlen(*avalue) ? "" : " ...");
+          dt_print(DT_DEBUG_ALWAYS, "unsupported outline: %s%s\n", s, strlen(s) == strlen(*avalue) ? "" : " ...");
           g_free(s);
         }
       }
