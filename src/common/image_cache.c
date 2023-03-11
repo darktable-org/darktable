@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,8 +155,9 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   else
   {
     img->id = -1;
-    fprintf(stderr, "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s\n", entry->key,
-            sqlite3_errmsg(dt_database_get(darktable.db)));
+    dt_print(DT_DEBUG_ALWAYS,
+             "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s\n",
+             entry->key, sqlite3_errmsg(dt_database_get(darktable.db)));
   }
   sqlite3_finalize(stmt);
   img->cache_entry = entry; // init backref
@@ -305,7 +306,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 33, img->final_height);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 34, img->id);
   const int rc = sqlite3_step(stmt);
-  if(rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
+  if(rc != SQLITE_DONE)
+    dt_print(DT_DEBUG_ALWAYS, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
 
   // TODO: make this work in relaxed mode, too.

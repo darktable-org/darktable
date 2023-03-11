@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -447,7 +447,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
                                                        final_height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s'\n", dtlogo);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'\n", dtlogo);
       cairo_surface_destroy(surface);
       free(image_buffer);
       image_buffer = NULL;
@@ -465,7 +465,8 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   }
   else
   {
-    fprintf(stderr, "warning: can't load darktable logo from SVG file `%s'\n%s\n", dtlogo, error->message);
+    dt_print(DT_DEBUG_ALWAYS,
+             "warning: can't load darktable logo from SVG file `%s'\n%s\n", dtlogo, error->message);
     g_error_free(error);
   }
 

@@ -100,7 +100,7 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
 
     if(writer == NULL)
     {
-      fprintf(stderr, "[dt_presets_save_to_file] Error creating the xml writer\n, path: %s", filename);
+      dt_print(DT_DEBUG_ALWAYS, "[dt_presets_save_to_file] Error creating the xml writer\n, path: %s", filename);
       g_free(filename);
       return;
     }
@@ -108,7 +108,7 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
     rc = xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
     if(rc < 0)
     {
-      fprintf(stderr, "[dt_presets_save_to_file]: Error on encoding setting");
+      dt_print(DT_DEBUG_ALWAYS, "[dt_presets_save_to_file]: Error on encoding setting");
       g_free(filename);
       return;
     }

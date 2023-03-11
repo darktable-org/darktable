@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -642,9 +642,10 @@ int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr, g
 static inline void dt_unreachable_codepath_with_caller(const char *description, const char *file,
                                                        const int line, const char *function)
 {
-  fprintf(stderr, "[dt_unreachable_codepath] {%s} %s:%d (%s) - we should not be here. please report this to "
-                  "the developers.",
-          description, file, line, function);
+  dt_print(DT_DEBUG_ALWAYS,
+           "[dt_unreachable_codepath] {%s} %s:%d (%s) - we should not be here. please report "
+           "this to the developers.",
+           description, file, line, function);
   __builtin_unreachable();
 }
 

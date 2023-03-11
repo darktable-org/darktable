@@ -626,7 +626,7 @@ static int sanity_check(dt_iop_module_t *self)
   {
     dt_control_log(_("tone equalizer needs to be after distortion modules"
                      " in the pipeline – disabled"));
-    fprintf(stdout,
+    dt_print(DT_DEBUG_ALWAYS,
             "tone equalizer needs to be after distortion modules"
             " in the pipeline – disabled\n");
     self->enabled = 0;
@@ -1008,8 +1008,9 @@ void toneeq_process(struct dt_iop_module_t *self,
     // Pointers are not 64-bits aligned, and SSE code will segfault
     dt_control_log(_("tone equalizer in/out buffer are ill-aligned,"
                      " please report the bug to the developers"));
-    fprintf(stdout, "tone equalizer in/out buffer are ill-aligned,"
-            " please report the bug to the developers\n");
+    dt_print(DT_DEBUG_ALWAYS,
+             "tone equalizer in/out buffer are ill-aligned,"
+             " please report the bug to the developers\n");
     return;
   }
 

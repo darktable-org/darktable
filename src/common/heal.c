@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -331,7 +331,7 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
   unsigned *const restrict black_runs = dt_alloc_align(64, sizeof(unsigned) * subwidth * (height + 2));
   if(!red_runs || !black_runs)
   {
-    fprintf(stderr, "_heal_laplace_loop: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "_heal_laplace_loop: error allocating memory for healing\n");
     goto cleanup;
   }
 
@@ -387,7 +387,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
 {
   if(ch != 4)
   {
-    fprintf(stderr,"dt_heal: full-color image required\n");
+    dt_print(DT_DEBUG_ALWAYS,"dt_heal: full-color image required\n");
     return;
   }
   const size_t subwidth = 4 * ((width+1)/2);  // round up to be able to handle odd widths
@@ -395,7 +395,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
   float *const restrict black_buffer = dt_alloc_align_float(subwidth * (height + 2));
   if(red_buffer == NULL || black_buffer == NULL)
   {
-    fprintf(stderr, "dt_heal: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "dt_heal: error allocating memory for healing\n");
     goto cleanup;
   }
 
@@ -463,7 +463,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
-    fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "dt_heal_cl: error allocating memory for healing\n");
     err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
@@ -471,7 +471,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   dest_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(dest_buffer == NULL)
   {
-    fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "dt_heal_cl: error allocating memory for healing\n");
     err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }

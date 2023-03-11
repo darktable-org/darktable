@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -247,7 +247,8 @@ static float _action_process_rating(gpointer target, dt_action_element_t element
         element = DT_RATINGS_DOWNGRADE;
         break;
       default:
-        fprintf(stderr, "[_action_process_rating] unknown shortcut effect (%d) for rating\n", effect);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[_action_process_rating] unknown shortcut effect (%d) for rating\n", effect);
         break;
       }
     }

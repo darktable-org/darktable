@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -188,7 +188,7 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
   else if(roi_in->width <= roi_out->width && roi_in->height <= roi_out->height)
   {
     // output needs padding
-    fprintf(stderr,"copy_image_roi with larger output not yet implemented\n");
+    dt_print(DT_DEBUG_ALWAYS,"copy_image_roi with larger output not yet implemented\n");
     //TODO
   }
   else if(roi_in->width >= roi_out->width && roi_in->height >= roi_out->height)
@@ -212,7 +212,7 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
   else
   {
     // inconsistent RoIs!!
-    fprintf(stderr,"copy_image_roi called with inconsistent RoI!\n");
+    dt_print(DT_DEBUG_ALWAYS,"copy_image_roi called with inconsistent RoI!\n");
     //TODO
   }
 }
