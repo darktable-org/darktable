@@ -907,6 +907,10 @@ static inline void _cmatrix_fastpath_clipping(float *const restrict out,
                                               const dt_colormatrix_t lmatrix)
 {
 #ifdef __SSE2__
+  // we can't remove the SSE version yet, because I haven't been able to
+  // convince GCC10 to put the color matrix rows into registers, unlike
+  // with the SSE version.  That makes the non-SSE version quite a bit
+  // slower with fewer than 32 threads.
   if(darktable.codepath.SSE2)
   {
     _cmatrix_fastpath_clipping_sse(out, in, npixels, nmatrix, lmatrix);
@@ -925,14 +929,7 @@ static inline void _cmatrix_fastpath_clipping(float *const restrict out,
   {
     dt_aligned_pixel_t nRGB;
     dt_apply_color_matrix_by_row(in + 4*k, nmatrix_row0, nmatrix_row1, nmatrix_row2, nRGB);
-
-    // two separate clamping operations proves more efficient than
-    // either CLAMP or CLIP macros...
-    for_each_channel(c)
-      nRGB[c] = MAX(nRGB[c], 0.0f);
-    for_each_channel(c)
-      nRGB[c] = MIN(nRGB[c], 1.0f);
-
+    dt_vector_clip(nRGB);
     dt_aligned_pixel_t res;
     dt_RGB_to_Lab(nRGB, lmatrix_row0, lmatrix_row1, lmatrix_row2, res);
     copy_pixel_nontemporal(out + 4*k, res);
