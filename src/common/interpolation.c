@@ -555,8 +555,8 @@ static inline void compute_upsampling_kernel(const struct dt_interpolation *itor
 #if defined(__SSE2__)
   if(darktable.codepath.SSE2)
     return compute_upsampling_kernel_sse(itor, kernel, norm, first, t);
-#endif
   else
+#endif
     return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
 }
 
@@ -699,8 +699,8 @@ static inline void compute_downsampling_kernel(const struct dt_interpolation *it
   if(darktable.codepath.SSE2)
     return compute_downsampling_kernel_sse(itor, taps, first, kernel, norm,
                                            outoinratio, xout);
-#endif
   else
+#endif
     return compute_downsampling_kernel_plain(itor, taps, first, kernel, norm,
                                              outoinratio, xout);
 }
@@ -1034,8 +1034,8 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
   if(darktable.codepath.SSE2)
     return dt_interpolation_compute_pixel4c_sse(itor, in, out, x, y,
                                                 width, height, linestride);
-#endif
   else
+#endif
     return dt_interpolation_compute_pixel4c_plain(itor, in, out, x, y,
                                                   width, height, linestride);
 }
