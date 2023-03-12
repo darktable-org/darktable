@@ -304,6 +304,7 @@ static inline void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l)
   if(s == 0)
   {
     rgb[0] = rgb[1] = rgb[2] = l;
+    rgb[3] = 0.0f;
     return;
   }
   m2 = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
@@ -312,6 +313,7 @@ static inline void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l)
   rgb[0] = hue2rgb(m1, m2, h < 4.0f ? h + 2.0f : h - 4.0f);
   rgb[1] = hue2rgb(m1, m2, h);
   rgb[2] = hue2rgb(m1, m2, h > 2.0f ? h - 2.0f : h + 4.0f);
+  rgb[3] = 0.0f;
 }
 
 
