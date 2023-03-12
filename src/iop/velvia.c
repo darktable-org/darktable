@@ -122,28 +122,37 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
   const dt_iop_velvia_data_t *const data = (dt_iop_velvia_data_t *)piece->data;
 
-  const size_t ch = piece->colors;
   const float strength = data->strength / 100.0f;
 
   // Apply velvia saturation
   if(strength <= 0.0)
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, 4);
   else
   {
+    const size_t npixels = (size_t)roi_out->width * roi_out->height;
+    const float bias = data->bias;
+
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, data, ivoid, ovoid, roi_out, strength) \
+    dt_omp_firstprivate(ivoid, ovoid, npixels, strength, bias)      \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+    for(size_t k = 0; k < npixels; k++)
     {
-      const float *const in = (const float *const)ivoid + ch * k;
-      float *const out = (float *const)ovoid + ch * k;
+      const float *const in = (const float *const)ivoid + 4 * k;
+      float *const out = (float *const)ovoid + 4 * k;
 
       // calculate vibrance, and apply boost velvia saturation at least saturated pixels
       float pmax = MAX(in[0], MAX(in[1], in[2])); // max value in RGB set
@@ -153,16 +162,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                   : (pmax - pmin) / (1e-5f + MAX(0.0f, 2.0f - pmax - pmin));
 
       float pweight
-          = CLAMPS(((1.0f - (1.5f * psat)) + ((1.0f + (fabsf(plum - 0.5f) * 2.0f)) * (1.0f - data->bias)))
-                       / (1.0f + (1.0f - data->bias)),
+          = CLAMPS(((1.0f - (1.5f * psat)) + ((1.0f + (fabsf(plum - 0.5f) * 2.0f)) * (1.0f - bias)))
+                       / (1.0f + (1.0f - bias)),
                    0.0f, 1.0f);              // The weight of pixel
-      float saturation = strength * pweight; // So lets calculate the final affection of filter on pixel
+      float saturation = strength * pweight; // So lets calculate the final effect of filter on pixel
 
       // Apply velvia saturation values
-      out[0] = CLAMPS(in[0] + saturation * (in[0] - 0.5f * (in[1] + in[2])), 0.0f, 1.0f);
-      out[1] = CLAMPS(in[1] + saturation * (in[1] - 0.5f * (in[2] + in[0])), 0.0f, 1.0f);
-      out[2] = CLAMPS(in[2] + saturation * (in[2] - 0.5f * (in[0] + in[1])), 0.0f, 1.0f);
+      dt_aligned_pixel_t chan;
+      copy_pixel(chan, in);
+      // the compiler can use permute or shuffle instructions provided
+      // we include all four values in the initializer; otherwise it
+      // would need to build each element-by-element
+      const dt_aligned_pixel_t rotate1 = { chan[1], chan[2], chan[0], chan[3] };
+      const dt_aligned_pixel_t rotate2 = { chan[2], chan[0], chan[1], chan[3] };
+      dt_aligned_pixel_t othersum;
+      for_each_channel(c)
+        othersum[c] = rotate1[c] + rotate2[c];
+      dt_aligned_pixel_t velvia;
+      for_each_channel(c)
+        velvia[c] = CLAMPS(chan[c] + saturation * (chan[c] - 0.5f * othersum[c]), 0.0f, 1.0f);
+      copy_pixel_nontemporal(out, velvia);
     }
+    dt_omploop_sfence();  // ensure that nontemporal writes have flushed to RAM before continuing
   }
 }
 
