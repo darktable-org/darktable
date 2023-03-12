@@ -1214,7 +1214,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         {
           dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
-        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
+        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n",
+                 img->exif_lens, lens.c_str());
       }
     }
     else if(Exiv2::testVersion(0,27,4) && FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() == 0)
@@ -1490,7 +1491,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             break;
 
           default:
-            dt_print(DT_DEBUG_ALWAYS,"[exif] did not find a proper dng correction matrix for illuminant %i\n", illu[sel_illu]);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[exif] did not find a proper dng correction matrix for illuminant %i\n",
+                     illu[sel_illu]);
             break;
         }
       }
@@ -3311,8 +3314,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           else
           {
             dt_print(DT_DEBUG_ALWAYS,
-                    "[exif] cannot get iop-order for module '%s', XMP may be corrupted\n",
-                    entry->operation);
+                     "[exif] cannot get iop-order for module '%s', XMP may be corrupted\n",
+                     entry->operation);
             g_list_free_full(iop_order_list, free);
             g_list_free_full(history_entries, free_history_entry);
             g_list_free_full(mask_entries_v3, free_mask_entry);
@@ -3459,7 +3462,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
       if(preset_applied < 0)
       {
-        dt_print(DT_DEBUG_ALWAYS,"[exif] dt_exif_xmp_read for %s, id %i found auto_presets_applied but there was no history\n",filename,img->id);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[exif] dt_exif_xmp_read for %s, id %i found auto_presets_applied but there was no history\n",
+                 filename,img->id);
       }
     }
 
