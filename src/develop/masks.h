@@ -694,8 +694,9 @@ static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_
   if (!newbuf)
   {
     // not much we can do here except emit an error message
-    fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %zu!\n",
-            a->tag, size);
+    dt_print(DT_DEBUG_ALWAYS,
+             "critical: out of memory for dynbuf '%s' with size request %zu!\n",
+             a->tag, size);
     return FALSE;
   }
   if (a->buffer)
