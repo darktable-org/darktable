@@ -29,14 +29,21 @@
 #define DT_COMMON_BILATERAL_MAX_RES_S 3000
 #define DT_COMMON_BILATERAL_MAX_RES_R 50
 
-void dt_bilateral_grid_size(dt_bilateral_t *b, const int width, const int height, const float L_range,
-                            float sigma_s, const float sigma_r)
+void dt_bilateral_grid_size(dt_bilateral_t *b,
+                            const int width,
+                            const int height,
+                            const float L_range,
+                            float sigma_s,
+                            const float sigma_r)
 {
-  // Callers adjust sigma_s to account for image scaling to make the bilateral filter scale-invariant.  As a
-  // result, if the user sets a small enough value for sigma, we can get sigma_s substantially below 1.0.
-  // Values < 1 generate a bilateral grid with spatial dimensions larger than the (scaled) image pixel
-  // dimensions; for sigma_s < 0.5, there is at least one unused grid point between any two used points, and
-  // thus the gaussian blur will have little effect.  So we force sigma_s to be at least 0.5 to avoid an
+  // Callers adjust sigma_s to account for image scaling to make the
+  // bilateral filter scale-invariant.  As a result, if the user sets
+  // a small enough value for sigma, we can get sigma_s substantially
+  // below 1.0.  Values < 1 generate a bilateral grid with spatial
+  // dimensions larger than the (scaled) image pixel dimensions; for
+  // sigma_s < 0.5, there is at least one unused grid point between
+  // any two used points, and thus the gaussian blur will have little
+  // effect.  So we force sigma_s to be at least 0.5 to avoid an
   // excessively large grid.
   if(sigma_s < 0.5) sigma_s = 0.5;
 
@@ -44,19 +51,23 @@ void dt_bilateral_grid_size(dt_bilateral_t *b, const int width, const int height
   float _x = CLAMPS((int)roundf(width / sigma_s), 4, DT_COMMON_BILATERAL_MAX_RES_S);
   float _y = CLAMPS((int)roundf(height / sigma_s), 4, DT_COMMON_BILATERAL_MAX_RES_S);
   float _z = CLAMPS((int)roundf(L_range / sigma_r), 4, DT_COMMON_BILATERAL_MAX_RES_R);
-  // If we clamped the X or Y dimensions, the sigma_s for that dimension changes.  Since we need to use the
-  // same value in both dimensions, compute the effective sigma_s for the grid.
+  // If we clamped the X or Y dimensions, the sigma_s for that
+  // dimension changes.  Since we need to use the same value in both
+  // dimensions, compute the effective sigma_s for the grid.
   b->sigma_s = MAX(height / _y, width / _x);
   b->sigma_r = L_range / _z;
-  // Compute the grid size in light of the actual adjusted values for sigma_s and sigma_r
+  // Compute the grid size in light of the actual adjusted values for
+  // sigma_s and sigma_r
   b->size_x = (int)ceilf(width / b->sigma_s) + 1;
   b->size_y = (int)ceilf(height / b->sigma_s) + 1;
   b->size_z = (int)ceilf(L_range / b->sigma_r) + 1;
 #if 0
   if(b->sigma_s != sigma_s)
-    dt_print(DT_DEBUG_ALWAYS, "[bilateral] clamped sigma_s (%g -> %g)!\n",sigma_s,b->sigma_s);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[bilateral] clamped sigma_s (%g -> %g)!\n",sigma_s,b->sigma_s);
   if(b->sigma_r != sigma_r)
-    dt_print(DT_DEBUG_ALWAYS, "[bilateral] clamped sigma_r (%g -> %g)!\n",sigma_r,b->sigma_r);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[bilateral] clamped sigma_r (%g -> %g)!\n",sigma_r,b->sigma_r);
 #endif
 }
 
@@ -88,10 +99,11 @@ size_t dt_bilateral_memory_use2(const int width,
 }
 #endif /* !HAVE_OPENCL */
 
-size_t dt_bilateral_singlebuffer_size(const int width,     // width of input image
-                                      const int height,    // height of input image
-                                      const float sigma_s, // spatial sigma (blur pixel coords)
-                                      const float sigma_r) // range sigma (blur luma values)
+size_t dt_bilateral_singlebuffer_size
+  (const int width,     // width of input image
+   const int height,    // height of input image
+   const float sigma_s, // spatial sigma (blur pixel coords)
+   const float sigma_r) // range sigma (blur luma values)
 {
   dt_bilateral_t b;
   dt_bilateral_grid_size(&b,width,height,100.0f,sigma_s,sigma_r);
@@ -111,8 +123,13 @@ size_t dt_bilateral_singlebuffer_size2(const int width,
 }
 #endif /* !HAVE_OPENCL */
 
-static size_t image_to_grid(const dt_bilateral_t *const b, const int i, const int j, const float L,
-                            float *xf, float *yf, float *zf)
+static size_t image_to_grid(const dt_bilateral_t *const b,
+                            const int i,
+                            const int j,
+                            const float L,
+                            float *xf,
+                            float *yf,
+                            float *zf)
 {
   float x = CLAMPS(i / b->sigma_s, 0, b->size_x - 1);
   float y = CLAMPS(j / b->sigma_s, 0, b->size_y - 1);
@@ -126,7 +143,11 @@ static size_t image_to_grid(const dt_bilateral_t *const b, const int i, const in
   return ((xi + yi * b->size_x) * b->size_z) + zi;
 }
 
-static size_t image_to_relgrid(const dt_bilateral_t *const b, const int i, const float L, float *xf, float *zf)
+static size_t image_to_relgrid(const dt_bilateral_t *const b,
+                               const int i,
+                               const float L,
+                               float *xf,
+                               float *zf)
 {
   float x = CLAMPS(i / b->sigma_s, 0, b->size_x - 1);
   float z = CLAMPS(L / b->sigma_r, 0, b->size_z - 1);
@@ -154,11 +175,13 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   if(!b->buf)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[bilateral] unable to allocate buffer for %zux%zux%zu grid\n",b->size_x,b->size_y,b->size_z);
+             "[bilateral] unable to allocate buffer for %zux%zux%zu grid\n",
+             b->size_x,b->size_y,b->size_z);
     free(b);
     return NULL;
   }
-  dt_print(DT_DEBUG_DEV, "[bilateral] created grid [%ld %ld %ld] with sigma (%f %f) (%f %f)\n",
+  dt_print(DT_DEBUG_DEV,
+           "[bilateral] created grid [%ld %ld %ld] with sigma (%f %f) (%f %f)\n",
            b->size_x, b->size_y, b->size_z, b->sigma_s, sigma_s, b->sigma_r, sigma_r);
   return b;
 }
@@ -198,8 +221,9 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
   {
     const int firstrow = slice * b->sliceheight;
     const int lastrow = MIN((slice+1)*b->sliceheight,b->height);
-    // compute the first row of the final grid which this slice splats, and subtract that from the first
-    // row the current thread should use to get an offset
+    // compute the first row of the final grid which this slice
+    // splats, and subtract that from the first row the current thread
+    // should use to get an offset
     const int slice_offset = slice * b->slicerows - (int)(firstrow / b->sigma_s);
     // now iterate over the rows of the current horizontal slice
     for(int j = firstrow; j < lastrow; j++)
@@ -218,7 +242,8 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
         // sum up payload here
         const dt_aligned_pixel_t contrib =
         {
-          (1.0f - xf) * (1.0f - yf) * 100.0f / sigma_s,	// precompute the contributions along the first two dimensions
+          // precompute the contributions along the first two dimensions:
+          (1.0f - xf) * (1.0f - yf) * 100.0f / sigma_s,
           xf * (1.0f - yf) * 100.0f / sigma_s,
           (1.0f - xf) * yf * 100.0f / sigma_s,
           xf * yf * 100.0f / sigma_s
@@ -250,8 +275,9 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
         dest[i] += src[i];
       }
       dest += oy;
-      // clear elements in the part of the buffer which holds the final result now that we've read the partial result,
-      // since we'll be adding to those locations later
+      // clear elements in the part of the buffer which holds the
+      // final result now that we've read the partial result, since
+      // we'll be adding to those locations later
       if(j < b->size_y)
         memset(buf + j*oy, '\0', sizeof(float) * oy);
     }
@@ -261,8 +287,13 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(buf:64)
 #endif
-static void blur_line_z(float *buf, const int offset1, const int offset2, const int offset3, const int size1,
-                        const int size2, const int size3)
+static void blur_line_z(float *buf,
+                        const int offset1,
+                        const int offset2,
+                        const int offset3,
+                        const int size1,
+                        const int size2,
+                        const int size3)
 {
   const float w1 = 4.f / 16.f;
   const float w2 = 2.f / 16.f;
@@ -285,7 +316,8 @@ static void blur_line_z(float *buf, const int offset1, const int offset2, const 
       for(int i = 2; i < size3 - 2; i++)
       {
         const float tmp3 = buf[index];
-        buf[index] = +w1 * (buf[index + offset3] - tmp2) + w2 * (buf[index + 2 * offset3] - tmp1);
+        buf[index] = +w1 * (buf[index + offset3] - tmp2)
+          + w2 * (buf[index + 2 * offset3] - tmp1);
         index += offset3;
         tmp1 = tmp2;
         tmp2 = tmp3;
@@ -303,8 +335,13 @@ static void blur_line_z(float *buf, const int offset1, const int offset2, const 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(buf:64)
 #endif
-static void blur_line(float *buf, const int offset1, const int offset2, const int offset3, const int size1,
-                      const int size2, const int size3)
+static void blur_line(float *buf,
+                      const int offset1,
+                      const int offset2,
+                      const int offset3,
+                      const int size1,
+                      const int size2,
+                      const int size3)
 {
   const float w0 = 6.f / 16.f;
   const float w1 = 4.f / 16.f;
@@ -320,16 +357,19 @@ static void blur_line(float *buf, const int offset1, const int offset2, const in
     for(int j = 0; j < size2; j++)
     {
       float tmp1 = buf[index];
-      buf[index] = buf[index] * w0 + w1 * buf[index + offset3] + w2 * buf[index + 2 * offset3];
+      buf[index] = buf[index] * w0 + w1 * buf[index + offset3]
+        + w2 * buf[index + 2 * offset3];
       index += offset3;
       float tmp2 = buf[index];
-      buf[index] = buf[index] * w0 + w1 * (buf[index + offset3] + tmp1) + w2 * buf[index + 2 * offset3];
+      buf[index] = buf[index] * w0 + w1 * (buf[index + offset3] + tmp1)
+        + w2 * buf[index + 2 * offset3];
       index += offset3;
       for(int i = 2; i < size3 - 2; i++)
       {
         const float tmp3 = buf[index];
         buf[index]
-            = buf[index] * w0 + w1 * (buf[index + offset3] + tmp2) + w2 * (buf[index + 2 * offset3] + tmp1);
+            = buf[index] * w0 + w1 * (buf[index + offset3] + tmp2)
+          + w2 * (buf[index + 2 * offset3] + tmp1);
         index += offset3;
         tmp1 = tmp2;
         tmp2 = tmp3;
@@ -349,6 +389,7 @@ void dt_bilateral_blur(const dt_bilateral_t *b)
 {
   if(!b || !b->buf)
     return;
+
   const int ox = b->size_z;
   const int oy = b->size_x * b->size_z;
   const int oz = 1;
@@ -364,7 +405,10 @@ void dt_bilateral_blur(const dt_bilateral_t *b)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(out, in :64)
 #endif
-void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, float *out, const float detail)
+void dt_bilateral_slice(const dt_bilateral_t *const b,
+                        const float *const in,
+                        float *out,
+                        const float detail)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
   const float norm = -detail * b->sigma_r * 0.04f;
@@ -409,7 +453,9 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
 #ifdef _OPENMP
 #pragma omp declare simd aligned(out, in :64)
 #endif
-void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *const in, float *out,
+void dt_bilateral_slice_to_output(const dt_bilateral_t *const b,
+                                  const float *const in,
+                                  float *out,
                                   const float detail)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
