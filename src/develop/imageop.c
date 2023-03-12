@@ -201,11 +201,6 @@ static void default_process(struct dt_iop_module_t *self,
 {
   if(roi_in->width <= 1 || roi_in->height <= 1 || roi_out->width <= 1 || roi_out->height <= 1) return;
 
-#if defined(__SSE__)
-  if(darktable.codepath.SSE2 && self->process_sse2)
-    self->process_sse2(self, piece, i, o, roi_in, roi_out);
-  else
-#endif
   if(self->process_plain)
     self->process_plain(self, piece, i, o, roi_in, roi_out);
   else

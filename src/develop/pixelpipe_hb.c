@@ -1151,19 +1151,6 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
         const int counter = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) ? 100 : 50;
         const float mpix = (roi_out->width * roi_out->height) / 1.0e6;
 
-#if defined(__SSE__)
-        if(module->process_sse2)
-        {
-          dt_get_times(&start);
-          for(int i = 0; i < counter; i++)
-            module->process_sse2(module, piece, input, *output, roi_in, roi_out);
-          dt_get_times(&end);
-          const float clock = (end.clock - start.clock) / (float) counter;
-          dt_print(DT_DEBUG_ALWAYS,
-                   "[bench module SSE2]  [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
-                   full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
-        }
-#endif
         if(module->process_plain)
         {
           dt_get_times(&start);
