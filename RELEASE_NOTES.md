@@ -166,6 +166,7 @@ The following is a summary of the main features added to darktable
   - RGB Levels
   - Input Color Profile
   - Lowlight vision
+  - Velvia
 
   - Filmic (legacy)
   - Color Balance (legacy)
@@ -183,7 +184,7 @@ The following is a summary of the main features added to darktable
     features have parts now running faster.
 
   - The Edge-Avoiding a-trous Wavelet used by those modules Contrast
-    Equalizer and Denoise(Profiled). Meaning those modules have parts
+    Equalizer and Denoise (Profiled). Meaning those modules have parts
     now running faster.
 
   - Some part of the bilateral filter have been improved for better
