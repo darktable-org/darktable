@@ -378,8 +378,8 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
   if(!buf) return;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(b, in, norm, ox, oy, oz, height, width, buf) \
-    shared(out) collapse(2)
+  dt_omp_firstprivate(b, in, out, norm, ox, oy, oz, height, width, buf)  \
+  collapse(2)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -399,11 +399,9 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
                                    + buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
                                    + buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
                                    + buf[gi + ox + oy + oz] * (xf) * (yf) * (zf)));
+      // copy color and mask, then update L
+      copy_pixel(out + index, in + index);
       out[index] = Lout;
-      // and copy color and mask
-      out[index + 1] = in[index + 1];
-      out[index + 2] = in[index + 2];
-      out[index + 3] = in[index + 3];
     }
   }
 }
@@ -414,6 +412,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
 void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *const in, float *out,
                                   const float detail)
 {
+  double start = dt_get_wtime();
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
   const float norm = -detail * b->sigma_r * 0.04f;
   const int ox = b->size_z;
@@ -426,8 +425,8 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
   if(!buf) return;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(b, in, norm, oy, oz, ox, buf, width, height) \
-  shared(out) collapse(2)
+  dt_omp_firstprivate(b, in, out, norm, oy, oz, ox, buf, width, height)  \
+  collapse(2)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -449,6 +448,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
       out[index] = MAX(0.0f, out[index] + Lout);
     }
   }
+  fprintf(stderr,"bilat_slice_to %.3f ms\n",1000.0*(dt_get_wtime()-start));
 }
 
 void dt_bilateral_free(dt_bilateral_t *b)
