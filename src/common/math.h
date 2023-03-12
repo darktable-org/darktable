@@ -537,6 +537,30 @@ static inline void dt_vector_powf(const dt_aligned_pixel_t input,
 #endif
 }
 
+static inline void dt_vector_min(dt_aligned_pixel_t min,
+                                 const dt_aligned_pixel_t v1,
+                                 const dt_aligned_pixel_t v2)
+{
+#ifdef __SSE__
+  *((__m128*)min) = _mm_max_ps(*((__m128*)v1), *((__m128*)v2));
+#else
+  for_each_channel(c)
+    min[c] = MIN(v1[c], v2[c]);
+#endif
+}
+
+static inline void dt_vector_max(dt_aligned_pixel_t max,
+                                 const dt_aligned_pixel_t v1,
+                                 const dt_aligned_pixel_t v2)
+{
+#ifdef __SSE__
+  *((__m128*)max) = _mm_max_ps(*((__m128*)v1), *((__m128*)v2));
+#else
+  for_each_channel(c)
+    max[c] = MAX(v1[c], v2[c]);
+#endif
+}
+
 static inline float dt_vector_channel_max(const dt_aligned_pixel_t pixel)
 {
   dt_aligned_pixel_t swapRG = { pixel[1], pixel[0], pixel[2], pixel[3] };
@@ -545,6 +569,18 @@ static inline float dt_vector_channel_max(const dt_aligned_pixel_t pixel)
   for_each_channel(c)
     maximum[c] = MAX(MAX(pixel[c], swapRG[c]), swapRB[c]);
   return maximum[0];
+}
+
+static inline void dt_vector_clip(dt_aligned_pixel_t values)
+{
+#ifdef __SSE__
+  static const __m128 zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+  static const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
+  *((__m128*)values) = _mm_min_ps(_mm_max_ps(*((__m128*)values), zero), one);
+#else
+  for_each_channel(c)
+    values[c] = CLIP(values[c]);
+#endif
 }
 
 
