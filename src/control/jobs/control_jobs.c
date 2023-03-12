@@ -676,7 +676,8 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
       dt_image_set_monochrome_flag(imgid, mode == 2);
     }
     else
-      fprintf(stderr,"[dt_control_monochrome_images_job_run] got illegal imgid %i\n", imgid);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_control_monochrome_images_job_run] got illegal imgid %i\n", imgid);
 
     t = g_list_next(t);
     fraction += 1.0 / total;
@@ -1299,12 +1300,14 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
       }
       else
-        fprintf(stderr,"[dt_control_refresh_exif_run] couldn't dt_image_cache_get for imgid %i\n", imgid);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[dt_control_refresh_exif_run] couldn't dt_image_cache_get for imgid %i\n",
+                 imgid);
 
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
     }
     else
-      fprintf(stderr,"[dt_control_refresh_exif_run] illegal imgid %i\n", imgid);
+      dt_print(DT_DEBUG_ALWAYS,"[dt_control_refresh_exif_run] illegal imgid %i\n", imgid);
 
     t = g_list_next(t);
     fraction += 1.0 / total;
@@ -1426,7 +1429,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
       {
         dt_control_log(_("image `%s' is currently unavailable"), image->filename);
-        fprintf(stderr, "image `%s' is currently unavailable\n", imgfilename);
+        dt_print(DT_DEBUG_ALWAYS, "image `%s' is currently unavailable\n", imgfilename);
         // dt_image_remove(imgid);
         dt_image_cache_read_release(darktable.image_cache, image);
       }

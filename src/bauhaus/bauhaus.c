@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -978,7 +978,9 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget, gpointer field, dt_introspec
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(*w->label)
-    fprintf(stderr, "[dt_bauhaus_widget_set_field] bauhaus label '%s' set before field (needs to be after)\n", w->label);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_bauhaus_widget_set_field] bauhaus label '%s' set before field (needs to be after)\n",
+             w->label);
   w->field = field;
   w->field_type = field_type;
 }
@@ -1044,7 +1046,7 @@ void dt_bauhaus_update_module(dt_iop_module_t *self)
             dt_bauhaus_slider_set(widget, *(unsigned short *)bhw->field);
             break;
           default:
-            fprintf(stderr, "[dt_bauhaus_update_module] unsupported slider data type\n");
+            dt_print(DT_DEBUG_ALWAYS, "[dt_bauhaus_update_module] unsupported slider data type\n");
         }
         break;
       case DT_BAUHAUS_COMBOBOX:
@@ -1063,11 +1065,12 @@ void dt_bauhaus_update_module(dt_iop_module_t *self)
             dt_bauhaus_combobox_set(widget, *(gboolean *)bhw->field);
             break;
           default:
-            fprintf(stderr, "[dt_bauhaus_update_module] unsupported combo data type\n");
+            dt_print(DT_DEBUG_ALWAYS, "[dt_bauhaus_update_module] unsupported combo data type\n");
         }
         break;
       default:
-        fprintf(stderr, "[dt_bauhaus_update_module] invalid bauhaus widget type encountered\n");
+        dt_print(DT_DEBUG_ALWAYS
+                 , "[dt_bauhaus_update_module] invalid bauhaus widget type encountered\n");
     }
 
     if(!n && (n = gtk_widget_get_parent(widget)) && (n = gtk_widget_get_parent(n)) && !GTK_IS_NOTEBOOK(n)) n = NULL;
@@ -1503,7 +1506,7 @@ static void _bauhaus_combobox_set(dt_bauhaus_widget_t *w, const int pos, const g
           if(*b != prevb) dt_iop_gui_changed(w->module, GTK_WIDGET(w), &prevb);
           break;
         default:
-          fprintf(stderr, "[_bauhaus_combobox_set] unsupported combo data type\n");
+          dt_print(DT_DEBUG_ALWAYS, "[_bauhaus_combobox_set] unsupported combo data type\n");
       }
     }
     _highlight_changed_notebook_tab(GTK_WIDGET(w), GINT_TO_POINTER(d->active != d->defpos));
@@ -1609,7 +1612,9 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
   }
   else
   {
-    fprintf(stderr, "[bauhaus_slider_set_stop] only %d stops allowed.\n", DT_BAUHAUS_SLIDER_MAX_STOPS);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[bauhaus_slider_set_stop] only %d stops allowed.\n",
+             DT_BAUHAUS_SLIDER_MAX_STOPS);
   }
 }
 
@@ -2934,7 +2939,8 @@ static void _bauhaus_slider_value_change(dt_bauhaus_widget_t *w)
           if(*s != prevs) dt_iop_gui_changed(w->module, GTK_WIDGET(w), &prevs);
           break;
         default:
-          fprintf(stderr, "[_bauhaus_slider_value_change] unsupported slider data type\n");
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[_bauhaus_slider_value_change] unsupported slider data type\n");
       }
     }
 
@@ -3269,14 +3275,14 @@ void dt_bauhaus_vimkey_exec(const char *input)
     case DT_BAUHAUS_SLIDER:
       old_value = dt_bauhaus_slider_get(w);
       new_value = dt_calculator_solve(old_value, input);
-      fprintf(stderr, " = %f\n", new_value);
+      dt_print(DT_DEBUG_ALWAYS, " = %f\n", new_value);
       if(isfinite(new_value)) dt_bauhaus_slider_set(w, new_value);
       break;
     case DT_BAUHAUS_COMBOBOX:
       // TODO: what about text as entry?
       old_value = dt_bauhaus_combobox_get(w);
       new_value = dt_calculator_solve(old_value, input);
-      fprintf(stderr, " = %f\n", new_value);
+      dt_print(DT_DEBUG_ALWAYS, " = %f\n", new_value);
       if(isfinite(new_value)) dt_bauhaus_combobox_set(w, new_value);
       break;
     default:
@@ -3377,7 +3383,9 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         dt_bauhaus_slider_set(widget, move_size);
         break;
       default:
-        fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[_action_process_slider] unknown shortcut effect (%d) for slider\n",
+                 effect);
         break;
       }
 
@@ -3412,14 +3420,18 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         gtk_widget_queue_draw(widget);
         break;
       default:
-        fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[_action_process_slider] unknown shortcut effect (%d) for slider\n",
+                 effect);
         break;
       }
 
       _slider_zoom_toast(bhw);
       break;
     default:
-      fprintf(stderr, "[_action_process_slider] unknown shortcut element (%d) for slider\n", element);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_action_process_slider] unknown shortcut element (%d) for slider\n",
+               element);
       break;
     }
   }

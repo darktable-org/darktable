@@ -967,10 +967,10 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
         while(fname > dev->image_storage.filename && *fname != '/') fname--;
         if(fname > dev->image_storage.filename) fname++;
 
-        fprintf(stderr,
-                "[_dev_read_masks_history] %s (imgid `%i'):"
-                " mask version mismatch: history is %d, darktable is %d.\n",
-                fname, imgid, form->version, dt_masks_version());
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[_dev_read_masks_history] %s (imgid `%i'):"
+                 " mask version mismatch: history is %d, darktable is %d.\n",
+                 fname, imgid, form->version, dt_masks_version());
         dt_control_log(_("%s: mask version mismatch: %d != %d"),
                        fname, dt_masks_version(), form->version);
 
@@ -999,10 +999,10 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
       hist_item->forms = g_list_append(hist_item->forms, form);
     }
     else
-      fprintf(stderr,
-              "[_dev_read_masks_history] can't find history entry %i"
-              " while adding mask %s(%i)\n",
-              num, form->name, formid);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_dev_read_masks_history] can't find history entry %i"
+               " while adding mask %s(%i)\n",
+               num, form->name, formid);
 
     if(num < dev->history_end) hist_item_last = hist_item;
   }
@@ -2452,7 +2452,8 @@ void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui,
   else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
   else
-    fprintf(stderr, "[dt_masks_set_source_pos_initial_state] unknown state for setting masks position type\n");
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_masks_set_source_pos_initial_state] unknown state for setting masks position type\n");
 
   // both source types record an absolute position, for the relative
   // type, the first time is used the position is recorded, the second
@@ -2484,8 +2485,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
         form->functions->initial_source_pos(iwd, iht, &gui->posx_source, &gui->posy_source);
       }
       else
-        fprintf(stderr, "[dt_masks_set_source_pos_initial_value]"
-                " unsupported masks type when calculating source position initial value\n");
+        dt_print(DT_DEBUG_ALWAYS, "[dt_masks_set_source_pos_initial_value]"
+                 " unsupported masks type when calculating source position initial value\n");
 
       float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
@@ -2530,8 +2531,8 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui,
     form->source[1] = pts_src[1] / iht;
   }
   else
-    fprintf(stderr, "[dt_masks_set_source_pos_initial_value]"
-            " unknown source position type\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_masks_set_source_pos_initial_value]"
+             " unknown source position type\n");
 }
 
 // calculates the source position value for preview drawing, on cairo coordinates
@@ -2594,8 +2595,8 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
       }
 #endif
       else
-        fprintf(stderr, "[dt_masks_calculate_source_pos_value]"
-                " unsupported masks type when calculating source position value\n");
+        dt_print(DT_DEBUG_ALWAYS, "[dt_masks_calculate_source_pos_value]"
+                 " unsupported masks type when calculating source position value\n");
     }
     else
     {
@@ -2619,9 +2620,9 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
     }
   }
   else
-    fprintf(stderr,
-            "[dt_masks_calculate_source_pos_value]"
-            " unknown source position type for setting source position value\n");
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_masks_calculate_source_pos_value]"
+             " unknown source position type for setting source position value\n");
 
   *px = x;
   *py = y;
