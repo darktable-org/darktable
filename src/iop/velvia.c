@@ -183,6 +183,7 @@ void process(struct dt_iop_module_t *self,
         velvia[c] = CLAMPS(chan[c] + saturation * (chan[c] - 0.5f * othersum[c]), 0.0f, 1.0f);
       copy_pixel_nontemporal(out, velvia);
     }
+    dt_omploop_sfence();  // ensure that nontemporal writes have flushed to RAM before continuing
   }
 }
 
