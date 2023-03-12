@@ -448,7 +448,6 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
       out[index] = MAX(0.0f, out[index] + Lout);
     }
   }
-  fprintf(stderr,"bilat_slice_to %.3f ms\n",1000.0*(dt_get_wtime()-start));
 }
 
 void dt_bilateral_free(dt_bilateral_t *b)
@@ -466,4 +465,3 @@ void dt_bilateral_free(dt_bilateral_t *b)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
