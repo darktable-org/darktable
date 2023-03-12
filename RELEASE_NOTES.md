@@ -164,10 +164,12 @@ The following is a summary of the main features added to darktable
   - Local Contrast with Local Laplacian
   - Lowpass
   - RGB Levels
-  - Filmic (legacy)
-  - Color Balance (legacy)
   - Input Color Profile
   - Lowlight vision
+
+  - Filmic (legacy)
+  - Color Balance (legacy)
+  - Levels (legacy)
 
   - The gaussian generator used by many modules: Censorize, Denoise
     Profile, Lowpass, Diffuse & Sharpen, Defringe, RAW Chromatic
@@ -183,6 +185,12 @@ The following is a summary of the main features added to darktable
   - The Edge-Avoiding a-trous Wavelet used by those modules Contrast
     Equalizer and Denoise(Profiled). Meaning those modules have parts
     now running faster.
+
+  - Some part of the bilateral filter have been improved for better
+    performances. This is used in multiple modules like Monochrome,
+    Lowpass Filter, Shadow and Highlights, Censorize, Retouch, Color
+    Mapping, Rotation and Perspective and Local Contrast. Meaning all
+    those modules have parts now running faster.
 
   - Loader for JPEG2000 file format
 
