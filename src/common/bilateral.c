@@ -412,7 +412,6 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
 void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *const in, float *out,
                                   const float detail)
 {
-  double start = dt_get_wtime();
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
   const float norm = -detail * b->sigma_r * 0.04f;
   const int ox = b->size_z;
