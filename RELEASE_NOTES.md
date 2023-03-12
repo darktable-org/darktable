@@ -166,6 +166,8 @@ The following is a summary of the main features added to darktable
   - RGB Levels
   - Filmic (legacy)
   - Color Balance (legacy)
+  - Input Color Profile
+  - Lowlight vision
 
   - The gaussian generator used by many modules: Censorize, Denoise
     Profile, Lowpass, Diffuse & Sharpen, Defringe, RAW Chromatic
