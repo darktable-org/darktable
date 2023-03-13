@@ -167,6 +167,7 @@ The following is a summary of the main features added to darktable
   - Input Color Profile
   - Lowlight vision
   - Velvia
+  - Split-toning
 
   - Filmic (legacy)
   - Color Balance (legacy)
