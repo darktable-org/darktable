@@ -812,7 +812,9 @@ static void _fire_darkroom_image_loaded_event(const bool clean, const int32_t im
 static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
-  if(dev->image_loading) return;
+  const gboolean is_loading =
+    dt_atomic_exch_int((dt_atomic_int *)&dev->image_loading, TRUE);
+  if(is_loading) return;
 
   // deactivate module label timer if set
   if(darktable.develop->gui_module
