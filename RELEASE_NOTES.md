@@ -491,7 +491,7 @@ The following is a summary of the main features added to darktable
 
 ### White Balance Presets
 
-   No data for this release.
+- Canon EOS R7
 
 ### Noise Profiles
 
