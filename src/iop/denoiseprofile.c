@@ -95,134 +95,6 @@ typedef enum dt_iop_denoiseprofile_channel_t
 // and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(11, dt_iop_denoiseprofile_params_t)
 
-typedef struct dt_iop_denoiseprofile_params_v1_t
-{
-  float radius;     // search radius
-  float strength;   // noise level after equalization
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-} dt_iop_denoiseprofile_params_v1_t;
-
-typedef struct dt_iop_denoiseprofile_params_v4_t
-{
-  float radius;     // search radius
-  float strength;   // noise level after equalization
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
-} dt_iop_denoiseprofile_params_v4_t;
-
-typedef struct dt_iop_denoiseprofile_params_v5_t
-{
-  float radius;                      // patch size
-  float nbhood;                      // search radius
-  float strength;                    // noise level after equalization
-  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
-} dt_iop_denoiseprofile_params_v5_t;
-
-typedef struct dt_iop_denoiseprofile_params_v6_t
-{
-  float radius;                      // patch size
-  float nbhood;                      // search radius
-  float strength;                    // noise level after equalization
-  float scattering;                  // spread the patch search zone without increasing number of patches
-  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
-} dt_iop_denoiseprofile_params_v6_t;
-
-typedef struct dt_iop_denoiseprofile_params_v7_t
-{
-  float radius;                      // patch size
-  float nbhood;                      // search radius
-  float strength;                    // noise level after equalization
-  float scattering;                  // spread the patch search zone without increasing number of patches
-  float central_pixel_weight;        // increase central pixel's weight in patch comparison
-  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
-  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
-  // backward compatibility options
-  gboolean fix_anscombe_and_nlmeans_norm;
-} dt_iop_denoiseprofile_params_v7_t;
-
-typedef struct dt_iop_denoiseprofile_params_v8_t
-{
-  float radius;     // patch size
-  float nbhood;     // search radius
-  float strength;   // noise level after equalization
-  float shadows;    // control the impact on shadows
-  float bias;       // allows to reduce backtransform bias
-  float scattering; // spread the patch search zone without increasing number of patches
-  float central_pixel_weight; // increase central pixel's weight in patch comparison
-  float overshooting; // adjusts the way parameters are autoset
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
-  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
-  // backward compatibility options
-  gboolean fix_anscombe_and_nlmeans_norm;
-  gboolean use_new_vst;
-} dt_iop_denoiseprofile_params_v8_t;
-
-typedef struct dt_iop_denoiseprofile_params_v9_t
-{
-  float radius;     // patch size
-  float nbhood;     // search radius
-  float strength;   // noise level after equalization
-  float shadows;    // control the impact on shadows
-  float bias;       // allows to reduce backtransform bias
-  float scattering; // spread the patch search zone without increasing number of patches
-  float central_pixel_weight; // increase central pixel's weight in patch comparison
-  float overshooting; // adjusts the way parameters are autoset
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
-  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
-  // backward compatibility options
-  gboolean fix_anscombe_and_nlmeans_norm;
-  gboolean use_new_vst;
-} dt_iop_denoiseprofile_params_v9_t;
-
-typedef struct dt_iop_denoiseprofile_params_v10_t
-{
-  float radius;     /* patch size
-                       $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "patch size" */
-  float nbhood;     /* search radius
-                       $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "search radius" */
-  float strength;   /* noise level after equalization
-                       $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 */
-  float shadows;    /* control the impact on shadows
-                       $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "preserve shadows" */
-  float bias;       /* allows to reduce backtransform bias
-                       $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
-  float scattering; /* spread the patch search zone without increasing number of patches
-                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering" */
-  float central_pixel_weight; /* increase central pixel's weight in patch comparison
-                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight" */
-  float overshooting; /* adjusts the way parameters are autoset
-                         $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; /* switch between nlmeans and wavelets
-                                        $DEFAULT: MODE_NLMEANS */
-  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; /* values to change wavelet force by frequency
-                                                                     $DEFAULT: 0.5 */
-  gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE $DESCRIPTION: "whitebalance-adaptive transform" whether to adapt anscombe transform to wb coeffs
-  gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE $DESCRIPTION: "fix various bugs in algorithm" backward compatibility options
-  gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "upgrade profiled transform" backward compatibility options
-  dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
-                                                              $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
-} dt_iop_denoiseprofile_params_v10_t;
-
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;     /* patch size
@@ -363,6 +235,139 @@ int legacy_params(dt_iop_module_t *self,
                   void *new_params,
                   const int new_version)
 {
+  typedef struct dt_iop_denoiseprofile_params_v1_t
+  {
+    float radius;     // search radius
+    float strength;   // noise level after equalization
+    float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+    dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+  } dt_iop_denoiseprofile_params_v1_t;
+
+  typedef struct dt_iop_denoiseprofile_params_v4_t
+  {
+    float radius;     // search radius
+    float strength;   // noise level after equalization
+    float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+    dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+    float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
+  } dt_iop_denoiseprofile_params_v4_t;
+
+  typedef struct dt_iop_denoiseprofile_params_v5_t
+  {
+    float radius;                      // patch size
+    float nbhood;                      // search radius
+    float strength;                    // noise level after equalization
+    float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
+    dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+    float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
+  } dt_iop_denoiseprofile_params_v5_t;
+
+  typedef struct dt_iop_denoiseprofile_params_v6_t
+  {
+    float radius;                      // patch size
+    float nbhood;                      // search radius
+    float strength;                    // noise level after equalization
+    float scattering;                  // spread the patch search zone without increasing number of patches
+    float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
+    dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+    float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
+  } dt_iop_denoiseprofile_params_v6_t;
+
+  typedef struct dt_iop_denoiseprofile_params_v7_t
+  {
+    float radius;                      // patch size
+    float nbhood;                      // search radius
+    float strength;                    // noise level after equalization
+    float scattering;                  // spread the patch search zone without increasing number of patches
+    float central_pixel_weight;        // increase central pixel's weight in patch comparison
+    float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
+    dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+    float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
+    gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+    // backward compatibility options
+    gboolean fix_anscombe_and_nlmeans_norm;
+  } dt_iop_denoiseprofile_params_v7_t;
+
+  typedef struct dt_iop_denoiseprofile_params_v8_t
+  {
+    float radius;     // patch size
+    float nbhood;     // search radius
+    float strength;   // noise level after equalization
+    float shadows;    // control the impact on shadows
+    float bias;       // allows to reduce backtransform bias
+    float scattering; // spread the patch search zone without increasing number of patches
+    float central_pixel_weight; // increase central pixel's weight in patch comparison
+    float overshooting; // adjusts the way parameters are autoset
+    float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+    dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+    float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
+    gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+    // backward compatibility options
+    gboolean fix_anscombe_and_nlmeans_norm;
+    gboolean use_new_vst;
+  } dt_iop_denoiseprofile_params_v8_t;
+
+#if 0
+  // v9 & v10 never used as legacy, keep there for reference
+
+  typedef struct dt_iop_denoiseprofile_params_v9_t
+  {
+    float radius;     // patch size
+    float nbhood;     // search radius
+    float strength;   // noise level after equalization
+    float shadows;    // control the impact on shadows
+    float bias;       // allows to reduce backtransform bias
+    float scattering; // spread the patch search zone without increasing number of patches
+    float central_pixel_weight; // increase central pixel's weight in patch comparison
+    float overshooting; // adjusts the way parameters are autoset
+    float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+    dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+    float x[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE_V9][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+    gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+    // backward compatibility options
+    gboolean fix_anscombe_and_nlmeans_norm;
+    gboolean use_new_vst;
+  } dt_iop_denoiseprofile_params_v9_t;
+
+  typedef struct dt_iop_denoiseprofile_params_v10_t
+  {
+    float radius;     /* patch size
+                         $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "patch size" */
+    float nbhood;     /* search radius
+                         $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "search radius" */
+    float strength;   /* noise level after equalization
+                         $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 */
+    float shadows;    /* control the impact on shadows
+                         $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "preserve shadows" */
+    float bias;       /* allows to reduce backtransform bias
+                         $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
+    float scattering; /* spread the patch search zone without increasing number of patches
+                         $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering" */
+    float central_pixel_weight; /* increase central pixel's weight in patch comparison
+                                   $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight" */
+    float overshooting; /* adjusts the way parameters are autoset
+                           $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
+    float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+    dt_iop_denoiseprofile_mode_t mode; /* switch between nlmeans and wavelets
+                                          $DEFAULT: MODE_NLMEANS */
+    float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; /* values to change wavelet force by frequency
+                                                                       $DEFAULT: 0.5 */
+    gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE $DESCRIPTION: "whitebalance-adaptive transform" whether to adapt anscombe transform to wb coeffs
+    gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE $DESCRIPTION: "fix various bugs in algorithm" backward compatibility options
+    gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "upgrade profiled transform" backward compatibility options
+    dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
+                                                                $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
+  } dt_iop_denoiseprofile_params_v10_t;
+
+#endif
+
   if((old_version == 1 || old_version == 2 || old_version == 3) && new_version == 4)
   {
     const dt_iop_denoiseprofile_params_v1_t *o = old_params;
@@ -1161,7 +1166,8 @@ static void compute_wb_factors(dt_aligned_pixel_t wb,
 static gboolean invert_matrix(const dt_colormatrix_t in,
                               dt_colormatrix_t out)
 {
-  // use same notation as https://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_3_%C3%97_3_matrices
+  // use same notation as:
+  // https://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_3_%C3%97_3_matrices
   const float biga = in[1][1] * in[2][2] - in[1][2] * in[2][1];
   const float bigb = -in[1][0] * in[2][2] + in[1][2] * in[2][0];
   const float bigc = in[1][0] * in[2][1] - in[1][1] * in[2][0];
@@ -1675,16 +1681,15 @@ static void nlmeans_backtransform(const dt_iop_denoiseprofile_data_t *const d,
   return;
 }
 
-static void process_nlmeans(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const void *const ivoid,
-        void *const ovoid,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+static void process_nlmeans(struct dt_iop_module_t *self,
+                            dt_dev_pixelpipe_iop_t *piece,
+                            const void *const ivoid,
+                            void *const ovoid,
+                            const dt_iop_roi_t *const roi_in,
+                            const dt_iop_roi_t *const roi_out)
 {
-  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  // get our data struct:
+  // this is called for preview and full pipe separately, each with
+  // its own pixelpipe piece.  get our data struct:
   const dt_iop_denoiseprofile_data_t *const d =
     (dt_iop_denoiseprofile_data_t *)piece->data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
