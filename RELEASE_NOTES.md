@@ -406,6 +406,11 @@ The following is a summary of the main features added to darktable
   ensure better hit in the cache leading to better performance and
   also avoid some refresh issues in some cases.
 
+- Fix a bug where the "highlights reconstruction" module, which was
+  not applicable to the current image, could be enabled. For example
+  it is now impossible to enable the module if the image is a JPEG as
+  the module works only with RAWs.
+
 ## Lua
 
 ### Add action support for Lua
