@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,7 +127,8 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
   else
   {
     dt_database_rollback_transaction(darktable.db);
-    fprintf(stderr, "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n", imgid);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n", imgid);
   }
 
   dt_unlock_image(imgid);
@@ -214,7 +215,8 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
   else
   {
     dt_database_rollback_transaction(darktable.db);
-    fprintf(stderr, "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n", imgid);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n", imgid);
   }
   dt_unlock_image(imgid);
 

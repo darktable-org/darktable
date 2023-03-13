@@ -176,7 +176,7 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_entry_set_width_chars(GTK_ENTRY(search->text), 0);
   gtk_widget_set_tooltip_text(search->text,
                               /* xgettext:no-c-format */
-                              _("filter by text from images metadata, tags, file path and name"
+                              _("filter by text from images metadata, camera brand/model, tags, file path and name"
                                 /* xgettext:no-c-format */
                                 "\n`%' is the wildcard character"
                                 /* xgettext:no-c-format */

@@ -257,7 +257,10 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   const int iheight = p->rawdetail_mask_roi.height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
-  if(info) fprintf(stderr, "[_refine_with_detail_mask] in module %s %ix%i --> %ix%i\n", self->op, iwidth, iheight, owidth, oheight);
+  if(info)
+    dt_print(DT_DEBUG_ALWAYS,
+             "[_refine_with_detail_mask] in module %s %ix%i --> %ix%i\n",
+             self->op, iwidth, iheight, owidth, oheight);
 
   const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
 
@@ -691,7 +694,10 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   const int iheight = p->rawdetail_mask_roi.height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
-  if(info) fprintf(stderr, "[_refine_with_detail_mask_cl] in module %s %ix%i --> %ix%i\n", self->op, iwidth, iheight, owidth, oheight);
+  if(info)
+    dt_print(DT_DEBUG_ALWAYS,
+             "[_refine_with_detail_mask_cl] in module %s %ix%i --> %ix%i\n",
+             self->op, iwidth, iheight, owidth, oheight);
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
   if(lum == NULL) goto error;
@@ -705,7 +711,9 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   err = dt_opencl_write_host_to_device(devid, p->rawdetail_mask_data, tmp, iwidth, iheight, sizeof(float));
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] write rawdetail_mask_data: %s\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL,
+             "[refine_with_detail_mask_cl] write rawdetail_mask_data: %s\n",
+             cl_errstr(err));
     goto error;
   }
 
@@ -715,7 +723,9 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
       CLARG(out), CLARG(tmp), CLARG(iwidth), CLARG(iheight));
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] kernel_read_mask: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[refine_with_detail_mask_cl] kernel_read_mask: %s\n",
+               cl_errstr(err));
       goto error;
     }
   }
@@ -726,7 +736,9 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
       CLARG(out), CLARG(blur), CLARG(iwidth), CLARG(iheight), CLARG(threshold), CLARG(detail));
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] kernel_calc_blend: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[refine_with_detail_mask_cl] kernel_calc_blend: %s\n",
+               cl_errstr(err));
       goto error;
     }
   }
@@ -744,7 +756,9 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
       dt_opencl_release_mem_object(dev_blurmat);
       if(err != CL_SUCCESS)
       {
-        dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] kernel_mask_blur: %s\n", cl_errstr(err));
+        dt_print(DT_DEBUG_OPENCL,
+                 "[refine_with_detail_mask_cl] kernel_mask_blur: %s\n",
+                 cl_errstr(err));
         goto error;
       }
     }
@@ -761,7 +775,8 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
       CLARG(out), CLARG(tmp), CLARG(iwidth), CLARG(iheight));
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] kernel_write_mask: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[refine_with_detail_mask_cl] kernel_write_mask: %s\n", cl_errstr(err));
       goto error;
     }
   }
@@ -956,7 +971,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
                                             &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] profile_info_cl: %s\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_blendop] profile_info_cl: %s\n", cl_errstr(err));
     goto error;
   }
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
@@ -969,7 +985,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_set_mask, sizes);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] kernel_set_mask: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_blendop] kernel_set_mask: %s\n", cl_errstr(err));
       goto error;
     }
   }
@@ -1006,7 +1023,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] write raster mask dev_mask_1: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_blendop] write raster mask dev_mask_1: %s\n",
+               cl_errstr(err));
       goto error;
     }
   }
@@ -1048,7 +1067,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] write drawn mask dev_mask_1: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_blendop] write drawn mask dev_mask_1: %s\n", cl_errstr(err));
       goto error;
     }
     // The following call to clFinish() works around a bug in some OpenCL
@@ -1069,7 +1089,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] apply global opacity: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_blendop] apply global opacity: %s\n", cl_errstr(err));
       goto error;
     }
 
@@ -1130,7 +1151,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         dt_gaussian_free_cl(g);
         if(err != CL_SUCCESS)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] DEVELOP_MASK_POST_BLUR: %s\n", cl_errstr(err));
+          dt_print(DT_DEBUG_OPENCL,
+                   "[opencl_blendop] DEVELOP_MASK_POST_BLUR: %s\n", cl_errstr(err));
           goto error;
         }
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
@@ -1144,7 +1166,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask_tone_curve, sizes);
         if(err != CL_SUCCESS)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] DEVELOP_MASK_POST_TONE_CURVE: %s\n", cl_errstr(err));
+          dt_print(DT_DEBUG_OPENCL,
+                   "[opencl_blendop] DEVELOP_MASK_POST_TONE_CURVE: %s\n", cl_errstr(err));
           goto error;
         }
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
@@ -1179,7 +1202,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
                                               &dev_work_profile_info, &dev_work_profile_lut);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] work_profile_info_cl: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_blendop] work_profile_info_cl: %s\n", cl_errstr(err));
       goto error;
     }
     // let us display a specific channel
@@ -1190,7 +1214,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_display_channel, sizes);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] kernel_display_channel: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_blendop] kernel_display_channel: %s\n", cl_errstr(err));
       goto error;
     }
   }
@@ -1204,7 +1229,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] blend_parameter: %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_blendop] blend_parameter: %s\n", cl_errstr(err));
       goto error;
     }
   }

@@ -643,6 +643,42 @@ static inline void dt_sfence()
 #define dt_omploop_sfence() dt_sfence()
 #endif
 
+#ifdef __SSE2__
+static inline unsigned int dt_mm_enable_flush_zero()
+{
+  // flush denormals to zero for masking to avoid performance penalty
+  // if there are a lot of zero values in the mask
+  const unsigned int oldMode = _MM_GET_FLUSH_ZERO_MODE();
+  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+  return oldMode;
+}
+
+static inline void dt_mm_restore_flush_zero(const unsigned int mode)
+{
+  _MM_SET_FLUSH_ZERO_MODE(mode);
+}
+
+#define DT_PREFETCH(addr) _mm_prefetch(addr, _MM_HINT_T2)
+#define PREFETCH_NTA(addr) _mm_prefetch(addr, _MM_HINT_NTA)
+
+#else // no SSE2
+
+#define dt_mm_enable_flush_zero() 0
+#define dt_mm_restore_flush_zero(mode) (void)mode;
+
+#if defined(__GNUC__)
+#define DT_PREFETCH(addr) __builtin_prefetch(addr,1,1)
+#define PREFETCH_NTA(addr) __builtin_prefetch(addr,1,0)
+#else
+#define DT_PREFETCH(addr)
+#define PREFETCH_NTA(addr)
+#endif
+
+// avoid cluttering the scalar codepath with #ifdefs by hiding the dependency on SSE2
+# define _mm_prefetch(where,hint)
+
+#endif /* __SSE2__ */
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

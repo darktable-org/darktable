@@ -201,13 +201,7 @@ static void default_process(struct dt_iop_module_t *self,
 {
   if(roi_in->width <= 1 || roi_in->height <= 1 || roi_out->width <= 1 || roi_out->height <= 1) return;
 
-  if(darktable.codepath.OPENMP_SIMD && self->process_plain)
-    self->process_plain(self, piece, i, o, roi_in, roi_out);
-#if defined(__SSE__)
-  else if(darktable.codepath.SSE2 && self->process_sse2)
-    self->process_sse2(self, piece, i, o, roi_in, roi_out);
-#endif
-  else if(self->process_plain)
+  if(self->process_plain)
     self->process_plain(self, piece, i, o, roi_in, roi_out);
   else
     dt_unreachable_codepath_with_desc(self->op);
@@ -1119,7 +1113,8 @@ static void _iop_panel_name(dt_iop_module_t *module)
   // IOP instance name if any
 
   // do not mess with panel name if we are not on the top of the history
-  if(darktable.develop->history_end < g_list_length(darktable.develop->history))
+  if(darktable.develop->history_end < g_list_length(darktable.develop->history)
+    || !module->instance_name)
     return;
 
   GtkLabel *iname = GTK_LABEL(module->instance_name);
@@ -1926,8 +1921,8 @@ void dt_iop_commit_params(dt_iop_module_t *module,
      && module_is_enabled
      && module_params_changed
      && !module->multi_name_hand_edited
-     // do not set module-name if currently editing it (see _rename_module_key_press).
-     && module->multi_name[sizeof(module->multi_name) - 1] == '\0')
+     && module->instance_name
+     && gtk_widget_get_visible(module->instance_name))
   {
     if(module->label_recompute_handle)
       g_source_remove(module->label_recompute_handle);

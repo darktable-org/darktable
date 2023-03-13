@@ -1438,9 +1438,10 @@ void init_presets(dt_lib_module_t *self)
     if(op_version != version)
     {
       // shouldn't happen, we run legacy_params on the lib level before calling this
-      fprintf(stderr, "[export_init_presets] found export preset '%s' with version %d, version %d was "
-                      "expected. dropping preset.\n",
-              name, op_version, version);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[export_init_presets] found export preset '%s' with version %d, version %d was "
+               "expected. dropping preset.\n",
+               name, op_version, version);
       sqlite3_stmt *innerstmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "DELETE FROM data.presets WHERE rowid=?1", -1,
@@ -1535,9 +1536,9 @@ void init_presets(dt_lib_module_t *self)
           memcpy((uint8_t *)new_params + pos, sdata, ssize);
 
         // write the updated preset back to db
-        fprintf(stderr,
-                "[export_init_presets] updating export preset '%s' from versions %d/%d to versions %d/%d\n",
-                name, fversion, sversion, new_fversion, new_sversion);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[export_init_presets] updating export preset '%s' from versions %d/%d to versions %d/%d\n",
+                 name, fversion, sversion, new_fversion, new_sversion);
         sqlite3_stmt *innerstmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "UPDATE data.presets SET op_params=?1 WHERE rowid=?2",
@@ -1557,9 +1558,10 @@ void init_presets(dt_lib_module_t *self)
     delete_preset:
       free(new_fdata);
       free(new_sdata);
-      fprintf(stderr, "[export_init_presets] export preset '%s' can't be updated from versions %d/%d to "
-                      "versions %d/%d. dropping preset\n",
-              name, fversion, sversion, new_fversion, new_sversion);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[export_init_presets] export preset '%s' can't be updated from versions %d/%d to "
+               "versions %d/%d. dropping preset\n",
+               name, fversion, sversion, new_fversion, new_sversion);
       sqlite3_stmt *innerstmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "DELETE FROM data.presets WHERE rowid=?1", -1,

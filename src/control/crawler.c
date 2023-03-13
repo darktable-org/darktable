@@ -506,7 +506,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
     error = dt_image_write_sidecar_file(entry.id);
     _set_modification_time(entry.xmp_path, entry.timestamp_db);
 
-    fprintf(stdout, "%s synced DB (new) → XMP (old)\n", entry.image_path);
+    dt_print(DT_DEBUG_ALWAYS, "%s synced DB (new) → XMP (old)\n", entry.image_path);
     if(error)
     {
       _log_synchronization

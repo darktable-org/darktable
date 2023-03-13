@@ -33,17 +33,6 @@
 #pragma GCC optimize ("finite-math-only")
 #endif
 
-#if defined(__SSE__)
-#define DT_PREFETCH(addr) _mm_prefetch(addr, _MM_HINT_T2)
-#define PREFETCH_NTA(addr) _mm_prefetch(addr, _MM_HINT_NTA)
-#elif defined(__GNUC__)
-#define DT_PREFETCH(addr) __builtin_prefetch(addr,1,1)
-#define PREFETCH_NTA(addr) __builtin_prefetch(addr,1,0)
-#else
-#define DT_PREFETCH(addr)
-#define PREFETCH_NTA(addr)
-#endif
-
 static void _blur_horizontal_1ch(float *const restrict buf,
     const int height,
     const int width,
@@ -554,152 +543,6 @@ static void _blur_horizontal_Nch_Kahan(const size_t N,
   return;
 }
 
-#ifdef __SSE2__
-static void _blur_vertical_1ch_sse(float *const restrict buf,
-    const int height,
-    const int width,
-    const int radius,
-    __m128 *const restrict scratch)
-{
-  size_t mask = 1;
-  for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
-
-  __m128 L = { 0, 0, 0, 0 };
-  __m128 hits = { 0, 0, 0, 0 };
-  const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
-  // add up the top half of the window
-  for(size_t y = 0; y < MIN(radius, height); y++)
-  {
-    PREFETCH_NTA(buf + (y+16)*width);
-    hits += one;
-    const __m128 v = _mm_loadu_ps(buf + y*width); // use unaligned load since width is not necessarily a multiple of 4
-    L += v;
-    scratch[y&mask] = v;
-  }
-  // process the blur up to the point where we start removing values
-  size_t y;
-  for(y = 0; y <= radius && y + radius < height; y++)
-  {
-    const size_t np = y + radius;
-    hits += one;
-    PREFETCH_NTA(buf + (np+16)*width);
-    const __m128 v = _mm_loadu_ps(buf+np*width);
-    L += v;
-    scratch[np&mask] = v;
-    // store the final result back into user buffer
-    _mm_storeu_ps(buf + y*width, L / hits);
-  }
-  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
-  //  remove old values (y-radius < 0)
-  for(; y <= radius && y < height; y++)
-  {
-    _mm_storeu_ps(buf + y*width, L / hits);
-  }
-  // process the blur for the bulk of the column
-  for( ; y + radius < height; y++)
-  {
-    const size_t np = y + radius;
-    const size_t op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
-    const __m128 v = _mm_loadu_ps(buf + np*width);
-    L -= scratch[op&mask];
-    L += v;
-    scratch[np&mask] = v;
-    // store the final result back into user buffer
-    _mm_storeu_ps(buf + y*width, L / hits);
-  }
-  // process the blur for the end of the scan line, where we don't have any more values to add to the mean
-  for( ; y < height; y++)
-  {
-    const size_t op = y - radius - 1;
-    hits -= one;
-    L -= scratch[op&mask];
-    // store the final result back into user buffer
-    _mm_storeu_ps(buf + y*width, L / hits);
-  }
-  return;
-}
-#endif /* __SSE2__ */
-
-#ifdef __SSE2__
-static void _blur_vertical_4ch_sse(float *const restrict buf,
-    const size_t height,
-    const size_t width,
-    const size_t radius,
-    __m128 *const restrict scratch)
-{
-  size_t mask = 1;
-  for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
-
-  __m128 L[4] = { _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0) };
-  __m128 hits = { 0.0f, 0.0f, 0.0f, 0.0f };
-  const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
-  // add up the top half of the window
-  for(size_t y = 0; y < MIN(radius, height); y++)
-  {
-    PREFETCH_NTA(buf + (y+16)*width);
-    hits += one;
-    for(size_t c = 0; c < 4; c++)
-    {
-      const __m128 v = _mm_loadu_ps(buf + y*width + 4*c); // use unaligned load since width may not be a multiple of 4
-      L[c] += v;
-      scratch[4*(y&mask)+c] = v;
-    }
-  }
-  // process the blur up to the point where we start removing values
-  size_t y;
-  for(y = 0; y <= radius && y + radius < height; y++)
-  {
-    const size_t np = y + radius;
-    hits += one;
-    PREFETCH_NTA(buf + (np+16)*width);
-    for(size_t c = 0; c < 4; c++)
-    {
-      const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
-      L[c] += v;
-      scratch[4*(np&mask)+c] = v;
-      _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
-    }
-  }
-  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
-  //  remove old values (y-radius < 0)
-  for(; y <= radius && y < height; y++)
-  {
-    for(size_t c = 0; c < 4; c++)
-      _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
-  }
-  // process the blur for the bulk of the scan line
-  for( ; y + radius < height; y++)
-  {
-    const size_t np = y + radius;
-    const size_t op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+32)*width);
-    for(size_t c = 0; c < 4; c++)
-    {
-      const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
-      L[c] -= scratch[4*(op&mask) + c];
-      L[c] += v;
-      scratch[4*(np&mask)+c] = v;
-      // store the final result while this line is still in cache
-      _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
-    }
-  }
-  // process the blur for the end of the scan line, where we don't have any more values to add to the mean
-  for( ; y < height; y++)
-  {
-    const size_t op = y - radius - 1;
-    hits -= one;
-    for(size_t c = 0; c < 4; c++)
-    {
-      L[c] -= scratch[4*(op&mask) + c];
-      // store the final result
-      _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
-    }
-  }
-  return;
-}
-#endif /* __SSE2__ */
-
 // invoked inside an OpenMP parallel for, so no need to parallelize
 static void _blur_vertical_1wide(float *const restrict buf,
     const size_t height,
@@ -720,7 +563,6 @@ static void _blur_vertical_1wide(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    PREFETCH_NTA(buf + (y+16)*width);
     hits++;
     const float v = buf[y*width];
     L += v;
@@ -732,7 +574,6 @@ static void _blur_vertical_1wide(float *const restrict buf,
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
-    PREFETCH_NTA(buf + (np+16)*width);
     hits++;
     const float v = buf[np*width];
     L += v;
@@ -750,7 +591,6 @@ static void _blur_vertical_1wide(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
     L -= scratch[op&mask];
     const float v = buf[np*width];
     L += v;
@@ -791,7 +631,6 @@ static void _blur_vertical_1wide_Kahan(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    PREFETCH_NTA(buf + (y+16)*width);
     hits++;
     const float v = buf[y*width];
     L = Kahan_sum(L, &c, v);
@@ -804,7 +643,6 @@ static void _blur_vertical_1wide_Kahan(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    PREFETCH_NTA(buf + (np+16)*width);
     const float v = buf[np*width];
     L = Kahan_sum(L, &c, v);
     scratch[np&mask] = v;
@@ -821,7 +659,6 @@ static void _blur_vertical_1wide_Kahan(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
     L = Kahan_sum(L, &c, -scratch[op&mask]);
     const float v = buf[np*width];
     L = Kahan_sum(L, &c, v);
@@ -848,14 +685,6 @@ static void _blur_vertical_4wide(float *const restrict buf,
     const size_t radius,
     float *const restrict scratch)
 {
-#ifdef __SSE2__
-  if(darktable.codepath.SSE2)
-  {
-    _blur_vertical_1ch_sse(buf, height, width, radius, (__m128*)scratch);
-    return;
-  }
-#endif /* __SSE2__ */
-
   // To improve cache hit rates, we copy the final result from the scratch space back to the original
   // location in the buffer as soon as we finish the final read of the buffer.  To reduce the working
   // set and further improve cache hits, we can treat the scratch space as a circular buffer and cycle
@@ -869,7 +698,6 @@ static void _blur_vertical_4wide(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    DT_PREFETCH(buf + (y+16)*width);
     hits++;
     _load_add_4wide(scratch + 4*(y&mask), L, buf + y * width);
   }
@@ -880,7 +708,6 @@ static void _blur_vertical_4wide(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    DT_PREFETCH(buf + (np+16)*width);
     _load_add_4wide(scratch + 4*(np&mask), L, buf + np*width);
     store_scaled_4wide(buf + y*width, L, hits);
   }
@@ -895,7 +722,6 @@ static void _blur_vertical_4wide(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    DT_PREFETCH(buf + (np+16)*width);
     _sub_4wide(L, scratch + 4*(op&mask));
     _load_add_4wide(scratch + 4*(np&mask), L, buf + np*width);
     store_scaled_4wide(buf + y*width, L, hits);
@@ -932,7 +758,6 @@ static void _blur_vertical_4wide_Kahan(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    DT_PREFETCH(buf + (y+16)*width);
     hits++;
     _load_add_4wide_Kahan(scratch + 4*(y&mask), L, buf + y * width, comp);
   }
@@ -943,7 +768,6 @@ static void _blur_vertical_4wide_Kahan(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    DT_PREFETCH(buf + (np+16)*width);
     _load_add_4wide_Kahan(scratch + 4*(np&mask), L, buf + np*width, comp);
     store_scaled_4wide(buf + y*width, L, hits);
   }
@@ -958,7 +782,6 @@ static void _blur_vertical_4wide_Kahan(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    DT_PREFETCH(buf + (np+16)*width);
     _sub_4wide_Kahan(L, scratch + 4*(op&mask), comp);
     _load_add_4wide_Kahan(scratch + 4*(np&mask), L, buf + np*width, comp);
     store_scaled_4wide(buf + y*width, L, hits);
@@ -981,14 +804,6 @@ static void _blur_vertical_16wide(float *const restrict buf,
     const size_t radius,
     float *const restrict scratch)
 {
-#ifdef __SSE2__
-  if(darktable.codepath.SSE2)
-  {
-    _blur_vertical_4ch_sse(buf, height, width, radius, (__m128*)scratch);
-    return;
-  }
-#endif /* __SSE2__ */
-
   // To improve cache hit rates, we copy the final result from the scratch space back to the original
   // location in the buffer as soon as we finish the final read of the buffer.  To reduce the working
   // set and further improve cache hits, we can treat the scratch space as a circular buffer and cycle
@@ -1002,7 +817,6 @@ static void _blur_vertical_16wide(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    PREFETCH_NTA(buf + (y+16)*width);
     hits++;
     _load_add_16wide(scratch + 16 * (y&mask), L, buf + y*width);
   }
@@ -1013,7 +827,6 @@ static void _blur_vertical_16wide(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    PREFETCH_NTA(buf + (np+16)*width);
     _load_add_16wide(scratch + 16 * (np&mask), L, buf + np*width);
     store_scaled_16wide(buf + y*width, L, hits);
   }
@@ -1028,7 +841,6 @@ static void _blur_vertical_16wide(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
     _sub_16wide(L, scratch + 16*(op&mask));
     _load_add_16wide(scratch + 16*(np&mask), L, buf + np*width);
     // update the means
@@ -1067,7 +879,6 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
   // add up the left half of the window
   for(size_t y = 0; y < MIN(radius, height); y++)
   {
-    DT_PREFETCH(buf + (y+16)*width);
     hits++;
     _load_add_16wide_Kahan(scratch + 16 * (y&mask), L, buf + y*width, comp);
   }
@@ -1078,7 +889,6 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    DT_PREFETCH(buf + (np+16)*width);
     _load_add_16wide_Kahan(scratch + 16 * (np&mask), L, buf + np*width, comp);
     store_scaled_16wide(buf + y*width, L, hits);
   }
@@ -1093,7 +903,6 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
   {
     const int np = y + radius;
     const int op = y - radius - 1;
-    DT_PREFETCH(buf + (np+16)*width);
     _sub_16wide_Kahan(L, scratch + 16*(op&mask), comp);
     _load_add_16wide_Kahan(scratch + 16*(np&mask), L, buf + np*width, comp);
     // update the means
@@ -1112,11 +921,11 @@ static void _blur_vertical_16wide_Kahan(float *const restrict buf,
 }
 
 static void _blur_vertical_1ch(float *const restrict buf,
-                              const size_t height,
-                              const size_t width,
-                              const size_t radius,
-                              float *const restrict scanlines,
-                              const size_t padded_size)
+                               const size_t height,
+                               const size_t width,
+                               const size_t radius,
+                               float *const restrict scanlines,
+                               const size_t padded_size)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \

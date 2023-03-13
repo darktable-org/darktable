@@ -66,11 +66,6 @@ struct patch_t
 };
 typedef struct patch_t patch_t;
 
-// avoid cluttering the scalar codepath with #ifdefs by hiding the dependency on SSE2
-#ifndef __SSE2__
-# define _mm_prefetch(where,hint)
-#endif
-
 static inline float gh(const float f)
 {
   return dt_fast_mexp2f(f) ;

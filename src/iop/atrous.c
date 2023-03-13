@@ -326,14 +326,6 @@ void process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
   process_wavelets(self, piece, i, o, roi_in, roi_out, eaw_decompose, eaw_synthesize);
 }
 
-#if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  process_wavelets(self, piece, i, o, roi_in, roi_out, eaw_decompose_sse2, eaw_synthesize_sse2);
-}
-#endif
-
 #ifdef HAVE_OPENCL
 
 #ifdef USE_NEW_CL
@@ -1596,7 +1588,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
                                 _("x"), p->x[ch1][node]);
         break;
       default:
-        fprintf(stderr, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer node\n", effect);
+        dt_print(DT_DEBUG_ALWAYS, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer node\n", effect);
         break;
       }
 
@@ -1620,7 +1612,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
         c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * move_size), 0.25 / BANDS, 1.0);
         break;
       default:
-        fprintf(stderr, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer radius\n", effect);
+        dt_print(DT_DEBUG_ALWAYS, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer radius\n", effect);
         break;
       }
 

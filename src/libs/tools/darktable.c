@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ void gui_init(dt_lib_module_t *self)
     g_free(logo);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from PNG file `%s'\n", filename);
       goto done;
     }
     const int png_width = cairo_image_surface_get_width(surface),
@@ -140,7 +140,7 @@ void gui_init(dt_lib_module_t *self)
         = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
     {
-      fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from PNG file `%s'\n", filename);
       free(d->image_buffer);
       d->image_buffer = NULL;
       cairo_surface_destroy(d->image);

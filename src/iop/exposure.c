@@ -661,6 +661,8 @@ void gui_update(struct dt_iop_module_t *self)
       break;
   }
 
+  dt_bauhaus_combobox_set(g->spot_mode, 0);
+
   dt_gui_update_collapsible_section(&g->cs);
 }
 

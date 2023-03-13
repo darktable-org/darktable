@@ -388,16 +388,14 @@ static int _check_deleted_instances(dt_develop_t *dev,
           else
           {
             if(mod_in_history && mod_next_in_history)
-              fprintf(
-                  stderr,
+              dt_print(DT_DEBUG_ALWAYS,
                   "[_check_deleted_instances] found duplicate module"
                   " %s %s (%i) and %s %s (%i) both in history\n",
                   mod->op, mod->multi_name, mod->multi_priority,
                   mod_next->op, mod_next->multi_name,
                   mod_next->multi_priority);
             else
-              fprintf(
-                  stderr,
+              dt_print(DT_DEBUG_ALWAYS,
                   "[_check_deleted_instances] found duplicate module"
                   " %s %s (%i) and %s %s (%i) none in history\n",
                   mod->op, mod->multi_name, mod->multi_priority,
@@ -521,9 +519,9 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
         dt_iop_get_module_from_list(iop_list, hitem->op_name);
       if(base_module == NULL)
       {
-        fprintf(stderr,
-                "[_create_deleted_modules] can't find base module for %s\n",
-                hitem->op_name);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[_create_deleted_modules] can't find base module for %s\n",
+                 hitem->op_name);
         return changed;
       }
 
@@ -885,9 +883,9 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
     }
     break;
   default:
-    fprintf(stderr, "unsupported introspection type \"%s\" encountered"
-            " in _lib_history_change_text (field %s)\n",
-            field->header.type_name, field->header.field_name);
+    dt_print(DT_DEBUG_ALWAYS, "unsupported introspection type \"%s\" encountered"
+             " in _lib_history_change_text (field %s)\n",
+             field->header.type_name, field->header.field_name);
     break;
   }
 

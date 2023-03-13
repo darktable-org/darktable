@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@
 #include <psapi.h>
 #include <sys/time.h>
 #include "getrusage.h"
+#include "common/darktable.h"   // just for dt_print
 
 static void usage_to_timeval(FILETIME *ft, struct timeval *tv)
 {
@@ -61,13 +62,13 @@ int getrusage(int who, struct rusage *usage)
   {
     if(!GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time))
     {
-      fprintf(stdout, "failed at GetProcessTimes\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed at GetProcessTimes\n");
       return -1;
     }
 
     if(!GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
     {
-      fprintf(stdout, "failed at GetProcessMemoryInfo\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed at GetProcessMemoryInfo\n");
       return -1;
     }
 
@@ -81,7 +82,7 @@ int getrusage(int who, struct rusage *usage)
   {
     if(!GetThreadTimes(GetCurrentThread(), &creation_time, &exit_time, &kernel_time, &user_time))
     {
-      fprintf(stdout, "failed at GetThreadTimes\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed at GetThreadTimes\n");
       return -1;
     }
     usage_to_timeval(&kernel_time, &usage->ru_stime);
@@ -99,4 +100,3 @@ int getrusage(int who, struct rusage *usage)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
