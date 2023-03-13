@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
 #define __STDC_FORMAT_MACROS
 
@@ -1214,7 +1214,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         {
           dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
-        fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
+        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n",
+                 img->exif_lens, lens.c_str());
       }
     }
     else if(Exiv2::testVersion(0,27,4) && FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() == 0)
@@ -1490,7 +1491,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             break;
 
           default:
-            fprintf(stderr,"[exif] did not find a proper dng correction matrix for illuminant %i\n", illu[sel_illu]);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[exif] did not find a proper dng correction matrix for illuminant %i\n",
+                     illu[sel_illu]);
             break;
         }
       }
@@ -2386,7 +2389,7 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos)
 
         if(tagid > 0) break;
 
-        fprintf(stderr, "[xmp_import] creating tag: %s\n", tag);
+        dt_print(DT_DEBUG_ALWAYS, "[xmp_import] creating tag: %s\n", tag);
         // create this tag (increment id, leave icon empty), retry.
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt_ins_tags, 1, tag, -1, SQLITE_TRANSIENT);
         sqlite3_step(stmt_ins_tags);
@@ -2983,7 +2986,7 @@ static void add_mask_entries_to_db(int imgid, GHashTable *mask_entries, int mask
     dt_masks_point_group_t *group = (dt_masks_point_group_t *)entry->mask_points;
     if((int)(entry->mask_nb * sizeof(dt_masks_point_group_t)) != entry->mask_points_len)
     {
-      fprintf(stderr, "[masks] error loading masks from XMP file, bad binary blob size.\n");
+      dt_print(DT_DEBUG_ALWAYS, "[masks] error loading masks from XMP file, bad binary blob size.\n");
       return;
     }
     for(int i = 0; i < entry->mask_nb; i++)
@@ -3209,8 +3212,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     if(sqlite3_step(stmt) != SQLITE_DONE)
     {
-      fprintf(stderr, "[exif] error deleting history for image %d\n", img->id);
-      fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+      dt_print(DT_DEBUG_ALWAYS, "[exif] error deleting history for image %d\n", img->id);
+      dt_print(DT_DEBUG_ALWAYS, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
       all_ok = FALSE;
       goto end;
     }
@@ -3271,8 +3274,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
-        fprintf(stderr, "[exif] error adding history entry for image %d\n", img->id);
-        fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+        dt_print(DT_DEBUG_ALWAYS, "[exif] error adding history entry for image %d\n", img->id);
+        dt_print(DT_DEBUG_ALWAYS, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
@@ -3310,9 +3313,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
               - entry->multi_priority / 100.0f;
           else
           {
-            fprintf(stderr,
-                    "[exif] cannot get iop-order for module '%s', XMP may be corrupted\n",
-                    entry->operation);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[exif] cannot get iop-order for module '%s', XMP may be corrupted\n",
+                     entry->operation);
             g_list_free_full(iop_order_list, free);
             g_list_free_full(history_entries, free_history_entry);
             g_list_free_full(mask_entries_v3, free_mask_entry);
@@ -3380,8 +3383,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
         if(sqlite3_step(stmt) != SQLITE_DONE)
         {
-          fprintf(stderr, "[exif] error adding mask history entry for image %d\n", img->id);
-          fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+          dt_print(DT_DEBUG_ALWAYS, "[exif] error adding mask history entry for image %d\n", img->id);
+          dt_print(DT_DEBUG_ALWAYS, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
           all_ok = FALSE;
           goto end;
         }
@@ -3405,8 +3408,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
-        fprintf(stderr, "[exif] error writing history_end for image %d\n", img->id);
-        fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+        dt_print(DT_DEBUG_ALWAYS, "[exif] error writing history_end for image %d\n", img->id);
+        dt_print(DT_DEBUG_ALWAYS, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
@@ -3426,16 +3429,16 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
-        fprintf(stderr, "[exif] error writing history_end for image %d\n", img->id);
-        fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+        dt_print(DT_DEBUG_ALWAYS, "[exif] error writing history_end for image %d\n", img->id);
+        dt_print(DT_DEBUG_ALWAYS, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
     }
     if(!dt_ioppr_write_iop_order_list(iop_order_list, img->id))
     {
-      fprintf(stderr, "[exif] error writing iop_list for image %d\n", img->id);
-      fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+      dt_print(DT_DEBUG_ALWAYS, "[exif] error writing iop_list for image %d\n", img->id);
+      dt_print(DT_DEBUG_ALWAYS, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
       all_ok = FALSE;
       goto end;
     }
@@ -3459,7 +3462,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
       if(preset_applied < 0)
       {
-        fprintf(stderr,"[exif] dt_exif_xmp_read for %s, id %i found auto_presets_applied but there was no history\n",filename,img->id);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[exif] dt_exif_xmp_read for %s, id %i found auto_presets_applied but there was no history\n",
+                 filename,img->id);
       }
     }
 
@@ -4676,7 +4681,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       }
       else
       {
-        fprintf(stderr, "cannot read XMP file '%s': '%s'\n", filename, strerror(errno));
+        dt_print(DT_DEBUG_ALWAYS, "cannot read XMP file '%s': '%s'\n", filename, strerror(errno));
         dt_control_log(_("cannot read XMP file '%s': '%s'"), filename, strerror(errno));
       }
 
@@ -4728,7 +4733,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       }
       else
       {
-        fprintf(stderr, "cannot write XMP file '%s': '%s'\n", filename, strerror(errno));
+        dt_print(DT_DEBUG_ALWAYS, "cannot write XMP file '%s': '%s'\n", filename, strerror(errno));
         dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, strerror(errno));
         return -1;
       }
