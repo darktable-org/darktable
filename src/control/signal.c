@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -343,7 +343,7 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
         g_value_set_pointer(&instance_and_params[i], va_arg(extra_args, void *));
         break;
       default:
-        fprintf(stderr, "error: unsupported parameter type `%s' for signal `%s'\n",
+        dt_print(DT_DEBUG_ALWAYS, "error: unsupported parameter type `%s' for signal `%s'\n",
                 g_type_name(type), signal_description->name);
         va_end(extra_args);
         for(int j = 0; j <= i; j++) g_value_unset(&instance_and_params[j]);
