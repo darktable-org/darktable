@@ -1244,6 +1244,8 @@ void dt_iop_gui_init(dt_iop_module_t *module)
 {
   ++darktable.gui->reset;
   --darktable.bauhaus->skip_accel;
+  if(module->label_recompute_handle)
+    g_source_remove(module->label_recompute_handle);
   if(module->gui_init) module->gui_init(module);
   ++darktable.bauhaus->skip_accel;
   --darktable.gui->reset;
@@ -1971,6 +1973,11 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
+  // clear possible deferred handler has the module won't be available anymore
+  if(module->label_recompute_handle)
+    g_source_remove(module->label_recompute_handle);
+  module->label_recompute_handle = 0;
+
   g_slist_free_full(module->widget_list, g_free);
   module->widget_list = NULL;
   module->gui_cleanup(module);
