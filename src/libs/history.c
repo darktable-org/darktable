@@ -388,16 +388,14 @@ static int _check_deleted_instances(dt_develop_t *dev,
           else
           {
             if(mod_in_history && mod_next_in_history)
-              fprintf(
-                  stderr,
+              dt_print(DT_DEBUG_ALWAYS,
                   "[_check_deleted_instances] found duplicate module"
                   " %s %s (%i) and %s %s (%i) both in history\n",
                   mod->op, mod->multi_name, mod->multi_priority,
                   mod_next->op, mod_next->multi_name,
                   mod_next->multi_priority);
             else
-              fprintf(
-                  stderr,
+              dt_print(DT_DEBUG_ALWAYS,
                   "[_check_deleted_instances] found duplicate module"
                   " %s %s (%i) and %s %s (%i) none in history\n",
                   mod->op, mod->multi_name, mod->multi_priority,
