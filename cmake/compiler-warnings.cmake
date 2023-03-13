@@ -63,11 +63,6 @@ endif()
 add_definitions(-DGTK_DISABLE_SINGLE_INCLUDES)
 
 #
-# Dirty hack to enforce GTK3 behaviour in GTK2: "Replace GDK_<keyname> with GDK_KEY_<keyname>"
-#
-add_definitions(-D__GDK_KEYSYMS_COMPAT_H__)
-
-#
 #  Do not use deprecated symbols
 #
 add_definitions(-DGDK_DISABLE_DEPRECATED)
