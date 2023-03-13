@@ -107,6 +107,8 @@ The following is a summary of the main features added to darktable
 
 ## Other Changes
 
+- Camera maker and model included in full text search
+
 - Add global <kbd>right-click</kbd> and drad to fix image
   rotation. This can now be used at any moment in darkroom as long as
   the currently focused module is not using this shortcut. This allows
