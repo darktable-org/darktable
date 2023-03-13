@@ -306,6 +306,8 @@ The following is a summary of the main features added to darktable
 
 ## Bug Fixes
 
+- Fix the reset of the sort order to 'filename' on every collection change.
+
 - Remove the commit button from the crop module has it was not used
   anymore.
 
