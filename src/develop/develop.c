@@ -1200,6 +1200,8 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   {
     GList *next = g_list_next(history);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    hist->module->multi_name_hand_edited = FALSE;
+    g_strlcpy(hist->module->multi_name, "", sizeof(hist->module->multi_name));
     dt_dev_free_history_item(hist);
     dev->history = g_list_delete_link(dev->history, history);
     history = next;

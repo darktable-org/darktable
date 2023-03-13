@@ -1113,7 +1113,8 @@ static void _iop_panel_name(dt_iop_module_t *module)
   // IOP instance name if any
 
   // do not mess with panel name if we are not on the top of the history
-  if(darktable.develop->history_end < g_list_length(darktable.develop->history))
+  if(darktable.develop->history_end < g_list_length(darktable.develop->history)
+    || !module->instance_name)
     return;
 
   GtkLabel *iname = GTK_LABEL(module->instance_name);
@@ -1920,8 +1921,8 @@ void dt_iop_commit_params(dt_iop_module_t *module,
      && module_is_enabled
      && module_params_changed
      && !module->multi_name_hand_edited
-     // do not set module-name if currently editing it (see _rename_module_key_press).
-     && module->multi_name[sizeof(module->multi_name) - 1] == '\0')
+     && module->instance_name
+     && gtk_widget_get_visible(module->instance_name))
   {
     if(module->label_recompute_handle)
       g_source_remove(module->label_recompute_handle);
