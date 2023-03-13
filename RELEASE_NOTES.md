@@ -400,6 +400,10 @@ The following is a summary of the main features added to darktable
 - When using the spot exposure mapping mode, properly reset the mode to
   "correction" when changing image.
 
+- Fix some pixel-pipe cache issues related to mask visualization. This
+  ensure better hit in the cache leading to better performance and
+  also avoid some refresh issues in some cases.
+
 ## Lua
 
 ### Add action support for Lua
