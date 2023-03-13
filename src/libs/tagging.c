@@ -1809,8 +1809,8 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   gtk_box_pack_end(GTK_BOX(box), entry, TRUE, TRUE, 0);
 
   gint flags = 0;
-  GtkWidget *category;
-  GtkWidget *private;
+  GtkWidget *category = NULL;
+  GtkWidget *private = NULL;
   GtkTextBuffer *buffer = NULL;
   if(tagid)
   {
