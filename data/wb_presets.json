@@ -22172,15 +22172,6 @@
               ]
             },
             {
-              "name": "White Fluorescent",
-              "channels": [
-                1.270508,
-                1,
-                1.756836,
-                0
-              ]
-            },
-            {
               "name": "Flash",
               "tuning": -9,
               "channels": [
@@ -23379,15 +23370,6 @@
               ]
             },
             {
-              "name": "White Fluorescent",
-              "channels": [
-                1.714844,
-                1,
-                1.96875,
-                0
-              ]
-            },
-            {
               "name": "Flash",
               "tuning": -9,
               "channels": [
@@ -24523,15 +24505,6 @@
                 1.899414,
                 1,
                 1.992188,
-                0
-              ]
-            },
-            {
-              "name": "White Fluorescent",
-              "channels": [
-                1.65918,
-                1,
-                2.275391,
                 0
               ]
             },
@@ -25675,15 +25648,6 @@
               ]
             },
             {
-              "name": "White Fluorescent",
-              "channels": [
-                1.651367,
-                1,
-                2.723633,
-                0
-              ]
-            },
-            {
               "name": "Flash",
               "tuning": -9,
               "channels": [
@@ -25915,15 +25879,6 @@
             },
             {
               "name": "Cool White Fluorescent",
-              "channels": [
-                1.563477,
-                1,
-                2.169922,
-                0
-              ]
-            },
-            {
-              "name": "White Fluorescent",
               "channels": [
                 1.563477,
                 1,
@@ -26887,15 +26842,6 @@
                 1.765625,
                 1,
                 1.9248046875,
-                0
-              ]
-            },
-            {
-              "name": "White Fluorescent",
-              "channels": [
-                1.537109375,
-                1,
-                2.2265625,
                 0
               ]
             },
