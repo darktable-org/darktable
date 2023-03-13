@@ -2503,27 +2503,12 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       }
       else if(active == 0 && g_strcmp0(text, _("not tagged")))
       {
-        // first filter is tag and the row is a leave
-        uint32_t sort = DT_COLLECTION_SORT_NONE;
-        gboolean descending = FALSE;
+        // // first filter is tag and the row is a leave
         const uint32_t tagid = dt_tag_get_tag_id_by_name(text);
         if(tagid)
-        {
-          if(dt_tag_get_tag_order_by_id(tagid, &sort, &descending))
-          {
-            order = g_strdup_printf("1:%u:%d$", sort, descending);
-          }
-          else
-          {
-            // the tag order is not set yet - default order (filename)
-            const int orderid = DT_COLLECTION_SORT_FILENAME;
-            order = g_strdup_printf("1:%d:0$", orderid);
-            dt_tag_set_tag_order_by_id(tagid, orderid & ~DT_COLLECTION_ORDER_FLAG,
-                                       orderid & DT_COLLECTION_ORDER_FLAG);
-          }
           dt_collection_set_tag_id((dt_collection_t *)darktable.collection, tagid);
-        }
-        else dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
+        else
+          dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
       }
     }
   }
