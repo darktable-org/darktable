@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1112,7 +1112,7 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
         vws |= DT_VIEW_LIGHTTABLE; // lighttable has copy/paste history shortcuts in separate lib
     }
     else
-      fprintf(stderr, "[find_views] views for category '%s' unknown\n", owner->id);
+      dt_print(DT_DEBUG_ALWAYS, "[find_views] views for category '%s' unknown\n", owner->id);
     break;
   case DT_ACTION_TYPE_GLOBAL:
     vws = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
@@ -2740,7 +2740,9 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
         char *act_start = strchr(line, '=');
         if(!act_start)
         {
-          fprintf(stderr, "[dt_shortcuts_load] line '%s' is not an assignment\n", line);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_shortcuts_load] line '%s' is not an assignment\n",
+                   line);
           continue;
         }
 
@@ -2753,10 +2755,16 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           if(!colon)
           {
             gtk_accelerator_parse(token, &s.key, &s.mods);
-            if(s.mods) fprintf(stderr, "[dt_shortcuts_load] unexpected modifiers found in %s\n", token);
+            if(s.mods)
+              dt_print(DT_DEBUG_ALWAYS,
+                       "[dt_shortcuts_load] unexpected modifiers found in %s\n",
+                       token);
             if(!s.key && sscanf(token, "tablet button %u", &s.key))
               s.key_device = DT_SHORTCUT_DEVICE_TABLET;
-            if(!s.key) fprintf(stderr, "[dt_shortcuts_load] no key name found in %s\n", token);
+            if(!s.key)
+              dt_print(DT_DEBUG_ALWAYS,
+                       "[dt_shortcuts_load] no key name found in %s\n",
+                       token);
           }
           else
           {
@@ -2764,7 +2772,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             *colon-- = 0;
             if(colon == token)
             {
-              fprintf(stderr, "[dt_shortcuts_load] missing driver name in %s\n", token);
+              dt_print(DT_DEBUG_ALWAYS,
+                       "[dt_shortcuts_load] missing driver name in %s\n", token);
               continue;
             }
             dt_input_device_t id = *colon - '0';
@@ -2781,7 +2790,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
               if(!g_ascii_strcasecmp(token, callbacks->name))
               {
                 if(!callbacks->string_to_key(key_start, &s.key))
-                  fprintf(stderr, "[dt_shortcuts_load] key not recognised in %s\n", key_start);
+                  dt_print(DT_DEBUG_ALWAYS,
+                           "[dt_shortcuts_load] key not recognised in %s\n", key_start);
 
                 s.key_device = id;
                 break;
@@ -2790,7 +2800,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             }
             if(!driver)
             {
-              fprintf(stderr, "[dt_shortcuts_load] '%s' is not a valid driver\n", token);
+              dt_print(DT_DEBUG_ALWAYS,
+                       "[dt_shortcuts_load] '%s' is not a valid driver\n", token);
               continue;
             }
           }
@@ -2839,7 +2850,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             if(!g_ascii_strcasecmp(token, "up"  )) { s.direction = DT_SHORTCUT_UP  ; continue; }
             if(!g_ascii_strcasecmp(token, "down")) { s.direction= DT_SHORTCUT_DOWN; continue; }
 
-            fprintf(stderr, "[dt_shortcuts_load] token '%s' not recognised\n", token);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[dt_shortcuts_load] token '%s' not recognised\n", token);
           }
           else
           {
@@ -2847,7 +2859,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             *colon-- = 0;
             if(colon == token)
             {
-              fprintf(stderr, "[dt_shortcuts_load] missing driver name in %s\n", token);
+              dt_print(DT_DEBUG_ALWAYS,
+                       "[dt_shortcuts_load] missing driver name in %s\n", token);
               continue;
             }
             dt_input_device_t id = *colon - '0';
@@ -2864,7 +2877,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
               if(!g_ascii_strcasecmp(token, callbacks->name))
               {
                 if(!callbacks->string_to_move(move_start, &s.move))
-                  fprintf(stderr, "[dt_shortcuts_load] move not recognised in %s\n", move_start);
+                  dt_print(DT_DEBUG_ALWAYS,
+                           "[dt_shortcuts_load] move not recognised in %s\n", move_start);
 
                 s.move_device = id;
                 break;
@@ -2873,7 +2887,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             }
             if(!driver)
             {
-              fprintf(stderr, "[dt_shortcuts_load] '%s' is not a valid driver\n", token);
+              dt_print(DT_DEBUG_ALWAYS,
+                       "[dt_shortcuts_load] '%s' is not a valid driver\n", token);
               continue;
             }
           }
@@ -2886,7 +2901,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
 
         if(!s.action)
         {
-          fprintf(stderr, "[dt_shortcuts_load] action path '%s' not found\n", token);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_shortcuts_load] action path '%s' not found\n", token);
           continue;
         }
 
@@ -2928,7 +2944,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           if(!g_ascii_strcasecmp(token, "last" )) s.instance = -1; else
           if(*token == '+' || *token == '-') sscanf(token, "%d", &s.instance); else
           if(*token == '*') sscanf(token, "*%g", &s.speed); else
-          fprintf(stderr, "[dt_shortcuts_load] token '%s' not recognised\n", token);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_shortcuts_load] token '%s' not recognised\n", token);
         }
 
         if(file_dev == DT_ALL_DEVICES ||
@@ -3260,7 +3277,8 @@ static float _process_action(dt_action_t *action, int instance,
       dt_gui_presets_apply_preset(action->label, action_target);
     }
     else
-      fprintf(stderr, "[process_action] preset '%s' has unsupported type\n", action->label);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[process_action] preset '%s' has unsupported type\n", action->label);
   }
   else
   {
@@ -3404,13 +3422,14 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
 
   if(!ac)
   {
-    fprintf(stderr, "[dt_action_process] action path '%s' not found\n", action);
+    dt_print(DT_DEBUG_ALWAYS, "[dt_action_process] action path '%s' not found\n", action);
     return NAN;;
   }
 
   if(ac->owner == &darktable.control->actions_lua)
   {
-    fprintf(stderr, "[dt_action_process] lua action '%s' triggered from lua\n", action);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_action_process] lua action '%s' triggered from lua\n", action);
     return NAN;;
   }
 
@@ -3418,7 +3437,8 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
   if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view))
      && !isnan(move_size))
   {
-    fprintf(stderr, "[dt_action_process] action '%s' not valid for current view\n", action);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_action_process] action '%s' not valid for current view\n", action);
     return NAN;
   }
 
@@ -3438,7 +3458,9 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
 
         if(!elements[el].name)
         {
-          fprintf(stderr, "[dt_action_process] element '%s' not valid for action '%s'\n", element, action);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_action_process] element '%s' not valid for action '%s'\n",
+                   element, action);
           return NAN;
         }
       }
@@ -3450,7 +3472,9 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
 
         if(!effects[ef])
         {
-          fprintf(stderr, "[dt_action_process] effect '%s' not valid for action '%s'\n", effect, action);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_action_process] effect '%s' not valid for action '%s'\n",
+                   effect, action);
           return NAN;
         }
       }
@@ -4129,7 +4153,7 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
     {
       if(!owner || !create)
       {
-        fprintf(stderr, "[dt_action_locate] action '%s' %s\n", *path,
+        dt_print(DT_DEBUG_ALWAYS, "[dt_action_locate] action '%s' %s\n", *path,
                 !owner ? "not valid base node" : "doesn't exist");
         g_free(clean_path);
         return NULL;
@@ -4164,7 +4188,8 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
   {
     if(owner->type <= DT_ACTION_TYPE_VIEW)
     {
-      fprintf(stderr, "[dt_action_locate] found action '%s' internal node\n", owner->id);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_action_locate] found action '%s' internal node\n", owner->id);
       return NULL;
     }
   }

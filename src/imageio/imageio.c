@@ -269,10 +269,10 @@ error_im:
 
   if(res)
   {
-    fprintf(
-        stderr,
-        "[dt_imageio_large_thumbnail] error: Not a supported thumbnail image format or broken thumbnail: %s\n",
-        mime_type);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_imageio_large_thumbnail] error: Not a supported thumbnail "
+             "image format or broken thumbnail: %s\n",
+             mime_type);
     goto error;
   }
 

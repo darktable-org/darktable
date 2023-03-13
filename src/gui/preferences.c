@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -192,7 +192,8 @@ static void save_usercss(GtkTextBuffer *buffer)
   GError *error = NULL;
   if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error))
   {
-    fprintf(stderr, "%s: error saving css to %s: %s\n", G_STRFUNC, usercsspath, error->message);
+    dt_print(DT_DEBUG_ALWAYS, "%s: error saving css to %s: %s\n",
+             G_STRFUNC, usercsspath, error->message);
     g_clear_error(&error);
   }
   g_free(usercsscontent);

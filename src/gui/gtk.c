@@ -1329,8 +1329,9 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
   {
     gui->dpi = screen_dpi_overwrite;
     gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi_overwrite);
-    dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi as specified in "
-                               "the configuration file\n",
+    dt_print(DT_DEBUG_CONTROL,
+             "[screen resolution] setting the screen resolution to %f dpi as specified in "
+             "the configuration file\n",
              screen_dpi_overwrite);
   }
   else
@@ -1343,10 +1344,12 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
     {
       gui->dpi = 96.0;
       gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
-      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to the default 96 dpi\n");
+      dt_print(DT_DEBUG_CONTROL,
+               "[screen resolution] setting the screen resolution to the default 96 dpi\n");
     }
     else
-      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi\n", gui->dpi);
+      dt_print(DT_DEBUG_CONTROL,
+               "[screen resolution] setting the screen resolution to %f dpi\n", gui->dpi);
   }
   gui->dpi_factor
       = gui->dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
@@ -2610,11 +2613,15 @@ void dt_gui_load_theme(const char *theme)
 
   gchar *path_uri = g_filename_to_uri(path, NULL, &error);
   if(path_uri == NULL)
-    fprintf(stderr, "%s: could not convert path %s to URI. Error: %s\n", G_STRFUNC, path, error->message);
+    dt_print(DT_DEBUG_ALWAYS,
+             "%s: could not convert path %s to URI. Error: %s\n",
+             G_STRFUNC, path, error->message);
 
   gchar *usercsspath_uri = g_filename_to_uri(usercsspath, NULL, &error);
   if(usercsspath_uri == NULL)
-    fprintf(stderr, "%s: could not convert path %s to URI. Error: %s\n", G_STRFUNC, usercsspath, error->message);
+    dt_print(DT_DEBUG_ALWAYS,
+             "%s: could not convert path %s to URI. Error: %s\n",
+             G_STRFUNC, usercsspath, error->message);
 
   gchar *themecss = NULL;
   if(dt_conf_get_bool("themes/usercss") && g_file_test(usercsspath, G_FILE_TEST_EXISTS))
@@ -2641,7 +2648,9 @@ void dt_gui_load_theme(const char *theme)
 
   if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), themecss, -1, &error))
   {
-    fprintf(stderr, "%s: error parsing combined CSS %s: %s\n", G_STRFUNC, themecss, error->message);
+    dt_print(DT_DEBUG_ALWAYS,
+             "%s: error parsing combined CSS %s: %s\n",
+             G_STRFUNC, themecss, error->message);
     g_clear_error(&error);
   }
 
@@ -2820,7 +2829,9 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
                              gtk_notebook_get_tab_label_text(notebook, reset_page), _("reset"));
       break;
     default:
-      fprintf(stderr, "[_action_process_tabs] unknown shortcut effect (%d) for tabs\n", effect);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_action_process_tabs] unknown shortcut effect (%d) for tabs\n",
+               effect);
       break;
     }
   }

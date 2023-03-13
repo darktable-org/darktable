@@ -1765,7 +1765,9 @@ static void softproof_profile_callback(GtkWidget *combo, gpointer user_data)
   }
 
   // profile not found, fall back to sRGB. shouldn't happen
-  fprintf(stderr, "can't find softproof profile `%s', using sRGB instead\n", dt_bauhaus_combobox_get_text(combo));
+  dt_print(DT_DEBUG_ALWAYS,
+           "can't find softproof profile `%s', using sRGB instead\n",
+           dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->softproof_type != DT_COLORSPACE_SRGB;
   darktable.color_profiles->softproof_type = DT_COLORSPACE_SRGB;
   darktable.color_profiles->softproof_filename[0] = '\0';
@@ -1802,7 +1804,9 @@ static void display_profile_callback(GtkWidget *combo, gpointer user_data)
   }
 
   // profile not found, fall back to system display profile. shouldn't happen
-  fprintf(stderr, "can't find display profile `%s', using system display profile instead\n", dt_bauhaus_combobox_get_text(combo));
+  dt_print(DT_DEBUG_ALWAYS,
+           "can't find display profile `%s', using system display profile instead\n",
+           dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->display_type != DT_COLORSPACE_DISPLAY;
   darktable.color_profiles->display_type = DT_COLORSPACE_DISPLAY;
   darktable.color_profiles->display_filename[0] = '\0';
@@ -1842,7 +1846,8 @@ static void display2_profile_callback(GtkWidget *combo, gpointer user_data)
   }
 
   // profile not found, fall back to system display2 profile. shouldn't happen
-  fprintf(stderr, "can't find preview display profile `%s', using system display profile instead\n",
+  dt_print(DT_DEBUG_ALWAYS,
+           "can't find preview display profile `%s', using system display profile instead\n",
           dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->display2_type != DT_COLORSPACE_DISPLAY2;
   darktable.color_profiles->display2_type = DT_COLORSPACE_DISPLAY2;
@@ -1884,7 +1889,9 @@ static void histogram_profile_callback(GtkWidget *combo, gpointer user_data)
   }
 
   // profile not found, fall back to export profile. shouldn't happen
-  fprintf(stderr, "can't find histogram profile `%s', using export profile instead\n", dt_bauhaus_combobox_get_text(combo));
+  dt_print(DT_DEBUG_ALWAYS,
+           "can't find histogram profile `%s', using export profile instead\n",
+           dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->histogram_type != DT_COLORSPACE_WORK;
   darktable.color_profiles->histogram_type = DT_COLORSPACE_WORK;
   darktable.color_profiles->histogram_filename[0] = '\0';
@@ -2915,9 +2922,9 @@ static void _on_drag_data_received(GtkWidget *widget,
   else
   {
     if(module_src == NULL)
-      fprintf(stderr, "[_on_drag_data_received] can't find source module\n");
+      dt_print(DT_DEBUG_ALWAYS, "[_on_drag_data_received] can't find source module\n");
     if(module_dest == NULL)
-      fprintf(stderr, "[_on_drag_data_received] can't find destination module\n");
+      dt_print(DT_DEBUG_ALWAYS, "[_on_drag_data_received] can't find destination module\n");
   }
 
   for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
@@ -4404,8 +4411,10 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
   {
     dev->second_window.dpi = screen_dpi_overwrite;
     gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi_overwrite);
-    dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi as specified in "
-                               "the configuration file\n", screen_dpi_overwrite);
+    dt_print(DT_DEBUG_CONTROL,
+             "[screen resolution] setting the screen resolution to %f dpi as specified in "
+             "the configuration file\n",
+             screen_dpi_overwrite);
   }
   else
   {
@@ -4417,10 +4426,13 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
     {
       dev->second_window.dpi = 96.0;
       gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
-      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to the default 96 dpi\n");
+      dt_print(DT_DEBUG_CONTROL,
+               "[screen resolution] setting the screen resolution to the default 96 dpi\n");
     }
     else
-      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi\n", dev->second_window.dpi);
+      dt_print(DT_DEBUG_CONTROL,
+               "[screen resolution] setting the screen resolution to %f dpi\n",
+               dev->second_window.dpi);
   }
   dev->second_window.dpi_factor
       = dev->second_window.dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
