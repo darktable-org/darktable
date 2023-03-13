@@ -394,6 +394,12 @@ The following is a summary of the main features added to darktable
   area (as determined by LibRaw) is always being used now on new
   imports.
 
+- When using Wayland give priority to XWayland, because native Wayland
+  is the cause of many issues in darktable.
+
+- When using the spot exposure mapping mode, properly reset the mode to
+  "correction" when changing image.
+
 ## Lua
 
 ### Add action support for Lua
