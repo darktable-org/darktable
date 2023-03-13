@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,12 @@
 
 DT_MODULE(1)
 
+typedef enum dt_history_copy_mode_t
+{
+  DT_COPY_HISTORY_APPEND    = 0,
+  DT_COPY_HISTORY_OVERWRITE = 1
+} dt_history_copy_mode_t;
+
 typedef struct dt_lib_copy_history_t
 {
   GtkWidget *pastemode;
@@ -46,6 +52,7 @@ typedef struct dt_lib_copy_history_t
   GtkWidget *copy_button, *discard_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
   GtkWidget *compress_button;
+  gboolean is_full_copy;
 } dt_lib_copy_history_t;
 
 const char *name(dt_lib_module_t *self)
@@ -196,11 +203,13 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   const int id = dt_act_on_get_main_image();
 
   if(id > 0 && dt_history_copy(id))
   {
+    d->is_full_copy = TRUE;
     _update(self);
   }
 }
@@ -208,11 +217,13 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   const int id = dt_act_on_get_main_image();
 
   if(id > 0 && dt_history_copy_parts(id))
   {
+    d->is_full_copy = FALSE;
     _update(self);
   }
 }
@@ -246,8 +257,13 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
+  const int current_mode = dt_bauhaus_combobox_get(d->pastemode);
+
   /* get past mode and store, overwrite / merge */
-  const int mode = dt_bauhaus_combobox_get(d->pastemode);
+  const int mode = d->is_full_copy
+    ? DT_COPY_HISTORY_OVERWRITE
+    : current_mode;
+
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from previously copied image and past onto selection */
@@ -261,6 +277,9 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     g_list_free(imgs);
   }
+
+  // restore mode
+  dt_conf_set_int("plugins/lighttable/copy_history/pastemode", current_mode);
 }
 
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
