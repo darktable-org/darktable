@@ -144,12 +144,12 @@ static float compute_center_pixel_norm(const float center_weight, const int radi
 
 // compute the channel-normed squared difference between two pixels
 static inline float pixel_difference(
-        const float* const pix1,
-        const float* pix2,
+        const dt_aligned_pixel_t pix1,
+        const dt_aligned_pixel_t pix2,
         const dt_aligned_pixel_t norm)
 {
   dt_aligned_pixel_t sum = { 0.f, 0.f, 0.f, 0.f };
-  for_each_channel(i, aligned(sum:16))
+  for_each_channel(i, aligned(sum, pix1, pix2:16))
   {
     const float diff = pix1[i] - pix2[i];
     sum[i] = diff * diff * norm[i];
@@ -159,14 +159,14 @@ static inline float pixel_difference(
 
 // optimized: pixel_difference(pix1, pix2, norm) - pixel_difference(pix3, pix4, norm)
 static inline float diff_of_pixels_diff(
-        const float* const pix1,
-        const float* pix2,
-        const float* const pix3,
-        const float* pix4,
+        const dt_aligned_pixel_t pix1,
+        const dt_aligned_pixel_t pix2,
+        const dt_aligned_pixel_t pix3,
+        const dt_aligned_pixel_t pix4,
         const dt_aligned_pixel_t norm)
 {
   dt_aligned_pixel_t sum = { 0.f, 0.f, 0.f, 0.f };
-  for_each_channel(i, aligned(sum:16))
+  for_each_channel(i, aligned(sum, pix1, pix2, pix3, pix4:16))
   {
     const float diff1 = pix1[i] - pix2[i];
     const float diff2 = pix3[i] - pix4[i];
@@ -242,7 +242,7 @@ static void init_column_sums(
   const int rmax = row + MIN(radius,MIN(height-1-row,height-1-(row+srow)));
   for(int col = chunk_left-radius-1; col < MIN(col_min,chunk_right+radius); col++)
   {
-    col_sums[col] = 0;
+    col_sums[col] = 0.0f;
 #ifdef CACHE_PIXDIFFS
     for(int i = row-radius; i <= row+radius; i++)
       set_pixdiff(col_sums,radius,i,col,0.0f);
@@ -250,7 +250,7 @@ static void init_column_sums(
   }
   for(int col = col_min; col < col_max; col++)
   {
-    float sum = 0;
+    float sum = 0.0f;
     for(int r = rmin; r <= rmax; r++)
     {
       const float *pixel = in + r*stride + 4*col;
@@ -265,7 +265,7 @@ static void init_column_sums(
   // clear out any columns where the patch column would be outside the RoI, as well as our overrun area
   for(int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
   {
-    col_sums[col] = 0;
+    col_sums[col] = 0.0f;
 #ifdef CACHE_PIXDIFFS
     for(int i = row-radius; i <= row+radius; i++)
       set_pixdiff(col_sums,radius,i,col,0.0f);
@@ -359,8 +359,8 @@ void nlmeans_denoise(
   const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(patches, num_patches, scratch_buf, padded_scratch_size, chk_height, chk_width, radius) \
-      dt_omp_sharedconst(params, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
+      dt_omp_firstprivate(patches, num_patches, scratch_buf, padded_scratch_size, chk_height, chk_width, radius, \
+                          params, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
       schedule(static) \
       collapse(2)
 #endif
@@ -405,7 +405,7 @@ void nlmeans_denoise(
         for(int row = row_min; row < row_max; row++)
         {
           // add up the initial columns of the sliding window of total patch distortion
-          float distortion = 0.0;
+          float distortion = 0.0f;
           for(int i = col_min - radius; i < MIN(col_min+radius, col_max); i++)
           {
             distortion += col_sums[i];
@@ -415,19 +415,26 @@ void nlmeans_denoise(
           float *const out = outbuf + (size_t)4 * width * row;
           const int offset = patch->offset;
           const float sharpness = params->sharpness;
-          if(params->center_weight < 0)
+          if(params->center_weight < 0.0f)
           {
             // computation as used by denoise(non-local) iop
             for(int col = col_min; col < col_max; col++)
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
               const float wt = gh(distortion * sharpness);
+#if defined(__SSE__) && defined(__GNUC__)
+              // GCC10 has really poor code generation here, so manually force vectorized evaluation
+              __m128 pixel = _mm_load_ps(in+4*col+offset);
+              pixel[3] = 1.0f;
+              ((__m128*)out)[col] += (pixel * _mm_set1_ps(wt));
+#else
               const float *const inpx = in+4*col;
-              const dt_aligned_pixel_t pixel = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
+              const dt_aligned_pixel_t pixel = { inpx[offset], inpx[offset+1], inpx[offset+2], 1.0f };
               for_four_channels(c,aligned(pixel,out:16))
               {
                 out[4*col+c] += pixel[c] * wt;
               }
+#endif  /* __SSE__ && __GNUC__ */
               _mm_prefetch(in+4*col+offset+stride,_MM_HINT_T0);	// try to ensure next row is ready in time
             }
           }
@@ -440,12 +447,19 @@ void nlmeans_denoise(
               const float dissimilarity = (distortion + pixel_difference(in+4*col,in+4*col+offset,center_norm))
                                            / (1.0f + params->center_weight);
               const float wt = gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f));
+#if defined(__SSE__) && defined(__GNUC__)
+              // GCC10 has really poor code generation here, so manually force vectorized evaluation
+              __m128 pixel = _mm_load_ps(in+4*col+offset);
+              pixel[3] = 1.0f;
+              ((__m128*)out)[col] += (pixel * _mm_set1_ps(wt));
+#else
               const float *const inpx = in + 4*col;
-              const dt_aligned_pixel_t pixel = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
+              const dt_aligned_pixel_t pixel = { inpx[offset], inpx[offset+1], inpx[offset+2], 1.0f };
               for_four_channels(c,aligned(pixel,out:16))
               {
                 out[4*col+c] += pixel[c] * wt;
               }
+#endif
               _mm_prefetch(in+4*col+offset+stride,_MM_HINT_T0);	// try to ensure next row is ready in time
             }
           }
