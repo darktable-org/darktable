@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
 #include "lua/image.h"
 #include "common/colorlabels.h"
@@ -69,7 +69,8 @@ void dt_lua_image_push(lua_State *L, int imgid)
 {
   // check that id is valid
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE id = ?1", -1, &stmt,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images WHERE id = ?1", -1, &stmt,
                               NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) != SQLITE_ROW)
@@ -129,7 +130,8 @@ static int generate_cache(lua_State *L)
   for(int k = max; k >= min && k >= 0; k--)
   {
     char filename[PATH_MAX] = { 0 };
-    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
+    snprintf(filename, sizeof(filename),
+             "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
 
     // if a valid thumbnail file is already on disc - do nothing
     if(dt_util_test_image_file(filename)) continue;
@@ -264,7 +266,8 @@ static int rating_member(lua_State *L)
     my_image->flags &= ~DT_VIEW_RATINGS_MASK;
     my_image->flags |= my_score;
     releasewriteimage(L, my_image);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
+    dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
                                g_list_prepend(NULL, GINT_TO_POINTER(my_image->id)));
     return 0;
   }
@@ -387,7 +390,8 @@ static int colorlabel_member(lua_State *L)
     {
       dt_colorlabels_remove_label(imgid, colorlabel_index);
     }
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
+    dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
     return 0;
   }
@@ -451,7 +455,8 @@ int get_group(lua_State *L)
   int group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE group_id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images WHERE group_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
   lua_newtable(L);
@@ -522,7 +527,8 @@ int dt_lua_init_image(lua_State *L)
   {
     lua_pushcfunction(L, image_luaautoc_member);
     luaA_Type member_type = luaA_struct_typeof_member_name(L, dt_image_t, member_name);
-    if(luaA_conversion_to_registered_type(L, member_type) || luaA_struct_registered_type(L, member_type)
+    if(luaA_conversion_to_registered_type(L, member_type)
+       || luaA_struct_registered_type(L, member_type)
        || luaA_enum_registered_type(L, member_type))
     {
       dt_lua_type_register(L, dt_lua_image_t, member_name);
@@ -637,4 +643,3 @@ int dt_lua_init_image(lua_State *L)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
