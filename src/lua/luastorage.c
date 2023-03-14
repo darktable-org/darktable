@@ -17,6 +17,7 @@
 */
 
 #include "lua/luastorage.h"
+#include "common/darktable.h"
 #include "common/file_location.h"
 #include "common/image.h"
 #include "control/jobs.h"
@@ -26,7 +27,6 @@
 #include "lua/glist.h"
 #include "lua/image.h"
 #include "lua/widget/widget.h"
-#include <common/darktable.h>
 #include <stdio.h>
 
 typedef struct
