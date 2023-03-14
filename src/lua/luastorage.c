@@ -99,7 +99,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
                        icc_filename, icc_intent, self, self_data, num, total, metadata) != 0)
   {
-    fprintf(stderr, "[%s] could not export to file: `%s'!\n", self->name(self), complete_name);
+    dt_print(DT_DEBUG_ALWAYS, "[%s] could not export to file: `%s'!\n", self->name(self), complete_name);
     g_free(complete_name);
     g_free(filename);
     return 1;

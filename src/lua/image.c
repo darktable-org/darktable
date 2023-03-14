@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2021 darktable developers.
+   Copyright (C) 2013-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -119,7 +119,7 @@ static int generate_cache(lua_State *L)
       {
         if(g_mkdir_with_parents(dirname, 0750))
         {
-          fprintf(stderr, _("could not create directory '%s'!\n"), dirname);
+          dt_print(DT_DEBUG_ALWAYS, _("could not create directory '%s'!\n"), dirname);
           return 1;
         }
       }
