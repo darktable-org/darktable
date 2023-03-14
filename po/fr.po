@@ -5158,7 +5158,7 @@ msgstr "Historique"
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:94
 msgid "color label"
-msgstr "Label de couleur"
+msgstr "Label couleur"
 
 #. iso
 #: ../src/common/collection.c:668 ../src/gui/preferences.c:826
@@ -13148,7 +13148,7 @@ msgstr "N&B : Ilford HP5+"
 
 #: ../src/iop/channelmixerrgb.c:420
 msgid "B&W: ILFORD DELTA 100"
-msgstr "N&B : Fuji Acros 100"
+msgstr "N&B : Ilford Delta 100"
 
 #: ../src/iop/channelmixerrgb.c:430
 msgid "B&W: ILFORD DELTA 400 - 3200"
@@ -25904,7 +25904,7 @@ msgstr "Actions de la souris"
 
 #~ msgctxt "accel"
 #~ msgid "color label"
-#~ msgstr "Label de couleur"
+#~ msgstr "Label couleur"
 
 #~ msgctxt "accel"
 #~ msgid "select all"
@@ -30372,7 +30372,7 @@ msgstr "Actions de la souris"
 
 #~ msgctxt "preferences"
 #~ msgid "gnome keyring"
-#~ msgstr "Gnome keyring"
+#~ msgstr "GNOME keyring"
 
 #~ msgid "VNG4 (slow)"
 #~ msgstr "VNG4 (lent)"
@@ -31046,7 +31046,7 @@ msgstr "Actions de la souris"
 #~ "you got the package from."
 #~ msgstr ""
 #~ "darktable a détecté une instruction illégale qui signifie probablement "
-#~ "qu’un code d’optimisation de CPU est utilisé à tort. Merci de reproduire "
+#~ "qu’un code d’optimisation de CPU est utilisé à tort pour votre système. Merci de reproduire "
 #~ "le plantage en utilisant « gdb darktable » à partir du terminal, puis de "
 #~ "poster le résultat sur la liste de publication en fournissant les "
 #~ "informations de votre CPU et du paquet utilisé pour darktable."
