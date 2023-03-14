@@ -1920,6 +1920,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
   // multi_name for this module.
 
   if(!dt_iop_is_hidden(module)
+     && module->gui_data
      && module_is_enabled
      && module_params_changed
      && !module->multi_name_hand_edited
