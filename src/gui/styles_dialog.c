@@ -819,31 +819,65 @@ typedef struct _preview_data_t
 {
   char style_name[128];
   int imgid;
+  gboolean first_draw;
+  cairo_surface_t *surface;
+  guint8 *hash;
+  int hash_len;
 } _preview_data_t;
 
 static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   _preview_data_t *data = (_preview_data_t *)user_data;
-  gboolean res = FALSE;
 
-  if(data->imgid > 0)
+  if(data->imgid > 0 && !data->first_draw && !data->surface)
+    data->surface = dt_gui_get_style_preview(data->imgid, data->style_name);
+
+  if(data->surface)
   {
-    cairo_surface_t *surface = dt_gui_get_style_preview(data->imgid, data->style_name);
     const int psize = dt_conf_get_int("ui/style/preview_size");
-    const int swidth = cairo_image_surface_get_width(surface);
-    const int sheight = cairo_image_surface_get_height(surface);
-    cairo_set_source_surface(cr, surface, .5f * (psize - swidth), .5f * (psize - sheight));
+    const int swidth = cairo_image_surface_get_width(data->surface);
+    const int sheight = cairo_image_surface_get_height(data->surface);
+    cairo_set_source_surface(cr, data->surface, .5f * (psize - swidth), .5f * (psize - sheight));
     cairo_paint(cr);
-    cairo_surface_destroy(surface);
-
-    res=TRUE;
+  }
+  else
+  {
+    data->first_draw = FALSE;
+    gtk_widget_queue_draw(widget);
   }
 
-  return res;
+  return FALSE;
 }
 
 GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 {
+  static _preview_data_t data = { "", -1, FALSE, NULL, NULL, 0};
+
+  dt_history_hash_values_t hash = { NULL, 0, NULL, 0, NULL, 0 };
+  dt_history_hash_read(imgid, &hash);
+
+  if(imgid != data.imgid
+     || g_strcmp0(data.style_name, name)
+     || data.hash_len != hash.current_len
+     || memcmp(data.hash, hash.current, data.hash_len))
+  {
+    if(data.surface)
+    {
+      cairo_surface_destroy(data.surface);
+      data.surface = NULL;
+    }
+    data.imgid = imgid;
+    g_strlcpy(data.style_name, name, sizeof(data.style_name));
+    g_free(data.hash);
+    data.hash = g_malloc(hash.current_len);
+    memcpy(data.hash, hash.current, hash.current_len);
+    data.hash_len = hash.current_len;
+  }
+
+  dt_history_hash_free(&hash);
+
+  if(!*name) return NULL;
+
   GtkWidget *ht = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *label = NULL;
@@ -910,10 +944,8 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
     gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
     gtk_widget_set_app_paintable(da, TRUE);
     gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
-    _preview_data_t *data = g_malloc(sizeof(_preview_data_t));
-    g_strlcpy(data->style_name, name, sizeof(data->style_name));
-    data->imgid = imgid;
-    g_signal_connect_data(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), data, (GClosureNotify)g_free, 0);
+    data.first_draw = TRUE;
+    g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), &data);
   }
 
   return ht;
