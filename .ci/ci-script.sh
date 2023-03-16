@@ -50,22 +50,18 @@ fi;
 
 target_build()
 {
-  # to get as much of the issues into the log as possible
-  cmake --build "$BUILD_DIR" -- $JOBS "$VERBOSE" "$KEEPGOING" || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
+  cmake --build "$BUILD_DIR" -- $JOBS "$VERBOSE" "$KEEPGOING"
 
   ctest --output-on-failure || ctest --rerun-failed -V -VV
 
-  # and now check that it installs where told and only there.
-  cmake --build "$BUILD_DIR" --target install -- $JOBS "$VERBOSE" "$KEEPGOING" || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
+  cmake --build "$BUILD_DIR" --target install -- $JOBS "$VERBOSE" "$KEEPGOING"
 }
 
 target_notest()
 {
-  # to get as much of the issues into the log as possible
-  cmake --build "$BUILD_DIR" -- $JOBS "$VERBOSE" "$KEEPGOING" || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
+  cmake --build "$BUILD_DIR" -- $JOBS "$VERBOSE" "$KEEPGOING"
 
-  # and now check that it installs where told and only there.
-  cmake --build "$BUILD_DIR" --target install -- $JOBS "$VERBOSE" "$KEEPGOING" || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
+  cmake --build "$BUILD_DIR" --target install -- $JOBS "$VERBOSE" "$KEEPGOING"
 }
 
 diskspace()
