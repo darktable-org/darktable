@@ -1586,7 +1586,7 @@ void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_ha
   }
 }
 
-void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash)
+void dt_history_hash_write(const int32_t imgid, const dt_history_hash_values_t *const hash)
 {
   if(hash->basic || hash->auto_apply || hash->current)
   {
@@ -1629,25 +1629,40 @@ void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
     hash->basic_len = sqlite3_column_bytes(stmt, 0);
     if(buf)
     {
-      hash->basic = malloc(hash->basic_len);
+      hash->basic = g_malloc(hash->basic_len);
       memcpy(hash->basic, buf, hash->basic_len);
     }
     buf = (void *)sqlite3_column_blob(stmt, 1);
     hash->auto_apply_len = sqlite3_column_bytes(stmt, 1);
     if(buf)
     {
-      hash->auto_apply = malloc(hash->auto_apply_len);
+      hash->auto_apply = g_malloc(hash->auto_apply_len);
       memcpy(hash->auto_apply, buf, hash->auto_apply_len);
     }
     buf = (void *)sqlite3_column_blob(stmt, 2);
     hash->current_len = sqlite3_column_bytes(stmt, 2);
     if(buf)
     {
-      hash->current = malloc(hash->current_len);
+      hash->current = g_malloc(hash->current_len);
       memcpy(hash->current, buf, hash->current_len);
     }
   }
   sqlite3_finalize(stmt);
+}
+
+void dt_history_hash_free(dt_history_hash_values_t *hash)
+{
+  g_free(hash->basic);
+  hash->basic = NULL;
+  hash->basic_len = 0;
+
+  g_free(hash->auto_apply);
+  hash->auto_apply = NULL;
+  hash->auto_apply_len = 0;
+
+  g_free(hash->current);
+  hash->current = NULL;
+  hash->current_len = 0;
 }
 
 gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
