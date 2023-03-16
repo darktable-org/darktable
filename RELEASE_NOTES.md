@@ -304,6 +304,14 @@ The following is a summary of the main features added to darktable
 - The search filter has been improved to also search the camera's brand
   and model.
 
+- A full copy and paste is always done in overwrite mode now. Using
+  the append mode was in the vast majority of time wrong in this
+  case. When the full history is copied and pasted into another image
+  we do want to just use the new history as a replacement of the
+  previous one. It makes no sense adding some multi-instance for some
+  modules for example. So this new default should fit better in the
+  workflow.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
