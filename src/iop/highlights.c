@@ -1454,6 +1454,12 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 
       dt_aligned_pixel_t high_frequency = { HF[index + 0], HF[index + 1], HF[index + 2], HF[index + 3] };
 
+      // The for_each_channel macro uses 4 floats SIMD instructions or 3 float regular ops,
+      // depending on system. Since we don't want to diffuse the norm, make sure to store and restore it later.
+      // This is not much of an issue when processing image at full-res, but more harmful since
+      // we reconstruct highlights on a downscaled variant
+      const float norm_backup = high_frequency[3];
+
       if(alpha[ALPHA] > 0.f)  // reconstruct
       {
         // non-local neighbours coordinates
@@ -1494,6 +1500,9 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         const dt_aligned_pixel_t multipliers_HF = { 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 0.f };
         for_each_channel(c, aligned(high_frequency, multipliers_HF, laplacian_HF, alpha))
           high_frequency[c] += alpha[c] * multipliers_HF[c] * (laplacian_HF[c] - first_order_factor * high_frequency[c]);
+ 
+        // Restore. See above.
+        high_frequency[3] = norm_backup;
       }
 
       if((scale & FIRST_SCALE))
