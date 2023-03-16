@@ -1,6 +1,6 @@
 name: CI
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -49,8 +49,6 @@ jobs:
         os:
           - { label: ubuntu-latest, code: latest }
         compiler:
-          - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
-          - { compiler: GNU11,  CC: gcc-11,   CXX: g++-11,     packages: gcc-11 g++-11 }
           - { compiler: GNU12,  CC: gcc-12,   CXX: g++-12,     packages: gcc-12 g++-12 }
           - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
         btype:
@@ -282,8 +280,9 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-11, xcode: 13.2.1, deployment: 11.3 }
-          - { os: macos-12, xcode: 14.2,   deployment: 12.5 }
+          - { os: macos-12,    xcode: 14.2,   deployment: 12.5 } # LLVM14
+          - { os: macos-12,    xcode: 13.4,   deployment: 12.0 } # LLVM13
+          - { os: macos-11,    xcode: 13.2.1, deployment: 11.3 } # LLVM12
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Debug ]
