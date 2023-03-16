@@ -312,6 +312,9 @@ The following is a summary of the main features added to darktable
   modules for example. So this new default should fit better in the
   workflow.
 
+- Re-enable loading of BigTIFF images by attempting the native
+  libtiff-based reader first.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
