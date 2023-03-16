@@ -139,7 +139,7 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-11, xcode: 12.5.1, deployment: 11.3 }
+          - { os: macos-11, xcode: 13.2.1, deployment: 11.3 }
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
