@@ -3952,22 +3952,21 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     char* value = dt_exif_xmp_encode(hash.basic, hash.basic_len, NULL);
     xmpData["Xmp.darktable.history_basic_hash"] = value;
     free(value);
-    g_free(hash.basic);
   }
   if(hash.auto_apply)
   {
     char* value = dt_exif_xmp_encode(hash.auto_apply, hash.auto_apply_len, NULL);
     xmpData["Xmp.darktable.history_auto_hash"] = value;
     free(value);
-    g_free(hash.auto_apply);
   }
   if(hash.current)
   {
     char* value = dt_exif_xmp_encode(hash.current, hash.current_len, NULL);
     xmpData["Xmp.darktable.history_current_hash"] = value;
     free(value);
-    g_free(hash.current);
   }
+
+  dt_history_hash_free(&hash);
 }
 
 // helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
