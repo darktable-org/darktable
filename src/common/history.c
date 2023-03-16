@@ -1586,7 +1586,7 @@ void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_ha
   }
 }
 
-void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash)
+void dt_history_hash_write(const int32_t imgid, const dt_history_hash_values_t *const hash)
 {
   if(hash->basic || hash->auto_apply || hash->current)
   {
