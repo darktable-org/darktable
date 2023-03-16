@@ -52,6 +52,10 @@ typedef float (*dt_interpolation_func)(float width, float t);
 typedef __m128 (*dt_interpolation_sse_func)(__m128 width, __m128 t);
 #endif
 
+typedef void (*dt_interpolation_taps_func)(float *taps, size_t num_taps,
+                                           float width, float first_tap,
+                                           float interval);
+
 /** Interpolation structure */
 struct dt_interpolation
 {
@@ -62,6 +66,7 @@ struct dt_interpolation
 #if defined(__SSE2__)
   dt_interpolation_sse_func funcsse; /**< Kernel function (four params a time) */
 #endif
+  dt_interpolation_taps_func maketaps;
 };
 
 /** Compute a single interpolated sample.

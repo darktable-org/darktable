@@ -216,6 +216,36 @@ static inline __m128 bilinear_sse(__m128 width, __m128 t)
 }
 #endif
 
+static void maketaps_bilinear(float *taps,
+                              size_t num_taps,
+                              float  width,
+                              float first_tap,
+                              float interval)
+{
+  static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
+  dt_aligned_pixel_t iter;
+  dt_aligned_pixel_t vt;
+//  dt_aligned_pixel_t vw;
+  for_four_channels(c)
+    iter[c] = 4.0f * interval;
+  for_four_channels(c)
+    vt[c] = first_tap + bootstrap[c] * interval;
+//  for_four_channels(c)
+//    vw[c] = width;
+
+  const int runs = (num_taps + 3) / 4;
+
+  for(size_t i = 0; i < runs; i++)
+  {
+    // compute and store the values for the current four taps
+    for_four_channels(c)
+      taps[4*i + c] = 1.0f - (vt[c] < 0.0f ? -vt[c] : vt[c]);
+    // prepare next iteration
+    for_four_channels(c)
+      vt[c] += iter[c];
+  }
+}
+  
 /* --------------------------------------------------------------------------
  * Bicubic interpolation
  * ------------------------------------------------------------------------*/
@@ -288,6 +318,73 @@ static inline __m128 bicubic_sse(__m128 width, __m128 t)
 }
 #endif
 
+static void maketaps_bicubic(float *taps,
+                             size_t num_taps,
+                             float  width,
+                             float first_tap,
+                             float interval)
+{
+  static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
+  static const dt_aligned_pixel_t half = { .5f, .5f, .5f, .5f };
+//  static const dt_aligned_pixel_t one = { 1.f, 1.f, 1.f, 1.f };
+  static const dt_aligned_pixel_t two = { 2.f, 2.f, 2.f, 2.f };
+  static const dt_aligned_pixel_t three = { 3.f, 3.f, 3.f, 3.f };
+  static const dt_aligned_pixel_t four = { 4.f, 4.f, 4.f, 4.f };
+  static const dt_aligned_pixel_t five = { 5.f, 5.f, 5.f, 5.f };
+  static const dt_aligned_pixel_t eight = { 8.f, 8.f, 8.f, 8.f };
+  dt_aligned_pixel_t iter;
+  dt_aligned_pixel_t vt;
+  for_four_channels(c)
+    iter[c] = 4.0f * interval;
+  for_four_channels(c)
+    vt[c] = first_tap + bootstrap[c] * interval;
+
+  const int runs = (num_taps + 3) / 4;
+
+  for(size_t i = 0; i < runs; i++)
+  {
+    // compute and store the values for the current four taps
+    dt_aligned_pixel_t vt_abs;
+    dt_aligned_pixel_t t2;   // tap-squared
+    for_four_channels(c)
+    {
+      vt_abs[c] = vt[c] < 0.0f ? -vt[c] : vt[c];
+      t2[c] = vt[c] * vt[c];
+    }
+    dt_aligned_pixel_t t5;
+    dt_aligned_pixel_t mt2_add_t5_sub_8;
+    for_four_channels(c)
+    {
+      t5[c] = five[c] * vt_abs[c];
+      mt2_add_t5_sub_8[c] = t5[c] - eight[c] - t2[c];
+    }
+    dt_aligned_pixel_t b;
+    dt_aligned_pixel_t r12;
+    for_four_channels(c)
+    {
+      b[c] = vt_abs[c] * mt2_add_t5_sub_8[c] + four[c];
+      r12[c] = b[c] * half[c]; // the value for 1 < t < 2
+    }
+    dt_aligned_pixel_t t23;
+    dt_aligned_pixel_t e;
+    dt_aligned_pixel_t r01;
+    for_four_channels(c)
+    {
+      t23[c] = three[c] * t2[c] - t5[c];
+      e[c] = t23[c] * vt_abs[c] + two[c];
+      r01[c] = e[c] * half[c];
+    }
+    // combine the values depending on whether abs(tap) is less than one or not
+    for_four_channels(c)
+    {
+      taps[4*i + c] = vt_abs[c] <= 1.0f ? r01[c] : r12[c];
+    }
+    // prepare next iteration
+    for_four_channels(c)
+      vt[c] += iter[c];
+  }
+}
+  
 /* --------------------------------------------------------------------------
  * Lanczos interpolation
  * ------------------------------------------------------------------------*/
@@ -387,6 +484,130 @@ static inline __m128 lanczos_sse2(__m128 width, __m128 t)
 }
 #endif
 
+static void dt_vector_sin(const dt_aligned_pixel_t arg, dt_aligned_pixel_t sine)
+{
+  static const dt_aligned_pixel_t pi = { M_PI_F, M_PI_F, M_PI_F, M_PI_F };
+  static const dt_aligned_pixel_t a
+    = { 4 / (M_PI_F * M_PI_F),
+        4 / (M_PI_F * M_PI_F),
+        4 / (M_PI_F * M_PI_F),
+        4 / (M_PI_F * M_PI_F) };
+  static const dt_aligned_pixel_t p = { 0.225f,  0.225f, 0.225f, 0.225f };
+  static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+  dt_aligned_pixel_t abs_arg;
+  for_four_channels(c)
+    abs_arg[c] = (arg[c] < 0.0f) ? -arg[c] : arg[c];
+  dt_aligned_pixel_t scaled;
+  for_four_channels(c)
+    scaled[c] = a[c] * arg[c] * (pi[c] - abs_arg[c]);
+  dt_aligned_pixel_t abs_scaled;
+  for_four_channels(c)
+    abs_scaled[c] = (scaled[c] < 0.0f) ? -scaled[c] : scaled[c];
+  for_four_channels(c)
+    sine[c] = scaled[c] * (p[c] * (abs_scaled[c] - one[c]) + one[c]);
+}
+
+static void maketaps_lanczos(float *taps,
+                             size_t num_taps,
+                             float  width,
+                             float first_tap,
+                             float interval)
+{
+  static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
+  dt_aligned_pixel_t iter;
+  dt_aligned_pixel_t vt;
+  for_four_channels(c)
+    iter[c] = 4.0f * interval;
+  for_four_channels(c)
+    vt[c] = first_tap + bootstrap[c] * interval;
+  dt_aligned_pixel_t vw;
+  for_four_channels(c)
+    vw[c] = width;
+
+  const int runs = (num_taps + 3) / 4;
+
+#ifdef __SSE__
+  if(darktable.codepath.SSE2)
+  {
+    for(size_t i = 0; i < runs; i++)
+    {
+    __m128 t = *((__m128*)vt);
+    __m128i a = _mm_cvtps_epi32(t);
+    __m128 r = _mm_sub_ps(t, _mm_cvtepi32_ps(a));
+
+    // Compute the correct sign for sinf(pi.r)
+    static const uint32_t fone[] __attribute__((aligned(SSE_ALIGNMENT)))
+      = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
+    static const uint32_t ione[] __attribute__((aligned(SSE_ALIGNMENT))) = { 1, 1, 1, 1 };
+    static const __m128 eps
+      = { DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON };
+    static const __m128 pi = { M_PI, M_PI, M_PI, M_PI };
+    static const __m128 pi2 = { M_PI * M_PI, M_PI * M_PI, M_PI * M_PI, M_PI * M_PI };
+
+    __m128i isign = _mm_and_si128(*(__m128i *)ione, a);
+    isign = _mm_slli_epi64(isign, 31);
+    isign = _mm_or_si128(*(__m128i *)fone, isign);
+    const __m128 fsign = _mm_castsi128_ps(isign);
+
+    __m128 num = width * fsign * sinf_fast_sse(pi * r);
+    num = num * sinf_fast_sse((pi * t) / width) + eps;
+
+    __m128 den = pi2 * t * t + eps;
+    *((__m128*)(taps+4*i)) = num / den;
+    // prepare next iteration
+    for_four_channels(c)
+      vt[c] += iter[c];
+    }
+  }
+  else
+#endif
+  {
+    for(size_t i = 0; i < runs; i++)
+    {
+      // compute and store the values for the current four taps
+      static const dt_aligned_pixel_t eps
+        = { DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON };
+      static const dt_aligned_pixel_t pi = { M_PI_F, M_PI_F, M_PI_F, M_PI_F };
+      static const dt_aligned_pixel_t pi2
+        = { M_PI_F*M_PI_F, M_PI_F*M_PI_F, M_PI_F*M_PI_F, M_PI_F*M_PI_F };
+      dt_aligned_pixel_t r;
+      dt_aligned_pixel_t sign;
+      for_four_channels(c)
+      {
+        int a = (int)vt[c];
+        r[c] = vt[c] - (float)a;
+        sign[c] = (a & 1) ? -1.0f : 1.0f;
+      }
+      dt_aligned_pixel_t sine_arg1;
+      dt_aligned_pixel_t sine_arg2;
+      for_four_channels(c)
+      {
+        sine_arg1[c] = pi[c] * r[c];
+        sine_arg2[c] = pi[c] * vt[c] / vw[c];
+      }
+      dt_aligned_pixel_t sine1;
+      dt_aligned_pixel_t sine2;
+      dt_vector_sin(sine_arg1, sine1);
+      dt_vector_sin(sine_arg2, sine2);
+      dt_aligned_pixel_t num;
+      dt_aligned_pixel_t denom;
+      for_four_channels(c)
+      {
+        num[c] = vw[c] * sign[c] * sine1[c] * sine2[c];
+        denom[c] = (pi2[c] * vt[c] * vt[c]) + eps[c];
+      }
+      for_four_channels(c)
+      {
+        taps[4*i + c] = num[c] / denom[c];
+      }
+      // prepare next iteration
+      for_four_channels(c)
+        vt[c] += iter[c];
+    }
+  }
+}
+  
 #undef DT_LANCZOS_EPSILON
 
 /* --------------------------------------------------------------------------
@@ -403,6 +624,7 @@ static const struct dt_interpolation dt_interpolator[] = {
    .name = "bilinear",
    .width = 1,
    .func = &bilinear,
+   .maketaps = &maketaps_bilinear,
 #if defined(__SSE2__)
    .funcsse = &bilinear_sse
 #endif
@@ -411,6 +633,7 @@ static const struct dt_interpolation dt_interpolator[] = {
    .name = "bicubic",
    .width = 2,
    .func = &bicubic,
+   .maketaps = &maketaps_bicubic,
 #if defined(__SSE2__)
    .funcsse = &bicubic_sse
 #endif
@@ -419,6 +642,7 @@ static const struct dt_interpolation dt_interpolator[] = {
    .name = "lanczos2",
    .width = 2,
    .func = &lanczos,
+   .maketaps = &maketaps_lanczos,
 #if defined(__SSE2__)
    .funcsse = &lanczos_sse2
 #endif
@@ -427,6 +651,7 @@ static const struct dt_interpolation dt_interpolator[] = {
    .name = "lanczos3",
    .width = 3,
    .func = &lanczos,
+   .maketaps = &maketaps_lanczos,
 #if defined(__SSE2__)
    .funcsse = &lanczos_sse2
 #endif
@@ -450,7 +675,7 @@ static inline void compute_upsampling_kernel_plain(const struct dt_interpolation
                                                    int *first,
                                                    float t)
 {
-  int f = (int)t - itor->width + 1;
+  int f = (int)floorf(t) - itor->width + 1;
   if(first)
   {
     *first = f;
@@ -495,7 +720,7 @@ static inline void compute_upsampling_kernel_sse(const struct dt_interpolation *
                                                  int *first,
                                                  float t)
 {
-  int f = (int)t - itor->width + 1;
+  int f = (int)floorf(t) - itor->width + 1;
   if(first)
   {
     *first = f;
@@ -552,12 +777,20 @@ static inline void compute_upsampling_kernel(const struct dt_interpolation *itor
                                              int *first,
                                              float t)
 {
-#if defined(__SSE2__)
-  if(darktable.codepath.SSE2)
-    return compute_upsampling_kernel_sse(itor, kernel, norm, first, t);
-  else
-#endif
-    return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
+  int f = (int)floorf(t) - itor->width + 1;
+  if(first)
+  {
+    *first = f;
+  }
+
+  /* Find closest integer position and then offset that to match first
+   * filtered sample position */
+  t = t - (float)f;
+
+  // compute the taps
+  itor->maketaps(kernel, 2*itor->width, itor->width, t, -1.0f);
+  if (norm)
+    *norm = 1.0f;  // all existing kernels have norm 1.0 when upsampling unless there's a bug
 }
 
 /** Computes a downsampling filtering kernel
@@ -688,6 +921,41 @@ static inline void compute_downsampling_kernel_sse(const struct dt_interpolation
 }
 #endif
 
+static inline void compute_downsampling_kernel_taps(const struct dt_interpolation *itor,
+                                                   int *taps,
+                                                   int *first,
+                                                   float *kernel,
+                                                   float *norm,
+                                                   const float outoinratio,
+                                                   const int xout)
+{
+  // Keep this at hand
+  const float w = (float)itor->width;
+
+  /* Compute the phase difference between output pixel and its
+   * input corresponding input pixel */
+  const float xin = ceil_fast(((float)xout - w) / outoinratio);
+  if(first)
+  {
+    *first = (int)xin;
+  }
+
+  // Compute first interpolator parameter
+  float t = xin * outoinratio - (float)xout;
+
+  // Compute all filter taps
+  int num_taps = *taps = (int)((w - t) / outoinratio);
+  itor->maketaps(kernel, num_taps, itor->width, t, outoinratio);
+  // compute the kernel norm if requested
+  if (norm)
+  {
+    float n  = 0.0f;
+    for(size_t i = 0; i < num_taps; i++)
+      n += kernel[i];
+    *norm = n;
+  }
+}
+
 static inline void compute_downsampling_kernel(const struct dt_interpolation *itor,
                                                int *taps, int *first,
                                                float *kernel,
@@ -701,8 +969,10 @@ static inline void compute_downsampling_kernel(const struct dt_interpolation *it
                                            outoinratio, xout);
   else
 #endif
-    return compute_downsampling_kernel_plain(itor, taps, first, kernel, norm,
-                                             outoinratio, xout);
+//    return compute_downsampling_kernel_plain(itor, taps, first, kernel, norm,
+//                                             outoinratio, xout);
+    return compute_downsampling_kernel_taps(itor, taps, first, kernel, norm,
+                                            outoinratio, xout);
 }
 
 /* --------------------------------------------------------------------------
@@ -1031,7 +1301,7 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
                                       const int linestride)
 {
 #if defined(__SSE2__)
-  if(darktable.codepath.SSE2)
+  if(darktable.codepath.SSE2 || 1)
     return dt_interpolation_compute_pixel4c_sse(itor, in, out, x, y,
                                                 width, height, linestride);
   else
