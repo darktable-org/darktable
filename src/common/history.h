@@ -162,10 +162,13 @@ gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid);
 void dt_history_hash_set_mipmap(const int32_t imgid);
 
 /** write hash values to db */
-void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash);
+void dt_history_hash_write(const int32_t imgid, const dt_history_hash_values_t *const hash);
 
 /** read hash values from db */
 void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash);
+
+/** release memory for hash values */
+void dt_history_hash_free(dt_history_hash_values_t *hash);
 
 #ifdef __cplusplus
 } // extern "C"
