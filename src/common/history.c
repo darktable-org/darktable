@@ -1748,7 +1748,7 @@ gboolean dt_history_copy_parts(const int imgid)
     // we want to copy all history and let user select the parts needed
     darktable.view_manager->copy_paste.full_copy = TRUE;
 
-    // run dialog, it will insert into selops the selected moduel
+    // run dialog, it will insert into selops the selected module
 
     if(dt_gui_hist_dialog_new(&(darktable.view_manager->copy_paste), imgid, TRUE) == GTK_RESPONSE_CANCEL)
       return FALSE;
