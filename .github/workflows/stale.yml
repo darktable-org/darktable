@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/stale@v5
+    - uses: actions/stale@v7
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: 'This issue did not get any activity in the past 60 days and will be closed in 365 days if no update occurs. Please check if the master branch has fixed it and report again or close the issue.'
