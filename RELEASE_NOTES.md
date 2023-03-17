@@ -315,6 +315,9 @@ The following is a summary of the main features added to darktable
 - Re-enable loading of BigTIFF images by attempting the native
   libtiff-based reader first.
 
+- The brush path is now a bit more transparent to better see what is
+  actually painted.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
