@@ -350,50 +350,6 @@ lanczos(float width, float t)
  * the range -width < t < width so we can additionally avoid the
  * range check.  */
 
-static inline float lanczos(const float width, const float t)
-{
-  /* Compute a value for sinf(pi.t) in [-pi pi] for which the value will be
-   * correct */
-  int a = (int)t;
-  float r = t - (float)a;
-
-  // Compute the correct sign for sinf(pi.r)
-  union
-  {
-    float f;
-    uint32_t i;
-  } sign;
-  sign.i = ((a & 1) << 31) | 0x3f800000;
-
-  return (DT_LANCZOS_EPSILON
-          + width * sign.f * sinf_fast(M_PI_F * r) * sinf_fast(M_PI_F * t / width))
-         / (DT_LANCZOS_EPSILON + M_PI_F * M_PI_F * t * t);
-}
-
-static void dt_vector_sin(const dt_aligned_pixel_t arg, dt_aligned_pixel_t sine)
-{
-  static const dt_aligned_pixel_t pi = { M_PI_F, M_PI_F, M_PI_F, M_PI_F };
-  static const dt_aligned_pixel_t a
-    = { 4 / (M_PI_F * M_PI_F),
-        4 / (M_PI_F * M_PI_F),
-        4 / (M_PI_F * M_PI_F),
-        4 / (M_PI_F * M_PI_F) };
-  static const dt_aligned_pixel_t p = { 0.225f,  0.225f, 0.225f, 0.225f };
-  static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-  dt_aligned_pixel_t abs_arg;
-  for_four_channels(c)
-    abs_arg[c] = (arg[c] < 0.0f) ? -arg[c] : arg[c];
-  dt_aligned_pixel_t scaled;
-  for_four_channels(c)
-    scaled[c] = a[c] * arg[c] * (pi[c] - abs_arg[c]);
-  dt_aligned_pixel_t abs_scaled;
-  for_four_channels(c)
-    abs_scaled[c] = (scaled[c] < 0.0f) ? -scaled[c] : scaled[c];
-  for_four_channels(c)
-    sine[c] = scaled[c] * (p[c] * (abs_scaled[c] - one[c]) + one[c]);
-}
-
 static void maketaps_lanczos(float *taps,
                              size_t num_taps,
                              float  width,
