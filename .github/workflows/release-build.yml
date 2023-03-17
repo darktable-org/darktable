@@ -49,3 +49,7 @@ jobs:
         run: |      
           cd ${{ env.SRC_DIR }}
           echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
+
+      - name: Output version
+        run: |
+          echo ${{ env.VERSION }}
