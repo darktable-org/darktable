@@ -45,17 +45,19 @@ enum dt_interpolation_type
 };
 
 /** Interpolation function */
-typedef void (*dt_interpolation_taps_func)(float *taps, size_t num_taps,
-                                           float width, float first_tap,
-                                           float interval);
+typedef void (*dt_interpolation_func)(float *taps,
+                                      size_t num_taps,
+                                      float width,
+                                      float first_tap,
+                                      float interval);
 
 /** Interpolation structure */
 struct dt_interpolation
 {
   enum dt_interpolation_type id;     /**< Id such as defined by the dt_interpolation_type */
   const char *name;                  /**< internal name  */
-  int width;                         /**< Half width of its kernel support */
-  dt_interpolation_taps_func maketaps; /**< Kernel function */
+  size_t width;                      /**< Half width of its kernel support */
+  dt_interpolation_func maketaps;    /**< Kernel function */
 };
 
 /** Compute a single interpolated sample.

@@ -420,7 +420,7 @@ static void maketaps_lanczos(float *taps,
     {
     __m128 t = *((__m128*)vt);
     __m128i a = _mm_cvtps_epi32(t);
-    __m128 r = _mm_sub_ps(t, _mm_cvtepi32_ps(a));
+    __m128 r = t - _mm_cvtepi32_ps(a);
 
     // Compute the correct sign for sinf(pi.r)
     static const uint32_t fone[] __attribute__((aligned(SSE_ALIGNMENT)))
@@ -754,13 +754,16 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
       dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
       for(int j = 0; j < 2 * itor->width; j++)
       {
-        for(int c = 0; c < 3; c++) h[c] += kernelh[j] * in[j * 4 + c];
+        for_each_channel(c)
+          h[c] += kernelh[j] * in[j * 4 + c];
       }
-      for(int c = 0; c < 3; c++) pixel[c] += kernelv[i] * h[c];
+      for_each_channel(c)
+        pixel[c] += kernelv[i] * h[c];
       in += linestride;
     }
 
-    for(int c = 0; c < 3; c++) out[c] = oonorm * pixel[c];
+    for_each_channel(c)
+      out[c] = oonorm * pixel[c];
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -793,16 +796,20 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
       {
         const int clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * 4;
-        for(int c = 0; c < 3; c++) h[c] += kernelh[j] * ipixel[c];
+        for_each_channel(c)
+          h[c] += kernelh[j] * ipixel[c];
       }
-      for(int c = 0; c < 3; c++) pixel[c] += kernelv[i] * h[c];
+      for_each_channel(c)
+        pixel[c] += kernelv[i] * h[c];
     }
 
-    for(int c = 0; c < 3; c++) out[c] = oonorm * pixel[c];
+    for_each_channel(c)
+      out[c] = oonorm * pixel[c];
   }
   else
   {
-    for(int c = 0; c < 3; c++) out[c] = 0.0f;
+    for_each_channel(c)
+      out[c] = 0.0f;
   }
 }
 
@@ -821,21 +828,12 @@ static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *
   // Quite a bit of space for kernels
   float kernelh[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
   float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
-  __m128 vkernelh[2 * MAX_HALF_FILTER_WIDTH];
-  __m128 vkernelv[2 * MAX_HALF_FILTER_WIDTH];
 
   // Compute both horizontal and vertical kernels
   float normh;
   float normv;
   compute_upsampling_kernel(itor, kernelh, &normh, NULL, x);
   compute_upsampling_kernel(itor, kernelv, &normv, NULL, y);
-
-  // We will process four components a time, duplicate the information
-  for(int i = 0; i < 2 * itor->width; i++)
-  {
-    vkernelh[i] = _mm_set_ps1(kernelh[i]);
-    vkernelv[i] = _mm_set_ps1(kernelv[i]);
-  }
 
   // Precompute the inverse of the filter norm for later use
   const __m128 oonorm = _mm_set_ps1(1.f / (normh * normv));
@@ -863,13 +861,13 @@ static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *
       __m128 h = _mm_setzero_ps();
       for(int j = 0; j < 2 * itor->width; j++)
       {
-        h = _mm_add_ps(h, _mm_mul_ps(vkernelh[j], *(__m128 *)&in[j * 4]));
+        h = h + _mm_set1_ps(kernelh[j]) * *((__m128 *)&in[j * 4]);
       }
-      pixel = _mm_add_ps(pixel, _mm_mul_ps(vkernelv[i], h));
+      pixel = pixel + _mm_set1_ps(kernelv[i]) * h;
       in += linestride;
     }
 
-    *(__m128 *)out = _mm_mul_ps(pixel, oonorm);
+    *(__m128 *)out = pixel * oonorm;
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
   {
@@ -902,12 +900,12 @@ static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *
       {
         const int clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * 4;
-        h = _mm_add_ps(h, _mm_mul_ps(vkernelh[j], *(__m128 *)ipixel));
+        h = h + _mm_set1_ps(kernelh[j]) * *((__m128 *)ipixel);
       }
-      pixel = _mm_add_ps(pixel, _mm_mul_ps(vkernelv[i], h));
+      pixel = pixel + _mm_set1_ps(kernelv[i]) * h;
     }
 
-    *(__m128 *)out = _mm_mul_ps(pixel, oonorm);
+    *(__m128 *)out = pixel * oonorm;
   }
   else
   {
@@ -926,7 +924,7 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
                                       const int linestride)
 {
 #if defined(__SSE2__)
-  if(darktable.codepath.SSE2 || 1)
+  if(darktable.codepath.SSE2)
     return dt_interpolation_compute_pixel4c_sse(itor, in, out, x, y,
                                                 width, height, linestride);
   else
