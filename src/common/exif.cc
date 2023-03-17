@@ -2577,7 +2577,8 @@ static GList *read_history_v1(const std::string &xmpPacket, const char *filename
 
     current_entry->modversion = atoi(modversion_iter->child_value());
 
-    current_entry->params = dt_exif_xmp_decode(params_iter->child_value(), strlen(params_iter->child_value()),
+    current_entry->params = dt_exif_xmp_decode(params_iter->child_value(),
+                                               strlen(params_iter->child_value()),
                                                &current_entry->params_len);
 
     if(multi_name && multi_name_iter != multi_name.node().children().end())
