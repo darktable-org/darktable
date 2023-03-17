@@ -1281,7 +1281,7 @@ static GList* _get_profiles()
 
   dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   prof->type = DT_COLORSPACE_SRGB;
-  dt_utf8_strlcpy(prof->name, _("sRGB (web-safe)"), sizeof(prof->name));
+  dt_utf8_strlcpy(prof->name, _("sRGB"), sizeof(prof->name));
   prof->pos = -2;
   prof->ppos = -2;
   list = g_list_prepend(list, prof);
