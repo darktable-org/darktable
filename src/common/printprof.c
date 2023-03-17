@@ -61,7 +61,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 
   if(!hTransform)
   {
-    fprintf(stderr, "error printer profile may be corrupted\n");
+    dt_print(DT_DEBUG_ALWAYS, "error printer profile may be corrupted\n");
     return 1;
   }
 
