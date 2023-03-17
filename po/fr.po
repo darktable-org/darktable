@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-03-14 22:22+0100\n"
-"PO-Revision-Date: 2023-03-16 19:18+0100\n"
+"PO-Revision-Date: 2023-03-17 14:32+0100\n"
 "Last-Translator: Nicolas Auffray <nicolas.auffray@zaclys.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1167,7 +1167,7 @@ msgstr ""
 " • Dureté ou opacité ou taille du pinceau – elle contrôle l’attribut "
 "spécifié\n"
 " • Absolue ou relative – elle est directement utilisée comme valeur de "
-"l’attribut ou multipliée avec la valeur prédéfinie"
+"l’attribut ou multipliée avec la valeur prédéfinie."
 
 #: ../build/bin/preferences_gen.h:4559
 msgid "smoothing of brush strokes"
@@ -8482,7 +8482,7 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Taille</b> : molette, <b>dureté</b> : Maj+molette\n"
+"<b>Taille</b> : molette • <b>dureté</b> : Maj+molette\n"
 "<b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/brush.c:3223
@@ -8519,7 +8519,7 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Taille</b> : molette, <b>taille d’adoucissement</b> : Maj+molette\n"
+"<b>Taille</b> : molette • <b>taille d’adoucissement</b> : Maj+molette\n"
 "<b>opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:520 ../src/develop/masks/ellipse.c:596
@@ -8558,8 +8558,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Taille</b> : molette, <b>taille d’adoucissement</b> : Maj+molette\n"
-"<b>Rotation</b> : Ctrl+Maj+molette, <b>opacité</b> : Ctrl+molette (%d%%)."
+"<b>Taille</b> : molette • <b>taille d’adoucissement</b> : Maj+molette\n"
+"<b>Rotation</b> : Ctrl+Maj+molette • <b>opacité</b> : Ctrl+molette (%d%%)."
 
 #: ../src/develop/masks/ellipse.c:2285
 msgid "<b>rotate</b>: ctrl+drag"
@@ -8572,8 +8572,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
 "ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Mode d’adoucissement</b> : Maj+clic, <b>tourner</b> : Ctrl+déplacer\n"
-"<b>Taille</b> : molette, <b>taille d’adoucissement</b> : Maj+molette, "
+"<b>Mode d’adoucissement</b> : Maj+clic • <b>tourner</b> : Ctrl+déplacer\n"
+"<b>Taille</b> : molette • <b>taille d’adoucissement</b> : Maj+molette • "
 "<b>opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:119 ../src/develop/masks/gradient.c:163
@@ -8617,8 +8617,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Courbe</b> : molette, <b>compression</b> : Maj+molette\n"
-"<b>Orientation</b> : Clic+déplacer, <b>opacité</b> : Ctrl+molette (%d%%)"
+"<b>Courbe</b> : molette • <b>compression</b> : Maj+molette\n"
+"<b>Orientation</b> : Clic+déplacer • <b>opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1653
 #, c-format
@@ -8626,7 +8626,7 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Courbe</b> : molette, <b>compression</b> : Maj+molette\n"
+"<b>Courbe</b> : molette • <b>compression</b> : Maj+molette\n"
 "<b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1656
@@ -8714,7 +8714,7 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>Ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : Ctrl+clic\n"
+"<b>Ajouter un nœud</b> : clic • <b>ajouter un nœud dur</b> : Ctrl+clic\n"
 "<b>Annuler</b> : clic droit"
 
 #: ../src/develop/masks/path.c:3457
@@ -8722,7 +8722,7 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>Ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : Ctrl+clic\n"
+"<b>Ajouter un nœud</b> : clic • <b>ajouter un nœud dur</b> : Ctrl+clic\n"
 "<b>Terminer le chemin</b> : clic droit"
 
 #: ../src/develop/masks/path.c:3460
@@ -8730,7 +8730,7 @@ msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
-"<b>Déplacer un nœud</b> : déplacer, <b>supprimer un nœud</b> : clic droit\n"
+"<b>Déplacer un nœud</b> : déplacer • <b>supprimer un nœud</b> : clic droit\n"
 "<b>Passer au mode doux ou dur</b> : Ctrl+clic"
 
 #: ../src/develop/masks/path.c:3464
@@ -13916,14 +13916,14 @@ msgstr "La marge basse ne peut pas dépasser la marge haute"
 
 #: ../src/iop/clipping.c:3019
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
-msgstr "<b>Finaliser</b> : double clic, <b>redresser</b> : glisser droit"
+msgstr "<b>Finaliser</b> : double clic • <b>redresser</b> : glisser droit"
 
 #: ../src/iop/clipping.c:3023
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>Redimensionner</b> : glisser, <b>conserver les proportions</b> : "
+"<b>Redimensionner</b> : glisser • <b>conserver les proportions</b> : "
 "Maj+glisser\n"
 "<b>Redresser</b> : glisser droit"
 
@@ -13941,7 +13941,7 @@ msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>Appliquer</b> : clic <tt>ok</tt>, <b>modifier la symétrie</b> : clic ꝏ\n"
+"<b>Appliquer</b> : clic <tt>ok</tt> • <b>modifier la symétrie</b> : clic ꝏ\n"
 "<b>Déplacer ligne/point de contrôle</b> : glisser"
 
 #: ../src/iop/clipping.c:3083
@@ -13950,9 +13950,9 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
-"<b>Déplacer</b> : glisser, <b>déplacer verticalement</b> : Maj+glisser, "
+"<b>Déplacer</b> : glisser • <b>déplacer verticalement</b> : Maj+glisser • "
 "<b>déplacer horizontalement</b> : Ctrl+glisser\n"
-"<b>Redresser</b> : glisser droit, <b>finaliser</b> : double clic"
+"<b>Redresser</b> : glisser droit • <b>finaliser</b> : double clic"
 
 #: ../src/iop/clipping.c:3340 ../src/iop/crop.c:1795
 #, c-format
@@ -15115,14 +15115,14 @@ msgstr "Change le cadrage"
 #: ../src/iop/crop.c:1666
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>Retailler</b> : glisser, <b>Conserver les proportions</b> : Maj+glisser"
+"<b>Retailler</b> : glisser • <b>conserver les proportions</b> : Maj+glisser"
 
 #: ../src/iop/crop.c:1675
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
 msgstr ""
-"<b>Déplacer</b> : glisser, <b>déplacer verticalement</b> : Maj+glisser, "
+"<b>Déplacer</b> : glisser • <b>déplacer verticalement</b> : Maj+glisser • "
 "<b>déplacer horizontalement</b> : Ctrl+glisser"
 
 #: ../src/iop/defringe.c:71
@@ -17425,9 +17425,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Cliquer et tracer pour ajouter un point.\n"
-" • Défiler pour changer la taille,\n"
-" • Maj+défiler pour changer la force,\n"
-" • Ctrl+défiler pour changer la direction."
+"Défiler pour changer la taille • Maj+défiler pour changer la force • "
+"Ctrl+défiler pour changer la direction."
 
 #: ../src/iop/liquify.c:3549
 msgid ""
@@ -17436,9 +17435,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Cliquer pour ajouter une ligne.\n"
-" • Défiler pour changer la taille,\n"
-" • Maj+défiler pour changer la force,\n"
-" • Ctrl+défiler pour changer la direction."
+"Défiler pour changer la taille • Maj+défiler pour changer la force • "
+"Ctrl+défiler pour changer la direction."
 
 #: ../src/iop/liquify.c:3552
 msgid ""
@@ -17447,9 +17445,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Cliquer pour ajouter une courbe.\n"
-" • Défiler pour changer la taille,\n"
-" • Maj+défiler pour changer la force,\n"
-" • Ctrl+défiler pour changer la direction."
+"Défiler pour changer la taille • Maj+défiler pour changer la force • "
+"Ctrl+défiler pour changer la direction."
 
 #: ../src/iop/liquify.c:3599
 msgid ""
@@ -17507,19 +17504,18 @@ msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
 msgstr ""
-" • Ctrl+clic : ajouter un point,\n"
-" • Clic droit : supprimer un chemin,\n"
-" • Ctrl+Alt+clic : basculer entre ligne et courbe."
+"Ctrl+clic : ajouter un point • Clic droit : supprimer un chemin,\n"
+"Ctrl+Alt+clic : basculer entre ligne et courbe."
 
 #: ../src/iop/liquify.c:3629
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-" • Clic+déplacer pour positionner,\n"
-" • Clic : montrer/cacher les contrôles d’adoucissement,\n"
-" • Ctrl+clic : bascule entre automatique, parabolique, lissé et symétrique,\n"
-" • Clic droit pour supprimer."
+"Clic+déplacer pour positionner • Clic : montrer/cacher les contrôles "
+"d’adoucissement,\n"
+"Ctrl+clic : bascule entre automatique, parabolique, lissé et symétrique • "
+"Clic droit pour supprimer."
 
 #: ../src/iop/liquify.c:3632 ../src/iop/liquify.c:3633
 msgid "drag to change shape of path"
@@ -19345,8 +19341,8 @@ msgid ""
 "shift+scroll for large steps; ctrl+scroll for small steps"
 msgstr ""
 "Utiliser la molette en survolant l’image pour changer l’exposition.\n"
-" • Maj+défiler pour un changement grossier,\n"
-" • Ctrl+défiler pour un changement précis."
+"Maj+défiler pour un changement grossier • Ctrl+défiler pour un changement "
+"précis."
 
 #: ../src/iop/toneequal.c:2213
 msgid "some parameters are out-of-bounds"
@@ -19437,10 +19433,10 @@ msgid ""
 "negative values will avoid oscillations and behave more robustly\n"
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
-" • Les valeurs positives produisent des transitions plus progressives\n"
+"Les valeurs positives produisent des transitions plus progressives\n"
 "mais la courbe peut devenir oscillante avec certains paramètres.\n"
-" • Les valeurs négatives évitent les oscillations et le comportement sera "
-"plus robuste\n"
+"Les valeurs négatives évitent les oscillations et le comportement sera plus "
+"robuste\n"
 "mais les transitions seront plus brutales et le contraste local sera "
 "endommagé."
 
