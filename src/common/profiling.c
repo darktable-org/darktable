@@ -33,7 +33,7 @@ void dt_timer_stop_with_name(dt_timer_t *t)
   g_assert(t != NULL);
   g_timer_stop(t->timer);
   gulong ms = 0;
-  fprintf(stderr, "Timer %s in function %s took %.3f seconds to execute.\n", t->description, t->function,
+  dt_print(DT_DEBUG_PERF, "Timer %s in function %s took %.3f seconds to execute.\n", t->description, t->function,
           g_timer_elapsed(t->timer, &ms));
   g_timer_destroy(t->timer);
   g_free(t);
