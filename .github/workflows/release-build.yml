@@ -39,7 +39,18 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:          
-      - name: Relesase
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ vars.RELEASE_TAG }}
+          fetch-depth: 0
+          submodules: true
+          path: src
+
+      - name: Get version info
+        run: |      
+          cd ${{ env.SRC_DIR }}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
+
+      - name: Output version
         run: |
-          echo ${{ vars.RELEASE_TAG }}
-          
+          echo ${{ env.VERSION }} 
