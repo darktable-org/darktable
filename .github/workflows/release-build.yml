@@ -45,14 +45,10 @@ jobs:
           fetch-depth: 0
           submodules: true
           path: src
-      - name: Submodule update
-        run: |
-          cd src
-          git submodule update
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
+          brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
           brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
