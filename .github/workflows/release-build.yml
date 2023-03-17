@@ -45,6 +45,10 @@ jobs:
           fetch-depth: 0
           submodules: true
           path: src
+      - name: Submodule update
+        run: |
+          cd src
+          git submodule update
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
