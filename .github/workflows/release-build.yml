@@ -1,0 +1,51 @@
+name: Release Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+
+  macOS:
+    if: startsWith(${{ vars.RELEASE_TAG }}, 'release-') && (github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch')
+    name: macOS Release Build
+    runs-on: ${{ matrix.build.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        build:
+          - { os: macos-11, xcode: 13.2.1, deployment: 11.3 }
+        compiler:
+          - { compiler: XCode,   CC: cc, CXX: c++ }
+        btype: [ Release ]
+        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON]
+        target:
+          - skiptest
+        generator:
+          - Ninja
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.build.deployment }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/src/build
+      INSTALL_PREFIX: ${{ github.workspace }}/src/build/macosx
+      ECO: ${{ matrix.eco }}
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      GENERATOR: ${{ matrix.generator }}
+      TARGET: ${{ matrix.target }}
+    steps:          
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ vars.RELEASE_TAG }}
+          fetch-depth: 0
+          submodules: true
+          path: src
+
+      - name: Get version info
+        run: |      
+          cd ${{ env.SRC_DIR }}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
