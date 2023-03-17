@@ -369,84 +369,47 @@ static void maketaps_lanczos(float *taps,
 
   const int runs = (num_taps + 3) / 4;
 
-#ifdef __SSE__
-  if(darktable.codepath.SSE2)
+  for(size_t i = 0; i < runs; i++)
   {
-    for(size_t i = 0; i < runs; i++)
-    {
-    __m128 t = *((__m128*)vt);
-    __m128i a = _mm_cvtps_epi32(t);
-    __m128 r = t - _mm_cvtepi32_ps(a);
-
-    // Compute the correct sign for sinf(pi.r)
-    static const uint32_t fone[] __attribute__((aligned(SSE_ALIGNMENT)))
-      = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
-    static const uint32_t ione[] __attribute__((aligned(SSE_ALIGNMENT))) = { 1, 1, 1, 1 };
-    static const __m128 eps
+    // compute and store the values for the current four taps
+    static const dt_aligned_pixel_t eps
       = { DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON };
-    static const __m128 pi = { M_PI, M_PI, M_PI, M_PI };
-    static const __m128 pi2 = { M_PI * M_PI, M_PI * M_PI, M_PI * M_PI, M_PI * M_PI };
-
-    __m128i isign = _mm_and_si128(*(__m128i *)ione, a);
-    isign = _mm_slli_epi64(isign, 31);
-    isign = _mm_or_si128(*(__m128i *)fone, isign);
-    const __m128 fsign = _mm_castsi128_ps(isign);
-
-    __m128 num = width * fsign * sinf_fast_sse(pi * r);
-    num = num * sinf_fast_sse((pi * t) / width) + eps;
-
-    __m128 den = pi2 * t * t + eps;
-    *((__m128*)(taps+4*i)) = num / den;
+    static const dt_aligned_pixel_t pi = { M_PI_F, M_PI_F, M_PI_F, M_PI_F };
+    static const dt_aligned_pixel_t pi2
+      = { M_PI_F*M_PI_F, M_PI_F*M_PI_F, M_PI_F*M_PI_F, M_PI_F*M_PI_F };
+    dt_aligned_pixel_t r;
+    dt_aligned_pixel_t sign;
+    for_four_channels(c)
+    {
+      int a = (int)vt[c];
+      r[c] = vt[c] - (float)a;
+      sign[c] = (a & 1) ? -1.0f : 1.0f;
+    }
+    dt_aligned_pixel_t sine_arg1;
+    dt_aligned_pixel_t sine_arg2;
+    for_four_channels(c)
+    {
+      sine_arg1[c] = pi[c] * r[c];
+      sine_arg2[c] = pi[c] * vt[c] / vw[c];
+    }
+    dt_aligned_pixel_t sine1;
+    dt_aligned_pixel_t sine2;
+    dt_vector_sin(sine_arg1, sine1);
+    dt_vector_sin(sine_arg2, sine2);
+    dt_aligned_pixel_t num;
+    dt_aligned_pixel_t denom;
+    for_four_channels(c)
+    {
+      num[c] = vw[c] * sign[c] * sine1[c] * sine2[c];
+      denom[c] = (pi2[c] * vt[c] * vt[c]) + eps[c];
+    }
+    for_four_channels(c)
+    {
+      taps[4*i + c] = num[c] / denom[c];
+    }
     // prepare next iteration
     for_four_channels(c)
       vt[c] += iter[c];
-    }
-  }
-  else
-#endif
-  {
-    for(size_t i = 0; i < runs; i++)
-    {
-      // compute and store the values for the current four taps
-      static const dt_aligned_pixel_t eps
-        = { DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON, DT_LANCZOS_EPSILON };
-      static const dt_aligned_pixel_t pi = { M_PI_F, M_PI_F, M_PI_F, M_PI_F };
-      static const dt_aligned_pixel_t pi2
-        = { M_PI_F*M_PI_F, M_PI_F*M_PI_F, M_PI_F*M_PI_F, M_PI_F*M_PI_F };
-      dt_aligned_pixel_t r;
-      dt_aligned_pixel_t sign;
-      for_four_channels(c)
-      {
-        int a = (int)vt[c];
-        r[c] = vt[c] - (float)a;
-        sign[c] = (a & 1) ? -1.0f : 1.0f;
-      }
-      dt_aligned_pixel_t sine_arg1;
-      dt_aligned_pixel_t sine_arg2;
-      for_four_channels(c)
-      {
-        sine_arg1[c] = pi[c] * r[c];
-        sine_arg2[c] = pi[c] * vt[c] / vw[c];
-      }
-      dt_aligned_pixel_t sine1;
-      dt_aligned_pixel_t sine2;
-      dt_vector_sin(sine_arg1, sine1);
-      dt_vector_sin(sine_arg2, sine2);
-      dt_aligned_pixel_t num;
-      dt_aligned_pixel_t denom;
-      for_four_channels(c)
-      {
-        num[c] = vw[c] * sign[c] * sine1[c] * sine2[c];
-        denom[c] = (pi2[c] * vt[c] * vt[c]) + eps[c];
-      }
-      for_four_channels(c)
-      {
-        taps[4*i + c] = num[c] / denom[c];
-      }
-      // prepare next iteration
-      for_four_channels(c)
-        vt[c] += iter[c];
-    }
   }
 }
   
