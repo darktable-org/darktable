@@ -391,7 +391,7 @@ static float *_process_opposed(
         const size_t idx = row * roi_in->width + col;
         const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
         const float inval = fmaxf(0.0f, input[idx]);
-        if((inval >= clips[color]) && (col > 0) && (col < roi_in->width - 1) && (row > 0) && (row < roi_in->height - 1))
+        if(inval >= clips[color])
         {
           const float ref = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
           tmpout[idx] = fmaxf(inval, ref + chrominance[color]);
@@ -424,9 +424,8 @@ static float *_process_opposed(
         else
         { 
           const int color = (filters == 9u) ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
-          const gboolean inrefs = (irow > 0) && (icol > 0) && (irow < roi_in->height-1) && (icol < roi_in->width-1);
           oval = fmaxf(0.0f, input[ix]);
-          if(inrefs && (oval >= clips[color]))
+          if(oval >= clips[color])
           {
             const float ref = _calc_refavg(&input[ix], xtrans, filters, irow, icol, roi_in, TRUE);
             oval = fmaxf(oval, ref + chrominance[color]);
