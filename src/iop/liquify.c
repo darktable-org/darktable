@@ -3730,14 +3730,14 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
 
     dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint
         = btn == g->btn_point_tool
-        ? _("click and drag to add point\nscroll to change size - "
-            "shift+scroll to change strength - ctrl+scroll to change direction")
+        ? _("<b>add point</b>: click and drag\n<b>size</b>: scroll - "
+            "<b>strength</b>: shift+scroll - <b>direction</b>: ctrl+scroll")
         : btn == g->btn_line_tool
-        ? _("click to add line\nscroll to change size - "
-            "shift+scroll to change strength - ctrl+scroll to change direction")
+        ? _("<b>add line</b>: click\n<b>size</b>: scroll - "
+            "<b>strength</b>: shift+scroll - <b>direction</b>: ctrl+scroll")
         : btn == g->btn_curve_tool
-        ? _("click to add curve\nscroll to change size - "
-            "shift+scroll to change strength - ctrl+scroll to change direction")
+        ? _("<b>add curve</b>: click\n<b>size</b>: scroll - "
+            "<b>strength</b>: shift+scroll - <b>direction</b>: ctrl+scroll")
         : "";
 
     //  start the preview mode to show the shape that will be created
@@ -3785,7 +3785,9 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));
+  gtk_widget_set_tooltip_text
+    (hbox,
+     _("use a tool to add warps\n<b>remove a warp</b>: right-click"));
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   GtkWidget *label = dt_ui_label_new(_("warps|nodes count:"));
@@ -3820,18 +3822,26 @@ void gui_init(dt_iop_module_t *self)
                                          _liquify_cairo_paint_point_tool, hbox));
 
   dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint     = "";
-  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click: add node - right click: remove path\n"
-                                                              "ctrl+alt+click: toggle line/curve");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click: show/hide feathering controls\n"
-                                                              "ctrl+click: autosmooth, cusp, smooth, symmetrical"
-                                                              " - right click to remove");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     = _("drag to change shape of path");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     = _("drag to change shape of path");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_RADIUSPOINT].hint    = _("drag to adjust warp radius");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint = _("drag to adjust hardness (center)");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint = _("drag to adjust hardness (feather)");
-  dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\n"
-                                                              "ctrl+click: linear, grow, and shrink");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           =
+    _("<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
+      "<b>toggle line/curve</b>: ctrl+alt+click");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    =
+    _("<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
+      "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click"
+      " - <b>remove</b>: right click");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     =
+    _("<b>shape of path</b>: drag");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     =
+    _("<b>shape of path</b>: drag");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_RADIUSPOINT].hint    =
+    _("<b>radius</b>: drag");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint =
+    _("<b>hardness (center)</b>: drag");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint =
+    _("<b>hardness (feather)</b>: drag");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  =
+    _("<b>strength</b>: drag\n"
+      "<b>linear, grow, and shrink</b>: ctrl+click");
 }
 
 void gui_reset(dt_iop_module_t *self)
