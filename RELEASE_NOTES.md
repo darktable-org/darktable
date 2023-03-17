@@ -424,13 +424,17 @@ The following is a summary of the main features added to darktable
 
 ## Lua
 
+### API Version
+
+- API version is now 9.1.0
+
 ### Add action support for Lua
 
 - The lua call to dt.gui.action has become more flexible, with most
   parameters optional, so you can read the focused status of a module
   doing just dt.gui.action("iop/filmicrgb", "focus").
 
-- tooltips show these compacter lua commands in mapping mode (only
+- tooltips show the compact lua commands in mapping mode (only
   adding the last parameter, instance, if the module supports
   multi-instance) and have been added to presets and styles menus as
   well.
@@ -463,10 +467,16 @@ The following is a summary of the main features added to darktable
 
 ### Other Lua changes
 
-- Add image orientation retrieval support.
+- Added aspect_ratio field to dt_lua_image_t for image orientation
+  retrieval support.
 
 - Two new properties have been added to get the flags (category,
   private) and the synonyms from a tag.
+
+- Moved `pixelpipe-processing-complete` event from the end of the 
+  image pixelpipe to the end of the preview pixelpipe to catch
+  completion of events that only update the preview such as 
+  spot exposure measurement in the exposure module.
 
 ## Notes
 
