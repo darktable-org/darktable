@@ -2577,7 +2577,8 @@ static GList *read_history_v1(const std::string &xmpPacket, const char *filename
 
     current_entry->modversion = atoi(modversion_iter->child_value());
 
-    current_entry->params = dt_exif_xmp_decode(params_iter->child_value(), strlen(params_iter->child_value()),
+    current_entry->params = dt_exif_xmp_decode(params_iter->child_value(),
+                                               strlen(params_iter->child_value()),
                                                &current_entry->params_len);
 
     if(multi_name && multi_name_iter != multi_name.node().children().end())
@@ -2600,9 +2601,10 @@ static GList *read_history_v1(const std::string &xmpPacket, const char *filename
 
     if(blendop_params && blendop_params_iter != blendop_params.node().children().end())
     {
-      current_entry->blendop_params = dt_exif_xmp_decode(blendop_params_iter->child_value(),
-                                                         strlen(blendop_params_iter->child_value()),
-                                                         &current_entry->blendop_params_len);
+      current_entry->blendop_params =
+        dt_exif_xmp_decode(blendop_params_iter->child_value(),
+                           strlen(blendop_params_iter->child_value()),
+                           &current_entry->blendop_params_len);
       blendop_params_iter++;
     }
 
@@ -2629,7 +2631,8 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
     // XmpText: Xmp.darktable.history[1]/darktable:settings[1]/darktable:name = width
     // XmpText: Xmp.darktable.history[1]/darktable:settings[1]/darktable:value = 23
 
-    char *key = g_strdup(history->key().c_str());
+    std::string key_item = history->key();
+    char *key = g_strdup(key_item.c_str());
     char *key_iter = key;
     if(g_str_has_prefix(key, "Xmp.darktable.history["))
     {
@@ -2677,7 +2680,8 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       if(g_str_has_prefix(key_iter, "darktable:operation"))
       {
         current_entry->have_operation = TRUE;
-        current_entry->operation = g_strdup(history->value().toString().c_str());
+        std::string value_item = history->value().toString();
+        current_entry->operation = g_strdup(value_item.c_str());
       }
       else if(g_str_has_prefix(key_iter, "darktable:num"))
       {
@@ -2695,7 +2699,9 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       else if(g_str_has_prefix(key_iter, "darktable:params"))
       {
         current_entry->have_params = TRUE;
-        current_entry->params = dt_exif_xmp_decode(history->value().toString().c_str(), history->value().size(),
+        std::string value_item = history->value().toString();
+        current_entry->params = dt_exif_xmp_decode(value_item.c_str(),
+                                                   history->value().size(),
                                                    &current_entry->params_len);
       }
       else if(g_str_has_prefix(key_iter, "darktable:multi_name_hand_edited"))
@@ -2704,7 +2710,8 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       }
       else if(g_str_has_prefix(key_iter, "darktable:multi_name"))
       {
-        current_entry->multi_name = g_strdup(history->value().toString().c_str());
+        std::string value_item = history->value().toString();
+        current_entry->multi_name = g_strdup(value_item.c_str());
       }
       else if(g_str_has_prefix(key_iter, "darktable:multi_priority"))
       {
@@ -2713,7 +2720,8 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       else if(g_str_has_prefix(key_iter, "darktable:iop_order"))
       {
         // we ensure reading the iop_order as a high precision float
-        string str = g_strdup(history->value().toString().c_str());
+        std::string value_item = history->value().toString();
+        string str = g_strdup(value_item.c_str());
         static const std::locale& c_locale = std::locale("C");
         std::istringstream istring(str);
         istring.imbue(c_locale);
@@ -2725,7 +2733,8 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       }
       else if(g_str_has_prefix(key_iter, "darktable:blendop_params"))
       {
-        current_entry->blendop_params = dt_exif_xmp_decode(history->value().toString().c_str(),
+        std::string value_item = history->value().toString();
+        current_entry->blendop_params = dt_exif_xmp_decode(value_item.c_str(),
                                                            history->value().size(),
                                                            &current_entry->blendop_params_len);
       }
@@ -2841,7 +2850,8 @@ static GList *read_masks_v3(Exiv2::XmpData &xmpData, const char *filename, const
     // XmpText: Xmp.darktable.history[1]/darktable:settings[1]/darktable:name = width
     // XmpText: Xmp.darktable.history[1]/darktable:settings[1]/darktable:value = 23
 
-    char *key = g_strdup(history->key().c_str());
+    std::string key_item = history->key();
+    char *key = g_strdup(key_item.c_str());
     char *key_iter = key;
     if(g_str_has_prefix(key, "Xmp.darktable.masks_history["))
     {
@@ -2898,7 +2908,8 @@ static GList *read_masks_v3(Exiv2::XmpData &xmpData, const char *filename, const
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_name"))
       {
-        current_entry->mask_name = g_strdup(history->value().toString().c_str());
+        std::string value_item = history->value().toString();
+        current_entry->mask_name = g_strdup(value_item.c_str());
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_version"))
       {
@@ -2906,7 +2917,10 @@ static GList *read_masks_v3(Exiv2::XmpData &xmpData, const char *filename, const
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_points"))
       {
-        current_entry->mask_points = dt_exif_xmp_decode(history->value().toString().c_str(), history->value().size(), &current_entry->mask_points_len);
+        std::string value_item = history->value().toString();
+        current_entry->mask_points = dt_exif_xmp_decode(value_item.c_str(),
+                                                        history->value().size(),
+                                                        &current_entry->mask_points_len);
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_nb"))
       {
@@ -2914,7 +2928,10 @@ static GList *read_masks_v3(Exiv2::XmpData &xmpData, const char *filename, const
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_src"))
       {
-        current_entry->mask_src = dt_exif_xmp_decode(history->value().toString().c_str(), history->value().size(), &current_entry->mask_src_len);
+        std::string value_item = history->value().toString();
+        current_entry->mask_src = dt_exif_xmp_decode(value_item.c_str(),
+                                                     history->value().size(),
+                                                     &current_entry->mask_src_len);
       }
 
     }
