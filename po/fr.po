@@ -8482,7 +8482,7 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Taille</b> : molette • <b>dureté</b> : Maj+molette\n"
+"<b>Taille</b> : molette • <b>Dureté</b> : Maj+molette\n"
 "<b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/brush.c:3223
@@ -8519,8 +8519,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Taille</b> : molette • <b>taille d’adoucissement</b> : Maj+molette\n"
-"<b>opacité</b> : Ctrl+molette (%d%%)"
+"<b>Taille</b> : molette • <b>Taille d’adoucissement</b> : Maj+molette\n"
+"<b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:520 ../src/develop/masks/ellipse.c:596
 #, c-format
@@ -8558,8 +8558,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Taille</b> : molette • <b>taille d’adoucissement</b> : Maj+molette\n"
-"<b>Rotation</b> : Ctrl+Maj+molette • <b>opacité</b> : Ctrl+molette (%d%%)."
+"<b>Taille</b> : molette • <b>Taille d’adoucissement</b> : Maj+molette\n"
+"<b>Rotation</b> : Ctrl+Maj+molette • <b>Opacité</b> : Ctrl+molette (%d%%)."
 
 #: ../src/develop/masks/ellipse.c:2285
 msgid "<b>rotate</b>: ctrl+drag"
@@ -8572,9 +8572,9 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
 "ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Mode d’adoucissement</b> : Maj+clic • <b>tourner</b> : Ctrl+déplacer\n"
-"<b>Taille</b> : molette • <b>taille d’adoucissement</b> : Maj+molette • "
-"<b>opacité</b> : Ctrl+molette (%d%%)"
+"<b>Mode d’adoucissement</b> : Maj+clic • <b>Tourner</b> : Ctrl+déplacer\n"
+"<b>Taille</b> : molette • <b>Taille d’adoucissement</b> : Maj+molette • "
+"<b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:119 ../src/develop/masks/gradient.c:163
 #, c-format
@@ -8617,8 +8617,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Courbe</b> : molette • <b>compression</b> : Maj+molette\n"
-"<b>Orientation</b> : Clic+déplacer • <b>opacité</b> : Ctrl+molette (%d%%)"
+"<b>Courbe</b> : molette • <b>Compression</b> : Maj+molette\n"
+"<b>Orientation</b> : Clic+déplacer • <b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1653
 #, c-format
@@ -8626,7 +8626,7 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Courbe</b> : molette • <b>compression</b> : Maj+molette\n"
+"<b>Courbe</b> : molette • <b>Compression</b> : Maj+molette\n"
 "<b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1656
@@ -8714,7 +8714,7 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>Ajouter un nœud</b> : clic • <b>ajouter un nœud dur</b> : Ctrl+clic\n"
+"<b>Ajouter un nœud</b> : clic • <b>Ajouter un nœud dur</b> : Ctrl+clic\n"
 "<b>Annuler</b> : clic droit"
 
 #: ../src/develop/masks/path.c:3457
@@ -8722,7 +8722,7 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>Ajouter un nœud</b> : clic • <b>ajouter un nœud dur</b> : Ctrl+clic\n"
+"<b>Ajouter un nœud</b> : clic • <b>Ajouter un nœud dur</b> : Ctrl+clic\n"
 "<b>Terminer le chemin</b> : clic droit"
 
 #: ../src/develop/masks/path.c:3460
@@ -8730,7 +8730,7 @@ msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
-"<b>Déplacer un nœud</b> : déplacer • <b>supprimer un nœud</b> : clic droit\n"
+"<b>Déplacer un nœud</b> : déplacer • <b>Supprimer un nœud</b> : clic droit\n"
 "<b>Passer au mode doux ou dur</b> : Ctrl+clic"
 
 #: ../src/develop/masks/path.c:3464
@@ -13916,14 +13916,14 @@ msgstr "La marge basse ne peut pas dépasser la marge haute"
 
 #: ../src/iop/clipping.c:3019
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
-msgstr "<b>Finaliser</b> : double clic • <b>redresser</b> : glisser droit"
+msgstr "<b>Finaliser</b> : double clic • <b>Redresser</b> : glisser droit"
 
 #: ../src/iop/clipping.c:3023
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>Redimensionner</b> : glisser • <b>conserver les proportions</b> : "
+"<b>Redimensionner</b> : glisser • <b>Conserver les proportions</b> : "
 "Maj+glisser\n"
 "<b>Redresser</b> : glisser droit"
 
@@ -13934,14 +13934,14 @@ msgstr "<b>Déplacer le point de contrôle</b> : glisser"
 #: ../src/iop/clipping.c:3071
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"
 msgstr ""
-"<b>Déplacer les lignes</b> : glisser, <b>modifier la symétrie</b> : clic ꝏ"
+"<b>Déplacer les lignes</b> : glisser • <b>Modifier la symétrie</b> : clic ꝏ"
 
 #: ../src/iop/clipping.c:3076
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>Appliquer</b> : clic <tt>ok</tt> • <b>modifier la symétrie</b> : clic ꝏ\n"
+"<b>Appliquer</b> : clic <tt>ok</tt> • <b>Modifier la symétrie</b> : clic ꝏ\n"
 "<b>Déplacer ligne/point de contrôle</b> : glisser"
 
 #: ../src/iop/clipping.c:3083
@@ -13950,9 +13950,9 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
-"<b>Déplacer</b> : glisser • <b>déplacer verticalement</b> : Maj+glisser • "
+"<b>Déplacer</b> : glisser • <b>Déplacer verticalement</b> : Maj+glisser • "
 "<b>déplacer horizontalement</b> : Ctrl+glisser\n"
-"<b>Redresser</b> : glisser droit • <b>finaliser</b> : double clic"
+"<b>Redresser</b> : glisser droit • <b>Finaliser</b> : double clic"
 
 #: ../src/iop/clipping.c:3340 ../src/iop/crop.c:1795
 #, c-format
@@ -15115,15 +15115,15 @@ msgstr "Change le cadrage"
 #: ../src/iop/crop.c:1666
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>Retailler</b> : glisser • <b>conserver les proportions</b> : Maj+glisser"
+"<b>Retailler</b> : glisser • <b>Conserver les proportions</b> : Maj+glisser"
 
 #: ../src/iop/crop.c:1675
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
 msgstr ""
-"<b>Déplacer</b> : glisser • <b>déplacer verticalement</b> : Maj+glisser • "
-"<b>déplacer horizontalement</b> : Ctrl+glisser"
+"<b>Déplacer</b> : glisser • <b>Déplacer verticalement</b> : Maj+glisser • "
+"<b>Déplacer horizontalement</b> : Ctrl+glisser"
 
 #: ../src/iop/defringe.c:71
 msgid "defringe"
@@ -20806,8 +20806,7 @@ msgstr " • Clic ou clic+déplacer pour sélectionner une ou plusieurs valeurs"
 # commence par ' • ' car fait partie de la liste ci-dessus
 #: ../src/libs/filtering.c:704
 msgid "right-click opens a menu to select the available values"
-msgstr ""
-" • Clic droit pour ouvrir un menu afin de sélectionner une valeur disponible"
+msgstr " • Clic droit pour ouvrir un menu afin de sélectionner une valeur disponible"
 
 #: ../src/libs/filtering.c:801
 #, c-format
