@@ -1423,13 +1423,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           }
         }
 
-      if((sel_illu > -1) && (darktable.unmuted & DT_DEBUG_IMAGEIO))
-      {
-        fprintf(stderr, "[exif] `%s` dng illuminant %i (%iK) selected from ", img->filename, illu[sel_illu], sel_temp);
-        for(int i = 0; i < 3; i++)
-          fprintf(stderr," -- [%i] %i (%iK)", i + 1, illu[i], _illu_to_temp(illu[i]));
-        fprintf(stderr, "\n");
-      }
+      if(sel_illu > -1)
+        dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` dng illuminant %i (%iK) selected from  [1] %i (%iK), [2] %i (%iK), [3] %i (%iK)\n",
+          img->filename, illu[sel_illu], sel_temp,
+          illu[0], _illu_to_temp(illu[0]),
+          illu[1], _illu_to_temp(illu[1]),
+          illu[2], _illu_to_temp(illu[2])); 
 
       // Take the found CalibrationIlluminant / ColorMatrix pair.
       // D65: just copy. Otherwise multiply by the specific correction matrix.

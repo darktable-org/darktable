@@ -437,7 +437,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
     if(fd == -1)
     {
       dt_control_log(_("failed to create temporary file for printing options"));
-      fprintf(stderr, "failed to create temporary pdf for printing options\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed to create temporary pdf for printing options\n");
       return;
     }
     close(fd);
