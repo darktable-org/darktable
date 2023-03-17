@@ -522,14 +522,11 @@ kernel void highlights_opposed(
   {
     val = fmax(0.0f, read_imagef(in, samplerA, (int2)(icol, irow)).x);
 
-    if((icol > 0) && (icol < iwidth-1) && (irow > 0) && (irow < iheight-1))
+    const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+    if(val >= clips[color])
     {
-      const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
-      if(val >= clips[color])
-      {
-        const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth);
-        val = fmax(val, ref + chroma[color]);
-      }
+      const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth);
+      val = fmax(val, ref + chroma[color]);
     }
   }
   write_imagef (out, (int2)(x, y), val);
