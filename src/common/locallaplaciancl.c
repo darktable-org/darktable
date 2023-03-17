@@ -116,7 +116,7 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
   return g;
 
 error:
-  fprintf(stderr, "[local laplacian cl] could not allocate temporary buffers\n");
+  dt_print(DT_DEBUG_OPENCL, "[local laplacian cl] could not allocate temporary buffers\n");
   dt_local_laplacian_free_cl(g);
   return NULL;
 }
