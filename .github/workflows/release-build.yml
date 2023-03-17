@@ -12,6 +12,7 @@ jobs:
     if: startsWith(${{ vars.RELEASE_TAG }}, 'release-') && (github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch')
     name: macOS Release Build
     runs-on: ${{ matrix.build.os }}
+    environment: Release Build
     strategy:
       fail-fast: true
       matrix:
@@ -41,3 +42,4 @@ jobs:
       - name: Relesase
         run: |
           echo ${{ vars.RELEASE_TAG }}
+          
