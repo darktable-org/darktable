@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1359,7 +1359,7 @@ dt_colorspaces_t *dt_colorspaces_init()
   // TODO: what about display?
   res->profiles
       = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SRGB, dt_colorspaces_create_srgb_profile_v4(),
-                                                     _("sRGB (e.g. JPG)"), ++in_pos, -1, -1, -1, -1, -1));
+                                                     _("sRGB"), ++in_pos, -1, -1, -1, -1, -1));
 
   res->profiles
       = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SRGB, dt_colorspaces_create_srgb_profile(),
