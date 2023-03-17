@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ static const char *ocllib[] = { "libOpenCL", "libOpenCL.so", "libOpenCL.so.1", N
 void dt_dlopencl_noop(void)
 {
   /* we should normally never get here */
-  fprintf(stderr, "dt_dlopencl internal error: unsupported function call\n");
+  dt_print(DT_DEBUG_OPENCL, "dt_dlopencl internal error: unsupported function call\n");
   raise(SIGABRT);
 }
 
