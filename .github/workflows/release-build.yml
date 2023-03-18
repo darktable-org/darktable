@@ -48,10 +48,10 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
           brew tap Homebrew/bundle
           cd src/.ci
-          export HOMEBREW_NO_INSTALL_UPGRADE=1
+          # export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
           # handle keg-only libs
           brew link --force libomp
