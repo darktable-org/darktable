@@ -7,6 +7,7 @@ permissions:
   contents: read
 
 jobs:
+
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: macOS Release Build
@@ -40,52 +41,10 @@ jobs:
     steps:          
       - uses: actions/checkout@v3
         with:
-          ref: ${{ vars.RELEASE_TAG }}
+          ref: refs/tags/${{ vars.RELEASE_TAG }} master
           submodules: true
           path: src
-      - name: Install Base Dependencies
+      - name: git status
         run: |
-          brew update > /dev/null || true
-          brew tap Homebrew/bundle
-          cd src/.ci
-          export HOMEBREW_NO_INSTALL_UPGRADE=1
-          brew bundle --verbose || true
-          # handle keg-only libs
-          brew link --force libomp
-          brew link --force libsoup@2
-      - name: Build and Install
-          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
-        run: |
-          cmake -E make_directory "${BUILD_DIR}";
-          cmake -E make_directory "${INSTALL_PREFIX}";
-          ./src/.ci/ci-script.sh;
-      - name: Check if it runs
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
-      - name: Build macOS package
-        run: |
-          ./src/packaging/macosx/3_make_hb_darktable_package.sh
-      - name: Create DMG file
-        run: |
-          ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
-      - name: Get version info
-        run: |      
-          cd ${{ env.SRC_DIR }}
-          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
-      - name: Package upload
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: darktable-${{ env.VERSION }}.dmg
-          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          retention-days: 2
+          cd src
+          git status
