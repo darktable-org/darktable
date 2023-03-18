@@ -202,9 +202,15 @@ static inline float _calc_refavg(const float *in,
   const int color = (filters == 9u) ? FCxtrans(row, col, roi, xtrans) : FC(row, col, filters);
   dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
-  for(int dy = -1; dy < 2; dy++)
+
+  const int dymin = (row > 0) ? -1 : 0;
+  const int dxmin = (col > 0) ? -1 : 0;
+  const int dymax = (row < roi->height -1) ? 2 : 1;
+  const int dxmax = (col < roi->width -1) ? 2 : 1;
+
+  for(int dy = dymin; dy < dymax; dy++)
   {
-    for(int dx = -1; dx < 2; dx++)
+    for(int dx = dxmin; dx < dxmax; dx++)
     {
       const float val = fmaxf(0.0f, in[(ssize_t)dy * roi->width + dx]);
       const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, roi, xtrans) : FC(row + dy, col + dx, filters);
