@@ -41,7 +41,7 @@ jobs:
     steps:          
       - uses: actions/checkout@v3
         with:
-          ref: refs/tags/${{ vars.RELEASE_TAG }} master
+          ref: refs/tags/${{ vars.RELEASE_TAG }} -b ${{ vars.RELEASE_TAG }}
           submodules: true
           path: src
       - name: git status
