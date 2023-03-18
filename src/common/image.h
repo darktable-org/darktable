@@ -513,8 +513,8 @@ gboolean dt_image_safe_remove(const int32_t imgid);
 /* try to sync .xmp for all local copies */
 void dt_image_local_copy_synch(void);
 // xmp functions:
-int dt_image_write_sidecar_file(const int32_t imgid);
-void dt_image_synch_xmp(const int selected);
+gboolean dt_image_write_sidecar_file(const int32_t imgid);
+void dt_image_synch_xmp(const int32_t selected);
 void dt_image_synch_xmps(const GList *img);
 void dt_image_synch_all_xmp(const gchar *pathname);
 /** get the mode xmp sidecars are written */

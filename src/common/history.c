@@ -1706,7 +1706,7 @@ void dt_history_hash_set_mipmap(const int32_t imgid)
 
 dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
 {
-  dt_history_hash_t status = 0;
+  dt_history_hash_t status = DT_HISTORY_HASH_NONE;
   if(imgid == -1) return status;
   sqlite3_stmt *stmt;
   // clang-format off
