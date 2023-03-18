@@ -49,5 +49,5 @@ jobs:
         run: |
           cd src
           git clean -xdf
-          git restore -SW ${{ vars.RELEASE_TAG }}
+          git restore --source ${{ vars.RELEASE_TAG }} -SW
           git status
