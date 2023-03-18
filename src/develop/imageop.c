@@ -2604,6 +2604,16 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   }
 }
 
+static void _iop_tooltip_reposition(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
+{
+  GdkWindow *window = gtk_widget_get_window(gtk_widget_get_toplevel(widget));
+  if(!window) return;
+
+  gtk_widget_get_allocation(user_data, allocation);
+  gtk_widget_translate_coordinates(user_data, gtk_widget_get_toplevel(user_data), 0, 0, &allocation->x, &allocation->y);
+  gdk_window_move_to_rect(window, allocation, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH, GDK_ANCHOR_FLIP_Y | GDK_ANCHOR_SLIDE_X, 0, 0);
+}
+
 gboolean _iop_tooltip_callback(GtkWidget *widget,
                                gint x,
                                gint y,
@@ -2660,6 +2670,8 @@ gboolean _iop_tooltip_callback(GtkWidget *widget,
   }
 
   gtk_box_pack_start(GTK_BOX(vbox), grid, FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(vbox), "size-allocate", G_CALLBACK(_iop_tooltip_reposition), module->header);
 
   return dt_shortcut_tooltip_callback(widget, x, y, keyboard_mode, tooltip, vbox);
 }
@@ -2733,7 +2745,11 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   if((module->flags() & IOP_FLAGS_DEPRECATED) && module->deprecated_msg())
     gtk_widget_set_tooltip_text(lab, module->deprecated_msg());
   else
+  {
     g_signal_connect(lab, "query-tooltip", G_CALLBACK(_iop_tooltip_callback), module);
+    g_signal_connect(header, "query-tooltip", G_CALLBACK(_iop_tooltip_callback), module);
+    gtk_widget_set_has_tooltip(header, TRUE);
+  }
 
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_LABEL]), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
