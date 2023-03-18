@@ -947,15 +947,15 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // commit image ops to db
   dt_dev_write_history(dev);
 
-  const int32_t devid = dev->image_storage.id;
+  const int32_t new_imgid = dev->image_storage.id;
 
   // be sure light table will update the thumbnail
-  if(!dt_history_hash_is_mipmap_synced(devid))
+  if(!dt_history_hash_is_mipmap_synced(new_imgid))
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, devid);
-    dt_image_update_final_size(devid);
-    dt_image_synch_xmp(devid);
-    dt_history_hash_set_mipmap(devid);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, new_imgid);
+    dt_image_update_final_size(new_imgid);
+    dt_image_synch_xmp(new_imgid);
+    dt_history_hash_set_mipmap(new_imgid);
 #ifdef USE_LUA
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
@@ -3236,7 +3236,7 @@ void leave(dt_view_t *self)
   // commit image ops to db
   dt_dev_write_history(dev);
 
-  const int32_t devid = dev->image_storage.id;
+  const int32_t imgid = dev->image_storage.id;
 
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
@@ -3246,16 +3246,16 @@ void leave(dt_view_t *self)
   }
   else
   {
-    dt_image_set_aspect_ratio(devid, FALSE);
+    dt_image_set_aspect_ratio(imgid, FALSE);
   }
 
   // be sure light table will regenerate the thumbnail:
-  if(!dt_history_hash_is_mipmap_synced(devid))
+  if(!dt_history_hash_is_mipmap_synced(imgid))
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, devid);
-    dt_image_update_final_size(devid);
-    dt_image_synch_xmp(devid);
-    dt_history_hash_set_mipmap(devid);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+    dt_image_update_final_size(imgid);
+    dt_image_synch_xmp(imgid);
+    dt_history_hash_set_mipmap(imgid);
 #ifdef USE_LUA
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
