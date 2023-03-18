@@ -45,11 +45,11 @@ enum dt_interpolation_type
 };
 
 /** Interpolation function */
-typedef void (*dt_interpolation_func)(float *taps,
-                                      size_t num_taps,
-                                      float width,
-                                      float first_tap,
-                                      float interval);
+typedef float (*dt_interpolation_func)(float *taps,
+                                       size_t num_taps,
+                                       float width,
+                                       float first_tap,
+                                       float interval);
 
 /** Interpolation structure */
 struct dt_interpolation

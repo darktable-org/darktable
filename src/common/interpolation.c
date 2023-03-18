@@ -208,11 +208,11 @@ static inline float bilinear(const float width, float t)
   return r;
 }
 
-static void maketaps_bilinear(float *taps,
-                              size_t num_taps,
-                              float  width,
-                              float first_tap,
-                              float interval)
+static float maketaps_bilinear(float *taps,
+                               size_t num_taps,
+                               float  width,
+                               float first_tap,
+                               float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   dt_aligned_pixel_t iter;
@@ -233,17 +233,18 @@ static void maketaps_bilinear(float *taps,
     for_four_channels(c)
       vt[c] += iter[c];
   }
+  return 1.0f; //kernel norm is 1.0f by construction
 }
   
 /* --------------------------------------------------------------------------
  * Bicubic interpolation
  * ------------------------------------------------------------------------*/
 
-static void maketaps_bicubic(float *taps,
-                             size_t num_taps,
-                             float  width,
-                             float first_tap,
-                             float interval)
+static float maketaps_bicubic(float *taps,
+                              size_t num_taps,
+                              float  width,
+                              float first_tap,
+                              float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   static const dt_aligned_pixel_t half = { .5f, .5f, .5f, .5f };
@@ -303,6 +304,7 @@ static void maketaps_bicubic(float *taps,
     for_four_channels(c)
       vt[c] += iter[c];
   }
+  return 1.0f; //kernel norm is 1.0f by construction
 }
   
 /* --------------------------------------------------------------------------
@@ -350,11 +352,11 @@ lanczos(float width, float t)
  * the range -width < t < width so we can additionally avoid the
  * range check.  */
 
-static void maketaps_lanczos(float *taps,
-                             size_t num_taps,
-                             float  width,
-                             float first_tap,
-                             float interval)
+static float maketaps_lanczos(float *taps,
+                              size_t num_taps,
+                              float width,
+                              float first_tap,
+                              float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   dt_aligned_pixel_t iter;
@@ -400,7 +402,7 @@ static void maketaps_lanczos(float *taps,
     dt_aligned_pixel_t denom;
     for_four_channels(c)
     {
-      num[c] = vw[c] * sign[c] * sine1[c] * sine2[c];
+      num[c] = (vw[c] * sign[c] * sine1[c] * sine2[c]) + eps[c];
       denom[c] = (pi2[c] * vt[c] * vt[c]) + eps[c];
     }
     for_four_channels(c)
@@ -411,6 +413,15 @@ static void maketaps_lanczos(float *taps,
     for_four_channels(c)
       vt[c] += iter[c];
   }
+  // we need to compute the norm, even though it is very close to 1.0
+  // and causes an increase of maxDE on the integration tests only
+  // from 1.1 to 1.7, because not doing so generates visible moire
+  // banding in smooth gradients.  Unfortunately, this costs an extra
+  // 15-20% runtime....
+  float norm = 0.0f;
+  for(size_t i = 0; i < num_taps; i++)
+    norm += taps[i];
+  return norm;
 }
   
 #undef DT_LANCZOS_EPSILON
@@ -451,12 +462,16 @@ static const struct dt_interpolation dt_interpolator[] = {
  * Kernel utility methods
  * ------------------------------------------------------------------------*/
 
-static inline void compute_upsampling_kernel(const struct dt_interpolation *itor,
-                                             float *kernel,
-                                             float *norm,
-                                             int *first,
-                                             float t)
+static inline float compute_upsampling_kernel(const struct dt_interpolation *itor,
+                                              float *kernel,
+                                              int *first,
+                                              float t)
 {
+  // find first pixel contributing to the filter's kernel.  We need
+  // floorf() because a simple cast to int truncates toward zero,
+  // yielding an incorrect result for the slightly-negative positions
+  // that can occur at the top and left edges when doing perspective
+  // correction
   int f = (int)floorf(t) - itor->width + 1;
   if(first)
   {
@@ -467,10 +482,8 @@ static inline void compute_upsampling_kernel(const struct dt_interpolation *itor
    * filtered sample position */
   t = t - (float)f;
 
-  // compute the taps
-  itor->maketaps(kernel, 2*itor->width, itor->width, t, -1.0f);
-  if (norm)
-    *norm = 1.0f;  // all existing kernels have norm 1.0 when upsampling unless there's a bug
+  // compute the taps and return the kernel norm
+  return itor->maketaps(kernel, 2*itor->width, itor->width, t, -1.0f);
 }
 
 
@@ -540,10 +553,8 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
   float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
 
   // Compute both horizontal and vertical kernels
-  float normh;
-  float normv;
-  compute_upsampling_kernel(itor, kernelh, &normh, NULL, x);
-  compute_upsampling_kernel(itor, kernelv, &normv, NULL, y);
+  float normh = compute_upsampling_kernel(itor, kernelh, NULL, x);
+  float normv = compute_upsampling_kernel(itor, kernelv, NULL, y);
 
   int ix = (int)x;
   int iy = (int)y;
@@ -642,10 +653,8 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
   float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
 
   // Compute both horizontal and vertical kernels
-  float normh;
-  float normv;
-  compute_upsampling_kernel(itor, kernelh, &normh, NULL, x);
-  compute_upsampling_kernel(itor, kernelv, &normv, NULL, y);
+  float normh = compute_upsampling_kernel(itor, kernelh, NULL, x);
+  float normv = compute_upsampling_kernel(itor, kernelv, NULL, y);
 
   // Precompute the inverse of the filter norm for later use
   const float oonorm = (1.f / (normh * normv));
@@ -749,10 +758,8 @@ static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *
   float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
 
   // Compute both horizontal and vertical kernels
-  float normh;
-  float normv;
-  compute_upsampling_kernel(itor, kernelh, &normh, NULL, x);
-  compute_upsampling_kernel(itor, kernelv, &normv, NULL, y);
+  float normh = compute_upsampling_kernel(itor, kernelh, NULL, x);
+  float normv = compute_upsampling_kernel(itor, kernelv, NULL, y);
 
   // Precompute the inverse of the filter norm for later use
   const __m128 oonorm = _mm_set_ps1(1.f / (normh * normv));
@@ -868,10 +875,8 @@ static void dt_interpolation_compute_pixel1c_plain(const struct dt_interpolation
   float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
 
   // Compute both horizontal and vertical kernels
-  float normh;
-  float normv;
-  compute_upsampling_kernel(itor, kernelh, &normh, NULL, x);
-  compute_upsampling_kernel(itor, kernelv, &normv, NULL, y);
+  float normh = compute_upsampling_kernel(itor, kernelh, NULL, x);
+  float normv = compute_upsampling_kernel(itor, kernelv, NULL, y);
 
   // Precompute the inverse of the filter norm for later use
   const float oonorm = (1.f / (normh * normv));
@@ -1171,7 +1176,7 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor,
 
       // Compute the filter kernel at that position
       int first;
-      compute_upsampling_kernel(itor, scratchpad, NULL, &first, fx);
+      (void)compute_upsampling_kernel(itor, scratchpad, &first, fx);
 
       /* Check lower and higher bound pixel index and skip as many pixels as
        * necessary to fall into range */
