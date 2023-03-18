@@ -506,7 +506,7 @@ The following is a summary of the main features added to darktable
   
 - Beginning with this release a new support policy regarding macOS versions will be in place.
   darktable releases will just support macOS versions that are also supported by Apple. 
-  So release 4.4 will drop support for macOS versions older than 11.3.  
+  So release 4.4 drops support for macOS versions older than 11.3.  
 
 ## Changed Dependencies
 
