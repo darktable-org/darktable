@@ -326,10 +326,13 @@ static int exif_datetime_taken_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
-    dt_datetime_img_to_exif(sdt, sizeof(sdt), my_image);
+    int datetime_size = dt_conf_get_bool("lighttable/ui/milliseconds") ? DT_DATETIME_LENGTH 
+                                                                       : DT_DATETIME_EXIF_LENGTH;
+    char *sdt = calloc(datetime_size, sizeof(char));
+    dt_datetime_img_to_exif(sdt, datetime_size, my_image);
     lua_pushstring(L, sdt);
     releasereadimage(L, my_image);
+    free(sdt);
     return 1;
   }
   else
