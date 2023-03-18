@@ -450,7 +450,12 @@ static inline void compute_upsampling_kernel_plain(const struct dt_interpolation
                                                    int *first,
                                                    float t)
 {
-  int f = (int)t - itor->width + 1;
+  // find first pixel contributing to the filter's kernel.  We need
+  // floorf() because a simple cast to int truncates toward zero,
+  // yielding an incorrect result for the slightly-negative positions
+  // that can occur at the top and left edges when doing perspective
+  // correction
+  int f = (int)floorf(t) - itor->width + 1;
   if(first)
   {
     *first = f;
@@ -495,7 +500,12 @@ static inline void compute_upsampling_kernel_sse(const struct dt_interpolation *
                                                  int *first,
                                                  float t)
 {
-  int f = (int)t - itor->width + 1;
+  // find first pixel contributing to the filter's kernel.  We need
+  // floorf() because a simple cast to int truncates toward zero,
+  // yielding an incorrect result for the slightly-negative positions
+  // that can occur at the top and left edges when doing perspective
+  // correction
+  int f = (int)floorf(t) - itor->width + 1;
   if(first)
   {
     *first = f;
