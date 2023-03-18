@@ -318,6 +318,9 @@ The following is a summary of the main features added to darktable
 - The brush path is now a bit more transparent to better see what is
   actually painted.
 
+- Style tooltip immediately shows module details while waiting for
+  preview image to be calculated.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
@@ -425,6 +428,11 @@ The following is a summary of the main features added to darktable
   it is now impossible to enable the module if the image is a JPEG as
   the module works only with RAWs.
 
+- Fix border issue in inpaint opposed highlights reconstruction. Some
+  pixels on the border of the image where not handled by the
+  algorithm. This may lead to a small difference on the border of the
+  image and will avoids some possible redish borders.
+
 ## Lua
 
 ### API Version
@@ -476,9 +484,9 @@ The following is a summary of the main features added to darktable
 - Two new properties have been added to get the flags (category,
   private) and the synonyms from a tag.
 
-- Moved `pixelpipe-processing-complete` event from the end of the 
+- Moved `pixelpipe-processing-complete` event from the end of the
   image pixelpipe to the end of the preview pixelpipe to catch
-  completion of events that only update the preview such as 
+  completion of events that only update the preview such as
   spot exposure measurement in the exposure module.
 
 ## Notes
