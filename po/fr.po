@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-14 22:22+0100\n"
-"PO-Revision-Date: 2023-03-17 14:32+0100\n"
-"Last-Translator: Nicolas Auffray <nicolas.auffray@zaclys.net>\n"
+"POT-Creation-Date: 2023-03-18 10:05+0100\n"
+"PO-Revision-Date: 2023-03-18 10:18+0100\n"
+"Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
@@ -3270,7 +3270,8 @@ msgstr "Troncature du gamut"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:302
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:201
-#: ../src/common/colorspaces.c:1595
+#: ../src/common/colorspaces.c:1362 ../src/common/colorspaces.c:1595
+#: ../src/libs/print_settings.c:1284
 msgid "sRGB"
 msgstr "sRVB"
 
@@ -4037,32 +4038,32 @@ msgid "inpaint a flat color"
 msgstr "Reconstruit une couleur uniforme"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2462 ../src/iop/highlights.c:2468
+#: ../src/iop/highlights.c:2471 ../src/iop/highlights.c:2477
 msgid "clip highlights"
 msgstr "Tronquer les hautes lumières"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2466
+#: ../src/iop/highlights.c:2475
 msgid "reconstruct in LCh"
 msgstr "Reconstruire dans LCh"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2417 ../src/iop/highlights.c:2478
+#: ../src/iop/highlights.c:2426 ../src/iop/highlights.c:2487
 msgid "reconstruct color"
 msgstr "Reconstruire les couleurs"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2473
+#: ../src/iop/highlights.c:2482
 msgid "guided laplacians"
 msgstr "Laplaciens guidés"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:290
-#: ../src/iop/highlights.c:2470
+#: ../src/iop/highlights.c:2479
 msgid "segmentation based"
 msgstr "Par segmentation"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:291
-#: ../src/iop/highlights.c:2458
+#: ../src/iop/highlights.c:2467
 msgid "inpaint opposed"
 msgstr "Peinture opposée"
 
@@ -4172,7 +4173,7 @@ msgstr "Corrections"
 #: ../src/iop/bilat.c:428 ../src/iop/colorbalance.c:1912
 #: ../src/iop/denoiseprofile.c:3881 ../src/iop/exposure.c:1149
 #: ../src/iop/levels.c:679 ../src/iop/profile_gamma.c:668
-#: ../src/libs/copy_history.c:358 ../src/libs/export.c:1277
+#: ../src/libs/copy_history.c:402 ../src/libs/export.c:1277
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
 #: ../src/libs/styles.c:849 ../src/views/darkroom.c:2365
 msgid "mode"
@@ -4911,7 +4912,7 @@ msgstr "Menu déroulant"
 #: ../src/gui/presets.c:498 ../src/gui/styles_dialog.c:516
 #: ../src/imageio/storage/disk.c:123 ../src/imageio/storage/gallery.c:110
 #: ../src/imageio/storage/latex.c:109 ../src/iop/lut3d.c:1546
-#: ../src/libs/collect.c:409 ../src/libs/copy_history.c:107
+#: ../src/libs/collect.c:409 ../src/libs/copy_history.c:117
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1505
 #: ../src/libs/import.c:1609 ../src/libs/styles.c:393 ../src/libs/styles.c:528
 #: ../src/libs/tagging.c:2485 ../src/libs/tagging.c:2521
@@ -5639,11 +5640,7 @@ msgstr "Système"
 msgid "system display profile (second window)"
 msgstr "Système (2e fenêtre)"
 
-#: ../src/common/colorspaces.c:1362
-msgid "sRGB (e.g. JPG)"
-msgstr "sRVB (JPG par exemple)"
-
-#: ../src/common/colorspaces.c:1366 ../src/libs/print_settings.c:1284
+#: ../src/common/colorspaces.c:1366
 msgid "sRGB (web-safe)"
 msgstr "sRVB (web)"
 
@@ -6143,12 +6140,12 @@ msgstr ""
 "Le filtre guidé indépendant de l’exposition a échoué lors de l’allocation de "
 "mémoire, vérifier les préférences de la RAM"
 
-#: ../src/common/exif.cc:4685
+#: ../src/common/exif.cc:4700
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
 
-#: ../src/common/exif.cc:4737
+#: ../src/common/exif.cc:4752
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Impossible d’écrire le fichier XMP « %s » : « %s »"
@@ -6190,89 +6187,89 @@ msgstr ""
 "Il est nécessaire de copier le développement d’une image avant de le coller "
 "sur une autre"
 
-#: ../src/common/image.c:322
+#: ../src/common/image.c:326
 msgid "orphaned image"
 msgstr "Image orpheline"
 
-#: ../src/common/image.c:613
+#: ../src/common/image.c:618
 #, c-format
 msgid "geo-location undone for %d images"
 msgstr "Géolocalisation annulée pour %d images"
 
-#: ../src/common/image.c:614
+#: ../src/common/image.c:619
 #, c-format
 msgid "geo-location re-applied to %d images"
 msgstr "Géolocalisation réappliquée à %d images"
 
-#: ../src/common/image.c:634
+#: ../src/common/image.c:639
 #, c-format
 msgid "date/time undone for %d images"
 msgstr "Data/heure annulée pour %d images"
 
-#: ../src/common/image.c:635
+#: ../src/common/image.c:640
 #, c-format
 msgid "date/time re-applied to %d images"
 msgstr "Data/heure réappliquée à %d images"
 
-#: ../src/common/image.c:2138
+#: ../src/common/image.c:2179
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Accès à la copie locale « %s » impossible"
 
-#: ../src/common/image.c:2145
+#: ../src/common/image.c:2186
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Création de la copie locale « %s » impossible"
 
-#: ../src/common/image.c:2152
+#: ../src/common/image.c:2193
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Erreur lors du déplacement de la copie locale de « %s » vers « %s »"
 
-#: ../src/common/image.c:2169
+#: ../src/common/image.c:2210
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Erreur de déplacement « %s » : le fichier n’existe pas"
 
-#: ../src/common/image.c:2179
+#: ../src/common/image.c:2220
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Erreur de déplacement de « %s » vers « %s » : le fichier existe"
 
-#: ../src/common/image.c:2183
+#: ../src/common/image.c:2224
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Erreur lors du déplacement de « %s » vers « %s »"
 
-#: ../src/common/image.c:2508
+#: ../src/common/image.c:2553
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "Impossible de créer une copie locale lorsque l’original n’est pas accessible."
 
-#: ../src/common/image.c:2522
+#: ../src/common/image.c:2567
 msgid "cannot create local copy."
 msgstr "Copie locale impossible."
 
-#: ../src/common/image.c:2597 ../src/control/jobs/control_jobs.c:777
+#: ../src/common/image.c:2647 ../src/control/jobs/control_jobs.c:777
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "Impossible de supprimer une copie locale lorsque l’original n’est pas "
 "accessible."
 
-#: ../src/common/image.c:2764
+#: ../src/common/image.c:2814
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/image.c:2966
+#: ../src/common/image.c:3016
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>Attention</b>, échantillons manquants pour le boîtier."
 
 # semble être la suite de la phrase précédente,
 # minuscule initiale
-#: ../src/common/image.c:2967
+#: ../src/common/image.c:3017
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6282,7 +6279,7 @@ msgstr ""
 
 # semble être la suite de la phrase précédente,
 # minuscule initiale et virgule finale
-#: ../src/common/image.c:2968
+#: ../src/common/image.c:3018
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6293,90 +6290,90 @@ msgstr ""
 
 # semble être la suite et fin de la phrase précédente,
 # minuscule initiale et point final
-#: ../src/common/image.c:2971
+#: ../src/common/image.c:3021
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "sinon le fichier RAW <b>ne sera plus lisible</b> dans la prochaine version."
 
-#: ../src/common/image.h:206 ../src/common/ratings.c:284
+#: ../src/common/image.h:207 ../src/common/ratings.c:284
 #: ../src/libs/history.c:854 ../src/libs/snapshots.c:610
 msgid "unknown"
 msgstr "Inconnu"
 
 # Capitalisation ?
 #. EMPTY_FIELD
-#: ../src/common/image.h:207
+#: ../src/common/image.h:208
 msgid "tiff"
 msgstr "Tiff"
 
 # Capitalisation ?
-#: ../src/common/image.h:208
+#: ../src/common/image.h:209
 msgid "png"
 msgstr "Png"
 
 # Capitalisation ?
-#: ../src/common/image.h:209 ../src/imageio/format/j2k.c:652
+#: ../src/common/image.h:210 ../src/imageio/format/j2k.c:652
 msgid "j2k"
 msgstr "J2k"
 
 # Capitalisation ?
-#: ../src/common/image.h:210
+#: ../src/common/image.h:211
 msgid "jpeg"
 msgstr "Jpeg"
 
 # Capitalisation ?
-#: ../src/common/image.h:211
+#: ../src/common/image.h:212
 msgid "exr"
 msgstr "Exr"
 
 # Capitalisation ?
-#: ../src/common/image.h:212
+#: ../src/common/image.h:213
 msgid "rgbe"
 msgstr "Rgbe"
 
 # Capitalisation ?
-#: ../src/common/image.h:213
+#: ../src/common/image.h:214
 msgid "pfm"
 msgstr "Pfm"
 
-#: ../src/common/image.h:214
+#: ../src/common/image.h:215
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/common/image.h:215
+#: ../src/common/image.h:216
 msgid "rawspeed"
 msgstr "rawspeed"
 
 # Capitalisation ?
-#: ../src/common/image.h:216
+#: ../src/common/image.h:217
 msgid "netpnm"
 msgstr "Netpnm"
 
-#: ../src/common/image.h:217
+#: ../src/common/image.h:218
 msgid "avif"
 msgstr "AVIF"
 
-#: ../src/common/image.h:218
+#: ../src/common/image.h:219
 msgid "ImageMagick"
 msgstr "ImageMagick"
 
-#: ../src/common/image.h:219
+#: ../src/common/image.h:220
 msgid "heif"
 msgstr "HEIF"
 
-#: ../src/common/image.h:220
+#: ../src/common/image.h:221
 msgid "libraw"
 msgstr "LibRaw"
 
-#: ../src/common/image.h:221
+#: ../src/common/image.h:222
 msgid "webp"
 msgstr "Webp"
 
-#: ../src/common/image.h:222
+#: ../src/common/image.h:223
 msgid "jpeg xl"
 msgstr "JPEG XL"
 
-#: ../src/common/image.h:223
+#: ../src/common/image.h:224
 msgid "QOI"
 msgstr "QOI"
 
@@ -6459,7 +6456,7 @@ msgstr "Nom de version"
 msgid "image id"
 msgstr "Numéro"
 
-#: ../src/common/mipmap_cache.c:1066 ../src/imageio/imageio.c:721
+#: ../src/common/mipmap_cache.c:1066 ../src/imageio/imageio.c:727
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Image « %s » non disponible"
@@ -6530,7 +6527,7 @@ msgstr "Letter"
 msgid "Legal"
 msgstr "Legal"
 
-#: ../src/common/pwstorage/pwstorage.c:83
+#: ../src/common/pwstorage/pwstorage.c:85
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr "GNOME Keyring n’est plus supporté, en configurer un autre"
 
@@ -6611,67 +6608,67 @@ msgstr "Rejeter"
 msgid "style with name '%s' already exists"
 msgstr "Le style « %s » existe déjà"
 
-#: ../src/common/styles.c:268 ../src/common/styles.c:1752
+#: ../src/common/styles.c:268 ../src/common/styles.c:1756
 #: ../src/libs/styles.c:54
 msgid "styles"
 msgstr "Styles"
 
-#: ../src/common/styles.c:542 ../src/gui/styles_dialog.c:238
+#: ../src/common/styles.c:546 ../src/gui/styles_dialog.c:238
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "Le style « %s » a été créé"
 
-#: ../src/common/styles.c:683 ../src/common/styles.c:713
-#: ../src/common/styles.c:752 ../src/dtgtk/culling.c:994
+#: ../src/common/styles.c:687 ../src/common/styles.c:717
+#: ../src/common/styles.c:756 ../src/dtgtk/culling.c:994
 msgid "no image selected!"
 msgstr "Aucune image sélectionnée."
 
-#: ../src/common/styles.c:687
+#: ../src/common/styles.c:691
 #, c-format
 msgid "style %s successfully applied!"
 msgstr "Le style « %s » a été appliqué."
 
-#: ../src/common/styles.c:703
+#: ../src/common/styles.c:707
 msgid "no images nor styles selected!"
 msgstr "Pas d’image ou de style sélectionné."
 
-#: ../src/common/styles.c:708
+#: ../src/common/styles.c:712
 msgid "no styles selected!"
 msgstr "Pas de style sélectionné."
 
-#: ../src/common/styles.c:738
+#: ../src/common/styles.c:742
 msgid "style successfully applied!"
 msgid_plural "styles successfully applied!"
 msgstr[0] "Le style a été appliqué."
 msgstr[1] "Les styles ont été appliqués."
 
-#: ../src/common/styles.c:829
+#: ../src/common/styles.c:833
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "Module « %s », version non cohérente : %d != %d"
 
-#: ../src/common/styles.c:1106
+#: ../src/common/styles.c:1110
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "Le style « %s » est appliqué à l’image actuelle"
 
-#: ../src/common/styles.c:1368
+#: ../src/common/styles.c:1372
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "Impossible de remplacer le style « %s »"
 
-#: ../src/common/styles.c:1374
+#: ../src/common/styles.c:1378
 #, c-format
 msgid "style file for %s exists"
 msgstr "Le fichier du style « %s » existe déjà"
 
-#: ../src/common/styles.c:1643
+#: ../src/common/styles.c:1647
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "Le style « %s » a été importé"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1687
+#: ../src/common/styles.c:1691
 #, c-format
 msgid "could not read file `%s'"
 msgstr "Impossible de lire le fichier « %s »"
@@ -7350,7 +7347,7 @@ msgstr "Date/heure définie pour %d images"
 msgid "time offset"
 msgstr "Décalage"
 
-#: ../src/control/jobs/control_jobs.c:2014 ../src/libs/copy_history.c:370
+#: ../src/control/jobs/control_jobs.c:2014 ../src/libs/copy_history.c:417
 msgid "write sidecar files"
 msgstr "Sauver en XMP"
 
@@ -7629,17 +7626,17 @@ msgid "uniformly"
 msgstr "Uniforme"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2740
-#: ../src/develop/blend_gui.c:3431 ../src/develop/imageop.c:2519
+#: ../src/develop/blend_gui.c:3431 ../src/develop/imageop.c:2527
 msgid "drawn mask"
 msgstr "Masque dessiné"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2514
-#: ../src/develop/blend_gui.c:3442 ../src/develop/imageop.c:2521
+#: ../src/develop/blend_gui.c:3442 ../src/develop/imageop.c:2529
 msgid "parametric mask"
 msgstr "Masque paramétrique"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2948
-#: ../src/develop/blend_gui.c:3469 ../src/develop/imageop.c:2523
+#: ../src/develop/blend_gui.c:3469 ../src/develop/imageop.c:2531
 msgid "raster mask"
 msgstr "Masque raster"
 
@@ -7686,12 +7683,12 @@ msgid "on"
 msgstr "Activé(e)"
 
 #: ../src/develop/blend_gui.c:1001 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2630
+#: ../src/develop/imageop.c:2638
 msgid "input"
 msgstr "Entrée"
 
 #: ../src/develop/blend_gui.c:1001 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2630
+#: ../src/develop/imageop.c:2638
 msgid "output"
 msgstr "Sortie"
 
@@ -8267,70 +8264,70 @@ msgid "duplicate instance"
 msgstr "Cloner l’instance"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:982 ../src/develop/imageop.c:3569
+#: ../src/develop/imageop.c:982 ../src/develop/imageop.c:3577
 #: ../src/libs/masks.c:1187
 msgid "move up"
 msgstr "Monter"
 
-#: ../src/develop/imageop.c:988 ../src/develop/imageop.c:3570
+#: ../src/develop/imageop.c:988 ../src/develop/imageop.c:3578
 #: ../src/libs/masks.c:1190
 msgid "move down"
 msgstr "Descendre"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:994 ../src/develop/imageop.c:3572
+#: ../src/develop/imageop.c:994 ../src/develop/imageop.c:3580
 #: ../src/gui/accelerators.c:155 ../src/gui/presets.c:499
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "Supprimer"
 
-#: ../src/develop/imageop.c:1001 ../src/develop/imageop.c:3573
+#: ../src/develop/imageop.c:1001 ../src/develop/imageop.c:3581
 #: ../src/libs/modulegroups.c:3466 ../src/libs/modulegroups.c:3817
 msgid "rename"
 msgstr "Renommer"
 
-#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2780
+#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2788
 #, c-format
 msgid "'%s' is switched on"
 msgstr "« %s » est activé"
 
-#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2780
+#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2788
 #, c-format
 msgid "'%s' is switched off"
 msgstr "« %s » est désactivé"
 
-#: ../src/develop/imageop.c:2513
+#: ../src/develop/imageop.c:2521
 msgid "unknown mask"
 msgstr "Masque inconnu"
 
-#: ../src/develop/imageop.c:2517
+#: ../src/develop/imageop.c:2525
 msgid "drawn + parametric mask"
 msgstr "Masques dessiné et paramétrique"
 
-#: ../src/develop/imageop.c:2526
+#: ../src/develop/imageop.c:2534
 #, c-format
 msgid "this module has a `%s'"
 msgstr "Ce module a un « %s »"
 
-#: ../src/develop/imageop.c:2531
+#: ../src/develop/imageop.c:2539
 #, c-format
 msgid "taken from module %s"
 msgstr "Récupéré depuis le module « %s »"
 
-#: ../src/develop/imageop.c:2536
+#: ../src/develop/imageop.c:2544
 msgid "click to display (module must be activated first)"
 msgstr "Cliquer pour afficher (le module doit être activé)"
 
-#: ../src/develop/imageop.c:2630
+#: ../src/develop/imageop.c:2638
 msgid "purpose"
 msgstr "Objectif"
 
-#: ../src/develop/imageop.c:2630
+#: ../src/develop/imageop.c:2638
 msgid "process"
 msgstr "Traitement"
 
-#: ../src/develop/imageop.c:2739
+#: ../src/develop/imageop.c:2747
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8338,7 +8335,7 @@ msgstr ""
 "Instances multiples,\n"
 "clic droit pour créer une nouvelle instance."
 
-#: ../src/develop/imageop.c:2752
+#: ../src/develop/imageop.c:2760
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8346,7 +8343,7 @@ msgstr ""
 "Réinitialiser les paramètres,\n"
 "Ctrl+clic pour réappliquer les préréglages automatiques."
 
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2771
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8354,15 +8351,15 @@ msgstr ""
 "Préréglages,\n"
 "clic droit pour appliquer sur une nouvelle instance."
 
-#: ../src/develop/imageop.c:3012 ../src/develop/imageop.c:3034
+#: ../src/develop/imageop.c:3020 ../src/develop/imageop.c:3042
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3459
+#: ../src/develop/imageop.c:3467
 msgid "unsupported input"
 msgstr "Entrée non supportée"
 
-#: ../src/develop/imageop.c:3460
+#: ../src/develop/imageop.c:3468
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8373,36 +8370,36 @@ msgstr ""
 "dans le pipeline où le format de données\n"
 "ne satisfait pas les prérequis."
 
-#: ../src/develop/imageop.c:3568 ../src/develop/imageop.c:3578
+#: ../src/develop/imageop.c:3576 ../src/develop/imageop.c:3586
 #: ../src/gui/accelerators.c:151 ../src/libs/lib.c:1252
 msgid "show"
 msgstr "Afficher"
 
-#: ../src/develop/imageop.c:3571 ../src/libs/modulegroups.c:3312
+#: ../src/develop/imageop.c:3579 ../src/libs/modulegroups.c:3312
 #: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
 #: ../src/libs/tagging.c:3245
 msgid "new"
 msgstr "Nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:3574 ../src/libs/duplicate.c:403
+#: ../src/develop/imageop.c:3582 ../src/libs/duplicate.c:403
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr "Cloner"
 
-#: ../src/develop/imageop.c:3579
+#: ../src/develop/imageop.c:3587
 msgid "enable"
 msgstr "Activer"
 
-#: ../src/develop/imageop.c:3580 ../src/gui/accelerators.c:167
+#: ../src/develop/imageop.c:3588 ../src/gui/accelerators.c:167
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:3581 ../src/gui/accelerators.c:2467
+#: ../src/develop/imageop.c:3589 ../src/gui/accelerators.c:2467
 msgid "instance"
 msgstr "Instance"
 
-#: ../src/develop/imageop.c:3582 ../src/gui/accelerators.c:112
+#: ../src/develop/imageop.c:3590 ../src/gui/accelerators.c:112
 #: ../src/gui/accelerators.c:122 ../src/gui/gtk.c:2829 ../src/gui/gtk.c:2876
 #: ../src/gui/hist_dialog.c:253 ../src/gui/styles_dialog.c:598
 #: ../src/gui/styles_dialog.c:620 ../src/iop/atrous.c:1514
@@ -8411,12 +8408,12 @@ msgid "reset"
 msgstr "Réinitialiser"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3583 ../src/gui/preferences.c:793
+#: ../src/develop/imageop.c:3591 ../src/gui/preferences.c:793
 #: ../src/libs/lib.c:1254
 msgid "presets"
 msgstr "Préréglages"
 
-#: ../src/develop/imageop.c:3603
+#: ../src/develop/imageop.c:3611
 msgid "processing module"
 msgstr "Module de traitement"
 
@@ -9109,7 +9106,7 @@ msgstr "Coller l’historique"
 msgid "paste history parts"
 msgstr "Coller l’historique en partie"
 
-#: ../src/dtgtk/thumbtable.c:2338 ../src/libs/copy_history.c:354
+#: ../src/dtgtk/thumbtable.c:2338 ../src/libs/copy_history.c:397
 msgid "discard history"
 msgstr "Supprimer"
 
@@ -10629,7 +10626,7 @@ msgid "select preset(s) to import"
 msgstr "Sélectionne le(s) préréglage(s) à importer"
 
 #: ../src/gui/preferences.c:1033 ../src/libs/collect.c:409
-#: ../src/libs/copy_history.c:107 ../src/libs/geotagging.c:930
+#: ../src/libs/copy_history.c:117 ../src/libs/geotagging.c:930
 #: ../src/libs/import.c:1505 ../src/libs/import.c:1609 ../src/libs/styles.c:528
 msgid "_open"
 msgstr "_Ouvrir"
@@ -10639,7 +10636,7 @@ msgid "darktable preset files"
 msgstr "Fichiers de préréglage"
 
 #: ../src/gui/preferences.c:1047 ../src/iop/lut3d.c:1577
-#: ../src/libs/copy_history.c:144 ../src/libs/geotagging.c:946
+#: ../src/libs/copy_history.c:156 ../src/libs/geotagging.c:946
 #: ../src/libs/styles.c:542
 msgid "all files"
 msgstr "Tous les fichiers"
@@ -10970,7 +10967,7 @@ msgid "can't create style out of unaltered image"
 msgstr "Impossible de créer un style depuis une image non développée"
 
 # Il n'y a plus de préférence du nombre de theads
-#: ../src/imageio/imageio.c:737
+#: ../src/imageio/imageio.c:743
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -10979,17 +10976,17 @@ msgstr ""
 "Échec de l’allocation de mémoire pour « %s », merci de diminuer le nombre de "
 "fils utilisés pour l’exportation ou d’acheter de la mémoire."
 
-#: ../src/imageio/imageio.c:738
+#: ../src/imageio/imageio.c:744
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "L’aperçu"
 
-#: ../src/imageio/imageio.c:738
+#: ../src/imageio/imageio.c:744
 msgctxt "noun"
 msgid "export"
 msgstr "L’image"
 
-#: ../src/imageio/imageio.c:751
+#: ../src/imageio/imageio.c:757
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -11101,7 +11098,7 @@ msgstr ""
 " • 81 à 90 % → YUV422\n"
 " • 5 à 80 % → YUV420\n"
 
-#: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:333
+#: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:373
 #: ../src/libs/image.c:585
 msgid "copy"
 msgstr "Copier"
@@ -11569,8 +11566,9 @@ msgstr "Sur conflit"
 msgid "create unique filename"
 msgstr "Créer un fichier unique"
 
+#. DT_COPY_HISTORY_APPEND
 #: ../src/imageio/storage/disk.c:186 ../src/imageio/storage/piwigo.c:1033
-#: ../src/libs/copy_history.c:362 ../src/libs/image.c:603
+#: ../src/libs/copy_history.c:407 ../src/libs/image.c:603
 #: ../src/libs/styles.c:441 ../src/libs/styles.c:624 ../src/libs/styles.c:853
 msgid "overwrite"
 msgstr "Écraser"
@@ -11823,7 +11821,7 @@ msgstr "Correctif ou créatif"
 #: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:131 ../src/iop/exposure.c:133
 #: ../src/iop/flip.c:106 ../src/iop/flip.c:107 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:212 ../src/iop/lens.cc:214
-#: ../src/iop/liquify.c:294 ../src/iop/liquify.c:296 ../src/iop/retouch.c:210
+#: ../src/iop/liquify.c:297 ../src/iop/liquify.c:299 ../src/iop/retouch.c:210
 #: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:102
 #: ../src/iop/splittoning.c:104 ../src/iop/splittoning.c:106
 #: ../src/iop/spots.c:70 ../src/iop/spots.c:72 ../src/iop/toneequal.c:325
@@ -11832,7 +11830,7 @@ msgid "linear, RGB, scene-referred"
 msgstr "Relatif à la scène, linéaire, RVB"
 
 #: ../src/iop/ashift.c:132 ../src/iop/borders.c:194 ../src/iop/clipping.c:322
-#: ../src/iop/crop.c:146 ../src/iop/flip.c:106 ../src/iop/liquify.c:295
+#: ../src/iop/crop.c:146 ../src/iop/flip.c:106 ../src/iop/liquify.c:298
 msgid "geometric, RGB"
 msgstr "Géométrique, RVB"
 
@@ -12432,7 +12430,7 @@ msgstr "Appliquer les ajustements habituels de l’image"
 #: ../src/iop/colisa.c:90 ../src/iop/colorcontrast.c:97
 #: ../src/iop/colorize.c:105 ../src/iop/colormapping.c:153
 #: ../src/iop/colorzones.c:145 ../src/iop/grain.c:425 ../src/iop/highpass.c:78
-#: ../src/iop/levels.c:135 ../src/iop/liquify.c:293 ../src/iop/lowlight.c:92
+#: ../src/iop/levels.c:135 ../src/iop/liquify.c:296 ../src/iop/lowlight.c:92
 #: ../src/iop/lowpass.c:134 ../src/iop/monochrome.c:98 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:103 ../src/iop/velvia.c:105
 #: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:158
@@ -14968,7 +14966,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
 #: ../src/iop/colorreconstruction.c:1261 ../src/iop/demosaic.c:5505
-#: ../src/iop/highlights.c:2625
+#: ../src/iop/highlights.c:2634
 msgid "not applicable"
 msgstr "Non applicable"
 
@@ -16918,7 +16916,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "Reconstruire, RAW"
 
-#: ../src/iop/highlights.c:2361
+#: ../src/iop/highlights.c:2370
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -16926,11 +16924,11 @@ msgstr ""
 "Reconstruction des hautes lumières : mode non disponible pour ce type "
 "d’image. Repli sur « Peinture opposée »."
 
-#: ../src/iop/highlights.c:2558
+#: ../src/iop/highlights.c:2567
 msgid "highlight reconstruction method"
 msgstr "Méthode de reconstruction des hautes lumières"
 
-#: ../src/iop/highlights.c:2563
+#: ../src/iop/highlights.c:2572
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -16945,7 +16943,7 @@ msgstr ""
 "« Laplaciens guidés », « Peinture opposée » et « Par segmentation »,\n"
 "surtout si le point blanc du boîtier est incorrect."
 
-#: ../src/iop/highlights.c:2574
+#: ../src/iop/highlights.c:2583
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -16954,7 +16952,7 @@ msgstr ""
 "L’icône « masque » montre les positions exactes des bords des segments "
 "résultants."
 
-#: ../src/iop/highlights.c:2582
+#: ../src/iop/highlights.c:2591
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -16967,7 +16965,7 @@ msgstr ""
 "L’icône « masque » montre les segments qui sont considérés comme bon "
 "candidats."
 
-#: ../src/iop/highlights.c:2593
+#: ../src/iop/highlights.c:2602
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -16991,7 +16989,7 @@ msgstr ""
 "reconstruites\n"
 "et éviter les dégradés."
 
-#: ../src/iop/highlights.c:2599
+#: ../src/iop/highlights.c:2608
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -17001,7 +16999,7 @@ msgstr ""
 "photosites tronqués.\n"
 "L’icône « masque » montre l’effet ajouté au données déjà reconstruites."
 
-#: ../src/iop/highlights.c:2609
+#: ../src/iop/highlights.c:2618
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17009,7 +17007,7 @@ msgstr ""
 "Ajoute du bruit pour fusionner visuellement les zones reconstruites\n"
 "dans le reste de l’image bruitées. Utile pour les hauts ISO."
 
-#: ../src/iop/highlights.c:2613
+#: ../src/iop/highlights.c:2622
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17017,7 +17015,7 @@ msgstr ""
 "Augmenter si le magenta des hautes lumières n’est pas complètement corrigé.\n"
 "Chaque nouvelle itération ajoute une pénalité de temps."
 
-#: ../src/iop/highlights.c:2618
+#: ../src/iop/highlights.c:2627
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17026,7 +17024,7 @@ msgstr ""
 "Cela peut produire des délimitations tranchées entre les régions valides et "
 "tronquées."
 
-#: ../src/iop/highlights.c:2622
+#: ../src/iop/highlights.c:2631
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17034,7 +17032,7 @@ msgstr ""
 "Augmenter pour corriger les larges zones tronquées.\n"
 "Les grandes valeurs pénalisent fortement les performances."
 
-#: ../src/iop/highlights.c:2626
+#: ../src/iop/highlights.c:2635
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "Ce module ne fonctionne que pour les RAW et sRAW non monochrome"
 
@@ -17406,68 +17404,68 @@ msgstr "Blanc"
 msgid "white percentile"
 msgstr "Centile des blancs"
 
-#: ../src/iop/liquify.c:287
+#: ../src/iop/liquify.c:290
 msgid "liquify"
 msgstr "Liquéfier"
 
-#: ../src/iop/liquify.c:292
+#: ../src/iop/liquify.c:295
 msgid "distort parts of the image"
 msgstr "Déforme des parties de l’image"
 
-#: ../src/iop/liquify.c:2872
+#: ../src/iop/liquify.c:3014
 msgid "click to edit nodes"
 msgstr "Cliquer pour éditer les points"
 
-#: ../src/iop/liquify.c:3546
+#: ../src/iop/liquify.c:3733
 msgid ""
-"click and drag to add point\n"
-"scroll to change size - shift+scroll to change strength - ctrl+scroll to "
-"change direction"
+"<b>add point</b>: click and drag\n"
+"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
+"ctrl+scroll"
 msgstr ""
-"Cliquer et tracer pour ajouter un point.\n"
-"Défiler pour changer la taille • Maj+défiler pour changer la force • "
-"Ctrl+défiler pour changer la direction."
+"<b>Ajouter un point</b> : clic\n"
+"<b>Taille</b> : défiler • <b>Force</b> : Maj+défiler • <b>Direction</b> :"
+"Ctrl+défiler"
 
-#: ../src/iop/liquify.c:3549
+#: ../src/iop/liquify.c:3736
 msgid ""
-"click to add line\n"
-"scroll to change size - shift+scroll to change strength - ctrl+scroll to "
-"change direction"
+"<b>add line</b>: click\n"
+"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
+"ctrl+scroll"
 msgstr ""
-"Cliquer pour ajouter une ligne.\n"
-"Défiler pour changer la taille • Maj+défiler pour changer la force • "
-"Ctrl+défiler pour changer la direction."
+"<b>Ajouter une ligne</b> : clic\n"
+"<b>Taille</b> : défiler • <b>Force</b> : Maj+défiler • <b>Direction</b> :"
+"Ctrl+défiler"
 
-#: ../src/iop/liquify.c:3552
+#: ../src/iop/liquify.c:3739
 msgid ""
-"click to add curve\n"
-"scroll to change size - shift+scroll to change strength - ctrl+scroll to "
-"change direction"
+"<b>add curve</b>: click\n"
+"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
+"ctrl+scroll"
 msgstr ""
-"Cliquer pour ajouter une courbe.\n"
-"Défiler pour changer la taille • Maj+défiler pour changer la force • "
-"Ctrl+défiler pour changer la direction."
+"<b>Ajouter une courbe</b> : clic\n"
+"<b>Taille</b> : défiler • <b>Force</b> : Maj+défiler • <b>Direction</b> :"
+"Ctrl+défiler"
 
-#: ../src/iop/liquify.c:3599
+#: ../src/iop/liquify.c:3790
 msgid ""
-"use a tool to add warps.\n"
-"right-click to remove a warp."
+"use a tool to add warps\n"
+"<b>remove a warp</b>: right-click"
 msgstr ""
 "Utiliser un outil pour ajouter une forme.\n"
-"Clic droit pour supprimer une forme."
+"<b>Supprimer une forme</b> : Clic droit"
 
-#: ../src/iop/liquify.c:3602
+#: ../src/iop/liquify.c:3793
 msgid "warps|nodes count:"
 msgstr "Nombres de formes|points : "
 
-#: ../src/iop/liquify.c:3610
+#: ../src/iop/liquify.c:3802
 msgid "edit, add and delete nodes"
 msgstr ""
 "Outil point\n"
 "Éditer et supprimer des points"
 
-#: ../src/iop/liquify.c:3614 ../src/iop/liquify.c:3618
-#: ../src/iop/liquify.c:3622 ../src/iop/retouch.c:2238
+#: ../src/iop/liquify.c:3807 ../src/iop/liquify.c:3813
+#: ../src/iop/liquify.c:3819 ../src/iop/retouch.c:2238
 #: ../src/iop/retouch.c:2242 ../src/iop/retouch.c:2246
 #: ../src/iop/retouch.c:2250 ../src/iop/spots.c:883 ../src/iop/spots.c:888
 #: ../src/iop/spots.c:893 ../src/libs/masks.c:1805 ../src/libs/masks.c:1814
@@ -17475,71 +17473,73 @@ msgstr ""
 msgid "shapes"
 msgstr "Formes"
 
-#: ../src/iop/liquify.c:3614
+#: ../src/iop/liquify.c:3808
 msgid "draw curves"
 msgstr "Dessiner des courbes"
 
-#: ../src/iop/liquify.c:3614
+#: ../src/iop/liquify.c:3808
 msgid "draw multiple curves"
 msgstr "dessiner plusieurs courbes"
 
-#: ../src/iop/liquify.c:3618
+#: ../src/iop/liquify.c:3814
 msgid "draw lines"
 msgstr "Dessiner des lignes"
 
-#: ../src/iop/liquify.c:3618
+#: ../src/iop/liquify.c:3814
 msgid "draw multiple lines"
 msgstr "dessiner plusieurs lignes"
 
-#: ../src/iop/liquify.c:3622
+#: ../src/iop/liquify.c:3820
 msgid "draw points"
 msgstr "Dessiner des points"
 
-#: ../src/iop/liquify.c:3622
+#: ../src/iop/liquify.c:3820
 msgid "draw multiple points"
 msgstr "dessiner plusieurs points"
 
-#: ../src/iop/liquify.c:3627
+#: ../src/iop/liquify.c:3826
 msgid ""
-"ctrl+click: add node - right click: remove path\n"
-"ctrl+alt+click: toggle line/curve"
+"<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
+"<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
-"Ctrl+clic : ajouter un point • Clic droit : supprimer un chemin,\n"
-"Ctrl+Alt+clic : basculer entre ligne et courbe."
+"<b>Ajouter un nœud</b> : Ctrl+clic • <b>Supprimer le chemin</b> : clic "
+"droit\n"
+"<b>Basculer entre ligne et courbe</b> : Ctrl+Alt+clic"
 
-#: ../src/iop/liquify.c:3629
+#: ../src/iop/liquify.c:3829
 msgid ""
-"click and drag to move - click: show/hide feathering controls\n"
-"ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
+"<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
+"<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
+"right click"
 msgstr ""
-"Clic+déplacer pour positionner • Clic : montrer/cacher les contrôles "
-"d’adoucissement,\n"
-"Ctrl+clic : bascule entre automatique, parabolique, lissé et symétrique • "
-"Clic droit pour supprimer."
+"<b>Déplacer</b> : Clic+déplacer • <b>Montrer/cacher les contrôles</b> : "
+"Clic\n"
+"<b>Automatique, parabolique, lissé et symétrique</b> : Ctrl+clic • "
+"<b>Supprimer</b> : Clic droit"
 
-#: ../src/iop/liquify.c:3632 ../src/iop/liquify.c:3633
-msgid "drag to change shape of path"
-msgstr "Déplacer pour changer le chemin"
+#: ../src/iop/liquify.c:3833 ../src/iop/liquify.c:3835
+msgid "<b>shape of path</b>: drag"
+msgstr "<b>Changer le chemin</b> : déplacer"
 
-#: ../src/iop/liquify.c:3634
-msgid "drag to adjust warp radius"
-msgstr "Déplacer pour ajuster le rayon"
+#: ../src/iop/liquify.c:3837
+msgid "<b>radius</b>: drag"
+msgstr "<b>Rayon</b: déplacer"
 
-#: ../src/iop/liquify.c:3635
-msgid "drag to adjust hardness (center)"
-msgstr "Déplacer pour ajuster la dureté (centre)"
+#: ../src/iop/liquify.c:3839
+msgid "<b>hardness (center)</b>: drag"
+msgstr "<b>Dureté (centre)</b> : déplacer"
 
-#: ../src/iop/liquify.c:3636
-msgid "drag to adjust hardness (feather)"
-msgstr "Déplacer pour ajuster la dureté (adoucissement)"
+#: ../src/iop/liquify.c:3841
+msgid "<b>hardness (feather)</b>: drag"
+msgstr "<b>Dureté (adoucissement)</b> : déplacer"
 
-#: ../src/iop/liquify.c:3637
+#: ../src/iop/liquify.c:3843
 msgid ""
-"drag to adjust warp strength\n"
-"ctrl+click: linear, grow, and shrink"
+"<b>strength</b>: drag\n"
+"<b>linear, grow, and shrink</b>: ctrl+click"
 msgstr ""
-"Déplacer pour ajuster la force du point\n"
-"Ctrl+clic : linéaire, augmente et diminue."
+"<b>Force</b> : déplacer\n"
+"<b>Linéaire, augmente et diminue</b> : Ctrl+clic"
 
 #: ../src/iop/lmmse_demosaic.c:145
 msgid "[lmmse_demosaic] too small area"
@@ -20241,50 +20241,50 @@ msgid "restrict scope to selection"
 msgstr "Restreindre le scope à la sélection"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
-#: ../src/libs/copy_history.c:53
+#: ../src/libs/copy_history.c:61
 msgid "history stack"
 msgstr "Développement"
 
-#: ../src/libs/copy_history.c:106
+#: ../src/libs/copy_history.c:116
 msgid "open sidecar file"
 msgstr "Ouvrir un fichier XMP"
 
-#: ../src/libs/copy_history.c:139
+#: ../src/libs/copy_history.c:151
 msgid "XMP sidecar files"
 msgstr "Fichiers XMP"
 
-#: ../src/libs/copy_history.c:154
+#: ../src/libs/copy_history.c:168
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Erreur de chargement du fichier « %s »"
 
-#: ../src/libs/copy_history.c:191
+#: ../src/libs/copy_history.c:208
 #, c-format
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
 msgstr[0] "Pas de compression de l’historique de %d image"
 msgstr[1] "Pas de compression de l’historique de %d images"
 
-#: ../src/libs/copy_history.c:228
+#: ../src/libs/copy_history.c:249
 msgid "delete images' history?"
 msgstr "Supprimer l’historique des images ?"
 
-#: ../src/libs/copy_history.c:229
+#: ../src/libs/copy_history.c:250
 #, c-format
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
 msgstr[0] "Supprimer l’historique de %d image sélectionnée ?"
 msgstr[1] "Supprimer l’historique des %d images sélectionnées ?"
 
-#: ../src/libs/copy_history.c:328
+#: ../src/libs/copy_history.c:367
 msgid "selective copy..."
 msgstr "Copier sélectivement…"
 
-#: ../src/libs/copy_history.c:329
+#: ../src/libs/copy_history.c:368
 msgid "choose which modules to copy from the source image"
 msgstr "Choisir les modules à copier depuis l’image source"
 
-#: ../src/libs/copy_history.c:334
+#: ../src/libs/copy_history.c:374
 msgid ""
 "copy history stack of\n"
 "first selected image"
@@ -20292,19 +20292,19 @@ msgstr ""
 "Copie le développement de\n"
 "la première image sélectionnée"
 
-#: ../src/libs/copy_history.c:338
+#: ../src/libs/copy_history.c:379
 msgid "selective paste..."
 msgstr "Coller sélectivement"
 
-#: ../src/libs/copy_history.c:339
+#: ../src/libs/copy_history.c:380
 msgid "choose which modules to paste to the target image(s)"
 msgstr "Choisir les modules à coller aux images cibles"
 
-#: ../src/libs/copy_history.c:344 ../src/libs/image.c:590
+#: ../src/libs/copy_history.c:385 ../src/libs/image.c:590
 msgid "paste"
 msgstr "Coller"
 
-#: ../src/libs/copy_history.c:345
+#: ../src/libs/copy_history.c:386
 msgid ""
 "paste history stack to\n"
 "all selected images"
@@ -20312,11 +20312,11 @@ msgstr ""
 "Applique le développement à\n"
 "toutes les images sélectionnées"
 
-#: ../src/libs/copy_history.c:350
+#: ../src/libs/copy_history.c:392
 msgid "compress history"
 msgstr "Compresser"
 
-#: ../src/libs/copy_history.c:351
+#: ../src/libs/copy_history.c:393
 msgid ""
 "compress history stack of\n"
 "all selected images"
@@ -20324,7 +20324,7 @@ msgstr ""
 "Compresser l’historique de développement\n"
 "des images sélectionnées"
 
-#: ../src/libs/copy_history.c:355
+#: ../src/libs/copy_history.c:398
 msgid ""
 "discard history stack of\n"
 "all selected images"
@@ -20332,19 +20332,19 @@ msgstr ""
 "Supprimer l’historique de développement\n"
 "des images sélectionnées."
 
-#: ../src/libs/copy_history.c:359 ../src/libs/styles.c:850
+#: ../src/libs/copy_history.c:403 ../src/libs/styles.c:850
 msgid "how to handle existing history"
 msgstr "Gestion des développements pré-existants"
 
-#: ../src/libs/copy_history.c:362 ../src/libs/styles.c:853
+#: ../src/libs/copy_history.c:406 ../src/libs/styles.c:853
 msgid "append"
 msgstr "Empiler"
 
-#: ../src/libs/copy_history.c:366
+#: ../src/libs/copy_history.c:412
 msgid "load sidecar file..."
 msgstr "Charger le fichier XMP"
 
-#: ../src/libs/copy_history.c:367
+#: ../src/libs/copy_history.c:413
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
@@ -20352,7 +20352,7 @@ msgstr ""
 "Charge un fichier de développement XMP\n"
 "et l’applique aux images sélectionnées."
 
-#: ../src/libs/copy_history.c:371
+#: ../src/libs/copy_history.c:418
 msgid "write history stack and tags to XMP sidecar files"
 msgstr ""
 "Écrit le développement et les mots-clés\n"
@@ -20806,7 +20806,8 @@ msgstr " • Clic ou clic+déplacer pour sélectionner une ou plusieurs valeurs"
 # commence par ' • ' car fait partie de la liste ci-dessus
 #: ../src/libs/filtering.c:704
 msgid "right-click opens a menu to select the available values"
-msgstr " • Clic droit pour ouvrir un menu afin de sélectionner une valeur disponible"
+msgstr ""
+" • Clic droit pour ouvrir un menu afin de sélectionner une valeur disponible"
 
 #: ../src/libs/filtering.c:801
 #, c-format
@@ -24905,6 +24906,62 @@ msgstr "Créer une fenêtre flottante persistante"
 msgid "mouse actions"
 msgstr "Actions de la souris"
 
+#~ msgid "sRGB (e.g. JPG)"
+#~ msgstr "sRVB (JPG par exemple)"
+
+#~ msgid ""
+#~ "click and drag to add point\n"
+#~ "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
+#~ "change direction"
+#~ msgstr ""
+#~ "Cliquer et tracer pour ajouter un point.\n"
+#~ "Défiler pour changer la taille • Maj+défiler pour changer la force • "
+#~ "Ctrl+défiler pour changer la direction."
+
+#~ msgid ""
+#~ "click to add line\n"
+#~ "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
+#~ "change direction"
+#~ msgstr ""
+#~ "Cliquer pour ajouter une ligne.\n"
+#~ "Défiler pour changer la taille • Maj+défiler pour changer la force • "
+#~ "Ctrl+défiler pour changer la direction."
+
+#~ msgid ""
+#~ "click to add curve\n"
+#~ "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
+#~ "change direction"
+#~ msgstr ""
+#~ "Cliquer pour ajouter une courbe.\n"
+#~ "Défiler pour changer la taille • Maj+défiler pour changer la force • "
+#~ "Ctrl+défiler pour changer la direction."
+
+#~ msgid ""
+#~ "ctrl+click: add node - right click: remove path\n"
+#~ "ctrl+alt+click: toggle line/curve"
+#~ msgstr ""
+#~ "Ctrl+clic : ajouter un point • Clic droit : supprimer un chemin,\n"
+#~ "Ctrl+Alt+clic : basculer entre ligne et courbe."
+
+#~ msgid "drag to change shape of path"
+#~ msgstr "Déplacer pour changer le chemin"
+
+#~ msgid "drag to adjust warp radius"
+#~ msgstr "Déplacer pour ajuster le rayon"
+
+#~ msgid "drag to adjust hardness (center)"
+#~ msgstr "Déplacer pour ajuster la dureté (centre)"
+
+#~ msgid "drag to adjust hardness (feather)"
+#~ msgstr "Déplacer pour ajuster la dureté (adoucissement)"
+
+#~ msgid ""
+#~ "drag to adjust warp strength\n"
+#~ "ctrl+click: linear, grow, and shrink"
+#~ msgstr ""
+#~ "Déplacer pour ajuster la force du point\n"
+#~ "Ctrl+clic : linéaire, augmente et diminue."
+
 #~ msgctxt "accel"
 #~ msgid "acquire"
 #~ msgstr "Acquérir"
@@ -26500,15 +26557,6 @@ msgstr "Actions de la souris"
 #~ msgid "you need to switch views for the new setting to take effect."
 #~ msgstr ""
 #~ "Un changement de vue est nécessaire pour que le changement prenne effet"
-
-#, c-format
-#~ msgid ""
-#~ "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
-#~ "<b>opacity</b>: ctrl+scroll (%d%%)"
-#~ msgstr ""
-#~ "<b>Dureté</b> : molette\n"
-#~ "<b>Taille</b> : Maj+molette\n"
-#~ "<b>Opacité</b> : Ctrl+molette (%d%%)"
 
 #~ msgid "modules order"
 #~ msgstr "Ordre des modules"
