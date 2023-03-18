@@ -193,21 +193,6 @@ static inline size_t increase_for_alignment(const size_t l,
  * Bilinear interpolation
  * ------------------------------------------------------------------------*/
 
-static inline float bilinear(const float width, float t)
-{
-  float r;
-  t = fabsf(t);
-  if(t > 1.f)
-  {
-    r = 0.f;
-  }
-  else
-  {
-    r = 1.f - t;
-  }
-  return r;
-}
-
 static float maketaps_bilinear(float *taps,
                                size_t num_taps,
                                float  width,
