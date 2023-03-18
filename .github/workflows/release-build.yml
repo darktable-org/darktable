@@ -48,4 +48,6 @@ jobs:
       - name: git status
         run: |
           cd src
+          git clean -xdf
+          git restore -SW ${{ vars.RELEASE_TAG }}
           git status
