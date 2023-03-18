@@ -12,6 +12,7 @@ jobs:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Nightly darktable win64
     runs-on: windows-latest
+    environment: Release Build
     strategy:
       fail-fast: true
       matrix:
