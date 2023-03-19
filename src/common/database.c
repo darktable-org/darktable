@@ -1142,7 +1142,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     while(sqlite3_step(sel_stmt) == SQLITE_ROW)
     {
       const char *op_name = (const char *)sqlite3_column_text(sel_stmt, 0);
-      printf("operation %s with no iop_order while upgrading database\n", op_name);
+      dt_print(DT_DEBUG_ALWAYS, "[init] operation %s with no iop_order while upgrading database\n", op_name);
     }
     sqlite3_finalize(sel_stmt);
     // clang-format off
@@ -2241,7 +2241,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     while(sqlite3_step(sel_stmt) == SQLITE_ROW)
     {
       const char *op_name = (const char *)sqlite3_column_text(sel_stmt, 0);
-      printf("operation %s with no iop_order while upgrading style_items in database\n", op_name);
+      dt_print(DT_DEBUG_ALWAYS, "[init] operation %s with no iop_order while upgrading style_items in database\n", op_name);
     }
     sqlite3_finalize(sel_stmt);
     // clang-format off
