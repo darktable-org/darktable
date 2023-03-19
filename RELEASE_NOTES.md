@@ -173,6 +173,11 @@ The following is a summary of the main features added to darktable
   - Color Balance (legacy)
   - Levels (legacy)
 
+  - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
+    Lanczos3) used by modules doing warp or scaling of pixels. The old
+    Crop and Rotate and the new Perspective Correction modules are now
+    running faster.
+
   - The gaussian generator used by many modules: Censorize, Denoise
     Profile, Lowpass, Diffuse & Sharpen, Defringe, RAW Chromatic
     Aberrations, Base Curve, Perspective Correction, Filmic RGB,
