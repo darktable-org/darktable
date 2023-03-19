@@ -45,23 +45,19 @@ enum dt_interpolation_type
 };
 
 /** Interpolation function */
-typedef float (*dt_interpolation_func)(float width, float t);
-
-#if defined(__SSE2__)
-/** Interpolation function (SSE) */
-typedef __m128 (*dt_interpolation_sse_func)(__m128 width, __m128 t);
-#endif
+typedef float (*dt_interpolation_func)(float *taps,
+                                       size_t num_taps,
+                                       float width,
+                                       float first_tap,
+                                       float interval);
 
 /** Interpolation structure */
 struct dt_interpolation
 {
   enum dt_interpolation_type id;     /**< Id such as defined by the dt_interpolation_type */
   const char *name;                  /**< internal name  */
-  int width;                         /**< Half width of its kernel support */
-  dt_interpolation_func func;        /**< Kernel function */
-#if defined(__SSE2__)
-  dt_interpolation_sse_func funcsse; /**< Kernel function (four params a time) */
-#endif
+  size_t width;                      /**< Half width of its kernel support */
+  dt_interpolation_func maketaps;    /**< Kernel function */
 };
 
 /** Compute a single interpolated sample.
