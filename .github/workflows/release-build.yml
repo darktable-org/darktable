@@ -9,7 +9,7 @@ permissions:
 jobs:
   Win64:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: win64 ${{ vars.RELEASE_TAG }}
+    name: win64
     runs-on: windows-latest
     environment: Release Build
     strategy:
@@ -132,7 +132,7 @@ jobs:
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: macOS ${{ vars.RELEASE_TAG }}
+    name: macOS
     runs-on: ${{ matrix.build.os }}
     environment: Release Build
     strategy:
