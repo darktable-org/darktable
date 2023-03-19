@@ -471,7 +471,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
               if(free_mb < 100)
               {
                 dt_print(DT_DEBUG_ALWAYS,
-                         "Aborting image write as only %" PRId64 " MB free to write %s\n",
+                         "[mipmap_cache] aborting image write as only %" PRId64 " MB free to write %s\n",
                          free_mb, filename);
                 goto write_error;
               }
@@ -479,7 +479,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
             else
             {
               dt_print(DT_DEBUG_ALWAYS,
-                       "Aborting image write since couldn't determine free space available to write %s\n",
+                       "[mipmap_cache] aborting image write since couldn't determine free space available to write %s\n",
                        filename);
               goto write_error;
             }
