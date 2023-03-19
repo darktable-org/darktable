@@ -418,8 +418,7 @@ static void sync_xmp_to_db(GtkTreeModel *model,
   _get_crawler_entry_from_model(model, iter, &entry);
   _db_update_timestamp(entry.id, entry.timestamp_xmp);
 
-  const int error =
-    dt_history_load_and_apply(entry.id, entry.xmp_path, 0);  // success = 0, fail = 1
+  const gboolean error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
 
   if(error)
   {
@@ -448,7 +447,7 @@ static void sync_db_to_xmp(GtkTreeModel *model,
   _get_crawler_entry_from_model(model, iter, &entry);
 
   // write the XMP and make sure it get the last modified timestamp of the db
-  const int error = dt_image_write_sidecar_file(entry.id);  // success = 0, fail = 1
+  const gboolean error = dt_image_write_sidecar_file(entry.id);
   _set_modification_time(entry.xmp_path, entry.timestamp_db);
 
   if(error)
@@ -476,7 +475,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
 
-  int error = 0;
+  gboolean error = FALSE;
 
   if(entry.timestamp_xmp > entry.timestamp_db)
   {
@@ -527,7 +526,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
   {
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
-    error = 1;
+    error = TRUE;
     _log_synchronization(gui, _("EXCEPTION: %s has inconsistent timestamps"),
                          entry.image_path);
   }
@@ -546,7 +545,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
-  int error = 0;
+  gboolean error = FALSE;
 
   if(entry.timestamp_xmp < entry.timestamp_db)
   {
@@ -594,7 +593,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
   {
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
-    error = 1;
+    error = TRUE;
     _log_synchronization(gui,
                          _("EXCEPTION: %s has inconsistent timestamps"),
                          entry.image_path);
