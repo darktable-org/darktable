@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     x="0"
+     y="0">
+
+  <text x="0" y="5px" text-anchor="start"
+        xml:space="preserve"
+        fill="$(WATERMARK_COLOR)"
+        font-family="$(WATERMARK_FONT_FAMILY)"
+        font-style="$(WATERMARK_FONT_STYLE)"
+        font-weight="$(WATERMARK_FONT_WEIGHT)"
+        font-size="10px"><tspan style="fill:none">$</tspan>$(WATERMARK_TEXT)<tspan style="fill:none">p</tspan></text>
+</svg>
