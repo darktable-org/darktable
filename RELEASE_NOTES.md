@@ -433,6 +433,9 @@ The following is a summary of the main features added to darktable
   algorithm. This may lead to a small difference on the border of the
   image and will avoids some possible redish borders.
 
+- Avoid XMP writing if not requested and image was not altered. This
+  is rule is properly followed now also when importing RAW + JPEG.
+
 ## Lua
 
 ### API Version
@@ -503,10 +506,10 @@ The following is a summary of the main features added to darktable
   version, this can be supported by reverting the following change:
   remove line 241 of darktable.css file on your system. See:
   https://github.com/darktable-org/darktable/issues/13166
-  
+
 - Beginning with this release a new support policy regarding macOS versions will be in place.
-  darktable releases will just support macOS versions that are also supported by Apple. 
-  So release 4.4 drops support for macOS versions older than 11.3.  
+  darktable releases will just support macOS versions that are also supported by Apple.
+  So release 4.4 drops support for macOS versions older than 11.3.
 
 ## Changed Dependencies
 
