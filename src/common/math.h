@@ -423,77 +423,6 @@ static inline float ceil_fast(const float x)
   }
 }
 
-#if defined(__SSE2__)
-/** Compute absolute value
- * @param t Vector of 4 floats
- * @return Vector of their absolute values
- */ static inline __m128 _mm_abs_ps(const __m128 t)
-{
-  static const uint32_t signmask[4] __attribute__((aligned(64)))
-  = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff };
-  return _mm_and_ps(*(__m128 *)signmask, t);
-}
-#endif
-
-/** Compute an approximate sine.
- * This function behaves correctly for the range [-pi pi] only.
- * It has the following properties:
- * <ul>
- *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
- *   <li>It has matching derivatives to sine for these same points</li>
- *   <li>Its relative error margin is <= 1% iirc</li>
- *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
- * </ul>
- * @param t Radian parameter
- * @return guess what
- */
-static inline float sinf_fast(float t)
-{
-  /***** if you change this function, you must also change the copy in data/kernels/basic.cl *****/
-  static const float a = 4 / (M_PI * M_PI);
-  static const float p = 0.225f;
-
-  t = a * t * (M_PI_F - fabsf(t));
-
-  return t * (p * (fabsf(t) - 1) + 1);
-}
-
-#if defined(__SSE2__)
-/** Compute an approximate sine (SSE version, four sines a call).
- * This function behaves correctly for the range [-pi pi] only.
- * It has the following properties:
- * <ul>
- *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
- *   <li>It has matching derivatives to sine for these same points</li>
- *   <li>Its relative error margin is <= 1% iirc</li>
- *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
- * </ul>
- * @param t Radian parameter
- * @return guess what
- */
-static inline __m128 sinf_fast_sse(const __m128 t)
-{
-  static const __m128 a
-      = { 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI) };
-  static const __m128 p = { 0.225f, 0.225f, 0.225f, 0.225f };
-  static const __m128 pi = { M_PI, M_PI, M_PI, M_PI };
-
-  // m4 = a*t*(M_PI - fabsf(t));
-  const __m128 m1 = _mm_abs_ps(t);
-  const __m128 m2 = _mm_sub_ps(pi, m1);
-  const __m128 m3 = _mm_mul_ps(t, m2);
-  const __m128 m4 = _mm_mul_ps(a, m3);
-
-  // p*(m4*fabsf(m4) - m4) + m4;
-  const __m128 n1 = _mm_abs_ps(m4);
-  const __m128 n2 = _mm_mul_ps(m4, n1);
-  const __m128 n3 = _mm_sub_ps(n2, m4);
-  const __m128 n4 = _mm_mul_ps(p, n3);
-
-  return _mm_add_ps(n4, m4);
-}
-#endif
-
 static inline void dt_vector_log2(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
 {
 #ifdef __SSE2__
@@ -581,6 +510,42 @@ static inline void dt_vector_clip(dt_aligned_pixel_t values)
   for_each_channel(c)
     values[c] = CLIP(values[c]);
 #endif
+}
+
+/** Compute approximate sines, four at a time.
+ * This function behaves correctly for the range [-pi pi] only.
+ * It has the following properties:
+ * <ul>
+ *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
+ *   <li>It has matching derivatives to sine for these same points</li>
+ *   <li>Its relative error margin is <= 1% iirc</li>
+ *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
+ * </ul>
+ * @param arg: Radian parameters
+ * @return sine: guess what
+ */
+static inline void dt_vector_sin(const dt_aligned_pixel_t arg, dt_aligned_pixel_t sine)
+{
+  static const dt_aligned_pixel_t pi = { M_PI_F, M_PI_F, M_PI_F, M_PI_F };
+  static const dt_aligned_pixel_t a
+    = { 4 / (M_PI_F * M_PI_F),
+        4 / (M_PI_F * M_PI_F),
+        4 / (M_PI_F * M_PI_F),
+        4 / (M_PI_F * M_PI_F) };
+  static const dt_aligned_pixel_t p = { 0.225f,  0.225f, 0.225f, 0.225f };
+  static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+  dt_aligned_pixel_t abs_arg;
+  for_four_channels(c)
+    abs_arg[c] = (arg[c] < 0.0f) ? -arg[c] : arg[c];
+  dt_aligned_pixel_t scaled;
+  for_four_channels(c)
+    scaled[c] = a[c] * arg[c] * (pi[c] - abs_arg[c]);
+  dt_aligned_pixel_t abs_scaled;
+  for_four_channels(c)
+    abs_scaled[c] = (scaled[c] < 0.0f) ? -scaled[c] : scaled[c];
+  for_four_channels(c)
+    sine[c] = scaled[c] * (p[c] * (abs_scaled[c] - one[c]) + one[c]);
 }
 
 
