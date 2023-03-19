@@ -55,9 +55,13 @@ DT_MODULE_INTROSPECTION(5, dt_iop_watermark_params_t)
 
 typedef enum dt_iop_watermark_base_scale_t
 {
-  DT_SCALE_IMAGE = 0,         // $DESCRIPTION: "image"
-  DT_SCALE_LARGER_BORDER = 1, // $DESCRIPTION: "larger border"
-  DT_SCALE_SMALLER_BORDER = 2 // $DESCRIPTION: "smaller border"
+  DT_SCALE_IMAGE                 = 0,     // $DESCRIPTION: "image"
+  DT_SCALE_LARGER_BORDER         = 1,     // $DESCRIPTION: "larger border"
+  DT_SCALE_SMALLER_BORDER        = 2,     // $DESCRIPTION: "smaller border"
+  DT_SCALE_WIDTH_LARGER_BORDER   = 3,     // $DESCRIPTION: "marker (width) : border (large)"
+  DT_SCALE_WIDTH_SMALLER_BORDER  = 4,     // $DESCRIPTION: "marker (width) : border (small)"
+  DT_SCALE_HEIGHT_LARGER_BORDER  = 5,     // $DESCRIPTION: "marker (height) : border (large)"
+  DT_SCALE_HEIGHT_SMALLER_BORDER = 6      // $DESCRIPTION: "marker (height) : border (small)"
 } dt_iop_watermark_base_scale_t;
 
 typedef enum dt_iop_watermark_type_t
@@ -591,40 +595,57 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // wbase, hbase are the base width and height, this is the
   // multiplicator used for the offset computing scale is the scale of
   // the watermark itself and is used only to render it.
-
   float wbase, hbase, scale;
 
-  if(data->sizeto == DT_SCALE_IMAGE)
-  {
-    // in image mode, the wbase and hbase are just the image width and height
-    wbase = iw;
-    hbase = ih;
-    if(dimension.width > dimension.height)
-      scale = (iw * roi_out->scale) / dimension.width;
-    else
-      scale = (ih * roi_out->scale) / dimension.height;
-  }
-  else
-  {
-    // in larger/smaller side mode, set wbase and hbase to the largest
-    // or smallest side of the image
-    const float larger = dimension.width > dimension.height
-      ? (float)dimension.width
-      : (float)dimension.height;
+  // in larger/smaller (legacy) side mode, set wbase and hbase to the largest
+  // or smallest side of the image
+  const float larger = dimension.width > dimension.height
+    ? (float)dimension.width
+    : (float)dimension.height;
 
-    if(iw > ih)
-    {
-      wbase = hbase = (data->sizeto == DT_SCALE_LARGER_BORDER) ? iw : ih;
-      scale = (data->sizeto == DT_SCALE_LARGER_BORDER) ? (iw / larger) : (ih / larger);
-    }
-    else
-    {
-      wbase = hbase = (data->sizeto == DT_SCALE_SMALLER_BORDER) ? iw : ih;
-      scale = (data->sizeto == DT_SCALE_SMALLER_BORDER) ? (iw / larger) : (ih / larger);
-    }
-    scale *= roi_out->scale;
+  // set the base width and height to either large or smaller
+  // border of current image and calculate scale using either
+  // marker (SVG object) width or height
+  switch (data->sizeto)
+  {
+    case DT_SCALE_LARGER_BORDER:
+      wbase = hbase = (iw > ih) ? iw : ih;
+      scale = wbase / larger;
+      break;
+    case DT_SCALE_SMALLER_BORDER:
+      wbase = hbase = (iw < ih) ? iw : ih;
+      scale = wbase / larger;
+      break;
+    case DT_SCALE_WIDTH_LARGER_BORDER:
+      wbase = hbase = (iw > ih) ? iw : ih;
+      scale = wbase / dimension.width;
+      break;
+    case DT_SCALE_WIDTH_SMALLER_BORDER:
+      wbase = hbase = (iw < ih) ? iw : ih;
+      scale = wbase / dimension.width;
+      break;
+    case DT_SCALE_HEIGHT_LARGER_BORDER:
+      wbase = hbase = (iw > ih) ? iw : ih;
+      scale = wbase / dimension.height;
+      break;
+    case DT_SCALE_HEIGHT_SMALLER_BORDER:
+      wbase = hbase = (iw < ih) ? iw : ih;
+      scale = wbase / dimension.height;
+      break;
+
+    // default to "image" mode
+    case DT_SCALE_IMAGE:
+    default:
+      // in image mode, the wbase and hbase are just the image width and height
+      wbase = iw;
+      hbase = ih;
+      if(dimension.width > dimension.height)
+        scale = iw / dimension.width;
+      else
+        scale = ih / dimension.height;
   }
 
+  scale *= roi_out->scale;
   scale *= uscale;
 
   // compute the width and height of the SVG object in image
@@ -633,36 +654,64 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   float svg_width, svg_height;
 
-  if(dimension.width > dimension.height)
+  switch (data->sizeto)
   {
-    if(data->sizeto == DT_SCALE_IMAGE
-       || (iw > ih && data->sizeto == DT_SCALE_LARGER_BORDER)
-       || (iw < ih && data->sizeto == DT_SCALE_SMALLER_BORDER))
-    {
-      svg_width = iw * uscale;
+    case DT_SCALE_LARGER_BORDER:
+      if(dimension.width > dimension.height)
+      {
+        svg_width = ((iw > ih) ? iw : ih) * uscale;
+        svg_height = dimension.height * (svg_width / dimension.width);
+      }
+      else
+      {
+        svg_height = ((iw > ih) ? iw : ih) * uscale;
+        svg_width = dimension.width * (svg_height / dimension.height);
+      }
+      break;
+    case DT_SCALE_SMALLER_BORDER:
+      if(dimension.width > dimension.height)
+      {
+        svg_width = ((iw < ih) ? iw : ih) * uscale;
+        svg_height = dimension.height * (svg_width / dimension.width);
+      }
+      else
+      {
+        svg_height = ((iw < ih) ? iw : ih) * uscale;
+        svg_width = dimension.width * (svg_height / dimension.height);
+      }
+      break;
+    case DT_SCALE_WIDTH_LARGER_BORDER:
+      svg_width = ((iw > ih) ? iw : ih) * uscale;
       svg_height = dimension.height * (svg_width / dimension.width);
-    }
-    else
-    {
-      svg_width = ih * uscale;
+      break;
+    case DT_SCALE_WIDTH_SMALLER_BORDER:
+      svg_width = ((iw < ih) ? iw : ih) * uscale;
       svg_height = dimension.height * (svg_width / dimension.width);
-    }
-  }
-  else
-  {
-    if(data->sizeto == DT_SCALE_IMAGE
-       || (ih > iw && data->sizeto == DT_SCALE_LARGER_BORDER)
-       || (ih < iw && data->sizeto == DT_SCALE_SMALLER_BORDER))
-    {
-      svg_height = ih * uscale;
+      break;
+    case DT_SCALE_HEIGHT_LARGER_BORDER:
+      svg_height = ((iw > ih) ? iw : ih) * uscale;
       svg_width = dimension.width * (svg_height / dimension.height);
-    }
-    else
-    {
-      svg_height = iw * uscale;
+      break;
+    case DT_SCALE_HEIGHT_SMALLER_BORDER:
+      svg_height = ((iw < ih) ? iw : ih) * uscale;
       svg_width = dimension.width * (svg_height / dimension.height);
-    }
+      break;
+  
+    // default to "image" mode
+    case DT_SCALE_IMAGE:
+    default:
+      if(dimension.width > dimension.height)
+      {
+        svg_width = iw * uscale;
+        svg_height = dimension.height * (svg_width / dimension.width);
+      }
+      else
+      {
+        svg_height = ih * uscale;
+        svg_width = dimension.width * (svg_height / dimension.height);
+      }
   }
+
 
   /* For the rotation we need an extra cairo image as rotations are
      buggy via rsvg_handle_render_cairo.  distortions and blurred
