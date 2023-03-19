@@ -46,17 +46,9 @@ typedef void(_blend_row_func)(const float *const restrict a, const float *const 
 #endif
 static inline void _CLAMP_XYZ(float *const restrict XYZ)
 {
-  for(size_t i = 0; i < 3; i++) XYZ[i] = clamp_simd(XYZ[i]);
+  for_each_channel(c)
+    XYZ[c] = CLIP(XYZ[c]);
 }
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(src, dst: 16)
-#endif
-static inline void _PX_COPY(const float *const restrict src, float *const restrict dst)
-{
-  for(size_t i = 0; i < 3; i++) dst[i] = src[i];
-}
-
 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(parameters, invert_mask)
@@ -730,8 +722,8 @@ static void _blend_lightness(const float *const restrict a, const float *const r
     dt_aligned_pixel_t ta, tb;
     dt_aligned_pixel_t tta, ttb;
 
-    _PX_COPY(a + j, ta);
-    _PX_COPY(b + j, tb);
+    copy_pixel(ta, a + j);
+    copy_pixel(tb, b + j);
 
     _CLAMP_XYZ(ta);
     _CLAMP_XYZ(tb);
@@ -763,8 +755,8 @@ static void _blend_chromaticity(const float *const restrict a, const float *cons
     dt_aligned_pixel_t ta, tb;
     dt_aligned_pixel_t tta, ttb;
 
-    _PX_COPY(a + j, ta);
-    _PX_COPY(b + j, tb);
+    copy_pixel(ta, a + j);
+    copy_pixel(tb, b + j);
 
     _CLAMP_XYZ(ta);
     _CLAMP_XYZ(tb);
@@ -796,8 +788,8 @@ static void _blend_hue(const float *const restrict a, const float *const restric
     dt_aligned_pixel_t ta, tb;
     dt_aligned_pixel_t tta, ttb;
 
-    _PX_COPY(a + j, ta);
-    _PX_COPY(b + j, tb);
+    copy_pixel(ta, a + j);
+    copy_pixel(tb, b + j);
 
     _CLAMP_XYZ(ta);
     _CLAMP_XYZ(tb);
@@ -832,8 +824,8 @@ static void _blend_color(const float *const restrict a, const float *const restr
     dt_aligned_pixel_t ta, tb;
     dt_aligned_pixel_t tta, ttb;
 
-    _PX_COPY(a + j, ta);
-    _PX_COPY(b + j, tb);
+    copy_pixel(ta, a + j);
+    copy_pixel(tb, b + j);
 
     _CLAMP_XYZ(ta);
     _CLAMP_XYZ(tb);
@@ -869,8 +861,8 @@ static void _blend_coloradjust(const float *const restrict a, const float *const
     dt_aligned_pixel_t ta, tb;
     dt_aligned_pixel_t tta, ttb;
 
-    _PX_COPY(a + j, ta);
-    _PX_COPY(b + j, tb);
+    copy_pixel(ta, a + j);
+    copy_pixel(tb, b + j);
 
     _CLAMP_XYZ(ta);
     _CLAMP_XYZ(tb);
