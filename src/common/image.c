@@ -2699,68 +2699,79 @@ int dt_image_local_copy_reset(const int32_t imgid)
 // xmp stuff
 // *******************************************************
 
-int dt_image_write_sidecar_file(const int32_t imgid)
+gboolean dt_image_write_sidecar_file(const int32_t imgid)
 {
-  // TODO: compute hash and don't write if not needed!
-  // write .xmp file
-  if((imgid > 0) && (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER))
-  {
-    char filename[PATH_MAX] = { 0 };
+  if(imgid <= 0)
+    return TRUE;
 
-    // FIRST: check if the original file is present
-    gboolean from_cache = FALSE;
+  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
+  if(xmp_mode == DT_WRITE_XMP_NEVER)
+    return TRUE;
+
+  if((xmp_mode == DT_WRITE_XMP_LAZY) && !dt_image_altered(imgid))
+    return TRUE;
+
+  char filename[PATH_MAX] = { 0 };
+
+  // FIRST: check if the original file is present
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+
+  if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+  {
+    // OTHERWISE: check if the local copy exists
+    from_cache = TRUE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
-    if(!g_file_test(filename, G_FILE_TEST_EXISTS))
-    {
-      // OTHERWISE: check if the local copy exists
-      from_cache = TRUE;
-      dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
-
-      //  nothing to do, the original is not accessible and there is no local copy
-      if(!from_cache) return 1;
-    }
-
-    dt_image_path_append_version(imgid, filename, sizeof(filename));
-    g_strlcat(filename, ".xmp", sizeof(filename));
-
-    if(!dt_exif_xmp_write(imgid, filename))
-    {
-      // put the timestamp into db. this can't be done in exif.cc
-      // since that code gets called for the copy exporter, too
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "UPDATE main.images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1",
-         -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-      return 0;
-    }
+    //  nothing to do, the original is not accessible and there is no local copy
+    if(!from_cache)
+      return TRUE;
   }
 
-  return 1; // error : nothing written
+  dt_image_path_append_version(imgid, filename, sizeof(filename));
+  g_strlcat(filename, ".xmp", sizeof(filename));
+
+  if(!dt_exif_xmp_write(imgid, filename))
+  {
+    // put the timestamp into db. this can't be done in exif.cc
+    // since that code gets called for the copy exporter, too
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE main.images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1",
+       -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    return FALSE;
+  }
+
+  return TRUE; // nothing written
 }
 
 void dt_image_synch_xmps(const GList *img)
 {
-  if(!img) return;
-  if(dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER)
+  if(!img)
+    return;
+
+  // nothing to do if not creating .xmp
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
+    return;
+
+  for(const GList *imgs = img; imgs; imgs = g_list_next(imgs))
   {
-    for(const GList *imgs = img; imgs; imgs = g_list_next(imgs))
-    {
-      dt_image_write_sidecar_file(GPOINTER_TO_INT(imgs->data));
-    }
+    dt_image_write_sidecar_file(GPOINTER_TO_INT(imgs->data));
   }
 }
 
-void dt_image_synch_xmp(const int selected)
+void dt_image_synch_xmp(const int32_t selected)
 {
+  // nothing to do if not creating .xmp
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
+    return;
+
   if(selected > 0)
-  {
     dt_image_write_sidecar_file(selected);
-  }
   else
   {
     GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
@@ -2771,20 +2782,21 @@ void dt_image_synch_xmp(const int selected)
 
 void dt_image_synch_all_xmp(const gchar *pathname)
 {
-  if(dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER)
-  {
-    const int imgid = dt_image_get_id_full_path(pathname);
-    if(imgid != -1)
-    {
-      dt_image_write_sidecar_file(imgid);
-    }
-  }
+  // nothing to do if not creating .xmp
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
+    return;
+
+  const int32_t imgid = dt_image_get_id_full_path(pathname);
+  if(imgid != -1)
+    dt_image_write_sidecar_file(imgid);
 }
 
 void dt_image_local_copy_synch(void)
 {
   // nothing to do if not creating .xmp
-  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER) return;
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
+    return;
+
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
