@@ -197,9 +197,10 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
 
 void dt_image_cache_print(dt_image_cache_t *cache)
 {
-  printf("[image cache] fill %.2f/%.2f MB (%.2f%%)\n", cache->cache.cost / (1024.0 * 1024.0),
-         cache->cache.cost_quota / (1024.0 * 1024.0),
-         (float)cache->cache.cost / (float)cache->cache.cost_quota);
+  dt_print(DT_DEBUG_ALWAYS,
+           "[image cache] fill %.2f/%.2f MB (%.2f%%)\n", cache->cache.cost / (1024.0 * 1024.0),
+           cache->cache.cost_quota / (1024.0 * 1024.0),
+           (float)cache->cache.cost / (float)cache->cache.cost_quota);
 }
 
 dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const int32_t imgid, char mode)
