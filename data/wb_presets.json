@@ -119873,6 +119873,83 @@
               ]
             }
           ]
+        },
+        {
+          "model": "GR IIIx",
+          "presets": [
+            {
+              "name": "Daylight",
+              "channels": [
+                2.74609375,
+                1,
+                1.8046875,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                3.29296875,
+                1,
+                1.3515625,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                3.00390625,
+                1,
+                1.5625,
+                0
+              ]
+            },
+            {
+              "name": "Tungsten",
+              "channels": [
+                1.7265625,
+                1,
+                3.1328125,
+                0
+              ]
+            },
+            {
+              "name": "Warm White Fluorescent",
+              "channels": [
+                2.01171875,
+                1,
+                3.0859375,
+                0
+              ]
+            },
+            {
+              "name": "Day White Fluorescent",
+              "channels": [
+                2.6484375,
+                1,
+                2.03515625,
+                0
+              ]
+            },
+            {
+              "name": "Daylight Fluorescent",
+              "channels": [
+                3.109375,
+                1,
+                1.79296875,
+                0
+              ]
+            },
+            {
+              "name": "White Fluorescent",
+              "channels": [
+                2.37890625,
+                1,
+                2.484375,
+                0
+              ]
+            }
+          ]
         }
       ]
     },
