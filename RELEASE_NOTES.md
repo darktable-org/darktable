@@ -199,6 +199,9 @@ The following is a summary of the main features added to darktable
     Mapping, Rotation and Perspective and Local Contrast. Meaning all
     those modules have parts now running faster.
 
+  - All the blending modes in Lab & RGB for the Display & Scene
+    referred workflows have been optimized.
+
   - Loader for JPEG2000 file format
 
 - Improve Highlights reconstruction "inpaint opposed" performance by
