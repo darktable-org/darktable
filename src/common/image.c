@@ -915,7 +915,6 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   dt_image_update_final_size(imgid);
-  // write that through to xmp:
   dt_image_write_sidecar_file(imgid);
 }
 
@@ -1823,7 +1822,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
   g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
-  const int res = dt_exif_xmp_read(img, dtfilename, 0);
+  const gboolean res = dt_exif_xmp_read(img, dtfilename, 0);
 
   // write through to db, but not to xmp.
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -1831,7 +1830,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   // read all sidecar files
   const int nb_xmp = _image_read_duplicates(id, normalized_filename, raise_signals);
 
-  if((res != 0) && (nb_xmp == 0))
+  if(res && (nb_xmp == 0))
   {
     // Search for Lightroom sidecar file, import tags if found
     const gboolean lr_xmp = dt_lightroom_import(id, NULL, TRUE);
@@ -2151,7 +2150,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         // write through to db, but not to xmp
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
         dup_list = g_list_delete_link(dup_list, dup_list);
-        // write xmp file
+        // now also write xmp file
         dt_image_write_sidecar_file(id);
       }
       g_list_free(dup_list);
@@ -2506,7 +2505,6 @@ int32_t dt_image_copy_rename(const int32_t imgid,
 
         dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
 
-        // write xmp file
         dt_image_write_sidecar_file(newid);
 
         dt_collection_update_query(darktable.collection,
@@ -2662,7 +2660,6 @@ int dt_image_local_copy_reset(const int32_t imgid)
     GFile *dest = g_file_new_for_path(locppath);
 
     // first sync the xmp with the original picture
-
     dt_image_write_sidecar_file(imgid);
 
     // delete image from cache directory only if there is no other
@@ -2708,9 +2705,6 @@ gboolean dt_image_write_sidecar_file(const int32_t imgid)
   if(xmp_mode == DT_WRITE_XMP_NEVER)
     return TRUE;
 
-  if((xmp_mode == DT_WRITE_XMP_LAZY) && !dt_image_altered(imgid))
-    return TRUE;
-
   char filename[PATH_MAX] = { 0 };
 
   // FIRST: check if the original file is present
@@ -2728,13 +2722,23 @@ gboolean dt_image_write_sidecar_file(const int32_t imgid)
       return TRUE;
   }
 
-  dt_image_path_append_version(imgid, filename, sizeof(filename));
-  g_strlcat(filename, ".xmp", sizeof(filename));
+  gboolean error = FALSE;
 
-  if(!dt_exif_xmp_write(imgid, filename))
+  // the sidecar is written only if required
+  if((xmp_mode == DT_WRITE_XMP_ALWAYS)
+     || ((xmp_mode == DT_WRITE_XMP_LAZY) && dt_image_altered(imgid)))
   {
-    // put the timestamp into db. this can't be done in exif.cc
-    // since that code gets called for the copy exporter, too
+    dt_image_path_append_version(imgid, filename, sizeof(filename));
+    g_strlcat(filename, ".xmp", sizeof(filename));
+    error = dt_exif_xmp_write(imgid, filename);
+  }
+
+  /* The timestamp must be put into db
+     - in case of no reported error while writing the sidecar
+     - or if no sidecar writing was required
+  */
+  if(!error)
+  {
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2
       (dt_database_get(darktable.db),
@@ -2743,10 +2747,8 @@ gboolean dt_image_write_sidecar_file(const int32_t imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    return FALSE;
   }
-
-  return TRUE; // nothing written
+  return error;
 }
 
 void dt_image_synch_xmps(const GList *img)
