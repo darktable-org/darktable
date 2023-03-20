@@ -361,6 +361,8 @@ dt_imageio_write_xmp_t dt_image_get_xmp_mode()
 gboolean dt_image_safe_remove(const int32_t imgid)
 {
   // always safe to remove if we do not have .xmp
+  // FIXME ?? we might have remaining sidecar files from a situation with enabled writing.
+  // Do we want to test and possibly remove them?
   if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER) return TRUE;
 
   // check whether the original file is accessible
@@ -2702,8 +2704,6 @@ gboolean dt_image_write_sidecar_file(const int32_t imgid)
     return TRUE;
 
   const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
-  if(xmp_mode == DT_WRITE_XMP_NEVER)
-    return TRUE;
 
   char filename[PATH_MAX] = { 0 };
 
@@ -2756,10 +2756,6 @@ void dt_image_synch_xmps(const GList *img)
   if(!img)
     return;
 
-  // nothing to do if not creating .xmp
-  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
-    return;
-
   for(const GList *imgs = img; imgs; imgs = g_list_next(imgs))
   {
     dt_image_write_sidecar_file(GPOINTER_TO_INT(imgs->data));
@@ -2768,10 +2764,6 @@ void dt_image_synch_xmps(const GList *img)
 
 void dt_image_synch_xmp(const int32_t selected)
 {
-  // nothing to do if not creating .xmp
-  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
-    return;
-
   if(selected > 0)
     dt_image_write_sidecar_file(selected);
   else
@@ -2784,10 +2776,6 @@ void dt_image_synch_xmp(const int32_t selected)
 
 void dt_image_synch_all_xmp(const gchar *pathname)
 {
-  // nothing to do if not creating .xmp
-  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
-    return;
-
   const int32_t imgid = dt_image_get_id_full_path(pathname);
   if(imgid != -1)
     dt_image_write_sidecar_file(imgid);
@@ -2795,10 +2783,6 @@ void dt_image_synch_all_xmp(const gchar *pathname)
 
 void dt_image_local_copy_synch(void)
 {
-  // nothing to do if not creating .xmp
-  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER)
-    return;
-
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
