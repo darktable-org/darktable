@@ -38,6 +38,7 @@ typedef enum _style_items_columns_t
   DT_HIST_ITEMS_COL_ISACTIVE,
   DT_HIST_ITEMS_COL_AUTOINIT,
   DT_HIST_ITEMS_COL_NAME,
+  DT_HIST_ITEMS_COL_MASK,
   DT_HIST_ITEMS_COL_NUM,
   DT_HIST_ITEMS_NUM_COLS
 } _styles_columns_t;
@@ -192,8 +193,8 @@ void tree_on_row_activated(GtkTreeView       *treeview,
     do
     {
       gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-                         DT_HIST_ITEMS_COL_ENABLED, FALSE, -1);
-
+                         DT_HIST_ITEMS_COL_ENABLED, FALSE,
+                         -1);
     } while(gtk_tree_model_iter_next(model, &iter));
   }
 
@@ -246,7 +247,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   GtkListStore *liststore
     = gtk_list_store_new(DT_HIST_ITEMS_NUM_COLS,
                          G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN,
-                         G_TYPE_STRING, G_TYPE_UINT);
+                         G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_UINT);
 
   /* enabled */
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
@@ -286,6 +287,16 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     (GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "markup",
      DT_HIST_ITEMS_COL_NAME, NULL);
 
+  /* mask */
+  renderer = gtk_cell_renderer_pixbuf_new();
+  column = gtk_tree_view_column_new_with_attributes
+    (_("mask"), renderer, "pixbuf",
+     DT_HIST_ITEMS_COL_MASK, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(d->items), column);
+  gtk_tree_view_column_set_alignment(column, 0.5);
+  gtk_tree_view_column_set_clickable(column, FALSE);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(30));
+
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)),
                               GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->items), GTK_TREE_MODEL(liststore));
@@ -294,6 +305,8 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
   GdkPixbuf *is_inactive_pb =
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
+  GdkPixbuf *mask =
+    dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_showmask);
 
   /* fill list with history items */
   GList *items = dt_history_get_items(imgid, FALSE, TRUE);
@@ -315,10 +328,9 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
           (GTK_LIST_STORE(liststore), &iter,
            DT_HIST_ITEMS_COL_ENABLED, iscopy ? is_safe : _gui_is_set(d->selops, item->num),
            DT_HIST_ITEMS_COL_AUTOINIT, FALSE,
-           DT_HIST_ITEMS_COL_ISACTIVE, (gboolean)item->enabled
-                                        ? is_active_pb
-                                        : is_inactive_pb,
+           DT_HIST_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
            DT_HIST_ITEMS_COL_NAME, item->name,
+           DT_HIST_ITEMS_COL_MASK, item->mask_mode > 0 ? mask : NULL,
            DT_HIST_ITEMS_COL_NUM, (gint)item->num,
            -1);
       }
