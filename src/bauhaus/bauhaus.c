@@ -2379,7 +2379,8 @@ static gint _bauhaus_natural_width(GtkWidget *widget, gboolean popup)
     gint number_width = 0;
     char *max = dt_bauhaus_slider_get_text(widget, w->data.slider.max);
     char *min = dt_bauhaus_slider_get_text(widget, w->data.slider.min);
-    char *text = strlen(max) >= strlen(min) ? max : min;pango_layout_set_text(layout, text, -1);
+    char *text = strlen(max) >= strlen(min) ? max : min;
+    pango_layout_set_text(layout, text, -1);
     pango_layout_get_size(layout, &number_width, NULL);
     natural_size += 2 * INNER_PADDING + number_width / PANGO_SCALE;
     g_free(max);
