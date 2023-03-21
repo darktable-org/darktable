@@ -982,8 +982,8 @@ interpolate_bilinear(read_only image2d_t in,
   // Nearest pixels in input array (nodes in grid)
   const float4 Q_NW = read_imagef(in, samplerA, (int2)(x_prev, y_prev));
   const float4 Q_NE = read_imagef(in, samplerA, (int2)(x_next, y_prev));
-  const float4 Q_SE = read_imagef(in, samplerA, (int2)(x_prev, y_next));
-  const float4 Q_SW = read_imagef(in, samplerA, (int2)(x_next, y_next));
+  const float4 Q_SE = read_imagef(in, samplerA, (int2)(x_next, y_next));
+  const float4 Q_SW = read_imagef(in, samplerA, (int2)(x_prev, y_next));
 
   // Spatial differences between nodes
   const float Dy_next = (float)y_next - y_in;
