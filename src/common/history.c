@@ -916,7 +916,7 @@ GList *dt_history_get_items(const int32_t imgid,
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT num, operation, enabled, multi_name"
+                              "SELECT num, operation, enabled, multi_name, blendop_params"
                               " FROM main.history"
                               " WHERE imgid=?1"
                               "   AND num IN (SELECT MAX(num)"
@@ -938,8 +938,12 @@ GList *dt_history_get_items(const int32_t imgid,
     char name[512] = { 0 };
     dt_history_item_t *item = g_malloc(sizeof(dt_history_item_t));
     const char *op = (char *)sqlite3_column_text(stmt, 1);
+    // first uint32_t of blend_params is the mode
+    const uint32_t *blend_params = (uint32_t *)sqlite3_column_blob(stmt, 4);
+    const int blend_params_len = sqlite3_column_bytes(stmt, 4);
     item->num = sqlite3_column_int(stmt, 0);
     item->enabled = sqlite3_column_int(stmt, 2);
+    item->mask_mode = blend_params_len > 0 ? blend_params[0] : DEVELOP_MASK_DISABLED;
 
     const char *mname = (char *)sqlite3_column_text(stmt, 3);
 

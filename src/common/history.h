@@ -22,6 +22,7 @@
 #include <inttypes.h>
 #include <sqlite3.h>
 #include "develop/imageop.h"
+#include "develop/blend.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -128,6 +129,7 @@ typedef struct dt_history_item_t
   gchar *op;
   gchar *name;
   gboolean enabled;
+  dt_develop_mask_mode_t mask_mode;
 } dt_history_item_t;
 
 /** get list of history items for image */
