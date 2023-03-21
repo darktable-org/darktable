@@ -696,7 +696,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                        DT_STYLE_ITEMS_COL_NUM,      -1,
                        -1);
     /* get history items for named style and populate the items list */
-    GList *items = dt_styles_get_item_list(name, FALSE, imgid, TRUE);
+    GList *items = dt_styles_get_item_list(name, TRUE, imgid, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
@@ -903,7 +903,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 
   gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
-  GList *items = dt_styles_get_item_list(name, FALSE, -1, FALSE);
+  GList *items = dt_styles_get_item_list(name, TRUE, -1, FALSE);
   GList *l = items;
   while(l)
   {
