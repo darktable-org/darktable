@@ -370,6 +370,14 @@ restart:
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
+
+#ifdef USE_LUA
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "pixelpipe-processing-complete",
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+      LUA_ASYNC_DONE);
+#endif
 }
 
 void dt_dev_process_preview2_job(dt_develop_t *dev)
@@ -647,14 +655,6 @@ restart:
   dt_control_log_busy_leave();
   dt_control_toast_busy_leave();
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
-
-#ifdef USE_LUA
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "pixelpipe-processing-complete",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
-      LUA_ASYNC_DONE);
-#endif
 
   if(dev->gui_attached && !dev->gui_leaving)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);

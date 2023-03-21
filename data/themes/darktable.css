@@ -205,7 +205,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
-@define-color brush_trace alpha(black, .8);
+@define-color brush_trace alpha(black, .6);
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_15;

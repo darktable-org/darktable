@@ -37,7 +37,8 @@ typedef enum dt_imageio_retval_t
 {
   DT_IMAGEIO_OK = 0,         // all good :)
   DT_IMAGEIO_FILE_NOT_FOUND, // file has been lost
-  DT_IMAGEIO_LOAD_FAILED,    // file either corrupted or in a format not supported by the current loader
+  DT_IMAGEIO_LOAD_FAILED,    // file either corrupted or in a format
+                             // not supported by the current loader.
   DT_IMAGEIO_CACHE_FULL      // buffer allocation for image data failed
 } dt_imageio_retval_t;
 
@@ -65,8 +66,8 @@ typedef enum
   // To reuse : force to 0 in DB loading and force to 0 in DB saving
   // Use it to store a state that doesn't need to go in DB
   DT_IMAGE_THUMBNAIL_DEPRECATED = 16,
-  // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping
-  // etc.
+  // set during import if the image is low-dynamic range, i.e. doesn't
+  // need demosaic, wb, highlight clipping etc.
   DT_IMAGE_LDR = 32,
   // set during import if the image is raw data, i.e. it needs demosaicing.
   DT_IMAGE_RAW = 64,
@@ -88,8 +89,8 @@ typedef enum
   DT_IMAGE_4BAYER = 16384,
   // image was detected as monochrome
   DT_IMAGE_MONOCHROME = 32768,
-  // DNG image has exif tags which are not cached in the database but must be read and stored in dt_image_t
-  // when the image is loaded.
+  // DNG image has exif tags which are not cached in the database but
+  // must be read and stored in dt_image_t when the image is loaded.
   DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS = 65536,
   // image is an sraw
   DT_IMAGE_S_RAW = 1 << 17,
@@ -282,9 +283,13 @@ typedef struct dt_image_t
   float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
   uint8_t *profile;          // embedded profile, for example from JPEGs
   uint32_t profile_size;
-  dt_image_colorspace_t colorspace; // the colorspace that is specified in exif. mostly used for jpeg files
+  dt_image_colorspace_t colorspace; // the colorspace that is
+                                    // specified in exif. mostly used
+                                    // for jpeg files
 
-  dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
+  dt_image_raw_parameters_t legacy_flip; // unfortunately needed to
+                                         // convert old bits to new
+                                         // flip module.
 
   /* gps coords */
   dt_image_geoloc_t geoloc;
@@ -310,7 +315,8 @@ typedef struct dt_image_t
   /* GainMaps from DNG OpcodeList2 exif tag */
   GList *dng_gain_maps;
 
-  /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
+  /* convenience pointer back into the image cache, so we can return
+   * dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
 
@@ -395,7 +401,8 @@ uint32_t dt_image_import(int32_t film_id,
                          const char *filename,
                          const gboolean override_ignore_jpegs,
                          const gboolean raise_signals);
-/** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
+/** imports a new image from raw/etc file and adds it to the data base
+ * and image cache. Use from lua thread.*/
 uint32_t dt_image_import_lua(const int32_t film_id,
                              const char *filename,
                              const gboolean override_ignore_jpegs);
@@ -506,8 +513,8 @@ gboolean dt_image_safe_remove(const int32_t imgid);
 /* try to sync .xmp for all local copies */
 void dt_image_local_copy_synch(void);
 // xmp functions:
-int dt_image_write_sidecar_file(const int32_t imgid);
-void dt_image_synch_xmp(const int selected);
+gboolean dt_image_write_sidecar_file(const int32_t imgid);
+void dt_image_synch_xmp(const int32_t selected);
 void dt_image_synch_xmps(const GList *img);
 void dt_image_synch_all_xmp(const gchar *pathname);
 /** get the mode xmp sidecars are written */

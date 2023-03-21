@@ -313,15 +313,22 @@ static float _calc_refavg(
         global const unsigned char (*const xtrans)[6],
         const unsigned int filters,
         int row,
-        int col)
+        int col,
+        int maxrow,
+        int maxcol)
 {
   float mean[3] = { 0.0f, 0.0f, 0.0f };
   float sum[3] =  { 0.0f, 0.0f, 0.0f };
   float cnt[3]  = { 0.0f, 0.0f, 0.0f };
 
-  for(int dy = -1; dy < 2; dy++)
+  const int dymin = (row > 0) ? -1 : 0;
+  const int dxmin = (col > 0) ? -1 : 0;
+  const int dymax = (row < maxrow -1) ? 2 : 1;
+  const int dxmax = (col < maxcol -1) ? 2 : 1;
+
+  for(int dy = dymin; dy < dymax; dy++)
   {
-    for(int dx = -1; dx < 2; dx++)
+    for(int dx = dxmin; dx < dxmax; dx++)
     {
       const float val = fmax(0.0f, read_imagef(in, samplerA, (int2)(col+dx, row+dy)).x);
       const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, xtrans) : FC(row + dy, col + dx, filters);
@@ -332,7 +339,7 @@ static float _calc_refavg(
 
   const float onethird = 1.0f / 3.0f;
   for(int c = 0; c < 3; c++)
-    mean[c] = pow(sum[c] / cnt[c], onethird);
+    mean[c] = (cnt[c] > 0.0f) ? pow(sum[c] / cnt[c], onethird) : 0.0f;
 
   const float croot_refavg[3] = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
@@ -473,7 +480,7 @@ kernel void highlights_chroma(
     const int px = color * msize + mad24(row/3, mwidth, col/3);
     if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
     {
-      const float ref = _calc_refavg(in, xtrans, filters, row, col);
+      const float ref = _calc_refavg(in, xtrans, filters, row, col, height, width);
       sum[color] += inval - ref;
       cnt[color] += 1.0f;
     }
@@ -515,14 +522,11 @@ kernel void highlights_opposed(
   {
     val = fmax(0.0f, read_imagef(in, samplerA, (int2)(icol, irow)).x);
 
-    if((icol > 0) && (icol < iwidth-1) && (irow > 0) && (irow < iheight-1))
+    const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+    if(val >= clips[color])
     {
-      const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
-      if(val >= clips[color])
-      {
-        const float ref = _calc_refavg(in, xtrans, filters, irow, icol);
-        val = fmax(val, ref + chroma[color]);
-      }
+      const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth);
+      val = fmax(val, ref + chroma[color]);
     }
   }
   write_imagef (out, (int2)(x, y), val);
@@ -1194,6 +1198,11 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
 
   float4 high_frequency = read_imagef(HF, samplerA, (int2)(x, y));
 
+  // We use 4 floats SIMD instructions but we don't want to diffuse the norm, make sure to store and restore it later.
+  // This is not much of an issue when processing image at full-res, but more harmful since
+  // we reconstruct highlights on a downscaled variant
+  const float norm_backup = high_frequency.w;
+
   float4 out;
 
   if(alpha.w > 0.f) // reconstruct
@@ -1237,6 +1246,8 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     // Diffuse
     const float4 multipliers_HF = { 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 0.f };
     high_frequency += alpha * multipliers_HF * (laplacian_HF - first_order_factor * high_frequency);
+
+    high_frequency.w = norm_backup;
   }
 
   if((scale & FIRST_SCALE))

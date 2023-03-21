@@ -859,6 +859,22 @@ void dt_shortcut_copy_lua(dt_action_t *action, gchar *preset_name)
   _shortcut_copy_lua(widget, &shortcut, preset_name);
 }
 
+static void _tooltip_reposition(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
+{
+  GdkWindow *window = gtk_widget_get_window(gtk_widget_get_toplevel(widget));
+  if(!window) return;
+
+  gint wx, wy, width = gdk_window_get_width(window);
+  gdk_window_get_origin(window, &wx, &wy);
+
+  GdkRectangle workarea;
+  gdk_monitor_get_workarea(gdk_display_get_monitor_at_window(gdk_window_get_display(window), window), &workarea);
+
+  wx = CLAMP(wx, workarea.x, workarea.x + workarea.width - width);
+
+  gdk_window_move(window, wx, wy);
+}
+
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                       GtkTooltip *tooltip, GtkWidget *vbox)
 {
@@ -1045,6 +1061,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
 
   gtk_widget_show_all(vbox);
   gtk_tooltip_set_custom(tooltip, vbox);
+  g_signal_connect(G_OBJECT(vbox), "size-allocate", G_CALLBACK(_tooltip_reposition), widget);
 
   return TRUE;
 }

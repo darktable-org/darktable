@@ -2,7 +2,8 @@
 //
 // Copyright (c) 2014 Moritz Lipp <mlq@pwmt.org>.
 // Copyright (c) 2016 tobias ellinghaus <me@houz.org>.
-//
+// Copyright (C) 2023 darktable developers.
+
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -23,6 +24,7 @@
 
 #include "backend_libsecret.h"
 #include "control/conf.h"
+#include "common/darktable.h"
 
 #include <glib.h>
 #include <json-glib/json-glib.h>
@@ -64,7 +66,7 @@ const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
   SecretService *secret_service = secret_service_get_sync(SECRET_SERVICE_LOAD_COLLECTIONS, NULL, &error);
   if(error)
   {
-    fprintf(stderr, "[pwstorage_libsecret] error connecting to Secret Service: %s\n", error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error connecting to Secret Service: %s\n", error->message);
     g_error_free(error);
     if(secret_service) g_object_unref(secret_service);
     dt_pwstorage_libsecret_destroy(context);
@@ -116,7 +118,7 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t *context, 
                                             NULL);
   if(!res)
   {
-    fprintf(stderr, "[pwstorage_libsecret] error storing password: %s\n", error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error storing password: %s\n", error->message);
     g_error_free(error);
   }
 
@@ -145,7 +147,7 @@ GHashTable *dt_pwstorage_libsecret_get(const backend_libsecret_context_t *contex
                                              NULL);
   if(error)
   {
-    fprintf(stderr, "[pwstorage_libsecret] error retrieving password: %s\n", error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error retrieving password: %s\n", error->message);
     g_error_free(error);
     goto error;
   }

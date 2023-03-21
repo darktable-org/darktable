@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ struct dt_iop_module_t;
 // note that if an image has no history (and no history hash) it is considered as basic
 typedef enum dt_history_hash_t
 {
+  DT_HISTORY_HASH_NONE = 0,          // no defined status for initializing
   DT_HISTORY_HASH_BASIC   = 1 << 0,  // only mandatory modules
   DT_HISTORY_HASH_AUTO    = 1 << 1,  // mandatory modules plus the auto applied ones
   DT_HISTORY_HASH_CURRENT = 1 << 2,  // current state, with or without change
@@ -133,13 +134,13 @@ typedef struct dt_history_item_t
 GList *dt_history_get_items(int32_t imgid, gboolean enabled);
 
 /** get list of history items for image as a nice string */
-char *dt_history_get_items_as_string(int32_t imgid);
+char *dt_history_get_items_as_string(const int32_t imgid);
 
 /** get a single history item as string with enabled status */
-char *dt_history_item_as_string(const char *name, gboolean enabled);
+char *dt_history_item_as_string(const char *name, const gboolean enabled);
 
 /* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists(int32_t imgid,
+gboolean dt_history_check_module_exists(const int32_t imgid,
                                         const char *operation,
                                         const gboolean enabled);
 
@@ -162,10 +163,13 @@ gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid);
 void dt_history_hash_set_mipmap(const int32_t imgid);
 
 /** write hash values to db */
-void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash);
+void dt_history_hash_write(const int32_t imgid, const dt_history_hash_values_t *const hash);
 
 /** read hash values from db */
 void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash);
+
+/** release memory for hash values */
+void dt_history_hash_free(dt_history_hash_values_t *hash);
 
 #ifdef __cplusplus
 } // extern "C"

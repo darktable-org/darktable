@@ -173,6 +173,11 @@ The following is a summary of the main features added to darktable
   - Color Balance (legacy)
   - Levels (legacy)
 
+  - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
+    Lanczos3) used by modules doing warp or scaling of pixels. The old
+    Crop and Rotate and the new Perspective Correction modules are now
+    running faster.
+
   - The gaussian generator used by many modules: Censorize, Denoise
     Profile, Lowpass, Diffuse & Sharpen, Defringe, RAW Chromatic
     Aberrations, Base Curve, Perspective Correction, Filmic RGB,
@@ -193,6 +198,11 @@ The following is a summary of the main features added to darktable
     Lowpass Filter, Shadow and Highlights, Censorize, Retouch, Color
     Mapping, Rotation and Perspective and Local Contrast. Meaning all
     those modules have parts now running faster.
+
+  - All the blending modes in Lab & RGB for the Display & Scene
+    referred workflows have been optimized.
+
+  - The luminance mask calculation for the Tone Equalizer?
 
   - Loader for JPEG2000 file format
 
@@ -304,6 +314,23 @@ The following is a summary of the main features added to darktable
 - The search filter has been improved to also search the camera's brand
   and model.
 
+- A full copy and paste is always done in overwrite mode now. Using
+  the append mode was in the vast majority of time wrong in this
+  case. When the full history is copied and pasted into another image
+  we do want to just use the new history as a replacement of the
+  previous one. It makes no sense adding some multi-instance for some
+  modules for example. So this new default should fit better in the
+  workflow.
+
+- Re-enable loading of BigTIFF images by attempting the native
+  libtiff-based reader first.
+
+- The brush path is now a bit more transparent to better see what is
+  actually painted.
+
+- Style tooltip immediately shows module details while waiting for
+  preview image to be calculated.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
@@ -411,7 +438,19 @@ The following is a summary of the main features added to darktable
   it is now impossible to enable the module if the image is a JPEG as
   the module works only with RAWs.
 
+- Fix border issue in inpaint opposed highlights reconstruction. Some
+  pixels on the border of the image where not handled by the
+  algorithm. This may lead to a small difference on the border of the
+  image and will avoids some possible redish borders.
+
+- Avoid XMP writing if not requested and image was not altered. This
+  is rule is properly followed now also when importing RAW + JPEG.
+
 ## Lua
+
+### API Version
+
+- API version is now 9.1.0
 
 ### Add action support for Lua
 
@@ -419,7 +458,7 @@ The following is a summary of the main features added to darktable
   parameters optional, so you can read the focused status of a module
   doing just dt.gui.action("iop/filmicrgb", "focus").
 
-- tooltips show these compacter lua commands in mapping mode (only
+- tooltips show the compact lua commands in mapping mode (only
   adding the last parameter, instance, if the module supports
   multi-instance) and have been added to presets and styles menus as
   well.
@@ -452,10 +491,16 @@ The following is a summary of the main features added to darktable
 
 ### Other Lua changes
 
-- Add image orientation retrieval support.
+- Added aspect_ratio field to dt_lua_image_t for image orientation
+  retrieval support.
 
 - Two new properties have been added to get the flags (category,
   private) and the synonyms from a tag.
+
+- Moved `pixelpipe-processing-complete` event from the end of the
+  image pixelpipe to the end of the preview pixelpipe to catch
+  completion of events that only update the preview such as
+  spot exposure measurement in the exposure module.
 
 ## Notes
 
@@ -471,6 +516,10 @@ The following is a summary of the main features added to darktable
   version, this can be supported by reverting the following change:
   remove line 241 of darktable.css file on your system. See:
   https://github.com/darktable-org/darktable/issues/13166
+
+- Beginning with this release a new support policy regarding macOS versions will be in place.
+  darktable releases will just support macOS versions that are also supported by Apple.
+  So release 4.4 drops support for macOS versions older than 11.3.
 
 ## Changed Dependencies
 
