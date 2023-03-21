@@ -661,13 +661,13 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_NAME);
   g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1,
-                                              _("item"), renderer, "text",
+                                              _("item"), renderer, "markup",
                                               DT_STYLE_ITEMS_COL_NAME, NULL);
 
   if(edit)
   {
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items_new), -1,
-                                                _("item"), renderer, "text",
+                                                _("item"), renderer, "markup",
                                                 DT_STYLE_ITEMS_COL_NAME, NULL);
   }
 
@@ -748,7 +748,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                        -1);
     g_free(label);
 
-    GList *items = dt_history_get_items(imgid, FALSE);
+    GList *items = dt_history_get_items(imgid, FALSE, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
