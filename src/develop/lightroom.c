@@ -214,7 +214,7 @@ typedef struct dt_iop_colorin_params_v1_t
 #define LRDT_BLEND_VERSION 4
 #define DEVELOP_BLENDIF_SIZE 16
 
-typedef struct dt_develop_blend_params_t
+typedef struct dt_lr_develop_blend_params_t
 {
   /** blending mode */
   uint32_t mode;
@@ -228,7 +228,7 @@ typedef struct dt_develop_blend_params_t
   float radius;
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params_t;
+} dt_lr_develop_blend_params_t;
 
 //
 // end of blend_params
@@ -330,7 +330,7 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
                         size_t imported_len, int version, int *import_count)
 {
   int32_t num = 0;
-  dt_develop_blend_params_t blend_params = { 0 };
+  dt_lr_develop_blend_params_t blend_params = { 0 };
 
   //  get current num if any
   sqlite3_stmt *stmt;
@@ -357,7 +357,7 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_size, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_lr_develop_blend_params_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, LRDT_BLEND_VERSION);
 
   sqlite3_step(stmt);
@@ -1572,4 +1572,3 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
