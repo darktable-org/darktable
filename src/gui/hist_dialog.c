@@ -269,7 +269,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_NAME);
   g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes
-    (GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "text",
+    (GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "markup",
      DT_HIST_ITEMS_COL_NAME, NULL);
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)),
@@ -282,7 +282,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
 
   /* fill list with history items */
-  GList *items = dt_history_get_items(imgid, FALSE);
+  GList *items = dt_history_get_items(imgid, FALSE, TRUE);
   if(items)
   {
     GtkTreeIter iter;

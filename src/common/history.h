@@ -131,7 +131,9 @@ typedef struct dt_history_item_t
 } dt_history_item_t;
 
 /** get list of history items for image */
-GList *dt_history_get_items(int32_t imgid, gboolean enabled);
+GList *dt_history_get_items(const int32_t imgid,
+                            const gboolean enabled,
+                            const gboolean markup);
 
 /** get list of history items for image as a nice string */
 char *dt_history_get_items_as_string(const int32_t imgid);

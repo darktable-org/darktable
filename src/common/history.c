@@ -907,7 +907,9 @@ char *dt_history_item_as_string(const char *name, const gboolean enabled)
   return g_strconcat(enabled ? "●" : "○", "  ", name, NULL);
 }
 
-GList *dt_history_get_items(const int32_t imgid, const gboolean enabled)
+GList *dt_history_get_items(const int32_t imgid,
+                            const gboolean enabled,
+                            const gboolean markup)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
@@ -939,19 +941,25 @@ GList *dt_history_get_items(const int32_t imgid, const gboolean enabled)
     item->num = sqlite3_column_int(stmt, 0);
     item->enabled = sqlite3_column_int(stmt, 2);
 
-    char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
+    const char *mname = (char *)sqlite3_column_text(stmt, 3);
 
-    if(strcmp(mname, "0") == 0)
+    if(!mname
+       || strlen(mname) == 0
+       || strcmp(mname, "0") == 0)
+    {
       g_snprintf(name, sizeof(name), "%s", dt_iop_get_localized_name(op));
+    }
     else
-      g_snprintf(name, sizeof(name), "%s %s",
+    {
+      g_snprintf(name, sizeof(name), "%s • %s%s%s",
                  dt_iop_get_localized_name(op),
-                 (char *)sqlite3_column_text(stmt, 3));
+                 markup ? "<small>" : "",
+                 (char *)mname,
+                 markup ? "</small>" : "");
+    }
     item->name = g_strdup(name);
     item->op = g_strdup(op);
     result = g_list_prepend(result, item);
-
-    g_free(mname);
   }
   sqlite3_finalize(stmt);
   return g_list_reverse(result);   // list was built in reverse order, so un-reverse it
