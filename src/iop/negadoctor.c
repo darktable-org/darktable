@@ -292,14 +292,9 @@ static inline void _process_pixel(const dt_aligned_pixel_t pix_in,
     dt_aligned_pixel_t print_gamma;
     dt_vector_powf(print_linear, gamma, print_gamma); // note : this is always > 0
     dt_aligned_pixel_t e_to_gamma;
-#if 0
-    for_each_channel(c)
-      e_to_gamma[c] = fast_expf(-(print_gamma[c] - soft_clip[c]) / soft_clip_comp[c]);
-#else
     dt_aligned_pixel_t clipped_gamma;
     for_each_channel(c)
       clipped_gamma[c] = -(print_gamma[c] - soft_clip[c]) / soft_clip_comp[c];
-#endif
     dt_vector_exp(clipped_gamma, e_to_gamma);
     for_each_channel(c)
     {
