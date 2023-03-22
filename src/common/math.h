@@ -451,6 +451,44 @@ static inline void dt_vector_log2(const dt_aligned_pixel_t x, dt_aligned_pixel_t
 #endif
 }
 
+static inline void dt_vector_exp(const dt_aligned_pixel_t x, dt_aligned_pixel_t result)
+{
+  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
+  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
+  const int i1 = 0x3f800000u;
+  // e^x, the comment would be 2^x
+  const int i2 = 0x402DF854u; // 0x40000000u;
+  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
+  // without max clamping (doesn't work for large x, but is faster):
+  union float_int u[4];
+  for_four_channels(c, aligned(x, result))
+  {
+    const int k0 = i1 + (int)(x[c] * (i2 - i1));
+    u[c].k = k0 > 0 ? k0 : 0;
+    result[c] = u[c].f;
+  }
+}
+
+static inline void dt_vector_exp2(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
+{
+#ifdef __SSE2__
+  *((__m128*)res) = _mm_exp2_ps(*((__m128*)x));
+#else
+  //TODO: plain C implementation of _mm_exp2_ps from sse.h
+  for_four_channels(c,aligned(x,res))
+    res[c] = exp2f(x[c]);
+#endif
+}
+
+static inline void dt_vector_exp10(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
+{
+  // 10^x == 2^(3.3219280948873626 * x)
+  dt_aligned_pixel_t scaled;
+  for_four_channels(c,aligned(x,scaled))
+    scaled[c] = 3.3219280948873626f * x[c];
+  dt_vector_exp2(scaled, res);
+}
+
 static inline void dt_vector_powf(const dt_aligned_pixel_t input,
                                   const dt_aligned_pixel_t power,
                                   dt_aligned_pixel_t output)
