@@ -168,6 +168,7 @@ The following is a summary of the main features added to darktable
   - Lowlight vision
   - Velvia
   - Split-toning
+  - Nega Doctor
 
   - Filmic (legacy)
   - Color Balance (legacy)
