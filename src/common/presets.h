@@ -30,13 +30,13 @@ int dt_presets_import_from_file(const char *preset_path);
 /** does the module support autoapplying presets ? */
 gboolean dt_presets_module_can_autoapply(const gchar *operation);
 
-/** get preset name for given module params */
-char *dt_presets_get_name(const char *module_name,
-                          const void *params,
-                          const uint32_t param_size,
-                          const gboolean is_default_params,
-                          const void *blend_params,
-                          const uint32_t blend_params_size);
+/** get preset multi_name for given module params */
+char *dt_presets_get_multi_name(const char *module_name,
+                                const void *params,
+                                const uint32_t param_size,
+                                const gboolean is_default_params,
+                                const void *blend_params,
+                                const uint32_t blend_params_size);
 
 /** get currently active preset name for the module */
 gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect);

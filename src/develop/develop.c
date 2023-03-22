@@ -1470,7 +1470,7 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
   // we make sure that the multi-name is updated if possible with the
   // actual preset name if any is defined for the default parameters.
 
-  char *preset_name = dt_presets_get_name
+  char *preset_name = dt_presets_get_multi_name
     (module->op,
      module->default_params, module->params_size, TRUE,
      module->blend_params, sizeof(dt_develop_blend_params_t));
