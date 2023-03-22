@@ -694,6 +694,8 @@ void dt_bauhaus_init()
   dt_bauhaus_load_theme();
 
   darktable.bauhaus->skip_accel = 1;
+  darktable.bauhaus->combo_introspection = g_hash_table_new(NULL, NULL);
+  darktable.bauhaus->combo_list = g_hash_table_new(NULL, NULL);
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -1273,7 +1275,7 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidg
 void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const char **texts)
 {
   if(action)
-    g_hash_table_insert(darktable.control->combo_list, action, texts);
+    g_hash_table_insert(darktable.bauhaus->combo_list, action, texts);
 
   int item = 0;
   while(texts && *texts)
@@ -1289,7 +1291,7 @@ gboolean dt_bauhaus_combobox_add_introspection(GtkWidget *widget,
   dt_introspection_type_enum_tuple_t *item = (dt_introspection_type_enum_tuple_t *)list;
 
   if(action)
-    g_hash_table_insert(darktable.control->combo_introspection, action, (gpointer)list);
+    g_hash_table_insert(darktable.bauhaus->combo_introspection, action, (gpointer)list);
 
   while(item->name && item->value != start) item++;
   for(; item->name; item++)
@@ -1558,7 +1560,7 @@ gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *widget, int value)
 
   // this might be a legacy option that was hidden; try to re-add from introspection
   dt_introspection_type_enum_tuple_t *values
-    = g_hash_table_lookup(darktable.control->combo_introspection, dt_action_widget(widget));
+    = g_hash_table_lookup(darktable.bauhaus->combo_introspection, dt_action_widget(widget));
   if(values)
   {
     dt_bauhaus_combobox_add_introspection(widget, NULL, values, value, value);
@@ -3509,7 +3511,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
     default:
       value = effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1;
       dt_introspection_type_enum_tuple_t *values
-        = g_hash_table_lookup(darktable.control->combo_introspection, dt_action_widget(target));
+        = g_hash_table_lookup(darktable.bauhaus->combo_introspection, dt_action_widget(target));
       if(values)
         value = values[value].value;
 
