@@ -332,6 +332,10 @@ The following is a summary of the main features added to darktable
 - Style tooltip immediately shows module details while waiting for
   preview image to be calculated.
 
+- In the style and copy/paste dialog a new column display the module
+  masking status. If any mask (draw, parametric or raster) is used the
+  column contains a mask icon.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
