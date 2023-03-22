@@ -907,14 +907,16 @@ char *dt_history_item_as_string(const char *name, const gboolean enabled)
   return g_strconcat(enabled ? "●" : "○", "  ", name, NULL);
 }
 
-GList *dt_history_get_items(const int32_t imgid, const gboolean enabled)
+GList *dt_history_get_items(const int32_t imgid,
+                            const gboolean enabled,
+                            const gboolean markup)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT num, operation, enabled, multi_name"
+                              "SELECT num, operation, enabled, multi_name, blendop_params"
                               " FROM main.history"
                               " WHERE imgid=?1"
                               "   AND num IN (SELECT MAX(num)"
@@ -936,22 +938,32 @@ GList *dt_history_get_items(const int32_t imgid, const gboolean enabled)
     char name[512] = { 0 };
     dt_history_item_t *item = g_malloc(sizeof(dt_history_item_t));
     const char *op = (char *)sqlite3_column_text(stmt, 1);
+    // first uint32_t of blend_params is the mode
+    const uint32_t *blend_params = (uint32_t *)sqlite3_column_blob(stmt, 4);
+    const int blend_params_len = sqlite3_column_bytes(stmt, 4);
     item->num = sqlite3_column_int(stmt, 0);
     item->enabled = sqlite3_column_int(stmt, 2);
+    item->mask_mode = blend_params_len > 0 ? blend_params[0] : DEVELOP_MASK_DISABLED;
 
-    char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
+    const char *mname = (char *)sqlite3_column_text(stmt, 3);
 
-    if(strcmp(mname, "0") == 0)
+    if(!mname
+       || strlen(mname) == 0
+       || strcmp(mname, "0") == 0)
+    {
       g_snprintf(name, sizeof(name), "%s", dt_iop_get_localized_name(op));
+    }
     else
-      g_snprintf(name, sizeof(name), "%s %s",
+    {
+      g_snprintf(name, sizeof(name), "%s • %s%s%s",
                  dt_iop_get_localized_name(op),
-                 (char *)sqlite3_column_text(stmt, 3));
+                 markup ? "<small>" : "",
+                 (char *)mname,
+                 markup ? "</small>" : "");
+    }
     item->name = g_strdup(name);
     item->op = g_strdup(op);
     result = g_list_prepend(result, item);
-
-    g_free(mname);
   }
   sqlite3_finalize(stmt);
   return g_list_reverse(result);   // list was built in reverse order, so un-reverse it

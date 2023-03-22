@@ -208,12 +208,13 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
   GtkWidget *onoff = NULL;
 
   /* create toggle button */
-  GtkWidget *widget = gtk_toggle_button_new_with_label(label);
+  GtkWidget *widget = gtk_toggle_button_new_with_label("");
   dt_gui_add_class(widget, "dt_transparent_background");
   GtkWidget *lab = gtk_bin_get_child(GTK_BIN(widget));
   gtk_widget_set_halign(lab, GTK_ALIGN_START);
   gtk_label_set_xalign(GTK_LABEL(lab), 0);
   gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_END);
+  gtk_label_set_markup (GTK_LABEL (lab), label);
   if(always_on)
   {
     onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, 0, NULL);
@@ -1111,7 +1112,7 @@ static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
   else if(!item->multi_name[0] || strcmp(item->multi_name, "0") == 0)
     label = g_strdup(item->module->name());
   else
-    label = g_strdup_printf("%s • %s", item->module->name(), item->multi_name);
+    label = g_strdup_printf("%s <small>• %s</small>", item->module->name(), item->multi_name);
 
   return label;
 }
