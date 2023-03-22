@@ -336,6 +336,9 @@ The following is a summary of the main features added to darktable
   masking status. If any mask (draw, parametric or raster) is used the
   column contains a mask icon.
 
+- Makes the drawn mask tools' tooltip of Liquify module consistent
+  with the other mask tools as found in the blending drawn masks.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
