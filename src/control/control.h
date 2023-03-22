@@ -136,7 +136,7 @@ typedef struct dt_control_t
                actions_iops, actions_blend, actions_focus,
                actions_lua, actions_fallbacks, *actions_modifiers;
 
-  GHashTable *widgets, *combo_introspection, *combo_list;
+  GHashTable *widgets;
   GSequence *shortcuts;
   gboolean enable_fallbacks;
   GtkWidget *mapping_widget;

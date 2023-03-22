@@ -221,6 +221,7 @@ typedef struct dt_bauhaus_t
 
   // initialise or connect accelerators in set_label
   int skip_accel;
+  GHashTable *combo_introspection, *combo_list;
 
   // appearance relevant stuff:
   // sizes and fonts:

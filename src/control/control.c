@@ -188,8 +188,6 @@ void dt_control_init(dt_control_t *s)
   dt_action_insert_sorted(&s->actions_iops, &s->actions_focus);
 
   s->widgets = g_hash_table_new(NULL, NULL);
-  s->combo_introspection = g_hash_table_new(NULL, NULL);
-  s->combo_list = g_hash_table_new(NULL, NULL);
   s->shortcuts = g_sequence_new(g_free);
   s->enable_fallbacks = dt_conf_get_bool("accel/enable_fallbacks");
   s->mapping_widget = NULL;
