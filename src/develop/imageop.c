@@ -1863,7 +1863,7 @@ static gboolean _iop_update_label(gpointer data)
   const gboolean is_default_params =
     memcmp(module->params, module->default_params, module->params_size) == 0;
 
-  char *preset_name = dt_presets_get_name
+  char *preset_name = dt_presets_get_multi_name
     (module->op,
      module->params, module->params_size, is_default_params,
      module->blend_params, sizeof(dt_develop_blend_params_t));
