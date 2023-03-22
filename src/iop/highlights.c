@@ -1189,7 +1189,8 @@ static void _remosaic_and_replace(const float *const restrict input,
                                   float *const restrict output,
                                   const dt_aligned_pixel_t wb,
                                   const uint32_t filters,
-                                  const size_t width, const size_t height)
+                                  const size_t width,
+                                  const size_t height)
 {
   // Take RGB ratios and norm, reconstruct RGB and remosaic the image
   #ifdef _OPENMP
@@ -1225,21 +1226,26 @@ enum wavelets_scale_t
 };
 
 
-static uint8_t scale_type(const int s, const int scales)
+static unsigned int scale_type(const int s, const int scales)
 {
-  uint8_t scale = ANY_SCALE;
+  unsigned int scale = ANY_SCALE;
   if(s == 0) scale |= FIRST_SCALE;
   if(s == scales - 1) scale |= LAST_SCALE;
   return scale;
 }
 
 
-static inline void guide_laplacians(const float *const restrict high_freq, const float *const restrict low_freq,
+static inline void guide_laplacians(const float *const restrict high_freq,
+                                    const float *const restrict low_freq,
                                     const float *const restrict clipping_mask,
                                     float *const restrict output,
-                                    const size_t width, const size_t height, const int mult,
-                                    const float noise_level, const int salt,
-                                    const uint8_t scale, const float radius_sq)
+                                    const size_t width,
+                                    const size_t height,
+                                    const int mult,
+                                    const float noise_level,
+                                    const int salt,
+                                    const unsigned int scale,
+                                    const float radius_sq)
 {
   float *const restrict out = DT_IS_ALIGNED(output);
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
@@ -1350,7 +1356,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
         }
       }
 
-      if((scale & FIRST_SCALE))
+      if(scale & FIRST_SCALE)
       {
         // out is not inited yet
         for_each_channel(c, aligned(out, high_frequency : 64))
@@ -1363,7 +1369,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
           out[index + c] += high_frequency[c];
       }
 
-      if((scale & LAST_SCALE))
+      if(scale & LAST_SCALE)
       {
         // add the residual and clamp
         for_each_channel(c, aligned(out, LF, high_frequency : 64))
@@ -1398,7 +1404,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
         }
       }
 
-      if((scale & LAST_SCALE))
+      if(scale & LAST_SCALE)
       {
         // Break the RGB channels into ratios/norm for the next step of reconstruction
         const float norm = fmaxf(sqrtf(sqf(out[index + RED]) + sqf(out[index + GREEN]) + sqf(out[index + BLUE])), 1e-6f);
@@ -1409,10 +1415,15 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
   }
 }
 
-static inline void heat_PDE_diffusion(const float *const restrict high_freq, const float *const restrict low_freq,
+static inline void heat_PDE_diffusion(const float *const restrict high_freq,
+                                      const float *const restrict low_freq,
                                       const float *const restrict clipping_mask,
-                                      float *const restrict output, const size_t width, const size_t height,
-                                      const int mult, const uint8_t scale, const float first_order_factor)
+                                      float *const restrict output,
+                                      const size_t width,
+                                      const size_t height,
+                                      const int mult,
+                                      const uint8_t scale,
+                                      const float first_order_factor)
 {
   // Simultaneous inpainting for image structure and texture using anisotropic heat transfer model
   // https://www.researchgate.net/publication/220663968
@@ -1541,17 +1552,19 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
   }
 }
 
-static inline gint wavelets_process(const float *const restrict in, float
-                                    *const restrict reconstructed,
+static inline gint wavelets_process(const float *const restrict in,
+                                    float *const restrict reconstructed,
                                     const float *const restrict clipping_mask,
-                                    const size_t width, const size_t height,
+                                    const size_t width,
+                                    const size_t height,
                                     const int scales,
                                     float *const restrict HF,
                                     float *const restrict LF_odd,
                                     float *const restrict LF_even,
                                     const diffuse_reconstruct_variant_t variant,
                                     const float noise_level,
-                                    const int salt, const float first_order_factor)
+                                    const int salt,
+                                    const float first_order_factor)
 {
   gint success = TRUE;
 
@@ -1588,7 +1601,7 @@ static inline gint wavelets_process(const float *const restrict in, float
 
     decompose_2D_Bspline(buffer_in, HF, buffer_out, width, height, mult, tempbuf, padded_size);
 
-    uint8_t current_scale_type = scale_type(s, scales);
+    unsigned int current_scale_type = scale_type(s, scales);
     const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s * DS_FACTOR));
 
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
@@ -1612,9 +1625,12 @@ static inline gint wavelets_process(const float *const restrict in, float
 }
 
 
-static void process_laplacian_bayer(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                    const void *const restrict ivoid, void *const restrict ovoid,
-                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+static void process_laplacian_bayer(struct dt_iop_module_t *self,
+                                    dt_dev_pixelpipe_iop_t *piece,
+                                    const void *const restrict ivoid,
+                                    void *const restrict ovoid,
+                                    const dt_iop_roi_t *const roi_in,
+                                    const dt_iop_roi_t *const roi_out,
                                     const dt_aligned_pixel_t clips)
 {
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
@@ -1712,9 +1728,12 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self, dt_dev_pixelpi
 
 #ifdef HAVE_OPENCL
 static inline cl_int wavelets_process_cl(const int devid,
-                                         cl_mem in, cl_mem reconstructed,
+                                         cl_mem in,
+                                         cl_mem reconstructed,
                                          cl_mem clipping_mask,
-                                         const size_t sizes[3], const int width, const int height,
+                                         const size_t sizes[3],
+                                         const int width,
+                                         const int height,
                                          dt_iop_highlights_global_data_t *const gd,
                                          const int scales,
                                          cl_mem HF,
@@ -1722,7 +1741,8 @@ static inline cl_int wavelets_process_cl(const int devid,
                                          cl_mem LF_even,
                                          const diffuse_reconstruct_variant_t variant,
                                          const float noise_level,
-                                         const int salt, const float solid_color)
+                                         const int salt,
+                                         const float solid_color)
 {
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -1771,7 +1791,7 @@ static inline cl_int wavelets_process_cl(const int devid,
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_wavelets_detail, sizes);
     if(err != CL_SUCCESS) return err;
 
-    uint8_t current_scale_type = scale_type(s, scales);
+    unsigned int current_scale_type = scale_type(s, scales);
     const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s * DS_FACTOR));
 
     // Compute wavelets low-frequency scales
@@ -1800,9 +1820,12 @@ static inline cl_int wavelets_process_cl(const int devid,
   return err;
 }
 
-static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                         cl_mem dev_in, cl_mem dev_out,
-                                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self,
+                                         dt_dev_pixelpipe_iop_t *piece,
+                                         cl_mem dev_in,
+                                         cl_mem dev_out,
+                                         const dt_iop_roi_t *const roi_in,
+                                         const dt_iop_roi_t *const roi_out,
                                          const dt_aligned_pixel_t clips)
 {
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
