@@ -1146,7 +1146,7 @@ void dt_styles_delete_by_name(const char *name)
 }
 
 GList *dt_styles_get_item_list(const char *name,
-                               const gboolean params,
+                               const gboolean localized,
                                const int imgid,
                                const gboolean with_multi_name)
 {
@@ -1155,17 +1155,7 @@ GList *dt_styles_get_item_list(const char *name,
   int id = 0;
   if((id = dt_styles_get_id_by_name(name)) != 0)
   {
-    if(params)
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "SELECT num, multi_priority, module, operation, enabled, op_params,"
-         "       blendop_params, multi_name, blendop_version"
-         " FROM data.style_items"
-         " WHERE styleid=?1 ORDER BY num DESC",
-         -1, &stmt, NULL);
-      // clang-format on
-    else if(imgid != -1)
+    if(imgid != -1)
     {
       // get all items from the style
       //    UNION
@@ -1179,13 +1169,15 @@ GList *dt_styles_get_item_list(const char *name,
           "        WHERE imgid=?2 "
           "          AND operation=data.style_items.operation"
           "          AND multi_priority=data.style_items.multi_priority),"
-          "       0, multi_name, multi_name_hand_edited, blendop_version"
+          "       op_params, blendop_params,"
+          "       multi_name, multi_name_hand_edited, blendop_version"
           " FROM data.style_items"
           " WHERE styleid=?1"
           " UNION"
           " SELECT -1, main.history.multi_priority, main.history.module,"
           "        main.history.operation, main.history.enabled, "
-          "        main.history.num,0, multi_name, FALSE, blendop_version"
+          "        main.history.num, main.history.op_params, main.history.blendop_params,"
+          "        multi_name, FALSE, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
           "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
@@ -1197,8 +1189,8 @@ GList *dt_styles_get_item_list(const char *name,
       // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
-         "SELECT num, multi_priority, module, operation, enabled, 0, 0,"
-         "       multi_name, multi_name_hand_edited"
+         "SELECT num, multi_priority, module, operation, enabled, 0, op_params,"
+         "       blendop_params, multi_name, multi_name_hand_edited, blendop_version"
          " FROM data.style_items"
          " WHERE styleid=?1 ORDER BY num DESC",
                                   -1, &stmt, NULL);
@@ -1225,51 +1217,46 @@ GList *dt_styles_get_item_list(const char *name,
 
       item->enabled = sqlite3_column_int(stmt, 4);
 
-      const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
-      const gboolean multi_name_hand_edited = sqlite3_column_int(stmt, 8);
+      const char *multi_name = (const char *)sqlite3_column_text(stmt, 8);
+      const gboolean multi_name_hand_edited = sqlite3_column_int(stmt, 9);
       const gboolean has_multi_name =
         multi_name_hand_edited
         || (multi_name && *multi_name && (strcmp(multi_name, "0") != 0));
 
-      if(params)
+      const unsigned char *op_blob = sqlite3_column_blob(stmt, 6);
+      const int32_t op_len = sqlite3_column_bytes(stmt, 6);
+      const unsigned char *bop_blob = sqlite3_column_blob(stmt, 7);
+      const int32_t bop_len = sqlite3_column_bytes(stmt, 7);
+      const int32_t bop_ver = sqlite3_column_int(stmt, 10);
+
+      item->params = malloc(op_len);
+      item->params_size = op_len;
+      memcpy(item->params, op_blob, op_len);
+
+      item->blendop_params = malloc(bop_len);
+      item->blendop_params_size = bop_len;
+      item->blendop_version = bop_ver;
+      memcpy(item->blendop_params, bop_blob, bop_len);
+
+      if(!localized)
       {
-        // when we get the parameters we do not want to get the operation localized as this
-        // is used to compare against the internal module name.
+        // when we get the parameters we do not want to get the
+        // operation localized as this is used to compare against the
+        // internal module name.
 
         if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", sqlite3_column_text(stmt, 3), multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", sqlite3_column_text(stmt, 3));
-
-        const unsigned char *op_blob = sqlite3_column_blob(stmt, 5);
-        const int32_t op_len = sqlite3_column_bytes(stmt, 5);
-        const unsigned char *bop_blob = sqlite3_column_blob(stmt, 6);
-        const int32_t bop_len = sqlite3_column_bytes(stmt, 6);
-        const int32_t bop_ver = sqlite3_column_int(stmt, 9);
-
-        item->params = malloc(op_len);
-        item->params_size = op_len;
-        memcpy(item->params, op_blob, op_len);
-
-        item->blendop_params = malloc(bop_len);
-        item->blendop_params_size = bop_len;
-        item->blendop_version = bop_ver;
-        memcpy(item->blendop_params, bop_blob, bop_len);
       }
       else
       {
         const gchar *itname = dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 3));
-
         if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", itname, multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", itname);
 
-        item->params = NULL;
-        item->blendop_params = NULL;
-        item->params_size = 0;
-        item->blendop_params_size = 0;
-        item->blendop_version = 0;
         if(imgid != -1 && sqlite3_column_type(stmt, 5) != SQLITE_NULL)
           item->selimg_num = sqlite3_column_int(stmt, 5);
       }
