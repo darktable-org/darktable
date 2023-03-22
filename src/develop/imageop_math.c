@@ -902,13 +902,6 @@ void dt_iop_RGB_to_YCbCr(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t yuv)
   yuv[2] = 0.615 * rgb[0] - 0.515 * rgb[1] - 0.100 * rgb[2];
 }
 
-void dt_iop_YCbCr_to_RGB(const dt_aligned_pixel_t yuv, dt_aligned_pixel_t rgb)
-{
-  rgb[0] = yuv[0] + 1.140 * yuv[2];
-  rgb[1] = yuv[0] - 0.394 * yuv[1] - 0.581 * yuv[2];
-  rgb[2] = yuv[0] + 2.028 * yuv[1];
-}
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
