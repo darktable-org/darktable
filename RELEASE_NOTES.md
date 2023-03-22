@@ -447,6 +447,9 @@ The following is a summary of the main features added to darktable
 - Avoid XMP writing if not requested and image was not altered. This
   is rule is properly followed now also when importing RAW + JPEG.
 
+- Make sure the database timestamp is always set when possibly writing
+  a sidecar xmp file.
+
 ## Lua
 
 ### API Version
