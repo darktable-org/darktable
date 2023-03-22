@@ -406,6 +406,9 @@ void dt_colorspaces_rgb_to_cygm(float *out,
                                 const int num,
                                 const double RGB_to_CAM[4][3]);
 
+gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE prof, float primaries[3][2],
+                                                                  float whitepoint[2]);
+
 /** Calculate RGB <-> XYZ matrices from the given primaries and whitepoint */
 void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float primaries[3][2],
                                                                const float whitepoint[2],
