@@ -75,33 +75,39 @@ typedef enum dt_iop_lens_modify_flag_t
 
 typedef enum dt_iop_lens_modflag_t
 {
-  DT_IOP_LENS_MODFLAG_NONE = 0,
-  DT_IOP_LENS_MODFLAG_ALL = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING,
-  DT_IOP_LENS_MODFLAG_DIST_TCA = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA,
-  DT_IOP_LENS_MODFLAG_DIST_VIGN = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING,
-  DT_IOP_LENS_MODFLAG_TCA_VIGN = DT_IOP_LENS_MODIFY_FLAG_TCA | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING,
-  DT_IOP_LENS_MODFLAG_DIST = DT_IOP_LENS_MODIFY_FLAG_DISTORTION,
-  DT_IOP_LENS_MODFLAG_TCA = DT_IOP_LENS_MODIFY_FLAG_TCA,
-  DT_IOP_LENS_MODFLAG_VIGN = DT_IOP_LENS_MODIFY_FLAG_VIGNETTING,
+  DT_IOP_LENS_MODFLAG_NONE = 0, // $DESCRIPTION: "none"
+  DT_IOP_LENS_MODFLAG_ALL = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING, // $DESCRIPTION: "all"
+  DT_IOP_LENS_MODFLAG_DIST_TCA = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA, // $DESCRIPTION: "distortion & TCA"
+  DT_IOP_LENS_MODFLAG_DIST_VIGN = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING, // $DESCRIPTION: "distortion & vignetting"
+  DT_IOP_LENS_MODFLAG_TCA_VIGN = DT_IOP_LENS_MODIFY_FLAG_TCA | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING, // $DESCRIPTION: "TCA & vignetting"
+  DT_IOP_LENS_MODFLAG_DIST = DT_IOP_LENS_MODIFY_FLAG_DISTORTION, // $DESCRIPTION: "only distortion"
+  DT_IOP_LENS_MODFLAG_TCA = DT_IOP_LENS_MODIFY_FLAG_TCA, // $DESCRIPTION: "only TCA"
+  DT_IOP_LENS_MODFLAG_VIGN = DT_IOP_LENS_MODIFY_FLAG_VIGNETTING, // $DESCRIPTION: "only vignetting"
 } dt_iop_lens_modflag_t;
 
 typedef enum dt_iop_lens_lenstype_t
 {
   DT_IOP_LENS_LENSTYPE_UNKNOWN = 0,
-  DT_IOP_LENS_LENSTYPE_RECTILINEAR = 1,
-  DT_IOP_LENS_LENSTYPE_FISHEYE = 2,
-  DT_IOP_LENS_LENSTYPE_PANORAMIC = 3,
-  DT_IOP_LENS_LENSTYPE_EQUIRECTANGULAR = 4,
-  DT_IOP_LENS_LENSTYPE_FISHEYE_ORTHOGRAPHIC = 5,
-  DT_IOP_LENS_LENSTYPE_FISHEYE_STEREOGRAPHIC = 6,
-  DT_IOP_LENS_LENSTYPE_FISHEYE_EQUISOLID = 7,
-  DT_IOP_LENS_LENSTYPE_FISHEYE_THOBY = 8
+  DT_IOP_LENS_LENSTYPE_RECTILINEAR = 1,           // $DESCRIPTION: "rectilinear"
+  DT_IOP_LENS_LENSTYPE_FISHEYE = 2,               // $DESCRIPTION: "fish-eye"
+  DT_IOP_LENS_LENSTYPE_PANORAMIC = 3,             // $DESCRIPTION: "panoramic"
+  DT_IOP_LENS_LENSTYPE_EQUIRECTANGULAR = 4,       // $DESCRIPTION: "equirectangular"
+  DT_IOP_LENS_LENSTYPE_FISHEYE_ORTHOGRAPHIC = 5,  // $DESCRIPTION: "orthographic"
+  DT_IOP_LENS_LENSTYPE_FISHEYE_STEREOGRAPHIC = 6, // $DESCRIPTION: "stereographic"
+  DT_IOP_LENS_LENSTYPE_FISHEYE_EQUISOLID = 7,     // $DESCRIPTION: "equisolid angle"
+  DT_IOP_LENS_LENSTYPE_FISHEYE_THOBY = 8,         // $DESCRIPTION: "thoby fish-eye"
 } dt_iop_lens_lenstype_t;
+
+typedef enum dt_iop_lens_mode_t
+{
+  DT_IOP_LENS_MODE_CORRECT = 0, // $DESCRIPTION: "correct"
+  DT_IOP_LENS_MODE_DISTORT = 1, // $DESCRIPTION: "distort"
+} dt_iop_lens_mode_t;
 
 typedef struct dt_iop_lens_params_t
 {
   dt_iop_lens_method_t method; // $DEFAULT: DT_IOP_LENS_METHOD_LENSFUN $DESCRIPTION: "correction method"
-  int modify_flags; // $DEFAULT: DT_IOP_LENS_MODFLAG_ALL $DESCRIPTION: "corrections"
+  dt_iop_lens_modflag_t modify_flags; // $DEFAULT: DT_IOP_LENS_MODFLAG_ALL $DESCRIPTION: "corrections"
 
   // NOTE: the options for lensfun and metadata correction methods should be
   // kept separate since also if similar their value have different effects.
@@ -109,13 +115,13 @@ typedef struct dt_iop_lens_params_t
   // the unique parameter in common is modify_flags
 
   // lensfun method parameters
-  int inverse; // $MIN: 0 $MAX: 1 $DEFAULT: 0 $DESCRIPTION: "mode"
+  dt_iop_lens_mode_t inverse; // $DEFAULT: DT_IOP_LENS_MODE_CORRECT $DESCRIPTION: "mode"
   float scale; // $MIN: 0.1 $MAX: 2.0 $DEFAULT: 1.0
   float crop;
   float focal;
   float aperture;
   float distance;
-  int target_geom; // $DEFAULT: DT_IOP_LENS_LENSTYPE_RECTILINEAR $DESCRIPTION: "geometry"
+  dt_iop_lens_lenstype_t target_geom; // $DEFAULT: DT_IOP_LENS_LENSTYPE_RECTILINEAR $DESCRIPTION: "target geometry"
   char camera[128];
   char lens[128];
   gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA overwrite"
@@ -150,7 +156,6 @@ typedef struct dt_iop_lens_gui_data_t
   GtkWidget *find_lens_button;
   GtkWidget *find_camera_button;
   GtkWidget *cor_dist_ft, *cor_vig_ft, *cor_scale;
-  GList *modifiers;
   GtkLabel *message;
   int corrections_done;
   gboolean lensfun_trouble;
@@ -277,7 +282,7 @@ static int _modflags_to_lensfun_mods(int modify_flags)
   return mods;
 }
 
-static int _modflags_from_lensfun_mods(int lf_mods)
+static dt_iop_lens_modflag_t _modflags_from_lensfun_mods(int lf_mods)
 {
   int mods = 0;
 
@@ -285,10 +290,10 @@ static int _modflags_from_lensfun_mods(int lf_mods)
   mods |= lf_mods & LF_MODIFY_VIGNETTING ? DT_IOP_LENS_MODIFY_FLAG_VIGNETTING : 0;
   mods |= lf_mods & LF_MODIFY_TCA        ? DT_IOP_LENS_MODIFY_FLAG_TCA        : 0;
 
-  return mods;
+  return (dt_iop_lens_modflag_t)mods;
 }
 
-static int _lenstype_from_lensfun_lenstype(lfLensType lt)
+static dt_iop_lens_lenstype_t _lenstype_from_lensfun_lenstype(lfLensType lt)
 {
   switch(lt)
   {
@@ -347,7 +352,7 @@ int legacy_params(
     *n = *d; // start with a fresh copy of default parameters
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
-    n->inverse = o->inverse;
+    n->inverse = (dt_iop_lens_mode_t)o->inverse;
     n->scale = o->scale;
     n->crop = o->crop;
     n->focal = o->focal;
@@ -398,7 +403,7 @@ int legacy_params(
     *n = *d; // start with a fresh copy of default parameters
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
-    n->inverse = o->inverse;
+    n->inverse = (dt_iop_lens_mode_t)o->inverse;
     n->scale = o->scale;
     n->crop = o->crop;
     n->focal = o->focal;
@@ -448,7 +453,7 @@ int legacy_params(
     *n = *d; // start with a fresh copy of default parameters
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
-    n->inverse = o->inverse;
+    n->inverse = (dt_iop_lens_mode_t)o->inverse;
     n->scale = o->scale;
     n->crop = o->crop;
     n->focal = o->focal;
@@ -499,7 +504,7 @@ int legacy_params(
 
     // The unique method in previous versions was lensfun
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
-    n->inverse = o->inverse;
+    n->inverse = (dt_iop_lens_mode_t)o->inverse;
     n->scale = o->scale;
     n->crop = o->crop;
     n->focal = o->focal;
@@ -555,14 +560,14 @@ int legacy_params(
 
     // The unique method in previous versions was lensfun
     n->method = o->method;
-    n->modify_flags = o->modify_flags;
-    n->inverse = o->inverse;
+    n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
+    n->inverse = (dt_iop_lens_mode_t)o->inverse;
     n->scale = o->scale;
     n->crop = o->crop;
     n->focal = o->focal;
     n->aperture = o->aperture;
     n->distance = o->distance;
-    n->target_geom = o->target_geom;
+    n->target_geom = (dt_iop_lens_lenstype_t)o->target_geom;
     g_strlcpy(n->camera, o->camera, sizeof(n->camera));
     g_strlcpy(n->lens, o->lens, sizeof(n->lens));
     n->tca_override = o->tca_override;
@@ -2545,7 +2550,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->target_geom = DT_IOP_LENS_LENSTYPE_RECTILINEAR;
 
   if(dt_image_is_monochrome(img))
-    d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
+    d->modify_flags = DT_IOP_LENS_MODFLAG_DIST_VIGN;
 
   // init crop from lensfun db:
   char model[100]; // truncate often complex descriptions.
@@ -3313,15 +3318,6 @@ static void _autoscale_pressed_lf(GtkWidget *button, gpointer user_data)
   dt_bauhaus_slider_set(g->scale, scale);
 }
 
-static void _target_geometry_changed(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
-
-  const int pos = dt_bauhaus_combobox_get(widget);
-  p->target_geom = (pos + DT_IOP_LENS_LENSTYPE_UNKNOWN + 1);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
 /* -- lensfun gui end -- */
 
 static void _display_errors(struct dt_iop_module_t *self)
@@ -3346,27 +3342,6 @@ static void _display_errors(struct dt_iop_module_t *self)
   }
 
   gtk_widget_queue_draw(self->widget);
-}
-
-static void _modflags_changed(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-
-  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-
-  const int pos = dt_bauhaus_combobox_get(widget);
-  for(GList *modifiers = g->modifiers;  modifiers; modifiers = g_list_next(modifiers))
-  {
-    dt_iop_lens_gui_modifier_t *mm = (dt_iop_lens_gui_modifier_t *)modifiers->data;
-    if(mm->pos == pos)
-    {
-      p->modify_flags = mm->modflag;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      break;
-    }
-  }
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -3433,25 +3408,14 @@ static void _have_corrections_done(gpointer instance, gpointer user_data)
   const int corrections_done = g->corrections_done;
   dt_iop_gui_leave_critical_section(self);
 
-  const char empty_message[] = "";
-  char *message = (char *)empty_message;
+  dt_introspection_type_enum_tuple_t *modifiers = self->get_f("modify_flags")->Enum.values;
+  while(modifiers->name && modifiers->value != corrections_done)
+    modifiers++;
 
-  for(GList *modifiers = g->modifiers;
-      modifiers && self->enabled;
-      modifiers = g_list_next(modifiers))
-  {
-    dt_iop_lens_gui_modifier_t *mm = (dt_iop_lens_gui_modifier_t *)modifiers->data;
-    if(mm->modflag == corrections_done)
-    {
-      message = mm->name;
-      break;
-    }
-  }
+  const char *message = modifiers->name ? modifiers->description : "";
 
-  ++darktable.gui->reset;
-  gtk_label_set_text(g->message, message);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->message), message);
-  --darktable.gui->reset;
+  gtk_label_set_text(g->message, Q_(message));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->message), Q_(message));
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -3467,67 +3431,11 @@ void gui_init(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
-  g->modifiers = NULL;
-  g->camera = NULL;
-  g->camera_menu = NULL;
-  g->lens_menu = NULL;
-
   dt_iop_gui_enter_critical_section(self); // not actually needed,
                                            // we're the only one with
                                            // a ref to this instance
   g->corrections_done = -1;
   dt_iop_gui_leave_critical_section(self);
-
-  // initialize modflags options
-  int pos = -1;
-  dt_iop_lens_gui_modifier_t *modifier;
-  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("none"), sizeof(modifier->name));
-  g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = DT_IOP_LENS_MODFLAG_NONE;
-  modifier->pos = ++pos;
-
-  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("all"), sizeof(modifier->name));
-  g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = DT_IOP_LENS_MODFLAG_ALL;
-  modifier->pos = ++pos;
-
-  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("distortion & TCA"), sizeof(modifier->name));
-  g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = DT_IOP_LENS_MODFLAG_DIST_TCA;
-  modifier->pos = ++pos;
-
-  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("distortion & vignetting"), sizeof(modifier->name));
-  g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = DT_IOP_LENS_MODFLAG_DIST_VIGN;
-  modifier->pos = ++pos;
-
-  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("TCA & vignetting"), sizeof(modifier->name));
-  g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = DT_IOP_LENS_MODFLAG_TCA_VIGN;
-  modifier->pos = ++pos;
-
-  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("only distortion"), sizeof(modifier->name));
-  g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = DT_IOP_LENS_MODFLAG_DIST;
-  modifier->pos = ++pos;
-
-  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("only TCA"), sizeof(modifier->name));
-  g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = DT_IOP_LENS_MODFLAG_TCA;
-  modifier->pos = ++pos;
-
-  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("only vignetting"), sizeof(modifier->name));
-  g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = DT_IOP_LENS_MODFLAG_VIGN;
-  modifier->pos = ++pos;
 
   /* lensfun widget */
   // _from_params methods assign widgets to self->widget, so
@@ -3587,23 +3495,8 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 
   // target geometry
-  g->target_geom = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->target_geom, NULL, N_("geometry"));
-  gtk_box_pack_start(GTK_BOX(box_lf), g->target_geom, TRUE, TRUE, 0);
+  g->target_geom = dt_bauhaus_combobox_from_params(self, "target_geom");
   gtk_widget_set_tooltip_text(g->target_geom, _("target geometry"));
-  dt_bauhaus_combobox_add(g->target_geom, _("rectilinear"));
-  dt_bauhaus_combobox_add(g->target_geom, _("fish-eye"));
-  dt_bauhaus_combobox_add(g->target_geom, _("panoramic"));
-  dt_bauhaus_combobox_add(g->target_geom, _("equirectangular"));
-#if LF_VERSION >= ((0 << 24) | (2 << 16) | (6 << 8) | 0)
-  dt_bauhaus_combobox_add(g->target_geom, _("orthographic"));
-  dt_bauhaus_combobox_add(g->target_geom, _("stereographic"));
-  dt_bauhaus_combobox_add(g->target_geom, _("equisolid angle"));
-  dt_bauhaus_combobox_add(g->target_geom, _("thoby fish-eye"));
-#endif
-  g_signal_connect(G_OBJECT(g->target_geom), "value-changed",
-                   G_CALLBACK(_target_geometry_changed),
-                   (gpointer)self);
 
   // scale
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
@@ -3615,8 +3508,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   // reverse direction
   g->reverse = dt_bauhaus_combobox_from_params(self, "inverse");
-  dt_bauhaus_combobox_add(g->reverse, _("correct"));
-  dt_bauhaus_combobox_add(g->reverse, _("distort"));
   gtk_widget_set_tooltip_text(g->reverse, _("correct distortions or apply them"));
 
   g->tca_override = dt_bauhaus_toggle_from_params(self, "tca_override");
@@ -3659,21 +3550,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // selector for correction type (modflags): one or more out of
   // distortion, TCA, vignetting
-  g->modflags = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->modflags, NULL, N_("corrections"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->modflags, TRUE, TRUE, 0);
+  g->modflags = dt_bauhaus_combobox_from_params(self, "modify_flags");
   gtk_widget_set_tooltip_text(g->modflags, _("which corrections to apply"));
-
-  GList *l = g->modifiers;
-  while(l)
-  {
-    modifier = (dt_iop_lens_gui_modifier_t *)l->data;
-    dt_bauhaus_combobox_add(g->modflags, modifier->name);
-    l = g_list_next(l);
-  }
-  dt_bauhaus_combobox_set(g->modflags, 0);
-  g_signal_connect(G_OBJECT(g->modflags), "value-changed",
-                   G_CALLBACK(_modflags_changed), (gpointer)self);
 
   g->methods = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->methods), FALSE);
@@ -3713,17 +3591,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
-  const int modflag = p->modify_flags;
-  for(GList *modifiers = g->modifiers; modifiers; modifiers = g_list_next(modifiers))
-  {
-    dt_iop_lens_gui_modifier_t *mm = (dt_iop_lens_gui_modifier_t *)modifiers->data;
-    if(mm->modflag == modflag)
-    {
-      dt_bauhaus_combobox_set(g->modflags, mm->pos);
-      break;
-    }
-  }
-
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
 
@@ -3734,8 +3601,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->camera_model, "");
   gtk_widget_set_tooltip_text(g->lens_model, "");
 
-  dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
-  dt_bauhaus_combobox_set(g->reverse, p->inverse);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override), p->tca_override);
 
   const lfCamera **cam = NULL;
@@ -3772,24 +3637,15 @@ void gui_update(struct dt_iop_module_t *self)
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
 
-
   gui_changed(self, NULL, NULL);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_have_corrections_done), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_develop_ui_pipe_finished_callback), self);
-
-  while(g->modifiers)
-  {
-    g_free(g->modifiers->data);
-    g->modifiers = g_list_delete_link(g->modifiers, g->modifiers);
-  }
 
   IOP_GUI_FREE;
 }
