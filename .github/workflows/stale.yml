@@ -27,6 +27,7 @@ jobs:
         stale-pr-label: 'no-pr-activity'
         days-before-stale: 60
         days-before-close: 365
+        ascending: true
         remove-stale-when-updated: true
         exempt-all-milestones: true
         exempt-pr-labels: 'bugfix,wip'
