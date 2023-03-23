@@ -58,6 +58,41 @@
 #define w3 (DT_LMMSE_TILESIZE * 3)
 #define w4 (DT_LMMSE_TILESIZE * 4)
 
+static float *lmmse_gamma_in = NULL;
+static float *lmmse_gamma_out = NULL;
+
+static void _cleanup_lmmse_gamma()
+{
+  dt_free_align(lmmse_gamma_in);
+  dt_free_align(lmmse_gamma_out);
+  lmmse_gamma_in = NULL;
+  lmmse_gamma_out = NULL;
+}
+
+// returns true in case of allocating error
+static void _init_lmmse_gamma()
+{
+  lmmse_gamma_in = dt_alloc_align_float(65536);
+  lmmse_gamma_out = dt_alloc_align_float(65536);
+  if(!lmmse_gamma_in || !lmmse_gamma_out)
+  {
+    _cleanup_lmmse_gamma();
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic lmmse] Can't allocate gamma memory\n");
+    return;
+  }
+#ifdef _OPENMP
+    #pragma omp for
+#endif
+  for(int j = 0; j < 65536; j++)
+  {
+    const double x = (double)j / 65535.0;
+    lmmse_gamma_in[j]  = (x <= 0.001867) ? x * 17.0 : 1.044445 * exp(log(x) / 2.4) - 0.044445;
+    lmmse_gamma_out[j] = (x <= 0.031746) ? x / 17.0 : exp(log((x + 0.044445) / 1.044445) * 2.4);
+  }
+}
+
+
+
 static inline float _median3f(float x0, float x1, float x2)
 {
   return fmaxf(fminf(x0,x1), fminf(x2, fmaxf(x0,x1)));
@@ -108,6 +143,7 @@ static inline float _median9f(float a0, float a1, float a2, float a3, float a4, 
 
 static inline float _calc_gamma(float val, float *table)
 {
+  if(table == NULL) return val;
   const float index = val * 65535.0f;
   if(index < 0.0f)      return 0.0f;
   if(index > 65534.99f) return 1.0f;
@@ -120,7 +156,7 @@ static inline float _calc_gamma(float val, float *table)
 }
 
 #ifdef _OPENMP
-  #pragma omp declare simd aligned(in, out, gamma_in, gamma_out)
+  #pragma omp declare simd aligned(in, out)
 #endif
 static void lmmse_demosaic(
         dt_dev_pixelpipe_iop_t *piece,
@@ -129,9 +165,7 @@ static void lmmse_demosaic(
         dt_iop_roi_t *const roi_out,
         const dt_iop_roi_t *const roi_in,
         const uint32_t filters,
-        const uint32_t mode,
-        float *const restrict gamma_in,
-        float *const restrict gamma_out)
+        const uint32_t mode)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -141,6 +175,8 @@ static void lmmse_demosaic(
     dt_control_log(_("[lmmse_demosaic] too small area"));
     return;
   }
+
+  if(!lmmse_gamma_in) _init_lmmse_gamma();
 
   float h0 = 1.0f;
   float h1 = expf( -1.0f / 8.0f);
@@ -205,7 +241,7 @@ static void lmmse_demosaic(
           int idx = row * width + colStart;
           for(int ccc = BORDER_AROUND, col = colStart; ccc < tileCols + BORDER_AROUND; ccc++, col++, cfa++, idx++)
           {
-            cfa[0] = _calc_gamma(revscaler * in[idx], gamma_in);
+            cfa[0] = _calc_gamma(revscaler * in[idx], lmmse_gamma_in);
           }
         }
 
@@ -568,9 +604,9 @@ static void lmmse_demosaic(
           float *col2 = qix[2] + idx;
           for(int col = first_horizontal; col < last_horizontal; col++, dest +=4, col0++, col1++, col2++)
           {
-            dest[0] = scaler * _calc_gamma(col0[0], gamma_out);
-            dest[1] = scaler * _calc_gamma(col1[0], gamma_out);
-            dest[2] = scaler * _calc_gamma(col2[0], gamma_out);
+            dest[0] = scaler * _calc_gamma(col0[0], lmmse_gamma_out);
+            dest[1] = scaler * _calc_gamma(col1[0], lmmse_gamma_out);
+            dest[2] = scaler * _calc_gamma(col2[0], lmmse_gamma_out);
             dest[3] = 0.0f;
           }
         }

@@ -192,8 +192,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_border_redblue;
   int kernel_rcd_border_green;
   int kernel_write_blended_dual;
-  float *lmmse_gamma_in;
-  float *lmmse_gamma_out;
 } dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
@@ -620,7 +618,6 @@ void process(
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
 
   const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   int demosaicing_method = data->demosaicing_method;
@@ -725,21 +722,7 @@ void process(
       }
       else if(demosaicing_method == DT_IOP_DEMOSAIC_LMMSE)
       {
-        if(gd->lmmse_gamma_in == NULL)
-        {
-          gd->lmmse_gamma_in = dt_alloc_align_float(65536);
-          gd->lmmse_gamma_out = dt_alloc_align_float(65536);
-#ifdef _OPENMP
-    #pragma omp for
-#endif
-          for(int j = 0; j < 65536; j++)
-          {
-            const double x = (double)j / 65535.0;
-            gd->lmmse_gamma_in[j]  = (x <= 0.001867) ? x * 17.0 : 1.044445 * exp(log(x) / 2.4) - 0.044445;
-            gd->lmmse_gamma_out[j] = (x <= 0.031746) ? x / 17.0 : exp(log((x + 0.044445) / 1.044445) * 2.4);
-          }
-        }
-        lmmse_demosaic(piece, tmp, in, &roo, &roi, piece->pipe->dsc.filters, data->lmmse_refine, gd->lmmse_gamma_in, gd->lmmse_gamma_out);
+        lmmse_demosaic(piece, tmp, in, &roo, &roi, piece->pipe->dsc.filters, data->lmmse_refine);
       }
       else if((demosaicing_method & ~DT_DEMOSAIC_DUAL) != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, piece->pipe->dsc.filters,
@@ -1002,8 +985,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_rcd_border_redblue = dt_opencl_create_kernel(rcd, "rcd_border_redblue");
   gd->kernel_rcd_border_green = dt_opencl_create_kernel(rcd, "rcd_border_green");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
-  gd->lmmse_gamma_in = NULL;
-  gd->lmmse_gamma_out = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1059,10 +1040,9 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_rcd_border_redblue);
   dt_opencl_free_kernel(gd->kernel_rcd_border_green);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
-  dt_free_align(gd->lmmse_gamma_in);
-  dt_free_align(gd->lmmse_gamma_out);
   free(module->data);
   module->data = NULL;
+  _cleanup_lmmse_gamma();
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
