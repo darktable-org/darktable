@@ -1470,7 +1470,7 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
   // we make sure that the multi-name is updated if possible with the
   // actual preset name if any is defined for the default parameters.
 
-  char *preset_name = dt_presets_get_multi_name
+  char *preset_name = dt_presets_get_module_label
     (module->op,
      module->default_params, module->params_size, TRUE,
      module->blend_params, sizeof(dt_develop_blend_params_t));
@@ -1625,12 +1625,14 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   char query[1024];
   // clang-format off
 
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
   snprintf(query, sizeof(query),
            "INSERT OR REPLACE INTO memory.history"
            " SELECT ?1, 0, op_version, operation, op_params,"
            "       enabled, blendop_params, blendop_version,"
            "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
-           "       COALESCE(NULLIF(multi_name,''), NULLIF(name,'')), 0"
+           "       %s, multi_name_hand_edited"
            " FROM %s"
            " WHERE ( (autoapply=1"
            "          AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
@@ -1642,6 +1644,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "   AND operation NOT IN"
            "        ('ioporder', 'metadata', 'modulegroups', 'export', 'tagging', 'collect', '%s')"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
+           auto_module ? "COALESCE(NULLIF(multi_name,''), NULLIF(name,''))" : "''",
            preset_table[legacy],
            is_display_referred?"":"basecurve");
   // clang-format on
