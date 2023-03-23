@@ -2460,7 +2460,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_from_params(self, "channel");
-  dt_bauhaus_combobox_remove_at(c->select_by, DT_IOP_COLORZONES_MAX_CHANNELS);
   gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
 
   c->mode = dt_bauhaus_combobox_from_params(self, "mode");

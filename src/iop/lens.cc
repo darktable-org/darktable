@@ -2636,20 +2636,14 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)module->gui_data;
   if(g)
   {
-    // rebuild methods selector combbox with only available methods
-    const int menu_size = dt_bauhaus_combobox_length(g->methods_selector);
-    for(int i = 0; i < menu_size; i++)
-      dt_bauhaus_combobox_remove_at(g->methods_selector, 0);
+    dt_bauhaus_combobox_clear(g->methods_selector);
 
     if(_have_embedded_metadata(module))
-      dt_bauhaus_combobox_add_full(g->methods_selector,
-                                   _("embedded metadata"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                   GINT_TO_POINTER(DT_IOP_LENS_METHOD_EMBEDDED_METADATA),
-                                   NULL, TRUE);
+      dt_bauhaus_combobox_set_from_value(g->methods_selector,
+                                         DT_IOP_LENS_METHOD_EMBEDDED_METADATA);
 
-    dt_bauhaus_combobox_add_full(g->methods_selector,
-                                 _("lensfun"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                 GINT_TO_POINTER(DT_IOP_LENS_METHOD_LENSFUN), NULL, TRUE);
+    dt_bauhaus_combobox_set_from_value(g->methods_selector,
+                                       DT_IOP_LENS_METHOD_LENSFUN);
 
     // if we have a gui -> reset corrections_done message
     dt_iop_gui_enter_critical_section(module);

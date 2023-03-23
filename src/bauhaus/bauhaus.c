@@ -1555,6 +1555,17 @@ gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *widget, int value)
       return TRUE;
     }
   }
+
+  // this might be a legacy option that was hidden; try to re-add from introspection
+  dt_introspection_type_enum_tuple_t *values
+    = g_hash_table_lookup(darktable.control->combo_introspection, dt_action_widget(widget));
+  if(values)
+  {
+    dt_bauhaus_combobox_add_introspection(widget, NULL, values, value, value);
+    dt_bauhaus_combobox_set(widget, d->entries->len - 1);
+    return TRUE;
+  }
+
   return FALSE;
 }
 
