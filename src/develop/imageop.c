@@ -1863,7 +1863,7 @@ static gboolean _iop_update_label(gpointer data)
   const gboolean is_default_params =
     memcmp(module->params, module->default_params, module->params_size) == 0;
 
-  char *preset_name = dt_presets_get_multi_name
+  char *preset_name = dt_presets_get_module_label
     (module->op,
      module->params, module->params_size, is_default_params,
      module->blend_params, sizeof(dt_develop_blend_params_t));
@@ -1924,7 +1924,8 @@ void dt_iop_commit_params(dt_iop_module_t *module,
      && module_params_changed
      && !module->multi_name_hand_edited
      && module->instance_name
-     && gtk_widget_get_visible(module->instance_name))
+     && gtk_widget_get_visible(module->instance_name)
+     && dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
   {
     if(module->label_recompute_handle)
       g_source_remove(module->label_recompute_handle);

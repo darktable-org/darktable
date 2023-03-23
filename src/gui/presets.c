@@ -951,11 +951,15 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
 
     // if module name has not been hand edited, use preset multi_name
     // or name as module label.
-    if(!module->multi_name_hand_edited
+
+    const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+    if(auto_module
+       && !module->multi_name_hand_edited
        && (strlen(multi_name) == 0 || multi_name[0] != ' '))
     {
       g_strlcpy(module->multi_name,
-                strlen(multi_name) > 0 ? multi_name : name,
+                dt_presets_get_multi_name(name, multi_name),
                 sizeof(module->multi_name));
       module->multi_name_hand_edited = multi_name_hand_edited;
     }
