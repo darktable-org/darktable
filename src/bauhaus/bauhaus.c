@@ -1296,8 +1296,11 @@ gboolean dt_bauhaus_combobox_add_introspection(GtkWidget *widget,
   while(item->name && item->value != start) item++;
   for(; item->name; item++)
   {
-    dt_bauhaus_combobox_add_full(widget, Q_(item->description ? item->description : item->name),
-                                 DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(item->value), NULL, TRUE);
+    const char *text = item->description ? item->description : item->name;
+    if(*text)
+      dt_bauhaus_combobox_add_full(widget, Q_(text),
+                                   DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                   GUINT_TO_POINTER(item->value), NULL, TRUE);
     if(item->value == end) return TRUE;
   }
   return FALSE;
