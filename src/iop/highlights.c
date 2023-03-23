@@ -2439,15 +2439,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
 
-  const int menu_size = dt_bauhaus_combobox_length(g->mode);
-  const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
-  const gboolean bayer = (filters != 0) && (filters != 9u);
-
-  const gboolean basic = ((filters == 9u && menu_size == 4) || (bayer && menu_size == 5));
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT && basic)
-     dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
   gui_changed(self, NULL, NULL);
 }
 
@@ -2483,32 +2474,20 @@ void reload_defaults(dt_iop_module_t *self)
   {
     // rebuild the complete menu depending on sensor type and possibly active but obsolete mode
     const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
-    const int menu_size = dt_bauhaus_combobox_length(g->mode);
-    for(int i = 0; i < menu_size; i++)
-      dt_bauhaus_combobox_remove_at(g->mode, 0);
+    dt_bauhaus_combobox_clear(g->mode);
 
-    dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
+    // add combo entries from introspection
+    dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_OPPOSED);
 
     if(filters == 0)
-      dt_bauhaus_combobox_add_full(g->mode, _("clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_CLIP), NULL, TRUE);
+      dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_CLIP);
     else
     {
-      dt_bauhaus_combobox_add_full(g->mode, _("reconstruct in LCh"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LCH), NULL, TRUE);
-      dt_bauhaus_combobox_add_full(g->mode, _("clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_CLIP), NULL, TRUE);
-      dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
-      if((filters != 0) && (filters != 9u))
-        dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
-
-      dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-      if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT)
-        dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
+      dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_LCH);
+      dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_CLIP);
+      dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_SEGMENTS);
+      if(filters != 9u)
+        dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_LAPLACIAN);
     }
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
