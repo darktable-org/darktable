@@ -386,7 +386,8 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
         module->instance = mod_src->instance;
         module->multi_priority = mod_src->multi_priority;
         module->multi_name_hand_edited = mod_src->multi_name_hand_edited;
-        module->iop_order = dt_ioppr_get_iop_order(dev_dest->iop_order_list, module->op, module->multi_priority);
+        module->iop_order = dt_ioppr_get_iop_order(dev_dest->iop_order_list,
+                                                   module->op, module->multi_priority);
       }
     }
     else
