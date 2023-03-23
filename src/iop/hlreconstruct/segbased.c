@@ -90,8 +90,6 @@ The chosen segmentation algorithm works like this:
 
 #define HL_POWERF 3.0f
 
-#include "iop/segmentation.h"
-#include "common/distance_transform.h"
 
 static inline float _local_std_deviation(const float *p, const int w)
 {
@@ -123,12 +121,15 @@ static float _calc_weight(const float *s, const size_t loc, const int w, const f
   return sval * smoothness;
 }
 
-static void _calc_plane_candidates(const float *plane, const float *refavg, dt_iop_segmentation_t *seg, const float clipval, const float badlevel)
+static void _calc_plane_candidates(const float *plane,
+                                   const float *refavg,
+                                   dt_iop_segmentation_t *seg,
+                                   const float clipval,
+                                   const float badlevel)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(plane, refavg, seg) \
-  dt_omp_sharedconst(clipval, badlevel) \
+  dt_omp_firstprivate(plane, refavg, seg, clipval, badlevel) \
   schedule(dynamic)
 #endif
   for(int id = 2; id < seg->nr; id++)
@@ -233,8 +234,7 @@ static void _initial_gradients(const size_t w,
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(luminance, gradient, distance) \
-  dt_omp_sharedconst(w, height) \
+  dt_omp_firstprivate(luminance, gradient, distance, w, height) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = HL_BORDER + 2; row < height - HL_BORDER - 2; row++)
@@ -274,8 +274,7 @@ static float _segment_maxdistance(const int width,
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   reduction(max : max_distance) \
-  dt_omp_firstprivate(distance, seg) \
-  dt_omp_sharedconst(width, xmin, xmax, ymin, ymax, id) \
+  dt_omp_firstprivate(distance, seg, width, xmin, xmax, ymin, ymax, id) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = ymin; row < ymax; row++)
@@ -325,8 +324,7 @@ static void _calc_distance_ring(const int width,
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(distance, gradient, seg) \
-  dt_omp_sharedconst(width, xmin, xmax, ymin, ymax, dist, id, attenuate) \
+  dt_omp_firstprivate(distance, gradient, seg, width, xmin, xmax, ymin, ymax, dist, id, attenuate) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = ymin; row < ymax; row++)
@@ -387,8 +385,7 @@ static void _segment_gradients(const int width,
   {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gradient, tmp) \
-  dt_omp_sharedconst(width, xmin, xmax, ymin, ymax) \
+  dt_omp_firstprivate(gradient, tmp, width, xmin, xmax, ymin, ymax) \
   schedule(static)
 #endif
     for(size_t row = ymin; row < ymax; row++)
@@ -400,8 +397,7 @@ static void _segment_gradients(const int width,
     dt_box_mean(tmp, ymax-ymin, xmax-xmin, 1, MIN((int)maxdist, 15), 2);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gradient, tmp, distance, seg) \
-  dt_omp_sharedconst(width, xmin, xmax, ymin, ymax, id) \
+  dt_omp_firstprivate(gradient, tmp, distance, seg, width, xmin, xmax, ymin, ymax, id) \
   schedule(static)
 #endif
     for(size_t row = ymin; row < ymax; row++)
@@ -415,8 +411,7 @@ static void _segment_gradients(const int width,
   }
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gradient, tmp, distance, seg) \
-  dt_omp_sharedconst(width, xmin, xmax, ymin, ymax, id, strength) \
+  dt_omp_firstprivate(gradient, tmp, distance, seg, width, xmin, xmax, ymin, ymax, id, strength) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = ymin; row < ymax; row++)
@@ -517,8 +512,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   #pragma omp parallel for default(none) \
   reduction( | : has_allclipped) \
   reduction( + : anyclipped) \
-  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans) \
-  dt_omp_sharedconst(pwidth, filters, xshifter) \
+  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 1; row < roi_in->height-1; row++)
@@ -599,8 +593,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, isegments, plane) \
-  dt_omp_sharedconst(filters, pwidth) \
+  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, isegments, plane, filters, pwidth) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 1; row < roi_in->height-1; row++)
@@ -645,8 +638,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     dt_iop_image_fill(distance, 0.0f, pwidth, pheight, 1);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(tmp, plane, distance, isegments, icoeffs) \
-  dt_omp_sharedconst(pheight, pwidth) \
+  dt_omp_firstprivate(tmp, plane, distance, isegments, icoeffs, pheight, pwidth) \
   schedule(static)
 #endif
     for(size_t row = HL_BORDER + 1; row < pheight - HL_BORDER - 1; row++)
@@ -698,8 +690,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, gradient, distance) \
-  dt_omp_sharedconst(filters, pwidth, dshift, strength) \
+  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, gradient, distance, filters, pwidth, dshift, strength) \
   schedule(static) collapse(2)
 #endif
       for(size_t row = 1; row < roi_in->height-1; row++)
@@ -721,8 +712,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, output, tmpout, roi_in, roi_out, xtrans, isegments, gradient) \
-  dt_omp_sharedconst(filters, pwidth, vmode, strength, do_masking) \
+  dt_omp_firstprivate(clips, output, tmpout, roi_in, roi_out, xtrans, isegments, gradient, filters, pwidth, vmode, strength, do_masking) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
