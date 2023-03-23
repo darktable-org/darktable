@@ -31,4 +31,4 @@ jobs:
         exempt-all-milestones: true
         exempt-pr-labels: 'bugfix,wip'
         exempt-issue-labels: 'scope: camera support,bugfix: wip'
-        operations-per-run: 500
+        operations-per-run: 800
