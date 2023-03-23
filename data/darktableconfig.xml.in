@@ -299,7 +299,7 @@
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
-    <longdescription>if found, use OpenCL runtime on your system for improved processing speed.\ncan be switched on and off at any time.</longdescription>
+    <longdescription>if found, use OpenCL runtime on your system to speed up processing.\ncan be switched on and off at any time.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl_scheduling_profile</name>
