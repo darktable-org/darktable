@@ -14,8 +14,9 @@
 */
 #pragma once
 
-#include <xmmintrin.h>
+#ifdef __SSE__
 
+#include <xmmintrin.h>
 #include "common/darktable.h"
 
 
@@ -123,6 +124,8 @@ static inline __m128 _mm_pow_ps1(__m128 x, float y)
 {
   return _mm_exp2_ps(_mm_mul_ps(_mm_log2_ps(x), _mm_set1_ps(y)));
 }
+
+#endif /* __SSE__ */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

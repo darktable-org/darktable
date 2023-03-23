@@ -18,14 +18,7 @@
 
 #pragma once
 
-#include "common/math.h"
-
-#ifdef __SSE2__
-#include "common/sse.h" // also loads darkable.h
-#include <xmmintrin.h>
-#else
-#include "common/darktable.h"
-#endif
+#include "common/math.h" // also loads darkable.h, sse.h, <xmmintrin.h>
 
 
 #ifdef __SSE2__

@@ -21,11 +21,7 @@
 #include <stddef.h>
 #include <math.h>
 #include <stdint.h>
-#ifdef __SSE__
-#include <xmmintrin.h>
-#include "common/sse.h"
-#endif
-#include "common/darktable.h"
+#include "common/sse.h"		// also includes darktable.h
 
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 
