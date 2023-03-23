@@ -794,7 +794,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         // elements of c2 need to be expf(mag*anistropy), but we haven't applied the expf() yet.  Do that now.
         for(size_t k = 0; k < 4; k++)
         {
-          dt_fast_expf_4wide(c2[k], c2[k]);
+          dt_vector_exp(c2[k], c2[k]);
         }
 
         dt_aligned_pixel_t kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
