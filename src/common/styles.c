@@ -798,14 +798,17 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
         memcpy(module->blend_params, style_item->blendop_params, sizeof(dt_develop_blend_params_t));
       }
       else if(style_item->blendop_params
-              && dt_develop_blend_legacy_params(module, style_item->blendop_params, style_item->blendop_version,
-                  module->blend_params, dt_develop_blend_version(), style_item->blendop_params_size) == 0)
+              && dt_develop_blend_legacy_params(module, style_item->blendop_params,
+                                                style_item->blendop_version,
+                                                module->blend_params, dt_develop_blend_version(),
+                                                style_item->blendop_params_size) == 0)
       {
         // do nothing
       }
       else
       {
-        memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+        memcpy(module->blend_params, module->default_blendop_params,
+               sizeof(dt_develop_blend_params_t));
       }
 
       gboolean autoinit = FALSE;
@@ -828,7 +831,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
         if(legacy_ret == 1)
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, darktable is %d.\n",
+                   "[dt_styles_apply_style_item] module `%s' version mismatch:"
+                   " history is %d, darktable is %d.\n",
                    module->op, style_item->module_version, module->version());
           dt_control_log(_("module `%s' version mismatch: %d != %d"), module->op,
                          module->version(), style_item->module_version);
@@ -898,12 +902,14 @@ void _styles_apply_to_image_ext(const char *name,
                                 const int32_t imgid,
                                 const gboolean undo)
 {
-  int id = 0;
   sqlite3_stmt *stmt;
 
-  if((id = dt_styles_get_id_by_name(name)) != 0)
+  const int style_id = dt_styles_get_id_by_name(name);
+
+  if(style_id != 0)
   {
-    int32_t newimgid;
+    int32_t newimgid = 0;
+
     /* check if we should make a duplicate before applying style */
     if(duplicate)
     {
@@ -972,7 +978,8 @@ void _styles_apply_to_image_ext(const char *name,
        " ORDER BY operation, multi_priority",
        -1, &stmt, NULL);
     // clang-format on
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, style_id);
+
     GList *si_list = NULL;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
