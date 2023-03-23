@@ -17,11 +17,9 @@
 */
 
 #include "common/eaw.h"
-#include "common/darktable.h"
 #include "common/math.h"
 #include "control/control.h"     // needed by dwt.h
 #include "common/dwt.h"          // for dwt_interleave_rows
-#include <math.h>
 
 static inline void weight(const dt_aligned_pixel_t c1,
                               const dt_aligned_pixel_t c2,
