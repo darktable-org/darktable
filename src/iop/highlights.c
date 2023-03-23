@@ -29,6 +29,7 @@
 #include "common/opencl.h"
 #include "common/imagebuf.h"
 #include "common/fast_guided_filter.h"
+#include "common/distance_transform.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -266,7 +267,6 @@ int legacy_params(dt_iop_module_t *self,
 static dt_aligned_pixel_t img_oppchroma;
 static uint64_t img_opphash = 0;
 
-#include "common/distance_transform.h"
 #include "hlreconstruct/segmentation.c"
 #include "hlreconstruct/segbased.c"
 #include "hlreconstruct/opposed.c"
