@@ -22,6 +22,7 @@ FILE(GLOB SOURCE_FILES
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
+  "common/custom_primaries.c"
   "common/splines.cpp"
   "common/curl_tools.c"
   "common/darktable.c"
