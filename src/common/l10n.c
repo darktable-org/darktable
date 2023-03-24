@@ -138,7 +138,7 @@ static void get_language_names(GList *languages)
   if(!g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     dt_print(DT_DEBUG_ALWAYS, "[l10n] error: can't open iso-codes file `%s'\n"
-                    "       there won't be nicely translated language names in the preferences.\n", filename);
+             "                   there won't be nicely translated language names in the preferences.\n", filename);
     goto end;
   }
 
