@@ -469,9 +469,9 @@ void init_presets(dt_iop_module_so_t *self)
   dt_database_start_transaction(darktable.db);
 
   p.orientation = ORIENTATION_NULL;
-  dt_gui_presets_add_generic(_("autodetect"), self->op,
+  dt_gui_presets_add_generic(_("auto"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
-  dt_gui_presets_update_autoapply(_("autodetect"), self->op, self->version(), 1);
+  dt_gui_presets_update_autoapply(_("auto"), self->op, self->version(), 1);
 
   p.orientation = ORIENTATION_NONE;
   dt_gui_presets_add_generic(_("no rotation"), self->op,
