@@ -1295,6 +1295,24 @@ static inline void gamut_check_Yrg(dt_aligned_pixel_t Ych)
   Ych[1] = max_c;
 }
 
+static inline void dt_RGB_to_YCbCr(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t yuv)
+{
+  static const dt_colormatrix_t rgb_to_YCbCr_transposed = {
+    { 0.299f, -0.147f,  0.615f, 0.0f },
+    { 0.587f, -0.289f, -0.515f, 0.0f },
+    { 0.114f,  0.437f, -0.100f, 0.0f }
+  };
+  dt_apply_transposed_color_matrix(rgb, rgb_to_YCbCr_transposed, yuv);
+}
+
+static inline void dt_YCbCr_to_RGB(const dt_aligned_pixel_t yuv, dt_aligned_pixel_t rgb)
+{
+  rgb[0] = yuv[0] + 1.140f * yuv[2];
+  rgb[1] = yuv[0] - 0.394f * yuv[1] - 0.581f * yuv[2];
+  rgb[2] = yuv[0] + 2.028f * yuv[1];
+}
+
+
 /** The following is darktable Uniform Color Space 2022
  * © Aurélien Pierre
  * https://eng.aurelienpierre.com/2022/02/color-saturation-control-for-the-21th-century/
