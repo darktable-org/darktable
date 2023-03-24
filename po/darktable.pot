@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-18 10:05+0100\n"
+"POT-Creation-Date: 2023-03-24 18:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1476,7 +1476,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6097
 msgid ""
-"if found, use OpenCL runtime on your system for improved processing speed.\n"
+"if found, use OpenCL runtime on your system to speed up processing.\n"
 "can be switched on and off at any time."
 msgstr ""
 
@@ -1635,7 +1635,7 @@ msgstr ""
 msgid "storage"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:6824 ../src/control/crawler.c:725
+#: ../build/bin/preferences_gen.h:6824 ../src/control/crawler.c:724
 msgid "database"
 msgstr ""
 
@@ -1668,7 +1668,7 @@ msgid ""
 "recent one for successful restore"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:6952 ../src/control/crawler.c:724
+#: ../build/bin/preferences_gen.h:6952 ../src/control/crawler.c:723
 msgid "XMP"
 msgstr ""
 
@@ -1817,10 +1817,11 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7586
 msgid ""
-"when creating XMP file the hierarchical tags are also added as a simple list "
-"of non-hierarchical ones to make them visible to some other programs. when "
-"this option is checked darktable will only include their last part and "
-"ignore the rest. so 'foo|bar|baz' will only add 'baz'."
+"when creating XMP file the hierarchical tags are also added as a simple "
+"list\n"
+"of non-hierarchical ones to make them visible to some other programs.\n"
+"when this option is checked darktable will only include their last part\n"
+"and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7596
@@ -2349,7 +2350,7 @@ msgstr ""
 #. // portrait / landscape
 #: ../build/lib/darktable/plugins/introspection_borders.c:130
 #: ../build/lib/darktable/plugins/introspection_borders.c:265
-#: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2360
+#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2360
 msgid "orientation"
 msgstr ""
 
@@ -3709,7 +3710,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:143
 #: ../build/lib/darktable/plugins/introspection_highlights.c:244
-#: ../src/views/darkroom.c:2384
+#: ../src/views/darkroom.c:2381
 msgid "clipping threshold"
 msgstr ""
 
@@ -3739,32 +3740,32 @@ msgid "inpaint a flat color"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2471 ../src/iop/highlights.c:2477
+#: ../src/iop/highlights.c:2494 ../src/iop/highlights.c:2500
 msgid "clip highlights"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2475
+#: ../src/iop/highlights.c:2498
 msgid "reconstruct in LCh"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2426 ../src/iop/highlights.c:2487
+#: ../src/iop/highlights.c:2449 ../src/iop/highlights.c:2510
 msgid "reconstruct color"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2482
+#: ../src/iop/highlights.c:2505
 msgid "guided laplacians"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:290
-#: ../src/iop/highlights.c:2479
+#: ../src/iop/highlights.c:2502
 msgid "segmentation based"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:291
-#: ../src/iop/highlights.c:2467
+#: ../src/iop/highlights.c:2490
 msgid "inpaint opposed"
 msgstr ""
 
@@ -3859,7 +3860,7 @@ msgstr ""
 #. Page CORRECTIONS
 #: ../build/lib/darktable/plugins/introspection_lens.cc:128
 #: ../build/lib/darktable/plugins/introspection_lens.cc:277
-#: ../src/iop/lens.cc:3669 ../src/iop/negadoctor.c:857
+#: ../src/iop/lens.cc:3669 ../src/iop/negadoctor.c:899
 msgid "corrections"
 msgstr ""
 
@@ -3876,7 +3877,7 @@ msgstr ""
 #: ../src/iop/levels.c:679 ../src/iop/profile_gamma.c:668
 #: ../src/libs/copy_history.c:402 ../src/libs/export.c:1277
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
-#: ../src/libs/styles.c:849 ../src/views/darkroom.c:2365
+#: ../src/libs/styles.c:849 ../src/views/darkroom.c:2362
 msgid "mode"
 msgstr ""
 
@@ -3931,8 +3932,8 @@ msgstr ""
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2260 ../src/views/darkroom.c:2659
-#: ../src/views/darkroom.c:2662 ../src/views/lighttable.c:765
+#: ../src/views/darkroom.c:2257 ../src/views/darkroom.c:2656
+#: ../src/views/darkroom.c:2659 ../src/views/lighttable.c:765
 #: ../src/views/lighttable.c:774 ../src/views/lighttable.c:1253
 #: ../src/views/lighttable.c:1257 ../src/views/lighttable.c:1261
 #: ../src/views/lighttable.c:1265 ../src/views/lighttable.c:1269
@@ -4023,7 +4024,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:144
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:239
-#: ../src/iop/negadoctor.c:947
+#: ../src/iop/negadoctor.c:989
 msgid "paper grade (gamma)"
 msgstr ""
 
@@ -4038,12 +4039,12 @@ msgid "print exposure adjustment"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
-#: ../src/iop/negadoctor.c:375
+#: ../src/iop/negadoctor.c:417
 msgid "black and white film"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:262
-#: ../src/iop/negadoctor.c:360
+#: ../src/iop/negadoctor.c:402
 msgid "color film"
 msgstr ""
 
@@ -4137,7 +4138,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4593
 #: ../src/iop/colisa.c:305 ../src/iop/lowpass.c:587 ../src/iop/soften.c:377
-#: ../src/iop/vignette.c:969 ../src/libs/history.c:974
+#: ../src/iop/vignette.c:969 ../src/libs/history.c:975
 msgid "brightness"
 msgstr ""
 
@@ -4530,79 +4531,79 @@ msgstr ""
 msgid "Print your images"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:745 ../src/bauhaus/bauhaus.c:3621
+#: ../src/bauhaus/bauhaus.c:747 ../src/bauhaus/bauhaus.c:3625
 msgid "sliders"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:746 ../src/bauhaus/bauhaus.c:3626
+#: ../src/bauhaus/bauhaus.c:748 ../src/bauhaus/bauhaus.c:3630
 msgid "dropdowns"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:747 ../src/bauhaus/bauhaus.c:3631
+#: ../src/bauhaus/bauhaus.c:749 ../src/bauhaus/bauhaus.c:3635
 msgid "buttons"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3342
+#: ../src/bauhaus/bauhaus.c:3346
 msgid "button on"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3342
+#: ../src/bauhaus/bauhaus.c:3346
 msgid "button off"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3343
+#: ../src/bauhaus/bauhaus.c:3347
 msgid "button pressed"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3555
+#: ../src/bauhaus/bauhaus.c:3559
 msgid "not that many sliders"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3565
+#: ../src/bauhaus/bauhaus.c:3569
 msgid "not that many dropdowns"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3580
+#: ../src/bauhaus/bauhaus.c:3584
 msgid "not that many buttons"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3585 ../src/gui/accelerators.c:335
+#: ../src/bauhaus/bauhaus.c:3589 ../src/gui/accelerators.c:335
 msgid "value"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3586 ../src/bauhaus/bauhaus.c:3592
+#: ../src/bauhaus/bauhaus.c:3590 ../src/bauhaus/bauhaus.c:3596
 #: ../src/gui/accelerators.c:313
 msgid "button"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3587
+#: ../src/bauhaus/bauhaus.c:3591
 msgid "force"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3588 ../src/libs/navigation.c:167
+#: ../src/bauhaus/bauhaus.c:3592 ../src/libs/navigation.c:167
 #: ../src/libs/navigation.c:178
 msgid "zoom"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3591
+#: ../src/bauhaus/bauhaus.c:3595
 msgid "selection"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3610
+#: ../src/bauhaus/bauhaus.c:3614
 msgid "slider"
 msgstr ""
 
-#: ../src/bauhaus/bauhaus.c:3615
+#: ../src/bauhaus/bauhaus.c:3619
 msgid "dropdown"
 msgstr ""
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1661
-#: ../src/control/jobs/control_jobs.c:1715 ../src/gui/accelerators.c:2131
-#: ../src/gui/accelerators.c:2207 ../src/gui/accelerators.c:2258
-#: ../src/gui/accelerators.c:2286 ../src/gui/accelerators.c:2345
-#: ../src/gui/hist_dialog.c:212 ../src/gui/preferences.c:1033
+#: ../src/control/jobs/control_jobs.c:1715 ../src/gui/accelerators.c:2148
+#: ../src/gui/accelerators.c:2224 ../src/gui/accelerators.c:2275
+#: ../src/gui/accelerators.c:2303 ../src/gui/accelerators.c:2362
+#: ../src/gui/hist_dialog.c:224 ../src/gui/preferences.c:1033
 #: ../src/gui/preferences.c:1072 ../src/gui/presets.c:361
-#: ../src/gui/presets.c:498 ../src/gui/styles_dialog.c:516
+#: ../src/gui/presets.c:498 ../src/gui/styles_dialog.c:517
 #: ../src/imageio/storage/disk.c:123 ../src/imageio/storage/gallery.c:110
 #: ../src/imageio/storage/latex.c:109 ../src/iop/lut3d.c:1546
 #: ../src/libs/collect.c:409 ../src/libs/copy_history.c:117
@@ -4613,7 +4614,7 @@ msgid "_cancel"
 msgstr ""
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1072
-#: ../src/gui/styles_dialog.c:519 ../src/libs/styles.c:393
+#: ../src/gui/styles_dialog.c:520 ../src/libs/styles.c:393
 msgid "_save"
 msgstr ""
 
@@ -4878,8 +4879,8 @@ msgstr ""
 msgid "module"
 msgstr ""
 
-#: ../src/common/collection.c:686 ../src/gui/hist_dialog.c:316
-#: ../src/gui/styles_dialog.c:695 ../src/gui/styles_dialog.c:741
+#: ../src/common/collection.c:686 ../src/gui/hist_dialog.c:344
+#: ../src/gui/styles_dialog.c:720 ../src/gui/styles_dialog.c:769
 #: ../src/libs/filters/module_order.c:161 ../src/libs/ioporder.c:40
 msgid "module order"
 msgstr ""
@@ -5294,7 +5295,7 @@ msgid "export profile"
 msgstr ""
 
 #: ../src/common/colorspaces.c:1347 ../src/common/colorspaces.c:1627
-#: ../src/views/darkroom.c:2524
+#: ../src/views/darkroom.c:2521
 msgid "softproof profile"
 msgstr ""
 
@@ -5714,12 +5715,12 @@ msgid ""
 "your RAM settings"
 msgstr ""
 
-#: ../src/common/exif.cc:4700
+#: ../src/common/exif.cc:4708
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr ""
 
-#: ../src/common/exif.cc:4752
+#: ../src/common/exif.cc:4760
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr ""
@@ -5741,7 +5742,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: ../src/common/film.c:371 ../src/gui/preferences.c:811
-#: ../src/gui/styles_dialog.c:545 ../src/libs/geotagging.c:830
+#: ../src/gui/styles_dialog.c:546 ../src/libs/geotagging.c:830
 #: ../src/libs/import.c:1550
 msgid "name"
 msgstr ""
@@ -5751,7 +5752,7 @@ msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
 
-#: ../src/common/history.c:826
+#: ../src/common/history.c:827
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 
@@ -5759,52 +5760,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr ""
 
-#: ../src/common/image.c:618
+#: ../src/common/image.c:620
 #, c-format
 msgid "geo-location undone for %d images"
 msgstr ""
 
-#: ../src/common/image.c:619
+#: ../src/common/image.c:621
 #, c-format
 msgid "geo-location re-applied to %d images"
 msgstr ""
 
-#: ../src/common/image.c:639
+#: ../src/common/image.c:641
 #, c-format
 msgid "date/time undone for %d images"
 msgstr ""
 
-#: ../src/common/image.c:640
+#: ../src/common/image.c:642
 #, c-format
 msgid "date/time re-applied to %d images"
 msgstr ""
 
-#: ../src/common/image.c:2179
+#: ../src/common/image.c:2180
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2186
+#: ../src/common/image.c:2187
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2193
+#: ../src/common/image.c:2194
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2210
+#: ../src/common/image.c:2211
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr ""
 
-#: ../src/common/image.c:2220
+#: ../src/common/image.c:2221
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr ""
 
-#: ../src/common/image.c:2224
+#: ../src/common/image.c:2225
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr ""
@@ -5821,36 +5822,36 @@ msgstr ""
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 
-#: ../src/common/image.c:2814
+#: ../src/common/image.c:2812
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/common/image.c:3016
+#: ../src/common/image.c:3014
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr ""
 
-#: ../src/common/image.c:3017
+#: ../src/common/image.c:3015
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 msgstr ""
 
-#: ../src/common/image.c:3018
+#: ../src/common/image.c:3016
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
 "in as many format/compression/bit depths as possible"
 msgstr ""
 
-#: ../src/common/image.c:3021
+#: ../src/common/image.c:3019
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 
 #: ../src/common/image.h:207 ../src/common/ratings.c:284
-#: ../src/libs/history.c:854 ../src/libs/snapshots.c:610
+#: ../src/libs/history.c:855 ../src/libs/snapshots.c:610
 msgid "unknown"
 msgstr ""
 
@@ -5974,7 +5975,7 @@ msgstr ""
 msgid "title"
 msgstr ""
 
-#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:549
+#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:550
 #: ../src/libs/filtering.c:70
 msgid "description"
 msgstr ""
@@ -5996,7 +5997,7 @@ msgstr ""
 msgid "image id"
 msgstr ""
 
-#: ../src/common/mipmap_cache.c:1066 ../src/imageio/imageio.c:727
+#: ../src/common/mipmap_cache.c:1065 ../src/imageio/imageio.c:727
 #, c-format
 msgid "image `%s' is not available!"
 msgstr ""
@@ -6144,12 +6145,12 @@ msgstr ""
 msgid "style with name '%s' already exists"
 msgstr ""
 
-#: ../src/common/styles.c:268 ../src/common/styles.c:1756
+#: ../src/common/styles.c:268 ../src/common/styles.c:1750
 #: ../src/libs/styles.c:54
 msgid "styles"
 msgstr ""
 
-#: ../src/common/styles.c:546 ../src/gui/styles_dialog.c:238
+#: ../src/common/styles.c:546 ../src/gui/styles_dialog.c:239
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr ""
@@ -6178,33 +6179,33 @@ msgid_plural "styles successfully applied!"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/common/styles.c:833
+#: ../src/common/styles.c:837
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr ""
 
-#: ../src/common/styles.c:1110
+#: ../src/common/styles.c:1117
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr ""
 
-#: ../src/common/styles.c:1372
+#: ../src/common/styles.c:1366
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr ""
 
-#: ../src/common/styles.c:1378
+#: ../src/common/styles.c:1372
 #, c-format
 msgid "style file for %s exists"
 msgstr ""
 
-#: ../src/common/styles.c:1647
+#: ../src/common/styles.c:1641
 #, c-format
 msgid "style %s was successfully imported"
 msgstr ""
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1691
+#: ../src/common/styles.c:1685
 #, c-format
 msgid "could not read file `%s'"
 msgstr ""
@@ -6222,7 +6223,7 @@ msgid "m"
 msgstr ""
 
 #: ../src/control/control.c:66 ../src/gui/accelerators.c:138
-#: ../src/views/darkroom.c:2140
+#: ../src/views/darkroom.c:2137
 msgid "hold"
 msgstr ""
 
@@ -6293,159 +6294,159 @@ msgstr ""
 msgid "working..."
 msgstr ""
 
-#: ../src/control/crawler.c:426
+#: ../src/control/crawler.c:425
 #, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
 msgstr ""
 
-#: ../src/control/crawler.c:427 ../src/control/crawler.c:493
-#: ../src/control/crawler.c:562
+#: ../src/control/crawler.c:426 ../src/control/crawler.c:492
+#: ../src/control/crawler.c:561
 msgid ""
 "ERROR: cannot write the database. the destination may be full, offline or "
 "read-only."
 msgstr ""
 
-#: ../src/control/crawler.c:434
+#: ../src/control/crawler.c:433
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
 msgstr ""
 
-#: ../src/control/crawler.c:456
+#: ../src/control/crawler.c:455
 #, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
 msgstr ""
 
-#: ../src/control/crawler.c:458 ../src/control/crawler.c:517
-#: ../src/control/crawler.c:583
+#: ../src/control/crawler.c:457 ../src/control/crawler.c:516
+#: ../src/control/crawler.c:582
 #, c-format
 msgid ""
 "ERROR: cannot write %s \n"
 "the destination may be full, offline or read-only."
 msgstr ""
 
-#: ../src/control/crawler.c:464
+#: ../src/control/crawler.c:463
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
 msgstr ""
 
-#: ../src/control/crawler.c:490
+#: ../src/control/crawler.c:489
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
 msgstr ""
 
-#: ../src/control/crawler.c:500
+#: ../src/control/crawler.c:499
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
 msgstr ""
 
-#: ../src/control/crawler.c:514
+#: ../src/control/crawler.c:513
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
 msgstr ""
 
-#: ../src/control/crawler.c:522
+#: ../src/control/crawler.c:521
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
 msgstr ""
 
-#: ../src/control/crawler.c:531 ../src/control/crawler.c:599
+#: ../src/control/crawler.c:530 ../src/control/crawler.c:598
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
 msgstr ""
 
-#: ../src/control/crawler.c:559
+#: ../src/control/crawler.c:558
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
 msgstr ""
 
-#: ../src/control/crawler.c:568
+#: ../src/control/crawler.c:567
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
 msgstr ""
 
-#: ../src/control/crawler.c:580
+#: ../src/control/crawler.c:579
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
 msgstr ""
 
-#: ../src/control/crawler.c:589
+#: ../src/control/crawler.c:588
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
 msgstr ""
 
-#: ../src/control/crawler.c:671
+#: ../src/control/crawler.c:670
 #, c-format
 msgid "%id %02dh %02dm %02ds"
 msgstr ""
 
-#: ../src/control/crawler.c:741 ../src/imageio/storage/disk.c:168
+#: ../src/control/crawler.c:740 ../src/imageio/storage/disk.c:168
 #: ../src/imageio/storage/gallery.c:154 ../src/imageio/storage/latex.c:153
 #: ../src/imageio/storage/latex.c:171
 msgid "path"
 msgstr ""
 
-#: ../src/control/crawler.c:750
+#: ../src/control/crawler.c:749
 msgid "XMP timestamp"
 msgstr ""
 
-#: ../src/control/crawler.c:755
+#: ../src/control/crawler.c:754
 msgid "database timestamp"
 msgstr ""
 
-#: ../src/control/crawler.c:760
+#: ../src/control/crawler.c:759
 msgid "newest"
 msgstr ""
 
-#: ../src/control/crawler.c:766
+#: ../src/control/crawler.c:765
 msgid "time difference"
 msgstr ""
 
-#: ../src/control/crawler.c:778
+#: ../src/control/crawler.c:777
 msgid "updated XMP sidecar files found"
 msgstr ""
 
-#: ../src/control/crawler.c:779
+#: ../src/control/crawler.c:778
 msgid "_close"
 msgstr ""
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2344
+#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2344
 #: ../src/libs/import.c:1720 ../src/libs/select.c:133
 msgid "select all"
 msgstr ""
 
-#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2345
+#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2345
 #: ../src/libs/import.c:1724 ../src/libs/select.c:137
 msgid "select none"
 msgstr ""
 
-#: ../src/control/crawler.c:796 ../src/dtgtk/thumbtable.c:2346
+#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2346
 #: ../src/libs/select.c:141
 msgid "invert selection"
 msgstr ""
 
-#: ../src/control/crawler.c:808
+#: ../src/control/crawler.c:807
 msgid "on the selection:"
 msgstr ""
 
-#: ../src/control/crawler.c:809
+#: ../src/control/crawler.c:808
 msgid "keep the XMP edit"
 msgstr ""
 
-#: ../src/control/crawler.c:810
+#: ../src/control/crawler.c:809
 msgid "keep the database edit"
 msgstr ""
 
-#: ../src/control/crawler.c:811
+#: ../src/control/crawler.c:810
 msgid "keep the newest edit"
 msgstr ""
 
-#: ../src/control/crawler.c:812
+#: ../src/control/crawler.c:811
 msgid "keep the oldest edit"
 msgstr ""
 
-#: ../src/control/crawler.c:837
+#: ../src/control/crawler.c:836
 msgid "synchronization log"
 msgstr ""
 
@@ -7138,17 +7139,17 @@ msgid "uniformly"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2740
-#: ../src/develop/blend_gui.c:3431 ../src/develop/imageop.c:2527
+#: ../src/develop/blend_gui.c:3431 ../src/develop/imageop.c:2526
 msgid "drawn mask"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2514
-#: ../src/develop/blend_gui.c:3442 ../src/develop/imageop.c:2529
+#: ../src/develop/blend_gui.c:3442 ../src/develop/imageop.c:2528
 msgid "parametric mask"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2948
-#: ../src/develop/blend_gui.c:3469 ../src/develop/imageop.c:2531
+#: ../src/develop/blend_gui.c:3469 ../src/develop/imageop.c:2530
 msgid "raster mask"
 msgstr ""
 
@@ -7195,12 +7196,12 @@ msgid "on"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1001 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2638
+#: ../src/develop/imageop.c:2637
 msgid "input"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1001 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2638
+#: ../src/develop/imageop.c:2637
 msgid "output"
 msgstr ""
 
@@ -7421,15 +7422,15 @@ msgstr ""
 #: ../src/iop/filmic.c:1503 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1558
 #: ../src/iop/filmicrgb.c:4179 ../src/iop/filmicrgb.c:4190
 #: ../src/iop/filmicrgb.c:4224 ../src/iop/filmicrgb.c:4234
-#: ../src/iop/graduatednd.c:1113 ../src/iop/negadoctor.c:966
+#: ../src/iop/graduatednd.c:1113 ../src/iop/negadoctor.c:1008
 #: ../src/iop/profile_gamma.c:643 ../src/iop/profile_gamma.c:649
-#: ../src/iop/relight.c:259 ../src/iop/soften.c:378 ../src/iop/toneequal.c:3354
+#: ../src/iop/relight.c:259 ../src/iop/soften.c:378 ../src/iop/toneequal.c:3342
+#: ../src/iop/toneequal.c:3345 ../src/iop/toneequal.c:3348
+#: ../src/iop/toneequal.c:3351 ../src/iop/toneequal.c:3354
 #: ../src/iop/toneequal.c:3357 ../src/iop/toneequal.c:3360
 #: ../src/iop/toneequal.c:3363 ../src/iop/toneequal.c:3366
-#: ../src/iop/toneequal.c:3369 ../src/iop/toneequal.c:3372
-#: ../src/iop/toneequal.c:3375 ../src/iop/toneequal.c:3378
-#: ../src/iop/toneequal.c:3501 ../src/iop/toneequal.c:3510
-#: ../src/iop/toneequal.c:3523 ../src/views/darkroom.c:2431
+#: ../src/iop/toneequal.c:3489 ../src/iop/toneequal.c:3498
+#: ../src/iop/toneequal.c:3511 ../src/views/darkroom.c:2428
 msgid " EV"
 msgstr ""
 
@@ -7566,7 +7567,7 @@ msgstr ""
 msgid "blending options"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3502 ../src/libs/history.c:960
+#: ../src/develop/blend_gui.c:3502 ../src/libs/history.c:961
 msgid "blend mode"
 msgstr ""
 
@@ -7585,7 +7586,7 @@ msgid ""
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3532 ../src/libs/history.c:964
+#: ../src/develop/blend_gui.c:3532 ../src/libs/history.c:965
 msgid "blend fulcrum"
 msgstr ""
 
@@ -7603,7 +7604,7 @@ msgstr ""
 msgid "set the opacity of the blending"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3552 ../src/libs/history.c:967
+#: ../src/develop/blend_gui.c:3552 ../src/libs/history.c:968
 msgid "combine masks"
 msgstr ""
 
@@ -7613,7 +7614,7 @@ msgid ""
 "mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3562 ../src/libs/history.c:977
+#: ../src/develop/blend_gui.c:3562 ../src/libs/history.c:978
 msgid "invert mask"
 msgstr ""
 
@@ -7632,7 +7633,7 @@ msgid ""
 "negative values select flat areas"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3581 ../src/libs/history.c:970
+#: ../src/develop/blend_gui.c:3581 ../src/libs/history.c:971
 msgid "feathering guide"
 msgstr ""
 
@@ -7642,7 +7643,7 @@ msgid ""
 "choose to apply feathering before or after mask blur"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3593 ../src/libs/history.c:969
+#: ../src/develop/blend_gui.c:3593 ../src/libs/history.c:970
 msgid "feathering radius"
 msgstr ""
 
@@ -7659,7 +7660,7 @@ msgid "radius for gaussian blur of blend mask"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:3612 ../src/iop/retouch.c:2452
-#: ../src/libs/history.c:965
+#: ../src/libs/history.c:966
 msgid "mask opacity"
 msgstr ""
 
@@ -7669,7 +7670,7 @@ msgid ""
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3623 ../src/libs/history.c:973
+#: ../src/develop/blend_gui.c:3623 ../src/libs/history.c:974
 msgid "mask contrast"
 msgstr ""
 
@@ -7721,96 +7722,96 @@ msgstr ""
 msgid "duplicate instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:982 ../src/develop/imageop.c:3577
+#: ../src/develop/imageop.c:982 ../src/develop/imageop.c:3576
 #: ../src/libs/masks.c:1187
 msgid "move up"
 msgstr ""
 
-#: ../src/develop/imageop.c:988 ../src/develop/imageop.c:3578
+#: ../src/develop/imageop.c:988 ../src/develop/imageop.c:3577
 #: ../src/libs/masks.c:1190
 msgid "move down"
 msgstr ""
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:994 ../src/develop/imageop.c:3580
+#: ../src/develop/imageop.c:994 ../src/develop/imageop.c:3579
 #: ../src/gui/accelerators.c:155 ../src/gui/presets.c:499
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr ""
 
-#: ../src/develop/imageop.c:1001 ../src/develop/imageop.c:3581
+#: ../src/develop/imageop.c:1001 ../src/develop/imageop.c:3580
 #: ../src/libs/modulegroups.c:3466 ../src/libs/modulegroups.c:3817
 msgid "rename"
 msgstr ""
 
-#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2787
 #, c-format
 msgid "'%s' is switched on"
 msgstr ""
 
-#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2787
 #, c-format
 msgid "'%s' is switched off"
 msgstr ""
 
-#: ../src/develop/imageop.c:2521
+#: ../src/develop/imageop.c:2520
 msgid "unknown mask"
 msgstr ""
 
-#: ../src/develop/imageop.c:2525
+#: ../src/develop/imageop.c:2524
 msgid "drawn + parametric mask"
 msgstr ""
 
-#: ../src/develop/imageop.c:2534
+#: ../src/develop/imageop.c:2533
 #, c-format
 msgid "this module has a `%s'"
 msgstr ""
 
-#: ../src/develop/imageop.c:2539
+#: ../src/develop/imageop.c:2538
 #, c-format
 msgid "taken from module %s"
 msgstr ""
 
-#: ../src/develop/imageop.c:2544
+#: ../src/develop/imageop.c:2543
 msgid "click to display (module must be activated first)"
 msgstr ""
 
-#: ../src/develop/imageop.c:2638
+#: ../src/develop/imageop.c:2637
 msgid "purpose"
 msgstr ""
 
-#: ../src/develop/imageop.c:2638
+#: ../src/develop/imageop.c:2637
 msgid "process"
 msgstr ""
 
-#: ../src/develop/imageop.c:2747
+#: ../src/develop/imageop.c:2746
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:2760
+#: ../src/develop/imageop.c:2759
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
 msgstr ""
 
-#: ../src/develop/imageop.c:2771
+#: ../src/develop/imageop.c:2770
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:3020 ../src/develop/imageop.c:3042
+#: ../src/develop/imageop.c:3019 ../src/develop/imageop.c:3041
 msgid "ERROR"
 msgstr ""
 
-#: ../src/develop/imageop.c:3467
+#: ../src/develop/imageop.c:3466
 msgid "unsupported input"
 msgstr ""
 
-#: ../src/develop/imageop.c:3468
+#: ../src/develop/imageop.c:3467
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -7818,49 +7819,49 @@ msgid ""
 "its requirements."
 msgstr ""
 
-#: ../src/develop/imageop.c:3576 ../src/develop/imageop.c:3586
+#: ../src/develop/imageop.c:3575 ../src/develop/imageop.c:3585
 #: ../src/gui/accelerators.c:151 ../src/libs/lib.c:1252
 msgid "show"
 msgstr ""
 
-#: ../src/develop/imageop.c:3579 ../src/libs/modulegroups.c:3312
+#: ../src/develop/imageop.c:3578 ../src/libs/modulegroups.c:3312
 #: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
 #: ../src/libs/tagging.c:3245
 msgid "new"
 msgstr ""
 
-#: ../src/develop/imageop.c:3582 ../src/libs/duplicate.c:403
+#: ../src/develop/imageop.c:3581 ../src/libs/duplicate.c:403
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr ""
 
-#: ../src/develop/imageop.c:3587
+#: ../src/develop/imageop.c:3586
 msgid "enable"
 msgstr ""
 
-#: ../src/develop/imageop.c:3588 ../src/gui/accelerators.c:167
+#: ../src/develop/imageop.c:3587 ../src/gui/accelerators.c:167
 msgid "focus"
 msgstr ""
 
-#: ../src/develop/imageop.c:3589 ../src/gui/accelerators.c:2467
+#: ../src/develop/imageop.c:3588 ../src/gui/accelerators.c:2484
 msgid "instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:3590 ../src/gui/accelerators.c:112
+#: ../src/develop/imageop.c:3589 ../src/gui/accelerators.c:112
 #: ../src/gui/accelerators.c:122 ../src/gui/gtk.c:2829 ../src/gui/gtk.c:2876
-#: ../src/gui/hist_dialog.c:253 ../src/gui/styles_dialog.c:598
-#: ../src/gui/styles_dialog.c:620 ../src/iop/atrous.c:1514
+#: ../src/gui/hist_dialog.c:268 ../src/gui/styles_dialog.c:601
+#: ../src/gui/styles_dialog.c:623 ../src/iop/atrous.c:1514
 #: ../src/libs/lib.c:1253 ../src/libs/modulegroups.c:3883
 msgid "reset"
 msgstr ""
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3591 ../src/gui/preferences.c:793
+#: ../src/develop/imageop.c:3590 ../src/gui/preferences.c:793
 #: ../src/libs/lib.c:1254
 msgid "presets"
 msgstr ""
 
-#: ../src/develop/imageop.c:3611
+#: ../src/develop/imageop.c:3610
 msgid "processing module"
 msgstr ""
 
@@ -8362,8 +8363,8 @@ msgstr ""
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2218
-#: ../src/gui/accelerators.c:2297 ../src/gui/gtk.c:1201 ../src/gui/gtk.c:2956
+#: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2235
+#: ../src/gui/accelerators.c:2314 ../src/gui/gtk.c:1201 ../src/gui/gtk.c:2956
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3783
 #: ../src/iop/lens.cc:3497 ../src/iop/rawdenoise.c:894
 #: ../src/libs/collect.c:3141 ../src/libs/filtering.c:1460
@@ -8567,7 +8568,7 @@ msgid "fallbacks"
 msgstr ""
 
 #: ../src/gui/accelerators.c:64 ../src/gui/accelerators.c:697
-#: ../src/gui/accelerators.c:2457 ../src/gui/accelerators.c:3304
+#: ../src/gui/accelerators.c:2474 ../src/gui/accelerators.c:3321
 msgid "speed"
 msgstr ""
 
@@ -8583,7 +8584,7 @@ msgstr ""
 #: ../src/iop/ashift.c:5849 ../src/iop/ashift.c:5954 ../src/iop/ashift.c:5956
 #: ../src/iop/ashift.c:6291 ../src/iop/clipping.c:1902
 #: ../src/iop/clipping.c:2094 ../src/iop/clipping.c:2110
-#: ../src/views/darkroom.c:2659 ../src/views/lighttable.c:1257
+#: ../src/views/darkroom.c:2656 ../src/views/lighttable.c:1257
 msgid "horizontal"
 msgstr ""
 
@@ -8591,7 +8592,7 @@ msgstr ""
 #: ../src/iop/ashift.c:5849 ../src/iop/ashift.c:5954 ../src/iop/ashift.c:5956
 #: ../src/iop/ashift.c:6289 ../src/iop/clipping.c:1901
 #: ../src/iop/clipping.c:2095 ../src/iop/clipping.c:2109
-#: ../src/views/darkroom.c:2662 ../src/views/lighttable.c:1261
+#: ../src/views/darkroom.c:2659 ../src/views/lighttable.c:1261
 msgid "vertical"
 msgstr ""
 
@@ -8662,18 +8663,18 @@ msgstr ""
 msgid "previous"
 msgstr ""
 
-#: ../src/gui/accelerators.c:123 ../src/gui/accelerators.c:1375
+#: ../src/gui/accelerators.c:123 ../src/gui/accelerators.c:1392
 msgid "last"
 msgstr ""
 
-#: ../src/gui/accelerators.c:124 ../src/gui/accelerators.c:1374
+#: ../src/gui/accelerators.c:124 ../src/gui/accelerators.c:1391
 msgid "first"
 msgstr ""
 
 #: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:141
 #: ../src/gui/accelerators.c:301 ../src/libs/filters/rating_range.c:268
-#: ../src/libs/tagging.c:3116 ../src/views/darkroom.c:2347
-#: ../src/views/darkroom.c:2397 ../src/views/darkroom.c:2631
+#: ../src/libs/tagging.c:3116 ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2394 ../src/views/darkroom.c:2628
 msgid "toggle"
 msgstr ""
 
@@ -8709,7 +8710,7 @@ msgstr ""
 msgid "store"
 msgstr ""
 
-#: ../src/gui/accelerators.c:157 ../src/gui/styles_dialog.c:634
+#: ../src/gui/accelerators.c:157 ../src/gui/styles_dialog.c:637
 msgid "update"
 msgstr ""
 
@@ -8820,128 +8821,128 @@ msgid ""
 "<tt>%s</tt>"
 msgstr ""
 
-#: ../src/gui/accelerators.c:899
+#: ../src/gui/accelerators.c:915
 msgid "press Delete to delete selected shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:900
+#: ../src/gui/accelerators.c:916
 msgid "double-click to add new shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:901 ../src/gui/accelerators.c:914
+#: ../src/gui/accelerators.c:917 ../src/gui/accelerators.c:930
 msgid "start typing for incremental search"
 msgstr ""
 
-#: ../src/gui/accelerators.c:911
+#: ../src/gui/accelerators.c:927
 msgid "click to filter shortcut list"
 msgstr ""
 
-#: ../src/gui/accelerators.c:912
+#: ../src/gui/accelerators.c:928
 msgid "right click to show action of selected shortcut\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:913
+#: ../src/gui/accelerators.c:929
 msgid "double-click to define new shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:936
+#: ../src/gui/accelerators.c:952
 msgid "shift+alt+scroll to change height"
 msgstr ""
 
-#: ../src/gui/accelerators.c:956
+#: ../src/gui/accelerators.c:972
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:957
+#: ../src/gui/accelerators.c:973
 msgid "click to open shortcut configuration"
 msgstr ""
 
-#: ../src/gui/accelerators.c:958
+#: ../src/gui/accelerators.c:974
 msgid "ctrl+click to add to quick access panel\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:959
+#: ../src/gui/accelerators.c:975
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:960
+#: ../src/gui/accelerators.c:976
 msgid "scroll to change default speed"
 msgstr ""
 
-#: ../src/gui/accelerators.c:961
+#: ../src/gui/accelerators.c:977
 msgid "right click to exit mapping mode"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1017
+#: ../src/gui/accelerators.c:1033
 msgid "ctrl+v"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1017
+#: ../src/gui/accelerators.c:1033
 msgid "right long click"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1017
+#: ../src/gui/accelerators.c:1033
 msgid "to copy lua command"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1258
+#: ../src/gui/accelerators.c:1275
 msgid "shortcut for move exists with single effect"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1259
+#: ../src/gui/accelerators.c:1276
 msgid "create separate shortcuts for up and down move?"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1282
+#: ../src/gui/accelerators.c:1299
 #, c-format
 msgid "%s, speed reset"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1291
+#: ../src/gui/accelerators.c:1308
 msgid "shortcut exists with different settings"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1292
+#: ../src/gui/accelerators.c:1309
 msgid "reset the settings of the shortcut?"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1303
+#: ../src/gui/accelerators.c:1320
 msgid "shortcut already exists"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1304
+#: ../src/gui/accelerators.c:1321
 msgid "remove the shortcut?"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1336
+#: ../src/gui/accelerators.c:1353
 msgid "clashing shortcuts exist"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1337
+#: ../src/gui/accelerators.c:1354
 msgid "remove these existing shortcuts?"
 msgstr ""
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1373
+#: ../src/gui/accelerators.c:1390
 msgid "preferred"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1376
+#: ../src/gui/accelerators.c:1393
 msgid "second"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1377
+#: ../src/gui/accelerators.c:1394
 msgid "last but one"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1509 ../src/gui/accelerators.c:1563
+#: ../src/gui/accelerators.c:1526 ../src/gui/accelerators.c:1580
 msgid "(unchanged)"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1658
+#: ../src/gui/accelerators.c:1675
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -8955,31 +8956,31 @@ msgid ""
 "right-click to cancel"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1726
+#: ../src/gui/accelerators.c:1743
 msgid "removing shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1727
+#: ../src/gui/accelerators.c:1744
 msgid "remove the selected shortcut?"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2128
+#: ../src/gui/accelerators.c:2145
 msgid "restore shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2132
+#: ../src/gui/accelerators.c:2149
 msgid "_defaults"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2133
+#: ../src/gui/accelerators.c:2150
 msgid "_startup"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2134
+#: ../src/gui/accelerators.c:2151
 msgid "_edits"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2139
+#: ../src/gui/accelerators.c:2156
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -8987,177 +8988,177 @@ msgid ""
 "  - as when opening this dialog\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2142
+#: ../src/gui/accelerators.c:2159
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2196 ../src/gui/preferences.c:896
+#: ../src/gui/accelerators.c:2213 ../src/gui/preferences.c:896
 #: ../src/libs/tools/global_toolbox.c:496
 #: ../src/libs/tools/global_toolbox.c:809
 msgid "shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2205
+#: ../src/gui/accelerators.c:2222
 msgid "export shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2208 ../src/gui/accelerators.c:2287
-#: ../src/gui/hist_dialog.c:215 ../src/gui/presets.c:499
+#: ../src/gui/accelerators.c:2225 ../src/gui/accelerators.c:2304
+#: ../src/gui/hist_dialog.c:227 ../src/gui/presets.c:499
 msgid "_ok"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2213
+#: ../src/gui/accelerators.c:2230
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2219 ../src/gui/accelerators.c:2298
+#: ../src/gui/accelerators.c:2236 ../src/gui/accelerators.c:2315
 msgid "keyboard"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2231
+#: ../src/gui/accelerators.c:2248
 msgid "device id"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2257
+#: ../src/gui/accelerators.c:2274
 msgid "select file to export"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2258 ../src/libs/tagging.c:2521
+#: ../src/gui/accelerators.c:2275 ../src/libs/tagging.c:2521
 msgid "_export"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2284
+#: ../src/gui/accelerators.c:2301
 msgid "import shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2292
+#: ../src/gui/accelerators.c:2309
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2310
+#: ../src/gui/accelerators.c:2327
 msgid "id in file"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2316
+#: ../src/gui/accelerators.c:2333
 msgid "id when loaded"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2320
+#: ../src/gui/accelerators.c:2337
 msgid "clear device first"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2344
+#: ../src/gui/accelerators.c:2361
 msgid "select file to import"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2345 ../src/libs/tagging.c:2485
+#: ../src/gui/accelerators.c:2362 ../src/libs/tagging.c:2485
 msgid "_import"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2418
+#: ../src/gui/accelerators.c:2435
 msgid "search shortcuts list"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2419
+#: ../src/gui/accelerators.c:2436
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
 msgstr ""
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2433 ../src/views/view.c:1383
+#: ../src/gui/accelerators.c:2450 ../src/views/view.c:1383
 msgid "shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2435 ../src/gui/accelerators.c:2526
+#: ../src/gui/accelerators.c:2452 ../src/gui/accelerators.c:2543
 #: ../src/views/view.c:1385
 msgid "action"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2444
+#: ../src/gui/accelerators.c:2461
 msgid "element"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2451
+#: ../src/gui/accelerators.c:2468
 msgid "effect"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2508
+#: ../src/gui/accelerators.c:2525
 msgid "search actions list"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2509
+#: ../src/gui/accelerators.c:2526
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2532 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2549 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:192
 msgid "type"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2567
+#: ../src/gui/accelerators.c:2584
 msgid "enable fallbacks"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2568
+#: ../src/gui/accelerators.c:2585
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2574
+#: ../src/gui/accelerators.c:2591
 msgid "restore..."
 msgstr ""
 
-#: ../src/gui/accelerators.c:2575
+#: ../src/gui/accelerators.c:2592
 msgid "restore default shortcuts or previous state"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2579 ../src/libs/styles.c:886
+#: ../src/gui/accelerators.c:2596 ../src/libs/styles.c:886
 #: ../src/libs/tagging.c:3248
 msgid "import..."
 msgstr ""
 
-#: ../src/gui/accelerators.c:2580
+#: ../src/gui/accelerators.c:2597
 msgid "fully or partially import shortcuts from file"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2584 ../src/libs/styles.c:893
+#: ../src/gui/accelerators.c:2601 ../src/libs/styles.c:893
 #: ../src/libs/tagging.c:3251
 msgid "export..."
 msgstr ""
 
-#: ../src/gui/accelerators.c:2585
+#: ../src/gui/accelerators.c:2602
 msgid "fully or partially export shortcuts to file"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3000
+#: ../src/gui/accelerators.c:3017
 msgid "input devices reinitialised"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3182
+#: ../src/gui/accelerators.c:3199
 msgid "fallback to move"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3405
+#: ../src/gui/accelerators.c:3422
 #, c-format
 msgid "%s not assigned"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3573
+#: ../src/gui/accelerators.c:3590
 #, c-format
 msgid "%s assigned to %s"
 msgstr ""
 
-#: ../src/gui/gtk.c:172 ../src/views/darkroom.c:4630
+#: ../src/gui/gtk.c:172 ../src/views/darkroom.c:4623
 msgid "darktable - darkroom preview"
 msgstr ""
 
@@ -9662,7 +9663,7 @@ msgid "global guide overlay settings"
 msgstr ""
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2631
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2628
 msgid "guide lines"
 msgstr ""
 
@@ -9719,33 +9720,38 @@ msgid ""
 "that shows guide overlays"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:210
+#: ../src/gui/hist_dialog.c:222
 msgid "select parts to copy"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:210
+#: ../src/gui/hist_dialog.c:222
 msgid "select parts to paste"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:213 ../src/gui/styles_dialog.c:517
+#: ../src/gui/hist_dialog.c:225 ../src/gui/styles_dialog.c:518
 msgid "select _all"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:214 ../src/gui/styles_dialog.c:518
+#: ../src/gui/hist_dialog.c:226 ../src/gui/styles_dialog.c:519
 msgid "select _none"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:244 ../src/gui/styles_dialog.c:588
-#: ../src/gui/styles_dialog.c:610
+#: ../src/gui/hist_dialog.c:259 ../src/gui/styles_dialog.c:591
+#: ../src/gui/styles_dialog.c:613
 msgid "include"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:664
-#: ../src/gui/styles_dialog.c:670
+#: ../src/gui/hist_dialog.c:287 ../src/gui/styles_dialog.c:667
+#: ../src/gui/styles_dialog.c:673
 msgid "item"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:329
+#: ../src/gui/hist_dialog.c:293 ../src/gui/styles_dialog.c:680
+#: ../src/gui/styles_dialog.c:689
+msgid "mask"
+msgstr ""
+
+#: ../src/gui/hist_dialog.c:358
 msgid "can't copy history out of unaltered image"
 msgstr ""
 
@@ -10174,60 +10180,60 @@ msgstr ""
 msgid "update preset"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:220 ../src/libs/styles.c:438
+#: ../src/gui/styles_dialog.c:221 ../src/libs/styles.c:438
 #: ../src/libs/styles.c:621
 msgid "overwrite style?"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:221
+#: ../src/gui/styles_dialog.c:222
 #, c-format
 msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:250 ../src/gui/styles_dialog.c:322
+#: ../src/gui/styles_dialog.c:251 ../src/gui/styles_dialog.c:323
 msgid "please give style a name"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:254 ../src/gui/styles_dialog.c:326
+#: ../src/gui/styles_dialog.c:255 ../src/gui/styles_dialog.c:327
 msgid "unnamed style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:311
+#: ../src/gui/styles_dialog.c:312
 #, c-format
 msgid "style %s was successfully saved"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:504
+#: ../src/gui/styles_dialog.c:505
 msgid "edit style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:505
+#: ../src/gui/styles_dialog.c:506
 msgid "duplicate style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:506
+#: ../src/gui/styles_dialog.c:507
 msgid "creates a duplicate of the style before applying changes"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:510
+#: ../src/gui/styles_dialog.c:511
 msgid "create new style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:546
+#: ../src/gui/styles_dialog.c:547
 msgid "enter a name for the new style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:551
+#: ../src/gui/styles_dialog.c:552
 msgid "enter a description for the new style, this description is searchable"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:588
+#: ../src/gui/styles_dialog.c:591
 msgid "keep"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:789
+#: ../src/gui/styles_dialog.c:818
 msgid "can't create style out of unaltered image"
 msgstr ""
 
@@ -10500,7 +10506,7 @@ msgid "internal"
 msgstr ""
 
 #: ../src/imageio/format/jxl.c:593 ../src/libs/duplicate.c:397
-#: ../src/libs/history.c:1130 ../src/libs/snapshots.c:600
+#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:600
 msgid "original"
 msgstr ""
 
@@ -11017,10 +11023,10 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:236 ../src/iop/clipping.c:321
 #: ../src/iop/clipping.c:323 ../src/iop/colorbalancergb.c:186
 #: ../src/iop/colorin.c:137 ../src/iop/crop.c:145 ../src/iop/crop.c:147
-#: ../src/iop/demosaic.c:230 ../src/iop/denoiseprofile.c:726
+#: ../src/iop/demosaic.c:324 ../src/iop/denoiseprofile.c:726
 #: ../src/iop/denoiseprofile.c:728 ../src/iop/diffuse.c:145
 #: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:131 ../src/iop/exposure.c:133
-#: ../src/iop/flip.c:106 ../src/iop/flip.c:107 ../src/iop/hazeremoval.c:113
+#: ../src/iop/flip.c:111 ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:212 ../src/iop/lens.cc:214
 #: ../src/iop/liquify.c:297 ../src/iop/liquify.c:299 ../src/iop/retouch.c:210
 #: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:102
@@ -11031,7 +11037,7 @@ msgid "linear, RGB, scene-referred"
 msgstr ""
 
 #: ../src/iop/ashift.c:132 ../src/iop/borders.c:194 ../src/iop/clipping.c:322
-#: ../src/iop/crop.c:146 ../src/iop/flip.c:106 ../src/iop/liquify.c:298
+#: ../src/iop/crop.c:146 ../src/iop/flip.c:111 ../src/iop/liquify.c:298
 msgid "geometric, RGB"
 msgstr ""
 
@@ -11223,7 +11229,7 @@ msgstr ""
 
 #: ../src/iop/atrous.c:134 ../src/iop/bilateral.cc:100 ../src/iop/diffuse.c:144
 #: ../src/iop/exposure.c:130 ../src/iop/filmicrgb.c:358
-#: ../src/iop/graduatednd.c:146 ../src/iop/negadoctor.c:157
+#: ../src/iop/graduatednd.c:146 ../src/iop/negadoctor.c:146
 #: ../src/iop/rgbcurve.c:143 ../src/iop/rgblevels.c:123 ../src/iop/shadhi.c:197
 #: ../src/iop/sigmoid.c:101 ../src/iop/tonecurve.c:211
 #: ../src/iop/toneequal.c:324
@@ -11395,7 +11401,7 @@ msgstr ""
 #: ../src/iop/atrous.c:1682 ../src/iop/colorbalancergb.c:2027
 #: ../src/iop/colorzones.c:2474 ../src/iop/denoiseprofile.c:3817
 #: ../src/iop/filmicrgb.c:4146 ../src/iop/lowlight.c:825
-#: ../src/iop/rawdenoise.c:921 ../src/iop/toneequal.c:3399
+#: ../src/iop/rawdenoise.c:921 ../src/iop/toneequal.c:3387
 msgid "graph"
 msgstr ""
 
@@ -11491,7 +11497,7 @@ msgstr ""
 #: ../src/iop/basecurve.c:352 ../src/iop/cacorrect.c:78
 #: ../src/iop/cacorrectrgb.c:170 ../src/iop/colorreconstruction.c:135
 #: ../src/iop/defringe.c:82 ../src/iop/denoiseprofile.c:725
-#: ../src/iop/dither.c:100 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:112
+#: ../src/iop/dither.c:100 ../src/iop/flip.c:110 ../src/iop/hazeremoval.c:112
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:73
 #: ../src/iop/invert.c:119 ../src/iop/lens.cc:211 ../src/iop/nlmeans.c:95
 #: ../src/iop/profile_gamma.c:102 ../src/iop/rawdenoise.c:130
@@ -11502,7 +11508,7 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:353 ../src/iop/channelmixer.c:140
 #: ../src/iop/channelmixer.c:142 ../src/iop/lut3d.c:142
-#: ../src/iop/negadoctor.c:158 ../src/iop/profile_gamma.c:103
+#: ../src/iop/negadoctor.c:147 ../src/iop/profile_gamma.c:103
 #: ../src/iop/rgbcurve.c:144 ../src/iop/rgbcurve.c:146
 #: ../src/iop/rgblevels.c:124 ../src/iop/sigmoid.c:104 ../src/iop/soften.c:102
 #: ../src/iop/soften.c:104
@@ -11512,7 +11518,7 @@ msgstr ""
 #: ../src/iop/basecurve.c:354 ../src/iop/basicadj.c:149
 #: ../src/iop/colorbalance.c:163 ../src/iop/colorbalancergb.c:187
 #: ../src/iop/dither.c:102 ../src/iop/filmicrgb.c:360
-#: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:159
+#: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:103
 #: ../src/iop/vignette.c:160 ../src/iop/watermark.c:299
@@ -11521,7 +11527,7 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:355 ../src/iop/dither.c:101 ../src/iop/dither.c:103
 #: ../src/iop/filmicrgb.c:361 ../src/iop/graduatednd.c:149
-#: ../src/iop/negadoctor.c:160 ../src/iop/profile_gamma.c:105
+#: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
 #: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
 #: ../src/iop/vignette.c:161 ../src/iop/watermark.c:298
 #: ../src/iop/watermark.c:300
@@ -11978,7 +11984,7 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:79 ../src/iop/cacorrect.c:81
 #: ../src/iop/cacorrectrgb.c:171 ../src/iop/cacorrectrgb.c:173
-#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:180
+#: ../src/iop/demosaic.c:322 ../src/iop/highlights.c:180
 #: ../src/iop/highlights.c:182 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:159
@@ -11988,7 +11994,7 @@ msgid "linear, raw, scene-referred"
 msgstr ""
 
 #: ../src/iop/cacorrect.c:80 ../src/iop/cacorrectrgb.c:172
-#: ../src/iop/demosaic.c:229 ../src/iop/invert.c:121
+#: ../src/iop/demosaic.c:323 ../src/iop/invert.c:121
 #: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:160
 #: ../src/iop/temperature.c:214
 msgid "linear, raw"
@@ -12431,7 +12437,7 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4371 ../src/iop/clipping.c:2087
 #: ../src/iop/colorbalancergb.c:1842 ../src/iop/filmicrgb.c:4158
-#: ../src/iop/negadoctor.c:787 ../src/iop/toneequal.c:3347
+#: ../src/iop/negadoctor.c:829 ../src/iop/toneequal.c:3335
 #: ../src/libs/image.c:462 ../src/views/lighttable.c:1265
 msgid "page"
 msgstr ""
@@ -13226,7 +13232,7 @@ msgid "colorbalance works only on RGB input"
 msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1475 ../src/iop/colorzones.c:2164
-#: ../src/iop/retouch.c:1884 ../src/iop/toneequal.c:1994
+#: ../src/iop/retouch.c:1884 ../src/iop/toneequal.c:1982
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 
@@ -13651,7 +13657,7 @@ msgid ""
 "using color profiles to remap RGB values"
 msgstr ""
 
-#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:90 ../src/iop/demosaic.c:227
+#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:90 ../src/iop/demosaic.c:321
 #: ../src/iop/rawprepare.c:158
 msgid "mandatory"
 msgstr ""
@@ -13805,26 +13811,26 @@ msgstr ""
 
 #: ../src/iop/colorout.c:878 ../src/libs/export.c:1261
 #: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2646
-#: ../src/views/darkroom.c:2500 ../src/views/lighttable.c:1180
+#: ../src/views/darkroom.c:2497 ../src/views/lighttable.c:1180
 msgid "perceptual"
 msgstr ""
 
 #: ../src/iop/colorout.c:879 ../src/libs/export.c:1262
 #: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
-#: ../src/views/darkroom.c:2501 ../src/views/lighttable.c:1181
+#: ../src/views/darkroom.c:2498 ../src/views/lighttable.c:1181
 msgid "relative colorimetric"
 msgstr ""
 
 #: ../src/iop/colorout.c:880 ../src/libs/export.c:1263
 #: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
-#: ../src/views/darkroom.c:2502 ../src/views/lighttable.c:1182
+#: ../src/views/darkroom.c:2499 ../src/views/lighttable.c:1182
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr ""
 
 #: ../src/iop/colorout.c:881 ../src/libs/export.c:1264
 #: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
-#: ../src/views/darkroom.c:2503 ../src/views/lighttable.c:1183
+#: ../src/views/darkroom.c:2500 ../src/views/lighttable.c:1183
 msgid "absolute colorimetric"
 msgstr ""
 
@@ -13879,8 +13885,8 @@ msgstr ""
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 
-#: ../src/iop/colorreconstruction.c:1261 ../src/iop/demosaic.c:5505
-#: ../src/iop/highlights.c:2634
+#: ../src/iop/colorreconstruction.c:1261 ../src/iop/demosaic.c:1324
+#: ../src/iop/highlights.c:2657
 msgid "not applicable"
 msgstr ""
 
@@ -14051,24 +14057,24 @@ msgstr ""
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
 
-#: ../src/iop/demosaic.c:221
+#: ../src/iop/demosaic.c:315
 msgid "demosaic"
 msgstr ""
 
-#: ../src/iop/demosaic.c:226
+#: ../src/iop/demosaic.c:320
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 
-#: ../src/iop/demosaic.c:4964
+#: ../src/iop/demosaic.c:920
 msgid "[dual demosaic_cl] internal problem"
 msgstr ""
 
-#: ../src/iop/demosaic.c:5340
+#: ../src/iop/demosaic.c:1159
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr ""
 
-#: ../src/iop/demosaic.c:5472
+#: ../src/iop/demosaic.c:1291
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -14076,21 +14082,21 @@ msgid ""
 "dual demosaicers double processing time."
 msgstr ""
 
-#: ../src/iop/demosaic.c:5476
+#: ../src/iop/demosaic.c:1295
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
 "dual demosaicers double processing time."
 msgstr ""
 
-#: ../src/iop/demosaic.c:5480
+#: ../src/iop/demosaic.c:1299
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
 "set to 1.0 to ignore edges"
 msgstr ""
 
-#: ../src/iop/demosaic.c:5485
+#: ../src/iop/demosaic.c:1304
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -14098,21 +14104,21 @@ msgid ""
 "toggle to visualize the mask"
 msgstr ""
 
-#: ../src/iop/demosaic.c:5493
+#: ../src/iop/demosaic.c:1312
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 msgstr ""
 
-#: ../src/iop/demosaic.c:5496
+#: ../src/iop/demosaic.c:1315
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 
-#: ../src/iop/demosaic.c:5499
+#: ../src/iop/demosaic.c:1318
 msgid "green channels matching method"
 msgstr ""
 
-#: ../src/iop/demosaic.c:5506
+#: ../src/iop/demosaic.c:1325
 msgid "demosaicing is only used for color raw images"
 msgstr ""
 
@@ -14581,10 +14587,6 @@ msgstr ""
 msgid "damping level of random dither"
 msgstr ""
 
-#: ../src/iop/dual_demosaic.c:57
-msgid "[dual demosaic] can't allocate internal buffers"
-msgstr ""
-
 #: ../src/iop/equalizer.c:89
 msgid "legacy equalizer"
 msgstr ""
@@ -14628,7 +14630,7 @@ msgstr ""
 msgid "L : \t%.1f %%"
 msgstr ""
 
-#: ../src/iop/exposure.c:937 ../src/libs/history.c:964
+#: ../src/iop/exposure.c:937 ../src/libs/history.c:965
 #, c-format
 msgid "%.2f EV"
 msgstr ""
@@ -14837,7 +14839,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1600 ../src/libs/export.c:1242
 #: ../src/libs/print_settings.c:2323 ../src/libs/print_settings.c:2642
-#: ../src/views/darkroom.c:2506 ../src/views/lighttable.c:1186
+#: ../src/views/darkroom.c:2503 ../src/views/lighttable.c:1186
 msgid "intent"
 msgstr ""
 
@@ -15221,51 +15223,51 @@ msgctxt "modulename"
 msgid "scale into final size"
 msgstr ""
 
-#: ../src/iop/flip.c:79
+#: ../src/iop/flip.c:80
 msgid "rotation|flip"
 msgstr ""
 
-#: ../src/iop/flip.c:105
+#: ../src/iop/flip.c:110
 msgid "flip or rotate image by step of 90 degrees"
 msgstr ""
 
-#: ../src/iop/flip.c:415 ../src/iop/flip.c:417
+#: ../src/iop/flip.c:472 ../src/iop/flip.c:474
 msgid "autodetect"
 msgstr ""
 
-#: ../src/iop/flip.c:420
+#: ../src/iop/flip.c:477
 msgid "no rotation"
 msgstr ""
 
-#: ../src/iop/flip.c:424 ../src/iop/flip.c:554
+#: ../src/iop/flip.c:481 ../src/iop/flip.c:624
 msgid "flip horizontally"
 msgstr ""
 
-#: ../src/iop/flip.c:428 ../src/iop/flip.c:557
+#: ../src/iop/flip.c:485 ../src/iop/flip.c:628
 msgid "flip vertically"
 msgstr ""
 
-#: ../src/iop/flip.c:432
+#: ../src/iop/flip.c:489
 msgid "rotate by -90 degrees"
 msgstr ""
 
-#: ../src/iop/flip.c:436
+#: ../src/iop/flip.c:493
 msgid "rotate by  90 degrees"
 msgstr ""
 
-#: ../src/iop/flip.c:440
+#: ../src/iop/flip.c:497
 msgid "rotate by 180 degrees"
 msgstr ""
 
-#: ../src/iop/flip.c:543
+#: ../src/iop/flip.c:612
 msgid "transform"
 msgstr ""
 
-#: ../src/iop/flip.c:546
+#: ../src/iop/flip.c:616
 msgid "rotate 90 degrees CCW"
 msgstr ""
 
-#: ../src/iop/flip.c:550
+#: ../src/iop/flip.c:620
 msgid "rotate 90 degrees CW"
 msgstr ""
 
@@ -15462,17 +15464,17 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr ""
 
-#: ../src/iop/highlights.c:2370
+#: ../src/iop/highlights.c:2393
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
 msgstr ""
 
-#: ../src/iop/highlights.c:2567
+#: ../src/iop/highlights.c:2590
 msgid "highlight reconstruction method"
 msgstr ""
 
-#: ../src/iop/highlights.c:2572
+#: ../src/iop/highlights.c:2595
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -15482,13 +15484,13 @@ msgid ""
 "especially if camera white point is incorrect."
 msgstr ""
 
-#: ../src/iop/highlights.c:2583
+#: ../src/iop/highlights.c:2606
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
 msgstr ""
 
-#: ../src/iop/highlights.c:2591
+#: ../src/iop/highlights.c:2614
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -15496,7 +15498,7 @@ msgid ""
 "the mask button shows segments that are considered to have a good candidate."
 msgstr ""
 
-#: ../src/iop/highlights.c:2602
+#: ../src/iop/highlights.c:2625
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -15508,38 +15510,38 @@ msgid ""
 "highlights rebuilt and avoid gradients."
 msgstr ""
 
-#: ../src/iop/highlights.c:2608
+#: ../src/iop/highlights.c:2631
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
 "data."
 msgstr ""
 
-#: ../src/iop/highlights.c:2618
+#: ../src/iop/highlights.c:2641
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr ""
 
-#: ../src/iop/highlights.c:2622
+#: ../src/iop/highlights.c:2645
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr ""
 
-#: ../src/iop/highlights.c:2627
+#: ../src/iop/highlights.c:2650
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
 msgstr ""
 
-#: ../src/iop/highlights.c:2631
+#: ../src/iop/highlights.c:2654
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
 msgstr ""
 
-#: ../src/iop/highlights.c:2635
+#: ../src/iop/highlights.c:2658
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr ""
 
@@ -15631,7 +15633,7 @@ msgstr ""
 msgid "color of film material"
 msgstr ""
 
-#: ../src/iop/invert.c:500 ../src/iop/negadoctor.c:805
+#: ../src/iop/invert.c:500 ../src/iop/negadoctor.c:847
 msgid "pick color of film material from image"
 msgstr ""
 
@@ -16006,10 +16008,6 @@ msgid ""
 "<b>linear, grow, and shrink</b>: ctrl+click"
 msgstr ""
 
-#: ../src/iop/lmmse_demosaic.c:145
-msgid "[lmmse_demosaic] too small area"
-msgstr ""
-
 #: ../src/iop/lowlight.c:86
 msgid "lowlight vision"
 msgstr ""
@@ -16318,43 +16316,43 @@ msgstr ""
 msgid "how much to keep highlights"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:146
+#: ../src/iop/negadoctor.c:135
 msgid "negadoctor"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:151
+#: ../src/iop/negadoctor.c:140
 msgid "film|invert|negative|scan"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:156
+#: ../src/iop/negadoctor.c:145
 msgid "invert film negative scans and simulate printing on paper"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:427
+#: ../src/iop/negadoctor.c:469
 msgid "D min"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:433 ../src/iop/negadoctor.c:813
+#: ../src/iop/negadoctor.c:475 ../src/iop/negadoctor.c:855
 msgid "D min red component"
 msgstr ""
 
 #. Page FILM PROPERTIES
-#: ../src/iop/negadoctor.c:790
+#: ../src/iop/negadoctor.c:832
 msgid "film properties"
 msgstr ""
 
 #. Dmin
-#: ../src/iop/negadoctor.c:794
+#: ../src/iop/negadoctor.c:836
 msgctxt "section"
 msgid "color of the film base"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:800
+#: ../src/iop/negadoctor.c:842
 msgid "select color of film material from a swatch"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:814 ../src/iop/negadoctor.c:824
-#: ../src/iop/negadoctor.c:834
+#: ../src/iop/negadoctor.c:856 ../src/iop/negadoctor.c:866
+#: ../src/iop/negadoctor.c:876
 msgid ""
 "adjust the color and shade of the film transparent base.\n"
 "this value depends on the film material, \n"
@@ -16362,58 +16360,58 @@ msgid ""
 "and the scanner white balance."
 msgstr ""
 
-#: ../src/iop/negadoctor.c:823
+#: ../src/iop/negadoctor.c:865
 msgid "D min green component"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:833
+#: ../src/iop/negadoctor.c:875
 msgid "D min blue component"
 msgstr ""
 
 #. D max and scanner bias
-#: ../src/iop/negadoctor.c:841
+#: ../src/iop/negadoctor.c:883
 msgctxt "section"
 msgid "dynamic range of the film"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:845
+#: ../src/iop/negadoctor.c:887
 msgid ""
 "maximum density of the film, corresponding to white after inversion.\n"
 "this value depends on the film specifications, the developing process,\n"
 "the dynamic range of the scene and the scanner exposure settings."
 msgstr ""
 
-#: ../src/iop/negadoctor.c:849
+#: ../src/iop/negadoctor.c:891
 msgctxt "section"
 msgid "scanner exposure settings"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:853
+#: ../src/iop/negadoctor.c:895
 msgid ""
 "correct the exposure of the scanner, for all RGB channels,\n"
 "before the inversion, so blacks are neither clipped or too pale."
 msgstr ""
 
 #. WB shadows
-#: ../src/iop/negadoctor.c:860
+#: ../src/iop/negadoctor.c:902
 msgctxt "section"
 msgid "shadows color cast"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:866
+#: ../src/iop/negadoctor.c:908
 msgid "select color of shadows from a swatch"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:871
+#: ../src/iop/negadoctor.c:913
 msgid "pick shadows color from image"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:876
+#: ../src/iop/negadoctor.c:918
 msgid "shadows red offset"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:877 ../src/iop/negadoctor.c:884
-#: ../src/iop/negadoctor.c:891
+#: ../src/iop/negadoctor.c:919 ../src/iop/negadoctor.c:926
+#: ../src/iop/negadoctor.c:933
 msgid ""
 "correct the color cast in shadows so blacks are\n"
 "truly achromatic. Setting this value before\n"
@@ -16421,34 +16419,34 @@ msgid ""
 "recovering the global white balance in difficult cases."
 msgstr ""
 
-#: ../src/iop/negadoctor.c:883
+#: ../src/iop/negadoctor.c:925
 msgid "shadows green offset"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:890
+#: ../src/iop/negadoctor.c:932
 msgid "shadows blue offset"
 msgstr ""
 
 #. WB highlights
-#: ../src/iop/negadoctor.c:897
+#: ../src/iop/negadoctor.c:939
 msgctxt "section"
 msgid "highlights white balance"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:903
+#: ../src/iop/negadoctor.c:945
 msgid "select color of illuminant from a swatch"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:908
+#: ../src/iop/negadoctor.c:950
 msgid "pick illuminant color from image"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:913
+#: ../src/iop/negadoctor.c:955
 msgid "illuminant red gain"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:914 ../src/iop/negadoctor.c:921
-#: ../src/iop/negadoctor.c:928
+#: ../src/iop/negadoctor.c:956 ../src/iop/negadoctor.c:963
+#: ../src/iop/negadoctor.c:970
 msgid ""
 "correct the color of the illuminant so whites are\n"
 "truly achromatic. Setting this value after\n"
@@ -16456,57 +16454,57 @@ msgid ""
 "recovering the global white balance in difficult cases."
 msgstr ""
 
-#: ../src/iop/negadoctor.c:920
+#: ../src/iop/negadoctor.c:962
 msgid "illuminant green gain"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:927
+#: ../src/iop/negadoctor.c:969
 msgid "illuminant blue gain"
 msgstr ""
 
 #. Page PRINT PROPERTIES
-#: ../src/iop/negadoctor.c:934
+#: ../src/iop/negadoctor.c:976
 msgid "print properties"
 msgstr ""
 
 #. print corrections
-#: ../src/iop/negadoctor.c:937
+#: ../src/iop/negadoctor.c:979
 msgctxt "section"
 msgid "virtual paper properties"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:943
+#: ../src/iop/negadoctor.c:985
 msgid ""
 "correct the density of black after the inversion,\n"
 "to adjust the global contrast while avoiding clipping shadows."
 msgstr ""
 
-#: ../src/iop/negadoctor.c:948
+#: ../src/iop/negadoctor.c:990
 msgid ""
 "select the grade of the virtual paper, which is actually\n"
 "equivalent to applying a gamma. it compensates the film D max\n"
 "and recovers the contrast. use a high grade for high D max."
 msgstr ""
 
-#: ../src/iop/negadoctor.c:956
+#: ../src/iop/negadoctor.c:998
 msgid ""
 "gradually compress specular highlights past this value\n"
 "to avoid clipping while pushing the exposure for mid-tones.\n"
 "this somewhat reproduces the behavior of matte paper."
 msgstr ""
 
-#: ../src/iop/negadoctor.c:960
+#: ../src/iop/negadoctor.c:1002
 msgctxt "section"
 msgid "virtual print emulation"
 msgstr ""
 
-#: ../src/iop/negadoctor.c:967
+#: ../src/iop/negadoctor.c:1009
 msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
 msgstr ""
 
-#: ../src/iop/negadoctor.c:975
+#: ../src/iop/negadoctor.c:1017
 msgid "toggle on or off the color controls"
 msgstr ""
 
@@ -16537,9 +16535,9 @@ msgstr ""
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:71 ../src/views/darkroom.c:2397
-#: ../src/views/darkroom.c:2415 ../src/views/darkroom.c:2422
-#: ../src/views/darkroom.c:2432 ../src/views/darkroom.c:2449
+#: ../src/iop/overexposed.c:71 ../src/views/darkroom.c:2394
+#: ../src/views/darkroom.c:2412 ../src/views/darkroom.c:2419
+#: ../src/views/darkroom.c:2429 ../src/views/darkroom.c:2446
 msgid "overexposed"
 msgstr ""
 
@@ -16638,9 +16636,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2347
-#: ../src/views/darkroom.c:2365 ../src/views/darkroom.c:2371
-#: ../src/views/darkroom.c:2384
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2362 ../src/views/darkroom.c:2368
+#: ../src/views/darkroom.c:2381
 msgid "raw overexposed"
 msgstr ""
 
@@ -16713,10 +16711,6 @@ msgstr ""
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
-msgstr ""
-
-#: ../src/iop/rcd_demosaic.c:300
-msgid "[rcd_demosaic] too small area"
 msgstr ""
 
 #: ../src/iop/relight.c:54
@@ -17616,113 +17610,113 @@ msgid ""
 msgstr ""
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
-#: ../src/iop/toneequal.c:1009
+#: ../src/iop/toneequal.c:997
 msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
 
-#: ../src/iop/toneequal.c:1114
+#: ../src/iop/toneequal.c:1102
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
 
-#: ../src/iop/toneequal.c:1823 ../src/iop/toneequal.c:2208
+#: ../src/iop/toneequal.c:1811 ../src/iop/toneequal.c:2196
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr ""
 
-#: ../src/iop/toneequal.c:1858 ../src/iop/toneequal.c:1925
+#: ../src/iop/toneequal.c:1846 ../src/iop/toneequal.c:1913
 msgid "wait for the preview to finish recomputing"
 msgstr ""
 
-#: ../src/iop/toneequal.c:2065 ../src/iop/toneequal.c:2615
+#: ../src/iop/toneequal.c:2053 ../src/iop/toneequal.c:2603
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
 msgstr ""
 
-#: ../src/iop/toneequal.c:2213
+#: ../src/iop/toneequal.c:2201
 msgid "some parameters are out-of-bounds"
 msgstr ""
 
-#: ../src/iop/toneequal.c:2552
+#: ../src/iop/toneequal.c:2540
 #, c-format
 msgid "%+.1f EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3264
+#: ../src/iop/toneequal.c:3252
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3267
+#: ../src/iop/toneequal.c:3255
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3270
+#: ../src/iop/toneequal.c:3258
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr ""
 
 #. Simple view
-#: ../src/iop/toneequal.c:3351 ../src/iop/toneequal.c:3380
-#: ../src/iop/toneequal.c:3381 ../src/iop/toneequal.c:3382
-#: ../src/iop/toneequal.c:3383 ../src/iop/toneequal.c:3384
-#: ../src/iop/toneequal.c:3385 ../src/iop/toneequal.c:3386
-#: ../src/iop/toneequal.c:3387 ../src/iop/toneequal.c:3388
+#: ../src/iop/toneequal.c:3339 ../src/iop/toneequal.c:3368
+#: ../src/iop/toneequal.c:3369 ../src/iop/toneequal.c:3370
+#: ../src/iop/toneequal.c:3371 ../src/iop/toneequal.c:3372
+#: ../src/iop/toneequal.c:3373 ../src/iop/toneequal.c:3374
+#: ../src/iop/toneequal.c:3375 ../src/iop/toneequal.c:3376
 msgid "simple"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3380
+#: ../src/iop/toneequal.c:3368
 msgid "-8 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3381
+#: ../src/iop/toneequal.c:3369
 msgid "-7 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3382
+#: ../src/iop/toneequal.c:3370
 msgid "-6 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3383
+#: ../src/iop/toneequal.c:3371
 msgid "-5 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3384
+#: ../src/iop/toneequal.c:3372
 msgid "-4 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3385
+#: ../src/iop/toneequal.c:3373
 msgid "-3 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3386
+#: ../src/iop/toneequal.c:3374
 msgid "-2 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3387
+#: ../src/iop/toneequal.c:3375
 msgid "-1 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3388
+#: ../src/iop/toneequal.c:3376
 msgid "+0 EV"
 msgstr ""
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3392
+#: ../src/iop/toneequal.c:3380
 msgid "advanced"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3419
+#: ../src/iop/toneequal.c:3407
 msgid "double-click to reset the curve"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3423
+#: ../src/iop/toneequal.c:3411
 msgid "curve smoothing"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3426
+#: ../src/iop/toneequal.c:3414
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -17731,25 +17725,25 @@ msgid ""
 msgstr ""
 
 #. Masking options
-#: ../src/iop/toneequal.c:3436
+#: ../src/iop/toneequal.c:3424
 msgid "masking"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3442
+#: ../src/iop/toneequal.c:3430
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3445
+#: ../src/iop/toneequal.c:3433
 msgid "details"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3446
+#: ../src/iop/toneequal.c:3434
 msgid "preserve details"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3449
+#: ../src/iop/toneequal.c:3437
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -17763,20 +17757,20 @@ msgid ""
 "filter' methods"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3462
+#: ../src/iop/toneequal.c:3450
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3470
+#: ../src/iop/toneequal.c:3458
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
 
-#: ../src/iop/toneequal.c:3478
+#: ../src/iop/toneequal.c:3466
 msgid ""
 "precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
@@ -17785,33 +17779,33 @@ msgid ""
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3485
+#: ../src/iop/toneequal.c:3473
 msgctxt "section"
 msgid "mask post-processing"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3496
+#: ../src/iop/toneequal.c:3484
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
 "clipping occurs."
 msgstr ""
 
-#: ../src/iop/toneequal.c:3504
+#: ../src/iop/toneequal.c:3492
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3513
+#: ../src/iop/toneequal.c:3501
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
 "the magic wand will auto-adjust the average exposure"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3526
+#: ../src/iop/toneequal.c:3514
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -17820,7 +17814,7 @@ msgid ""
 "the magic wand will auto-adjust the contrast"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3549 ../src/iop/toneequal.c:3552
+#: ../src/iop/toneequal.c:3537 ../src/iop/toneequal.c:3540
 msgid "display exposure mask"
 msgstr ""
 
@@ -19285,7 +19279,7 @@ msgid "open GPX file"
 msgstr ""
 
 #: ../src/libs/geotagging.c:928 ../src/libs/tools/lighttable.c:332
-#: ../src/libs/tools/lighttable.c:400 ../src/views/darkroom.c:2210
+#: ../src/libs/tools/lighttable.c:400 ../src/views/darkroom.c:2207
 msgid "preview"
 msgstr ""
 
@@ -19557,74 +19551,74 @@ msgstr ""
 msgid "create style from history"
 msgstr ""
 
-#: ../src/libs/history.c:221
+#: ../src/libs/history.c:222
 msgid "always-on module"
 msgstr ""
 
-#: ../src/libs/history.c:227
+#: ../src/libs/history.c:228
 msgid "default enabled module"
 msgstr ""
 
-#: ../src/libs/history.c:234
+#: ../src/libs/history.c:235
 msgid "deprecated module"
 msgstr ""
 
-#: ../src/libs/history.c:956
+#: ../src/libs/history.c:957
 msgid "colorspace"
 msgstr ""
 
-#: ../src/libs/history.c:958
+#: ../src/libs/history.c:959
 msgid "mask mode"
 msgstr ""
 
-#: ../src/libs/history.c:962
+#: ../src/libs/history.c:963
 msgid "blend operation"
 msgstr ""
 
-#: ../src/libs/history.c:972
+#: ../src/libs/history.c:973
 msgid "mask blur"
 msgstr ""
 
-#: ../src/libs/history.c:975
+#: ../src/libs/history.c:976
 msgid "raster mask instance"
 msgstr ""
 
-#: ../src/libs/history.c:976
+#: ../src/libs/history.c:977
 msgid "raster mask id"
 msgstr ""
 
-#: ../src/libs/history.c:982
+#: ../src/libs/history.c:983
 msgid "drawn mask polarity"
 msgstr ""
 
-#: ../src/libs/history.c:986
+#: ../src/libs/history.c:987
 #, c-format
 msgid "a drawn mask was added"
 msgstr ""
 
-#: ../src/libs/history.c:988
+#: ../src/libs/history.c:989
 #, c-format
 msgid "the drawn mask was removed"
 msgstr ""
 
-#: ../src/libs/history.c:989
+#: ../src/libs/history.c:990
 #, c-format
 msgid "the drawn mask was changed"
 msgstr ""
 
-#: ../src/libs/history.c:1021
+#: ../src/libs/history.c:1022
 msgid "parametric output mask:"
 msgstr ""
 
-#: ../src/libs/history.c:1022
+#: ../src/libs/history.c:1023
 msgid "parametric input mask:"
 msgstr ""
 
-#: ../src/libs/history.c:1351
+#: ../src/libs/history.c:1353
 msgid "delete image's history?"
 msgstr ""
 
-#: ../src/libs/history.c:1352
+#: ../src/libs/history.c:1354
 msgid "do you really want to clear history of current image?"
 msgstr ""
 
@@ -22118,7 +22112,7 @@ msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr ""
 
-#: ../src/views/darkroom.c:736 ../src/views/darkroom.c:2474
+#: ../src/views/darkroom.c:736 ../src/views/darkroom.c:2471
 msgid "gamut check"
 msgstr ""
 
@@ -22131,154 +22125,154 @@ msgstr ""
 msgid "no image to open!"
 msgstr ""
 
-#: ../src/views/darkroom.c:1311
+#: ../src/views/darkroom.c:1308
 msgid "no userdefined presets for favorite modules were found"
 msgstr ""
 
-#: ../src/views/darkroom.c:1456
+#: ../src/views/darkroom.c:1453
 msgid "no styles have been created yet"
 msgstr ""
 
-#: ../src/views/darkroom.c:2309 ../src/views/darkroom.c:2310
+#: ../src/views/darkroom.c:2306 ../src/views/darkroom.c:2307
 msgid "quick access to presets"
 msgstr ""
 
-#: ../src/views/darkroom.c:2318
+#: ../src/views/darkroom.c:2315
 msgid "quick access to styles"
 msgstr ""
 
-#: ../src/views/darkroom.c:2320
+#: ../src/views/darkroom.c:2317
 msgid "quick access for applying any of your styles"
 msgstr ""
 
-#: ../src/views/darkroom.c:2326
+#: ../src/views/darkroom.c:2323
 msgid "second window"
 msgstr ""
 
-#: ../src/views/darkroom.c:2329
+#: ../src/views/darkroom.c:2326
 msgid "display a second darkroom image window"
 msgstr ""
 
-#: ../src/views/darkroom.c:2334
+#: ../src/views/darkroom.c:2331
 msgid "color assessment"
 msgstr ""
 
-#: ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2334
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr ""
 
-#: ../src/views/darkroom.c:2350
+#: ../src/views/darkroom.c:2347
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
 msgstr ""
 
-#: ../src/views/darkroom.c:2366
+#: ../src/views/darkroom.c:2363
 msgid "select how to mark the clipped pixels"
 msgstr ""
 
-#: ../src/views/darkroom.c:2368
+#: ../src/views/darkroom.c:2365
 msgid "mark with CFA color"
 msgstr ""
 
-#: ../src/views/darkroom.c:2368
+#: ../src/views/darkroom.c:2365
 msgid "mark with solid color"
 msgstr ""
 
-#: ../src/views/darkroom.c:2368
+#: ../src/views/darkroom.c:2365
 msgid "false color"
 msgstr ""
 
-#: ../src/views/darkroom.c:2371 ../src/views/darkroom.c:2422
+#: ../src/views/darkroom.c:2368 ../src/views/darkroom.c:2419
 msgid "color scheme"
 msgstr ""
 
-#: ../src/views/darkroom.c:2372
+#: ../src/views/darkroom.c:2369
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
 msgstr ""
 
-#: ../src/views/darkroom.c:2375
+#: ../src/views/darkroom.c:2372
 msgctxt "solidcolor"
 msgid "red"
 msgstr ""
 
-#: ../src/views/darkroom.c:2376
+#: ../src/views/darkroom.c:2373
 msgctxt "solidcolor"
 msgid "green"
 msgstr ""
 
-#: ../src/views/darkroom.c:2377
+#: ../src/views/darkroom.c:2374
 msgctxt "solidcolor"
 msgid "blue"
 msgstr ""
 
-#: ../src/views/darkroom.c:2378
+#: ../src/views/darkroom.c:2375
 msgctxt "solidcolor"
 msgid "black"
 msgstr ""
 
-#: ../src/views/darkroom.c:2386
+#: ../src/views/darkroom.c:2383
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
 "0.0 - black level"
 msgstr ""
 
-#: ../src/views/darkroom.c:2400
+#: ../src/views/darkroom.c:2397
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
 msgstr ""
 
-#: ../src/views/darkroom.c:2415
+#: ../src/views/darkroom.c:2412
 msgid "clipping preview mode"
 msgstr ""
 
-#: ../src/views/darkroom.c:2416
+#: ../src/views/darkroom.c:2413
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
 msgstr ""
 
-#: ../src/views/darkroom.c:2418
+#: ../src/views/darkroom.c:2415
 msgid "full gamut"
 msgstr ""
 
-#: ../src/views/darkroom.c:2418
+#: ../src/views/darkroom.c:2415
 msgid "any RGB channel"
 msgstr ""
 
-#: ../src/views/darkroom.c:2418
+#: ../src/views/darkroom.c:2415
 msgid "luminance only"
 msgstr ""
 
-#: ../src/views/darkroom.c:2418
+#: ../src/views/darkroom.c:2415
 msgid "saturation only"
 msgstr ""
 
-#: ../src/views/darkroom.c:2423
+#: ../src/views/darkroom.c:2420
 msgid "select colors to indicate clipping"
 msgstr ""
 
-#: ../src/views/darkroom.c:2425
+#: ../src/views/darkroom.c:2422
 msgid "black & white"
 msgstr ""
 
-#: ../src/views/darkroom.c:2425
+#: ../src/views/darkroom.c:2422
 msgid "red & blue"
 msgstr ""
 
-#: ../src/views/darkroom.c:2425
+#: ../src/views/darkroom.c:2422
 msgid "purple & green"
 msgstr ""
 
-#: ../src/views/darkroom.c:2432
+#: ../src/views/darkroom.c:2429
 msgid "lower threshold"
 msgstr ""
 
-#: ../src/views/darkroom.c:2433
+#: ../src/views/darkroom.c:2430
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -22290,214 +22284,214 @@ msgid ""
 "typical B&W glossy prints produce black at -9.00 EV."
 msgstr ""
 
-#: ../src/views/darkroom.c:2449
+#: ../src/views/darkroom.c:2446
 msgid "upper threshold"
 msgstr ""
 
-#: ../src/views/darkroom.c:2451
+#: ../src/views/darkroom.c:2448
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
 "100% is peak medium luminance."
 msgstr ""
 
-#: ../src/views/darkroom.c:2463
+#: ../src/views/darkroom.c:2460
 msgid "softproof"
 msgstr ""
 
-#: ../src/views/darkroom.c:2466
+#: ../src/views/darkroom.c:2463
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
 msgstr ""
 
-#: ../src/views/darkroom.c:2477
+#: ../src/views/darkroom.c:2474
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
 
-#: ../src/views/darkroom.c:2506 ../src/views/darkroom.c:2508
-#: ../src/views/darkroom.c:2522 ../src/views/darkroom.c:2523
-#: ../src/views/darkroom.c:2524 ../src/views/darkroom.c:2525
+#: ../src/views/darkroom.c:2503 ../src/views/darkroom.c:2505
+#: ../src/views/darkroom.c:2519 ../src/views/darkroom.c:2520
+#: ../src/views/darkroom.c:2521 ../src/views/darkroom.c:2522
 #: ../src/views/lighttable.c:1186 ../src/views/lighttable.c:1188
 msgid "profiles"
 msgstr ""
 
-#: ../src/views/darkroom.c:2508 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2505 ../src/views/lighttable.c:1188
 msgid "preview intent"
 msgstr ""
 
-#: ../src/views/darkroom.c:2522 ../src/views/lighttable.c:1192
+#: ../src/views/darkroom.c:2519 ../src/views/lighttable.c:1192
 msgid "display profile"
 msgstr ""
 
-#: ../src/views/darkroom.c:2523 ../src/views/lighttable.c:1195
+#: ../src/views/darkroom.c:2520 ../src/views/lighttable.c:1195
 msgid "preview display profile"
 msgstr ""
 
-#: ../src/views/darkroom.c:2525
+#: ../src/views/darkroom.c:2522
 msgid "histogram profile"
 msgstr ""
 
-#: ../src/views/darkroom.c:2589 ../src/views/lighttable.c:1231
+#: ../src/views/darkroom.c:2586 ../src/views/lighttable.c:1231
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/views/darkroom.c:2592 ../src/views/lighttable.c:1234
+#: ../src/views/darkroom.c:2589 ../src/views/lighttable.c:1234
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/views/darkroom.c:2595
+#: ../src/views/darkroom.c:2592
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/views/darkroom.c:2598
+#: ../src/views/darkroom.c:2595
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/views/darkroom.c:2634
+#: ../src/views/darkroom.c:2631
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
 msgstr ""
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2651
+#: ../src/views/darkroom.c:2648
 msgid "full preview"
 msgstr ""
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2655
+#: ../src/views/darkroom.c:2652
 msgid "force pan/zoom/rotate with mouse"
 msgstr ""
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2667
+#: ../src/views/darkroom.c:2664
 msgid "zoom close-up"
 msgstr ""
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2670 ../src/views/lighttable.c:1290
+#: ../src/views/darkroom.c:2667 ../src/views/lighttable.c:1290
 msgid "zoom in"
 msgstr ""
 
-#: ../src/views/darkroom.c:2671 ../src/views/lighttable.c:1292
+#: ../src/views/darkroom.c:2668 ../src/views/lighttable.c:1292
 msgid "zoom out"
 msgstr ""
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2674
+#: ../src/views/darkroom.c:2671
 msgid "image forward"
 msgstr ""
 
-#: ../src/views/darkroom.c:2675
+#: ../src/views/darkroom.c:2672
 msgid "image back"
 msgstr ""
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2678
+#: ../src/views/darkroom.c:2675
 msgid "cycle overlay colors"
 msgstr ""
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2681
+#: ../src/views/darkroom.c:2678
 msgid "show drawn masks"
 msgstr ""
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2684
+#: ../src/views/darkroom.c:2681
 msgid "increase brush size"
 msgstr ""
 
-#: ../src/views/darkroom.c:2685
+#: ../src/views/darkroom.c:2682
 msgid "decrease brush size"
 msgstr ""
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2688
+#: ../src/views/darkroom.c:2685
 msgid "increase brush hardness"
 msgstr ""
 
-#: ../src/views/darkroom.c:2689
+#: ../src/views/darkroom.c:2686
 msgid "decrease brush hardness"
 msgstr ""
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2692
+#: ../src/views/darkroom.c:2689
 msgid "increase brush opacity"
 msgstr ""
 
-#: ../src/views/darkroom.c:2693
+#: ../src/views/darkroom.c:2690
 msgid "decrease brush opacity"
 msgstr ""
 
 #. undo/redo
-#: ../src/views/darkroom.c:2696 ../src/views/lighttable.c:1282
+#: ../src/views/darkroom.c:2693 ../src/views/lighttable.c:1282
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr ""
 
-#: ../src/views/darkroom.c:2697 ../src/views/lighttable.c:1283
+#: ../src/views/darkroom.c:2694 ../src/views/lighttable.c:1283
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr ""
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2700
+#: ../src/views/darkroom.c:2697
 msgid "change keyboard shortcut slider precision"
 msgstr ""
 
-#: ../src/views/darkroom.c:3973
+#: ../src/views/darkroom.c:3966
 msgid "keyboard shortcut slider precision: fine"
 msgstr ""
 
-#: ../src/views/darkroom.c:3975
+#: ../src/views/darkroom.c:3968
 msgid "keyboard shortcut slider precision: normal"
 msgstr ""
 
-#: ../src/views/darkroom.c:3977
+#: ../src/views/darkroom.c:3970
 msgid "keyboard shortcut slider precision: coarse"
 msgstr ""
 
-#: ../src/views/darkroom.c:3993
+#: ../src/views/darkroom.c:3986
 msgid "switch to lighttable"
 msgstr ""
 
-#: ../src/views/darkroom.c:3994 ../src/views/lighttable.c:882
+#: ../src/views/darkroom.c:3987 ../src/views/lighttable.c:882
 msgid "zoom in the image"
 msgstr ""
 
-#: ../src/views/darkroom.c:3995
+#: ../src/views/darkroom.c:3988
 msgid "unbounded zoom in the image"
 msgstr ""
 
-#: ../src/views/darkroom.c:3996
+#: ../src/views/darkroom.c:3989
 msgid "zoom to 100% 200% and back"
 msgstr ""
 
-#: ../src/views/darkroom.c:3997 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3990 ../src/views/lighttable.c:885
 msgid "pan a zoomed image"
 msgstr ""
 
-#: ../src/views/darkroom.c:3999 ../src/views/lighttable.c:927
+#: ../src/views/darkroom.c:3992 ../src/views/lighttable.c:927
 msgid "[modules] expand module without closing others"
 msgstr ""
 
-#: ../src/views/darkroom.c:4000 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:3993 ../src/views/lighttable.c:928
 msgid "[modules] expand module and close others"
 msgstr ""
 
-#: ../src/views/darkroom.c:4002
+#: ../src/views/darkroom.c:3995
 msgid "[modules] rename module"
 msgstr ""
 
-#: ../src/views/darkroom.c:4004
+#: ../src/views/darkroom.c:3997
 msgid "[modules] change module position in pipe"
 msgstr ""
 
