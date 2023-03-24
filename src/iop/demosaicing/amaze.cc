@@ -126,9 +126,12 @@ static inline float _xdivf(float d, int n)
 ////////////////////////////////////////////////////////////////
 
 
-void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                       float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                       const int filters)
+void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
+                       const float *const in,
+                       float *out,
+                       const dt_iop_roi_t *const roi_in,
+                       const dt_iop_roi_t *const roi_out,
+                       const uint32_t filters)
 {
   int winx = roi_out->x;
   int winy = roi_out->y;
@@ -217,8 +220,6 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
 #pragma omp parallel
 #endif
   {
-    //     int progresscounter = 0;
-
     constexpr int cldf = 2; // factor to multiply cache line distance. 1 = 64 bytes, 2 = 128 bytes ...
     // assign working space
     char *buffer
@@ -1360,6 +1361,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
  * end of raw therapee code
  *==================================================================================*/
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
