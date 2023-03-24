@@ -44,7 +44,7 @@ static gchar* _dt_full_locale_name(const char *locale)
   {
     if(error)
     {
-      dt_print(DT_DEBUG_ALWAYS, "couldn't check locale: '%s'\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "[l10n] couldn't check locale: '%s'\n", error->message);
       g_error_free(error);
     }
   }
