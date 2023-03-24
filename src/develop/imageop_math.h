@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -98,8 +98,6 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw,
                             int32_t ibh, uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh,
                             int32_t obw, int32_t obh);
-
-void dt_iop_RGB_to_YCbCr(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t yuv);
 
 /** estimates an exponential form f(x) = a*x^g from a few (num) points (x, y).
  *  the largest point should be (1.0, y) to really get good data. */
