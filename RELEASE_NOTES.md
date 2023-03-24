@@ -457,6 +457,11 @@ The following is a summary of the main features added to darktable
 - Make sure the database timestamp is always set when possibly writing
   a sidecar xmp file.
 
+- A workaround was implemented for the mouse hover effect over sliders
+  and dropdowns, that used to cause the whole side panel, including
+  histogram, to be redrawn on each move between widgets, reducing cpu
+  consumption.
+
 ## Lua
 
 ### API Version
