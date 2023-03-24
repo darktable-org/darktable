@@ -551,9 +551,11 @@ static void dt_bh_init(DtBauhausWidget *class)
 static gboolean _enter_leave(GtkWidget *widget, GdkEventCrossing *event)
 {
   if(event->type == GDK_ENTER_NOTIFY)
-    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+    // gtk_widget_set_state_flags triggers resize&draw avalanche
+    // instead add GTK_STATE_FLAG_PRELIGHT in _widget_draw
+    darktable.bauhaus->hovered = widget;
   else
-    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
+    darktable.bauhaus->hovered = NULL;
 
   gtk_widget_queue_draw(widget);
 
@@ -2177,7 +2179,8 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
   GdkRGBA *fg_color = default_color_assign();
   GdkRGBA *bg_color;
   GdkRGBA *text_color = default_color_assign();
-  const GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  const GtkStateFlags hovering = widget == darktable.bauhaus->hovered ? GTK_STATE_FLAG_PRELIGHT : 0;
+  const GtkStateFlags state = gtk_widget_get_state_flags(widget) | hovering;
   gtk_style_context_get_color(context, state, text_color);
 
   gtk_style_context_get_color(context, state, fg_color);
@@ -2376,7 +2379,8 @@ static gint _bauhaus_natural_width(GtkWidget *widget, gboolean popup)
     gint number_width = 0;
     char *max = dt_bauhaus_slider_get_text(widget, w->data.slider.max);
     char *min = dt_bauhaus_slider_get_text(widget, w->data.slider.min);
-    char *text = strlen(max) >= strlen(min) ? max : min;pango_layout_set_text(layout, text, -1);
+    char *text = strlen(max) >= strlen(min) ? max : min;
+    pango_layout_set_text(layout, text, -1);
     pango_layout_get_size(layout, &number_width, NULL);
     natural_size += 2 * INNER_PADDING + number_width / PANGO_SCALE;
     g_free(max);
