@@ -44,10 +44,6 @@
 *    x86/64 machines, tested on Xeon E-2288G, i5-8250U.
 */
 
-#ifndef RCD_TILESIZE
-  #define RCD_TILESIZE 112
-#endif
-
 /* We don't want to use the -Ofast option in dt as it effects are not well specified and there have been issues
    leading to crashes.
    But we can use the 'fast-math' option in code sections if input data and algorithms are well defined.
@@ -71,11 +67,11 @@
 
 #define RCD_BORDER 9          // avoid tile-overlap errors
 #define RCD_MARGIN 6          // for the outermost tiles we can have a smaller outer border
-#define RCD_TILEVALID (RCD_TILESIZE - 2 * RCD_BORDER)
-#define w1 RCD_TILESIZE
-#define w2 (2 * RCD_TILESIZE)
-#define w3 (3 * RCD_TILESIZE)
-#define w4 (4 * RCD_TILESIZE)
+#define RCD_TILEVALID (DT_RCD_TILESIZE - 2 * RCD_BORDER)
+#define w1 DT_RCD_TILESIZE
+#define w2 (2 * DT_RCD_TILESIZE)
+#define w3 (3 * DT_RCD_TILESIZE)
+#define w4 (4 * DT_RCD_TILESIZE)
 
 #define eps 1e-5f              // Tolerance to avoid dividing by zero
 #define epssq 1e-10f
@@ -314,15 +310,15 @@ static void rcd_demosaic(
   dt_omp_firstprivate(width, height, filters, out, in, scaler, revscaler)
 #endif
   {
-    float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
+    float *const VH_Dir = dt_alloc_align_float((size_t) DT_RCD_TILESIZE * DT_RCD_TILESIZE);
     // ensure that border elements which are read but never actually set below are zeroed out
-    memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
-    float *const PQ_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
-    float *const cfa =    dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
-    float *const P_CDiff_Hpf = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
-    float *const Q_CDiff_Hpf = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
+    memset(VH_Dir, 0, sizeof(*VH_Dir) * DT_RCD_TILESIZE * DT_RCD_TILESIZE);
+    float *const PQ_Dir = dt_alloc_align_float((size_t) DT_RCD_TILESIZE * DT_RCD_TILESIZE / 2);
+    float *const cfa =    dt_alloc_align_float((size_t) DT_RCD_TILESIZE * DT_RCD_TILESIZE);
+    float *const P_CDiff_Hpf = dt_alloc_align_float((size_t) DT_RCD_TILESIZE * DT_RCD_TILESIZE / 2);
+    float *const Q_CDiff_Hpf = dt_alloc_align_float((size_t) DT_RCD_TILESIZE * DT_RCD_TILESIZE / 2);
 
-    float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = (void *)dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
+    float (*const rgb)[DT_RCD_TILESIZE * DT_RCD_TILESIZE] = (void *)dt_alloc_align_float((size_t)3 * DT_RCD_TILESIZE * DT_RCD_TILESIZE);
 
     // No overlapping use so re-use same buffer
     float *const lpf = PQ_Dir;
@@ -337,46 +333,46 @@ static void rcd_demosaic(
       for(int tile_horizontal = 0; tile_horizontal < num_horizontal; tile_horizontal++)
       {
         const int rowStart = tile_vertical * RCD_TILEVALID;
-        const int rowEnd = MIN(rowStart + RCD_TILESIZE, height);
+        const int rowEnd = MIN(rowStart + DT_RCD_TILESIZE, height);
 
         const int colStart = tile_horizontal * RCD_TILEVALID;
-        const int colEnd = MIN(colStart + RCD_TILESIZE, width);
+        const int colEnd = MIN(colStart + DT_RCD_TILESIZE, width);
 
-        const int tileRows = MIN(rowEnd - rowStart, RCD_TILESIZE);
-        const int tileCols = MIN(colEnd - colStart, RCD_TILESIZE);
+        const int tileRows = MIN(rowEnd - rowStart, DT_RCD_TILESIZE);
+        const int tileCols = MIN(colEnd - colStart, DT_RCD_TILESIZE);
 
-        if(rowStart + RCD_TILESIZE > height || colStart + RCD_TILESIZE > width)
+        if(rowStart + DT_RCD_TILESIZE > height || colStart + DT_RCD_TILESIZE > width)
         {
           // VH_Dir is only filled for(4,4)..(height-4,width-4), but the refinement code reads (3,3)...(h-3,w-3),
           // so we need to ensure that the border is zeroed for partial tiles to get consistent results
-          memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
+          memset(VH_Dir, 0, sizeof(*VH_Dir) * DT_RCD_TILESIZE * DT_RCD_TILESIZE);
           // TODO: figure out what part of rgb is being accessed without initialization on partial tiles
-          memset(rgb, 0, sizeof(float) * 3 * RCD_TILESIZE * RCD_TILESIZE);
+          memset(rgb, 0, sizeof(float) * 3 * DT_RCD_TILESIZE * DT_RCD_TILESIZE);
         }
         // Step 0: fill data and make sure data are not negative.
         for(int row = rowStart; row < rowEnd; row++)
         {
           const int c0 = FC(row, colStart, filters);
           const int c1 = FC(row, colStart + 1, filters);
-          for(int col = colStart, indx = (row - rowStart) * RCD_TILESIZE, in_indx = row * width + colStart; col < colEnd; col++, indx++, in_indx++)
+          for(int col = colStart, indx = (row - rowStart) * DT_RCD_TILESIZE, in_indx = row * width + colStart; col < colEnd; col++, indx++, in_indx++)
           {
             cfa[indx] = rgb[c0][indx] = rgb[c1][indx] = _safe_in(in[in_indx], revscaler);
           }
         }
 
         // STEP 1: Find vertical and horizontal interpolation directions
-        float bufferV[3][RCD_TILESIZE - 8];
+        float bufferV[3][DT_RCD_TILESIZE - 8];
         // Step 1.1: Calculate the square of the vertical and horizontal color difference high pass filter
         for(int row = 3; row < MIN(tileRows - 3, 5); row++ )
         {
-          for(int col = 4, indx = row * RCD_TILESIZE + col; col < tileCols - 4; col++, indx++ )
+          for(int col = 4, indx = row * DT_RCD_TILESIZE + col; col < tileCols - 4; col++, indx++ )
           {
             bufferV[row - 3][col - 4] = sqrf((cfa[indx - w3] - cfa[indx - w1] - cfa[indx + w1] + cfa[indx + w3]) - 3.0f * (cfa[indx - w2] + cfa[indx + w2]) + 6.0f * cfa[indx]);
           }
         }
 
         // Step 1.2: Obtain the vertical and horizontal directional discrimination strength
-        float DT_ALIGNED_PIXEL bufferH[RCD_TILESIZE];
+        float DT_ALIGNED_PIXEL bufferH[DT_RCD_TILESIZE];
         // We start with V0, V1 and V2 pointing to row -1, row and row +1
         // After row is processed V0 must point to the old V1, V1 must point to the old V2 and V2 must point to the old V0
         // because the old V0 is not used anymore and will be filled with row + 1 data in next iteration
@@ -385,15 +381,15 @@ static void rcd_demosaic(
         float* V2 = bufferV[2];
         for(int row = 4; row < tileRows - 4; row++ )
         {
-          for(int col = 3, indx = row * RCD_TILESIZE + col; col < tileCols - 3; col++, indx++)
+          for(int col = 3, indx = row * DT_RCD_TILESIZE + col; col < tileCols - 3; col++, indx++)
           {
             bufferH[col - 3] = sqrf((cfa[indx -  3] - cfa[indx -  1] - cfa[indx +  1] + cfa[indx +  3]) - 3.0f * (cfa[indx -  2] + cfa[indx +  2]) + 6.0f * cfa[indx]);
           }
-          for(int col = 4, indx = (row + 1) * RCD_TILESIZE + col; col < tileCols - 4; col++, indx++)
+          for(int col = 4, indx = (row + 1) * DT_RCD_TILESIZE + col; col < tileCols - 4; col++, indx++)
           {
             V2[col - 4] = sqrf((cfa[indx - w3] - cfa[indx - w1] - cfa[indx + w1] + cfa[indx + w3]) - 3.0f * (cfa[indx - w2] + cfa[indx + w2]) + 6.0f * cfa[indx]);
           }
-          for(int col = 4, indx = row * RCD_TILESIZE + col; col < tileCols - 4; col++, indx++ )
+          for(int col = 4, indx = row * DT_RCD_TILESIZE + col; col < tileCols - 4; col++, indx++ )
           {
             const float V_Stat = fmaxf(epssq,      V0[col - 4] +      V1[col - 4] +      V2[col - 4]);
             const float H_Stat = fmaxf(epssq, bufferH[col - 4] + bufferH[col - 3] + bufferH[col - 2]);
@@ -407,7 +403,7 @@ static void rcd_demosaic(
         // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
         for(int row = 2; row < tileRows - 2; row++)
         {
-          for(int col = 2 + (FC(row, 0, filters) & 1), indx = row * RCD_TILESIZE + col, lp_indx = indx / 2; col < tileCols - 2; col += 2, indx +=2, lp_indx++)
+          for(int col = 2 + (FC(row, 0, filters) & 1), indx = row * DT_RCD_TILESIZE + col, lp_indx = indx / 2; col < tileCols - 2; col += 2, indx +=2, lp_indx++)
           {
             lpf[lp_indx] = cfa[indx]
                         + 0.5f * (cfa[indx - w1]     + cfa[indx + w1] +     cfa[indx - 1] +      cfa[indx + 1])
@@ -419,7 +415,7 @@ static void rcd_demosaic(
         // Step 3.1: Populate the green channel at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * RCD_TILESIZE + col, lpindx = indx / 2; col < tileCols - 4; col += 2, indx += 2, lpindx++)
+          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * DT_RCD_TILESIZE + col, lpindx = indx / 2; col < tileCols - 4; col += 2, indx += 2, lpindx++)
           {
             const float cfai = cfa[indx];
 
@@ -455,7 +451,7 @@ static void rcd_demosaic(
         // Step 4.0: Calculate the square of the P/Q diagonals color difference high pass filter
         for(int row = 3; row < tileRows - 3; row++)
         {
-          for(int col = 3, indx = row * RCD_TILESIZE + col, indx2 = indx / 2; col < tileCols - 3; col+=2, indx+=2, indx2++)
+          for(int col = 3, indx = row * DT_RCD_TILESIZE + col, indx2 = indx / 2; col < tileCols - 3; col+=2, indx+=2, indx2++)
           {
             P_CDiff_Hpf[indx2] = sqrf((cfa[indx - w3 - 3] - cfa[indx - w1 - 1] - cfa[indx + w1 + 1] + cfa[indx + w3 + 3]) - 3.0f * (cfa[indx - w2 - 2] + cfa[indx + w2 + 2]) + 6.0f * cfa[indx]);
             Q_CDiff_Hpf[indx2] = sqrf((cfa[indx - w3 + 3] - cfa[indx - w1 + 1] - cfa[indx + w1 - 1] + cfa[indx + w3 - 3]) - 3.0f * (cfa[indx - w2 + 2] + cfa[indx + w2 - 2]) + 6.0f * cfa[indx]);
@@ -464,7 +460,7 @@ static void rcd_demosaic(
         // Step 4.1: Obtain the P/Q diagonals directional discrimination strength
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * RCD_TILESIZE + col, indx2 = indx / 2, indx3 = (indx - w1 - 1) / 2, indx4 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, indx2++, indx3++, indx4++ )
+          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * DT_RCD_TILESIZE + col, indx2 = indx / 2, indx3 = (indx - w1 - 1) / 2, indx4 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, indx2++, indx3++, indx4++ )
           {
             const float P_Stat = fmaxf(epssq, P_CDiff_Hpf[indx3]     + P_CDiff_Hpf[indx2] + P_CDiff_Hpf[indx4 + 1]);
             const float Q_Stat = fmaxf(epssq, Q_CDiff_Hpf[indx3 + 1] + Q_CDiff_Hpf[indx2] + Q_CDiff_Hpf[indx4]);
@@ -475,7 +471,7 @@ static void rcd_demosaic(
         // Step 4.2: Populate the red and blue channels at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * RCD_TILESIZE + col, c = 2 - FC(row, col, filters), pqindx = indx / 2, pqindx2 = (indx - w1 - 1) / 2, pqindx3 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, pqindx++, pqindx2++, pqindx3++)
+          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * DT_RCD_TILESIZE + col, c = 2 - FC(row, col, filters), pqindx = indx / 2, pqindx2 = (indx - w1 - 1) / 2, pqindx3 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, pqindx++, pqindx2++, pqindx3++)
           {
             // Refined P/Q diagonal local discrimination
             const float PQ_Central_Value   = PQ_Dir[pqindx];
@@ -507,7 +503,7 @@ static void rcd_demosaic(
         // Step 4.3: Populate the red and blue channels at green CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FC(row, 1, filters) & 1), indx = row * RCD_TILESIZE + col; col < tileCols - 4; col += 2, indx +=2)
+          for(int col = 4 + (FC(row, 1, filters) & 1), indx = row * DT_RCD_TILESIZE + col; col < tileCols - 4; col += 2, indx +=2)
           {
             // Refined vertical and horizontal local discrimination
             const float VH_Central_Value = VH_Dir[indx];
@@ -558,7 +554,7 @@ static void rcd_demosaic(
         const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? RCD_MARGIN : RCD_BORDER);
         for(int row = first_vertical; row < last_vertical; row++)
         {
-          for(int col = first_horizontal, idx = (row - rowStart) * RCD_TILESIZE + col - colStart, o_idx = (row * width + col) * 4; col < last_horizontal; col++, o_idx += 4, idx++)
+          for(int col = first_horizontal, idx = (row - rowStart) * DT_RCD_TILESIZE + col - colStart, o_idx = (row * width + col) * 4; col < last_horizontal; col++, o_idx += 4, idx++)
           {
             out[o_idx]   = scaler * fmaxf(0.0f, rgb[0][idx]);
             out[o_idx+1] = scaler * fmaxf(0.0f, rgb[1][idx]);
@@ -581,6 +577,275 @@ static void rcd_demosaic(
 #ifdef __GNUC__
   #pragma GCC pop_options
 #endif
+
+#ifdef HAVE_OPENCL
+static int process_rcd_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const gboolean smooth)
+{
+  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  const dt_image_t *img = &self->dev->image_storage;
+
+  const int devid = piece->pipe->devid;
+  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
+
+  cl_mem dev_aux = NULL;
+  cl_mem dev_tmp = NULL;
+  cl_mem dev_green_eq = NULL;
+  cl_mem cfa = NULL;
+  cl_mem rgb0 = NULL;
+  cl_mem rgb1 = NULL;
+  cl_mem rgb2 = NULL;
+  cl_mem VH_dir = NULL;
+  cl_mem PQ_dir = NULL;
+  cl_mem VP_diff = NULL;
+  cl_mem HQ_diff = NULL;
+
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+
+  if(qual_flags & DT_DEMOSAIC_FULL_SCALE)
+  {
+     // Full demosaic and then scaling if needed
+    const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
+
+    int width = roi_out->width;
+    int height = roi_out->height;
+
+    // green equilibration
+    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
+    {
+      dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
+      if(dev_green_eq == NULL) goto error;
+      if(!green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in)) goto error;
+      dev_in = dev_green_eq;
+    }
+
+    // need to reserve scaled auxiliary buffer or use dev_out
+    if(scaled)
+    {
+      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+      if(dev_aux == NULL) goto error;
+      width = roi_in->width;
+      height = roi_in->height;
+    }
+    else
+      dev_aux = dev_out;
+
+    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+    if(dev_tmp == NULL) goto error;
+
+    {
+      const int myborder = 3;
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
+        CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLARG(myborder));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      dt_opencl_local_buffer_t locopt
+        = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
+                                      .cellsize = sizeof(float) * 1, .overhead = 0,
+                                      .sizex = 64, .sizey = 64 };
+
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt)) goto error;
+      const int myborder = 32;
+      size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+      size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+      dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_green, 0, CLARG(dev_in), CLARG(dev_tmp),
+        CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)),
+        CLARG(myborder));
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_green, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      dt_opencl_local_buffer_t locopt
+        = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
+                                      .cellsize = 4 * sizeof(float), .overhead = 0,
+                                      .sizex = 64, .sizey = 64 };
+
+      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt)) goto error;
+      const int myborder = 16;
+      size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+      size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+      dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_redblue, 0, CLARG(dev_tmp), CLARG(dev_aux),
+        CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)),
+        CLARG(myborder));
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_redblue, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+    }
+    dt_opencl_release_mem_object(dev_tmp);
+    dev_tmp = NULL;
+
+    cfa = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(cfa == NULL) goto error;
+    VH_dir = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(VH_dir == NULL) goto error;
+    PQ_dir = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(PQ_dir == NULL) goto error;
+    VP_diff = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(VP_diff == NULL) goto error;
+    HQ_diff = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(HQ_diff == NULL) goto error;
+    rgb0 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(rgb0 == NULL) goto error;
+    rgb1 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(rgb1 == NULL) goto error;
+    rgb2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(rgb2 == NULL) goto error;
+
+    {
+      // populate data
+      const float scaler = 1.0f / fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_populate, width, height,
+        CLARG(dev_in), CLARG(cfa), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height),
+        CLARG(piece->pipe->dsc.filters), CLARG(scaler));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_1, width, height,
+        CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      // Step 1.2: Calculate vertical and horizontal local discrimination
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_2, width, height,
+        CLARG(VH_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2_1, width / 2, height,
+        CLARG(PQ_dir), CLARG(cfa), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      // Step 3.1: Populate the green channel at blue and red CFA positions
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_3_1, width / 2, height,
+        CLARG(PQ_dir), CLARG(cfa), CLARG(rgb1), CLARG(VH_dir), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      // Step 4.1: Calculate a squared P/Q diagonals high pass filter on color differences
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_1, width / 2, height,
+        CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      // Step 4.2: Calculate P/Q diagonal local discrimination
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_2, width / 2, height,
+        CLARG(PQ_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      // Step 4.3: Populate the red and blue channels at blue and red CFA positions
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_1, width / 2, height,
+        CLARG(PQ_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    {
+      // Step 5.2: Populate the red and blue channels at green CFA positions
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_2, width / 2, height,
+        CLARG(VH_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+      if(err != CL_SUCCESS) goto error;
+    }
+    const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+
+    {
+      // write output
+      const int myborder = 6;
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_write_output, width, height,
+        CLARG(dev_aux), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(scaler),
+        CLARG(myborder));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    dt_opencl_release_mem_object(cfa);
+    dt_opencl_release_mem_object(rgb0);
+    dt_opencl_release_mem_object(rgb1);
+    dt_opencl_release_mem_object(rgb2);
+    dt_opencl_release_mem_object(VH_dir);
+    dt_opencl_release_mem_object(PQ_dir);
+    dt_opencl_release_mem_object(VP_diff);
+    dt_opencl_release_mem_object(HQ_diff);
+    dt_opencl_release_mem_object(dev_green_eq);
+    dev_green_eq = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
+
+    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
+
+    if(scaled)
+    {
+      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self->so->op, roi_in, roi_out, "\n");
+      // scale aux buffer to output buffer
+      err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
+      if(err != CL_SUCCESS) goto error;
+    }
+  }
+  else
+  {
+    // sample half-size image:
+    const int zero = 0;
+    cl_mem dev_pix = dev_in;
+    const int width = roi_out->width;
+    const int height = roi_out->height;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, width, height,
+      CLARG(dev_pix), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
+      CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+  dev_aux = NULL;
+
+  // color smoothing
+  if((data->color_smoothing) && smooth)
+  {
+    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
+      goto error;
+  }
+
+  return TRUE;
+
+error:
+  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+  dt_opencl_release_mem_object(dev_green_eq);
+  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(cfa);
+  dt_opencl_release_mem_object(rgb0);
+  dt_opencl_release_mem_object(rgb1);
+  dt_opencl_release_mem_object(rgb2);
+  dt_opencl_release_mem_object(VH_dir);
+  dt_opencl_release_mem_object(PQ_dir);
+  dt_opencl_release_mem_object(VP_diff);
+  dt_opencl_release_mem_object(HQ_diff);
+  dev_aux = dev_green_eq = dev_tmp = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] rcd couldn't enqueue kernel! %s\n", cl_errstr(err));
+  return FALSE;
+}
+
+#endif
+
+
+
+
+
+
 
 #undef RCD_BORDER
 #undef RCD_MARGIN
