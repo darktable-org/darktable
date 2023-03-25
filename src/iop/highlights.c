@@ -335,7 +335,14 @@ void tiling_callback(struct dt_iop_module_t *self,
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   const uint32_t filters = piece->pipe->dsc.filters;
 
-  if(d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN && filters && filters != 9u)
+  const gboolean is_bayer = filters && (filters != 9u);
+  const gboolean is_xtrans = filters && (filters == 9u);
+
+  tiling->xalign = is_xtrans ? 3 : 2;
+  tiling->yalign = is_xtrans ? 3 : 2;
+  tiling->overlap = 0;
+
+  if(d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN && is_bayer)
   {
     // Bayer CFA and guided laplacian method : prepare for wavelets decomposition.
     const float scale = fmaxf(DS_FACTOR * piece->iscale / roi_in->scale, 1.f);
@@ -343,24 +350,11 @@ void tiling_callback(struct dt_iop_module_t *self,
     const int scales = CLAMP((int)ceilf(log2f(final_radius)), 1, MAX_NUM_SCALES);
     const int max_filter_radius = (1 << scales);
 
-    // Warning : in and out are single-channel in RAW mode
-    // in + out + interpolated + ds_interpolated + ds_tmp + 2 * ds_LF + ds_HF + mask + ds_mask
-    if(filters) // RAW
-    {
-      tiling->factor = 2.f + 2.f * 4 + 6.f * 4 / (DS_FACTOR * DS_FACTOR);
-      tiling->factor_cl =  2.f + 3.f * 4 + 5.f * 4 / (DS_FACTOR * DS_FACTOR);
+    tiling->factor = 2.f + 2.f * 4 + 6.f * 4 / (DS_FACTOR * DS_FACTOR);
+    tiling->factor_cl =  2.f + 3.f * 4 + 5.f * 4 / (DS_FACTOR * DS_FACTOR);
 
-      // The wavelets decomposition uses a temp buffer of size 4 × ds_width
-      tiling->maxbuf = 1.f / roi_in->height * dt_get_num_threads() * 4.f / DS_FACTOR;
-    }
-    else
-    {
-      tiling->factor = 2.f + 2.f + 6.f / (DS_FACTOR * DS_FACTOR);
-      tiling->factor_cl = 2.f + 3.f + 5.f / (DS_FACTOR * DS_FACTOR);
-
-      // The wavelets decomposition uses a temp buffer of size 4 × width
-      tiling->maxbuf = 1.f / roi_in->height * dt_get_num_threads() / DS_FACTOR;
-    }
+    // The wavelets decomposition uses a temp buffer of size 4 × ds_width
+    tiling->maxbuf = 1.f / roi_in->height * dt_get_num_threads() * 4.f / DS_FACTOR;
 
     // No temp buffer on GPU
     tiling->maxbuf_cl = 1.0f;
@@ -372,9 +366,6 @@ void tiling_callback(struct dt_iop_module_t *self,
     // The clean way of doing it would be an internal tiling mechanism
     // where we restitch the tiles between each new iteration.
     tiling->overlap = max_filter_radius * 1.5f / DS_FACTOR;
-    tiling->xalign = 1;
-    tiling->yalign = 1;
-
     return;
   }
 
@@ -382,17 +373,6 @@ void tiling_callback(struct dt_iop_module_t *self,
   {
     // even if the algorithm can't tile we want to calculate memory for pixelpipe checks and a possible warning
     const int segments = roi_out->width * roi_out->height / 4000; // segments per mpix
-    if(filters == 9u)
-    {
-      tiling->xalign = 3;
-      tiling->yalign = 3;
-    }
-    else
-    {
-      tiling->xalign = 2;
-      tiling->yalign = 2;
-    }
-    tiling->overlap = 0;
     tiling->overhead = segments * 5 * 5 * sizeof(int); // segmentation stuff
     tiling->factor = 3.0f;
     tiling->maxbuf = 1.0f;
@@ -401,18 +381,7 @@ void tiling_callback(struct dt_iop_module_t *self,
 
   if(d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)
   {
-    if(filters == 9u)
-    {
-      tiling->xalign = 3;
-      tiling->yalign = 3;
-    }
-    else
-    {
-      tiling->xalign = 2;
-      tiling->yalign = 2;
-    }
     tiling->factor = 2.5f; // enough for in&output buffers plus masks
-    tiling->overlap = 0;
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
     return;
@@ -422,26 +391,11 @@ void tiling_callback(struct dt_iop_module_t *self,
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
 
-  if(filters == 9u)
+  if(d->mode == DT_IOP_HIGHLIGHTS_LCH)
   {
-    // xtrans
-    tiling->xalign = 6;
-    tiling->yalign = 6;
-    tiling->overlap = (d->mode == DT_IOP_HIGHLIGHTS_LCH) ? 2 : 0;
-  }
-  else if(filters)
-  {
-    // bayer
-    tiling->xalign = 2;
-    tiling->yalign = 2;
-    tiling->overlap = (d->mode == DT_IOP_HIGHLIGHTS_LCH) ? 1 : 0;
-  }
-  else
-  {
-    // non-raw
-    tiling->xalign = 1;
-    tiling->yalign = 1;
-    tiling->overlap = 0;
+    tiling->xalign = is_xtrans ? 6 : 2;
+    tiling->yalign = is_xtrans ? 6 : 2;
+    tiling->overlap = is_xtrans ? 2 : 1;
   }
 }
 
