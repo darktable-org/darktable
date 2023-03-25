@@ -398,6 +398,8 @@ static void _set_iter_name(dt_lib_masks_t *lm,
     snprintf(str, sizeof(str), "%s %d%%", str2, (int)(opacity * 100));
   }
 
+  const gboolean show = state & DT_MASKS_STATE_SHOW;
+
   GdkPixbuf *icop = NULL;
   GdkPixbuf *icinv = NULL;
 
@@ -416,7 +418,7 @@ static void _set_iter_name(dt_lib_masks_t *lm,
   gtk_tree_store_set(GTK_TREE_STORE(model), iter,
                      TREE_TEXT, str,
                      TREE_IC_OP, icop,
-                     TREE_IC_OP_VISIBLE,(icop != NULL),
+                     TREE_IC_OP_VISIBLE, (icop != NULL) && show,
                      TREE_IC_INVERSE, icinv,
                      TREE_IC_INVERSE_VISIBLE, (icinv != NULL),
                      -1);
@@ -728,6 +730,59 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
   }
 }
 
+static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
+                                               GtkTreeIter *iter,
+                                               const int first_id,
+                                               const int second_id)
+{
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
+
+  int grid = -1;
+  int id = -1;
+  _lib_masks_get_values(model, iter, NULL, &grid, &id);
+
+  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
+
+  if(grp)
+  {
+    // we search the entries and change the state
+    // the new first entry is removed the SHOW state and
+    // the new second node is set SHOW state + UNION if no operator defined yet.
+    for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
+    {
+      dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+      gboolean changed = FALSE;
+      if(pt->formid == first_id)
+      {
+        pt->state &= ~DT_MASKS_STATE_SHOW;
+        changed = TRUE;
+      }
+      else if(pt->formid == second_id)
+      {
+        // ensure that at leat an operator is defined as we are
+        // going to show this mask operator.
+        if((pt->state & DT_MASKS_STATE_OP) == DT_MASKS_STATE_NONE)
+          pt->state |= DT_MASKS_STATE_UNION;
+        pt->state |= DT_MASKS_STATE_SHOW;
+        changed = TRUE;
+      }
+      if(changed)
+        _set_iter_name(lm,
+                       dt_masks_get_from_id(darktable.develop, id),
+                       pt->state, pt->opacity, model,
+                       iter);
+    }
+  }
+}
+
+static gboolean _is_first_tree_item(GtkTreeModel *model, GtkTreeIter *iter)
+{
+  GtkTreeIter *tmp = gtk_tree_iter_copy(iter);
+  const gboolean is_first_item = !gtk_tree_model_iter_previous(model, tmp);
+  gtk_tree_iter_free(tmp);
+  return is_first_item;
+}
+
 static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -744,50 +799,25 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
     GtkTreeIter iter;
-    GtkTreeIter prev_iter;
+
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
       int grid = -1;
       int id = -1;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
-      prev_iter = *gtk_tree_iter_copy(&iter);
-      gtk_tree_model_iter_previous(model, &prev_iter);
+      GtkTreeIter *prev_iter = gtk_tree_iter_copy(&iter);
+      gtk_tree_model_iter_previous(model, prev_iter);
       int prev_grid = -1;
       int prev_id = -1;
-      _lib_masks_get_values(model, &prev_iter, NULL, &prev_grid, &prev_id);
+      _lib_masks_get_values(model, prev_iter, NULL, &prev_grid, &prev_id);
 
-      const gboolean is_first_item = !gtk_tree_model_iter_previous(model, &prev_iter);
-
-      if(is_first_item)
+      if(_is_first_tree_item(model, prev_iter))
       {
-        dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
-        if(grp)
-        {
-          // we search the entries and change the state
-          // the new first entry has a clear mask state and the
-          // new second node is set to UNION.
-          for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
-          {
-            dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
-            gboolean changed = FALSE;
-            if(pt->formid == id)
-            {
-              pt->state = DT_MASKS_STATE_NONE;
-              changed = TRUE;
-            }
-            else if(pt->formid == prev_id)
-            {
-              pt->state = DT_MASKS_STATE_UNION;
-              changed = TRUE;
-            }
-            if(changed)
-              _set_iter_name(lm, dt_masks_get_from_id(darktable.develop, id),
-                             pt->state, pt->opacity, model,
-                             &iter);
-          }
-        }
+        _swap_first_second_item_visibility(lm, &iter, id, prev_id);
       }
+
+      gtk_tree_iter_free(prev_iter);
 
       dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 0);
     }
@@ -815,50 +845,25 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
     GtkTreeIter iter;
-    GtkTreeIter next_iter;
+
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
       int grid = -1;
       int id = -1;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
-      next_iter = *gtk_tree_iter_copy(&iter);
-      gtk_tree_model_iter_next(model, &next_iter);
+      GtkTreeIter *next_iter = gtk_tree_iter_copy(&iter);
+      gtk_tree_model_iter_next(model, next_iter);
       int next_grid = -1;
       int next_id = -1;
-      _lib_masks_get_values(model, &next_iter, NULL, &next_grid, &next_id);
+      _lib_masks_get_values(model, next_iter, NULL, &next_grid, &next_id);
 
-      const gboolean is_first_item = !gtk_tree_model_iter_previous(model, &iter);
-
-      if(is_first_item)
+      if(_is_first_tree_item(model, &iter))
       {
-        dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
-        if(grp)
-        {
-          // we search the entries and change the state
-          // the new first entry has a clear mask state and the
-          // new second node is set to UNION.
-          for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
-          {
-            dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
-            gboolean changed = FALSE;
-            if(pt->formid == id)
-            {
-              pt->state = DT_MASKS_STATE_UNION;
-              changed = TRUE;
-            }
-            else if(pt->formid == next_id)
-            {
-              pt->state = DT_MASKS_STATE_NONE;
-              changed = TRUE;
-            }
-            if(changed)
-              _set_iter_name(lm, dt_masks_get_from_id(darktable.develop, id),
-                             pt->state, pt->opacity, model,
-                             &iter);
-          }
-        }
+        _swap_first_second_item_visibility(lm, &iter, next_id, id);
       }
+
+      gtk_tree_iter_free(next_iter);
 
       dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 1);
     }
