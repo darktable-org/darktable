@@ -1001,7 +1001,9 @@ static int _tree_button_pressed(GtkWidget *treeview,
 
     // we get all infos from selection
     const int nb = gtk_tree_selection_count_selected_rows(selection);
-    int from_group = 0;
+    gboolean from_group = FALSE;
+
+    gboolean is_first_row = FALSE;
 
     int grpid = 0;
     int depth = 0;
@@ -1021,10 +1023,18 @@ static int _tree_button_pressed(GtkWidget *treeview,
           _lib_masks_get_values(model, &iter, NULL, NULL, &grpid);
           grp = dt_masks_get_from_id(darktable.develop, grpid);
         }
+
+        // if depth > 1 then check if the selected item is the first in the
+        // group.
+        if(!gtk_tree_path_prev(it0))
+          is_first_row = TRUE;
       }
+
       g_list_free_full(selected, (GDestroyNotify)gtk_tree_path_free);
     }
-    if(depth > 1) from_group = 1;
+
+    if(depth > 1)
+      from_group = TRUE;
 
     if(nb == 0 || (grp && grp->type & DT_MASKS_GROUP))
     {
@@ -1170,16 +1180,24 @@ static int _tree_button_pressed(GtkWidget *treeview,
       if(nb == 1)
       {
         gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
+
         item = gtk_menu_item_new_with_label(_("mode: union"));
+        gtk_widget_set_sensitive(item, !is_first_row);
         g_signal_connect(item, "activate", (GCallback)_tree_union, self);
         gtk_menu_shell_append(menu, item);
+
         item = gtk_menu_item_new_with_label(_("mode: intersection"));
+        gtk_widget_set_sensitive(item, !is_first_row);
         g_signal_connect(item, "activate", (GCallback)_tree_intersection, self);
         gtk_menu_shell_append(menu, item);
+
         item = gtk_menu_item_new_with_label(_("mode: difference"));
+        gtk_widget_set_sensitive(item, !is_first_row);
         g_signal_connect(item, "activate", (GCallback)_tree_difference, self);
         gtk_menu_shell_append(menu, item);
+
         item = gtk_menu_item_new_with_label(_("mode: exclusion"));
+        gtk_widget_set_sensitive(item, !is_first_row);
         g_signal_connect(item, "activate", (GCallback)_tree_exclusion, self);
         gtk_menu_shell_append(menu, item);
       }
