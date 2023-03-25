@@ -1004,6 +1004,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
     gboolean from_group = FALSE;
 
     gboolean is_first_row = FALSE;
+    gboolean is_last_row = FALSE;
 
     int grpid = 0;
     int depth = 0;
@@ -1024,10 +1025,18 @@ static int _tree_button_pressed(GtkWidget *treeview,
           grp = dt_masks_get_from_id(darktable.develop, grpid);
         }
 
-        // if depth > 1 then check if the selected item is the first in the
-        // group.
-        if(!gtk_tree_path_prev(it0))
+        // if depth > 1 then check if the selected item is the first
+        // or last in the group. This is used to enable/disable some
+        // feature only meaningful for rows with prev/next.
+
+        GtkTreeIter it;
+        gtk_tree_model_get_iter(model, &it, it0);
+        is_last_row = !gtk_tree_model_iter_next(model, &it);
+
+        if(!is_last_row && !gtk_tree_path_prev(it0))
+        {
           is_first_row = TRUE;
+        }
       }
 
       g_list_free_full(selected, (GDestroyNotify)gtk_tree_path_free);
@@ -1203,9 +1212,12 @@ static int _tree_button_pressed(GtkWidget *treeview,
       }
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
       item = gtk_menu_item_new_with_label(_("move up"));
+      gtk_widget_set_sensitive(item, !is_first_row);
       g_signal_connect(item, "activate", (GCallback)_tree_moveup, self);
       gtk_menu_shell_append(menu, item);
+
       item = gtk_menu_item_new_with_label(_("move down"));
+      gtk_widget_set_sensitive(item, !is_last_row);
       g_signal_connect(item, "activate", (GCallback)_tree_movedown, self);
       gtk_menu_shell_append(menu, item);
     }
