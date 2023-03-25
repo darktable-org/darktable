@@ -472,8 +472,6 @@ int process_cl(struct dt_iop_module_t *self,
   {
     err = process_opposed_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
     if(err != CL_SUCCESS) goto error;
-
-    return TRUE;
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters != 9u)
   {
@@ -522,7 +520,7 @@ int process_cl(struct dt_iop_module_t *self,
     err = process_laplacian_bayer_cl(self, piece, dev_in, dev_out, roi_in, roi_out, clips);
     if(err != CL_SUCCESS) goto error;
   }
-  else // default: if(d->mode == DT_IOP_HIGHLIGHTS_CLIP)
+  else // (d->mode == DT_IOP_HIGHLIGHTS_CLIP)
   {
     // raw images with clip mode (both bayer and xtrans)
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_clip, width, height,
@@ -562,31 +560,16 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece,
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  if(piece->pipe->dsc.filters)
-  { // raw mosaic
+  const int ch = (piece->pipe->dsc.filters) ? piece->colors : 1;
+  const size_t msize = (size_t)roi_out->width * roi_out->height * ch; 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(clip, in, out, roi_out) \
+    dt_omp_firstprivate(clip, in, out, msize) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-    {
-      out[k] = MIN(clip, in[k]);
-    }
-  }
-  else
+  for(size_t k = 0; k < msize; k++)
   {
-    const int ch = piece->colors;
-
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, clip, in, out, roi_out) \
-    schedule(static)
-#endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
-    {
-      out[k] = MIN(clip, in[k]);
-    }
+    out[k] = fminf(clip, fmaxf(0.0f, in[k]));
   }
 }
 
