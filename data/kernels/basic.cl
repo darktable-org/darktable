@@ -266,6 +266,7 @@ highlights_4f_clip (read_only image2d_t in, write_only image2d_t out, const int 
   pixel.x = fmin(clip, pixel.x);
   pixel.y = fmin(clip, pixel.y);
   pixel.z = fmin(clip, pixel.z);
+  pixel = fmax(pixel, (float4)0.f);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -280,7 +281,7 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
 
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
-  pixel = fmin(clip, pixel);
+  pixel = fmin(clip, fmax(0.0f, pixel));
 
   write_imagef (out, (int2)(x, y), pixel);
 }
