@@ -26,19 +26,29 @@
 #include <xmmintrin.h>
 #endif
 
-static inline void weight(const float *c1, const float *c2, const float sharpen, dt_aligned_pixel_t weight)
+static inline void weight(const dt_aligned_pixel_t c1,
+                              const dt_aligned_pixel_t c2,
+                              const dt_aligned_pixel_t sharpen,
+                              dt_aligned_pixel_t weight)
 {
+/* Computes the vector
+ * (wl, wc, wc, 1)
+ *
+ * where:
+ * wl = exp(-sharpen*SQR(c1[0] - c2[0]))
+ * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
+ */
   dt_aligned_pixel_t square;
   for_each_channel(c) square[c] = c1[c] - c2[c];
-  for_each_channel(c) square[c] = square[c] * square[c];
-
-  const float wl = dt_fast_expf(-sharpen * square[0]);
-  const float wc = dt_fast_expf(-sharpen * (square[1] + square[2]));
-
-  weight[0] = wl;
-  weight[1] = wc;
-  weight[2] = wc;
-  weight[3] = 1.0f;
+  for_each_channel(c) square[c] = square[c] * square[c];	// { d1, d2, d3, ? }
+  const dt_aligned_pixel_t square2 = { square[0], square[2], square[1], square[3] }; // { d1, d3, d2, ? }
+  dt_aligned_pixel_t added;
+  for_each_channel(c)
+    added[c] = square[c] + square2[c];				// { d1+d1, d2+d3, d2+d3, ? }
+  dt_aligned_pixel_t sharpened;
+  for_each_channel(c)
+    sharpened[c] = sharpen[c] * added[c];			// { -s*d1,  -s*(d2+d3), -s*(d2+d3), 0 }
+  dt_vector_exp(sharpened, weight);				// { wl, wc, wc, 1 }
 }
 
 #if defined(__SSE2__)
@@ -70,7 +80,7 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
   {                                                                                                          \
     const float f = filter[(ii)] * filter[(jj)];                                                             \
     dt_aligned_pixel_t wp;                                                                                   \
-    weight(px, px2, sharpen, wp);                                                                            \
+    weight(px, px2, vsharpen, wp);                                                                           \
     dt_aligned_pixel_t w;                                                                                    \
     dt_aligned_pixel_t pd;                                                                                   \
     for_four_channels(c,aligned(px2))                                                                        \
@@ -143,10 +153,11 @@ void eaw_decompose(float *const restrict out, const float *const restrict in, fl
   const int mult = 1 << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
+  const dt_aligned_pixel_t vsharpen = { -0.5f * sharpen, -sharpen, -sharpen, 0.0f };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(detail, filter, height, in, sharpen, mult, boundary, out, width) \
+  dt_omp_firstprivate(detail, filter, height, in, vsharpen, mult, boundary, out, width) \
   schedule(static)
 #endif
   for(int rowid = 0; rowid < height; rowid++)
