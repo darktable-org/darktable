@@ -570,6 +570,37 @@ static float lerp_lut(const float *const lut, const float v)
   return l1 * (1.0f - f) + l2 * f;
 }
 
+// call only if sure that v<1.0
+//TODO: dedup this and colorout.c
+static inline float _lerp_lut(const float *const lut, const float v)
+{
+  const float z = MAX(v,0.0f);  // clip away negatives
+  const float ft = z * (LUT_SAMPLES - 1);
+  // because v<1.0, ft must be less than (LUT_SAMPLES-1), so truncating
+  // will set t <= (LUT_SAMPLES-2) and thus we don't need to clamp it
+  // to avoid an array overrun
+  const int t = (int)ft;
+  const float f = ft - t;
+  const float l1 = lut[t];
+  const float l2 = lut[t + 1];
+  return l1 * (1.0f - f) + l2 * f;
+}
+
+static inline void _apply_tone_curves(dt_aligned_pixel_t pixel,
+                                      const dt_iop_colorin_data_t *const d)
+{
+  // assures unbounded color management without extrapolation.  Should not be called
+  // for linear profiles, as there is no need to apply a tone curve to them.
+  for(int c = 0; c < 3; c++)
+    if (d->lut[c][0] >= 0.0f)
+    {
+      if(__builtin_expect(pixel[c] < 1.0f, 1))
+        pixel[c] = _lerp_lut(d->lut[c], pixel[c]);
+      else
+        pixel[c] = dt_iop_eval_exp(d->unbounded_coeffs[c], pixel[c]);
+    }
+}
+
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
@@ -718,7 +749,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self,
     for(int c = 0; c < 3; c++)
       cam[c] = (d->lut[c][0] >= 0.0f)
         ? ((in[c] < 1.0f)
-           ? lerp_lut(d->lut[c], in[c])
+           ? _lerp_lut(d->lut[c], in[c])
            : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
         : in[c];
     cam[3] = 0.0f; // avoid uninitialized-variable warning
@@ -809,7 +840,7 @@ static void process_sse2_cmatrix_bm(struct dt_iop_module_t *self,
       for(int c = 0; c < 3; c++)
         cam[c] = (d->lut[c][0] >= 0.0f)
           ? ((buf_in[c] < 1.0f)
-             ? lerp_lut(d->lut[c], buf_in[c])
+             ? _lerp_lut(d->lut[c], buf_in[c])
              : dt_iop_eval_exp(d->unbounded_coeffs[c], buf_in[c]))
           : buf_in[c];
 
@@ -987,26 +1018,16 @@ static void _cmatrix_proper_simple_sse(float *const restrict out,
                                        const dt_iop_colorin_data_t *const d,
                                        const dt_colormatrix_t cmatrix)
 {
-  const __m128 cm0 = _mm_set_ps(0.0f, d->cmatrix[2][0], d->cmatrix[1][0], d->cmatrix[0][0]);
-  const __m128 cm1 = _mm_set_ps(0.0f, d->cmatrix[2][1], d->cmatrix[1][1], d->cmatrix[0][1]);
-  const __m128 cm2 = _mm_set_ps(0.0f, d->cmatrix[2][2], d->cmatrix[1][2], d->cmatrix[0][2]);
+  const __m128 cm0 = _mm_set_ps(0.0f, cmatrix[2][0], cmatrix[1][0], cmatrix[0][0]);
+  const __m128 cm1 = _mm_set_ps(0.0f, cmatrix[2][1], cmatrix[1][1], cmatrix[0][1]);
+  const __m128 cm2 = _mm_set_ps(0.0f, cmatrix[2][2], cmatrix[1][2], cmatrix[0][2]);
 
   // this function is called from inside a parallel for loop, so no need for further parallelization
   for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t cam;
-
-    // memcpy(cam, in, sizeof(float)*3);
-    // avoid calling this for linear profiles (marked with negative
-    // entries), assures unbounded color management without
-    // extrapolation.
-    for(int c = 0; c < 3; c++)
-      cam[c] = (d->lut[c][0] >= 0.0f)
-        ? ((in[4*k+c] < 1.0f)
-           ? lerp_lut(d->lut[c], in[4*k+c])
-           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[4*k+c]))
-        : in[4*k+c];
-
+    copy_pixel(cam, in + 4*k);
+    _apply_tone_curves(cam, d);
     __m128 xyz = ((cm0 * _mm_set1_ps(cam[0]))
                   + (cm1 * _mm_set1_ps(cam[1]))
                   + (cm2 * _mm_set1_ps(cam[2])));
@@ -1036,17 +1057,8 @@ static void _cmatrix_proper_simple(float *const restrict out,
   for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t cam;
-    // avoid calling this for linear profiles (marked with negative
-    // entries), assures unbounded color management without
-    // extrapolation.
-    for(int c = 0; c < 3; c++)
-      cam[c] = (d->lut[c][0] >= 0.0f)
-        ? ((in[4*k+c] < 1.0f)
-           ? lerp_lut(d->lut[c], in[4*k+c])
-           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[4*k+c]))
-        : in[4*k+c];
-    cam[3] = 0.0f; // avoid uninitialized-variable warning
-
+    copy_pixel(cam, in + 4*k);
+    _apply_tone_curves(cam, d);
     dt_aligned_pixel_t res;
     dt_RGB_to_Lab(cam, cmatrix_row0, cmatrix_row1, cmatrix_row2, res);
     copy_pixel_nontemporal(out + 4*k, res);
@@ -1072,17 +1084,8 @@ static inline void _cmatrix_proper_clipping_sse(float *const restrict out,
   for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t cam;
-
-    // memcpy(cam, in, sizeof(float)*3);
-    // avoid calling this for linear profiles (marked with negative
-    // entries), assures unbounded color management without
-    // extrapolation.
-    for(int c = 0; c < 3; c++)
-      cam[c] = (d->lut[c][0] >= 0.0f)
-        ? ((in[4*k+c] < 1.0f)
-           ? lerp_lut(d->lut[c], in[4*k+c])
-           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[4*k+c]))
-        : in[4*k+c];
+    copy_pixel(cam, in + 4*k);
+    _apply_tone_curves(cam, d);
 
     // convert to clipping colorspace
     __m128 nrgb = ((nm0 * _mm_set1_ps(cam[0]))
@@ -1124,16 +1127,8 @@ static inline void _cmatrix_proper_clipping(float *const restrict out,
   for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t cam;
-    // avoid calling this for linear profiles (marked with negative
-    // entries), assures unbounded color management without
-    // extrapolation.
-    for(int c = 0; c < 3; c++)
-      cam[c] = (d->lut[c][0] >= 0.0f)
-        ? ((in[4*k+c] < 1.0f)
-           ? lerp_lut(d->lut[c], in[4*k+c])
-           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[4*k+c]))
-        : in[4*k+c];
-    cam[3] = 0.0f; // avoid uninitialized-variable warning
+    copy_pixel(cam, in + 4*k);
+    _apply_tone_curves(cam, d);
 
     dt_aligned_pixel_t nRGB;
     dt_apply_color_matrix_by_row(cam, nmatrix_row0, nmatrix_row1, nmatrix_row2, nRGB);
