@@ -297,23 +297,19 @@ void modify_roi_in(dt_iop_module_t *self,
 
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   /* When do we need to expand the roi to maximum of the full input data?
      1. Certainly not if any other than opposed or the segmentation based algo is used.
    */
   if(!use_opposing)
     return;
 
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  const gboolean clipmask = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) : FALSE;
   /*
-     2. Certainly not if we show the clipped mask in fullpipe as that is also safe with current roi
-     3. Certainly not for linear raws as they miss the automatic downscaler provided by the demosaicer stage, so
-        the expanding to full image data does not work as we do a downscaling very early in
-        the pixelpipe. So - no quality achieved but really bad performance.
-        See #12998 and #12993 for a lengthy discussion
+    2. Certainly not for linear raws as they miss the automatic downscaler provided by the demosaicer stage, so
+       the expanding to full image data does not work as we do a downscaling very early in
+       the pixelpipe. So - no quality achieved but really bad performance.
+       See #12998 and #12993 for a lengthy discussion
   */
-  if((fullpipe && clipmask) || (piece->pipe->dsc.filters == 0))
+  if(piece->pipe->dsc.filters == 0)
     return;
 
   /* We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
@@ -620,8 +616,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
     const size_t npixels = roi_out->width * (size_t)roi_out->height;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, clips) \
-    dt_omp_sharedconst(npixels) \
+    dt_omp_firstprivate(in, out, clips, npixels) \
     schedule(static)
 #endif
     for(size_t k = 0; k < 4*npixels; k += 4)
@@ -635,17 +630,25 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, clips, roi_in) \
-  dt_omp_sharedconst(filters, xtrans, is_xtrans) \
+  dt_omp_firstprivate(in, out, clips, roi_in, roi_out, filters, xtrans, is_xtrans) \
   schedule(static)
 #endif
-    for(size_t row = 0; row < roi_in->height; row++)
+    for(size_t row = 0; row < roi_out->height; row++)
     {
-      for(size_t col = 0, i = row * roi_in->width; col < roi_in->width; col++, i++)
+      for(size_t col = 0; col < roi_out->width; col++)
       {
-        const int c = is_xtrans ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-        const float ival = in[i];
-        out[i] = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+        const size_t ox = row * roi_out->width + col;
+        const size_t irow = row + roi_out->y;
+        const size_t icol = col + roi_out->x;
+        const size_t ix = irow * roi_in->width + icol;
+        if((irow < roi_in->height) && (icol < roi_in->width))
+        {
+          const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
+          const float ival = in[ix];
+          out[ox] = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+        }
+        else
+          out[ox] = 0.0f;
       }
     }
   }
