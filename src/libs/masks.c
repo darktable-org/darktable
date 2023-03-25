@@ -1254,14 +1254,14 @@ static gboolean _tree_restrict_select(GtkTreeSelection *selection,
   // now we unselect all members of selection with not the same parent node
   // idem for all those with a different depth
   int *indices = gtk_tree_path_get_indices(path);
-  int depth = gtk_tree_path_get_depth(path);
+  const int depth = gtk_tree_path_get_depth(path);
 
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   GList *items_iter = items;
   while(items_iter)
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
-    int dd = gtk_tree_path_get_depth(item);
+    const int dd = gtk_tree_path_get_depth(item);
     int *ii = gtk_tree_path_get_indices(item);
     int ok = 1;
     if(dd != depth)
