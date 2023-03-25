@@ -203,7 +203,7 @@ The following is a summary of the main features added to darktable
   - All the blending modes in Lab & RGB for the Display & Scene
     referred workflows have been optimized.
 
-  - The luminance mask calculation for the Tone Equalizer?
+  - The luminance mask calculation for the Tone Equalizer.
 
   - Loader for JPEG2000 file format
 
