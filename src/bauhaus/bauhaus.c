@@ -2593,7 +2593,8 @@ static void _slider_add_step(GtkWidget *widget, float delta, guint state, gboole
     if(d->factor < 0 ? d->pos < 0.0001 : d->pos > 0.9999) d->max = d->max < d->soft_max ? d->min : d->soft_max;
     dt_bauhaus_slider_set(widget, value + delta);
   }
-  else if(!strcmp(d->format,"°") && (d->max - d->min) * d->factor == 360.0f
+  else if(!strcmp(d->format,"°")
+          && fabsf((d->max - d->min) * d->factor - 360.0f) < 1e-4
           && fabsf(value + delta)/(d->max - d->min) < 2)
     dt_bauhaus_slider_set(widget, value + delta);
   else
