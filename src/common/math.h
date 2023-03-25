@@ -486,7 +486,7 @@ static inline void dt_vector_min(dt_aligned_pixel_t min,
                                  const dt_aligned_pixel_t v2)
 {
 #ifdef __SSE__
-  *((__m128*)min) = _mm_max_ps(*((__m128*)v1), *((__m128*)v2));
+  *((__m128*)min) = _mm_min_ps(*((__m128*)v1), *((__m128*)v2));
 #else
   for_each_channel(c)
     min[c] = MIN(v1[c], v2[c]);
