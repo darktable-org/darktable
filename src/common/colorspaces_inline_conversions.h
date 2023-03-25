@@ -124,7 +124,7 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 #endif
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(in,out)
+#pragma omp declare simd aligned(in,out : 16) aligned(matrix : 64)
 #endif
 static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix,
                                                     dt_aligned_pixel_t out)
@@ -136,7 +136,7 @@ static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in,
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(in,out)
+#pragma omp declare simd aligned(in,out,matrix_row0,matrix_row1,matrix_row2)
 #endif
 static inline void dt_apply_color_matrix_by_row(const dt_aligned_pixel_t in,
                                                 const dt_aligned_pixel_t matrix_row0,
@@ -619,6 +619,9 @@ static inline void dt_prophotorgb_to_Lab(const dt_aligned_pixel_t rgb, dt_aligne
   dt_XYZ_to_Lab(XYZ, Lab);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(rgb, Lab, cmatrix_row0, cmatrix_row1, cmatrix_row2)
+#endif
 static inline void dt_RGB_to_Lab(const dt_aligned_pixel_t rgb,
                                  const dt_aligned_pixel_t cmatrix_row0,
                                  const dt_aligned_pixel_t cmatrix_row1,
@@ -632,7 +635,7 @@ static inline void dt_RGB_to_Lab(const dt_aligned_pixel_t rgb,
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(RGB)
 #endif
 static inline float _dt_RGB_2_Hue(const dt_aligned_pixel_t RGB, const float max, const float delta)
 {

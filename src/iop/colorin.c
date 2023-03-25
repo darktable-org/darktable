@@ -558,6 +558,8 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
   }
 }
 
+static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 static float lerp_lut(const float *const lut, const float v)
 {
@@ -1098,16 +1100,12 @@ static inline void _cmatrix_proper_clipping(float *const restrict out,
     copy_pixel(cam, in + 4*k);
     _apply_tone_curves(cam, d);
 
+    // convert to the gamut-clipping colorspace
     dt_aligned_pixel_t nRGB;
     dt_apply_color_matrix_by_row(cam, nmatrix_row0, nmatrix_row1, nmatrix_row2, nRGB);
-
-    // two separate clamping operations proves more efficient than
-    // either CLAMP or CLIP macros...
-    for_each_channel(c)
-      nRGB[c] = MAX(nRGB[c], 0.0f);
-    for_each_channel(c)
-      nRGB[c] = MIN(nRGB[c], 1.0f);
-
+    // clip to the gamut colorspace
+    dt_vector_clip(nRGB);
+    // convert from gamut colorspace to destination colorspace
     dt_aligned_pixel_t res;
     dt_RGB_to_Lab(nRGB, lmatrix_row0, lmatrix_row1, lmatrix_row2, res);
     copy_pixel_nontemporal(out + 4*k, res);
