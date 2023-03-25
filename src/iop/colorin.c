@@ -1011,44 +1011,12 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
   dt_omploop_sfence();
 }
 
-#ifdef __SSE2__
-static void _cmatrix_proper_simple_sse(float *const restrict out,
-                                       const float *const restrict in,
-                                       size_t npixels,
-                                       const dt_iop_colorin_data_t *const d,
-                                       const dt_colormatrix_t cmatrix)
-{
-  const __m128 cm0 = _mm_set_ps(0.0f, cmatrix[2][0], cmatrix[1][0], cmatrix[0][0]);
-  const __m128 cm1 = _mm_set_ps(0.0f, cmatrix[2][1], cmatrix[1][1], cmatrix[0][1]);
-  const __m128 cm2 = _mm_set_ps(0.0f, cmatrix[2][2], cmatrix[1][2], cmatrix[0][2]);
-
-  // this function is called from inside a parallel for loop, so no need for further parallelization
-  for(size_t k = 0; k < npixels; k++)
-  {
-    dt_aligned_pixel_t cam;
-    copy_pixel(cam, in + 4*k);
-    _apply_tone_curves(cam, d);
-    __m128 xyz = ((cm0 * _mm_set1_ps(cam[0]))
-                  + (cm1 * _mm_set1_ps(cam[1]))
-                  + (cm2 * _mm_set1_ps(cam[2])));
-    _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(xyz));
-  }
-}
-#endif
-
 static void _cmatrix_proper_simple(float *const restrict out,
                                    const float *const restrict in,
                                    size_t npixels,
                                    const dt_iop_colorin_data_t *const d,
                                    const dt_colormatrix_t cmatrix)
 {
-#ifdef __SSE2__
-  if(darktable.codepath.SSE2)
-  {
-    _cmatrix_proper_simple_sse(out, in, npixels, d, cmatrix);
-    return;
-  }
-#endif
   const dt_aligned_pixel_t cmatrix_row0 = { cmatrix[0][0], cmatrix[1][0], cmatrix[2][0], 0.0f };
   const dt_aligned_pixel_t cmatrix_row1 = { cmatrix[0][1], cmatrix[1][1], cmatrix[2][1], 0.0f };
   const dt_aligned_pixel_t cmatrix_row2 = { cmatrix[0][2], cmatrix[1][2], cmatrix[2][2], 0.0f };
