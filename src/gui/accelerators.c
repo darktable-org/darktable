@@ -3324,7 +3324,7 @@ static float _process_action(dt_action_t *action, int instance,
       return_value = definition->process(action_target, element, effect, move_size);
     }
 #ifdef USE_LUA
-    else if(action->owner == &darktable.control->actions_lua && definition)
+    else if(owner == &darktable.control->actions_lua && definition)
     {
       dt_lua_lock();
 
