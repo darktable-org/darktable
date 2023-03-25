@@ -352,29 +352,6 @@ static inline void dt_fast_expf_4wide(const float x[4], float result[4])
   }
 }
 
-#if defined(__SSE2__)
-#define ALIGNED(a) __attribute__((aligned(a)))
-#define VEC4(a)                                                                                              \
-  {                                                                                                          \
-    (a), (a), (a), (a)                                                                                       \
-  }
-
-/* SSE intrinsics version of dt_fast_expf */
-static const __m128 dt__fone ALIGNED(64) = VEC4(0x3f800000u);
-static const __m128 femo ALIGNED(64) = VEC4(0x00adf880u);
-static inline __m128 dt_fast_expf_sse2(const __m128 x)
-{
-  __m128 f = dt__fone + (x * femo);                 // f(n) = i1 + x(n)*(i2-i1)
-  __m128i i = _mm_cvtps_epi32(f);                   // i(n) = int(f(n))
-  __m128i mask = _mm_srai_epi32(i, 31);             // mask(n) = 0xffffffff if i(n) < 0
-  i = _mm_andnot_si128(mask, i);                    // i(n) = 0 if i(n) < 0
-  return _mm_castsi128_ps(i);                       // return *(float*)&i
-}
-#undef ALIGNED
-#undef VEC4
-
-#endif // __SSE2__
-
 // fast approximation of 2^-x for 0<x<126
 /****** if you change this function, you need to make the same change in data/kernels/{denoiseprofile,nlmeans}.cl ***/
 static inline float dt_fast_mexp2f(const float x)
