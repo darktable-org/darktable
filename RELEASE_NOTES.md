@@ -39,10 +39,15 @@ The following is a summary of the main features added to darktable
   after).
 
   To better view which module instance corresponds to which preset the
-  module label is set to the preset name. This preset name will be
-  changed if some parameters on the module are changed (and so does
-  not correspond to the preset anymore). If the module label is hand
-  edited it will be kept.
+  module label is set to the preset label. This module label will be
+  changed if some parameters on the module are changed. The module's
+  label will be cleared if no preset match or will be set to the new
+  preset label otherwise. If the module label has been hand edited it
+  will be kept as-is and will never be changed automatically.
+
+  A new option named "automatically update module name" (activated by
+  default) has been introduced to allow to fully disable the module's
+  label auto setting.
 
 - Rework the module default parameters and make them usable
   in copy/paste, presets and styles.
