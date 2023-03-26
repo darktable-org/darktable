@@ -568,9 +568,7 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece,
     schedule(static)
 #endif
   for(size_t k = 0; k < msize; k++)
-  {
-    out[k] = fminf(clip, fmaxf(0.0f, in[k]));
-  }
+    out[k] = fminf(clip, in[k]);
 }
 
 static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
