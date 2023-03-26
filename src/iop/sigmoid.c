@@ -394,13 +394,13 @@ static inline void preserve_hue_and_energy(const dt_aligned_pixel_t pix_in, cons
     const dt_iop_sigmoid_value_order_t order, const float hue_preservation)
 {
   // Naive Hue correction of the middle channel
-  const float full_hue_correction = per_channel[order.min] + ((per_channel[order.max] - per_channel[order.min]) * (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]));
+  const float midscale = (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]);
+  const float full_hue_correction = per_channel[order.min] + (per_channel[order.max] - per_channel[order.min]) * midscale;
   const float naive_hue_mid = (1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
 
   const float per_channel_energy = per_channel[order.min] + per_channel[order.mid] + per_channel[order.max];
   const float naive_hue_energy = per_channel[order.min] + naive_hue_mid + per_channel[order.max];
   const float blend_factor = 2.0 * pix_in[order.min] / (pix_in[order.min] + pix_in[order.mid]);
-  const float midscale = (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]);
 
   // Preserve hue constrained to maintain the same energy as the per channel result
   if (naive_hue_mid <= per_channel[order.mid])
