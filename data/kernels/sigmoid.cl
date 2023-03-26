@@ -142,7 +142,7 @@ static inline void _preserve_hue_and_energy(float *pix_io,
   const float naive_hue_mid =
     (1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
 
-  const float per_channel_energy = per_channel[order.min] + per_channel[order.mid] + per_channel[order.max];
+  const float per_channel_energy = per_channel[0] + per_channel[1] + per_channel[2];
   const float naive_hue_energy = per_channel[order.min] + naive_hue_mid + per_channel[order.max];
   const float blend_factor = 2.0f * pix_io[order.min] / (pix_io[order.min] + pix_io[order.mid]);
   const float energy_target = blend_factor * per_channel_energy + (1.0f - blend_factor) * naive_hue_energy;
