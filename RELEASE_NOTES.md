@@ -344,6 +344,12 @@ The following is a summary of the main features added to darktable
   has been improved. It could also potentially lead to slight
   differences.
 
+- In mask manager some actions in the menu could be activated even
+  though they were a no-op given the context. So now the move up/down
+  action are disabled for the first and last element in a group
+  respectively. The setting of the mask operator is disabled for the
+  first element in a group. Basically those are small UI improvements.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
@@ -466,6 +472,11 @@ The following is a summary of the main features added to darktable
   and dropdowns, that used to cause the whole side panel, including
   histogram, to be redrawn on each move between widgets, reducing cpu
   consumption.
+
+- Fix operator state in the mask manager. When moving up/down a mask
+  we ensure that the first mask has no operator and that the second
+  one has an operator assigned. If no operator has been set yet the
+  default union operator is assigned.
 
 ## Lua
 
