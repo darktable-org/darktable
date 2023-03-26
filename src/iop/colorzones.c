@@ -603,7 +603,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS - 1;
     p.curve_type[c] = CATMULL_ROM;
   }
-  dt_gui_presets_add_generic(_("red black white"), self->op,
+  dt_gui_presets_add_generic(_("B&W: with red"), self->op,
                              version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // black white and skin tones
@@ -626,7 +626,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS - 1;
     p.curve_type[c] = CATMULL_ROM;
   }
-  dt_gui_presets_add_generic(_("black white and skin tones"), self->op,
+  dt_gui_presets_add_generic(_("B&W: with skin tones"), self->op,
                              version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // polarizing filter
@@ -701,7 +701,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS - 1;
     p.curve_type[c] = CATMULL_ROM;
   }
-  dt_gui_presets_add_generic(_("black & white film"), self->op,
+  dt_gui_presets_add_generic(_("B&W: film"), self->op,
                              version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // neutral preset with just a set of nodes uniformly distributed along the hue axis

@@ -371,17 +371,22 @@ gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect
   return name;
 }
 
-char *dt_presets_get_name(const char *module_name,
-                          const void *params,
-                          const uint32_t param_size,
-                          const gboolean is_default_params,
-                          const void *blend_params,
-                          const uint32_t blend_params_size)
+char *dt_presets_get_module_label(const char *module_name,
+                                  const void *params,
+                                  const uint32_t param_size,
+                                  const gboolean is_default_params,
+                                  const void *blend_params,
+                                  const uint32_t blend_params_size)
 {
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+  if(!auto_module)
+    return NULL;
+
   sqlite3_stmt *stmt;
 
   // clang-format off
-  char *query = g_strdup_printf("SELECT name"
+  char *query = g_strdup_printf("SELECT name, multi_name"
                                 " FROM data.presets"
                                 " WHERE operation = ?1"
                                 "   AND (op_params = ?2"
@@ -398,13 +403,31 @@ char *dt_presets_get_name(const char *module_name,
 
   char *result = NULL;
 
+  // returns the preset's multi_name if defined otherwise the preset
+  // name is returned.
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    result = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
-
+  {
+    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    const char *multi_name = (const char *)sqlite3_column_text(stmt, 1);
+    if(strlen(multi_name) == 0 || multi_name[0] != ' ')
+      result = g_strdup(dt_presets_get_multi_name(name, multi_name));
+  }
   g_free(query);
   sqlite3_finalize(stmt);
 
   return result;
+}
+
+const char *dt_presets_get_multi_name(const char *name, const char *multi_name)
+{
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+  // in auto-update mode     : use either the multi_name if defined otherwise the name
+  // in non auto-update mode : use only the multi_name if defined
+  if(auto_module)
+    return strlen(multi_name) > 0 ? multi_name : name;
+  else
+    return strlen(multi_name) > 0 ? multi_name : "";
 }
 
 // clang-format off

@@ -3571,6 +3571,13 @@
     <shortdescription>prompt for name on addition of new instance</shortdescription>
     <longdescription>if enabled, a rename prompt will be present for each new module instance (either new instance or duplicate)</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>darkroom/ui/auto_module_name_update</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>automatically update module name</shortdescription>
+    <longdescription>if enabled, the module name will be automatically update to match a preset name if present.</longdescription>
+  </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
 
