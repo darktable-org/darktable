@@ -59,6 +59,9 @@ typedef enum dt_masks_state_t
   DT_MASKS_STATE_EXCLUSION = 1 << 6
 } dt_masks_state_t;
 
+#define DT_MASKS_STATE_OP (DT_MASKS_STATE_UNION | DT_MASKS_STATE_INTERSECTION \
+                           | DT_MASKS_STATE_DIFFERENCE | DT_MASKS_STATE_EXCLUSION)
+
 typedef enum dt_masks_property_t
 {
   DT_MASKS_PROPERTY_OPACITY,

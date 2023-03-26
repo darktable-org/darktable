@@ -1443,7 +1443,7 @@ void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module,
       (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
     fpt->formid = formid;
     fpt->parentid = grid;
-    fpt->state = DT_MASKS_STATE_USE;
+    fpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
     fpt->opacity = 1.0f;
     grp->points = g_list_append(grp->points, fpt);
   }
