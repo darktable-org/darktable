@@ -94,8 +94,6 @@ typedef enum dt_iop_demosaic_qual_flags_t
   // or third scale interpolation instead
   DT_DEMOSAIC_FULL_SCALE              = 1 << 0,
   DT_DEMOSAIC_ONLY_VNG_LINEAR         = 1 << 1,
-  DT_DEMOSAIC_XTRANS_FULL             = 1 << 2,
-  DT_DEMOSAIC_MEDIUM_QUAL             = 1 << 3
 } dt_iop_demosaic_qual_flags_t;
 
 typedef enum dt_iop_demosaic_smooth_t
@@ -205,21 +203,7 @@ typedef struct dt_iop_demosaic_data_t
   float dual_thrs;
 } dt_iop_demosaic_data_t;
 
-static int get_quality()
-{
-  int qual = 1;
-  const char *quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
-  if(quality)
-  {
-    if(!strcmp(quality, "always bilinear (fast)"))
-      qual = 0;
-    else if(!strcmp(quality, "full (possibly slow)"))
-      qual = 2;
-  }
-  return qual;
-}
-
-static int get_thumb_quality(int width, int height)
+static gboolean get_thumb_quality(int width, int height)
 {
   // we check if we need ultra-high quality thumbnail for this size
   const int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
@@ -236,28 +220,21 @@ static int demosaic_qual_flags(
         const dt_image_t *const img,
         const dt_iop_roi_t *const roi_out)
 {
+  const uint32_t filters = piece->pipe->dsc.filters;
+  const gboolean is_xtrans = filters == 9u;
+  const int pipe = piece->pipe->type & DT_DEV_PIXELPIPE_ANY; 
+
   int flags = 0;
-  switch(piece->pipe->type & DT_DEV_PIXELPIPE_ANY)
+  switch(pipe)
   {
     case DT_DEV_PIXELPIPE_FULL:
-    case DT_DEV_PIXELPIPE_PREVIEW2:
-      {
-        const int qual = get_quality();
-        if(qual > 0) flags |= DT_DEMOSAIC_FULL_SCALE;
-        if(qual > 1) flags |= DT_DEMOSAIC_XTRANS_FULL;
-        if((qual < 2) && (roi_out->scale <= .99999f))
-          flags |= DT_DEMOSAIC_MEDIUM_QUAL;
-      }
+      flags |= DT_DEMOSAIC_FULL_SCALE;
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
-      flags |= DT_DEMOSAIC_FULL_SCALE | DT_DEMOSAIC_XTRANS_FULL;
+      flags |= DT_DEMOSAIC_FULL_SCALE;
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
-      // we check if we need ultra-high quality thumbnail for this size
-      if(get_thumb_quality(roi_out->width, roi_out->height))
-      {
-        flags |= DT_DEMOSAIC_FULL_SCALE | DT_DEMOSAIC_XTRANS_FULL;
-      }
+      flags |= (get_thumb_quality(roi_out->width, roi_out->height)) ? DT_DEMOSAIC_FULL_SCALE : 0;
       break;
     default: // make C not complain about missing enum members
       break;
@@ -268,26 +245,17 @@ static int demosaic_qual_flags(
   // possible to skip the full demosaic and perform a quick downscale.
   // Note even though the X-Trans CFA is 6x6, for this purposes we can
   // see each 6x6 tile as four fairly similar 3x3 tiles
-  if(roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f))
-  {
+  if(roi_out->scale > (is_xtrans ? 0.667f : 0.5f))
     flags |= DT_DEMOSAIC_FULL_SCALE;
-  }
+
   // half_size_f doesn't support 4bayer images
-  if(img->flags & DT_IMAGE_4BAYER) flags |= DT_DEMOSAIC_FULL_SCALE;
-  // we use full Markesteijn demosaicing on xtrans sensors if maximum
-  // quality is required
-  if(roi_out->scale > 0.667f)
-  {
-    flags |= DT_DEMOSAIC_XTRANS_FULL;
-  }
+  if(img->flags & DT_IMAGE_4BAYER)
+    flags |= DT_DEMOSAIC_FULL_SCALE;
 
   // we check if we can stop at the linear interpolation step in VNG
   // instead of going the full way
-  if((flags & DT_DEMOSAIC_FULL_SCALE) &&
-      (roi_out->scale < (piece->pipe->dsc.filters == 9u ? 0.5f : 0.667f)))
-  {
+  if((flags & DT_DEMOSAIC_FULL_SCALE) && (roi_out->scale < (is_xtrans ? 0.5f : 0.667f)))
     flags |= DT_DEMOSAIC_ONLY_VNG_LINEAR;
-  }
 
   return flags;
 }
@@ -415,10 +383,8 @@ void modify_roi_out(
         const dt_iop_roi_t *const roi_in)
 {
   *roi_out = *roi_in;
-
-  // snap to start of mosaic block:
-  roi_out->x = 0; // MAX(0, roi_out->x & ~1);
-  roi_out->y = 0; // MAX(0, roi_out->y & ~1);
+  roi_out->x = 0;
+  roi_out->y = 0;
 }
 
 // which roi input is needed to process to this output?
@@ -429,8 +395,6 @@ void modify_roi_in(
         const dt_iop_roi_t *roi_out,
         dt_iop_roi_t *roi_in)
 {
-  // this op is disabled for preview pipe/filters == 0
-
   *roi_in = *roi_out;
   // need 1:1, demosaic and then sub-sample. or directly sample half-size
   roi_in->x /= roi_out->scale;
@@ -476,16 +440,20 @@ void tiling_callback(
 
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
-  const float greeneq
-      = ((piece->pipe->dsc.filters != 9u) && (data->green_eq != DT_IOP_GREEN_EQ_NO)) ? 0.25f : 0.0f;
+  const gboolean is_xtrans = piece->pipe->dsc.filters == 9u;
+  const float greeneq = (!is_xtrans && (data->green_eq != DT_IOP_GREEN_EQ_NO)) ? 0.25f : 0.0f;
   const dt_iop_demosaic_method_t demosaicing_method = data->demosaicing_method & ~DT_DEMOSAIC_DUAL;
 
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
-  const int full_scale_demosaicing = qual_flags & DT_DEMOSAIC_FULL_SCALE;
+  const int full_scale = qual_flags & DT_DEMOSAIC_FULL_SCALE;
 
   // check if output buffer has same dimension as input buffer (thus avoiding one
   // additional temporary buffer)
   const int unscaled = (roi_out->width == roi_in->width && roi_out->height == roi_in->height);
+
+  // define aligners
+  tiling->xalign = is_xtrans ? DT_XTRANS_SNAPPER : DT_BAYER_SNAPPER;
+  tiling->yalign = is_xtrans ? DT_XTRANS_SNAPPER : DT_BAYER_SNAPPER;
 
   if((demosaicing_method == DT_IOP_DEMOSAIC_PPG) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
@@ -495,23 +463,20 @@ void tiling_callback(
     // Bayer pattern with PPG, Passthrough or Amaze
     tiling->factor = 1.0f + ioratio;         // in + out
 
-    if(full_scale_demosaicing && unscaled)
+    if(full_scale && unscaled)
       tiling->factor += fmax(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
-    else if(full_scale_demosaicing)
+    else if(full_scale)
       tiling->factor += fmax(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
     else
       tiling->factor += smooth;                        // + smooth
 
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
-    tiling->xalign = 2;
-    tiling->yalign = 2;
     tiling->overlap = 5; // take care of border handling
   }
   else if(((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN) ||
            (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ||
-           (demosaicing_method == DT_IOP_DEMOSAIC_FDC)) &&
-          (qual_flags & DT_DEMOSAIC_XTRANS_FULL))
+           (demosaicing_method == DT_IOP_DEMOSAIC_FDC)))
   {
     // X-Trans pattern full Markesteijn processing
     const int ndir = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 8 : 4;
@@ -523,48 +488,42 @@ void tiling_callback(
                       + ndir * 0.125f  // homo + homosum
                       + 1.0f;          // aux
 
-    if(full_scale_demosaicing && unscaled)
+    if(full_scale && unscaled)
       tiling->factor += fmax(1.0f + greeneq, smooth);
-    else if(full_scale_demosaicing)
+    else if(full_scale)
       tiling->factor += fmax(2.0f + greeneq, smooth);
     else
       tiling->factor += smooth;
 
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
-    tiling->xalign = DT_XTRANS_SNAPPER;
-    tiling->yalign = DT_XTRANS_SNAPPER;
     tiling->overlap = overlap;
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
   {
     tiling->factor = 1.0f + ioratio;
-    if(full_scale_demosaicing && unscaled)
+    if(full_scale && unscaled)
       tiling->factor += fmax(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
-    else if(full_scale_demosaicing)
+    else if(full_scale)
       tiling->factor += fmax(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
     else
       tiling->factor += smooth;                        // + smooth
     tiling->maxbuf = 1.0f;
     tiling->overhead = sizeof(float) * DT_RCD_TILESIZE * DT_RCD_TILESIZE * 8 * dt_get_num_threads();
-    tiling->xalign = 2;
-    tiling->yalign = 2;
     tiling->overlap = 10;
     tiling->factor_cl = tiling->factor + 3.0f;
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_LMMSE)
   {
     tiling->factor = 1.0f + ioratio;
-    if(full_scale_demosaicing && unscaled)
+    if(full_scale && unscaled)
       tiling->factor += fmax(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
-    else if(full_scale_demosaicing)
+    else if(full_scale)
       tiling->factor += fmax(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
     else
       tiling->factor += smooth;                        // + smooth
     tiling->maxbuf = 1.0f;
     tiling->overhead = sizeof(float) * DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE * 6 * dt_get_num_threads();
-    tiling->xalign = 2;
-    tiling->yalign = 2;
     tiling->overlap = 10;
   }
   else
@@ -572,25 +531,21 @@ void tiling_callback(
     // VNG
     tiling->factor = 1.0f + ioratio;
 
-    if(full_scale_demosaicing && unscaled)
+    if(full_scale && unscaled)
       tiling->factor += fmax(1.0f + greeneq, smooth);
-    else if(full_scale_demosaicing)
+    else if(full_scale)
       tiling->factor += fmax(2.0f + greeneq, smooth);
     else
       tiling->factor += smooth;
 
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
-    tiling->xalign = 6; // covering Bayer pattern for VNG4 as well as xtrans for VNG
-    tiling->yalign = 6; // covering Bayer pattern for VNG4 as well as xtrans for VNG
     tiling->overlap = 6;
   }
   if(data->demosaicing_method & DT_DEMOSAIC_DUAL)
   {
     // make sure VNG4 is also possible
     tiling->factor += 1.0f;
-    tiling->xalign = MAX(6, tiling->xalign);
-    tiling->yalign = MAX(6, tiling->yalign);
     tiling->overlap = MAX(6, tiling->overlap);
   }
   return;
@@ -605,7 +560,6 @@ void process(
         const dt_iop_roi_t *const roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
-  const float threshold = 0.0001f * img->exif_iso;
 
   dt_dev_clear_rawdetail_mask(piece->pipe);
 
@@ -631,14 +585,6 @@ void process(
     if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
       demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
   }
-
-  if((qual_flags & DT_DEMOSAIC_MEDIUM_QUAL)
-  // only overwrite setting if quality << requested and in dr mode and not a special method
-  && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-  && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
-  // dual demosaicing with the show mask option on is also a special method for ui
-  && !((demosaicing_method & DT_DEMOSAIC_DUAL) && showmask))
-    demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   const float *const pixels = (float *)i;
 
@@ -671,9 +617,9 @@ void process(
       const int passes = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN) ? 1 : 3;
       if(demosaicing_method == DT_IOP_DEMOSAIC_MARKEST3_VNG)
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, passes);
-      else if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DT_DEMOSAIC_XTRANS_FULL))
+      else if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DT_DEMOSAIC_FULL_SCALE))
         xtrans_fdc_interpolate(self, tmp, pixels, &roo, &roi, xtrans);
-      else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DT_DEMOSAIC_XTRANS_FULL))
+      else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DT_DEMOSAIC_FULL_SCALE))
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, passes);
       else
         vng_interpolate(tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR);
@@ -685,6 +631,7 @@ void process(
 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO)
       {
+        const float threshold = 0.0001f * img->exif_iso;
         in = (float *)dt_alloc_align_float((size_t)roi_in->height * roi_in->width);
         switch(data->green_eq)
         {
@@ -725,8 +672,7 @@ void process(
         lmmse_demosaic(piece, tmp, in, &roo, &roi, piece->pipe->dsc.filters, data->lmmse_refine);
       }
       else if((demosaicing_method & ~DT_DEMOSAIC_DUAL) != DT_IOP_DEMOSAIC_AMAZE)
-        demosaic_ppg(tmp, in, &roo, &roi, piece->pipe->dsc.filters,
-                     data->median_thrs); // wanted ppg or zoomed out a lot and quality is limited to 1
+        demosaic_ppg(tmp, in, &roo, &roi, piece->pipe->dsc.filters, data->median_thrs);
       else
         amaze_demosaic(piece, in, tmp, &roi, &roo, piece->pipe->dsc.filters);
 
@@ -835,7 +781,7 @@ int process_cl(
       return FALSE;
   }
   else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
-    !(qual_flags & DT_DEMOSAIC_XTRANS_FULL))
+    !(qual_flags & DT_DEMOSAIC_FULL_SCALE))
   {
     if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR))
       return FALSE;
