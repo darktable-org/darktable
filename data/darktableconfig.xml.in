@@ -2310,19 +2310,6 @@
     <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
-    <name>plugins/darkroom/demosaic/quality</name>
-    <type>
-      <enum>
-        <option>always bilinear (fast)</option>
-        <option>default</option>
-        <option>full (possibly slow)</option>
-      </enum>
-    </type>
-    <default>default</default>
-    <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>demosaicer when not viewing 1:1 in darkroom mode:\n - 'bilinear': is fast but slightly blurry.\n - 'default': uses the default demosaicer for the used sensor (RCD or Markesteijn).\n - 'full': will use exactly the settings as for full-size export.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="darkroom" section="general">
     <name>preview_downsampling</name>
     <type>
       <enum>
