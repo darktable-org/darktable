@@ -43,11 +43,11 @@ The following is a summary of the main features added to darktable
   changed if some parameters on the module are changed. The module's
   label will be cleared if no preset match or will be set to the new
   preset label otherwise. If the module label has been hand edited it
-  will be kept as-is and will never be changed automatically.
+  will be kept as-is and will never be updated automatically.
 
   A new option named "automatically update module name" (activated by
   default) has been introduced to allow to fully disable the module's
-  label auto setting.
+  label auto update.
 
 - Rework the module default parameters and make them usable
   in copy/paste, presets and styles.
