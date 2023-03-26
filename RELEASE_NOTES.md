@@ -339,6 +339,11 @@ The following is a summary of the main features added to darktable
 - Makes the drawn mask tools' tooltip of Liquify module consistent
   with the other mask tools as found in the blending drawn masks.
 
+- Removed "Demosaicing for zoomed out darkroom mode" configuration
+  option. This option is not useful now that the pixel-pipe cache
+  has been improved. It could also potentially lead to slight
+  differences.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
