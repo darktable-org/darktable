@@ -484,15 +484,11 @@ static inline void dt_vector_powf(const dt_aligned_pixel_t input,
                                   const dt_aligned_pixel_t power,
                                   dt_aligned_pixel_t output)
 {
-#ifdef __SSE__
-    *((__m128*)output) = _mm_pow_ps(*((__m128*)input), *((__m128*)power));
-#else
-    for_four_channels(c)
-    {
-      // Apply the transfer function of the display
-      output[c] = powf(input[c], power[c]);
-    }
-#endif
+  dt_aligned_pixel_t log;
+  dt_vector_log2(input, log);
+  for_each_channel(c)
+    log[c] *= power[c];
+  dt_vector_exp2(log, output);
 }
 
 static inline void dt_vector_add(dt_aligned_pixel_t sum,
