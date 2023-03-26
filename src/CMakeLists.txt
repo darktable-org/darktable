@@ -93,6 +93,7 @@ FILE(GLOB SOURCE_FILES
   "common/iop_profile.c"
   "common/dng_opcode.c"
   "common/wb_presets.c"
+  "common/distance_transform.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
