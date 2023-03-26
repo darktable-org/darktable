@@ -21,11 +21,7 @@
 #include <stddef.h>
 #include <math.h>
 #include <stdint.h>
-#ifdef __SSE__
-#include <xmmintrin.h>
-#include "common/sse.h"
-#endif
-#include "common/darktable.h"
+#include "common/sse.h"		// also includes darktable.h
 
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 
@@ -329,27 +325,6 @@ static inline float dt_fast_expf(const float x)
   union float_int u;
   u.k = k0 > 0 ? k0 : 0;
   return u.f;
-}
-
-static inline void dt_fast_expf_4wide(const float x[4], float result[4])
-{
-  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
-  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
-  const int i1 = 0x3f800000u;
-  // e^x, the comment would be 2^x
-  const int i2 = 0x402DF854u; // 0x40000000u;
-  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
-  // without max clamping (doesn't work for large x, but is faster):
-  union float_int u[4];
-#ifdef _OPENMP
-#pragma omp simd aligned(x, result)
-#endif
-  for(size_t c = 0; c < 4; c++)
-  {
-    const int k0 = i1 + (int)(x[c] * (i2 - i1));
-    u[c].k = k0 > 0 ? k0 : 0;
-    result[c] = u[c].f;
-  }
 }
 
 // fast approximation of 2^-x for 0<x<126
