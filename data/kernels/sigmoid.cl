@@ -182,36 +182,6 @@ static inline void _preserve_hue_and_energy(float *pix_io,
 }
 
 kernel void
-sigmoid_loglogistic_per_channel (read_only image2d_t in,
-                                 write_only image2d_t out,
-                                 const int width,
-                                 const int height,
-                                 const float white_target,
-                                 const float paper_exp,
-                                 const float film_fog,
-                                 const float contrast_power,
-                                 const float skew_power)
-{
-  const unsigned int x = get_global_id(0);
-  const unsigned int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 i = read_imagef(in, sampleri, (int2)(x, y));
-  float alpha = i.w;
-
-  // Force negative values to zero
-  i = _desaturate_negative_values(i);
-
-  i = _generalized_loglogistic_sigmoid_vector(i, white_target, paper_exp, film_fog, contrast_power, skew_power);
-
-  // Copy over the alpha channel
-  i.w = alpha;
-
-  write_imagef(out, (int2)(x, y), i);
-}
-
-kernel void
 sigmoid_loglogistic_per_channel_interpolated (read_only image2d_t in,
                                               write_only image2d_t out,
                                               const int width,

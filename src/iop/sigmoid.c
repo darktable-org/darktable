@@ -78,7 +78,6 @@ typedef struct dt_iop_sigmoid_gui_data_t
 
 typedef struct dt_iop_sigmoid_global_data_t
 {
-  int kernel_sigmoid_loglogistic_per_channel;
   int kernel_sigmoid_loglogistic_per_channel_interpolated;
   int kernel_sigmoid_loglogistic_rgb_ratio;
 } dt_iop_sigmoid_global_data_t;
@@ -306,47 +305,6 @@ static void pixel_channel_order(const dt_aligned_pixel_t pix_in, dt_iop_sigmoid_
   }
 }
 
-
-void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
-
-  const float *const in = (const float *)ivoid;
-  float *const out = (float *)ovoid;
-  const size_t npixels = (size_t)roi_in->width * roi_in->height;
-
-  const float white_target = module_data->white_target;
-  const float paper_exp = module_data->paper_exposure;
-  const float film_fog = module_data->film_fog;
-  const float contrast_power = module_data->film_power;
-  const float skew_power = module_data->paper_power;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, white_target, paper_exp, film_fog, contrast_power, skew_power) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
-  for(size_t k = 0; k < 4 * npixels; k += 4)
-  {
-    const float *const restrict pix_in = in + k;
-    float *const restrict pix_out = out + k;
-    dt_aligned_pixel_t pix_in_strict_positive;
-
-    // Force negative values to zero
-    desaturate_negative_values(pix_in, pix_in_strict_positive);
-
-    for_each_channel(c, aligned(pix_in_strict_positive, pix_out))
-    {
-      pix_out[c] = generalized_loglogistic_sigmoid(pix_in_strict_positive[c], white_target, paper_exp, film_fog, contrast_power, skew_power);
-    }
-
-    // Copy over the alpha channel
-    pix_out[3] = pix_in[3];
-  }
-}
-
 void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -532,16 +490,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if (module_data->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
-    if (module_data->hue_preservation >= 0.001f)
-    {
-      process_loglogistic_per_channel_interpolated(piece, ivoid, ovoid, roi_in, roi_out);
-    }
-    else
-    {
-      process_loglogistic_per_channel(piece, ivoid, ovoid, roi_in, roi_out);
-    }
+    process_loglogistic_per_channel_interpolated(piece, ivoid, ovoid, roi_in, roi_out);
   }
-  else
+  else // DT_SIGMOID_METHOD_RGB_RATIO
   {
     process_loglogistic_rgb_ratio(piece, ivoid, ovoid, roi_in, roi_out);
   }
@@ -572,31 +523,14 @@ int process_cl(struct dt_iop_module_t *self,
   if (d->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
     const float hue_preservation = d->hue_preservation;
-
-    if (hue_preservation >= 0.001f)
-    {
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel_interpolated,
-                                             width, height,
-                                             CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-                                             CLARG(white_target), CLARG(paper_exp),
-                                             CLARG(film_fog), CLARG(contrast_power),
-                                             CLARG(skew_power), CLARG(hue_preservation));
-      if(err != CL_SUCCESS) goto error;
-      return TRUE;
-    }
-    else
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel,
-                                             width, height,
-                                             CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-                                             CLARG(white_target), CLARG(paper_exp),
-                                             CLARG(film_fog), CLARG(contrast_power),
-                                             CLARG(skew_power));
-      if(err != CL_SUCCESS) goto error;
-      return TRUE;
-
-    }
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel_interpolated,
+                                           width, height,
+                                           CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                           CLARG(white_target), CLARG(paper_exp),
+                                           CLARG(film_fog), CLARG(contrast_power),
+                                           CLARG(skew_power), CLARG(hue_preservation));
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
   }
   else
   {
@@ -625,7 +559,6 @@ void init_global(dt_iop_module_so_t *module)
     (dt_iop_sigmoid_global_data_t *)malloc(sizeof(dt_iop_sigmoid_global_data_t));
 
   module->data = gd;
-  gd->kernel_sigmoid_loglogistic_per_channel = dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");
   gd->kernel_sigmoid_loglogistic_per_channel_interpolated =
     dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel_interpolated");
   gd->kernel_sigmoid_loglogistic_rgb_ratio = dt_opencl_create_kernel(program, "sigmoid_loglogistic_rgb_ratio");
@@ -634,7 +567,6 @@ void init_global(dt_iop_module_so_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel_interpolated);
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
   free(module->data);
