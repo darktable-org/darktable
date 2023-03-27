@@ -155,6 +155,7 @@ typedef struct _gui_collapsible_section_t
   GtkWidget *toggle;    // toggle button
   GtkWidget *expander;  // the expanded
   GtkBox *container;    // the container for all widgets into the section
+  struct dt_action_t *module; // the lib or iop module that contains this section
 } dt_gui_collapsible_section_t;
 
 static inline cairo_surface_t *dt_cairo_image_surface_create(cairo_format_t format, int width, int height) {
@@ -456,8 +457,10 @@ void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget);
 
 // create a collapsible section, insert in parent, return the container
 void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
-                                    const char *confname, const char *label,
-                                    GtkBox *parent);
+                                    const char *confname,
+                                    const char *label,
+                                    GtkBox *parent,
+                                    struct dt_action_t *module);
 // routine to be called from gui_update
 void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 
