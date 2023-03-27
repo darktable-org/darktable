@@ -242,7 +242,6 @@ src/iop/grain.c
 src/iop/hazeremoval.c
 src/iop/highlights.c
 src/iop/highpass.c
-src/iop/hlrecovery_v2.c
 src/iop/hotpixels.c
 src/iop/invert.c
 src/iop/lens.cc
