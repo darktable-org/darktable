@@ -533,10 +533,10 @@ The following is a summary of the main features added to darktable
 
 - dt_lua_image_t now repects the `show time in milliseconds` setting
   in lighttable preferences and will return exif_datetime_taken with
-  milliseconds when enabled
+  milliseconds when enabled.
 
 - Added final_height, final_width, p_height, and p_width fields to 
-  dt_lua_image_t
+  dt_lua_image_t.
 
 - Two new properties have been added to get the flags (category,
   private) and the synonyms from a tag.
