@@ -455,6 +455,8 @@ static inline void dt_vector_round(const dt_aligned_pixel_t input, dt_aligned_pi
 #endif
 }
 
+// plain auto-vectorizing C implementation of _mm_log2_ps from sse.h
+// See http://www.devmaster.net/forums/showthread.php?p=43580 for the original
 static inline void dt_vector_log2(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
 {
   // split input value into exponent and mantissa
@@ -510,9 +512,10 @@ static inline void dt_vector_exp(const dt_aligned_pixel_t x, dt_aligned_pixel_t 
   }
 }
 
+// plain auto-vectorizing C implementation of _mm_exp2_ps from sse.h
+// See http://www.devmaster.net/forums/showthread.php?p=43580 for the original
 static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pixel_t res)
 {
-  // plain C implementation of _mm_exp2_ps from sse.h
   // clamp the exponent to the suported range
   static const dt_aligned_pixel_t lower_bound = { -126.99999f, -126.99999f, -126.99999f, -126.99999f };
   static const dt_aligned_pixel_t upper_bound = {  129.00000f,  129.00000f,  129.00000f,  129.00000f };
@@ -520,23 +523,22 @@ static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pix
   dt_aligned_pixel_t x;
   dt_vector_min(x, input, upper_bound);
   dt_vector_max(x, x, lower_bound);
+
   // split the input value into fraction and exponent
   dt_aligned_pixel_t x_adj;
   for_four_channels(c)
     x_adj[c] = x[c] - half[c];
   dt_aligned_pixel_t ipart;
   dt_vector_round(x_adj, ipart);
-  union { uint32_t i[4]; float f[4]; } expipart;
   dt_aligned_pixel_t fpart;
   for_four_channels(c)
-  {
     fpart[c] = x[c] - ipart[c];
-  }
+
   // compute the multiplier 2^ipart by directly building the corresponding float value
+  union { uint32_t i[4]; float f[4]; } expipart;
   for_four_channels(c)
-  {
     expipart.i[c] = (127 + (int)ipart[c]) << 23;
-  }
+
   // evaluate the nth-degree polynomial (coefficients chosen for minimax fit on [-0.5, 0.5[ )
   dt_aligned_pixel_t expfpart;
   for_four_channels(c)
@@ -627,14 +629,10 @@ static inline float dt_vector_channel_max(const dt_aligned_pixel_t pixel)
 
 static inline void dt_vector_clip(dt_aligned_pixel_t values)
 {
-#ifdef __SSE__
-  static const __m128 zero = { 0.0f, 0.0f, 0.0f, 0.0f };
-  static const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
-  *((__m128*)values) = _mm_min_ps(_mm_max_ps(*((__m128*)values), zero), one);
-#else
-  for_four_channel(c)
-    values[c] = CLIP(values[c]);
-#endif
+  static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+  static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
+  dt_vector_max(values, values, zero);
+  dt_vector_min(values, values, one);
 }
 
 /** Compute approximate sines, four at a time.

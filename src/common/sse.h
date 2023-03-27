@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -119,11 +119,6 @@ static inline __m128 _mm_log2_ps(__m128 x)
 static inline __m128 _mm_pow_ps(__m128 x, __m128 y)
 {
   return _mm_exp2_ps(_mm_mul_ps(_mm_log2_ps(x), y));
-}
-
-static inline __m128 _mm_pow_ps1(__m128 x, float y)
-{
-  return _mm_exp2_ps(_mm_mul_ps(_mm_log2_ps(x), _mm_set1_ps(y)));
 }
 
 #endif /* __SSE__ */
