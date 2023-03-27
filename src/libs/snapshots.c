@@ -606,7 +606,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   // first make sure the current history is properly written
   dt_dev_write_history(darktable.develop);
 
-  const gchar *name = _("original");
+  char *name = NULL;
 
   if(darktable.develop->history_end > 0)
   {
@@ -614,10 +614,24 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
       g_list_nth_data(darktable.develop->history,
                       darktable.develop->history_end - 1);
     if(history_item && history_item->module)
-      name = history_item->module->name();
+    {
+      if(strlen(history_item->multi_name) == 0
+         || history_item->multi_name[0] == ' ')
+      {
+        name = g_strdup(history_item->module->name());
+      }
+      else
+      {
+        name = g_strdup_printf("%s • %s",
+                               history_item->module->name(),
+                               history_item->multi_name);
+      }
+    }
     else
-      name = _("unknown");
+      name = g_strdup(_("unknown"));
   }
+  else
+    name = g_strdup(_("original"));
 
   dt_lib_snapshot_t *s = &d->snapshot[d->num_snapshots];
   _clear_snapshot_entry(s);
@@ -650,6 +664,9 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   g_snprintf(label, sizeof(label), "%s (%u)", name, s->history_end);
   gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(s->button))), label);
   gtk_widget_grab_focus(s->button);
+
+  g_free(name);
+
   /* update slots used */
   d->num_snapshots++;
 
