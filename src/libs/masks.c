@@ -2007,7 +2007,8 @@ void gui_init(dt_lib_module_t *self)
     (&d->cs,
      "plugins/darkroom/masks/expand_properties",
      _("properties"),
-     GTK_BOX(self->widget));
+     GTK_BOX(self->widget),
+     DT_ACTION(self));
   d->none_label = dt_ui_label_new(_("no shapes selected"));
   gtk_box_pack_start(GTK_BOX(d->cs.container), d->none_label, FALSE, FALSE, 0);
   gtk_widget_show_all(GTK_WIDGET(d->cs.container));

@@ -849,13 +849,15 @@ static void _do_select_new_clicked(GtkWidget *widget, dt_lib_module_t* self)
 static void _expander_create(dt_gui_collapsible_section_t *cs,
                              GtkBox *parent,
                              const char *label,
-                             const char *pref_key)
+                             const char *pref_key,
+                             dt_lib_module_t *self)
 {
   dt_gui_new_collapsible_section
     (cs,
      pref_key,
      label,
-     parent);
+     parent,
+     DT_ACTION(self));
 }
 
 static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
@@ -1645,7 +1647,7 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
 
   // collapsible section
   _expander_create(&d->from.cs, GTK_BOX(import_patterns),
-                   _("naming rules"), "ui_last/session_expander_import");
+                   _("naming rules"), "ui_last/session_expander_import", NULL);
 
   // import patterns
   grid = GTK_GRID(gtk_grid_new());
@@ -2036,7 +2038,7 @@ void gui_init(dt_lib_module_t *self)
 
   // collapsible section
 
-  _expander_create(&d->cs, GTK_BOX(self->widget), _("parameters"), "ui_last/expander_import");
+  _expander_create(&d->cs, GTK_BOX(self->widget), _("parameters"), "ui_last/expander_import", self);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
