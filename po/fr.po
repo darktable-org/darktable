@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-26 19:32+0200\n"
-"PO-Revision-Date: 2023-03-26 19:37+0200\n"
+"POT-Creation-Date: 2023-03-27 23:00+0200\n"
+"PO-Revision-Date: 2023-03-27 23:02+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1515,7 +1515,8 @@ msgstr ""
 "sait ce qu’on fait."
 
 #: ../build/bin/preferences_gen.h:5848
-msgid "cpu / gpu / memory"
+#, fuzzy
+msgid "CPU / GPU / memory"
 msgstr "CPU / GPU / Mémoire"
 
 #: ../build/bin/preferences_gen.h:5868
@@ -4018,32 +4019,32 @@ msgid "inpaint a flat color"
 msgstr "Reconstruit une couleur uniforme"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:1045 ../src/iop/highlights.c:1051
+#: ../src/iop/highlights.c:1038 ../src/iop/highlights.c:1044
 msgid "clip highlights"
 msgstr "Tronquer les hautes lumières"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:1049
+#: ../src/iop/highlights.c:1042
 msgid "reconstruct in LCh"
 msgstr "Reconstruire dans LCh"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:1000 ../src/iop/highlights.c:1061
+#: ../src/iop/highlights.c:993 ../src/iop/highlights.c:1054
 msgid "reconstruct color"
 msgstr "Reconstruire les couleurs"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:1056
+#: ../src/iop/highlights.c:1049
 msgid "guided laplacians"
 msgstr "Laplaciens guidés"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:290
-#: ../src/iop/highlights.c:1053
+#: ../src/iop/highlights.c:1046
 msgid "segmentation based"
 msgstr "Par segmentation"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:291
-#: ../src/iop/highlights.c:1041
+#: ../src/iop/highlights.c:1034
 msgid "inpaint opposed"
 msgstr "Peinture opposée"
 
@@ -6276,7 +6277,7 @@ msgstr ""
 "sinon le fichier RAW <b>ne sera plus lisible</b> dans la prochaine version."
 
 #: ../src/common/image.h:207 ../src/common/ratings.c:284
-#: ../src/libs/history.c:855 ../src/libs/snapshots.c:610
+#: ../src/libs/history.c:855 ../src/libs/snapshots.c:631
 msgid "unknown"
 msgstr "Inconnu"
 
@@ -7606,17 +7607,17 @@ msgid "uniformly"
 msgstr "Uniforme"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2740
-#: ../src/develop/blend_gui.c:3431 ../src/develop/imageop.c:2527
+#: ../src/develop/blend_gui.c:3431 ../src/develop/imageop.c:2574
 msgid "drawn mask"
 msgstr "Masque dessiné"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2514
-#: ../src/develop/blend_gui.c:3442 ../src/develop/imageop.c:2529
+#: ../src/develop/blend_gui.c:3442 ../src/develop/imageop.c:2576
 msgid "parametric mask"
 msgstr "Masque paramétrique"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2948
-#: ../src/develop/blend_gui.c:3469 ../src/develop/imageop.c:2531
+#: ../src/develop/blend_gui.c:3469 ../src/develop/imageop.c:2578
 msgid "raster mask"
 msgstr "Masque raster"
 
@@ -7663,12 +7664,12 @@ msgid "on"
 msgstr "Activé(e)"
 
 #: ../src/develop/blend_gui.c:1001 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2638
+#: ../src/develop/imageop.c:2703
 msgid "input"
 msgstr "Entrée"
 
 #: ../src/develop/blend_gui.c:1001 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2638
+#: ../src/develop/imageop.c:2703
 msgid "output"
 msgstr "Sortie"
 
@@ -8223,91 +8224,91 @@ msgstr ""
 "Désactive temporairement le masque de fusion.\n"
 "Uniquement pour le module actif."
 
-#: ../src/develop/develop.c:2226
+#: ../src/develop/develop.c:2266
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : Module « %s » version non cohérente : %d != %d"
 
-#: ../src/develop/develop.c:2754
+#: ../src/develop/develop.c:2794
 msgid "module duplicate, can't move new instance after the base one\n"
 msgstr ""
 "Duplication de module, impossible de déplacer la nouvelle instance après "
 "celle de base.\n"
 
-#: ../src/develop/imageop.c:970
+#: ../src/develop/imageop.c:1002
 msgid "new instance"
 msgstr "Nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:976
+#: ../src/develop/imageop.c:1008
 msgid "duplicate instance"
 msgstr "Cloner l’instance"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:982 ../src/develop/imageop.c:3577
+#: ../src/develop/imageop.c:1014 ../src/develop/imageop.c:3664
 #: ../src/libs/masks.c:1300
 msgid "move up"
 msgstr "Monter"
 
-#: ../src/develop/imageop.c:988 ../src/develop/imageop.c:3578
+#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:3665
 #: ../src/libs/masks.c:1305
 msgid "move down"
 msgstr "Descendre"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:994 ../src/develop/imageop.c:3580
+#: ../src/develop/imageop.c:1026 ../src/develop/imageop.c:3667
 #: ../src/gui/accelerators.c:155 ../src/gui/presets.c:499
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "Supprimer"
 
-#: ../src/develop/imageop.c:1001 ../src/develop/imageop.c:3581
+#: ../src/develop/imageop.c:1033 ../src/develop/imageop.c:3668
 #: ../src/libs/modulegroups.c:3466 ../src/libs/modulegroups.c:3817
 msgid "rename"
 msgstr "Renommer"
 
-#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:1101 ../src/develop/imageop.c:2864
 #, c-format
 msgid "'%s' is switched on"
 msgstr "« %s » est activé"
 
-#: ../src/develop/imageop.c:1069 ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:1101 ../src/develop/imageop.c:2864
 #, c-format
 msgid "'%s' is switched off"
 msgstr "« %s » est désactivé"
 
-#: ../src/develop/imageop.c:2521
+#: ../src/develop/imageop.c:2568
 msgid "unknown mask"
 msgstr "Masque inconnu"
 
-#: ../src/develop/imageop.c:2525
+#: ../src/develop/imageop.c:2572
 msgid "drawn + parametric mask"
 msgstr "Masques dessiné et paramétrique"
 
-#: ../src/develop/imageop.c:2534
+#: ../src/develop/imageop.c:2581
 #, c-format
 msgid "this module has a `%s'"
 msgstr "Ce module a un « %s »"
 
-#: ../src/develop/imageop.c:2539
+#: ../src/develop/imageop.c:2586
 #, c-format
 msgid "taken from module %s"
 msgstr "Récupéré depuis le module « %s »"
 
-#: ../src/develop/imageop.c:2544
+#: ../src/develop/imageop.c:2591
 msgid "click to display (module must be activated first)"
 msgstr "Cliquer pour afficher (le module doit être activé)"
 
-#: ../src/develop/imageop.c:2638
+#: ../src/develop/imageop.c:2703
 msgid "purpose"
 msgstr "Objectif"
 
-#: ../src/develop/imageop.c:2638
+#: ../src/develop/imageop.c:2703
 msgid "process"
 msgstr "Traitement"
 
-#: ../src/develop/imageop.c:2747
+#: ../src/develop/imageop.c:2820
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8315,7 +8316,7 @@ msgstr ""
 "Instances multiples,\n"
 "clic droit pour créer une nouvelle instance."
 
-#: ../src/develop/imageop.c:2760
+#: ../src/develop/imageop.c:2835
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8323,7 +8324,7 @@ msgstr ""
 "Réinitialiser les paramètres,\n"
 "Ctrl+clic pour réappliquer les préréglages automatiques."
 
-#: ../src/develop/imageop.c:2771
+#: ../src/develop/imageop.c:2847
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8331,15 +8332,15 @@ msgstr ""
 "Préréglages,\n"
 "clic droit pour appliquer sur une nouvelle instance."
 
-#: ../src/develop/imageop.c:3020 ../src/develop/imageop.c:3042
+#: ../src/develop/imageop.c:3097 ../src/develop/imageop.c:3119
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3467
+#: ../src/develop/imageop.c:3548
 msgid "unsupported input"
 msgstr "Entrée non supportée"
 
-#: ../src/develop/imageop.c:3468
+#: ../src/develop/imageop.c:3549
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8350,36 +8351,36 @@ msgstr ""
 "dans le pipeline où le format de données\n"
 "ne satisfait pas les prérequis."
 
-#: ../src/develop/imageop.c:3576 ../src/develop/imageop.c:3586
+#: ../src/develop/imageop.c:3663 ../src/develop/imageop.c:3673
 #: ../src/gui/accelerators.c:151 ../src/libs/lib.c:1252
 msgid "show"
 msgstr "Afficher"
 
-#: ../src/develop/imageop.c:3579 ../src/libs/modulegroups.c:3312
+#: ../src/develop/imageop.c:3666 ../src/libs/modulegroups.c:3312
 #: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
 #: ../src/libs/tagging.c:3245
 msgid "new"
 msgstr "Nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:3582 ../src/libs/duplicate.c:403
+#: ../src/develop/imageop.c:3669 ../src/libs/duplicate.c:403
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr "Cloner"
 
-#: ../src/develop/imageop.c:3587
+#: ../src/develop/imageop.c:3674
 msgid "enable"
 msgstr "Activer"
 
-#: ../src/develop/imageop.c:3588 ../src/gui/accelerators.c:167
+#: ../src/develop/imageop.c:3675 ../src/gui/accelerators.c:167
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:3589 ../src/gui/accelerators.c:2484
+#: ../src/develop/imageop.c:3676 ../src/gui/accelerators.c:2484
 msgid "instance"
 msgstr "Instance"
 
-#: ../src/develop/imageop.c:3590 ../src/gui/accelerators.c:112
+#: ../src/develop/imageop.c:3677 ../src/gui/accelerators.c:112
 #: ../src/gui/accelerators.c:122 ../src/gui/gtk.c:2829 ../src/gui/gtk.c:2876
 #: ../src/gui/hist_dialog.c:268 ../src/gui/styles_dialog.c:601
 #: ../src/gui/styles_dialog.c:623 ../src/iop/atrous.c:1514
@@ -8388,12 +8389,12 @@ msgid "reset"
 msgstr "Réinitialiser"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3591 ../src/gui/preferences.c:793
+#: ../src/develop/imageop.c:3678 ../src/gui/preferences.c:793
 #: ../src/libs/lib.c:1254
 msgid "presets"
 msgstr "Préréglages"
 
-#: ../src/develop/imageop.c:3611
+#: ../src/develop/imageop.c:3698
 msgid "processing module"
 msgstr "Module de traitement"
 
@@ -11248,7 +11249,7 @@ msgid "internal"
 msgstr "Interne"
 
 #: ../src/imageio/format/jxl.c:593 ../src/libs/duplicate.c:397
-#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:600
+#: ../src/libs/history.c:1132 ../src/libs/snapshots.c:634
 msgid "original"
 msgstr "Original"
 
@@ -11802,8 +11803,8 @@ msgstr "Correctif ou créatif"
 #: ../src/iop/clipping.c:323 ../src/iop/colorbalancergb.c:186
 #: ../src/iop/colorin.c:137 ../src/iop/crop.c:145 ../src/iop/crop.c:147
 #: ../src/iop/demosaic.c:292 ../src/iop/denoiseprofile.c:726
-#: ../src/iop/denoiseprofile.c:728 ../src/iop/diffuse.c:145
-#: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:131 ../src/iop/exposure.c:133
+#: ../src/iop/denoiseprofile.c:728 ../src/iop/diffuse.c:146
+#: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:131 ../src/iop/exposure.c:133
 #: ../src/iop/flip.c:111 ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:212 ../src/iop/lens.cc:214
 #: ../src/iop/liquify.c:297 ../src/iop/liquify.c:299 ../src/iop/retouch.c:210
@@ -12037,7 +12038,7 @@ msgstr "netteté|acutance|contraste local"
 msgid "add or remove local contrast, sharpness, acutance"
 msgstr "Ajoute ou supprime du contraste local, de la netteté, de l’acutance"
 
-#: ../src/iop/atrous.c:134 ../src/iop/bilateral.cc:100 ../src/iop/diffuse.c:144
+#: ../src/iop/atrous.c:134 ../src/iop/bilateral.cc:100 ../src/iop/diffuse.c:145
 #: ../src/iop/exposure.c:130 ../src/iop/filmicrgb.c:358
 #: ../src/iop/graduatednd.c:146 ../src/iop/negadoctor.c:146
 #: ../src/iop/rgbcurve.c:143 ../src/iop/rgblevels.c:123 ../src/iop/shadhi.c:197
@@ -12078,7 +12079,7 @@ msgstr "Réduction du bruit chromatique"
 msgid "denoise"
 msgstr "Réduction du bruit"
 
-#: ../src/iop/atrous.c:804 ../src/iop/bloom.c:75 ../src/iop/diffuse.c:339
+#: ../src/iop/atrous.c:804 ../src/iop/bloom.c:75 ../src/iop/diffuse.c:372
 msgid "bloom"
 msgstr "Lumière d’arrière-plan"
 
@@ -12489,7 +12490,7 @@ msgstr "Tronquer"
 msgid "adjusts clipping value for auto exposure calculation"
 msgstr "Ajuste les valeurs seuils pour le calcul automatique de l’exposition"
 
-#: ../src/iop/bilat.c:96 ../src/iop/clahe.c:64
+#: ../src/iop/bilat.c:96 ../src/iop/clahe.c:64 ../src/iop/diffuse.c:472
 msgid "local contrast"
 msgstr "Contraste local"
 
@@ -12569,7 +12570,7 @@ msgstr ""
 "(réduit le contraste des ombres et hautes lumières),\n"
 "augmenter pour un contraste local plus puissant."
 
-#: ../src/iop/bilateral.cc:74 ../src/iop/diffuse.c:321
+#: ../src/iop/bilateral.cc:74 ../src/iop/diffuse.c:349
 msgid "surface blur"
 msgstr "Flou de surface"
 
@@ -12585,7 +12586,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:102 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:727
-#: ../src/iop/diffuse.c:146 ../src/iop/exposure.c:132 ../src/iop/soften.c:103
+#: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:132 ../src/iop/soften.c:103
 #: ../src/iop/splittoning.c:105 ../src/iop/velvia.c:107
 msgid "linear, RGB"
 msgstr "Linéaire, RVB"
@@ -14951,7 +14952,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
 #: ../src/iop/colorreconstruction.c:1261 ../src/iop/demosaic.c:1270
-#: ../src/iop/highlights.c:1208
+#: ../src/iop/highlights.c:1201
 msgid "not applicable"
 msgstr "Non applicable"
 
@@ -15489,7 +15490,7 @@ msgstr "Diffusion ou netteté"
 msgid "diffusion|deconvolution|blur|sharpening"
 msgstr "diffusion|déconvolution|flou|netteté"
 
-#: ../src/iop/diffuse.c:140
+#: ../src/iop/diffuse.c:141
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur,\n"
@@ -15502,67 +15503,63 @@ msgstr ""
 "endommagées d’une image,\n"
 "ou supprimer le flou en utilisant une déconvolution aveugle."
 
-#: ../src/iop/diffuse.c:233
+#: ../src/iop/diffuse.c:241
 msgid "lens deblur: soft"
 msgstr "Correction du flou d’objectif : léger"
 
-#: ../src/iop/diffuse.c:238
+#: ../src/iop/diffuse.c:248
 msgid "lens deblur: medium"
 msgstr "Correction du flou d’objectif : moyen"
 
-#: ../src/iop/diffuse.c:243
+#: ../src/iop/diffuse.c:255
 msgid "lens deblur: hard"
 msgstr "Correction du flou d’objectif : fort"
 
-#: ../src/iop/diffuse.c:262
+#: ../src/iop/diffuse.c:277
 msgid "dehaze"
 msgstr "Suppression de la brume"
 
-#: ../src/iop/diffuse.c:283
+#: ../src/iop/diffuse.c:301
 msgid "denoise: fine"
 msgstr "Débruitage : léger"
 
-#: ../src/iop/diffuse.c:292
+#: ../src/iop/diffuse.c:313
 msgid "denoise: medium"
 msgstr "Débruitage : moyen"
 
-#: ../src/iop/diffuse.c:301
+#: ../src/iop/diffuse.c:325
 msgid "denoise: coarse"
 msgstr "Débruitage : fort"
 
-#: ../src/iop/diffuse.c:357
-msgid "sharpen demosaicing (no AA filter)"
-msgstr "Netteté du dématriçage (sans filtre AA)"
+#: ../src/iop/diffuse.c:395
+msgid "sharpen demosaicing: no AA filter"
+msgstr "Netteté du dématriçage : sans filtre AA"
 
-#: ../src/iop/diffuse.c:361
-msgid "sharpen demosaicing (AA filter)"
-msgstr "Netteté du dématriçage (filtre AA)"
+#: ../src/iop/diffuse.c:401
+msgid "sharpen demosaicing: AA filter"
+msgstr "Netteté du dématriçage : filtre AA"
 
-#: ../src/iop/diffuse.c:380
+#: ../src/iop/diffuse.c:424
 msgid "simulate watercolor"
 msgstr "Simuler l’aquarelle"
 
-#: ../src/iop/diffuse.c:398
+#: ../src/iop/diffuse.c:447
 msgid "simulate line drawing"
 msgstr "Simuler le dessin au trait"
 
-#: ../src/iop/diffuse.c:419
-msgid "add local contrast"
-msgstr "Ajoute du contraste local"
-
-#: ../src/iop/diffuse.c:439
+#: ../src/iop/diffuse.c:496
 msgid "inpaint highlights"
 msgstr "Remplir les hautes lumières"
 
-#: ../src/iop/diffuse.c:460
-msgid "fast sharpness"
-msgstr "Netteté rapide"
+#: ../src/iop/diffuse.c:521
+msgid "sharpness: fast"
+msgstr "Netteté : rapide"
 
-#: ../src/iop/diffuse.c:482
-msgid "fast local contrast"
-msgstr "Contraste local rapide"
+#: ../src/iop/diffuse.c:545
+msgid "local contrast: fast"
+msgstr "Contraste local : rapide"
 
-#: ../src/iop/diffuse.c:1110 ../src/iop/diffuse.c:1363
+#: ../src/iop/diffuse.c:1239 ../src/iop/diffuse.c:1517
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
 "« Diffusion ou netteté » n’a pas assez de mémoire, vérifier les paramètres "
@@ -15570,13 +15567,13 @@ msgstr ""
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/diffuse.c:1469 ../src/iop/splittoning.c:537
+#: ../src/iop/diffuse.c:1633 ../src/iop/splittoning.c:537
 #: ../src/libs/camera.c:487
 msgctxt "section"
 msgid "properties"
 msgstr "Paramètres"
 
-#: ../src/iop/diffuse.c:1474
+#: ../src/iop/diffuse.c:1639
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -15587,7 +15584,7 @@ msgstr ""
 "Ceci est similaire à laisser plus de temps à la réaction de diffusion.\n"
 "Pour la netteté ou la reconstruction, plus d’itérations peuvent aider."
 
-#: ../src/iop/diffuse.c:1483
+#: ../src/iop/diffuse.c:1648
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -15601,7 +15598,7 @@ msgstr ""
 "Pour déflouter et débruiter régler à zéro, augmenter pour opérer sur le "
 "contraste local."
 
-#: ../src/iop/diffuse.c:1493
+#: ../src/iop/diffuse.c:1658
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -15615,12 +15612,12 @@ msgstr ""
 "Pour le défloutage, le rayon devrait être de la largeur du flou d’objectif "
 "environ."
 
-#: ../src/iop/diffuse.c:1499
+#: ../src/iop/diffuse.c:1665
 msgctxt "section"
 msgid "speed (sharpen ↔ diffuse)"
 msgstr "Vitesse (netteté ↔ diffusion)"
 
-#: ../src/iop/diffuse.c:1505
+#: ../src/iop/diffuse.c:1672
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -15636,7 +15633,7 @@ msgstr ""
 "augmentent la diffusion\n"
 "et le flou. Ne fait rien si mis à zéro."
 
-#: ../src/iop/diffuse.c:1514
+#: ../src/iop/diffuse.c:1682
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -15652,7 +15649,7 @@ msgstr ""
 "augmentent la diffusion\n"
 "et le flou. Ne fait rien si mis à zéro."
 
-#: ../src/iop/diffuse.c:1523
+#: ../src/iop/diffuse.c:1692
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -15668,7 +15665,7 @@ msgstr ""
 "augmentent la diffusion\n"
 "et le flou. Ne fait rien si mis à zéro."
 
-#: ../src/iop/diffuse.c:1532
+#: ../src/iop/diffuse.c:1702
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -15684,12 +15681,12 @@ msgstr ""
 "augmentent la diffusion\n"
 "et le flou. Ne fait rien si mis à zéro."
 
-#: ../src/iop/diffuse.c:1538
+#: ../src/iop/diffuse.c:1708
 msgctxt "section"
 msgid "direction"
 msgstr "Direction"
 
-#: ../src/iop/diffuse.c:1544
+#: ../src/iop/diffuse.c:1715
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -15703,7 +15700,7 @@ msgstr ""
 "évitent les bords (isophotes), zéro affecte les deux de manière égale "
 "(isotropique)."
 
-#: ../src/iop/diffuse.c:1552
+#: ../src/iop/diffuse.c:1724
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -15717,7 +15714,7 @@ msgstr ""
 "évitent les bords (isophotes), zéro affecte les deux de manière égale "
 "(isotropique)."
 
-#: ../src/iop/diffuse.c:1560
+#: ../src/iop/diffuse.c:1733
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -15731,7 +15728,7 @@ msgstr ""
 "évitent les bords (isophotes), zéro affecte les deux de manière égale "
 "(isotropique)."
 
-#: ../src/iop/diffuse.c:1568
+#: ../src/iop/diffuse.c:1742
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -15745,12 +15742,12 @@ msgstr ""
 "évitent les bords (isophotes), zéro affecte les deux de manière égale "
 "(isotropique)."
 
-#: ../src/iop/diffuse.c:1573
+#: ../src/iop/diffuse.c:1748
 msgctxt "section"
 msgid "edge management"
 msgstr "Gestion des bords"
 
-#: ../src/iop/diffuse.c:1578
+#: ../src/iop/diffuse.c:1755
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
@@ -15761,7 +15758,7 @@ msgstr ""
 "diffusion.\n"
 "Pour une netteté autonome utiliser une vitesse négative."
 
-#: ../src/iop/diffuse.c:1584
+#: ../src/iop/diffuse.c:1762
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -15771,7 +15768,7 @@ msgstr ""
 "Augmenter pour exclure plus de bords de la diffusion,\n"
 "si des franges ou des halos apparaissent."
 
-#: ../src/iop/diffuse.c:1590
+#: ../src/iop/diffuse.c:1769
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -15785,12 +15782,12 @@ msgstr ""
 "sombres\n"
 "semblent trop accentuées par rapport aux zones claires."
 
-#: ../src/iop/diffuse.c:1596
+#: ../src/iop/diffuse.c:1775
 msgctxt "section"
 msgid "diffusion spatiality"
 msgstr "Spatialité de la diffusion"
 
-#: ../src/iop/diffuse.c:1601
+#: ../src/iop/diffuse.c:1782
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -16893,7 +16890,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "Reconstruire, RAW"
 
-#: ../src/iop/highlights.c:944
+#: ../src/iop/highlights.c:937
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -16901,11 +16898,11 @@ msgstr ""
 "Reconstruction des hautes lumières : mode non disponible pour ce type "
 "d’image. Repli sur « Peinture opposée »."
 
-#: ../src/iop/highlights.c:1141
+#: ../src/iop/highlights.c:1134
 msgid "highlight reconstruction method"
 msgstr "Méthode de reconstruction des hautes lumières"
 
-#: ../src/iop/highlights.c:1146
+#: ../src/iop/highlights.c:1139
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -16920,7 +16917,7 @@ msgstr ""
 "« Laplaciens guidés », « Peinture opposée » et « Par segmentation »,\n"
 "surtout si le point blanc du boîtier est incorrect."
 
-#: ../src/iop/highlights.c:1157
+#: ../src/iop/highlights.c:1150
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -16929,7 +16926,7 @@ msgstr ""
 "L’icône « masque » montre les positions exactes des bords des segments "
 "résultants."
 
-#: ../src/iop/highlights.c:1165
+#: ../src/iop/highlights.c:1158
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -16942,7 +16939,7 @@ msgstr ""
 "L’icône « masque » montre les segments qui sont considérés comme bon "
 "candidats."
 
-#: ../src/iop/highlights.c:1176
+#: ../src/iop/highlights.c:1169
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -16966,7 +16963,7 @@ msgstr ""
 "reconstruites\n"
 "et éviter les dégradés."
 
-#: ../src/iop/highlights.c:1182
+#: ../src/iop/highlights.c:1175
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -16976,7 +16973,7 @@ msgstr ""
 "photosites tronqués.\n"
 "L’icône « masque » montre l’effet ajouté au données déjà reconstruites."
 
-#: ../src/iop/highlights.c:1192
+#: ../src/iop/highlights.c:1185
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -16984,7 +16981,7 @@ msgstr ""
 "Ajoute du bruit pour fusionner visuellement les zones reconstruites\n"
 "dans le reste de l’image bruitées. Utile pour les hauts ISO."
 
-#: ../src/iop/highlights.c:1196
+#: ../src/iop/highlights.c:1189
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16992,7 +16989,7 @@ msgstr ""
 "Augmenter si le magenta des hautes lumières n’est pas complètement corrigé.\n"
 "Chaque nouvelle itération ajoute une pénalité de temps."
 
-#: ../src/iop/highlights.c:1201
+#: ../src/iop/highlights.c:1194
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17001,7 +16998,7 @@ msgstr ""
 "Cela peut produire des délimitations tranchées entre les régions valides et "
 "tronquées."
 
-#: ../src/iop/highlights.c:1205
+#: ../src/iop/highlights.c:1198
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17009,7 +17006,7 @@ msgstr ""
 "Augmenter pour corriger les larges zones tronquées.\n"
 "Les grandes valeurs pénalisent fortement les performances."
 
-#: ../src/iop/highlights.c:1209
+#: ../src/iop/highlights.c:1202
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "Ce module ne fonctionne que pour les RAW et sRAW non monochrome"
 
@@ -23240,11 +23237,11 @@ msgid "this snapshot was taken from"
 msgstr "Cet instantané a été pris depuis"
 
 #. create take snapshot button
-#: ../src/libs/snapshots.c:539
+#: ../src/libs/snapshots.c:548
 msgid "take snapshot"
 msgstr "Prendre un instantané"
 
-#: ../src/libs/snapshots.c:540
+#: ../src/libs/snapshots.c:549
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -23252,7 +23249,7 @@ msgstr ""
 "Prend un instantané pour le comparer avec une autre image\n"
 "ou avec la même à une autre étape du développement."
 
-#: ../src/libs/snapshots.c:576
+#: ../src/libs/snapshots.c:585
 msgid "toggle last snapshot"
 msgstr "Basculer le dernier instantané"
 
@@ -24874,6 +24871,15 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#~ msgid "add local contrast"
+#~ msgstr "Ajoute du contraste local"
+
+#~ msgid "fast sharpness"
+#~ msgstr "Netteté rapide"
+
+#~ msgid "fast local contrast"
+#~ msgstr "Contraste local rapide"
 
 #~ msgctxt "preferences"
 #~ msgid "always bilinear (fast)"
