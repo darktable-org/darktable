@@ -430,13 +430,12 @@ void dt_dump_pfm_file(
   }
 
   char fname[PATH_MAX]= { 0 };
-  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s_%s%s%s.%s",
+  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s_%s%s.%s",
      path,
      written,
      modname,
      cpu ? "cpu" : "GPU", 
-     input ? "in_" : "",
-     output ? "out_" : "",
+     (input && output) ? "diff_" : ((!input && !output) ? "" : ((input) ? "in_" : "out_")),
      (bpp != 16) ? "M" : "C",
      (bpp==2) ? "ppm" : "pfm");
 
