@@ -478,11 +478,11 @@ static void _signal_image_changed(gpointer instance, gpointer user_data)
     dt_lib_snapshot_t *s = &d->snapshot[k];
 
     GtkWidget *b = d->snapshot[k].button;
-    GtkLabel *l = GTK_LABEL(gtk_bin_get_child(GTK_BIN(b)));
+    GtkEntry *l = GTK_ENTRY(gtk_bin_get_child(GTK_BIN(b)));
 
     char lab[128];
     char newlab[128];
-    g_strlcpy(lab, gtk_label_get_text(l), sizeof(lab));
+    g_strlcpy(lab, gtk_entry_get_text(l), sizeof(lab));
 
     // remove possible double asterisk at the start of the label
     if(lab[0] == '*')
@@ -506,10 +506,19 @@ static void _signal_image_changed(gpointer instance, gpointer user_data)
       gtk_widget_set_tooltip_text(b, newlab);
     }
 
-    gtk_label_set_text(l, lab);
+    gtk_entry_set_text(l, lab);
   }
 
   dt_control_queue_redraw_center();
+}
+
+static gboolean _lib_button_button_pressed_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    gtk_widget_grab_focus(user_data);
+
+  gtk_widget_set_focus_on_click(widget, FALSE);
+  return gtk_widget_has_focus(user_data);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -543,7 +552,6 @@ void gui_init(dt_lib_module_t *self)
   /*
    * initialize snapshots
    */
-  char wdname[32] = { 0 };
   char localtmpdir[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(localtmpdir, sizeof(localtmpdir));
 
@@ -552,14 +560,15 @@ void gui_init(dt_lib_module_t *self)
     _clear_snapshot_entry(&d->snapshot[k]);
 
     /* create snapshot button */
-    d->snapshot[k].button = gtk_toggle_button_new_with_label(wdname);
-    GtkWidget *label = gtk_bin_get_child(GTK_BIN(d->snapshot[k].button));
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
-    gtk_label_set_xalign(GTK_LABEL(label), 0);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+    d->snapshot[k].button = gtk_toggle_button_new();
+    GtkWidget *entry = gtk_entry_new();
+    gtk_widget_show(entry);
+    gtk_container_add(GTK_CONTAINER(d->snapshot[k].button), entry);
 
     g_signal_connect(G_OBJECT(d->snapshot[k].button), "toggled",
                      G_CALLBACK(_lib_snapshots_toggled_callback), self);
+    g_signal_connect(G_OBJECT(d->snapshot[k].button), "button-press-event",
+                     G_CALLBACK(_lib_button_button_pressed_callback), entry);
 
     /* add button to snapshot box */
     gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
@@ -639,8 +648,8 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
 
   char label[64];
   g_snprintf(label, sizeof(label), "%s (%u)", name, s->history_end);
-  gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(s->button))), label);
-
+  gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(s->button))), label);
+  gtk_widget_grab_focus(s->button);
   /* update slots used */
   d->num_snapshots++;
 
@@ -869,7 +878,7 @@ static int name_member(lua_State *L)
   {
     return luaL_error(L, "Accessing a non-existent snapshot");
   }
-  lua_pushstring(L, gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[index].button)))));
+  lua_pushstring(L, gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->snapshot[index].button)))));
   return 1;
 }
 
