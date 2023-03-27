@@ -136,15 +136,16 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self,
-                                _("simulate directional diffusion of light with heat transfer model\n"
-                                  "to apply an iterative edge-oriented blur,\n"
-                                  "inpaint damaged parts of the image, "
-                                  "or to remove blur with blind deconvolution."),
-                                _("corrective and creative"),
-                                _("linear, RGB, scene-referred"),
-                                _("linear, RGB"),
-                                _("linear, RGB, scene-referred"));
+  return dt_iop_set_description
+    (self,
+     _("simulate directional diffusion of light with heat transfer model\n"
+       "to apply an iterative edge-oriented blur,\n"
+       "inpaint damaged parts of the image, "
+       "or to remove blur with blind deconvolution."),
+     _("corrective and creative"),
+     _("linear, RGB, scene-referred"),
+     _("linear, RGB"),
+     _("linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -157,12 +158,17 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+int default_colorspace(dt_iop_module_t *self,
+                       dt_dev_pixelpipe_t *pipe,
+                       dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void *new_params,
                   const int new_version)
 {
   if(old_version == 1 && new_version == 2)
@@ -230,17 +236,20 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.radius = 8;
   p.iterations = 8;
-  dt_gui_presets_add_generic(_("lens deblur: soft"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("lens deblur: soft"), self->op, self->version(), &p,
+                             sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.radius = 10;
   p.iterations = 16;
-  dt_gui_presets_add_generic(_("lens deblur: medium"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("lens deblur: medium"), self->op, self->version(), &p,
+                             sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.radius = 12;
   p.iterations = 24;
-  dt_gui_presets_add_generic(_("lens deblur: hard"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("lens deblur: hard"), self->op, self->version(), &p,
+                             sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 10;
@@ -259,7 +268,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.anisotropy_third = 2.f;
   p.anisotropy_fourth = 0.f;
 
-  dt_gui_presets_add_generic(_("dehaze"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("dehaze"), self->op, self->version(), &p,
+                             sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 32;
@@ -280,7 +290,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = 0.f;
   p.third = +0.06f;
   p.fourth = 0.f;
-  dt_gui_presets_add_generic(_("denoise: fine"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("denoise: fine"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.radius = 3;
   p.radius_center = 4;
@@ -289,7 +301,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = 0.f;
   p.third = +0.05f;
   p.fourth = 0.f;
-  dt_gui_presets_add_generic(_("denoise: medium"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("denoise: medium"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.radius = 6;
   p.radius_center = 8;
@@ -298,7 +312,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = 0.f;
   p.third = +0.04f;
   p.fourth = 0.f;
-  dt_gui_presets_add_generic(_("denoise: coarse"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("denoise: coarse"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.radius_center = 0;
 
@@ -318,7 +334,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = +1.f;
   p.third = +1.f;
   p.fourth = +1.f;
-  dt_gui_presets_add_generic(_("surface blur"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("surface blur"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 1;
   p.radius = 32;
@@ -336,7 +354,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = +0.5f;
   p.third = +0.5f;
   p.fourth = +0.5f;
-  dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 1;
   p.radius = 4;
@@ -354,11 +374,13 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = -0.25f;
   p.third = -0.25f;
   p.fourth = -0.25f;
-  dt_gui_presets_add_generic(_("sharpen demosaicing (no AA filter)"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("sharpen demosaicing (no AA filter)"), self->op,
+                             self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.radius = 8;
-  dt_gui_presets_add_generic(_("sharpen demosaicing (AA filter)"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("sharpen demosaicing (AA filter)"), self->op,
+                             self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 4;
@@ -377,7 +399,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = 0.f;
   p.third = +0.5f;
   p.fourth = +0.5f;
-  dt_gui_presets_add_generic(_("simulate watercolor"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("simulate watercolor"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 50;
   p.radius = 64;
@@ -395,7 +419,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = -1.f;
   p.third = -1.f;
   p.fourth = -1.f;
-  dt_gui_presets_add_generic(_("simulate line drawing"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("simulate line drawing"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
 
   // local contrast
   p.sharpness = 0.0f;
@@ -416,7 +442,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.radius = 384;
   p.radius_center = 512;
   p.regularization = 1.f;
-  dt_gui_presets_add_generic(_("add local contrast"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("add local contrast"), self->op, self->version(), &p,
+                             sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 32;
@@ -436,7 +463,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = +0.0f;
   p.third = +0.0f;
   p.fourth = +0.5f;
-  dt_gui_presets_add_generic(_("inpaint highlights"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("inpaint highlights"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
 
   // fast presets for slow hardware
   p.radius_center = 0;
@@ -457,7 +486,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.fourth = 0.f;
 
   p.iterations = 1;
-  dt_gui_presets_add_generic(_("fast sharpness"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("fast sharpness"), self->op, self->version(), &p,
+                             sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.radius_center = 512;
@@ -479,19 +509,23 @@ void init_presets(dt_iop_module_so_t *self)
   p.fourth = 0.f;
 
   p.iterations = 1;
-  dt_gui_presets_add_generic(_("fast local contrast"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("fast local contrast"), self->op, self->version(), &p,
+                             sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+void tiling_callback(struct dt_iop_module_t *self,
+                     struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
   dt_iop_diffuse_data_t *data = (dt_iop_diffuse_data_t *)piece->data;
 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
-  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
+  const int diffusion_scales =
+    num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
   const int max_filter_radius = (1 << scales);
 
@@ -508,7 +542,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-static inline void init_reconstruct(float *const restrict reconstructed, const size_t width, const size_t height)
+static inline void init_reconstruct(float *const restrict reconstructed,
+                                    const size_t width,
+                                    const size_t height)
 {
 // init the reconstructed buffer with non-clipped and partially clipped pixels
 #ifdef _OPENMP
@@ -527,7 +563,8 @@ static inline void init_reconstruct(float *const restrict reconstructed, const s
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixels:64) aligned(xy:16) uniform(pixels)
 #endif
-static inline void find_gradients(const dt_aligned_pixel_t pixels[9], dt_aligned_pixel_t xy[2])
+static inline void find_gradients(const dt_aligned_pixel_t pixels[9],
+                                  dt_aligned_pixel_t xy[2])
 {
   // Compute the gradient with centered finite differences in a 3×3 stencil
   // warning : x is vertical, y is horizontal
@@ -541,7 +578,8 @@ static inline void find_gradients(const dt_aligned_pixel_t pixels[9], dt_aligned
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixels:64) aligned(xy:16) uniform(pixels)
 #endif
-static inline void find_laplacians(const dt_aligned_pixel_t pixels[9], dt_aligned_pixel_t xy[2])
+static inline void find_laplacians(const dt_aligned_pixel_t pixels[9],
+                                   dt_aligned_pixel_t xy[2])
 {
   // Compute the laplacian with centered finite differences in a 3×3 stencil
   // warning : x is vertical, y is horizontal
@@ -556,9 +594,11 @@ static inline void find_laplacians(const dt_aligned_pixel_t pixels[9], dt_aligne
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16)
 #endif
-static inline void rotation_matrix_isophote(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
+static inline void rotation_matrix_isophote(const dt_aligned_pixel_t c2,
+                                            const dt_aligned_pixel_t cos_theta_sin_theta,
                                             const dt_aligned_pixel_t cos_theta2,
-                                            const dt_aligned_pixel_t sin_theta2, dt_aligned_pixel_t a[2][2])
+                                            const dt_aligned_pixel_t sin_theta2,
+                                            dt_aligned_pixel_t a[2][2])
 {
   // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
   // [[ a11, a12 ],
@@ -576,9 +616,11 @@ static inline void rotation_matrix_isophote(const dt_aligned_pixel_t c2, const d
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16)
 #endif
-static inline void rotation_matrix_gradient(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
+static inline void rotation_matrix_gradient(const dt_aligned_pixel_t c2,
+                                            const dt_aligned_pixel_t cos_theta_sin_theta,
                                             const dt_aligned_pixel_t cos_theta2,
-                                            const dt_aligned_pixel_t sin_theta2, dt_aligned_pixel_t a[2][2])
+                                            const dt_aligned_pixel_t sin_theta2,
+                                            dt_aligned_pixel_t a[2][2])
 {
   // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
   // [[ a11, a12 ],
@@ -597,7 +639,8 @@ static inline void rotation_matrix_gradient(const dt_aligned_pixel_t c2, const d
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, kernel: 64)
 #endif
-static inline void build_matrix(const dt_aligned_pixel_t a[2][2], dt_aligned_pixel_t kernel[9])
+static inline void build_matrix(const dt_aligned_pixel_t a[2][2],
+                                dt_aligned_pixel_t kernel[9])
 {
   for_each_channel(c)
   {
@@ -651,9 +694,12 @@ static inline void isotrope_laplacian(dt_aligned_pixel_t kernel[9])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(kernel, c2: 64) uniform(isotropy_type)
 #endif
-static inline void compute_kernel(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
-                                  const dt_aligned_pixel_t cos_theta2, const dt_aligned_pixel_t sin_theta2,
-                                  const dt_isotropy_t isotropy_type, dt_aligned_pixel_t kernel[9])
+static inline void compute_kernel(const dt_aligned_pixel_t c2,
+                                  const dt_aligned_pixel_t cos_theta_sin_theta,
+                                  const dt_aligned_pixel_t cos_theta2,
+                                  const dt_aligned_pixel_t sin_theta2,
+                                  const dt_isotropy_t isotropy_type,
+                                  dt_aligned_pixel_t kernel[9])
 {
   // Build the matrix of rotation with anisotropy
 
@@ -682,22 +728,36 @@ static inline void compute_kernel(const dt_aligned_pixel_t c2, const dt_aligned_
   }
 }
 
-static inline void heat_PDE_diffusion(const float *const restrict high_freq, const float *const restrict low_freq,
-                                      const uint8_t *const restrict mask, const int has_mask,
-                                      float *const restrict output, const size_t width, const size_t height,
-                                      const dt_aligned_pixel_t anisotropy, const dt_isotropy_t isotropy_type[4],
-                                      const float regularization, const float variance_threshold,
-                                      const float current_radius_square, const int mult,
-                                      const dt_aligned_pixel_t ABCD, const float strength)
+static inline void heat_PDE_diffusion(const float *const restrict high_freq,
+                                      const float *const restrict low_freq,
+                                      const uint8_t *const restrict mask,
+                                      const int has_mask,
+                                      float *const restrict output,
+                                      const size_t width,
+                                      const size_t height,
+                                      const dt_aligned_pixel_t anisotropy,
+                                      const dt_isotropy_t isotropy_type[4],
+                                      const float regularization,
+                                      const float variance_threshold,
+                                      const float current_radius_square,
+                                      const int mult,
+                                      const dt_aligned_pixel_t ABCD,
+                                      const float strength)
 {
-  // Simultaneous inpainting for image structure and texture using anisotropic heat transfer model
+  // Simultaneous inpainting for image structure and texture using
+  // anisotropic heat transfer model
   // https://www.researchgate.net/publication/220663968
   // modified as follow :
-  //  * apply it in a multi-scale wavelet setup : we basically solve it twice, on the wavelets LF and HF layers.
-  //  * replace the manual texture direction/distance selection by an automatic detection similar to the structure one,
-  //  * generalize the framework for isotropic diffusion and anisotropic weighted on the isophote direction
+  //
+  //  * apply it in a multi-scale wavelet setup : we basically solve
+  //    it twice, on the wavelets LF and HF layers.
+  //  * replace the manual texture direction/distance selection by an
+  //    automatic detection similar to the structure one,
+  //  * generalize the framework for isotropic diffusion and
+  //    anisotropic weighted on the isophote direction
   //  * add a variance regularization to better avoid edges.
-  // The sharpness setting mimics the contrast equalizer effect by simply multiplying the HF by some gain.
+  // The sharpness setting mimics the contrast equalizer effect by
+  // simply multiplying the HF by some gain.
 
   float *const restrict out = DT_IS_ALIGNED(output);
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
@@ -764,9 +824,13 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           c2[0][c] = -magnitude_grad * anisotropy[0];
           c2[2][c] = -magnitude_grad * anisotropy[2];
           // Compute cos(arg(grad)) = dx / hypot - force arg(grad) = 0 if hypot == 0
-          gradient[0][c] = (magnitude_grad != 0.f) ? gradient[0][c] / magnitude_grad : 1.f; // cos(0)
+          gradient[0][c] = (magnitude_grad != 0.f)
+            ? gradient[0][c] / magnitude_grad
+            : 1.f; // cos(0)
           // Compute sin (arg(grad))= dy / hypot - force arg(grad) = 0 if hypot == 0
-          gradient[1][c] = (magnitude_grad != 0.f) ? gradient[1][c] / magnitude_grad : 0.f; // sin(0)
+          gradient[1][c] = (magnitude_grad != 0.f)
+            ? gradient[1][c] / magnitude_grad
+            : 0.f; // sin(0)
           // Warning : now gradient = { cos(arg(grad)) , sin(arg(grad)) }
           cos_theta_grad_sq[c] = sqf(gradient[0][c]);
           sin_theta_grad_sq[c] = sqf(gradient[1][c]);
@@ -782,29 +846,38 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           c2[1][c] = -magnitude_lapl * anisotropy[1];
           c2[3][c] = -magnitude_lapl * anisotropy[3];
           // Compute cos(arg(lapl)) = dx / hypot - force arg(lapl) = 0 if hypot == 0
-          laplacian[0][c] = (magnitude_lapl != 0.f) ? laplacian[0][c] / magnitude_lapl : 1.f; // cos(0)
+          laplacian[0][c] = (magnitude_lapl != 0.f)
+            ? laplacian[0][c] / magnitude_lapl
+            : 1.f; // cos(0)
           // Compute sin (arg(lapl))= dy / hypot - force arg(lapl) = 0 if hypot == 0
-          laplacian[1][c] = (magnitude_lapl != 0.f) ? laplacian[1][c] / magnitude_lapl : 0.f; // sin(0)
+          laplacian[1][c] = (magnitude_lapl != 0.f)
+            ? laplacian[1][c] / magnitude_lapl
+            : 0.f; // sin(0)
           // Warning : now laplacian = { cos(arg(lapl)) , sin(arg(lapl)) }
           cos_theta_lapl_sq[c] = sqf(laplacian[0][c]);
           sin_theta_lapl_sq[c] = sqf(laplacian[1][c]);
           cos_theta_sin_theta_lapl[c] = laplacian[0][c] * laplacian[1][c];
         }
 
-        // elements of c2 need to be expf(mag*anistropy), but we haven't applied the expf() yet.  Do that now.
+        // elements of c2 need to be expf(mag*anistropy), but we
+        // haven't applied the expf() yet.  Do that now.
         for(size_t k = 0; k < 4; k++)
         {
           dt_vector_exp(c2[k], c2[k]);
         }
 
         dt_aligned_pixel_t kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
-        compute_kernel(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0],
+        compute_kernel(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq,
+                       sin_theta_grad_sq, isotropy_type[0],
                        kern_first);
-        compute_kernel(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[1],
+        compute_kernel(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq,
+                       sin_theta_lapl_sq, isotropy_type[1],
                        kern_second);
-        compute_kernel(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[2],
+        compute_kernel(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq,
+                       sin_theta_grad_sq, isotropy_type[2],
                        kern_third);
-        compute_kernel(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[3],
+        compute_kernel(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq,
+                       sin_theta_lapl_sq, isotropy_type[3],
                        kern_fourth);
 
         dt_aligned_pixel_t derivatives[4] = { { 0.f } };
@@ -861,10 +934,15 @@ static inline float compute_anisotropy_factor(const float user_param)
   return sqf(user_param);
 }
 
-static inline gint wavelets_process(const float *const restrict in, float *const restrict reconstructed,
-                                    const uint8_t *const restrict mask, const size_t width,
-                                    const size_t height, const dt_iop_diffuse_data_t *const data,
-                                    const float final_radius, const float zoom, const int scales,
+static inline gint wavelets_process(const float *const restrict in,
+                                    float *const restrict reconstructed,
+                                    const uint8_t *const restrict mask,
+                                    const size_t width,
+                                    const size_t height,
+                                    const dt_iop_diffuse_data_t *const data,
+                                    const float final_radius,
+                                    const float zoom,
+                                    const int scales,
                                     const int has_mask,
                                     float *const restrict HF[MAX_NUM_SCALES],
                                     float *const restrict LF_odd,
@@ -887,13 +965,15 @@ static inline gint wavelets_process(const float *const restrict in, float *const
   const float regularization = powf(10.f, data->regularization) - 1.f;
   const float variance_threshold = powf(10.f, data->variance_threshold);
 
-  // À trous decimated wavelet decompose
-  // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
-  // the wavelets decomposition here is the same as the equalizer/atrous module,
+  // À trous decimated wavelet decompose there is a paper from a guy
+  // we know that explains it :
+  // https://jo.dreggn.org/home/2010_atrous.pdf the wavelets
+  // decomposition here is the same as the equalizer/atrous module,
   float *restrict residual; // will store the temp buffer containing the last step of blur
   // allocate a one-row temporary buffer for the decomposition
   size_t padded_size;
-  float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
+  float *const DT_ALIGNED_ARRAY tempbuf =
+    dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
   for(int s = 0; s < scales; ++s)
   {
     /* fprintf(stdout, "Wavelet decompose : scale %i\n", s); */
@@ -918,7 +998,8 @@ static inline gint wavelets_process(const float *const restrict in, float *const
       buffer_out = LF_odd;
     }
 
-    decompose_2D_Bspline(buffer_in, HF[s], buffer_out, width, height, mult, tempbuf, padded_size);
+    decompose_2D_Bspline(buffer_in, HF[s], buffer_out, width, height,
+                         mult, tempbuf, padded_size);
 
     residual = buffer_out;
 
@@ -926,10 +1007,10 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     {
       char name[64];
       sprintf(name, "scale-input-%i", s);
-      dt_dump_pfm(name, buffer_in, width, height,  4 * sizeof(float), "diffuse");
+      dt_dump_pfm(name, buffer_in, width, height, 4 * sizeof(float), "diffuse");
 
       sprintf(name, "scale-blur-%i", s);
-      dt_dump_pfm(name, buffer_out, width, height,  4 * sizeof(float), "diffuse");
+      dt_dump_pfm(name, buffer_out, width, height, 4 * sizeof(float), "diffuse");
     }
   }
   dt_free_align(tempbuf);
@@ -944,9 +1025,12 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
     const float real_radius = current_radius * zoom;
 
-    const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
-    const dt_aligned_pixel_t ABCD = { data->first * KAPPA * norm, data->second * KAPPA * norm,
-                                      data->third * KAPPA * norm, data->fourth * KAPPA * norm };
+    const float norm =
+      expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
+    const dt_aligned_pixel_t ABCD = { data->first * KAPPA * norm,
+                                      data->second * KAPPA * norm,
+                                      data->third * KAPPA * norm,
+                                      data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
 
     /* debug
@@ -993,8 +1077,11 @@ static inline gint wavelets_process(const float *const restrict in, float *const
 }
 
 
-static inline void build_mask(const float *const restrict input, uint8_t *const restrict mask,
-                              const float threshold, const size_t width, const size_t height)
+static inline void build_mask(const float *const restrict input,
+                              uint8_t *const restrict mask,
+                              const float threshold,
+                              const size_t width,
+                              const size_t height)
 {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) dt_omp_firstprivate(input, mask, height, width, threshold)        \
@@ -1007,9 +1094,11 @@ static inline void build_mask(const float *const restrict input, uint8_t *const 
   }
 }
 
-static inline void inpaint_mask(float *const restrict inpainted, const float *const restrict original,
+static inline void inpaint_mask(float *const restrict inpainted,
+                                const float *const restrict original,
                                 const uint8_t *const restrict mask,
-                                const size_t width, const size_t height)
+                                const size_t width,
+                                const size_t height)
 {
   // init the reconstruction with noise inside the masked areas
 #ifdef _OPENMP
@@ -1031,7 +1120,8 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
       xoshiro128plus(state);
 
       for_four_channels(c, aligned(inpainted, original, state:64))
-        inpainted[k + c] = fabsf(gaussian_noise(original[k + c], original[k + c], i % 2 || j % 2, state));
+        inpainted[k + c] = fabsf(gaussian_noise(original[k + c],
+                                                original[k + c], i % 2 || j % 2, state));
     }
     else
     {
@@ -1041,8 +1131,12 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
   }
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
-             void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const restrict ivoid,
+             void *const restrict ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
@@ -1087,10 +1181,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
   const int iterations = MAX(ceilf((float)data->iterations), 1);
-  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
+  const int diffusion_scales =
+    num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
-  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16);
+  self->cache_next_important =
+    ((data->iterations * (data->radius + data->radius_center)) > 16);
 
   gboolean out_of_memory = FALSE;
 
@@ -1160,11 +1256,17 @@ error:
 }
 
 #if HAVE_OPENCL
-static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reconstructed, cl_mem mask,
-                                         const size_t sizes[3], const int width, const int height,
+static inline cl_int wavelets_process_cl(const int devid,
+                                         cl_mem in,
+                                         cl_mem reconstructed,
+                                         cl_mem mask,
+                                         const size_t sizes[3],
+                                         const int width,
+                                         const int height,
                                          const dt_iop_diffuse_data_t *const data,
                                          dt_iop_diffuse_global_data_t *const gd,
-                                         const float final_radius, const float zoom, const int scales,
+                                         const float final_radius,
+                                         const float zoom, const int scales,
                                          const int has_mask,
                                          cl_mem HF[MAX_NUM_SCALES],
                                          cl_mem LF_odd,
@@ -1199,7 +1301,8 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
 
 
   // À trous wavelet decompose
-  // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
+  // there is a paper from a guy we know that explains it :
+  // https://jo.dreggn.org/home/2010_atrous.pdf
   // the wavelets decomposition here is the same as the equalizer/atrous module,
   cl_mem residual;
   for(int s = 0; s < scales; ++s)
@@ -1226,20 +1329,23 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
     }
 
     // Compute wavelets low-frequency scales
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_horizontal, 0, CLARG(buffer_in), CLARG(HF[s]),
-      CLARG(width), CLARG(height), CLARG(mult));
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_horizontal, 0,
+                              CLARG(buffer_in), CLARG(HF[s]),
+                              CLARG(width), CLARG(height), CLARG(mult));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_horizontal, sizes);
     if(err != CL_SUCCESS) return err;
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_vertical, 0, CLARG(HF[s]), CLARG(buffer_out),
-      CLARG(width), CLARG(height), CLARG(mult));
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_vertical, 0,
+                              CLARG(HF[s]), CLARG(buffer_out),
+                              CLARG(width), CLARG(height), CLARG(mult));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_vertical, sizes);
     if(err != CL_SUCCESS) return err;
 
-    // Compute wavelets high-frequency scales and backup the maximum of texture over the RGB channels
-    // Note : HF = detail - LF
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_wavelets_detail, 0, CLARG(buffer_in), CLARG(buffer_out),
-      CLARG(HF[s]), CLARG(width), CLARG(height));
+    // Compute wavelets high-frequency scales and backup the maximum
+    // of texture over the RGB channels Note : HF = detail - LF
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_wavelets_detail, 0,
+                              CLARG(buffer_in), CLARG(buffer_out),
+                              CLARG(HF[s]), CLARG(width), CLARG(height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_wavelets_detail, sizes);
     if(err != CL_SUCCESS) return err;
 
@@ -1257,9 +1363,12 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
     const float real_radius = current_radius * zoom;
     const float current_radius_square = sqf(current_radius);
 
-    const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
-    const dt_aligned_pixel_t ABCD = { data->first * KAPPA * norm, data->second * KAPPA * norm,
-                                      data->third * KAPPA * norm, data->fourth * KAPPA * norm };
+    const float norm =
+      expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
+    const dt_aligned_pixel_t ABCD = { data->first * KAPPA * norm,
+                                      data->second * KAPPA * norm,
+                                      data->third * KAPPA * norm,
+                                      data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
 
     cl_mem buffer_in;
@@ -1284,10 +1393,14 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
     if(s == 0) buffer_out = reconstructed;
 
     // Compute wavelets low-frequency scales
-    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_pde, 0, CLARG(HF[s]), CLARG(buffer_in), CLARG(mask),
-      CLARG(has_mask), CLARG(buffer_out), CLARG(width), CLARG(height), CLARG(anisotropy), CLARG(isotropy_type),
-      CLARG(regularization), CLARG(variance_threshold), CLARG(current_radius_square), CLARG(mult), CLARG(ABCD),
-      CLARG(strength));
+    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_pde, 0,
+                              CLARG(HF[s]), CLARG(buffer_in), CLARG(mask),
+                              CLARG(has_mask), CLARG(buffer_out),
+                              CLARG(width), CLARG(height),
+                              CLARG(anisotropy), CLARG(isotropy_type),
+                              CLARG(regularization), CLARG(variance_threshold),
+                              CLARG(current_radius_square), CLARG(mult), CLARG(ABCD),
+                              CLARG(strength));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_pde, sizes);
     if(err != CL_SUCCESS) return err;
 
@@ -1297,13 +1410,19 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
-  dt_iop_diffuse_global_data_t *const gd = (dt_iop_diffuse_global_data_t *)self->global_data;
+  const dt_iop_diffuse_data_t *const data =
+    (dt_iop_diffuse_data_t *)piece->data;
+  dt_iop_diffuse_global_data_t *const gd =
+    (dt_iop_diffuse_global_data_t *)self->global_data;
 
   int out_of_memory = FALSE;
 
@@ -1338,10 +1457,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
   const int iterations = MAX(ceilf((float)data->iterations), 1);
-  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
+  const int diffusion_scales =
+    num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
-  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16);
+  self->cache_next_important =
+    ((data->iterations * (data->radius + data->radius_center)) > 16);
 
   // wavelets scales buffers
   cl_mem HF[MAX_NUM_SCALES];
@@ -1370,14 +1491,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(has_mask)
   {
     // build a boolean mask, TRUE where image is above threshold, FALSE otherwise
-    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_build_mask, 0, CLARG(in), CLARG(mask), CLARG(data->threshold),
-      CLARG(roi_out->width), CLARG(roi_out->height));
+    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_build_mask, 0,
+                              CLARG(in), CLARG(mask), CLARG(data->threshold),
+                              CLARG(roi_out->width), CLARG(roi_out->height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_build_mask, sizes);
     if(err != CL_SUCCESS) goto error;
 
     // init the inpainting area with noise
-    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_inpaint_mask, 0, CLARG(temp1), CLARG(in), CLARG(mask),
-      CLARG(roi_out->width), CLARG(roi_out->height));
+    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_inpaint_mask, 0,
+                              CLARG(temp1), CLARG(in), CLARG(mask),
+                              CLARG(roi_out->width), CLARG(roi_out->height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_inpaint_mask, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -1403,7 +1526,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
 
     if(it == (int)iterations - 1) temp_out = dev_out;
-    err = wavelets_process_cl(devid, temp_in, temp_out, mask, sizes, width, height, data, gd, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even);
+    err = wavelets_process_cl(devid, temp_in, temp_out, mask, sizes,
+                              width, height, data, gd, final_radius,
+                              scale, scales, has_mask, HF, LF_odd, LF_even);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1424,14 +1549,16 @@ error:
   if(LF_odd) dt_opencl_release_mem_object(LF_odd);
   for(int s = 0; s < scales; s++) if(HF[s]) dt_opencl_release_mem_object(HF[s]);
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  dt_print(DT_DEBUG_OPENCL,
+           "[opencl_diffuse] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 33; // extended.cl in programs.conf
-  dt_iop_diffuse_global_data_t *gd = (dt_iop_diffuse_global_data_t *)malloc(sizeof(dt_iop_diffuse_global_data_t));
+  dt_iop_diffuse_global_data_t *gd =
+    (dt_iop_diffuse_global_data_t *)malloc(sizeof(dt_iop_diffuse_global_data_t));
 
   module->data = gd;
   gd->kernel_diffuse_build_mask = dt_opencl_create_kernel(program, "build_mask");
@@ -1439,9 +1566,12 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_diffuse_pde = dt_opencl_create_kernel(program, "diffuse_pde");
 
   const int wavelets = 35; // bspline.cl, from programs.conf
-  gd->kernel_filmic_bspline_horizontal = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_horizontal");
-  gd->kernel_filmic_bspline_vertical = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_vertical");
-  gd->kernel_filmic_wavelets_detail = dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
+  gd->kernel_filmic_bspline_horizontal =
+    dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_horizontal");
+  gd->kernel_filmic_bspline_vertical =
+    dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_vertical");
+  gd->kernel_filmic_wavelets_detail =
+    dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
 }
 
 
@@ -1466,15 +1596,17 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_diffuse_gui_data_t *g = IOP_GUI_ALLOC(diffuse);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "properties")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_section_label_new(C_("section", "properties")), FALSE, FALSE, 0);
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   dt_bauhaus_slider_set_soft_range(g->iterations, 1., 128);
-  gtk_widget_set_tooltip_text(g->iterations,
-                              _("more iterations make the effect stronger but the module slower.\n"
-                                "this is analogous to giving more time to the diffusion reaction.\n"
-                                "if you plan on sharpening or inpainting, \n"
-                                "more iterations help reconstruction."));
+  gtk_widget_set_tooltip_text
+    (g->iterations,
+     _("more iterations make the effect stronger but the module slower.\n"
+       "this is analogous to giving more time to the diffusion reaction.\n"
+       "if you plan on sharpening or inpainting, \n"
+       "more iterations help reconstruction."));
 
   g->radius_center = dt_bauhaus_slider_from_params(self, "radius_center");
   dt_bauhaus_slider_set_soft_range(g->radius_center, 0., 512.);
@@ -1496,22 +1628,25 @@ void gui_init(struct dt_iop_module_t *self)
                    "if you plan on deblurring, \n"
                    "the radius should be around the width of your lens blur."));
 
-  GtkWidget *label_speed = dt_ui_section_label_new(C_("section", "speed (sharpen ↔ diffuse)"));
+  GtkWidget *label_speed =
+    dt_ui_section_label_new(C_("section", "speed (sharpen ↔ diffuse)"));
   gtk_box_pack_start(GTK_BOX(self->widget), label_speed, FALSE, FALSE, 0);
 
   g->first = dt_bauhaus_slider_from_params(self, "first");
   dt_bauhaus_slider_set_digits(g->first, 4);
   dt_bauhaus_slider_set_format(g->first, "%");
-  gtk_widget_set_tooltip_text(g->first, _("diffusion speed of low-frequency wavelet layers\n"
-                  "in the direction of 1st order anisotropy (set below).\n\n"
-                  "negative values sharpen, \n"
-                  "positive values diffuse and blur, \n"
-                  "zero does nothing."));
+  gtk_widget_set_tooltip_text
+    (g->first, _("diffusion speed of low-frequency wavelet layers\n"
+                 "in the direction of 1st order anisotropy (set below).\n\n"
+                 "negative values sharpen, \n"
+                 "positive values diffuse and blur, \n"
+                 "zero does nothing."));
 
   g->second = dt_bauhaus_slider_from_params(self, "second");
   dt_bauhaus_slider_set_digits(g->second, 4);
   dt_bauhaus_slider_set_format(g->second, "%");
-  gtk_widget_set_tooltip_text(g->second, _("diffusion speed of low-frequency wavelet layers\n"
+  gtk_widget_set_tooltip_text
+    (g->second, _("diffusion speed of low-frequency wavelet layers\n"
                   "in the direction of 2nd order anisotropy (set below).\n\n"
                   "negative values sharpen, \n"
                   "positive values diffuse and blur, \n"
@@ -1520,16 +1655,18 @@ void gui_init(struct dt_iop_module_t *self)
   g->third = dt_bauhaus_slider_from_params(self, "third");
   dt_bauhaus_slider_set_digits(g->third, 4);
   dt_bauhaus_slider_set_format(g->third, "%");
-  gtk_widget_set_tooltip_text(g->third, _("diffusion speed of high-frequency wavelet layers\n"
-                  "in the direction of 3rd order anisotropy (set below).\n\n"
-                  "negative values sharpen, \n"
-                  "positive values diffuse and blur, \n"
-                  "zero does nothing."));
+  gtk_widget_set_tooltip_text
+    (g->third, _("diffusion speed of high-frequency wavelet layers\n"
+                 "in the direction of 3rd order anisotropy (set below).\n\n"
+                 "negative values sharpen, \n"
+                 "positive values diffuse and blur, \n"
+                 "zero does nothing."));
 
   g->fourth = dt_bauhaus_slider_from_params(self, "fourth");
   dt_bauhaus_slider_set_digits(g->fourth, 4);
   dt_bauhaus_slider_set_format(g->fourth, "%");
-  gtk_widget_set_tooltip_text(g->fourth, _("diffusion speed of high-frequency wavelet layers\n"
+  gtk_widget_set_tooltip_text
+    (g->fourth, _("diffusion speed of high-frequency wavelet layers\n"
                   "in the direction of 4th order anisotropy (set below).\n\n"
                   "negative values sharpen, \n"
                   "positive values diffuse and blur, \n"
@@ -1541,68 +1678,80 @@ void gui_init(struct dt_iop_module_t *self)
   g->anisotropy_first = dt_bauhaus_slider_from_params(self, "anisotropy_first");
   dt_bauhaus_slider_set_digits(g->anisotropy_first, 4);
   dt_bauhaus_slider_set_format(g->anisotropy_first, "%");
-  gtk_widget_set_tooltip_text(g->anisotropy_first, _("direction of 1st order speed (set above).\n\n"
-                  "negative values follow gradients more closely, \n"
-                  "positive values rather avoid edges (isophotes), \n"
-                  "zero affects both equally (isotropic)."));
+  gtk_widget_set_tooltip_text
+    (g->anisotropy_first, _("direction of 1st order speed (set above).\n\n"
+                            "negative values follow gradients more closely, \n"
+                            "positive values rather avoid edges (isophotes), \n"
+                            "zero affects both equally (isotropic)."));
 
   g->anisotropy_second = dt_bauhaus_slider_from_params(self, "anisotropy_second");
   dt_bauhaus_slider_set_digits(g->anisotropy_second, 4);
   dt_bauhaus_slider_set_format(g->anisotropy_second, "%");
-  gtk_widget_set_tooltip_text(g->anisotropy_second,_("direction of 2nd order speed (set above).\n\n"
-                  "negative values follow gradients more closely, \n"
-                  "positive values rather avoid edges (isophotes), \n"
-                  "zero affects both equally (isotropic)."));
+  gtk_widget_set_tooltip_text
+    (g->anisotropy_second,_("direction of 2nd order speed (set above).\n\n"
+                            "negative values follow gradients more closely, \n"
+                            "positive values rather avoid edges (isophotes), \n"
+                            "zero affects both equally (isotropic)."));
 
   g->anisotropy_third = dt_bauhaus_slider_from_params(self, "anisotropy_third");
   dt_bauhaus_slider_set_digits(g->anisotropy_third, 4);
   dt_bauhaus_slider_set_format(g->anisotropy_third, "%");
-  gtk_widget_set_tooltip_text(g->anisotropy_third,_("direction of 3rd order speed (set above).\n\n"
-                  "negative values follow gradients more closely, \n"
-                  "positive values rather avoid edges (isophotes), \n"
-                  "zero affects both equally (isotropic)."));
+  gtk_widget_set_tooltip_text
+    (g->anisotropy_third,_("direction of 3rd order speed (set above).\n\n"
+                           "negative values follow gradients more closely, \n"
+                           "positive values rather avoid edges (isophotes), \n"
+                           "zero affects both equally (isotropic)."));
 
   g->anisotropy_fourth = dt_bauhaus_slider_from_params(self, "anisotropy_fourth");
   dt_bauhaus_slider_set_digits(g->anisotropy_fourth, 4);
   dt_bauhaus_slider_set_format(g->anisotropy_fourth, "%");
-  gtk_widget_set_tooltip_text(g->anisotropy_fourth,_("direction of 4th order speed (set above).\n\n"
-                  "negative values follow gradients more closely, \n"
-                  "positive values rather avoid edges (isophotes), \n"
-                  "zero affects both equally (isotropic)."));
+  gtk_widget_set_tooltip_text
+    (g->anisotropy_fourth,_("direction of 4th order speed (set above).\n\n"
+                            "negative values follow gradients more closely, \n"
+                            "positive values rather avoid edges (isophotes), \n"
+                            "zero affects both equally (isotropic)."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "edge management")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_section_label_new(C_("section", "edge management")),
+                     FALSE, FALSE, 0);
 
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
   dt_bauhaus_slider_set_format(g->sharpness, "%");
-  gtk_widget_set_tooltip_text(g->sharpness,
-                              _("increase or decrease the sharpness of the highest frequencies.\n"
-                              "can be used to keep details after blooming,\n"
-                              "for standalone sharpening set speed to negative values."));
+  gtk_widget_set_tooltip_text
+    (g->sharpness,
+     _("increase or decrease the sharpness of the highest frequencies.\n"
+       "can be used to keep details after blooming,\n"
+       "for standalone sharpening set speed to negative values."));
 
   g->regularization = dt_bauhaus_slider_from_params(self, "regularization");
-  gtk_widget_set_tooltip_text(g->regularization,
-                              _("define the sensitivity of the variance penalty for edges.\n"
-                                "increase to exclude more edges from diffusion,\n"
-                                "if fringes or halos appear."));
+  gtk_widget_set_tooltip_text
+    (g->regularization,
+     _("define the sensitivity of the variance penalty for edges.\n"
+       "increase to exclude more edges from diffusion,\n"
+       "if fringes or halos appear."));
 
   g->variance_threshold = dt_bauhaus_slider_from_params(self, "variance_threshold");
-  gtk_widget_set_tooltip_text(g->variance_threshold,
-                              _("define the variance threshold between edge amplification and penalty.\n"
-                                "decrease if you want pixels on smooth surfaces get a boost,\n"
-                                "increase if you see noise appear on smooth surfaces or\n"
-                                "if dark areas seem oversharpened compared to bright areas."));
+  gtk_widget_set_tooltip_text
+    (g->variance_threshold,
+     _("define the variance threshold between edge amplification and penalty.\n"
+       "decrease if you want pixels on smooth surfaces get a boost,\n"
+       "increase if you see noise appear on smooth surfaces or\n"
+       "if dark areas seem oversharpened compared to bright areas."));
 
-
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "diffusion spatiality")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_section_label_new(C_("section", "diffusion spatiality")),
+                     FALSE, FALSE, 0);
 
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_format(g->threshold, "%");
-  gtk_widget_set_tooltip_text(g->threshold,
-                              _("luminance threshold for the mask.\n"
-                                "0. disables the luminance masking and applies the module on the whole image.\n"
-                                "any higher value excludes pixels with luminance lower than the threshold.\n"
-                                "this can be used to inpaint highlights."));
+  gtk_widget_set_tooltip_text
+    (g->threshold,
+     _("luminance threshold for the mask.\n"
+       "0. disables the luminance masking and applies the module on the whole image.\n"
+       "any higher value excludes pixels with luminance lower than the threshold.\n"
+       "this can be used to inpaint highlights."));
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
