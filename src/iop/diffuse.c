@@ -522,6 +522,55 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
+  // two more sharpness (standard & strong)
+  p.iterations = 3;
+  p.radius_center = 0;
+  p.radius = 3;
+
+  p.first = 0.0065f;
+  p.second = -0.25f;
+  p.third = -0.25f;
+  p.fourth = -0.2774f;
+
+  p.anisotropy_first = 100.f;
+  p.anisotropy_second = 100.f;
+  p.anisotropy_third = 100.f;
+  p.anisotropy_fourth = 100.f;
+
+  p.sharpness = 0.0f;
+  p.regularization = 2.94f;
+  p.threshold = 0.0f;
+
+  p.variance_threshold = 0.0f;
+
+  dt_gui_presets_add_generic(_("sharpness"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 6;
+  p.radius_center = 0;
+  p.radius = 3;
+
+  p.first = 0.0065f;
+  p.second = -0.25f;
+  p.third = -0.25f;
+  p.fourth = -0.2774f;
+
+  p.anisotropy_first = 100.f;
+  p.anisotropy_second = 100.f;
+  p.anisotropy_third = 100.f;
+  p.anisotropy_fourth = 100.f;
+
+  p.sharpness = 0.0f;
+  p.regularization = 2.15f;
+  p.variance_threshold = 0.22f;
+
+  p.threshold = 0.0f;
+
+  dt_gui_presets_add_generic(_("sharpness: strong"), self->op, self->version(), &p,
+                             sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
   p.iterations = 1;
   p.radius_center = 512;
   p.radius = 512;
