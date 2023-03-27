@@ -1164,7 +1164,8 @@ void gui_init(struct dt_iop_module_t *self)
     (&g->cs,
      "plugins/darkroom/exposure/mapping",
      _("spot exposure mapping"),
-     GTK_BOX(self->widget));
+     GTK_BOX(self->widget),
+     DT_ACTION(self));
 
   gtk_widget_set_tooltip_text
     (g->cs.expander,

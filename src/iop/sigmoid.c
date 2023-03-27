@@ -677,7 +677,8 @@ void gui_init(dt_iop_module_t *self)
     (&g->cs,
      "plugins/darkroom/sigmoid/expand_values",
      _("display luminance"),
-     GTK_BOX(self->widget));
+     GTK_BOX(self->widget),
+     DT_ACTION(self));
   gtk_widget_set_tooltip_text(g->cs.expander,
                                 _("set display black/white targets"));
   GtkWidget *main_box = self->widget;
