@@ -1644,7 +1644,18 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "   AND operation NOT IN"
            "        ('ioporder', 'metadata', 'modulegroups', 'export', 'tagging', 'collect', '%s')"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
-           auto_module ? "COALESCE(NULLIF(multi_name,''), NULLIF(name,''))" : "''",
+           // auto module:
+           //  ON  : we take as the preset label either the multi-name
+           //        if defined or the preset name.
+           //  OFF : we take the multi-name only if hand-edited otherwise a
+           //        simple incremental instance number (equivalent to the multi_priority
+           //        field is used).
+           auto_module
+             ? "COALESCE(NULLIF(multi_name,''), NULLIF(name,''))"
+             : "CASE WHEN multi_name_hand_edited"
+               "  THEN multi_name"
+               "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
+               " END",
            preset_table[legacy],
            is_display_referred?"":"basecurve");
   // clang-format on
