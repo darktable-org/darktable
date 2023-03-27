@@ -413,48 +413,46 @@ int process_cl(struct dt_iop_module_t *self,
   const int height = roi_in->height;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  gboolean visualizing = FALSE;
+
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_mem dev_xtrans = NULL;
+  cl_mem dev_clips = NULL;
+
   if(g && fullpipe)
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
-      visualizing = (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED);
+      if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
+      {
+        const float mclip = d->clip * highlights_clip_magics[d->mode];
+        const float *c = piece->pipe->dsc.temperature.coeffs;
+        float clips[4] = { mclip * (c[RED]   <= 0.0f ? 1.0f : c[RED]),
+                           mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]),
+                           mclip * (c[BLUE]  <= 0.0f ? 1.0f : c[BLUE]),
+                           mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
+
+        dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
+        if(dev_clips == NULL) goto error;
+
+        dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+        if(dev_xtrans == NULL) goto error;
+
+        size_t sizes[] = { ROUNDUPDWD(roi_out->width, devid), ROUNDUPDHT(roi_out->height, devid), 1 };
+        dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 0, CLARG(dev_in), CLARG(dev_out),
+          CLARG(roi_out->width), CLARG(roi_out->height), CLARG(roi_in->width), CLARG(roi_in->height),
+          CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters), CLARG(dev_xtrans),
+          CLARG(dev_clips));
+
+        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
+        if(err != CL_SUCCESS) goto error;
+
+        dt_opencl_release_mem_object(dev_clips);
+        dt_opencl_release_mem_object(dev_xtrans);
+        return TRUE;
+      }
     }
-  }
-
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
-  cl_mem dev_xtrans = NULL;
-  cl_mem dev_clips = NULL;
-
-  // this works for bayer and X-Trans sensors
-  if(visualizing)
-  {
-    const float mclip = d->clip * highlights_clip_magics[d->mode];
-    const float *c = piece->pipe->dsc.temperature.coeffs;
-    float clips[4] = { mclip * (c[RED]   <= 0.0f ? 1.0f : c[RED]),
-                       mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]),
-                       mclip * (c[BLUE]  <= 0.0f ? 1.0f : c[BLUE]),
-                       mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
-
-    dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
-    if(dev_clips == NULL) goto error;
-
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
-    if(dev_xtrans == NULL) goto error;
-
-    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 0, CLARG(dev_in), CLARG(dev_out),
-      CLARG(width), CLARG(height), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters), CLARG(dev_xtrans),
-      CLARG(dev_clips));
-
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    dt_opencl_release_mem_object(dev_clips);
-    dt_opencl_release_mem_object(dev_xtrans);
-    return TRUE;
   }
 
   const float clip = d->clip
@@ -614,15 +612,15 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   dt_omp_firstprivate(in, out, clips, roi_in, roi_out, filters, xtrans, is_xtrans) \
   schedule(static)
 #endif
-    for(size_t row = 0; row < roi_out->height; row++)
+    for(int row = 0; row < roi_out->height; row++)
     {
-      for(size_t col = 0; col < roi_out->width; col++)
+      for(int col = 0; col < roi_out->width; col++)
       {
-        const size_t ox = row * roi_out->width + col;
-        const size_t irow = row + roi_out->y;
-        const size_t icol = col + roi_out->x;
-        const size_t ix = irow * roi_in->width + icol;
-        if((irow < roi_in->height) && (icol < roi_in->width))
+        const size_t ox = (size_t)row * roi_out->width + col;
+        const int irow = row + roi_out->y;
+        const int icol = col + roi_out->x;
+        const size_t ix = (size_t)irow * roi_in->width + icol;
+        if((icol >= 0) && (irow >= 0) && (irow < roi_in->height) && (icol < roi_in->width))
         {
           const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
           const float ival = in[ix];
@@ -647,21 +645,18 @@ void process(struct dt_iop_module_t *self,
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  gboolean visualizing = FALSE;
   if(g && fullpipe)
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
-      visualizing = (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED);
+      if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
+      {
+        process_visualize(piece, ivoid, ovoid, roi_in, roi_out, data);
+        return;
+      }
     }
-  }
-
-  if(visualizing)
-  {
-    process_visualize(piece, ivoid, ovoid, roi_in, roi_out, data);
-    return;
   }
 
   /* While rendering thumnbnails we look for an acceptable lower quality */
