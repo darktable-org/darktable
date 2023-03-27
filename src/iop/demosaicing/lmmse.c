@@ -17,8 +17,9 @@
 */
 
 /*
-    The lmmse code base used for the darktable port has been taken from rawtherapee derived librtprocess.
-    Adapt for dt and tiling - hanno schwalm 06/2021
+    The lmmse code base used for the darktable port has been taken
+    from rawtherapee derived librtprocess.  Adapt for dt and tiling -
+    hanno schwalm 06/2021
 
     LSMME demosaicing algorithm
     L. Zhang and X. Wu,
@@ -36,11 +37,16 @@
 */
 
 /* Why tiling?
-   The internal tiling vastly reduces memory footprint and allows data processing to be done mostly
-   with in-cache data thus increasing performance.
 
-   The performance has been tested on a E-2288G for 45mpix images, tiling improves performance > 2-fold.
-   times in sec: basic (0.5->0.15), median (0.6->0.18), 3xmedian (0.8->0.22), 3xmedian + 2x refine (1.2->0.30)
+   The internal tiling vastly reduces memory footprint and allows data
+   processing to be done mostly with in-cache data thus increasing
+   performance.
+
+   The performance has been tested on a E-2288G for 45mpix images,
+   tiling improves performance > 2-fold.  times in sec: basic
+   (0.5->0.15), median (0.6->0.18), 3xmedian (0.8->0.22), 3xmedian +
+   2x refine (1.2->0.30)
+
    The default is now 2 times slower than RCD and 2 times faster than AMaZE
 */
 
@@ -195,7 +201,9 @@ static void lmmse_demosaic(
   // refinement steps
   const int refine = (mode > 2) ? mode - 2 : 0;
 
-  const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+  const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0],
+                             fmaxf(piece->pipe->dsc.processed_maximum[1],
+                                   piece->pipe->dsc.processed_maximum[2]));
   const float revscaler = 1.0f / scaler;
 
   const int num_vertical =   1 + (height - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
@@ -231,15 +239,20 @@ static void lmmse_demosaic(
         const int tileRows = MIN(rowEnd - rowStart, LMMSE_TILE_INT);
         const int tileCols = MIN(colEnd - colStart, LMMSE_TILE_INT);
 
-        // index limit; normally is DT_LMMSE_TILESIZE but maybe missing bottom lines or right columns for outermost tile
+        // index limit; normally is DT_LMMSE_TILESIZE but maybe
+        // missing bottom lines or right columns for outermost tile
         const int last_rr = tileRows + 2 * BORDER_AROUND;
         const int last_cc = tileCols + 2 * BORDER_AROUND;
 
-        for(int rrr = BORDER_AROUND, row = rowStart; rrr < tileRows + BORDER_AROUND; rrr++, row++)
+        for(int rrr = BORDER_AROUND, row = rowStart;
+            rrr < tileRows + BORDER_AROUND; rrr++,
+              row++)
         {
           float *cfa = qix[5] + rrr * DT_LMMSE_TILESIZE + BORDER_AROUND;
           int idx = row * width + colStart;
-          for(int ccc = BORDER_AROUND, col = colStart; ccc < tileCols + BORDER_AROUND; ccc++, col++, cfa++, idx++)
+          for(int ccc = BORDER_AROUND, col = colStart;
+              ccc < tileCols + BORDER_AROUND;
+              ccc++, col++, cfa++, idx++)
           {
             cfa[0] = _calc_gamma(revscaler * in[idx], lmmse_gamma_in);
           }
@@ -635,4 +648,3 @@ static void lmmse_demosaic(
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
