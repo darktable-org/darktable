@@ -15618,7 +15618,7 @@ msgstr ""
 #: ../src/iop/diffuse.c:1499
 msgctxt "section"
 msgid "speed (sharpen ↔ diffuse)"
-msgstr "Vitesse (Netteté ↔ Diffusion)"
+msgstr "Vitesse (netteté ↔ diffusion)"
 
 #: ../src/iop/diffuse.c:1505
 msgid ""
