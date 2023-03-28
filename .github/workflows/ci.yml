@@ -78,11 +78,11 @@ jobs:
           sudo add-apt-repository -y universe
           sudo add-apt-repository -y multiverse
           sudo apt-get update
-          sudo apt-get -y install \
+          sudo eatmydata apt-get -y install \
             ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
-          sudo apt-get -y install \
+          sudo eatmydata apt-get -y install \
             build-essential \
             appstream-util \
             desktop-file-utils \
@@ -243,7 +243,7 @@ jobs:
             SDL2:p
             sqlite3:p
             zlib:p
-          update: true
+          update: false
       - run: git config --global core.autocrlf input
         shell: bash
       - uses: actions/checkout@v3

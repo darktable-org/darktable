@@ -273,7 +273,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>omit hierarchy in simple tag lists</shortdescription>
-    <longdescription>when creating XMP file the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
+    <longdescription>when creating XMP file the hierarchical tags are also added as a simple list\nof non-hierarchical ones to make them visible to some other programs.\nwhen this option is checked darktable will only include their last part\nand ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
   </dtconfig>
   <dtconfig dialog="collect">
     <name>plugins/lighttable/tagging/no_uncategorized</name>
@@ -299,7 +299,7 @@
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
-    <longdescription>if found, use OpenCL runtime on your system for improved processing speed.\ncan be switched on and off at any time.</longdescription>
+    <longdescription>if found, use OpenCL runtime on your system to speed up processing.\ncan be switched on and off at any time.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl_scheduling_profile</name>
@@ -2310,19 +2310,6 @@
     <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
-    <name>plugins/darkroom/demosaic/quality</name>
-    <type>
-      <enum>
-        <option>always bilinear (fast)</option>
-        <option>default</option>
-        <option>full (possibly slow)</option>
-      </enum>
-    </type>
-    <default>default</default>
-    <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>demosaicer when not viewing 1:1 in darkroom mode:\n - 'bilinear': is fast but slightly blurry.\n - 'default': uses the default demosaicer for the used sensor (RCD or Markesteijn).\n - 'full': will use exactly the settings as for full-size export.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="darkroom" section="general">
     <name>preview_downsampling</name>
     <type>
       <enum>
@@ -3583,6 +3570,13 @@
     <default>false</default>
     <shortdescription>prompt for name on addition of new instance</shortdescription>
     <longdescription>if enabled, a rename prompt will be present for each new module instance (either new instance or duplicate)</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>darkroom/ui/auto_module_name_update</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>automatically update module name</shortdescription>
+    <longdescription>if enabled, the module name will be automatically update to match a preset name if present.</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@

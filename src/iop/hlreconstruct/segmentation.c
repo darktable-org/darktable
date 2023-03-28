@@ -213,8 +213,7 @@ static inline void _dilating(const int *img,
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img, o) \
-  dt_omp_sharedconst(height, w1, border, radius) \
+  dt_omp_firstprivate(img, o, height, w1, border, radius) \
   schedule(static)
 #endif
   for(size_t row = border; row < height - border; row++)
@@ -342,8 +341,7 @@ static inline void _eroding(const int *img,
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img, o) \
-  dt_omp_sharedconst(height, w1, border, radius) \
+  dt_omp_firstprivate(img, o, height, w1, border, radius) \
   schedule(static)
 #endif
   for(size_t row = border; row < height - border; row++)

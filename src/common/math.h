@@ -21,11 +21,7 @@
 #include <stddef.h>
 #include <math.h>
 #include <stdint.h>
-#ifdef __SSE__
-#include <xmmintrin.h>
-#include "common/sse.h"
-#endif
-#include "common/darktable.h"
+#include "common/sse.h"		// also includes darktable.h
 
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 
@@ -331,50 +327,6 @@ static inline float dt_fast_expf(const float x)
   return u.f;
 }
 
-static inline void dt_fast_expf_4wide(const float x[4], float result[4])
-{
-  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
-  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
-  const int i1 = 0x3f800000u;
-  // e^x, the comment would be 2^x
-  const int i2 = 0x402DF854u; // 0x40000000u;
-  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
-  // without max clamping (doesn't work for large x, but is faster):
-  union float_int u[4];
-#ifdef _OPENMP
-#pragma omp simd aligned(x, result)
-#endif
-  for(size_t c = 0; c < 4; c++)
-  {
-    const int k0 = i1 + (int)(x[c] * (i2 - i1));
-    u[c].k = k0 > 0 ? k0 : 0;
-    result[c] = u[c].f;
-  }
-}
-
-#if defined(__SSE2__)
-#define ALIGNED(a) __attribute__((aligned(a)))
-#define VEC4(a)                                                                                              \
-  {                                                                                                          \
-    (a), (a), (a), (a)                                                                                       \
-  }
-
-/* SSE intrinsics version of dt_fast_expf */
-static const __m128 dt__fone ALIGNED(64) = VEC4(0x3f800000u);
-static const __m128 femo ALIGNED(64) = VEC4(0x00adf880u);
-static inline __m128 dt_fast_expf_sse2(const __m128 x)
-{
-  __m128 f = dt__fone + (x * femo);                 // f(n) = i1 + x(n)*(i2-i1)
-  __m128i i = _mm_cvtps_epi32(f);                   // i(n) = int(f(n))
-  __m128i mask = _mm_srai_epi32(i, 31);             // mask(n) = 0xffffffff if i(n) < 0
-  i = _mm_andnot_si128(mask, i);                    // i(n) = 0 if i(n) < 0
-  return _mm_castsi128_ps(i);                       // return *(float*)&i
-}
-#undef ALIGNED
-#undef VEC4
-
-#endif // __SSE2__
-
 // fast approximation of 2^-x for 0<x<126
 /****** if you change this function, you need to make the same change in data/kernels/{denoiseprofile,nlmeans}.cl ***/
 static inline float dt_fast_mexp2f(const float x)
@@ -451,6 +403,44 @@ static inline void dt_vector_log2(const dt_aligned_pixel_t x, dt_aligned_pixel_t
 #endif
 }
 
+static inline void dt_vector_exp(const dt_aligned_pixel_t x, dt_aligned_pixel_t result)
+{
+  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
+  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
+  const int i1 = 0x3f800000u;
+  // e^x, the comment would be 2^x
+  const int i2 = 0x402DF854u; // 0x40000000u;
+  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
+  // without max clamping (doesn't work for large x, but is faster):
+  union float_int u[4];
+  for_four_channels(c, aligned(x, result))
+  {
+    const int k0 = i1 + (int)(x[c] * (i2 - i1));
+    u[c].k = k0 > 0 ? k0 : 0;
+    result[c] = u[c].f;
+  }
+}
+
+static inline void dt_vector_exp2(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
+{
+#ifdef __SSE2__
+  *((__m128*)res) = _mm_exp2_ps(*((__m128*)x));
+#else
+  //TODO: plain C implementation of _mm_exp2_ps from sse.h
+  for_four_channels(c,aligned(x,res))
+    res[c] = exp2f(x[c]);
+#endif
+}
+
+static inline void dt_vector_exp10(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
+{
+  // 10^x == 2^(3.3219280948873626 * x)
+  dt_aligned_pixel_t scaled;
+  for_four_channels(c,aligned(x,scaled))
+    scaled[c] = 3.3219280948873626f * x[c];
+  dt_vector_exp2(scaled, res);
+}
+
 static inline void dt_vector_powf(const dt_aligned_pixel_t input,
                                   const dt_aligned_pixel_t power,
                                   dt_aligned_pixel_t output)
@@ -471,7 +461,7 @@ static inline void dt_vector_min(dt_aligned_pixel_t min,
                                  const dt_aligned_pixel_t v2)
 {
 #ifdef __SSE__
-  *((__m128*)min) = _mm_max_ps(*((__m128*)v1), *((__m128*)v2));
+  *((__m128*)min) = _mm_min_ps(*((__m128*)v1), *((__m128*)v2));
 #else
   for_each_channel(c)
     min[c] = MIN(v1[c], v2[c]);

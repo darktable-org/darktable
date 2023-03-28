@@ -52,6 +52,7 @@ typedef enum _style_items_columns_t
   DT_STYLE_ITEMS_COL_ISACTIVE,
   DT_STYLE_ITEMS_COL_AUTOINIT,
   DT_STYLE_ITEMS_COL_NAME,
+  DT_STYLE_ITEMS_COL_MASK,
   DT_STYLE_ITEMS_COL_NUM,
   DT_STYLE_ITEMS_COL_UPDATE_NUM,
   DT_STYLE_ITEMS_NUM_COLS
@@ -572,12 +573,14 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   sd->items = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkListStore *liststore = gtk_list_store_new(
     DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN,
-    GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+    GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING,
+    GDK_TYPE_PIXBUF, G_TYPE_INT, G_TYPE_INT);
 
   sd->items_new = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkListStore *liststore_new = gtk_list_store_new
     (DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING,
-      GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+     GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING,
+     GDK_TYPE_PIXBUF, G_TYPE_INT, G_TYPE_INT);
 
   /* enabled */
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
@@ -661,14 +664,34 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_NAME);
   g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1,
-                                              _("item"), renderer, "text",
+                                              _("item"), renderer, "markup",
                                               DT_STYLE_ITEMS_COL_NAME, NULL);
 
   if(edit)
   {
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items_new), -1,
-                                                _("item"), renderer, "text",
+                                                _("item"), renderer, "markup",
                                                 DT_STYLE_ITEMS_COL_NAME, NULL);
+  }
+
+  /* mask */
+  renderer = gtk_cell_renderer_pixbuf_new();
+  column = gtk_tree_view_column_new_with_attributes
+    (_("mask"), renderer, "pixbuf",
+     DT_STYLE_ITEMS_COL_MASK, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(sd->items), column);
+  gtk_tree_view_column_set_alignment(column, 0.5);
+  gtk_tree_view_column_set_clickable(column, FALSE);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(30));
+
+  if(edit)
+  {
+    column = gtk_tree_view_column_new_with_attributes(_("mask"), renderer, "pixbuf",
+                                                      DT_STYLE_ITEMS_COL_MASK, NULL);
+    gtk_tree_view_column_set_alignment(column, 0.5);
+    gtk_tree_view_column_set_clickable(column, FALSE);
+    gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(30));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(sd->items_new), column);
   }
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(sd->items)), GTK_SELECTION_SINGLE);
@@ -683,6 +706,8 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
   GdkPixbuf *is_inactive_pb =
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
+  GdkPixbuf *mask =
+    dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_showmask);
 
   /* fill list with history items */
   GtkTreeIter iter;
@@ -696,12 +721,13 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                        DT_STYLE_ITEMS_COL_NUM,      -1,
                        -1);
     /* get history items for named style and populate the items list */
-    GList *items = dt_styles_get_item_list(name, FALSE, imgid, TRUE);
+    GList *items = dt_styles_get_item_list(name, TRUE, imgid, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
         dt_style_item_t *item = (dt_style_item_t *)items_iter->data;
+        const dt_develop_mask_mode_t mask_mode = item->blendop_params->mask_mode;
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
         {
@@ -712,6 +738,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                              DT_STYLE_ITEMS_COL_UPDATE,     FALSE,
                              DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
                              DT_STYLE_ITEMS_COL_NAME,       item->name,
+                             DT_STYLE_ITEMS_COL_MASK,       mask_mode > 0 ? mask : NULL,
                              DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
                              -1);
@@ -726,6 +753,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                              DT_STYLE_ITEMS_COL_AUTOINIT,   FALSE,
                              DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
                              DT_STYLE_ITEMS_COL_NAME,       item->name,
+                             DT_STYLE_ITEMS_COL_MASK,       mask_mode > 0 ? mask : NULL,
                              DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
                              -1);
@@ -748,7 +776,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                        -1);
     g_free(label);
 
-    GList *items = dt_history_get_items(imgid, FALSE);
+    GList *items = dt_history_get_items(imgid, FALSE, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
@@ -777,6 +805,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
            DT_STYLE_ITEMS_COL_AUTOINIT, FALSE,
            DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
            DT_STYLE_ITEMS_COL_NAME,     item->name,
+           DT_STYLE_ITEMS_COL_MASK,     item->mask_mode > 0 ? mask : NULL,
            DT_STYLE_ITEMS_COL_NUM,      item->num,
            -1);
 
@@ -903,7 +932,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 
   gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
-  GList *items = dt_styles_get_item_list(name, FALSE, -1, FALSE);
+  GList *items = dt_styles_get_item_list(name, TRUE, -1, FALSE);
   GList *l = items;
   while(l)
   {

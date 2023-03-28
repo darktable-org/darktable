@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,22 +42,32 @@ typedef struct dt_lib_navigation_t
 
 
 /* expose function for navigation module */
-static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data);
+static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
+                                              cairo_t *crf,
+                                              gpointer user_data);
 /* motion notify callback handler*/
-static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
+static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget,
+                                                       GdkEventMotion *event,
                                                        gpointer user_data);
 /* button press callback */
-static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEvent *event,
+static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
+                                                      GdkEvent *event,
                                                       gpointer user_data);
 /* button release callback */
-static gboolean _lib_navigation_button_release_callback(GtkWidget *widget, GdkEventButton *event,
+static gboolean _lib_navigation_button_release_callback(GtkWidget *widget,
+                                                        GdkEventButton *event,
                                                         gpointer user_data);
 /* leave notify callback */
-static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget,
+                                                      GdkEventCrossing *event,
                                                       gpointer user_data);
 
 /* helper function for position set */
-static void _lib_navigation_set_position(struct dt_lib_module_t *self, double x, double y, int wd, int ht);
+static void _lib_navigation_set_position(struct dt_lib_module_t *self,
+                                         const double x,
+                                         const double y,
+                                         const int wd,
+                                         const int ht);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -86,7 +96,8 @@ int position(const dt_lib_module_t *self)
 }
 
 
-static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer user_data)
+static void _lib_navigation_control_redraw_callback(gpointer instance,
+                                                    gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
@@ -100,8 +111,9 @@ static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer 
   gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
                   : zoom == DT_ZOOM_FILL ? g_strdup(C_("navigationbox", "fill"))
                   : 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0)
-                    == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0) ? g_strdup(_("small"))
-                  : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
+                    == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0)
+                         ? g_strdup(_("small"))
+                         : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
   ++darktable.gui->reset;
   dt_bauhaus_combobox_set(d->zoom, -1);
   if(!dt_bauhaus_combobox_set_from_text(d->zoom, zoomline))
@@ -133,12 +145,16 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   /* create drawingarea */
-  GtkWidget *thumbnail = dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/navigation/aspect_percent");
-  gtk_widget_set_tooltip_text(thumbnail, _("navigation\nclick or drag to position zoomed area in center view"));
+  GtkWidget *thumbnail = dt_ui_resize_wrap(NULL, 0,
+                                           "plugins/darkroom/navigation/aspect_percent");
+  gtk_widget_set_tooltip_text
+    (thumbnail,
+     _("navigation\nclick or drag to position zoomed area in center view"));
 
   /* connect callbacks */
   gtk_widget_set_app_paintable(thumbnail, TRUE);
-  g_signal_connect(G_OBJECT(thumbnail), "draw", G_CALLBACK(_lib_navigation_draw_callback), self);
+  g_signal_connect(G_OBJECT(thumbnail), "draw",
+                   G_CALLBACK(_lib_navigation_draw_callback), self);
   g_signal_connect(G_OBJECT(thumbnail), "button-press-event",
                    G_CALLBACK(_lib_navigation_button_press_callback), self);
   g_signal_connect(G_OBJECT(thumbnail), "scroll-event",
@@ -153,15 +169,20 @@ void gui_init(dt_lib_module_t *self)
   /* set size of navigation draw area */
   // gtk_widget_set_size_request(thumbnail, -1, DT_PIXEL_APPLY_DPI(175));
   gtk_widget_set_name(GTK_WIDGET(thumbnail), "navigation-module");
-  dt_action_t *ac = dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL,
+  dt_action_t *ac = dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions,
+                                     NULL,
                                      N_("hide navigation thumbnail"), thumbnail, NULL);
-  dt_action_register(ac, NULL, _lib_navigation_collapse_callback, GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(ac, NULL, _lib_navigation_collapse_callback,
+                     GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                            G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                                  G_CALLBACK(_lib_navigation_control_redraw_callback),
+                                  self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
-                            G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+                                  G_CALLBACK(_lib_navigation_control_redraw_callback),
+                                  self);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->zoom, darktable.view_manager->proxy.darkroom.view,
                                NULL, N_("zoom"), _("image zoom level"),
@@ -175,9 +196,12 @@ void gui_init(dt_lib_module_t *self)
                                N_("400%"),
                                N_("800%"),
                                N_("1600%"));
+
   ac = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("zoom"));
-  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 2, GDK_KEY_3, GDK_MOD1_MASK);
-  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 3, GDK_KEY_2, GDK_MOD1_MASK);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 2,
+                       GDK_KEY_3, GDK_MOD1_MASK);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 3,
+                       GDK_KEY_2, GDK_MOD1_MASK);
 
   dt_bauhaus_combobox_set_editable(d->zoom, TRUE);
   DT_BAUHAUS_WIDGET(d->zoom)->show_label = FALSE;
@@ -197,7 +221,9 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   /* disconnect from signal */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_lib_navigation_control_redraw_callback),
+                                     self);
 
   g_free(self->data);
   self->data = NULL;
@@ -205,7 +231,9 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 
-static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
+                                              cairo_t *crf,
+                                              gpointer user_data)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -221,7 +249,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
   /* draw navigation image if available */
-  if(dev->preview_pipe->output_backbuf && dev->image_storage.id == dev->preview_pipe->output_imgid)
+  if(dev->preview_pipe->output_backbuf
+     && dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
@@ -233,7 +262,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
 
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
     cairo_surface_t *surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+        = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf,
+                                              CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
@@ -258,7 +288,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_fill(cr);
 
       float boxw = 1, boxh = 1;
-      dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, &boxw, &boxh);
+      dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom,
+                               closeup, &boxw, &boxh);
 
       // Repaint the original image in the area of interest
       cairo_set_source_surface(cr, surface, 0, 0);
@@ -293,27 +324,38 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   return TRUE;
 }
 
-void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int wd, int ht)
+void _lib_navigation_set_position(dt_lib_module_t *self,
+                                  const double x,
+                                  const double y,
+                                  const int wd,
+                                  const int ht)
 {
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
 
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
+  const int closeup = dt_control_get_dev_closeup();
 
   if(d->dragging && zoom != DT_ZOOM_FIT)
   {
     const int inset = DT_NAVIGATION_INSET;
-    const float width = wd - 2 * inset, height = ht - 2 * inset;
+    const float width = wd - 2 * inset;
+    const float height = ht - 2 * inset;
     const dt_develop_t *dev = darktable.develop;
     int iwd, iht;
     dt_dev_get_processed_size(dev, &iwd, &iht);
+
     float zoom_x = fmaxf(
-        -.5,
-        fminf(((x - inset) / width - .5f) / (iwd * fminf(wd / (float)iwd, ht / (float)iht) / (float)wd), .5));
+      -.5,
+      fminf(((x - inset) / width - .5f) / (iwd * fminf(wd / (float)iwd,
+                                                       ht / (float)iht) / (float)wd),
+            .5));
     float zoom_y = fmaxf(
-        -.5, fminf(((y - inset) / height - .5f) / (iht * fminf(wd / (float)iwd, ht / (float)iht) / (float)ht),
-                   .5));
-    dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+      -.5,
+      fminf(((y - inset) / height - .5f) / (iht * fminf(wd / (float)iwd,
+                                                        ht / (float)iht) / (float)ht),
+            .5));
+    dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y,
+                             zoom, closeup, NULL, NULL);
     dt_control_set_dev_zoom_x(zoom_x);
     dt_control_set_dev_zoom_y(zoom_y);
 
@@ -326,13 +368,15 @@ void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int
   }
 }
 
-static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
+static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget,
+                                                       GdkEventMotion *event,
                                                        gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  _lib_navigation_set_position(self, event->x, event->y, allocation.width, allocation.height);
+  _lib_navigation_set_position(self, event->x, event->y,
+                               allocation.width, allocation.height);
   return TRUE;
 }
 
@@ -443,7 +487,8 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
   dt_control_navigation_redraw();
 }
 
-static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEvent *event,
+static gboolean _lib_navigation_button_press_callback(GtkWidget *widget,
+                                                      GdkEvent *event,
                                                       gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -453,7 +498,8 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
   if(event->type == GDK_BUTTON_PRESS && event->button.button != 2)
   {
     d->dragging = 1;
-    _lib_navigation_set_position(self, event->button.x, event->button.y, allocation.width, allocation.height);
+    _lib_navigation_set_position(self, event->button.x, event->button.y,
+                                 allocation.width, allocation.height);
 
     return TRUE;
   }
@@ -469,7 +515,8 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
   }
 }
 
-static gboolean _lib_navigation_button_release_callback(GtkWidget *widget, GdkEventButton *event,
+static gboolean _lib_navigation_button_release_callback(GtkWidget *widget,
+                                                        GdkEventButton *event,
                                                         gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -479,7 +526,8 @@ static gboolean _lib_navigation_button_release_callback(GtkWidget *widget, GdkEv
   return TRUE;
 }
 
-static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget,
+                                                      GdkEventCrossing *event,
                                                       gpointer user_data)
 {
   return TRUE;

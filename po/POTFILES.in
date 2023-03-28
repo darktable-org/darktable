@@ -168,6 +168,7 @@ src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
 src/imageio/imageio.c
+src/imageio/imageio_qoi.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
@@ -186,7 +187,6 @@ src/imageio/storage/email.c
 src/imageio/storage/gallery.c
 src/imageio/storage/latex.c
 src/imageio/storage/piwigo.c
-src/iop/amaze_demosaic_RT.cc
 src/iop/ashift.c
 src/iop/atrous.c
 src/iop/basecurve.c
@@ -220,10 +220,15 @@ src/iop/colorzones.c
 src/iop/crop.c
 src/iop/defringe.c
 src/iop/demosaic.c
+src/iop/demosaicing/amaze.cc
+src/iop/demosaicing/basics.c
+src/iop/demosaicing/passthrough.c
+src/iop/demosaicing/ppg.c
+src/iop/demosaicing/vng.c
+src/iop/demosaicing/xtrans.c
 src/iop/denoiseprofile.c
 src/iop/diffuse.c
 src/iop/dither.c
-src/iop/dual_demosaic.c
 src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/filmic.c
@@ -237,13 +242,11 @@ src/iop/grain.c
 src/iop/hazeremoval.c
 src/iop/highlights.c
 src/iop/highpass.c
-src/iop/hlrecovery_v2.c
 src/iop/hotpixels.c
 src/iop/invert.c
 src/iop/lens.cc
 src/iop/levels.c
 src/iop/liquify.c
-src/iop/lmmse_demosaic.c
 src/iop/lowlight.c
 src/iop/lowpass.c
 src/iop/lut3d.c
@@ -256,7 +259,6 @@ src/iop/profile_gamma.c
 src/iop/rawdenoise.c
 src/iop/rawoverexposed.c
 src/iop/rawprepare.c
-src/iop/rcd_demosaic.c
 src/iop/relight.c
 src/iop/retouch.c
 src/iop/rgbcurve.c

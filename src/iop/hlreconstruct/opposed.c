@@ -111,7 +111,8 @@ static inline char _mask_dilated(const char *in, const size_t w1)
 static void _process_linear_opposed(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
-        const float *const input, float *const output,
+        const float *const input,
+        float *const output,
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out,
         const gboolean quality)
@@ -142,8 +143,7 @@ static void _process_linear_opposed(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, mask) \
-  dt_omp_sharedconst(msize, mwidth) \
+  dt_omp_firstprivate(clips, input, roi_in, mask, msize, mwidth) \
   schedule(static)
 #endif
     for(size_t row = 1; row < roi_in->height -1; row++)
@@ -174,8 +174,7 @@ static void _process_linear_opposed(
     {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask) \
-  dt_omp_sharedconst(mwidth, mheight, msize) \
+  dt_omp_firstprivate(mask, mwidth, mheight, msize) \
   schedule(static) collapse(2)
 #endif
       for(size_t row = 3; row < mheight - 3; row++)
@@ -191,9 +190,8 @@ static void _process_linear_opposed(
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, clips, mask) \
+  dt_omp_firstprivate(input, roi_in, clips, mask, msize, mwidth) \
   reduction(+ : sums, cnts) \
-  dt_omp_sharedconst(msize, mwidth) \
   schedule(static)
 #endif
       for(size_t row = 3; row < roi_in->height - 3; row++)
@@ -282,8 +280,7 @@ static float *_process_opposed(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, xtrans, mask) \
-  dt_omp_sharedconst(filters, msize, mwidth, mheight) \
+  dt_omp_firstprivate(clips, input, roi_in, xtrans, mask, filters, msize, mwidth, mheight) \
   schedule(static) collapse(2)
 #endif
       for(int mrow = 1; mrow < mheight-1; mrow++)
@@ -320,8 +317,7 @@ static float *_process_opposed(
         */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask) \
-  dt_omp_sharedconst(mwidth, mheight, msize) \
+  dt_omp_firstprivate(mask, mwidth, mheight, msize) \
   schedule(static) collapse(2)
 #endif
         for(size_t row = 3; row < mheight - 3; row++)
@@ -338,9 +334,8 @@ static float *_process_opposed(
        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */ 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, xtrans, clips, mask) \
+  dt_omp_firstprivate(input, roi_in, xtrans, clips, mask, filters, msize, mwidth) \
   reduction(+ : sums, cnts) \
-  dt_omp_sharedconst(filters, msize, mwidth) \
   schedule(static) collapse(2)
 #endif
         for(size_t row = 3; row < roi_in->height - 3; row++)
@@ -380,8 +375,7 @@ static float *_process_opposed(
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, chrominance) \
-  dt_omp_sharedconst(filters) \
+  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, chrominance, filters) \
   schedule(static) collapse(2)
 #endif
     for(size_t row = 0; row < roi_in->height; row++)
@@ -404,8 +398,7 @@ static float *_process_opposed(
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out) \
-  dt_omp_sharedconst(filters) \
+  dt_omp_firstprivate(output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out, filters) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
@@ -599,3 +592,8 @@ static cl_int process_opposed_cl(
 }
 #endif
 
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

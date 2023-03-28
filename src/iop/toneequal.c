@@ -749,7 +749,6 @@ static inline void apply_toneequalizer(const float *const restrict in,
                                        float *const restrict out,
                                        const dt_iop_roi_t *const roi_in,
                                        const dt_iop_roi_t *const roi_out,
-                                       const size_t ch,
                                        const dt_iop_toneequalizer_data_t *const d)
 {
   const size_t num_elem = (size_t)roi_in->width * roi_in->height;
@@ -759,7 +758,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(in, out, num_elem, luminance, lut, min_ev, max_ev, ch)
+  dt_omp_firstprivate(in, out, num_elem, luminance, lut, min_ev, max_ev)
 #endif
   for(size_t k = 0; k < num_elem; ++k)
   {
@@ -768,13 +767,8 @@ static inline void apply_toneequalizer(const float *const restrict in,
     const float exposure = fast_clamp(log2f(luminance[k]), min_ev, max_ev);
     float correction = lut[(unsigned)roundf((exposure - min_ev) * LUT_RESOLUTION)];
     // apply correction
-    for(size_t c = 0; c < ch; c++)
-    {
-      if(c == 3)
-        out[k * ch + c] = in[k * ch + c];
-      else
-        out[k * ch + c] = correction * in[k * ch + c];
-    }
+    for_each_channel(c)
+      out[4 * k + c] = correction * in[4 * k + c];
   }
 }
 
@@ -788,7 +782,6 @@ static inline void apply_toneequalizer(const float *const restrict in,
                                        float *const restrict out,
                                        const dt_iop_roi_t *const roi_in,
                                        const dt_iop_roi_t *const roi_out,
-                                       const size_t ch,
                                        const dt_iop_toneequalizer_data_t *const d)
 {
   const size_t num_elem = roi_in->width * roi_in->height;
@@ -798,7 +791,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(in, out, num_elem, luminance, factors, centers_ops, gauss_denom, ch)
+  dt_omp_firstprivate(in, out, num_elem, luminance, factors, centers_ops, gauss_denom)
 #endif
   for(size_t k = 0; k < num_elem; ++k)
   {
@@ -820,12 +813,8 @@ static inline void apply_toneequalizer(const float *const restrict in,
     float correction = fast_clamp(result, 0.25f, 4.0f);
 
     // apply correction
-    for(size_t c = 0; c < ch; c++)
-    {
-      if(c == 3)
-        out[k * ch + c] = in[k * ch + c];
-      else
-        out[k * ch + c] = correction * in[k * ch + c];
+    for_each_channel(c)
+      out[4 * k + c] = correction * in[4 * k + c];
     }
   }
 }
@@ -857,7 +846,6 @@ static inline void compute_luminance_mask(const float *const restrict in,
                                           float *const restrict luminance,
                                           const size_t width,
                                           const size_t height,
-                                          const size_t ch,
                                           const dt_iop_toneequalizer_data_t *const d)
 {
   switch(d->details)
@@ -865,7 +853,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
     case(DT_TONEEQ_NONE):
     {
       // No contrast boost here
-      luminance_mask(in, luminance, width, height, ch,
+      luminance_mask(in, luminance, width, height,
                      d->method, d->exposure_boost, 0.0f, 1.0f);
       break;
     }
@@ -873,7 +861,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
     case(DT_TONEEQ_AVG_GUIDED):
     {
       // Still no contrast boost
-      luminance_mask(in, luminance, width, height, ch,
+      luminance_mask(in, luminance, width, height,
                      d->method, d->exposure_boost, 0.0f, 1.0f);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
                         DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization,
@@ -890,7 +878,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
       // which makes only 2-3 channels usable.
       // we assume the distribution is centered around -4EV, e.g. the center of the nodes
       // the exposure boost should be used to make this assumption true
-      luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost,
+      luminance_mask(in, luminance, width, height, d->method, d->exposure_boost,
                      CONTRAST_FULCRUM, d->contrast_boost);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
                         DT_GF_BLENDING_LINEAR, d->scale, d->quantization,
@@ -901,7 +889,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
     case(DT_TONEEQ_AVG_EIGF):
     {
       // Still no contrast boost
-      luminance_mask(in, luminance, width, height, ch,
+      luminance_mask(in, luminance, width, height,
                      d->method, d->exposure_boost, 0.0f, 1.0f);
       fast_eigf_surface_blur(luminance, width, height,
                              d->radius, d->feathering, d->iterations,
@@ -912,7 +900,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
 
     case(DT_TONEEQ_EIGF):
     {
-      luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost,
+      luminance_mask(in, luminance, width, height, d->method, d->exposure_boost,
                      CONTRAST_FULCRUM, d->contrast_boost);
       fast_eigf_surface_blur(luminance, width, height,
                              d->radius, d->feathering, d->iterations,
@@ -923,7 +911,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
 
     default:
     {
-      luminance_mask(in, luminance, width, height, ch,
+      luminance_mask(in, luminance, width, height,
                      d->method, d->exposure_boost, 0.0f, 1.0f);
       break;
     }
@@ -1132,7 +1120,7 @@ void toneeq_process(struct dt_iop_module_t *self,
       if(hash != saved_hash || !luminance_valid)
       {
         /* compute only if upstream pipe state has changed */
-        compute_luminance_mask(in, luminance, width, height, ch, d);
+        compute_luminance_mask(in, luminance, width, height, d);
         hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
       }
     }
@@ -1151,20 +1139,20 @@ void toneeq_process(struct dt_iop_module_t *self,
         dt_iop_gui_enter_critical_section(self);
         g->thumb_preview_hash = hash;
         g->histogram_valid = FALSE;
-        compute_luminance_mask(in, luminance, width, height, ch, d);
+        compute_luminance_mask(in, luminance, width, height, d);
         g->luminance_valid = TRUE;
         dt_iop_gui_leave_critical_section(self);
       }
     }
     else // make it dummy-proof
     {
-      compute_luminance_mask(in, luminance, width, height, ch, d);
+      compute_luminance_mask(in, luminance, width, height, d);
     }
   }
   else
   {
     // no caching path : compute no matter what
-    compute_luminance_mask(in, luminance, width, height, ch, d);
+    compute_luminance_mask(in, luminance, width, height, d);
   }
 
   // Display output
@@ -1176,11 +1164,11 @@ void toneeq_process(struct dt_iop_module_t *self,
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     }
     else
-      apply_toneequalizer(in, luminance, out, roi_in, roi_out, ch, d);
+      apply_toneequalizer(in, luminance, out, roi_in, roi_out, d);
   }
   else
   {
-    apply_toneequalizer(in, luminance, out, roi_in, roi_out, ch, d);
+    apply_toneequalizer(in, luminance, out, roi_in, roi_out, d);
   }
 
   if(!cached) dt_free_align(luminance);

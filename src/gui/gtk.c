@@ -3344,6 +3344,11 @@ static void _collapse_button_changed(GtkDarktableToggleButton *widget, gpointer 
 {
   dt_gui_collapsible_section_t *cs = (dt_gui_collapsible_section_t *)user_data;
 
+  if(cs->module && cs->module->type == DT_ACTION_TYPE_IOP_INSTANCE)
+      dt_iop_request_focus((dt_iop_module_t *)cs->module);
+  else if(cs->module && cs->module->type == DT_ACTION_TYPE_LIB)
+    darktable.lib->gui_module = (struct dt_lib_module_t *)cs->module;
+
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cs->toggle));
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), active);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(cs->toggle), dtgtk_cairo_paint_solid_arrow,
@@ -3378,12 +3383,16 @@ void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs)
 }
 
 void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
-                                    const char *confname, const char *label, GtkBox *parent)
+                                    const char *confname,
+                                    const char *label,
+                                    GtkBox *parent,
+                                    dt_action_t *module)
 {
   const gboolean expanded = dt_conf_get_bool(confname);
 
   cs->confname = g_strdup(confname);
   cs->parent = parent;
+  cs->module = module;
 
   // collapsible section header
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);

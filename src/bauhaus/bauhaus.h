@@ -199,6 +199,8 @@ enum
 typedef struct dt_bauhaus_t
 {
   struct dt_bauhaus_widget_t *current;
+  // the widget that has the mouse over it
+  GtkWidget *hovered;
   GtkWidget *popup_window;
   GtkWidget *popup_area;
   // are set by the motion notification, to be used during drawing.

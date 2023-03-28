@@ -1250,7 +1250,8 @@ void gui_init(struct dt_iop_module_t *self)
     (&g->cs,
      "plugins/darkroom/crop/expand_margins",
      _("margins"),
-     GTK_BOX(box_enabled));
+     GTK_BOX(box_enabled),
+     DT_ACTION(self));
 
   self->widget = GTK_WIDGET(g->cs.container);
 

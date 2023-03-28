@@ -326,10 +326,13 @@ static int exif_datetime_taken_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
-    dt_datetime_img_to_exif(sdt, sizeof(sdt), my_image);
+    int datetime_size = dt_conf_get_bool("lighttable/ui/milliseconds") ? DT_DATETIME_LENGTH 
+                                                                       : DT_DATETIME_EXIF_LENGTH;
+    char *sdt = calloc(datetime_size, sizeof(char));
+    dt_datetime_img_to_exif(sdt, datetime_size, my_image);
     lua_pushstring(L, sdt);
     releasereadimage(L, my_image);
+    free(sdt);
     return 1;
   }
   else
@@ -514,6 +517,10 @@ int dt_lua_init_image(lua_State *L)
   luaA_struct_member(L, dt_image_t, filename, const char_filename_length);
   luaA_struct_member(L, dt_image_t, width, const int32_t);
   luaA_struct_member(L, dt_image_t, height, const int32_t);
+  luaA_struct_member(L, dt_image_t, final_width, const int32_t);
+  luaA_struct_member(L, dt_image_t, final_height, const int32_t);
+  luaA_struct_member(L, dt_image_t, p_width, const int32_t);
+  luaA_struct_member(L, dt_image_t, p_height, const int32_t);
   luaA_struct_member(L, dt_image_t, aspect_ratio, const float);
 
   luaA_struct_member_name(L, dt_image_t, geoloc.longitude, protected_double, longitude); // set to NAN if value is not set

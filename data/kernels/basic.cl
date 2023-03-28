@@ -281,15 +281,16 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
   pixel = fmin(clip, pixel);
-
   write_imagef (out, (int2)(x, y), pixel);
 }
 
 kernel void highlights_false_color(
         read_only image2d_t in,
         write_only image2d_t out,
-        const int width,
-        const int height,
+        const int owidth,
+        const int oheight,
+        const int iwidth,
+        const int iheight,
         const int rx,
         const int ry,
         const unsigned int filters,
@@ -299,12 +300,18 @@ kernel void highlights_false_color(
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if(x >= width || y >= height) return;
+  if(x >= owidth || y >= oheight) return;
 
-  const float ival = read_imagef(in, sampleri, (int2)(x, y)).x;
-  const int c = (filters == 9u) ? FCxtrans(y + ry, x + rx, xtrans) : FC(y + ry, x + rx, filters);
-  float oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+  const int irow = y + ry;
+  const int icol = x + rx;
+  float oval = 0.0f;
 
+  if((irow >= 0) && (icol >= 0) && (icol < iwidth) && (irow < iheight))
+  { 
+    const float ival = read_imagef(in, sampleri, (int2)(icol, irow)).x;
+    const int c = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+    oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+  }
   write_imagef (out, (int2)(x, y), oval);
 }
 
@@ -768,8 +775,9 @@ interpolate_and_mask(read_only image2d_t input,
                      write_only image2d_t clipping_mask,
                      constant float *clips,
                      constant float *wb,
-                     const int filters,
-                     const int width, const int height)
+                     const unsigned int filters,
+                     const int width,
+                     const int height)
 {
   // Bilinear interpolation
   const int j = get_global_id(0); // = x
@@ -901,8 +909,9 @@ remosaic_and_replace(read_only image2d_t input,
                      read_only image2d_t clipping_mask,
                      write_only image2d_t output,
                      constant float *wb,
-                     const int filters,
-                     const int width, const int height)
+                     const unsigned int filters,
+                     const int width,
+                     const int height)
 {
   // Take RGB ratios and norm, reconstruct RGB and remosaic the image
   const int j = get_global_id(0); // = x
@@ -922,7 +931,8 @@ remosaic_and_replace(read_only image2d_t input,
 kernel void
 box_blur_5x5(read_only image2d_t in,
              write_only image2d_t out,
-             const int width, const int height)
+             const int width,
+             const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -944,8 +954,13 @@ box_blur_5x5(read_only image2d_t in,
 
 
 kernel void
-interpolate_bilinear(read_only image2d_t in, const int width_in, const int height_in,
-                     write_only image2d_t out, const int width_out, const int height_out, const int RGBa)
+interpolate_bilinear(read_only image2d_t in,
+                     const int width_in,
+                     const int height_in,
+                     write_only image2d_t out,
+                     const int width_out,
+                     const int height_out,
+                     const int RGBa)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -974,8 +989,8 @@ interpolate_bilinear(read_only image2d_t in, const int width_in, const int heigh
   // Nearest pixels in input array (nodes in grid)
   const float4 Q_NW = read_imagef(in, samplerA, (int2)(x_prev, y_prev));
   const float4 Q_NE = read_imagef(in, samplerA, (int2)(x_next, y_prev));
-  const float4 Q_SE = read_imagef(in, samplerA, (int2)(x_prev, y_next));
-  const float4 Q_SW = read_imagef(in, samplerA, (int2)(x_next, y_next));
+  const float4 Q_SE = read_imagef(in, samplerA, (int2)(x_next, y_next));
+  const float4 Q_SW = read_imagef(in, samplerA, (int2)(x_prev, y_next));
 
   // Spatial differences between nodes
   const float Dy_next = (float)y_next - y_in;
@@ -1001,12 +1016,18 @@ enum wavelets_scale_t
 
 
 kernel void
-guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
+guide_laplacians(read_only image2d_t HF,
+                 read_only image2d_t LF,
                  read_only image2d_t mask,
-                 read_only image2d_t output_r, write_only image2d_t output_w,
-                 const int width, const int height, const int mult,
-                 const float noise_level, const int salt,
-                 const unsigned char scale, const float radius_sq)
+                 read_only image2d_t output_r,
+                 write_only image2d_t output_w,
+                 const int width,
+                 const int height,
+                 const int mult,
+                 const float noise_level,
+                 const int salt,
+                 const unsigned int scale,
+                 const float radius_sq)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1075,10 +1096,10 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
       guiding_channel_HF = RED;
     }
     if(variance_HF.y > guiding_value_HF)
-      {
+    {
       guiding_value_HF = variance_HF.y;
       guiding_channel_HF = GREEN;
-      }
+    }
     if(variance_HF.z > guiding_value_HF)
     {
       guiding_value_HF = variance_HF.z;
@@ -1134,7 +1155,7 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 
   }
 
-  if((scale & FIRST_SCALE))
+  if(scale & FIRST_SCALE)
   {
     // out is not inited yet
     out = high_frequency;
@@ -1145,7 +1166,7 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
     out = read_imagef(output_r, samplerA, (int2)(x, y)) + high_frequency;
   }
 
-  if((scale & LAST_SCALE))
+  if(scale & LAST_SCALE)
   {
     // add the residual and clamp
     out = fmax(out + read_imagef(LF, samplerA, (int2)(x, y)), (float4)0.f);
@@ -1170,7 +1191,7 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
     out = fmax(alpha * noise + alpha_comp * out, 0.f);
   }
 
-  if((scale & LAST_SCALE))
+  if(scale & LAST_SCALE)
   {
     // Break the RGB channels into ratios/norm for the next step of reconstruction
     const float4 out_2 = out * out;
@@ -1183,11 +1204,16 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 }
 
 kernel void
-diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
+diffuse_color(read_only image2d_t HF,
+              read_only image2d_t LF,
               read_only image2d_t mask,
-              read_only image2d_t output_r, write_only image2d_t output_w,
-              const int width, const int height,
-              const int mult, const unsigned char scale, const float first_order_factor)
+              read_only image2d_t output_r,
+              write_only image2d_t output_w,
+              const int width,
+              const int height,
+              const int mult,
+              const unsigned int scale,
+              const float first_order_factor)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1250,7 +1276,7 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     high_frequency.w = norm_backup;
   }
 
-  if((scale & FIRST_SCALE))
+  if(scale & FIRST_SCALE)
   {
     // out is not inited yet
     out = high_frequency;
@@ -1261,7 +1287,7 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     out = read_imagef(output_r, samplerA, (int2)(x, y)) + high_frequency;
   }
 
-  if((scale & LAST_SCALE))
+  if(scale & LAST_SCALE)
   {
     // add the residual and clamp
     out = fmax(out + read_imagef(LF, samplerA, (int2)(x, y)), (float4)0.f);

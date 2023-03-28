@@ -2159,7 +2159,7 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
   // pre-gamma image. Now that preview pipe is complete, draw it
   // FIXME: it would be nice if process() just queued a redraw if not in live view, but then our draw code would have to have some other way to assure that the histogram image is current besides checking the pixelpipe to see if it has processed the current image
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
 }
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)

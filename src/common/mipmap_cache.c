@@ -326,7 +326,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
     // dt_print(DT_DEBUG_ALWAYS, "[mipmap cache] alloc dynamic for key %u %p\n", key, *buf);
     if(!(entry->data))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[mipmap cache] memory allocation failed!\n");
+      dt_print(DT_DEBUG_ALWAYS, "[mipmap_cache] memory allocation failed!\n");
       exit(1);
     }
 
@@ -471,7 +471,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
               if(free_mb < 100)
               {
                 dt_print(DT_DEBUG_ALWAYS,
-                         "Aborting image write as only %" PRId64 " MB free to write %s\n",
+                         "[mipmap_cache] aborting image write as only %" PRId64 " MB free to write %s\n",
                          free_mb, filename);
                 goto write_error;
               }
@@ -479,7 +479,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
             else
             {
               dt_print(DT_DEBUG_ALWAYS,
-                       "Aborting image write since couldn't determine free space available to write %s\n",
+                       "[mipmap_cache] aborting image write since couldn't determine free space available to write %s\n",
                        filename);
               goto write_error;
             }
@@ -604,16 +604,16 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
-  printf("[mipmap_cache] thumbs fill %.2f/%.2f MB (%.2f%%)\n",
-         cache->mip_thumbs.cache.cost / (1024.0 * 1024.0),
-         cache->mip_thumbs.cache.cost_quota / (1024.0 * 1024.0),
-         100.0f * (float)cache->mip_thumbs.cache.cost / (float)cache->mip_thumbs.cache.cost_quota);
-  printf("[mipmap_cache] float fill %"PRIu32"/%"PRIu32" slots (%.2f%%)\n",
-         (uint32_t)cache->mip_f.cache.cost, (uint32_t)cache->mip_f.cache.cost_quota,
-         100.0f * (float)cache->mip_f.cache.cost / (float)cache->mip_f.cache.cost_quota);
-  printf("[mipmap_cache] full  fill %"PRIu32"/%"PRIu32" slots (%.2f%%)\n",
-         (uint32_t)cache->mip_full.cache.cost, (uint32_t)cache->mip_full.cache.cost_quota,
-         100.0f * (float)cache->mip_full.cache.cost / (float)cache->mip_full.cache.cost_quota);
+  dt_print(DT_DEBUG_ALWAYS,"[mipmap_cache] thumbs fill %.2f/%.2f MB (%.2f%%)\n",
+           cache->mip_thumbs.cache.cost / (1024.0 * 1024.0),
+           cache->mip_thumbs.cache.cost_quota / (1024.0 * 1024.0),
+           100.0f * (float)cache->mip_thumbs.cache.cost / (float)cache->mip_thumbs.cache.cost_quota);
+  dt_print(DT_DEBUG_ALWAYS,"[mipmap_cache] float fill %"PRIu32"/%"PRIu32" slots (%.2f%%)\n",
+           (uint32_t)cache->mip_f.cache.cost, (uint32_t)cache->mip_f.cache.cost_quota,
+           100.0f * (float)cache->mip_f.cache.cost / (float)cache->mip_f.cache.cost_quota);
+  dt_print(DT_DEBUG_ALWAYS,"[mipmap_cache] full  fill %"PRIu32"/%"PRIu32" slots (%.2f%%)\n",
+           (uint32_t)cache->mip_full.cache.cost, (uint32_t)cache->mip_full.cache.cost_quota,
+           100.0f * (float)cache->mip_full.cache.cost / (float)cache->mip_full.cache.cost_quota);
 
   uint64_t sum = 0;
   uint64_t sum_fetches = 0;
@@ -627,26 +627,25 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
   sum += cache->mip_full.stats_requests;
   sum_fetches += cache->mip_full.stats_fetches;
   sum_standins += cache->mip_full.stats_standin;
-  printf("[mipmap_cache] level | near match | miss | stand-in | fetches | total rq\n");
-  printf("[mipmap_cache] thumb | %6.2f%% | %6.2f%% | %6.2f%%  | %6.2f%% | %6.2f%%\n",
-         100.0 * cache->mip_thumbs.stats_near_match / (float)cache->mip_thumbs.stats_requests,
-         100.0 * cache->mip_thumbs.stats_misses / (float)cache->mip_thumbs.stats_requests,
-         100.0 * cache->mip_thumbs.stats_standin / (float)sum_standins,
-         100.0 * cache->mip_thumbs.stats_fetches / (float)sum_fetches,
-         100.0 * cache->mip_thumbs.stats_requests / (float)sum);
-  printf("[mipmap_cache] float | %6.2f%% | %6.2f%% | %6.2f%%  | %6.2f%% | %6.2f%%\n",
-         100.0 * cache->mip_f.stats_near_match / (float)cache->mip_f.stats_requests,
-         100.0 * cache->mip_f.stats_misses / (float)cache->mip_f.stats_requests,
-         100.0 * cache->mip_f.stats_standin / (float)sum_standins,
-         100.0 * cache->mip_f.stats_fetches / (float)sum_fetches,
-         100.0 * cache->mip_f.stats_requests / (float)sum);
-  printf("[mipmap_cache] full  | %6.2f%% | %6.2f%% | %6.2f%%  | %6.2f%% | %6.2f%%\n",
-         100.0 * cache->mip_full.stats_near_match / (float)cache->mip_full.stats_requests,
-         100.0 * cache->mip_full.stats_misses / (float)cache->mip_full.stats_requests,
-         100.0 * cache->mip_full.stats_standin / (float)sum_standins,
-         100.0 * cache->mip_full.stats_fetches / (float)sum_fetches,
-         100.0 * cache->mip_full.stats_requests / (float)sum);
-  printf("\n\n");
+  dt_print(DT_DEBUG_ALWAYS,"[mipmap_cache] level | near match | miss | stand-in | fetches | total rq\n");
+  dt_print(DT_DEBUG_ALWAYS,"[mipmap_cache] thumb | %6.2f%% | %6.2f%% | %6.2f%%  | %6.2f%% | %6.2f%%\n",
+           100.0 * cache->mip_thumbs.stats_near_match / (float)cache->mip_thumbs.stats_requests,
+           100.0 * cache->mip_thumbs.stats_misses / (float)cache->mip_thumbs.stats_requests,
+           100.0 * cache->mip_thumbs.stats_standin / (float)sum_standins,
+           100.0 * cache->mip_thumbs.stats_fetches / (float)sum_fetches,
+           100.0 * cache->mip_thumbs.stats_requests / (float)sum);
+  dt_print(DT_DEBUG_ALWAYS,"[mipmap_cache] float | %6.2f%% | %6.2f%% | %6.2f%%  | %6.2f%% | %6.2f%%\n",
+           100.0 * cache->mip_f.stats_near_match / (float)cache->mip_f.stats_requests,
+           100.0 * cache->mip_f.stats_misses / (float)cache->mip_f.stats_requests,
+           100.0 * cache->mip_f.stats_standin / (float)sum_standins,
+           100.0 * cache->mip_f.stats_fetches / (float)sum_fetches,
+           100.0 * cache->mip_f.stats_requests / (float)sum);
+  dt_print(DT_DEBUG_ALWAYS,"[mipmap_cache] full  | %6.2f%% | %6.2f%% | %6.2f%%  | %6.2f%% | %6.2f%%\n\n\n",
+           100.0 * cache->mip_full.stats_near_match / (float)cache->mip_full.stats_requests,
+           100.0 * cache->mip_full.stats_misses / (float)cache->mip_full.stats_requests,
+           100.0 * cache->mip_full.stats_standin / (float)sum_standins,
+           100.0 * cache->mip_full.stats_fetches / (float)sum_fetches,
+           100.0 * cache->mip_full.stats_requests / (float)sum);
 }
 
 static gboolean _raise_signal_mipmap_updated(gpointer user_data)
