@@ -1651,7 +1651,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
 }
 
 // TODO: can this blob also contain xmp and iptc data?
-int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
+gboolean dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
 {
   try
   {
@@ -1659,20 +1659,20 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
     Exiv2::ExifParser::decode(exifData, blob, size);
     bool res = _exif_decode_exif_data(img, exifData);
     dt_exif_apply_default_metadata(img);
-    return res ? 0 : 1;
+    return res ? FALSE : TRUE;
   }
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
     std::cerr << "[exiv2 dt_exif_read_from_blob] " << img->filename << ": " << s << std::endl;
-    return 1;
+    return TRUE;
   }
 }
 
 /**
  * Get the largest possible thumbnail from the image
  */
-int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char **mime_type)
+gboolean dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char **mime_type)
 {
   try
   {
@@ -1687,7 +1687,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
     if(list.empty())
     {
       dt_print(DT_DEBUG_LIGHTTABLE, "[exiv2 dt_exif_get_thumbnail] couldn't find thumbnail for %s", path);
-      return 1;
+      return TRUE;
     }
 
     // Select the largest one
@@ -1705,24 +1705,24 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
     *buffer = (uint8_t *)malloc(_size);
     if(!*buffer) {
       std::cerr << "[exiv2 dt_exif_get_thumbnail] couldn't allocate memory for thumbnail for " << path << std::endl;
-      return 1;
+      return TRUE;
     }
     //std::cerr << "[exiv2] "<< path << ": found thumbnail "<< preview.width() << "x" << preview.height() << std::endl;
     memcpy(*buffer, tmp, _size);
 
-    return 0;
+    return FALSE;
   }
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_get_thumbnail] %s: %s\n", path, e.what());
-    return 1;
+    return TRUE;
   }
 }
 
 /** read the metadata of an image.
  * XMP data trumps IPTC data trumps EXIF data
  */
-int dt_exif_read(dt_image_t *img, const char *path)
+gboolean dt_exif_read(dt_image_t *img, const char *path)
 {
   // at least set datetime taken to something useful in case there is no exif data in this file (pfm, png,
   // ...)
@@ -1778,12 +1778,12 @@ int dt_exif_read(dt_image_t *img, const char *path)
     img->height = image->pixelHeight();
     img->width = image->pixelWidth();
 
-    return res ? 0 : 1;
+    return res ? FALSE : TRUE;
   }
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,"[exiv2 dt_exif_read] %s: %s\n", path, e.what());
-    return 1;
+    return TRUE;
   }
 }
 
@@ -1861,8 +1861,13 @@ static void dt_remove_exif_geotag(Exiv2::ExifData &exifData)
   dt_remove_exif_keys(exifData, keys, n_keys);
 }
 
-int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const int sRGB, const int out_width,
-                      const int out_height, const int dng_mode)
+int dt_exif_read_blob(uint8_t **buf,
+                      const char *path,
+                      const int32_t imgid,
+                      const int sRGB,
+                      const int out_width,
+                      const int out_height,
+                      const int dng_mode)
 {
   *buf = NULL;
   try
@@ -3056,11 +3061,11 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
 }
 
 // need a write lock on *img (non-const) to write stars (and soon color labels).
-int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only)
+gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only)
 {
   // exclude pfm to avoid stupid errors on the console
   const char *c = filename + strlen(filename) - 4;
-  if(c >= filename && !strcmp(c, ".pfm")) return 1;
+  if(c >= filename && !strcmp(c, ".pfm")) return TRUE;
   try
   {
     // read xmp sidecar
@@ -3217,7 +3222,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     {
       std::cerr << "error: Xmp schema version " << xmp_version << " in " << filename << " not supported" << std::endl;
       g_hash_table_destroy(mask_entries);
-      return 1;
+      return TRUE;
     }
 
     dt_database_start_transaction(darktable.db);
@@ -3337,7 +3342,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
             g_list_free_full(mask_entries_v3, free_mask_entry);
             if(mask_entries) g_hash_table_destroy(mask_entries);
             g_free(e);
-            return 1;
+            return TRUE;
           }
         }
         else
@@ -3528,7 +3533,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     {
       std::cerr << "[exif] error reading history from '" << filename << "'" << std::endl;
       dt_database_rollback_transaction(darktable.db);
-      return 1;
+      return TRUE;
     }
 
   }
@@ -3537,9 +3542,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     // actually nobody's interested in that if the file doesn't exist:
     // std::string s(e.what());
     // std::cerr << "[exiv2] " << filename << ": " << s << std::endl;
-    return 1;
+    return TRUE;
   }
-  return 0;
+  return FALSE;
 }
 
 // add history metadata to XmpData
@@ -4108,7 +4113,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
 #define ERROR_CODE(a) (a)
 #endif
 
-char *dt_exif_xmp_read_string(const int imgid)
+char *dt_exif_xmp_read_string(const int32_t imgid)
 {
   try
   {
@@ -4420,8 +4425,11 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp, dt_develop_t *dev, dt_dev_pixel
 }
 
 
-int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata, dt_develop_t *dev,
-                              dt_dev_pixelpipe_t *pipe)
+gboolean dt_exif_xmp_attach_export(const int32_t imgid,
+                                   const char *filename,
+                                   void *metadata,
+                                   dt_develop_t *dev,
+                                   dt_dev_pixelpipe_t *pipe)
 {
   dt_export_metadata_t *m = (dt_export_metadata_t *)metadata;
   try
@@ -4651,30 +4659,30 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         catch(Exiv2::AnyError &e2)
         {
           std::cerr << "[dt_exif_xmp_attach_export] without history " << filename << ": caught exiv2 exception '" << e2 << "'\n";
-          return -1;
+          return TRUE;
         }
       }
       else
         throw;
     }
-    return 0;
+    return FALSE;
   }
   catch(Exiv2::AnyError &e)
   {
     std::cerr << "[dt_exif_xmp_attach_export] " << filename << ": caught exiv2 exception '" << e << "'\n";
-    return -1;
+    return TRUE;
   }
 }
 
-// write xmp sidecar file:
-int dt_exif_xmp_write(const int imgid, const char *filename)
+// write xmp sidecar file: returns TRUE in case of errors
+gboolean dt_exif_xmp_write(const int32_t imgid, const char *filename)
 {
   // refuse to write sidecar for non-existent image:
   char imgfname[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
 
   dt_image_full_path(imgid, imgfname, sizeof(imgfname), &from_cache);
-  if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
+  if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return TRUE;
 
   try
   {
@@ -4750,16 +4758,16 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       {
         dt_print(DT_DEBUG_ALWAYS, "cannot write XMP file '%s': '%s'\n", filename, strerror(errno));
         dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, strerror(errno));
-        return -1;
+        return TRUE;
       }
     }
 
-    return 0;
+    return FALSE;
   }
   catch(Exiv2::AnyError &e)
   {
     std::cerr << "[dt_exif_xmp_write] " << filename << ": caught exiv2 exception '" << e << "'\n";
-    return -1;
+    return TRUE;
   }
 }
 

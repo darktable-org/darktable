@@ -1,22 +1,23 @@
 /*
- *    This file is part of darktable,
- *    Copyright (C) 2018-2020 darktable developers.
- *
- *    darktable is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    darktable is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+    This file is part of darktable,
+    Copyright (C) 2018-2023 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "common/l10n.h"
+#include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/conf.h"
 
@@ -43,7 +44,7 @@ static gchar* _dt_full_locale_name(const char *locale)
   {
     if(error)
     {
-      fprintf(stderr, "couldn't check locale: '%s'\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "[l10n] couldn't check locale: '%s'\n", error->message);
       g_error_free(error);
     }
   }
@@ -136,8 +137,8 @@ static void get_language_names(GList *languages)
 
   if(!g_file_test(filename, G_FILE_TEST_EXISTS))
   {
-    fprintf(stderr, "[l10n] error: can't open iso-codes file `%s'\n"
-                    "       there won't be nicely translated language names in the preferences.\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[l10n] error: can't open iso-codes file `%s'\n"
+             "                   there won't be nicely translated language names in the preferences.\n", filename);
     goto end;
   }
 
@@ -164,7 +165,7 @@ static void get_language_names(GList *languages)
   parser = json_parser_new();
   if(!json_parser_load_from_file(parser, filename, &error))
   {
-    fprintf(stderr, "[l10n] error: parsing json from `%s' failed\n%s\n", filename, error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[l10n] error: parsing json from `%s' failed\n%s\n", filename, error->message);
     goto end;
   }
 
@@ -172,7 +173,7 @@ static void get_language_names(GList *languages)
   JsonNode *root = json_parser_get_root(parser);
   if(!root)
   {
-    fprintf(stderr, "[l10n] error: can't get root node of `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[l10n] error: can't get root node of `%s'\n", filename);
     goto end;
   }
 
@@ -180,13 +181,13 @@ static void get_language_names(GList *languages)
 
   if(!json_reader_read_member(reader, "639-2"))
   {
-    fprintf(stderr, "[l10n] error: unexpected layout of `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[l10n] error: unexpected layout of `%s'\n", filename);
     goto end;
   }
 
   if(!json_reader_is_array(reader))
   {
-    fprintf(stderr, "[l10n] error: unexpected layout of `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[l10n] error: unexpected layout of `%s'\n", filename);
     goto end;
   }
 
@@ -198,7 +199,7 @@ static void get_language_names(GList *languages)
     json_reader_read_element(reader, i);
     if(!json_reader_is_object(reader))
     {
-      fprintf(stderr, "[l10n] error: unexpected layout of `%s' (element %d)\n", filename, i);
+      dt_print(DT_DEBUG_ALWAYS, "[l10n] error: unexpected layout of `%s' (element %d)\n", filename, i);
       free(saved_locale);
       saved_locale = NULL;
       goto end;
@@ -264,7 +265,7 @@ static void get_language_names(GList *languages)
       }
     }
     else
-      fprintf(stderr, "[l10n] error: element %d has no name, skipping\n", i);
+      dt_print(DT_DEBUG_ALWAYS, "[l10n] error: element %d has no name, skipping\n", i);
 
     json_reader_end_element(reader);
   }
@@ -389,7 +390,7 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
       g_dir_close(dir) ;
     }
     else
-      fprintf(stderr, "[l10n] error: can't open directory `%s'\n", localedir);
+      dt_print(DT_DEBUG_ALWAYS, "[l10n] error: can't open directory `%s'\n", localedir);
 
     // default to English if no other language matched
     if(!sys_default)

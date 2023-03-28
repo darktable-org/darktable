@@ -692,7 +692,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   buffer[1] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
   if(buffer[1] == NULL)
   {
-    printf("not enough memory for wavelet decomposition");
+    dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -701,7 +701,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   layers = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
   if(layers == NULL)
   {
-    printf("not enough memory for wavelet decomposition");
+    dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -722,7 +722,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     merged_layers = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
     if(merged_layers == NULL)
     {
-      printf("not enough memory for wavelet decomposition");
+      dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
@@ -751,7 +751,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     temp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
     if(temp == NULL)
     {
-      printf("not enough memory for wavelet decomposition");
+      dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
@@ -940,4 +940,3 @@ cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -600,6 +600,56 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 {
 }
 
+static void _dump_pipe_pfm_diff(
+        const char *mod,
+        const void *indata,
+        const dt_iop_roi_t *roi_in,
+        const int inbpp,
+        const void *outdata,
+        const dt_iop_roi_t *roi_out,
+        const int outbpp,
+        const char *pipe)
+{
+  if(!darktable.dump_pfm_pipe) return;
+  if(!mod) return;
+  if(!dt_str_commasubstring(darktable.dump_pfm_pipe, mod)) return; 
+  if(inbpp != outbpp) return;
+  if(!(inbpp == 16 || inbpp == 4)) return;
+
+
+  const int fchannels = inbpp / 4; 
+  float *mixed = dt_alloc_align_float((size_t)fchannels * roi_out->width * roi_out->height);
+  if(!mixed) return;
+
+  const float *in = indata;
+  const float *out = outdata;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_in, roi_out, mixed, in, out, fchannels) \
+  schedule(static) collapse(2)
+#endif
+  for(int row = 0; row < roi_out->height; row++)
+  {
+    for(int col = 0; col < roi_out->width; col++)
+    {
+      const size_t ox = fchannels * (row * roi_out->width + col);
+      const int irow = row + roi_out->y;
+      const int icol = col + roi_out->x;
+
+      for(int c = 0; c < fchannels; c++)
+      {
+        if((irow < roi_in->height) && (icol < roi_in->width) && (icol >= 0) && (irow >= 0))
+          mixed[ox+c] = fabsf(in[fchannels * (irow * roi_in->width + icol)+c] - out[ox+c]);
+        else
+          mixed[ox+c] = 0.0f;
+      }
+    }
+  }
+  dt_dump_pfm_file(pipe, mixed, roi_out->width, roi_out->height, outbpp, mod, "[dt_dump_pipe_pfm]", TRUE, TRUE, TRUE);
+  dt_free_align(mixed);
+}
+
 // helper to get per module histogram
 static void _histogram_collect(dt_dev_pixelpipe_iop_t *piece,
                                const void *pixel,
@@ -1113,10 +1163,13 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
 
     if(pfm_dump)
+    {
       dt_dump_pipe_pfm(module->so->op, *output,
                        roi_out->width, roi_out->height, bpp,
                        FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
-
+      _dump_pipe_pfm_diff(module->so->op, input, roi_in, in_bpp, *output, roi_out, bpp,
+                                          dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+    }
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
   }
@@ -1168,10 +1221,14 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     module->process(module, piece, input, *output, roi_in, roi_out);
 
     if(pfm_dump)
+    {
       dt_dump_pipe_pfm(module->so->op, *output,
                        roi_out->width, roi_out->height, bpp,
                        FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+      _dump_pipe_pfm_diff(module->so->op, input, roi_in, in_bpp, *output, roi_out, bpp,
+                                          dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
+    }
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
   }

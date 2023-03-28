@@ -75,7 +75,8 @@ void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
 
   dt_image_init(&dev->image_storage);
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-  dev->history_updating = dev->image_force_reload = dev->image_loading = dev->preview_loading = FALSE;
+  dev->history_updating = dev->image_force_reload = FALSE;
+  dev->image_loading = dev->preview_loading = FALSE;
   dev->preview2_loading = dev->preview_input_changed = dev->preview2_input_changed = FALSE;
   dev->image_invalid_cnt = 0;
   dev->pipe = dev->preview_pipe = dev->preview2_pipe = NULL;
@@ -119,13 +120,17 @@ void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
 
   dev->proxy.exposure.module = NULL;
   dev->proxy.chroma_adaptation = NULL;
-  dev->proxy.wb_is_D65 = TRUE; // don't display error messages until we know for sure it's FALSE
+  dev->proxy.wb_is_D65 = TRUE; // don't display error messages until
+                               // we know for sure it's FALSE
   dev->proxy.wb_coeffs[0] = 0.f;
 
   dev->rawoverexposed.enabled = FALSE;
-  dev->rawoverexposed.mode = dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
-  dev->rawoverexposed.colorscheme = dt_conf_get_int("darkroom/ui/rawoverexposed/colorscheme");
-  dev->rawoverexposed.threshold = dt_conf_get_float("darkroom/ui/rawoverexposed/threshold");
+  dev->rawoverexposed.mode =
+    dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
+  dev->rawoverexposed.colorscheme =
+    dt_conf_get_int("darkroom/ui/rawoverexposed/colorscheme");
+  dev->rawoverexposed.threshold =
+    dt_conf_get_float("darkroom/ui/rawoverexposed/threshold");
 
   dev->overexposed.enabled = FALSE;
   dev->overexposed.mode = dt_conf_get_int("darkroom/ui/overexposed/mode");
@@ -185,7 +190,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   g_list_free_full(dev->iop_order_list, free);
   while(dev->allprofile_info)
   {
-    dt_ioppr_cleanup_profile_info((dt_iop_order_iccprofile_info_t *)dev->allprofile_info->data);
+    dt_ioppr_cleanup_profile_info
+      ((dt_iop_order_iccprofile_info_t *)dev->allprofile_info->data);
     dt_free_align(dev->allprofile_info->data);
     dev->allprofile_info = g_list_delete_link(dev->allprofile_info, dev->allprofile_info);
   }
@@ -196,9 +202,12 @@ void dt_dev_cleanup(dt_develop_t *dev)
   g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
 
-  dt_conf_set_int("darkroom/ui/rawoverexposed/mode", dev->rawoverexposed.mode);
-  dt_conf_set_int("darkroom/ui/rawoverexposed/colorscheme", dev->rawoverexposed.colorscheme);
-  dt_conf_set_float("darkroom/ui/rawoverexposed/threshold", dev->rawoverexposed.threshold);
+  dt_conf_set_int("darkroom/ui/rawoverexposed/mode",
+                  dev->rawoverexposed.mode);
+  dt_conf_set_int("darkroom/ui/rawoverexposed/colorscheme",
+                  dev->rawoverexposed.colorscheme);
+  dt_conf_set_float("darkroom/ui/rawoverexposed/threshold",
+                    dev->rawoverexposed.threshold);
 
   dt_conf_set_int("darkroom/ui/overexposed/mode", dev->overexposed.mode);
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
@@ -302,7 +311,8 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
             // completion, which in turn will trigger us again later.
   }
   // init pixel pipeline for preview.
-  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);
+  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev,
+                             (float *)buf.buf, buf.width, buf.height, buf.iscale);
 
   if(dev->preview_loading)
   {
@@ -473,7 +483,8 @@ restart:
     dt_second_window_set_dev_zoom_x(dev, zoom_x);
     dt_second_window_set_dev_zoom_y(dev, zoom_y);
   }
-  const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1.0f, 0) * dev->second_window.ppd;
+  const float scale =
+    dt_second_window_get_zoom_scale(dev, zoom, 1.0f, 0) * dev->second_window.ppd;
   int window_width = dev->second_window.width * dev->second_window.ppd;
   int window_height = dev->second_window.height * dev->second_window.ppd;
   if(closeup)
@@ -516,7 +527,8 @@ restart:
   dt_pthread_mutex_unlock(&dev->preview2_pipe_mutex);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
+                                DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
@@ -568,7 +580,8 @@ void dt_dev_process_image_job(dt_develop_t *dev)
       dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       dev->preview2_input_changed = TRUE;
       dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->gui_synch = 1; // notify gui thread we want to synch (call gui_update in the modules)
+      dev->gui_synch = 1; // notify gui thread we want to synch (call
+                          // gui_update in the modules)
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
       dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
@@ -636,7 +649,9 @@ restart:
     else
       goto restart;
   }
-  dt_show_times_f(&start, "[dev_process_image] pixel pipeline", "processing `%s'", dev->image_storage.filename);
+  dt_show_times_f(&start,
+                  "[dev_process_image] pixel pipeline", "processing `%s'",
+                  dev->image_storage.filename);
   dt_dev_average_delay_update(&start, &dev->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
@@ -679,7 +694,8 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL,
+                      DT_MIPMAP_BLOCKING, 'r');
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   dt_show_times(&start, "[dt_dev_load_raw] loading the image.");
 
@@ -706,8 +722,14 @@ float dt_dev_get_zoom_scale(
 {
   float zoom_scale;
 
-  const float w = preview ? dev->preview_pipe->processed_width : dev->pipe->processed_width;
-  const float h = preview ? dev->preview_pipe->processed_height : dev->pipe->processed_height;
+  const float w = preview
+    ? dev->preview_pipe->processed_width
+    : dev->pipe->processed_width;
+
+  const float h = preview
+    ? dev->preview_pipe->processed_height
+    : dev->pipe->processed_height;
+
   const float ps = dev->pipe->backbuf_width
     ? dev->pipe->processed_width / (float)dev->preview_pipe->processed_width
     : dev->preview_pipe->iscale;
@@ -820,21 +842,22 @@ int dt_dev_write_history_item(const int imgid,
                               const int32_t num)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT num FROM main.history WHERE imgid = ?1 AND num = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT num FROM main.history WHERE imgid = ?1 AND num = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   if(sqlite3_step(stmt) != SQLITE_ROW)
   {
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.history (imgid, num) VALUES (?1, ?2)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "INSERT INTO main.history (imgid, num) VALUES (?1, ?2)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
     sqlite3_step(stmt);
   }
-  // printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op,
-  // *(float *)h->params, *(((float *)h->params)+1));
+
   sqlite3_finalize(stmt);
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -852,7 +875,8 @@ int dt_dev_write_history_item(const int imgid,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, h->enabled);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, num);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, h->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, h->blend_params,
+                             sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, h->multi_priority);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, h->multi_name, -1, SQLITE_TRANSIENT);
@@ -939,10 +963,10 @@ static void _dev_add_history_item_ext(
     }
   }
 
-  if(!history                                                  // no history yet, push new item
-     || new_item                                               // a new item is requested
+  if(!history                                              // no history yet, push new item
+     || new_item                                           // a new item is requested
      || module != hist->module
-     || module->instance != hist->module->instance             // add new item for different op
+     || module->instance != hist->module->instance         // add new item for different op
      || module->multi_priority != hist->module->multi_priority // or instance
      || ((dev->focus_hash != hist->focus_hash)                 // or if focused out and in
          // but only add item if there is a difference at all for the same module
@@ -952,9 +976,6 @@ static void _dev_add_history_item_ext(
                  && memcmp(hist->params, module->params, module->params_size)))))
   {
     // new operation, push new item
-    // printf("adding new history item %d - %s\n", dev->history_end, module->op);
-    // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1,
-    // ((dt_dev_history_item_t *)history->data)->module->op);
     dev->history_end++;
 
     hist = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
@@ -981,14 +1002,14 @@ static void _dev_add_history_item_ext(
     if(!no_image)
     {
       dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
-      dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
+      // topology remains, as modules are fixed for now:
+      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+      dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
   }
   else
   {
     // same operation, change params
-    // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
     hist = (dt_dev_history_item_t *)history->data;
     memcpy(hist->params, module->params, module->params_size);
 
@@ -1470,7 +1491,7 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
   // we make sure that the multi-name is updated if possible with the
   // actual preset name if any is defined for the default parameters.
 
-  char *preset_name = dt_presets_get_name
+  char *preset_name = dt_presets_get_module_label
     (module->op,
      module->default_params, module->params_size, TRUE,
      module->blend_params, sizeof(dt_develop_blend_params_t));
@@ -1625,23 +1646,39 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   char query[1024];
   // clang-format off
 
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
   snprintf(query, sizeof(query),
            "INSERT OR REPLACE INTO memory.history"
            " SELECT ?1, 0, op_version, operation, op_params,"
            "       enabled, blendop_params, blendop_version,"
            "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
-           "       COALESCE(NULLIF(multi_name,''), NULLIF(name,'')), 0"
+           "       %s, multi_name_hand_edited"
            " FROM %s"
            " WHERE ( (autoapply=1"
-           "          AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+           "          AND ((?2 LIKE model AND ?3 LIKE maker)"
+           "               OR (?4 LIKE model AND ?5 LIKE maker))"
            "          AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
            "          AND ?8 BETWEEN exposure_min AND exposure_max"
            "          AND ?9 BETWEEN aperture_min AND aperture_max"
            "          AND ?10 BETWEEN focal_length_min AND focal_length_max"
            "          AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
            "   AND operation NOT IN"
-           "        ('ioporder', 'metadata', 'modulegroups', 'export', 'tagging', 'collect', '%s')"
+           "       ('ioporder', 'metadata', 'modulegroups', 'export',"
+           "        'tagging', 'collect', '%s')"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
+           // auto module:
+           //  ON  : we take as the preset label either the multi-name
+           //        if defined or the preset name.
+           //  OFF : we take the multi-name only if hand-edited otherwise a
+           //        simple incremental instance number (equivalent to the multi_priority
+           //        field is used).
+           auto_module
+             ? "COALESCE(NULLIF(multi_name,''), NULLIF(name,''))"
+             : "CASE WHEN multi_name_hand_edited"
+               "  THEN multi_name"
+               "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
+               " END",
            preset_table[legacy],
            is_display_referred?"":"basecurve");
   // clang-format on
@@ -1651,13 +1688,16 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   int iformat = 0;
   if(dt_image_is_rawprepare_supported(image))
     iformat |= FOR_RAW;
-  else iformat |= FOR_LDR;
+  else
+    iformat |= FOR_LDR;
   if(dt_image_is_hdr(image))
     iformat |= FOR_HDR;
 
   int excluded = 0;
-  if(dt_image_monochrome_flags(image)) excluded |= FOR_NOT_MONO;
-  else excluded |= FOR_NOT_COLOR;
+  if(dt_image_monochrome_flags(image))
+    excluded |= FOR_NOT_MONO;
+  else
+    excluded |= FOR_NOT_COLOR;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1705,9 +1745,12 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(FLT_MAX, image->exif_iso)));
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f,
+                                                fminf(1000000, image->exif_exposure)));
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f,
+                                                fminf(1000000, image->exif_aperture)));
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f,
+                                                 fminf(1000000, image->exif_focal_length)));
     // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
@@ -2970,10 +3013,14 @@ int dt_dev_distort_backtransform_locked(dt_develop_t *dev,
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order))
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
+               && module->iop_order >= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+               && module->iop_order > iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
+               && module->iop_order <= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
+               && module->iop_order < iop_order))
        && !(dev->gui_module && dev->gui_module != module
             && (dev->gui_module->operation_tags_filter() & module->operation_tags())))
     {
@@ -2999,7 +3046,9 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev,
       for(size_t idx=0; idx < 2 * points_count; idx++)
         points[idx] /= dev->preview_downsampling;
 
-  const int success = dt_dev_distort_backtransform_locked(dev, pipe, iop_order, transf_direction, points, points_count);
+  const int success = dt_dev_distort_backtransform_locked
+    (dev, pipe, iop_order,
+     transf_direction, points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return success;
 }
@@ -3008,7 +3057,9 @@ dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
                                                     struct dt_dev_pixelpipe_t *pipe,
                                                     struct dt_iop_module_t *module)
 {
-  for(const GList *pieces = g_list_last(pipe->nodes); pieces; pieces = g_list_previous(pieces))
+  for(const GList *pieces = g_list_last(pipe->nodes);
+      pieces;
+      pieces = g_list_previous(pieces))
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->module == module)
@@ -3043,10 +3094,14 @@ uint64_t dt_dev_hash_plus(dt_develop_t *dev,
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)))
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
+                              && module->iop_order >= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+                              && module->iop_order > iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
+                              && module->iop_order <= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
+                              && module->iop_order < iop_order)))
     {
       hash = ((hash << 5) + hash) ^ piece->hash;
     }
@@ -3152,10 +3207,14 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev,
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled && module->operation_tags() & IOP_TAG_DISTORT
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)))
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
+               && module->iop_order >= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+               && module->iop_order > iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
+               && module->iop_order <= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
+               && module->iop_order < iop_order)))
     {
       hash = ((hash << 5) + hash) ^ piece->hash;
     }
@@ -3240,14 +3299,18 @@ int dt_dev_sync_pixelpipe_hash_distort(dt_develop_t *dev,
 void dt_dev_reorder_gui_module_list(dt_develop_t *dev)
 {
   int pos_module = 0;
-  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
+  for(const GList *modules = g_list_last(dev->iop);
+      modules;
+      modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
     GtkWidget *expander = module->expander;
     if(expander)
     {
-      gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
+      gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui,
+                                                DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
+                            expander,
                             pos_module++);
     }
   }
@@ -3309,11 +3372,17 @@ float dt_second_window_get_zoom_scale(dt_develop_t *dev,
 {
   float zoom_scale = 0.0f;
 
-  const float w = preview ? dev->preview_pipe->processed_width : dev->preview2_pipe->processed_width;
-  const float h = preview ? dev->preview_pipe->processed_height : dev->preview2_pipe->processed_height;
+  const float w = preview
+    ? dev->preview_pipe->processed_width
+    : dev->preview2_pipe->processed_width;
+
+  const float h = preview
+    ? dev->preview_pipe->processed_height
+    : dev->preview2_pipe->processed_height;
+
   const float ps = dev->preview2_pipe->backbuf_width
-                       ? dev->preview2_pipe->processed_width / (float)dev->preview_pipe->processed_width
-                       : dev->preview_pipe->iscale;
+    ? dev->preview2_pipe->processed_width / (float)dev->preview_pipe->processed_width
+    : dev->preview_pipe->iscale;
 
   switch(zoom)
   {

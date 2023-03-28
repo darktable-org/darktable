@@ -38,18 +38,22 @@
 static char *dt_preset_encode(sqlite3_stmt *stmt, int row)
 {
   const int32_t len = sqlite3_column_bytes(stmt, row);
-  char *vparams = dt_exif_xmp_encode((const unsigned char *)sqlite3_column_blob(stmt, row), len, NULL);
+  char *vparams = dt_exif_xmp_encode
+    ((const unsigned char *)sqlite3_column_blob(stmt, row), len, NULL);
   return vparams;
 }
 
-void dt_presets_save_to_file(const int rowid, const char *preset_name, const char *filedir)
+void dt_presets_save_to_file(const int rowid,
+                             const char *preset_name,
+                             const char *filedir)
 {
   sqlite3_stmt *stmt;
 
   // generate filename based on name of preset
   // convert all characters to underscore which are not allowed in filenames
   gchar *presetname = g_strdup(preset_name);
-  gchar *filename = g_strdup_printf("%s/%s.dtpreset", filedir, g_strdelimit(presetname, "/<>:\"\\|*?[]", '_'));
+  gchar *filename = g_strdup_printf("%s/%s.dtpreset", filedir,
+                                    g_strdelimit(presetname, "/<>:\"\\|*?[]", '_'));
 
   g_free(presetname);
 
@@ -100,7 +104,9 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
 
     if(writer == NULL)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[dt_presets_save_to_file] Error creating the xml writer\n, path: %s", filename);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_presets_save_to_file] Error creating the xml writer\n, path: %s",
+               filename);
       g_free(filename);
       return;
     }
@@ -108,7 +114,8 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
     rc = xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
     if(rc < 0)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[dt_presets_save_to_file]: Error on encoding setting");
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_presets_save_to_file]: Error on encoding setting");
       g_free(filename);
       return;
     }
@@ -120,7 +127,8 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", name);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", description);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", operation);
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_preset_encode(stmt, 0));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s",
+                                    dt_preset_encode(stmt, 0));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_version", "%d", op_version);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", enabled);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "autoapply", "%d", autoapply);
@@ -133,13 +141,19 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "exposure_max", "%f", exposure_max);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "aperture_min", "%f", aperture_min);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "aperture_max", "%f", aperture_max);
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "focal_length_min", "%d", focal_length_min);
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "focal_length_max", "%d", focal_length_max);
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s", dt_preset_encode(stmt, 1));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d", blendop_version);
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d", multi_priority);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "focal_length_min", "%d",
+                                    focal_length_min);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "focal_length_max", "%d",
+                                    focal_length_max);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s",
+                                    dt_preset_encode(stmt, 1));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d",
+                                    blendop_version);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d",
+                                    multi_priority);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name", "%s", multi_name);
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name_hand_edited", "%d", multi_name_hand_edited);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name_hand_edited", "%d",
+                                    multi_name_hand_edited);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "filter", "%d", filter);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "def", "%d", def);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "format", "%d", format);
@@ -284,7 +298,8 @@ int dt_presets_import_from_file(const char *preset_path)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, focal_length_max);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 16, op_params_blob, op_params_len, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, op_version);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 18, blendop_params_blob, blendop_params_len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 18, blendop_params_blob, blendop_params_len,
+                             SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 19, blendop_version);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, enabled);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, multi_priority);
@@ -313,7 +328,9 @@ int dt_presets_import_from_file(const char *preset_path)
 
 gboolean dt_presets_module_can_autoapply(const gchar *operation)
 {
-  for(const GList *lib_modules = darktable.lib->plugins; lib_modules; lib_modules = g_list_next(lib_modules))
+  for(const GList *lib_modules = darktable.lib->plugins;
+      lib_modules;
+      lib_modules = g_list_next(lib_modules))
   {
     dt_lib_module_t *lib_module = (dt_lib_module_t *)lib_modules->data;
     if(!strcmp(lib_module->plugin_name, operation))
@@ -357,7 +374,8 @@ gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect
     if(((op_params_size == 0
          && !memcmp(module->default_params, module->params, module->params_size))
         || ((op_params_size > 0
-             && !memcmp(module->params, op_params, MIN(op_params_size, module->params_size)))))
+             && !memcmp(module->params, op_params,
+                        MIN(op_params_size, module->params_size)))))
        && !memcmp(module->blend_params, blendop_params,
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
        && module->enabled == enabled)
@@ -371,17 +389,22 @@ gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect
   return name;
 }
 
-char *dt_presets_get_name(const char *module_name,
-                          const void *params,
-                          const uint32_t param_size,
-                          const gboolean is_default_params,
-                          const void *blend_params,
-                          const uint32_t blend_params_size)
+char *dt_presets_get_module_label(const char *module_name,
+                                  const void *params,
+                                  const uint32_t param_size,
+                                  const gboolean is_default_params,
+                                  const void *blend_params,
+                                  const uint32_t blend_params_size)
 {
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+  if(!auto_module)
+    return NULL;
+
   sqlite3_stmt *stmt;
 
   // clang-format off
-  char *query = g_strdup_printf("SELECT name"
+  char *query = g_strdup_printf("SELECT name, multi_name"
                                 " FROM data.presets"
                                 " WHERE operation = ?1"
                                 "   AND (op_params = ?2"
@@ -398,13 +421,31 @@ char *dt_presets_get_name(const char *module_name,
 
   char *result = NULL;
 
+  // returns the preset's multi_name if defined otherwise the preset
+  // name is returned.
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    result = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
-
+  {
+    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    const char *multi_name = (const char *)sqlite3_column_text(stmt, 1);
+    if(strlen(multi_name) == 0 || multi_name[0] != ' ')
+      result = g_strdup(dt_presets_get_multi_name(name, multi_name));
+  }
   g_free(query);
   sqlite3_finalize(stmt);
 
   return result;
+}
+
+const char *dt_presets_get_multi_name(const char *name, const char *multi_name)
+{
+  const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+  // in auto-update mode     : use either the multi_name if defined otherwise the name
+  // in non auto-update mode : use only the multi_name if defined
+  if(auto_module)
+    return strlen(multi_name) > 0 ? multi_name : name;
+  else
+    return strlen(multi_name) > 0 ? multi_name : "";
 }
 
 // clang-format off

@@ -41,17 +41,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#if defined(__GNUC__)
-#pragma GCC optimize ("unroll-loops", "tree-loop-if-convert", \
-                      "tree-loop-distribution", "no-strict-aliasing", \
-                      "loop-interchange", "loop-nest-optimize", "tree-loop-im", \
-                      "unswitch-loops", "tree-loop-ivcanon", "ira-loop-pressure", \
-                      "split-ivs-in-unroller", "variable-expansion-in-unroller", \
-                      "split-loops", "ivopts", "predictive-commoning",\
-                      "tree-loop-linear", "loop-block", "loop-strip-mine", \
-                      "finite-math-only", "fp-contract=fast", "fast-math")
-#endif
-
 /** DOCUMENTATION
  *
  * This module allows to invert scanned negatives and simulate their print on paper, based on Kodak Cineon
@@ -260,6 +249,61 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->gamma = p->gamma;
 }
 
+static inline void _process_pixel(const dt_aligned_pixel_t pix_in,
+                                  dt_aligned_pixel_t pix_out,
+                                  const dt_aligned_pixel_t Dmin,
+                                  const dt_aligned_pixel_t wb_high,
+                                  const dt_aligned_pixel_t offset,
+                                  const dt_aligned_pixel_t black,
+                                  const dt_aligned_pixel_t exposure,
+                                  const dt_aligned_pixel_t gamma,
+                                  const dt_aligned_pixel_t soft_clip,
+                                  const dt_aligned_pixel_t soft_clip_comp)
+{
+    dt_aligned_pixel_t density;
+    // Convert transmission to density using Dmin as a fulcrum
+    dt_aligned_pixel_t clamped;
+    for_each_channel(c)
+    {
+      clamped[c] = MAX(pix_in[c],THRESHOLD);  // threshold to -32 EV
+      density[c] = Dmin[c] / clamped[c];
+    }
+    dt_aligned_pixel_t log_density;
+    dt_vector_log2(density, log_density);
+    #define LOG2_to_LOG10 0.3010299956f
+    for_each_channel(c)
+      log_density[c] *= -LOG2_to_LOG10;
+    // now log_density = -log10f( Dmin / MAX(pix_in, THRESHOLD) )
+    dt_aligned_pixel_t corrected_de;
+    for_each_channel(c)
+    {
+      // Correct density in log space
+      corrected_de[c] = wb_high[c] * log_density[c] + offset[c];
+    }
+    dt_aligned_pixel_t ten_to_x;
+    dt_vector_exp10(corrected_de, ten_to_x);
+    dt_aligned_pixel_t print_linear;
+    for_each_channel(c)
+    {
+      // Print density on paper : ((1 - 10^corrected_de + black) * exposure)^gamma rewritten for FMA
+      print_linear[c] = -(exposure[c] * ten_to_x[c] + black[c]);
+      print_linear[c] = MAX(print_linear[c], 0.0f);
+    }
+    dt_aligned_pixel_t print_gamma;
+    dt_vector_powf(print_linear, gamma, print_gamma); // note : this is always > 0
+    dt_aligned_pixel_t e_to_gamma;
+    dt_aligned_pixel_t clipped_gamma;
+    for_each_channel(c)
+      clipped_gamma[c] = -(print_gamma[c] - soft_clip[c]) / soft_clip_comp[c];
+    dt_vector_exp(clipped_gamma, e_to_gamma);
+    for_each_channel(c)
+    {
+      // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
+      pix_out[c] = (print_gamma[c] > soft_clip[c])
+        ? soft_clip[c] + (1.0f - e_to_gamma[c] * soft_clip_comp[c])
+        : print_gamma[c];
+    }
+}
 
 void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
              const void *const restrict ivoid, void *const restrict ovoid,
@@ -271,37 +315,35 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
   const float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
 
+  dt_aligned_pixel_t gamma;
+  dt_aligned_pixel_t black;
+  dt_aligned_pixel_t exposure;
+  dt_aligned_pixel_t soft_clip;
+  dt_aligned_pixel_t soft_clip_comp;
+  for_each_channel(c)
+  {
+    gamma[c] = d->gamma;
+    black[c] = d->black;
+    exposure[c] = d->exposure;
+    soft_clip[c] = d->soft_clip;
+    soft_clip_comp[c] = d->soft_clip_comp;
+  }
+  // Unpack vectors one by one with extra pragmas to be sure the compiler understands they can be vectorized
+  const float *const restrict Dmin = __builtin_assume_aligned(d->Dmin, 16);
+  const float *const restrict wb_high = __builtin_assume_aligned(d->wb_high, 16);
+  const float *const restrict offset = __builtin_assume_aligned(d->offset, 16);
 
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(d, in, out, roi_out) \
-    aligned(in, out:64) collapse(2)
+    dt_omp_firstprivate(d, in, out, roi_out, exposure, black, gamma, soft_clip, soft_clip_comp, \
+                        Dmin, wb_high, offset)                                              \
+    aligned(in, out:64)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * 4; k += 4)
   {
-    for(size_t c = 0; c < 4; c++)
-    {
-      // Unpack vectors one by one with extra pragmas to be sure the compiler understands they can be vectorized
-      const float *const restrict pix_in = in + k;
-      float *const restrict pix_out = out + k;
-      const float *const restrict Dmin = __builtin_assume_aligned(d->Dmin, 16);
-      const float *const restrict wb_high = __builtin_assume_aligned(d->wb_high, 16);
-      const float *const restrict offset = __builtin_assume_aligned(d->offset, 16);
-
-      // Convert transmission to density using Dmin as a fulcrum
-      const float density = - log10f(Dmin[c] / fmaxf(pix_in[c], THRESHOLD)); // threshold to -32 EV
-
-      // Correct density in log space
-      const float corrected_de = wb_high[c] * density + offset[c];
-
-      // Print density on paper : ((1 - 10^corrected_de + black) * exposure)^gamma rewritten for FMA
-      const float print_linear = -(d->exposure * fast_exp10f(corrected_de) + d->black);
-      const float print_gamma = powf(fmaxf(print_linear, 0.0f), d->gamma); // note : this is always > 0
-
-      // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
-      pix_out[c] =  (print_gamma > d->soft_clip) ? d->soft_clip + (1.0f - fast_expf(-(print_gamma - d->soft_clip) / d->soft_clip_comp)) * d->soft_clip_comp
-                                                 : print_gamma;
-    }
+    const float *const restrict pix_in = in + k;
+    float *const restrict pix_out = out + k;
+    _process_pixel(pix_in, pix_out, Dmin, wb_high, offset, black, exposure, gamma, soft_clip, soft_clip_comp);
   }
 }
 

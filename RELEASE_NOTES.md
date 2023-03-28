@@ -39,10 +39,15 @@ The following is a summary of the main features added to darktable
   after).
 
   To better view which module instance corresponds to which preset the
-  module label is set to the preset name. This preset name will be
-  changed if some parameters on the module are changed (and so does
-  not correspond to the preset anymore). If the module label is hand
-  edited it will be kept.
+  module label is set to the preset label. This module label will be
+  changed if some parameters on the module are changed. The module's
+  label will be cleared if no preset match or will be set to the new
+  preset label otherwise. If the module label has been hand edited it
+  will be kept as-is and will never be updated automatically.
+
+  A new option named "automatically update module name" (activated by
+  default) has been introduced to allow to fully disable the module's
+  label auto update.
 
 - Rework the module default parameters and make them usable
   in copy/paste, presets and styles.
@@ -168,6 +173,7 @@ The following is a summary of the main features added to darktable
   - Lowlight vision
   - Velvia
   - Split-toning
+  - Nega Doctor
 
   - Filmic (legacy)
   - Color Balance (legacy)
@@ -198,6 +204,11 @@ The following is a summary of the main features added to darktable
     Lowpass Filter, Shadow and Highlights, Censorize, Retouch, Color
     Mapping, Rotation and Perspective and Local Contrast. Meaning all
     those modules have parts now running faster.
+
+  - All the blending modes in Lab & RGB for the Display & Scene
+    referred workflows have been optimized.
+
+  - The luminance mask calculation for the Tone Equalizer.
 
   - Loader for JPEG2000 file format
 
@@ -326,6 +337,24 @@ The following is a summary of the main features added to darktable
 - Style tooltip immediately shows module details while waiting for
   preview image to be calculated.
 
+- In the style and copy/paste dialog a new column display the module
+  masking status. If any mask (draw, parametric or raster) is used the
+  column contains a mask icon.
+
+- Makes the drawn mask tools' tooltip of Liquify module consistent
+  with the other mask tools as found in the blending drawn masks.
+
+- Removed "Demosaicing for zoomed out darkroom mode" configuration
+  option. This option is not useful now that the pixel-pipe cache
+  has been improved. It could also potentially lead to slight
+  differences.
+
+- In mask manager some actions in the menu could be activated even
+  though they were a no-op given the context. So now the move up/down
+  action are disabled for the first and last element in a group
+  respectively. The setting of the mask operator is disabled for the
+  first element in a group. Basically those are small UI improvements.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
@@ -441,6 +470,19 @@ The following is a summary of the main features added to darktable
 - Avoid XMP writing if not requested and image was not altered. This
   is rule is properly followed now also when importing RAW + JPEG.
 
+- Make sure the database timestamp is always set when possibly writing
+  a sidecar xmp file.
+
+- A workaround was implemented for the mouse hover effect over sliders
+  and dropdowns, that used to cause the whole side panel, including
+  histogram, to be redrawn on each move between widgets, reducing cpu
+  consumption.
+
+- Fix operator state in the mask manager. When moving up/down a mask
+  we ensure that the first mask has no operator and that the second
+  one has an operator assigned. If no operator has been set yet the
+  default union operator is assigned.
+
 ## Lua
 
 ### API Version
@@ -488,6 +530,13 @@ The following is a summary of the main features added to darktable
 
 - Added aspect_ratio field to dt_lua_image_t for image orientation
   retrieval support.
+
+- dt_lua_image_t now repects the `show time in milliseconds` setting
+  in lighttable preferences and will return exif_datetime_taken with
+  milliseconds when enabled.
+
+- Added final_height, final_width, p_height, and p_width fields to 
+  dt_lua_image_t.
 
 - Two new properties have been added to get the flags (category,
   private) and the synonyms from a tag.

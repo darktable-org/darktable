@@ -1406,6 +1406,8 @@ static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button,
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
+  dt_iop_request_focus(module);
+
   const gboolean was_toggled = !gtk_toggle_button_get_active(button);
   gtk_toggle_button_set_active(button, was_toggled);
 
