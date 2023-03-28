@@ -495,6 +495,38 @@ static inline void dt_vector_powf(const dt_aligned_pixel_t input,
 #endif
 }
 
+static inline void dt_vector_add(dt_aligned_pixel_t sum,
+                                 const dt_aligned_pixel_t v1,
+                                 const dt_aligned_pixel_t v2)
+{
+  for_four_channels(c, aligned(sum,v1,v2))
+    sum[c] = v1[c] + v2[c];
+}
+
+static inline void dt_vector_sub(dt_aligned_pixel_t diff,
+                                 const dt_aligned_pixel_t v1,
+                                 const dt_aligned_pixel_t v2)
+{
+  for_four_channels(c, aligned(diff,v1,v2))
+    diff[c] = v1[c] - v2[c];
+}
+
+static inline void dt_vector_mul(dt_aligned_pixel_t result,
+                                 const dt_aligned_pixel_t v1,
+                                 const dt_aligned_pixel_t v2)
+{
+  for_four_channels(c, aligned(result,v1,v2))
+    result[c] = v1[c] * v2[c];
+}
+
+static inline void dt_vector_div(dt_aligned_pixel_t result,
+                                 const dt_aligned_pixel_t v1,
+                                 const dt_aligned_pixel_t v2)
+{
+  for_four_channels(c, aligned(result,v1,v2))
+    result[c] = v1[c] / v2[c];
+}
+
 static inline void dt_vector_min(dt_aligned_pixel_t min,
                                  const dt_aligned_pixel_t v1,
                                  const dt_aligned_pixel_t v2)
