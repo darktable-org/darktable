@@ -46,81 +46,123 @@ static inline void weight(const dt_aligned_pixel_t c1,
   dt_vector_exp(sharpened, weight);				// { wl, wc, wc, 1 }
 }
 
-#define SUM_PIXEL_CONTRIBUTION(ii, jj) 		                                                             \
-  do                                                                                                         \
-  {                                                                                                          \
-    const float f = filter[(ii)] * filter[(jj)];                                                             \
-    dt_aligned_pixel_t wp;                                                                                   \
-    weight(px, px2, vsharpen, wp);                                                                           \
-    dt_aligned_pixel_t w;                                                                                    \
-    dt_aligned_pixel_t pd;                                                                                   \
-    for_four_channels(c,aligned(px2))                                                                        \
-    {                                                                                                        \
-      w[c] = f * wp[c];                                                                                      \
-      wgt[c] += w[c];                                                                                        \
-      pd[c] = w[c] * px2[c];                                                                                 \
-      sum[c] += pd[c];                                                                                       \
-    }                                                                                                        \
+static inline void accumulate(dt_aligned_pixel_t accum,
+                              const dt_aligned_pixel_t detail,
+                              const dt_aligned_pixel_t thresh,
+                              const dt_aligned_pixel_t boostval)
+{
+  // decrease the absolute magnitude of the detail by the threshold,
+  // then add the result to the accumulator; copysignf does not
+  // vectorize, but it turns out that just adding up two clamped
+  // alternatives gives exactly the same result and DOES vectorize
+  //    const float absamt = fmaxf(0.0f, (fabsf(detail[k + c]) - threshold[c]));
+  //    const float amount = copysignf(absamt, detail[k + c]);
+  // the below code is the vectorization of
+  //   amount = MAX(detail - thresh, 0.0f) + MIN(detail + thresh, 0.0f);
+  static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t sum, diff;
+  for_four_channels(c, aligned(sum, diff, detail, thresh))
+  {
+    sum[c] = detail[c] + thresh[c];
+    diff[c] = detail[c] - thresh[c];
+  }
+  dt_vector_min(sum, sum, zero);
+  dt_vector_max(diff, diff, zero);
+  dt_aligned_pixel_t amount;
+  for_four_channels(c, aligned(amount, sum, diff))
+    amount[c] = sum[c] + diff[c];
+
+  for_four_channels(c,aligned(accum,detail,thresh,boostval))
+  {
+    accum[c] += (boostval[c] * amount[c]);
+  }
+}
+
+#define SUM_PIXEL_CONTRIBUTION						\
+  do                                                                    \
+  {                                                                     \
+    dt_aligned_pixel_t wp;                                              \
+    weight(px + 4*i, px2, vsharpen, wp);                                \
+    dt_aligned_pixel_t w;                                               \
+    const float f = filter[filter_idx++];                               \
+    for_four_channels(c,aligned(px2))                                   \
+    {                                                                   \
+      w[c] = f * wp[c];                                                 \
+      wgt[c] += w[c];                                                   \
+      sum[c] += w[c] * px2[c];                                          \
+    }                                                                   \
   } while(0)
 
 #define SUM_PIXEL_PROLOGUE                                                                                   \
   dt_aligned_pixel_t sum = { 0.0f, 0.0f, 0.0f, 0.0f };                                                       \
-  dt_aligned_pixel_t wgt = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t wgt = { 0.0f, 0.0f, 0.0f, 0.0f };							     \
+  size_t filter_idx = 0;
 
 #define SUM_PIXEL_EPILOGUE                                                                                   \
-  dt_aligned_pixel_t det;                                               				     \
+  dt_aligned_pixel_t det;										     \
   for_each_channel(c)      										     \
   {													     \
     sum[c] /= wgt[c];                                                   				     \
-    det[c] = (px[c] - sum[c]);									     \
+    det[c] = (px[4*i+c] - sum[c]);								     	     \
   }                                                                       				     \
-  copy_pixel_nontemporal(pcoarse,sum);                                  				     \
-  copy_pixel_nontemporal(pdetail,det);                                  				     \
-  px += 4;                                                                                                   \
-  pdetail += 4;                                                                                              \
-  pcoarse += 4;
+  copy_pixel_nontemporal(pcoarse + 4*i,sum);                                  				     \
+  accumulate(pdetail + 4*i, det, threshold, boost);							     \
 
-void eaw_decompose(float *const restrict out, const float *const restrict in, float *const restrict detail,
-                   const int scale, const float sharpen, const int32_t width, const int32_t height)
+void eaw_decompose_and_synthesize(float *const restrict out,
+                                  const float *const restrict in,
+                                  float *const restrict accum,
+                                  const int scale,
+                                  const float sharpen,
+                                  const dt_aligned_pixel_t threshold,
+                                  const dt_aligned_pixel_t boost,
+                                  const ssize_t width,
+                                  const ssize_t height)
 {
   const int mult = 1 << scale;
-  static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+  static const float filter[25] =
+    {
+      1.0f / 256.0f,  4.0f / 256.0f,  6.0f / 256.0f,  4.0f / 256.0f, 1.0f / 256.0f,
+      4.0f / 256.0f, 16.0f / 256.0f, 24.0f / 256.0f, 16.0f / 256.0f, 4.0f / 256.0f,
+      6.0f / 256.0f, 24.0f / 256.0f, 36.0f / 256.0f, 24.0f / 256.0f, 6.0f / 256.0f,
+      4.0f / 256.0f, 16.0f / 256.0f, 24.0f / 256.0f, 16.0f / 256.0f, 4.0f / 256.0f,
+      1.0f / 256.0f,  4.0f / 256.0f,  6.0f / 256.0f,  4.0f / 256.0f, 1.0f / 256.0f
+    };
   const int boundary = 2 * mult;
   const dt_aligned_pixel_t vsharpen = { -0.5f * sharpen, -sharpen, -sharpen, 0.0f };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(detail, filter, height, in, vsharpen, mult, boundary, out, width) \
+  dt_omp_firstprivate(accum, filter, height, in, vsharpen, threshold, boost, mult, boundary, out, width) \
   schedule(static)
 #endif
-  for(int rowid = 0; rowid < height; rowid++)
+  for(size_t rowid = 0; rowid < height; rowid++)
   {
     const size_t j = dwt_interleave_rows(rowid, height, mult);
     const float *px = ((float *)in) + (size_t)4 * j * width;
     const float *px2;
-    float *pdetail = detail + (size_t)4 * j * width;
+    float *pdetail = accum + (size_t)4 * j * width;
     float *pcoarse = out + (size_t)4 * j * width;
 
     // for the first and last 'boundary' rows, we have to perform boundary tests for the entire row;
     //   for the central bulk, we only need to use those slower versions on the leftmost and rightmost pixels
-    const int lbound = (j < boundary || j >= height - boundary) ? width-boundary : boundary;
+    const size_t lbound = (j < boundary || j >= height - boundary) ? width-boundary : boundary;
 
     /* The first "2*mult" pixels need a boundary check because we might try to access past the left edge,
      * which requires nearest pixel interpolation */
-    int i;
+    size_t i;
     for(i = 0; i < lbound; i++)
     {
       SUM_PIXEL_PROLOGUE;
-      for(int jj = 0; jj < 5; jj++)
+      for(ssize_t jj = 0; jj < 5; jj++)
       {
-        const int y = j + mult * (jj-2);
-        const int clamp_y = CLAMP(y,0,height-1);
-        for(int ii = 0; ii < 5; ii++)
+        const ssize_t y = j + mult * (jj-2);
+        const ssize_t clamp_y = CLAMP(y,0,height-1);
+        for(ssize_t ii = 0; ii < 5; ii++)
         {
-          int x = i + mult * ((ii)-2);
+          ssize_t x = i + mult * ((ii)-2);
           if(x < 0) x = 0;			// we might be looking past the left edge
           px2 = ((float *)in) + 4 * x + (size_t)4 * clamp_y * width;
-          SUM_PIXEL_CONTRIBUTION(ii, jj);
+          SUM_PIXEL_CONTRIBUTION;
         }
       }
       SUM_PIXEL_EPILOGUE;
@@ -131,11 +173,11 @@ void eaw_decompose(float *const restrict out, const float *const restrict in, fl
     {
       SUM_PIXEL_PROLOGUE;
       px2 = ((float *)in) + (size_t)4 * (i - 2 * mult + (size_t)(j - 2 * mult) * width);
-      for(int jj = 0; jj < 5; jj++)
+      for(ssize_t jj = 0; jj < 5; jj++)
       {
-        for(int ii = 0; ii < 5; ii++)
+        for(ssize_t ii = 0; ii < 5; ii++)
         {
-          SUM_PIXEL_CONTRIBUTION(ii, jj);
+          SUM_PIXEL_CONTRIBUTION;
           px2 += (size_t)4 * mult;
         }
         px2 += (size_t)4 * (width - 5) * mult;
@@ -147,16 +189,16 @@ void eaw_decompose(float *const restrict out, const float *const restrict in, fl
     for( ; i < width; i++)
     {
       SUM_PIXEL_PROLOGUE;
-      for(int jj = 0; jj < 5; jj++)
+      for(ssize_t jj = 0; jj < 5; jj++)
       {
-        const int y = j + mult * (jj-2);
-        const int clamp_y = CLAMP(y,0,height-1);
-        for(int ii = 0; ii < 5; ii++)
+        const ssize_t y = j + mult * (jj-2);
+        const ssize_t clamp_y = CLAMP(y,0,height-1);
+        for(ssize_t ii = 0; ii < 5; ii++)
         {
-          int x = i + mult * ((ii)-2);
+          ssize_t x = i + mult * ((ii)-2);
           if(x >= width) x = width - 1;		// we might be looking beyond the right edge
           px2 = ((float *)in) + 4 * x + (size_t)4 * clamp_y * width;
-          SUM_PIXEL_CONTRIBUTION(ii, jj);
+          SUM_PIXEL_CONTRIBUTION;
         }
       }
       SUM_PIXEL_EPILOGUE;
@@ -179,17 +221,7 @@ void eaw_synthesize(float *const out, const float *const in, const float *const 
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
-    dt_aligned_pixel_t synth;
-    for_four_channels(c,aligned(in,detail))
-    {
-      // decrease the absolute magnitude of the detail by the threshold; copysignf does not vectorize, but it
-      // turns out that just adding up two clamped alternatives gives exactly the same result and DOES vectorize
-      //const float absamt = fmaxf(0.0f, (fabsf(detail[k + c]) - threshold[c]));
-      //const float amount = copysignf(absamt, detail[k + c]);
-      const float amount = MAX(detail[4*k+c] - thresh[c], 0.0f) + MIN(detail[4*k+c] + thresh[c], 0.0f);
-      synth[c] = in[4*k + c] + (boostval[c] * amount);
-    }
-    copy_pixel_nontemporal(out + 4*k, synth);
+    accumulate(out + 4*k, detail + 4*k, thresh, boostval);
   }
   dt_omploop_sfence();
 }
@@ -228,18 +260,16 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
 #endif
 
 #undef SUM_PIXEL_CONTRIBUTION
-#define SUM_PIXEL_CONTRIBUTION(ii, jj) 		                                                             \
+#define SUM_PIXEL_CONTRIBUTION	 		                                                             \
   do                                                                                                         \
   {                                                                                                          \
-    const float f = filter[(ii)] * filter[(jj)];                                                             \
+    const float f = filter[filter_idx++];                                                                    \
     const float wp = dn_weight(px, px2, inv_sigma2);                                                         \
     const float w = f * wp;                                                                                  \
-    dt_aligned_pixel_t pd;                                                                                   \
     for_each_channel(c,aligned(px2))                                                                         \
     {                                                                                                        \
-      pd[c] = w * px2[c];                                                                                    \
       wgt[c] += w;                                                                                           \
-      sum[c] += pd[c];                                                                                       \
+      sum[c] += w * px2[c];                                                                                  \
     }                                                                                                        \
   } while(0)
 
@@ -262,7 +292,14 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
                       const int32_t width, const int32_t height)
 {
   const int mult = 1u << scale;
-  static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+  static const float filter[25] =
+    {
+      1.0f / 256.0f,  4.0f / 256.0f,  6.0f / 256.0f,  4.0f / 256.0f, 1.0f / 256.0f,
+      4.0f / 256.0f, 16.0f / 256.0f, 24.0f / 256.0f, 16.0f / 256.0f, 4.0f / 256.0f,
+      6.0f / 256.0f, 24.0f / 256.0f, 36.0f / 256.0f, 24.0f / 256.0f, 6.0f / 256.0f,
+      4.0f / 256.0f, 16.0f / 256.0f, 24.0f / 256.0f, 16.0f / 256.0f, 4.0f / 256.0f,
+      1.0f / 256.0f,  4.0f / 256.0f,  6.0f / 256.0f,  4.0f / 256.0f, 1.0f / 256.0f
+    };
   const int boundary = 2 * mult;
 
   _aligned_pixel sum_sq = { .v = { 0.0f } };
@@ -302,7 +339,7 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
           int x = i + mult * ((ii)-2);
           if(x < 0) x = 0;			// we might be looking past the left edge
           px2 = ((float *)in) + 4 * x + (size_t)4 * clamp_y * width;
-          SUM_PIXEL_CONTRIBUTION(ii, jj);
+          SUM_PIXEL_CONTRIBUTION;
         }
       }
       SUM_PIXEL_EPILOGUE;
@@ -317,7 +354,7 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
       {
         for(int ii = 0; ii < 5; ii++)
         {
-          SUM_PIXEL_CONTRIBUTION(ii, jj);
+          SUM_PIXEL_CONTRIBUTION;
           px2 += (size_t)4 * mult;
         }
         px2 += (size_t)4 * (width - 5) * mult;
@@ -338,7 +375,7 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
           int x = i + mult * ((ii)-2);
           if(x >= width) x = width - 1;		// we might be looking past the right edge
           px2 = ((float *)in) + 4 * x + (size_t)4 * clamp_y * width;
-          SUM_PIXEL_CONTRIBUTION(ii, jj);
+          SUM_PIXEL_CONTRIBUTION;
         }
       }
       SUM_PIXEL_EPILOGUE;
