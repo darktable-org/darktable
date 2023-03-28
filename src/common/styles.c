@@ -133,13 +133,15 @@ static void _dt_style_cleanup_multi_instance(int id)
   char last_operation[128] = { 0 };
   int last_mi = 0;
 
-  /* let's clean-up the style multi-instance. What we want to do is have a unique multi_priority value for
-     each iop.
-     Furthermore this value must start to 0 and increment one by one for each multi-instance of the same
-     module. On
-     SQLite there is no notion of ROW_NUMBER, so we use rather resource consuming SQL statement, but as a
-     style has
-     never a huge number of items that's not a real issue. */
+  /* let's clean-up the style multi-instance. What we want to do is
+     have a unique multi_priority value for each iop.
+
+     Furthermore this value must start to 0 and increment one by one
+     for each multi-instance of the same module.
+
+     On SQLite there is no notion of ROW_NUMBER, so we use rather
+     resource consuming SQL statement, but as a style has never a huge
+     number of items that's not a real issue. */
 
   /* 1. read all data for the style and record multi_instance value. */
 
@@ -739,7 +741,8 @@ void dt_multiple_styles_apply_to_list(GList *styles,
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   const guint styles_cnt = g_list_length(styles);
-  dt_control_log(ngettext("style successfully applied!", "styles successfully applied!", styles_cnt));
+  dt_control_log(ngettext("style successfully applied!",
+                          "styles successfully applied!", styles_cnt));
 }
 
 void dt_styles_create_from_list(const GList *list)
@@ -1004,7 +1007,8 @@ void _styles_apply_to_image_ext(const char *name,
       memcpy(style_item->params, (void *)sqlite3_column_blob(stmt, 3), style_item->params_size);
       style_item->blendop_params_size = sqlite3_column_bytes(stmt, 5);
       style_item->blendop_params = (void *)malloc(style_item->blendop_params_size);
-      memcpy(style_item->blendop_params, (void *)sqlite3_column_blob(stmt, 5), style_item->blendop_params_size);
+      memcpy(style_item->blendop_params, (void *)sqlite3_column_blob(stmt, 5),
+             style_item->blendop_params_size);
       style_item->iop_order = 0;
 
       si_list = g_list_prepend(si_list, style_item);
@@ -1124,7 +1128,8 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
   {
     /* delete the style */
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.styles WHERE id = ?1", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM data.styles WHERE id = ?1", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
@@ -1166,7 +1171,9 @@ GList *dt_styles_get_item_list(const char *name,
     {
       // get all items from the style
       //    UNION
-      // get all items from history, not in the style : select only the last operation, that is max(num)
+      // get all items from history, not in the style : select only
+      // the last operation, that is max(num)
+
       // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
@@ -1187,7 +1194,8 @@ GList *dt_styles_get_item_list(const char *name,
           "        multi_name, FALSE, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
-          "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
+          "   AND (main.history.operation"
+          "        NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
           " GROUP BY operation HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
         // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -1353,7 +1361,8 @@ void dt_styles_save_to_file(const char *style_name,
   // generate filename based on name of style
   // convert all characters to underscore which are not allowed in filenames
   char *filename = g_strdup(style_name);
-  snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, g_strdelimit(filename, "/<>:\"\\|*?[]", '_'));
+  snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle",
+           filedir, g_strdelimit(filename, "/<>:\"\\|*?[]", '_'));
   g_free(filename);
 
   // check if file exists
@@ -1394,7 +1403,8 @@ void dt_styles_save_to_file(const char *style_name,
 
   xmlTextWriterStartElement(writer, BAD_CAST "info");
   xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
-  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", dt_styles_get_description(style_name));
+  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s",
+                                  dt_styles_get_description(style_name));
   GList *iop_list = dt_styles_module_order_list(style_name);
   if(iop_list)
   {
@@ -1419,16 +1429,26 @@ void dt_styles_save_to_file(const char *style_name,
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     xmlTextWriterStartElement(writer, BAD_CAST "plugin");
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d", sqlite3_column_int(stmt, 0));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d", sqlite3_column_int(stmt, 1));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", sqlite3_column_text(stmt, 2));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_style_encode(stmt, 3));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt, 4));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s", dt_style_encode(stmt, 5));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d", sqlite3_column_int(stmt, 6));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d", sqlite3_column_int(stmt, 7));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name", "%s", sqlite3_column_text(stmt, 8));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name_hand_edited", "%s", sqlite3_column_text(stmt, 9));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d",
+                                    sqlite3_column_int(stmt, 0));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d",
+                                    sqlite3_column_int(stmt, 1));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s",
+                                    sqlite3_column_text(stmt, 2));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s",
+                                    dt_style_encode(stmt, 3));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d",
+                                    sqlite3_column_int(stmt, 4));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s",
+                                    dt_style_encode(stmt, 5));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d",
+                                    sqlite3_column_int(stmt, 6));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d",
+                                    sqlite3_column_int(stmt, 7));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name", "%s",
+                                    sqlite3_column_text(stmt, 8));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name_hand_edited", "%s",
+                                    sqlite3_column_text(stmt, 9));
     xmlTextWriterEndElement(writer);
   }
   sqlite3_finalize(stmt);
@@ -1619,7 +1639,8 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version);
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, plugin->multi_priority);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, plugin->multi_name->str, plugin->multi_name->len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, plugin->multi_name->str,
+                             plugin->multi_name->len, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, plugin->multi_name_hand_edited);
 
   sqlite3_step(stmt);
@@ -1633,7 +1654,9 @@ static void dt_style_save(StyleData *style)
   if(style == NULL) return;
 
   /* first create the style header */
-  if(!dt_styles_create_style_header(style->info->name->str, style->info->description->str, style->info->iop_list)) return;
+  if(!dt_styles_create_style_header(style->info->name->str,
+                                    style->info->description->str, style->info->iop_list))
+    return;
 
   if((id = dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
