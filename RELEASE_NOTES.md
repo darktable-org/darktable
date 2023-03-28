@@ -483,6 +483,13 @@ The following is a summary of the main features added to darktable
   one has an operator assigned. If no operator has been set yet the
   default union operator is assigned.
 
+- In rotate & perspective, if the current rotation is close to +-180
+  degrees, adjusting it by drawing a horizon line with
+  <kbd>right-click+drag</kbd> could lead to it being clipped at the
+  end of the slider. It now correctly wraps around and a manually
+  entered value outside the range, like 182, will be wrapped as well,
+  to -178 degrees.
+
 ## Lua
 
 ### API Version
@@ -535,7 +542,7 @@ The following is a summary of the main features added to darktable
   in lighttable preferences and will return exif_datetime_taken with
   milliseconds when enabled.
 
-- Added final_height, final_width, p_height, and p_width fields to 
+- Added final_height, final_width, p_height, and p_width fields to
   dt_lua_image_t.
 
 - Two new properties have been added to get the flags (category,
