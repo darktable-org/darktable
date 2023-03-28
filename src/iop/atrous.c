@@ -249,8 +249,7 @@ static int get_scales(float (*thrs)[4], float (*boost)[4], float *sharp, const d
 /* just process the supplied image buffer, upstream default_process_tiling() does the rest */
 static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                              const void *const i, void *const o, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out, const eaw_decompose_t decompose,
-                             const eaw_synthesize_t synthesize)
+                             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
@@ -279,11 +278,10 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   }
 
   float *const restrict out = (float*)o;
-  float *restrict detail = NULL;
   float *restrict tmp = NULL;
   float *restrict tmp2 = NULL;
 
-  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 4, &detail, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 0))
   {
     dt_iop_copy_image_roi(out, i, piece->colors, roi_in, roi_out, TRUE);
     return;
@@ -299,8 +297,8 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   // that we don't need to store it past the current scale's iteration
   for(int scale = 0; scale < max_scale; scale++)
   {
-    decompose(buf2, buf1, detail, scale, sharp[scale], width, height);
-    synthesize(out, out, detail, thrs[scale], boost[scale], width, height);
+    eaw_decompose_and_synthesize(buf2, buf1, out, scale, sharp[scale], thrs[scale],
+                                 boost[scale], width, height);
     if(scale == 0) buf1 = (float *)tmp2; // now switch to second scratch for buffer ping-pong between buf1 and buf2
     float *buf3 = buf2;
     buf2 = buf1;
@@ -309,12 +307,13 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   // add in the final residue
 #ifdef _OPENMP
-#pragma omp simd aligned(buf1, out : 64)
+#pragma omp parallel for simd aligned(buf1, out : 64) \
+  dt_omp_firstprivate(width, height, buf1, out) \
+  schedule(simd:static) num_threads(MIN(dt_get_num_threads(),16))
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
 
-  dt_free_align(detail);
   dt_free_align(tmp);
   dt_free_align(tmp2);
   return;
@@ -323,7 +322,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 void process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
              void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  process_wavelets(self, piece, i, o, roi_in, roi_out, eaw_decompose, eaw_synthesize);
+  process_wavelets(self, piece, i, o, roi_in, roi_out);
 }
 
 #ifdef HAVE_OPENCL
@@ -587,7 +586,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = 2 * (1 << max_scale); // 2 * 2^max_scale
 
-  tiling->factor = 5.0f;                // in + out + 2*tmp + details
+  tiling->factor = 4.0f;                // in + out + 2*tmp
   tiling->factor_cl = 3.0f + max_scale; // in + out + tmp + scale buffers
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
