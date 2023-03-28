@@ -595,6 +595,7 @@ dialog .sidebar row:selected:hover label,
   font-size: 1.1em;
 }
 
+#snapshot-button entry,
 #iop-module-name
 {
   font-weight: lighter;
@@ -2303,4 +2304,23 @@ Details :
 #footer-toolbar scale
 {
   margin: 0.07em 0.28em;
+}
+
+/* The entry in the snapshot button must not be visible by default as we still want to see
+   a flat button. Only when flying over one can see that the area is editable */
+#snapshot-button entry
+{
+  background-color: @button_bg;
+  border: none;
+}
+
+#snapshot-button entry
+{
+  background-color: transparent;
+}
+
+#snapshot-button *
+{
+   padding-left: 1px;
+   padding-right: 1px;
 }
