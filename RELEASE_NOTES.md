@@ -355,6 +355,14 @@ The following is a summary of the main features added to darktable
   respectively. The setting of the mask operator is disabled for the
   first element in a group. Basically those are small UI improvements.
 
+- Two new sharpness' presets on the diffuse or sharpen module have
+  been added. One standard sharpness and one with a stronger effect.
+
+- The snapshots buttons have been redesigned to have a better look. The
+  display is now closer to the history module. At the same time the
+  module label is displayed and it is editable with
+  <kbd>ctrl+click</kbd>.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
