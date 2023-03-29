@@ -1307,7 +1307,7 @@ static inline gboolean _check_module_now_important(dt_dev_pixelpipe_t *pipe,
 }
 
 #ifdef HAVE_OPENCL
-static inline gboolean _opencl_pipe_is_inited(dt_dev_pixelpipe_t *pipe)
+static inline gboolean _opencl_pipe_isok(dt_dev_pixelpipe_t *pipe)
 {
   return darktable.opencl->inited
          && !darktable.opencl->stopped
@@ -1561,7 +1561,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     **out_format = pipe->dsc = piece->dsc_out = piece->dsc_in;
 
 #ifdef HAVE_OPENCL
-    if(_opencl_pipe_is_inited(pipe) && (cl_mem_input != NULL))
+    if(_opencl_pipe_isok(pipe) && (cl_mem_input != NULL))
     {
       *cl_mem_output = cl_mem_input;
     }
@@ -1644,7 +1644,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       = (input_format->cst != IOP_CS_RAW) ? dt_ioppr_get_pipe_work_profile_info(pipe) : NULL;
 
   /* do we have opencl at all? did user tell us to use it? did we get a resource? */
-  if(_opencl_pipe_is_inited(pipe))
+  if(_opencl_pipe_isok(pipe))
   {
     gboolean success_opencl = TRUE;
     dt_iop_colorspace_type_t input_cst_cl = input_format->cst;
@@ -2626,7 +2626,7 @@ restart:
                                               pieces, pos);
 
   // get status summary of opencl queue by checking the eventlist
-  const int oclerr = (pipe->devid >= 0) ? (dt_opencl_events_flush(pipe->devid, 1) != 0) : 0;
+  const int oclerr = (pipe->devid >= 0) ? (dt_opencl_events_flush(pipe->devid, TRUE) != 0) : 0;
 
   // Check if we had opencl errors ....  remark: opencl errors can
   // come in two ways: pipe->opencl_error is TRUE (and err is TRUE) OR
