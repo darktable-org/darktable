@@ -3590,7 +3590,8 @@ int button_pressed(dt_view_t *self,
         const float delta_x = 0.01f;
         const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
 
-        // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? -- would require a different hack for figuring out base of the drag
+        // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? 
+        // -- would require a different hack for figuring out base of the drag
         // hack: for box pickers, these represent the "base" point being dragged
         sample->point[0] = zoom_x;
         sample->point[1] = zoom_y;
@@ -3711,19 +3712,13 @@ int button_pressed(dt_view_t *self,
   if(which == 2) // Middle mouse button
   {
     // zoom to 1:1 2:1 and back
-    int procw, proch;
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     int closeup = dt_control_get_dev_closeup();
     float zoom_x = dt_control_get_dev_zoom_x();
     float zoom_y = dt_control_get_dev_zoom_y();
-    dt_dev_get_processed_size(dev, &procw, &proch);
     float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
     const float ppd = darktable.gui->ppd;
     const gboolean low_ppd = (darktable.gui->ppd == 1);
-    const float mouse_off_x = x - 0.5f * dev->width;
-    const float mouse_off_y = y - 0.5f * dev->height;
-    zoom_x += mouse_off_x / (procw * scale);
-    zoom_y += mouse_off_y / (proch * scale);
     const float tscale = scale * ppd;
     closeup = 0;
 
@@ -3764,8 +3759,6 @@ int button_pressed(dt_view_t *self,
     dt_control_set_dev_zoom_scale(scale);
     dt_control_set_dev_closeup(closeup);
     scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    zoom_x -= mouse_off_x / (procw * scale);
-    zoom_y -= mouse_off_y / (proch * scale);
     dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
     dt_control_set_dev_zoom(zoom);
     dt_control_set_dev_zoom_x(zoom_x);
