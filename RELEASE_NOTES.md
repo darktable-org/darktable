@@ -498,6 +498,8 @@ The following is a summary of the main features added to darktable
   entered value outside the range, like 182, will be wrapped as well,
   to -178 degrees.
 
+- Fixed monochrome images loading.
+
 ## Lua
 
 ### API Version
