@@ -484,10 +484,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
         for(int i = 0; i < img->width; i++, out += 4)
         {
-          for(int k = 0; k < 3; k++)
-          {
-            out[k] = (float)in(j, cpp * i + k) / (float)UINT16_MAX;
-          }
+          out[0] = out[1] = out[2] = (float)in(j, cpp * i) / (float)UINT16_MAX;
+          out[3] = 0.0f;
         }
       }
     }
@@ -503,10 +501,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
         for(int i = 0; i < img->width; i++, out += 4)
         {
-          for(int k = 0; k < 3; k++)
-          {
-            out[k] = in(j, cpp * i + k);
-          }
+          out[0] = out[1] = out[2] = in(j, cpp * i);
+          out[3] = 0.0f;
         }
       }
     }
