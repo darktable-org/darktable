@@ -1306,6 +1306,16 @@ static inline gboolean _check_module_now_important(dt_dev_pixelpipe_t *pipe,
   return (module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NOW);
 }
 
+#ifdef HAVE_OPENCL
+static inline gboolean _opencl_pipe_is_inited(dt_dev_pixelpipe_t *pipe)
+{
+  return darktable.opencl->inited
+         && !darktable.opencl->stopped
+         && pipe->opencl_enabled
+         && (pipe->devid >= 0);
+}
+#endif
+
 // recursive helper for process:
 static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                         dt_develop_t *dev,
@@ -1551,10 +1561,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     **out_format = pipe->dsc = piece->dsc_out = piece->dsc_in;
 
 #ifdef HAVE_OPENCL
-    if(dt_opencl_is_inited()
-       && pipe->opencl_enabled
-       && pipe->devid >= 0
-       && (cl_mem_input != NULL))
+    if(_opencl_pipe_is_inited(pipe) && (cl_mem_input != NULL))
     {
       *cl_mem_output = cl_mem_input;
     }
@@ -1637,7 +1644,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       = (input_format->cst != IOP_CS_RAW) ? dt_ioppr_get_pipe_work_profile_info(pipe) : NULL;
 
   /* do we have opencl at all? did user tell us to use it? did we get a resource? */
-  if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)
+  if(_opencl_pipe_is_inited(pipe))
   {
     gboolean success_opencl = TRUE;
     dt_iop_colorspace_type_t input_cst_cl = input_format->cst;
