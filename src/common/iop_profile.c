@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2022 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,28 +66,6 @@ static void _clear_lut_curves(dt_iop_order_iccprofile_info_t *const profile_info
     profile_info->lut_in[i][0] = -1.0f;
     profile_info->lut_out[i][0] = -1.0f;
   }
-}
-
-static char *_colorspace_to_name(dt_iop_colorspace_type_t type)
-{
-  switch(type)
-  {
-    case IOP_CS_NONE:
-      return "IOP_CS_NONE";
-    case IOP_CS_RAW:
-      return "IOP_CS_RAW";
-    case IOP_CS_LAB:
-      return "IOP_CS_LAB";
-    case IOP_CS_RGB:
-      return "IOP_CS_RGB";
-    case IOP_CS_LCH:
-      return "IOP_CS_LCH";
-    case IOP_CS_HSL:
-      return "IOP_CS_HSL";
-    case IOP_CS_JZCZHZ:
-      return "IOP_CS_JZCZHZ";
-  }
-  return "invalid IOP_CS";
 }
 
 static void _transform_from_to_rgb_lab_lcms2(
@@ -334,8 +312,13 @@ static inline void _transform_lcms2_rgb(const float *const image_in, float *cons
 }
 
 
-static inline int _init_unbounded_coeffs(float *const lutr, float *const lutg, float *const lutb,
-    float *const unbounded_coeffsr, float *const unbounded_coeffsg, float *const unbounded_coeffsb, const int lutsize)
+static inline int _init_unbounded_coeffs(float *const lutr,
+                                         float *const lutg,
+                                         float *const lutb,
+                                         float *const unbounded_coeffsr,
+                                         float *const unbounded_coeffsg,
+                                         float *const unbounded_coeffsb,
+                                         const int lutsize)
 {
   int nonlinearlut = 0;
   float *lut[3] = { lutr, lutg, lutb };
@@ -417,8 +400,10 @@ static inline void _apply_tonecurves(const float *const image_in, float *const i
 }
 
 
-static inline void _transform_rgb_to_lab_matrix(const float *const restrict image_in, float *const restrict image_out,
-                                                const int width, const int height,
+static inline void _transform_rgb_to_lab_matrix(const float *const restrict image_in,
+                                                float *const restrict image_out,
+                                                const int width,
+                                                const int height,
                                                 const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const int ch = 4;
@@ -466,9 +451,11 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
 }
 
 
-static inline void _transform_lab_to_rgb_matrix(const float *const image_in, float *const image_out, const int width,
-                                         const int height,
-                                         const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline void _transform_lab_to_rgb_matrix(const float *const image_in,
+                                                float *const image_out,
+                                                const int width,
+                                                const int height,
+                                                const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const int ch = 4;
   const size_t stride = (size_t)width * height * ch;
@@ -629,7 +616,7 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
   {
     *converted_cst = cst_from;
     dt_print(DT_DEBUG_ALWAYS, "[_transform_matrix] invalid conversion from %s to %s\n",
-      _colorspace_to_name(cst_from), _colorspace_to_name(cst_to));
+      dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to));
   }
 }
 
@@ -671,7 +658,10 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
  * it can be called multiple time between init and cleanup
  * return 0 if OK, non zero otherwise
  */
-static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profile_info, const int type, const char *filename, const int intent)
+static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
+                                          const int type,
+                                          const char *filename,
+                                          const int intent)
 {
   int err_code = 0;
   cmsHPROFILE *rgb_profile = NULL;
@@ -947,7 +937,8 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(struct dt_
   return pipe->output_profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe)
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(dt_iop_module_t *module,
+                                                                       struct dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_order_iccprofile_info_t *restrict color_profile;
 
@@ -1128,7 +1119,7 @@ void dt_ioppr_transform_image_colorspace(
     {
       dt_get_times(&end_time);
       dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f CPU) [%s %s]\n",
-          _colorspace_to_name(cst_from), _colorspace_to_name(cst_to),
+          dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -1140,7 +1131,7 @@ void dt_ioppr_transform_image_colorspace(
     {
       dt_get_times(&end_time);
       dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f lcms2) [%s %s]\n",
-          _colorspace_to_name(cst_from), _colorspace_to_name(cst_to),
+          dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -1148,12 +1139,14 @@ void dt_ioppr_transform_image_colorspace(
   if(*converted_cst == cst_from)
     dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace] in `%s', profile `%s', invalid conversion from %s to %s\n",
       self->so->op, dt_colorspaces_get_name(profile_info->type, profile_info->filename),
-      _colorspace_to_name(cst_from), _colorspace_to_name(cst_to));
+      dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to));
 }
 
 
 __DT_CLONE_TARGETS__
-void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_in, float *const restrict image_out, const int width,
+void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_in,
+                                             float *const restrict image_out,
+                                             const int width,
                                              const int height,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_to,
@@ -1207,8 +1200,7 @@ dt_colorspaces_cl_global_t *dt_colorspaces_init_cl_global()
   const int program = 23; // colorspaces.cl, from programs.conf
   g->kernel_colorspaces_transform_lab_to_rgb_matrix = dt_opencl_create_kernel(program, "colorspaces_transform_lab_to_rgb_matrix");
   g->kernel_colorspaces_transform_rgb_matrix_to_lab = dt_opencl_create_kernel(program, "colorspaces_transform_rgb_matrix_to_lab");
-  g->kernel_colorspaces_transform_rgb_matrix_to_rgb
-      = dt_opencl_create_kernel(program, "colorspaces_transform_rgb_matrix_to_rgb");
+  g->kernel_colorspaces_transform_rgb_matrix_to_rgb = dt_opencl_create_kernel(program, "colorspaces_transform_rgb_matrix_to_rgb");
   return g;
 }
 
@@ -1224,7 +1216,8 @@ void dt_colorspaces_free_cl_global(dt_colorspaces_cl_global_t *g)
   free(g);
 }
 
-void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info, dt_colorspaces_iccprofile_info_cl_t *profile_info_cl)
+void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
+                                  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl)
 {
   for(int i = 0; i < 9; i++)
   {
@@ -1261,8 +1254,10 @@ cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profil
 }
 
 cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
-                                           const int devid, dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
-                                           cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                           const int devid,
+                                           dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+                                           cl_float **_profile_lut_cl,
+                                           cl_mem *_dev_profile_info,
                                            cl_mem *_dev_profile_lut)
 {
   cl_int err = CL_SUCCESS;
@@ -1315,7 +1310,8 @@ cleanup:
 }
 
 void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
-                                        cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                        cl_float **_profile_lut_cl,
+                                        cl_mem *_dev_profile_info,
                                         cl_mem *_dev_profile_lut)
 {
   dt_colorspaces_iccprofile_info_cl_t *profile_info_cl = *_profile_info_cl;
@@ -1334,9 +1330,15 @@ void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_p
   *_dev_profile_lut = NULL;
 }
 
-int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
-                                           cl_mem dev_img_out, const int width, const int height,
-                                           const int cst_from, const int cst_to, int *converted_cst,
+int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
+                                           const int devid,
+                                           cl_mem dev_img_in,
+                                           cl_mem dev_img_out,
+                                           const int width,
+                                           const int height,
+                                           const int cst_from,
+                                           const int cst_to,
+                                           int *converted_cst,
                                            const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   cl_int err = CL_SUCCESS;
@@ -1393,7 +1395,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
       *converted_cst = cst_from;
       dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace_cl] in `%s', profile `%s', invalid conversion from %s to %s\n",
         self->so->op, dt_colorspaces_get_name(profile_info->type, profile_info->filename),
-        _colorspace_to_name(cst_from), _colorspace_to_name(cst_to));
+        dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to));
       goto cleanup;
     }
 
@@ -1441,8 +1443,8 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS, "image colorspace transform %s-->%s took %.3f secs (%.3f GPU) [%s %s]\n",
-          _colorspace_to_name(cst_from), _colorspace_to_name(cst_to),
+      dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s %s]\n",
+          dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -1482,8 +1484,11 @@ cleanup:
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
 
-int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_in, cl_mem dev_img_out,
-                                               const int width, const int height,
+int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid,
+                                               cl_mem dev_img_in,
+                                               cl_mem dev_img_out,
+                                               const int width,
+                                               const int height,
                                                const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                                const dt_iop_order_iccprofile_info_t *const profile_info_to,
                                                const char *message)

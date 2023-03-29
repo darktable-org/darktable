@@ -3524,6 +3524,28 @@ const char **dt_iop_set_description(dt_iop_module_t *module,
   return (const char **)str_out;
 }
 
+const char *dt_iop_colorspace_to_name(const dt_iop_colorspace_type_t type)
+{
+  switch(type)
+  {
+    case IOP_CS_NONE:
+      return "IOP_CS_NONE";
+    case IOP_CS_RAW:
+      return "IOP_CS_RAW";
+    case IOP_CS_LAB:
+      return "IOP_CS_LAB";
+    case IOP_CS_RGB:
+      return "IOP_CS_RGB";
+    case IOP_CS_LCH:
+      return "IOP_CS_LCH";
+    case IOP_CS_HSL:
+      return "IOP_CS_HSL";
+    case IOP_CS_JZCZHZ:
+      return "IOP_CS_JZCZHZ";
+  }
+  return "invalid IOP_CS";
+}
+
 gboolean dt_iop_have_required_input_format(const int req_ch,
                                            struct dt_iop_module_t *const module,
                                            const int ch,
