@@ -1124,11 +1124,29 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   const dt_iop_order_iccprofile_info_t *const work_profile
       = (input_format->cst != IOP_CS_RAW) ? dt_ioppr_get_pipe_work_profile_info(pipe) : NULL;
 
+  const int cst_from = input_format->cst;
+  const int cst_to = module->input_colorspace(module, pipe, piece);
+
+  if(darktable.unmuted & DT_DEBUG_PIPE)
+  {
+    const gboolean no_conversion = (cst_from == cst_to) || (work_profile == NULL)
+                    || (work_profile->type == DT_COLORSPACE_NONE);
+    if(!no_conversion)
+    {
+      char profiles[128] = { 0 };
+      snprintf(profiles, sizeof(profiles), "%s -> %s\n",
+        dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to));
+
+      dt_print_pipe(DT_DEBUG_PIPE,
+                  "transform colorspace CPU", piece->pipe, module->so->op, roi_in, roi_out, profiles);
+
+    }
+  }
+
   // transform to module input colorspace
   dt_ioppr_transform_image_colorspace
-    (module, input, input, roi_in->width, roi_in->height, input_format->cst,
-     module->input_colorspace(module, pipe, piece), &input_format->cst,
-     work_profile);
+    (module, input, input, roi_in->width, roi_in->height, cst_from,
+     cst_to, &input_format->cst, work_profile);
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return 1;
@@ -1150,45 +1168,26 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   const gboolean pfm_dump = darktable.dump_pfm_pipe
     && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
 
+  if(pfm_dump)
+    dt_dump_pipe_pfm(module->so->op, input,
+                     roi_in->width, roi_in->height, in_bpp,
+                     TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
   if(!fitting && piece->process_tiling_ready)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                   "process TILE", piece->pipe, module->so->op, roi_in, roi_out, "\n");
-
-    if(pfm_dump)
-      dt_dump_pipe_pfm(module->so->op, input,
-                       roi_in->width, roi_in->height, in_bpp,
-                       TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
-
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
 
-    if(pfm_dump)
-    {
-      dt_dump_pipe_pfm(module->so->op, *output,
-                       roi_out->width, roi_out->height, bpp,
-                       FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
-      _dump_pipe_pfm_diff(module->so->op, input, roi_in, in_bpp, *output, roi_out, bpp,
-                                          dt_dev_pixelpipe_type_to_str(piece->pipe->type));
-    }
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
   }
   else
   {
-    if(!fitting)
-      dt_print_pipe(DT_DEBUG_PIPE,
-                    "pixelpipe_process_on_CPU",
-                    piece->pipe, module->so->op, NULL, NULL,
-                    "Warning: processed without tiling even if memory requirements are not met\n");
-
     dt_print_pipe(DT_DEBUG_PIPE,
                   "pixelpipe_process_on_CPU",
-                  piece->pipe, module->so->op, roi_in, roi_out, "\n");
-
-    if(pfm_dump)
-      dt_dump_pipe_pfm(module->so->op, input,
-                       roi_in->width, roi_in->height, in_bpp,
-                       TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+                  piece->pipe, module->so->op, roi_in, roi_out,
+                  (fitting) ? "\n" : "Warning: processed without tiling even if memory requirements are not met\n");
 
     // this code section is for simplistic benchmarking via --bench-module
     if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
@@ -1220,17 +1219,17 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     }
     module->process(module, piece, input, *output, roi_in, roi_out);
 
-    if(pfm_dump)
-    {
-      dt_dump_pipe_pfm(module->so->op, *output,
-                       roi_out->width, roi_out->height, bpp,
-                       FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
-      _dump_pipe_pfm_diff(module->so->op, input, roi_in, in_bpp, *output, roi_out, bpp,
-                                          dt_dev_pixelpipe_type_to_str(piece->pipe->type));
-
-    }
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+  }
+
+  if(pfm_dump)
+  {
+    dt_dump_pipe_pfm(module->so->op, *output,
+                     roi_out->width, roi_out->height, bpp,
+                     FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+    _dump_pipe_pfm_diff(module->so->op, input, roi_in, in_bpp, *output, roi_out, bpp,
+                                          dt_dev_pixelpipe_type_to_str(piece->pipe->type));
   }
 
   // and save the output colorspace
@@ -1756,6 +1755,24 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         // transform to input colorspace
         if(success_opencl)
         {
+          const int cst_from = input_cst_cl;
+          const int cst_to = module->input_colorspace(module, pipe, piece);
+
+          if(darktable.unmuted & DT_DEBUG_PIPE)
+          {
+            const gboolean no_conversion = (cst_from == cst_to) || (work_profile == NULL)
+                            || (work_profile->type == DT_COLORSPACE_NONE);
+            if(!no_conversion)
+            {
+              char profiles[128] = { 0 };
+              snprintf(profiles, sizeof(profiles), "%s -> %s\n",
+                dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to));
+
+              dt_print_pipe(DT_DEBUG_PIPE,
+                  "transform colorspace CL", piece->pipe, module->so->op, &roi_in, roi_out, profiles);
+            }
+          }
+
           success_opencl =
             dt_ioppr_transform_image_colorspace_cl(module, piece->pipe->devid,
                                                    cl_mem_input, cl_mem_input,
