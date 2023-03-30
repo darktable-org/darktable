@@ -3303,7 +3303,7 @@ static void _display_errors(struct dt_iop_module_t *self)
       (self, _("camera/lens not found"),
        _("please select your lens manually\n"
          "you might also want to check if your lensfun database is up-to-date\n"
-         "by running lensfun_update_data"),
+         "by running lensfun-update-data"),
        "camera/lens not found");
   }
   else
