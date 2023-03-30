@@ -9955,7 +9955,7 @@ msgstr "Beschreibung für weitere Information"
 
 #: ../src/gui/presets.c:529
 msgid "reset all module parameters to their default values"
-msgstr "Modull-Parameter zurücksetzen"
+msgstr "Modul-Parameter zurücksetzen"
 
 #: ../src/gui/presets.c:532
 msgid "the parameters will be reset to their default values, which may be automatically set based on image metadata"
