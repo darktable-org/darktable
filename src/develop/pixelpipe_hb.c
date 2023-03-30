@@ -177,14 +177,14 @@ gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe,
 
 gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
-  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 12, 0);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 12 : 2, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
 
 gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 {
-  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 5, 0);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 5 : 2, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
   return res;
 }
@@ -192,7 +192,7 @@ gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
   const size_t csize = MAX(64*1024*1024, darktable.dtresources.mipmap_memory / 4);
-  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, csize);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, darktable.pipe_cache ? 64 : 2, csize);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
