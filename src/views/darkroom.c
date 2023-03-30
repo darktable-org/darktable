@@ -3722,14 +3722,9 @@ int button_pressed(dt_view_t *self,
     const float tscale = scale * ppd;
     closeup = 0;
 
-    const char *const key_zoom_level = "darkroom/mouse/middle_button_cycle_zoom_to_200_percent";
     // Get config so we can check if the user want to cycle through 100%->200%->FIT or
     // only switch between FIT<->100%.
-    if(!dt_conf_key_exists(key_zoom_level))
-    {
-      dt_conf_set_bool(key_zoom_level, 1); // Set default TRUE
-    }
-    const gboolean cycle_zoom_200 = dt_conf_get_bool(key_zoom_level);
+    const gboolean cycle_zoom_200 = dt_conf_get_bool("darkroom/mouse/middle_button_cycle_zoom_to_200_percent");
 
     if((tscale > 0.95f) && (tscale < 1.05f) && cycle_zoom_200) // we are at 100% and switch to 200%
     {
