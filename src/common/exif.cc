@@ -1047,12 +1047,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /*
      * Get the focus distance in meters.
      */
-    if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance"))
-    {
-      float value = pos->toFloat();
-      img->exif_focus_distance = (0.01 * pow(10, value / 40));
-    }
-    else if(FIND_EXIF_TAG("Exif.NikonLd3.FocusDistance"))
+    if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance") || FIND_EXIF_TAG("Exif.NikonLd3.FocusDistance")
+       || (Exiv2::testVersion(0, 27, 4) && FIND_EXIF_TAG("Exif.NikonLd4.FocusDistance")))
     {
       float value = pos->toFloat();
       img->exif_focus_distance = (0.01 * pow(10, value / 40));
