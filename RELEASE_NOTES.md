@@ -363,6 +363,8 @@ The following is a summary of the main features added to darktable
   module label is displayed and it is editable with
   <kbd>ctrl+click</kbd>.
 
+- Read focus distance for Nikon Z bodies.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
