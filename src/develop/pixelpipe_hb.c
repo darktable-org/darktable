@@ -2648,7 +2648,7 @@ restart:
     {
       // too frequent opencl errors encountered: this is a clear sign
       // of a broken setup. give up on opencl during this session.
-      darktable.opencl->stopped = 1;
+      darktable.opencl->stopped = TRUE;
       dt_print(DT_DEBUG_OPENCL,
                "[opencl] frequent opencl errors encountered; disabling opencl for this session!\n");
       dt_control_log
