@@ -560,6 +560,9 @@ const char **dt_iop_set_description(dt_iop_module_t *module,
                                     const char *process,
                                     const char *output);
 
+/** get a nice printable name. */
+const char *dt_iop_colorspace_to_name(const dt_iop_colorspace_type_t type);
+
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
 {
   // Align so that DT_ALIGNED_ARRAY may be used within gui_data struct

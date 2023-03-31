@@ -1458,7 +1458,7 @@ gboolean dt_opencl_finish(const int devid)
 
   // take the opportunity to release some event handles, but without printing
   // summary statistics
-  cl_int success = dt_opencl_events_flush(devid, 0);
+  cl_int success = dt_opencl_events_flush(devid, FALSE);
 
   return (err == CL_SUCCESS && success == CL_COMPLETE);
 }
@@ -3188,18 +3188,10 @@ int dt_opencl_dev_roundup_height(int size, const int devid)
   return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
 }
 
-/** check if opencl is inited */
-int dt_opencl_is_inited(void)
-{
-  return darktable.opencl->inited;
-}
-
-
 /** check if opencl is enabled */
-int dt_opencl_is_enabled(void)
+gboolean dt_opencl_is_enabled(void)
 {
-  if(!darktable.opencl->inited) return FALSE;
-  return darktable.opencl->enabled;
+  return darktable.opencl->inited && darktable.opencl->enabled;
 }
 
 
@@ -3356,7 +3348,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
 
   // check if we would exceed the number of available event handles. In that case first flush existing handles
   if((*numevents - *eventsconsolidated + 1 > cl->dev[devid].event_handles) || (*numevents == *maxevents))
-    (void)dt_opencl_events_flush(devid, 0);
+    (void)dt_opencl_events_flush(devid, FALSE);
 
   // if no more space left in eventlist: grow buffer
   if(*numevents == *maxevents)
@@ -3477,7 +3469,7 @@ If "reset" is TRUE report summary info (would be CL_COMPLETE or last error code)
 print profiling info if needed.
 If "reset" is FALSE just store info (success value, profiling) from terminated events
 and release events for re-use by OpenCL driver. */
-cl_int dt_opencl_events_flush(const int devid, const int reset)
+cl_int dt_opencl_events_flush(const int devid, const gboolean reset)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return FALSE;

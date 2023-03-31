@@ -140,6 +140,7 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
+  printf("  --disable-pipecache\n");
   printf("  --dump-pfm <modulea,moduleb>\n");
   printf("  --dump-pipe <modulea,moduleb>\n");
   printf("  --bench-module <modulea,moduleb>\n");
@@ -581,7 +582,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
   darktable.num_openmp_threads = dt_get_num_procs();
-
+  darktable.pipe_cache = TRUE;
   darktable.unmuted = 0;
   GSList *config_override = NULL;
   for(int k = 1; k < argc; k++)
@@ -967,6 +968,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef HAVE_OPENCL
         exclude_opencl = TRUE;
 #endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--disable-pipecache"))
+      {
+        darktable.pipe_cache = FALSE;
         argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--"))
