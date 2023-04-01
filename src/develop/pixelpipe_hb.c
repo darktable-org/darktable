@@ -21,6 +21,7 @@
 #include "common/histogram.h"
 #include "common/opencl.h"
 #include "common/iop_order.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "control/signal.h"
 #include "develop/blend.h"
@@ -1538,8 +1539,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   // modules manipulating pixel content and only process image
   // distorting modules. Finally "gamma" is responsible for displaying
   // channel/mask data accordingly.
+  // FIXME: Might this leave wrong data in the pipe if a module changes roi ?
   if(!dt_iop_module_is(module->so, "gamma")
-     && (pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_ANY | DT_DEV_PIXELPIPE_DISPLAY_MASK))
+     && (pipe->mask_display &
+       (DT_DEV_PIXELPIPE_DISPLAY_ANY | DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU))
      && !(module->operation_tags() & IOP_TAG_DISTORT)
      && (in_bpp == out_bpp)
      && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
@@ -1549,34 +1552,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
 #ifdef HAVE_OPENCL
     if(_opencl_pipe_isok(pipe) && (cl_mem_input != NULL))
-    {
       *cl_mem_output = cl_mem_input;
-    }
     else
-    {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(in_bpp, out_bpp) \
-      shared(roi_out, roi_in, output, input) \
-      schedule(static)
 #endif
-      for(int j = 0; j < roi_out->height; j++)
-          memcpy(((char *)*output) + (size_t)out_bpp * j * roi_out->width,
-                 ((char *)input) + (size_t)in_bpp * j * roi_in.width,
-                 (size_t)in_bpp * roi_in.width);
-    }
-#else // don't HAVE_OPENCL
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in_bpp, out_bpp) \
-    shared(roi_out, roi_in, output, input) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-          memcpy(((char *)*output) + (size_t)out_bpp * j * roi_out->width,
-                 ((char *)input) + (size_t)in_bpp * j * roi_in.width,
-                 (size_t)in_bpp * roi_in.width);
-#endif
+
+    dt_iop_image_copy_by_size((float *)*output, (float *)input, roi_out->width, roi_out->height, bpp / sizeof(float));
 
     return FALSE;
   }
