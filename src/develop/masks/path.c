@@ -2372,11 +2372,15 @@ static void _path_events_post_expose(cairo_t *cr,
     float from_x = 0.0f;
     float from_y = 0.0f;
 
-    dt_masks_closest_point(gpt->points_count, gpt->points,
+    dt_masks_closest_point(gpt->points_count,
+                           nb * 3,
+                           gpt->points,
                            gpt->source[2], gpt->source[3],
                            &to_x, &to_y);
 
-    dt_masks_closest_point(gpt->source_count, gpt->source,
+    dt_masks_closest_point(gpt->source_count,
+                           nb * 3,
+                           gpt->source,
                            to_x, to_y,
                            &from_x, &from_y);
 

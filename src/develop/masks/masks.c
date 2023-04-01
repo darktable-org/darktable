@@ -2658,7 +2658,8 @@ void dt_masks_draw_arrow(cairo_t *cr,
                          const gboolean touch_dest)
 {
   const float pr_d = darktable.develop->preview_downsampling;
-  const float arrow_scale = (24.0f * pr_d) / zoom_scale;
+
+  const float arrow_scale = (24.0f * pr_d) / sqrtf(3.f * zoom_scale);
 
   const float cdx = from_x - to_x;
   const float cdy = from_y - to_y;
@@ -2671,8 +2672,8 @@ void dt_masks_draw_arrow(cairo_t *cr,
     cangle = -(M_PI / 2) - cangle;
 
   // move a bit away from the path
-  const float x = to_x + (touch_dest ? 0.f : 6.f * cosf(cangle) / zoom_scale);
-  const float y = to_y + (touch_dest ? 0.f : 6.f * sinf(cangle) / zoom_scale);
+  const float x = to_x + (touch_dest ? 0.f : 5.f * cosf(cangle) / zoom_scale);
+  const float y = to_y + (touch_dest ? 0.f : 5.f * sinf(cangle) / zoom_scale);
 
   cairo_move_to(cr, from_x, from_y); // source center
   cairo_line_to(cr, x, y);           // dest border + a bit of space
@@ -2691,6 +2692,7 @@ void dt_masks_draw_arrow(cairo_t *cr,
 }
 
 void dt_masks_closest_point(const int count,
+                            const int nb_ctrl,
                             const float *points,
                             const float px,
                             const float py,
@@ -2701,7 +2703,7 @@ void dt_masks_closest_point(const int count,
   *x = px;
   *y = py;
 
-  for(int i = 1; i < count; i++)
+  for(int i = nb_ctrl; i < count; i++)
   {
     const float dx = points[i * 2] - px;
     const float dy = points[i * 2 + 1] - py;
