@@ -890,6 +890,10 @@ void dt_opencl_init(
   char *locale = strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_ALL, "C");
 
+  // we might want to show an opencl error
+  char *logerror = NULL;
+  const gboolean opencl_requested = dt_conf_get_bool("opencl");
+
   cl->crc = 5781;
   cl->dlocl = NULL;
   cl->dev_priority_image = NULL;
@@ -918,7 +922,7 @@ void dt_opencl_init(
   }
 
   dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
-  dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl: %s\n", dt_conf_get_bool("opencl") ? "ON" : "OFF" );
+  dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl: %s\n", opencl_requested ? "ON" : "OFF" );
   const char *str = dt_conf_get_string_const("opencl_scheduling_profile");
   dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl_scheduling_profile: '%s'\n", str);
   // look for explicit definition of opencl_runtime library in preferences
@@ -956,6 +960,7 @@ void dt_opencl_init(
 
   if(num_platforms == 0)
   {
+    logerror = "no opencl platform available";
     dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available\n");
     goto finally;
   }
@@ -975,8 +980,10 @@ void dt_opencl_init(
       if((errn == CL_SUCCESS) && (errv == CL_SUCCESS))
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no devices found for %s (vendor) - %s (name)\n", platform_vendor, platform_name); 
       else
+      {
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no devices found for unknown platform\n"); 
-
+        logerror = "no devices found for unknown platform";
+      }
       all_num_devices[n] = 0;
     }
     else
@@ -1015,6 +1022,7 @@ void dt_opencl_init(
       cl->dev = NULL;
       free(devices);
       dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] could not allocate memory\n");
+      logerror = "memory allocation problem";
       goto finally;
     }
   }
@@ -1085,6 +1093,10 @@ void dt_opencl_init(
 finally:
   dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE and %sENABLED.\n",
            cl->inited ? "" : "NOT ", cl->enabled ? "" : "NOT ");
+
+  if(logerror && opencl_requested)
+    dt_control_log(_("OpenCL initializing problem:\n%s"), logerror);
+
   if(cl->inited)
   {
     dt_capabilities_add("opencl");
