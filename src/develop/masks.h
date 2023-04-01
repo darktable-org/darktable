@@ -893,6 +893,14 @@ void dt_masks_draw_anchor(cairo_t *cr,
                           const float x,
                           const float y);
 
+void dt_masks_draw_arrow(cairo_t *cr,
+                         const float from_x,
+                         const float from_y,
+                         const float to_x,
+                         const float to_y,
+                         const float zoom_scale,
+                         const gboolean touch_dest);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

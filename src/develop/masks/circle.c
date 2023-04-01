@@ -923,7 +923,6 @@ static void _circle_events_post_expose(cairo_t *cr,
   // draw the source if any
   if(gpt->source_count > 6)
   {
-    const float pr_d = darktable.develop->preview_downsampling;
     const float radius = fabs(gpt->points[2] - gpt->points[0]);
 
     // compute the dest inner circle intersection with the line from
@@ -942,21 +941,16 @@ static void _circle_events_post_expose(cairo_t *cr,
       else
         cangle = -(M_PI / 2) - cangle;
 
-      // (arrowx,arrowy) is the point of intersection, we move it
-      // (factor 1.11) a bit farther than the inner circle to avoid
-      // superposition.
-      const float arrowx = gpt->points[0] + 1.11 * radius * cosf(cangle);
-      const float arrowy = gpt->points[1] + 1.11 * radius * sinf(cangle);
+      // (arrowx, arrowy) is the point of intersection
+      const float arrowx = gpt->points[0] + radius * cosf(cangle);
+      const float arrowy = gpt->points[1] + radius * sinf(cangle);
 
-      cairo_move_to(cr, gpt->source[0], gpt->source[1]); // source center
-      cairo_line_to(cr, arrowx, arrowy);                 // dest border
-      // then draw to line for the arrow itself
-      const float arrow_scale = 6.0f * pr_d;
-      cairo_move_to(cr, arrowx + arrow_scale * cosf(cangle + (0.4f)),
-                    arrowy + arrow_scale * sinf(cangle + (0.4f)));
-      cairo_line_to(cr, arrowx, arrowy);
-      cairo_line_to(cr, arrowx + arrow_scale * cosf(cangle - (0.4f)),
-                    arrowy + arrow_scale * sinf(cangle - (0.4f)));
+      // then draw two lines for the arrow itself
+      dt_masks_draw_arrow(cr,
+                          gpt->source[0], gpt->source[1],
+                          arrowx, arrowy,
+                          zoom_scale,
+                          FALSE);
 
       cairo_set_dash(cr, dashed, 0, 0);
       if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))

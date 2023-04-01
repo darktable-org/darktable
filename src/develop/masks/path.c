@@ -2366,8 +2366,12 @@ static void _path_events_post_expose(cairo_t *cr,
   if(!gui->creation && gpt->source_count > nb * 3 + 6)
   {
     // we draw the line between source and dest
-    cairo_move_to(cr, gpt->source[2], gpt->source[3]);
-    cairo_line_to(cr, gpt->points[2], gpt->points[3]);
+    dt_masks_draw_arrow(cr,
+                        gpt->source[2], gpt->source[3],
+                        to_x, to_y,
+                        zoom_scale,
+                        FALSE);
+
     cairo_set_dash(cr, dashed, 0, 0);
     if((gui->group_selected == index)
        && (gui->form_selected || gui->form_dragging))
