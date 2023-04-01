@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,8 +24,9 @@
 #include "config.h"
 #endif
 
-#ifndef __APPLE__
 #include <glib.h>
+
+#ifndef __APPLE__
 #include <gmodule.h>
 #endif //!__APPLE__
 
@@ -41,13 +42,13 @@ typedef struct dt_gmodule_t
 
 
 /* check if gmodules is supported on this platform */
-int dt_gmodule_supported(void);
+gboolean dt_gmodule_supported(void);
 
 /* dynamically load library */
 dt_gmodule_t *dt_gmodule_open(const char *);
 
 /* get pointer to function */
-int dt_gmodule_symbol(dt_gmodule_t *, const char *, void (**)(void));
+gboolean dt_gmodule_symbol(dt_gmodule_t *, const char *, void (**)(void));
 
 #endif // HAVE_OPENCL
 
