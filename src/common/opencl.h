@@ -38,6 +38,7 @@
 #define DT_OPENCL_DEFAULT_ERROR -999
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
 #define DT_OPENCL_PROCESS_CL -997
+#define DT_OPENCL_NODEVICE -996
 #include "common/darktable.h"
 
 #ifdef HAVE_OPENCL
@@ -151,9 +152,9 @@ typedef struct dt_opencl_device_t
   size_t peak_memory;
   size_t used_available;
   // flags what tuning modes should be used
-  int tuneactive; 
+  dt_opencl_tunemode_t tuneactive; 
   // flags detected errors
-  int runtime_error;
+  dt_opencl_tunemode_t runtime_error;
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
@@ -174,15 +175,12 @@ typedef struct dt_opencl_device_t
   // 0 -> disabled by default; might be switched on by tune for performance
   // 1 -> enabled by default
   // 2 -> disabled under all circumstances. This could/should be used if we give away / ship specific keys for buggy systems 
-  int pinned_memory;
+  dt_opencl_pinmode_t pinned_memory;
 
   // in OpenCL processing round width/height of global work groups to a multiple of these values.
   // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
   int clroundup_wd;
   int clroundup_ht;
-
-  // A bitfield that identifies the type of OpenCL device required to test for on-CPU and more.
-  unsigned int cltype;
 
   // This defines how often should dt_opencl_events_get_slot do a dt_opencl_events_flush.
   // It should definitely le lower than the number of events that can be handled by the device/driver.
@@ -190,17 +188,17 @@ typedef struct dt_opencl_device_t
   int event_handles;
 
   // opencl_events enabled for the device, set internally via event_handles
-  int use_events;
+  gboolean use_events;
 
   // async pixelpipe mode for device
   // if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency.
   // however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed
   // instead of only a single module. export pixelpipe will always be run synchronously.
-  int asyncmode;
+  gboolean asyncmode;
 
   // a device might be turned off by force by setting this value to 1
   // also used for blacklisted drivers
-  int disabled;
+  gboolean disabled;
 
   // Some devices are known to be unused by other apps so there is no need to test for available memory at all.
   int forced_headroom;
@@ -224,10 +222,10 @@ struct dt_guided_filter_cl_global_t;
 typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
-  int inited;
-  int print_statistics;
-  int enabled;
-  int stopped;
+  gboolean inited;
+  gboolean print_statistics;
+  gboolean enabled;
+  gboolean stopped;
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
@@ -303,13 +301,14 @@ const char *cl_errstr(cl_int error);
 /** both finish functions return TRUE in case of success */
 /** cleans up command queue. */
 int dt_opencl_finish(const int devid);
-/** cleans up command queue if in synchron mode or while exporting */
-int dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
+
+/** cleans up command queue if in synchron mode or while exporting, returns TRUE in case of success */
+gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
 
 /** enqueues a synchronization point. */
-int dt_opencl_enqueue_barrier(const int devid);
+gboolean dt_opencl_enqueue_barrier(const int devid);
 
-/** locks a device for your thread's exclusive use */
+/** locks a device for your thread's exclusive use and returns it's id */
 int dt_opencl_lock_device(const int pipetype);
 
 /** done with your command queue. */
@@ -317,14 +316,6 @@ void dt_opencl_unlock_device(const int dev);
 
 /** calculates md5sums for a list of CL include files. */
 void dt_opencl_md5sum(const char **files, char **md5sums);
-
-/** loads the given .cl file and returns a reference to an internal program. */
-int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char *binname,
-                           const char *cachedir, char *md5sum, char **includemd5, int *loaded_cached);
-
-/** builds the given program. */
-int dt_opencl_build_program(const int dev, const int prog, const char *binname, const char *cachedir,
-                            char *md5sum, int loaded_cached);
 
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(const int program, const char *name);
@@ -530,7 +521,7 @@ int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_loca
 /** utility functions handling device specific properties */
 void dt_opencl_write_device_config(const int devid);
 gboolean dt_opencl_read_device_config(const int devid);
-int dt_opencl_avoid_atomics(const int devid);
+gboolean dt_opencl_avoid_atomics(const int devid);
 int dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);
 
@@ -548,16 +539,17 @@ extern "C" {
 
 typedef struct dt_opencl_t
 {
-  int inited;
-  int enabled;
-  int stopped;
+  gboolean inited;
+  gboolean enabled;
+  gboolean stopped;
   int error_count;
 } dt_opencl_t;
+
 static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
-  cl->inited = 0;
-  cl->enabled = 0;
-  cl->stopped = 0;
+  cl->inited = FALSE;
+  cl->enabled = FALSE;
+  cl->stopped = FALSE;
   cl->error_count = 0;
   dt_conf_set_bool("opencl", FALSE);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] this version of darktable was built without opencl support\n");
@@ -571,9 +563,9 @@ static inline gboolean dt_opencl_finish(const int devid)
 }
 static inline gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
 {
-  return -1;
+  return FALSE;
 }
-static inline int dt_opencl_enqueue_barrier(const int devid)
+static inline gboolean dt_opencl_enqueue_barrier(const int devid)
 {
   return -1;
 }
@@ -583,14 +575,6 @@ static inline int dt_opencl_lock_device(const int dev)
 }
 static inline void dt_opencl_unlock_device(const int dev)
 {
-}
-static inline int dt_opencl_load_program(const int dev, const char *filename)
-{
-  return -1;
-}
-static inline int dt_opencl_build_program(const int dev, const int program)
-{
-  return -1;
 }
 static inline int dt_opencl_create_kernel(const int program, const char *name)
 {
@@ -610,10 +594,6 @@ static inline int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, 
 }
 static inline int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel,
                                                        size_t *kernelworkgroupsize)
-{
-  return -1;
-}
-static inline int dt_opencl_set_kernel_arg(const int dev, const int kernel, const size_t size, const void *arg)
 {
   return -1;
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -221,7 +221,7 @@ typedef struct dt_dlopencl_symbols_t
 
 typedef struct dt_dlopencl_t
 {
-  int have_opencl;
+  gboolean have_opencl;
   dt_dlopencl_symbols_t *symbols;
   char *library;
 } dt_dlopencl_t;

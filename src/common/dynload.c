@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include <string.h>
 #else //!__APPLE__
 #include <dlfcn.h>
-#include <glib.h>
 #endif //!__APPLE__
 
 #include "common/dynload.h"
@@ -32,11 +31,9 @@
 
 #ifndef __APPLE__
 /* check if gmodules is supported on this platform */
-int dt_gmodule_supported(void)
+gboolean dt_gmodule_supported(void)
 {
-  int success = g_module_supported();
-
-  return success;
+  return g_module_supported();
 }
 
 
@@ -71,16 +68,14 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 }
 
 
-/* get pointer to symbol */
-int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
+/* get pointer to symbol and return flag in case off success */
+gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
 {
-  int success = g_module_symbol(module->gmodule, name, (gpointer)pointer);
-
-  return success;
+  return g_module_symbol(module->gmodule, name, (gpointer)pointer);
 }
 #else //!__APPLE__
 /* check if gmodules is supported on this platform */
-int dt_gmodule_supported(void)
+gboolean dt_gmodule_supported(void)
 {
   return TRUE;
 }
@@ -103,7 +98,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 }
 
 /* get pointer to symbol */
-int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
+gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
 {
   *pointer = dlsym(module->gmodule, name);
 
