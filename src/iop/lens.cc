@@ -2338,7 +2338,7 @@ void commit_params(struct dt_iop_module_t *self,
     d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
 
   // no OpenCL for LENS_METHOD_EMBEDDED_METADATA
-  piece->process_cl_ready = (d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA) ? 0 : 1;
+  piece->process_cl_ready = (d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA) ? FALSE : TRUE;
 
   if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
   {

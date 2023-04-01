@@ -299,7 +299,7 @@ void commit_params(struct dt_iop_module_t *self,
       (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
   if(d->mode == s_mode_local_laplacian)
-    piece->process_tiling_ready = 0; // can't deal with tiles, sorry.
+    piece->process_tiling_ready = FALSE; // can't deal with tiles, sorry.
 }
 
 

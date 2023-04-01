@@ -283,7 +283,7 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance, dt_io
   // to work properly. This will force colorin to be run and it
   // will set the work_profile if needed.
   piece->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  piece->pipe->cache_obsolete = 1;
+  piece->pipe->cache_obsolete = TRUE;
 
   // iops only need new picker data if the pointer has moved
   if(_record_point_area(picker))

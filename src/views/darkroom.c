@@ -4532,7 +4532,7 @@ static gboolean _second_window_configure_callback(GtkWidget *da,
     // pipe needs to be reconstructed
     dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
     dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->preview2_pipe->cache_obsolete = 1;
+    dev->preview2_pipe->cache_obsolete = TRUE;
   }
   oldw = event->width;
   oldh = event->height;

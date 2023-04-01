@@ -2572,7 +2572,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 
   // display selection don't work with opencl
-  piece->process_cl_ready = (g && g->display_mask) ? 0 : 1;
+  piece->process_cl_ready = (g && g->display_mask) ? FALSE : TRUE;
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   d->mode = p->mode;
 

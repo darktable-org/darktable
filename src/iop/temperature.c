@@ -700,7 +700,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-    piece->process_cl_ready = 0;
+    piece->process_cl_ready = FALSE;
 
   if(g)
   {

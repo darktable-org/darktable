@@ -2407,9 +2407,9 @@ void dt_dev_reprocess_all(dt_develop_t *dev)
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->pipe->cache_obsolete = 1;
-    dev->preview_pipe->cache_obsolete = 1;
-    dev->preview2_pipe->cache_obsolete = 1;
+    dev->pipe->cache_obsolete = TRUE;
+    dev->preview_pipe->cache_obsolete = TRUE;
+    dev->preview2_pipe->cache_obsolete = TRUE;
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
@@ -2425,7 +2425,7 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
   if(dev && dev->gui_attached)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->pipe->cache_obsolete = 1;
+    dev->pipe->cache_obsolete = TRUE;
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
@@ -2440,7 +2440,7 @@ void dt_dev_reprocess_preview(dt_develop_t *dev)
   if(darktable.gui->reset || !dev || !dev->gui_attached) return;
 
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview_pipe->cache_obsolete = 1;
+  dev->preview_pipe->cache_obsolete = TRUE;
 
   dt_dev_invalidate_preview(dev);
   dt_control_queue_redraw_center();

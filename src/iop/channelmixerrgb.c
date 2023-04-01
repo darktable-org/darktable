@@ -3070,7 +3070,7 @@ void commit_params(struct dt_iop_module_t *self,
            d->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES ) && // WB extraction mode
            (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) ) )
     {
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
     }
   }
 }

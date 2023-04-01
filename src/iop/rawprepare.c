@@ -789,7 +789,7 @@ void commit_params(
     piece->enabled = 0;
 
   if(piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_RAWPREPARE))
-    piece->process_tiling_ready = 0;
+    piece->process_tiling_ready = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

@@ -68,8 +68,8 @@ typedef struct dt_dev_pixelpipe_iop_t
   dt_iop_roi_t buf_in,
       buf_out;                // theoretical full buffer regions of interest, as passed through modify_roi_out
   dt_iop_roi_t processed_roi_in, processed_roi_out; // the actual roi that was used for processing the piece
-  int process_cl_ready;       // set this to 0 in commit_params to temporarily disable the use of process_cl
-  int process_tiling_ready;   // set this to 0 in commit_params to temporarily disable tiling
+  gboolean process_cl_ready;       // set this to FALSE in commit_params to temporarily disable the use of process_cl
+  gboolean process_tiling_ready;   // set this to FALSE in commit_params to temporarily disable tiling
 
   // the following are used internally for caching:
   dt_iop_buffer_dsc_t dsc_in, dsc_out;
@@ -87,6 +87,14 @@ typedef enum dt_dev_pixelpipe_change_t
   DT_DEV_PIPE_ZOOMED = 1 << 3 // zoom event, preview pipe does not need changes
 } dt_dev_pixelpipe_change_t;
 
+typedef enum dt_develop_detail_mask_t
+{
+  DT_DEV_DETAIL_MASK_NONE = 0,
+  DT_DEV_DETAIL_MASK_REQUIRED = 1,
+  DT_DEV_DETAIL_MASK_DEMOSAIC = 2,
+  DT_DEV_DETAIL_MASK_RAWPREPARE = 4
+} dt_develop_detail_mask_t;
+
 /**
  * this encapsulates the pixelpipe.
  * a develop module will need several of these:
@@ -98,7 +106,7 @@ typedef struct dt_dev_pixelpipe_t
   // store history/zoom caches
   dt_dev_pixelpipe_cache_t cache;
   // set to non-zero in order to obsolete old cache entries on next pixelpipe run
-  int cache_obsolete;
+  gboolean cache_obsolete;
   // input buffer
   float *input;
   // width and height of input buffer
@@ -140,22 +148,22 @@ typedef struct dt_dev_pixelpipe_t
   // as we have to scale the mask later ke keep roi at that stage
   float *rawdetail_mask_data;
   struct dt_iop_roi_t rawdetail_mask_roi;
-  int want_detail_mask;
+  dt_develop_detail_mask_t want_detail_mask;
 
   // we have to keep track of the next processing module to use an iop cacheline with high priority
   gboolean next_important_module;
 
   int output_imgid;
   // working?
-  int processing;
+  gboolean processing;
   // shutting down?
   dt_atomic_int shutdown;
   // opencl enabled for this pixelpipe?
-  int opencl_enabled;
+  gboolean opencl_enabled;
   // opencl error detected?
-  int opencl_error;
+  gboolean opencl_error;
   // running in a tiling context?
-  int tiling;
+  gboolean tiling;
   // should this pixelpipe display a mask in the end?
   int mask_display;
   // should this pixelpipe completely suppressed the blendif module?
@@ -259,8 +267,8 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 // force a rebuild of the pipe, needed when a module order is changed for example
 void dt_dev_pixelpipe_rebuild(struct dt_develop_t *dev);
 
-// process region of interest of pixels. returns 1 if pipe was altered during processing.
-int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
+// process region of interest of pixels. returns TRUE if pipe was altered during processing.
+gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                              struct dt_develop_t *dev,
                              const int x,
                              const int y,
@@ -268,7 +276,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                              const int height,
                              const float scale);
 // convenience method that does not gamma-compress the image.
-int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
+gboolean dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
                                       struct dt_develop_t *dev,
                                       const int x,
                                       const int y,
