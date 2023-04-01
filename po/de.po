@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-03-31 18:38+0200\n"
-"PO-Revision-Date: 2023-04-01 06:46+0200\n"
+"PO-Revision-Date: 2023-04-01 18:50+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1233,13 +1233,12 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5403
 msgid "automatically update module name"
-msgstr "automatischer Update des Modulnamens"
+msgstr "Ergänze Instanzname zum Modulnamen"
 
 #: ../build/bin/preferences_gen.h:5417
 msgid "if enabled, the module name will be automatically update to match a preset name if present."
 msgstr ""
-"wenn aktiviert, wird der Modulname automatisch aktualisiert, um mit einem ggf. voreingestellten Namen überein zu "
-"stimmen"
+"wenn aktiviert, wird dem Modulnamen der Instanzname bzw. der Name der ggf. verwendeten Voreinstellung angehängt"
 
 #: ../build/bin/preferences_gen.h:5445
 msgid "processing"
