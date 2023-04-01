@@ -677,6 +677,13 @@ static inline void _luma_chroma(const dt_aligned_pixel_t input,
   }
 }
 
+void dt_colormatrix_copy(dt_colormatrix_t out, const dt_colormatrix_t in)
+{
+  for(size_t i = 0; i < 4; i++)
+    for_each_channel(c)
+      out[i][c] = in[i][c];
+}
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16)
 #endif
@@ -699,10 +706,42 @@ static inline void _loop_switch(const float *const restrict in,
                                 const dt_adaptation_t kind,
                                 const dt_iop_channelmixer_rgb_version_t version)
 {
+  dt_colormatrix_t RGB_to_LMS;
+  dt_colormatrix_t MIX_to_XYZ;
+  switch (kind)
+  {
+    case DT_ADAPTATION_FULL_BRADFORD:
+    case DT_ADAPTATION_LINEAR_BRADFORD:
+      make_RGB_to_Bradford_LMS(RGB_to_XYZ, RGB_to_LMS);
+      make_Bradford_LMS_to_XYZ(MIX, MIX_to_XYZ);
+      break;
+    case DT_ADAPTATION_CAT16:
+      make_RGB_to_CAT16_LMS(RGB_to_XYZ, RGB_to_LMS);
+      make_CAT16_LMS_to_XYZ(MIX, MIX_to_XYZ);
+      break;
+    case DT_ADAPTATION_XYZ:
+      dt_colormatrix_copy(RGB_to_LMS, RGB_to_XYZ);
+      dt_colormatrix_copy(MIX_to_XYZ, MIX);
+      break;
+    case DT_ADAPTATION_RGB:
+    case DT_ADAPTATION_LAST:
+      // RGB_to_LMS not applied, since we are not adapting WB
+      dt_colormatrix_mul(MIX_to_XYZ, RGB_to_XYZ, MIX);
+      break;
+  }
+
+  dt_aligned_pixel_t min_value = { 0.0f, 0.0f, 0.0f, 0.0f };
+  if(!clip)
+    for_each_channel(c)
+      min_value[c] = -FLT_MAX;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, ch, in, out, XYZ_to_RGB, RGB_to_XYZ, MIX, illuminant, saturation, lightness, grey, p, gamut, clip, apply_grey, kind, version) \
-  schedule(simd:static)
+  dt_omp_firstprivate(width, height, min_value, in, out, XYZ_to_RGB, RGB_to_XYZ, \
+                      RGB_to_LMS, MIX_to_XYZ, illuminant, \
+                      saturation, lightness, grey, p, gamut, clip, \
+                      apply_grey, kind, version)                   \
+  schedule(static)
 #endif
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
@@ -711,7 +750,7 @@ static inline void _loop_switch(const float *const restrict in,
     dt_aligned_pixel_t temp_two;
 
     for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
-      temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
+      temp_two[c] = fmaxf(in[k + c], min_value[c]);
 
     /* WE START IN PIPELINE RGB */
 
@@ -725,50 +764,30 @@ static inline void _loop_switch(const float *const restrict in,
 
         // Convert to LMS
         convert_XYZ_to_bradford_LMS(temp_one, temp_two);
-        {
-          // Do white balance
-          downscale_vector(temp_two, Y);
-            bradford_adapt_D50(temp_two, illuminant, p, TRUE, temp_one);
-          upscale_vector(temp_one, Y);
-
-          // Compute the 3D mix - this is a rotation + homothety of the vector base
-          dot_product(temp_one, MIX, temp_two);
-        }
-        convert_bradford_LMS_to_XYZ(temp_two, temp_one);
-
+        // Do white balance
+        downscale_vector(temp_two, Y);
+        bradford_adapt_D50(temp_two, illuminant, p, TRUE, temp_one);
+        upscale_vector(temp_one, Y);
+        copy_pixel(temp_two, temp_one);
         break;
       }
       case DT_ADAPTATION_LINEAR_BRADFORD:
       {
-        // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
-        // Convert to LMS
-        convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        // Convert from RGB to XYZ to LMS
+        dot_product(temp_two, RGB_to_LMS, temp_one);
 
         // Do white balance
-        bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
-
-        // Compute the 3D mix - this is a rotation + homothety of the vector base
-        dot_product(temp_one, MIX, temp_two);
-        convert_bradford_LMS_to_XYZ(temp_two, temp_one);
-
+        bradford_adapt_D50(temp_one, illuminant, p, FALSE, temp_two);
         break;
       }
       case DT_ADAPTATION_CAT16:
       {
         // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
-        // Convert to LMS
-        convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
+        dot_product(temp_two, RGB_to_LMS, temp_one);
 
         // Do white balance
         // force full-adaptation
-        CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one);
-
-        // Compute the 3D mix - this is a rotation + homothety of the vector base
-        dot_product(temp_one, MIX, temp_two);
-        convert_CAT16_LMS_to_XYZ(temp_two, temp_one);
-
+        CAT16_adapt_D50(temp_one, illuminant, 1.0f, TRUE, temp_two);
         break;
       }
       case DT_ADAPTATION_XYZ:
@@ -778,11 +797,6 @@ static inline void _loop_switch(const float *const restrict in,
 
         // Do white balance in XYZ
         XYZ_adapt_D50(temp_one, illuminant, temp_two);
-
-        // Compute the 3D mix in XYZ - this is a rotation + homothety
-        // of the vector base
-        dot_product(temp_two, MIX, temp_one);
-
         break;
       }
       case DT_ADAPTATION_RGB:
@@ -790,19 +804,11 @@ static inline void _loop_switch(const float *const restrict in,
       default:
       {
         // No white balance.
-
-        // Compute the 3D mix in RGB - this is a rotation + homothety
-        // of the vector base
-        dot_product(temp_two, MIX, temp_one);
-
-        // Convert from RGB to XYZ
-        dot_product(temp_one, RGB_to_XYZ, temp_two);
-
-        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c)
-          temp_one[c] = temp_two[c];
-        break;
       }
     }
+
+    // Compute the 3D mix - this is a rotation + homothety of the vector base
+    dot_product(temp_two, MIX_to_XYZ, temp_one);
 
     /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
@@ -895,7 +901,7 @@ static inline void _loop_switch(const float *const restrict in,
         for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
           out[k + c] = temp_two[c];
 
-      out[k + 3] = in[k + 3]; // alpha mask
+//      out[k + 3] = in[k + 3]; // alpha mask
     }
   }
 }
