@@ -365,6 +365,10 @@ The following is a summary of the main features added to darktable
 
 - Read focus distance for Nikon Z bodies.
 
+- Change reading creator metadata from IPTC Information Interchange
+  Model to prefer By-line over Writer/Editor. Read date/time and
+  description metadata from commonly used properties.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
