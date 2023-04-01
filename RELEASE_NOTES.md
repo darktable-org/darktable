@@ -506,6 +506,9 @@ The following is a summary of the main features added to darktable
 
 - Fixed monochrome images loading.
 
+- Fix tiny circle mask display. Ensure that the mask is always
+  visible.
+
 ## Lua
 
 ### API Version
