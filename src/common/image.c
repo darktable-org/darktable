@@ -616,10 +616,13 @@ static void _pop_undo(gpointer user_data,
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undogeotag->imgid));
       i++;
     }
-    if(i > 1) dt_control_log((action == DT_ACTION_UNDO)
-                              ? ngettext("geo-location undone for %d image", "geo-location undone for %d images", i)
-                              : ngettext("geo-location re-applied to %d image", "geo-location re-applied to %d images", i),
-                             i);
+    if(i > 1)
+      dt_control_log((action == DT_ACTION_UNDO)
+                     ? ngettext("geo-location undone for %d image",
+                                "geo-location undone for %d images", i)
+                     : ngettext("geo-location re-applied to %d image",
+                                "geo-location re-applied to %d images", i),
+                     i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
                                   DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs), 0);
@@ -638,10 +641,13 @@ static void _pop_undo(gpointer user_data,
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undodatetime->imgid));
       i++;
     }
-    if(i > 1) dt_control_log((action == DT_ACTION_UNDO)
-                              ? ngettext("date/time undone for %d image", "date/time undone for %d images", i)
-                              : ngettext("date/time re-applied to %d image", "date/time re-applied to %d images", i),
-                             i);
+    if(i > 1)
+      dt_control_log((action == DT_ACTION_UNDO)
+                     ? ngettext("date/time undone for %d image",
+                                "date/time undone for %d images", i)
+                     : ngettext("date/time re-applied to %d image",
+                                "date/time re-applied to %d images", i),
+                     i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
                                   DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy(*imgs));
