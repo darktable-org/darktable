@@ -913,8 +913,7 @@ void dt_opencl_init(
 
   if(exclude_opencl)
   {
-    dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] do not try to find and use an opencl runtime library due to "
-                              "explicit user request\n");
+    dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl disabled due to explicit user request\n");
     goto finally;
   }
 
@@ -930,8 +929,9 @@ void dt_opencl_init(
   dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
            dt_conf_get_int("opencl_mandatory_timeout"));
 
-  // dynamically load opencl runtime
-  if((cl->dlocl = dt_dlopencl_init(library)) == NULL)
+  // dynamically load opencl runtime and bind required symbols and test it
+  cl->dlocl = dt_dlopencl_init(library);
+  if(cl->dlocl == NULL)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
              "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
@@ -943,11 +943,11 @@ void dt_opencl_init(
              cl->dlocl->library);
   }
 
-  cl_int err;
   all_platforms = malloc(sizeof(cl_platform_id) * DT_OPENCL_MAX_PLATFORMS);
   all_num_devices = malloc(sizeof(cl_uint) * DT_OPENCL_MAX_PLATFORMS);
-  cl_uint num_platforms = DT_OPENCL_MAX_PLATFORMS;
-  err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
+  cl_uint num_platforms = 0;
+
+  cl_int err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
   {
     dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] could not get platforms: %s\n", cl_errstr(err));
@@ -1073,9 +1073,9 @@ void dt_opencl_init(
     assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL && cl->dev_priority_preview2 != NULL
            && cl->dev_priority_export != NULL && cl->dev_priority_thumbnail != NULL);
 
-    dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] OpenCL successfully initialized.\n");
-    dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");
-    for(int i = 0; i < dev; i++) dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init]\t\t%d\t'%s'\n", i, cl->dev[i].name);
+    dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] OpenCL successfully initialized. Internal numbers and names of available devices:\n");
+    for(int i = 0; i < dev; i++)
+      dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init]\t\t%d\t'%s'\n", i, cl->dev[i].name);
   }
   else
   {
@@ -1083,10 +1083,8 @@ void dt_opencl_init(
   }
 
 finally:
-  dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE on this system.\n",
-           cl->inited ? "" : "NOT ");
-  dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n",
-           cl->enabled ? "ON" : "OFF");
+  dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE and %sENABLED.\n",
+           cl->inited ? "" : "NOT ", cl->enabled ? "" : "NOT ");
   if(cl->inited)
   {
     dt_capabilities_add("opencl");
