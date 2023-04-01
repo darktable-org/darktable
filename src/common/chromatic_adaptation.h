@@ -54,6 +54,11 @@ static inline void convert_XYZ_to_bradford_LMS(const dt_aligned_pixel_t XYZ, dt_
   dot_product(XYZ, XYZ_to_Bradford_LMS, LMS);
 }
 
+static inline void make_RGB_to_Bradford_LMS(const dt_colormatrix_t rgb, dt_colormatrix_t lms)
+{
+  dt_colormatrix_mul(lms, XYZ_to_Bradford_LMS, rgb);
+}
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
 #endif
@@ -61,6 +66,16 @@ static inline void convert_bradford_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
   dot_product(LMS, Bradford_LMS_to_XYZ, XYZ);
+}
+
+static inline void make_Bradford_LMS_to_RGB(const dt_colormatrix_t lms_to_rgb, dt_colormatrix_t rgb)
+{
+  dt_colormatrix_mul(rgb, lms_to_rgb, Bradford_LMS_to_XYZ);
+}
+
+static inline void make_Bradford_LMS_to_XYZ(const dt_colormatrix_t lms, dt_colormatrix_t xyz)
+{
+  dt_colormatrix_mul(xyz, Bradford_LMS_to_XYZ, lms);
 }
 
 
@@ -84,6 +99,11 @@ static inline void convert_XYZ_to_CAT16_LMS(const dt_aligned_pixel_t XYZ, dt_ali
   dot_product(XYZ, XYZ_to_CAT16_LMS, LMS);
 }
 
+static inline void make_RGB_to_CAT16_LMS(const dt_colormatrix_t rgb, dt_colormatrix_t lms)
+{
+  dt_colormatrix_mul(lms, XYZ_to_CAT16_LMS, rgb);
+}
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
 #endif
@@ -91,6 +111,16 @@ static inline void convert_CAT16_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_ali
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
   dot_product(LMS, CAT16_LMS_to_XYZ, XYZ);
+}
+
+static inline void make_CAT16_LMS_to_RGB(const dt_colormatrix_t lms_to_rgb, dt_colormatrix_t rgb)
+{
+  dt_colormatrix_mul(rgb, lms_to_rgb, CAT16_LMS_to_XYZ);
+}
+
+static inline void make_CAT16_LMS_to_XYZ(const dt_colormatrix_t lms, dt_colormatrix_t xyz)
+{
+  dt_colormatrix_mul(xyz, CAT16_LMS_to_XYZ, lms);
 }
 
 
