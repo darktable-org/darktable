@@ -26,6 +26,9 @@
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
 
+#define MIN_CIRCLE_RADIUS 0.0005f
+#define MIN_CIRCLE_BORDER 0.0005f
+
 static void _circle_get_distance(const float x,
                                  const float y,
                                  const float as,
@@ -123,7 +126,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
 
       if(up && masks_border < max_mask_border)
         masks_border *= 1.0f / 0.97f;
-      else if(!up && masks_border > 0.0005f)
+      else if(!up && masks_border > MIN_CIRCLE_BORDER)
         masks_border *= 0.97f;
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), masks_border);
@@ -133,7 +136,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
     {
       if(up && masks_size < max_mask_size)
         masks_size *= 1.0f / 0.97f;
-      else if(!up && masks_size > 0.001f)
+      else if(!up && masks_size > MIN_CIRCLE_RADIUS)
         masks_size *= 0.97f;
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), masks_size);
@@ -164,7 +167,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
       {
         if(up && circle->border < max_mask_border)
           circle->border *= 1.0f / 0.97f;
-        else if(!up && circle->border > 0.0005f)
+        else if(!up && circle->border > MIN_CIRCLE_BORDER)
           circle->border *= 0.97f;
         else
           return 1;
@@ -177,10 +180,8 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
       {
         if(up && circle->radius < max_mask_size)
           circle->radius *= 1.0f / 0.97f;
-        else if(!up && circle->radius > 0.001f)
+        else if(!up && circle->radius > MIN_CIRCLE_RADIUS)
           circle->radius *= 0.97f;
-        else
-          return 1;
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), circle->radius);
@@ -555,7 +556,7 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
 
     const float s = dt_masks_drag_factor(gui, index, gui->point_dragging, FALSE);
 
-    circle->radius = CLAMP(circle->radius * s, 0.0005f, max_mask_size);
+    circle->radius = CLAMP(circle->radius * s, MIN_CIRCLE_RADIUS, max_mask_size);
 
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
@@ -694,7 +695,7 @@ static float *_points_to_transform(const float x,
 {
   // how many points do we need?
   const float r = radius * MIN(wd, ht);
-  const size_t l = (size_t)(2.0f * M_PI * r);
+  const size_t l = MAX(10, (size_t)(2.0f * M_PI * r));
   // allocate buffer
   float *const restrict points = dt_alloc_align_float((l + 1) * 2);
   if(!points)
@@ -1532,8 +1533,8 @@ static GSList *_circle_setup_mouse_actions(const struct dt_masks_form_t *const f
 
 static void _circle_sanitize_config(dt_masks_type_t type)
 {
-  dt_conf_get_and_sanitize_float(DT_MASKS_CONF(type, circle, size), 0.001f, 0.5f);
-  dt_conf_get_and_sanitize_float(DT_MASKS_CONF(type, circle, border), 0.0005f, 0.5f);
+  dt_conf_get_and_sanitize_float(DT_MASKS_CONF(type, circle, size), MIN_CIRCLE_RADIUS, 0.5f);
+  dt_conf_get_and_sanitize_float(DT_MASKS_CONF(type, circle, border), MIN_CIRCLE_BORDER, 0.5f);
 }
 
 static void _circle_set_form_name(struct dt_masks_form_t *const form,
@@ -1591,14 +1592,14 @@ static void _circle_modify_property(dt_masks_form_t *const form,
     case DT_MASKS_PROPERTY_SIZE:;
       const float max_mask_size =
         form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
-      masks_size = CLAMP(masks_size * ratio, 0.001f, max_mask_size);
+      masks_size = CLAMP(masks_size * ratio, MIN_CIRCLE_RADIUS, max_mask_size);
 
       if(circle) circle->radius = masks_size;
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), masks_size);
 
       *sum += masks_size;
       *max = fminf(*max, max_mask_size / masks_size);
-      *min = fmaxf(*min, 0.001f / masks_size);
+      *min = fmaxf(*min, MIN_CIRCLE_RADIUS / masks_size);
       ++*count;
       break;
     case DT_MASKS_PROPERTY_FEATHER:;
@@ -1609,14 +1610,14 @@ static void _circle_modify_property(dt_masks_form_t *const form,
         ? circle->border
         : dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border));
 
-      masks_border = CLAMP(masks_border * ratio, 0.0005f, max_mask_border);
+      masks_border = CLAMP(masks_border * ratio, MIN_CIRCLE_BORDER, max_mask_border);
 
       if(circle) circle->border = masks_border;
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), masks_border);
 
       *sum += masks_border;
       *max = fminf(*max, max_mask_border / masks_border);
-      *min = fmaxf(*min, 0.0005f / masks_border);
+      *min = fmaxf(*min, MIN_CIRCLE_BORDER / masks_border);
       ++*count;
       break;
     default:;
