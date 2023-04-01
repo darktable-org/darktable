@@ -1503,7 +1503,9 @@ static void _ellipse_events_post_expose(cairo_t *cr,
       float arrowx = 0.0f;
       float arrowy = 0.0f;
 
-      dt_masks_closest_point(gpt->source_count, gpt->points,
+      dt_masks_closest_point(gpt->source_count,
+                             6,
+                             gpt->points,
                              gpt->source[0], gpt->source[1],
                              &arrowx, &arrowy);
       dt_masks_draw_arrow(cr,
