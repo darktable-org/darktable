@@ -804,6 +804,8 @@ static inline void _loop_switch(const float *const restrict in,
       default:
       {
         // No white balance.
+        for_four_channels(c)
+          temp_one[c] = 0.0f; //keep compiler happy by ensuring that always initialized
       }
     }
 
