@@ -2690,6 +2690,32 @@ void dt_masks_draw_arrow(cairo_t *cr,
                 y + arrow_scale * sinf(cangle - (0.4)));
 }
 
+void dt_masks_closest_point(const int count,
+                            const float *points,
+                            const float px,
+                            const float py,
+                            float *x,
+                            float *y)
+{
+  float dist = FLT_MAX;
+  *x = px;
+  *y = py;
+
+  for(int i = 1; i < count; i++)
+  {
+    const float dx = points[i * 2] - px;
+    const float dy = points[i * 2 + 1] - py;
+
+    const float d = sqf(dx*dx + dy*dy);
+    if(d < dist)
+    {
+      *x = points[i * 2];
+      *y = points[i * 2 + 1];
+      dist = d;
+    }
+  }
+}
+
 #include "detail.c"
 
 // clang-format off

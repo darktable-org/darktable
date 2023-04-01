@@ -2365,6 +2365,15 @@ static void _path_events_post_expose(cairo_t *cr,
   // draw the source if needed
   if(!gui->creation && gpt->source_count > nb * 3 + 6)
   {
+    // look for the destination point closest to the source to avoid
+    // the arrow to cross the mask.
+    float to_x = 0.0f;
+    float to_y = 0.0f;
+
+    dt_masks_closest_point(gpt->points_count, gpt->points,
+                           gpt->source[2], gpt->source[3],
+                           &to_x, &to_y);
+
     // we draw the line between source and dest
     dt_masks_draw_arrow(cr,
                         gpt->source[2], gpt->source[3],

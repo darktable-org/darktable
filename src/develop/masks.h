@@ -893,6 +893,13 @@ void dt_masks_draw_anchor(cairo_t *cr,
                           const float x,
                           const float y);
 
+void dt_masks_closest_point(const int count,
+                            const float *points,
+                            const float px,
+                            const float py,
+                            float *x,
+                            float *y);
+
 void dt_masks_draw_arrow(cairo_t *cr,
                          const float from_x,
                          const float from_y,
