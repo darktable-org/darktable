@@ -742,19 +742,14 @@ static inline void _loop_switch(const float *const restrict in,
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        const float Y = temp_one[1];
-
         // Convert to LMS
         convert_XYZ_to_bradford_LMS(temp_one, temp_two);
-        {
-          // Do white balance
-          downscale_vector(temp_two, Y);
-            bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
-          upscale_vector(temp_one, Y);
 
-          // Compute the 3D mix - this is a rotation + homothety of the vector base
-          dot_product(temp_one, MIX, temp_two);
-        }
+        // Do white balance
+        bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
+
+        // Compute the 3D mix - this is a rotation + homothety of the vector base
+        dot_product(temp_one, MIX, temp_two);
         convert_bradford_LMS_to_XYZ(temp_two, temp_one);
 
         break;
@@ -763,20 +758,15 @@ static inline void _loop_switch(const float *const restrict in,
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        const float Y = temp_one[1];
-
         // Convert to LMS
         convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
-        {
-          // Do white balance
-          downscale_vector(temp_two, Y);
-          // force full-adaptation
-          CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one);
-          upscale_vector(temp_one, Y);
 
-          // Compute the 3D mix - this is a rotation + homothety of the vector base
-          dot_product(temp_one, MIX, temp_two);
-        }
+        // Do white balance
+        // force full-adaptation
+        CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one);
+
+        // Compute the 3D mix - this is a rotation + homothety of the vector base
+        dot_product(temp_one, MIX, temp_two);
         convert_CAT16_LMS_to_XYZ(temp_two, temp_one);
 
         break;
@@ -785,12 +775,9 @@ static inline void _loop_switch(const float *const restrict in,
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        const float Y = temp_one[1];
 
         // Do white balance in XYZ
-        downscale_vector(temp_one, Y);
-          XYZ_adapt_D50(temp_one, illuminant, temp_two);
-        upscale_vector(temp_two, Y);
+        XYZ_adapt_D50(temp_one, illuminant, temp_two);
 
         // Compute the 3D mix in XYZ - this is a rotation + homothety
         // of the vector base
