@@ -914,7 +914,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   const char* compile_opt = NULL;
 
   if(dt_conf_key_exists(compile_option_name_cname)
-     && (dt_conf_get_int("performance_configuration_version_completed") > 12))
+     && (dt_conf_get_int("performance_configuration_version_completed") > 13))
     compile_opt = dt_conf_get_string_const(compile_option_name_cname);
   else
   {

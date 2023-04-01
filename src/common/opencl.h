@@ -65,14 +65,14 @@ extern "C" {
 
 #define DT_OPENCL_DEFAULT_COMPILE_INTEL ("")
 #define DT_OPENCL_DEFAULT_COMPILE_AMD ("-cl-fast-relaxed-math")
-#define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math -cl-mad-enable -cl-no-signed-zeros")
 #define DT_OPENCL_DEFAULT_COMPILE ("")
 #define DT_CLDEVICE_HEAD ("cldevice_v4_")
 
 // version for current darktable cl kernels
 // this is reflected in the kernel directory and allows to
 // enforce a new kernel compilation cycle
-#define DT_OPENCL_KERNELS 1
+#define DT_OPENCL_KERNELS 2
 
 typedef enum dt_opencl_memory_t
 {
