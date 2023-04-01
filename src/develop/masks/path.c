@@ -2369,14 +2369,20 @@ static void _path_events_post_expose(cairo_t *cr,
     // the arrow to cross the mask.
     float to_x = 0.0f;
     float to_y = 0.0f;
+    float from_x = 0.0f;
+    float from_y = 0.0f;
 
     dt_masks_closest_point(gpt->points_count, gpt->points,
                            gpt->source[2], gpt->source[3],
                            &to_x, &to_y);
 
+    dt_masks_closest_point(gpt->source_count, gpt->source,
+                           to_x, to_y,
+                           &from_x, &from_y);
+
     // we draw the line between source and dest
     dt_masks_draw_arrow(cr,
-                        gpt->source[2], gpt->source[3],
+                        from_x, from_y, // gpt->source[2], gpt->source[3],
                         to_x, to_y,
                         zoom_scale,
                         FALSE);
