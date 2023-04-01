@@ -2649,6 +2649,47 @@ void dt_masks_draw_anchor(cairo_t *cr,
   cairo_stroke(cr);
 }
 
+void dt_masks_draw_arrow(cairo_t *cr,
+                         const float from_x,
+                         const float from_y,
+                         const float to_x,
+                         const float to_y,
+                         const float zoom_scale,
+                         const gboolean touch_dest)
+{
+  const float pr_d = darktable.develop->preview_downsampling;
+  const float arrow_scale = (24.0f * pr_d) / zoom_scale;
+
+  const float cdx = from_x - to_x;
+  const float cdy = from_y - to_y;
+
+  float cangle = atanf(cdx / cdy);
+
+  if(cdy > 0)
+    cangle = (M_PI / 2) - cangle;
+  else
+    cangle = -(M_PI / 2) - cangle;
+
+  // move a bit away from the path
+  const float x = to_x + (touch_dest ? 0.f : 6.f * cosf(cangle) / zoom_scale);
+  const float y = to_y + (touch_dest ? 0.f : 6.f * sinf(cangle) / zoom_scale);
+
+  cairo_move_to(cr, from_x, from_y); // source center
+  cairo_line_to(cr, x, y);           // dest border + a bit of space
+
+  // then draw to line for the arrow itself
+
+  cairo_move_to(cr,
+                x + arrow_scale * cosf(cangle + (0.4)),
+                y + arrow_scale * sinf(cangle + (0.4)));
+
+  cairo_line_to(cr, x, y);
+
+  cairo_line_to(cr,
+                x + arrow_scale * cosf(cangle - (0.4)),
+                y + arrow_scale * sinf(cangle - (0.4)));
+}
+
 #include "detail.c"
 
 // clang-format off

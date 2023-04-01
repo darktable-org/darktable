@@ -2743,8 +2743,12 @@ static void _brush_events_post_expose(cairo_t *cr,
   if(!gui->creation && gpt->source_count > nb * 3 + 2)
   {
     // we draw the line between source and dest
-    cairo_move_to(cr, gpt->source[2], gpt->source[3]);
-    cairo_line_to(cr, gpt->points[2], gpt->points[3]);
+    dt_masks_draw_arrow(cr,
+                        gpt->source[2], gpt->source[3],
+                        gpt->points[2], gpt->points[3],
+                        zoom_scale,
+                        FALSE);
+
     cairo_set_dash(cr, dashed, 0, 0);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
       cairo_set_line_width(cr, 2.5 / zoom_scale);
