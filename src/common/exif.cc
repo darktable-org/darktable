@@ -608,7 +608,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     }
 
     /* read timestamp from Xmp.exif.DateTimeOriginal */
-    if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal"))
+    if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal") || FIND_XMP_TAG("Xmp.photoshop.DateCreated"))
     {
       char *datetime = strdup(pos->toString().c_str());
       dt_exif_sanitize_datetime(datetime);
@@ -681,7 +681,12 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
     }
-    if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
+    if(FIND_IPTC_TAG("Iptc.Application2.Byline"))
+    {
+      std::string str = pos->print(/*&iptcData*/);
+      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+    }
+    else if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
     {
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
@@ -690,6 +695,28 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
     {
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+    }
+    if(FIND_IPTC_TAG("Iptc.Application2.DateCreated"))
+    {
+      GString *datetime = g_string_new(pos->toString().c_str());
+
+      // FIXME: Workaround for exiv2 reading partial IPTC DateCreated in YYYYMMDD format
+      if(g_regex_match_simple("^\\d{8}$", datetime->str, (GRegexCompileFlags)0, (GRegexMatchFlags)0))
+      {
+        datetime = g_string_insert_c(datetime, 6, ':');
+        datetime = g_string_insert_c(datetime, 4, ':');
+      }
+
+      if(FIND_IPTC_TAG("Iptc.Application2.TimeCreated"))
+      {
+        char *time = g_strndup(pos->toString().c_str(), 8); // remove timezone at the end
+        datetime = g_string_append(datetime, " ");
+        datetime = g_string_append(datetime, time);
+        free(time);
+      }
+      dt_exif_sanitize_datetime(datetime->str);
+      dt_datetime_exif_to_img(img, datetime->str);
+      g_string_free(datetime, TRUE);
     }
 
     return true;
@@ -1295,6 +1322,11 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       if(str2 != "binary comment")
         dt_metadata_set_import(img->id, "Xmp.dc.description", str2.c_str());
     }
+    else if(FIND_EXIF_TAG("Exif.Image.ImageDescription"))
+    {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set_import(img->id, "Xmp.dc.description", str.c_str());
+    }
 
     if(FIND_EXIF_TAG("Exif.Image.Copyright"))
     {
@@ -1424,7 +1456,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           img->filename, illu[sel_illu], sel_temp,
           illu[0], _illu_to_temp(illu[0]),
           illu[1], _illu_to_temp(illu[1]),
-          illu[2], _illu_to_temp(illu[2])); 
+          illu[2], _illu_to_temp(illu[2]));
 
       // Take the found CalibrationIlluminant / ColorMatrix pair.
       // D65: just copy. Otherwise multiply by the specific correction matrix.
