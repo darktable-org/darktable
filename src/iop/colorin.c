@@ -1382,7 +1382,7 @@ void commit_params(struct dt_iop_module_t *self,
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   d->nonlinearlut = 0;
-  piece->process_cl_ready = 1;
+  piece->process_cl_ready = TRUE;
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
@@ -1523,7 +1523,7 @@ void commit_params(struct dt_iop_module_t *self,
        (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
         LUT_SAMPLES))
     {
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       d->cmatrix[0][0] = NAN;
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
@@ -1549,7 +1549,7 @@ void commit_params(struct dt_iop_module_t *self,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       d->cmatrix[0][0] = NAN;
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
@@ -1592,7 +1592,7 @@ void commit_params(struct dt_iop_module_t *self,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       d->cmatrix[0][0] = NAN;
       d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);

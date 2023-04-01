@@ -826,7 +826,7 @@ void commit_params(struct dt_iop_module_t *self,
   piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || opplinear) ? 0 : 1;
 
   if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
-    piece->process_tiling_ready = 0;
+    piece->process_tiling_ready = FALSE;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 

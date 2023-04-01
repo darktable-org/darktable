@@ -459,10 +459,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   for(int k = 0; k < 4; k++) d->color[k] = p->color[k];
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
+  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = FALSE;
 
   // 4Bayer images not implemented in OpenCL yet
-  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = FALSE;
 
   if(self->hide_enable_button) piece->enabled = 0;
 }

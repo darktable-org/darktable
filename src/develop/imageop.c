@@ -1943,12 +1943,12 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 #ifdef HAVE_OPENCL
   // assume process_cl is ready, commit_params can overwrite this.
   if(module->process_cl)
-    piece->process_cl_ready = 1;
+    piece->process_cl_ready = TRUE;
 #endif // HAVE_OPENCL
 
   // register if module allows tiling, commit_params can overwrite this.
   if(module->flags() & IOP_FLAGS_ALLOW_TILING)
-    piece->process_tiling_ready = 1;
+    piece->process_tiling_ready = TRUE;
 
   if(darktable.unmuted & DT_DEBUG_PARAMS && module->so->get_introspection())
     _iop_validate_params(module->so->get_introspection()->field, params,
