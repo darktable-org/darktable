@@ -572,9 +572,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.tmp_directory = NULL;
   darktable.bench_module = NULL;
 
+  gboolean exclude_opencl = TRUE;
+  gboolean print_statistics = FALSE;
 #ifdef HAVE_OPENCL
-  gboolean exclude_opencl = FALSE;
-  gboolean print_statistics = (strstr(argv[0], "darktable-cltest") == NULL);
+  exclude_opencl = FALSE;
+  print_statistics = (strstr(argv[0], "darktable-cltest") == NULL);
 #endif
 
 #ifdef USE_LUA
