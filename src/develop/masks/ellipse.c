@@ -1500,72 +1500,12 @@ static void _ellipse_events_post_expose(cairo_t *cr,
     if(cdx != 0.0 && cdy != 0.0)
     {
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      float cangle = atanf(cdx / cdy);
-
-      if(cdy > 0)
-        cangle = (M_PI / 2) - cangle;
-      else
-        cangle = -(M_PI / 2) - cangle;
-
-      // compute raidus a & radius b. at this stage this must be
-      // computed from the list of transformed point for drawing the
-      // ellipse.
-
-      const float bot_x = gpt->points[2];
-      const float bot_y = gpt->points[3];
-      const float rgt_x = gpt->points[6];
-      const float rgt_y = gpt->points[7];
-      const float cnt_x = gpt->points[0];
-      const float cnt_y = gpt->points[1];
-
-      const float adx = cnt_x - bot_x;
-      const float ady = cnt_y - bot_y;
-      const float a = sqrtf(adx * adx + ady * ady);
-
-      const float bdx = cnt_x - rgt_x;
-      const float bdy = cnt_y - rgt_y;
-      const float b = sqrtf(bdx * bdx + bdy * bdy);
-
-      // takes the biggest radius, should always been a as the points
-      // are arranged
-      const float radius = MAX(a, b);
-
-      // the top/left/bottom/right controls of the ellipse are not
-      // always at the same place in g->points[], it depends on the
-      // rotation of the ellipse which is not recorded anywhere. Let's
-      // use a stupid search to find the closest point on the border
-      // where to attach the arrow.
-
-      const float cosc = cosf(cangle);
-      const float sinc = sinf(cangle);
-      const float step = radius / 259.f;
-
-      float dist = FLT_MAX;
       float arrowx = 0.0f;
       float arrowy = 0.0f;
 
-      for(int k=1; k<gpt->source_count; k+=2)
-      {
-        const float px = gpt->points[k*2];
-        const float py = gpt->points[k*2 + 1];
-
-        float rr = 0.01f;
-        while(rr < radius)
-        {
-          const float epx = cnt_x + rr * cosc;
-          const float epy = cnt_y + rr * sinc;
-          const float edist = sqf(epx - px) + sqf(epy - py);
-
-          if(edist < dist)
-          {
-            dist = edist;
-            arrowx = cnt_x + (rr + 1.11) * cosc;
-            arrowy = cnt_y + (rr + 1.11) * sinc;
-          }
-          rr += step;
-        }
-      }
-
+      dt_masks_closest_point(gpt->source_count, gpt->points,
+                             gpt->source[0], gpt->source[1],
+                             &arrowx, &arrowy);
       dt_masks_draw_arrow(cr,
                           gpt->source[0], gpt->source[1],
                           arrowx, arrowy,
