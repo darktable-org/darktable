@@ -140,6 +140,7 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
+  printf("  --disable-pipecache\n");
   printf("  --dump-pfm <modulea,moduleb>\n");
   printf("  --dump-pipe <modulea,moduleb>\n");
   printf("  --bench-module <modulea,moduleb>\n");
@@ -430,13 +431,12 @@ void dt_dump_pfm_file(
   }
 
   char fname[PATH_MAX]= { 0 };
-  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s_%s%s%s.%s",
+  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s_%s%s.%s",
      path,
      written,
      modname,
      cpu ? "cpu" : "GPU", 
-     input ? "in_" : "",
-     output ? "out_" : "",
+     (input && output) ? "diff_" : ((!input && !output) ? "" : ((input) ? "in_" : "out_")),
      (bpp != 16) ? "M" : "C",
      (bpp==2) ? "ppm" : "pfm");
 
@@ -572,9 +572,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.tmp_directory = NULL;
   darktable.bench_module = NULL;
 
+  gboolean exclude_opencl = TRUE;
+  gboolean print_statistics = FALSE;
 #ifdef HAVE_OPENCL
-  gboolean exclude_opencl = FALSE;
-  gboolean print_statistics = (strstr(argv[0], "darktable-cltest") == NULL);
+  exclude_opencl = FALSE;
+  print_statistics = (strstr(argv[0], "darktable-cltest") == NULL);
 #endif
 
 #ifdef USE_LUA
@@ -582,7 +584,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
   darktable.num_openmp_threads = dt_get_num_procs();
-
+  darktable.pipe_cache = TRUE;
   darktable.unmuted = 0;
   GSList *config_override = NULL;
   for(int k = 1; k < argc; k++)
@@ -970,6 +972,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
         argv[k] = NULL;
       }
+      else if(!strcmp(argv[k], "--disable-pipecache"))
+      {
+        darktable.pipe_cache = FALSE;
+        argv[k] = NULL;
+      }
       else if(!strcmp(argv[k], "--"))
       {
         // "--" confuses the argument parser of glib/gtk. remove it.
@@ -1291,8 +1298,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
-#ifdef HAVE_OPENCL
   dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
+#ifdef HAVE_OPENCL
   dt_opencl_update_settings();
 #endif
 
@@ -1848,31 +1855,6 @@ void dt_configure_runtime_performance(const int old, char *info)
   {
     dt_conf_set_string("resourcelevel", (sufficient) ? "default" : "small");
     dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] resourcelevel=%s\n", (sufficient) ? "default" : "small");
-  }
-
-  if(!dt_conf_key_not_empty("plugins/darkroom/demosaic/quality"))
-  {
-    dt_conf_set_string("plugins/darkroom/demosaic/quality", (sufficient) ? "default" : "always bilinear (fast)");
-    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] plugins/darkroom/demosaic/quality=%s",
-      (sufficient) ? "default" : "always bilinear (fast)");
-  }
-  else if(old == 2)
-  {
-    const gchar *demosaic_quality = dt_conf_get_string_const("plugins/darkroom/demosaic/quality");
-    if(!strcmp(demosaic_quality, "always bilinear (fast)"))
-    {
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "default");
-      dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] override: plugins/darkroom/demosaic/quality=default\n");
-    }
-  }
-  else if(old < 12)
-  {
-    const gchar *demosaic_quality = dt_conf_get_string_const("plugins/darkroom/demosaic/quality");
-    if(!strcmp(demosaic_quality, "at most RCD (reasonable)"))
-    {
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "default");
-      dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] override: plugins/darkroom/demosaic/quality=default\n");
-    }
   }
 
   if(!dt_conf_key_not_empty("cache_disk_backend_full"))

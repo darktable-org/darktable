@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,8 +101,27 @@ int position(const dt_lib_module_t *self)
   return 1000;
 }
 
+enum _lib_snapshot_button_items
+  {
+    _SNAPSHOT_BUTTON_NUM,
+    _SNAPSHOT_BUTTON_STATUS,
+    _SNAPSHOT_BUTTON_NAME,
+    _SNAPSHOT_BUTTON_LABEL,
+  } _lib_snapshot_button_items;
+
+static GtkWidget *_lib_snapshot_button_get_item(GtkWidget *button, const int num)
+{
+  GtkWidget *cont = gtk_bin_get_child(GTK_BIN(button));
+  GList *items = gtk_container_get_children(GTK_CONTAINER(cont));
+  return (GtkWidget *)g_list_nth_data(items, num);
+}
+
 // draw snapshot sign
-static void _draw_sym(cairo_t *cr, float x, float y, gboolean vertical, gboolean inverted)
+static void _draw_sym(cairo_t *cr,
+                      const float x,
+                      const float y,
+                      const gboolean vertical,
+                      const gboolean inverted)
 {
   const double inv = inverted ? -0.1 : 1.0;
 
@@ -136,8 +155,12 @@ static gboolean _snap_expose_again(gpointer user_data)
 }
 
 /* expose snapshot over center viewport */
-void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx,
-                     int32_t pointery)
+void gui_post_expose(dt_lib_module_t *self,
+                     cairo_t *cri,
+                     const int32_t width,
+                     const int32_t height,
+                     const int32_t pointerx,
+                     const int32_t pointery)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   dt_develop_t *dev = darktable.develop;
@@ -301,7 +324,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   }
 }
 
-int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)
+int button_released(struct dt_lib_module_t *self,
+                    const double x,
+                    const double y,
+                    const int which,
+                    const uint32_t state)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
@@ -321,8 +348,13 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
 
 static int _lib_snapshot_rotation_cnt = 0;
 
-int button_pressed(struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type,
-                   uint32_t state)
+int button_pressed(struct dt_lib_module_t *self,
+                   const double x,
+                   const double y,
+                   const double pressure,
+                   const int which,
+                   const int type,
+                   const uint32_t state)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
@@ -341,11 +373,16 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
     /* do the split rotating */
     const double hhs = HANDLE_SIZE * 0.5;
-    if(((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs)
+    if(((d->vertical
+         && xp > d->vp_xpointer - hhs
+         && xp < d->vp_xpointer + hhs)
         && yp > 0.5 - hhs && yp < 0.5 + hhs)
-        || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs)
+        || ((!d->vertical && yp > d->vp_ypointer - hhs
+             && yp < d->vp_ypointer + hhs)
             && xp > 0.5 - hhs && xp < 0.5 + hhs)
-        || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs
+        || (d->vp_xrotate > xp - hhs
+            && d->vp_xrotate <= xp + hhs
+            && d->vp_yrotate > yp - hhs
             && d->vp_yrotate <= yp + hhs))
     {
       /* let's rotate */
@@ -376,7 +413,11 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
   return 0;
 }
 
-int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int which)
+int mouse_moved(dt_lib_module_t *self,
+                const double x,
+                const double y,
+                const double pressure,
+                const int which)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
@@ -419,6 +460,12 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
   s->ctx = 0;
   s->imgid = -1;
   s->history_end = -1;
+  if(s->button)
+  {
+    GtkWidget *lstatus = _lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_STATUS);
+    gtk_widget_set_tooltip_text(s->button, "");
+    gtk_widget_set_tooltip_text(lstatus, "");
+  }
 }
 
 static void _clear_snapshots(dt_lib_module_t *self, const uint32_t imgid)
@@ -451,7 +498,9 @@ void gui_reset(dt_lib_module_t *self)
   _clear_snapshots(self, -1);
 }
 
-static void _signal_profile_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+static void _signal_profile_changed(gpointer instance,
+                                    const uint8_t profile_type,
+                                    gpointer user_data)
 {
   // when the display profile is changed, make sure we recreate the snapshot
   if(profile_type == DT_COLORSPACES_PROFILE_TYPE_DISPLAY)
@@ -477,39 +526,50 @@ static void _signal_image_changed(gpointer instance, gpointer user_data)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
 
+    if(s->imgid == -1)
+      continue;
+
     GtkWidget *b = d->snapshot[k].button;
-    GtkLabel *l = GTK_LABEL(gtk_bin_get_child(GTK_BIN(b)));
+    GtkWidget *st = _lib_snapshot_button_get_item(b, _SNAPSHOT_BUTTON_STATUS);
 
-    char lab[128];
-    char newlab[128];
-    g_strlcpy(lab, gtk_label_get_text(l), sizeof(lab));
-
-    // remove possible double asterisk at the start of the label
-    if(lab[0] == '*')
-      g_strlcpy(newlab, &lab[3], sizeof(newlab));
-    else
-      g_strlcpy(newlab, lab, sizeof(newlab));
+    char stat[8] = { 0 };
 
     if(s->imgid == imgid)
     {
-      snprintf(lab, sizeof(lab), "%s", newlab);
+      g_strlcpy(stat, " ", sizeof(stat));
+
       gtk_widget_set_tooltip_text(b, "");
+      gtk_widget_set_tooltip_text(st, "");
     }
     else
     {
-      snprintf(lab, sizeof(lab), _("** %s"), newlab);
+      g_strlcpy(stat, "↗", sizeof(stat));
+
+      char tooltip[128] = { 0 };
       // tooltip
       char *name = dt_image_get_filename(s->imgid);
-      snprintf(newlab, sizeof(newlab),
-               _("** %s '%s'"), _("this snapshot was taken from"), name);
+      snprintf(tooltip, sizeof(tooltip),
+               _("↗ %s '%s'"), _("this snapshot was taken from"), name);
       g_free(name);
-      gtk_widget_set_tooltip_text(b, newlab);
+      gtk_widget_set_tooltip_text(b, tooltip);
+      gtk_widget_set_tooltip_text(st, tooltip);
     }
 
-    gtk_label_set_text(l, lab);
+    gtk_label_set_text(GTK_LABEL(st), stat);
   }
 
   dt_control_queue_redraw_center();
+}
+
+static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
+                                                    GdkEventButton *event,
+                                                    gpointer user_data)
+{
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    gtk_widget_grab_focus(user_data);
+
+  gtk_widget_set_focus_on_click(widget, FALSE);
+  return gtk_widget_has_focus(user_data);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -536,14 +596,16 @@ void gui_init(dt_lib_module_t *self)
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
-  d->take_button = dt_action_button_new(self, N_("take snapshot"), _lib_snapshots_add_button_clicked_callback, self,
-                                        _("take snapshot to compare with another image "
-                                          "or the same image at another stage of development"), 0, 0);
+  d->take_button = dt_action_button_new
+    (self,
+     N_("take snapshot"),
+     _lib_snapshots_add_button_clicked_callback, self,
+     _("take snapshot to compare with another image "
+       "or the same image at another stage of development"), 0, 0);
 
   /*
    * initialize snapshots
    */
-  char wdname[32] = { 0 };
   char localtmpdir[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(localtmpdir, sizeof(localtmpdir));
 
@@ -552,14 +614,35 @@ void gui_init(dt_lib_module_t *self)
     _clear_snapshot_entry(&d->snapshot[k]);
 
     /* create snapshot button */
-    d->snapshot[k].button = gtk_toggle_button_new_with_label(wdname);
-    GtkWidget *label = gtk_bin_get_child(GTK_BIN(d->snapshot[k].button));
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
-    gtk_label_set_xalign(GTK_LABEL(label), 0);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+    d->snapshot[k].button = gtk_toggle_button_new();
+    gtk_widget_set_name(d->snapshot[k].button, "snapshot-button");
+
+    // 4 items inside, num, status, name, label
+    GtkWidget *num = gtk_label_new("");
+    gtk_widget_set_name(num, "history-number");
+    dt_gui_add_class(num, "dt_monospace");
+
+
+    GtkWidget *status = gtk_label_new("");
+    dt_gui_add_class(status, "dt_monospace");
+
+    GtkWidget *name = gtk_label_new("");
+    GtkWidget *entry = gtk_entry_new();
+
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+    gtk_box_pack_start(GTK_BOX(box), num, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), status, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), name, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), entry, TRUE, TRUE, 0);
+
+    gtk_widget_show_all(box);
+    gtk_container_add(GTK_CONTAINER(d->snapshot[k].button), box);
 
     g_signal_connect(G_OBJECT(d->snapshot[k].button), "toggled",
                      G_CALLBACK(_lib_snapshots_toggled_callback), self);
+    g_signal_connect(G_OBJECT(d->snapshot[k].button), "button-press-event",
+                     G_CALLBACK(_lib_button_button_pressed_callback), entry);
 
     /* add button to snapshot box */
     gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
@@ -570,10 +653,13 @@ void gui_init(dt_lib_module_t *self)
 
   /* add snapshot box and take snapshot button to widget ui*/
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_resize_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
+                     dt_ui_resize_wrap(d->snapshots_box, 1,
+                                       "plugins/darkroom/snapshots/windowheight"),
+                     TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 
-  dt_action_register(DT_ACTION(self), N_("toggle last snapshot"), _lib_snapshots_toggle_last, 0, 0);
+  dt_action_register(DT_ACTION(self), N_("toggle last snapshot"),
+                     _lib_snapshots_toggle_last, 0, 0);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                                   G_CALLBACK(_signal_profile_changed), self);
@@ -589,7 +675,8 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpointer user_data)
+static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
+                                                       gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
@@ -597,7 +684,8 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   // first make sure the current history is properly written
   dt_dev_write_history(darktable.develop);
 
-  const gchar *name = _("original");
+  char *name = NULL;
+  char *label = NULL;
 
   if(darktable.develop->history_end > 0)
   {
@@ -605,10 +693,21 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
       g_list_nth_data(darktable.develop->history,
                       darktable.develop->history_end - 1);
     if(history_item && history_item->module)
-      name = history_item->module->name();
+    {
+      name = g_strdup(history_item->module->name());
+
+      if(strlen(history_item->multi_name) > 0
+         && history_item->multi_name[0] != ' ')
+      {
+        label = g_strdup_printf("• %s",
+                               history_item->multi_name);
+      }
+    }
     else
-      name = _("unknown");
+      name = g_strdup(_("unknown"));
   }
+  else
+    name = g_strdup(_("original"));
 
   dt_lib_snapshot_t *s = &d->snapshot[d->num_snapshots];
   _clear_snapshot_entry(s);
@@ -637,9 +736,28 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  char label[64];
-  g_snprintf(label, sizeof(label), "%s (%u)", name, s->history_end);
-  gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(s->button))), label);
+  GtkEntry *entry =
+    (GtkEntry *)_lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_LABEL);
+  GtkLabel *lnum =
+    (GtkLabel *)_lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_NUM);
+  GtkLabel *lname =
+    (GtkLabel *)_lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_NAME);
+  GtkLabel *lstatus =
+    (GtkLabel *)_lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_STATUS);
+
+  char num[8];
+  g_snprintf(num, sizeof(num), "%2u", s->history_end);
+
+  gtk_label_set_text(lnum, num);
+  gtk_label_set_text(lstatus, " ");
+  gtk_label_set_text(lname, name);
+  if(label)
+    gtk_entry_set_text(entry, label);
+
+  gtk_widget_grab_focus(s->button);
+
+  g_free(name);
+  g_free(label);
 
   /* update slots used */
   d->num_snapshots++;
@@ -869,7 +987,21 @@ static int name_member(lua_State *L)
   {
     return luaL_error(L, "Accessing a non-existent snapshot");
   }
-  lua_pushstring(L, gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[index].button)))));
+  GtkLabel *num = (GtkLabel *)_lib_snapshot_button_get_item(d->snapshot[index].button,
+                                                            _SNAPSHOT_BUTTON_NUM);
+  GtkLabel *name = (GtkLabel *)_lib_snapshot_button_get_item(d->snapshot[index].button,
+                                                             _SNAPSHOT_BUTTON_NAME);
+
+  // skip first space if present
+  char *n = (char *)gtk_label_get_text(num);
+  if(*n == ' ') n++;
+
+  char *value = g_strdup_printf("%s (%s)",
+                                gtk_label_get_text(name),
+                                n);
+  lua_pushstring (L, value);
+
+  g_free(value);
   return 1;
 }
 
@@ -932,8 +1064,6 @@ void init(struct dt_lib_module_t *self)
   lua_pushcclosure(L, name_member, 1);
   dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L,dt_lua_snapshot_t,"__tostring");
-
-
 
   luaA_enum(L, snapshot_direction_t);
   luaA_enum_value_name(L, snapshot_direction_t, SNS_LEFT, "left");

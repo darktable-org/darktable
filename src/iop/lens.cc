@@ -671,27 +671,6 @@ static float _get_autoscale_lf(dt_iop_module_t *self,
   return scale;
 }
 
-/* Why do we care about being a monochrome image or not?  The lensfun
- library does not have an algorithm for distortion or tca correction
- specialized for monochrome images, the builtin correction works with
- subtle differences for the color channels leading to some colorizing
- of the images.
-
- How is this fixed here:
-
-   Monochrome images (from pure monochrome cameras or cameras with the
-   color filter removed from the sensor) have all three rgb colors set
-   to the same value by the demosaicer.
-
-   Looking through lensfun code & docs the
-   ApplySubpixelGeometryDistortion algorithm makes assumptions from
-   given coeffs how far data are displaced for the different
-   wavelengths of light.
-
-   As green / Y channel is the most centric i took that as the
-   canonical value instead of taking the mean.
-*/
-
 static void _process_lf(dt_iop_module_t *self,
                         dt_dev_pixelpipe_iop_t *piece,
                         const void *const ivoid,
@@ -752,7 +731,7 @@ static void _process_lf(dt_iop_module_t *self,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(padded_bufsize, ch, ch_width, d, interpolation, ivoid, mask_display, ovoid, roi_in, roi_out)	\
-      dt_omp_sharedconst(buf, raw_monochrome) \
+      dt_omp_sharedconst(buf) \
       shared(modifier) \
       schedule(static)
 #endif
@@ -786,8 +765,6 @@ static void _process_lf(dt_iop_module_t *self,
               (interpolation, inptr, pi0, pi1, roi_in->width,
                roi_in->height, ch, ch_width);
           }
-
-          if(raw_monochrome) out[0] = out[2] = out[1];
 
           if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
           {
@@ -877,7 +854,7 @@ static void _process_lf(dt_iop_module_t *self,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(padded_buf2size, ch, ch_width, d, interpolation, mask_display, ovoid, roi_in, roi_out) \
-      dt_omp_sharedconst(buf2, raw_monochrome) \
+      dt_omp_sharedconst(buf2) \
       shared(buf, modifier) \
       schedule(static)
 #endif
@@ -909,7 +886,7 @@ static void _process_lf(dt_iop_module_t *self,
                                                      roi_in->width,
                                                      roi_in->height, ch, ch_width);
           }
-          if(raw_monochrome) out[0] = out[2] = out[1];
+
           if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
           {
             if(d->do_nan_checks && (!isfinite(buf2ptr[2]) || !isfinite(buf2ptr[3])))
@@ -974,6 +951,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
   const int height = MAX(iheight, oheight);
   const int ch = piece->colors;
   const int tmpbufwidth = owidth * 2 * 3;
+  const size_t tmpbufsize = (size_t)tmpbufwidth * oheight * sizeof(float);  
   const size_t tmpbuflen = d->inverse
     ? (size_t)oheight * owidth * 2 * 3 * sizeof(float)
     : MAX((size_t)oheight * owidth * 2 * 3, (size_t)iheight * iwidth * ch) * sizeof(float);
@@ -988,15 +966,12 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
   size_t origin[] = { 0, 0, 0 };
   size_t iregion[] = { (size_t)iwidth, (size_t)iheight, 1 };
   size_t oregion[] = { (size_t)owidth, (size_t)oheight, 1 };
-  size_t isizes[] = { (size_t)ROUNDUPDWD(iwidth, devid),
-                      (size_t)ROUNDUPDHT(iheight, devid), 1 };
-  size_t osizes[] = { (size_t)ROUNDUPDWD(owidth, devid),
-                      (size_t)ROUNDUPDHT(oheight, devid), 1 };
+  size_t isizes[] = { (size_t)ROUNDUPDWD(iwidth, devid), (size_t)ROUNDUPDHT(iheight, devid), 1 };
+  size_t osizes[] = { (size_t)ROUNDUPDWD(owidth, devid), (size_t)ROUNDUPDHT(oheight, devid), 1 };
 
   int modflags;
   int ldkernel = -1;
-  const struct dt_interpolation *interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
@@ -1054,22 +1029,16 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
       for(int y = 0; y < roi_out->height; y++)
       {
         float *pi = tmpbuf + (size_t)y * tmpbufwidth;
-        modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y,
-                                                  roi_out->width, 1, pi);
+        modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width, 1, pi);
       }
 
-      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device
-        (devid, tmpbuf, dev_tmpbuf, 0,
-         (size_t)owidth * oheight * 2 * 3 * sizeof(float), CL_TRUE);
-
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, tmpbufsize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_args(devid, ldkernel, 0, CLARG(dev_in),
-                                CLARG(dev_tmp), CLARG(owidth), CLARG(oheight),
-        CLARG(iwidth), CLARG(iheight), CLARG(roi_in_x), CLARG(roi_in_y),
-                                CLARG(dev_tmpbuf), CLARG((d->do_nan_checks)),
-        CLARG((raw_monochrome)));
+      dt_opencl_set_kernel_args(devid, ldkernel, 0,
+        CLARG(dev_in), CLARG(dev_tmp),
+        CLARG(owidth), CLARG(oheight), CLARG(iwidth), CLARG(iheight), CLARG(roi_in_x), CLARG(roi_in_y),
+        CLARG(dev_tmpbuf), CLARG((d->do_nan_checks)));
       err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, osizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -1092,22 +1061,19 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
         /* Colour correction: vignetting */
         // actually this way row stride does not matter.
         float *buf = tmpbuf + (size_t)y * ch * roi_out->width;
-        for(int k = 0; k < ch * roi_out->width; k++) buf[k] = 0.5f;
+        for(int k = 0; k < ch * roi_out->width; k++)
+          buf[k] = 0.5f;
         modifier->ApplyColorModification(buf, roi_out->x, roi_out->y + y,
                                          roi_out->width, 1,
                                          pixelformat, ch * roi_out->width);
       }
 
-      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0,
-                                             (size_t)ch * roi_out->width *
-                                             roi_out->height * sizeof(float),
-                                             CL_TRUE);
+      const size_t bsize = (size_t)ch * roi_out->width * roi_out->height * sizeof(float);
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, bsize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_args(devid, gd->kernel_lens_vignette, 0,
-                                CLARG(dev_tmp), CLARG(dev_out), CLARG(owidth),
-        CLARG(oheight), CLARG(dev_tmpbuf));
+        CLARG(dev_tmp), CLARG(dev_out), CLARG(owidth), CLARG(oheight), CLARG(dev_tmpbuf));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_vignette, osizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -1139,15 +1105,12 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
                                          pixelformat, ch * roi_in->width);
       }
 
-      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(
-          devid, tmpbuf, dev_tmpbuf, 0,
-          (size_t)ch * roi_in->width * roi_in->height * sizeof(float), CL_TRUE);
+      const size_t bsize = (size_t)ch * roi_in->width * roi_in->height * sizeof(float);
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, bsize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_args(devid, gd->kernel_lens_vignette, 0,
-                                CLARG(dev_in), CLARG(dev_tmp), CLARG(iwidth),
-        CLARG(iheight), CLARG(dev_tmpbuf));
+        CLARG(dev_in), CLARG(dev_tmp), CLARG(iwidth), CLARG(iheight), CLARG(dev_tmpbuf));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lens_vignette, isizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -1172,21 +1135,18 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
       for(int y = 0; y < roi_out->height; y++)
       {
         float *pi = tmpbuf + (size_t)y * tmpbufwidth;
-        modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y,
-                                                  roi_out->width, 1, pi);
+        modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width, 1, pi);
       }
 
-      /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device
-        (devid, tmpbuf, dev_tmpbuf, 0,
-         (size_t)owidth * oheight * 2 * 3 * sizeof(float), CL_TRUE);
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, tmpbufsize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
-      dt_opencl_set_kernel_args(devid, ldkernel, 0, CLARG(dev_tmp),
-                                CLARG(dev_out), CLARG(owidth), CLARG(oheight),
-        CLARG(iwidth), CLARG(iheight), CLARG(roi_in_x), CLARG(roi_in_y),
-                                CLARG(dev_tmpbuf), CLARG((d->do_nan_checks)),
-        CLARG((raw_monochrome)));
+      dt_opencl_set_kernel_args(devid, ldkernel, 0,
+        CLARG(dev_tmp), CLARG(dev_out),
+        CLARG(owidth), CLARG(oheight),
+        CLARG(iwidth), CLARG(iheight),
+        CLARG(roi_in_x), CLARG(roi_in_y),
+        CLARG(dev_tmpbuf), CLARG((d->do_nan_checks)));
       err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, osizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -3343,7 +3303,7 @@ static void _display_errors(struct dt_iop_module_t *self)
       (self, _("camera/lens not found"),
        _("please select your lens manually\n"
          "you might also want to check if your lensfun database is up-to-date\n"
-         "by running lensfun_update_data"),
+         "by running lensfun-update-data"),
        "camera/lens not found");
   }
   else

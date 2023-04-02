@@ -920,7 +920,8 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
      dt_database_get(darktable.db),
-     "SELECT op_params, enabled, blendop_params, blendop_version, writeprotect"
+     "SELECT op_params, enabled, blendop_params, blendop_version, writeprotect,"
+     "       multi_name, multi_name_hand_edited"
      " FROM data.presets"
      " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
      -1, &stmt, NULL);
@@ -938,6 +939,8 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
     const int bl_length = sqlite3_column_bytes(stmt, 2);
     const int blendop_version = sqlite3_column_int(stmt, 3);
     const int writeprotect = sqlite3_column_int(stmt, 4);
+    const char *multi_name = (const char *)sqlite3_column_text(stmt, 5);
+    const int multi_name_hand_edited = sqlite3_column_int(stmt, 6);
 
     if(op_params && (op_length == module->params_size))
       memcpy(module->params, op_params, op_length);
@@ -945,9 +948,21 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
       memcpy(module->params, module->default_params, module->params_size);
 
     module->enabled = enabled;
-    // if module name has not been hand edited, use preset name as module label
-    if(!module->multi_name_hand_edited)
-      g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+
+    // if module name has not been hand edited, use preset multi_name
+    // or name as module label.
+
+    const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
+
+    if(auto_module
+       && !module->multi_name_hand_edited
+       && (strlen(multi_name) == 0 || multi_name[0] != ' '))
+    {
+      g_strlcpy(module->multi_name,
+                dt_presets_get_multi_name(name, multi_name),
+                sizeof(module->multi_name));
+      module->multi_name_hand_edited = multi_name_hand_edited;
+    }
 
     if(blendop_params
        && (blendop_version == dt_develop_blend_version())
@@ -956,7 +971,8 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
       dt_iop_commit_blend_params(module, blendop_params);
     }
     else if(blendop_params
-            && dt_develop_blend_legacy_params(module, blendop_params, blendop_version, module->blend_params,
+            && dt_develop_blend_legacy_params(module, blendop_params,
+                                              blendop_version, module->blend_params,
                                               dt_develop_blend_version(), bl_length) == 0)
     {
       // do nothing

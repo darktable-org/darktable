@@ -18,14 +18,7 @@
 
 #pragma once
 
-#include "common/math.h"
-
-#ifdef __SSE2__
-#include "common/sse.h" // also loads darkable.h
-#include <xmmintrin.h>
-#else
-#include "common/darktable.h"
-#endif
+#include "common/math.h" // also loads darkable.h, sse.h, <xmmintrin.h>
 
 
 #ifdef __SSE2__
@@ -124,7 +117,7 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 #endif
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(in,out)
+#pragma omp declare simd aligned(in,out : 16) aligned(matrix : 64)
 #endif
 static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix,
                                                     dt_aligned_pixel_t out)
@@ -136,7 +129,7 @@ static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in,
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(in,out)
+#pragma omp declare simd aligned(in,out,matrix_row0,matrix_row1,matrix_row2)
 #endif
 static inline void dt_apply_color_matrix_by_row(const dt_aligned_pixel_t in,
                                                 const dt_aligned_pixel_t matrix_row0,
@@ -619,6 +612,9 @@ static inline void dt_prophotorgb_to_Lab(const dt_aligned_pixel_t rgb, dt_aligne
   dt_XYZ_to_Lab(XYZ, Lab);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(rgb, Lab, cmatrix_row0, cmatrix_row1, cmatrix_row2)
+#endif
 static inline void dt_RGB_to_Lab(const dt_aligned_pixel_t rgb,
                                  const dt_aligned_pixel_t cmatrix_row0,
                                  const dt_aligned_pixel_t cmatrix_row1,
@@ -632,7 +628,7 @@ static inline void dt_RGB_to_Lab(const dt_aligned_pixel_t rgb,
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(RGB)
 #endif
 static inline float _dt_RGB_2_Hue(const dt_aligned_pixel_t RGB, const float max, const float delta)
 {
@@ -1298,6 +1294,24 @@ static inline void gamut_check_Yrg(dt_aligned_pixel_t Ych)
   // Overwrite chroma with the sanitized value
   Ych[1] = max_c;
 }
+
+static inline void dt_RGB_to_YCbCr(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t yuv)
+{
+  static const dt_colormatrix_t rgb_to_YCbCr_transposed = {
+    { 0.299f, -0.147f,  0.615f, 0.0f },
+    { 0.587f, -0.289f, -0.515f, 0.0f },
+    { 0.114f,  0.437f, -0.100f, 0.0f }
+  };
+  dt_apply_transposed_color_matrix(rgb, rgb_to_YCbCr_transposed, yuv);
+}
+
+static inline void dt_YCbCr_to_RGB(const dt_aligned_pixel_t yuv, dt_aligned_pixel_t rgb)
+{
+  rgb[0] = yuv[0] + 1.140f * yuv[2];
+  rgb[1] = yuv[0] - 0.394f * yuv[1] - 0.581f * yuv[2];
+  rgb[2] = yuv[0] + 2.028f * yuv[1];
+}
+
 
 /** The following is darktable Uniform Color Space 2022
  * © Aurélien Pierre

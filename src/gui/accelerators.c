@@ -1045,6 +1045,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
 
     GtkWidget *label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), markup_text);
+    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+    gtk_label_set_max_width_chars(GTK_LABEL(label), 70);
     gtk_widget_set_halign(label, GTK_ALIGN_START);
 
     g_free(markup_text);
@@ -3324,7 +3326,7 @@ static float _process_action(dt_action_t *action, int instance,
       return_value = definition->process(action_target, element, effect, move_size);
     }
 #ifdef USE_LUA
-    else if(action->owner == &darktable.control->actions_lua && definition)
+    else if(owner == &darktable.control->actions_lua && definition)
     {
       dt_lua_lock();
 

@@ -1164,16 +1164,17 @@ void gui_init(struct dt_iop_module_t *self)
     (&g->cs,
      "plugins/darkroom/exposure/mapping",
      _("spot exposure mapping"),
-     GTK_BOX(self->widget));
+     GTK_BOX(self->widget),
+     DT_ACTION(self));
 
   gtk_widget_set_tooltip_text
     (g->cs.expander,
      _("define a target brightness, in terms of exposure,\n"
-       " for a selected region of the image (the control sample),\n"
-       " which you then match against the same target brightness\n"
-       " in other images. the control sample can either\n"
-       " be a critical part of your subject or a non-moving and\n"
-       " consistently-lit surface over your series of images."));
+       "for a selected region of the image (the control sample),\n"
+       "which you then match against the same target brightness\n"
+       "in other images. the control sample can either\n"
+       "be a critical part of your subject or a non-moving and\n"
+       "consistently-lit surface over your series of images."));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL
     (g->spot_mode, self, NULL, N_("spot mode"),

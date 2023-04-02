@@ -205,6 +205,7 @@ typedef struct dt_lib_histogram_t
   GtkWidget *button_box_opt;           // GtkBox -- contains options buttons
   GtkWidget *button_box_rgb;           // GtkBox -- contains RGB channels buttons
   GtkWidget *color_harmony_box;        // GtkBox -- contains color harmony buttons
+  GtkWidget *color_harmony_fix;        // GtkFixed -- contains moveable color harmony buttons
   GtkWidget *scope_type_button
     [DT_LIB_HISTOGRAM_SCOPE_N];        // Array of GtkToggleButton -- histogram control
   GtkWidget *scope_view_button;        // GtkButton -- how to render the current scope
@@ -1996,7 +1997,7 @@ static gboolean _color_harmony_enter_notify_callback(GtkWidget *widget, GdkEvent
   d->color_harmony_old = d->color_harmony;
   d->color_harmony = pos + 1;
   gtk_widget_queue_draw(d->scope_draw);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
@@ -2005,7 +2006,7 @@ static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget, GdkEvent
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->color_harmony = d->color_harmony_old;
   gtk_widget_queue_draw(d->scope_draw);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
@@ -2015,16 +2016,24 @@ static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCross
   _scope_type_update(d);
   gtk_widget_show(d->button_box_main);
   gtk_widget_show(d->button_box_opt);
-  return TRUE;
+  return FALSE;
 }
 
-static gboolean _eventbox_motion_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+static gboolean _eventbox_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
                                                  gpointer user_data)
 {
   //This is required in order to correctly display the button tooltips
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   _scope_type_update(d);
-  return TRUE;
+
+  GtkAllocation fix_alloc;
+  gtk_widget_get_allocation(d->color_harmony_fix, &fix_alloc);
+  const int full_height = gtk_widget_get_allocated_height(widget);
+  const int excess = gtk_widget_get_allocated_height(d->color_harmony_box) + fix_alloc.y - full_height;
+  const int shift = excess * MAX(event->y - fix_alloc.y, 0) / (full_height - fix_alloc.y);
+  gtk_fixed_move(GTK_FIXED(d->color_harmony_fix), d->color_harmony_box, 0, - MAX(shift, 0));
+
+  return FALSE;
 }
 
 static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
@@ -2037,7 +2046,7 @@ static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCross
     gtk_widget_hide(d->button_box_main);
     gtk_widget_hide(d->button_box_opt);
   }
-  return TRUE;
+  return FALSE;
 }
 
 static void _lib_histogram_collapse_callback(dt_action_t *action)
@@ -2159,7 +2168,7 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
   // pre-gamma image. Now that preview pipe is complete, draw it
   // FIXME: it would be nice if process() just queued a redraw if not in live view, but then our draw code would have to have some other way to assure that the histogram image is current besides checking the pixelpipe to see if it has processed the current image
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
 }
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
@@ -2322,7 +2331,9 @@ void gui_init(dt_lib_module_t *self)
   d->color_harmony_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_valign(d->color_harmony_box, GTK_ALIGN_START);
   gtk_widget_set_halign(d->color_harmony_box, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(d->button_box_main), d->color_harmony_box, FALSE, FALSE, 0);
+  d->color_harmony_fix = gtk_fixed_new();
+  gtk_fixed_put(GTK_FIXED(d->color_harmony_fix), d->color_harmony_box, 0, 0);
+  gtk_box_pack_start(GTK_BOX(d->button_box_main), d->color_harmony_fix, FALSE, FALSE, 0);
 
   d->button_box_opt = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   dt_gui_add_class(d->button_box_opt, "button_box");

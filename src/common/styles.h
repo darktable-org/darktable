@@ -136,7 +136,7 @@ GList *dt_styles_get_list(const char *filter);
     the multi_name.
 */
 GList *dt_styles_get_item_list(const char *name,
-                               const gboolean params,
+                               const gboolean localized,
                                const int imgid,
                                const gboolean with_multi_name);
 
