@@ -2660,12 +2660,11 @@ void dt_masks_draw_arrow(cairo_t *cr,
   const float pr_d = darktable.develop->preview_downsampling;
   const float dx = from_x - to_x;
   const float dy = from_y - to_y;
-  const float size = sqf(dx*dx + dy*dy) * pr_d;
   const float arrow_size = 24.0f * pr_d;
 
   const float arrow_scale = arrow_size / sqrtf(3.f * zoom_scale);
 
-  const gboolean draw_arrow = (size > 96.f * arrow_size);
+  const gboolean draw_arrow = TRUE;
 
   float cangle = atanf(dx / dy);
 
