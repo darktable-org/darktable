@@ -3453,11 +3453,11 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
   }
 
   const dt_view_type_flags_t vws = _find_views(ac);
-  if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view))
-     && !isnan(move_size))
+  if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view)))
   {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[dt_action_process] action '%s' not valid for current view\n", action);
+    if(!isnan(move_size))
+      dt_print(DT_DEBUG_ALWAYS,
+              "[dt_action_process] action '%s' not valid for current view\n", action);
     return NAN;
   }
 
