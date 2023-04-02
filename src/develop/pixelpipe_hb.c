@@ -1387,6 +1387,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;
 
+    dt_print_pipe(DT_DEBUG_PIPE,
+                  "pixelpipe data: from cache", pipe, "", &roi_in, roi_out, "\n");
     // we're done! as colorpicker/scopes only work on gamma iop
     // input -- which is unavailable via cache -- there's no need to
     // run these
@@ -1410,7 +1412,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       return TRUE;
 
     dt_times_t start;
-    dt_get_times(&start);
+    dt_get_perf_times(&start);
     // we're looking for the full buffer
     if(roi_out->scale == 1.0f
        && roi_out->x == 0 && roi_out->y == 0
@@ -1419,7 +1421,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     {
       *output = pipe->input;
       dt_print_pipe(DT_DEBUG_PIPE,
-                    "pixelpipe full data", pipe, "", &roi_in, roi_out, "\n");
+                    "pixelpipe data: full", pipe, "", &roi_in, roi_out, "\n");
     }
     else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
                                        output, out_format, NULL, FALSE))
@@ -1433,8 +1435,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         const int in_y = MAX(roi_in.y, 0);
         const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
         const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
-        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe 1:1 copy", pipe, "", &roi_in, roi_out,
-           "%s\n", (cp_width > 0) ? "copied" : "already available");
+        dt_print_pipe(DT_DEBUG_PIPE,
+          (cp_width > 0) ? "pixelpipe data: 1:1 copied" : "pixelpipe data: 1:1 none",
+          pipe, "", &roi_in, roi_out, "bpp=%d\n", bpp);
         if(cp_width > 0)
         {
 #ifdef _OPENMP
@@ -1456,7 +1459,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         roi_in.width = pipe->iwidth;
         roi_in.height = pipe->iheight;
         roi_in.scale = 1.0f;
-        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe clip&zoom", pipe, "", &roi_in, roi_out, "\n");
+        dt_print_pipe(DT_DEBUG_PIPE,
+          "pixelpipe data: clip&zoom", pipe, "", &roi_in, roi_out, "\n");
         dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
       }
     }
@@ -1531,7 +1535,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     return TRUE;
 
   dt_times_t start;
-  dt_get_times(&start);
+  dt_get_perf_times(&start);
 
   dt_pixelpipe_flow_t pixelpipe_flow = (PIXELPIPE_FLOW_NONE | PIXELPIPE_FLOW_HISTOGRAM_NONE);
 
@@ -1557,7 +1561,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     else
 #endif
 
-    dt_iop_image_copy_by_size((float *)*output, (float *)input, roi_out->width, roi_out->height, bpp / sizeof(float));
+    dt_iop_image_copy_by_size(*output, input, roi_out->width, roi_out->height, bpp / sizeof(float));
 
     return FALSE;
   }
