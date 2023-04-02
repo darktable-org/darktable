@@ -1104,18 +1104,19 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
   return;
 }
 
-static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
-                                    dt_develop_t *dev,
-                                    float *input,
-                                    dt_iop_buffer_dsc_t *input_format,
-                                    const dt_iop_roi_t *roi_in,
-                                    void **output,
-                                    dt_iop_buffer_dsc_t **out_format,
-                                    const dt_iop_roi_t *roi_out,
-                                    dt_iop_module_t *module,
-                                    dt_dev_pixelpipe_iop_t *piece,
-                                    dt_develop_tiling_t *tiling,
-                                    dt_pixelpipe_flow_t *pixelpipe_flow)
+static gboolean _pixelpipe_process_on_CPU(
+                 dt_dev_pixelpipe_t *pipe,
+                 dt_develop_t *dev,
+                 float *input,
+                 dt_iop_buffer_dsc_t *input_format,
+                 const dt_iop_roi_t *roi_in,
+                 void **output,
+                 dt_iop_buffer_dsc_t **out_format,
+                 const dt_iop_roi_t *roi_out,
+                 dt_iop_module_t *module,
+                 dt_dev_pixelpipe_iop_t *piece,
+                 dt_develop_tiling_t *tiling,
+                 dt_pixelpipe_flow_t *pixelpipe_flow)
 {
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -1286,8 +1287,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
-
-  return FALSE;
+  else
+    return FALSE;
 }
 
 static inline gboolean _check_good_pipe(dt_dev_pixelpipe_t *pipe)
@@ -1320,15 +1321,16 @@ static inline gboolean _opencl_pipe_isok(dt_dev_pixelpipe_t *pipe)
 #endif
 
 // recursive helper for process, returns TRUE in case of unfinished work or error
-static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
-                                        dt_develop_t *dev,
-                                        void **output,
-                                        void **cl_mem_output,
-                                        dt_iop_buffer_dsc_t **out_format,
-                                        const dt_iop_roi_t *roi_out,
-                                        GList *modules,
-                                        GList *pieces,
-                                        const int pos)
+static gboolean _dev_pixelpipe_process_rec(
+                 dt_dev_pixelpipe_t *pipe,
+                 dt_develop_t *dev,
+                 void **output,
+                 void **cl_mem_output,
+                 dt_iop_buffer_dsc_t **out_format,
+                 const dt_iop_roi_t *roi_out,
+                 GList *modules,
+                 GList *pieces,
+                 const int pos)
 {
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -2411,13 +2413,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 }
 
 
-gboolean dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
-                                      dt_develop_t *dev,
-                                      const int x,
-                                      const int y,
-                                      const int width,
-                                      const int height,
-                                      const float scale)
+gboolean dt_dev_pixelpipe_process_no_gamma(
+           dt_dev_pixelpipe_t *pipe,
+           dt_develop_t *dev,
+           const int x,
+           const int y,
+           const int width,
+           const int height,
+           const float scale)
 {
   // temporarily disable gamma mapping.
   GList *gammap = g_list_last(pipe->nodes);
@@ -2466,15 +2469,16 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
 }
 
 // returns TRUE in case of error or early exit
-static gboolean _dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe,
-                                                     dt_develop_t *dev,
-                                                     void **output,
-                                                     void **cl_mem_output,
-                                                     dt_iop_buffer_dsc_t **out_format,
-                                                     const dt_iop_roi_t *roi_out,
-                                                     GList *modules,
-                                                     GList *pieces,
-                                                     const int pos)
+static gboolean _dev_pixelpipe_process_rec_and_backcopy(
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_develop_t *dev,
+                  void **output,
+                  void **cl_mem_output,
+                  dt_iop_buffer_dsc_t **out_format,
+                  const dt_iop_roi_t *roi_out,
+                  GList *modules,
+                  GList *pieces,
+                  const int pos)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   darktable.dtresources.group = 4 * darktable.dtresources.level;
@@ -2518,13 +2522,14 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe
   return ret;
 }
 
-gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
-                             dt_develop_t *dev,
-                             const int x,
-                             const int y,
-                             const int width,
-                             const int height,
-                             const float scale)
+gboolean dt_dev_pixelpipe_process(
+           dt_dev_pixelpipe_t *pipe,
+           dt_develop_t *dev,
+           const int x,
+           const int y,
+           const int width,
+           const int height,
+           const float scale)
 {
   pipe->processing = TRUE;
   pipe->opencl_enabled = dt_opencl_running();
@@ -2575,13 +2580,13 @@ restart:
     pipe, "", &roi, &roi, "\n");
 
   // run pixelpipe recursively and get error status
-  const gboolean err =
-    _dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_format,
-                                              &roi, modules,
-                                              pieces, pos);
+  const gboolean err = _dev_pixelpipe_process_rec_and_backcopy(
+                       pipe, dev, &buf, &cl_mem_out, &out_format, &roi, modules, pieces, pos);
 
   // get status summary of opencl queue by checking the eventlist
-  const gboolean oclerr = (pipe->devid >= 0) ? (dt_opencl_events_flush(pipe->devid, TRUE) != 0) : FALSE;
+  const gboolean oclerr = (pipe->devid >= 0)
+                          ? (dt_opencl_events_flush(pipe->devid, TRUE) != 0)
+                          : FALSE;
 
   // Check if we had opencl errors ....  remark: opencl errors can
   // come in two ways: pipe->opencl_error is TRUE (and err is TRUE) OR
