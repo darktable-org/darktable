@@ -893,6 +893,10 @@ void dt_masks_draw_anchor(cairo_t *cr,
                           const float x,
                           const float y);
 
+/* find the closest to point (px, py) in points array.
+   nb_ctrl is the number of points (control points) to
+   skip at the start of points.
+*/
 void dt_masks_closest_point(const int count,
                             const int nb_ctrl,
                             const float *points,
@@ -901,6 +905,11 @@ void dt_masks_closest_point(const int count,
                             float *x,
                             float *y);
 
+/* draw a line from -> to with an arrow at the end.
+   if touch_dest is true then the arrow will be at the
+   (to_x, to_y) location, otherwise a small space will
+   be left.
+*/
 void dt_masks_draw_arrow(cairo_t *cr,
                          const float from_x,
                          const float from_y,
