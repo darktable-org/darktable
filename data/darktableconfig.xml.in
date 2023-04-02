@@ -3576,7 +3576,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>automatically update module name</shortdescription>
-    <longdescription>if enabled, the module name will be automatically update to match a preset name if present.</longdescription>
+    <longdescription>if enabled, the module name will be automatically updated to match a preset name or a preset instance name if present.</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
