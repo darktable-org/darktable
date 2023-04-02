@@ -52,7 +52,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   struct dt_dev_pixelpipe_t *pipe; // the pipe this piece belongs to
   void *data;                      // to be used by the module to store stuff per pipe piece
   void *blendop_data;              // to be used by the module to store blendop per pipe piece
-  int enabled; // used to disable parts of the pipe for export, independent on module itself.
+  gboolean enabled; // used to disable parts of the pipe for export, independent on module itself.
 
   dt_dev_request_flags_t request_histogram;              // (bitwise) set if you want an histogram captured
   dt_dev_histogram_collection_params_t histogram_params; // set histogram generation params

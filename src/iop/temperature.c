@@ -594,7 +594,7 @@ void process(struct dt_iop_module_t *self,
     }
   }
 
-  piece->pipe->dsc.temperature.enabled = 1;
+  piece->pipe->dsc.temperature.enabled = TRUE;
   for(int k = 0; k < 4; k++)
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
@@ -659,7 +659,7 @@ int process_cl(struct dt_iop_module_t *self,
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_xtrans);
 
-  piece->pipe->dsc.temperature.enabled = 1;
+  piece->pipe->dsc.temperature.enabled = TRUE;
   for(int k = 0; k < 4; k++)
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];

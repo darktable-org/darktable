@@ -51,7 +51,7 @@ typedef struct dt_iop_buffer_dsc_t
 
   struct
   {
-    int enabled;
+    gboolean enabled;
     dt_aligned_pixel_t coeffs;
   } temperature;
 
