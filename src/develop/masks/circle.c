@@ -941,14 +941,23 @@ static void _circle_events_post_expose(cairo_t *cr,
       else
         cangle = -(M_PI / 2) - cangle;
 
-      // (arrowx, arrowy) is the point of intersection
-      const float arrowx = gpt->points[0] + radius * cosf(cangle);
-      const float arrowy = gpt->points[1] + radius * sinf(cangle);
+      // (to_x, to_y) is the point of intersection
+      const float to_x = gpt->points[0] + radius * cosf(cangle);
+      const float to_y = gpt->points[1] + radius * sinf(cangle);
+
+      float from_x = 0.0f;
+      float from_y = 0.0f;
+
+      dt_masks_closest_point(gpt->source_count,
+                             0,
+                             gpt->source,
+                             to_x, to_y,
+                             &from_x, &from_y);
 
       // then draw two lines for the arrow itself
       dt_masks_draw_arrow(cr,
-                          gpt->source[0], gpt->source[1],
-                          arrowx, arrowy,
+                          from_x,from_y,
+                          to_x, to_y,
                           zoom_scale,
                           FALSE);
 
