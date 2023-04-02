@@ -38,6 +38,16 @@ static void _path_bounding_box_raw(const float *const points,
                                    float *y_min,
                                    float *y_max);
 
+static void _path_bounding_box(const float *const points,
+                               const float *border,
+                               const int nb_corner,
+                               const int num_points,
+                               const int num_borders,
+                               int *width,
+                               int *height,
+                               int *posx,
+                               int *posy);
+
 /** get the point of the path at pos t [0,1]  */
 static void _path_get_XY(const float p0x,
                          const float p0y,
@@ -2372,21 +2382,37 @@ static void _path_events_post_expose(cairo_t *cr,
     float from_x = 0.0f;
     float from_y = 0.0f;
 
+    int width = 0;
+    int height = 0;
+    int posx = 0;
+    int posy = 0;
+
+    // 1. find source path bounding box
+    _path_bounding_box(gpt->source, NULL, nb,
+                       gpt->source_count, 0,
+                       &width, &height, &posx, &posy);
+
+    // 2. source area center
+    const float center_x = (float)posx + (float)width / 2.f;
+    const float center_y = (float)posy + (float)height / 2.f;
+
+    // 3. dest border, closest to source area center
     dt_masks_closest_point(gpt->points_count,
                            nb * 3,
                            gpt->points,
-                           gpt->source[2], gpt->source[3],
+                           center_x, center_y,
                            &to_x, &to_y);
 
+    // 4. source border, closest to point border
     dt_masks_closest_point(gpt->source_count,
                            nb * 3,
                            gpt->source,
                            to_x, to_y,
                            &from_x, &from_y);
 
-    // we draw the line between source and dest
+    // 5. we draw the line between source and dest
     dt_masks_draw_arrow(cr,
-                        from_x, from_y, // gpt->source[2], gpt->source[3],
+                        from_x, from_y,
                         to_x, to_y,
                         zoom_scale,
                         FALSE);
