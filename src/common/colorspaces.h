@@ -195,8 +195,6 @@ typedef struct dt_colorspaces_cicp_t
     dt_colorspaces_cicp_matrix_coefficients_t matrix_coefficients;
 } dt_colorspaces_cicp_t;
 
-int mat3inv(float *const dst, const float *const src);
-
 /** populate the global color profile lists */
 dt_colorspaces_t *dt_colorspaces_init();
 
