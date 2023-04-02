@@ -2658,37 +2658,49 @@ void dt_masks_draw_arrow(cairo_t *cr,
                          const gboolean touch_dest)
 {
   const float pr_d = darktable.develop->preview_downsampling;
+  const float dx = from_x - to_x;
+  const float dy = from_y - to_y;
+  const float size = sqf(dx*dx + dy*dy) * pr_d;
+  const float arrow_size = 24.0f * pr_d;
 
-  const float arrow_scale = (24.0f * pr_d) / sqrtf(3.f * zoom_scale);
+  const float arrow_scale = arrow_size / sqrtf(3.f * zoom_scale);
 
-  const float cdx = from_x - to_x;
-  const float cdy = from_y - to_y;
+  const gboolean draw_arrow = (size > 96.f * arrow_size);
 
-  float cangle = atanf(cdx / cdy);
+  float cangle = atanf(dx / dy);
 
-  if(cdy > 0)
+  if(dy > 0)
     cangle = (M_PI / 2) - cangle;
   else
     cangle = -(M_PI / 2) - cangle;
 
   // move a bit away from the path
-  const float x = to_x + (touch_dest ? 0.f : 5.f * cosf(cangle) / zoom_scale);
-  const float y = to_y + (touch_dest ? 0.f : 5.f * sinf(cangle) / zoom_scale);
+  const float x = to_x + (touch_dest
+                          ? 0.f
+                          : 5.f * cosf(cangle) / zoom_scale);
 
-  cairo_move_to(cr, from_x, from_y); // source center
-  cairo_line_to(cr, x, y);           // dest border + a bit of space
+  const float y = to_y + (touch_dest
+                          ? 0.f
+                          : 5.f * sinf(cangle) / zoom_scale);
 
-  // then draw to line for the arrow itself
+  cairo_move_to(cr, from_x, from_y); // start
+  cairo_line_to(cr, x, y);           // end + a bit of space
 
-  cairo_move_to(cr,
-                x + arrow_scale * cosf(cangle + (0.4)),
-                y + arrow_scale * sinf(cangle + (0.4)));
+  // no arrow when size too small
+  if(draw_arrow)
+  {
+    // then draw to line for the arrow itself
 
-  cairo_line_to(cr, x, y);
+    cairo_move_to(cr,
+                  x + arrow_scale * cosf(cangle + (0.4)),
+                  y + arrow_scale * sinf(cangle + (0.4)));
 
-  cairo_line_to(cr,
-                x + arrow_scale * cosf(cangle - (0.4)),
-                y + arrow_scale * sinf(cangle - (0.4)));
+    cairo_line_to(cr, x, y);
+
+    cairo_line_to(cr,
+                  x + arrow_scale * cosf(cangle - (0.4)),
+                  y + arrow_scale * sinf(cangle - (0.4)));
+  }
 }
 
 void dt_masks_closest_point(const int count,
