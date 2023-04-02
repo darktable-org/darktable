@@ -98,49 +98,6 @@ static const cmsCIExyYTRIPLE ProPhoto_Primaries = {
 
 cmsCIEXYZTRIPLE Rec709_Primaries_Prequantized;
 
-#define generate_mat3inv_body(c_type, A, B)                                                                  \
-  int mat3inv_##c_type(c_type *const dst, const c_type *const src)                                           \
-  {                                                                                                          \
-                                                                                                             \
-    const c_type det = A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3))                                     \
-                       - A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3))                                   \
-                       + A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));                                  \
-                                                                                                             \
-    const c_type epsilon = 1e-7f;                                                                            \
-    if(fabs(det) < epsilon) return 1;                                                                        \
-                                                                                                             \
-    const c_type invDet = 1.0 / det;                                                                         \
-                                                                                                             \
-    B(1, 1) = invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));                                              \
-    B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));                                             \
-    B(1, 3) = invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));                                              \
-                                                                                                             \
-    B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));                                             \
-    B(2, 2) = invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));                                              \
-    B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));                                             \
-                                                                                                             \
-    B(3, 1) = invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));                                              \
-    B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));                                             \
-    B(3, 3) = invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));                                              \
-    return 0;                                                                                                \
-  }
-
-#define A(y, x) src[(y - 1) * 3 + (x - 1)]
-#define B(y, x) dst[(y - 1) * 3 + (x - 1)]
-/** inverts the given 3x3 matrix */
-generate_mat3inv_body(float, A, B)
-
-    int mat3inv(float *const dst, const float *const src)
-{
-  return mat3inv_float(dst, src);
-}
-
-generate_mat3inv_body(double, A, B)
-#undef B
-#undef A
-#undef generate_mat3inv_body
-
-
 static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self,
                                                           dt_colorspaces_color_profile_type_t type,
                                                           const char *filename,
@@ -464,74 +421,6 @@ static cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
   cmsFreeToneCurve(transferFunction);
 
   return profile;
-}
-
-int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
-{
-  dt_profiled_colormatrix_t *preset = NULL;
-  for(int k = 0; k < dt_profiled_colormatrix_cnt; k++)
-  {
-    if(!strcasecmp(makermodel, dt_profiled_colormatrices[k].makermodel))
-    {
-      preset = dt_profiled_colormatrices + k;
-      break;
-    }
-  }
-  if(!preset) return -1;
-
-  const float wxyz = preset->white[0] + preset->white[1] + preset->white[2];
-  const float rxyz = preset->rXYZ[0] + preset->rXYZ[1] + preset->rXYZ[2];
-  const float gxyz = preset->gXYZ[0] + preset->gXYZ[1] + preset->gXYZ[2];
-  const float bxyz = preset->bXYZ[0] + preset->bXYZ[1] + preset->bXYZ[2];
-
-  const float xn = preset->white[0] / wxyz;
-  const float yn = preset->white[1] / wxyz;
-  const float xr = preset->rXYZ[0] / rxyz;
-  const float yr = preset->rXYZ[1] / rxyz;
-  const float xg = preset->gXYZ[0] / gxyz;
-  const float yg = preset->gXYZ[1] / gxyz;
-  const float xb = preset->bXYZ[0] / bxyz;
-  const float yb = preset->bXYZ[1] / bxyz;
-
-  const float primaries[9] = { xr, xg, xb, yr, yg, yb, 1.0f - xr - yr, 1.0f - xg - yg, 1.0f - xb - yb };
-
-  float result[9];
-  if(mat3inv(result, primaries)) return -1;
-
-  const dt_aligned_pixel_t whitepoint = { xn / yn, 1.0f, (1.0f - xn - yn) / yn };
-  dt_aligned_pixel_t coeff;
-
-  // get inverse primary whitepoint
-  mat3mulv(coeff, result, whitepoint);
-
-
-  float tmp[9] = { coeff[0] * xr, coeff[1] * xg, coeff[2] * xb, coeff[0] * yr, coeff[1] * yg, coeff[2] * yb,
-                   coeff[0] * (1.0f - xr - yr), coeff[1] * (1.0f - xg - yg), coeff[2] * (1.0f - xb - yb) };
-
-  // input whitepoint[] in XYZ with Y normalized to 1.0f
-  const dt_aligned_pixel_t dn
-      = { preset->white[0] / (float)preset->white[1], 1.0f, preset->white[2] / (float)preset->white[1] };
-  static const float lam_rigg[9] = { 0.8951f, 0.2664f, -0.1614f, -0.7502f, 1.7135f, 0.0367f, 0.0389f, -0.0685f, 1.0296f };
-
-  // adapt to d50
-  float chad_inv[9];
-  if(mat3inv(chad_inv, lam_rigg)) return -1;
-
-  dt_aligned_pixel_t cone_src_rgb, cone_dst_rgb;
-  mat3mulv(cone_src_rgb, lam_rigg, dn);
-  mat3mulv(cone_dst_rgb, lam_rigg, d50);
-
-  const float cone[9]
-      = { cone_dst_rgb[0] / cone_src_rgb[0], 0.0f, 0.0f, 0.0f, cone_dst_rgb[1] / cone_src_rgb[1], 0.0f, 0.0f,
-          0.0f, cone_dst_rgb[2] / cone_src_rgb[2] };
-
-  float tmp2[9];
-  float bradford[9];
-  mat3mul(tmp2, cone, lam_rigg);
-  mat3mul(bradford, chad_inv, tmp2);
-
-  mat3mul(matrix, bradford, tmp);
-  return 0;
 }
 
 cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel)
