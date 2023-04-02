@@ -949,7 +949,7 @@ static void _circle_events_post_expose(cairo_t *cr,
       float from_y = 0.0f;
 
       dt_masks_closest_point(gpt->source_count,
-                             0,
+                             2,
                              gpt->source,
                              to_x, to_y,
                              &from_x, &from_y);
