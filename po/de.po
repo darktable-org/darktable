@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-31 18:38+0200\n"
-"PO-Revision-Date: 2023-04-01 18:50+0200\n"
+"POT-Creation-Date: 2023-04-02 18:18+0200\n"
+"PO-Revision-Date: 2023-04-02 18:30+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1233,12 +1233,13 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5403
 msgid "automatically update module name"
-msgstr "Ergänze Modulname um Instanzname"
+msgstr "Ergänze Modulname um Voreinstellungs- oder Instanznamen"
 
 #: ../build/bin/preferences_gen.h:5417
-msgid "if enabled, the module name will be automatically update to match a preset name if present."
-msgstr ""
-"wenn aktiviert, wird dem Modulnamen der Instanzname bzw. der Name der ggf. verwendeten Voreinstellung hinzugefügt"
+msgid ""
+"if enabled, the module name will be automatically updated to match a preset name or a preset instance name if "
+"present."
+msgstr "wenn aktiviert, wird der Modulname mit einem ggf. vorhandenen Voreinstellungs- oder Instanznamen ergänzt"
 
 #: ../build/bin/preferences_gen.h:5445
 msgid "processing"
@@ -5300,64 +5301,64 @@ msgstr "Datei „%s” hat ein unbekanntes Format!"
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei „%s”"
 
-#: ../src/common/darktable.c:1461
+#: ../src/common/darktable.c:1463
 msgid "configuration information"
 msgstr "Information zur Konfiguration"
 
-#: ../src/common/darktable.c:1463
+#: ../src/common/darktable.c:1465
 msgid "show this information again"
 msgstr "diese Informationen erneut anzeigen"
 
-#: ../src/common/darktable.c:1463
+#: ../src/common/darktable.c:1465
 msgid "understood"
 msgstr "verstanden"
 
-#: ../src/common/darktable.c:1883
+#: ../src/common/darktable.c:1885
 msgid "the RCD demosaicer has been defined as default instead of PPG because of better quality and performance."
 msgstr ""
 "Der RCD-Demosaicer wurde wegen seiner besseren Qualität und Performance anstelle von PPG als Standard definiert."
 
-#: ../src/common/darktable.c:1885
+#: ../src/common/darktable.c:1887
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr "siehe Einstellungen/Dunkelkammer/Demosaicing für den herausgezoomten Dunkelkammermodus"
 
-#: ../src/common/darktable.c:1891
+#: ../src/common/darktable.c:1893
 msgid "the user interface and the underlying internals for tuning darktable performance have changed."
 msgstr ""
 "Die Einstellmöglichkeiten und die zugrunde liegenden internen Funktionen zur Optimierung der darktable Performance "
 "haben sich geändert."
 
-#: ../src/common/darktable.c:1893
+#: ../src/common/darktable.c:1895
 msgid "you won't find headroom and friends any longer, instead in preferences/processing use:"
 msgstr ""
 "direkte Einstellung von Headroom und so weiter sind nicht mehr vorgesehen, dafür gibt es in Voreinstellungen/"
 "Bearbeitung:"
 
-#: ../src/common/darktable.c:1895
+#: ../src/common/darktable.c:1897
 msgid "1) darktable resources"
 msgstr "1) darktable Ressourcenzuweisung"
 
-#: ../src/common/darktable.c:1897
+#: ../src/common/darktable.c:1899
 msgid "2) tune OpenCL performance"
 msgstr "2) OpenCL Performance optimieren"
 
-#: ../src/common/darktable.c:1904
+#: ../src/common/darktable.c:1906
 msgid "some global config parameters relevant for OpenCL performance are not used any longer."
 msgstr "einige für OpenCL Leistung relevante globale Konfigurationsparameter werden nicht mehr verwendet."
 
-#: ../src/common/darktable.c:1906
+#: ../src/common/darktable.c:1908
 msgid "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. content is:"
 msgstr "Stattdessen stehen die gerätespezifischen Daten in „cl_device_v4_canonical-name“. Inhalte sind:"
 
-#: ../src/common/darktable.c:1908
+#: ../src/common/darktable.c:1910
 msgid " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"
 msgstr "„avoid_atomics“ „micro_nap“ „pinned_memory“ „roundupwd“ „roundupht“ „eventhandles“ „async“ „disable“ „magic“"
 
-#: ../src/common/darktable.c:1910
+#: ../src/common/darktable.c:1912
 msgid "you may tune as before except 'magic'"
 msgstr "tunen wie zuvor, aber ohne Automagisches Verhalten"
 
-#: ../src/common/darktable.c:1916
+#: ../src/common/darktable.c:1918
 msgid "your OpenCL compiler settings for all devices have been reset to default."
 msgstr "Die OpenCL Compiler Einstellungen wurden für alle GPUs auf den Default zurückgesetzt."
 
@@ -5593,12 +5594,12 @@ msgstr ""
 "schneller belichtungsunabhängiger geführter Filter konnte keinen Speicher allokieren, überprüfe die RAM-"
 "Einstellungen"
 
-#: ../src/common/exif.cc:4704
+#: ../src/common/exif.cc:5106
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "konnte xmp Datei „%s“ nicht lesen: „%s“"
 
-#: ../src/common/exif.cc:4756
+#: ../src/common/exif.cc:5160
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "konnte xmp Datei „%s“ nicht schreiben: „%s“"
@@ -5888,19 +5889,28 @@ msgstr "generische Poisson-Verteilung"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Rauschprofildatei „%s“ ist defekt"
 
-#: ../src/common/opencl.c:1132
+#: ../src/common/opencl.c:1344
+#, c-format
+msgid ""
+"OpenCL initializing problem:\n"
+"%s"
+msgstr ""
+"OpenCL Initialisierungsproblem:\n"
+"%s"
+
+#: ../src/common/opencl.c:1407
 msgid "due to a slow GPU hardware acceleration using OpenCL has been deactivated"
 msgstr "OpenCL-Hardware-Beschleunigung wurde aufgrund einer langsamen GPU deaktiviert"
 
-#: ../src/common/opencl.c:1139
+#: ../src/common/opencl.c:1417
 msgid "multiple GPUs detected - OpenCL scheduling profile has been set accordingly"
 msgstr "mehrere GPUs gefunden – OpenCL-Scheduler-Profil wurde entsprechend gesetzt"
 
-#: ../src/common/opencl.c:1147
+#: ../src/common/opencl.c:1430
 msgid "very fast GPU detected - OpenCL scheduling profile has been set accordingly"
 msgstr "Sehr schnelle GPU gefunden – OpenCL-Scheduler-Profil wurde entsprechend gesetzt"
 
-#: ../src/common/opencl.c:1154
+#: ../src/common/opencl.c:1439
 msgid "OpenCL scheduling profile set to default"
 msgstr "OpenCL-Scheduler-Profil wurde auf den Standardwert gesetzt"
 
@@ -7759,8 +7769,8 @@ msgstr[1] "%s wurden importiert"
 msgid "hardness: %3.2f%%"
 msgstr "Härte: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1334 ../src/develop/masks/brush.c:1410 ../src/develop/masks/circle.c:140
-#: ../src/develop/masks/circle.c:187 ../src/develop/masks/ellipse.c:560 ../src/develop/masks/ellipse.c:636
+#: ../src/develop/masks/brush.c:1334 ../src/develop/masks/brush.c:1410 ../src/develop/masks/circle.c:143
+#: ../src/develop/masks/circle.c:188 ../src/develop/masks/ellipse.c:560 ../src/develop/masks/ellipse.c:636
 #: ../src/develop/masks/path.c:1237
 #, c-format
 msgid "size: %3.2f%%"
@@ -7796,30 +7806,30 @@ msgstr ""
 msgid "<b>size</b>: scroll"
 msgstr "<b>Größe</b>: Scrollen"
 
-#: ../src/develop/masks/circle.c:130 ../src/develop/masks/circle.c:174 ../src/develop/masks/ellipse.c:539
+#: ../src/develop/masks/circle.c:133 ../src/develop/masks/circle.c:177 ../src/develop/masks/ellipse.c:539
 #: ../src/develop/masks/ellipse.c:615 ../src/develop/masks/path.c:1174
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "Ausblendegröße: %3.2f%%"
 
-#: ../src/develop/masks/circle.c:1525
+#: ../src/develop/masks/circle.c:1526
 msgid "[CIRCLE] change size"
 msgstr "[CIRCLE] Größe ändern"
 
-#: ../src/develop/masks/circle.c:1527
+#: ../src/develop/masks/circle.c:1528
 msgid "[CIRCLE] change feather size"
 msgstr "[CIRCLE] Bereich des Ausblendens ändern"
 
-#: ../src/develop/masks/circle.c:1529
+#: ../src/develop/masks/circle.c:1530
 msgid "[CIRCLE] change opacity"
 msgstr "[CIRCLE] Deckkraft ändern"
 
-#: ../src/develop/masks/circle.c:1542
+#: ../src/develop/masks/circle.c:1543
 #, c-format
 msgid "circle #%d"
 msgstr "Kreis #%d"
 
-#: ../src/develop/masks/circle.c:1553 ../src/develop/masks/path.c:3471
+#: ../src/develop/masks/circle.c:1554 ../src/develop/masks/path.c:3471
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -14879,15 +14889,17 @@ msgstr "Belichtungsanpassung"
 #: ../src/iop/exposure.c:1172
 msgid ""
 "define a target brightness, in terms of exposure,\n"
-" for a selected region of the image (the control sample),\n"
-" which you then match against the same target brightness\n"
-" in other images. the control sample can either\n"
-" be a critical part of your subject or a non-moving and\n"
-" consistently-lit surface over your series of images."
+"for a selected region of the image (the control sample),\n"
+"which you then match against the same target brightness\n"
+"in other images. the control sample can either\n"
+"be a critical part of your subject or a non-moving and\n"
+"consistently-lit surface over your series of images."
 msgstr ""
-"Automatische Einstellung des Belichtungswerts um die Helligkeit in Bildern einer Serie anhand einer Referenz "
-"anzugleichen.\n"
-"Referenz und Zielbereich kann entweder ein kritischer Teil des Motivs sein oder eine sich nicht bewegende und "
+"Automatische Einstellung des Belichtungswerts um die \n"
+"Helligkeit in Bildern einer Serie anhand einer Referenz \n"
+"anzugleichen. \n"
+"Referenz und Zielbereich kann entweder ein kritischer Teil \n"
+"des Motivs sein oder eine sich nicht bewegende und \n"
 "gleichmäßig beleuchtete Fläche in der Bildserie."
 
 #: ../src/iop/exposure.c:1181
