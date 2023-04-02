@@ -2564,6 +2564,10 @@ restart:
   dt_iop_buffer_dsc_t _out_format = { 0 };
   dt_iop_buffer_dsc_t *out_format = &_out_format;
 
+  dt_print_pipe(DT_DEBUG_PIPE,
+    (pipe->devid >= 0) ? "pixelpipe starting CL" : "pixelpipe starting on CPU",
+    pipe, "", &roi, &roi, "\n");
+
   // run pixelpipe recursively and get error status
   const gboolean err =
     _dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_format,
@@ -2605,8 +2609,10 @@ restart:
 
     dt_dev_pixelpipe_flush_caches(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
-    dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n",
-             dt_dev_pixelpipe_type_to_str(pipe->type));
+
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+      "pixelpipe restarting on CPU", pipe, "", &roi, &roi, "\n");
+
     goto restart; // try again (this time without opencl)
   }
 
@@ -2624,6 +2630,7 @@ restart:
   // ... and in case of other errors ...
   if(err)
   {
+    dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe ERROR", pipe, "", &roi, &roi, "\n");
     pipe->processing = FALSE;
     return TRUE;
   }
@@ -2656,6 +2663,8 @@ restart:
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
   dt_dev_pixelpipe_cache_report(pipe);
+
+  dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe finished", pipe, "", &roi, &roi, "\n");
 
   pipe->processing = FALSE;
   return FALSE;
@@ -2693,7 +2702,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
       if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
         dt_print_pipe(DT_DEBUG_PIPE,
-                      "modify roi OUT", piece->pipe, module->so->op, &roi_in, &roi_out, "\n");
+                      "check pipe dimension", piece->pipe, module->so->op, &roi_in, &roi_out, "\n");
     }
     else
     {
