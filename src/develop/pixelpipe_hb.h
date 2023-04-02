@@ -167,7 +167,7 @@ typedef struct dt_dev_pixelpipe_t
   // should this pixelpipe display a mask in the end?
   int mask_display;
   // should this pixelpipe completely suppressed the blendif module?
-  int bypass_blendif;
+  gboolean bypass_blendif;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;

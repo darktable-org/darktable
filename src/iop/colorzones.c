@@ -422,7 +422,7 @@ void process_display(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   }
 
   piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
-  piece->pipe->bypass_blendif = 1;
+  piece->pipe->bypass_blendif = TRUE;
 }
 
 void process_v1(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
