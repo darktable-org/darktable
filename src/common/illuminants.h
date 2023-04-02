@@ -418,7 +418,7 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
   float XYZ_to_CAM[4][3];
   XYZ_to_CAM[0][0] = NAN;
 
-  if(!isnan(img->d65_color_matrix[0]))
+  if(img->d65_color_matrix[0] < FLT_MAX)	// is the first element NAN?
   {
     // keep in sync with reload_defaults from colorin.c
     // embedded matrix is used with higher priority than standard one
@@ -441,14 +441,14 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
         XYZ_to_CAM[k][i] = img->adobe_XYZ_to_CAM[k][i];
   }
 
-  if(isnan(XYZ_to_CAM[0][0])) return FALSE;
+  if(!(XYZ_to_CAM[0][0] < FLT_MAX)) return FALSE; // fail if first element is NAN
 
   // Bloody input matrices define XYZ -> CAM transform, as if we often needed camera profiles to output
   // So we need to invert them. Here go your CPU cycles again.
   float CAM_to_XYZ[4][3];
   CAM_to_XYZ[0][0] = NAN;
   matrice_pseudoinverse(XYZ_to_CAM, CAM_to_XYZ, 3);
-  if(isnan(CAM_to_XYZ[0][0])) return FALSE;
+  if(!(CAM_to_XYZ[0][0] < FLT_MAX)) return FALSE; //fail if first element is NAN
 
   float x, y;
   WB_coeffs_to_illuminant_xy(CAM_to_XYZ, WB, &x, &y);
