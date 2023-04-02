@@ -2486,8 +2486,8 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(
   dt_opencl_check_tuning(pipe->devid);
 #endif
   pipe->next_important_module = FALSE;
-  gboolean ret = _dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format,
-                                         roi_out, modules, pieces, pos);
+  gboolean ret = _dev_pixelpipe_process_rec(
+                  pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL
   // copy back final opencl buffer (if any) to CPU
   if(ret)
@@ -2499,9 +2499,10 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(
   {
     if(*cl_mem_output != NULL)
     {
-      cl_int err = dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output,
-                                                 roi_out->width, roi_out->height,
-                                                 dt_iop_buffer_dsc_to_bpp(*out_format));
+      cl_int err = dt_opencl_copy_device_to_host(
+                    pipe->devid, *output, *cl_mem_output,
+                    roi_out->width, roi_out->height,
+                    dt_iop_buffer_dsc_to_bpp(*out_format));
       dt_opencl_release_mem_object(*cl_mem_output);
       *cl_mem_output = NULL;
 
