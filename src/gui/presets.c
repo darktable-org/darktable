@@ -1575,7 +1575,7 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op,
             || (op_params_size > 0
                 && !memcmp(params, op_params, MIN(op_params_size, params_size))))
        && !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
-       && ((module->enabled && enabled) || (!module->enabled && !enabled)) // safe check gboolean vs int32_t
+       && (module->enabled && enabled)
        )
     {
       active_preset = cnt;
