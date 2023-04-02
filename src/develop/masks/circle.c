@@ -923,8 +923,6 @@ static void _circle_events_post_expose(cairo_t *cr,
   // draw the source if any
   if(gpt->source_count > 6)
   {
-    const float radius = fabs(gpt->points[2] - gpt->points[0]);
-
     // compute the dest inner circle intersection with the line from
     // source center to dest center.
     const float cdx = gpt->source[0] - gpt->points[0];
@@ -934,19 +932,17 @@ static void _circle_events_post_expose(cairo_t *cr,
     if(cdx != 0.0 && cdy != 0.0)
     {
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      float cangle = atanf(cdx / cdy);
 
-      if(cdy > 0)
-        cangle = (M_PI / 2) - cangle;
-      else
-        cangle = -(M_PI / 2) - cangle;
-
-      // (to_x, to_y) is the point of intersection
-      const float to_x = gpt->points[0] + radius * cosf(cangle);
-      const float to_y = gpt->points[1] + radius * sinf(cangle);
-
+      float to_x = 0.0f;
+      float to_y = 0.0f;
       float from_x = 0.0f;
       float from_y = 0.0f;
+
+      dt_masks_closest_point(gpt->points_count,
+                             2,
+                             gpt->points,
+                             gpt->source[0], gpt->source[1],
+                             &to_x, &to_y);
 
       dt_masks_closest_point(gpt->source_count,
                              2,
