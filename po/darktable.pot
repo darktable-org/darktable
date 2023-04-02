@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-31 18:38+0200\n"
+"POT-Creation-Date: 2023-04-02 18:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1282,8 +1282,8 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5417
 msgid ""
-"if enabled, the module name will be automatically update to match a preset "
-"name if present."
+"if enabled, the module name will be automatically updated to match a preset "
+"name or a preset instance name if present."
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5445
@@ -5435,71 +5435,71 @@ msgstr ""
 msgid "error loading file `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:1461
+#: ../src/common/darktable.c:1463
 msgid "configuration information"
 msgstr ""
 
-#: ../src/common/darktable.c:1463
+#: ../src/common/darktable.c:1465
 msgid "show this information again"
 msgstr ""
 
-#: ../src/common/darktable.c:1463
+#: ../src/common/darktable.c:1465
 msgid "understood"
 msgstr ""
 
-#: ../src/common/darktable.c:1883
+#: ../src/common/darktable.c:1885
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
 msgstr ""
 
-#: ../src/common/darktable.c:1885
+#: ../src/common/darktable.c:1887
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 
-#: ../src/common/darktable.c:1891
+#: ../src/common/darktable.c:1893
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
 msgstr ""
 
-#: ../src/common/darktable.c:1893
+#: ../src/common/darktable.c:1895
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
 
-#: ../src/common/darktable.c:1895
+#: ../src/common/darktable.c:1897
 msgid "1) darktable resources"
 msgstr ""
 
-#: ../src/common/darktable.c:1897
+#: ../src/common/darktable.c:1899
 msgid "2) tune OpenCL performance"
 msgstr ""
 
-#: ../src/common/darktable.c:1904
+#: ../src/common/darktable.c:1906
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
 msgstr ""
 
-#: ../src/common/darktable.c:1906
+#: ../src/common/darktable.c:1908
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
 
-#: ../src/common/darktable.c:1908
+#: ../src/common/darktable.c:1910
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 msgstr ""
 
-#: ../src/common/darktable.c:1910
+#: ../src/common/darktable.c:1912
 msgid "you may tune as before except 'magic'"
 msgstr ""
 
-#: ../src/common/darktable.c:1916
+#: ../src/common/darktable.c:1918
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
@@ -5702,12 +5702,12 @@ msgid ""
 "your RAM settings"
 msgstr ""
 
-#: ../src/common/exif.cc:4704
+#: ../src/common/exif.cc:5106
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr ""
 
-#: ../src/common/exif.cc:4756
+#: ../src/common/exif.cc:5160
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr ""
@@ -5998,22 +5998,29 @@ msgstr ""
 msgid "noiseprofile file `%s' is not valid"
 msgstr ""
 
-#: ../src/common/opencl.c:1132
+#: ../src/common/opencl.c:1344
+#, c-format
+msgid ""
+"OpenCL initializing problem:\n"
+"%s"
+msgstr ""
+
+#: ../src/common/opencl.c:1407
 msgid ""
 "due to a slow GPU hardware acceleration using OpenCL has been deactivated"
 msgstr ""
 
-#: ../src/common/opencl.c:1139
+#: ../src/common/opencl.c:1417
 msgid ""
 "multiple GPUs detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
 
-#: ../src/common/opencl.c:1147
+#: ../src/common/opencl.c:1430
 msgid ""
 "very fast GPU detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
 
-#: ../src/common/opencl.c:1154
+#: ../src/common/opencl.c:1439
 msgid "OpenCL scheduling profile set to default"
 msgstr ""
 
@@ -7882,7 +7889,7 @@ msgid "hardness: %3.2f%%"
 msgstr ""
 
 #: ../src/develop/masks/brush.c:1334 ../src/develop/masks/brush.c:1410
-#: ../src/develop/masks/circle.c:140 ../src/develop/masks/circle.c:187
+#: ../src/develop/masks/circle.c:143 ../src/develop/masks/circle.c:188
 #: ../src/develop/masks/ellipse.c:560 ../src/develop/masks/ellipse.c:636
 #: ../src/develop/masks/path.c:1237
 #, c-format
@@ -7917,31 +7924,31 @@ msgstr ""
 msgid "<b>size</b>: scroll"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:130 ../src/develop/masks/circle.c:174
+#: ../src/develop/masks/circle.c:133 ../src/develop/masks/circle.c:177
 #: ../src/develop/masks/ellipse.c:539 ../src/develop/masks/ellipse.c:615
 #: ../src/develop/masks/path.c:1174
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1525
+#: ../src/develop/masks/circle.c:1526
 msgid "[CIRCLE] change size"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1527
+#: ../src/develop/masks/circle.c:1528
 msgid "[CIRCLE] change feather size"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1529
+#: ../src/develop/masks/circle.c:1530
 msgid "[CIRCLE] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1542
+#: ../src/develop/masks/circle.c:1543
 #, c-format
 msgid "circle #%d"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1553 ../src/develop/masks/path.c:3471
+#: ../src/develop/masks/circle.c:1554 ../src/develop/masks/path.c:3471
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -14664,11 +14671,11 @@ msgstr ""
 #: ../src/iop/exposure.c:1172
 msgid ""
 "define a target brightness, in terms of exposure,\n"
-" for a selected region of the image (the control sample),\n"
-" which you then match against the same target brightness\n"
-" in other images. the control sample can either\n"
-" be a critical part of your subject or a non-moving and\n"
-" consistently-lit surface over your series of images."
+"for a selected region of the image (the control sample),\n"
+"which you then match against the same target brightness\n"
+"in other images. the control sample can either\n"
+"be a critical part of your subject or a non-moving and\n"
+"consistently-lit surface over your series of images."
 msgstr ""
 
 #: ../src/iop/exposure.c:1181
