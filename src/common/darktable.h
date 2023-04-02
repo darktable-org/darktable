@@ -500,6 +500,18 @@ static inline void dt_get_times(dt_times_t *t)
   t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
 }
 
+static inline void dt_get_perf_times(dt_times_t *t)
+{
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    struct rusage ru;
+
+    getrusage(RUSAGE_SELF, &ru);
+    t->clock = dt_get_wtime();
+    t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
+  }
+}
+
 void dt_show_times(const dt_times_t *start, const char *prefix);
 
 void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *suffix, ...) __attribute__((format(printf, 3, 4)));

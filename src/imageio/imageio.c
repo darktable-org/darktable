@@ -732,7 +732,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
   const int ht = img->height;
 
   dt_times_t start;
-  dt_get_times(&start);
+  dt_get_perf_times(&start);
   dt_dev_pixelpipe_t pipe;
   gboolean res = thumbnail_export
     ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
@@ -919,7 +919,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
 
   const int bpp = format->bpp(format_params);
 
-  dt_get_times(&start);
+  dt_get_perf_times(&start);
   if(high_quality_processing)
   {
     /*
