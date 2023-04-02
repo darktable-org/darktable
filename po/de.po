@@ -1233,12 +1233,12 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5403
 msgid "automatically update module name"
-msgstr "Ergänze Instanzname zum Modulnamen"
+msgstr "Ergänze Modulname um Instanzname"
 
 #: ../build/bin/preferences_gen.h:5417
 msgid "if enabled, the module name will be automatically update to match a preset name if present."
 msgstr ""
-"wenn aktiviert, wird dem Modulnamen der Instanzname bzw. der Name der ggf. verwendeten Voreinstellung angehängt"
+"wenn aktiviert, wird dem Modulnamen der Instanzname bzw. der Name der ggf. verwendeten Voreinstellung hinzugefügt"
 
 #: ../build/bin/preferences_gen.h:5445
 msgid "processing"
