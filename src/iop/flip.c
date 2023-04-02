@@ -506,7 +506,7 @@ void reload_defaults(dt_iop_module_t *self)
 
   d->orientation = ORIENTATION_NULL;
 
-  self->default_enabled = 1;
+  self->default_enabled = TRUE;
 
   if(self->dev->image_storage.legacy_flip.user_flip != 0
      && self->dev->image_storage.legacy_flip.user_flip != 0xff)

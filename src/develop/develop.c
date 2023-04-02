@@ -2288,18 +2288,17 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
        * default_params. if user want to, he can disable it.
        */
       if(dt_iop_module_is(hist->module->so, "flip")
-         && hist->enabled == 0
+         && !hist->enabled
          && labs(modversion) == 1)
       {
         memcpy(hist->params, hist->module->default_params, hist->module->params_size);
-        hist->enabled = 1;
+        hist->enabled = TRUE;
       }
     }
 
     // make sure that always-on modules are always on. duh.
-    if(hist->module->default_enabled == 1
-       && hist->module->hide_enable_button == 1)
-      hist->enabled = 1;
+    if(hist->module->default_enabled && hist->module->hide_enable_button)
+      hist->enabled = TRUE;
 
     dev->history = g_list_append(dev->history, hist);
     dev->history_end++;

@@ -428,7 +428,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   piece->enabled = dev->rawoverexposed.enabled && fullpipe && dev->gui_attached && sensorok;
 
-  if(image->buf_dsc.datatype != TYPE_UINT16 || !image->buf_dsc.filters) piece->enabled = 0;
+  if(image->buf_dsc.datatype != TYPE_UINT16 || !image->buf_dsc.filters) piece->enabled = FALSE;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -467,8 +467,8 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_rawoverexposed_t));
   module->default_params = calloc(1, sizeof(dt_iop_rawoverexposed_t));
-  module->hide_enable_button = 1;
-  module->default_enabled = 1;
+  module->hide_enable_button = TRUE;
+  module->default_enabled = TRUE;
   module->params_size = sizeof(dt_iop_rawoverexposed_t);
   module->gui_data = NULL;
 }

@@ -219,7 +219,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_equalizer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_equalizer_params_t));
-  module->default_enabled = 0; // we're a rather slow and rare op.
+  module->default_enabled = FALSE; // we're a rather slow and rare op.
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
   dt_iop_equalizer_params_t *d = module->default_params;

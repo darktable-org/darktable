@@ -1211,7 +1211,7 @@ int _get_multi_priority(dt_develop_t *dev,
   for(const GList *l = dev->iop; l; l = g_list_next(l))
   {
     const dt_iop_module_t *const restrict mod = (dt_iop_module_t *)l->data;
-    if((!only_disabled || mod->enabled == FALSE) && dt_iop_module_is(mod->so, operation))
+    if((!only_disabled || !mod->enabled) && dt_iop_module_is(mod->so, operation))
     {
       count++;
       if(count == n) return mod->multi_priority;

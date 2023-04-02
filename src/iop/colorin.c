@@ -1389,10 +1389,10 @@ void commit_params(struct dt_iop_module_t *self,
   dt_colorspaces_color_profile_type_t type = p->type;
   if(type == DT_COLORSPACE_LAB)
   {
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     return;
   }
-  piece->enabled = 1;
+  piece->enabled = TRUE;
 
   if(type == DT_COLORSPACE_ENHANCED_MATRIX)
   {
@@ -1487,7 +1487,7 @@ void commit_params(struct dt_iop_module_t *self,
   {
     dt_print(DT_DEBUG_ALWAYS, "[colorin] input profile could not be generated!\n");
     dt_control_log(_("input profile could not be generated!"));
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     return;
   }
 
@@ -1737,8 +1737,8 @@ void gui_update(struct dt_iop_module_t *self)
 // FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
-  module->default_enabled = 1;
-  module->hide_enable_button = 1;
+  module->default_enabled = TRUE;
+  module->hide_enable_button = TRUE;
 
   dt_iop_colorin_params_t *d = module->default_params;
 
