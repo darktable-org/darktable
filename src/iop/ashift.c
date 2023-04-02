@@ -26,6 +26,7 @@
 #include "common/imagebuf.h"
 #include "common/interpolation.h"
 #include "common/math.h"
+#include "common/matrices.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
