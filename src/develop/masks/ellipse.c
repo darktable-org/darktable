@@ -1500,17 +1500,26 @@ static void _ellipse_events_post_expose(cairo_t *cr,
     if(cdx != 0.0 && cdy != 0.0)
     {
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      float arrowx = 0.0f;
-      float arrowy = 0.0f;
+      float to_x = 0.0f;
+      float to_y = 0.0f;
+      float from_x = 0.0f;
+      float from_y = 0.0f;
 
-      dt_masks_closest_point(gpt->source_count,
+      dt_masks_closest_point(gpt->points_count,
                              6,
                              gpt->points,
                              gpt->source[0], gpt->source[1],
-                             &arrowx, &arrowy);
+                             &to_x, &to_y);
+
+      dt_masks_closest_point(gpt->source_count,
+                             6,
+                             gpt->source,
+                             to_x, to_y,
+                             &from_x, &from_y);
+
       dt_masks_draw_arrow(cr,
-                          gpt->source[0], gpt->source[1],
-                          arrowx, arrowy,
+                          from_x, from_y,
+                          to_x, to_y,
                           zoom_scale,
                           FALSE);
 
