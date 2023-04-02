@@ -374,7 +374,7 @@ void init(dt_iop_module_t *module)
   dt_iop_default_init(module);
 
   // Any non-default settings; for example disabling the on/off switch:
-  module->hide_enable_button = 1;
+  module->hide_enable_button = TRUE;
   // To make this work correctly, you also need to hide the widgets, otherwise moving one
   // would enable the module anyway. The standard way is to set up a gtk_stack and show
   // the page that only has a label with an explanatory text when the module can't be used.
@@ -510,11 +510,11 @@ void reload_defaults(dt_iop_module_t *module)
   // As an example, switch off for non-raw images. The enable button was already hidden in init().
   if(!dt_image_is_raw(&module->dev->image_storage))
   {
-    module->default_enabled = 0;
+    module->default_enabled = FALSE;
   }
   else
   {
-    module->default_enabled = 1;
+    module->default_enabled = TRUE;
     d->checker_scale = 3; // something dependent on exif, for example.
   }
 

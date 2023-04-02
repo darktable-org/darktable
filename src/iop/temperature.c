@@ -689,7 +689,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   if(self->hide_enable_button)
   {
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     return;
   }
 
@@ -1524,7 +1524,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_is_scene_referred()
     || (is_workflow_none && another_cat_defined);
 
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
   module->hide_enable_button = true_monochrome;
 
   // White balance module doesn't need to be enabled for true_monochrome raws (like
@@ -1538,7 +1538,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(is_raw)
     {
       // raw images need wb:
-      module->default_enabled = 1;
+      module->default_enabled = TRUE;
 
       // if workflow = modern, only set WB coeffs equivalent to D65 illuminant
       // full chromatic adaptation is deferred to channelmixerrgb

@@ -470,7 +470,8 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
         if(!rawprep_img && active) piece->enabled = FALSE;
       }
 
-      if(piece->enabled != hist->enabled)
+//      if(piece->enabled != hist->enabled) // both are gboolean, don't do binary comp ?
+      if((piece->enabled && !hist->enabled) || (!piece->enabled && hist->enabled))
       {
         if(piece->enabled)
           dt_iop_set_module_trouble_message
@@ -2420,9 +2421,9 @@ gboolean dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
     gamma = (dt_dev_pixelpipe_iop_t *)gammap->data;
   }
 
-  if(gamma) gamma->enabled = 0;
+  if(gamma) gamma->enabled = FALSE;
   const gboolean ret = dt_dev_pixelpipe_process(pipe, dev, x, y, width, height, scale);
-  if(gamma) gamma->enabled = 1;
+  if(gamma) gamma->enabled = TRUE;
   return ret;
 }
 
@@ -2432,7 +2433,7 @@ void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op)
   dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
   while(!dt_iop_module_is(piece->module->so, op))
   {
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     piece = NULL;
     nodes = g_list_previous(nodes);
     if(!nodes) break;
@@ -2446,7 +2447,7 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
   dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
   while(!dt_iop_module_is(piece->module->so, op))
   {
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     piece = NULL;
     nodes = g_list_next(nodes);
     if(!nodes) break;

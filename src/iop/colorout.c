@@ -837,8 +837,8 @@ void init(dt_iop_module_t *module)
 {
   dt_iop_default_init(module);
 
-  module->hide_enable_button = 1;
-  module->default_enabled = 1;
+  module->hide_enable_button = TRUE;
+  module->default_enabled = TRUE;
 }
 
 static void _preference_changed(gpointer instance, gpointer user_data)

@@ -392,8 +392,8 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_gamma_params_t));
   module->params_size = sizeof(dt_iop_gamma_params_t);
   module->gui_data = NULL;
-  module->hide_enable_button = 1;
-  module->default_enabled = 1;
+  module->hide_enable_button = TRUE;
+  module->default_enabled = TRUE;
 }
 
 // clang-format off

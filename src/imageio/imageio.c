@@ -948,7 +948,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
       }
     }
 
-    if(finalscale) finalscale->enabled = 0;
+    if(finalscale) finalscale->enabled = FALSE;
 
     // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
     if(bpp == 8)
@@ -956,7 +956,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
     else
       dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
 
-    if(finalscale) finalscale->enabled = 1;
+    if(finalscale) finalscale->enabled = TRUE;
   }
   dt_show_times(&start, thumbnail_export ? "[dev_process_thumbnail] pixel pipeline processing"
                                          : "[dev_process_export] pixel pipeline processing");

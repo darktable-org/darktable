@@ -786,7 +786,7 @@ void commit_params(
 
   if(!(dt_image_is_rawprepare_supported(&piece->pipe->image))
      || _image_is_normalized(&piece->pipe->image))
-    piece->enabled = 0;
+    piece->enabled = FALSE;
 
   if(piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_RAWPREPARE))
     piece->process_tiling_ready = FALSE;
@@ -822,7 +822,7 @@ void reload_defaults(dt_iop_module_t *self)
                                     .raw_white_point = image->raw_white_point,
                                     .flat_field = has_gainmaps ? FLAT_FIELD_EMBEDDED : FLAT_FIELD_OFF };
 
-  self->hide_enable_button = 1;
+  self->hide_enable_button = TRUE;
   self->default_enabled = dt_image_is_rawprepare_supported(image) && !_image_is_normalized(image);
 
   if(self->widget)

@@ -1344,7 +1344,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   dt_image_t *img = &pipe->image;
   const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
 
-  if(!active) piece->enabled = 0;
+  if(!active) piece->enabled = FALSE;
 
   d->iterations = p->iterations;
   d->avoidshift = p->avoidshift;
