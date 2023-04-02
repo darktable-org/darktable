@@ -133,7 +133,7 @@ The following is a summary of the main features added to darktable
   - Velvia
   - Split-toning
   - Nega Doctor
-
+  - Channel Mixer RGB (CIECAM16, linear Bradford, XYZ and nonlinear Bradford).
   - Filmic (legacy)
   - Color Balance (legacy)
   - Levels (legacy)
