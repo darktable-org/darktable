@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
 #pragma once
 
 #include "common/dttypes.h"
+
+// inverts the given un-padded 3x3 matrix
+int mat3inv(float *const dst, const float *const src);
 
 // inverts the given padded 3x3 matrix
 int mat3SSEinv(dt_colormatrix_t dst, const dt_colormatrix_t src);
