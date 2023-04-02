@@ -122,6 +122,7 @@ void dt_print_pipe(dt_debug_thread_t thread,
   char vbuf[2048] = { 0 };
   char rois[1024] = { 0 };
   char name[128] = { 0 };
+  char masking[64] = { 0 };
 
   snprintf(buf[0], sizeof(buf[0]), "%.4f", dt_get_wtime() - darktable.start_wtime);
   snprintf(buf[1], sizeof(buf[1]), "[%s]", title);
@@ -134,14 +135,19 @@ void dt_print_pipe(dt_debug_thread_t thread,
   }
 
   if(pipe)
+  {
     snprintf(name, sizeof(name), "[%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
+    if(pipe->mask_display)
+      snprintf(masking, sizeof(masking),
+        " masking=%#x %s", pipe->mask_display, pipe->bypass_blendif ? ", bypass blend" : "" );
+  }
 
   va_list ap;
   va_start(ap, msg);
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11s %-28s %-14s %-20s %s %s", buf[0], buf[1], name, buf[2], rois, vbuf);
+  printf("%11s %-28s %-14s %-20s %s%s %s", buf[0], buf[1], name, buf[2], rois, masking, vbuf);
   fflush(stdout);
 }
 
@@ -228,7 +234,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->opencl_error = FALSE;
   pipe->tiling = FALSE;
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-  pipe->bypass_blendif = 0;
+  pipe->bypass_blendif = FALSE;
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
@@ -2556,7 +2562,7 @@ restart:
   // mask display off as a starting point
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   // and blendif active
-  pipe->bypass_blendif = 0;
+  pipe->bypass_blendif = FALSE;
 
   void *buf = NULL;
   void *cl_mem_out = NULL;

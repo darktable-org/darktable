@@ -3573,7 +3573,7 @@ void process(struct dt_iop_module_t *self,
     for(size_t j = 0; j < (size_t)roi_rt->width * roi_rt->height * 4; j += 4) in_retouch[j + 3] = 0.f;
 
     piece->pipe->mask_display = g->mask_display ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-    piece->pipe->bypass_blendif = 1;
+    piece->pipe->bypass_blendif = TRUE;
     usr_data.mask_display = 1;
   }
 
@@ -4411,7 +4411,7 @@ int process_cl(struct dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto cleanup;
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
-    piece->pipe->bypass_blendif = 1;
+    piece->pipe->bypass_blendif = TRUE;
     usr_data.mask_display = 1;
   }
 
