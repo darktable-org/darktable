@@ -730,7 +730,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
   const dt_lib_histogram_scale_t vs_scale = d->vectorscope_scale;
 
-  if(!vs_prof || isnan(vs_prof->matrix_in[0][0]))
+  if(!vs_prof || !dt_is_valid_colormatrix(vs_prof->matrix_in[0][0]))
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear Rec2020\n",

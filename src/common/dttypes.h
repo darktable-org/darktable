@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2021 darktable developers.
+ *    Copyright (C) 2021-2023 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -17,6 +17,12 @@
  */
 
 #pragma once
+
+// ucomment the next line to use something other than NAN to signal an invalid color matrix
+// leave commented out for backward compatibility in case some instances have been missed.
+//#define NO_COLORMATRIX_NAN
+
+#include <math.h>
 
 // When included by a C++ file, restrict qualifiers are not allowed
 #ifdef __cplusplus
@@ -185,6 +191,39 @@ static inline void dt_colormatrix_transpose(dt_colormatrix_t dst,
     dst[3][c] = src[c][3];
   }
 }
+
+#ifdef NO_COLORMATRIX_NAN
+static inline void dt_mark_colormatrix_invalid(float *matrix)
+{
+  *matrix = -FLT_MAX;
+}
+
+static inline int dt_is_valid_colormatrix(float matrix)
+{
+  return matrix != -FLT_MAX;
+}
+#else
+
+#ifdef __GNUC__
+#pragma GCC push_options
+#pragma GCC optimize ("-fno-finite-math-only")
+#endif
+
+static inline void dt_mark_colormatrix_invalid(float *matrix)
+{
+  *matrix = NAN;
+}
+
+static inline int dt_is_valid_colormatrix(float matrix)
+{
+  return isfinite(matrix);
+}
+
+#ifdef __GNUC__
+#pragma GCC pop_options
+#endif
+
+#endif /* NO_COLORMATRIX_NAN */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

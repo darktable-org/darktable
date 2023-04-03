@@ -2093,9 +2093,12 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int 
     }
 }
 
-int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3], float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4])
+int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
+                                           float in_XYZ_to_CAM[9],
+                                           double XYZ_to_CAM[4][3],
+                                           double CAM_to_XYZ[3][4])
 {
-  if(!isnan(in_XYZ_to_CAM[0]))
+  if(!dt_is_valid_colormatrix(in_XYZ_to_CAM[0]))
   {
     for(int i = 0; i < 9; i++)
         XYZ_to_CAM[i/3][i%3] = (double) in_XYZ_to_CAM[i];
@@ -2104,7 +2107,7 @@ int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3], f
   }
   else
   {
-    if(isnan(adobe_XYZ_to_CAM[0][0]))
+    if(!dt_is_valid_colormatrix(adobe_XYZ_to_CAM[0][0]))
       return FALSE;
 
     for(int i = 0; i < 4; i++)
@@ -2131,9 +2134,9 @@ int dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
   double RGB_to_CAM[4][3];
 
   float XYZ_to_CAM[4][3];
-  XYZ_to_CAM[0][0] = NAN;
+  dt_mark_colormatrix_invalid(&XYZ_to_CAM[0][0]);
 
-  if(embedded_matrix == NULL || isnan(embedded_matrix[0]))
+  if(embedded_matrix == NULL || !dt_is_valid_colormatrix(embedded_matrix[0]))
   {
     for(int k=0; k<4; k++)
       for(int i=0; i<3; i++)
@@ -2156,10 +2159,10 @@ int dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
     XYZ_to_CAM[2][2] = embedded_matrix[8];
   }
 
-  if(isnan(XYZ_to_CAM[0][0]))
+  if(!dt_is_valid_colormatrix(XYZ_to_CAM[0][0]))
     return FALSE;
 
-  const double RGB_to_XYZ[3][3] = {
+  static const double RGB_to_XYZ[3][3] = {
   // sRGB D65
     { 0.412453, 0.357580, 0.180423 },
     { 0.212671, 0.715160, 0.072169 },
