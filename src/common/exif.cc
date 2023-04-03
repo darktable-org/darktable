@@ -1427,9 +1427,11 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // read embedded color matrix as used in DNGs
     {
       float colmatrix[3][12];
-      colmatrix[0][0] = colmatrix[1][0] = colmatrix[2][0] = NAN;
+      dt_mark_colormatrix_invalid(&colmatrix[0][0]);
+      dt_mark_colormatrix_invalid(&colmatrix[1][0]);
+      dt_mark_colormatrix_invalid(&colmatrix[2][0]);
       dt_dng_illuminant_t illu[3] = { DT_LS_Unknown, DT_LS_Unknown, DT_LS_Unknown };
-      img->d65_color_matrix[0] = NAN; // make sure for later testing
+      dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]); // make sure for later testing
 
       // fallback later via `find_temperature_from_raw_coeffs` if there is no valid illuminant
 
@@ -1524,7 +1526,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       if(sel_illu == -1)
         for(int i = 0; i < 3; ++i)
         {
-          if((illu[i] == DT_LS_Unknown) && !std::isnan(colmatrix[i][0]))
+	  if((illu[i] == DT_LS_Unknown) && dt_is_valid_colormatrix(colmatrix[i][0]))
           {
             sel_illu = i;
             sel_temp = D65temp;

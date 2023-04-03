@@ -2005,7 +2005,7 @@ void dt_image_init(dt_image_t *img)
   img->raw_black_level = 0;
   for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
   img->raw_white_point = 16384; // 2^14
-  img->d65_color_matrix[0] = NAN;
+  dt_mark_colormatrix_invalid(img->d65_color_matrix);
   img->profile = NULL;
   img->profile_size = 0;
   img->colorspace = DT_IMAGE_COLORSPACE_NONE;
@@ -2023,7 +2023,7 @@ void dt_image_init(dt_image_t *img)
 
   for(int k=0; k<4; k++)
     for(int i=0; i<3; i++)
-      img->adobe_XYZ_to_CAM[k][i] = NAN;
+      dt_mark_colormatrix_invalid(&img->adobe_XYZ_to_CAM[k][i]);
 }
 
 void dt_image_refresh_makermodel(dt_image_t *img)
