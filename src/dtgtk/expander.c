@@ -65,6 +65,8 @@ GtkWidget *dtgtk_expander_get_body_event_box(GtkDarktableExpander *expander)
   return expander->body_evb;
 }
 
+static GtkWidget *_scroll_widget = NULL;
+static GtkWidget *_last_expanded = NULL;
 static GtkAllocation _start_pos = {0};
 
 void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expanded)
@@ -77,18 +79,18 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
   {
     expander->expanded = expanded;
 
-    GtkWidget *frame = expander->body;
-
-    if(expanded && gtk_widget_get_mapped(GTK_WIDGET(expander)))
+    if(expanded)
     {
-      GtkWidget *sw = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(GTK_WIDGET(expander))));
-      if(GTK_IS_SCROLLED_WINDOW(sw) && !g_strcmp0("right", gtk_widget_get_name(gtk_widget_get_parent(sw))))
+      _last_expanded = GTK_WIDGET(expander);
+      GtkWidget *sw = gtk_widget_get_ancestor(_last_expanded, GTK_TYPE_SCROLLED_WINDOW);
+      if(sw)
       {
-        gtk_widget_get_allocation(GTK_WIDGET(expander), &_start_pos);
+        gtk_widget_get_allocation(_last_expanded, &_start_pos);
         _start_pos.x = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)));
       }
     }
 
+    GtkWidget *frame = expander->body;
     if(frame)
     {
       gtk_widget_set_visible(frame, TRUE); // for collapsible sections
@@ -105,12 +107,10 @@ gboolean dtgtk_expander_get_expanded(GtkDarktableExpander *expander)
   return expander->expanded;
 }
 
-static GtkWidget *_scroll_widget = NULL;
-
 static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, gpointer user_data)
 {
-  GtkWidget *sw = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
-  if(!GTK_IS_SCROLLED_WINDOW(sw)) return G_SOURCE_REMOVE;
+  GtkWidget *sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
+  if(!sw) return G_SOURCE_REMOVE;
 
   GtkAllocation allocation, available;
   gtk_widget_get_allocation(widget, &allocation);
@@ -122,7 +122,9 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
   const gboolean is_iop = !g_strcmp0("iop-expander", gtk_widget_get_name(widget));
 
   // try not to get dragged upwards if a module above is collapsing
-  if(is_iop && allocation.y < _start_pos.y)
+  if(is_iop
+     && widget == _last_expanded
+     && allocation.y < _start_pos.y)
   {
     const int offset = _start_pos.y - allocation.y - _start_pos.x + value;
     value -= offset;
