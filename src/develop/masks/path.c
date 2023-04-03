@@ -38,6 +38,16 @@ static void _path_bounding_box_raw(const float *const points,
                                    float *y_min,
                                    float *y_max);
 
+static void _path_bounding_box(const float *const points,
+                               const float *border,
+                               const int nb_corner,
+                               const int num_points,
+                               const int num_borders,
+                               int *width,
+                               int *height,
+                               int *posx,
+                               int *posy);
+
 /** get the point of the path at pos t [0,1]  */
 static void _path_get_XY(const float p0x,
                          const float p0y,
@@ -2365,27 +2375,49 @@ static void _path_events_post_expose(cairo_t *cr,
   // draw the source if needed
   if(!gui->creation && gpt->source_count > nb * 3 + 6)
   {
-    // we draw the line between source and dest
-    cairo_move_to(cr, gpt->source[2], gpt->source[3]);
-    cairo_line_to(cr, gpt->points[2], gpt->points[3]);
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index)
-       && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
+    // look for the destination point closest to the source to avoid
+    // the arrow to cross the mask.
+    float to_x = 0.0f;
+    float to_y = 0.0f;
+    float from_x = 0.0f;
+    float from_y = 0.0f;
 
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_stroke_preserve(cr);
+    int width = 0;
+    int height = 0;
+    int posx = 0;
+    int posy = 0;
 
-    if((gui->group_selected == index)
-       && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
+    // 1. find source path bounding box
+    _path_bounding_box(gpt->source, NULL, nb,
+                       gpt->source_count, 0,
+                       &width, &height, &posx, &posy);
 
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
+    // 2. source area center
+    const float center_x = (float)posx + (float)width / 2.f;
+    const float center_y = (float)posy + (float)height / 2.f;
+
+    // 3. dest border, closest to source area center
+    dt_masks_closest_point(gpt->points_count,
+                           nb * 3,
+                           gpt->points,
+                           center_x, center_y,
+                           &to_x, &to_y);
+
+    // 4. source border, closest to point border
+    dt_masks_closest_point(gpt->source_count,
+                           nb * 3,
+                           gpt->source,
+                           to_x, to_y,
+                           &from_x, &from_y);
+
+    // 5. we draw the line between source and dest
+    dt_masks_draw_arrow(cr,
+                        from_x, from_y,
+                        to_x, to_y,
+                        zoom_scale,
+                        FALSE);
+
+    dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
 
     // we draw the source
     cairo_set_dash(cr, dashed, 0, 0);
