@@ -546,7 +546,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->detail = p->detail;
 
   // drago needs the maximum L-value of the whole image so it must not use tiling
-  if(d->operator == OPERATOR_DRAGO) piece->process_tiling_ready = 0;
+  if(d->operator == OPERATOR_DRAGO) piece->process_tiling_ready = FALSE;
 
 #ifdef HAVE_OPENCL
   if(d->detail != 0.0f)

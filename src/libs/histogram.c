@@ -894,7 +894,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
                                      const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
   dt_times_t start;
-  dt_get_times(&start);
+  dt_get_perf_times(&start);
 
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
@@ -1374,7 +1374,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_times_t start;
-  dt_get_times(&start);
+  dt_get_perf_times(&start);
 
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;

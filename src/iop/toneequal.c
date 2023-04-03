@@ -629,7 +629,7 @@ static int sanity_check(dt_iop_module_t *self)
     dt_print(DT_DEBUG_ALWAYS,
             "tone equalizer needs to be after distortion modules"
             " in the pipeline – disabled\n");
-    self->enabled = 0;
+    self->enabled = FALSE;
     dt_dev_add_history_item(darktable.develop, self, FALSE);
 
     if(self->dev->gui_attached)
@@ -3042,8 +3042,8 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
                                         GdkEventCrossing *event,
                                         dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return 1;
-  if(!self->enabled) return 0;
+  if(darktable.gui->reset) return TRUE;
+  if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
@@ -3078,7 +3078,7 @@ static gboolean area_button_press(GtkWidget *widget,
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
 
-  if(darktable.gui->reset) return 1;
+  if(darktable.gui->reset) return TRUE;
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
@@ -3136,8 +3136,8 @@ static gboolean area_motion_notify(GtkWidget *widget,
                                    gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return 1;
-  if(!self->enabled) return 0;
+  if(darktable.gui->reset) return TRUE;
+  if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
@@ -3191,8 +3191,8 @@ static gboolean area_button_release(GtkWidget *widget,
                                     gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return 1;
-  if(!self->enabled) return 0;
+  if(darktable.gui->reset) return TRUE;
+  if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
@@ -3233,7 +3233,7 @@ static gboolean notebook_button_press(GtkWidget *widget,
                                       gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return 1;
+  if(darktable.gui->reset) return TRUE;
 
   // Give focus to module
   dt_iop_request_focus(self);
@@ -3241,7 +3241,7 @@ static gboolean notebook_button_press(GtkWidget *widget,
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
 
-  return 0;
+  return FALSE;
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

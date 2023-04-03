@@ -239,7 +239,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t *)calloc(1, param_size);
   module->default_params = (dt_iop_params_t *)calloc(1, param_size);
 
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
   module->has_trouble = FALSE;
   module->gui_data = NULL;
 
@@ -377,7 +377,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   module->widget = NULL;
   module->header = NULL;
   module->off = NULL;
-  module->hide_enable_button = 0;
+  module->hide_enable_button = FALSE;
   module->has_trouble = FALSE;
   module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
@@ -400,7 +400,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   module->histogram_middle_grey = FALSE;
   module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   module->suppress_mask = 0;
-  module->enabled = module->default_enabled = 0; // all modules disabled by default.
+  module->enabled = module->default_enabled = FALSE; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
   module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
   module->raster_mask.source.masks =
@@ -1067,7 +1067,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   {
     if(gtk_toggle_button_get_active(togglebutton))
     {
-      module->enabled = 1;
+      module->enabled = TRUE;
 
       if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
         dt_iop_gui_set_expanded(module, TRUE,
@@ -1077,7 +1077,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     }
     else
     {
-      module->enabled = 0;
+      module->enabled = FALSE;
 
       //  if current module is set as the CAT instance, remove that setting
       if(module->dev->proxy.chroma_adaptation == module)
@@ -1943,12 +1943,12 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 #ifdef HAVE_OPENCL
   // assume process_cl is ready, commit_params can overwrite this.
   if(module->process_cl)
-    piece->process_cl_ready = 1;
+    piece->process_cl_ready = TRUE;
 #endif // HAVE_OPENCL
 
   // register if module allows tiling, commit_params can overwrite this.
   if(module->flags() & IOP_FLAGS_ALLOW_TILING)
-    piece->process_tiling_ready = 1;
+    piece->process_tiling_ready = TRUE;
 
   if(darktable.unmuted & DT_DEBUG_PARAMS && module->so->get_introspection())
     _iop_validate_params(module->so->get_introspection()->field, params,

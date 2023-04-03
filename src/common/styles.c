@@ -866,11 +866,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
          * default_params. if user want to, he can disable it.
          */
         if(dt_iop_module_is(module->so, "flip")
-           && module->enabled == 0
+           && !module->enabled
            && labs(style_item->module_version) == 1)
         {
           memcpy(module->params, module->default_params, module->params_size);
-          module->enabled = 1;
+          module->enabled = TRUE;
         }
       }
       else

@@ -726,7 +726,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
     const size_t wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
     for(size_t ty = 0; ty < tiles_y; ty++)
     {
-      piece->pipe->tiling = 1;
+      piece->pipe->tiling = TRUE;
 
       const size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
 
@@ -811,7 +811,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 
   if(input != NULL) dt_free_align(input);
   if(output != NULL) dt_free_align(output);
-  piece->pipe->tiling = 0;
+  piece->pipe->tiling = FALSE;
   return;
 
 error:
@@ -821,7 +821,7 @@ error:
 fallback:
   if(input != NULL) dt_free_align(input);
   if(output != NULL) dt_free_align(output);
-  piece->pipe->tiling = 0;
+  piece->pipe->tiling = FALSE;
   dt_print(DT_DEBUG_TILING,
            "[default_process_tiling_ptp] [%s] fall back to standard processing for module '%s'\n",
            dt_dev_pixelpipe_type_to_str(piece->pipe->type), self->op);
@@ -1000,7 +1000,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   for(size_t tx = 0; tx < tiles_x; tx++)
     for(size_t ty = 0; ty < tiles_y; ty++)
     {
-      piece->pipe->tiling = 1;
+      piece->pipe->tiling = TRUE;
 
       /* the output dimensions of the good part of this specific tile */
       const size_t wd = (tx + 1) * tile_wd > roi_out->width ? (size_t)roi_out->width - tx * tile_wd : tile_wd;
@@ -1162,7 +1162,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
 
   if(input != NULL) dt_free_align(input);
   if(output != NULL) dt_free_align(output);
-  piece->pipe->tiling = 0;
+  piece->pipe->tiling = FALSE;
   return;
 
 error:
@@ -1172,7 +1172,7 @@ error:
 fallback:
   if(input != NULL) dt_free_align(input);
   if(output != NULL) dt_free_align(output);
-  piece->pipe->tiling = 0;
+  piece->pipe->tiling = FALSE;
   dt_print(DT_DEBUG_TILING,
            "[default_process_tiling_roi] [%s] fall back to standard processing for module '%s'\n",
            dt_dev_pixelpipe_type_to_str(piece->pipe->type), self->op);
@@ -1515,7 +1515,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   for(size_t tx = 0; tx < tiles_x; tx++)
     for(size_t ty = 0; ty < tiles_y; ty++)
     {
-      piece->pipe->tiling = 1;
+      piece->pipe->tiling = TRUE;
 
       const size_t wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
       const size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
@@ -1666,7 +1666,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   dt_opencl_release_mem_object(pinned_output);
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
-  piece->pipe->tiling = 0;
+  piece->pipe->tiling = FALSE;
   return TRUE;
 
 error:
@@ -1678,7 +1678,7 @@ error:
   dt_opencl_release_mem_object(pinned_output);
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
-  piece->pipe->tiling = 0;
+  piece->pipe->tiling = FALSE;
   const gboolean pinning_error = (use_pinned_memory == FALSE) && dt_opencl_use_pinned_memory(devid);
   dt_print(DT_DEBUG_TILING | DT_DEBUG_OPENCL,
            "[default_process_tiling_opencl_ptp] [%s] couldn't run process_cl() for "
@@ -1910,7 +1910,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   for(size_t tx = 0; tx < tiles_x; tx++)
     for(size_t ty = 0; ty < tiles_y; ty++)
     {
-      piece->pipe->tiling = 1;
+      piece->pipe->tiling = TRUE;
 
       /* the output dimensions of the good part of this specific tile */
       const size_t wd = (tx + 1) * tile_wd > roi_out->width ? (size_t)roi_out->width - tx * tile_wd : tile_wd;
@@ -2128,7 +2128,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   dt_opencl_release_mem_object(pinned_output);
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
-  piece->pipe->tiling = 0;
+  piece->pipe->tiling = FALSE;
   return TRUE;
 
 error:
@@ -2140,7 +2140,7 @@ error:
   dt_opencl_release_mem_object(pinned_output);
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
-  piece->pipe->tiling = 0;
+  piece->pipe->tiling = FALSE;
   const gboolean pinning_error = (use_pinned_memory == FALSE) && dt_opencl_use_pinned_memory(devid);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
            "[default_process_tiling_opencl_roi] [%s] couldn't run process_cl() "

@@ -5803,7 +5803,7 @@ void gui_update(struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *module)
 {
   // our module is disabled by default
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
 
   int isflipped = 0;
   float f_length = DEFAULT_F_LENGTH;
