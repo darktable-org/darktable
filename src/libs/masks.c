@@ -1005,7 +1005,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
              && !(module->flags() & IOP_FLAGS_NO_MASKS))
           {
             dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-            bd->masks_shown = 1;
+            bd->masks_shown = DT_MASKS_EDIT_FULL;
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
             gtk_widget_queue_draw(bd->masks_edit);
           }

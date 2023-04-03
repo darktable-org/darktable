@@ -21,6 +21,7 @@
 #include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "develop/pixelpipe.h"
+#include "develop/masks.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/color_picker_proxy.h"
@@ -346,7 +347,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_edit;
   GtkWidget *masks_polarity;
   int *masks_combo_ids;
-  int masks_shown;
+  dt_masks_edit_mode_t masks_shown;
 
   GtkWidget *raster_combo;
   GtkWidget *raster_polarity;

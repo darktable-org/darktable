@@ -409,17 +409,17 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-int try_enter(dt_view_t *self)
+gboolean try_enter(dt_view_t *self)
 {
   /* verify that there are images to display */
   if(dt_collection_get_count(darktable.collection) != 0)
   {
-    return 0;
+    return FALSE;
   }
   else
   {
     dt_control_log(_("there are no images in this collection"));
-    return 1;
+    return TRUE;
   }
 }
 
