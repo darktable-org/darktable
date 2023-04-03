@@ -33,6 +33,15 @@
 #define BORDER_MIN 0.00005f
 #define BORDER_MAX 0.5f
 
+static void _brush_bounding_box(const float *const points,
+                                const float *const border,
+                                const int nb_corner,
+                                const int num_points,
+                                int *width,
+                                int *height,
+                                int *posx,
+                                int *posy);
+
 /** get squared distance of indexed point to line segment, taking
  * weighted payload data into account */
 static float _brush_point_line_distance2(const int index,
@@ -2742,22 +2751,47 @@ static void _brush_events_post_expose(cairo_t *cr,
   // draw the source if needed
   if(!gui->creation && gpt->source_count > nb * 3 + 2)
   {
-    // we draw the line between source and dest
-    cairo_move_to(cr, gpt->source[2], gpt->source[3]);
-    cairo_line_to(cr, gpt->points[2], gpt->points[3]);
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
+    float to_x = 0.0f;
+    float to_y = 0.0f;
+    float from_x = 0.0f;
+    float from_y = 0.0f;
+
+    int width = 0;
+    int height = 0;
+    int posx = 0;
+    int posy = 0;
+
+    // 1. find source brush bounding box
+    _brush_bounding_box(gpt->source, NULL, nb,
+                        gpt->source_count,
+                        &width, &height, &posx, &posy);
+
+    // 2. source area center
+    const float center_x = (float)posx + (float)width / 2.f;
+    const float center_y = (float)posy + (float)height / 2.f;
+
+    // 3. dest border, closest to source area center
+    dt_masks_closest_point(gpt->points_count,
+                           nb * 3,
+                           gpt->points,
+                           center_x, center_y,
+                           &to_x, &to_y);
+
+    // 4. source border, closest to point border
+    dt_masks_closest_point(gpt->source_count,
+                           nb * 3,
+                           gpt->source,
+                           to_x, to_y,
+                           &from_x, &from_y);
+
+    // 5. we draw the line between source and dest
+    dt_masks_draw_arrow(cr,
+                        from_x, from_y,
+                        to_x, to_y,
+                        zoom_scale,
+                        FALSE);
+
+    dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
 
     // we draw the source
     cairo_set_dash(cr, dashed, 0, 0);
@@ -2797,13 +2831,17 @@ static void _brush_bounding_box_raw(const float *const points,
 #endif
   for(int i = nb_corner * 3; i < num_points; i++)
   {
-    // we look at the borders
-    const float x = border[i * 2];
-    const float y = border[i * 2 + 1];
-    xmin = MIN(x, xmin);
-    xmax = MAX(x, xmax);
-    ymin = MIN(y, ymin);
-    ymax = MAX(y, ymax);
+    if(border)
+    {
+      // we look at the borders
+      const float x = border[i * 2];
+      const float y = border[i * 2 + 1];
+      xmin = MIN(x, xmin);
+      xmax = MAX(x, xmax);
+      ymin = MIN(y, ymin);
+      ymax = MAX(y, ymax);
+    }
+
     // we look at the brush too
     const float xx = points[i * 2];
     const float yy = points[i * 2 + 1];

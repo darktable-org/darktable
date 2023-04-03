@@ -1361,11 +1361,16 @@ static void _ellipse_events_post_expose(cairo_t *cr,
 
       float x = 0.0f, y = 0.0f;
 
-      float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, border));
-      int flags = dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
-      float radius_a = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_a));
-      float radius_b = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_b));
-      float rotation = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, rotation));
+      const float masks_border =
+        dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, border));
+      const int flags =
+        dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
+      const float radius_a =
+        dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_a));
+      const float radius_b =
+        dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_b));
+      const float rotation =
+        dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, rotation));
 
       float pzx = gui->posx;
       float pzy = gui->posy;
@@ -1394,15 +1399,14 @@ static void _ellipse_events_post_expose(cairo_t *cr,
                                  rotation, &points, &points_count);
       if(draw && masks_border > 0.f)
       {
-        draw = _ellipse_get_points(
-            darktable.develop, x, y,
-            (flags & DT_MASKS_ELLIPSE_PROPORTIONAL
-             ? radius_a * (1.0f + masks_border)
-             : radius_a + masks_border),
-            (flags & DT_MASKS_ELLIPSE_PROPORTIONAL
-             ? radius_b * (1.0f + masks_border)
-             : radius_b + masks_border),
-            rotation, &border, &border_count);
+        draw = _ellipse_get_points(darktable.develop, x, y,
+                                   (flags & DT_MASKS_ELLIPSE_PROPORTIONAL
+                                    ? radius_a * (1.0f + masks_border)
+                                    : radius_a + masks_border),
+                                   (flags & DT_MASKS_ELLIPSE_PROPORTIONAL
+                                    ? radius_b * (1.0f + masks_border)
+                                    : radius_b + masks_border),
+                                   rotation, &border, &border_count);
       }
 
       if(draw && points_count >= 2)
@@ -1487,7 +1491,6 @@ static void _ellipse_events_post_expose(cairo_t *cr,
   // draw the source if any
   if(gpt->source_count > 10)
   {
-    const float pr_d = darktable.develop->preview_downsampling;
     // compute the dest inner ellipse intersection with the line from
     // source center to dest center.
     const float cdx = gpt->source[0] - gpt->points[0];
@@ -1497,96 +1500,30 @@ static void _ellipse_events_post_expose(cairo_t *cr,
     if(cdx != 0.0 && cdy != 0.0)
     {
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      float cangle = atanf(cdx / cdy);
+      float to_x = 0.0f;
+      float to_y = 0.0f;
+      float from_x = 0.0f;
+      float from_y = 0.0f;
 
-      if(cdy > 0)
-        cangle = (M_PI / 2) - cangle;
-      else
-        cangle = -(M_PI / 2) - cangle;
+      dt_masks_closest_point(gpt->points_count,
+                             6,
+                             gpt->points,
+                             gpt->source[0], gpt->source[1],
+                             &to_x, &to_y);
 
-      // compute raidus a & radius b. at this stage this must be
-      // computed from the list of transformed point for drawing the
-      // ellipse.
+      dt_masks_closest_point(gpt->source_count,
+                             6,
+                             gpt->source,
+                             to_x, to_y,
+                             &from_x, &from_y);
 
-      const float bot_x = gpt->points[2];
-      const float bot_y = gpt->points[3];
-      const float rgt_x = gpt->points[6];
-      const float rgt_y = gpt->points[7];
-      const float cnt_x = gpt->points[0];
-      const float cnt_y = gpt->points[1];
+      dt_masks_draw_arrow(cr,
+                          from_x, from_y,
+                          to_x, to_y,
+                          zoom_scale,
+                          FALSE);
 
-      const float adx = cnt_x - bot_x;
-      const float ady = cnt_y - bot_y;
-      const float a = sqrtf(adx * adx + ady * ady);
-
-      const float bdx = cnt_x - rgt_x;
-      const float bdy = cnt_y - rgt_y;
-      const float b = sqrtf(bdx * bdx + bdy * bdy);
-
-      // takes the biggest radius, should always been a as the points
-      // are arranged
-      const float radius = MAX(a, b);
-
-      // the top/left/bottom/right controls of the ellipse are not
-      // always at the same place in g->points[], it depends on the
-      // rotation of the ellipse which is not recorded anywhere. Let's
-      // use a stupid search to find the closest point on the border
-      // where to attach the arrow.
-
-      const float cosc = cosf(cangle);
-      const float sinc = sinf(cangle);
-      const float step = radius / 259.f;
-
-      float dist = FLT_MAX;
-      float arrowx = 0.0f;
-      float arrowy = 0.0f;
-
-      for(int k=1; k<gpt->source_count; k+=2)
-      {
-        const float px = gpt->points[k*2];
-        const float py = gpt->points[k*2 + 1];
-
-        float rr = 0.01f;
-        while(rr < radius)
-        {
-          const float epx = cnt_x + rr * cosc;
-          const float epy = cnt_y + rr * sinc;
-          const float edist = sqf(epx - px) + sqf(epy - py);
-
-          if(edist < dist)
-          {
-            dist = edist;
-            arrowx = cnt_x + (rr + 1.11) * cosc;
-            arrowy = cnt_y + (rr + 1.11) * sinc;
-          }
-          rr += step;
-        }
-      }
-
-      cairo_move_to(cr, gpt->source[0], gpt->source[1]); // source center
-      cairo_line_to(cr, arrowx, arrowy);                 // dest border
-      // then draw to line for the arrow itself
-      const float arrow_scale = 6.0 * pr_d;
-
-      cairo_move_to(cr, arrowx + arrow_scale * cosf(cangle + (0.4)),
-                    arrowy + arrow_scale * sinf(cangle + (0.4)));
-      cairo_line_to(cr, arrowx, arrowy);
-      cairo_line_to(cr, arrowx + arrow_scale * cosf(cangle - (0.4)),
-                    arrowy + arrow_scale * sinf(cangle - (0.4)));
-
-      cairo_set_dash(cr, dashed, 0, 0);
-      if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-        cairo_set_line_width(cr, 2.5 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 1.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, FALSE, 0.8);
-      cairo_stroke_preserve(cr);
-      if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 0.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, TRUE, 0.8);
-      cairo_stroke(cr);
+      dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
     }
 
     // we draw the source
