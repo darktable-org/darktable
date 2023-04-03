@@ -54,10 +54,10 @@
 
 static void _mark_as_nonmatrix_profile(dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  profile_info->matrix_in[0][0] = NAN;
-  profile_info->matrix_in_transposed[0][0] = NAN;
-  profile_info->matrix_out[0][0] = NAN;
-  profile_info->matrix_out_transposed[0][0] = NAN;
+  dt_mark_colormatrix_invalid(&profile_info->matrix_in[0][0]);
+  dt_mark_colormatrix_invalid(&profile_info->matrix_in_transposed[0][0]);
+  dt_mark_colormatrix_invalid(&profile_info->matrix_out[0][0]);
+  dt_mark_colormatrix_invalid(&profile_info->matrix_out_transposed[0][0]);
 }
 
 static void _clear_lut_curves(dt_iop_order_iccprofile_info_t *const profile_info)
@@ -789,7 +789,8 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
       _mark_as_nonmatrix_profile(profile_info);
       _clear_lut_curves(profile_info);
     }
-    else if(isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
+    else if(!dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+            || !dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
     {
       _mark_as_nonmatrix_profile(profile_info);
       _clear_lut_curves(profile_info);
@@ -805,7 +806,8 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   // we do extrapolation for input values above 1.0f.
   // unfortunately we can only do this if we got the computation
   // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
-  if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]))
+  if(dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
   {
     profile_info->nonlinearlut = _init_unbounded_coeffs(profile_info->lut_in[0],
                                                         profile_info->lut_in[1],
@@ -821,10 +823,11 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                            profile_info->unbounded_coeffs_out[1],
                            profile_info->unbounded_coeffs_out[2],
                            profile_info->lutsize);
+    error = FALSE;
   }
 
-  if(!isnan(profile_info->matrix_in[0][0])
-     && !isnan(profile_info->matrix_out[0][0])
+  if(dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile_info->matrix_out[0][0])
      && profile_info->nonlinearlut)
   {
     const dt_aligned_pixel_t rgb = { 0.1842f, 0.1842f, 0.1842f };
@@ -833,6 +836,7 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                                            profile_info->unbounded_coeffs_in,
                                                            profile_info->lutsize,
                                                            profile_info->nonlinearlut);
+    error = FALSE;
   }
 
   return error;
@@ -940,12 +944,13 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
     dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
   if(profile_info == NULL
-     || isnan(profile_info->matrix_in[0][0])
-     || isnan(profile_info->matrix_out[0][0]))
+     || !dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+     || !dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
   {
-    dt_print(DT_DEBUG_PIPE,
-      "[dt_ioppr_set_pipe_work_profile_info] profile `%s' in `%s' replaced by linear Rec2020\n",
-      dt_colorspaces_get_name(type, NULL), filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %s %s, "
+             "it will be replaced with linear Rec2020\n",
+             dt_colorspaces_get_name(type, NULL), filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
   pipe->work_profile_info = profile_info;
@@ -1000,8 +1005,8 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
     dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
   if(profile_info == NULL
-     || isnan(profile_info->matrix_in[0][0])
-     || isnan(profile_info->matrix_out[0][0]))
+     || !dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+     || !dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
   {
     if(type != DT_COLORSPACE_DISPLAY)
     {
@@ -1223,8 +1228,9 @@ void dt_ioppr_transform_image_colorspace
   dt_times_t start_time = { 0 }, end_time = { 0 };
   dt_get_perf_times(&start_time);
 
-  // matrix should be never NAN, this is only to test it against lcms2!
-  if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]))
+  // matrix should never be invalid, this is only to test it against lcms2!
+  if(dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
   {
     _transform_matrix(self, image_in, image_out, width, height,
                       cst_from, cst_to, converted_cst, profile_info);
@@ -1294,8 +1300,10 @@ void dt_ioppr_transform_image_colorspace_rgb
   dt_times_t start_time = { 0 }, end_time = { 0 };
   dt_get_perf_times(&start_time);
 
-  if(!isnan(profile_info_from->matrix_in[0][0]) && !isnan(profile_info_from->matrix_out[0][0])
-     && !isnan(profile_info_to->matrix_in[0][0]) && !isnan(profile_info_to->matrix_out[0][0]))
+  if(dt_is_valid_colormatrix(profile_info_from->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile_info_from->matrix_out[0][0])
+     && dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile_info_to->matrix_out[0][0]))
   {
     _transform_matrix_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
 
@@ -1517,7 +1525,8 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   *converted_cst = cst_from;
 
   // if we have a matrix use opencl
-  if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]))
+  if(dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
   {
     dt_times_t start_time = { 0 }, end_time = { 0 };
     dt_get_perf_times(&start_time);
@@ -1707,8 +1716,10 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
   cl_mem matrix_cl = NULL;
 
   // if we have a matrix use opencl
-  if(!isnan(profile_info_from->matrix_in[0][0]) && !isnan(profile_info_from->matrix_out[0][0])
-     && !isnan(profile_info_to->matrix_in[0][0]) && !isnan(profile_info_to->matrix_out[0][0]))
+  if(dt_is_valid_colormatrix(profile_info_from->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile_info_from->matrix_out[0][0])
+     && dt_is_valid_colormatrix(profile_info_to->matrix_in[0][0])
+     && dt_is_valid_colormatrix(profile_info_to->matrix_out[0][0]))
   {
     dt_times_t start_time = { 0 }, end_time = { 0 };
     dt_get_perf_times(&start_time);
