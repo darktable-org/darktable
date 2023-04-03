@@ -369,6 +369,14 @@ The following is a summary of the main features added to darktable
   Model to prefer By-line over Writer/Editor. Read date/time and
   description metadata from commonly used properties.
 
+- The drawing of arrow between the source and destination area in the
+  Retouch module has been reworked. We have a arrow for all forms
+  (instead of a simple line for Brush & Path shapes). The arrow is
+  also always the smallest one between both area and so avoid crossing
+  the shapes. Finally for the circle and ellipse the arrow doesn't
+  start anymore from the center area but as for other shapes on the
+  border.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
