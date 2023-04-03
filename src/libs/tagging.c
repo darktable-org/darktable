@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/collection.h"
 #include "common/selection.h"
 #include "common/darktable.h"
@@ -1997,7 +1998,7 @@ static gboolean _apply_rename_path(GtkWidget *dialog, const char *tagname,
 
       GtkWidget *warning_dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL,
                       GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
-                      _("at least one new tagname (%s) already exists, aborting."), new_tagname);
+                      _("at least one new tag name (%s) already exists, aborting"), new_tagname);
       gtk_dialog_run(GTK_DIALOG(warning_dialog));
       gtk_widget_destroy(warning_dialog);
     }
