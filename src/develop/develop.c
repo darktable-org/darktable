@@ -62,8 +62,8 @@ void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
   dev->average_delay = DT_DEV_AVERAGE_DELAY_START;
   dev->preview_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   dev->preview2_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
-  dev->gui_leaving = 0;
-  dev->gui_synch = 0;
+  dev->gui_leaving = FALSE;
+  dev->gui_synch = FALSE;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
@@ -580,8 +580,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
       dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       dev->preview2_input_changed = TRUE;
       dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->gui_synch = 1; // notify gui thread we want to synch (call
-                          // gui_update in the modules)
+      dev->gui_synch = TRUE; // notify gui thread we want to synch (call gui_update in the modules)
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
       dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
     }

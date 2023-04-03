@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,16 +162,22 @@ typedef enum dt_view_image_over_t
 } dt_view_image_over_t;
 
 /** returns an uppercase string of file extension **plus** some flag information **/
-char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow);
+char* dt_view_extend_modes_str(const char * name,
+                               const gboolean is_hdr,
+                               const gboolean is_bw,
+                               const gboolean is_bw_flow);
 /** expose an image and return a cair0_surface. */
-dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
+dt_view_surface_value_t dt_view_image_get_surface(int32_t imgid,
+                                                  int32_t width,
+                                                  int32_t height,
+                                                  cairo_surface_t **surface,
                                                   const gboolean quality);
 
 
 /** Set the selection bit to a given value for the specified image */
-void dt_view_set_selection(int imgid, int value);
+void dt_view_set_selection(int32_t imgid, int value);
 /** toggle selection of given image. */
-void dt_view_toggle_selection(int imgid);
+void dt_view_toggle_selection(int32_t imgid);
 
 /**
  * holds all relevant data needed to manage the view
@@ -312,7 +318,7 @@ typedef struct dt_view_manager_t
       void (*culling_preview_reload_overlays)(struct dt_view_t *view);
       gboolean (*get_preview_state)(struct dt_view_t *view);
       void (*set_preview_state)(struct dt_view_t *view, gboolean state, gboolean sticky, gboolean focus);
-      void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
+      void (*change_offset)(struct dt_view_t *view, gboolean reset, int32_t imgid);
     } lighttable;
 
     /* tethering view proxy object */
@@ -344,7 +350,7 @@ typedef struct dt_view_manager_t
       gboolean (*remove_marker)(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
       void (*add_location)(const dt_view_t *view, dt_map_location_data_t *p, const guint posid);
       void (*location_action)(const dt_view_t *view, const int action);
-      void (*drag_set_icon)(const dt_view_t *view, GdkDragContext *context, const int imgid, const int count);
+      void (*drag_set_icon)(const dt_view_t *view, GdkDragContext *context, const int32_t imgid, const int count);
       gboolean (*redraw)(gpointer user_data);
       gboolean (*display_selected)(gpointer user_data);
     } map;
@@ -369,9 +375,9 @@ void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */
 const char *dt_view_manager_name(dt_view_manager_t *vm);
-/** switch to this module. returns non-null if the module fails to change. */
-int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name);
-int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *new_view);
+/** switch to this module. returns TRUE if the module fails to change. */
+gboolean dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name);
+gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *new_view);
 /** expose current module. */
 void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height,
                             int32_t pointerx, int32_t pointery);
@@ -432,7 +438,7 @@ GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm);
 
 // active images functions
 void dt_view_active_images_reset(gboolean raise);
-void dt_view_active_images_add(int imgid, gboolean raise);
+void dt_view_active_images_add(int32_t imgid, gboolean raise);
 GSList *dt_view_active_images_get();
 
 /** get the lighttable current layout */
@@ -454,7 +460,7 @@ void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm);
 /** force refresh of culling and/or preview overlays */
 void dt_view_lighttable_culling_preview_reload_overlays(dt_view_manager_t *vm);
 /** sets the offset image (for culling and full preview) */
-void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid);
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, int32_t imgid);
 
 /* accel window */
 void dt_view_accels_show(dt_view_manager_t *vm);
@@ -462,7 +468,7 @@ void dt_view_accels_hide(dt_view_manager_t *vm);
 void dt_view_accels_refresh(dt_view_manager_t *vm);
 
 /* audio */
-void dt_view_audio_start(dt_view_manager_t *vm, int imgid);
+void dt_view_audio_start(dt_view_manager_t *vm, int32_t imgid);
 void dt_view_audio_stop(dt_view_manager_t *vm);
 
 /*
