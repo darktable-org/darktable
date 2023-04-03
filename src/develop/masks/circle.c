@@ -957,19 +957,7 @@ static void _circle_events_post_expose(cairo_t *cr,
                           zoom_scale,
                           FALSE);
 
-      cairo_set_dash(cr, dashed, 0, 0);
-      if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-        cairo_set_line_width(cr, 2.5 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 1.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, FALSE, 0.8);
-      cairo_stroke_preserve(cr);
-      if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 0.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, TRUE, 0.8);
-      cairo_stroke(cr);
+      dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
     }
 
     // we only the main shape for the source, no borders

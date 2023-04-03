@@ -2702,6 +2702,34 @@ void dt_masks_draw_arrow(cairo_t *cr,
   }
 }
 
+void dt_masks_stroke_arrow(cairo_t *cr,
+                           const dt_masks_form_gui_t *gui,
+                           const int group,
+                           const float zoom_scale)
+{
+  double dashed[] = { 4.0, 4.0 };
+  dashed[0] /= zoom_scale;
+  dashed[1] /= zoom_scale;
+
+  cairo_set_dash(cr, dashed, 0, 0);
+
+  if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
+    cairo_set_line_width(cr, 2.5 / zoom_scale);
+  else
+    cairo_set_line_width(cr, 1.5 / zoom_scale);
+
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_stroke_preserve(cr);
+
+  if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
+    cairo_set_line_width(cr, 1.0 / zoom_scale);
+  else
+    cairo_set_line_width(cr, 0.5 / zoom_scale);
+
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  cairo_stroke(cr);
+}
+
 void dt_masks_closest_point(const int count,
                             const int nb_ctrl,
                             const float *points,
