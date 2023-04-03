@@ -908,6 +908,26 @@ char *dt_history_item_as_string(const char *name, const gboolean enabled)
   return g_strconcat(enabled ? "●" : "○", "  ", name, NULL);
 }
 
+char *dt_history_get_name_label(const char *name,
+                                const char *label,
+                                const gboolean markup)
+{
+  if(!label
+     || strlen(label) == 0
+     || strcmp(label, "0") == 0)
+  {
+    return g_strdup_printf("%s", name);
+  }
+  else
+  {
+    return g_strdup_printf("%s • %s%s%s",
+                           name,
+                           markup ? "<small>" : "",
+                           label,
+                           markup ? "</small>" : "");
+  }
+}
+
 GList *dt_history_get_items(const int32_t imgid,
                             const gboolean enabled,
                             const gboolean markup)
