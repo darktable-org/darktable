@@ -918,6 +918,12 @@ void dt_masks_draw_arrow(cairo_t *cr,
                          const float zoom_scale,
                          const gboolean touch_dest);
 
+/* stroke the arrow on cr depending on selection */
+void dt_masks_stroke_arrow(cairo_t *cr,
+                           const dt_masks_form_gui_t *gui,
+                           const int group,
+                           const float zoom_scale);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */
