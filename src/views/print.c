@@ -315,19 +315,19 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   }
 }
 
-int try_enter(dt_view_t *self)
+gboolean try_enter(dt_view_t *self)
 {
   dt_print_t *prt = (dt_print_t*)self->data;
 
   //  now check that there is at least one selected image
 
-  const int imgid = dt_act_on_get_main_image();
+  const int32_t imgid = dt_act_on_get_main_image();
 
   if(imgid < 0)
   {
     // fail :(
     dt_control_log(_("no image to open!"));
-    return 1;
+    return TRUE;
   }
 
   // this loads the image from db if needed:
@@ -349,7 +349,7 @@ int try_enter(dt_view_t *self)
   // we need to setup the selected image
   prt->imgs->imgid_to_load = imgid;
 
-  return 0;
+  return FALSE;
 }
 
 void enter(dt_view_t *self)

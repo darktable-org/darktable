@@ -802,9 +802,9 @@ void configure(dt_view_t *self, int wd, int ht)
   // dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
-int try_enter(dt_view_t *self)
+gboolean try_enter(dt_view_t *self)
 {
-  return 0;
+  return FALSE;
 }
 
 static void _view_map_signal_change_raise(gpointer user_data)
