@@ -997,7 +997,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
 
-  if(!(dt_image_is_raw(&pipe->image))) piece->enabled = 0;
+  if(!(dt_image_is_raw(&pipe->image))) piece->enabled = FALSE;
   d->green_eq = p->green_eq;
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
@@ -1035,49 +1035,49 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   switch(d->demosaicing_method)
   {
     case DT_IOP_DEMOSAIC_PPG:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_AMAZE:
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       break;
     case DT_IOP_DEMOSAIC_VNG4:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_RCD:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_LMMSE:
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       break;
     case DT_IOP_DEMOSAIC_RCD_VNG:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_AMAZE_VNG:
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       break;
     case DT_IOP_DEMOSAIC_MARKEST3_VNG:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_VNG:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
-      piece->process_cl_ready = 1;
+      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_FDC:
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       break;
     default:
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
   }
 
   // green-equilibrate over full image excludes tiling
@@ -1087,7 +1087,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       || ((use_method & DT_DEMOSAIC_DUAL) && (d->dual_thrs > 0.0f))
       || (piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_DEMOSAIC)))
   {
-    piece->process_tiling_ready = 0;
+    piece->process_tiling_ready = FALSE;
   }
 
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
@@ -1129,7 +1129,7 @@ void reload_defaults(dt_iop_module_t *module)
   else
     d->demosaicing_method = DT_IOP_DEMOSAIC_RCD;
 
-  module->hide_enable_button = 1;
+  module->hide_enable_button = TRUE;
 
   module->default_enabled = dt_image_is_raw(&module->dev->image_storage);
   if(module->widget)

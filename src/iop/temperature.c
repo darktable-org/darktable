@@ -594,7 +594,7 @@ void process(struct dt_iop_module_t *self,
     }
   }
 
-  piece->pipe->dsc.temperature.enabled = 1;
+  piece->pipe->dsc.temperature.enabled = TRUE;
   for(int k = 0; k < 4; k++)
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
@@ -659,7 +659,7 @@ int process_cl(struct dt_iop_module_t *self,
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_xtrans);
 
-  piece->pipe->dsc.temperature.enabled = 1;
+  piece->pipe->dsc.temperature.enabled = TRUE;
   for(int k = 0; k < 4; k++)
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
@@ -689,7 +689,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   if(self->hide_enable_button)
   {
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     return;
   }
 
@@ -700,7 +700,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-    piece->process_cl_ready = 0;
+    piece->process_cl_ready = FALSE;
 
   if(g)
   {
@@ -1524,7 +1524,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_is_scene_referred()
     || (is_workflow_none && another_cat_defined);
 
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
   module->hide_enable_button = true_monochrome;
 
   // White balance module doesn't need to be enabled for true_monochrome raws (like
@@ -1538,7 +1538,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(is_raw)
     {
       // raw images need wb:
-      module->default_enabled = 1;
+      module->default_enabled = TRUE;
 
       // if workflow = modern, only set WB coeffs equivalent to D65 illuminant
       // full chromatic adaptation is deferred to channelmixerrgb

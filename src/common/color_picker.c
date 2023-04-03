@@ -282,7 +282,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
                             const dt_iop_order_iccprofile_info_t *const profile)
 {
   dt_times_t start_time = { 0 }, end_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+  dt_get_perf_times(&start_time);
 
   if(dsc->channels == 4u)
   {

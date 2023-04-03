@@ -140,7 +140,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) piece->enabled = 0;
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) piece->enabled = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -162,8 +162,8 @@ void init(dt_iop_module_t *self)
 {
   self->params = calloc(1, sizeof(dt_iop_finalscale_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_finalscale_params_t));
-  self->default_enabled = 1;
-  self->hide_enable_button = 1;
+  self->default_enabled = TRUE;
+  self->hide_enable_button = TRUE;
   self->params_size = sizeof(dt_iop_finalscale_params_t);
   self->gui_data = NULL;
 }

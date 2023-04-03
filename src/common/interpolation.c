@@ -1277,7 +1277,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                 "resample_plain", NULL, itor->name, roi_in, roi_out, "\n");
   dt_times_t start = { 0 }, mid = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
+  dt_get_perf_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
@@ -1321,7 +1321,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
     goto exit;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
+  dt_get_perf_times(&mid);
 
   const size_t height = roi_out->height;
   const size_t width = roi_out->width;
@@ -1522,7 +1522,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                 "resample_cl", NULL, itor->name, roi_in, roi_out, "\n");
   dt_times_t start = { 0 }, mid = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
+  dt_get_perf_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
@@ -1560,7 +1560,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
     goto error;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
+  dt_get_perf_times(&mid);
 
   int hmaxtaps = -1, vmaxtaps = -1;
   for(int k = 0; k < roi_out->width; k++) hmaxtaps = MAX(hmaxtaps, hlength[k]);
@@ -1734,7 +1734,7 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                 "resample_1c_plain", NULL, itor->name, roi_in, roi_out, "\n");
   dt_times_t start = { 0 }, mid = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
+  dt_get_perf_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
@@ -1776,7 +1776,7 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
     goto exit;
   }
 
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
+  dt_get_perf_times(&mid);
 
   // Process each output line
 #ifdef _OPENMP

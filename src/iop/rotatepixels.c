@@ -334,7 +334,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // this should not be used for normal images
   // (i.e. for those, when this iop is off by default)
-  if((d->rx == 0u) && (d->ry == 0u)) piece->enabled = 0;
+  if((d->rx == 0u) && (d->ry == 0u)) piece->enabled = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

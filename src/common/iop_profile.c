@@ -1108,7 +1108,7 @@ void dt_ioppr_transform_image_colorspace(
   }
 
   dt_times_t start_time = { 0 }, end_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+  dt_get_perf_times(&start_time);
 
   // matrix should be never NAN, this is only to test it against lcms2!
   if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]))
@@ -1165,7 +1165,7 @@ void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_i
   }
 
   dt_times_t start_time = { 0 }, end_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+  dt_get_perf_times(&start_time);
 
   if(!isnan(profile_info_from->matrix_in[0][0]) && !isnan(profile_info_from->matrix_out[0][0])
      && !isnan(profile_info_to->matrix_in[0][0]) && !isnan(profile_info_to->matrix_out[0][0]))
@@ -1376,7 +1376,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
   if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]))
   {
     dt_times_t start_time = { 0 }, end_time = { 0 };
-    if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+    dt_get_perf_times(&start_time);
 
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
@@ -1544,7 +1544,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid,
      && !isnan(profile_info_to->matrix_in[0][0]) && !isnan(profile_info_to->matrix_out[0][0]))
   {
     dt_times_t start_time = { 0 }, end_time = { 0 };
-    if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+    dt_get_perf_times(&start_time);
 
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
