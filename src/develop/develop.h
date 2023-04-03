@@ -149,8 +149,8 @@ typedef struct dt_develop_t
 {
   gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
                         // gui_init'ed.
-  int32_t gui_leaving;  // set if everything is scheduled to shut down.
-  int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
+  gboolean gui_leaving;  // set if everything is scheduled to shut down.
+  gboolean gui_synch;    // set to TRUE by the render threads if gui_update should be called in the modules.
   int32_t focus_hash;   // determines whether to start a new history item or to merge down.
   gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
   gboolean preview_input_changed, preview2_input_changed;
@@ -211,7 +211,7 @@ typedef struct dt_develop_t
   GList *allforms;
 
   //full preview stuff
-  int full_preview;
+  gboolean full_preview;
   int full_preview_last_zoom, full_preview_last_closeup;
   float full_preview_last_zoom_x, full_preview_last_zoom_y;
   struct dt_iop_module_t *full_preview_last_module;

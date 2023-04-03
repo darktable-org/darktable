@@ -440,13 +440,13 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   }
 }
 
-int try_enter(dt_view_t *self)
+gboolean try_enter(dt_view_t *self)
 {
   /* verify that camera supports tethering and is available */
-  if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL)) return 0;
+  if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL)) return FALSE;
 
   dt_control_log(_("no camera with tethering support available for use..."));
-  return 1;
+  return TRUE;
 }
 
 static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)

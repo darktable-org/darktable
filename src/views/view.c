@@ -211,7 +211,7 @@ static void _remove_child(GtkWidget *child,GtkContainer *container)
     }
 }
 
-int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
+gboolean dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
 {
   gboolean switching_to_none = *view_name == '\0';
   dt_view_t *new_view = NULL;
@@ -227,13 +227,13 @@ int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
         break;
       }
     }
-    if(!new_view) return 1; // the requested view doesn't exist
+    if(!new_view) return TRUE; // the requested view doesn't exist
   }
 
   return dt_view_manager_switch_by_view(vm, new_view);
 }
 
-int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
+gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 {
   dt_view_t *old_view = vm->current_view;
   dt_view_t *new_view = (dt_view_t *)nv; // views belong to us, we can de-const them :-)
@@ -280,7 +280,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
     /* remove sticky accels window */
     if(vm->accels_window.window) dt_view_accels_hide(vm);
-    return 0;
+    return FALSE;
   }
 
   // invariant: new_view != NULL after this point
@@ -288,7 +288,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   if(new_view->try_enter)
   {
-    const int error = new_view->try_enter(new_view);
+    const gboolean error = new_view->try_enter(new_view);
     if(error)
     {
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE, old_view, new_view);
@@ -399,7 +399,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   // update toast visibility
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
-  return 0;
+  return FALSE;
 }
 
 const char *dt_view_manager_name(dt_view_manager_t *vm)
