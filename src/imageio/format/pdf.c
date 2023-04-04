@@ -1,20 +1,20 @@
 /*
- *    This file is part of darktable,
- *    Copyright (C) 2015-2023 darktable developers.
- *
- *    darktable is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    darktable is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+    This file is part of darktable,
+    Copyright (C) 2015-2023 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "common/pdf.h"
 #include "bauhaus/bauhaus.h"
@@ -648,8 +648,8 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // embedded icc profile yes|no
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->icc, self, NULL, N_("embed icc profiles"),
-                               _("images can be tagged with their icc profile"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->icc, self, NULL, N_("embed ICC profiles"),
+                               _("images can be tagged with their ICC profile"),
                                dt_conf_get_bool("plugins/imageio/format/pdf/icc"),
                                icc_toggle_callback, self,
                                N_("no"), N_("yes"));
