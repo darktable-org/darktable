@@ -5468,11 +5468,13 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->demosaic_method_bayer = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
-  for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 9);
+
+  const int xtrans = dt_bauhaus_combobox_get_from_value(g->demosaic_method_bayer, DT_DEMOSAIC_XTRANS);
+  for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, xtrans);
   gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nLMMSE is suited best for high ISO images.\ndual demosaicers double processing time."));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
-  for(int i=0;i<9;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
+  for(int i=0;i<xtrans;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\ndual demosaicers double processing time."));
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");

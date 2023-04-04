@@ -1544,7 +1544,7 @@ gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *widget, const char *text)
   return FALSE;
 }
 
-gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *widget, int value)
+int dt_bauhaus_combobox_get_from_value(GtkWidget *widget, int value)
 {
   const dt_bauhaus_combobox_data_t *d = _combobox_data(widget);
 
@@ -1553,18 +1553,27 @@ gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *widget, int value)
     const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, i);
     if(GPOINTER_TO_INT(entry->data) == value)
     {
-      dt_bauhaus_combobox_set(widget, i);
-      return TRUE;
+      return i;
     }
   }
+
+  return -1;
+}
+
+gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *widget, int value)
+{
+  const int pos = dt_bauhaus_combobox_get_from_value(widget, value);
+  dt_bauhaus_combobox_set(widget, pos);
+
+  if(pos != -1) return TRUE;
 
   // this might be a legacy option that was hidden; try to re-add from introspection
   dt_introspection_type_enum_tuple_t *values
     = g_hash_table_lookup(darktable.bauhaus->combo_introspection, dt_action_widget(widget));
-  if(values)
+  if(values
+     && dt_bauhaus_combobox_add_introspection(widget, NULL, values, value, value))
   {
-    dt_bauhaus_combobox_add_introspection(widget, NULL, values, value, value);
-    dt_bauhaus_combobox_set(widget, d->entries->len - 1);
+    dt_bauhaus_combobox_set(widget, dt_bauhaus_combobox_length(widget) - 1);
     return TRUE;
   }
 
