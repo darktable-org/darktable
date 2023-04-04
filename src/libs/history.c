@@ -1112,7 +1112,7 @@ static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
   else if(!item->multi_name[0] || strcmp(item->multi_name, "0") == 0)
     label = g_strdup(item->module->name());
   else
-    label = g_markup_printf_escaped("%s <small>• %s</small>",
+    label = g_markup_printf_escaped("%s • <small>%s</small>",
                                     item->module->name(), item->multi_name);
 
   return label;

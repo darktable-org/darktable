@@ -908,6 +908,26 @@ char *dt_history_item_as_string(const char *name, const gboolean enabled)
   return g_strconcat(enabled ? "●" : "○", "  ", name, NULL);
 }
 
+char *dt_history_get_name_label(const char *name,
+                                const char *label,
+                                const gboolean markup)
+{
+  if(!label
+     || strlen(label) == 0
+     || strcmp(label, "0") == 0)
+  {
+    return g_strdup_printf("%s", name);
+  }
+  else
+  {
+    return g_strdup_printf("%s • %s%s%s",
+                           name,
+                           markup ? "<small>" : "",
+                           label,
+                           markup ? "</small>" : "");
+  }
+}
+
 GList *dt_history_get_items(const int32_t imgid,
                             const gboolean enabled,
                             const gboolean markup)
@@ -936,7 +956,6 @@ GList *dt_history_get_items(const int32_t imgid,
   {
     if(strcmp((const char*)sqlite3_column_text(stmt, 1), "mask_manager") == 0) continue;
 
-    char name[512] = { 0 };
     dt_history_item_t *item = g_malloc(sizeof(dt_history_item_t));
     const char *op = (char *)sqlite3_column_text(stmt, 1);
     // first uint32_t of blend_params is the mode
@@ -948,21 +967,7 @@ GList *dt_history_get_items(const int32_t imgid,
 
     const char *mname = (char *)sqlite3_column_text(stmt, 3);
 
-    if(!mname
-       || strlen(mname) == 0
-       || strcmp(mname, "0") == 0)
-    {
-      g_snprintf(name, sizeof(name), "%s", dt_iop_get_localized_name(op));
-    }
-    else
-    {
-      g_snprintf(name, sizeof(name), "%s • %s%s%s",
-                 dt_iop_get_localized_name(op),
-                 markup ? "<small>" : "",
-                 (char *)mname,
-                 markup ? "</small>" : "");
-    }
-    item->name = g_strdup(name);
+    item->name = dt_history_get_name_label(dt_iop_get_localized_name(op), mname, markup);
     item->op = g_strdup(op);
     result = g_list_prepend(result, item);
   }
