@@ -4352,7 +4352,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original colors are preserved.\n"
                                                    "may reinforce chromatic aberrations and chroma noise,\n"
                                                    "so ensure they are properly corrected elsewhere."));
-  dt_bauhaus_combobox_remove_at(g->preserve_color, DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1); // hide legacy Euclidean norm by default
+  // hide legacy Euclidean norm by default
+  const int pos = dt_bauhaus_combobox_get_from_value(g->preserve_color, DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1);
+  dt_bauhaus_combobox_remove_at(g->preserve_color, pos);
 
   // Curve type
   g->highlights = dt_bauhaus_combobox_from_params(self, "highlights");

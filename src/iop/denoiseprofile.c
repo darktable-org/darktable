@@ -3778,7 +3778,9 @@ void gui_init(dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
   const gboolean compute_variance =
     dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
-  if(!compute_variance) dt_bauhaus_combobox_remove_at(g->mode, 4);
+  const int pos = dt_bauhaus_combobox_get_from_value(g->mode, MODE_VARIANCE);
+  if(!compute_variance && pos != -1)
+    dt_bauhaus_combobox_remove_at(g->mode, pos);
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);

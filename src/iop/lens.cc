@@ -2642,13 +2642,11 @@ void reload_defaults(dt_iop_module_t *module)
   if(g)
   {
     dt_bauhaus_combobox_clear(g->methods_selector);
-
-    if(_have_embedded_metadata(module))
-      dt_bauhaus_combobox_set_from_value(g->methods_selector,
-                                         DT_IOP_LENS_METHOD_EMBEDDED_METADATA);
-
-    dt_bauhaus_combobox_set_from_value(g->methods_selector,
-                                       DT_IOP_LENS_METHOD_LENSFUN);
+    dt_bauhaus_combobox_add_introspection(g->methods_selector, NULL,
+                                          module->so->get_f("method")->Enum.values,
+                                          _have_embedded_metadata(module)
+                                          ? DT_IOP_LENS_METHOD_EMBEDDED_METADATA
+                                          : DT_IOP_LENS_METHOD_LENSFUN, -1);
 
     // if we have a gui -> reset corrections_done message
     dt_iop_gui_enter_critical_section(module);

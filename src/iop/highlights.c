@@ -59,12 +59,12 @@ static float highlights_clip_magics[6] = { 1.0f, 1.0f, 0.987f, 0.995f, 0.987f, 0
 
 typedef enum dt_iop_highlights_mode_t
 {
-  DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
-  DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
-  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
-  DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
-  DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "segmentation based"
   DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "inpaint opposed"
+  DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
+  DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
+  DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "segmentation based"
+  DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
+  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -2476,18 +2476,20 @@ void reload_defaults(dt_iop_module_t *self)
     const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
     dt_bauhaus_combobox_clear(g->mode);
 
-    // add combo entries from introspection
-    dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_OPPOSED);
-
+    dt_introspection_type_enum_tuple_t *values = self->so->get_f("mode")->Enum.values;
     if(filters == 0)
-      dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_CLIP);
+    {
+      dt_bauhaus_combobox_add_introspection(g->mode, NULL, values, DT_IOP_HIGHLIGHTS_OPPOSED,
+                                                                   DT_IOP_HIGHLIGHTS_OPPOSED);
+      dt_bauhaus_combobox_add_introspection(g->mode, NULL, values, DT_IOP_HIGHLIGHTS_CLIP,
+                                                                   DT_IOP_HIGHLIGHTS_CLIP);
+    }
     else
     {
-      dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_LCH);
-      dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_CLIP);
-      dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_SEGMENTS);
-      if(filters != 9u)
-        dt_bauhaus_combobox_set_from_value(g->mode, DT_IOP_HIGHLIGHTS_LAPLACIAN);
+      dt_bauhaus_combobox_add_introspection(g->mode, NULL, values, DT_IOP_HIGHLIGHTS_OPPOSED,
+                                                                   filters == 9u
+                                                                   ? DT_IOP_HIGHLIGHTS_SEGMENTS
+                                                                   : DT_IOP_HIGHLIGHTS_LAPLACIAN);
     }
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
