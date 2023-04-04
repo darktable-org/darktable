@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/** Note :
+ * we use finite-math-only and fast-math because we have ensured no divisions by zero
+ * fp-contract=fast enables hardware-accelerated Fused Multiply-Add
+ **/
+#if defined(__GNUC__)
+#pragma GCC optimize ("finite-math-only", "no-math-errno", "fast-math", "fp-contract=fast")
+#endif
+ 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -23,18 +32,8 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
-#include "common/debug.h"
-#include "common/math.h"
 #include "common/opencl.h"
-#include "control/control.h"
-#include "develop/develop.h"
-#include "develop/imageop.h"
 #include "develop/imageop_gui.h"
-#include "dtgtk/gradientslider.h"
-#include "dtgtk/togglebutton.h"
-#include "gui/color_picker_proxy.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
@@ -107,45 +106,49 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_LAB;
 }
 
-#define GAUSS(a, b, c, x) (a * powf(2.718281828f, (-powf((x - b), 2) / (powf(c, 2)))))
+//#define GAUSS(a, b, c, x) (a * powf(2.718281828f, (-powf((x - b), 2) / (powf(c, 2)))))
+#define GAUSS(a, b, c, x) (a * expf(-(x-b)*(x-b) / (c*c)))
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
+
   dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
-  const int ch = piece->colors;
 
   // Precalculate parameters for gauss function
-  const float a = 1.0;                        // Height of top
-  const float b = -1.0 + (data->center * 2);  // Center of top
-  const float c = (data->width / 10.0) / 2.0; // Width
+  const float a = 1.0f;                           // Height of top
+  const float b = -1.0f + (data->center * 2.0f);  // Center of top
+  const float c = (data->width / 10.0f) / 2.0f;   // Width
+
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const float ev = data->ev;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(a, b, c, ch, ivoid, ovoid, roi_out) shared(data)       \
-    schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(a, b, c, ivoid, ovoid, npixels, ev) \
+  schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-    float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-    for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
-    {
-      const float lightness = in[0] / 100.0;
-      const float x = -1.0 + (lightness * 2.0);
-      float gauss = GAUSS(a, b, c, x);
-
-      if(isnan(gauss) || isinf(gauss)) gauss = 0.0;
-
-      float relight = 1.0 / exp2f(-data->ev * CLIP(gauss));
-
-      if(isnan(relight) || isinf(relight)) relight = 1.0;
-
-      out[0] = 100.0 * CLIP(lightness * relight);
-      out[1] = in[1];
-      out[2] = in[2];
-      out[3] = in[3];
-    }
+    const float *const restrict in = ((float *)ivoid) + 4*k;
+    float *const restrict out = ((float *)ovoid) + 4*k;
+    dt_aligned_pixel_t pixel;
+    copy_pixel(pixel, in);
+    const float lightness = pixel[0] / 100.0f;
+    const float x = -1.0f + (lightness * 2.0f);
+    float gauss = GAUSS(a, b, c, x);
+    float relight = exp2f(ev * CLIP(gauss));
+    pixel[0] = 100.0f * CLIP(lightness * relight);
+    copy_pixel_nontemporal(out, pixel);
   }
+  dt_omploop_sfence();
 }
 
 
