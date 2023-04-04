@@ -574,7 +574,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_attach(grid, dt_ui_label_new(_("title")), 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("title"), G_CALLBACK(title_changed_callback), self,
-                                           _("enter the title of the pdf"),
+                                           _("enter the title of the PDF"),
                                            dt_conf_get_string_const("plugins/imageio/format/pdf/title")));
   gtk_entry_set_placeholder_text(d->title, "untitled");
   gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
@@ -583,7 +583,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // paper size
 
   d->size = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("paper size"),
-                                         _("paper size of the pdf\neither one from the list or "
+                                         _("paper size of the PDF\neither one from the list or "
                                            "\"<width> [unit] x <height> <unit>\n"
                                            "example: 210 mm x 2.97 cm"),
                                          0, size_toggle_callback, self, NULL);
@@ -598,7 +598,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // orientation
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->orientation, self, NULL, N_("page orientation"),
-                               _("paper orientation of the pdf"),
+                               _("paper orientation of the PDF"),
                                dt_conf_get_int("plugins/imageio/format/pdf/orientation"),
                                orientation_toggle_callback, self,
                                N_("portrait"), N_("landscape"));
@@ -609,7 +609,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_attach(grid, dt_ui_label_new(_("border")), 0, ++line, 1, 1);
 
   d->border = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("border"), G_CALLBACK(border_changed_callback), self,
-                                           _("empty space around the pdf\n"
+                                           _("empty space around the PDF\n"
                                              "format: size + unit\nexamples: 10 mm, 1 inch"),
                                            dt_conf_get_string_const("plugins/imageio/format/pdf/border")));
   gtk_entry_set_max_length(d->border, sizeof(((dt_imageio_pdf_params_t *)NULL)->border) - 1);
@@ -622,14 +622,14 @@ void gui_init(dt_imageio_module_format_t *self)
 
   d->dpi = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 5000, 1));
   gtk_grid_attach(grid, GTK_WIDGET(d->dpi), 1, line, 1, 1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->dpi), _("dpi of the images inside the pdf"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->dpi), _("dpi of the images inside the PDF"));
   gtk_spin_button_set_value(d->dpi, dt_conf_get_float("plugins/imageio/format/pdf/dpi"));
   g_signal_connect(G_OBJECT(d->dpi), "value-changed", G_CALLBACK(dpi_changed_callback), self);
 
   // rotate images yes|no
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->rotate, self, NULL, N_("rotate images"),
-                               _("images can be rotated to match the pdf orientation "
+                               _("images can be rotated to match the PDF orientation "
                                  "to waste less space when printing"),
                                dt_conf_get_bool("plugins/imageio/format/pdf/rotate"),
                                rotate_toggle_callback, self,
@@ -639,7 +639,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // pages all|single images|contact sheet
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->pages, self, NULL, N_("TODO: pages"),
-                               _("what pages should be added to the pdf"),
+                               _("what pages should be added to the PDF"),
                                dt_conf_get_int("plugins/imageio/format/pdf/pages"),
                                pages_toggle_callback, self,
                                N_("all"), N_("single images"), N_("contact sheet"));
@@ -685,7 +685,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // image mode normal|draft|debug
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->mode, self, NULL, N_("image mode"),
-                               _("normal -- just put the images into the pdf\n"
+                               _("normal -- just put the images into the PDF\n"
                                  "draft -- images are replaced with boxes\n"
                                  "debug -- only show the outlines and bounding boxes"),
                                dt_conf_get_int("plugins/imageio/format/pdf/mode"),
