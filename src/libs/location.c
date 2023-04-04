@@ -284,7 +284,8 @@ static void clear_search(dt_lib_location_t *lib)
 
 static void _show_location(dt_lib_location_t *lib, _lib_location_result_t *p)
 {
-  if(isnan(p->bbox.lon1) || isnan(p->bbox.lat1) || isnan(p->bbox.lon2) || isnan(p->bbox.lat2))
+  if(p->bbox.lon1 == DT_INVALID_GPS_COORDINATE || p->bbox.lat1 == DT_INVALID_GPS_COORDINATE
+     || p->bbox.lon2 == DT_INVALID_GPS_COORDINATE || p->bbox.lat2 == DT_INVALID_GPS_COORDINATE)
   {
     int32_t zoom = _lib_location_place_get_zoom(p);
     dt_view_map_center_on_location(darktable.view_manager, p->lon, p->lat, zoom);
@@ -449,12 +450,12 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
   _lib_location_result_t *place = g_malloc0(sizeof(_lib_location_result_t));
   if(!place) return;
 
-  place->lon = NAN;
-  place->lat = NAN;
-  place->bbox.lon1 = NAN;
-  place->bbox.lat1 = NAN;
-  place->bbox.lon2 = NAN;
-  place->bbox.lat2 = NAN;
+  place->lon = DT_INVALID_GPS_COORDINATE;
+  place->lat = DT_INVALID_GPS_COORDINATE;
+  place->bbox.lon1 = DT_INVALID_GPS_COORDINATE;
+  place->bbox.lat1 = DT_INVALID_GPS_COORDINATE;
+  place->bbox.lon2 = DT_INVALID_GPS_COORDINATE;
+  place->bbox.lat2 = DT_INVALID_GPS_COORDINATE;
   place->marker_type = MAP_DISPLAY_NONE;
   place->marker_points = NULL;
 
@@ -626,7 +627,7 @@ broken_bbox:
   }
 
   /* check if we got sane data */
-  if(isnan(place->lon) || isnan(place->lat)) goto bail_out;
+  if(place->lon == DT_INVALID_GPS_COORDINATE || place->lat == DT_INVALID_GPS_COORDINATE) goto bail_out;
 
   /* add place to result list */
   lib->places = g_list_append(lib->places, place);

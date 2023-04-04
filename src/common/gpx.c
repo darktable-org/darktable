@@ -19,6 +19,7 @@
 #include "common/geo.h"
 #include "common/darktable.h"
 #include "common/math.h"
+#include "common/utility.h"
 #include <glib.h>
 #include <inttypes.h>
 
@@ -235,8 +236,8 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         geoloc->longitude = lon;
 
         /* make a simple linear interpolation on elevation */
-        if(tp_next->elevation == NAN || tp->elevation == NAN)
-          geoloc->elevation = NAN;
+        if(tp_next->elevation == DT_INVALID_GPS_COORDINATE || tp->elevation == DT_INVALID_GPS_COORDINATE)
+          geoloc->elevation = DT_INVALID_GPS_COORDINATE;
         else
           geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * f;
       }
@@ -287,10 +288,10 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       gpx->current_track_point = g_malloc0(sizeof(dt_gpx_track_point_t));
       gpx->current_track_point->segid = gpx->segid;
 
-      /* initialize with NAN for validation check */
-      gpx->current_track_point->longitude = NAN;
-      gpx->current_track_point->latitude = NAN;
-      gpx->current_track_point->elevation = NAN;
+      /* initialize with flag value for validation check */
+      gpx->current_track_point->longitude = DT_INVALID_GPS_COORDINATE;
+      gpx->current_track_point->latitude = DT_INVALID_GPS_COORDINATE;
+      gpx->current_track_point->elevation = DT_INVALID_GPS_COORDINATE;
 
       /* go thru the attributes to find and get values of lon / lat*/
       while(*attribute_name)
@@ -305,7 +306,8 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       }
 
       /* validate that we actually got lon / lat attribute values */
-      if(isnan(gpx->current_track_point->longitude) || isnan(gpx->current_track_point->latitude))
+      if(gpx->current_track_point->longitude == DT_INVALID_GPS_COORDINATE
+         || gpx->current_track_point->latitude == DT_INVALID_GPS_COORDINATE)
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "broken GPX file, failed to get lon/lat attribute values for trkpt\n");

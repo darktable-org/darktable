@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -345,7 +345,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)malloc(sizeof(dt_image_geoloc_t));
       if(action == DT_MA_CLEAR)
-        geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
+        geoloc->longitude = geoloc->latitude = geoloc->elevation = DT_INVALID_GPS_COORDINATE;
       else
         dt_image_get_location(imageid, geoloc);
       dt_image_set_locations(imgs, geoloc, TRUE);

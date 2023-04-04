@@ -813,7 +813,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     else if(!xmlStrcmp(name, (const xmlChar *)"GPSLatitude"))
     {
       double latitude = dt_util_gps_string_to_number((const char *)value);
-      if(!isnan(latitude))
+      if(latitude != DT_INVALID_GPS_COORDINATE)
       {
         data->lat = latitude;
         data->has_gps = TRUE;
@@ -822,7 +822,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     else if(!xmlStrcmp(name, (const xmlChar *)"GPSLongitude"))
     {
       double longitude = dt_util_gps_string_to_number((const char *)value);
-      if(!isnan(longitude))
+      if(longitude != DT_INVALID_GPS_COORDINATE)
       {
         data->lon = longitude;
         data->has_gps = TRUE;
@@ -1191,8 +1191,8 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   data.has_tags = FALSE;
   data.rating = 0;
   data.has_rating = FALSE;
-  data.lat = NAN;
-  data.lon = NAN;
+  data.lat = DT_INVALID_GPS_COORDINATE;
+  data.lon = DT_INVALID_GPS_COORDINATE;
   data.has_gps = FALSE;
   data.color = 0;
   data.has_colorlabel = FALSE;
@@ -1531,7 +1531,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     dt_image_geoloc_t geoloc;
     geoloc.longitude = data.lon;
     geoloc.latitude = data.lat;
-    geoloc.elevation = NAN;
+    geoloc.elevation = DT_INVALID_GPS_COORDINATE;
     dt_image_set_location(imgid, &geoloc, FALSE, FALSE);
     GList *imgs = NULL;
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));

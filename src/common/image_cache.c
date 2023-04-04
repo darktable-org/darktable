@@ -89,15 +89,15 @@ void dt_image_cache_allocate(void *data,
     if(sqlite3_column_type(stmt, 19) == SQLITE_FLOAT)
       img->geoloc.longitude = sqlite3_column_double(stmt, 19);
     else
-      img->geoloc.longitude = NAN;
+      img->geoloc.longitude = DT_INVALID_GPS_COORDINATE;
     if(sqlite3_column_type(stmt, 20) == SQLITE_FLOAT)
       img->geoloc.latitude = sqlite3_column_double(stmt, 20);
     else
-      img->geoloc.latitude = NAN;
+      img->geoloc.latitude = DT_INVALID_GPS_COORDINATE;
     if(sqlite3_column_type(stmt, 21) == SQLITE_FLOAT)
       img->geoloc.elevation = sqlite3_column_double(stmt, 21);
     else
-      img->geoloc.elevation = NAN;
+      img->geoloc.elevation = DT_INVALID_GPS_COORDINATE;
     const void *color_matrix = sqlite3_column_blob(stmt, 22);
     if(color_matrix)
       memcpy(img->d65_color_matrix, color_matrix, sizeof(img->d65_color_matrix));

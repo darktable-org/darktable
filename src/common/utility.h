@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,6 +70,10 @@ dt_logo_season_t dt_util_get_logo_season(void);
 
 cairo_surface_t *dt_util_get_logo(const float size);
 cairo_surface_t *dt_util_get_logo_text(const float size);
+
+/** special value to indicate an invalid or unitialized coordinate (replaces */
+/** former use of NAN and isnan() by the most negative float) **/
+#define DT_INVALID_GPS_COORDINATE (-FLT_MAX)
 
 gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);

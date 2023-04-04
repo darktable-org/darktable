@@ -1999,9 +1999,9 @@ void dt_image_init(dt_image_t *img)
   img->exif_iso = 0;
   img->exif_focal_length = 0;
   img->exif_focus_distance = 0;
-  img->geoloc.latitude = NAN;
-  img->geoloc.longitude = NAN;
-  img->geoloc.elevation = NAN;
+  img->geoloc.latitude = DT_INVALID_GPS_COORDINATE;
+  img->geoloc.longitude = DT_INVALID_GPS_COORDINATE;
+  img->geoloc.elevation = DT_INVALID_GPS_COORDINATE;
   img->raw_black_level = 0;
   for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
   img->raw_white_point = 16384; // 2^14

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2537,7 +2537,7 @@ static void _view_map_center_on_image(dt_view_t *self, const dt_imgid_t imgid)
     dt_image_geoloc_t geoloc;
     dt_image_get_location(imgid, &geoloc);
 
-    if(!isnan(geoloc.longitude) && !isnan(geoloc.latitude))
+    if(geoloc.longitude != DT_INVALID_GPS_COORDINATE && geoloc.latitude != DT_INVALID_GPS_COORDINATE)
     {
       int zoom;
       g_object_get(G_OBJECT(lib->map), "zoom", &zoom, NULL);
@@ -2651,7 +2651,7 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
         osm_gps_map_point_free(pt);
         // TODO redraw the image group
         // it seems that at this time osm_gps_map doesn't answer before dt_image_set_locations(). Locked in some way ?
-        const dt_image_geoloc_t geoloc = { longitude, latitude, NAN };
+        const dt_image_geoloc_t geoloc = { longitude, latitude, DT_INVALID_GPS_COORDINATE };
         dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
         dt_image_set_locations(imgs, &geoloc, TRUE);
         dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
@@ -2742,7 +2742,8 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
         imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgt[i]));
       }
       //  image(s) dropped into the filmstrip, let's remove it (them) in this case
-      const dt_image_geoloc_t geoloc = { NAN, NAN, NAN };
+      const dt_image_geoloc_t geoloc
+        = { DT_INVALID_GPS_COORDINATE, DT_INVALID_GPS_COORDINATE, DT_INVALID_GPS_COORDINATE };
       dt_image_set_locations(imgs, &geoloc, TRUE);
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
       success = TRUE;

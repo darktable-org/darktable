@@ -134,9 +134,9 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->exif_aperture = 0.0f;
   params->data->exif_focal_length = 0.0f;
   params->data->exif_focus_distance = 0.0f;
-  params->data->longitude = NAN;
-  params->data->latitude = NAN;
-  params->data->elevation = NAN;
+  params->data->longitude = DT_INVALID_GPS_COORDINATE;
+  params->data->latitude = DT_INVALID_GPS_COORDINATE;
+  params->data->elevation = DT_INVALID_GPS_COORDINATE;
   params->data->show_msec = dt_conf_get_bool("lighttable/ui/milliseconds");
   if(dt_is_valid_imgid(params->imgid))
   {
@@ -233,7 +233,7 @@ static inline gboolean _has_prefix(char **str, const char *prefix)
 
 static char *_variables_get_longitude(dt_variables_params_t *params)
 {
-  if(isnan(params->data->longitude))
+  if(params->data->longitude == DT_INVALID_GPS_COORDINATE)
     return g_strdup("");
   if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
      && g_strcmp0(params->jobcode, "infos") == 0)
@@ -249,7 +249,7 @@ static char *_variables_get_longitude(dt_variables_params_t *params)
 
 static char *_variables_get_latitude(dt_variables_params_t *params)
 {
-  if(isnan(params->data->latitude))
+  if(params->data->latitude == DT_INVALID_GPS_COORDINATE)
     return g_strdup("");
   if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
      && g_strcmp0(params->jobcode, "infos") == 0)
@@ -428,11 +428,11 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   {
     gchar *parts[4] = { 0 };
     int i = 0;
-    if(!isnan(params->data->latitude))
+    if(params->data->latitude != DT_INVALID_GPS_COORDINATE)
       parts[i++] = _variables_get_latitude(params);
-    if(!isnan(params->data->longitude))
+    if(params->data->longitude != DT_INVALID_GPS_COORDINATE)
       parts[i++] = _variables_get_longitude(params);
-    if(!isnan(params->data->elevation))
+    if(params->data->elevation != DT_INVALID_GPS_COORDINATE)
       parts[i++] = g_strdup_printf("%.2f", params->data->elevation);
 
     result = g_strjoinv(", ", parts);
