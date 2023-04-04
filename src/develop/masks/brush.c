@@ -3271,6 +3271,11 @@ static void _brush_modify_property(dt_masks_form_t *const form,
         masks_border = MAX(BORDER_MIN, MIN(masks_border * ratio, BORDER_MAX));
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
 
+        if(gui->guipoints_count > 0)
+        {
+          dt_masks_dynbuf_set(gui->guipoints_payload, -4, masks_border);
+        }
+
         *sum += 2.0f * masks_border;
         *max = fminf(*max, BORDER_MAX / masks_border);
         *min = fmaxf(*min, BORDER_MIN / masks_border);
@@ -3303,6 +3308,11 @@ static void _brush_modify_property(dt_masks_form_t *const form,
           dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
         masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * ratio, HARDNESS_MAX));
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
+
+        if(gui->guipoints_count > 0)
+        {
+          dt_masks_dynbuf_set(gui->guipoints_payload, -3, masks_hardness);
+        }
 
         *sum += masks_hardness;
         *max = fminf(*max, HARDNESS_MAX / masks_hardness);
