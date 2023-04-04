@@ -1309,7 +1309,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>middle mouse button zooms to 200%</shortdescription>
-    <longdescription>when clicking the middle mouse button to zoom, the zoom level will cycle through 100%, 200% and then back to fit the screen. Otherwise it switches between fit to screen and 100%.</longdescription>
+    <longdescription>when clicking the middle mouse button to zoom, the zoom level will cycle through 100%, 200% and then back to fit the screen. Otherwise it switches between fit to screen and 100% and the 'ctrl' key can be used to control the zoom level.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>channel_display</name>
