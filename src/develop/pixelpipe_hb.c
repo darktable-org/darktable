@@ -1432,7 +1432,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(!gamma_preview)
   {
     dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
-    cache_available = dt_dev_pixelpipe_cache_available(&(pipe->cache), hash, bufsize);
+    cache_available = dt_dev_pixelpipe_cache_available(pipe, hash, bufsize);
   }
   if(cache_available)
   {

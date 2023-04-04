@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 #define VERY_OLD_CACHE_WEIGHT 1000
-// TODO: make cache global (needs to be thread safe then)
+#define CACHE_INVALIDATION -1000000
 
 static inline int _to_mb(size_t m)
 {
@@ -33,9 +33,9 @@ static inline int _to_mb(size_t m)
 
 gboolean dt_dev_pixelpipe_cache_init(
            dt_dev_pixelpipe_cache_t *cache,
-           int entries,
-           size_t size,
-           size_t limit)
+           const int entries,
+           const size_t size,
+           const size_t limit)
 {
   cache->entries = entries;
   cache->allmem = cache->queries = cache->misses = 0;
@@ -115,20 +115,22 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 }
 
 uint64_t dt_dev_pixelpipe_cache_basichash(
-           int imgid,
+           const int32_t imgid,
            struct dt_dev_pixelpipe_t *pipe,
-           int module)
+           const int position)
 {
   // bernstein hash (djb2)
   uint64_t hash = 5381;
+
   // we use the the imgid and both actual pipe type and mask_display for the hash
-  const int hashing_pipemode[3] = {(int)imgid, (int)pipe->type, (int)pipe->mask_display};
+  const int32_t hashing_pipemode[2] = {imgid, (int32_t)pipe->type };
   const char *pstr = (const char *)hashing_pipemode;
   for(size_t ip = 0; ip < sizeof(hashing_pipemode); ip++)
     hash = ((hash << 5) + hash) ^ pstr[ip];
-  // go through all modules up to module and compute a weird hash using the operation and params.
+
+  // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
-  for(int k = 0; k < module && pieces; k++)
+  for(int k = 0; k < position && pieces; k++)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     dt_develop_t *dev = piece->module->dev;
@@ -158,7 +160,7 @@ uint64_t dt_dev_pixelpipe_cache_basichash(
 }
 
 uint64_t dt_dev_pixelpipe_cache_basichash_prior(
-           int imgid,
+           const int32_t imgid,
            struct dt_dev_pixelpipe_t *pipe,
            const dt_iop_module_t *const module)
 {
@@ -179,19 +181,19 @@ uint64_t dt_dev_pixelpipe_cache_basichash_prior(
     pieces = g_list_next(pieces);
     modules = g_list_next(modules);
   }
-  return last>=0 ? dt_dev_pixelpipe_cache_basichash(imgid, pipe, last) : -1;
+  return (last >= 0) ? dt_dev_pixelpipe_cache_basichash(imgid, pipe, last) : -1;
 }
 
 void dt_dev_pixelpipe_cache_fullhash(
-        int imgid,
+        const int32_t imgid,
         const dt_iop_roi_t *roi,
         struct dt_dev_pixelpipe_t *pipe,
-        int module,
+        const int position,
         uint64_t *basichash,
         uint64_t *fullhash)
 {
-  uint64_t hash = *basichash = dt_dev_pixelpipe_cache_basichash(imgid, pipe, module);
-  // also add scale, x and y:
+  uint64_t hash = *basichash = dt_dev_pixelpipe_cache_basichash(imgid, pipe, position);
+  // also include roi data
   const char *str = (const char *)roi;
   for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
     hash = ((hash << 5) + hash) ^ str[i];
@@ -199,21 +201,25 @@ void dt_dev_pixelpipe_cache_fullhash(
 }
 
 uint64_t dt_dev_pixelpipe_cache_hash(
-           int imgid,
+           const int32_t imgid,
            const dt_iop_roi_t *roi,
            dt_dev_pixelpipe_t *pipe,
-           int module)
+           const int position)
 {
   uint64_t basichash, hash;
-  dt_dev_pixelpipe_cache_fullhash(imgid, roi, pipe, module, &basichash, &hash);
+  dt_dev_pixelpipe_cache_fullhash(imgid, roi, pipe, position, &basichash, &hash);
   return hash;
 }
 
 gboolean dt_dev_pixelpipe_cache_available(
-           dt_dev_pixelpipe_cache_t *cache,
+           dt_dev_pixelpipe_t *pipe,
            const uint64_t hash,
            const size_t size)
 {
+  if(pipe->mask_display)
+    return FALSE;
+
+  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   // search for hash in cache and make the sizes are identical
   for(int k = 0; k < cache->entries; k++)
     if((cache->hash[k] == hash) && (cache->size[k] == size))
@@ -283,11 +289,13 @@ static int _get_oldest_highgrp_line(dt_dev_pixelpipe_cache_t *cache)
   return id;
 }
 
-static int _get_cacheline(dt_dev_pixelpipe_cache_t *cache)
+static int _get_cacheline(struct dt_dev_pixelpipe_t *pipe)
 {
-  // Simplest case is some pipes having only two cachelines, so we
+  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  // Simplest case is some pipes having only two cachelines, or we are in masking mode so we
   // can toggle between them.
-  if(cache->entries == 2) return cache->queries & 1;
+  if((cache->entries == 2) || pipe->mask_display)
+    return cache->queries & 1;
 
   const int old_free = _get_oldest_free_cacheline(cache);
   if(old_free >= 0) return old_free;
@@ -312,22 +320,21 @@ static gboolean _get_by_hash(
   {
     if(cache->hash[k] == hash)
     {
-      if(cache->size[k] != size)
+      /* We check for situation with a hash identity but buffer sizes don't match.
+         This can happen because of "hash overlaps" or situations where the hash doesn't reflect the
+         complete status. (or we have a bug in dt)
+      */
+      const gboolean csize_error = cache->size[k] != size;
+      /* Also we don't use cached data while bypassing modules because of mask visualizing.
+         In both cases we don't want to simply realloc or alike as these data could possibly still
+         be used in the pipe.
+         Instead we make sure the cleanup can free it but it won't be taken in this pixelpipe process.
+         We do so by setting cache->used[k] to something lower than any possible age as a marker.
+      */
+      if(csize_error || pipe->mask_display)
       {
-        /* In rare sitations we might find an identical hash but the buffer sizes don't match.
-           This can happen because of "hash overlaps" or situations where the hash doesn't reflect the
-           complete status. (or we have a bug in dt)
-           In this case we don't want to simply realloc or alike as these data could possibly still
-           be used in the pipe.
-           Instead we make sure the cleanup can free it but it won't be taken in this pixelpipe process.
-           We do so by setting cache->used[k] to something lower than any possible age as a marker.
-        */ 
-        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_get", pipe, name, NULL, NULL,
-          "HIT ERROR     line%3i, age %4i at%p. size %iMB, requested %iMB\n",
-          k, cache->used[k], cache->data[k], _to_mb(cache->size[k]), _to_mb(size));
- 
         cache->hash[k] = cache->basichash[k] = -1;
-        cache->used[k] = -1000000;
+        cache->used[k] = CACHE_INVALIDATION;
       }
       else
       {
@@ -380,10 +387,11 @@ gboolean dt_dev_pixelpipe_cache_get(
   // Check both for free and non-matching (and grow or shrink buffer).
 
   // Can the module having used this cacheline before might still use the data with other dsc?
-  const int cline = _get_cacheline(&(pipe->cache));
+  const int cline = _get_cacheline(pipe);
   gboolean newdata = FALSE;
   if(((cache->entries == 2) && (cache->size[cline] < size))
-     || ((cache->entries > 2) && (cache->size[cline] != size)))
+     || ((cache->entries > 2) && (cache->size[cline] != size))
+     || pipe->mask_display)
   {
     newdata = TRUE;
     dt_free_align(cache->data[cline]);
@@ -409,20 +417,15 @@ gboolean dt_dev_pixelpipe_cache_get(
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get", pipe, name, NULL, NULL,
     "%s %s line%3i, age %4i at %p. hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-     newdata ? "new" : "   ", important ? "important" : "         ", cline, cache->used[cline],
+     newdata ? "new" : "   ",
+     important ? "important" : (pipe->mask_display ? "masking  " : "         "),
+     cline, cache->used[cline],
      cache->data[cline], cache->hash[cline], cache->basichash[cline]); 
 
   cache->basichash[cline] = basichash;
   cache->hash[cline] = hash;
-  if(pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU | DT_DEV_PIXELPIPE_DISPLAY_ANY))
-  {
-    // avoid caching
-    cache->used[cline] = VERY_OLD_CACHE_WEIGHT;
-  }
-  else
-  {
-    cache->used[cline] = important ? -cache->entries : 0;
-  }
+  cache->used[cline] = pipe->mask_display ? VERY_OLD_CACHE_WEIGHT
+                                          : (important ? -cache->entries : 0);
   cache->modname[cline] = name;
   cache->misses++;
   return TRUE;
@@ -430,7 +433,9 @@ gboolean dt_dev_pixelpipe_cache_get(
 
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
 {
-  cache->queries = cache->misses = cache->queries & 1; // we don't use zero here for "swapping pipelines" having only two lines
+  // we don't use zero here for "swapping pipelines" having only two lines
+  cache->queries = cache->misses = cache->queries & 1;
+
   for(int k = 0; k < cache->entries; k++)
   {
     cache->basichash[k] = -1;
@@ -460,9 +465,9 @@ void dt_dev_pixelpipe_cache_reweight(
        void *data,
        const size_t size)
 {
-  const int avoiding = pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU | DT_DEV_PIXELPIPE_DISPLAY_ANY);
-  if(avoiding)
+  if(pipe->mask_display)
     return;
+
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   for(int k = 0; k < cache->entries; k++)
   {
@@ -586,6 +591,7 @@ void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe)
     _to_mb(cache->allmem), _to_mb(cache->memlimit), (cache->queries - cache->misses) / (float)cache->queries);
 }
 
+#undef CACHE_INVALIDATION
 #undef VERY_OLD_CACHE_WEIGHT
 
 // clang-format off

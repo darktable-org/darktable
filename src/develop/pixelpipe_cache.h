@@ -55,15 +55,16 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entrie
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache);
 
 /** creates a hopefully unique hash from the complete module stack up to the module-th. */
-uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *pipe, int module);
+uint64_t dt_dev_pixelpipe_cache_basichash(const int32_t imgid, struct dt_dev_pixelpipe_t *pipe, int module);
 /** creates a hopefully unique hash from the complete module stack up to the module-th, including current viewport. */
-uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const struct dt_iop_roi_t *roi,
-                                     struct dt_dev_pixelpipe_t *pipe, int module);
+uint64_t dt_dev_pixelpipe_cache_hash(const int32_t imgid, const struct dt_iop_roi_t *roi,
+                                     struct dt_dev_pixelpipe_t *pipe, int position);
 /** return both of the above hashes */
-void dt_dev_pixelpipe_cache_fullhash(int imgid, const dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int module,
+void dt_dev_pixelpipe_cache_fullhash(const int32_t imgid, const dt_iop_roi_t *roi,
+                                     struct dt_dev_pixelpipe_t *pipe, int position,
                                      uint64_t *basichash, uint64_t *fullhash);
 /** get the basichash for the last enabled module prior to the specified one */
-uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpipe_t *pipe,
+uint64_t dt_dev_pixelpipe_cache_basichash_prior(const int32_t imgid, struct dt_dev_pixelpipe_t *pipe,
                                                 const struct dt_iop_module_t *const module);
 
 /** returns a float data buffer in 'data' for the given hash from the cache, dsc is updated too.
@@ -75,7 +76,7 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
                                const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, char *modname, const gboolean important);
 
 /** test availability of a cache line without destroying another, if it is not found. */
-gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size);
+gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const uint64_t hash, const size_t size);
 
 /** invalidates all cachelines. */
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache);
