@@ -1336,7 +1336,8 @@ static gboolean _pixelpipe_process_on_CPU(
 
 static inline gboolean _check_good_pipe(dt_dev_pixelpipe_t *pipe)
 {
-  return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW));
+  return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
+         && (pipe->mask_display == 0);
 }
 
 static inline gboolean _check_module_next_important(dt_dev_pixelpipe_t *pipe,
@@ -1423,7 +1424,8 @@ static gboolean _dev_pixelpipe_process_rec(
   uint64_t basichash = 0;
   uint64_t hash = 0;
 
-  // do not get gamma from cache on preview pipe so we can compute the final scope
+  // do not want data from the pixelpipe cache
+  // for gamma in preview pipe so we can compute the final scope
   const gboolean gamma_preview =
     (pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     && (module != NULL)
@@ -1432,6 +1434,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(!gamma_preview)
   {
     dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
+    // dt_dev_pixelpipe_cache_available() tests for masking mode and returns FALSE in that case 
     cache_available = dt_dev_pixelpipe_cache_available(pipe, hash, bufsize);
   }
   if(cache_available)
@@ -1445,7 +1448,8 @@ static gboolean _dev_pixelpipe_process_rec(
       return TRUE;
 
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "pixelpipe data: from cache", pipe, "", &roi_in, roi_out, "\n");
+                  "pixelpipe data: from cache", pipe, module ? module->so->op : "",
+                  &roi_in, roi_out, "\n");
     // we're done! as colorpicker/scopes only work on gamma iop
     // input -- which is unavailable via cache -- there's no need to
     // run these
@@ -1478,7 +1482,8 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       *output = pipe->input;
       dt_print_pipe(DT_DEBUG_PIPE,
-                    "pixelpipe data: full", pipe, "", &roi_in, roi_out, "\n");
+                    "pixelpipe data: full", pipe, module ? module->so->op : "",
+                    &roi_in, roi_out, "\n");
     }
     else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
                                        output, out_format, NULL, FALSE))
@@ -1494,7 +1499,8 @@ static gboolean _dev_pixelpipe_process_rec(
         const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
         dt_print_pipe(DT_DEBUG_PIPE,
           (cp_width > 0) ? "pixelpipe data: 1:1 copied" : "pixelpipe data: 1:1 none",
-          pipe, "", &roi_in, roi_out, "bpp=%d\n", bpp);
+          pipe, module ? module->so->op : "",
+          &roi_in, roi_out, "bpp=%d\n", bpp);
         if(cp_width > 0)
         {
 #ifdef _OPENMP
@@ -1517,7 +1523,8 @@ static gboolean _dev_pixelpipe_process_rec(
         roi_in.height = pipe->iheight;
         roi_in.scale = 1.0f;
         dt_print_pipe(DT_DEBUG_PIPE,
-          "pixelpipe data: clip&zoom", pipe, "", &roi_in, roi_out, "\n");
+          "pixelpipe data: clip&zoom", pipe, module ? module->so->op : "",
+          &roi_in, roi_out, "\n");
         dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in,
                              roi_out->width, pipe->iwidth);
       }
@@ -1541,7 +1548,8 @@ static gboolean _dev_pixelpipe_process_rec(
   module->modify_roi_in(module, piece, roi_out, &roi_in);
   if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "modify roi IN", piece->pipe, module->so->op, &roi_in, roi_out, "\n");
+                  "modify roi IN", piece->pipe, module ? module->so->op : "",
+                  &roi_in, roi_out, "\n");
   // recurse to get actual data of input buffer
 
   dt_iop_buffer_dsc_t _input_format = { 0 };
@@ -1572,21 +1580,28 @@ static gboolean _dev_pixelpipe_process_rec(
     return TRUE;
 
   gboolean important = FALSE;
-  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    important = (dt_iop_module_is(module->so, "colorout"));
-  else
-    important = (dt_iop_module_is(module->so, "gamma"));
+  gboolean input_important = FALSE;
+  // we only can have important cachelines if not in masking mode
+  if(!pipe->mask_display)
+  {
+    if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+      important = (dt_iop_module_is(module->so, "colorout"));
+    else
+      important = (dt_iop_module_is(module->so, "gamma"));
 
-  /*
-    As the iop cache holds modules input data we check for an
-    important hint in the current module and keep that info for the
-    next processed module
-  */
-  gboolean input_important = pipe->next_important_module;
-  if(module)
-    input_important |= _check_module_now_important(pipe, module);
+    /*
+      As the iop cache holds modules input data we check for an
+      important hint in the current module and keep that info for the
+      next processed module
+    */
 
-  important |= input_important;
+    input_important = pipe->next_important_module;
+    if(module)
+      input_important |= _check_module_now_important(pipe, module);
+
+    important |= input_important;
+  }
+
   dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
                              output, out_format,
                              module ? module->so->op : NULL,
@@ -1607,15 +1622,16 @@ static gboolean _dev_pixelpipe_process_rec(
   // distorting modules. Finally "gamma" is responsible for displaying
   // channel/mask data accordingly.
   // FIXME: Might this leave wrong data in the pipe if a module changes roi ?
+  //        Could we do a copy by roi here ?
   if(!dt_iop_module_is(module->so, "gamma")
-     && (pipe->mask_display &
-       (DT_DEV_PIXELPIPE_DISPLAY_ANY
-        | DT_DEV_PIXELPIPE_DISPLAY_MASK
-        | DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU))
+     && pipe->mask_display
      && !(module->operation_tags() & IOP_TAG_DISTORT)
      && (in_bpp == out_bpp)
      && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
   {
+    dt_print_pipe(DT_DEBUG_PIPE,
+                    "pixelpipe bypass", pipe, module ? module->so->op : "",
+                    &roi_in, roi_out, "\n");
     // since we're not actually running the module, the output format
     // is the same as the input format
     **out_format = pipe->dsc = piece->dsc_out = piece->dsc_in;
