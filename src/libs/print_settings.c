@@ -531,8 +531,8 @@ static int _print_job_run(dt_job_t *job)
   const gint fd = g_mkstemp(params->pdf_filename);
   if(fd == -1)
   {
-    dt_control_log(_("failed to create temporary pdf for printing"));
-    dt_print(DT_DEBUG_ALWAYS, "failed to create temporary pdf for printing\n");
+    dt_control_log(_("failed to create temporary PDF for printing"));
+    dt_print(DT_DEBUG_ALWAYS, "failed to create temporary PDF for printing\n");
     return 1;
   }
   close(fd);
