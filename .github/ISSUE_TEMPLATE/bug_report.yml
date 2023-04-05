@@ -1,4 +1,4 @@
-name: Report an issue with darktable
+name: Bug Report
 description: Use this template if something is not working correctly or issues with darktable.
 #title: ""
 labels: [needs-triage]
