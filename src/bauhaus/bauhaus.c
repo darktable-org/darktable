@@ -1137,16 +1137,24 @@ void dt_bauhaus_widget_release_quad(GtkWidget *widget)
   }
 }
 
-static float _default_linear_curve(float value, dt_bauhaus_curve_t dir)
+static float _default_linear_curve(const float value, const dt_bauhaus_curve_t dir)
 {
   // regardless of dir: input <-> output
   return value;
 }
 
-static float _reverse_linear_curve(float value, dt_bauhaus_curve_t dir)
+static float _reverse_linear_curve(const float value, const dt_bauhaus_curve_t dir)
 {
   // regardless of dir: input <-> output
   return 1.0 - value;
+}
+
+static float _curve_log10(const float inval, const dt_bauhaus_curve_t dir)
+{
+  if(dir == DT_BAUHAUS_SET)
+    return log10f(inval * 999.0f + 1.0f) / 3.0f;
+  else
+    return (expf(M_LN10 * inval * 3.0f) - 1.0f) / 999.0f;
 }
 
 GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self)
@@ -2585,13 +2593,16 @@ static void _slider_add_step(GtkWidget *widget, float delta, guint state, gboole
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  delta *= dt_bauhaus_slider_get_step(widget) * dt_accel_get_speed_multiplier(widget, state);
+  const float value = dt_bauhaus_slider_get(widget);
+
+  if(d->curve == _curve_log10)
+    delta = value * (powf(0.97f, - delta * dt_accel_get_speed_multiplier(widget, state)) - 1.0f);
+  else
+    delta *= dt_bauhaus_slider_get_step(widget) * dt_accel_get_speed_multiplier(widget, state);
 
   const float min_visible = powf(10.0f, -d->digits) / fabsf(d->factor);
   if(delta && fabsf(delta) < min_visible)
     delta = copysignf(min_visible, delta);
-
-  const float value = dt_bauhaus_slider_get(widget);
 
   if(force || dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
   {
@@ -2750,6 +2761,8 @@ char *dt_bauhaus_slider_get_text(GtkWidget *w, float val)
 
 void dt_bauhaus_slider_set(GtkWidget *widget, float pos)
 {
+  if(isnan(pos)) return;
+
   // this is the public interface function, translate by bounds and call set_normalized
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
@@ -2928,6 +2941,11 @@ void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, 
   d->pos = curve(d->curve(d->pos, DT_BAUHAUS_GET), DT_BAUHAUS_SET);
 
   d->curve = curve;
+}
+
+void dt_bauhaus_slider_set_log_curve(GtkWidget *widget)
+{
+  dt_bauhaus_slider_set_curve(widget, _curve_log10);
 }
 
 static gboolean _bauhaus_slider_value_change_dragging(gpointer data);
