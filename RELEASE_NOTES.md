@@ -384,6 +384,14 @@ The following is a summary of the main features added to darktable
   between fit and 100%. To have 200% zoom a <kbd>ctrl+click</kbd> is
   needed.
 
+- The mask shape size/feather/hardness sliders in the masks manager
+  module now display in log scale and scrolling over them makes
+  relative adjustments, just like <kbd>Shift</kbd> scrolling over the
+  shape itself. <kdb>Ctrl</kbd> or <kdb>Shift</kbd> will make fine or
+  coarse adjustments, also with shortcuts if fallbacks are
+  enabled. Shortcuts assigned to the sliders can be used to adjust
+  brush size/hardness while drawing.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
