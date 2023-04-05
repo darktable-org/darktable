@@ -427,7 +427,7 @@ char *dt_presets_get_module_label(const char *module_name,
   {
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 1);
-    if(strlen(multi_name) == 0 || multi_name[0] != ' ')
+    if(multi_name && (strlen(multi_name) == 0 || multi_name[0] != ' '))
       result = g_strdup(dt_presets_get_multi_name(name, multi_name));
   }
   g_free(query);
