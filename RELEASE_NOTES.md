@@ -518,6 +518,9 @@ The following is a summary of the main features added to darktable
 - Fix tiny circle mask display. Ensure that the mask is always
   visible.
 
+- Fixing OpenCL library loading in case of not fully implemented
+  required symbols.
+
 ## Lua
 
 ### API Version
