@@ -27,7 +27,7 @@
 #endif //!__APPLE__
 
 #include "common/dynload.h"
-
+#include "common/darktable.h"
 
 #ifndef __APPLE__
 /* check if gmodules is supported on this platform */
@@ -71,7 +71,13 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 /* get pointer to symbol and return flag in case off success */
 gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
 {
-  return g_module_symbol(module->gmodule, name, (gpointer)pointer);
+  // As in g_module_symbol() reference the returned pointer might be NULL
+  // so we also check for a non-NULL pointer for returned success 
+  const gboolean symbol = g_module_symbol(module->gmodule, name, (gpointer)pointer);
+  const gboolean valid = *pointer != NULL;
+  if(!(symbol && valid))
+    dt_print(DT_DEBUG_OPENCL, "[opencl init] missing symbol `%s` in library`\n", name);
+  return symbol && valid ? TRUE : FALSE;
 }
 #else //!__APPLE__
 /* check if gmodules is supported on this platform */
@@ -101,8 +107,11 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
 {
   *pointer = dlsym(module->gmodule, name);
+  const gboolean valid = *pointer != NULL;
+  if(!valid)
+    dt_print(DT_DEBUG_OPENCL, "[opencl init] missing symbol `%s` in library`\n", name);
 
-  return *pointer != NULL ? TRUE : FALSE;
+  return valid;
 }
 #endif //!__APPLE__
 #endif //HAVE_OPENCL
