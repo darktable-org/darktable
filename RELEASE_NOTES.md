@@ -378,6 +378,12 @@ The following is a summary of the main features added to darktable
   start anymore from the center area but as for other shapes on the
   border.
 
+- Added the option to change the zoom behavior for the middle mouse
+  button in darkroom. The setting can be enabled in the preference
+  dialog under 'darkroom' category. The new behavior will only zoom
+  between fit and 100%. To have 200% zoom a <kbd>ctrl+click</kbd> is
+  needed.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
