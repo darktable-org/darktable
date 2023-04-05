@@ -1225,8 +1225,10 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
 
       opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
-      const int opacitypercent = opacity * 100;
-      dt_toast_log(_("opacity: %d%%"), opacitypercent);
+
+      dt_toast_log(_("opacity: %.0f%%"), opacity * 100);
+      dt_dev_masks_list_change(darktable.develop);
+
       ret = 1;
     }
 
@@ -1891,8 +1893,7 @@ float dt_masks_form_change_opacity(dt_masks_form_t *form,
       if(opacity != fpt->opacity)
       {
         fpt->opacity = opacity;
-        const int opacitypercent = opacity * 100;
-        dt_toast_log(_("opacity: %d%%"), opacitypercent);
+        dt_toast_log(_("opacity: %.0f%%"), opacity * 100);
         dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
         dt_masks_update_image(darktable.develop);
       }
@@ -2376,6 +2377,39 @@ float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
   const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
 
   return s;
+}
+
+float dt_masks_change_size(gboolean up,
+                           const float value,
+                           const float min,
+                           const float max)
+{
+  const float v =
+    up
+    ? value / 0.97f
+    : value * 0.97f;
+
+  return CLAMP(v, min, max);
+}
+
+float dt_masks_change_rotation(gboolean up,
+                               const float value,
+                               const gboolean is_degree)
+{
+  const float step = 40.f;
+  const float incr = is_degree ? 360.f / step : 2.0f * DT_M_PI_F / step;
+  const float max  = is_degree ? 360.0        : M_PI_F;
+  const float v =
+    up
+    ? value + incr
+    : value - incr;
+
+  if(is_degree)
+    return fmodf(v + max, max);
+  else
+  {
+    return v > max ? v - (2.0f * max) : v;
+  }
 }
 
 // allow to select a shape inside an iop

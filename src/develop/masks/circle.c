@@ -118,26 +118,23 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
   // add a preview when creating a circle
   if(gui->creation)
   {
-    float masks_size = dt_conf_get_float(DT_MASKS_CONF(form->type, circle, size));
-
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
-      float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border));
-
-      if(up && masks_border < max_mask_border)
-        masks_border *= 1.0f / 0.97f;
-      else if(!up && masks_border > MIN_CIRCLE_BORDER)
-        masks_border *= 0.97f;
+      const float masks_border = dt_masks_change_size
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border)),
+         MIN_CIRCLE_BORDER, max_mask_border);
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), masks_border);
       dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
-      if(up && masks_size < max_mask_size)
-        masks_size *= 1.0f / 0.97f;
-      else if(!up && masks_size > MIN_CIRCLE_RADIUS)
-        masks_size *= 0.97f;
+      const float masks_size = dt_masks_change_size
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, circle, size)),
+         MIN_CIRCLE_RADIUS,
+         max_mask_size);
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), masks_size);
       dt_toast_log(_("size: %3.2f%%"), masks_size*100.0f);
@@ -165,12 +162,11 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        if(up && circle->border < max_mask_border)
-          circle->border *= 1.0f / 0.97f;
-        else if(!up && circle->border > MIN_CIRCLE_BORDER)
-          circle->border *= 0.97f;
-        else
-          return 1;
+        circle->border = dt_masks_change_size
+          (up,
+           circle->border,
+           MIN_CIRCLE_BORDER, max_mask_border);
+
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), circle->border);
@@ -178,10 +174,11 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
-        if(up && circle->radius < max_mask_size)
-          circle->radius *= 1.0f / 0.97f;
-        else if(!up && circle->radius > MIN_CIRCLE_RADIUS)
-          circle->radius *= 0.97f;
+        circle->radius = dt_masks_change_size
+          (up,
+           circle->radius,
+           MIN_CIRCLE_BORDER, max_mask_border);
+
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), circle->radius);

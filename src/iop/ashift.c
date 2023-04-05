@@ -5985,20 +5985,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-static float log10_curve(float inval, dt_bauhaus_curve_t dir)
-{
-  float outval;
-  if(dir == DT_BAUHAUS_SET)
-  {
-    outval = log10f(inval * 999.0f + 1.0f) / 3.0f;
-  }
-  else
-  {
-    outval = (expf(M_LN10 * inval * 3.0f) - 1.0f) / 999.0f;
-  }
-  return outval;
-}
-
 static float log2_curve(float inval, dt_bauhaus_curve_t dir)
 {
   float outval;
@@ -6154,7 +6140,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->f_length = dt_bauhaus_slider_from_params(self, "f_length");
   dt_bauhaus_slider_set_soft_range(g->f_length, 10.0f, 1000.0f);
-  dt_bauhaus_slider_set_curve(g->f_length, log10_curve);
+  dt_bauhaus_slider_set_log_curve(g->f_length);
   dt_bauhaus_slider_set_digits(g->f_length, 0);
   dt_bauhaus_slider_set_format(g->f_length, " mm");
 

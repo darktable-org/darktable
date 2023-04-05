@@ -147,9 +147,17 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     min -= _masks_properties[prop].max;
   }
 
-  if(!(form->type & DT_MASKS_GROUP)
-     && form->functions
-     && form->functions->modify_property)
+  if(prop == DT_MASKS_PROPERTY_OPACITY && gui->creation)
+  {
+    float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
+    opacity = CLAMP(opacity + value - d->last_value[prop], 0.05f, 1.0f);
+    dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+    sum += opacity;
+    ++count;
+  }
+  else if(!(form->type & DT_MASKS_GROUP)
+          && form->functions
+          && form->functions->modify_property)
   {
     form->functions->modify_property(form, prop, d->last_value[prop],
                                      value, &sum, &count, &min, &max);
@@ -221,6 +229,9 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
       max += sum / count;
       min += sum / count;
     }
+
+    if(isnan(min)) min = _masks_properties[prop].min;
+    if(isnan(max)) max = _masks_properties[prop].max;
     dt_bauhaus_slider_set_soft_range(widget, min, max);
 
     dt_bauhaus_slider_set(widget, sum / count);
@@ -2016,15 +2027,21 @@ void gui_init(dt_lib_module_t *self)
 
   for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
   {
-    d->property[i] = dt_bauhaus_slider_new_action(DT_ACTION(self), _masks_properties[i].min,
-                                                  _masks_properties[i].max, 0, 0.0, 2);
-    dt_bauhaus_widget_set_label(d->property[i], N_("properties"),
+    GtkWidget *slider = d->property[i]
+      = dt_bauhaus_slider_new_action(DT_ACTION(self),
+                                     _masks_properties[i].min,
+                                     _masks_properties[i].max,
+                                     0, 0.0, 2);
+    dt_bauhaus_widget_set_label(slider, N_("properties"),
                                 _masks_properties[i].name);
-    dt_bauhaus_slider_set_format(d->property[i], _masks_properties[i].format);
-    dt_bauhaus_slider_set_digits(d->property[i], 2);
-    d->last_value[i] = dt_bauhaus_slider_get(d->property[i]);
-    gtk_box_pack_start(GTK_BOX(d->cs.container), d->property[i], FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(d->property[i]), "value-changed",
+    dt_bauhaus_slider_set_format(slider, _masks_properties[i].format);
+    dt_bauhaus_slider_set_digits(slider, 2);
+    if(_masks_properties[i].relative)
+      dt_bauhaus_slider_set_log_curve(slider);
+
+    d->last_value[i] = dt_bauhaus_slider_get(slider);
+    gtk_box_pack_start(GTK_BOX(d->cs.container), slider, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(slider), "value-changed",
                      G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
   }
 

@@ -507,13 +507,11 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
 
     if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
-      float rotation = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, rotation));
-
-      if(up)
-        rotation += 10.f;
-      else
-        rotation -= 10.f;
-      rotation = fmodf(rotation + 360.0f, 360.0f);
+      const float rotation =
+        dt_masks_change_rotation
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, rotation)),
+         TRUE);
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), rotation);
 
@@ -522,17 +520,12 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
     else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, border));
-      int flags = dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
+      const int flags = dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
 
       const float reference =
         (flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f / fmin(radius_a, radius_b) : 1.0f);
-      if(!up && masks_border > 0.001f * reference)
-        masks_border *= 0.97f;
-      else if(up && masks_border < radius_limit * reference)
-        masks_border *= 1.0f / 0.97f;
-      else
-        return 1;
-      masks_border = CLAMP(masks_border, 0.001f * reference, reference);
+
+      masks_border = dt_masks_change_size(up, masks_border, 0.001f * reference, reference);
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), masks_border);
 
@@ -543,14 +536,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
     {
       const float oldradius = radius_a;
 
-      if(!up && radius_a > 0.001f)
-        radius_a *= 0.97f;
-      else if(up && radius_a < radius_limit)
-        radius_a *= 1.0f / 0.97f;
-      else
-        return 1;
-
-      radius_a = CLAMP(radius_a, 0.001f, radius_limit);
+      radius_a = dt_masks_change_size(up, radius_a, 0.001f, radius_limit);
 
       const float factor = radius_a / oldradius;
       radius_b *= factor;
@@ -583,12 +569,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
       if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK)
          && gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
-        // we try to change the rotation
-        if(up)
-          ellipse->rotation += 10.f;
-        else
-          ellipse->rotation -= 10.f;
-        ellipse->rotation = fmodf(ellipse->rotation + 360.0f, 360.0f);
+        ellipse->rotation = dt_masks_change_rotation(up, ellipse->rotation, TRUE);
 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
@@ -602,13 +583,10 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
           (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL
            ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1])
            : 1.0f);
-        if(!up && ellipse->border > 0.001f * reference)
-          ellipse->border *= 0.97f;
-        else if(up && ellipse->border < radius_limit * reference)
-          ellipse->border *= 1.0f/0.97f;
-        else return 1;
-        ellipse->border = CLAMP(ellipse->border, 0.001f * reference,
-                                radius_limit *reference);
+
+        ellipse->border =
+          dt_masks_change_size(up, ellipse->border, 0.001f * reference, radius_limit * reference);
+
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), ellipse->border);
@@ -618,13 +596,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
       {
         const float oldradius = ellipse->radius[0];
 
-        if(!up && ellipse->radius[0] > 0.001f)
-          ellipse->radius[0] *= 0.97f;
-        else if(up && ellipse->radius[0] < radius_limit)
-          ellipse->radius[0] *= 1.0f / 0.97f;
-        else return 1;
-
-        ellipse->radius[0] = CLAMP(ellipse->radius[0], 0.001f, radius_limit);
+        ellipse->radius[0] = dt_masks_change_size(up, ellipse->radius[0], 0.001f, radius_limit);
 
         const float factor = ellipse->radius[0] / oldradius;
         ellipse->radius[1] *= factor;
