@@ -1137,19 +1137,19 @@ void dt_bauhaus_widget_release_quad(GtkWidget *widget)
   }
 }
 
-static float _default_linear_curve(float value, dt_bauhaus_curve_t dir)
+static float _default_linear_curve(const float value, const dt_bauhaus_curve_t dir)
 {
   // regardless of dir: input <-> output
   return value;
 }
 
-static float _reverse_linear_curve(float value, dt_bauhaus_curve_t dir)
+static float _reverse_linear_curve(const float value, const dt_bauhaus_curve_t dir)
 {
   // regardless of dir: input <-> output
   return 1.0 - value;
 }
 
-float _curve_log10(float inval, dt_bauhaus_curve_t dir)
+static float _curve_log10(const float inval, const dt_bauhaus_curve_t dir)
 {
   if(dir == DT_BAUHAUS_SET)
     return log10f(inval * 999.0f + 1.0f) / 3.0f;
