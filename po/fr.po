@@ -17513,7 +17513,7 @@ msgstr "<b>Changer le chemin</b> : déplacer"
 
 #: ../src/iop/liquify.c:3837
 msgid "<b>radius</b>: drag"
-msgstr "<b>Rayon</b: déplacer"
+msgstr "<b>Rayon</b> : déplacer"
 
 #: ../src/iop/liquify.c:3839
 msgid "<b>hardness (center)</b>: drag"
