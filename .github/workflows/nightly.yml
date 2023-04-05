@@ -177,6 +177,15 @@ jobs:
           # handle keg-only libs
           brew link --force libomp
           brew link --force libsoup@2
+      - name: Rebuild graphicsmagick without modules
+        run: |
+          export HOMEBREW_NO_INSTALL_FROM_API=1
+
+          gm_formula=`brew edit --print-path graphicsmagick`
+          cat $gm_formula | sed '/--with-modules/d' > gm_formula.tmp
+          mv gm_formula.tmp $gm_formula
+
+          brew reinstall --build-from-source graphicsmagick
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
