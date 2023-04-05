@@ -792,11 +792,12 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module,
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
     }
     //spot and retouch manage creation_continuous in their own way
-    if(gui->creation_continuous)
+    if(gui->creation_continuous
+       && (!crea_module
+           || (!dt_iop_module_is(crea_module->so, "spots")
+               && !dt_iop_module_is(crea_module->so, "retouch"))))
     {
-      if(crea_module
-         && !dt_iop_module_is(crea_module->so, "spots")
-         && !dt_iop_module_is(crea_module->so, "retouch"))
+      if(crea_module)
       {
         dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
