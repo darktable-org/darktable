@@ -48,8 +48,6 @@ extern "C" {
 
 extern GType DT_BAUHAUS_WIDGET_TYPE;
 
-#define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX 500
-#define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN 25
 #define DT_BAUHAUS_SLIDER_MAX_STOPS 20
 #define DT_BAUHAUS_COMBO_MAX_TEXT 180
 
@@ -333,6 +331,7 @@ void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 float dt_bauhaus_slider_get_default(GtkWidget *widget);
 void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, dt_bauhaus_curve_t dir));
+void dt_bauhaus_slider_set_log_curve(GtkWidget *widget);
 
 // combobox:
 void dt_bauhaus_combobox_from_widget(struct dt_bauhaus_widget_t* widget,dt_iop_module_t *self);
