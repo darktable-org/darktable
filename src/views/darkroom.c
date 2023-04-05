@@ -3714,7 +3714,8 @@ int button_pressed(dt_view_t *self,
     dt_control_change_cursor(GDK_HAND1);
     return 1;
   }
-  if(which == 2)
+
+  if(which == 2) // Middle mouse button
   {
     // zoom to 1:1 2:1 and back
     int procw, proch;
@@ -3724,38 +3725,45 @@ int button_pressed(dt_view_t *self,
     float zoom_y = dt_control_get_dev_zoom_y();
     dt_dev_get_processed_size(dev, &procw, &proch);
     float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    const float ppd = darktable.gui->ppd;
     const gboolean low_ppd = (darktable.gui->ppd == 1);
     const float mouse_off_x = x - 0.5f * dev->width;
     const float mouse_off_y = y - 0.5f * dev->height;
     zoom_x += mouse_off_x / (procw * scale);
     zoom_y += mouse_off_y / (proch * scale);
-    const float tscale = scale * ppd;
+    const float tscale = scale * darktable.gui->ppd;
     closeup = 0;
-    if((tscale > 0.95f) && (tscale < 1.05f)) // we are at 100% and switch to 200%
+
+    const float scalefit = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1, 0) * darktable.gui->ppd;
+    const gboolean ctrl_pressed = dt_modifier_is(state, GDK_CONTROL_MASK);
+    
+    // Get config so we can check if the user want to cycle through 100%->200%->FIT or
+    // only switch between FIT<->100% unless ctrl key is pressed.
+    const gboolean cycle_zoom_200 = 
+          dt_conf_get_bool("darkroom/mouse/middle_button_cycle_zoom_to_200_percent");
+
+    // We are at 200% or above.
+    if(tscale > 1.9999f)
     {
-      zoom = DT_ZOOM_1;
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      if(low_ppd) closeup = 1;
+      zoom = (cycle_zoom_200 || ctrl_pressed) ? DT_ZOOM_FIT : DT_ZOOM_1;
     }
-    else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit
+    else if(tscale > 0.9999f) // >= 100%
     {
-      zoom = DT_ZOOM_FIT;
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+      zoom = (cycle_zoom_200 || ctrl_pressed) ? DT_ZOOM_1 : DT_ZOOM_FIT;
+      closeup = (low_ppd && (cycle_zoom_200 || ctrl_pressed)) ? 1 : 0;
     }
-    else // other than 100 or 200% so zoom to 100 %
+    else if(((tscale > scalefit) || (tscale < scalefit)) && !cycle_zoom_200)
     {
-      if(low_ppd)
-      {
-        zoom = DT_ZOOM_1;
-        scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      }
-      else
-      {
-        zoom = DT_ZOOM_FREE;
-        scale = 1.0f / ppd;
-      }
+      zoom = ctrl_pressed ? DT_ZOOM_1 : DT_ZOOM_FIT;
     }
+    else
+    {
+      zoom = low_ppd ? DT_ZOOM_1 : DT_ZOOM_FREE;
+      if(!cycle_zoom_200)
+        closeup = low_ppd && ctrl_pressed ? 1 : 0;
+    }
+
+    scale = low_ppd ? dt_dev_get_zoom_scale(dev, zoom, 1, 0) : (1.0f / darktable.gui->ppd);
+
     dt_control_set_dev_zoom_scale(scale);
     dt_control_set_dev_closeup(closeup);
     scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);

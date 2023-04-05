@@ -1304,6 +1304,13 @@
     <shortdescription>scroll down to increase mask parameters</shortdescription>
     <longdescription>when using the mouse scroll wheel to change mask parameters, scroll down to increase the mask size, feather size, opacity, brush hardness and gradient curvature\nby default scrolling up increases these parameters</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" section="general">
+    <name>darkroom/mouse/middle_button_cycle_zoom_to_200_percent</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>middle mouse button zooms to 200%</shortdescription>
+    <longdescription>when clicking the middle mouse button to zoom, the zoom level will cycle through 100%, 200% and then back to fit the screen. Otherwise it switches between fit to screen and 100% and the 'ctrl' key can be used to control the zoom level.</longdescription>
+  </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>channel_display</name>
     <type>
