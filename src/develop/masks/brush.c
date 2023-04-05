@@ -1317,9 +1317,12 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
   {
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
-      const float amount = up ? 1.03f : 0.97f;
-      float masks_hardness = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
-      masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+      const float masks_hardness = dt_masks_change_size
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness)),
+         HARDNESS_MIN,
+         HARDNESS_MAX);
+
       dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
 
       if(gui->guipoints_count > 0)
@@ -1330,10 +1333,12 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
     }
     else if(dt_modifier_is(state, 0))
     {
-      const float amount = up ? 1.03f : 0.97f;
+      const float masks_border = dt_masks_change_size
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)),
+         BORDER_MIN,
+         BORDER_MAX);
 
-      float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
-      masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
       dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
 
       if(gui->guipoints_count > 0)
@@ -1365,29 +1370,36 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        const float amount = up ? 1.03f : 0.97f;
         int pts_number = 0;
         for(GList *l = form->points; l; l = g_list_next(l))
         {
           if(gui->point_selected == -1 || gui->point_selected == pts_number)
           {
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-            const float masks_hardness = point->hardness;
-            point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+
+            point->hardness = dt_masks_change_size
+              (up,
+               point->hardness,
+               HARDNESS_MIN,
+               HARDNESS_MAX);
+
             dt_toast_log(_("hardness: %3.2f%%"), point->hardness*100.0f);
           }
           pts_number++;
         }
 
         // FIXME scale default hardess even when adjusting one point?
-        float masks_hardness =
-          dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
-        masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+
+        const float masks_hardness = dt_masks_change_size
+          (up,
+           dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness)),
+           HARDNESS_MIN,
+           HARDNESS_MAX);
+
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
       }
       else
       {
-        const float amount = up ? 1.03f : 0.97f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
         int pts_number = 0;
         for(GList *l = form->points; l; l = g_list_next(l))
@@ -1395,7 +1407,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
           if(gui->point_selected == -1 || gui->point_selected == pts_number)
           {
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-            if(amount > 1.0f && (point->border[0] > 1.0f || point->border[1] > 1.0f))
+            if(up && (point->border[0] > 1.0f || point->border[1] > 1.0f))
               return 1;
           }
           pts_number++;
@@ -1406,15 +1418,30 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
           if(gui->point_selected == -1 || gui->point_selected == pts_number)
           {
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-            point->border[0] *= amount;
-            point->border[1] *= amount;
+
+            point->border[0] = dt_masks_change_size
+              (up,
+               point->border[0],
+               BORDER_MIN,
+               BORDER_MAX);
+
+            point->border[1] = dt_masks_change_size
+              (up,
+               point->border[1],
+               BORDER_MIN,
+               BORDER_MAX);
           }
           pts_number++;
         }
         // FIXME scale default border even when adjusting one point?
         // Not showing toast for point itself?
-        float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
-        masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
+
+        const float masks_border = dt_masks_change_size
+          (up,
+           dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)),
+           BORDER_MIN,
+           BORDER_MAX);
+
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
         dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
       }

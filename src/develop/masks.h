@@ -618,6 +618,15 @@ float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
                            const int k,
                            const gboolean border);
 
+float dt_masks_change_size(gboolean up,
+                           const float value,
+                           const float min,
+                           const float max);
+
+float dt_masks_change_rotation(gboolean up,
+                               const float value,
+                               const gboolean is_degree);
+
 /** allow to select a shape inside an iop */
 void dt_masks_select_form(struct dt_iop_module_t *module,
                           dt_masks_form_t *sel);
