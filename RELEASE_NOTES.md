@@ -137,6 +137,7 @@ The following is a summary of the main features added to darktable
   - Filmic (legacy)
   - Color Balance (legacy)
   - Levels (legacy)
+  - Relight
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
