@@ -26,6 +26,11 @@
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
 
+static inline int _nb_ctrl_point(void)
+{
+  return 6;
+}
+
 static inline void _ellipse_point_transform(const float xref,
                                             const float yref,
                                             const float x,
@@ -186,7 +191,7 @@ static void _ellipse_get_distance(const float x,
       *near = -1;
 
       // get the minial dist for center & control points
-      for(int k=0; k<5; k++)
+      for(int k=0; k<_nb_ctrl_point() - 1; k++)
       {
         const float cx = x - gpt->source[k * 2];
         const float cy = y - gpt->source[k * 2 + 1];
@@ -197,7 +202,7 @@ static void _ellipse_get_distance(const float x,
     }
   }
 
-  for(int k=0; k<5; k++)
+  for(int k=0; k<_nb_ctrl_point() - 1; k++)
   {
     const float cx = x - gpt->points[k * 2];
     const float cy = y - gpt->points[k * 2 + 1];
@@ -251,7 +256,7 @@ static void _ellipse_draw_shape(const gboolean borders,
 
   _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, &x, &y);
   cairo_move_to(cr, x, y);
-  for(int i = 6; i < points_count; i++)
+  for(int i = _nb_ctrl_point(); i < points_count; i++)
   {
     _ellipse_point_transform(xref, yref, points[i * 2], points[i * 2 + 1],
                              sinr, cosr, &x, &y);
@@ -1257,7 +1262,7 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
     {
       dt_masks_form_gui_points_t *gpt =
         (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-      for(int i = 1; i < 5; i++)
+      for(int i = 1; i < _nb_ctrl_point() - 1; i++)
       {
         // prefer border points over shape itself in case of near
         // overlap for ease of pickup
@@ -1432,7 +1437,7 @@ static void _ellipse_events_post_expose(cairo_t *cr,
     const float sinr = sinf(r);
     const float cosr = cosf(r);
 
-    for(int i = 1; i < 5; i++)
+    for(int i = 1; i < _nb_ctrl_point() - 1; i++)
     {
       float x, y;
       _ellipse_point_transform(xref, yref, gpt->points[i * 2],
@@ -1465,13 +1470,13 @@ static void _ellipse_events_post_expose(cairo_t *cr,
       float from_y = 0.0f;
 
       dt_masks_closest_point(gpt->points_count,
-                             6,
+                             _nb_ctrl_point(),
                              gpt->points,
                              gpt->source[0], gpt->source[1],
                              &to_x, &to_y);
 
       dt_masks_closest_point(gpt->source_count,
-                             6,
+                             _nb_ctrl_point(),
                              gpt->source,
                              to_x, to_y,
                              &from_x, &from_y);
