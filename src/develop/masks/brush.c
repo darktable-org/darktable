@@ -1132,16 +1132,16 @@ static void _brush_get_distance(const float x,
                                 dt_masks_form_gui_t *gui,
                                 const int index,
                                 const int corner_count,
-                                int *inside,
-                                int *inside_border,
+                                gboolean *inside,
+                                gboolean *inside_border,
                                 int *near,
-                                int *inside_source,
+                                gboolean *inside_source,
                                 float *dist)
 {
   // initialise returned values
-  *inside_source = 0;
-  *inside = 0;
-  *inside_border = 0;
+  *inside_source = FALSE;
+  *inside = FALSE;
+  *inside_border = FALSE;
   *near = -1;
   *dist = FLT_MAX;
 
@@ -1182,16 +1182,16 @@ static void _brush_get_distance(const float x,
 
       if(*dist == dd && dd < as2)
       {
-        if(*inside == 0)
+        if(!*inside)
         {
           if(current_seg == 0)
-            *inside_source = corner_count - 1;
+            *inside_source = (corner_count - 1) > 0;
           else
-            *inside_source = current_seg - 1;
+            *inside_source = (current_seg - 1) > 0;
 
           if(*inside_source)
           {
-            *inside = 1;
+            *inside = TRUE;
           }
         }
       }
@@ -1209,7 +1209,7 @@ static void _brush_get_distance(const float x,
       if(((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->border[i * 2] > x)) nb++;
       last = yy;
     }
-    *inside = *inside_border = (nb & 1);
+    *inside = *inside_border = (nb & 1) == 1;
   }
 
   // and we check if we are near a segment
@@ -2427,8 +2427,9 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
   }
 
   // are we inside the form or the borders or near a segment ???
-  int in, inb, near, ins;
+  gboolean in, inb, ins;
   float dist;
+  int near;
   _brush_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;
   if(near < 0)

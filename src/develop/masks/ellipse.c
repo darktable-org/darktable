@@ -159,10 +159,10 @@ static void _ellipse_get_distance(const float x,
                                   const float as,
                                   dt_masks_form_gui_t *gui, int index,
                                   const int num_points,
-                                  int *inside,
-                                  int *inside_border,
+                                  gboolean *inside,
+                                  gboolean *inside_border,
                                   int *near,
-                                  int *inside_source,
+                                  gboolean *inside_source,
                                   float *dist)
 {
   (void)num_points; // unused arg, keep compiler from complaining
@@ -180,9 +180,9 @@ static void _ellipse_get_distance(const float x,
   {
     if(_ellipse_point_in_polygon(x, y, gpt->source + 10, gpt->source_count - 5) >= 0)
     {
-      *inside_source = 1;
-      *inside = 1;
-      *inside_border = 0;
+      *inside_source = TRUE;
+      *inside = TRUE;
+      *inside_border = FALSE;
       *near = -1;
 
       // get the minial dist for center & control points
@@ -214,18 +214,18 @@ static void _ellipse_get_distance(const float x,
   // we check if it's inside borders
   if(_ellipse_point_in_polygon(x, y, gpt->border + 10, gpt->border_count - 5) < 0)
   {
-    *inside = 0;
-    *inside_border = 0;
+    *inside = FALSE;
+    *inside_border = FALSE;
     *near = -1;
     return;
   }
 
-  *inside = 1;
+  *inside = TRUE;
   *near = 0;
-  *inside_border = 1;
+  *inside_border = TRUE;
 
   if(_ellipse_point_in_polygon(x, y, gpt->points + 10, gpt->points_count - 5) >= 0)
-    *inside_border = 0;
+    *inside_border = FALSE;
   if(_ellipse_point_close_to_path(x, y, as, gpt->points + 10, gpt->points_count - 5))
     *near = 1;
 }
@@ -1233,7 +1233,9 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
 
-    int in = 0, inb = 0, near = 0, ins = 0;
+    gboolean in = FALSE, inb = FALSE, ins = FALSE;
+    int near = 0;
+
     float dist = 0.0f;
     _ellipse_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins, &dist);
     if(ins)

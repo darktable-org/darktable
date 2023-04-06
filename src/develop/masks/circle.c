@@ -35,17 +35,17 @@ static void _circle_get_distance(const float x,
                                  dt_masks_form_gui_t *gui,
                                  const int index,
                                  const int num_points,
-                                 int *inside,
-                                 int *inside_border,
+                                 gboolean *inside,
+                                 gboolean *inside_border,
                                  int *near,
-                                 int *inside_source,
+                                 gboolean *inside_source,
                                  float *dist)
 {
   (void)num_points; // unused arg, keep compiler from complaining
   // initialise returned values
-  *inside_source = 0;
-  *inside = 0;
-  *inside_border = 0;
+  *inside_source = FALSE;
+  *inside = FALSE;
+  *inside_border = FALSE;
   *near = -1;
   *dist = FLT_MAX;
 
@@ -58,8 +58,8 @@ static void _circle_get_distance(const float x,
   // we first check if we are inside the source form
   if(dt_masks_point_in_form_exact(x, y, gpt->source, 1, gpt->source_count))
   {
-    *inside_source = 1;
-    *inside = 1;
+    *inside_source = TRUE;
+    *inside = TRUE;
 
     // distance from source center
     const float cx = x - gpt->source[0];
@@ -92,7 +92,7 @@ static void _circle_get_distance(const float x,
   // we check if it's inside borders
   if(!dt_masks_point_in_form_exact(x, y, gpt->border, 1, gpt->border_count)) return;
 
-  *inside = 1;
+  *inside = TRUE;
   *near = 0;
 
   // and we check if it's inside form
@@ -585,7 +585,8 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
     const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
-    int in, inb, near, ins;
+    gboolean in, inb, ins;
+    int near;
     float dist;
     _circle_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins, &dist);
     if(ins)
