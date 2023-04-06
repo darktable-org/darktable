@@ -33,6 +33,15 @@
 #define BORDER_MIN 0.00005f
 #define BORDER_MAX 0.5f
 
+static void _brush_bounding_box(const float *const points,
+                                const float *const border,
+                                const int nb_corner,
+                                const int num_points,
+                                int *width,
+                                int *height,
+                                int *posx,
+                                int *posy);
+
 /** get squared distance of indexed point to line segment, taking
  * weighted payload data into account */
 static float _brush_point_line_distance2(const int index,
@@ -1308,9 +1317,12 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
   {
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
-      const float amount = up ? 1.03f : 0.97f;
-      float masks_hardness = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
-      masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+      const float masks_hardness = dt_masks_change_size
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness)),
+         HARDNESS_MIN,
+         HARDNESS_MAX);
+
       dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
 
       if(gui->guipoints_count > 0)
@@ -1321,10 +1333,12 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
     }
     else if(dt_modifier_is(state, 0))
     {
-      const float amount = up ? 1.03f : 0.97f;
+      const float masks_border = dt_masks_change_size
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)),
+         BORDER_MIN,
+         BORDER_MAX);
 
-      float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
-      masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
       dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
 
       if(gui->guipoints_count > 0)
@@ -1356,29 +1370,36 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        const float amount = up ? 1.03f : 0.97f;
         int pts_number = 0;
         for(GList *l = form->points; l; l = g_list_next(l))
         {
           if(gui->point_selected == -1 || gui->point_selected == pts_number)
           {
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-            const float masks_hardness = point->hardness;
-            point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+
+            point->hardness = dt_masks_change_size
+              (up,
+               point->hardness,
+               HARDNESS_MIN,
+               HARDNESS_MAX);
+
             dt_toast_log(_("hardness: %3.2f%%"), point->hardness*100.0f);
           }
           pts_number++;
         }
 
         // FIXME scale default hardess even when adjusting one point?
-        float masks_hardness =
-          dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
-        masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+
+        const float masks_hardness = dt_masks_change_size
+          (up,
+           dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness)),
+           HARDNESS_MIN,
+           HARDNESS_MAX);
+
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
       }
       else
       {
-        const float amount = up ? 1.03f : 0.97f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
         int pts_number = 0;
         for(GList *l = form->points; l; l = g_list_next(l))
@@ -1386,7 +1407,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
           if(gui->point_selected == -1 || gui->point_selected == pts_number)
           {
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-            if(amount > 1.0f && (point->border[0] > 1.0f || point->border[1] > 1.0f))
+            if(up && (point->border[0] > 1.0f || point->border[1] > 1.0f))
               return 1;
           }
           pts_number++;
@@ -1397,15 +1418,30 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
           if(gui->point_selected == -1 || gui->point_selected == pts_number)
           {
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-            point->border[0] *= amount;
-            point->border[1] *= amount;
+
+            point->border[0] = dt_masks_change_size
+              (up,
+               point->border[0],
+               BORDER_MIN,
+               BORDER_MAX);
+
+            point->border[1] = dt_masks_change_size
+              (up,
+               point->border[1],
+               BORDER_MIN,
+               BORDER_MAX);
           }
           pts_number++;
         }
         // FIXME scale default border even when adjusting one point?
         // Not showing toast for point itself?
-        float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
-        masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
+
+        const float masks_border = dt_masks_change_size
+          (up,
+           dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)),
+           BORDER_MIN,
+           BORDER_MAX);
+
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
         dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
       }
@@ -2742,22 +2778,47 @@ static void _brush_events_post_expose(cairo_t *cr,
   // draw the source if needed
   if(!gui->creation && gpt->source_count > nb * 3 + 2)
   {
-    // we draw the line between source and dest
-    cairo_move_to(cr, gpt->source[2], gpt->source[3]);
-    cairo_line_to(cr, gpt->points[2], gpt->points[3]);
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
+    float to_x = 0.0f;
+    float to_y = 0.0f;
+    float from_x = 0.0f;
+    float from_y = 0.0f;
+
+    int width = 0;
+    int height = 0;
+    int posx = 0;
+    int posy = 0;
+
+    // 1. find source brush bounding box
+    _brush_bounding_box(gpt->source, NULL, nb,
+                        gpt->source_count,
+                        &width, &height, &posx, &posy);
+
+    // 2. source area center
+    const float center_x = (float)posx + (float)width / 2.f;
+    const float center_y = (float)posy + (float)height / 2.f;
+
+    // 3. dest border, closest to source area center
+    dt_masks_closest_point(gpt->points_count,
+                           nb * 3,
+                           gpt->points,
+                           center_x, center_y,
+                           &to_x, &to_y);
+
+    // 4. source border, closest to point border
+    dt_masks_closest_point(gpt->source_count,
+                           nb * 3,
+                           gpt->source,
+                           to_x, to_y,
+                           &from_x, &from_y);
+
+    // 5. we draw the line between source and dest
+    dt_masks_draw_arrow(cr,
+                        from_x, from_y,
+                        to_x, to_y,
+                        zoom_scale,
+                        FALSE);
+
+    dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
 
     // we draw the source
     cairo_set_dash(cr, dashed, 0, 0);
@@ -2797,13 +2858,17 @@ static void _brush_bounding_box_raw(const float *const points,
 #endif
   for(int i = nb_corner * 3; i < num_points; i++)
   {
-    // we look at the borders
-    const float x = border[i * 2];
-    const float y = border[i * 2 + 1];
-    xmin = MIN(x, xmin);
-    xmax = MAX(x, xmax);
-    ymin = MIN(y, ymin);
-    ymax = MAX(y, ymax);
+    if(border)
+    {
+      // we look at the borders
+      const float x = border[i * 2];
+      const float y = border[i * 2 + 1];
+      xmin = MIN(x, xmin);
+      xmax = MAX(x, xmax);
+      ymin = MIN(y, ymin);
+      ymax = MAX(y, ymax);
+    }
+
     // we look at the brush too
     const float xx = points[i * 2];
     const float yy = points[i * 2 + 1];
@@ -3271,6 +3336,11 @@ static void _brush_modify_property(dt_masks_form_t *const form,
         masks_border = MAX(BORDER_MIN, MIN(masks_border * ratio, BORDER_MAX));
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
 
+        if(gui->guipoints_count > 0)
+        {
+          dt_masks_dynbuf_set(gui->guipoints_payload, -4, masks_border);
+        }
+
         *sum += 2.0f * masks_border;
         *max = fminf(*max, BORDER_MAX / masks_border);
         *min = fmaxf(*min, BORDER_MIN / masks_border);
@@ -3303,6 +3373,11 @@ static void _brush_modify_property(dt_masks_form_t *const form,
           dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
         masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * ratio, HARDNESS_MAX));
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
+
+        if(gui->guipoints_count > 0)
+        {
+          dt_masks_dynbuf_set(gui->guipoints_payload, -3, masks_hardness);
+        }
 
         *sum += masks_hardness;
         *max = fminf(*max, HARDNESS_MAX / masks_hardness);

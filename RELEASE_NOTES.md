@@ -137,6 +137,7 @@ The following is a summary of the main features added to darktable
   - Filmic (legacy)
   - Color Balance (legacy)
   - Levels (legacy)
+  - Relight
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
@@ -369,6 +370,28 @@ The following is a summary of the main features added to darktable
   Model to prefer By-line over Writer/Editor. Read date/time and
   description metadata from commonly used properties.
 
+- The drawing of arrow between the source and destination area in the
+  Retouch module has been reworked. We have a arrow for all forms
+  (instead of a simple line for Brush & Path shapes). The arrow is
+  also always the smallest one between both area and so avoid crossing
+  the shapes. Finally for the circle and ellipse the arrow doesn't
+  start anymore from the center area but as for other shapes on the
+  border.
+
+- Added the option to change the zoom behavior for the middle mouse
+  button in darkroom. The setting can be enabled in the preference
+  dialog under 'darkroom' category. The new behavior will only zoom
+  between fit and 100%. To have 200% zoom a <kbd>ctrl+click</kbd> is
+  needed.
+
+- The mask shape size/feather/hardness sliders in the masks manager
+  module now display in log scale and scrolling over them makes
+  relative adjustments, just like <kbd>Shift</kbd> scrolling over the
+  shape itself. <kdb>Ctrl</kbd> or <kdb>Shift</kbd> will make fine or
+  coarse adjustments, also with shortcuts if fallbacks are
+  enabled. Shortcuts assigned to the sliders can be used to adjust
+  brush size/hardness while drawing.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
@@ -508,6 +531,9 @@ The following is a summary of the main features added to darktable
 
 - Fix tiny circle mask display. Ensure that the mask is always
   visible.
+
+- Fixing OpenCL library loading in case of not fully implemented
+  required symbols.
 
 ## Lua
 

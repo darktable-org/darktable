@@ -423,7 +423,6 @@ int process_cl(struct dt_iop_module_t *self,
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-      piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
       if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
         const float mclip = d->clip * highlights_clip_magics[d->mode];
@@ -650,7 +649,6 @@ void process(struct dt_iop_module_t *self,
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-      piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
       if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
         process_visualize(piece, ivoid, ovoid, roi_in, roi_out, data);
@@ -823,10 +821,10 @@ void commit_params(struct dt_iop_module_t *self,
   */
   const gboolean opplinear = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) && linear;
 
-  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || opplinear) ? 0 : 1;
+  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || opplinear) ? FALSE : TRUE;
 
   if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
-    piece->process_tiling_ready = 0;
+    piece->process_tiling_ready = FALSE;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 

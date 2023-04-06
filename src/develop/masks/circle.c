@@ -118,26 +118,23 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
   // add a preview when creating a circle
   if(gui->creation)
   {
-    float masks_size = dt_conf_get_float(DT_MASKS_CONF(form->type, circle, size));
-
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
-      float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border));
-
-      if(up && masks_border < max_mask_border)
-        masks_border *= 1.0f / 0.97f;
-      else if(!up && masks_border > MIN_CIRCLE_BORDER)
-        masks_border *= 0.97f;
+      const float masks_border = dt_masks_change_size
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border)),
+         MIN_CIRCLE_BORDER, max_mask_border);
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), masks_border);
       dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
-      if(up && masks_size < max_mask_size)
-        masks_size *= 1.0f / 0.97f;
-      else if(!up && masks_size > MIN_CIRCLE_RADIUS)
-        masks_size *= 0.97f;
+      const float masks_size = dt_masks_change_size
+        (up,
+         dt_conf_get_float(DT_MASKS_CONF(form->type, circle, size)),
+         MIN_CIRCLE_RADIUS,
+         max_mask_size);
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), masks_size);
       dt_toast_log(_("size: %3.2f%%"), masks_size*100.0f);
@@ -165,12 +162,11 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        if(up && circle->border < max_mask_border)
-          circle->border *= 1.0f / 0.97f;
-        else if(!up && circle->border > MIN_CIRCLE_BORDER)
-          circle->border *= 0.97f;
-        else
-          return 1;
+        circle->border = dt_masks_change_size
+          (up,
+           circle->border,
+           MIN_CIRCLE_BORDER, max_mask_border);
+
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), circle->border);
@@ -178,10 +174,11 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
-        if(up && circle->radius < max_mask_size)
-          circle->radius *= 1.0f / 0.97f;
-        else if(!up && circle->radius > MIN_CIRCLE_RADIUS)
-          circle->radius *= 0.97f;
+        circle->radius = dt_masks_change_size
+          (up,
+           circle->radius,
+           MIN_CIRCLE_BORDER, max_mask_border);
+
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), circle->radius);
@@ -351,11 +348,12 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module,
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
     }
     //spot and retouch manage creation_continuous in their own way
-    if(gui->creation_continuous)
+    if(gui->creation_continuous
+       && (!crea_module
+           || (!dt_iop_module_is(crea_module->so, "spots")
+               && !dt_iop_module_is(crea_module->so, "retouch"))))
     {
-      if(crea_module
-         && !dt_iop_module_is(crea_module->so, "spots")
-         && !dt_iop_module_is(crea_module->so, "retouch"))
+      if(crea_module)
       {
         dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
@@ -923,9 +921,6 @@ static void _circle_events_post_expose(cairo_t *cr,
   // draw the source if any
   if(gpt->source_count > 6)
   {
-    const float pr_d = darktable.develop->preview_downsampling;
-    const float radius = fabs(gpt->points[2] - gpt->points[0]);
-
     // compute the dest inner circle intersection with the line from
     // source center to dest center.
     const float cdx = gpt->source[0] - gpt->points[0];
@@ -935,42 +930,32 @@ static void _circle_events_post_expose(cairo_t *cr,
     if(cdx != 0.0 && cdy != 0.0)
     {
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      float cangle = atanf(cdx / cdy);
 
-      if(cdy > 0)
-        cangle = (M_PI / 2) - cangle;
-      else
-        cangle = -(M_PI / 2) - cangle;
+      float to_x = 0.0f;
+      float to_y = 0.0f;
+      float from_x = 0.0f;
+      float from_y = 0.0f;
 
-      // (arrowx,arrowy) is the point of intersection, we move it
-      // (factor 1.11) a bit farther than the inner circle to avoid
-      // superposition.
-      const float arrowx = gpt->points[0] + 1.11 * radius * cosf(cangle);
-      const float arrowy = gpt->points[1] + 1.11 * radius * sinf(cangle);
+      dt_masks_closest_point(gpt->points_count,
+                             2,
+                             gpt->points,
+                             gpt->source[0], gpt->source[1],
+                             &to_x, &to_y);
 
-      cairo_move_to(cr, gpt->source[0], gpt->source[1]); // source center
-      cairo_line_to(cr, arrowx, arrowy);                 // dest border
-      // then draw to line for the arrow itself
-      const float arrow_scale = 6.0f * pr_d;
-      cairo_move_to(cr, arrowx + arrow_scale * cosf(cangle + (0.4f)),
-                    arrowy + arrow_scale * sinf(cangle + (0.4f)));
-      cairo_line_to(cr, arrowx, arrowy);
-      cairo_line_to(cr, arrowx + arrow_scale * cosf(cangle - (0.4f)),
-                    arrowy + arrow_scale * sinf(cangle - (0.4f)));
+      dt_masks_closest_point(gpt->source_count,
+                             2,
+                             gpt->source,
+                             to_x, to_y,
+                             &from_x, &from_y);
 
-      cairo_set_dash(cr, dashed, 0, 0);
-      if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-        cairo_set_line_width(cr, 2.5 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 1.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, FALSE, 0.8);
-      cairo_stroke_preserve(cr);
-      if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 0.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, TRUE, 0.8);
-      cairo_stroke(cr);
+      // then draw two lines for the arrow itself
+      dt_masks_draw_arrow(cr,
+                          from_x,from_y,
+                          to_x, to_y,
+                          zoom_scale,
+                          FALSE);
+
+      dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
     }
 
     // we only the main shape for the source, no borders

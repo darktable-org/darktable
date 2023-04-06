@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,10 +195,6 @@ typedef struct dt_colorspaces_cicp_t
     dt_colorspaces_cicp_matrix_coefficients_t matrix_coefficients;
 } dt_colorspaces_cicp_t;
 
-int mat3inv_float(float *const dst, const float *const src);
-int mat3inv_double(double *const dst, const double *const src);
-int mat3inv(float *const dst, const float *const src);
-
 /** populate the global color profile lists */
 dt_colorspaces_t *dt_colorspaces_init();
 
@@ -216,9 +212,6 @@ cmsHPROFILE dt_colorspaces_create_vendor_profile(const char *makermodel);
 
 /** create a ICC virtual profile from the shipped alternate matrices in darktable. */
 cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
-
-/** just get the associated transformation matrix, for manual application. */
-int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
 
 /** return the work profile as set in colorin */
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid);

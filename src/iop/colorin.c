@@ -1382,17 +1382,17 @@ void commit_params(struct dt_iop_module_t *self,
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   d->nonlinearlut = 0;
-  piece->process_cl_ready = 1;
+  piece->process_cl_ready = TRUE;
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   dt_colorspaces_color_profile_type_t type = p->type;
   if(type == DT_COLORSPACE_LAB)
   {
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     return;
   }
-  piece->enabled = 1;
+  piece->enabled = TRUE;
 
   if(type == DT_COLORSPACE_ENHANCED_MATRIX)
   {
@@ -1487,7 +1487,7 @@ void commit_params(struct dt_iop_module_t *self,
   {
     dt_print(DT_DEBUG_ALWAYS, "[colorin] input profile could not be generated!\n");
     dt_control_log(_("input profile could not be generated!"));
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     return;
   }
 
@@ -1523,7 +1523,7 @@ void commit_params(struct dt_iop_module_t *self,
        (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
         LUT_SAMPLES))
     {
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       d->cmatrix[0][0] = NAN;
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
@@ -1549,7 +1549,7 @@ void commit_params(struct dt_iop_module_t *self,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       d->cmatrix[0][0] = NAN;
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
@@ -1592,7 +1592,7 @@ void commit_params(struct dt_iop_module_t *self,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
       d->cmatrix[0][0] = NAN;
       d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
@@ -1737,8 +1737,8 @@ void gui_update(struct dt_iop_module_t *self)
 // FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
-  module->default_enabled = 1;
-  module->hide_enable_button = 1;
+  module->default_enabled = TRUE;
+  module->hide_enable_button = TRUE;
 
   dt_iop_colorin_params_t *d = module->default_params;
 

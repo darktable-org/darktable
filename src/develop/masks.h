@@ -618,6 +618,15 @@ float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
                            const int k,
                            const gboolean border);
 
+float dt_masks_change_size(gboolean up,
+                           const float value,
+                           const float min,
+                           const float max);
+
+float dt_masks_change_rotation(gboolean up,
+                               const float value,
+                               const gboolean is_degree);
+
 /** allow to select a shape inside an iop */
 void dt_masks_select_form(struct dt_iop_module_t *module,
                           dt_masks_form_t *sel);
@@ -892,6 +901,37 @@ void dt_masks_draw_anchor(cairo_t *cr,
                           const float zoom_scale,
                           const float x,
                           const float y);
+
+/* find the closest to point (px, py) in points array.
+   nb_ctrl is the number of points (control points) to
+   skip at the start of points.
+*/
+void dt_masks_closest_point(const int count,
+                            const int nb_ctrl,
+                            const float *points,
+                            const float px,
+                            const float py,
+                            float *x,
+                            float *y);
+
+/* draw a line from -> to with an arrow at the end.
+   if touch_dest is true then the arrow will be at the
+   (to_x, to_y) location, otherwise a small space will
+   be left.
+*/
+void dt_masks_draw_arrow(cairo_t *cr,
+                         const float from_x,
+                         const float from_y,
+                         const float to_x,
+                         const float to_y,
+                         const float zoom_scale,
+                         const gboolean touch_dest);
+
+/* stroke the arrow on cr depending on selection */
+void dt_masks_stroke_arrow(cairo_t *cr,
+                           const dt_masks_form_gui_t *gui,
+                           const int group,
+                           const float zoom_scale);
 
 #ifdef __cplusplus
 } // extern "C"

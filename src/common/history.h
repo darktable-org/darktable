@@ -132,6 +132,11 @@ typedef struct dt_history_item_t
   dt_develop_mask_mode_t mask_mode;
 } dt_history_item_t;
 
+/** returns the history name + label with markup */
+char *dt_history_get_name_label(const char *name,
+                                const char *label,
+                                const gboolean markup);
+
 /** get list of history items for image */
 GList *dt_history_get_items(const int32_t imgid,
                             const gboolean enabled,

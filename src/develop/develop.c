@@ -62,8 +62,8 @@ void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
   dev->average_delay = DT_DEV_AVERAGE_DELAY_START;
   dev->preview_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   dev->preview2_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
-  dev->gui_leaving = 0;
-  dev->gui_synch = 0;
+  dev->gui_leaving = FALSE;
+  dev->gui_synch = FALSE;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
@@ -580,8 +580,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
       dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       dev->preview2_input_changed = TRUE;
       dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->gui_synch = 1; // notify gui thread we want to synch (call
-                          // gui_update in the modules)
+      dev->gui_synch = TRUE; // notify gui thread we want to synch (call gui_update in the modules)
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
       dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
@@ -2288,18 +2287,17 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
        * default_params. if user want to, he can disable it.
        */
       if(dt_iop_module_is(hist->module->so, "flip")
-         && hist->enabled == 0
+         && !hist->enabled
          && labs(modversion) == 1)
       {
         memcpy(hist->params, hist->module->default_params, hist->module->params_size);
-        hist->enabled = 1;
+        hist->enabled = TRUE;
       }
     }
 
     // make sure that always-on modules are always on. duh.
-    if(hist->module->default_enabled == 1
-       && hist->module->hide_enable_button == 1)
-      hist->enabled = 1;
+    if(hist->module->default_enabled && hist->module->hide_enable_button)
+      hist->enabled = TRUE;
 
     dev->history = g_list_append(dev->history, hist);
     dev->history_end++;
@@ -2407,9 +2405,9 @@ void dt_dev_reprocess_all(dt_develop_t *dev)
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->pipe->cache_obsolete = 1;
-    dev->preview_pipe->cache_obsolete = 1;
-    dev->preview2_pipe->cache_obsolete = 1;
+    dev->pipe->cache_obsolete = TRUE;
+    dev->preview_pipe->cache_obsolete = TRUE;
+    dev->preview2_pipe->cache_obsolete = TRUE;
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
@@ -2425,7 +2423,7 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
   if(dev && dev->gui_attached)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dev->pipe->cache_obsolete = 1;
+    dev->pipe->cache_obsolete = TRUE;
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
@@ -2440,7 +2438,7 @@ void dt_dev_reprocess_preview(dt_develop_t *dev)
   if(darktable.gui->reset || !dev || !dev->gui_attached) return;
 
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview_pipe->cache_obsolete = 1;
+  dev->preview_pipe->cache_obsolete = TRUE;
 
   dt_dev_invalidate_preview(dev);
   dt_control_queue_redraw_center();

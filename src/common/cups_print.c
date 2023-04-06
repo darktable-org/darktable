@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2021 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -437,7 +437,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
     if(fd == -1)
     {
       dt_control_log(_("failed to create temporary file for printing options"));
-      dt_print(DT_DEBUG_ALWAYS, "failed to create temporary pdf for printing options\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed to create temporary PDF for printing options\n");
       return;
     }
     close(fd);

@@ -321,7 +321,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   const dt_image_t *img = &pipe->image;
   const gboolean enabled = dt_image_is_raw(img) && !dt_image_is_monochrome(img);
 
-  if(!enabled || p->strength == 0.0) piece->enabled = 0;
+  if(!enabled || p->strength == 0.0) piece->enabled = FALSE;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

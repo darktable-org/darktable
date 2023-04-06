@@ -745,7 +745,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
   // our module is disabled by default
   // by default:
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:

@@ -221,7 +221,7 @@ typedef struct dt_iop_module_t
   /** order of the module on the pipe. the pipe will be sorted by iop_order. */
   int iop_order;
   /** module sets this if the enable checkbox should be hidden. */
-  int32_t hide_enable_button;
+  gboolean hide_enable_button;
   /** set to DT_REQUEST_COLORPICK_MODULE if you want an input color
    * picked during next eval. gui mode only. */
   dt_dev_request_colorpick_flags_t request_color_pick;
@@ -253,8 +253,8 @@ typedef struct dt_iop_module_t
   gboolean histogram_middle_grey;
   /** the module is used in this develop module. */
   struct dt_develop_t *dev;
-  /** non zero if this node should be processed. */
-  int32_t enabled, default_enabled;
+  /** TRUE if this node should be processed. */
+  gboolean enabled, default_enabled;
   /** parameters for the operation. will be replaced by history revert. */
   dt_iop_params_t *params, *default_params;
   /** size of individual params struct. */

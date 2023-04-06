@@ -38,6 +38,16 @@ static void _path_bounding_box_raw(const float *const points,
                                    float *y_min,
                                    float *y_max);
 
+static void _path_bounding_box(const float *const points,
+                               const float *border,
+                               const int nb_corner,
+                               const int num_points,
+                               const int num_borders,
+                               int *width,
+                               int *height,
+                               int *posx,
+                               int *posy);
+
 /** get the point of the path at pos t [0,1]  */
 static void _path_get_XY(const float p0x,
                          const float p0y,
@@ -1146,7 +1156,6 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
     }
     else
     {
-      const float amount = up ? 1.03f : 1.0f / 1.03f;
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
@@ -1156,7 +1165,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
         for(const GList *l = form->points; l; l = g_list_next(l))
         {
           const dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
-          if(amount > 1.0f
+          if(up
              && (point->border[0] > 1.0f
                  || point->border[1] > 1.0f))
             return 1;
@@ -1164,12 +1173,27 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
         for(const GList *l = form->points; l; l = g_list_next(l))
         {
           dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
-          point->border[0] *= amount;
-          point->border[1] *= amount;
+
+          point->border[0] = dt_masks_change_size
+            (up,
+             point->border[0],
+             0.0005f,
+             0.5f);
+          point->border[1] = dt_masks_change_size
+            (up,
+             point->border[1],
+             0.0005f,
+             0.5f);
+
           feather_size += point->border[0] + point->border[1];
         }
-        float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, path, border));
-        masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
+
+        const float masks_border = dt_masks_change_size
+          (up,
+           dt_conf_get_float(DT_MASKS_CONF(form->type, path, border)),
+           0.0005f,
+           0.5f);
+
         dt_conf_set_float(DT_MASKS_CONF(form->type, path, border), masks_border);
         dt_toast_log(_("feather size: %3.2f%%"),
                      feather_size * 50.0f / g_list_length(form->points));
@@ -1206,21 +1230,25 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
         by /= 3.0f * surf;
 
         surf = sqrtf(fabsf(surf));
-        if(amount < 1.0f && surf < 0.001f) return 1;
-        if(amount > 1.0f && surf > 2.0f) return 1;
+        if(!up && surf < 0.001f) return 1;
+        if(up && surf > 2.0f) return 1;
 
         // now we move each point
         for(GList *l = form->points; l; l = g_list_next(l))
         {
           dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
-          const float x = (point->corner[0] - bx) * amount;
-          const float y = (point->corner[1] - by) * amount;
+          const float x = dt_masks_change_size(up, point->corner[0] - bx, -FLT_MAX, FLT_MAX);
+          const float y = dt_masks_change_size(up, point->corner[1] - by, -FLT_MAX, FLT_MAX);
 
           // we stretch ctrl points
-          const float ct1x = (point->ctrl1[0] - point->corner[0]) * amount;
-          const float ct1y = (point->ctrl1[1] - point->corner[1]) * amount;
-          const float ct2x = (point->ctrl2[0] - point->corner[0]) * amount;
-          const float ct2y = (point->ctrl2[1] - point->corner[1]) * amount;
+          const float ct1x = dt_masks_change_size
+            (up, point->ctrl1[0] - point->corner[0], -FLT_MAX, FLT_MAX);
+          const float ct1y = dt_masks_change_size
+            (up, point->ctrl1[1] - point->corner[1], -FLT_MAX, FLT_MAX);
+          const float ct2x = dt_masks_change_size
+            (up, point->ctrl2[0] - point->corner[0], -FLT_MAX, FLT_MAX);
+          const float ct2y = dt_masks_change_size
+            (up, point->ctrl2[1] - point->corner[1], -FLT_MAX, FLT_MAX);
 
           // and we set the new points
           point->corner[0] = bx + x;
@@ -1234,7 +1262,8 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
         // now the redraw/save stuff
         _path_init_ctrl_points(form);
 
-        dt_toast_log(_("size: %3.2f%%"), surf * amount * 50.0f);
+        surf = dt_masks_change_size(up, surf, -FLT_MAX, FLT_MAX);
+        dt_toast_log(_("size: %3.2f%%"), surf * 50.0f);
       }
       else
       {
@@ -2365,27 +2394,49 @@ static void _path_events_post_expose(cairo_t *cr,
   // draw the source if needed
   if(!gui->creation && gpt->source_count > nb * 3 + 6)
   {
-    // we draw the line between source and dest
-    cairo_move_to(cr, gpt->source[2], gpt->source[3]);
-    cairo_line_to(cr, gpt->points[2], gpt->points[3]);
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index)
-       && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
+    // look for the destination point closest to the source to avoid
+    // the arrow to cross the mask.
+    float to_x = 0.0f;
+    float to_y = 0.0f;
+    float from_x = 0.0f;
+    float from_y = 0.0f;
 
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_stroke_preserve(cr);
+    int width = 0;
+    int height = 0;
+    int posx = 0;
+    int posy = 0;
 
-    if((gui->group_selected == index)
-       && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
+    // 1. find source path bounding box
+    _path_bounding_box(gpt->source, NULL, nb,
+                       gpt->source_count, 0,
+                       &width, &height, &posx, &posy);
 
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
+    // 2. source area center
+    const float center_x = (float)posx + (float)width / 2.f;
+    const float center_y = (float)posy + (float)height / 2.f;
+
+    // 3. dest border, closest to source area center
+    dt_masks_closest_point(gpt->points_count,
+                           nb * 3,
+                           gpt->points,
+                           center_x, center_y,
+                           &to_x, &to_y);
+
+    // 4. source border, closest to point border
+    dt_masks_closest_point(gpt->source_count,
+                           nb * 3,
+                           gpt->source,
+                           to_x, to_y,
+                           &from_x, &from_y);
+
+    // 5. we draw the line between source and dest
+    dt_masks_draw_arrow(cr,
+                        from_x, from_y,
+                        to_x, to_y,
+                        zoom_scale,
+                        FALSE);
+
+    dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
 
     // we draw the source
     cairo_set_dash(cr, dashed, 0, 0);

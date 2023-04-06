@@ -422,7 +422,7 @@ void process_display(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   }
 
   piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
-  piece->pipe->bypass_blendif = 1;
+  piece->pipe->bypass_blendif = TRUE;
 }
 
 void process_v1(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -2572,7 +2572,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 
   // display selection don't work with opencl
-  piece->process_cl_ready = (g && g->display_mask) ? 0 : 1;
+  piece->process_cl_ready = (g && g->display_mask) ? FALSE : TRUE;
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   d->mode = p->mode;
 
@@ -2681,7 +2681,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_colorzones_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorzones_params_t));
-  module->default_enabled = 0; // we're a rather slow and rare op.
+  module->default_enabled = FALSE;
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   module->request_histogram |= (DT_REQUEST_ON);

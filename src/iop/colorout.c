@@ -608,7 +608,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
-  piece->process_cl_ready = 1;
+  piece->process_cl_ready = TRUE;
 
   /* if we are exporting then check and set usage of override profile */
   if(pipe->type & DT_DEV_PIXELPIPE_EXPORT)
@@ -734,7 +734,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                                       LUT_SAMPLES))
   {
     d->cmatrix[0][0] = NAN;
-    piece->process_cl_ready = 0;
+    piece->process_cl_ready = FALSE;
     d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                           out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
   }
@@ -753,7 +753,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                                         LUT_SAMPLES))
     {
       d->cmatrix[0][0] = NAN;
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = FALSE;
 
       d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                             out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
@@ -837,8 +837,8 @@ void init(dt_iop_module_t *module)
 {
   dt_iop_default_init(module);
 
-  module->hide_enable_button = 1;
-  module->default_enabled = 1;
+  module->hide_enable_button = TRUE;
+  module->default_enabled = TRUE;
 }
 
 static void _preference_changed(gpointer instance, gpointer user_data)

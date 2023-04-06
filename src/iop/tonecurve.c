@@ -673,7 +673,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   for(int k = 0; k < 0x10000; k++) d->table[ch_a][k] = d->table[ch_a][k] * 256.0f - 128.0f;
   for(int k = 0; k < 0x10000; k++) d->table[ch_b][k] = d->table[ch_b][k] * 256.0f - 128.0f;
 
-  piece->process_cl_ready = 1;
+  piece->process_cl_ready = TRUE;
   if(p->tonecurve_autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
   {
     // derive curve for XYZ:

@@ -1225,8 +1225,10 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
 
       opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
-      const int opacitypercent = opacity * 100;
-      dt_toast_log(_("opacity: %d%%"), opacitypercent);
+
+      dt_toast_log(_("opacity: %.0f%%"), opacity * 100);
+      dt_dev_masks_list_change(darktable.develop);
+
       ret = 1;
     }
 
@@ -1891,8 +1893,7 @@ float dt_masks_form_change_opacity(dt_masks_form_t *form,
       if(opacity != fpt->opacity)
       {
         fpt->opacity = opacity;
-        const int opacitypercent = opacity * 100;
-        dt_toast_log(_("opacity: %d%%"), opacitypercent);
+        dt_toast_log(_("opacity: %.0f%%"), opacity * 100);
         dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
         dt_masks_update_image(darktable.develop);
       }
@@ -2378,6 +2379,39 @@ float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
   return s;
 }
 
+float dt_masks_change_size(gboolean up,
+                           const float value,
+                           const float min,
+                           const float max)
+{
+  const float v =
+    up
+    ? value / 0.97f
+    : value * 0.97f;
+
+  return CLAMP(v, min, max);
+}
+
+float dt_masks_change_rotation(gboolean up,
+                               const float value,
+                               const gboolean is_degree)
+{
+  const float step = 40.f;
+  const float incr = is_degree ? 360.f / step : 2.0f * DT_M_PI_F / step;
+  const float max  = is_degree ? 360.0        : M_PI_F;
+  const float v =
+    up
+    ? value + incr
+    : value - incr;
+
+  if(is_degree)
+    return fmodf(v + max, max);
+  else
+  {
+    return v > max ? v - (2.0f * max) : v;
+  }
+}
+
 // allow to select a shape inside an iop
 void dt_masks_select_form(struct dt_iop_module_t *module,
                           dt_masks_form_t *sel)
@@ -2647,6 +2681,114 @@ void dt_masks_draw_anchor(cairo_t *cr,
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(selected ? 2.0 : 1.0) / zoom_scale);
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
   cairo_stroke(cr);
+}
+
+void dt_masks_draw_arrow(cairo_t *cr,
+                         const float from_x,
+                         const float from_y,
+                         const float to_x,
+                         const float to_y,
+                         const float zoom_scale,
+                         const gboolean touch_dest)
+{
+  const float pr_d = darktable.develop->preview_downsampling;
+  const float dx = from_x - to_x;
+  const float dy = from_y - to_y;
+  const float arrow_size = 24.0f * pr_d;
+
+  const float arrow_scale = arrow_size / sqrtf(3.f * zoom_scale);
+
+  const gboolean draw_arrow = TRUE;
+
+  float cangle = atanf(dx / dy);
+
+  if(dy > 0)
+    cangle = (M_PI / 2) - cangle;
+  else
+    cangle = -(M_PI / 2) - cangle;
+
+  // move a bit away from the path
+  const float x = to_x + (touch_dest
+                          ? 0.f
+                          : 5.f * cosf(cangle) / zoom_scale);
+
+  const float y = to_y + (touch_dest
+                          ? 0.f
+                          : 5.f * sinf(cangle) / zoom_scale);
+
+  cairo_move_to(cr, from_x, from_y); // start
+  cairo_line_to(cr, x, y);           // end + a bit of space
+
+  // no arrow when size too small
+  if(draw_arrow)
+  {
+    // then draw to line for the arrow itself
+
+    cairo_move_to(cr,
+                  x + arrow_scale * cosf(cangle + (0.4)),
+                  y + arrow_scale * sinf(cangle + (0.4)));
+
+    cairo_line_to(cr, x, y);
+
+    cairo_line_to(cr,
+                  x + arrow_scale * cosf(cangle - (0.4)),
+                  y + arrow_scale * sinf(cangle - (0.4)));
+  }
+}
+
+void dt_masks_stroke_arrow(cairo_t *cr,
+                           const dt_masks_form_gui_t *gui,
+                           const int group,
+                           const float zoom_scale)
+{
+  double dashed[] = { 4.0, 4.0 };
+  dashed[0] /= zoom_scale;
+  dashed[1] /= zoom_scale;
+
+  cairo_set_dash(cr, dashed, 0, 0);
+
+  if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
+    cairo_set_line_width(cr, 2.5 / zoom_scale);
+  else
+    cairo_set_line_width(cr, 1.5 / zoom_scale);
+
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_stroke_preserve(cr);
+
+  if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
+    cairo_set_line_width(cr, 1.0 / zoom_scale);
+  else
+    cairo_set_line_width(cr, 0.5 / zoom_scale);
+
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  cairo_stroke(cr);
+}
+
+void dt_masks_closest_point(const int count,
+                            const int nb_ctrl,
+                            const float *points,
+                            const float px,
+                            const float py,
+                            float *x,
+                            float *y)
+{
+  float dist = FLT_MAX;
+  *x = px;
+  *y = py;
+
+  for(int i = nb_ctrl; i < count; i++)
+  {
+    const float dx = points[i * 2] - px;
+    const float dy = points[i * 2 + 1] - py;
+
+    const float d = sqf(dx*dx + dy*dy);
+    if(d < dist)
+    {
+      *x = points[i * 2];
+      *y = points[i * 2 + 1];
+      dist = d;
+    }
+  }
 }
 
 #include "detail.c"

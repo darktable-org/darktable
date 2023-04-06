@@ -3199,16 +3199,10 @@ int scrolled(struct dt_iop_module_t *module,
       float radius = 0.0f, r = 0.0f, phi = 0.0f;
       get_stamp_params(module, &radius, &r, &phi);
 
-      float factor = 1.0f;
-      if(incr)
-        factor *= 1.0f / 0.97f;
-      else if(!incr && cabsf(warp->radius - warp->point) > 10.0f)
-        factor *= 0.97f;
+      r = dt_masks_change_size(incr, r, 10.0f, FLT_MAX);
+      radius = dt_masks_change_size(incr, radius, 10.0f, FLT_MAX);
 
-      r *= factor;
-      radius *= factor;
-
-      warp->radius = warp->point + (radius * factor);
+      warp->radius = warp->point + (dt_masks_change_size(incr, radius, 10.0f, FLT_MAX));
       warp->strength = warp->point + r * cexpf(phi * I);
 
       dt_conf_set_float(CONF_RADIUS, radius);
@@ -3218,13 +3212,8 @@ int scrolled(struct dt_iop_module_t *module,
     else if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       //  change the strength direction
-      float phi = cargf(strength_v);
+      const float phi = dt_masks_change_rotation(incr, cargf(strength_v), FALSE);
       const float r = cabsf(strength_v);
-
-      if(incr)
-        phi += DT_M_PI_F / 16.0f;
-      else
-        phi -= DT_M_PI_F / 16.0f;
 
       warp->strength = warp->point + r * cexpf(phi * I);
       dt_conf_set_float(CONF_STRENGTH, r);
@@ -3235,12 +3224,7 @@ int scrolled(struct dt_iop_module_t *module,
     {
       //  change the strength
       const float phi = cargf(strength_v);
-      float r = cabsf(strength_v);
-
-      if(incr)
-        r *= 1.0f / 0.97f;
-      else
-        r *= 0.97f;
+      const float r = dt_masks_change_size(incr, cabsf(strength_v), 0.0001f, FLT_MAX);
 
       warp->strength = warp->point + r * cexpf(phi * I);
       dt_conf_set_float(CONF_STRENGTH, r);
