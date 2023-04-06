@@ -912,8 +912,6 @@ end:
 
 static void _gradient_draw_lines(const gboolean borders,
                                  cairo_t *cr,
-                                 double *dashed,
-                                 const float len,
                                  const gboolean selected,
                                  const float zoom_scale,
                                  float *pts_line,
@@ -950,26 +948,6 @@ static void _gradient_draw_lines(const gboolean borders,
       continue;
     }
 
-    if(borders)
-      cairo_set_dash(cr, dashed, len, 0);
-    else
-      cairo_set_dash(cr, dashed, 0, 0);
-    if(selected)
-    {
-      if(borders)
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 5.0 / zoom_scale);
-    }
-    else
-    {
-      if(borders)
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 3.0 / zoom_scale);
-    }
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-
     cairo_move_to(cr, x, y);
 
     count++;
@@ -980,18 +958,12 @@ static void _gradient_draw_lines(const gboolean borders,
 
       cairo_line_to(cr, points[count * 2], points[count * 2 + 1]);
     }
-    cairo_stroke_preserve(cr);
-    if(selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
+
+    dt_masks_line_stroke(cr, borders, FALSE, selected, zoom_scale);
   }
 }
 
 static void _gradient_draw_arrow(cairo_t *cr,
-                                 const float len,
                                  const gboolean selected,
                                  const gboolean border_selected,
                                  const float zoom_scale,
@@ -1012,7 +984,6 @@ static void _gradient_draw_arrow(cairo_t *cr,
 
   // draw pivot points
   {
-    cairo_set_dash(cr, dashed, 0, 0);
     if(border_selected)
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
@@ -1070,10 +1041,6 @@ static void _gradient_events_post_expose(cairo_t *cr,
                                          const int nb)
 {
   (void)nb; // unused arg, keep compiler from complaining
-  double dashed[] = { 4.0, 4.0 };
-  dashed[0] /= zoom_scale;
-  dashed[1] /= zoom_scale;
-  const int len = sizeof(dashed) / sizeof(dashed[0]);
 
   // preview gradient creation
   if(gui->creation)
@@ -1112,13 +1079,13 @@ static void _gradient_events_post_expose(cairo_t *cr,
 
     cairo_save(cr);
     // draw main line
-    _gradient_draw_lines(FALSE, cr, dashed, len, FALSE, zoom_scale,
+    _gradient_draw_lines(FALSE, cr, FALSE, zoom_scale,
                          points, points_count, points[0], points[1]);
     // draw borders
-    _gradient_draw_lines(TRUE, cr, dashed, len, FALSE, zoom_scale,
+    _gradient_draw_lines(TRUE, cr, FALSE, zoom_scale,
                          border, border_count, points[0], points[1]);
     // draw arrow
-    _gradient_draw_arrow(cr, dashed, len, FALSE, FALSE, zoom_scale,
+    _gradient_draw_arrow(cr, FALSE, FALSE, zoom_scale,
                          points, points_count);
     cairo_restore(cr);
 
@@ -1135,15 +1102,15 @@ static void _gradient_events_post_expose(cairo_t *cr,
   const gboolean selected = (gui->group_selected == index)
     && (gui->form_selected || gui->form_dragging);
   // draw main line
-  _gradient_draw_lines(FALSE, cr, dashed, len, selected, zoom_scale,
+  _gradient_draw_lines(FALSE, cr, selected, zoom_scale,
                        gpt->points, gpt->points_count, xref, yref);
   // draw borders
   if(gui->show_all_feathers || gui->group_selected == index)
-    _gradient_draw_lines(TRUE, cr, dashed, len, gui->border_selected, zoom_scale,
+    _gradient_draw_lines(TRUE, cr, gui->border_selected, zoom_scale,
                          gpt->border, gpt->border_count,
                          xref, yref);
 
-  _gradient_draw_arrow(cr, dashed, len, selected,
+  _gradient_draw_arrow(cr, selected,
                        ((gui->group_selected == index) && (gui->border_selected)),
                        zoom_scale, gpt->points, gpt->points_count);
 }

@@ -2796,6 +2796,40 @@ void dt_masks_closest_point(const int count,
   }
 }
 
+void dt_masks_line_stroke(cairo_t *cr,
+                          const gboolean border,
+                          const gboolean source,
+                          const gboolean selected,
+                          const float zoom_scale)
+{
+  const double size_border     = 1.0;
+  const double size_source     = 1.5;
+  const double size_mask       = 2.5;
+  const double factor_selected = 1.8;
+
+  double dashed[] = { 4.0, 4.0 };
+  dashed[0] /= zoom_scale;
+  dashed[1] /= zoom_scale;
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
+
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_set_dash(cr, dashed, border ? len : 0, 0);
+
+  const double line_width =
+    (border ? size_border : (source ? size_source : size_mask))
+    * (selected ? factor_selected : 1.0);
+
+  cairo_set_line_width(cr, line_width / zoom_scale);
+
+  cairo_stroke_preserve(cr);
+
+  cairo_set_line_width(cr, (line_width / 2.0) / zoom_scale);
+
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  cairo_set_dash(cr, dashed, border ? len : 0, 4);
+  cairo_stroke(cr);
+}
+
 #include "detail.c"
 
 // clang-format off

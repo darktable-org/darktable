@@ -2666,8 +2666,6 @@ static void _brush_events_post_expose(cairo_t *cr,
   // draw path
   if(gpt->points_count > nb * 3 + 2)
   {
-    cairo_set_dash(cr, dashed, 0, 0);
-
     cairo_move_to(cr, gpt->points[nb * 6], gpt->points[nb * 6 + 1]);
     int seg = 1, seg2 = 0;
     for(int i = nb * 3; i < gpt->points_count; i++)
@@ -2678,22 +2676,13 @@ static void _brush_events_post_expose(cairo_t *cr,
          && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
       {
         // this is the end of the last segment, so we have to draw it
-        if((gui->group_selected == index)
-           && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg2))
-          cairo_set_line_width(cr, 5.0 / zoom_scale);
-        else
-          cairo_set_line_width(cr, 3.0 / zoom_scale);
-        dt_draw_set_color_overlay(cr, FALSE, 0.9);
-        cairo_stroke_preserve(cr);
-        if(gui->group_selected == index && gui->seg_selected == seg2)
-          cairo_set_line_width(cr, 5.0 / zoom_scale);
-        else if((gui->group_selected == index)
-           && (gui->form_selected || gui->form_dragging))
-          cairo_set_line_width(cr, 2.0 / zoom_scale);
-        else
-          cairo_set_line_width(cr, 1.0 / zoom_scale);
-        dt_draw_set_color_overlay(cr, TRUE, 0.8);
-        cairo_stroke(cr);
+
+        dt_masks_line_stroke
+          (cr, FALSE, FALSE,
+           (gui->group_selected == index)
+           && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg2),
+           zoom_scale);
+
         // and we update the segment number
         seg = (seg + 1) % nb;
         seg2++;
@@ -2765,20 +2754,8 @@ static void _brush_events_post_expose(cairo_t *cr,
       cairo_line_to(cr, gpt->border[i * 2], gpt->border[i * 2 + 1]);
     }
     // we execute the drawing
-    if(gui->border_selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_set_dash(cr, dashed, len, 0);
-    cairo_stroke_preserve(cr);
-    if(gui->border_selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_set_dash(cr, dashed, len, 4);
-    cairo_stroke(cr);
+
+    dt_masks_line_stroke(cr, TRUE, FALSE, gui->border_selected, zoom_scale);
   }
 
   // draw the source if needed
@@ -2827,23 +2804,16 @@ static void _brush_events_post_expose(cairo_t *cr,
     dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
 
     // we draw the source
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
+
     cairo_move_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
     for(int i = nb * 3; i < gpt->source_count; i++)
       cairo_line_to(cr, gpt->source[i * 2], gpt->source[i * 2 + 1]);
     cairo_line_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
+
+    dt_masks_line_stroke
+      (cr, FALSE, TRUE,
+       (gui->group_selected == index) && (gui->form_selected || gui->form_dragging),
+       zoom_scale);
   }
 }
 

@@ -656,20 +656,13 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
 
 static void _circle_draw_lines(const gboolean borders,
                                const gboolean source,
-                               cairo_t *cr, double *dashed,
-                               const int len,
+                               cairo_t *cr,
                                const gboolean selected,
                                const float zoom_scale,
                                float *points,
                                const int points_count)
 {
   if(points_count <= 6) return;
-
-  cairo_set_line_width(cr, ((borders ? 2.0 : 3.0) + selected ? 2.0 : 0.0)
-                       / (borders || source ? 2.0 : 1.0)/zoom_scale);
-
-  dt_draw_set_color_overlay(cr, FALSE, 0.8);
-  cairo_set_dash(cr, dashed, len, 0);
 
   cairo_move_to(cr, points[2], points[3]);
   for(int i = 2; i < points_count; i++)
@@ -678,12 +671,7 @@ static void _circle_draw_lines(const gboolean borders,
   }
   cairo_line_to(cr, points[2], points[3]);
 
-  cairo_stroke_preserve(cr);
-
-  cairo_set_line_width(cr, (source ? 0.5 : 1.0) * (selected ? 2.0 : 1.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, TRUE, 0.8);
-  cairo_set_dash(cr, dashed, len, 4);
-  cairo_stroke(cr);
+  dt_masks_line_stroke(cr, borders, source, selected, zoom_scale);
 }
 
 static float *_points_to_transform(const float x,
@@ -823,10 +811,7 @@ static void _circle_events_post_expose(cairo_t *cr,
                                        const int num_points)
 {
   (void)num_points; // unused arg, keep compiler from complaining
-  double dashed[] = { 4.0, 4.0 };
-  dashed[0] /= zoom_scale;
-  dashed[1] /= zoom_scale;
-  const int len = sizeof(dashed) / sizeof(dashed[0]);
+
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
@@ -875,10 +860,10 @@ static void _circle_events_post_expose(cairo_t *cr,
       // we draw the form and it's border
       cairo_save(cr);
       // we draw the main shape
-      _circle_draw_lines(FALSE, FALSE, cr, dashed, len,
+      _circle_draw_lines(FALSE, FALSE, cr,
                          FALSE, zoom_scale, points, points_count);
       // we draw the borders
-      _circle_draw_lines(TRUE, FALSE, cr, dashed, len,
+      _circle_draw_lines(TRUE, FALSE, cr,
                          FALSE, zoom_scale, border, border_count);
       cairo_restore(cr);
 
@@ -904,12 +889,12 @@ static void _circle_events_post_expose(cairo_t *cr,
   const gboolean selected = (gui->group_selected == index)
     && (gui->form_selected || gui->form_dragging);
 
-  _circle_draw_lines(FALSE, FALSE, cr, dashed, 0,
+  _circle_draw_lines(FALSE, FALSE, cr,
                      selected, zoom_scale, gpt->points, gpt->points_count);
   // we draw the borders
   if(gui->show_all_feathers || gui->group_selected == index)
   {
-    _circle_draw_lines(TRUE, FALSE, cr, dashed, len,
+    _circle_draw_lines(TRUE, FALSE, cr,
                        gui->border_selected, zoom_scale, gpt->border,
                        gpt->border_count);
     dt_masks_draw_anchor(cr, gui->point_dragging > 0
@@ -961,7 +946,7 @@ static void _circle_events_post_expose(cairo_t *cr,
     }
 
     // we only the main shape for the source, no borders
-    _circle_draw_lines(FALSE, TRUE, cr, dashed, 0, selected,
+    _circle_draw_lines(FALSE, TRUE, cr, selected,
                        zoom_scale, gpt->source, gpt->source_count);
   }
 }
