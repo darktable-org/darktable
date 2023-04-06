@@ -654,7 +654,8 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
   return 0;
 }
 
-static void _circle_draw_lines(gboolean borders, gboolean source,
+static void _circle_draw_lines(const gboolean borders,
+                               const gboolean source,
                                cairo_t *cr, double *dashed,
                                const int len,
                                const gboolean selected,

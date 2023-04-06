@@ -1065,7 +1065,8 @@ static void _path_get_distance(const float x,
       //because of self-intersection)
       if(isnan(gpt->points[i * 2]))
       {
-        if(isnan(gpt->points[i * 2 + 1])) break;
+        if(isnan(gpt->points[i * 2 + 1]))
+          break;
         i = (int)gpt->points[i * 2 + 1] - 1;
         continue;
       }
@@ -1096,7 +1097,9 @@ static void _path_get_distance(const float x,
           *near = current_seg - 1;
       }
 
-      if(((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->points[i * 2] > x)) nb++;
+      if(((y<=yy && y>last) || (y>=yy && y<last))
+         && (gpt->points[i * 2] > x))
+        nb++;
 
       last = yy;
     }
