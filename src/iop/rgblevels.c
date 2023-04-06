@@ -1158,8 +1158,8 @@ static void _auto_levels(const float *const img, const int width, const int heig
     x_to = width - 1;
   }
 
-  float max = -INFINITY;
-  float min = INFINITY;
+  float max = -FLT_MAX;
+  float min = FLT_MAX;
 
   for(int y = y_from; y <= y_to; y++)
   {

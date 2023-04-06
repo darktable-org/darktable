@@ -2866,8 +2866,8 @@ static void rt_process_stats(struct dt_iop_module_t *self,
                              float levels[3])
 {
   const int size = width * height * ch;
-  float l_max = -INFINITY;
-  float l_min = INFINITY;
+  float l_max = -FLT_MAX;
+  float l_min = FLT_MAX;
   float l_sum = 0.f;
   int count = 0;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
@@ -3260,8 +3260,8 @@ static void _retouch_blur(dt_iop_module_t *self,
 
   if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
-    float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
-    float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+    static const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+    static const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
     dt_gaussian_t *g = dt_gaussian_init(roi_mask_scaled->width, roi_mask_scaled->height, 4, Labmax, Labmin, sigma,
                                         DT_IOP_GAUSSIAN_ZERO);
@@ -4023,8 +4023,8 @@ static cl_int _retouch_blur_cl(const int devid,
 
   if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
-    float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
-    float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+    static const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+    static const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
     dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, roi_mask_scaled->width, roi_mask_scaled->height, ch, Labmax,
                                               Labmin, sigma, DT_IOP_GAUSSIAN_ZERO);

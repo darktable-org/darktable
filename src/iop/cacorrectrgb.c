@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -260,8 +260,8 @@ static void get_manifolds(const float* const restrict in, const size_t width, co
   float *const restrict blurred_manifold_higher = dt_alloc_align_float(width * height * 4);
   float *const restrict blurred_manifold_lower = dt_alloc_align_float(width * height * 4);
 
-  dt_aligned_pixel_t max = {INFINITY, INFINITY, INFINITY, INFINITY};
-  dt_aligned_pixel_t min = {-INFINITY, -INFINITY, -INFINITY, 0.0f};
+  dt_aligned_pixel_t max = {FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX};
+  dt_aligned_pixel_t min = {-FLT_MAX, -FLT_MAX, -FLT_MAX, 0.0f};
   // start with a larger blur to estimate the manifolds if we refine them
   // later on
   const float blur_size = refine_manifolds ? sigma2 : sigma;
@@ -606,8 +606,8 @@ static void reduce_artifacts(const float* const restrict in,
   }
 
   float *const restrict blurred_in_out = dt_alloc_align_float(width * height * 4);
-  dt_aligned_pixel_t max = {INFINITY, INFINITY, INFINITY, INFINITY};
-  dt_aligned_pixel_t min = {0.0f, 0.0f, 0.0f, 0.0f};
+  const dt_aligned_pixel_t max = {FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX};
+  const dt_aligned_pixel_t min = {0.0f, 0.0f, 0.0f, 0.0f};
   dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
   if(!g) return;
   dt_gaussian_blur_4c(g, in_out, blurred_in_out);
