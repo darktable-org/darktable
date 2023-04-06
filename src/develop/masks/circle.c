@@ -29,6 +29,11 @@
 #define MIN_CIRCLE_RADIUS 0.0005f
 #define MIN_CIRCLE_BORDER 0.0005f
 
+static inline int _nb_ctrl_point(void)
+{
+  return 2;
+}
+
 static void _circle_get_distance(const float x,
                                  const float y,
                                  const float as,
@@ -665,7 +670,7 @@ static void _circle_draw_lines(const gboolean borders,
   if(points_count <= 6) return;
 
   cairo_move_to(cr, points[2], points[3]);
-  for(int i = 2; i < points_count; i++)
+  for(int i = _nb_ctrl_point(); i < points_count; i++)
   {
     cairo_line_to(cr, points[i * 2], points[i * 2 + 1]);
   }
@@ -924,13 +929,13 @@ static void _circle_events_post_expose(cairo_t *cr,
       float from_y = 0.0f;
 
       dt_masks_closest_point(gpt->points_count,
-                             2,
+                             _nb_ctrl_point(),
                              gpt->points,
                              gpt->source[0], gpt->source[1],
                              &to_x, &to_y);
 
       dt_masks_closest_point(gpt->source_count,
-                             2,
+                             _nb_ctrl_point(),
                              gpt->source,
                              to_x, to_y,
                              &from_x, &from_y);

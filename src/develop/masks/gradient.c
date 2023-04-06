@@ -26,6 +26,12 @@
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
 
+static inline int _nb_ctrl_point(void)
+{
+  return 3;
+}
+
+
 static void _gradient_get_distance(const float x,
                                    const float y,
                                    const float as,
@@ -54,7 +60,7 @@ static void _gradient_get_distance(const float x,
   float close_to_controls = FALSE;
 
   // compute distances with the three control points
-  for(int k = 0; k<3; k++)
+  for(int k = 0; k < _nb_ctrl_point(); k++)
   {
     const float dx = x - gpt->points[k * 2];
     const float dy = y - gpt->points[k * 2 + 1];
@@ -83,7 +89,7 @@ static void _gradient_get_distance(const float x,
   }
 
   // check if we are close to main line
-  for(int i = 3; i < gpt->points_count; i++)
+  for(int i = _nb_ctrl_point(); i < gpt->points_count; i++)
   {
     if((x - gpt->points[i * 2]) * (x - gpt->points[i * 2])
        + (y - gpt->points[i * 2 + 1]) * (y - gpt->points[i * 2 + 1]) < as2)
@@ -757,13 +763,12 @@ static int _gradient_get_points(dt_develop_t *dev,
   const float xstart = fabsf(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
   const float xdelta = -2.0f * xstart / (count - 3);
 
-//  gboolean in_frame = FALSE;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(nthreads)            \
     dt_omp_firstprivate(nthreads, pts, pts_count, count, cosv, sinv, xstart, xdelta, curvature, scale, x, y, wd,  \
                         ht, c_padded_size, points) schedule(static) if(count > 100)
 #endif
-  for(int i = 3; i < count; i++)
+  for(int i = _nb_ctrl_point(); i < count; i++)
   {
     const float xi = xstart + (i - 3) * xdelta;
     const float yi = curvature * xi * xi;
@@ -854,7 +859,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
                                                 + (points_count2 - 3) + 1));
     if(*points == NULL) goto end;
     *points_count = (points_count1 - 3) + (points_count2 - 3) + 1;
-    for(int i = 3; i < points_count1; i++)
+    for(int i = _nb_ctrl_point(); i < points_count1; i++)
     {
       (*points)[k * 2] = points1[i * 2];
       (*points)[k * 2 + 1] = points1[i * 2 + 1];
@@ -862,7 +867,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
     }
     (*points)[k * 2] = (*points)[k * 2 + 1] = INFINITY;
     k++;
-    for(int i = 3; i < points_count2; i++)
+    for(int i = _nb_ctrl_point(); i < points_count2; i++)
     {
       (*points)[k * 2] = points2[i * 2];
       (*points)[k * 2 + 1] = points2[i * 2 + 1];
@@ -877,7 +882,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
     *points = dt_alloc_align_float((size_t)2 * ((points_count1 - 3)));
     if(*points == NULL) goto end;
     *points_count = points_count1 - 3;
-    for(int i = 3; i < points_count1; i++)
+    for(int i = _nb_ctrl_point(); i < points_count1; i++)
     {
       (*points)[k * 2] = points1[i * 2];
       (*points)[k * 2 + 1] = points1[i * 2 + 1];
@@ -893,7 +898,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
     if(*points == NULL) goto end;
     *points_count = points_count2 - 3;
 
-    for(int i = 3; i < points_count2; i++)
+    for(int i = _nb_ctrl_point(); i < points_count2; i++)
     {
       (*points)[k * 2] = points2[i * 2];
       (*points)[k * 2 + 1] = points2[i * 2 + 1];
@@ -1162,7 +1167,7 @@ static int _gradient_get_area(const dt_iop_module_t *const module,
   float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  for(int i = 0; i < 4; i++)
+  for(int i = 0; i < _nb_ctrl_point(); i++)
   {
     xmin = fminf(points[i * 2], xmin);
     xmax = fmaxf(points[i * 2], xmax);
