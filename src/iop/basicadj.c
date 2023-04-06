@@ -726,10 +726,11 @@ static inline double xlog(double d)
 
   x = x * t + 0.693147180559945286226764 * e;
 
+#if 0  // we know that xlog will only be called with values 1 <= d <= 65537
   if(isinf(d)) x = INFINITY;
   if(d < 0)    x = NAN;
   if(d == 0)   x = -INFINITY;
-
+#endif
   return x;
 }
 

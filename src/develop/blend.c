@@ -178,21 +178,21 @@ void dt_develop_blendif_process_parameters(float *const restrict parameters,
       // handle the case when one end is open to avoid clipping input/output values
       if(blendif_parameters[i * 4 + 0] <= 0.0f && blendif_parameters[i * 4 + 1] <= 0.0f)
       {
-        parameters[j + 0] = -INFINITY;
-        parameters[j + 1] = -INFINITY;
+        parameters[j + 0] = -FLT_MAX;
+        parameters[j + 1] = -FLT_MAX;
       }
       if(blendif_parameters[i * 4 + 2] >= 1.0f && blendif_parameters[i * 4 + 3] >= 1.0f)
       {
-        parameters[j + 2] = INFINITY;
-        parameters[j + 3] = INFINITY;
+        parameters[j + 2] = FLT_MAX;
+        parameters[j + 3] = FLT_MAX;
       }
     }
     else
     {
-      parameters[j + 0] = -INFINITY;
-      parameters[j + 1] = -INFINITY;
-      parameters[j + 2] = INFINITY;
-      parameters[j + 3] = INFINITY;
+      parameters[j + 0] = -FLT_MAX;
+      parameters[j + 1] = -FLT_MAX;
+      parameters[j + 2] = FLT_MAX;
+      parameters[j + 3] = FLT_MAX;
       parameters[j + 4] = 0.0f;
       parameters[j + 5] = 0.0f;
     }

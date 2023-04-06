@@ -165,7 +165,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_aligned_pixel_t RGBmax, RGBmin;
   for(int k = 0; k < 4; k++)
   {
-    RGBmax[k] = INFINITY;
+    RGBmax[k] = FLT_MAX;
     RGBmin[k] = 0.f;
   }
 
@@ -295,8 +295,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(unbound)
   {
-    for(int k = 0; k < 4; k++) RGBmax[k] = INFINITY;
-    for(int k = 0; k < 4; k++) RGBmin[k] = -INFINITY;
+    for(int k = 0; k < 4; k++) RGBmax[k] = FLT_MAX;
+    for(int k = 0; k < 4; k++) RGBmin[k] = -FLT_MAX;
   }
 
   if(d->lowpass_algo == LOWPASS_ALGO_GAUSSIAN)
