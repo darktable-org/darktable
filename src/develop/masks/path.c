@@ -990,16 +990,16 @@ static void _path_get_distance(const float x,
                                dt_masks_form_gui_t *gui,
                                const int index,
                                const int corner_count,
-                               int *inside,
-                               int *inside_border,
+                               gboolean *inside,
+                               gboolean *inside_border,
                                int *near,
-                               int *inside_source,
+                               gboolean *inside_source,
                                float *dist)
 {
   // initialise returned values
-  *inside_source = 0;
-  *inside = 0;
-  *inside_border = 0;
+  *inside_source = FALSE;
+  *inside = FALSE;
+  *inside_border = FALSE;
   *near = -1;
   *dist = FLT_MAX;
 
@@ -1012,8 +1012,8 @@ static void _path_get_distance(const float x,
   // we first check if we are inside the source form
   if(dt_masks_point_in_form_exact(x, y, gpt->source, corner_count * 6, gpt->source_count))
   {
-    *inside_source = 1;
-    *inside = 1;
+    *inside_source = TRUE;
+    *inside = TRUE;
 
     float x_min = FLT_MAX, y_min = FLT_MAX;
     float x_max = FLT_MIN, y_max = FLT_MIN;
@@ -1044,7 +1044,7 @@ static void _path_get_distance(const float x,
   if(!dt_masks_point_in_form_exact(x, y, gpt->border, corner_count * 3, gpt->border_count))
     return;
 
-  *inside = 1;
+  *inside = TRUE;
 
   // and we check if it's inside form
   if(gpt->points_count > 2 + corner_count * 3)
@@ -1107,7 +1107,8 @@ static void _path_get_distance(const float x,
     const float dd = sqf(cx) + sqf(cy);
     *dist = fminf(*dist, dd);
   }
-  else *inside_border = 1;
+  else
+    *inside_border = TRUE;
 }
 
 static int _path_get_points_border(dt_develop_t *dev,
@@ -2176,7 +2177,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   }
 
   // are we inside the form or the borders or near a segment ???
-  int in = 0, inb = 0, near = 0, ins = 0;
+  gboolean in = FALSE, inb = FALSE, ins = FALSE;
+  int near = 0;
   float dist = 0;
   _path_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;

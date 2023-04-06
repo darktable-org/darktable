@@ -210,10 +210,10 @@ typedef struct dt_masks_functions_t
                        struct dt_masks_form_gui_t *gui,
                        const int index,
                        const int num_points,
-                       int *inside,
-                       int *inside_border,
+                       gboolean *inside,
+                       gboolean *inside_border,
                        int *near,
-                       int *inside_source,
+                       gboolean *inside_source,
                        float *dist);
   int (*get_points)(dt_develop_t *dev,
                     const float x,

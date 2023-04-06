@@ -2337,7 +2337,9 @@ int dt_masks_point_in_form_near(const float x,
       if((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1))
       {
         if(points[i * 2] > x) nb++;
-        if(points[i * 2] - x < distance && points[i * 2] - x > -distance) *near = 1;
+        if(points[i * 2] - x < distance
+           && points[i * 2] - x > -distance)
+          *near = i * 2;
       }
 
       if(next == start) break;

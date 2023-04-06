@@ -32,16 +32,16 @@ static void _gradient_get_distance(const float x,
                                    dt_masks_form_gui_t *gui,
                                    const int index,
                                    const int num_points,
-                                   int *inside,
-                                   int *inside_border,
+                                   gboolean *inside,
+                                   gboolean *inside_border,
                                    int *near,
-                                   int *inside_source,
+                                   gboolean *inside_source,
                                    float *dist)
 {
   (void)num_points; // unused arg, keep compiler from complaining
   if(!gui) return;
 
-  *inside = *inside_border = *inside_source = 0;
+  *inside = *inside_border = *inside_source = FALSE;
   *near = -1;
   *dist = FLT_MAX;
 
@@ -67,7 +67,7 @@ static void _gradient_get_distance(const float x,
   // check if we are close to pivot or anchor
   if(close_to_controls)
   {
-    *inside = 1;
+    *inside = TRUE;
     return;
   }
 
@@ -77,7 +77,7 @@ static void _gradient_get_distance(const float x,
     if((x - gpt->border[i * 2]) * (x - gpt->border[i * 2])
        + (y - gpt->border[i * 2 + 1]) * (y - gpt->border[i * 2 + 1]) < as2)
     {
-      *inside_border = 1;
+      *inside_border = TRUE;
       return;
     }
   }
@@ -88,7 +88,7 @@ static void _gradient_get_distance(const float x,
     if((x - gpt->points[i * 2]) * (x - gpt->points[i * 2])
        + (y - gpt->points[i * 2 + 1]) * (y - gpt->points[i * 2 + 1]) < as2)
     {
-      *inside = 1;
+      *inside = TRUE;
       return;
     }
   }
@@ -635,7 +635,8 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
     const float as = DT_PIXEL_APPLY_DPI(20) / (pr_d * zoom_scale);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
-    int in, inb, near, ins;
+    gboolean in, inb, ins;
+    int near;
     float dist;
     _gradient_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins, &dist);
 
