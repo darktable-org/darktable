@@ -1206,7 +1206,9 @@ static void _brush_get_distance(const float x,
     for(int i = corner_count * 3; i < gpt->border_count; i++)
     {
       const float yy = gpt->border[i * 2 + 1];
-      if(((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->border[i * 2] > x)) nb++;
+      if(((y<=yy && y>last) || (y>=yy && y<last))
+         && (gpt->border[i * 2] > x))
+        nb++;
       last = yy;
     }
     *inside = *inside_border = (nb & 1) == 1;
@@ -2382,7 +2384,10 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
                               gpt->points[k * 6 + 4],
                               gpt->points[k * 6 + 5],
                               &ffx, &ffy, TRUE);
-      if(pzx - ffx > -as && pzx - ffx < as && pzy - ffy > -as && pzy - ffy < as)
+      if(pzx - ffx > -as
+         && pzx - ffx < as
+         && pzy - ffy > -as
+         && pzy - ffy < as)
       {
         gui->feather_selected = k;
         dt_control_queue_redraw_center();
@@ -2477,7 +2482,7 @@ static void _brush_events_post_expose(cairo_t *cr,
     const float pr_d = darktable.develop->preview_downsampling;
     const float iwd = darktable.develop->preview_pipe->iwidth;
     const float iht = darktable.develop->preview_pipe->iheight;
-    const float min_iwd_iht= pr_d * MIN(iwd,iht);
+    const float min_iwd_iht = pr_d * MIN(iwd,iht);
 
     if(gui->guipoints_count == 0)
     {

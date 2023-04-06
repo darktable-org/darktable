@@ -910,7 +910,8 @@ end:
   return res;
 }
 
-static void _gradient_draw_lines(gboolean borders, cairo_t *cr,
+static void _gradient_draw_lines(const gboolean borders,
+                                 cairo_t *cr,
                                  double *dashed,
                                  const float len,
                                  const gboolean selected,
@@ -989,7 +990,7 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr,
   }
 }
 
-static void _gradient_draw_arrow(cairo_t *cr, double *dashed,
+static void _gradient_draw_arrow(cairo_t *cr,
                                  const float len,
                                  const gboolean selected,
                                  const gboolean border_selected,

@@ -1196,7 +1196,8 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
 
     const float pts[8] = { xref, yref, x, y, 0, 0, gui->dx, gui->dy };
 
-    const float dv = atan2f(pts[3] - pts[1], pts[2] - pts[0]) - atan2f(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
+    const float dv = atan2f(pts[3] - pts[1], pts[2] - pts[0])
+      - atan2f(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
 
     float pts2[8] = { xref, yref, x, y, xref + 10.0f, yref, xref, yref + 10.0f };
     dt_dev_distort_backtransform(darktable.develop, pts2, 4);
@@ -1274,10 +1275,10 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
       {
         // prefer border points over shape itself in case of near
         // overlap for ease of pickup
-        if(x - gpt->border[i * 2] > -as
-           && x - gpt->border[i * 2] < as
-           && y - gpt->border[i * 2 + 1] > -as
-           && y - gpt->border[i * 2 + 1] < as)
+        if(x - gpt->border[i * 2] > -as*2.0f
+           && x - gpt->border[i * 2] < as*2.0f
+           && y - gpt->border[i * 2 + 1] > -as*2.0f
+           && y - gpt->border[i * 2 + 1] < as*2.0f)
         {
           gui->point_border_selected = i;
           break;
