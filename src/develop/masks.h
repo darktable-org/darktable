@@ -933,6 +933,15 @@ void dt_masks_stroke_arrow(cairo_t *cr,
                            const int group,
                            const float zoom_scale);
 
+/* set line width for the mask drawing depending on the status
+   border, source & selected
+*/
+void dt_masks_line_stroke(cairo_t *cr,
+                          const gboolean border,
+                          const gboolean source,
+                          const gboolean selected,
+                          const float zoom_scale);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

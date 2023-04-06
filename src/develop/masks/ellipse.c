@@ -233,8 +233,6 @@ static void _ellipse_get_distance(const float x,
 static void _ellipse_draw_shape(const gboolean borders,
                                 const gboolean source,
                                 cairo_t *cr,
-                                double *dashed,
-                                const float len,
                                 const int selected,
                                 const float zoom_scale,
                                 const float xref,
@@ -251,13 +249,6 @@ static void _ellipse_draw_shape(const gboolean borders,
   float x = 0.0f;
   float y = 0.0f;
 
-  cairo_set_line_width(cr, ((borders ? 2.0 : 3.0)
-                            + selected ? 2.0 : 0.0) / (borders || source ? 2.0 : 1.0)
-                       /zoom_scale);
-
-  dt_draw_set_color_overlay(cr, FALSE, 0.8);
-  cairo_set_dash(cr, dashed, len, 0);
-
   _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, &x, &y);
   cairo_move_to(cr, x, y);
   for(int i = 6; i < points_count; i++)
@@ -268,13 +259,8 @@ static void _ellipse_draw_shape(const gboolean borders,
   }
   _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, &x, &y);
   cairo_line_to(cr, x, y);
-  cairo_stroke_preserve(cr);
 
-  cairo_set_line_width(cr, (source ? 0.5 : 1.0) * (selected ? 2.0 : 1.0) / zoom_scale);
-
-  dt_draw_set_color_overlay(cr, TRUE, 0.8);
-  cairo_set_dash(cr, dashed, len, 4);
-  cairo_stroke(cr);
+  dt_masks_line_stroke(cr, borders, source, selected, zoom_scale);
 }
 
 static float *_points_to_transform(const float xx,
@@ -1316,10 +1302,7 @@ static void _ellipse_events_post_expose(cairo_t *cr,
                                         const int num_points)
 {
   (void)num_points; //unused arg, keep compiler from complaining
-  double dashed[] = { 4.0, 4.0 };
-  dashed[0] /= zoom_scale;
-  dashed[1] /= zoom_scale;
-  const int len = sizeof(dashed) / sizeof(dashed[0]);
+
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
@@ -1390,7 +1373,7 @@ static void _ellipse_events_post_expose(cairo_t *cr,
         xref = points[0];
         yref = points[1];
 
-        _ellipse_draw_shape(FALSE, FALSE, cr, dashed, len, FALSE,
+        _ellipse_draw_shape(FALSE, FALSE, cr, FALSE,
                             zoom_scale, xref, yref, points, points_count);
       }
       if(draw && border_count >= 2)
@@ -1398,7 +1381,7 @@ static void _ellipse_events_post_expose(cairo_t *cr,
         xref = border[0];
         yref = border[1];
 
-        _ellipse_draw_shape(TRUE, FALSE, cr, dashed, len, FALSE,
+        _ellipse_draw_shape(TRUE, FALSE, cr, FALSE,
                             zoom_scale, xref, yref, border, border_count);
       }
 
@@ -1433,13 +1416,13 @@ static void _ellipse_events_post_expose(cairo_t *cr,
   // draw shape
   const gboolean selected =
     (gui->group_selected == index) && (gui->form_selected || gui->form_dragging);
-  _ellipse_draw_shape(FALSE, FALSE, cr, dashed, 0, selected,
+  _ellipse_draw_shape(FALSE, FALSE, cr, selected,
                       zoom_scale, xref, yref, gpt->points, gpt->points_count);
 
   // draw border
   if(gui->show_all_feathers || gui->group_selected == index)
   {
-    _ellipse_draw_shape(TRUE, FALSE, cr, dashed, len,
+    _ellipse_draw_shape(TRUE, FALSE, cr,
                         gui->border_selected, zoom_scale, xref, yref,
                         gpt->border, gpt->border_count);
 
@@ -1503,7 +1486,7 @@ static void _ellipse_events_post_expose(cairo_t *cr,
     }
 
     // we draw the source
-    _ellipse_draw_shape(FALSE, TRUE, cr, dashed, 0, selected,
+    _ellipse_draw_shape(FALSE, TRUE, cr, selected,
                         zoom_scale, xrefs, yrefs, gpt->source, gpt->source_count);
    }
 }
