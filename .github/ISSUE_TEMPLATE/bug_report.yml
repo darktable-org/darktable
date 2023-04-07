@@ -14,15 +14,6 @@ body:
         Before raising a bug/issue please check that it has not already been reported by searching [GitHub Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
         Some common issues are addressed in the [FAQ](https://www.darktable.org/about/faq/). 
         
-
-  - type: checkboxes
-    id: checklist
-    attributes:
-      label: Checklist
-      options:
-        - label: I have checked [GitHub Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue) and my problem is **not** described there.
-          required: true
-
   - type: textarea
     id: bug_description
     attributes:
