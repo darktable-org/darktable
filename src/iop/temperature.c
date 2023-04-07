@@ -1338,7 +1338,7 @@ void gui_update(struct dt_iop_module_t *self)
     }
   }
 
-  if(!found || isnan(g->mod_temp)) // reset or initialize user-defined
+  if(!found || g->mod_temp != -FLT_MAX) // reset or initialize user-defined
   {
     g->mod_temp = tempK;
     g->mod_tint = tint;
@@ -2082,7 +2082,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance setting"));
   gtk_box_pack_start(box_enabled, g->finetune, TRUE, TRUE, 0);
 
-  g->mod_temp = NAN;
+  g->mod_temp = -FLT_MAX;
   for(int k = 0; k < 4; k++)
   {
     g->daylight_wb[k] = 1.0;
