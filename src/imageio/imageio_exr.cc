@@ -56,6 +56,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
 
   Imath::Box2i dw;
   Imf::FrameBuffer frameBuffer;
+  int dx, dy;
   uint32_t xstride, ystride;
 
 
@@ -143,8 +144,8 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
     }
   }
 
-  /* Get image width and height from displayWindow */
-  dw = header.displayWindow();
+  /* get image width and height from data window only */
+  dw = header.dataWindow();
   img->width = dw.max.x - dw.min.x + 1;
   img->height = dw.max.y - dw.min.y + 1;
 
@@ -158,13 +159,19 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  /* setup framebuffer */
+  /* set up frame buffer relative to data window */
+  dx = dw.min.x;
+  dy = dw.min.y;
   xstride = sizeof(float) * 4;
   ystride = sizeof(float) * img->width * 4;
-  frameBuffer.insert("R", Imf::Slice(Imf::FLOAT, (char *)(buf + 0), xstride, ystride, 1, 1, 0.0));
-  frameBuffer.insert("G", Imf::Slice(Imf::FLOAT, (char *)(buf + 1), xstride, ystride, 1, 1, 0.0));
-  frameBuffer.insert("B", Imf::Slice(Imf::FLOAT, (char *)(buf + 2), xstride, ystride, 1, 1, 0.0));
-  frameBuffer.insert("A", Imf::Slice(Imf::FLOAT, (char *)(buf + 3), xstride, ystride, 1, 1, 0.0));
+  frameBuffer.insert(
+      "R", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 0), xstride, ystride, 1, 1, 0.0));
+  frameBuffer.insert(
+      "G", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 1), xstride, ystride, 1, 1, 0.0));
+  frameBuffer.insert(
+      "B", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 2), xstride, ystride, 1, 1, 0.0));
+  frameBuffer.insert(
+      "A", Imf::Slice(Imf::FLOAT, (char *)(buf - dx * 4 - dy * img->width * 4 + 3), xstride, ystride, 1, 1, 0.0));
 
   if(isTiled)
   {
@@ -173,8 +180,6 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   }
   else
   {
-    /* read pixels from dataWindow */
-    dw = header.dataWindow();
     file->setFrameBuffer(frameBuffer);
     file->readPixels(dw.min.y, dw.max.y);
   }
