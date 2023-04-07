@@ -999,10 +999,13 @@ static void _jump_to()
   {
     sqlite3_stmt *stmt;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
 
-    if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      imgid = sqlite3_column_int(stmt, 0);
+
     sqlite3_finalize(stmt);
   }
   if(dt_is_valid_imgid(imgid))
@@ -1438,7 +1441,7 @@ static int lua_update_values(lua_State *L)
 static int lua_update_metadata(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
-  dt_imgid_t imgid = lua_tointeger(L, 2);
+  const dt_imgid_t imgid = lua_tointeger(L, 2);
   gboolean have_updates = false;
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
   lua_getiuservalue(L, -1, 1);

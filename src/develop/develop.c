@@ -1519,7 +1519,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   const dt_imgid_t imgid = dev->image_storage.id;
 
-  if(imgid <= 0) return FALSE;
+  if(!dt_is_valid_imgid(imgid)) return FALSE;
 
   gboolean run = FALSE;
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -1955,7 +1955,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
                              const gboolean no_image,
                              const int32_t snapshot_id)
 {
-  if(imgid <= 0) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   if(!dev->iop) return;
 
   dt_lock_image(imgid);

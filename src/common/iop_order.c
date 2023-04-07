@@ -909,7 +909,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid, const gboolean sorted
     sqlite3_finalize(stmt);
   }
 
-  // fallback to last iop order list (also used to initialize the pipe when imgid = 0)
+  // fallback to last iop order list (also used to initialize the pipe when imgid = NO_IMGID)
   // and new image not yet loaded or whose history has been reset.
   if(!iop_order_list)
   {

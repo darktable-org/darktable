@@ -704,7 +704,7 @@ void dt_mipmap_cache_get_with_caller(
       // set to NULL if failed.
       buf->width = buf->height = 0;
       buf->iscale = 0.0f;
-      buf->imgid = 0;
+      buf->imgid = NO_IMGID;
       buf->color_space = DT_COLORSPACE_NONE;
       buf->size = DT_MIPMAP_NONE;
       buf->buf = NULL;
@@ -915,7 +915,7 @@ void dt_mipmap_cache_get_with_caller(
     }
     // nothing found :(
     buf->buf = NULL;
-    buf->imgid = 0;
+    buf->imgid = NO_IMGID;
     buf->size = DT_MIPMAP_NONE;
     buf->width = buf->height = 0;
     buf->iscale = 0.0f;

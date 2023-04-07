@@ -233,7 +233,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_backbuf = NULL;
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
-  pipe->output_imgid = 0;
+  pipe->output_imgid = NO_IMGID;
 
   pipe->rawdetail_mask_data = NULL;
   pipe->want_detail_mask = DT_DEV_DETAIL_MASK_NONE;
@@ -327,7 +327,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf = NULL;
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
-  pipe->output_imgid = 0;
+  pipe->output_imgid = NO_IMGID;
   pipe->next_important_module = FALSE;
 
   dt_dev_clear_rawdetail_mask(pipe);

@@ -446,7 +446,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   const gboolean use_splitline = (dt_bauhaus_combobox_get(lib->overlay_splitline) == 1);
 
   // OVERLAY
-  dt_imgid_t imgid = 0;
+  dt_imgid_t imgid = NO_IMGID;
   switch(dt_bauhaus_combobox_get(lib->overlay))
   {
     case OVERLAY_SELECTED:
@@ -639,7 +639,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
   dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
   int result = 0;
 
-  dt_imgid_t imgid = 0;
+  dt_imgid_t imgid = NO_IMGID;
   switch(dt_bauhaus_combobox_get(lib->overlay))
   {
     case OVERLAY_SELECTED:

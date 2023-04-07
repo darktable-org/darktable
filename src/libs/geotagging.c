@@ -1920,7 +1920,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(self->widget, TRUE);
   _update_layout(self);
 #endif
-  d->imgid = 0;
+  d->imgid = NO_IMGID;
   d->datetime = d->datetime0 = _get_image_datetime(self);
   if(d->datetime)
     g_date_time_ref(d->datetime);

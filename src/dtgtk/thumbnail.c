@@ -205,7 +205,7 @@ static void _thumb_update_rating_class(dt_thumbnail_t *thumb)
 
 static void _image_get_infos(dt_thumbnail_t *thumb)
 {
-  if(thumb->imgid <= 0) return;
+  if(!dt_is_valid_imgid(thumb->imgid)) return;
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_NONE) return;
 
   // we only get here infos that might change, others(exif, ...) are cached on widget creation
@@ -554,7 +554,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
 {
   if(!user_data) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(thumb->imgid <= 0)
+  if(!dt_is_valid_imgid(thumb->imgid))
   {
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
     cairo_paint(cr);
