@@ -31,7 +31,7 @@ typedef struct dt_selection_t
 
   /* this stores the last single clicked image id indicating
      the start of a selection range */
-  uint32_t last_single_id;
+  int32_t last_single_id;
 } dt_selection_t;
 
 const dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection)
@@ -53,9 +53,9 @@ static void _selection_update_collection(gpointer instance, dt_collection_change
                                          dt_collection_properties_t changed_property, gpointer imgs, int next,
                                          gpointer user_data);
 
-static void _selection_select(dt_selection_t *selection, uint32_t imgid)
+static void _selection_select(dt_selection_t *selection, int32_t imgid)
 {
-  if(imgid != -1)
+  if(imgid > 0)
   {
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(image)
@@ -177,18 +177,18 @@ void dt_selection_clear(const dt_selection_t *selection)
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_select(dt_selection_t *selection, uint32_t imgid)
+void dt_selection_select(dt_selection_t *selection, int32_t imgid)
 {
   if(imgid < 1) return;
   _selection_select(selection, imgid);
   selection->last_single_id = imgid;
 }
 
-void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
+void dt_selection_deselect(dt_selection_t *selection, int32_t imgid)
 {
   selection->last_single_id = -1;
 
-  if(imgid != -1)
+  if(imgid > 0)
   {
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(image)
@@ -221,19 +221,19 @@ void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_select_single(dt_selection_t *selection, uint32_t imgid)
+void dt_selection_select_single(dt_selection_t *selection, int32_t imgid)
 {
   selection->last_single_id = imgid;
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
   dt_selection_select(selection, imgid);
 }
 
-void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
+void dt_selection_toggle(dt_selection_t *selection, int32_t imgid)
 {
   sqlite3_stmt *stmt;
   gboolean exists = FALSE;
 
-  if(imgid == -1) return;
+  if(imgid < 1) return;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid FROM main.selected_images WHERE imgid=?1", -1, &stmt, NULL);
@@ -279,7 +279,7 @@ void dt_selection_select_all(dt_selection_t *selection)
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
+void dt_selection_select_range(dt_selection_t *selection, int32_t imgid)
 {
   if(!selection->collection) return;
 
@@ -307,7 +307,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   sqlite3_finalize(stmt);
 
   // if imgid not in collection, nothing to do
-  if(er < 0) return;
+  if(er < 1) return;
 
   // if last_single_id not in collection, we either use last selected image or first collected one
   int srid = selection->last_single_id;

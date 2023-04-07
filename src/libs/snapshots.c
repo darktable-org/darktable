@@ -43,7 +43,7 @@ typedef struct dt_lib_snapshot_t
   char *module;
   char *label;
   dt_view_context_t ctx;
-  uint32_t imgid;
+  int32_t imgid;
   uint32_t history_end;
   uint32_t id;
   /* snapshot cairo surface */
@@ -491,7 +491,7 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
   s->label = NULL;
 }
 
-static void _clear_snapshots(dt_lib_module_t *self, const uint32_t imgid)
+static void _clear_snapshots(dt_lib_module_t *self, const int32_t imgid)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   d->selected = -1;
@@ -543,7 +543,7 @@ static void _signal_image_changed(gpointer instance, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  const uint32_t imgid = darktable.develop->image_storage.id;
+  const int32_t imgid = darktable.develop->image_storage.id;
 
   for(uint32_t k = 0; k < MAX_SNAPSHOT; k++)
   {

@@ -1924,8 +1924,8 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)))
           folder = dt_util_dstrcat(folder, "%%");
         _import_set_collection(folder);
-        const int imgid = dt_conf_get_int("ui_last/import_last_image");
-        if(unique && imgid != -1)
+        const int32_t imgid = dt_conf_get_int("ui_last/import_last_image");
+        if(unique && imgid > 0)
         {
           dt_control_set_mouse_over_id(imgid);
           dt_ctl_switch_mode_to("darkroom");

@@ -90,8 +90,8 @@ void dt_history_delete_on_image(const int32_t imgid);
 void dt_history_delete_on_image_ext(const int32_t imgid, const gboolean undo);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
-gboolean dt_history_copy(const int imgid);
-gboolean dt_history_copy_parts(const int imgid);
+gboolean dt_history_copy(const int32_t imgid);
+gboolean dt_history_copy_parts(const int32_t imgid);
 gboolean dt_history_paste_on_list(const GList *list, gboolean undo);
 gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo);
 
@@ -104,7 +104,7 @@ static inline gboolean dt_history_module_skip_copy(const int flags)
 gboolean dt_history_load_and_apply_on_list(gchar *filename, const GList *list);
 
 /** load a dt file and applies to specified image */
-gboolean dt_history_load_and_apply(const int imgid,
+gboolean dt_history_load_and_apply(const int32_t imgid,
                                    gchar *filename,
                                    const gboolean history_only);
 

@@ -44,7 +44,7 @@ void dt_history_item_free(gpointer data)
   g_free(item);
 }
 
-static void _remove_preset_flag(const int imgid)
+static void _remove_preset_flag(const int32_t imgid)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
@@ -149,7 +149,7 @@ void dt_history_delete_on_image(const int32_t imgid)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
-gboolean dt_history_load_and_apply(const int imgid,
+gboolean dt_history_load_and_apply(const int32_t imgid,
                                    gchar *filename,
                                    const gboolean history_only)
 {
@@ -522,7 +522,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
   return module_added;
 }
 
-static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
+static gboolean _history_copy_and_paste_on_image_merge(const int32_t imgid,
                                                   const int32_t dest_imgid,
                                                   GList *ops,
                                                   const gboolean copy_full)
@@ -642,15 +642,15 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
   g_list_free(modules_used);
   g_list_free(autoinit_list);
 
-  return 0;
+  return FALSE;
 }
 
-static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid,
+static gboolean _history_copy_and_paste_on_image_overwrite(const int32_t imgid,
                                                       const int32_t dest_imgid,
                                                       GList *ops,
                                                       const gboolean copy_full)
 {
-  int ret_val = 0;
+  gboolean ret_val = FALSE;
   sqlite3_stmt *stmt;
 
   // replace history stack
@@ -820,12 +820,12 @@ gboolean dt_history_copy_and_paste_on_image(const int32_t imgid,
                                             const gboolean copy_iop_order,
                                             const gboolean copy_full)
 {
-  if(imgid == dest_imgid) return 1;
+  if(imgid == dest_imgid) return TRUE;
 
-  if(imgid == -1)
+  if(imgid <= 0)
   {
     dt_control_log(_("you need to copy history from an image before you paste it onto another"));
-    return 1;
+    return TRUE;
   }
 
   dt_lock_image_pair(imgid, dest_imgid);
@@ -857,7 +857,7 @@ gboolean dt_history_copy_and_paste_on_image(const int32_t imgid,
     g_list_free_full(iop_list, g_free);
   }
 
-  int ret_val = 0;
+  gboolean ret_val = FALSE;
   if(merge)
     ret_val = _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_full);
   else
@@ -1425,7 +1425,7 @@ GList *dt_history_duplicate(GList *hist)
 // if the image has no history return 0
 static gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
 {
-  if(imgid == -1) return 0;
+  if(imgid <= 0) return 0;
 
   GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
   gsize hash_len = 0;
@@ -1518,7 +1518,7 @@ static gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
 
 void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type)
 {
-  if(imgid == -1) return;
+  if(imgid <= 0) return;
 
   guint8 *hash = NULL;
   gsize hash_len = _history_hash_compute_from_db(imgid, &hash);
@@ -1686,7 +1686,7 @@ void dt_history_hash_free(dt_history_hash_values_t *hash)
 gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
 {
   gboolean status = FALSE;
-  if(imgid == -1) return status;
+  if(imgid <= 0) return status;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1708,7 +1708,7 @@ gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
 
 void dt_history_hash_set_mipmap(const int32_t imgid)
 {
-  if(imgid == -1) return;
+  if(imgid <= 0) return;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1725,7 +1725,7 @@ void dt_history_hash_set_mipmap(const int32_t imgid)
 dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
 {
   dt_history_hash_t status = DT_HISTORY_HASH_NONE;
-  if(imgid == -1) return status;
+  if(imgid <= 0) return status;
   sqlite3_stmt *stmt;
   // clang-format off
   char *query = g_strdup_printf("SELECT CASE"
@@ -1752,7 +1752,7 @@ dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
   return status;
 }
 
-gboolean dt_history_copy(const int imgid)
+gboolean dt_history_copy(const int32_t imgid)
 {
   // note that this routine does not copy anything, it just setup the copy_paste proxy
   // with the needed information that will be used while pasting.
@@ -1774,7 +1774,7 @@ gboolean dt_history_copy(const int imgid)
   return TRUE;
 }
 
-gboolean dt_history_copy_parts(const int imgid)
+gboolean dt_history_copy_parts(const int32_t imgid)
 {
   if(dt_history_copy(imgid))
   {
