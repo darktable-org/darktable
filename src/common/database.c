@@ -1238,7 +1238,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
                 "[init] can't prepare selecting history for iop_order migration (v21)\n");
     // clang-format on
     GList *item_list = NULL;
-    int current_imgid = -1;
+    int32_t current_imgid = -1;
     int current_order_version = -1;
 
     gboolean has_row = (sqlite3_step(mig_stmt) == SQLITE_ROW);
