@@ -2289,7 +2289,8 @@ int dt_masks_point_in_form_exact(const float x,
       }
       if(((yf <= y2 && yf > y1)
           || (yf >= y2 && yf < y1))
-         && (points[i * 2] > x)) nb++;
+         && (points[i * 2] > x))
+        nb++;
 
       if(next == start) break;
       i = next++;
@@ -2336,13 +2337,17 @@ int dt_masks_point_in_form_near(const float x,
       }
       if((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1))
       {
-        if(points[i * 2] > x) nb++;
-        if(points[i * 2] - x < distance && points[i * 2] - x > -distance) *near = 1;
+        if(points[i * 2] > x)
+          nb++;
+        if(points[i * 2] - x < distance
+           && points[i * 2] - x > -distance)
+          *near = i * 2;
       }
 
       if(next == start) break;
       i = next++;
-      if(next >= points_count) next = start;
+      if(next >= points_count)
+        next = start;
     }
     return (nb & 1);
   }
@@ -2789,6 +2794,40 @@ void dt_masks_closest_point(const int count,
       dist = d;
     }
   }
+}
+
+void dt_masks_line_stroke(cairo_t *cr,
+                          const gboolean border,
+                          const gboolean source,
+                          const gboolean selected,
+                          const float zoom_scale)
+{
+  const double size_border     = 1.0;
+  const double size_source     = 1.5;
+  const double size_mask       = 2.5;
+  const double factor_selected = 1.9;
+
+  double dashed[] = { 4.0, 4.0 };
+  dashed[0] /= zoom_scale;
+  dashed[1] /= zoom_scale;
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
+
+  dt_draw_set_color_overlay(cr, FALSE, selected ? 1.0 : 0.6);
+  cairo_set_dash(cr, dashed, border ? len : 0, 0);
+
+  const double line_width =
+    (border ? size_border : (source ? size_source : size_mask))
+    * (selected ? factor_selected : 1.0);
+
+  cairo_set_line_width(cr, line_width / zoom_scale);
+
+  cairo_stroke_preserve(cr);
+
+  cairo_set_line_width(cr, (line_width / 2.0) / zoom_scale);
+
+  dt_draw_set_color_overlay(cr, TRUE, selected ? 1.0 : 0.6);
+  cairo_set_dash(cr, dashed, border ? len : 0, 4);
+  cairo_stroke(cr);
 }
 
 #include "detail.c"
