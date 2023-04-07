@@ -84,7 +84,7 @@ static int default_dimension_wrapper(struct dt_imageio_module_storage_t *self,
 
 static int store_wrapper(struct dt_imageio_module_storage_t *self,
                          struct dt_imageio_module_data_t *self_data,
-                         const int imgid,
+                         const dt_imgid_t imgid,
                          dt_imageio_module_format_t *format,
                          dt_imageio_module_data_t *fdata,
                          const int num,

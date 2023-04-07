@@ -65,7 +65,7 @@ static void releasewriteimage(lua_State *L, dt_image_t *image)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_lua_image_push(lua_State *L, int imgid)
+void dt_lua_image_push(lua_State *L, dt_imgid_t imgid)
 {
   // check that id is valid
   sqlite3_stmt *stmt;
@@ -86,7 +86,7 @@ void dt_lua_image_push(lua_State *L, int imgid)
 
 static int history_delete(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
   dt_history_delete_on_image(imgid);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
@@ -95,7 +95,7 @@ static int history_delete(lua_State *L)
 
 static int drop_cache(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   return 0;
@@ -357,7 +357,7 @@ static int local_copy_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    int imgid = my_image->id;
+    dt_imgid_t imgid = my_image->id;
     luaL_checktype(L, 3, LUA_TBOOLEAN);
     // we need to release write image for the other functions to use it
     releasewriteimage(L, my_image);
@@ -375,7 +375,7 @@ static int local_copy_member(lua_State *L)
 
 static int colorlabel_member(lua_State *L)
 {
-  int imgid;
+  dt_imgid_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, 1);
   int colorlabel_index = luaL_checkoption(L, 2, NULL, dt_colorlabels_name);
   if(lua_gettop(L) != 3)
@@ -466,7 +466,7 @@ int get_group(lua_State *L)
   int table_index = 1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
     lua_seti(L, -2, table_index);
     table_index++;

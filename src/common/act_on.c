@@ -33,7 +33,7 @@ static int _find_custom(gconstpointer a, gconstpointer b)
 {
   return (GPOINTER_TO_INT(a) != GPOINTER_TO_INT(b));
 }
-static void _insert_in_list(GList **list, const int imgid, gboolean only_visible)
+static void _insert_in_list(GList **list, const dt_imgid_t imgid, gboolean only_visible)
 {
   if(only_visible)
   {
@@ -67,7 +67,7 @@ static void _insert_in_list(GList **list, const int imgid, gboolean only_visible
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        const int imgidg = sqlite3_column_int(stmt, 0);
+        const dt_imgid_t imgidg = sqlite3_column_int(stmt, 0);
         if(!g_list_find_custom(*list, GINT_TO_POINTER(imgidg), _find_custom))
           *list = g_list_append(*list, GINT_TO_POINTER(imgidg));
       }

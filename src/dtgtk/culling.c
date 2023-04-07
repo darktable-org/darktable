@@ -40,7 +40,7 @@ static inline int _get_max_in_memory_images()
 static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
-  const int imgid = GPOINTER_TO_INT(b);
+  const dt_imgid_t imgid = GPOINTER_TO_INT(b);
   if(th->imgid < 0 || imgid < 0) return 1;
   return (th->imgid != imgid);
 }
@@ -87,7 +87,7 @@ static int _thumb_get_imgid(int rowid)
   return id;
 }
 // get rowid from imgid
-static int _thumb_get_rowid(int imgid)
+static int _thumb_get_rowid(dt_imgid_t imgid)
 {
   int id = -1;
   sqlite3_stmt *stmt;
@@ -578,7 +578,7 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
     return FALSE;
 
   table->mouse_inside = FALSE;
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
 }
 
@@ -588,7 +588,7 @@ static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, 
   // this is when the mouse enter an "empty" area of thumbtable
   if(event->detail != GDK_NOTIFY_INFERIOR) return FALSE;
 
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
 }
 
@@ -784,7 +784,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 
-  const int imgid = dt_control_get_mouse_over_id();
+  const dt_imgid_t imgid = dt_control_get_mouse_over_id();
 
   // we crawl over all images to find the right one
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -795,7 +795,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   }
 }
 
-static void _dt_filmstrip_change(gpointer instance, int imgid, gpointer user_data)
+static void _dt_filmstrip_change(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
   if(!user_data || imgid <= 0) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
@@ -1657,7 +1657,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     }
     if(!in_list)
     {
-      dt_control_set_mouse_over_id(-1);
+      dt_control_set_mouse_over_id(NO_IMGID);
     }
   }
 
@@ -1699,7 +1699,7 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move)
   return TRUE;
 }
 
-void dt_culling_change_offset_image(dt_culling_t *table, int imgid)
+void dt_culling_change_offset_image(dt_culling_t *table, dt_imgid_t imgid)
 {
   table->offset = _thumb_get_rowid(imgid);
   dt_culling_full_redraw(table, TRUE);

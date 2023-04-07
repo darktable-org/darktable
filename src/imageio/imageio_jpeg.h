@@ -61,7 +61,7 @@ int dt_imageio_jpeg_write(const char *filename, const uint8_t *in, const int wid
 /** this will collect the images icc profile (or the global export override) and append it during write. */
 int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *in, const int width,
                                            const int height, const int quality, const void *exif, int exif_len,
-                                           int imgid);
+                                           dt_imgid_t imgid);
 /** read jpeg header from file, leave file descriptor open until jpeg_read is called. */
 int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg);
 /** reads the jpeg to the (sufficiently allocated) buffer, closes file. */

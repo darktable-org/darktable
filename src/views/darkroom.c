@@ -81,10 +81,10 @@ static void _update_softproof_gamut_checking(dt_develop_t *d);
 
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
-                                                       const int32_t imgid,
+                                                       const dt_imgid_t imgid,
                                                        gpointer user_data);
 
-static void _dev_change_image(dt_develop_t *dev, const int32_t imgid);
+static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid);
 
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
@@ -99,7 +99,7 @@ const char *name(const dt_view_t *self)
 static int display_image_cb(lua_State *L)
 {
   dt_develop_t *dev = darktable.develop;
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   if(luaL_testudata(L, 1, "dt_lua_image_t"))
   {
     luaA_to(L, dt_lua_image_t, &imgid, 1);
@@ -471,7 +471,7 @@ void expose(
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0;
   static int image_surface_height = 0;
-  static int32_t image_surface_imgid = -1;
+  static dt_imgid_t image_surface_imgid = NO_IMGID;
   // make a usable surface with requested width & height
   if(image_surface_width != width
      || image_surface_height != height
@@ -481,7 +481,7 @@ void expose(
     image_surface_height = height;
     if(image_surface) cairo_surface_destroy(image_surface);
     image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
-    image_surface_imgid = -1; // make sure the surface data are unknown
+    image_surface_imgid = NO_IMGID; // make sure the surface data are unknown
   }
   cairo_surface_t *surface;
   cairo_t *cr = cairo_create(image_surface);
@@ -771,7 +771,7 @@ void reset(dt_view_t *self)
 
 gboolean try_enter(dt_view_t *self)
 {
-  const int32_t imgid = dt_act_on_get_main_image();
+  const dt_imgid_t imgid = dt_act_on_get_main_image();
 
   if(imgid < 0)
   {
@@ -802,7 +802,7 @@ gboolean try_enter(dt_view_t *self)
 
 #ifdef USE_LUA
 
-static void _fire_darkroom_image_loaded_event(const bool clean, const int32_t imgid)
+static void _fire_darkroom_image_loaded_event(const bool clean, const dt_imgid_t imgid)
 {
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
       0, NULL, NULL,
@@ -814,7 +814,7 @@ static void _fire_darkroom_image_loaded_event(const bool clean, const int32_t im
 
 #endif
 
-static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
+static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
@@ -1159,10 +1159,10 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
-                                                       const int32_t imgid,
+                                                       const dt_imgid_t imgid,
                                                        gpointer user_data)
 {
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     // switch images in darkroom mode:
     const dt_view_t *self = (dt_view_t *)user_data;
@@ -1180,7 +1180,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
   if(dev->image_loading) return;
 
-  const int32_t imgid = dev->image_storage.id;
+  const dt_imgid_t imgid = dev->image_storage.id;
   int new_offset = 1;
   int new_id = -1;
 
@@ -1341,7 +1341,7 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   gchar *name = (char *)user_data;
   dt_develop_t *dev = darktable.develop;
 
-  const uint32_t imgid = dev->image_storage.id;
+  const dt_imgid_t imgid = dev->image_storage.id;
 
   // write history to ensure the preview will be done with latest
   // development history.
@@ -3243,7 +3243,7 @@ void leave(dt_view_t *self)
   // commit image ops to db
   dt_dev_write_history(dev);
 
-  const int32_t imgid = dev->image_storage.id;
+  const dt_imgid_t imgid = dev->image_storage.id;
 
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
@@ -3405,7 +3405,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
-  if(mouse_over_id == -1)
+  if(!dt_is_valid_imgid(mouse_over_id))
   {
     mouse_over_id = dev->image_storage.id;
     dt_control_set_mouse_over_id(mouse_over_id);
@@ -3735,10 +3735,10 @@ int button_pressed(dt_view_t *self,
 
     const float scalefit = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1, 0) * darktable.gui->ppd;
     const gboolean ctrl_pressed = dt_modifier_is(state, GDK_CONTROL_MASK);
-    
+
     // Get config so we can check if the user want to cycle through 100%->200%->FIT or
     // only switch between FIT<->100% unless ctrl key is pressed.
-    const gboolean cycle_zoom_200 = 
+    const gboolean cycle_zoom_200 =
           dt_conf_get_bool("darkroom/mouse/middle_button_cycle_zoom_to_200_percent");
 
     // We are at 200% or above.
@@ -4088,7 +4088,7 @@ static void second_window_expose(GtkWidget *widget,
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0;
   static int image_surface_height = 0;
-  static int32_t image_surface_imgid = -1;
+  static dt_imgid_t image_surface_imgid = NO_IMGID;
 
   if(image_surface_width != width
      || image_surface_height != height
@@ -4101,7 +4101,7 @@ static void second_window_expose(GtkWidget *widget,
     image_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width * dev->second_window.ppd, height * dev->second_window.ppd);
     cairo_surface_set_device_scale(image_surface, dev->second_window.ppd, dev->second_window.ppd);
 
-    image_surface_imgid = -1; // invalidate old stuff
+    image_surface_imgid = NO_IMGID; // invalidate old stuff
   }
 
   cairo_surface_t *surface;

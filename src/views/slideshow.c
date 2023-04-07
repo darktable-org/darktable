@@ -57,7 +57,7 @@ typedef struct _slideshow_buf_t
   size_t width;
   size_t height;
   int rank;
-  int imgid;
+  dt_imgid_t imgid;
   gboolean invalidated;
 } dt_slideshow_buf_t;
 
@@ -114,7 +114,7 @@ static int _get_image_at_rank(const int rank)
   return id;
 }
 
-static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d, const int imgid)
+static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d, const dt_imgid_t imgid)
 {
   dt_slideshow_slot_t slt = -1;
 
@@ -135,7 +135,7 @@ static void _init_slot(dt_slideshow_buf_t *s)
   s->width = 0;
   s->height = 0;
   s->rank = -1;
-  s->imgid = -1;
+  s->imgid = NO_IMGID;
   s->invalidated = TRUE;
 }
 
@@ -194,7 +194,7 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   d->exporting++;
   const size_t s_width = d->width;
   const size_t s_height = d->height;
-  const int imgid = d->buf[slot].imgid;
+  const dt_imgid_t imgid = d->buf[slot].imgid;
   size_t width = d->buf[slot].width;
   size_t height = d->buf[slot].height;
   uint8_t *buf;
@@ -459,10 +459,10 @@ void enter(dt_view_t *self)
   }
 
   // if one selected start with it, otherwise start at the current lighttable offset
-  const int imgid = dt_act_on_get_main_image();
+  const dt_imgid_t imgid = dt_act_on_get_main_image();
   gint selrank = -1;
 
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     sqlite3_stmt *stmt;
     gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
@@ -536,7 +536,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   dt_pthread_mutex_lock(&d->lock);
   dt_slideshow_buf_t *slot = &(d->buf[S_CURRENT]);
-  const int32_t imgid = slot->imgid;
+  const dt_imgid_t imgid = slot->imgid;
 
   if(d->width < slot->width
      || d->height < slot->height)

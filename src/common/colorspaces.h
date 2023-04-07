@@ -214,10 +214,10 @@ cmsHPROFILE dt_colorspaces_create_vendor_profile(const char *makermodel);
 cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
 
 /** return the work profile as set in colorin */
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid);
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const dt_imgid_t imgid);
 
 /** return the output profile as set in colorout, taking export override into account if passed in. */
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const dt_imgid_t imgid,
                                                                         dt_colorspaces_color_profile_type_t over_type,
                                                                         const char *over_filename);
 

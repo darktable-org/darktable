@@ -85,7 +85,7 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   dt_lib_imageinfo_t *d = (dt_lib_imageinfo_t *)self->data;
 
   // we grab the image
-  const int32_t imgid = darktable.develop->image_storage.id;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(imgid <= 0) return;
 
   // we compute the info line (we reuse the function used in export to disk)

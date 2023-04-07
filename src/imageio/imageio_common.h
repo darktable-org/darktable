@@ -84,7 +84,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
 
 struct dt_imageio_module_format_t;
 struct dt_imageio_module_data_t;
-int dt_imageio_export(const int32_t imgid,
+int dt_imageio_export(const dt_imgid_t imgid,
                       const char *filename,
                       struct dt_imageio_module_format_t *format,
                       struct dt_imageio_module_data_t *format_params,
@@ -101,7 +101,7 @@ int dt_imageio_export(const int32_t imgid,
                       const int total,
                       dt_export_metadata_t *metadata);
 
-int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
+int dt_imageio_export_with_flags(const dt_imgid_t imgid, const char *filename,
                                  struct dt_imageio_module_format_t *format,
                                  struct dt_imageio_module_data_t *format_params,
                                  const gboolean ignore_exif,
@@ -174,7 +174,7 @@ gboolean dt_imageio_lookup_makermodel(const char *maker,
 // get the type of image from its extension
 dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension);
 
-cairo_surface_t *dt_imageio_preview(const int32_t imgid,
+cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
                                     const size_t width,
                                     const size_t height,
                                     const int history_end,

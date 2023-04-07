@@ -1205,7 +1205,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
 static void _lib_history_truncate(gboolean compress)
 {
-  const int32_t imgid = darktable.develop->image_storage.id;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
 
   dt_dev_undo_start_record(darktable.develop);
@@ -1279,7 +1279,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
                                                      GdkEventButton *e,
                                                      gpointer user_data)
 {
-  const int32_t imgid = darktable.develop->image_storage.id;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
   static int reset = 0;
   if(reset) return FALSE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
@@ -1345,7 +1345,7 @@ static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
 
 void gui_reset(dt_lib_module_t *self)
 {
-  const int32_t imgid = darktable.develop->image_storage.id;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
 
   if(!dt_conf_get_bool("ask_before_discard")

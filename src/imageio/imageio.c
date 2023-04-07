@@ -650,7 +650,7 @@ void dt_imageio_to_fractional(const float in, uint32_t *num, uint32_t *den)
   }
 }
 
-int dt_imageio_export(const int32_t imgid,
+int dt_imageio_export(const dt_imgid_t imgid,
                       const char *filename,
                       dt_imageio_module_format_t *format,
                       dt_imageio_module_data_t *format_params,
@@ -683,7 +683,7 @@ int dt_imageio_export(const int32_t imgid,
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
-int dt_imageio_export_with_flags(const int32_t imgid,
+int dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                  const char *filename,
                                  dt_imageio_module_format_t *format,
                                  dt_imageio_module_data_t *format_params,
@@ -1289,7 +1289,7 @@ static int _preview_write_image(dt_imageio_module_data_t *data,
                                 const char *over_filename,
                                 void *exif,
                                 const int exif_len,
-                                const int imgid,
+                                const dt_imgid_t imgid,
                                 const int num,
                                 const int total,
                                 dt_dev_pixelpipe_t*pipe,
@@ -1319,7 +1319,7 @@ static const char *_preview_mime(dt_imageio_module_data_t *data)
   return "memory";
 }
 
-cairo_surface_t *dt_imageio_preview(const int32_t imgid,
+cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
                                     const size_t width,
                                     const size_t height,
                                     const int history_end,

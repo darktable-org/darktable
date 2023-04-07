@@ -1005,7 +1005,7 @@ void gui_reset(struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *self)
 {
   // we might be called from presets update infrastructure => there is no image
-  if(!self->dev || self->dev->image_storage.id == -1) return;
+  if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id)) return;
 
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   // enable this per default if raw or sraw if not true monochrome

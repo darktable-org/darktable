@@ -67,7 +67,7 @@ OPTIONAL(int, initialize_store, struct dt_imageio_module_storage_t *self, struct
                                 struct dt_imageio_module_format_t **format, struct dt_imageio_module_data_t **fdata,
                                 GList **images, const gboolean high_quality, const gboolean upscale);
 /* this actually does the work */
-REQUIRED(int, store, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data, const int imgid,
+REQUIRED(int, store, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data, const dt_imgid_t imgid,
                      struct dt_imageio_module_format_t *format, struct dt_imageio_module_data_t *fdata, const int num,
                      const int total, const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
                      const enum dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
@@ -102,4 +102,3 @@ OPTIONAL(char *, ask_user_confirmation, struct dt_imageio_module_storage_t *self
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

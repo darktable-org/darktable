@@ -115,7 +115,7 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 }
 
 uint64_t dt_dev_pixelpipe_cache_basichash(
-           int imgid,
+           dt_imgid_t imgid,
            struct dt_dev_pixelpipe_t *pipe,
            int module)
 {
@@ -158,7 +158,7 @@ uint64_t dt_dev_pixelpipe_cache_basichash(
 }
 
 uint64_t dt_dev_pixelpipe_cache_basichash_prior(
-           int imgid,
+           dt_imgid_t imgid,
            struct dt_dev_pixelpipe_t *pipe,
            const dt_iop_module_t *const module)
 {
@@ -183,7 +183,7 @@ uint64_t dt_dev_pixelpipe_cache_basichash_prior(
 }
 
 void dt_dev_pixelpipe_cache_fullhash(
-        int imgid,
+        dt_imgid_t imgid,
         const dt_iop_roi_t *roi,
         struct dt_dev_pixelpipe_t *pipe,
         int module,
@@ -199,7 +199,7 @@ void dt_dev_pixelpipe_cache_fullhash(
 }
 
 uint64_t dt_dev_pixelpipe_cache_hash(
-           int imgid,
+           dt_imgid_t imgid,
            const dt_iop_roi_t *roi,
            dt_dev_pixelpipe_t *pipe,
            int module)

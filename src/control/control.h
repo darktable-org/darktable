@@ -155,7 +155,7 @@ typedef struct dt_control_t
   int button_down, button_down_which, button_type;
   double button_x, button_y;
   int history_start;
-  int32_t mouse_over_id;
+  dt_imgid_t mouse_over_id;
   gboolean lock_cursor_shape;
 
   // TODO: move these to some darkroom struct
@@ -281,4 +281,3 @@ void dt_control_set_dev_zoom(dt_dev_zoom_t value);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

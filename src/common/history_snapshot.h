@@ -23,7 +23,7 @@
 
 typedef struct dt_undo_lt_history_t
 {
-  int32_t imgid;
+  dt_imgid_t imgid;
   int before;
   int before_history_end;
   int after;
@@ -32,7 +32,7 @@ typedef struct dt_undo_lt_history_t
 
 dt_undo_lt_history_t *dt_history_snapshot_item_init(void);
 
-void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *history_end);
+void dt_history_snapshot_undo_create(const dt_imgid_t imgid, int *snap_id, int *history_end);
 
 void dt_history_snapshot_undo_pop(gpointer user_data, const dt_undo_type_t type, const dt_undo_data_t data, const dt_undo_action_t action, GList **imgs);
 
@@ -43,4 +43,3 @@ void dt_history_snapshot_undo_lt_history_data_free(gpointer data);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

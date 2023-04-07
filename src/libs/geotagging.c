@@ -86,7 +86,7 @@ typedef struct dt_lib_geotagging_t
   GDateTime *datetime0;
   GTimeSpan offset;
   gboolean editing;
-  uint32_t imgid;
+  dt_imgid_t imgid;
   GList* imgs;
   int nb_imgs;
   GtkWidget *apply_offset;
@@ -115,7 +115,7 @@ typedef struct dt_lib_geotagging_t
 
 typedef struct dt_sel_img_t
 {
-  uint32_t imgid;
+  dt_imgid_t imgid;
   uint32_t segid;
   gchar dt[DT_DATETIME_LENGTH];
   gboolean counted;
@@ -324,7 +324,7 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
                         || !((next->gl.latitude == im->gl.latitude)
                              && (next->gl.longitude == im->gl.longitude))))
       {
-        struct {uint32_t imgid; float latitude; float longitude; int count;} p;
+        struct {dt_imgid_t imgid; float latitude; float longitude; int count;} p;
         p.imgid = im->imgid;
         p.latitude = im->gl.latitude;
         p.longitude = im->gl.longitude;
@@ -901,7 +901,7 @@ static void _setup_selected_images_list(dt_lib_module_t *self)
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int32_t imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     char dt[DT_DATETIME_LENGTH];
     if(!cimg) continue;
@@ -1325,9 +1325,9 @@ static GDateTime *_get_image_datetime(dt_lib_module_t *self)
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   GList *selected = dt_collection_get_selected(darktable.collection, 1);
   const int selid = selected ? GPOINTER_TO_INT(selected->data) : 0;
-  const int imgid = dt_act_on_get_main_image();
+  const dt_imgid_t imgid = dt_act_on_get_main_image();
   GDateTime *datetime = NULL;
-  if((selid != 0) || ((selid == 0) && (imgid != -1)))
+  if((selid != 0) || ((selid == 0) && (dt_is_valid_imgid(imgid))))
   {
     // consider act on only if no selected
     char datetime_s[DT_DATETIME_LENGTH];
