@@ -18,10 +18,12 @@
 
 #pragma once
 
-#include "common/geo.h"
 #include <glib.h>
 #include <sqlite3.h>
 #include <stdint.h>
+
+#include "common/darktable.h"
+#include "common/geo.h"
 
 typedef enum dt_map_locations_type_t
 {
