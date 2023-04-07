@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/undo.h"
+#include "common/darktable.h"
 
 typedef struct dt_undo_lt_history_t
 {

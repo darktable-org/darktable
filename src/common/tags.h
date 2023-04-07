@@ -22,6 +22,8 @@
 #include <sqlite3.h>
 #include <stdint.h>
 
+#include "common/darktable.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

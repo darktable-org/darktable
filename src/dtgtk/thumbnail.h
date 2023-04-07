@@ -23,6 +23,8 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "common/darktable.h"
+
 #define MAX_STARS 5
 #define IMG_TO_FIT 0.0f
 
