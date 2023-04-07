@@ -42,6 +42,9 @@ static void _brush_bounding_box(const float *const points,
                                 int *posx,
                                 int *posy);
 
+// A brush is serialized with 6 floats: { ctrl1_x, ctrl1_y, x, y, ctrl2_x, ctrl2_y }
+// So we have 3 points each with 2 floats.
+
 static inline int _nb_ctrl_point(const int nb_point)
 {
   return nb_point * 3;
@@ -2672,8 +2675,11 @@ static void _brush_events_post_expose(cairo_t *cr,
   if(gpt->points_count > _nb_ctrl_point(nb) + 2)
   {
     cairo_move_to(cr, gpt->points[nb * 6], gpt->points[nb * 6 + 1]);
-    int seg = 1, seg2 = 0;
-    for(int i = _nb_ctrl_point(nb); i < gpt->points_count; i++)
+
+    int seg = 1;
+    int i = _nb_ctrl_point(nb);
+
+    while(seg)
     {
       cairo_line_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       // we decide to highlight the form segment by segment
@@ -2681,18 +2687,17 @@ static void _brush_events_post_expose(cairo_t *cr,
          && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
       {
         // this is the end of the last segment, so we have to draw it
-
         dt_masks_line_stroke
           (cr, FALSE, FALSE,
            (gui->group_selected == index)
-           && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg2),
+           && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg - 1),
            zoom_scale);
 
         // and we update the segment number
         seg = (seg + 1) % nb;
-        seg2++;
         cairo_move_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       }
+      i++;
     }
   }
 
