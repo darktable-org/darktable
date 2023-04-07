@@ -52,11 +52,11 @@ body:
         A log or backtrace will help us investigate your issue. If available please attach below. You can also attach a screenshot or screencast or any other useful information.
       placeholder: |
         Drag and drop logfile or backtrace file here, if available.
-        Copying the contents is okay for short logs (< 20 lines), but please put them in code blocks:
+        Copying the contents is okay for short logs (like < 20 lines or so), but please put them in code blocks:
         ```
         log here
         ```
-        You can also use pastebin.com or similar
+        You can also use pastebin.com or similar service.
   
   - type: input
     id: commit
