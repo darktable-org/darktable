@@ -76,7 +76,6 @@ body:
         - 'flatpak'
         - 'OSB'
         - 'self compiled'
-        - 'bought it'
         - 'an online forum'
     validations:
      required: true
