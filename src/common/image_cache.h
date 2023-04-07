@@ -72,7 +72,7 @@ void dt_image_cache_remove(dt_image_cache_t *cache, const dt_imgid_t imgid);
 
 // register timestamps in cache
 void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid);
-void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, const dt_imgid_t imgid, const int32_t sourceid);
+void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, const dt_imgid_t imgid, const dt_imgid_t sourceid);
 void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid);
 void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid);
 void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid);

@@ -215,7 +215,9 @@ void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolea
   }
 }
 
-void dt_colorlabels_toggle_label_on_list(const GList *list, const int color, const gboolean undo_on)
+void dt_colorlabels_toggle_label_on_list(const GList *list,
+                                         const int color,
+                                         const gboolean undo_on)
 {
   const int label = 1<<color;
   GList *undo = NULL;
@@ -238,7 +240,8 @@ void dt_colorlabels_toggle_label_on_list(const GList *list, const int color, con
 
   if(undo_on)
   {
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
+    dt_undo_record(darktable.undo, NULL,
+                   DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
     dt_undo_end_group(darktable.undo);
   }
   dt_collection_hint_message(darktable.collection);
@@ -246,11 +249,13 @@ void dt_colorlabels_toggle_label_on_list(const GList *list, const int color, con
 
 int dt_colorlabels_check_label(const dt_imgid_t imgid, const int color)
 {
-  if(imgid <= 0) return 0;
+  if(!dt_is_valid_imgid(imgid)) return 0;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT * FROM main.color_labels WHERE imgid=?1 AND color=?2 LIMIT 1",
+                              "SELECT *"
+                              " FROM main.color_labels"
+                              " WHERE imgid=?1 AND color=?2 LIMIT 1",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -343,4 +348,3 @@ const dt_action_def_t dt_action_def_color_label
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

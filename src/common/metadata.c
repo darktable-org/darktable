@@ -630,7 +630,7 @@ void dt_metadata_set(const dt_imgid_t imgid, const char *key, const char *value,
 
 void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char *value)
 {
-  if(!key || !imgid || !dt_is_valid_imgid(imgid)) return;
+  if(!key || !dt_is_valid_imgid(imgid)) return;
 
   const int keyid = dt_metadata_get_keyid(key);
 
@@ -790,4 +790,3 @@ gboolean dt_metadata_already_imported(const char *filename, const char *datetime
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

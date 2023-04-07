@@ -162,7 +162,7 @@ int main(int argc, char *arg[])
   // parse command line arguments
   dt_mipmap_size_t min_mip = DT_MIPMAP_0;
   dt_mipmap_size_t max_mip = DT_MIPMAP_2;
-  int32_t min_imgid = 0;
+  int32_t min_imgid = NO_IMGID;
   int32_t max_imgid = INT32_MAX;
 
   int k;

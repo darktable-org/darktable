@@ -41,7 +41,7 @@ static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
   const dt_imgid_t imgid = GPOINTER_TO_INT(b);
-  if(th->imgid < 0 || imgid < 0) return 1;
+  if(!dt_is_valid_imgid(th->imgid) || !dt_is_valid_imgid(imgid)) return 1;
   return (th->imgid != imgid);
 }
 static void _list_remove_thumb(gpointer user_data)
@@ -797,7 +797,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 
 static void _dt_filmstrip_change(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
-  if(!user_data || imgid <= 0) return;
+  if(!user_data || !dt_is_valid_imgid(imgid)) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 
@@ -1825,4 +1825,3 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

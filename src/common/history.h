@@ -77,7 +77,7 @@ gboolean dt_history_merge_module_into_history(struct dt_develop_t *dev_dest,
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
 gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
-                                            const int32_t dest_imgid,
+                                            const dt_imgid_t dest_imgid,
                                             const gboolean merge,
                                             GList *ops,
                                             const gboolean copy_iop_order,

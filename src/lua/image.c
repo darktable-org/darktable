@@ -65,7 +65,7 @@ static void releasewriteimage(lua_State *L, dt_image_t *image)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_lua_image_push(lua_State *L, dt_imgid_t imgid)
+void dt_lua_image_push(lua_State *L, const dt_imgid_t imgid)
 {
   // check that id is valid
   sqlite3_stmt *stmt;
@@ -326,7 +326,7 @@ static int exif_datetime_taken_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    int datetime_size = dt_conf_get_bool("lighttable/ui/milliseconds") ? DT_DATETIME_LENGTH 
+    int datetime_size = dt_conf_get_bool("lighttable/ui/milliseconds") ? DT_DATETIME_LENGTH
                                                                        : DT_DATETIME_EXIF_LENGTH;
     char *sdt = calloc(datetime_size, sizeof(char));
     dt_datetime_img_to_exif(sdt, datetime_size, my_image);
@@ -357,7 +357,7 @@ static int local_copy_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_imgid_t imgid = my_image->id;
+    const dt_imgid_t imgid = my_image->id;
     luaL_checktype(L, 3, LUA_TBOOLEAN);
     // we need to release write image for the other functions to use it
     releasewriteimage(L, my_image);
@@ -434,7 +434,7 @@ int group_with(lua_State *L)
   luaA_to(L, dt_lua_image_t, &second_image, 2);
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, second_image, 'r');
-  dt_imgid_t group_id = cimg->group_id;
+  const dt_imgid_t group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
   dt_grouping_add_to_group(group_id, first_image);
@@ -455,7 +455,7 @@ int get_group(lua_State *L)
   dt_lua_image_t first_image;
   luaA_to(L, dt_lua_image_t, &first_image, 1);
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, first_image, 'r');
-  dt_imgid_t group_id = cimg->group_id;
+  const dt_imgid_t group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -466,7 +466,7 @@ int get_group(lua_State *L)
   int table_index = 1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
     lua_seti(L, -2, table_index);
     table_index++;

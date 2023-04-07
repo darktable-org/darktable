@@ -523,7 +523,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
 }
 
 static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
-                                                  const int32_t dest_imgid,
+                                                  const dt_imgid_t dest_imgid,
                                                   GList *ops,
                                                   const gboolean copy_full)
 {
@@ -646,7 +646,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
 }
 
 static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgid,
-                                                      const int32_t dest_imgid,
+                                                      const dt_imgid_t dest_imgid,
                                                       GList *ops,
                                                       const gboolean copy_full)
 {
@@ -814,7 +814,7 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
 }
 
 gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
-                                            const int32_t dest_imgid,
+                                            const dt_imgid_t dest_imgid,
                                             const gboolean merge,
                                             GList *ops,
                                             const gboolean copy_iop_order,
@@ -822,7 +822,7 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
 {
   if(imgid == dest_imgid) return TRUE;
 
-  if(imgid <= 0)
+  if(!dt_is_valid_imgid(imgid))
   {
     dt_control_log(_("you need to copy history from an image before you paste it onto another"));
     return TRUE;
@@ -1425,7 +1425,7 @@ GList *dt_history_duplicate(GList *hist)
 // if the image has no history return 0
 static gsize _history_hash_compute_from_db(const dt_imgid_t imgid, guint8 **hash)
 {
-  if(imgid <= 0) return 0;
+  if(!dt_is_valid_imgid(imgid)) return 0;
 
   GChecksum *checksum = g_checksum_new(G_CHECKSUM_MD5);
   gsize hash_len = 0;
@@ -1518,7 +1518,7 @@ static gsize _history_hash_compute_from_db(const dt_imgid_t imgid, guint8 **hash
 
 void dt_history_hash_write_from_history(const dt_imgid_t imgid, const dt_history_hash_t type)
 {
-  if(imgid <= 0) return;
+  if(!dt_is_valid_imgid(imgid)) return;
 
   guint8 *hash = NULL;
   gsize hash_len = _history_hash_compute_from_db(imgid, &hash);
@@ -1686,7 +1686,7 @@ void dt_history_hash_free(dt_history_hash_values_t *hash)
 gboolean dt_history_hash_is_mipmap_synced(const dt_imgid_t imgid)
 {
   gboolean status = FALSE;
-  if(imgid <= 0) return status;
+  if(!dt_is_valid_imgid(imgid)) return status;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1708,7 +1708,7 @@ gboolean dt_history_hash_is_mipmap_synced(const dt_imgid_t imgid)
 
 void dt_history_hash_set_mipmap(const dt_imgid_t imgid)
 {
-  if(imgid <= 0) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1725,7 +1725,7 @@ void dt_history_hash_set_mipmap(const dt_imgid_t imgid)
 dt_history_hash_t dt_history_hash_get_status(const dt_imgid_t imgid)
 {
   dt_history_hash_t status = DT_HISTORY_HASH_NONE;
-  if(imgid <= 0) return status;
+  if(!dt_is_valid_imgid(imgid)) return status;
   sqlite3_stmt *stmt;
   // clang-format off
   char *query = g_strdup_printf("SELECT CASE"
@@ -1757,7 +1757,7 @@ gboolean dt_history_copy(const dt_imgid_t imgid)
   // note that this routine does not copy anything, it just setup the copy_paste proxy
   // with the needed information that will be used while pasting.
 
-  if(imgid <= 0) return FALSE;
+  if(!dt_is_valid_imgid(imgid)) return FALSE;
 
   darktable.view_manager->copy_paste.copied_imageid = imgid;
   darktable.view_manager->copy_paste.full_copy = FALSE;

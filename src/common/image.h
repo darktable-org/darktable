@@ -394,19 +394,20 @@ int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
 /** get image id by filename */
-int32_t dt_image_get_id_full_path(const gchar *filename);
+dt_imgid_t dt_image_get_id_full_path(const gchar *filename);
 /** get image id by film_id and filename */
-int32_t dt_image_get_id(const uint32_t film_id, const gchar *filename);
+dt_imgid_t dt_image_get_id(const uint32_t film_id,
+                           const gchar *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
-uint32_t dt_image_import(int32_t film_id,
-                         const char *filename,
-                         const gboolean override_ignore_jpegs,
-                         const gboolean raise_signals);
+dt_imgid_t dt_image_import(int32_t film_id,
+                           const char *filename,
+                           const gboolean override_ignore_jpegs,
+                           const gboolean raise_signals);
 /** imports a new image from raw/etc file and adds it to the data base
  * and image cache. Use from lua thread.*/
-uint32_t dt_image_import_lua(const int32_t film_id,
-                             const char *filename,
-                             const gboolean override_ignore_jpegs);
+dt_imgid_t dt_image_import_lua(const int32_t film_id,
+                               const char *filename,
+                               const gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
 void dt_image_remove(const dt_imgid_t imgid);
 /** duplicates the given image in the database with the duplicate
@@ -414,9 +415,10 @@ void dt_image_remove(const dt_imgid_t imgid);
     exists just return the imgid without producing new
     duplicate. called with newversion -1 a new duplicate is produced
     with the next free version number. */
-int32_t dt_image_duplicate_with_version(const dt_imgid_t imgid, const int32_t newversion);
+dt_imgid_t dt_image_duplicate_with_version(const dt_imgid_t imgid,
+                                           const int32_t newversion);
 /** duplicates the given image in the database. */
-int32_t dt_image_duplicate(const dt_imgid_t imgid);
+dt_imgid_t dt_image_duplicate(const dt_imgid_t imgid);
 /** flips the image, clock wise, if given flag. */
 void dt_image_flip(const dt_imgid_t imgid, const int32_t cw);
 void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t user_flip);
@@ -504,9 +506,9 @@ int32_t dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gcha
 int32_t dt_image_copy(const dt_imgid_t imgid, const int32_t filmid);
 /** physically copy image to the folder of the film roll with filmid and
  *  the name given by newname, and duplicate update database entries. */
-int32_t dt_image_copy_rename(const dt_imgid_t imgid,
-                             const int32_t filmid,
-                             const gchar *newname);
+dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
+                                const int32_t filmid,
+                                const gchar *newname);
 int dt_image_local_copy_set(const dt_imgid_t imgid);
 int dt_image_local_copy_reset(const dt_imgid_t imgid);
 /* check whether it is safe to remove a file */

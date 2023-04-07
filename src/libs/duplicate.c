@@ -180,7 +180,7 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget,
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
-  d->imgid = 0;
+  d->imgid = NO_IMGID;
   dt_control_queue_redraw_center();
 }
 
@@ -246,7 +246,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
-  d->imgid = 0;
+  d->imgid = NO_IMGID;
   // we drop the preview if any
   if(d->preview_surf)
   {
@@ -381,7 +381,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)g_malloc0(sizeof(dt_lib_duplicate_t));
   self->data = (void *)d;
 
-  d->imgid = 0;
+  d->imgid = NO_IMGID;
   d->preview_surf = NULL;
   d->processed_width = 0;
   d->processed_height = 0;

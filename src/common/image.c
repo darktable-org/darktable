@@ -801,7 +801,7 @@ void dt_image_set_images_locations(const GList *imgs,
 
 void dt_image_update_final_size(const dt_imgid_t imgid)
 {
-  if(imgid <= 0) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   int ww = 0, hh = 0;
 
   if(darktable.develop
@@ -1146,8 +1146,8 @@ int32_t dt_image_duplicate(const dt_imgid_t imgid)
   return dt_image_duplicate_with_version(imgid, -1);
 }
 
-static int32_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
-                                                 const int32_t newversion)
+static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
+                                                    const int32_t newversion)
 {
   sqlite3_stmt *stmt;
   dt_imgid_t newid = NO_IMGID;
@@ -1345,11 +1345,11 @@ static int32_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
   return newid;
 }
 
-static int32_t _image_duplicate_with_version(const dt_imgid_t imgid,
-                                             const int32_t newversion,
-                                             const gboolean undo)
+static dt_imgid_t _image_duplicate_with_version(const dt_imgid_t imgid,
+                                                const int32_t newversion,
+                                                const gboolean undo)
 {
-  const int32_t newid = _image_duplicate_with_version_ext(imgid, newversion);
+  const dt_imgid_t newid = _image_duplicate_with_version_ext(imgid, newversion);
 
   if(dt_is_valid_imgid(newid))
   {
@@ -1386,7 +1386,8 @@ static int32_t _image_duplicate_with_version(const dt_imgid_t imgid,
   return newid;
 }
 
-int32_t dt_image_duplicate_with_version(const dt_imgid_t imgid, const int32_t newversion)
+dt_imgid_t dt_image_duplicate_with_version(const dt_imgid_t imgid,
+                                           const int32_t newversion)
 {
   return _image_duplicate_with_version(imgid, newversion, TRUE);
 }
@@ -1657,8 +1658,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
   sqlite3_stmt *stmt;
   // select from images; if found => return
   gchar *imgfname = g_path_get_basename(normalized_filename);
-  int32_t id = dt_image_get_id(film_id, imgfname);
-  if(id >= 0)
+  dt_imgid_t id = dt_image_get_id(film_id, imgfname);
+  if(dt_is_valid_imgid(id))
   {
     g_free(imgfname);
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
@@ -1899,9 +1900,9 @@ static uint32_t _image_import_internal(const int32_t film_id,
   return id;
 }
 
-int32_t dt_image_get_id_full_path(const gchar *filename)
+dt_imgid_t dt_image_get_id_full_path(const gchar *filename)
 {
-  int32_t id = -1;
+  dt_imgid_t id = NO_IMGID;
   gchar *dir = g_path_get_dirname(filename);
   gchar *file = g_path_get_basename(filename);
   sqlite3_stmt *stmt;
@@ -1924,9 +1925,9 @@ int32_t dt_image_get_id_full_path(const gchar *filename)
   return id;
 }
 
-int32_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
+dt_imgid_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
 {
-  int32_t id = -1;
+  dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
@@ -1939,18 +1940,18 @@ int32_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
   return id;
 }
 
-uint32_t dt_image_import(const int32_t film_id,
-                         const char *filename,
-                         const gboolean override_ignore_jpegs,
-                         const gboolean raise_signals)
+dt_imgid_t dt_image_import(const int32_t film_id,
+                           const char *filename,
+                           const gboolean override_ignore_jpegs,
+                           const gboolean raise_signals)
 {
   return _image_import_internal(film_id, filename, override_ignore_jpegs,
                                 TRUE, raise_signals);
 }
 
-uint32_t dt_image_import_lua(const int32_t film_id,
-                             const char *filename,
-                             const gboolean override_ignore_jpegs)
+dt_imgid_t dt_image_import_lua(const int32_t film_id,
+                               const char *filename,
+                               const gboolean override_ignore_jpegs)
 {
   return _image_import_internal(film_id, filename, override_ignore_jpegs, FALSE, TRUE);
 }
@@ -2247,9 +2248,9 @@ int32_t dt_image_move(const dt_imgid_t imgid, const int32_t filmid)
   return dt_image_rename(imgid, filmid, NULL);
 }
 
-int32_t dt_image_copy_rename(const dt_imgid_t imgid,
-                             const int32_t filmid,
-                             const gchar *newname)
+dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
+                                const int32_t filmid,
+                                const gchar *newname)
 {
   dt_imgid_t newid = NO_IMGID;
   sqlite3_stmt *stmt;
@@ -2709,7 +2710,7 @@ int dt_image_local_copy_reset(const dt_imgid_t imgid)
 
 gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
 {
-  if(imgid <= 0)
+  if(!dt_is_valid_imgid(imgid))
     return TRUE;
 
   const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();

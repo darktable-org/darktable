@@ -773,7 +773,7 @@ gboolean try_enter(dt_view_t *self)
 {
   const dt_imgid_t imgid = dt_act_on_get_main_image();
 
-  if(imgid < 0)
+  if(!dt_is_valid_imgid(imgid))
   {
     // fail :(
     dt_control_log(_("no image to open!"));

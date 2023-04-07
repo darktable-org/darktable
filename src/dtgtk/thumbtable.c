@@ -41,7 +41,7 @@ static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
   const dt_imgid_t imgid = GPOINTER_TO_INT(b);
-  if(th->imgid < 0 || imgid < 0) return 1;
+  if(!dt_is_valid_imgid(th->imgid) || !dt_is_valid_imgid(imgid)) return 1;
   return (th->imgid != imgid);
 }
 static void _list_remove_thumb(gpointer user_data)
@@ -749,7 +749,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
 
 static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, dt_imgid_t imgid)
 {
-  if(imgid <= 0) return NULL;
+  if(!dt_is_valid_imgid(imgid)) return NULL;
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -2287,9 +2287,9 @@ static void _accel_duplicate(dt_action_t *action)
 {
   dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
 
-  const int32_t sourceid = dt_act_on_get_main_image();
+  const dt_imgid_t sourceid = dt_act_on_get_main_image();
   const int32_t newimgid = dt_image_duplicate(sourceid);
-  if(newimgid <= 0) return;
+  if(!dt_is_valid_imgid(newimgid)) return;
 
   if(strcmp(action->id, "duplicate image"))
     dt_history_delete_on_image(newimgid);
