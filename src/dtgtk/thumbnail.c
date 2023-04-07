@@ -944,7 +944,7 @@ static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event
             || thumb->groupid == darktable.gui->expanded_group_id) // the group is already expanded, so ...
     {
       if(thumb->imgid == darktable.gui->expanded_group_id && darktable.gui->grouping) // ... collapse it
-        darktable.gui->expanded_group_id = -1;
+        darktable.gui->expanded_group_id = NO_IMGID;
       else // ... make the image the new representative of the group
         darktable.gui->expanded_group_id = dt_grouping_change_representative(thumb->imgid);
     }

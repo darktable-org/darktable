@@ -434,7 +434,7 @@ int group_with(lua_State *L)
   luaA_to(L, dt_lua_image_t, &second_image, 2);
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, second_image, 'r');
-  int group_id = cimg->group_id;
+  dt_imgid_t group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
   dt_grouping_add_to_group(group_id, first_image);
@@ -455,7 +455,7 @@ int get_group(lua_State *L)
   dt_lua_image_t first_image;
   luaA_to(L, dt_lua_image_t, &first_image, 1);
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, first_image, 'r');
-  int group_id = cimg->group_id;
+  dt_imgid_t group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

@@ -2217,7 +2217,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   if(!collection->clone && query_change == DT_COLLECTION_CHANGE_NEW_QUERY && darktable.gui)
   {
     // if the query has changed, we reset the expanded group
-    darktable.gui->expanded_group_id = -1;
+    darktable.gui->expanded_group_id = NO_IMGID;
   }
 
   if(!collection->clone)
