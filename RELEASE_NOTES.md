@@ -541,6 +541,8 @@ The following is a summary of the main features added to darktable
   this is especially true for the brush mask where the highlighted
   segment was barely distinguishable due to a bug.
 
+- Set imported EXR image size to the extent of valid data window only.
+
 ## Lua
 
 ### API Version
