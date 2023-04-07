@@ -35,7 +35,7 @@ typedef struct dt_variables_params_t
   const gchar *jobcode;
 
   /** used for expanding variables such as $(IMAGE_WIDTH) $(IMAGE_HEIGHT). */
-  uint32_t imgid;
+  int32_t imgid;
 
   /** used as thread-safe sequence number. only used if >= 0. */
   int sequence;
