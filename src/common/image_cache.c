@@ -203,7 +203,7 @@ void dt_image_cache_print(dt_image_cache_t *cache)
            (float)cache->cache.cost / (float)cache->cache.cost_quota);
 }
 
-dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const int32_t imgid, char mode)
+dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const dt_imgid_t imgid, char mode)
 {
   if(imgid <= 0) return NULL;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
@@ -213,7 +213,7 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const int32_t imgid, cha
   return img;
 }
 
-dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const int32_t imgid, char mode)
+dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const dt_imgid_t imgid, char mode)
 {
   if(imgid <= 0) return NULL;
   dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
@@ -323,13 +323,13 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
 
 
 // remove the image from the cache
-void dt_image_cache_remove(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_remove(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
   dt_cache_remove(&cache->cache, imgid);
 }
 
 /* set timestamps */
-void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
   if(imgid <= 0) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -342,7 +342,7 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t 
 }
 
 void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
-                                                    const int32_t imgid,
+                                                    const dt_imgid_t imgid,
                                                     const int32_t sourceid)
 {
   if(imgid <= 0 || sourceid <= 0) return;
@@ -361,7 +361,7 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
   if(imgid <= 0) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -373,7 +373,7 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
   if(imgid <= 0) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -385,7 +385,7 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const int32_t 
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
   if(imgid <= 0) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);

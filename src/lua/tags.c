@@ -102,7 +102,7 @@ static int tag_index(lua_State *L)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
   }
   else
@@ -195,7 +195,7 @@ static int tag_delete(lua_State *L)
 
 int dt_lua_tag_attach(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   dt_lua_tag_t tagid = 0;
   if(luaL_testudata(L, 1, "dt_lua_image_t"))
   {
@@ -289,7 +289,7 @@ int dt_lua_tag_get_tagged_images(lua_State *L)
   lua_newtable(L);
   while(rv == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
     lua_seti(L, -2, table_index);
     table_index++;

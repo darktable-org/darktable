@@ -67,7 +67,7 @@ typedef enum dt_mipmap_get_flags_t
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
-  uint32_t imgid;
+  dt_imgid_t imgid;
   int32_t width, height;
   float iscale;
   uint8_t *buf;
@@ -121,7 +121,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_get_with_caller(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
-    const uint32_t imgid,
+    const dt_imgid_t imgid,
     const dt_mipmap_size_t mip,
     const dt_mipmap_get_flags_t flags,
     const char mode,
@@ -133,7 +133,7 @@ void dt_mipmap_cache_get_with_caller(
 void dt_mipmap_cache_write_get_with_caller(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
-    const uint32_t imgid,
+    const dt_imgid_t imgid,
     const int mip,
     const char *file,
     int line);
@@ -144,12 +144,12 @@ void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buf
                                          int line);
 
 // remove thumbnails, so they will be regenerated:
-void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
-void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, const dt_mipmap_size_t mip);
+void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const dt_imgid_t imgid);
+void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const dt_imgid_t imgid, const dt_mipmap_size_t mip);
 
 // evict thumbnails from cache. They will be written to disc if not existing
-void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const uint32_t imgid);
-void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, const dt_mipmap_size_t mip);
+void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const dt_imgid_t imgid);
+void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const dt_imgid_t imgid, const dt_mipmap_size_t mip);
 
 // return the closest mipmap size
 // for the given window you wish to draw.

@@ -40,7 +40,7 @@
 static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
-  const int imgid = GPOINTER_TO_INT(b);
+  const dt_imgid_t imgid = GPOINTER_TO_INT(b);
   if(th->imgid < 0 || imgid < 0) return 1;
   return (th->imgid != imgid);
 }
@@ -226,7 +226,7 @@ static int _thumb_get_imgid(int rowid)
   return id;
 }
 // get rowid from imgid
-static int _thumb_get_rowid(int imgid)
+static int _thumb_get_rowid(dt_imgid_t imgid)
 {
   int id = -1;
   sqlite3_stmt *stmt;
@@ -747,7 +747,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
   return TRUE;
 }
 
-static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, int imgid)
+static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, dt_imgid_t imgid)
 {
   if(imgid <= 0) return NULL;
   for(const GList *l = table->list; l; l = g_list_next(l))
@@ -1066,7 +1066,7 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
     return FALSE;
 
   table->mouse_inside = FALSE;
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
 }
 
@@ -1076,7 +1076,7 @@ static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, 
   // this is when the mouse enter an "empty" area of thumbtable
   if(event->detail != GDK_NOTIFY_INFERIOR) return FALSE;
 
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
 }
 
@@ -1270,7 +1270,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images", -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        const int imgid = sqlite3_column_int(stmt, 0);
+        const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
         for(int i = max_level - 1; i >= min_level; i--)
         {
           dt_mipmap_cache_remove_at_size(darktable.mipmap_cache, imgid, i);
@@ -1337,7 +1337,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-  const int imgid = dt_control_get_mouse_over_id();
+  const dt_imgid_t imgid = dt_control_get_mouse_over_id();
 
   int groupid = -1;
   // we crawl over all images to find the right one
@@ -2232,7 +2232,7 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, const int offset, cons
 }
 
 // set offset at specific imgid and redraw if needed
-gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid, const gboolean redraw)
+gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const dt_imgid_t imgid, const gboolean redraw)
 {
   table->offset_imgid = imgid;
   return dt_thumbtable_set_offset(table, _thumb_get_rowid(imgid), redraw);
@@ -2440,7 +2440,7 @@ static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const 
   return FALSE;
 }
 
-gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, const int imgid)
+gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, const dt_imgid_t imgid)
 {
   if(imgid < 1) return FALSE;
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
@@ -2496,7 +2496,7 @@ static gboolean _zoomable_check_rowid_visibility(dt_thumbtable_t *table, const i
   return FALSE;
 }
 
-gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, const int imgid)
+gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, const dt_imgid_t imgid)
 {
   if(imgid < 1) return FALSE;
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
@@ -2584,7 +2584,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   }
 
   // change image_over
-  const int imgid = _thumb_get_imgid(newrowid);
+  const dt_imgid_t imgid = _thumb_get_imgid(newrowid);
 
   dt_control_set_mouse_over_id(imgid);
 

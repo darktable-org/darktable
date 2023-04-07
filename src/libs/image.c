@@ -54,7 +54,7 @@ typedef struct dt_lib_image_t
       *copy_metadata_button, *paste_metadata_button, *clear_metadata_button,
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   GtkWidget *page1; // saved here for lua extensions
-  int imageid;
+  dt_imgid_t imageid;
 } dt_lib_image_t;
 
 typedef enum dt_lib_metadata_id
@@ -227,8 +227,8 @@ static void _update(dt_lib_module_t *self)
   else
   {
     // exact one image to act on
-    const int32_t imgid = dt_act_on_get_main_image();
-    if(imgid > 0)
+    const dt_imgid_t imgid = dt_act_on_get_main_image();
+    if(dt_is_valid_imgid(imgid))
     {
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
@@ -310,7 +310,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean dtmetadata_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata");
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
-  const int imageid = d->imageid;
+  const dt_imgid_t imageid = d->imageid;
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   if(imgs)
   {

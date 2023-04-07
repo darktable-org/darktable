@@ -114,15 +114,15 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
 int dt_thumbtable_get_offset(dt_thumbtable_t *table);
 gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, int offset, gboolean redraw);
 // set offset at specific imageid (and redraw if needed)
-gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gboolean redraw);
+gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, dt_imgid_t imgid, gboolean redraw);
 
 // fired when the zoom level change
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, int oldzoom, int newzoom);
 
 // ensure that the mentioned image is visible by moving the view if needed
-gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid);
+gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, dt_imgid_t imgid);
 // check if the mentioned image is visible
-gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, int imgid);
+gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, dt_imgid_t imgid);
 
 // drag & drop receive function - handles dropping of files in the center view (files are added to the library)
 void dt_thumbtable_event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data, guint target_type, guint time, gpointer user_data);

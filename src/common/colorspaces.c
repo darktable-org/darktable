@@ -698,7 +698,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
   return profile;
 }
 
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid)
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const dt_imgid_t imgid)
 {
   // find the colorin module -- the pointer stays valid until darktable shuts down
   static const dt_iop_module_so_t *colorin = NULL;
@@ -748,7 +748,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int 
   return p;
 }
 
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const dt_imgid_t imgid,
                                                                         dt_colorspaces_color_profile_type_t over_type,
                                                                         const char *over_filename)
 {

@@ -31,7 +31,7 @@
 
 typedef struct dt_undo_tags_t
 {
-  int imgid;
+  dt_imgid_t imgid;
   GList *before; // list of tagid before
   GList *after; // list of tagid after
 } dt_undo_tags_t;
@@ -100,7 +100,7 @@ static void _bulk_add_tags(const gchar *tag_list)
   }
 }
 
-static void _pop_undo_execute(const int imgid, GList *before, GList *after)
+static void _pop_undo_execute(const dt_imgid_t imgid, GList *before, GList *after)
 {
   gchar *tobe_removed_list = _get_tb_removed_tag_string_values(before, after);
   gchar *tobe_added_list = _get_tb_added_tag_string_values(imgid, before, after);
@@ -382,7 +382,7 @@ typedef enum dt_tag_actions_t
   DT_TA_SET_ALL,
 } dt_tag_actions_t;
 
-static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type);
+static GList *_tag_get_tags(const dt_imgid_t imgid, const dt_tag_type_t type);
 
 static gboolean _tag_execute(const GList *tags, const GList *imgs, GList **undo, const gboolean undo_on,
                              const gint action)
@@ -390,7 +390,7 @@ static gboolean _tag_execute(const GList *tags, const GList *imgs, GList **undo,
   gboolean res = FALSE;
   for(const GList *images = imgs; images; images = g_list_next(images))
   {
-    const int image_id = GPOINTER_TO_INT(images->data);
+    const dt_imgid_t image_id = GPOINTER_TO_INT(images->data);
     dt_undo_tags_t *undotags = (dt_undo_tags_t *)malloc(sizeof(dt_undo_tags_t));
     undotags->imgid = image_id;
     undotags->before = _tag_get_tags(image_id, DT_TAG_TYPE_ALL);
@@ -450,10 +450,10 @@ gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolea
   return res;
 }
 
-gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
+gboolean dt_tag_attach(const guint tagid, const dt_imgid_t imgid, const gboolean undo_on, const gboolean group_on)
 {
   gboolean res = FALSE;
-  if(imgid == -1)
+  if(!dt_is_valid_imgid(imgid))
   {
     GList *imgs = dt_act_on_get_images(!group_on, TRUE, FALSE);
     res = dt_tag_attach_images(tagid, imgs, undo_on);
@@ -554,10 +554,10 @@ gboolean dt_tag_detach_images(const guint tagid, const GList *img, const gboolea
   return FALSE;
 }
 
-gboolean dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
+gboolean dt_tag_detach(const guint tagid, const dt_imgid_t imgid, const gboolean undo_on, const gboolean group_on)
 {
   GList *imgs = NULL;
-  if(imgid == -1)
+  if(!dt_is_valid_imgid(imgid))
     imgs = dt_act_on_get_images(!group_on, TRUE, FALSE);
   else
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
@@ -568,7 +568,7 @@ gboolean dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_
   return res;
 }
 
-gboolean dt_tag_detach_by_string(const char *name, const gint imgid, const gboolean undo_on,
+gboolean dt_tag_detach_by_string(const char *name, const dt_imgid_t imgid, const gboolean undo_on,
                                  const gboolean group_on)
 {
   if(!name || !name[0]) return FALSE;
@@ -595,12 +595,12 @@ void dt_set_darktable_tags()
   sqlite3_finalize(stmt);
 }
 
-uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ignore_dt_tags)
+uint32_t dt_tag_get_attached(const dt_imgid_t imgid, GList **result, const gboolean ignore_dt_tags)
 {
   sqlite3_stmt *stmt;
   uint32_t nb_selected = 0;
   char *images = NULL;
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     images = g_strdup_printf("%d", imgid);
     nb_selected = 1;
@@ -660,9 +660,9 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
   return count;
 }
 
-static uint32_t _tag_get_attached_export(const gint imgid, GList **result)
+static uint32_t _tag_get_attached_export(const dt_imgid_t imgid, GList **result)
 {
-  if(!(imgid > 0)) return 0;
+  if(!(dt_is_valid_imgid(imgid))) return 0;
 
   sqlite3_stmt *stmt;
   // clang-format off
@@ -752,7 +752,7 @@ GList *dt_sort_tag(GList *tags, gint sort_type)
   return sorted_tags;
 }
 
-GList *dt_tag_get_list(gint imgid)
+GList *dt_tag_get_list(dt_imgid_t imgid)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
@@ -796,7 +796,7 @@ GList *dt_tag_get_list(gint imgid)
   return dt_util_glist_uniq(tags);
 }
 
-GList *dt_tag_get_hierarchical(gint imgid)
+GList *dt_tag_get_hierarchical(dt_imgid_t imgid)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
@@ -817,11 +817,11 @@ GList *dt_tag_get_hierarchical(gint imgid)
   return tags;
 }
 
-static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
+static GList *_tag_get_tags(const dt_imgid_t imgid, const dt_tag_type_t type)
 {
   GList *tags = NULL;
   char *images = NULL;
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
     images = g_strdup_printf("%d", imgid);
   else
   {
@@ -852,7 +852,7 @@ static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
   return tags;
 }
 
-GList *dt_tag_get_tags(const gint imgid, const gboolean ignore_dt_tags)
+GList *dt_tag_get_tags(const dt_imgid_t imgid, const gboolean ignore_dt_tags)
 {
   return _tag_get_tags(imgid, ignore_dt_tags ? DT_TAG_TYPE_USER : DT_TAG_TYPE_ALL);
 }
@@ -865,7 +865,7 @@ static gint _is_not_exportable_tag(gconstpointer a, gconstpointer b)
           ((ta->flags) & (DT_TF_CATEGORY | DT_TF_PRIVATE))) ? 0 : -1;
 }
 
-GList *dt_tag_get_list_export(gint imgid, int32_t flags)
+GList *dt_tag_get_list_export(dt_imgid_t imgid, int32_t flags)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
@@ -945,7 +945,7 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
   return dt_util_glist_uniq(tags);
 }
 
-GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
+GList *dt_tag_get_hierarchical_export(dt_imgid_t imgid, int32_t flags)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
@@ -969,7 +969,7 @@ GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
   return g_list_reverse(tags);  // list was built in reverse order, so un-reverse it
 }
 
-gboolean dt_is_tag_attached(const guint tagid, const gint imgid)
+gboolean dt_is_tag_attached(const guint tagid, const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
   // clang-format off
@@ -1701,7 +1701,7 @@ ssize_t dt_tag_export(const char *filename)
   return count;
 }
 
-char *dt_tag_get_subtags(const gint imgid, const char *category, const int level)
+char *dt_tag_get_subtags(const dt_imgid_t imgid, const char *category, const int level)
 {
   if(!category) return NULL;
   const guint rootnb = dt_util_string_count_char(category, '|');

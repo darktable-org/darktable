@@ -359,10 +359,10 @@ void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
 void dt_dev_process_preview2(dt_develop_t *dev);
 
-void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
-void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
+void dt_dev_load_image(dt_develop_t *dev, const dt_imgid_t imgid);
+void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid);
 /** checks if provided imgid is the image currently in develop */
-int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
+int dt_dev_is_current_image(dt_develop_t *dev, dt_imgid_t imgid);
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op);
 void dt_dev_add_history_item_ext(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
@@ -384,10 +384,10 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
-void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid);
+void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,
-                             const int imgid,
+                             const dt_imgid_t imgid,
                              const gboolean no_image,
                              const gboolean snapshot);
 void dt_dev_read_history(dt_develop_t *dev);
@@ -624,7 +624,7 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
  *
  */
 void dt_dev_image(
-  uint32_t imgid,
+  dt_imgid_t imgid,
   size_t width,
   size_t height,
   int history_end,
@@ -633,7 +633,7 @@ void dt_dev_image(
   size_t *processed_height);
 
 void dt_dev_image_ext(
-  uint32_t imgid,
+  dt_imgid_t imgid,
   size_t width,
   size_t height,
   int history_end,

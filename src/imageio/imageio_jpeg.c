@@ -503,7 +503,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
                                            const int quality,
                                            const void *exif,
                                            const int exif_len,
-                                           const int imgid)
+                                           const dt_imgid_t imgid)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
   dt_imageio_jpeg_t jpg;
@@ -530,7 +530,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
   if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
   jpeg_start_compress(&(jpg.cinfo), TRUE);
 
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     // the code in this block is never being used. should that ever change make sure to honour the
     // color profile overwriting the one set in colorout, too. dt_colorspaces_get_output_profile() doesn't do that!

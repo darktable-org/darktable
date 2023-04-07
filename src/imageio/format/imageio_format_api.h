@@ -78,7 +78,7 @@ REQUIRED(int, bpp, struct dt_imageio_module_data_t *data);
 /* write to file, with exif if not NULL, and icc profile if supported. */
 REQUIRED(int, write_image, struct dt_imageio_module_data_t *data, const char *filename, const void *in,
                            dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                           void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                           void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
                            const gboolean export_masks);
 /* flag that describes the available precision/levels of output format. mainly used for dithering. */
 OPTIONAL(int, levels, struct dt_imageio_module_data_t *data);

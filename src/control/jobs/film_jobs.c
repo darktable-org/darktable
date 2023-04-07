@@ -334,7 +334,7 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
     g_free(cdn);
 
     /* import image */
-    const int32_t imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE, FALSE);
+    const dt_imgid_t imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE, FALSE);
     pending++;  // we have another image which hasn't been reported yet
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);

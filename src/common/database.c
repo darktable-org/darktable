@@ -1238,14 +1238,14 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
                 "[init] can't prepare selecting history for iop_order migration (v21)\n");
     // clang-format on
     GList *item_list = NULL;
-    int32_t current_imgid = -1;
+    dt_imgid_t current_imgid = NO_IMGID;
     int current_order_version = -1;
 
     gboolean has_row = (sqlite3_step(mig_stmt) == SQLITE_ROW);
 
     while(has_row)
     {
-      const int32_t imgid = sqlite3_column_int(mig_stmt, 0);
+      const dt_imgid_t imgid = sqlite3_column_int(mig_stmt, 0);
       char operation[20] = { 0 };
       g_strlcpy(operation, (const char *)sqlite3_column_text(mig_stmt, 1), sizeof(operation));
       const int multi_priority = sqlite3_column_int(mig_stmt, 2);
@@ -1478,7 +1478,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
                 "[init] can't prepare selecting history for history_hash migration\n");
     while(sqlite3_step(h_stmt) == SQLITE_ROW)
     {
-      const int32_t imgid= sqlite3_column_int(h_stmt, 0);
+      const dt_imgid_t imgid= sqlite3_column_int(h_stmt, 0);
       const int32_t altered = sqlite3_column_int(h_stmt, 1);
 
       guint8 *hash = NULL;

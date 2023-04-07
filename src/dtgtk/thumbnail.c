@@ -1088,11 +1088,11 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
   }
 }
 
-static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer user_data)
+static void _dt_mipmaps_updated_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(imgid > 0 && thumb->imgid != imgid) return;
+  if(dt_is_valid_imgid(imgid) && thumb->imgid != imgid) return;
 
   // we recompte the history tooltip if needed
   _thumb_update_altered_tooltip(thumb);
@@ -1108,7 +1108,7 @@ static gboolean _event_box_enter_leave(GtkWidget *widget, GdkEventCrossing *even
   // if we leave for ancestor, that means we leave for blank thumbtable area
   if(event->type == GDK_LEAVE_NOTIFY
      && event->detail == GDK_NOTIFY_ANCESTOR)
-    dt_control_set_mouse_over_id(-1);
+    dt_control_set_mouse_over_id(NO_IMGID);
 
   if(!thumb->mouse_over
      && event->type == GDK_ENTER_NOTIFY
@@ -1139,7 +1139,7 @@ static gboolean _event_btn_enter_leave(GtkWidget *widget, GdkEventCrossing *even
   darktable.control->element = event->type == GDK_ENTER_NOTIFY && widget == thumb->w_reject ? DT_VIEW_REJECT : -1;
 
   // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY && event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(-1);
+  if(event->type == GDK_LEAVE_NOTIFY && event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(NO_IMGID);
 
   if(thumb->disable_actions) return TRUE;
   if(event->type == GDK_ENTER_NOTIFY) _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
@@ -1172,7 +1172,7 @@ static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gp
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY && event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(-1);
+  if(event->type == GDK_LEAVE_NOTIFY && event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(NO_IMGID);
 
   if(thumb->disable_actions) return TRUE;
   for(int i = 0; i < MAX_STARS; i++)
@@ -1186,7 +1186,7 @@ static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gp
 static gboolean _event_main_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(-1);
+  if(event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(NO_IMGID);
   return FALSE;
 }
 
@@ -1461,7 +1461,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
   return thumb->w_main;
 }
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int imgid, int rowid,
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, dt_imgid_t imgid, int rowid,
                                  dt_thumbnail_overlay_t over, dt_thumbnail_container_t container, gboolean tooltip)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));

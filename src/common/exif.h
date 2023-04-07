@@ -74,7 +74,7 @@ gboolean dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
 
 /** write exif to blob, return length in bytes. blob will be allocated by the function. sRGB should be true
  * if sRGB colorspace is used as output. */
-int dt_exif_read_blob(uint8_t **blob, const char *path, const int32_t imgid, const int sRGB, const int out_width,
+int dt_exif_read_blob(uint8_t **blob, const char *path, const dt_imgid_t imgid, const int sRGB, const int out_width,
                       const int out_height, const int dng_mode);
 
 /** Reads exif tags that are not cached in the database */
@@ -84,14 +84,14 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename);
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
 /** write xmp sidecar file. */
-gboolean dt_exif_xmp_write(const int32_t imgid, const char *filename);
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename);
 
 /** write xmp packet inside an image. */
-gboolean dt_exif_xmp_attach_export(const int32_t imgid, const char *filename, void *metadata,
+gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename, void *metadata,
     dt_develop_t *dev, dt_dev_pixelpipe_t *pipe);
 
 /** get the xmp blob for imgid. */
-char *dt_exif_xmp_read_string(const int32_t imgid);
+char *dt_exif_xmp_read_string(const dt_imgid_t imgid);
 
 /** read xmp sidecar file. Returns TRUE in case of any error*/
 gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);

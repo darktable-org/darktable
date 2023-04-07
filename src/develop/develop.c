@@ -687,7 +687,7 @@ static inline void _dt_dev_load_pipeline_defaults(dt_develop_t *dev)
 }
 
 // load the raw and get the new image struct, blocking in gui thread
-static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
+static inline void _dt_dev_load_raw(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   // first load the raw, to make sure dt_image_t will contain all and correct data.
   dt_mipmap_buffer_t buf;
@@ -703,7 +703,7 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
   dt_image_cache_read_release(darktable.image_cache, image);
 }
 
-void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
+void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   _dt_dev_load_raw(dev, imgid);
   dev->image_force_reload = dev->image_loading =
@@ -757,7 +757,7 @@ float dt_dev_get_zoom_scale(
 
 void dt_dev_load_image_ext(
         dt_develop_t *dev,
-        const uint32_t imgid,
+        const dt_imgid_t imgid,
         const int32_t snapshot_id)
 {
   dt_lock_image(imgid);
@@ -787,7 +787,7 @@ void dt_dev_load_image_ext(
   dt_unlock_image(imgid);
 }
 
-void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
+void dt_dev_load_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   dt_dev_load_image_ext(dev, imgid, -1);
 }
@@ -836,7 +836,7 @@ void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht)
 }
 
 // helper used to synch a single history item with db
-int dt_dev_write_history_item(const int imgid,
+int dt_dev_write_history_item(const dt_imgid_t imgid,
                               dt_dev_history_item_t *h,
                               const int32_t num)
 {
@@ -1090,7 +1090,7 @@ void _dev_add_history_item(
 #endif
 
   /* attach changed tag reflecting actual change */
-  const int imgid = dev->image_storage.id;
+  const dt_imgid_t imgid = dev->image_storage.id;
   guint tagid = 0;
   dt_tag_new("darktable|changed", &tagid);
   const gboolean tag_change = dt_tag_attach(tagid, imgid, FALSE, FALSE);
@@ -1406,7 +1406,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
   dt_control_queue_redraw_center();
 }
 
-static void _cleanup_history(const int imgid)
+static void _cleanup_history(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1424,7 +1424,7 @@ static void _cleanup_history(const int imgid)
   sqlite3_finalize(stmt);
 }
 
-void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
+void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
   dt_lock_image(imgid);
@@ -1483,7 +1483,7 @@ static int _dev_get_module_nb_records()
   return cnt;
 }
 
-void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int imgid)
+void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
 
@@ -1517,7 +1517,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 {
   // NOTE: the presets/default iops will be *prepended* into the history.
 
-  const int imgid = dev->image_storage.id;
+  const dt_imgid_t imgid = dev->image_storage.id;
 
   if(imgid <= 0) return FALSE;
 
@@ -1794,7 +1794,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   return TRUE;
 }
 
-static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
+static void _dev_add_default_modules(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   //start with those modules that cannot be disabled
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
@@ -1824,7 +1824,7 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
   }
 }
 
-static void _dev_merge_history(dt_develop_t *dev, const int imgid)
+static void _dev_merge_history(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
 
@@ -1928,7 +1928,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
   }
 }
 
-void _dev_write_history(dt_develop_t *dev, const int imgid)
+void _dev_write_history(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   _cleanup_history(imgid);
   // write history entries
@@ -1951,7 +1951,7 @@ char * _print_validity(gboolean state)
 }
 
 void dt_dev_read_history_ext(dt_develop_t *dev,
-                             const int imgid,
+                             const dt_imgid_t imgid,
                              const gboolean no_image,
                              const int32_t snapshot_id)
 {
@@ -2540,7 +2540,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   *zoom_y = zoom2_y;
 }
 
-int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid)
+int dt_dev_is_current_image(dt_develop_t *dev, dt_imgid_t imgid)
 {
   return (dev->image_storage.id == imgid) ? 1 : 0;
 }
@@ -3508,7 +3508,7 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
 }
 
 void dt_dev_image_ext(
-  uint32_t imgid,
+  dt_imgid_t imgid,
   size_t width,
   size_t height,
   int history_end,
@@ -3559,7 +3559,7 @@ void dt_dev_image_ext(
 }
 
 void dt_dev_image(
-  uint32_t imgid,
+  dt_imgid_t imgid,
   size_t width,
   size_t height,
   int history_end,

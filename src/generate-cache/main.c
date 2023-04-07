@@ -94,7 +94,7 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int32_t imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     const char *imgfilename = (const char*)sqlite3_column_text(stmt, 1);
 
     counter++;

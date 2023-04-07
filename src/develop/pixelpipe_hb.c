@@ -451,7 +451,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
   dt_dev_pixelpipe_iop_t *piece = NULL;
 
   const dt_image_t *img      = &pipe->image;
-  const int32_t imgid        = img->id;
+  const dt_imgid_t imgid        = img->id;
   const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
   const gboolean raw_img     = dt_image_is_raw(img);
 

@@ -55,15 +55,15 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entrie
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache);
 
 /** creates a hopefully unique hash from the complete module stack up to the module-th. */
-uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *pipe, int module);
+uint64_t dt_dev_pixelpipe_cache_basichash(dt_imgid_t imgid, struct dt_dev_pixelpipe_t *pipe, int module);
 /** creates a hopefully unique hash from the complete module stack up to the module-th, including current viewport. */
-uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const struct dt_iop_roi_t *roi,
+uint64_t dt_dev_pixelpipe_cache_hash(dt_imgid_t imgid, const struct dt_iop_roi_t *roi,
                                      struct dt_dev_pixelpipe_t *pipe, int module);
 /** return both of the above hashes */
-void dt_dev_pixelpipe_cache_fullhash(int imgid, const dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int module,
+void dt_dev_pixelpipe_cache_fullhash(dt_imgid_t imgid, const dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int module,
                                      uint64_t *basichash, uint64_t *fullhash);
 /** get the basichash for the last enabled module prior to the specified one */
-uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpipe_t *pipe,
+uint64_t dt_dev_pixelpipe_cache_basichash_prior(dt_imgid_t imgid, struct dt_dev_pixelpipe_t *pipe,
                                                 const struct dt_iop_module_t *const module);
 
 /** returns a float data buffer in 'data' for the given hash from the cache, dsc is updated too.

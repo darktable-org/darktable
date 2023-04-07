@@ -167,7 +167,7 @@ char* dt_view_extend_modes_str(const char * name,
                                const gboolean is_bw,
                                const gboolean is_bw_flow);
 /** expose an image and return a cair0_surface. */
-dt_view_surface_value_t dt_view_image_get_surface(int32_t imgid,
+dt_view_surface_value_t dt_view_image_get_surface(dt_imgid_t imgid,
                                                   int32_t width,
                                                   int32_t height,
                                                   cairo_surface_t **surface,
@@ -175,9 +175,9 @@ dt_view_surface_value_t dt_view_image_get_surface(int32_t imgid,
 
 
 /** Set the selection bit to a given value for the specified image */
-void dt_view_set_selection(int32_t imgid, int value);
+void dt_view_set_selection(dt_imgid_t imgid, int value);
 /** toggle selection of given image. */
-void dt_view_toggle_selection(int32_t imgid);
+void dt_view_toggle_selection(dt_imgid_t imgid);
 
 /**
  * holds all relevant data needed to manage the view
@@ -318,7 +318,7 @@ typedef struct dt_view_manager_t
       void (*culling_preview_reload_overlays)(struct dt_view_t *view);
       gboolean (*get_preview_state)(struct dt_view_t *view);
       void (*set_preview_state)(struct dt_view_t *view, gboolean state, gboolean sticky, gboolean focus);
-      void (*change_offset)(struct dt_view_t *view, gboolean reset, int32_t imgid);
+      void (*change_offset)(struct dt_view_t *view, gboolean reset, dt_imgid_t imgid);
     } lighttable;
 
     /* tethering view proxy object */
@@ -350,7 +350,7 @@ typedef struct dt_view_manager_t
       gboolean (*remove_marker)(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
       void (*add_location)(const dt_view_t *view, dt_map_location_data_t *p, const guint posid);
       void (*location_action)(const dt_view_t *view, const int action);
-      void (*drag_set_icon)(const dt_view_t *view, GdkDragContext *context, const int32_t imgid, const int count);
+      void (*drag_set_icon)(const dt_view_t *view, GdkDragContext *context, const dt_imgid_t imgid, const int count);
       gboolean (*redraw)(gpointer user_data);
       gboolean (*display_selected)(gpointer user_data);
     } map;
@@ -438,7 +438,7 @@ GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm);
 
 // active images functions
 void dt_view_active_images_reset(gboolean raise);
-void dt_view_active_images_add(int32_t imgid, gboolean raise);
+void dt_view_active_images_add(dt_imgid_t imgid, gboolean raise);
 GSList *dt_view_active_images_get();
 
 /** get the lighttable current layout */
@@ -460,7 +460,7 @@ void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm);
 /** force refresh of culling and/or preview overlays */
 void dt_view_lighttable_culling_preview_reload_overlays(dt_view_manager_t *vm);
 /** sets the offset image (for culling and full preview) */
-void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, int32_t imgid);
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, dt_imgid_t imgid);
 
 /* accel window */
 void dt_view_accels_show(dt_view_manager_t *vm);
@@ -468,7 +468,7 @@ void dt_view_accels_hide(dt_view_manager_t *vm);
 void dt_view_accels_refresh(dt_view_manager_t *vm);
 
 /* audio */
-void dt_view_audio_start(dt_view_manager_t *vm, int32_t imgid);
+void dt_view_audio_start(dt_view_manager_t *vm, dt_imgid_t imgid);
 void dt_view_audio_stop(dt_view_manager_t *vm);
 
 /*
@@ -483,7 +483,7 @@ GObject *dt_view_map_add_marker(const dt_view_manager_t *vm, dt_geo_map_display_
 gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GObject *marker);
 void dt_view_map_add_location(const dt_view_manager_t *vm, dt_map_location_data_t *p, const guint posid);
 void dt_view_map_location_action(const dt_view_manager_t *vm, const int action);
-void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const int imgid, const int count);
+void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const dt_imgid_t imgid, const int count);
 #endif
 
 /*
