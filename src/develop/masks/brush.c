@@ -42,6 +42,14 @@ static void _brush_bounding_box(const float *const points,
                                 int *posx,
                                 int *posy);
 
+// A brush is serialized with 6 floats: { ctrl1_x, ctrl1_y, x, y, ctrl2_x, ctrl2_y }
+// So we have 3 points each with 2 floats.
+
+static inline int _nb_ctrl_point(const int nb_point)
+{
+  return nb_point * 3;
+}
+
 /** get squared distance of indexed point to line segment, taking
  * weighted payload data into account */
 static float _brush_point_line_distance2(const int index,
@@ -1132,16 +1140,16 @@ static void _brush_get_distance(const float x,
                                 dt_masks_form_gui_t *gui,
                                 const int index,
                                 const int corner_count,
-                                int *inside,
-                                int *inside_border,
+                                gboolean *inside,
+                                gboolean *inside_border,
                                 int *near,
-                                int *inside_source,
+                                gboolean *inside_source,
                                 float *dist)
 {
   // initialise returned values
-  *inside_source = 0;
-  *inside = 0;
-  *inside_border = 0;
+  *inside_source = FALSE;
+  *inside = FALSE;
+  *inside_border = FALSE;
   *near = -1;
   *dist = FLT_MAX;
 
@@ -1156,14 +1164,14 @@ static void _brush_get_distance(const float x,
   // we first check if we are inside the source form
 
   // add support for clone masks
-  if(gpt->points_count > 2 + corner_count * 3
-     && gpt->source_count > 2 + corner_count * 3)
+  if(gpt->points_count > 2 + _nb_ctrl_point(corner_count)
+     && gpt->source_count > 2 + _nb_ctrl_point(corner_count))
   {
     const float dx = -gpt->points[2] + gpt->source[2];
     const float dy = -gpt->points[3] + gpt->source[3];
 
     int current_seg = 1;
-    for(int i = corner_count * 3; i < gpt->points_count; i++)
+    for(int i = _nb_ctrl_point(corner_count); i < gpt->points_count; i++)
     {
       // do we change of path segment ?
       if(gpt->points[i * 2 + 1] == gpt->points[current_seg * 6 + 3]
@@ -1182,16 +1190,16 @@ static void _brush_get_distance(const float x,
 
       if(*dist == dd && dd < as2)
       {
-        if(*inside == 0)
+        if(!*inside)
         {
           if(current_seg == 0)
-            *inside_source = corner_count - 1;
+            *inside_source = (corner_count - 1) > 0;
           else
-            *inside_source = current_seg - 1;
+            *inside_source = (current_seg - 1) > 0;
 
           if(*inside_source)
           {
-            *inside = 1;
+            *inside = TRUE;
           }
         }
       }
@@ -1199,24 +1207,26 @@ static void _brush_get_distance(const float x,
   }
 
   // we check if it's inside borders
-  if(gpt->border_count > 2 + corner_count * 3)
+  if(gpt->border_count > 2 + _nb_ctrl_point(corner_count))
   {
     float last = gpt->border[gpt->border_count * 2 - 1];
     int nb = 0;
-    for(int i = corner_count * 3; i < gpt->border_count; i++)
+    for(int i = _nb_ctrl_point(corner_count); i < gpt->border_count; i++)
     {
       const float yy = gpt->border[i * 2 + 1];
-      if(((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->border[i * 2] > x)) nb++;
+      if(((y<=yy && y>last) || (y>=yy && y<last))
+         && (gpt->border[i * 2] > x))
+        nb++;
       last = yy;
     }
-    *inside = *inside_border = (nb & 1);
+    *inside = *inside_border = (nb & 1) == 1;
   }
 
   // and we check if we are near a segment
-  if(gpt->points_count > 2 + corner_count * 3)
+  if(gpt->points_count > 2 + _nb_ctrl_point(corner_count))
   {
     int current_seg = 1;
-    for(int i = corner_count * 3; i < gpt->points_count; i++)
+    for(int i = _nb_ctrl_point(corner_count); i < gpt->points_count; i++)
     {
       // do we change of path segment ?
       if(gpt->points[i * 2 + 1] == gpt->points[current_seg * 6 + 3]
@@ -2382,7 +2392,10 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
                               gpt->points[k * 6 + 4],
                               gpt->points[k * 6 + 5],
                               &ffx, &ffy, TRUE);
-      if(pzx - ffx > -as && pzx - ffx < as && pzy - ffy > -as && pzy - ffy < as)
+      if(pzx - ffx > -as
+         && pzx - ffx < as
+         && pzy - ffy > -as
+         && pzy - ffy < as)
       {
         gui->feather_selected = k;
         dt_control_queue_redraw_center();
@@ -2427,8 +2440,9 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
   }
 
   // are we inside the form or the borders or near a segment ???
-  int in, inb, near, ins;
+  gboolean in, inb, ins;
   float dist;
+  int near;
   _brush_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;
   if(near < 0)
@@ -2476,7 +2490,7 @@ static void _brush_events_post_expose(cairo_t *cr,
     const float pr_d = darktable.develop->preview_downsampling;
     const float iwd = darktable.develop->preview_pipe->iwidth;
     const float iht = darktable.develop->preview_pipe->iheight;
-    const float min_iwd_iht= pr_d * MIN(iwd,iht);
+    const float min_iwd_iht = pr_d * MIN(iwd,iht);
 
     if(gui->guipoints_count == 0)
     {
@@ -2658,13 +2672,14 @@ static void _brush_events_post_expose(cairo_t *cr,
   } // creation
 
   // draw path
-  if(gpt->points_count > nb * 3 + 2)
+  if(gpt->points_count > _nb_ctrl_point(nb) + 2)
   {
-    cairo_set_dash(cr, dashed, 0, 0);
-
     cairo_move_to(cr, gpt->points[nb * 6], gpt->points[nb * 6 + 1]);
-    int seg = 1, seg2 = 0;
-    for(int i = nb * 3; i < gpt->points_count; i++)
+
+    int seg = 1;
+    int i = _nb_ctrl_point(nb);
+
+    while(seg)
     {
       cairo_line_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       // we decide to highlight the form segment by segment
@@ -2672,32 +2687,22 @@ static void _brush_events_post_expose(cairo_t *cr,
          && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
       {
         // this is the end of the last segment, so we have to draw it
-        if((gui->group_selected == index)
-           && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg2))
-          cairo_set_line_width(cr, 5.0 / zoom_scale);
-        else
-          cairo_set_line_width(cr, 3.0 / zoom_scale);
-        dt_draw_set_color_overlay(cr, FALSE, 0.9);
-        cairo_stroke_preserve(cr);
-        if(gui->group_selected == index && gui->seg_selected == seg2)
-          cairo_set_line_width(cr, 5.0 / zoom_scale);
-        else if((gui->group_selected == index)
-           && (gui->form_selected || gui->form_dragging))
-          cairo_set_line_width(cr, 2.0 / zoom_scale);
-        else
-          cairo_set_line_width(cr, 1.0 / zoom_scale);
-        dt_draw_set_color_overlay(cr, TRUE, 0.8);
-        cairo_stroke(cr);
+        dt_masks_line_stroke
+          (cr, FALSE, FALSE,
+           (gui->group_selected == index)
+           && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg - 1),
+           zoom_scale);
+
         // and we update the segment number
         seg = (seg + 1) % nb;
-        seg2++;
         cairo_move_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       }
+      i++;
     }
   }
 
   // draw corners
-  if(gui->group_selected == index && gpt->points_count > nb * 3 + 2)
+  if(gui->group_selected == index && gpt->points_count > _nb_ctrl_point(nb) + 2)
   {
     for(int k = 0; k < nb; k++)
       dt_masks_draw_anchor(cr,
@@ -2750,33 +2755,21 @@ static void _brush_events_post_expose(cairo_t *cr,
   // draw border and corners
   if((gui->show_all_feathers
       || gui->group_selected == index)
-     && gpt->border_count > nb * 3 + 2)
+     && gpt->border_count > _nb_ctrl_point(nb) + 2)
   {
     cairo_move_to(cr, gpt->border[nb * 6], gpt->border[nb * 6 + 1]);
 
-    for(int i = nb * 3 + 1; i < gpt->border_count; i++)
+    for(int i = _nb_ctrl_point(nb) + 1; i < gpt->border_count; i++)
     {
       cairo_line_to(cr, gpt->border[i * 2], gpt->border[i * 2 + 1]);
     }
     // we execute the drawing
-    if(gui->border_selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_set_dash(cr, dashed, len, 0);
-    cairo_stroke_preserve(cr);
-    if(gui->border_selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_set_dash(cr, dashed, len, 4);
-    cairo_stroke(cr);
+
+    dt_masks_line_stroke(cr, TRUE, FALSE, gui->border_selected, zoom_scale);
   }
 
   // draw the source if needed
-  if(!gui->creation && gpt->source_count > nb * 3 + 2)
+  if(!gui->creation && gpt->source_count > _nb_ctrl_point(nb) + 2)
   {
     float to_x = 0.0f;
     float to_y = 0.0f;
@@ -2799,14 +2792,14 @@ static void _brush_events_post_expose(cairo_t *cr,
 
     // 3. dest border, closest to source area center
     dt_masks_closest_point(gpt->points_count,
-                           nb * 3,
+                           _nb_ctrl_point(nb),
                            gpt->points,
                            center_x, center_y,
                            &to_x, &to_y);
 
     // 4. source border, closest to point border
     dt_masks_closest_point(gpt->source_count,
-                           nb * 3,
+                           _nb_ctrl_point(nb),
                            gpt->source,
                            to_x, to_y,
                            &from_x, &from_y);
@@ -2821,23 +2814,16 @@ static void _brush_events_post_expose(cairo_t *cr,
     dt_masks_stroke_arrow(cr, gui, index, zoom_scale);
 
     // we draw the source
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
+
     cairo_move_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
-    for(int i = nb * 3; i < gpt->source_count; i++)
+    for(int i = _nb_ctrl_point(nb); i < gpt->source_count; i++)
       cairo_line_to(cr, gpt->source[i * 2], gpt->source[i * 2 + 1]);
     cairo_line_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
+
+    dt_masks_line_stroke
+      (cr, FALSE, TRUE,
+       (gui->group_selected == index) && (gui->form_selected || gui->form_dragging),
+       zoom_scale);
   }
 }
 
@@ -2856,7 +2842,7 @@ static void _brush_bounding_box_raw(const float *const points,
 #pragma omp parallel for reduction(min : xmin, ymin) reduction(max : xmax, ymax) \
   schedule(static) if(num_points > 1000)
 #endif
-  for(int i = nb_corner * 3; i < num_points; i++)
+  for(int i = _nb_ctrl_point(nb_corner); i < num_points; i++)
   {
     if(border)
     {
@@ -3056,7 +3042,7 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
   // now we fill the falloff
   int p0[2], p1[2];
 
-  for(int i = nb_corner * 3; i < border_count; i++)
+  for(int i = _nb_ctrl_point(nb_corner); i < border_count; i++)
   {
     p0[0] = points[i * 2];
     p0[1] = points[i * 2 + 1];
@@ -3174,7 +3160,7 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   const guint nb_corner = g_list_length(form->points);
 
   // we shift and scale down brush and border
-  for(int i = nb_corner * 3; i < border_count; i++)
+  for(int i = _nb_ctrl_point(nb_corner); i < border_count; i++)
   {
     const float xx = border[2 * i];
     const float yy = border[2 * i + 1];
@@ -3182,7 +3168,7 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
     border[2 * i + 1] = yy * scale - py;
   }
 
-  for(int i = nb_corner * 3; i < points_count; i++)
+  for(int i = _nb_ctrl_point(nb_corner); i < points_count; i++)
   {
     const float xx = points[2 * i];
     const float yy = points[2 * i + 1];
@@ -3222,7 +3208,7 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
 #pragma omp parallel for shared(buffer)
 #endif
 #endif
-  for(int i = nb_corner * 3; i < border_count; i++)
+  for(int i = _nb_ctrl_point(nb_corner); i < border_count; i++)
   {
     const int p0[] = { points[i * 2], points[i * 2 + 1] };
     const int p1[] = { border[i * 2], border[i * 2 + 1] };
