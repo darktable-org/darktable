@@ -1382,8 +1382,8 @@ finally:
 
       // get minima and maxima of performance data of all active devices
       const float tcpu = cl->cpubenchmark;
-      float tgpumin = INFINITY;
-      float tgpumax = -INFINITY;
+      float tgpumin = FLT_MAX;
+      float tgpumax = -FLT_MAX;
       for(int n = 0; n < cl->num_devs; n++)
       {
         if((cl->dev[n].benchmark > 0.0f) && (cl->dev[n].disabled == FALSE))
@@ -1617,8 +1617,8 @@ static float _opencl_benchmark_gpu(const int devid,
   float *buf = NULL;
   dt_gaussian_cl_t *g = NULL;
 
-  const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
-  const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+  const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+  const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
   unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
@@ -1684,7 +1684,7 @@ error:
   dt_free_align(buf);
   free_tea_states(tea_states);
   dt_opencl_release_mem_object(dev_mem);
-  return INFINITY;
+  return FLT_MAX;
 }
 
 static float _opencl_benchmark_cpu(
@@ -1697,8 +1697,8 @@ static float _opencl_benchmark_cpu(
   float *buf = NULL;
   dt_gaussian_t *g = NULL;
 
-  const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
-  const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+  const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+  const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
   const size_t nthreads = dt_get_num_threads();
   unsigned int *const tea_states = alloc_tea_states(nthreads);
@@ -1752,7 +1752,7 @@ error:
   dt_gaussian_free(g);
   dt_free_align(buf);
   free_tea_states(tea_states);
-  return INFINITY;
+  return FLT_MAX;
 }
 
 gboolean dt_opencl_finish(const int devid)

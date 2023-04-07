@@ -180,8 +180,8 @@ void process(struct dt_iop_module_t *self,
 
   const dt_aligned_pixel_t slope = { 1.0f, d->a_steepness, d->b_steepness, 1.0f };
   const dt_aligned_pixel_t offset = { 0.0f, d->a_offset, d->b_offset, 0.0f };
-  const dt_aligned_pixel_t lowlimit = { -INFINITY, -128.0f, -128.0f, -INFINITY };
-  const dt_aligned_pixel_t highlimit = { INFINITY, 128.0f, 128.0f, INFINITY };
+  const dt_aligned_pixel_t lowlimit = { -FLT_MAX, -128.0f, -128.0f, -FLT_MAX };
+  const dt_aligned_pixel_t highlimit = { FLT_MAX, 128.0f, 128.0f, FLT_MAX };
 
   if(d->unbound)
   {
