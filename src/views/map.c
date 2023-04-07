@@ -2549,10 +2549,10 @@ static void _view_map_center_on_image(dt_view_t *self, const int32_t imgid)
 static gboolean _view_map_center_on_image_list(dt_view_t *self, const char* table)
 {
   const dt_map_t *lib = (dt_map_t *)self->data;
-  double max_longitude = -INFINITY;
-  double max_latitude = -INFINITY;
-  double min_longitude = INFINITY;
-  double min_latitude = INFINITY;
+  double max_longitude = -FLT_MAX;
+  double max_latitude = -FLT_MAX;
+  double min_longitude = FLT_MAX;
+  double min_latitude = FLT_MAX;
   int count = 0;
 
   // clang-format off

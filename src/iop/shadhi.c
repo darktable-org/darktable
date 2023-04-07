@@ -336,8 +336,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     if(unbound_mask)
     {
-      for(int k = 0; k < 4; k++) Labmax[k] = INFINITY;
-      for(int k = 0; k < 4; k++) Labmin[k] = -INFINITY;
+      for(int k = 0; k < 4; k++) Labmax[k] = FLT_MAX;
+      for(int k = 0; k < 4; k++) Labmin[k] = -FLT_MAX;
     }
 
     dt_gaussian_t *g = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
@@ -506,8 +506,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     if(unbound_mask)
     {
-      for(int k = 0; k < 4; k++) Labmax[k] = INFINITY;
-      for(int k = 0; k < 4; k++) Labmin[k] = -INFINITY;
+      for(int k = 0; k < 4; k++) Labmax[k] = FLT_MAX;
+      for(int k = 0; k < 4; k++) Labmin[k] = -FLT_MAX;
     }
 
     g = dt_gaussian_init_cl(devid, width, height, channels, Labmax, Labmin, sigma, order);

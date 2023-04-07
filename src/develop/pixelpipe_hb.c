@@ -884,8 +884,8 @@ static void _pixelpipe_picker(dt_iop_module_t *module,
   // FIXME: don't need to initialize this if dt_color_picker_helper() does
   lib_colorpicker_stats pick =
     { { 0.0f, 0.0f, 0.0f, 0.0f },
-      { INFINITY, INFINITY, INFINITY, INFINITY },
-      { -INFINITY, -INFINITY, -INFINITY, -INFINITY } };
+      { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
+      { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
   if(!_pixelpipe_picker_box(module, roi,
                             darktable.lib->proxy.colorpicker.primary_sample,
@@ -939,8 +939,8 @@ static void _pixelpipe_picker_cl(const int devid,
   {
     for_four_channels(k)
     {
-      picked_color_min[k] = INFINITY;
-      picked_color_max[k] = -INFINITY;
+      picked_color_min[k] = FLT_MAX;
+      picked_color_max[k] = -FLT_MAX;
       picked_color[k] = 0.0f;
     }
 
@@ -986,8 +986,8 @@ static void _pixelpipe_picker_cl(const int devid,
   // FIXME: don't need to initialize this if dt_color_picker_helper() does
   lib_colorpicker_stats pick =
     { { 0.0f, 0.0f, 0.0f, 0.0f },
-      { INFINITY, INFINITY, INFINITY, INFINITY },
-      { -INFINITY, -INFINITY, -INFINITY, -INFINITY } };
+      { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
+      { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
   const dt_iop_order_iccprofile_info_t *const profile =
     dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);

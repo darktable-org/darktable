@@ -244,8 +244,8 @@ int process_cl(struct dt_iop_module_t *self,
 
   if(unbound)
   {
-    for(int k = 0; k < 4; k++) Labmax[k] = INFINITY;
-    for(int k = 0; k < 4; k++) Labmin[k] = -INFINITY;
+    for(int k = 0; k < 4; k++) Labmax[k] = FLT_MAX;
+    for(int k = 0; k < 4; k++) Labmin[k] = -FLT_MAX;
   }
 
   if(d->lowpass_algo == LOWPASS_ALGO_GAUSSIAN)
@@ -394,8 +394,8 @@ void process(struct dt_iop_module_t *self,
   {
     for_four_channels(c)
     {
-      Labmax[c] = INFINITY;
-      Labmin[c] = -INFINITY;
+      Labmax[c] = FLT_MAX;
+      Labmin[c] = -FLT_MAX;
     }
   }
 

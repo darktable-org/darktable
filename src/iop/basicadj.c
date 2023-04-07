@@ -709,6 +709,10 @@ static inline double ldexpk(double x, int32_t q)
 
 static inline double xlog(double d)
 {
+  // since this is a local function and we know that xlog will only be
+  // called with values 1 <= d <= 65537, there is no need to check for
+  // d == INFINITY or d <= 0 and return +/-INFINITY or NAN.
+
   const int e = ilogbp1(d * 0.7071);
   const double m = ldexpk(d, -e);
 
@@ -725,11 +729,6 @@ static inline double xlog(double d)
   t = fma(t, x2, 2);
 
   x = x * t + 0.693147180559945286226764 * e;
-
-  if(isinf(d)) x = INFINITY;
-  if(d < 0)    x = NAN;
-  if(d == 0)   x = -INFINITY;
-
   return x;
 }
 
