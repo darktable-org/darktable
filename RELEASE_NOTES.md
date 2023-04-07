@@ -535,6 +535,12 @@ The following is a summary of the main features added to darktable
 - Fixing OpenCL library loading in case of not fully implemented
   required symbols.
 
+- Rework the masks drawing to ensure all masks are drawn the same
+  way. The central area, border and highlighted segments are now
+  displayed consistently. The highlighted segment is more visible,
+  this is especially true for the brush mask where the highlighted
+  segment was barely distinguishable due to a bug.
+
 ## Lua
 
 ### API Version
