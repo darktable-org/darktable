@@ -1150,7 +1150,7 @@ static int32_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
                                                  const int32_t newversion)
 {
   sqlite3_stmt *stmt;
-  int32_t newid = -1;
+  dt_imgid_t newid = NO_IMGID;
   const int64_t image_position = dt_collection_get_image_position(imgid, 0);
   const int64_t new_image_position =
     (image_position < 0) ? _max_image_position() : image_position + 1;
@@ -1399,14 +1399,14 @@ void dt_image_remove(const dt_imgid_t imgid)
 
   sqlite3_stmt *stmt;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  const int old_group_id = img->group_id;
+  const dt_imgid_t old_group_id = img->group_id;
   dt_image_cache_read_release(darktable.image_cache, img);
 
   // make sure we remove from the cache first, or else the cache will
   // look for imgid in sql
   dt_image_cache_remove(darktable.image_cache, imgid);
 
-  const int new_group_id = dt_grouping_remove_from_group(imgid);
+  const dt_imgid_t new_group_id = dt_grouping_remove_from_group(imgid);
   if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
     darktable.gui->expanded_group_id = new_group_id;
 
@@ -1561,7 +1561,7 @@ static int _image_read_duplicates(const uint32_t id,
     }
 
     int newid = id;
-    int grpid = -1;
+    int grpid = NO_IMGID;
 
     if(count_xmps_processed == 0)
     {
@@ -1728,7 +1728,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
     ;
   *cc2 = '\0';
   gchar *sql_pattern = g_strconcat(basename, ".%", NULL);
-  int group_id;
+  dt_imgid_t group_id;
   // in case we are not a jpg check if we need to change group representative
   if(strcmp(ext, "jpg") != 0 && strcmp(ext, "jpeg") != 0)
   {
@@ -1974,7 +1974,7 @@ void dt_image_init(dt_image_t *img)
   img->buf_dsc.filters = 0u;
   img->buf_dsc = (dt_iop_buffer_dsc_t){.channels = 0, .datatype = TYPE_UNKNOWN };
   img->film_id = -1;
-  img->group_id = -1;
+  img->group_id = NO_IMGID;
   img->flags = 0;
   img->id = -1;
   img->version = -1;
@@ -2477,7 +2477,7 @@ int32_t dt_image_copy_rename(const dt_imgid_t imgid,
 
         // image group handling follows
         // get group_id of potential image duplicates in destination filmroll
-        int32_t new_group_id = -1;
+        dt_imgid_t new_group_id = NO_IMGID;
         // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2
           (dt_database_get(darktable.db),
@@ -2493,14 +2493,15 @@ int32_t dt_image_copy_rename(const dt_imgid_t imgid,
         if(sqlite3_step(stmt) == SQLITE_ROW) new_group_id = sqlite3_column_int(stmt, 0);
 
         // then check if there are further duplicates belonging to different group(s)
-        if(sqlite3_step(stmt) == SQLITE_ROW) new_group_id = -1;
+        if(sqlite3_step(stmt) == SQLITE_ROW) new_group_id = NO_IMGID;
         sqlite3_finalize(stmt);
 
         // rationale: if no group exists or if the image duplicates
         // belong to multiple groups, then the new image builds a
         // group of its own, else it is added to the (one) existing
         // group
-        if(new_group_id == -1) new_group_id = newid;
+        if(!dt_is_valid_imgid(new_group_id))
+          new_group_id = newid;
 
         // make copied image belong to a group
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

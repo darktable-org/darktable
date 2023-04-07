@@ -24,13 +24,14 @@
 #include "common/darktable.h"
 
 /** add an image to a group */
-void dt_grouping_add_to_group(int group_id, dt_imgid_t image_id);
+void dt_grouping_add_to_group(const dt_imgid_t group_id,
+                              const dt_imgid_t image_id);
 
 /** remove an image from a group. returns the new group_id of the other images. */
-int dt_grouping_remove_from_group(dt_imgid_t image_id);
+int dt_grouping_remove_from_group(const dt_imgid_t image_id);
 
 /** make an image the representative of the group it is in. returns the new group_id. */
-int dt_grouping_change_representative(dt_imgid_t image_id);
+int dt_grouping_change_representative(const dt_imgid_t image_id);
 
 /** get images of the group */
 GList *dt_grouping_get_group_images(const dt_imgid_t imgid);
