@@ -115,7 +115,7 @@ body:
     id: system
     attributes:
       label: Describe your system?
-      description: Describe your general computer system (Gb of memory, Wayland or X11, GTK+, Intel or M1 or M2) that could be relevant to the issue.
+      description: Include any information about your computer system that you think may be relevant to your report (e.g., RAM size, Wayland or X11, the version of GTK+ with which darktable is linked).
 
   - type: dropdown
     id: GPU
