@@ -5,6 +5,22 @@ How to make disk image with darktable application bundle from source (using Home
 1). Install required homebrew packages:
      $ 1_install_hb_dependencies.sh
 
+     Important: For the app bundle it is required that GraphicsMagick is linked
+     statically, which is not the default by homebrew. To get GraphicsMagick statically
+     linked, open a terminal and perform the following steps:
+
+     $ brew edit graphicsmagick 
+       
+     This opens the graphicsmagick homebrew formula in the editor. Locate and delete
+     the following line:
+       --with-modules
+
+     Reinstall graphicsmagick:
+
+     $ brew reinstall --build-from-source graphicsmagick
+
+     Now you have a statically linked GraphicsMagick library.
+
 2). Build and install darktable using either option A or B:
      - Option A: Build using the default build.sh, which should work for most use cases 
      $ 2_build_hb_darktable_default.sh
