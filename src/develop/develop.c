@@ -2540,9 +2540,9 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   *zoom_y = zoom2_y;
 }
 
-int dt_dev_is_current_image(dt_develop_t *dev, dt_imgid_t imgid)
+gboolean dt_dev_is_current_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
-  return (dev->image_storage.id == imgid) ? 1 : 0;
+  return (dev->image_storage.id == imgid) ? TRUE : FALSE;
 }
 
 static dt_dev_proxy_exposure_t *find_last_exposure_instance(dt_develop_t *dev)

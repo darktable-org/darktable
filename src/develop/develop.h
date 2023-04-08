@@ -362,7 +362,7 @@ void dt_dev_process_preview2(dt_develop_t *dev);
 void dt_dev_load_image(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid);
 /** checks if provided imgid is the image currently in develop */
-int dt_dev_is_current_image(dt_develop_t *dev, dt_imgid_t imgid);
+gboolean dt_dev_is_current_image(dt_develop_t *dev, const dt_imgid_t imgid);
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op);
 void dt_dev_add_history_item_ext(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
