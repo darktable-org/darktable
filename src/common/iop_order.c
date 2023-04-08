@@ -432,7 +432,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 }
 
 
-dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
+dt_iop_order_t dt_ioppr_get_iop_order_version(const dt_imgid_t imgid)
 {
   const gboolean is_display_referred = dt_is_display_referred();
   dt_iop_order_t iop_order_version =
@@ -672,7 +672,7 @@ gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list)
   return FALSE;
 }
 
-GList *dt_ioppr_get_multiple_instances_iop_order_list(const int32_t imgid,
+GList *dt_ioppr_get_multiple_instances_iop_order_list(const dt_imgid_t imgid,
                                                       const gboolean memory)
 {
   GList *res = NULL;
@@ -718,7 +718,7 @@ GList *dt_ioppr_get_multiple_instances_iop_order_list(const int32_t imgid,
 
 gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind,
                                   GList *iop_order_list,
-                                  const int32_t imgid)
+                                  const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
 
@@ -763,7 +763,7 @@ gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind,
   return TRUE;
 }
 
-gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const int32_t imgid)
+gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const dt_imgid_t imgid)
 {
   const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(iop_order_list);
   return dt_ioppr_write_iop_order(kind, iop_order_list, imgid);
@@ -808,7 +808,7 @@ GList *dt_ioppr_get_iop_order_list_version(const dt_iop_order_t version)
   return iop_order_list;
 }
 
-gboolean dt_ioppr_has_iop_order_list(const int32_t imgid)
+gboolean dt_ioppr_has_iop_order_list(const dt_imgid_t imgid)
 {
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
@@ -831,11 +831,11 @@ gboolean dt_ioppr_has_iop_order_list(const int32_t imgid)
   return result;
 }
 
-GList *dt_ioppr_get_iop_order_list(const int32_t imgid, const gboolean sorted)
+GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid, const gboolean sorted)
 {
   GList *iop_order_list = NULL;
 
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     sqlite3_stmt *stmt;
 
@@ -909,7 +909,7 @@ GList *dt_ioppr_get_iop_order_list(const int32_t imgid, const gboolean sorted)
     sqlite3_finalize(stmt);
   }
 
-  // fallback to last iop order list (also used to initialize the pipe when imgid = 0)
+  // fallback to last iop order list (also used to initialize the pipe when imgid = NO_IMGID)
   // and new image not yet loaded or whose history has been reset.
   if(!iop_order_list)
   {
@@ -986,7 +986,7 @@ void dt_ioppr_resync_modules_order(dt_develop_t *dev)
 // sets the iop_order on each module of *_iop_list
 // iop_order is set only for base modules, multi-instances will be flagged as unused with INT_MAX
 // if a module do not exists on iop_order_list it is flagged as unused with INT_MAX
-void dt_ioppr_set_default_iop_order(dt_develop_t *dev, const int32_t imgid)
+void dt_ioppr_set_default_iop_order(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   // get the iop-order for this image
 
@@ -1004,14 +1004,14 @@ void dt_ioppr_set_default_iop_order(dt_develop_t *dev, const int32_t imgid)
   dt_ioppr_resync_modules_order(dev);
 }
 
-void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid)
+void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const dt_imgid_t imgid)
 {
   dt_ioppr_set_default_iop_order(dev, imgid);
   dt_dev_reload_history_items(dev);
 }
 
 void dt_ioppr_change_iop_order(struct dt_develop_t *dev,
-                               const int32_t imgid,
+                               const dt_imgid_t imgid,
                                GList *new_iop_list)
 {
   GList *iop_list = dt_ioppr_iop_order_copy_deep(new_iop_list);
@@ -1903,7 +1903,7 @@ static GList *_get_fence_modules_list(GList *iop_list)
   return g_list_reverse(fences);  // list was built in reverse order, so un-reverse it
 }
 
-static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg)
+static void _ioppr_check_rules(GList *iop_list, const dt_imgid_t imgid, const char *msg)
 {
   // check for IOP_FLAGS_FENCE on each module
   // create a list of fences modules
@@ -2046,7 +2046,7 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, dt_iop_module_t *
 }
 
 int dt_ioppr_check_iop_order(dt_develop_t *dev,
-                             const int imgid,
+                             const dt_imgid_t imgid,
                              const char *msg)
 {
   int iop_order_ok = 1;

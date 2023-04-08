@@ -101,7 +101,7 @@ static void _apply_style_shortcut_callback(dt_action_t *action)
 
   if(v->view(v) == DT_VIEW_DARKROOM)
   {
-    const int32_t imgid = GPOINTER_TO_INT(imgs->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     dt_styles_apply_to_dev(action->label, imgid);
   }
   else
@@ -277,11 +277,11 @@ static gboolean dt_styles_create_style_header(const char *name,
 }
 
 static void _dt_style_update_from_image(const int id,
-                                        const int imgid,
+                                        const dt_imgid_t imgid,
                                         GList *filter,
                                         GList *update)
 {
-  if(update && imgid != -1)
+  if(update && dt_is_valid_imgid(imgid))
   {
     GList *list = filter;
     GList *upd = update;
@@ -352,7 +352,7 @@ static void _dt_style_update_from_image(const int id,
 
 static void  _dt_style_update_iop_order(const gchar *name,
                                         const int id,
-                                        const int32_t imgid,
+                                        const dt_imgid_t imgid,
                                         const gboolean copy_iop_order,
                                         const gboolean update_iop_order)
 {
@@ -396,7 +396,7 @@ void dt_styles_update(const char *name,
                       const char *newname,
                       const char *newdescription,
                       GList *filter,
-                      const int32_t imgid,
+                      const dt_imgid_t imgid,
                       GList *update,
                       const gboolean copy_iop_order,
                       const gboolean update_iop_order)
@@ -469,7 +469,7 @@ void dt_styles_create_from_style(const char *name,
                                  const char *newname,
                                  const char *description,
                                  GList *filter,
-                                 const int32_t imgid,
+                                 const dt_imgid_t imgid,
                                  GList *update,
                                  const gboolean copy_iop_order,
                                  const gboolean update_iop_order)
@@ -552,7 +552,7 @@ void dt_styles_create_from_style(const char *name,
 
 gboolean dt_styles_create_from_image(const char *name,
                                      const char *description,
-                                     const int32_t imgid,
+                                     const dt_imgid_t imgid,
                                      GList *filter,
                                      const gboolean copy_iop_order)
 {
@@ -657,7 +657,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
 
   for(const GList *l = list; l; l = g_list_next(l))
   {
-    const int32_t imgid = GPOINTER_TO_INT(l->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
     if(is_overwrite)
     {
       hist = dt_history_snapshot_item_init();
@@ -727,7 +727,7 @@ void dt_multiple_styles_apply_to_list(GList *styles,
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   for(const GList *l = list; l; l = g_list_next(l))
   {
-    const int32_t imgid = GPOINTER_TO_INT(l->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
     if(is_overwrite && !duplicate)
       dt_history_delete_on_image_ext(imgid, FALSE);
 
@@ -751,7 +751,7 @@ void dt_styles_create_from_list(const GList *list)
   /* for each image create style */
   for(const GList *l = list; l; l = g_list_next(l))
   {
-    const int imgid = GPOINTER_TO_INT(l->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
     dt_gui_styles_dialog_new(imgid);
     selected = TRUE;
   }
@@ -902,7 +902,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
 void _styles_apply_to_image_ext(const char *name,
                                 const gboolean duplicate,
                                 const gboolean overwrite,
-                                const int32_t imgid,
+                                const dt_imgid_t imgid,
                                 const gboolean undo)
 {
   sqlite3_stmt *stmt;
@@ -911,13 +911,13 @@ void _styles_apply_to_image_ext(const char *name,
 
   if(style_id != 0)
   {
-    int32_t newimgid = 0;
+    dt_imgid_t newimgid = NO_IMGID;
 
     /* check if we should make a duplicate before applying style */
     if(duplicate)
     {
       newimgid = dt_image_duplicate(imgid);
-      if(newimgid != -1)
+      if(dt_is_valid_imgid(newimgid))
       {
         if(overwrite)
           dt_history_delete_on_image_ext(newimgid, FALSE);
@@ -1092,12 +1092,12 @@ void _styles_apply_to_image_ext(const char *name,
 void dt_styles_apply_to_image(const char *name,
                               const gboolean duplicate,
                               const gboolean overwrite,
-                              const int32_t imgid)
+                              const dt_imgid_t imgid)
 {
   _styles_apply_to_image_ext(name, duplicate, overwrite, imgid, TRUE);
 }
 
-void dt_styles_apply_to_dev(const char *name, const int32_t imgid)
+void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 {
   if(!darktable.develop || darktable.develop->image_storage.id == -1) return;
 
@@ -1159,7 +1159,7 @@ void dt_styles_delete_by_name(const char *name)
 
 GList *dt_styles_get_item_list(const char *name,
                                const gboolean localized,
-                               const int imgid,
+                               const dt_imgid_t imgid,
                                const gboolean with_multi_name)
 {
   GList *result = NULL;
@@ -1167,7 +1167,7 @@ GList *dt_styles_get_item_list(const char *name,
   int id = 0;
   if((id = dt_styles_get_id_by_name(name)) != 0)
   {
-    if(imgid != -1)
+    if(dt_is_valid_imgid(imgid))
     {
       // get all items from the style
       //    UNION
@@ -1272,7 +1272,7 @@ GList *dt_styles_get_item_list(const char *name,
         else
           g_snprintf(iname, sizeof(iname), "%s", itname);
 
-        if(imgid != -1 && sqlite3_column_type(stmt, 5) != SQLITE_NULL)
+        if(dt_is_valid_imgid(imgid) && sqlite3_column_type(stmt, 5) != SQLITE_NULL)
           item->selimg_num = sqlite3_column_int(stmt, 5);
       }
       item->name = g_strdup(iname);

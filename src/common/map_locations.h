@@ -18,10 +18,12 @@
 
 #pragma once
 
-#include "common/geo.h"
 #include <glib.h>
 #include <sqlite3.h>
 #include <stdint.h>
+
+#include "common/darktable.h"
+#include "common/geo.h"
 
 typedef enum dt_map_locations_type_t
 {
@@ -97,10 +99,10 @@ dt_map_location_data_t *dt_map_location_get_data(const guint locid);
 void dt_map_location_set_data(const guint locid, const dt_map_location_data_t *g);
 
 // find locations which match with that image
-GList *dt_map_location_find_locations(const guint imgid);
+GList *dt_map_location_find_locations(const dt_imgid_t imgid);
 
 // update image's locations - remove old ones and add new ones
-void dt_map_location_update_locations(const guint imgid, const GList *tags);
+void dt_map_location_update_locations(const dt_imgid_t imgid, const GList *tags);
 
 // update location's images - remove old ones and add new ones
 gboolean dt_map_location_update_images(dt_location_draw_t *ld);
@@ -127,4 +129,3 @@ void dt_map_location_free_polygons(dt_location_draw_t *ld);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

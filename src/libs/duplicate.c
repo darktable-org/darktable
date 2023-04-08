@@ -40,7 +40,7 @@ DT_MODULE(1)
 typedef struct dt_lib_duplicate_t
 {
   GtkWidget *duplicate_box;
-  int imgid;
+  dt_imgid_t imgid;
 
   cairo_surface_t *preview_surf;
   size_t processed_width;
@@ -78,7 +78,7 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget,
                                                     GdkEvent *event,
                                                     dt_lib_module_t *self)
 {
-  const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
+  const dt_imgid_t imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
 
   // we write the content of the textbox to the caption field
   dt_metadata_set(imgid, "Xmp.darktable.version_name",
@@ -92,9 +92,10 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget,
                                                 GdkEventButton *event,
                                                 dt_lib_module_t *self)
 {
-  const int imgid = darktable.develop->image_storage.id;
-  const int newid = dt_image_duplicate(imgid);
-  if(newid <= 0) return;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
+  const dt_imgid_t newid = dt_image_duplicate(imgid);
+  if(!dt_is_valid_imgid(newid))
+    return;
   dt_history_delete_on_image(newid);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_collection_update_query(darktable.collection,
@@ -106,9 +107,10 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
                                                       GdkEventButton *event,
                                                       dt_lib_module_t *self)
 {
-  const int imgid = darktable.develop->image_storage.id;
-  const int newid = dt_image_duplicate(imgid);
-  if(newid <= 0) return;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
+  const dt_imgid_t newid = dt_image_duplicate(imgid);
+  if(!dt_is_valid_imgid(newid))
+    return;
   dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
@@ -119,7 +121,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid"));
+  const dt_imgid_t imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid"));
 
   if(imgid == darktable.develop->image_storage.id)
   {
@@ -156,7 +158,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget,
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_object_get_data(G_OBJECT(widget), "thumb");
-  const int imgid = thumb->imgid;
+  const dt_imgid_t imgid = thumb->imgid;
 
   if(event->button == 1)
   {
@@ -180,7 +182,7 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget,
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
-  d->imgid = 0;
+  d->imgid = NO_IMGID;
   dt_control_queue_redraw_center();
 }
 
@@ -205,7 +207,8 @@ void gui_post_expose(dt_lib_module_t *self,
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
-  if(d->imgid == 0) return;
+  if(!dt_is_valid_imgid(d->imgid))
+    return;
 
   const gboolean view_ok = dt_view_check_view_context(&d->view_ctx);
 
@@ -246,7 +249,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
-  d->imgid = 0;
+  d->imgid = NO_IMGID;
   // we drop the preview if any
   if(d->preview_surf)
   {
@@ -283,7 +286,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     GtkWidget *hb = gtk_grid_new();
-    const int imgid = sqlite3_column_int(stmt, 1);
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 1);
     dt_gui_add_class(hb, "dt_overlays_always");
     dt_thumbnail_t *thumb = dt_thumbnail_new(100, 100, IMG_TO_FIT, imgid, -1,
                                              DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
@@ -358,7 +361,7 @@ static void _lib_duplicate_collection_changed(gpointer instance,
 }
 
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance,
-                                                   const int imgid,
+                                                   const dt_imgid_t imgid,
                                                    dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
@@ -381,7 +384,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)g_malloc0(sizeof(dt_lib_duplicate_t));
   self->data = (void *)d;
 
-  d->imgid = 0;
+  d->imgid = NO_IMGID;
   d->preview_surf = NULL;
   d->processed_width = 0;
   d->processed_height = 0;

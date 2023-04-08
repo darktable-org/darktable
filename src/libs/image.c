@@ -54,7 +54,7 @@ typedef struct dt_lib_image_t
       *copy_metadata_button, *paste_metadata_button, *clear_metadata_button,
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   GtkWidget *page1; // saved here for lua extensions
-  int imageid;
+  dt_imgid_t imageid;
 } dt_lib_image_t;
 
 typedef enum dt_lib_metadata_id
@@ -87,15 +87,16 @@ uint32_t container(dt_lib_module_t *self)
  * if there is an expanded group, then they will be joined there, otherwise a new one will be created. */
 static void _group_helper_function(void)
 {
-  int new_group_id = darktable.gui->expanded_group_id;
+  dt_imgid_t new_group_id = darktable.gui->expanded_group_id;
   GList *imgs = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
                               &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id = sqlite3_column_int(stmt, 0);
-    if(new_group_id == -1) new_group_id = id;
+    dt_imgid_t id = sqlite3_column_int(stmt, 0);
+    if(!dt_is_valid_imgid(new_group_id))
+      new_group_id = id;
     dt_grouping_add_to_group(new_group_id, id);
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
   }
@@ -104,7 +105,7 @@ static void _group_helper_function(void)
   if(darktable.gui->grouping)
     darktable.gui->expanded_group_id = new_group_id;
   else
-    darktable.gui->expanded_group_id = -1;
+    darktable.gui->expanded_group_id = NO_IMGID;
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING, imgs);
   dt_control_queue_redraw_center();
 }
@@ -120,16 +121,16 @@ static void _ungroup_helper_function(void)
   {
     const int id = sqlite3_column_int(stmt, 0);
     const int new_group_id = dt_grouping_remove_from_group(id);
-    if(new_group_id != -1)
+    if(dt_is_valid_imgid(new_group_id))
     {
-      // new_group_id == -1 if image to be ungrouped was a single image and no change to any group was made
+      // new_!dt_is_valid_imgid(group_id) if image to be ungrouped was a single image and no change to any group was made
       imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
     }
   }
   sqlite3_finalize(stmt);
   if(imgs != NULL)
   {
-    darktable.gui->expanded_group_id = -1;
+    darktable.gui->expanded_group_id = NO_IMGID;
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING,
                                g_list_reverse(imgs));
     dt_control_queue_redraw_center();
@@ -227,8 +228,8 @@ static void _update(dt_lib_module_t *self)
   else
   {
     // exact one image to act on
-    const int32_t imgid = dt_act_on_get_main_image();
-    if(imgid > 0)
+    const dt_imgid_t imgid = dt_act_on_get_main_image();
+    if(dt_is_valid_imgid(imgid))
     {
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
@@ -310,7 +311,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean dtmetadata_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata");
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
-  const int imageid = d->imageid;
+  const dt_imgid_t imageid = d->imageid;
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   if(imgs)
   {

@@ -385,7 +385,7 @@ void dt_map_location_set_data(const guint locid, const dt_map_location_data_t *g
 }
 
 // find locations which match with that image
-GList *dt_map_location_find_locations(const guint imgid)
+GList *dt_map_location_find_locations(const dt_imgid_t imgid)
 {
   GList *tags = NULL;
   sqlite3_stmt *stmt;
@@ -511,7 +511,7 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
 }
 
 // update image's locations - remove old ones and add new ones
-void dt_map_location_update_locations(const guint imgid, const GList *tags)
+void dt_map_location_update_locations(const dt_imgid_t imgid, const GList *tags)
 {
   // get current locations
   GList *old_tags = NULL;

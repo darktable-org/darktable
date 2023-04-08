@@ -53,9 +53,9 @@ static void _selection_update_collection(gpointer instance, dt_collection_change
                                          dt_collection_properties_t changed_property, gpointer imgs, int next,
                                          gpointer user_data);
 
-static void _selection_select(dt_selection_t *selection, int32_t imgid)
+static void _selection_select(dt_selection_t *selection, dt_imgid_t imgid)
 {
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(image)
@@ -117,7 +117,7 @@ const dt_selection_t *dt_selection_new()
   _selection_update_collection(NULL, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL, -1, (gpointer)s);
 
   /* initialize last_single_id based on current database */
-  s->last_single_id = -1;
+  s->last_single_id = NO_IMGID;
 
   if(dt_collection_get_selected_count(darktable.collection) >= 1)
   {
@@ -177,18 +177,18 @@ void dt_selection_clear(const dt_selection_t *selection)
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_select(dt_selection_t *selection, int32_t imgid)
+void dt_selection_select(dt_selection_t *selection, dt_imgid_t imgid)
 {
-  if(imgid < 1) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   _selection_select(selection, imgid);
   selection->last_single_id = imgid;
 }
 
-void dt_selection_deselect(dt_selection_t *selection, int32_t imgid)
+void dt_selection_deselect(dt_selection_t *selection, dt_imgid_t imgid)
 {
-  selection->last_single_id = -1;
+  selection->last_single_id = NO_IMGID;
 
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(image)
@@ -221,19 +221,19 @@ void dt_selection_deselect(dt_selection_t *selection, int32_t imgid)
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_select_single(dt_selection_t *selection, int32_t imgid)
+void dt_selection_select_single(dt_selection_t *selection, dt_imgid_t imgid)
 {
   selection->last_single_id = imgid;
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
   dt_selection_select(selection, imgid);
 }
 
-void dt_selection_toggle(dt_selection_t *selection, int32_t imgid)
+void dt_selection_toggle(dt_selection_t *selection, dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
   gboolean exists = FALSE;
 
-  if(imgid < 1) return;
+  if(!dt_is_valid_imgid(imgid)) return;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid FROM main.selected_images WHERE imgid=?1", -1, &stmt, NULL);
@@ -269,7 +269,7 @@ void dt_selection_select_all(dt_selection_t *selection)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
 
-  selection->last_single_id = -1;
+  selection->last_single_id = NO_IMGID;
 
   g_free(fullq);
 
@@ -279,7 +279,7 @@ void dt_selection_select_all(dt_selection_t *selection)
   dt_collection_hint_message(darktable.collection);
 }
 
-void dt_selection_select_range(dt_selection_t *selection, int32_t imgid)
+void dt_selection_select_range(dt_selection_t *selection, dt_imgid_t imgid)
 {
   if(!selection->collection) return;
 
@@ -381,7 +381,7 @@ void dt_selection_select_filmroll(dt_selection_t *selection)
 
   dt_collection_update(selection->collection);
 
-  selection->last_single_id = -1;
+  selection->last_single_id = NO_IMGID;
 
   _selection_raise_signal();
 
@@ -408,7 +408,7 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
      "         OR h.current_hash IS NULL)",
      NULL, NULL, NULL);
 
-  selection->last_single_id = -1;
+  selection->last_single_id = NO_IMGID;
   _selection_raise_signal();
 
   /* update hint message */
@@ -422,7 +422,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
   while(list)
   {
     int count = 1;
-    int imgid = GPOINTER_TO_INT(list->data);
+    dt_imgid_t imgid = GPOINTER_TO_INT(list->data);
     selection->last_single_id = imgid;
     gchar *query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
     list = g_list_next(list);

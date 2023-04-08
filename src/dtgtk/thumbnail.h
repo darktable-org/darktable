@@ -23,6 +23,8 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "common/darktable.h"
+
 #define MAX_STARS 5
 #define IMG_TO_FIT 0.0f
 
@@ -62,7 +64,7 @@ typedef enum dt_thumbnail_selection_mode_t
 
 typedef struct
 {
-  int imgid, rowid;
+  dt_imgid_t imgid, rowid;
   int width, height;         // current thumb size (with the background and the border)
   int x, y;                  // current position at screen
   int img_width, img_height; // current image size (can be greater than the image box in case of zoom)
@@ -144,7 +146,7 @@ typedef struct
   gboolean busy; // should we show the busy message ?
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int imgid, int rowid, dt_thumbnail_overlay_t over,
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, dt_imgid_t imgid, int rowid, dt_thumbnail_overlay_t over,
                                  dt_thumbnail_container_t container, gboolean tooltip);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio);

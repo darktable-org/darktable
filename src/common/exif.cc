@@ -2028,7 +2028,7 @@ static void dt_remove_exif_geotag(Exiv2::ExifData &exifData)
 
 int dt_exif_read_blob(uint8_t **buf,
                       const char *path,
-                      const int32_t imgid,
+                      const dt_imgid_t imgid,
                       const int sRGB,
                       const int out_width,
                       const int out_height,
@@ -3182,7 +3182,7 @@ skip:
   return history_entries;
 }
 
-static void add_mask_entry_to_db(int imgid, mask_entry_t *entry)
+static void add_mask_entry_to_db(dt_imgid_t imgid, mask_entry_t *entry)
 {
   // add the mask entry only once
   if(entry->already_added)
@@ -3227,13 +3227,13 @@ static void add_non_clone_mask_entries_to_db(gpointer key,
                                              gpointer value,
                                              gpointer user_data)
 {
-  int imgid = *(int *)user_data;
+  dt_imgid_t imgid = *(int *)user_data;
   mask_entry_t *entry = (mask_entry_t *)value;
   if(!(entry->mask_type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
     add_mask_entry_to_db(imgid, entry);
 }
 
-static void add_mask_entries_to_db(const int imgid,
+static void add_mask_entries_to_db(const dt_imgid_t imgid,
                                    GHashTable *mask_entries,
                                    int mask_id)
 {
@@ -3277,7 +3277,7 @@ int _get_max_multi_priority(GList *history, const char *operation)
   return max_prio;
 }
 
-static gboolean _image_altered_deprecated(const uint32_t imgid)
+static gboolean _image_altered_deprecated(const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
 
@@ -3841,7 +3841,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
 
 // add history metadata to XmpData
 static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData,
-                                  const int imgid,
+                                  const dt_imgid_t imgid,
                                   int history_end)
 {
   sqlite3_stmt *stmt;
@@ -4004,7 +4004,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData,
 }
 
 // add timestamps to XmpData.
-static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
+static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const dt_imgid_t imgid)
 {
   static const char *keys[] =
   {
@@ -4151,7 +4151,7 @@ static void dt_set_xmp_exif_geotag(Exiv2::XmpData &xmpData,
 }
 
 static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
-                                   const int imgid,
+                                   const dt_imgid_t imgid,
                                    const gboolean export_flag)
 {
   sqlite3_stmt *stmt;
@@ -4200,7 +4200,7 @@ static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
 // helper to create an xmp data thing. throws exiv2 exceptions if
 // stuff goes wrong.
 static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
-                                const int imgid)
+                                const dt_imgid_t imgid)
 {
   const int xmp_version = DT_XMP_EXIF_VERSION;
   int stars = 1, raw_params = 0, history_end = -1;
@@ -4340,7 +4340,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
 // helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
 static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData,
-                                       const int imgid,
+                                       const dt_imgid_t imgid,
                                        dt_export_metadata_t *metadata)
 {
   const int xmp_version = DT_XMP_EXIF_VERSION;
@@ -4472,7 +4472,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData,
 #define ERROR_CODE(a) (a)
 #endif
 
-char *dt_exif_xmp_read_string(const int32_t imgid)
+char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
 {
   try
   {
@@ -4809,7 +4809,7 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp,
 }
 
 
-gboolean dt_exif_xmp_attach_export(const int32_t imgid,
+gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
                                    const char *filename,
                                    void *metadata,
                                    dt_develop_t *dev,
@@ -5070,7 +5070,7 @@ gboolean dt_exif_xmp_attach_export(const int32_t imgid,
 }
 
 // write xmp sidecar file: returns TRUE in case of errors
-gboolean dt_exif_xmp_write(const int32_t imgid, const char *filename)
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename)
 {
   // refuse to write sidecar for non-existent image:
   char imgfname[PATH_MAX] = { 0 };

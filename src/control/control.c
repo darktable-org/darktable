@@ -885,7 +885,7 @@ void dt_control_hinter_message(const struct dt_control_t *s, const char *message
   if(s->proxy.hinter.module) return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
 }
 
-int32_t dt_control_get_mouse_over_id()
+dt_imgid_t dt_control_get_mouse_over_id()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   const int32_t result = darktable.control->mouse_over_id;
@@ -893,7 +893,7 @@ int32_t dt_control_get_mouse_over_id()
   return result;
 }
 
-void dt_control_set_mouse_over_id(int32_t value)
+void dt_control_set_mouse_over_id(dt_imgid_t value)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   if(darktable.control->mouse_over_id != value)

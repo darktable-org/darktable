@@ -536,7 +536,7 @@ static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user
   else
     gtk_widget_set_tooltip_text(widget, _("collapse grouped images"));
   dt_conf_set_bool("ui_last/grouping", darktable.gui->grouping);
-  darktable.gui->expanded_group_id = -1;
+  darktable.gui->expanded_group_id = NO_IMGID;
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING, NULL);
 
 #ifdef USE_LUA
