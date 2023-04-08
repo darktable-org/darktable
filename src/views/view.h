@@ -49,15 +49,18 @@
     control which view the module should be available in also
     which placement in the panels the module have.
 */
-typedef enum
+typedef enum dt_view_type_flags_t
 {
+  DT_VIEW_NONE = 0,
   DT_VIEW_LIGHTTABLE = 1,
   DT_VIEW_DARKROOM = 2,
   DT_VIEW_TETHERING = 4,
   DT_VIEW_MAP = 8,
   DT_VIEW_SLIDESHOW = 16,
   DT_VIEW_PRINT = 32,
-  DT_VIEW_KNIGHT = 64
+  DT_VIEW_KNIGHT = 64,
+  DT_VIEW_ALL = DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP |
+                DT_VIEW_SLIDESHOW | DT_VIEW_PRINT | DT_VIEW_KNIGHT,
 } dt_view_type_flags_t;
 
 // flags that a view can set in flags()
@@ -114,10 +117,6 @@ typedef struct dt_mouse_action_t
   dt_mouse_action_type_t action;
   gchar name[256];
 } dt_mouse_action_t;
-
-#define DT_VIEW_ALL                                                                              \
-  (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
-   DT_VIEW_PRINT | DT_VIEW_KNIGHT)
 
 /* maximum zoom factor for the lighttable */
 #define DT_LIGHTTABLE_MAX_ZOOM 25

@@ -40,19 +40,15 @@ const char *name(dt_lib_module_t *self)
   return _("image infos");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
   /* we handle the hidden case here */
   const gboolean is_hidden =
     dt_conf_is_equal("plugins/darkroom/image_infos_position", "hidden");
   if(is_hidden)
-  {
-    static const char *vv[] = { NULL };
-    return vv;
-  }
-
-  static const char *v[] = { "darkroom", NULL };
-  return v;
+    return DT_VIEW_NONE;
+  else
+    return DT_VIEW_DARKROOM;
 }
 
 uint32_t container(dt_lib_module_t *self)

@@ -141,14 +141,13 @@ const char *name(dt_lib_module_t *self)
   return _("geotagging");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
 #ifdef HAVE_MAP
-  static const char *v[] = {"lighttable", "map", NULL};
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP;
 #else
-  static const char *v[] = {"lighttable", NULL};
+  return DT_VIEW_LIGHTTABLE;
 #endif
-  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
