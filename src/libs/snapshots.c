@@ -43,7 +43,7 @@ typedef struct dt_lib_snapshot_t
   char *module;
   char *label;
   dt_view_context_t ctx;
-  int32_t imgid;
+  dt_imgid_t imgid;
   uint32_t history_end;
   uint32_t id;
   /* snapshot cairo surface */
@@ -475,7 +475,7 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
 {
   s->surface = NULL;
   s->ctx = 0;
-  s->imgid = -1;
+  s->imgid = NO_IMGID;
   s->history_end = -1;
 
   if(s->button)
@@ -491,7 +491,7 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
   s->label = NULL;
 }
 
-static void _clear_snapshots(dt_lib_module_t *self, const int32_t imgid)
+static void _clear_snapshots(dt_lib_module_t *self, const dt_imgid_t imgid)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   d->selected = -1;
@@ -543,13 +543,13 @@ static void _signal_image_changed(gpointer instance, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  const int32_t imgid = darktable.develop->image_storage.id;
+  const dt_imgid_t imgid = darktable.develop->image_storage.id;
 
   for(uint32_t k = 0; k < MAX_SNAPSHOT; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
 
-    if(s->imgid == -1)
+    if(!dt_is_valid_imgid(s->imgid))
       continue;
 
     GtkWidget *b = d->snapshot[k].button;

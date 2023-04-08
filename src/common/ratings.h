@@ -29,10 +29,10 @@ extern "C" {
 // first three bits of dt_view_image_over_t
 
 /** get rating for the specified image */
-int dt_ratings_get(const int imgid);
+int dt_ratings_get(const dt_imgid_t imgid);
 
 /** apply rating to the specified image */
-void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean single_star_toggle,
+void dt_ratings_apply_on_image(const dt_imgid_t imgid, const int rating, const gboolean single_star_toggle,
                                const gboolean undo_on, const gboolean group_on);
 
 /** apply rating to all images in the list */

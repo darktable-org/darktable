@@ -40,8 +40,8 @@ static inline int _get_max_in_memory_images()
 static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
-  const int imgid = GPOINTER_TO_INT(b);
-  if(th->imgid < 0 || imgid < 0) return 1;
+  const dt_imgid_t imgid = GPOINTER_TO_INT(b);
+  if(!dt_is_valid_imgid(th->imgid) || !dt_is_valid_imgid(imgid)) return 1;
   return (th->imgid != imgid);
 }
 static void _list_remove_thumb(gpointer user_data)
@@ -74,7 +74,7 @@ static int _get_selection_count()
 // get imgid from rowid
 static int _thumb_get_imgid(int rowid)
 {
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
   gchar *query = g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -87,9 +87,9 @@ static int _thumb_get_imgid(int rowid)
   return id;
 }
 // get rowid from imgid
-static int _thumb_get_rowid(int imgid)
+static int _thumb_get_rowid(dt_imgid_t imgid)
 {
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
   gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -155,7 +155,7 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
 // set mouse_over_id to thumb under mouse or to first thumb
 static void _thumbs_refocus(dt_culling_t *table)
 {
-  int overid = -1;
+  dt_imgid_t overid = NO_IMGID;
 
   if(table->mouse_inside)
   {
@@ -578,7 +578,7 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
     return FALSE;
 
   table->mouse_inside = FALSE;
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
 }
 
@@ -588,7 +588,7 @@ static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, 
   // this is when the mouse enter an "empty" area of thumbtable
   if(event->detail != GDK_NOTIFY_INFERIOR) return FALSE;
 
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
 }
 
@@ -784,7 +784,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 
-  const int imgid = dt_control_get_mouse_over_id();
+  const dt_imgid_t imgid = dt_control_get_mouse_over_id();
 
   // we crawl over all images to find the right one
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -795,9 +795,9 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   }
 }
 
-static void _dt_filmstrip_change(gpointer instance, int imgid, gpointer user_data)
+static void _dt_filmstrip_change(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
-  if(!user_data || imgid <= 0) return;
+  if(!user_data || !dt_is_valid_imgid(imgid)) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 
@@ -932,7 +932,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   // get first id
   sqlite3_stmt *stmt;
   gchar *query = NULL;
-  int first_id = -1;
+  dt_imgid_t first_id = NO_IMGID;
 
   // prioritize mouseover if available
   first_id = dt_control_get_mouse_over_id();
@@ -992,7 +992,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
     if(sel_count == 0)
     {
       dt_control_log(_("no image selected!"));
-      first_id = -1;
+      first_id = NO_IMGID;
     }
     table->navigate_inside_selection = TRUE;
     table->offset = _thumb_get_rowid(first_id);
@@ -1657,7 +1657,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     }
     if(!in_list)
     {
-      dt_control_set_mouse_over_id(-1);
+      dt_control_set_mouse_over_id(NO_IMGID);
     }
   }
 
@@ -1699,7 +1699,7 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move)
   return TRUE;
 }
 
-void dt_culling_change_offset_image(dt_culling_t *table, int imgid)
+void dt_culling_change_offset_image(dt_culling_t *table, dt_imgid_t imgid)
 {
   table->offset = _thumb_get_rowid(imgid);
   dt_culling_full_redraw(table, TRUE);
@@ -1825,4 +1825,3 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

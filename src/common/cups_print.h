@@ -92,7 +92,7 @@ GList *dt_get_media_type(const dt_printer_info_t *printer);
 dt_medium_info_t *dt_get_medium(GList *media, const char *name);
 
 // print filename using the printer and the page size and setup
-void dt_print_file(const int32_t imgid, const char *filename, const char *job_title, const dt_print_info_t *pinfo);
+void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job_title, const dt_print_info_t *pinfo);
 
 // given the page settings (media size and border) and the printer (hardware margins) returns the
 // page and printable area layout in the area_width and area_height (the area that dt allocate

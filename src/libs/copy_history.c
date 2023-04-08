@@ -120,7 +120,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   if(act_on_one)
   {
     //single image to load xmp to, assume we want to load from same dir
-    const int imgid = GPOINTER_TO_INT(imgs->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(img && img->film_id != -1)
     {

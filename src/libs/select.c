@@ -206,7 +206,7 @@ static int lua_button_clicked_cb(lua_State* L)
   while(lua_next(L, -2) != 0)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
-    int imgid;
+    dt_imgid_t imgid;
     luaA_to(L, dt_lua_image_t, &imgid, -1);
     new_selection = g_list_prepend(new_selection, GINT_TO_POINTER(imgid));
     lua_pop(L, 1);

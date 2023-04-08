@@ -910,7 +910,7 @@ dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, const int id)
   return dt_masks_get_from_id_ext(dev->forms, id);
 }
 
-void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
+void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   dt_dev_history_item_t *hist_item = NULL;
   dt_dev_history_item_t *hist_item_last = NULL;
@@ -1012,7 +1012,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
   dt_masks_replace_current_forms(dev, (hist_item_last)?hist_item_last->forms:NULL);
 }
 
-void dt_masks_write_masks_history_item(const int imgid,
+void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
                                        const int num,
                                        dt_masks_form_t *form)
 {

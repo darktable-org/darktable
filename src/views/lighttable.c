@@ -250,7 +250,7 @@ static void _lighttable_check_layout(dt_view_t *self)
   }
 }
 
-static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgid)
+static void _lighttable_change_offset(dt_view_t *self, gboolean reset, dt_imgid_t imgid)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
@@ -322,7 +322,7 @@ static gboolean _preview_get_state(dt_view_t *self)
 
 static int set_image_visible_cb(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   dt_view_t *self = lua_touserdata(L, lua_upvalueindex(1));  //check were in lighttable view
   if(view(self) == DT_VIEW_LIGHTTABLE)
   {
@@ -349,7 +349,7 @@ static int set_image_visible_cb(lua_State *L)
 
 static gboolean is_image_visible_cb(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   dt_view_t *self = lua_touserdata(L, lua_upvalueindex(1));  //check were in lighttable view
   //check we are in file manager or zoomable
   if(view(self) == DT_VIEW_LIGHTTABLE)
@@ -595,7 +595,7 @@ void leave(dt_view_t *self)
 
 void reset(dt_view_t *self)
 {
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
 }
 
 

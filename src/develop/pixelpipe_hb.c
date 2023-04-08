@@ -233,7 +233,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_backbuf = NULL;
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
-  pipe->output_imgid = 0;
+  pipe->output_imgid = NO_IMGID;
 
   pipe->rawdetail_mask_data = NULL;
   pipe->want_detail_mask = DT_DEV_DETAIL_MASK_NONE;
@@ -327,7 +327,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf = NULL;
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
-  pipe->output_imgid = 0;
+  pipe->output_imgid = NO_IMGID;
   pipe->next_important_module = FALSE;
 
   dt_dev_clear_rawdetail_mask(pipe);
@@ -451,7 +451,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
   dt_dev_pixelpipe_iop_t *piece = NULL;
 
   const dt_image_t *img      = &pipe->image;
-  const int32_t imgid        = img->id;
+  const dt_imgid_t imgid        = img->id;
   const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
   const gboolean raw_img     = dt_image_is_raw(img);
 

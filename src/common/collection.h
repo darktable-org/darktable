@@ -220,7 +220,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 void dt_collection_hint_message(const dt_collection_t *collection);
 
 /** returns the image offset in the collection */
-int dt_collection_image_offset(int imgid);
+int dt_collection_image_offset(dt_imgid_t imgid);
 
 /* serialize and deserialize into a string. */
 void dt_collection_deserialize(const char *buf, gboolean filtering);
@@ -231,12 +231,12 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2, char **op);
 void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2, char **op);
 
-int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t tagid);
+int64_t dt_collection_get_image_position(const dt_imgid_t image_id, const int32_t tagid);
 void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position,
                                          const int32_t tagid);
 
 /* move images with drag and drop */
-void dt_collection_move_before(const int32_t image_id, GList * selected_images);
+void dt_collection_move_before(const dt_imgid_t image_id, GList * selected_images);
 
 /* initialize memory table */
 void dt_collection_memory_update();

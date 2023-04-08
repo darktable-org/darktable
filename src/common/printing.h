@@ -34,7 +34,7 @@ typedef struct _image_pos
 
 typedef struct _image_box
 {
-  int32_t imgid;
+  dt_imgid_t imgid;
   int32_t max_width, max_height; // max size for the export (in pixels)
   int32_t exp_width, exp_height; // final exported size (in pixels)
   int32_t dis_width, dis_height; // image size on screen (in pixels)
@@ -61,7 +61,7 @@ typedef struct dt_screen_pos
 
 typedef struct dt_images_box
 {
-  int32_t imgid_to_load;
+  dt_imgid_t imgid_to_load;
   int32_t motion_over;
   int count;
   dt_image_box box[MAX_IMAGE_PER_PAGE];
@@ -93,7 +93,7 @@ void dt_printing_setup_page(dt_images_box *imgs,
 
 /* setup the image id and exported width x height */
 void dt_printing_setup_image(dt_images_box *imgs, const int idx,
-                             const int32_t imgid, const int32_t width, const int32_t height,
+                             const dt_imgid_t imgid, const int32_t width, const int32_t height,
                              const dt_alignment_t alignment);
 
 /* return the on screen pos with alignement */

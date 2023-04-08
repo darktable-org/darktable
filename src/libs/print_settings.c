@@ -277,7 +277,7 @@ static const char *mime(dt_imageio_module_data_t *data)
 
 static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                       void *exif, int exif_len, dt_imgid_t imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
                        const gboolean export_masks)
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
@@ -508,7 +508,7 @@ static int _print_job_run(dt_job_t *job)
 
   // get first image on a box, needed as print leader
 
-  int imgid = -1;
+  dt_imgid_t imgid = NO_IMGID;
 
   // compute the needed size for picture for the given printer resolution
 
@@ -516,7 +516,7 @@ static int _print_job_run(dt_job_t *job)
   {
     if(params->imgs.box[k].imgid > -1)
     {
-      if(imgid == -1) imgid = params->imgs.box[k].imgid;
+      if(!dt_is_valid_imgid(imgid)) imgid = params->imgs.box[k].imgid;
       if(_export_and_setup_pos(job, &params->imgs.box[k], k))
         return 1;
     }
@@ -649,7 +649,7 @@ static void _print_button_clicked(GtkWidget *widget, gpointer user_data)
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  int imgid = -1;
+  dt_imgid_t imgid = NO_IMGID;
 
   // at least one image on a box
 
@@ -662,7 +662,7 @@ static void _print_button_clicked(GtkWidget *widget, gpointer user_data)
     }
   }
 
-  if(imgid == -1)
+  if(!dt_is_valid_imgid(imgid))
   {
     dt_control_log(_("cannot print until a picture is selected"));
     return;
@@ -835,7 +835,7 @@ _update_slider(dt_lib_print_settings_t *ps)
 
   // FIXME: why doesn't this update when units are changed?
   if(ps->selected != -1
-     && ps->imgs.box[ps->selected].imgid != -1
+     && dt_is_valid_imgid(ps->imgs.box[ps->selected].imgid)
      && ps->width && ps->height
      && ps->info)
   {
@@ -1217,7 +1217,7 @@ _intent_callback(GtkWidget *widget, dt_lib_module_t *self)
   ps->v_intent = pos - 1;
 }
 
-static void _set_orientation(dt_lib_print_settings_t *ps, int32_t imgid)
+static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
 {
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf,
@@ -1237,7 +1237,7 @@ static void _set_orientation(dt_lib_print_settings_t *ps, int32_t imgid)
   dt_control_queue_redraw_center();
 }
 
-static void _load_image_full_page(dt_lib_print_settings_t *ps, int32_t imgid)
+static void _load_image_full_page(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
 {
   _set_orientation(ps, imgid);
 
@@ -1254,7 +1254,7 @@ static void _load_image_full_page(dt_lib_print_settings_t *ps, int32_t imgid)
   dt_control_queue_redraw_center();
 }
 
-static void _print_settings_activate_or_update_callback(gpointer instance, int imgid, gpointer user_data)
+static void _print_settings_activate_or_update_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1638,8 +1638,8 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     dt_image_box *b = &ps->imgs.box[ps->selected];
 
     // if image present remove it, otherwise remove the box
-    if(b->imgid != -1)
-      b->imgid = -1;
+    if(dt_is_valid_imgid(b->imgid))
+      b->imgid = NO_IMGID;
     else
       _page_delete_area(self, ps->selected);
 
@@ -1794,7 +1794,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   {
     dt_image_box *img = &ps->imgs.box[k];
 
-    if(img->imgid != -1)
+    if(dt_is_valid_imgid(img->imgid))
     {
       cairo_surface_t *surf = NULL;
 
@@ -1821,7 +1821,8 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
         cairo_translate(cr, screen.x, screen.y);
         cairo_scale(cr, scaler, scaler);
         cairo_set_source_surface(cr, surf, 0, 0);
-        const double alpha = (ps->dragging || (ps->selected != -1 && ps->selected != k)) ? 0.25 : 1.0;
+        const double alpha = (ps->dragging
+                              || (ps->selected != -1 && ps->selected != k)) ? 0.25 : 1.0;
         cairo_paint_with_alpha(cr, alpha);
         cairo_surface_destroy(surf);
         cairo_restore(cr);
@@ -1830,7 +1831,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
       }
     }
 
-    if(k == ps->selected || img->imgid == -1)
+    if(k == ps->selected || !dt_is_valid_imgid(img->imgid))
     {
       cairo_set_source_rgba(cr, .4, .4, .4, 1.0);
       _cairo_rectangle(cr, (k == ps->selected) ? ps->sel_controls : 0,
@@ -3220,7 +3221,7 @@ void gui_reset(dt_lib_module_t *self)
 
   // reset page orientation to fit the picture if a single one is displayed
 
-  const int32_t imgid = (ps->imgs.count > 0) ? ps->imgs.box[0].imgid : -1;
+  const dt_imgid_t imgid = (ps->imgs.count > 0) ? ps->imgs.box[0].imgid : -1;
   dt_printing_clear_boxes(&ps->imgs);
   ps->imgs.imgid_to_load = imgid;
 

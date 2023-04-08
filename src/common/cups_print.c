@@ -411,7 +411,7 @@ dt_medium_info_t *dt_get_medium(GList *media, const char *name)
   return result;
 }
 
-void dt_print_file(const int32_t imgid, const char *filename, const char *job_title, const dt_print_info_t *pinfo)
+void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job_title, const dt_print_info_t *pinfo)
 {
   // first for safety check that filename exists and is readable
 

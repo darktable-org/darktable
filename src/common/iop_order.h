@@ -162,17 +162,17 @@ typedef struct dt_iop_order_rule_t
 const char *dt_iop_order_string(const dt_iop_order_t order);
 
 /** return the iop-order-version used by imgid (DT_IOP_ORDER_V30 if unknown iop-order-version) */
-dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
+dt_iop_order_t dt_ioppr_get_iop_order_version(const dt_imgid_t imgid);
 
 /** returns the kind of the list by looking at the order of the modules, it is either one of the built-in version
     or a customr order  */
 dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list);
 
 /** returns true if imgid has an iop-order set */
-gboolean dt_ioppr_has_iop_order_list(const int32_t imgid);
+gboolean dt_ioppr_has_iop_order_list(const dt_imgid_t imgid);
 
 /** returns a list of dt_iop_order_entry_t and updates *_version */
-GList *dt_ioppr_get_iop_order_list(const int32_t imgid,
+GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
                                    const gboolean sorted);
 /** return the iop-order list for the given version, this is used to get the built-in lists */
 GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version);
@@ -187,7 +187,7 @@ GList *dt_ioppr_get_iop_order_link(GList *iop_order_list,
 /** For a non custom order, returns TRUE if iop_order_list has multiple instances grouped together */
 gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list);
 /** returns a list of dt_iop_order_entry_t and updates *_version */
-GList *dt_ioppr_get_multiple_instances_iop_order_list(int32_t imgid, gboolean memory);
+GList *dt_ioppr_get_multiple_instances_iop_order_list(dt_imgid_t imgid, gboolean memory);
 
 /** returns the iop_order from iop_order_list list with operation = op_name */
 int dt_ioppr_get_iop_order(GList *iop_order_list,
@@ -200,10 +200,10 @@ gboolean dt_ioppr_is_iop_before(GList *iop_order_list,
                                 const int multi_priority);
 /* write iop-order list for the given image */
 gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list,
-                                       const int32_t imgid);
+                                       const dt_imgid_t imgid);
 gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind,
                                   GList *iop_order_list,
-                                  const int32_t imgid);
+                                  const dt_imgid_t imgid);
 
 /** serialize list, used for presets */
 void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size);
@@ -235,9 +235,9 @@ void dt_ioppr_update_for_modules(struct dt_develop_t *dev,
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);
 
 /** sets the default iop_order to iop_list */
-void dt_ioppr_set_default_iop_order(struct dt_develop_t *dev, const int32_t imgid);
-void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid);
-void dt_ioppr_change_iop_order(struct dt_develop_t *dev, const int32_t imgid, GList *new_iop_list);
+void dt_ioppr_set_default_iop_order(struct dt_develop_t *dev, const dt_imgid_t imgid);
+void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const dt_imgid_t imgid);
+void dt_ioppr_change_iop_order(struct dt_develop_t *dev, const dt_imgid_t imgid, GList *new_iop_list);
 /** extract all modules with multi-instances */
 GList *dt_ioppr_extract_multi_instances_list(GList *iop_order_list);
 /** merge all modules with multi-instances as extracted with routine above into a canonical iop-order list */
@@ -275,7 +275,7 @@ gboolean dt_ioppr_move_iop_after(struct dt_develop_t *dev,
                                  struct dt_iop_module_t *module_prev);
 
 // for debug only
-int dt_ioppr_check_iop_order(struct dt_develop_t *dev, const int imgid, const char *msg);
+int dt_ioppr_check_iop_order(struct dt_develop_t *dev, const dt_imgid_t imgid, const char *msg);
 void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg);
 void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg);
 void dt_ioppr_print_iop_order(GList *iop_order_list, const char *msg);

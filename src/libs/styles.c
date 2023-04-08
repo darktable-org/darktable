@@ -134,7 +134,7 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   GtkTreeModel* model;
   GtkTreePath* path;
   GtkTreeIter iter;
-  int imgid = -1;
+  dt_imgid_t imgid = NO_IMGID;
 
   if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(self), &x, &y, FALSE, &model, &path, &iter))
   {

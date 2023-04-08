@@ -20,7 +20,7 @@
 
 /** shows a dialog for creating a new style, w if not null is a widget to
     change the sensitive state depending on the dialog response.  */
-int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy);
+int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, dt_imgid_t imgid, gboolean iscopy);
 
 /** must be called to initialize the structure. */
 void dt_gui_hist_dialog_init(dt_history_copy_item_t *d);
