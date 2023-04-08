@@ -902,6 +902,13 @@ void dt_masks_draw_anchor(cairo_t *cr,
                           const float x,
                           const float y);
 
+/* draw the small control point for selected anchor in path & brush */
+void dt_masks_draw_ctrl(cairo_t *cr,
+                        const float x,
+                        const float y,
+                        const float zoom_scale,
+                        const gboolean selected);
+
 /* find the closest to point (px, py) in points array.
    nb_ctrl is the number of points (control points) to
    skip at the start of points.
