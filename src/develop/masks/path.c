@@ -2260,7 +2260,8 @@ static void _path_events_post_expose(cairo_t *cr,
     for(int k = 0; k < nb; k++)
       dt_masks_draw_anchor(cr,
                            k == gui->point_dragging
-                           || k == gui->point_selected, zoom_scale,
+                           || k == gui->point_selected,
+                           zoom_scale,
                            gpt->points[k * 6 + 2],
                            gpt->points[k * 6 + 3]);
   }
@@ -2287,16 +2288,8 @@ static void _path_events_post_expose(cairo_t *cr,
 
     dt_masks_line_stroke(cr, TRUE, FALSE, FALSE, zoom_scale);
 
-    if(k == gui->feather_dragging || k == gui->feather_selected)
-      cairo_arc(cr, ffx, ffy, 3.0f / zoom_scale, 0, 2.0 * M_PI);
-    else
-      cairo_arc(cr, ffx, ffy, 1.5f / zoom_scale, 0, 2.0 * M_PI);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_fill_preserve(cr);
-
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_stroke(cr);
+    dt_masks_draw_ctrl(cr, ffx, ffy, zoom_scale,
+                       k == gui->feather_dragging || k == gui->feather_selected);
   }
 
   // draw border and corners

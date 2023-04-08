@@ -2688,6 +2688,24 @@ void dt_masks_draw_anchor(cairo_t *cr,
   cairo_stroke(cr);
 }
 
+void dt_masks_draw_ctrl(cairo_t *cr,
+                        const float x,
+                        const float y,
+                        const float zoom_scale,
+                        const gboolean selected)
+{
+  const float ctrl_size = DT_PIXEL_APPLY_DPI(selected ? 3.0f : 1.5f) / zoom_scale;
+
+  cairo_arc(cr, x, y, ctrl_size, 0, 2.0 * M_PI);
+
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  cairo_fill_preserve(cr);
+
+  cairo_set_line_width(cr, 1.0 / zoom_scale);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_stroke(cr);
+}
+
 void dt_masks_draw_arrow(cairo_t *cr,
                          const float from_x,
                          const float from_y,
