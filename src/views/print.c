@@ -79,7 +79,7 @@ static void _film_strip_activated(const dt_imgid_t imgid, void *data)
 
   // if the previous shown image is selected and the selection is unique
   // then we change the selected image to the new one
-  if(prt->imgs->box[0].imgid > 0)
+  if(dt_is_valid_imgid(prt->imgs->box[0].imgid))
   {
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

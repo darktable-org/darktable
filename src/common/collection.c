@@ -2540,7 +2540,7 @@ int64_t dt_collection_get_image_position(const dt_imgid_t image_id, const int32_
 {
   int64_t image_position = -1;
 
-  if(image_id >= 0)
+  if(dt_is_valid_imgid(image_id))
   {
     sqlite3_stmt *stmt = NULL;
     // clang-format off

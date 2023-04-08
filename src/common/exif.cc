@@ -2212,7 +2212,7 @@ int dt_exif_read_blob(uint8_t **buf,
     // publisher, colorlabels?). Additionally find out how to embed
     // XMP data.  And shall we add a description of the history stack
     // to Exif.Image.ImageHistory?
-    if(imgid >= 0)
+    if(dt_is_valid_imgid(imgid))
     {
       /* Delete metadata taken from the original file if it's fields
          we manage in dt, too */

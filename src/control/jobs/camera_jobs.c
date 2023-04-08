@@ -230,7 +230,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_p
 
   const time_t timestamp = (!in_path || !in_filename) ? 0 :
                dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
-  if(timestamp && imgid >= 0)
+  if(timestamp && dt_is_valid_imgid(imgid))
   {
     char dt_txt[DT_DATETIME_EXIF_LENGTH];
     dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &timestamp);

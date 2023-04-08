@@ -115,7 +115,7 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance, dt_imgi
   lib->image_id = imgid;
   dt_view_active_images_reset(FALSE);
   dt_view_active_images_add(lib->image_id, TRUE);
-  if(imgid >= 0)
+  if(dt_is_valid_imgid(imgid))
   {
     dt_collection_memory_update();
     dt_selection_select_single(darktable.selection, imgid);
@@ -329,7 +329,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     }
     dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
   }
-  else if(lib->image_id >= 0) // First of all draw image if available
+  else if(dt_is_valid_imgid(lib->image_id)) // First of all draw image if available
   {
     // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
     cairo_surface_t *surf = NULL;
