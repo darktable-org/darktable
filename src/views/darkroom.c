@@ -1182,7 +1182,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 
   const dt_imgid_t imgid = dev->image_storage.id;
   int new_offset = 1;
-  int new_id = -1;
+  dt_imgid_t new_id = NO_IMGID;
 
   // we new offset and imgid after the jump
   sqlite3_stmt *stmt;
@@ -3349,7 +3349,7 @@ void leave(dt_view_t *self)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_prepend(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
 
-  darktable.develop->image_storage.id = -1;
+  darktable.develop->image_storage.id = NO_IMGID;
 
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }

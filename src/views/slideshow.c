@@ -93,10 +93,10 @@ typedef struct dt_slideshow_format_t
 static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event);
 static dt_job_t *_process_job_create(dt_slideshow_t *d);
 
-static int _get_image_at_rank(const int rank)
+static dt_imgid_t _get_image_at_rank(const int rank)
 {
   // get random image id from sql
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
 
   if(rank >= 0)
   {
@@ -152,7 +152,7 @@ static void _shift_left(dt_slideshow_t *d)
   d->buf[S_RIGHT].rank  = d->buf[S_CURRENT].rank + 2;
   d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank <= d->col_count
     ? _get_image_at_rank(d->buf[S_RIGHT].rank)
-    : -1;
+    : NO_IMGID;
   d->id_displayed = -1;
   d->id_preview_displayed = -1;
   dt_free_align(tmp_buf);
@@ -171,7 +171,7 @@ static void _shift_right(dt_slideshow_t *d)
   d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 2;
   d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
     ? _get_image_at_rank(d->buf[S_LEFT].rank)
-    : -1;
+    : NO_IMGID;
   d->id_displayed = -1;
   d->id_preview_displayed = -1;
   dt_free_align(tmp_buf);
@@ -202,7 +202,7 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   dt_pthread_mutex_unlock(&d->lock);
 
   dt_dev_image_ext
-    (imgid, 
+    (imgid,
      d->width / darktable.gui->ppd,
      d->height / darktable.gui->ppd,
      -1,
@@ -253,7 +253,7 @@ static gboolean _is_slot_waiting(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 {
   return d->buf[slot].invalidated
          && d->buf[slot].buf == NULL
-         && d->buf[slot].imgid >= 0
+         && dt_is_valid_imgid(d->buf[slot].imgid)
          && d->buf[slot].rank >= 0;
 }
 
@@ -341,7 +341,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 2;
       d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank < d->col_count
         ? _get_image_at_rank(d->buf[S_RIGHT].rank)
-        : -1;
+        : NO_IMGID;
       d->buf[S_RIGHT].invalidated = TRUE;
       dt_free_align(d->buf[S_RIGHT].buf);
       d->buf[S_RIGHT].buf = NULL;
@@ -362,7 +362,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 2;
       d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
         ? _get_image_at_rank(d->buf[S_LEFT].rank)
-        : -1;
+        : NO_IMGID;
       d->buf[S_LEFT].invalidated = TRUE;
       dt_free_align(d->buf[S_LEFT].buf);
       d->buf[S_LEFT].buf = NULL;
