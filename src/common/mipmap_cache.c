@@ -932,7 +932,7 @@ void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buf
                                          int line)
 {
   if(buf->size == DT_MIPMAP_NONE) return;
-  assert(buf->imgid > 0);
+  assert(dt_is_valid_imgid(buf->imgid));
   // assert(buf->size >= DT_MIPMAP_0); // breaks gcc-4.6/4.7 build
   assert(buf->size < DT_MIPMAP_NONE);
   assert(buf->cache_entry);

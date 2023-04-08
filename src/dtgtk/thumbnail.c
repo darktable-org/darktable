@@ -1226,7 +1226,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
   _thumb_update_rating_class(thumb);
   gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
-  if(thumb->imgid > 0)
+  if(dt_is_valid_imgid(thumb->imgid))
   {
     // this is only here to ensure that mouse-over value is updated correctly
     // all dragging actions take place inside thumbatble.c
