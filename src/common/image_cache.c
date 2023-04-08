@@ -154,7 +154,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   }
   else
   {
-    img->id = -1;
+    img->id = NO_IMGID;
     dt_print(DT_DEBUG_ALWAYS,
              "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s\n",
              entry->key, sqlite3_errmsg(dt_database_get(darktable.db)));

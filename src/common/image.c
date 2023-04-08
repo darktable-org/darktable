@@ -1977,7 +1977,7 @@ void dt_image_init(dt_image_t *img)
   img->film_id = -1;
   img->group_id = NO_IMGID;
   img->flags = 0;
-  img->id = -1;
+  img->id = NO_IMGID;
   img->version = -1;
   img->loader = LOADER_UNKNOWN;
   img->exif_inited = 0;

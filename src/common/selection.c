@@ -117,7 +117,7 @@ const dt_selection_t *dt_selection_new()
   _selection_update_collection(NULL, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL, -1, (gpointer)s);
 
   /* initialize last_single_id based on current database */
-  s->last_single_id = -1;
+  s->last_single_id = NO_IMGID;
 
   if(dt_collection_get_selected_count(darktable.collection) >= 1)
   {
@@ -186,7 +186,7 @@ void dt_selection_select(dt_selection_t *selection, dt_imgid_t imgid)
 
 void dt_selection_deselect(dt_selection_t *selection, dt_imgid_t imgid)
 {
-  selection->last_single_id = -1;
+  selection->last_single_id = NO_IMGID;
 
   if(dt_is_valid_imgid(imgid))
   {
@@ -269,7 +269,7 @@ void dt_selection_select_all(dt_selection_t *selection)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
 
-  selection->last_single_id = -1;
+  selection->last_single_id = NO_IMGID;
 
   g_free(fullq);
 
@@ -381,7 +381,7 @@ void dt_selection_select_filmroll(dt_selection_t *selection)
 
   dt_collection_update(selection->collection);
 
-  selection->last_single_id = -1;
+  selection->last_single_id = NO_IMGID;
 
   _selection_raise_signal();
 
@@ -408,7 +408,7 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
      "         OR h.current_hash IS NULL)",
      NULL, NULL, NULL);
 
-  selection->last_single_id = -1;
+  selection->last_single_id = NO_IMGID;
   _selection_raise_signal();
 
   /* update hint message */

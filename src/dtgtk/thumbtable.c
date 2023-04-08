@@ -211,9 +211,9 @@ static dt_thumbnail_t *_thumb_get_under_mouse(dt_thumbtable_t *table)
 }
 
 // get imgid from rowid
-static int _thumb_get_imgid(int rowid)
+static dt_imgid_t _thumb_get_imgid(int rowid)
 {
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
   gchar *query = g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);

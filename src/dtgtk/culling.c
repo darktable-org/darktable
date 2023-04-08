@@ -74,7 +74,7 @@ static int _get_selection_count()
 // get imgid from rowid
 static int _thumb_get_imgid(int rowid)
 {
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
   gchar *query = g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -89,7 +89,7 @@ static int _thumb_get_imgid(int rowid)
 // get rowid from imgid
 static int _thumb_get_rowid(dt_imgid_t imgid)
 {
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
   gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -155,7 +155,7 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
 // set mouse_over_id to thumb under mouse or to first thumb
 static void _thumbs_refocus(dt_culling_t *table)
 {
-  int overid = -1;
+  dt_imgid_t overid = NO_IMGID;
 
   if(table->mouse_inside)
   {
@@ -932,7 +932,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   // get first id
   sqlite3_stmt *stmt;
   gchar *query = NULL;
-  int first_id = -1;
+  dt_imgid_t first_id = NO_IMGID;
 
   // prioritize mouseover if available
   first_id = dt_control_get_mouse_over_id();
@@ -992,7 +992,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
     if(sel_count == 0)
     {
       dt_control_log(_("no image selected!"));
-      first_id = -1;
+      first_id = NO_IMGID;
     }
     table->navigate_inside_selection = TRUE;
     table->offset = _thumb_get_rowid(first_id);
