@@ -289,15 +289,6 @@ void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
 // disable given op and all that comes before it in the pipe:
 void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 
-
-// TODO: future application: remove/add modules from list, load from disk, user programmable etc
-void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe,
-                               struct dt_develop_t *dev,
-                               const int n);
-void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe,
-                                  struct dt_develop_t *dev,
-                                  const int n);
-
 // helper function to pass a raster mask through a (so far) processed pipe
 float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe,
                               const struct dt_iop_module_t *raster_mask_source,
