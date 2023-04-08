@@ -542,7 +542,7 @@ static float _get_exposure_bias(const struct dt_iop_module_t *self)
     bias = self->dev->image_storage.exif_exposure_bias;
 
   // sanity checks, don't trust exif tags too much
-  if(!isnan(bias))
+  if(bias != DT_EXIF_TAG_UNINITIALIZED)
     return CLAMP(bias, -5.0f, 5.0f);
   else
     return 0.0f;
