@@ -51,16 +51,16 @@
 */
 typedef enum dt_view_type_flags_t
 {
-  DT_VIEW_NONE = 0,
-  DT_VIEW_LIGHTTABLE = 1,
-  DT_VIEW_DARKROOM = 2,
-  DT_VIEW_TETHERING = 4,
-  DT_VIEW_MAP = 8,
-  DT_VIEW_SLIDESHOW = 16,
-  DT_VIEW_PRINT = 32,
-  DT_VIEW_KNIGHT = 64,
-  DT_VIEW_ALL = DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP |
-                DT_VIEW_SLIDESHOW | DT_VIEW_PRINT | DT_VIEW_KNIGHT,
+  DT_VIEW_NONE       = 0,
+  DT_VIEW_LIGHTTABLE = 1 << 0,
+  DT_VIEW_DARKROOM   = 1 << 1,
+  DT_VIEW_TETHERING  = 1 << 2,
+  DT_VIEW_MAP        = 1 << 3,
+  DT_VIEW_SLIDESHOW  = 1 << 4,
+  DT_VIEW_PRINT      = 1 << 5,
+  DT_VIEW_KNIGHT     = 1 << 6,
+  DT_VIEW_OTHER      = 1 << 30, // for your own unpublished user view
+  DT_VIEW_ALL        = ~DT_VIEW_NONE,
 } dt_view_type_flags_t;
 
 // flags that a view can set in flags()
