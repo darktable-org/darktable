@@ -858,7 +858,7 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
 {
   _preview_data_t *data = (_preview_data_t *)user_data;
 
-  if(data->imgid > 0 && !data->first_draw && !data->surface)
+  if(dt_is_valid_imgid(data->imgid) && !data->first_draw && !data->surface)
     data->surface = dt_gui_get_style_preview(data->imgid, data->style_name);
 
   if(data->surface)

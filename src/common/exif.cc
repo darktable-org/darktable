@@ -1787,7 +1787,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
     }
 
     str = dt_conf_get_string("ui_last/import_last_tags");
-    if(img->id > 0 && str != NULL && str[0] != '\0')
+    if(dt_is_valid_imgid(img->id) && str != NULL && str[0] != '\0')
     {
       GList *imgs = NULL;
       imgs = g_list_prepend(imgs, GINT_TO_POINTER(img->id));

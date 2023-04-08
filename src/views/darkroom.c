@@ -840,7 +840,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
   // if the previous shown image is selected and the selection is unique
   // then we change the selected image to the new one
-  if(dev->image_storage.id > 0)
+  if(dt_is_valid_imgid(dev->image_storage.id))
   {
     sqlite3_stmt *stmt;
     // clang-format off

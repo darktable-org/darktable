@@ -138,7 +138,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->latitude = NAN;
   params->data->elevation = NAN;
   params->data->show_msec = dt_conf_get_bool("lighttable/ui/milliseconds");
-  if(params->imgid > 0)
+  if(dt_is_valid_imgid(params->imgid))
   {
     params->data->camera_maker = NULL;
     params->data->camera_alias = NULL;
@@ -210,7 +210,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
 
 static void _cleanup_expansion(dt_variables_params_t *params)
 {
-  if(params->imgid > 0)
+  if(dt_is_valid_imgid(params->imgid))
   {
     if(params->data->datetime)
     {
