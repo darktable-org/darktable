@@ -372,10 +372,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 }
 
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", "map", "print", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
 uint32_t container(dt_lib_module_t *self)
