@@ -154,15 +154,12 @@ const char *name(dt_lib_module_t *self)
   return _("export");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v1[] = {"lighttable", "darkroom", NULL};
-  static const char *v2[] = {"lighttable", NULL};
-
   if(dt_conf_get_bool("plugins/darkroom/export/visible"))
-    return v1;
+    return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM;
   else
-    return v2;
+    return DT_VIEW_LIGHTTABLE;
 }
 
 uint32_t container(dt_lib_module_t *self)

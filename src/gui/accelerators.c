@@ -1082,38 +1082,13 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
   case DT_ACTION_TYPE_IOP:
     vws = DT_VIEW_DARKROOM;
     break;
-  case DT_ACTION_TYPE_VIEW:
-    {
-      dt_view_t *view = (dt_view_t *)owner;
-
-      vws = view->view(view);
-    }
+  case DT_ACTION_TYPE_VIEW:;
+    dt_view_t *view = (dt_view_t *)owner;
+    vws = view->view(view);
     break;
-  case DT_ACTION_TYPE_LIB:
-    {
-      dt_lib_module_t *lib = (dt_lib_module_t *)owner;
-
-      const gchar **views = lib->views(lib);
-      while(*views)
-      {
-        if     (strcmp(*views, "lighttable") == 0)
-          vws |= DT_VIEW_LIGHTTABLE;
-        else if(strcmp(*views, "darkroom") == 0)
-          vws |= DT_VIEW_DARKROOM;
-        else if(strcmp(*views, "print") == 0)
-          vws |= DT_VIEW_PRINT;
-        else if(strcmp(*views, "slideshow") == 0)
-          vws |= DT_VIEW_SLIDESHOW;
-        else if(strcmp(*views, "map") == 0)
-          vws |= DT_VIEW_MAP;
-        else if(strcmp(*views, "tethering") == 0)
-          vws |= DT_VIEW_TETHERING;
-        else if(strcmp(*views, "*") == 0)
-          vws |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
-                 DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
-        views++;
-      }
-    }
+  case DT_ACTION_TYPE_LIB:;
+    dt_lib_module_t *lib = (dt_lib_module_t *)owner;
+    vws = lib->views(lib);
     break;
   case DT_ACTION_TYPE_BLEND:
     vws = DT_VIEW_DARKROOM;
@@ -1122,8 +1097,7 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
     if(owner == &darktable.control->actions_fallbacks)
       vws = 0;
     else if(owner == &darktable.control->actions_lua)
-      vws = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
-            DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
+      vws = DT_VIEW_ALL;
     else if(owner == &darktable.control->actions_thumb)
     {
       vws = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
@@ -1134,8 +1108,7 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
       dt_print(DT_DEBUG_ALWAYS, "[find_views] views for category '%s' unknown\n", owner->id);
     break;
   case DT_ACTION_TYPE_GLOBAL:
-    vws = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
-          DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
+    vws = DT_VIEW_ALL;
     break;
   default:
     break;
