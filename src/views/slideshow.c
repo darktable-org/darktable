@@ -548,7 +548,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // redraw even if the current displayed image is imgid as we want the
   // "working..." label to be cleared.
 
-  if(slot->buf && imgid >= 0 && !slot->invalidated)
+  if(slot->buf && dt_is_valid_imgid(imgid) && !slot->invalidated)
   {
     cairo_paint(cr);
 
@@ -562,7 +562,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     d->id_preview_displayed = imgid;
     cairo_restore(cr);
   }
-  else if(imgid >= 0 && imgid != d->id_preview_displayed)
+  else if(dt_is_valid_imgid(imgid) && imgid != d->id_preview_displayed)
   {
     // get a small preview
     dt_mipmap_buffer_t buf;

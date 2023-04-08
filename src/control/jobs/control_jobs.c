@@ -671,7 +671,7 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
 
-    if(imgid >= 0)
+    if(dt_is_valid_imgid(imgid))
     {
       dt_image_set_monochrome_flag(imgid, mode == 2);
     }
@@ -1287,7 +1287,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   while(t)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
-    if(imgid >= 0)
+    if(dt_is_valid_imgid(imgid))
     {
       gboolean from_cache = TRUE;
       char sourcefile[PATH_MAX];

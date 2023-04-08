@@ -969,7 +969,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(mouse_over_id >= 0)
+  if(dt_is_valid_imgid(mouse_over_id))
   {
 #ifdef USE_LUA
     dt_lua_async_call_alien(lua_update_metadata,
