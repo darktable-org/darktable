@@ -1339,7 +1339,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 
   const dt_imgid_t imgid = dt_control_get_mouse_over_id();
 
-  int groupid = -1;
+  dt_imgid_t groupid = NO_IMGID;
   // we crawl over all images to find the right one
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
@@ -1470,7 +1470,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
         dt_thumbtable_full_redraw(table, TRUE);
       }
     }
-    int newid = table->offset_imgid;
+    dt_imgid_t newid = table->offset_imgid;
     if(newid <= 0 && table->offset > 0) newid = _thumb_get_imgid(table->offset);
 
     // is the current offset imgid in the changed list
@@ -2442,7 +2442,7 @@ static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const 
 
 gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, const dt_imgid_t imgid)
 {
-  if(imgid < 1) return FALSE;
+  if(!dt_is_valid_imgid(imgid)) return FALSE;
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     return _filemanager_ensure_rowid_visibility(table, _thumb_get_rowid(imgid));
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
@@ -2498,7 +2498,7 @@ static gboolean _zoomable_check_rowid_visibility(dt_thumbtable_t *table, const i
 
 gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, const dt_imgid_t imgid)
 {
-  if(imgid < 1) return FALSE;
+  if(!dt_is_valid_imgid(imgid)) return FALSE;
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     return _filemanager_check_rowid_visibility(table, _thumb_get_rowid(imgid));
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)

@@ -93,8 +93,9 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget,
                                                 dt_lib_module_t *self)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  const int newid = dt_image_duplicate(imgid);
-  if(newid <= 0) return;
+  const dt_imgid_t newid = dt_image_duplicate(imgid);
+  if(!dt_is_valid_imgid(newid))
+    return;
   dt_history_delete_on_image(newid);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_collection_update_query(darktable.collection,
@@ -107,8 +108,9 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
                                                       dt_lib_module_t *self)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  const int newid = dt_image_duplicate(imgid);
-  if(newid <= 0) return;
+  const dt_imgid_t newid = dt_image_duplicate(imgid);
+  if(!dt_is_valid_imgid(newid))
+    return;
   dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
@@ -205,7 +207,8 @@ void gui_post_expose(dt_lib_module_t *self,
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
-  if(d->imgid == 0) return;
+  if(!dt_is_valid_imgid(d->imgid))
+    return;
 
   const gboolean view_ok = dt_view_check_view_context(&d->view_ctx);
 

@@ -1622,7 +1622,7 @@ void dt_control_delete_image(dt_imgid_t imgid)
   if(dt_conf_get_bool("ask_before_delete"))
   {
     // Do not show the dialog if no valid image
-    if(imgid < 1)
+    if(!dt_is_valid_imgid(imgid))
     {
       dt_control_job_dispose(job);
       return;

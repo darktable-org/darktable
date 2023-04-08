@@ -45,7 +45,7 @@
 #include "win/main_wrapper.h"
 #endif
 
-static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mipmap_size_t max_mip, const int32_t min_imgid, const int32_t max_imgid)
+static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mipmap_size_t max_mip, const dt_imgid_t min_imgid, const int32_t max_imgid)
 {
   fprintf(stderr, _("creating cache directories\n"));
   for(dt_mipmap_size_t k = min_mip; k <= max_mip; k++)
@@ -162,7 +162,7 @@ int main(int argc, char *arg[])
   // parse command line arguments
   dt_mipmap_size_t min_mip = DT_MIPMAP_0;
   dt_mipmap_size_t max_mip = DT_MIPMAP_2;
-  int32_t min_imgid = NO_IMGID;
+  dt_imgid_t min_imgid = NO_IMGID;
   int32_t max_imgid = INT32_MAX;
 
   int k;

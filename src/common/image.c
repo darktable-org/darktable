@@ -1561,7 +1561,7 @@ static int _image_read_duplicates(const uint32_t id,
       g_free(idfield);
     }
 
-    int newid = id;
+    dt_imgid_t newid = id;
     int grpid = NO_IMGID;
 
     if(count_xmps_processed == 0)

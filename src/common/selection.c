@@ -179,7 +179,7 @@ void dt_selection_clear(const dt_selection_t *selection)
 
 void dt_selection_select(dt_selection_t *selection, dt_imgid_t imgid)
 {
-  if(imgid < 1) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   _selection_select(selection, imgid);
   selection->last_single_id = imgid;
 }
@@ -233,7 +233,7 @@ void dt_selection_toggle(dt_selection_t *selection, dt_imgid_t imgid)
   sqlite3_stmt *stmt;
   gboolean exists = FALSE;
 
-  if(imgid < 1) return;
+  if(!dt_is_valid_imgid(imgid)) return;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid FROM main.selected_images WHERE imgid=?1", -1, &stmt, NULL);
