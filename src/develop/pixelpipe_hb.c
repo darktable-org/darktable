@@ -65,7 +65,7 @@ typedef enum dt_pixelpipe_picker_source_t
 
 #include "develop/pixelpipe_cache.c"
 
-const char *dt_dev_pixelpipe_type_to_str(int pipe_type)
+const char *dt_dev_pixelpipe_type_to_str(const int pipe_type)
 {
   const gboolean fast = pipe_type & DT_DEV_PIXELPIPE_FAST;
   const char *r = NULL;
@@ -614,15 +614,6 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
                                   pipe->iwidth, pipe->iheight,
                                   &pipe->processed_width,
                                   &pipe->processed_height);
-}
-
-// TODO:
-void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int n)
-{
-}
-// TODO:
-void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int n)
-{
 }
 
 static void _dump_pipe_pfm_diff(
