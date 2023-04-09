@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2022 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 /** a class to manage a table of thumbnail for lighttable and filmstrip.  */
 
 #include "dtgtk/thumbtable.h"
+#include "common/darktable.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
 #include "common/debug.h"
@@ -1085,16 +1086,17 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   const dt_view_manager_t *vm = darktable.view_manager;
   dt_view_t *view = vm->current_view;
-  const int id = dt_control_get_mouse_over_id();
+  const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(id > 0 && event->button == 1
+  if(dt_is_valid_imgid(id)
+     && event->button == 1
      && (table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
          || table->mode == DT_THUMBTABLE_MODE_ZOOM)
      && event->type == GDK_2BUTTON_PRESS)
   {
     dt_view_manager_switch(darktable.view_manager, "darkroom");
   }
-  else if(id > 0
+  else if(dt_is_valid_imgid(id)
           && event->button == 1 &&
           table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
           && event->type == GDK_BUTTON_PRESS
@@ -1170,8 +1172,8 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
     // on map view consider click release instead of press
     dt_view_manager_t *vm = darktable.view_manager;
     dt_view_t *view = vm->current_view;
-    const int id = dt_control_get_mouse_over_id();
-    if(id > 0
+    const dt_imgid_t id = dt_control_get_mouse_over_id();
+    if(dt_is_valid_imgid(id)
        && event->button == 1
        && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
        && event->type == GDK_BUTTON_RELEASE
@@ -1357,7 +1359,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 
   // we recrawl over all image for groups borders
   // this is somewhat complex as we want to draw borders around the group and not around each image of the group
-  if(groupid > 0)
+  if(dt_is_valid_imgid(groupid))
   {
     int pos = 0;
     for(const GList *l = table->list; l; l = g_list_next(l))
@@ -1444,7 +1446,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   if(query_change == DT_COLLECTION_CHANGE_RELOAD)
   {
-    int old_hover = dt_control_get_mouse_over_id();
+    dt_imgid_t old_hover = dt_control_get_mouse_over_id();
     /** Here's how it works
      *
      *          list of change|   | x | x | x | x |
@@ -1486,7 +1488,8 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 
     if(in_list)
     {
-      if(next > 0 && _thumb_get_rowid(table->offset_imgid) != table->offset)
+      if(dt_is_valid_imgid(next)
+         && _thumb_get_rowid(table->offset_imgid) != table->offset)
       {
         // if offset has changed, that means the offset img has moved. So we use the next untouched image as offset
         // but we have to ensure next is in the selection if we navigate inside sel.
@@ -1611,7 +1614,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     }
 
     // if the previous hovered image isn't here anymore, try to hover "next" image
-    if(old_hover > 0 && next > 0)
+    if(dt_is_valid_imgid(old_hover) && dt_is_valid_imgid(next))
     {
       // except for darkroom when mouse is not in filmstrip (the active image primes)
       const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
@@ -1657,7 +1660,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
       const int imgs_nb = g_list_length(table->drag_list);
       if(imgs_nb)
       {
-        uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
+        dt_imgid_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
         GList *l = table->drag_list;
         for(int i = 0; i < imgs_nb; i++)
         {
@@ -1678,7 +1681,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
       {
         gchar pathname[PATH_MAX] = { 0 };
         gboolean from_cache = TRUE;
-        const int id = GPOINTER_TO_INT(l->data);
+        const dt_imgid_t id = GPOINTER_TO_INT(l->data);
         dt_image_full_path(id, pathname, sizeof(pathname), &from_cache);
         gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
         gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
@@ -1690,7 +1693,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
         GList *images = NULL;
         for(; l; l = g_list_next(l))
         {
-          const int id = GPOINTER_TO_INT(l->data);
+          const dt_imgid_t id = GPOINTER_TO_INT(l->data);
           gchar pathname[PATH_MAX] = { 0 };
           gboolean from_cache = TRUE;
           dt_image_full_path(id, pathname, sizeof(pathname), &from_cache);
@@ -1809,7 +1812,7 @@ void dt_thumbtable_event_dnd_received(GtkWidget *widget, GdkDragContext *context
       {
         // source = dest = thumbtable => we are reordering
         // set order to "user defined" (this shouldn't trigger anything)
-        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        const dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
         dt_collection_move_before(mouse_over_id, table->drag_list);
         dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                    g_list_copy(table->drag_list));
@@ -2084,7 +2087,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     {
       // this mean we arrive from filmstrip with some active images
       // we need to ensure they are visible and to mark them with some css effect
-      const int lastid = GPOINTER_TO_INT(g_slist_last(darktable.view_manager->active_images)->data);
+      const dt_imgid_t lastid =
+        GPOINTER_TO_INT(g_slist_last(darktable.view_manager->active_images)->data);
       dt_thumbtable_ensure_imgid_visibility(table, lastid);
 
       for(GSList *l = darktable.view_manager->active_images; l; l = g_slist_next(l))
@@ -2288,7 +2292,7 @@ static void _accel_duplicate(dt_action_t *action)
   dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
 
   const dt_imgid_t sourceid = dt_act_on_get_main_image();
-  const int32_t newimgid = dt_image_duplicate(sourceid);
+  const dt_imgid_t newimgid = dt_image_duplicate(sourceid);
   if(!dt_is_valid_imgid(newimgid)) return;
 
   if(strcmp(action->id, "duplicate image"))
@@ -2510,11 +2514,12 @@ gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, const dt_i
 static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)
 {
   // base point
-  int baseid = dt_control_get_mouse_over_id();
+  dt_imgid_t baseid = dt_control_get_mouse_over_id();
   gboolean first_move = (baseid <= 0);
   int newrowid = -1;
   // let's be sure that the current image is selected
-  if(baseid > 0 && select) dt_selection_select(darktable.selection, baseid);
+  if(dt_is_valid_imgid(baseid) && select)
+    dt_selection_select(darktable.selection, baseid);
 
   int baserowid = 1;
 
@@ -2592,15 +2597,17 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   if(newrowid != -1) _filemanager_ensure_rowid_visibility(table, newrowid);
 
   // if needed, we set the selection
-  if(select && imgid > 0) dt_selection_select_range(darktable.selection, imgid);
+  if(select && dt_is_valid_imgid(imgid))
+    dt_selection_select_range(darktable.selection, imgid);
   return TRUE;
 }
 
 static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)
 {
   // let's be sure that the current image is selected
-  int baseid = dt_control_get_mouse_over_id();
-  if(baseid > 0 && select) dt_selection_select(darktable.selection, baseid);
+  dt_imgid_t baseid = dt_control_get_mouse_over_id();
+  if(dt_is_valid_imgid(baseid) && select)
+    dt_selection_select(darktable.selection, baseid);
 
   // first, we move the view by 1 thumb_size
   // move step
