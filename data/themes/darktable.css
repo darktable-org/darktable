@@ -1354,6 +1354,12 @@ filechooser row:hover .sidebar-icon
   background-color: @range_bg_color;
 }
 
+/* set masks sliders in header toolbar */
+#header-toolbar #bauhaus-slider
+{
+  margin: 0em 0em;
+}
+
 /* and adjust label and color buttons, especially in header bar */
 .dt_quick_filter,
 #filter-sort-box label,

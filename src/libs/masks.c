@@ -51,10 +51,12 @@ typedef struct dt_lib_masks_t
   GtkWidget *property[DT_MASKS_PROPERTY_LAST];
   GtkWidget *pressure, *smoothing;
   float last_value[DT_MASKS_PROPERTY_LAST];
-  GtkWidget *none_label;
+  GtkWidget *stack;
+  GtkWidget *box;
 
   GdkPixbuf *ic_inverse, *ic_union, *ic_intersection;
   GdkPixbuf *ic_difference, *ic_sum, *ic_exclusion, *ic_used;
+  gboolean all_hidden;
 } dt_lib_masks_t;
 
 
@@ -238,7 +240,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     dt_bauhaus_slider_set(widget, sum / count);
     d->last_value[prop] = dt_bauhaus_slider_get(widget);
 
-    gtk_widget_hide(d->none_label);
+    d->all_hidden = FALSE;
     dt_control_queue_redraw_center();
   }
 
@@ -247,7 +249,32 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 
 static void _update_all_properties(dt_lib_masks_t *self)
 {
-  gtk_widget_show(self->none_label);
+  GtkWidget *stack = gtk_widget_get_parent(self->box);
+
+  const gboolean show_in_module = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(self->cs.toggle));
+  if(show_in_module ^ (stack == self->stack))
+  {
+    g_object_ref(self->box);
+    gtk_container_remove(GTK_CONTAINER(stack), self->box);
+    if(show_in_module)
+    {
+      stack = self->stack;
+      gtk_orientable_set_orientation(GTK_ORIENTABLE(self->box), GTK_ORIENTATION_VERTICAL);
+      gtk_widget_set_halign(GTK_WIDGET(self->box), GTK_ALIGN_FILL);
+    }
+    else
+    {
+      stack = dt_view_filter_get_stack(darktable.view_manager);
+      gtk_orientable_set_orientation(GTK_ORIENTABLE(self->box), GTK_ORIENTATION_HORIZONTAL);
+      gtk_widget_set_halign(GTK_WIDGET(self->box), GTK_ALIGN_END);
+    }
+    gtk_stack_add_named(GTK_STACK(stack), self->box, "sliders");
+    DT_BAUHAUS_WIDGET(self->pressure)->show_label = show_in_module;
+    DT_BAUHAUS_WIDGET(self->smoothing)->show_label = show_in_module;
+    g_object_unref(self->box);
+  }
+
+  self->all_hidden = TRUE;
 
   for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
     _property_changed(self->property[i], i);
@@ -257,6 +284,11 @@ static void _update_all_properties(dt_lib_masks_t *self)
 
   gtk_widget_set_visible(self->pressure, drawing_brush && darktable.gui->have_pen_pressure);
   gtk_widget_set_visible(self->smoothing, drawing_brush);
+
+  gtk_stack_set_transition_duration(GTK_STACK(stack),
+                                    dt_conf_get_int("darkroom/ui/transition_duration"));
+  gtk_stack_set_visible_child_name(GTK_STACK(stack),
+                                   self->all_hidden ? "noshapes" : "sliders");
 }
 
 static void _lib_masks_get_values(GtkTreeModel *model,
@@ -1900,8 +1932,19 @@ void gui_init(dt_lib_module_t *self)
      _("properties"),
      GTK_BOX(self->widget),
      DT_ACTION(self));
-  d->none_label = dt_ui_label_new(_("no shapes selected"));
-  gtk_box_pack_start(GTK_BOX(d->cs.container), d->none_label, FALSE, FALSE, 0);
+
+  g_signal_connect_swapped(G_OBJECT(d->cs.toggle), "toggled",
+                           G_CALLBACK(_update_all_properties), d);
+
+  d->stack = gtk_stack_new();
+  gtk_box_pack_start(GTK_BOX(d->cs.container), d->stack, FALSE, FALSE, 0);
+  gtk_stack_add_named(GTK_STACK(d->stack), dt_ui_label_new(_("no shapes selected")), "noshapes");
+
+  d->box = gtk_button_box_new(GTK_ORIENTATION_VERTICAL);
+  gtk_button_box_set_layout(GTK_BUTTON_BOX(d->box), GTK_BUTTONBOX_EXPAND);
+  gtk_box_set_homogeneous(GTK_BOX(d->box), TRUE);
+  gtk_stack_add_named(GTK_STACK(d->stack), d->box, "sliders");
+
   gtk_widget_show_all(GTK_WIDGET(d->cs.container));
   gtk_widget_set_no_show_all(GTK_WIDGET(d->cs.container), TRUE);
 
@@ -1920,18 +1963,20 @@ void gui_init(dt_lib_module_t *self)
       dt_bauhaus_slider_set_log_curve(slider);
 
     d->last_value[i] = dt_bauhaus_slider_get(slider);
-    gtk_box_pack_start(GTK_BOX(d->cs.container), slider, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(d->box), slider, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(slider), "value-changed",
                      G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
   }
 
   d->pressure = dt_gui_preferences_enum(DT_ACTION(self), "pressure_sensitivity");
   dt_bauhaus_widget_set_label(d->pressure, N_("properties"), N_("pressure"));
-  gtk_box_pack_start(GTK_BOX(d->cs.container), d->pressure, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->box), d->pressure, FALSE, TRUE, 0);
+  gtk_button_box_set_child_non_homogeneous(GTK_BUTTON_BOX(d->box), d->pressure, TRUE);
 
   d->smoothing = dt_gui_preferences_enum(DT_ACTION(self), "brush_smoothing");
   dt_bauhaus_widget_set_label(d->smoothing, N_("properties"), N_("smoothing"));
-  gtk_box_pack_start(GTK_BOX(d->cs.container), d->smoothing, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->box), d->smoothing, FALSE, TRUE, 0);
+  gtk_button_box_set_child_non_homogeneous(GTK_BUTTON_BOX(d->box), d->smoothing, TRUE);
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;
