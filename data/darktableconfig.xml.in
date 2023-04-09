@@ -2169,8 +2169,8 @@
     <name>darkroom/ui/transition_duration</name>
     <type min="0" max="1000">int</type>
     <default>250</default>
-    <shortdescription>duration of the ui transitions in ms</shortdescription>
-    <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other ui elements</longdescription>
+    <shortdescription>duration of the UI transitions in ms</shortdescription>
+    <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other UI elements</longdescription>
   </dtconfig>
   <dtconfig>
     <name>ui/style/preview_size</name>
