@@ -38,7 +38,7 @@ struct dt_iop_module_t;
 typedef struct dt_dev_history_item_t
 {
   struct dt_iop_module_t *module; // pointer to image operation module
-  int32_t enabled;                // switched respective module on/off
+  gboolean enabled;               // switched respective module on/off
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   char op_name[20];
@@ -48,7 +48,7 @@ typedef struct dt_dev_history_item_t
   gboolean multi_name_hand_edited;
   GList *forms;        // snapshot of dt_develop_t->forms
   int num;             // num of history on database
-  int32_t focus_hash;  // used to determine whether or not to start a
+  gboolean focus_hash;  // used to determine whether or not to start a
                        // new item or to merge down
 } dt_dev_history_item_t;
 
@@ -151,7 +151,7 @@ typedef struct dt_develop_t
                         // gui_init'ed.
   gboolean gui_leaving;  // set if everything is scheduled to shut down.
   gboolean gui_synch;    // set to TRUE by the render threads if gui_update should be called in the modules.
-  int32_t focus_hash;   // determines whether to start a new history item or to merge down.
+  gboolean focus_hash;   // determines whether to start a new history item or to merge down.
   gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
   gboolean preview_input_changed, preview2_input_changed;
 
