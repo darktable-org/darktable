@@ -25,7 +25,7 @@
 void dt_presets_save_to_file(const int rowid, const char *preset_name, const char *filedir);
 
 /** load preset from file */
-int dt_presets_import_from_file(const char *preset_path);
+gboolean dt_presets_import_from_file(const char *preset_path);
 
 /** does the module support autoapplying presets ? */
 gboolean dt_presets_module_can_autoapply(const gchar *operation);

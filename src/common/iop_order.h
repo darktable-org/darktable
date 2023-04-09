@@ -244,8 +244,8 @@ GList *dt_ioppr_extract_multi_instances_list(GList *iop_order_list);
 GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list,
                                                     GList *multi_instance_list);
 
-/** returns 1 if there's a module_so without a iop_order defined */
-int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list);
+/** returns TRUE if there's a module_so without a iop_order defined */
+gboolean dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list);
 
 /* returns a list of dt_iop_order_rule_t with the current iop order rules */
 GList *dt_ioppr_get_iop_order_rules();
@@ -275,7 +275,7 @@ gboolean dt_ioppr_move_iop_after(struct dt_develop_t *dev,
                                  struct dt_iop_module_t *module_prev);
 
 // for debug only
-int dt_ioppr_check_iop_order(struct dt_develop_t *dev, const dt_imgid_t imgid, const char *msg);
+gboolean dt_ioppr_check_iop_order(struct dt_develop_t *dev, const dt_imgid_t imgid, const char *msg);
 void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg);
 void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg);
 void dt_ioppr_print_iop_order(GList *iop_order_list, const char *msg);

@@ -193,13 +193,13 @@ void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_p
                                         cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
                                         cl_mem *_dev_profile_lut);
 
-/** same as the C version */
-int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
+/** same as the C version, both return TRUE in case everything went fine */
+gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
                                            cl_mem dev_img_out, const int width, const int height,
                                            const int cst_from, const int cst_to, int *converted_cst,
                                            const dt_iop_order_iccprofile_info_t *const profile_info);
 
-int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_in, cl_mem dev_img_out,
+gboolean dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_in, cl_mem dev_img_out,
                                                const int width, const int height,
                                                const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                                const dt_iop_order_iccprofile_info_t *const profile_info_to,

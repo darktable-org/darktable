@@ -1330,7 +1330,7 @@ void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_p
   *_dev_profile_lut = NULL;
 }
 
-int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
+gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
                                            const int devid,
                                            cl_mem dev_img_in,
                                            cl_mem dev_img_out,
@@ -1484,7 +1484,7 @@ cleanup:
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
 
-int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid,
+gboolean dt_ioppr_transform_image_colorspace_rgb_cl(const int devid,
                                                cl_mem dev_img_in,
                                                cl_mem dev_img_out,
                                                const int width,
