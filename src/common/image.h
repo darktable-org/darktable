@@ -236,7 +236,7 @@ struct dt_cache_entry_t;
 typedef struct dt_image_t
 {
   // minimal exif data here (all in multiples of 4-byte to interface nicely with c++):
-  int32_t exif_inited;
+  gboolean exif_inited;
   dt_image_orientation_t orientation;
   float exif_exposure;
   float exif_exposure_bias;
