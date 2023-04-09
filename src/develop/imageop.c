@@ -2544,7 +2544,7 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_
   const dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   module->request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_MASK;
-  module->request_mask_display |= (is_active ? DT_DEV_PIXELPIPE_DISPLAY_MASK : 0);
+  module->request_mask_display |= (is_active ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_NONE);
 
   // set the module show mask button too
   if(bd->showmask)

@@ -451,7 +451,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
   dt_dev_pixelpipe_iop_t *piece = NULL;
 
   const dt_image_t *img      = &pipe->image;
-  const dt_imgid_t imgid        = img->id;
+  const dt_imgid_t imgid     = img->id;
   const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
   const gboolean raw_img     = dt_image_is_raw(img);
 
@@ -1327,7 +1327,7 @@ static gboolean _pixelpipe_process_on_CPU(
 static inline gboolean _check_good_pipe(dt_dev_pixelpipe_t *pipe)
 {
   return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
-         && (pipe->mask_display == 0);
+         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE);
 }
 
 static inline gboolean _check_module_next_important(dt_dev_pixelpipe_t *pipe,
