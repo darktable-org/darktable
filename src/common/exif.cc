@@ -1729,7 +1729,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     };
 
-    img->exif_inited = 1;
+    img->exif_inited = TRUE;
     return true;
   }
   catch(Exiv2::AnyError &e)
@@ -1920,7 +1920,7 @@ gboolean dt_exif_read(dt_image_t *img, const char *path)
       }
     }
     else
-      img->exif_inited = 1;
+      img->exif_inited = TRUE;
 
     // these get overwritten by IPTC and XMP. is that how it should work?
     dt_exif_apply_default_metadata(img);

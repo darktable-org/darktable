@@ -1827,7 +1827,7 @@ static uint32_t _image_import_internal(const int32_t film_id,
   img->group_id = group_id;
 
   // read dttags and exif for database queries!
-  if(dt_exif_read(img, normalized_filename)) img->exif_inited = 0;
+  if(dt_exif_read(img, normalized_filename)) img->exif_inited = FALSE;
   char dtfilename[PATH_MAX] = { 0 };
   g_strlcpy(dtfilename, normalized_filename, sizeof(dtfilename));
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
@@ -1980,7 +1980,7 @@ void dt_image_init(dt_image_t *img)
   img->id = NO_IMGID;
   img->version = -1;
   img->loader = LOADER_UNKNOWN;
-  img->exif_inited = 0;
+  img->exif_inited = FALSE;
   img->camera_missing_sample = FALSE;
   dt_datetime_exif_to_img(img, "");
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
