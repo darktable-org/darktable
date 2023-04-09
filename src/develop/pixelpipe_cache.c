@@ -36,7 +36,7 @@ gboolean dt_dev_pixelpipe_cache_init(
            const size_t size,
            const size_t limit)
 {
-  cache->entries = MAX(2, entries);
+  cache->entries = entries;
   cache->allmem = cache->queries = cache->misses = 0;
   cache->memlimit = limit;
   cache->data = (void **)calloc(entries, sizeof(void *));
@@ -220,20 +220,20 @@ gboolean dt_dev_pixelpipe_cache_available(
 
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   // search for hash in cache and make the sizes are identical
-  for(int k = 0; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
     if((cache->hash[k] == hash) && (cache->size[k] == size))
       return TRUE;
   return FALSE;
 }
 
 // While looking for the oldest cacheline we always ignore the first two lines as they are used
-// for swapping buffers while in entries==2 or masking mode
+// for swapping buffers while in entries==DT_PIPECACHE_MIN or masking mode
 static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache)
 {
   // we never want the latest used cacheline! It was <= 0 and the weight has increased just now
   int weight = 1;
   int id = 0;
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->used[k] > weight)
     {
@@ -248,7 +248,7 @@ static int _get_oldest_used_cacheline(dt_dev_pixelpipe_cache_t *cache, const int
 {
   int weight = 0;
   int id = 0;
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->used[k] > weight) && (cache->data[k] != NULL) && (cache->used[k] > age))
     {
@@ -264,7 +264,7 @@ static int _get_oldest_free_cacheline(dt_dev_pixelpipe_cache_t *cache)
   // we never want the latest used cacheline! It was <= 0 and the weight has increased just now
   int weight = 1;
   int id = 0;
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->used[k] > weight) && (cache->data[k] == NULL))
     {
@@ -279,7 +279,7 @@ static int _get_oldest_highgrp_line(dt_dev_pixelpipe_cache_t *cache)
 {
   int id = 0;
   int weight = -cache->entries / 4;
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->used[k] < 0) && (cache->data[k] != NULL) && (cache->used[k] > weight))
     {
@@ -295,13 +295,13 @@ static int _get_cacheline(struct dt_dev_pixelpipe_t *pipe)
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   // Simplest case is some pipes having only two cachelines or we are in masking mode so we
   // can just toggle between them.
-  if((cache->entries == 2) || pipe->mask_display)
+  if((cache->entries == DT_PIPECACHE_MIN) || pipe->mask_display)
     return cache->queries & 1;
 
   const int old_free = _get_oldest_free_cacheline(cache);
   if(old_free > 0) return old_free;
 
-  const int old_used = _get_oldest_used_cacheline(cache, 2);
+  const int old_used = _get_oldest_used_cacheline(cache, DT_PIPECACHE_MIN);
   if(old_used > 0) return old_used;
 
   return _get_oldest_cacheline(cache);
@@ -317,7 +317,7 @@ static gboolean _get_by_hash(
           const char *const name)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->hash[k] == hash)
     {
@@ -374,7 +374,7 @@ gboolean dt_dev_pixelpipe_cache_get(
     cache->used[k]++; // age all entries
 
   // cache keeps history and we have a cache hit, so no new buffer
-  if(cache->entries > 2 && _get_by_hash(pipe, hash, size, data, dsc, name))
+  if(cache->entries > DT_PIPECACHE_MIN && _get_by_hash(pipe, hash, size, data, dsc, name))
     return FALSE;
 
   // We need a fresh buffer as there was no hit.
@@ -388,8 +388,8 @@ gboolean dt_dev_pixelpipe_cache_get(
   // Can the module having used this cacheline before might still use the data with other dsc?
   const int cline = _get_cacheline(pipe);
   gboolean newdata = FALSE;
-  if(((cache->entries == 2) && (cache->size[cline] < size))
-     || ((cache->entries > 2) && (cache->size[cline] != size)))
+  if(((cache->entries == DT_PIPECACHE_MIN) && (cache->size[cline] < size))
+     || ((cache->entries > DT_PIPECACHE_MIN) && (cache->size[cline] != size)))
   {
     newdata = TRUE;
     dt_free_align(cache->data[cline]);
@@ -435,7 +435,7 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
 {
   // we don't use zero here for "swapping pipelines" having only two lines
   cache->queries = cache->misses = cache->queries & 1;
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     cache->basichash[k] = -1;
     cache->hash[k] = -1;
@@ -448,7 +448,7 @@ void dt_dev_pixelpipe_cache_flush_all_but(
         dt_dev_pixelpipe_cache_t *cache,
         uint64_t basichash)
 {
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->basichash[k] == basichash)
       continue;
@@ -465,7 +465,7 @@ void dt_dev_pixelpipe_cache_reweight(
        const size_t size)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->data[k] == data) && (size == cache->size[k]))
       cache->used[k] = -cache->entries;
@@ -477,7 +477,7 @@ void dt_dev_pixelpipe_cache_unweight(
        void *data)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->data[k] == data)
     {
@@ -490,7 +490,7 @@ void dt_dev_pixelpipe_cache_unweight(
 
 void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *data)
 {
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->data[k] == data)
     {
@@ -526,7 +526,7 @@ static size_t _free_cacheline(
 static int _important_lines(dt_dev_pixelpipe_cache_t *cache)
 {
   int important = 0;
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
     if(cache->used[k] < 0) important++;
   return important;
 }
@@ -534,7 +534,7 @@ static int _important_lines(dt_dev_pixelpipe_cache_t *cache)
 static int _used_lines(dt_dev_pixelpipe_cache_t *cache)
 {
   int in_use = 0;
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
     if(cache->data[k]) in_use++;
   return in_use;
 }
@@ -544,14 +544,14 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
 
   // we have pixelpipes like export & thumbnail that just use alternating buffers so no cleanup
-  if(cache->entries == 2) return;
+  if(cache->entries == DT_PIPECACHE_MIN) return;
 
   size_t freed = 0;
   int low_grp = 0;
   int high_grp = 0;
   int bad_grp = 0;
 
-  for(int k = 2; k < cache->entries; k++)
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     // **Always** remove the lines that have been reported having a hit-error or in masking mode
     if(cache->used[k] >= 8 * VERY_OLD_CACHE_WEIGHT)
