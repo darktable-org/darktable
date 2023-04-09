@@ -80,7 +80,7 @@ static void _update(dt_lib_module_t *self)
   const int act_on_any = (nbimgs > 0);
   const int act_on_one = (nbimgs == 1);
   const int act_on_mult = act_on_any && !act_on_one;
-  const int act_on_img = dt_act_on_get_main_image();
+  const dt_imgid_t act_on_img = dt_act_on_get_main_image();
   const gboolean can_paste =
     darktable.view_manager->copy_paste.copied_imageid > 0
     && (act_on_mult
@@ -214,9 +214,9 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  const int id = dt_act_on_get_main_image();
+  const dt_imgid_t id = dt_act_on_get_main_image();
 
-  if(id > 0 && dt_history_copy(id))
+  if(dt_is_valid_imgid(id) && dt_history_copy(id))
   {
     d->is_full_copy = TRUE;
     _update(self);
@@ -228,9 +228,9 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  const int id = dt_act_on_get_main_image();
+  const dt_imgid_t id = dt_act_on_get_main_image();
 
-  if(id > 0 && dt_history_copy_parts(id))
+  if(dt_is_valid_imgid(id) && dt_history_copy_parts(id))
   {
     d->is_full_copy = FALSE;
     _update(self);
