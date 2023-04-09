@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2022 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ static int _get_selection_count()
 }
 
 // get imgid from rowid
-static int _thumb_get_imgid(int rowid)
+static dt_imgid_t _thumb_get_imgid(int rowid)
 {
   dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
@@ -123,7 +123,7 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
     dt_thumbnail_t *th = (dt_thumbnail_t *)table->list->data;
     if(th->imgid != table->offset_imgid || th->display_focus != table->focus) ret = TRUE;
   }
-  else if(table->offset_imgid > 0)
+  else if(dt_is_valid_imgid(table->offset_imgid))
     ret = TRUE;
 
   if(table->mode == DT_CULLING_MODE_CULLING)
@@ -179,7 +179,7 @@ static void _thumbs_refocus(dt_culling_t *table)
   }
 
   // if overid not valid, we use the offset image
-  if(overid <= 0)
+  if(!dt_is_valid_imgid(overid))
   {
     overid = table->offset_imgid;
   }
@@ -488,7 +488,7 @@ static gboolean _zoom_thumb_max(dt_thumbnail_t *th, float x_root, float y_root)
 // toggle zoom max / zoom fit of image currently having mouse over id
 static void _toggle_zoom_current(dt_culling_t *table, float x_root, float y_root)
 {
-  const int id = dt_control_get_mouse_over_id();
+  const dt_imgid_t id = dt_control_get_mouse_over_id();
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -606,9 +606,9 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
     return TRUE;
   }
 
-  const int id = dt_control_get_mouse_over_id();
+  const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(id > 0 && event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(dt_is_valid_imgid(id) && event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     dt_view_manager_switch(darktable.view_manager, "darkroom");
     return TRUE;
@@ -938,11 +938,11 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   first_id = dt_control_get_mouse_over_id();
 
   // try active images
-  if(first_id < 1 && darktable.view_manager->active_images)
+  if(!dt_is_valid_imgid(first_id) && darktable.view_manager->active_images)
      first_id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
 
   // overwrite with selection no active images
-  if(first_id < 1)
+  if(!dt_is_valid_imgid(first_id))
   {
     // search the first selected image
     // clang-format off
@@ -959,16 +959,16 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   }
 
   // if no new offset is available until now, we continue with the fallback one
-  if(first_id == -1)
+  if(!dt_is_valid_imgid(first_id))
     first_id = _thumb_get_imgid(fallback_offset);
 
   // if this also fails we start at the beginning of the collection
-  if(first_id < 1)
+  if(!dt_is_valid_imgid(first_id))
   {
     first_id = _thumb_get_imgid(1);
   }
 
-  if(first_id < 1)
+  if(!dt_is_valid_imgid(first_id))
   {
     // Collection probably empty?
     return;
@@ -1100,8 +1100,9 @@ static void _thumbs_prefetch(dt_culling_t *table)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int id = sqlite3_column_int(stmt, 0);
-    if(id > 0) dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
+    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
+    if(dt_is_valid_imgid(id))
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
   }
   sqlite3_finalize(stmt);
   g_free(query);
@@ -1136,8 +1137,9 @@ static void _thumbs_prefetch(dt_culling_t *table)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int id = sqlite3_column_int(stmt, 0);
-    if(id > 0) dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
+    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
+    if(dt_is_valid_imgid(id))
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
   }
   sqlite3_finalize(stmt);
 }
@@ -1180,7 +1182,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   while(sqlite3_step(stmt) == SQLITE_ROW && g_list_shorter_than(newlist, table->thumbs_count+1))
   {
     const int nrow = sqlite3_column_int(stmt, 0);
-    const int nid = sqlite3_column_int(stmt, 1);
+    const dt_imgid_t nid = sqlite3_column_int(stmt, 1);
     // first, we search if the thumb is already here
     GList *tl = g_list_find_custom(table->list, GINT_TO_POINTER(nid), _list_compare_by_imgid);
     if(tl)
