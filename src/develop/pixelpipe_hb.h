@@ -31,6 +31,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define DT_PIPECACHE_MIN 2
+
 /**
  * struct used by iop modules to connect to pixelpipe.
  * data can be used to store whatever private data and
