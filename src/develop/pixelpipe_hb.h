@@ -153,7 +153,7 @@ typedef struct dt_dev_pixelpipe_t
   // we have to keep track of the next processing module to use an iop cacheline with high priority
   gboolean next_important_module;
 
-  int output_imgid;
+  dt_imgid_t output_imgid;
   // working?
   gboolean processing;
   // shutting down?
