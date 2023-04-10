@@ -685,4 +685,5 @@ No samples on raw.pixls.us
 
 ## Translations
 
+- New English translation with capital letters
 - ???
