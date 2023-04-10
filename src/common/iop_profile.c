@@ -346,8 +346,10 @@ static inline int _init_unbounded_coeffs(float *const lutr,
 }
 
 
-static inline void _apply_tonecurves(const float *const image_in, float *const image_out,
-                                     const int width, const int height,
+static inline void _apply_tonecurves(const float *const image_in,
+                                     float *const image_out,
+                                     const int width,
+                                     const int height,
                                      const float *const restrict lutr,
                                      const float *const restrict lutg,
                                      const float *const restrict lutb,
@@ -481,7 +483,8 @@ static inline void _transform_lab_to_rgb_matrix(const float *const image_in,
   if(profile_info->nonlinearlut)
   {
     // TODO : maybe optimize that path like _transform_matrix_rgb
-    _apply_tonecurves(image_out, image_out, width, height, profile_info->lut_out[0], profile_info->lut_out[1],
+    _apply_tonecurves(image_out, image_out, width, height,
+                      profile_info->lut_out[0], profile_info->lut_out[1],
                       profile_info->lut_out[2], profile_info->unbounded_coeffs_out[0],
                       profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2],
                       profile_info->lutsize);
@@ -491,7 +494,8 @@ static inline void _transform_lab_to_rgb_matrix(const float *const image_in,
 
 static inline void _transform_matrix_rgb(const float *const restrict image_in,
                                          float *const restrict image_out,
-                                         const int width, const int height,
+                                         const int width,
+                                         const int height,
                                          const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                          const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
@@ -590,7 +594,8 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
 static inline void _transform_matrix(struct dt_iop_module_t *self,
                                      const float *const restrict image_in,
                                      float *const restrict image_out,
-                                     const int width, const int height,
+                                     const int width,
+                                     const int height,
                                      const dt_iop_colorspace_type_t cst_from,
                                      const dt_iop_colorspace_type_t cst_to,
                                      dt_iop_colorspace_type_t *converted_cst,
@@ -629,8 +634,10 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info, co
   profile_info->filename[0] = '\0';
   profile_info->intent = DT_INTENT_PERCEPTUAL;
   _mark_as_nonmatrix_profile(profile_info);
-  profile_info->unbounded_coeffs_in[0][0] = profile_info->unbounded_coeffs_in[1][0] = profile_info->unbounded_coeffs_in[2][0] = -1.0f;
-  profile_info->unbounded_coeffs_out[0][0] = profile_info->unbounded_coeffs_out[1][0] = profile_info->unbounded_coeffs_out[2][0] = -1.0f;
+  profile_info->unbounded_coeffs_in[0][0] = profile_info->unbounded_coeffs_in[1][0]
+                                          = profile_info->unbounded_coeffs_in[2][0] = -1.0f;
+  profile_info->unbounded_coeffs_out[0][0] = profile_info->unbounded_coeffs_out[1][0]
+                                           = profile_info->unbounded_coeffs_out[2][0] = -1.0f;
   profile_info->nonlinearlut = 0;
   profile_info->grey = 0.f;
   profile_info->lutsize = (lutsize > 0) ? lutsize: DT_IOPPR_LUT_SAMPLES;
@@ -656,14 +663,15 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
 
 /** generate the info for the profile (type, filename) if matrix can be retrieved from lcms2
  * it can be called multiple time between init and cleanup
- * return 0 if OK, non zero otherwise
+ * return TRUE in case of an error
+ * FIXME we don't generate any error flag right now! 
  */
-static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
+static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
                                           const int type,
                                           const char *filename,
                                           const int intent)
 {
-  int err_code = 0;
+  gboolean err_code = FALSE;
   cmsHPROFILE *rgb_profile = NULL;
 
   _mark_as_nonmatrix_profile(profile_info);
@@ -778,8 +786,8 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
   {
     profile_info = dt_alloc_align(64, sizeof(dt_iop_order_iccprofile_info_t));
     dt_ioppr_init_profile_info(profile_info, 0);
-    const int err = dt_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, intent);
-    if(err == 0)
+    const gboolean err = dt_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, intent);
+    if(!err)
     {
       dev->allprofile_info = g_list_append(dev->allprofile_info, profile_info);
     }
