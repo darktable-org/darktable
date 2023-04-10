@@ -1430,10 +1430,10 @@ static gboolean _expose_again(gpointer user_data)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
 
-  if(ps->imgs.imgid_to_load != -1)
+  if(dt_is_valid_imgid(ps->imgs.imgid_to_load))
   {
     _load_image_full_page(ps, ps->imgs.imgid_to_load);
-    ps->imgs.imgid_to_load = -1;
+    ps->imgs.imgid_to_load = NO_IMGID;
   }
 
   dt_control_queue_redraw_center();
@@ -1821,7 +1821,7 @@ void gui_post_expose(struct dt_lib_module_t *self,
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  if(ps->imgs.imgid_to_load != -1)
+  if(dt_is_valid_imgid(ps->imgs.imgid_to_load))
   {
     // we set orientation and delay the reload to ensure the
     // page is properly set before trying to display the image.
