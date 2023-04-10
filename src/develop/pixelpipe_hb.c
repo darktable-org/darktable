@@ -2385,7 +2385,7 @@ static gboolean _dev_pixelpipe_process_rec(
      && darktable.develop->gui_attached
      && module->expanded
      && module->enabled
-     && (pipe->type & DT_DEV_PIXELPIPE_FULL)
+     && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
      && (module->request_histogram & DT_REQUEST_EXPANDED);
 
   if(needs_histo)
