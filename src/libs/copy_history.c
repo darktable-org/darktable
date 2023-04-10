@@ -77,9 +77,9 @@ static void _update(dt_lib_module_t *self)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   const int nbimgs = dt_act_on_get_images_nb(TRUE, FALSE);
-  const int act_on_any = (nbimgs > 0);
-  const int act_on_one = (nbimgs == 1);
-  const int act_on_mult = act_on_any && !act_on_one;
+  const gboolean act_on_any = (nbimgs > 0);
+  const gboolean act_on_one = (nbimgs == 1);
+  const gboolean act_on_mult = act_on_any && !act_on_one;
   const dt_imgid_t act_on_img = dt_act_on_get_main_image();
   const gboolean can_paste =
     dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid)
@@ -109,7 +109,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(!imgs)
     return;
-  const int act_on_one = g_list_is_singleton(imgs); // list length == 1?
+  const gboolean act_on_one = g_list_is_singleton(imgs); // list length == 1?
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
           _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
