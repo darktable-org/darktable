@@ -215,7 +215,7 @@ gboolean dt_dev_pixelpipe_cache_available(
            const uint64_t hash,
            const size_t size)
 {
-  if(pipe->mask_display)
+  if(pipe->mask_display || pipe->nocache)
     return FALSE;
 
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
@@ -295,7 +295,7 @@ static int _get_cacheline(struct dt_dev_pixelpipe_t *pipe)
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   // Simplest case is some pipes having only two cachelines or we are in masking mode so we
   // can just toggle between them.
-  if((cache->entries == DT_PIPECACHE_MIN) || pipe->mask_display)
+  if((cache->entries == DT_PIPECACHE_MIN) || pipe->mask_display || pipe->nocache)
     return cache->queries & 1;
 
   const int old_free = _get_oldest_free_cacheline(cache);
@@ -331,7 +331,7 @@ static gboolean _get_by_hash(
            won't be taken in this pixelpipe process.
            We do so by setting cache->used[k] to something very high.
       */
-      if((cache->size[k] != size) || pipe->mask_display)
+      if((cache->size[k] != size) || pipe->mask_display || pipe->nocache)
       {
         cache->hash[k] = cache->basichash[k] = -1;
         cache->used[k] = 8 * VERY_OLD_CACHE_WEIGHT;
