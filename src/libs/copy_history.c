@@ -82,7 +82,7 @@ static void _update(dt_lib_module_t *self)
   const int act_on_mult = act_on_any && !act_on_one;
   const dt_imgid_t act_on_img = dt_act_on_get_main_image();
   const gboolean can_paste =
-    darktable.view_manager->copy_paste.copied_imageid > 0
+    dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid)
     && (act_on_mult
         || (act_on_one
             && (darktable.view_manager->copy_paste.copied_imageid != act_on_img)));
