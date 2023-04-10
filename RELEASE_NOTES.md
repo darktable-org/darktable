@@ -355,6 +355,10 @@ The following is a summary of the main features added to darktable
   respectively. The setting of the mask operator is disabled for the
   first element in a group. Basically those are small UI improvements.
 
+- Added options in the watermark module for more fine-grained control
+  of the watermark scaling. In conjunction with the new 'text-fixedsize'
+  template it is now possible to insert text with constant font size.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
