@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -63,7 +63,8 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
  * NULL if not found
  */
 dt_iop_order_iccprofile_info_t *
-dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev, dt_colorspaces_color_profile_type_t profile_type,
+dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
+                                    dt_colorspaces_color_profile_type_t profile_type,
                                     const char *profile_filename);
 
 /** adds the profile info from (profile_type, profile_filename) to the dev profiles info list if not already exists
@@ -140,12 +141,19 @@ void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *pr
                                          const char **profile_filename);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
-void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
-                                         float *const image_out, const int width, const int height,
-                                         const int cst_from, const int cst_to, int *converted_cst,
+void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self,
+                                         const float *const image_in,
+                                         float *const image_out,
+                                         const int width,
+                                         const int height,
+                                         const int cst_from,
+                                         const int cst_to,
+                                         int *converted_cst,
                                          const dt_iop_order_iccprofile_info_t *const profile_info);
 
-void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in, float *const image_out, const int width,
+void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in,
+                                             float *const image_out,
+                                             const int width,
                                              const int height,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_to,
@@ -177,7 +185,8 @@ void dt_colorspaces_free_cl_global(dt_colorspaces_cl_global_t *g);
 /** sets profile_info_cl using profile_info
  * to be used as a parameter when calling opencl
  */
-void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info, dt_colorspaces_iccprofile_info_cl_t *profile_info_cl);
+void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
+                                  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl);
 /** returns the profile_info trc
  * to be used as a parameter when calling opencl
  */
@@ -185,25 +194,36 @@ cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profil
 
 /** build the required parameters for a kernel that uses a profile info */
 cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
-                                           const int devid, dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
-                                           cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                           const int devid,
+                                           dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+                                           cl_float **_profile_lut_cl,
+                                           cl_mem *_dev_profile_info,
                                            cl_mem *_dev_profile_lut);
 /** free parameters build with the previous function */
 void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
                                         cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
                                         cl_mem *_dev_profile_lut);
 
-/** same as the C version */
-int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
-                                           cl_mem dev_img_out, const int width, const int height,
-                                           const int cst_from, const int cst_to, int *converted_cst,
-                                           const dt_iop_order_iccprofile_info_t *const profile_info);
+/** same as the C version, both return TRUE in case everything went fine */
+gboolean dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self,
+                                                const int devid,
+                                                cl_mem dev_img_in,
+                                                cl_mem dev_img_out,
+                                                const int width,
+                                                const int height,
+                                                const int cst_from,
+                                                const int cst_to,
+                                                int *converted_cst,
+                                                const dt_iop_order_iccprofile_info_t *const profile_info);
 
-int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_in, cl_mem dev_img_out,
-                                               const int width, const int height,
-                                               const dt_iop_order_iccprofile_info_t *const profile_info_from,
-                                               const dt_iop_order_iccprofile_info_t *const profile_info_to,
-                                               const char *message);
+gboolean dt_ioppr_transform_image_colorspace_rgb_cl(const int devid,
+                                                    cl_mem dev_img_in,
+                                                    cl_mem dev_img_out,
+                                                    const int width,
+                                                    const int height,
+                                                    const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                                                    const dt_iop_order_iccprofile_info_t *const profile_info_to,
+                                                    const char *message);
 #endif
 
 /** the following must have the matrix_in and matrix_out generated */
@@ -238,10 +258,11 @@ static inline float eval_exp(const float coeff[3], const float x)
   aligned(lut:64) \
   uniform(rgb_in, rgb_out, unbounded_coeffs, lut)
 #endif
-static inline void dt_ioppr_apply_trc(const dt_aligned_pixel_t rgb_in, dt_aligned_pixel_t rgb_out,
-                              float *const lut[3],
-                              const float unbounded_coeffs[3][3],
-                              const int lutsize)
+static inline void dt_ioppr_apply_trc(const dt_aligned_pixel_t rgb_in,
+                                      dt_aligned_pixel_t rgb_out,
+                                      float *const lut[3],
+                                      const float unbounded_coeffs[3][3],
+                                      const int lutsize)
 {
   for(int c = 0; c < 3; c++)
   {
@@ -258,9 +279,11 @@ static inline void dt_ioppr_apply_trc(const dt_aligned_pixel_t rgb_in, dt_aligne
   uniform(rgb, matrix_in, lut_in, unbounded_coeffs_in)
 #endif
 static inline float dt_ioppr_get_rgb_matrix_luminance(const dt_aligned_pixel_t rgb,
-                                                      const dt_colormatrix_t matrix_in, float *const lut_in[3],
+                                                      const dt_colormatrix_t matrix_in,
+                                                      float *const lut_in[3],
                                                       const float unbounded_coeffs_in[3][3],
-                                                      const int lutsize, const int nonlinearlut)
+                                                      const int lutsize,
+                                                      const int nonlinearlut)
 {
   float luminance = 0.f;
 
@@ -283,10 +306,13 @@ static inline float dt_ioppr_get_rgb_matrix_luminance(const dt_aligned_pixel_t r
   aligned(lut_in:64) \
   uniform(lut_in, unbounded_coeffs_in)
 #endif
-static inline void dt_ioppr_rgb_matrix_to_xyz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t xyz,
-                                              const dt_colormatrix_t matrix_in_transposed, float *const lut_in[3],
+static inline void dt_ioppr_rgb_matrix_to_xyz(const dt_aligned_pixel_t rgb,
+                                              dt_aligned_pixel_t xyz,
+                                              const dt_colormatrix_t matrix_in_transposed,
+                                              float *const lut_in[3],
                                               const float unbounded_coeffs_in[3][3],
-                                              const int lutsize, const int nonlinearlut)
+                                              const int lutsize,
+                                              const int nonlinearlut)
 {
   if(nonlinearlut)
   {
@@ -304,10 +330,13 @@ static inline void dt_ioppr_rgb_matrix_to_xyz(const dt_aligned_pixel_t rgb, dt_a
   aligned(lut_out:64) \
   uniform(lut_out, unbounded_coeffs_out)
 #endif
-static inline void dt_ioppr_xyz_to_rgb_matrix(const dt_aligned_pixel_t xyz, dt_aligned_pixel_t rgb,
-                                              const dt_colormatrix_t matrix_out_transposed, float *const lut_out[3],
+static inline void dt_ioppr_xyz_to_rgb_matrix(const dt_aligned_pixel_t xyz,
+                                              dt_aligned_pixel_t rgb,
+                                              const dt_colormatrix_t matrix_out_transposed,
+                                              float *const lut_out[3],
                                               const float unbounded_coeffs_out[3][3],
-                                              const int lutsize, const int nonlinearlut)
+                                              const int lutsize,
+                                              const int nonlinearlut)
 {
   if(nonlinearlut)
   {
@@ -326,10 +355,13 @@ static inline void dt_ioppr_xyz_to_rgb_matrix(const dt_aligned_pixel_t xyz, dt_a
   aligned(lut_out:64) \
   uniform(lut_out, unbounded_coeffs_out)
 #endif
-static inline void dt_ioppr_lab_to_rgb_matrix(const dt_aligned_pixel_t lab, dt_aligned_pixel_t rgb,
-                                              const dt_colormatrix_t matrix_out_transposed, float *const lut_out[3],
+static inline void dt_ioppr_lab_to_rgb_matrix(const dt_aligned_pixel_t lab,
+                                              dt_aligned_pixel_t rgb,
+                                              const dt_colormatrix_t matrix_out_transposed,
+                                              float *const lut_out[3],
                                               const float unbounded_coeffs_out[3][3],
-                                              const int lutsize, const int nonlinearlut)
+                                              const int lutsize,
+                                              const int nonlinearlut)
 {
   dt_aligned_pixel_t xyz;
   dt_Lab_to_XYZ(lab, xyz);
@@ -352,10 +384,13 @@ static inline void dt_ioppr_lab_to_rgb_matrix(const dt_aligned_pixel_t lab, dt_a
   aligned(lut_in:64) \
   uniform(lut_in, unbounded_coeffs_in)
 #endif
-static inline void dt_ioppr_rgb_matrix_to_lab(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t lab,
-                                              const dt_colormatrix_t matrix_in_transposed, float *const lut_in[3],
+static inline void dt_ioppr_rgb_matrix_to_lab(const dt_aligned_pixel_t rgb,
+                                              dt_aligned_pixel_t lab,
+                                              const dt_colormatrix_t matrix_in_transposed,
+                                              float *const lut_in[3],
                                               const float unbounded_coeffs_in[3][3],
-                                              const int lutsize, const int nonlinearlut)
+                                              const int lutsize,
+                                              const int nonlinearlut)
 {
   dt_aligned_pixel_t xyz = { 0.f };
   dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, matrix_in_transposed, lut_in, unbounded_coeffs_in, lutsize, nonlinearlut);
@@ -370,7 +405,8 @@ static inline float dt_ioppr_get_profile_info_middle_grey(const dt_iop_order_icc
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline float dt_ioppr_compensate_middle_grey(const float x,
+                                                    const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   // we transform the curve nodes from the image colorspace to lab
   dt_aligned_pixel_t lab = { 0.0f };
@@ -383,14 +419,16 @@ static inline float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline float dt_ioppr_uncompensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline float dt_ioppr_uncompensate_middle_grey(const float x,
+                                                      const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   // we transform the curve nodes from lab to the image colorspace
   const dt_aligned_pixel_t lab = { x * 100.f, 0.0f, 0.0f };
   dt_aligned_pixel_t rgb = { 0.0f };
 
   dt_ioppr_lab_to_rgb_matrix(lab, rgb, profile_info->matrix_out_transposed, profile_info->lut_out,
-                             profile_info->unbounded_coeffs_out, profile_info->lutsize, profile_info->nonlinearlut);
+                             profile_info->unbounded_coeffs_out,
+                             profile_info->lutsize, profile_info->nonlinearlut);
   return rgb[0];
 }
 

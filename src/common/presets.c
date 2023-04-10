@@ -214,7 +214,7 @@ static int get_preset_element_float(xmlDocPtr doc, gchar *name)
   return result;
 }
 
-int dt_presets_import_from_file(const char *preset_path)
+gboolean dt_presets_import_from_file(const char *preset_path)
 {
   xmlDocPtr doc = xmlParseFile(preset_path);
   if(!doc)

@@ -39,7 +39,7 @@ GList *dt_act_on_get_images(const gboolean only_visible, const gboolean force, c
 gchar *dt_act_on_get_query(const gboolean only_visible);
 
 // get the main image to act on during global changes (libs, accels)
-int dt_act_on_get_main_image();
+dt_imgid_t dt_act_on_get_main_image();
 
 // get only the number of images to act on
 int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force);

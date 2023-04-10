@@ -79,7 +79,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->exif_crop = sqlite3_column_double(stmt, 15);
     img->orientation = sqlite3_column_int(stmt, 16);
     img->exif_focus_distance = sqlite3_column_double(stmt, 17);
-    if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
+    if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = TRUE;
     uint32_t tmp = sqlite3_column_int(stmt, 18);
     memcpy(&img->legacy_flip, &tmp, sizeof(dt_image_raw_parameters_t));
     if(sqlite3_column_type(stmt, 19) == SQLITE_FLOAT)
