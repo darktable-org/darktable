@@ -1252,7 +1252,7 @@
     <type>string</type>
     <default>120|400</default>
     <shortdescription>delimiters for size categories</shortdescription>
-    <longdescription>size categories are used to be able to set different overlays and css values depending of the size of the thumbnail, separated by |.\nfor example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px</longdescription>
+    <longdescription>size categories are used to be able to set different overlays and CSS values depending of the size of the thumbnail, separated by |.\nfor example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
@@ -2169,8 +2169,8 @@
     <name>darkroom/ui/transition_duration</name>
     <type min="0" max="1000">int</type>
     <default>250</default>
-    <shortdescription>duration of the ui transitions in ms</shortdescription>
-    <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other ui elements</longdescription>
+    <shortdescription>duration of the UI transitions in ms</shortdescription>
+    <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other UI elements</longdescription>
   </dtconfig>
   <dtconfig>
     <name>ui/style/preview_size</name>
