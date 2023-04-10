@@ -666,9 +666,9 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
  * return TRUE in case of an error
  */
 static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
-                                          const int type,
-                                          const char *filename,
-                                          const int intent)
+                                               const int type,
+                                               const char *filename,
+                                               const int intent)
 {
   gboolean error = TRUE;
   cmsHPROFILE *rgb_profile = NULL;
@@ -1691,4 +1691,3 @@ cleanup:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
