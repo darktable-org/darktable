@@ -505,7 +505,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
   dt_iop_segmentation_t isegments[HL_SEGMENT_PLANES];
   for(int i = 0; i < HL_SEGMENT_PLANES; i++)
-    segerror |= dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER, segmentation_limit);
+    segerror |= dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER+1, segmentation_limit);
 
   if(segerror)
   {
