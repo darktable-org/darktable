@@ -1793,7 +1793,9 @@ gboolean dt_history_copy_parts(const dt_imgid_t imgid)
 
 gboolean dt_history_paste_on_list(const GList *list, const gboolean undo)
 {
-  if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
+  if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
+    return FALSE;
+
   if(!list) // do we have any images to receive the pasted history?
     return FALSE;
 
@@ -1828,7 +1830,9 @@ gboolean dt_history_paste_on_list(const GList *list, const gboolean undo)
 
 gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
 {
-  if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
+  if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
+    return FALSE;
+
   if(!list) // do we have any images to receive the pasted history?
     return FALSE;
 
