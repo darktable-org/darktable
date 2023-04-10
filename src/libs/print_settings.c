@@ -417,7 +417,7 @@ static void _create_pdf(dt_job_t *job, dt_images_box imgs, const float width, co
     const int resolution = params->prt.printer.resolution;
     const dt_image_box *box = &imgs.box[k];
 
-    if(box->imgid > -1)
+    if(dt_is_valid_imgid(box->imgid))
     {
       pdf_image[count] =
         dt_pdf_add_image(pdf, (uint8_t *)box->buf, box->exp_width, box->exp_height,
@@ -513,7 +513,7 @@ static int _print_job_run(dt_job_t *job)
 
   for(int k=0; k<params->imgs.count; k++)
   {
-    if(params->imgs.box[k].imgid > -1)
+    if(dt_is_valid_imgid(params->imgs.box[k].imgid))
     {
       if(!dt_is_valid_imgid(imgid)) imgid = params->imgs.box[k].imgid;
       if(_export_and_setup_pos(job, &params->imgs.box[k], k))
@@ -558,7 +558,7 @@ static int _print_job_run(dt_job_t *job)
 
   for(int k=0; k<params->imgs.count; k++)
   {
-    if(params->imgs.box[k].imgid > -1)
+    if(dt_is_valid_imgid(params->imgs.box[k].imgid))
       if(dt_tag_attach(tagid, params->imgs.box[k].imgid, FALSE, FALSE))
         DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
@@ -654,7 +654,7 @@ static void _print_button_clicked(GtkWidget *widget, gpointer user_data)
 
   for(int k=0; k<ps->imgs.count; k++)
   {
-    if(ps->imgs.box[k].imgid > -1)
+    if(dt_is_valid_imgid(ps->imgs.box[k].imgid))
     {
       imgid = ps->imgs.box[k].imgid;
       break;
@@ -3220,7 +3220,7 @@ void gui_reset(dt_lib_module_t *self)
 
   // reset page orientation to fit the picture if a single one is displayed
 
-  const dt_imgid_t imgid = (ps->imgs.count > 0) ? ps->imgs.box[0].imgid : -1;
+  const dt_imgid_t imgid = (ps->imgs.count > 0) ? ps->imgs.box[0].imgid : NO_IMGID;
   dt_printing_clear_boxes(&ps->imgs);
   ps->imgs.imgid_to_load = imgid;
 
