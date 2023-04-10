@@ -664,14 +664,13 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
 /** generate the info for the profile (type, filename) if matrix can be retrieved from lcms2
  * it can be called multiple time between init and cleanup
  * return TRUE in case of an error
- * FIXME we don't generate any error flag right now! 
  */
 static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profile_info,
                                           const int type,
                                           const char *filename,
                                           const int intent)
 {
-  gboolean err_code = FALSE;
+  gboolean error = TRUE;
   cmsHPROFILE *rgb_profile = NULL;
 
   _mark_as_nonmatrix_profile(profile_info);
@@ -700,7 +699,8 @@ static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *p
     cmsColorSpaceSignature rgb_color_space = cmsGetColorSpace(rgb_profile);
     if(rgb_color_space != cmsSigRgbData)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_generate_profile_info] working profile color space `%c%c%c%c' not supported\n",
+      dt_print(DT_DEBUG_PIPE,
+        "[dt_ioppr_generate_profile_info] working profile color space `%c%c%c%c' not supported\n",
               (char)(rgb_color_space>>24),
               (char)(rgb_color_space>>16),
               (char)(rgb_color_space>>8),
@@ -712,6 +712,7 @@ static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *p
   // get the matrix
   if(rgb_profile)
   {
+    error = FALSE;
     if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, profile_info->matrix_in, profile_info->lut_in[0],
                                                     profile_info->lut_in[1], profile_info->lut_in[2],
                                                     profile_info->lutsize)
@@ -744,15 +745,17 @@ static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *p
         profile_info->unbounded_coeffs_in[0], profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2], profile_info->lutsize);
     _init_unbounded_coeffs(profile_info->lut_out[0], profile_info->lut_out[1], profile_info->lut_out[2],
         profile_info->unbounded_coeffs_out[0], profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2], profile_info->lutsize);
+    error = FALSE;
   }
 
   if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]) && profile_info->nonlinearlut)
   {
     const dt_aligned_pixel_t rgb = { 0.1842f, 0.1842f, 0.1842f };
     profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
+    error = FALSE;
   }
 
-  return err_code;
+  return error;
 }
 
 dt_iop_order_iccprofile_info_t *
@@ -853,7 +856,8 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %s %s, it will be replaced with linear Rec2020\n",
+    dt_print(DT_DEBUG_PIPE,
+      "[dt_ioppr_set_pipe_work_profile_info] profile `%s' in `%s' replaced by linear Rec2020\n",
       dt_colorspaces_get_name(type, NULL), filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
@@ -874,8 +878,9 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_set_pipe_input_profile_info] unsupported input profile %s %s,"
-        " it will be replaced with linear Rec2020\n", dt_colorspaces_get_name(type, NULL), filename);
+    dt_print(DT_DEBUG_PIPE,
+      "[dt_ioppr_set_pipe_input_profile_info] profile `%s' in `%s' replaced by linear Rec2020\n",
+      dt_colorspaces_get_name(type, NULL), filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
 
@@ -909,10 +914,9 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
     {
       // ??? this error output has been disabled for a display profile.
       // see discussion in https://github.com/darktable-org/darktable/issues/6774
-      dt_print(DT_DEBUG_ALWAYS,
-              "[dt_ioppr_set_pipe_output_profile_info] unsupported output"
-              " profile %s %s, it will be replaced with sRGB\n",
-              dt_colorspaces_get_name(type, NULL), filename);
+      dt_print(DT_DEBUG_PIPE,
+         "[dt_ioppr_set_pipe_output_profile_info] profile `%s' in `%s' replaced by sRGB\n",
+         dt_colorspaces_get_name(type, NULL), filename);
     }
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", intent);
   }
