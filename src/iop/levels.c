@@ -470,11 +470,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    piece->request_histogram |= (DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
   else
-    piece->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram &= ~DT_REQUEST_ON;
 
-  piece->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
+  piece->request_histogram |= DT_REQUEST_ONLY_IN_GUI;
 
   piece->histogram_params.bins_count = 256;
 
@@ -482,10 +482,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     d->mode = LEVELS_MODE_AUTOMATIC;
 
-    piece->request_histogram |= (DT_REQUEST_ON);
-    self->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
+    self->request_histogram &= ~DT_REQUEST_ON;
 
-    if(!self->dev->gui_attached) piece->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
+    if(!self->dev->gui_attached) piece->request_histogram &= ~DT_REQUEST_ONLY_IN_GUI;
 
     piece->histogram_params.bins_count = 16384;
 
@@ -511,7 +511,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     d->mode = LEVELS_MODE_MANUAL;
 
-    self->request_histogram |= (DT_REQUEST_ON);
+    self->request_histogram |= DT_REQUEST_ON;
 
     d->levels[0] = p->levels[0];
     d->levels[1] = p->levels[1];
@@ -569,7 +569,7 @@ void init(dt_iop_module_t *module)
 {
   dt_iop_default_init(module);
 
-  module->request_histogram |= (DT_REQUEST_ON);
+  module->request_histogram |= DT_REQUEST_ON;
 
   dt_iop_levels_params_t *d = module->default_params;
 

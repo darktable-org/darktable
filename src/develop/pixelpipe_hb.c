@@ -1118,7 +1118,6 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
         dt_control_queue_redraw_widget(module->widget);
     }
   }
-  return;
 }
 
 static gboolean _pixelpipe_process_on_CPU(
@@ -1423,7 +1422,8 @@ static gboolean _dev_pixelpipe_process_rec(
  
   // we also never want any cached data is in masking mode
   if(!gamma_preview
-      && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE))
+      && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+      && !pipe->nocache)
   {
     dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
     // dt_dev_pixelpipe_cache_available() tests for masking mode and returns FALSE in that case 
@@ -2381,7 +2381,17 @@ static gboolean _dev_pixelpipe_process_rec(
   // in case we get this buffer from the cache in the future, cache some stuff:
   **out_format = piece->dsc_out = pipe->dsc;
 
-  if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+  const gboolean needs_histo = module
+     && darktable.develop->gui_attached
+     && module->expanded
+     && module->enabled
+     && (pipe->type & DT_DEV_PIXELPIPE_FULL)
+     && (module->request_histogram & DT_REQUEST_EXPANDED);
+
+  if(needs_histo)
+    dt_print_pipe(DT_DEBUG_PIPE, "internal histogram", pipe, module->so->op, NULL, NULL, "\n");
+
+  if((pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE) && !needs_histo)
   {
     if(module && module == darktable.develop->gui_module)
     {
@@ -2393,6 +2403,12 @@ static gboolean _dev_pixelpipe_process_rec(
     // we check for an important hint after processing the module as we
     // want to track a runtime hint too.
     pipe->next_important_module = _check_module_next_important(pipe, module);
+  }
+
+  if(needs_histo)
+  {
+    pipe->nocache = TRUE;
+    dt_dev_pixelpipe_cache_unweight(pipe, *output);
   }
 
   // warn on NaN or infinity
@@ -2646,6 +2662,7 @@ gboolean dt_dev_pixelpipe_process(
            const float scale)
 {
   pipe->processing = TRUE;
+  pipe->nocache = FALSE;
   pipe->opencl_enabled = dt_opencl_running();
   pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type)
                                        : -1; // try to get/lock opencl resource

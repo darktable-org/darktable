@@ -2558,9 +2558,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    piece->request_histogram |= (DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
   else
-    piece->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram &= ~DT_REQUEST_ON;
 
 #if 0 // print new preset
   printf("p.channel = %d;\n", p->channel);
@@ -2684,7 +2684,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = FALSE;
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
-  module->request_histogram |= (DT_REQUEST_ON);
+  module->request_histogram |= DT_REQUEST_ON;
 
   _reset_parameters(module->default_params, DT_IOP_COLORZONES_h, DT_IOP_COLORZONES_SPLINES_V2);
 }
