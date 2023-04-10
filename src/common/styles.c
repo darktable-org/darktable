@@ -1099,7 +1099,8 @@ void dt_styles_apply_to_image(const char *name,
 
 void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 {
-  if(!darktable.develop || darktable.develop->image_storage.id == -1) return;
+  if(!darktable.develop || !dt_is_valid_imgid(darktable.develop->image_storage.id))
+    return;
 
   /* write current history changes so nothing gets lost */
   dt_dev_write_history(darktable.develop);
