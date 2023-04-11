@@ -47,7 +47,8 @@ typedef enum dt_dev_request_flags_t
 {
   DT_REQUEST_NONE = 0,
   DT_REQUEST_ON = 1 << 0,
-  DT_REQUEST_ONLY_IN_GUI = 1 << 1
+  DT_REQUEST_ONLY_IN_GUI = 1 << 1,
+  DT_REQUEST_EXPANDED = 1 << 2 // 
 } dt_dev_request_flags_t;
 
 // params to be used to collect histogram

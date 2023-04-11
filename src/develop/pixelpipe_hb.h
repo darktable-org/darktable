@@ -154,6 +154,8 @@ typedef struct dt_dev_pixelpipe_t
 
   // we have to keep track of the next processing module to use an iop cacheline with high priority
   gboolean next_important_module;
+  // avoid cached data for processed module
+  gboolean nocache;
 
   dt_imgid_t output_imgid;
   // working?

@@ -824,9 +824,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    piece->request_histogram |= (DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
   else
-    piece->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram &= ~DT_REQUEST_ON;
+
+  piece->request_histogram |= DT_REQUEST_EXPANDED;
 
   memcpy(&(d->params), p, sizeof(dt_iop_rgblevels_params_t));
 
@@ -889,7 +891,7 @@ void init(dt_iop_module_t *self)
 {
   dt_iop_default_init(self);
 
-  self->request_histogram |= (DT_REQUEST_ON);
+  self->request_histogram |= (DT_REQUEST_ON | DT_REQUEST_EXPANDED);
 
   dt_iop_rgblevels_params_t *d = self->default_params;
 
