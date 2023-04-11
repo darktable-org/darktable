@@ -670,7 +670,7 @@ static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *p
                                                const char *filename,
                                                const int intent)
 {
-  gboolean error = TRUE;
+  gboolean error = FALSE;
   cmsHPROFILE *rgb_profile = NULL;
 
   _mark_as_nonmatrix_profile(profile_info);
@@ -706,13 +706,13 @@ static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *p
               (char)(rgb_color_space>>8),
               (char)(rgb_color_space));
       rgb_profile = NULL;
+      error = TRUE;
     }
   }
 
   // get the matrix
   if(rgb_profile)
   {
-    error = FALSE;
     if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, profile_info->matrix_in, profile_info->lut_in[0],
                                                     profile_info->lut_in[1], profile_info->lut_in[2],
                                                     profile_info->lutsize)
@@ -745,14 +745,12 @@ static gboolean dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *p
         profile_info->unbounded_coeffs_in[0], profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2], profile_info->lutsize);
     _init_unbounded_coeffs(profile_info->lut_out[0], profile_info->lut_out[1], profile_info->lut_out[2],
         profile_info->unbounded_coeffs_out[0], profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2], profile_info->lutsize);
-    error = FALSE;
   }
 
   if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]) && profile_info->nonlinearlut)
   {
     const dt_aligned_pixel_t rgb = { 0.1842f, 0.1842f, 0.1842f };
     profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
-    error = FALSE;
   }
 
   return error;
