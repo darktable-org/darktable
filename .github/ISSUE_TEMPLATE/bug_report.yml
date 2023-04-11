@@ -49,14 +49,17 @@ body:
     attributes:
       label: Logfile | Screenshot | Screencast
       description: |
-        A log or backtrace will help us investigate your issue. If available please attach below. You can also attach a screenshot or screencast or any other useful information.
+        If you suspect a bug in darktable, it would be nice to have some kind of log file - it's also much more likely that one of the developers will look into your problem soon.
+        In most cases '-d common' will be sufficient, '-d opencl' is suggested in case of a suspected problem with OpenCL.
+        In case the program crashes, the backtrace file helps a lot to understand the reason. If available please attach below.
+        You can also attach a screenshot or screencast or any other useful information.
       placeholder: |
-        Drag and drop logfile or backtrace file here, if available.
-        Copying the contents is okay for short logs (like < 20 lines or so), but please put them in code blocks:
+        Drag and drop log file or backtrace file here, if available.
+        Copying the contents is okay for short logs (like < 50 lines or so), but please put them in code blocks:
         ```
         log here
         ```
-        You can also use pastebin.com or similar service.
+        You can use pastebin.com or similar services for long texts.
   
   - type: input
     id: commit
@@ -85,8 +88,8 @@ body:
     attributes:
       label: darktable version
       description: |
-        Please fill out the version of darktable (eg. 4.2.0+250~gee17c5dcc) that had the issue. 
-        You can obtain via clicking in the darktable logo or darktable --version in the command line.
+        Please fill out the version of darktable (e.g., 4.2.0+250~gee17c5dcc) that had the issue.
+        You can get it by clicking on the darktable logo or by running 'darktable --version' on the command line.
       placeholder: '4.2.0+250~gee17c5dcc'
     validations:
       required: true
