@@ -1425,15 +1425,15 @@ int set_params(dt_imageio_module_storage_t *self,
   return 0;
 }
 
-int supported(dt_imageio_module_storage_t *storage,
-              dt_imageio_module_format_t *format)
+gboolean supported(dt_imageio_module_storage_t *storage,
+                   dt_imageio_module_format_t *format)
 {
   if(strcmp(format->mime(NULL), "image/jpeg") == 0)
-    return 1;
+    return TRUE;
   else if(strcmp(format->mime(NULL), "image/png") == 0)
-    return 1;
+    return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
 void free_params(dt_imageio_module_storage_t *self,

@@ -573,16 +573,16 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   return 0;
 }
 
-int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
+gboolean supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
 {
   const char *mime = format->mime(NULL);
-  if(strcmp(mime, "image/jpeg") == 0) return 1;
-  if(strcmp(mime, "image/png") == 0) return 1;
-  if(strcmp(mime, "image/webp") == 0) return 1;
-  if(strcmp(mime, "image/avif") == 0) return 1;
-  if(strcmp(mime, "image/jxl") == 0) return 1;
+  if(strcmp(mime, "image/jpeg") == 0) return TRUE;
+  if(strcmp(mime, "image/png") == 0) return TRUE;
+  if(strcmp(mime, "image/webp") == 0) return TRUE;
+  if(strcmp(mime, "image/avif") == 0) return TRUE;
+  if(strcmp(mime, "image/jxl") == 0) return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
 // clang-format off
