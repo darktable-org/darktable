@@ -88,8 +88,8 @@ body:
     attributes:
       label: darktable version
       description: |
-        Please fill out the version of darktable (eg. 4.2.0+250~gee17c5dcc) that had the issue. 
-        You can obtain via clicking in the darktable logo or darktable --version in the command line.
+        Please fill out the version of darktable (e.g., 4.2.0+250~gee17c5dcc) that had the issue.
+        You can get it by clicking on the darktable logo or by running 'darktable --version' on the command line.
       placeholder: '4.2.0+250~gee17c5dcc'
     validations:
       required: true
