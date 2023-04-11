@@ -463,7 +463,7 @@ void dt_film_remove(const int id)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int32_t imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     if(!dt_image_safe_remove(imgid))
     {
       remove_ok = FALSE;
@@ -485,7 +485,7 @@ void dt_film_remove(const int id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int32_t imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     dt_image_local_copy_reset(imgid);
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
     dt_image_cache_remove(darktable.image_cache, imgid);

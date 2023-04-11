@@ -39,10 +39,9 @@ const char *name(dt_lib_module_t *self)
   return _("select");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -206,7 +205,7 @@ static int lua_button_clicked_cb(lua_State* L)
   while(lua_next(L, -2) != 0)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
-    int imgid;
+    dt_imgid_t imgid;
     luaA_to(L, dt_lua_image_t, &imgid, -1);
     new_selection = g_list_prepend(new_selection, GINT_TO_POINTER(imgid));
     lua_pop(L, 1);

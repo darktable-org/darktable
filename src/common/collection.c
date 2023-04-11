@@ -55,7 +55,7 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t id, gpointer user_data);
 
 /* determine image offset of specified imgid for the given collection */
-static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid);
+static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, dt_imgid_t imgid);
 /* update aspect ratio for the selected images */
 static void _collection_update_aspect_ratio(const dt_collection_t *collection);
 
@@ -617,7 +617,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
     double start = dt_get_wtime();
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const int imgid = sqlite3_column_int(stmt, 0);
+      const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
       dt_image_set_raw_aspect_ratio(imgid);
 
       if(dt_get_wtime() - start > MAX_TIME)
@@ -965,7 +965,7 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const int imgid = sqlite3_column_int(stmt, 0);
+      const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
       list = g_list_prepend(list, GINT_TO_POINTER(imgid));
     }
 
@@ -2217,7 +2217,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   if(!collection->clone && query_change == DT_COLLECTION_CHANGE_NEW_QUERY && darktable.gui)
   {
     // if the query has changed, we reset the expanded group
-    darktable.gui->expanded_group_id = -1;
+    darktable.gui->expanded_group_id = NO_IMGID;
   }
 
   if(!collection->clone)
@@ -2470,9 +2470,9 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   g_idle_add(dt_collection_hint_message_internal, message);
 }
 
-static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid)
+static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, dt_imgid_t imgid)
 {
-  if(imgid == -1) return 0;
+  if(!dt_is_valid_imgid(imgid)) return 0;
   int offset = 0;
   sqlite3_stmt *stmt;
 
@@ -2500,7 +2500,7 @@ static int dt_collection_image_offset_with_collection(const dt_collection_t *col
   return offset;
 }
 
-int dt_collection_image_offset(int imgid)
+int dt_collection_image_offset(dt_imgid_t imgid)
 {
   return dt_collection_image_offset_with_collection(darktable.collection, imgid);
 }
@@ -2536,11 +2536,11 @@ static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t
   }
 }
 
-int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t tagid)
+int64_t dt_collection_get_image_position(const dt_imgid_t image_id, const int32_t tagid)
 {
   int64_t image_position = -1;
 
-  if(image_id >= 0)
+  if(dt_is_valid_imgid(image_id))
   {
     sqlite3_stmt *stmt = NULL;
     // clang-format off
@@ -2612,7 +2612,7 @@ void dt_collection_shift_image_positions(const unsigned int length,
  *
  * Img 3 and Img 4 is not updated.
 */
-void dt_collection_move_before(const int32_t image_id, GList * selected_images)
+void dt_collection_move_before(const dt_imgid_t image_id, GList * selected_images)
 {
   if(!selected_images)
   {

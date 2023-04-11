@@ -419,6 +419,11 @@ The following is a summary of the main features added to darktable
   better hit when looking in the cache and so allow for better
   performances.
 
+- Fix some pixel-pipe cache issues related to mask visualization and
+  module's internal histogram (like RGB Curve for example). This
+  ensure better hit in the cache leading to better performance and
+  also avoid some refresh issues in some cases.
+
 - Fix "--threads n" restricts OMP threads to specified number (does
   not allow for more threads than available on the host.
 
@@ -490,10 +495,6 @@ The following is a summary of the main features added to darktable
 - When using the spot exposure mapping mode, properly reset the mode to
   "correction" when changing image.
 
-- Fix some pixel-pipe cache issues related to mask visualization. This
-  ensure better hit in the cache leading to better performance and
-  also avoid some refresh issues in some cases.
-
 - Fix a bug where the "highlights reconstruction" module, which was
   not applicable to the current image, could be enabled. For example
   it is now impossible to enable the module if the image is a JPEG as
@@ -534,6 +535,14 @@ The following is a summary of the main features added to darktable
 
 - Fixing OpenCL library loading in case of not fully implemented
   required symbols.
+
+- Rework the masks drawing to ensure all masks are drawn the same
+  way. The central area, border and highlighted segments are now
+  displayed consistently. The highlighted segment is more visible,
+  this is especially true for the brush mask where the highlighted
+  segment was barely distinguishable due to a bug.
+
+- Set imported EXR image size to the extent of valid data window only.
 
 ## Lua
 
@@ -677,4 +686,5 @@ No samples on raw.pixls.us
 
 ## Translations
 
+- New English translation with capital letters
 - ???

@@ -27,7 +27,7 @@ dt_undo_lt_history_t *dt_history_snapshot_item_init(void)
   return (dt_undo_lt_history_t *)g_malloc0(sizeof(dt_undo_lt_history_t));
 }
 
-void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *history_end)
+void dt_history_snapshot_undo_create(const dt_imgid_t imgid, int *snap_id, int *history_end)
 {
   // create history & mask snapshots for imgid, return the snapshot id
   sqlite3_stmt *stmt;
@@ -134,7 +134,7 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
   dt_unlock_image(imgid);
 }
 
-static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_id, const int history_end)
+static void _history_snapshot_undo_restore(const dt_imgid_t imgid, const int snap_id, const int history_end)
 {
   // restore the given snapshot for imgid
   sqlite3_stmt *stmt;
@@ -223,7 +223,7 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 }
 
-static void _clear_undo_snapshot(const int32_t imgid, const int snap_id)
+static void _clear_undo_snapshot(const dt_imgid_t imgid, const int snap_id)
 {
   sqlite3_stmt *stmt;
 

@@ -211,7 +211,7 @@ void tree_on_row_activated(GtkTreeView       *treeview,
 }
 
 int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
-                           const int imgid,
+                           const dt_imgid_t imgid,
                            const gboolean iscopy)
 {
   int res;
@@ -385,7 +385,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 void dt_gui_hist_dialog_init(dt_history_copy_item_t *d)
 {
   d->selops = NULL;
-  d->copied_imageid = -1;
+  d->copied_imageid = NO_IMGID;
   d->copy_iop_order = FALSE;
 }
 

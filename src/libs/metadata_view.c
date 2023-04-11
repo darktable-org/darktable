@@ -170,10 +170,9 @@ const char *name(dt_lib_module_t *self)
   return _("image information");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"*", NULL};
-  return v;
+  return DT_VIEW_ALL;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -470,7 +469,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   gchar *images = NULL;
 
-  if(mouse_over_id == -1)
+  if(!dt_is_valid_imgid(mouse_over_id))
   {
      const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
     if(cv->view(cv) == DT_VIEW_DARKROOM)
@@ -969,7 +968,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(mouse_over_id >= 0)
+  if(dt_is_valid_imgid(mouse_over_id))
   {
 #ifdef USE_LUA
     dt_lua_async_call_alien(lua_update_metadata,
@@ -994,18 +993,21 @@ fill_minuses:
 
 static void _jump_to()
 {
-  int32_t imgid = dt_control_get_mouse_over_id();
-  if(imgid == -1)
+  dt_imgid_t imgid = dt_control_get_mouse_over_id();
+  if(!dt_is_valid_imgid(imgid))
   {
     sqlite3_stmt *stmt;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
 
-    if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      imgid = sqlite3_column_int(stmt, 0);
+
     sqlite3_finalize(stmt);
   }
-  if(imgid != -1)
+  if(dt_is_valid_imgid(imgid))
   {
     char path[512];
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -1438,7 +1440,7 @@ static int lua_update_values(lua_State *L)
 static int lua_update_metadata(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
-  int32_t imgid = lua_tointeger(L, 2);
+  const dt_imgid_t imgid = lua_tointeger(L, 2);
   gboolean have_updates = false;
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
   lua_getiuservalue(L, -1, 1);
@@ -1448,7 +1450,7 @@ static int lua_update_metadata(lua_State *L)
   while(lua_next(L, 5) != 0)
   {
     have_updates = true;
-    if(imgid > 0)
+    if(dt_is_valid_imgid(imgid))
     {
       lua_pushvalue(L, -1);
       luaA_push(L, dt_lua_image_t, &imgid);

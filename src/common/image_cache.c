@@ -79,7 +79,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->exif_crop = sqlite3_column_double(stmt, 15);
     img->orientation = sqlite3_column_int(stmt, 16);
     img->exif_focus_distance = sqlite3_column_double(stmt, 17);
-    if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
+    if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = TRUE;
     uint32_t tmp = sqlite3_column_int(stmt, 18);
     memcpy(&img->legacy_flip, &tmp, sizeof(dt_image_raw_parameters_t));
     if(sqlite3_column_type(stmt, 19) == SQLITE_FLOAT)
@@ -154,7 +154,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   }
   else
   {
-    img->id = -1;
+    img->id = NO_IMGID;
     dt_print(DT_DEBUG_ALWAYS,
              "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s\n",
              entry->key, sqlite3_errmsg(dt_database_get(darktable.db)));
@@ -203,20 +203,20 @@ void dt_image_cache_print(dt_image_cache_t *cache)
            (float)cache->cache.cost / (float)cache->cache.cost_quota);
 }
 
-dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const int32_t imgid, char mode)
+dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const dt_imgid_t imgid, char mode)
 {
-  if(imgid <= 0) return NULL;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, (uint32_t)imgid, mode);
+  if(!dt_is_valid_imgid(imgid)) return NULL;
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   return img;
 }
 
-dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const int32_t imgid, char mode)
+dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const dt_imgid_t imgid, char mode)
 {
-  if(imgid <= 0) return NULL;
-  dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, (uint32_t)imgid, mode);
+  if(!dt_is_valid_imgid(imgid)) return NULL;
+  dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
   if(!entry) return 0;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
@@ -323,15 +323,15 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
 
 
 // remove the image from the cache
-void dt_image_cache_remove(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_remove(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
   dt_cache_remove(&cache->cache, imgid);
 }
 
 /* set timestamps */
-void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
-  if(imgid <= 0) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
@@ -341,9 +341,11 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t 
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, const int32_t imgid, const int32_t sourceid)
+void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
+                                                    const dt_imgid_t imgid,
+                                                    const dt_imgid_t sourceid)
 {
-  if(imgid <= 0 || sourceid <= 0) return;
+  if(!dt_is_valid_imgid(imgid) || !dt_is_valid_imgid(sourceid)) return;
 
   // get source timestamp
   const dt_image_t *simg = dt_image_cache_get(cache, sourceid, 'r');
@@ -359,9 +361,9 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, con
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
-  if(imgid <= 0) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
@@ -371,9 +373,9 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
-  if(imgid <= 0) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
@@ -383,9 +385,9 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const int32_t 
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const int32_t imgid)
+void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
 {
-  if(imgid <= 0) return;
+  if(!dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));

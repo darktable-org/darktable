@@ -910,7 +910,7 @@ dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, const int id)
   return dt_masks_get_from_id_ext(dev->forms, id);
 }
 
-void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
+void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
 {
   dt_dev_history_item_t *hist_item = NULL;
   dt_dev_history_item_t *hist_item_last = NULL;
@@ -1012,7 +1012,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
   dt_masks_replace_current_forms(dev, (hist_item_last)?hist_item_last->forms:NULL);
 }
 
-void dt_masks_write_masks_history_item(const int imgid,
+void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
                                        const int num,
                                        dt_masks_form_t *form)
 {
@@ -2289,7 +2289,8 @@ int dt_masks_point_in_form_exact(const float x,
       }
       if(((yf <= y2 && yf > y1)
           || (yf >= y2 && yf < y1))
-         && (points[i * 2] > x)) nb++;
+         && (points[i * 2] > x))
+        nb++;
 
       if(next == start) break;
       i = next++;
@@ -2336,13 +2337,17 @@ int dt_masks_point_in_form_near(const float x,
       }
       if((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1))
       {
-        if(points[i * 2] > x) nb++;
-        if(points[i * 2] - x < distance && points[i * 2] - x > -distance) *near = 1;
+        if(points[i * 2] > x)
+          nb++;
+        if(points[i * 2] - x < distance
+           && points[i * 2] - x > -distance)
+          *near = i * 2;
       }
 
       if(next == start) break;
       i = next++;
-      if(next >= points_count) next = start;
+      if(next >= points_count)
+        next = start;
     }
     return (nb & 1);
   }
@@ -2683,6 +2688,24 @@ void dt_masks_draw_anchor(cairo_t *cr,
   cairo_stroke(cr);
 }
 
+void dt_masks_draw_ctrl(cairo_t *cr,
+                        const float x,
+                        const float y,
+                        const float zoom_scale,
+                        const gboolean selected)
+{
+  const float ctrl_size = DT_PIXEL_APPLY_DPI(selected ? 3.0f : 1.5f) / zoom_scale;
+
+  cairo_arc(cr, x, y, ctrl_size, 0, 2.0 * M_PI);
+
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  cairo_fill_preserve(cr);
+
+  cairo_set_line_width(cr, 1.0 / zoom_scale);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_stroke(cr);
+}
+
 void dt_masks_draw_arrow(cairo_t *cr,
                          const float from_x,
                          const float from_y,
@@ -2694,7 +2717,7 @@ void dt_masks_draw_arrow(cairo_t *cr,
   const float pr_d = darktable.develop->preview_downsampling;
   const float dx = from_x - to_x;
   const float dy = from_y - to_y;
-  const float arrow_size = 24.0f * pr_d;
+  const float arrow_size = DT_PIXEL_APPLY_DPI(24.0f) * pr_d;
 
   const float arrow_scale = arrow_size / sqrtf(3.f * zoom_scale);
 
@@ -2748,17 +2771,17 @@ void dt_masks_stroke_arrow(cairo_t *cr,
   cairo_set_dash(cr, dashed, 0, 0);
 
   if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
-    cairo_set_line_width(cr, 2.5 / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.5) / zoom_scale);
   else
-    cairo_set_line_width(cr, 1.5 / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) / zoom_scale);
 
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
   cairo_stroke_preserve(cr);
 
   if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
   else
-    cairo_set_line_width(cr, 0.5 / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5) / zoom_scale);
 
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_stroke(cr);
@@ -2789,6 +2812,40 @@ void dt_masks_closest_point(const int count,
       dist = d;
     }
   }
+}
+
+void dt_masks_line_stroke(cairo_t *cr,
+                          const gboolean border,
+                          const gboolean source,
+                          const gboolean selected,
+                          const float zoom_scale)
+{
+  const double size_border     = DT_PIXEL_APPLY_DPI(1.0);
+  const double size_source     = DT_PIXEL_APPLY_DPI(1.5);
+  const double size_mask       = DT_PIXEL_APPLY_DPI(2.5);
+  const double factor_selected = DT_PIXEL_APPLY_DPI(1.9);
+
+  double dashed[] = { 4.0, 4.0 };
+  dashed[0] /= zoom_scale;
+  dashed[1] /= zoom_scale;
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
+
+  dt_draw_set_color_overlay(cr, FALSE, selected ? 1.0 : 0.6);
+  cairo_set_dash(cr, dashed, border ? len : 0, 0);
+
+  const double line_width =
+    (border ? size_border : (source ? size_source : size_mask))
+    * (selected ? factor_selected : 1.0);
+
+  cairo_set_line_width(cr, line_width / zoom_scale);
+
+  cairo_stroke_preserve(cr);
+
+  cairo_set_line_width(cr, (line_width / 2.0) / zoom_scale);
+
+  dt_draw_set_color_overlay(cr, TRUE, selected ? 1.0 : 0.6);
+  cairo_set_dash(cr, dashed, border ? len : 0, 4);
+  cairo_stroke(cr);
 }
 
 #include "detail.c"

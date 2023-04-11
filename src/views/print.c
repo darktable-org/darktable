@@ -60,12 +60,12 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_PRINT;
 }
 
-static void _print_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)
+static void _print_mipmaps_updated_signal_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
 
-static void _film_strip_activated(const int imgid, void *data)
+static void _film_strip_activated(const dt_imgid_t imgid, void *data)
 {
   const dt_view_t *self = (dt_view_t *)data;
   dt_print_t *prt = (dt_print_t *)self->data;
@@ -79,7 +79,7 @@ static void _film_strip_activated(const int imgid, void *data)
 
   // if the previous shown image is selected and the selection is unique
   // then we change the selected image to the new one
-  if(prt->imgs->box[0].imgid > 0)
+  if(dt_is_valid_imgid(prt->imgs->box[0].imgid))
   {
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -116,9 +116,9 @@ static void _film_strip_activated(const int imgid, void *data)
   dt_control_queue_redraw();
 }
 
-static void _view_print_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
+static void _view_print_filmstrip_activate_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
-  if(imgid > 0) _film_strip_activated(imgid, user_data);
+  if(dt_is_valid_imgid(imgid)) _film_strip_activated(imgid, user_data);
 }
 
 static void _view_print_settings(const dt_view_t *view, dt_print_info_t *pinfo, dt_images_box *imgs)
@@ -307,7 +307,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   {
     const int bidx = dt_printing_get_image_box(prt->imgs, x, y);
     if(bidx == -1)
-      dt_control_set_mouse_over_id(-1);
+      dt_control_set_mouse_over_id(NO_IMGID);
     else if(mouse_over_id != prt->imgs->box[bidx].imgid)
     {
       dt_control_set_mouse_over_id(prt->imgs->box[bidx].imgid);
@@ -321,9 +321,9 @@ gboolean try_enter(dt_view_t *self)
 
   //  now check that there is at least one selected image
 
-  const int32_t imgid = dt_act_on_get_main_image();
+  const dt_imgid_t imgid = dt_act_on_get_main_image();
 
-  if(imgid < 0)
+  if(!dt_is_valid_imgid(imgid))
   {
     // fail :(
     dt_control_log(_("no image to open!"));

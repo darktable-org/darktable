@@ -14,15 +14,6 @@ body:
         Before raising a bug/issue please check that it has not already been reported by searching [GitHub Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
         Some common issues are addressed in the [FAQ](https://www.darktable.org/about/faq/). 
         
-
-  - type: checkboxes
-    id: checklist
-    attributes:
-      label: Checklist
-      options:
-        - label: I have checked [GitHub Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue) and my problem is **not** described there.
-          required: true
-
   - type: textarea
     id: bug_description
     attributes:
@@ -58,14 +49,17 @@ body:
     attributes:
       label: Logfile | Screenshot | Screencast
       description: |
-        A log or backtrace will help us investigate your issue. If available please attach below. You can also attach a screenshot or screencast or any other useful information.
+        If you suspect a bug in darktable, it would be nice to have some kind of log file - it's also much more likely that one of the developers will look into your problem soon.
+        In most cases '-d common' will be sufficient, '-d opencl' is suggested in case of a suspected problem with OpenCL.
+        In case the program crashes, the backtrace file helps a lot to understand the reason. If available please attach below.
+        You can also attach a screenshot or screencast or any other useful information.
       placeholder: |
-        Drag and drop logfile or backtrace file here, if available.
-        Copying the contents is okay for short logs (< 20 lines), but please put them in code blocks:
+        Drag and drop log file or backtrace file here, if available.
+        Copying the contents is okay for short logs (like < 50 lines or so), but please put them in code blocks:
         ```
         log here
         ```
-        You can also use pastebin.com or similar
+        You can use pastebin.com or similar services for long texts.
   
   - type: input
     id: commit
@@ -85,7 +79,6 @@ body:
         - 'flatpak'
         - 'OSB'
         - 'self compiled'
-        - 'bought it'
         - 'an online forum'
     validations:
      required: true
@@ -95,8 +88,8 @@ body:
     attributes:
       label: darktable version
       description: |
-        Please fill out the version of darktable (eg. 4.2.0+250~gee17c5dcc) that had the issue. 
-        You can obtain via clicking in the darktable logo or darktable --version in the command line.
+        Please fill out the version of darktable (e.g., 4.2.0+250~gee17c5dcc) that had the issue.
+        You can get it by clicking on the darktable logo or by running 'darktable --version' on the command line.
       placeholder: '4.2.0+250~gee17c5dcc'
     validations:
       required: true
@@ -125,7 +118,7 @@ body:
     id: system
     attributes:
       label: Describe your system?
-      description: Describe your general computer system (Gb of memory, Wayland or X11, GTK+, Intel or M1 or M2) that could be relevant to the issue.
+      description: Include any information about your computer system that you think may be relevant to your report (e.g., RAM size, Wayland or X11, the version of GTK+ with which darktable is linked).
 
   - type: dropdown
     id: GPU

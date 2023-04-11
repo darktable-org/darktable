@@ -31,6 +31,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define DT_PIPECACHE_MIN 2
+
 /**
  * struct used by iop modules to connect to pixelpipe.
  * data can be used to store whatever private data and
@@ -152,8 +154,10 @@ typedef struct dt_dev_pixelpipe_t
 
   // we have to keep track of the next processing module to use an iop cacheline with high priority
   gboolean next_important_module;
+  // avoid cached data for processed module
+  gboolean nocache;
 
-  int output_imgid;
+  dt_imgid_t output_imgid;
   // working?
   gboolean processing;
   // shutting down?
@@ -288,15 +292,6 @@ gboolean dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
 void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
 // disable given op and all that comes before it in the pipe:
 void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
-
-
-// TODO: future application: remove/add modules from list, load from disk, user programmable etc
-void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe,
-                               struct dt_develop_t *dev,
-                               const int n);
-void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe,
-                                  struct dt_develop_t *dev,
-                                  const int n);
 
 // helper function to pass a raster mask through a (so far) processed pipe
 float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe,

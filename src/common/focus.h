@@ -221,7 +221,7 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
   }
 }
 
-static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int buffer_width,
+static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, dt_imgid_t imgid, int buffer_width,
                                    int buffer_height, dt_focus_cluster_t *focus, int frows, int fcols,
                                    float full_zoom, float full_x, float full_y)
 {

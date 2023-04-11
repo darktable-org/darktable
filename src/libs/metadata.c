@@ -63,10 +63,9 @@ const char *name(dt_lib_module_t *self)
   return _("metadata editor");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", "tethering", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -806,7 +805,7 @@ void gui_init(dt_lib_module_t *self)
     //reported upstream to https://gitlab.gnome.org/GNOME/gtk/-/issues/4042
     //see also discussions on https://github.com/darktable-org/darktable/pull/10584
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(gtk_bin_get_child(GTK_BIN(swindow))),
-                                   GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+                                   GTK_POLICY_EXTERNAL, GTK_POLICY_AUTOMATIC);
 
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);

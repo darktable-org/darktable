@@ -40,10 +40,9 @@ const char *name(dt_lib_module_t *self)
   return _("module order");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"darkroom", NULL};
-  return v;
+  return DT_VIEW_DARKROOM;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -174,7 +173,7 @@ void gui_reset (dt_lib_module_t *self)
 
   if(iop_order_list)
   {
-    const int32_t imgid = darktable.develop->image_storage.id;
+    const dt_imgid_t imgid = darktable.develop->image_storage.id;
 
     dt_ioppr_change_iop_order(darktable.develop, imgid, iop_order_list);
 
@@ -218,7 +217,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   if(iop_order_list)
   {
-    const int32_t imgid = darktable.develop->image_storage.id;
+    const dt_imgid_t imgid = darktable.develop->image_storage.id;
 
     dt_ioppr_change_iop_order(darktable.develop, imgid, iop_order_list);
 

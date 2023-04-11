@@ -118,7 +118,8 @@ typedef struct dt_storage_piwigo_params_t
   char *album;
   gboolean new_album;
   int privacy;
-  gboolean export_tags; // deprecated - let here not to change params size. to be removed on next version change
+  gboolean export_tags; // deprecated - let here not to change params
+                        // size. to be removed on next version change
   gchar *tags;
 } dt_storage_piwigo_params_t;
 
@@ -136,9 +137,15 @@ static char *_get_filename(dt_image_t *img)
 }
 
 /* low-level routine doing the HTTP POST request */
-static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth);
+static void _piwigo_api_post(_piwigo_api_context_t *ctx,
+                             GList *args,
+                             char *filename,
+                             const gboolean isauth);
 
-static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *data)
+static size_t curl_write_data_cb(void *ptr,
+                                 const size_t size,
+                                 const size_t nmemb,
+                                 void *data)
 {
   GString *string = (GString *)data;
   g_string_append_len(string, ptr, size * nmemb);
@@ -148,7 +155,9 @@ static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *dat
   return size * nmemb;
 }
 
-static GList *_piwigo_query_add_arguments(GList *args, const char *name, const char *value)
+static GList *_piwigo_query_add_arguments(GList *args,
+                                          const char *name,
+                                          const char *value)
 {
   _curl_args_t *arg = malloc(sizeof(_curl_args_t));
   g_strlcpy(arg->name, name, sizeof(arg->name));
@@ -228,7 +237,7 @@ static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
         account->username =  g_strdup(json_object_get_string_member(obj, "username"));
         account->password =  g_strdup(json_object_get_string_member(obj, "password"));
 
-        if(account->server && strlen(account->server)>0)
+        if(account->server && strlen(account->server) > 0)
           ui->accounts = g_list_append(ui->accounts, account);
         else
           free(account); // we didn't add account to list, freeing it
@@ -241,7 +250,8 @@ static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
   g_hash_table_destroy(table);
 }
 
-static _piwigo_account_t *_piwigo_get_account(dt_storage_piwigo_gui_data_t *ui, const gchar *server)
+static _piwigo_account_t *_piwigo_get_account(dt_storage_piwigo_gui_data_t *ui,
+                                              const gchar *server)
 {
   if(!server) return NULL;
 
@@ -291,12 +301,16 @@ static void _piwigo_set_status(dt_storage_piwigo_gui_data_t *ui, gchar *message,
 {
   if(!color) color = "#ffffff";
   gchar mup[512] = { 0 };
-  snprintf(mup, sizeof(mup), "<span foreground=\"%s\" ><small>%s</small></span>", color, message);
+  snprintf(mup, sizeof(mup),
+           "<span foreground=\"%s\" ><small>%s</small></span>", color, message);
   gtk_label_set_markup(ui->status_label, mup);
   gtk_widget_set_tooltip_markup(GTK_WIDGET(ui->status_label), mup);
 }
 
-static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth)
+static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx,
+                                     GList *args,
+                                     char *filename,
+                                     const gboolean isauth)
 {
   curl_mime *form = NULL;
 
@@ -321,8 +335,9 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
 
     ctx->cookie_file = g_strdup_printf(cookie_fmt, dt_get_wtime());
 
-    // not that this is safe as the cookie file is written only when the curl context is finalized.
-    // At this stage we unlink the file.
+    // not that this is safe as the cookie file is written only when
+    // the curl context is finalized.  At this stage we unlink the
+    // file.
     curl_easy_setopt(ctx->curl_ctx, CURLOPT_COOKIEJAR, ctx->cookie_file);
   }
   else
@@ -382,11 +397,13 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
   if(res == CURLE_OK)
   {
     GError *error = NULL;
-    gboolean ret = json_parser_load_from_data(ctx->json_parser, response->str, response->len, &error);
+    gboolean ret = json_parser_load_from_data(ctx->json_parser,
+                                              response->str, response->len, &error);
     if(!ret) goto cleanup;
     JsonNode *root = json_parser_get_root(ctx->json_parser);
     // we should always have a dict
-    if(json_node_get_node_type(root) != JSON_NODE_OBJECT) goto cleanup;
+    if(json_node_get_node_type(root) != JSON_NODE_OBJECT)
+      goto cleanup;
     ctx->response = json_node_get_object(root);
     const char *status = json_object_get_string_member(ctx->response, "stat");
     ctx->error_occured = (status && (strcmp(status,"fail")==0));
@@ -435,7 +452,10 @@ static void _piwigo_api_authenticate(_piwigo_api_context_t *ctx)
   g_list_free(args);
 }
 
-static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth)
+static void _piwigo_api_post(_piwigo_api_context_t *ctx,
+                             GList *args,
+                             char *filename,
+                             const gboolean isauth)
 {
   int res = _piwigo_api_post_internal(ctx, args, filename, isauth);
 
@@ -452,8 +472,10 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
 
     if(!isauth)
     {
-      // an error during the curl post command, could be an authentication issue, try to authenticate again
-      // but only if this is not an authentication post, otherwise this will happen below anyway.
+      // an error during the curl post command, could be an
+      // authentication issue, try to authenticate again but only if
+      // this is not an authentication post, otherwise this will
+      // happen below anyway.
       _piwigo_api_authenticate(ctx);
     }
 
@@ -504,7 +526,9 @@ static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
     else
     {
       const gchar *errormessage = json_object_get_string_member(ui->api->response, "message");
-      dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] could not authenticate: `%s'!\n", errormessage);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageio_storage_piwigo] could not authenticate: `%s'!\n",
+               errormessage);
       _piwigo_set_status(ui, _("not authenticated"), "#e07f7f");
       _piwigo_ctx_destroy(&ui->api);
     }
@@ -593,7 +617,8 @@ static void _piwigo_conflict_changed(GtkWidget *widget, gpointer data)
 }
 
 /** Refresh albums */
-static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar *select_album)
+static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
+                                   const gchar *select_album)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), FALSE);
@@ -663,7 +688,8 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar
 
       _piwigo_album_t *new_album = g_malloc0(sizeof(struct _piwigo_album_t));
 
-      g_strlcpy(new_album->name, json_object_get_string_member(album, "name"), sizeof(new_album->name));
+      g_strlcpy(new_album->name, json_object_get_string_member(album, "name"),
+                sizeof(new_album->name));
       new_album->id = json_object_get_int_member(album, "id");
       new_album->size = json_object_get_int_member(album, "nb_images");
       const int isroot = json_object_get_null_member(album, "id_uppercat");
@@ -677,9 +703,11 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar
         while(*p++) if(*p == ',') indent++;
       }
 
-      snprintf(data, sizeof(data), "%*c%s (%"PRId64")", indent * 3, ' ', new_album->name, new_album->size);
+      snprintf(data, sizeof(data), "%*c%s (%"PRId64")", indent * 3, ' ',
+               new_album->name, new_album->size);
 
-      if(to_select && !strcmp(new_album->name, to_select)) index = i + 1;
+      if(to_select && !strcmp(new_album->name, to_select))
+        index = i + 1;
 
       g_strlcpy(new_album->label, data, sizeof(new_album->label));
 
@@ -733,7 +761,9 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
   return TRUE;
 }
 
-static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *img, int page)
+static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p,
+                                    dt_image_t *img,
+                                    const int page)
 {
   GList *args = NULL;
   char album_id[10];
@@ -796,7 +826,11 @@ static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *i
   return -1;
 }
 
-static gboolean _piwigo_api_set_info(dt_storage_piwigo_params_t *p, gchar *author, gchar *caption, gchar *description, int pwg_image_id)
+static gboolean _piwigo_api_set_info(dt_storage_piwigo_params_t *p,
+                                     gchar *author,
+                                     gchar *caption,
+                                     gchar *description,
+                                     const int pwg_image_id)
 {
   GList *args = NULL;
   char pwg_image_id_string[10];
@@ -822,8 +856,12 @@ static gboolean _piwigo_api_set_info(dt_storage_piwigo_params_t *p, gchar *autho
   return !p->api->error_occured;
 }
 
-static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *fname,
-                                         gchar *author, gchar *caption, gchar *description, int pwg_image_id)
+static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p,
+                                         gchar *fname,
+                                         gchar *author,
+                                         gchar *caption,
+                                         gchar *description,
+                                         const int pwg_image_id)
 {
   GList *args = NULL;
   char cat[10];
@@ -923,14 +961,19 @@ void gui_init(dt_imageio_module_storage_t *self)
     index++;
   }
   gtk_widget_set_hexpand(ui->account_list, TRUE);
-  g_signal_connect(G_OBJECT(ui->account_list), "value-changed", G_CALLBACK(_piwigo_account_changed), (gpointer)ui);
+  g_signal_connect(G_OBJECT(ui->account_list), "value-changed",
+                   G_CALLBACK(_piwigo_account_changed), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(self->widget), ui->account_list, FALSE, FALSE, 0);
 
   // server
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->server_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("server"), G_CALLBACK(_piwigo_server_entry_changed), ui,
-                                                   _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
-                                                   last_account?last_account->server:"piwigo.com"));
+  ui->server_entry = GTK_ENTRY
+    (dt_action_entry_new
+     (DT_ACTION(self), N_("server"),
+      G_CALLBACK(_piwigo_server_entry_changed), ui,
+      _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+      last_account ? last_account->server : "piwigo.com"));
+
   gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("server")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->server_entry), TRUE, TRUE, 0);
@@ -939,9 +982,13 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // login
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->user_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("user"), G_CALLBACK(_piwigo_entry_changed), ui,
-                                                   _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
-                                                   last_account?last_account->username:""));
+  ui->user_entry = GTK_ENTRY
+    (dt_action_entry_new
+     (DT_ACTION(self), N_("user"),
+      G_CALLBACK(_piwigo_entry_changed), ui,
+      _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+      last_account ? last_account->username : ""));
+
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("user")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->user_entry), TRUE, TRUE, 0);
@@ -949,8 +996,10 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // password
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->pwd_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("password"), G_CALLBACK(_piwigo_entry_changed), ui, NULL,
-                                                   last_account?last_account->password:""));
+  ui->pwd_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self),
+                                                N_("password"),
+                                                G_CALLBACK(_piwigo_entry_changed), ui, NULL,
+                                                last_account ? last_account->password : ""));
   gtk_entry_set_visibility(GTK_ENTRY(ui->pwd_entry), FALSE);
   gtk_widget_set_hexpand(GTK_WIDGET(ui->pwd_entry), TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("password")), FALSE, FALSE, 0);
@@ -987,7 +1036,8 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   ui->album_list = dt_bauhaus_combobox_new_action(DT_ACTION(self)); // Available albums
   dt_bauhaus_widget_set_label(ui->album_list, NULL, N_("album"));
-  g_signal_connect(G_OBJECT(ui->album_list), "value-changed", G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
+  g_signal_connect(G_OBJECT(ui->album_list), "value-changed",
+                   G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
   gtk_widget_set_sensitive(ui->album_list, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), ui->album_list, TRUE, TRUE, 0);
 
@@ -1032,7 +1082,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(ui->conflict_action, _("update metadata"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
   gtk_box_pack_start(GTK_BOX(self->widget), ui->conflict_action, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed", G_CALLBACK(_piwigo_conflict_changed), self);
+  g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed",
+                   G_CALLBACK(_piwigo_conflict_changed), self);
   dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/conflict"));
 }
 
@@ -1068,15 +1119,25 @@ static gboolean _finalize_store(gpointer user_data)
   return FALSE;
 }
 
-void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
+void finalize_store(struct dt_imageio_module_storage_t *self,
+                    dt_imageio_module_data_t *data)
 {
   g_main_context_invoke(NULL, _finalize_store, self->gui_data);
 }
 
-int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
-          dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
-          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
+int store(dt_imageio_module_storage_t *self,
+          dt_imageio_module_data_t *sdata,
+          const dt_imgid_t imgid,
+          dt_imageio_module_format_t *format,
+          dt_imageio_module_data_t *fdata,
+          const int num,
+          const int total,
+          const gboolean high_quality,
+          const gboolean upscale,
+          const gboolean export_masks,
+          const dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename,
+          const dt_iop_color_intent_t icc_intent,
           dt_export_metadata_t *metadata)
 {
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
@@ -1097,7 +1158,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
-  // If title is not existing, then use the filename without extension. If not, then use title instead
+    // If title is not existing, then use the filename without
+    // extension. If not, then use title instead
     GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
     if(title != NULL)
     {
@@ -1130,10 +1192,13 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type, icc_filename,
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale,
+                       TRUE, export_masks, icc_type, icc_filename,
                        icc_intent, self, sdata, num, total, metadata) != 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] could not export to file: `%s'!\n", fname);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[imageio_storage_piwigo] could not export to file: `%s'!\n",
+             fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
     result = 1;
     goto cleanup;
@@ -1158,7 +1223,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
     if(status)
     {
-      int pwg_image_id = -1;
+      int pwg_image_id = NO_IMGID;
 
       if(conflict_action != DT_PIWIGO_CONFLICT_NOTHING)
       {
@@ -1170,7 +1235,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
         status = _piwigo_api_set_info(p, author, caption, description, pwg_image_id);
         if(!status)
         {
-          dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] could not update to piwigo!\n");
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[imageio_storage_piwigo] could not update to piwigo!\n");
           dt_control_log(_("could not update to piwigo!"));
           result = 1;
         }
@@ -1184,7 +1250,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
         status = _piwigo_api_upload_photo(p, fname, author, caption, description, pwg_image_id);
         if(!status)
         {
-          dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] could not upload to piwigo!\n");
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[imageio_storage_piwigo] could not upload to piwigo!\n");
           dt_control_log(_("could not upload to piwigo!"));
           result = 1;
         }
@@ -1219,8 +1286,10 @@ cleanup:
   else if(!result && !skipped)
   {
     // this makes sense only if the export was successful
-    dt_control_log(ngettext("%d/%d exported to piwigo webalbum", "%d/%d exported to piwigo webalbum", num),
-                   num, total);
+    dt_control_log
+      (ngettext("%d/%d exported to piwigo webalbum",
+                "%d/%d exported to piwigo webalbum", num),
+       num, total);
   }
   return result;
 }
@@ -1255,7 +1324,8 @@ void *get_params(dt_imageio_module_storage_t *self)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)self->gui_data;
   if(!ui) return NULL; // gui not initialized, CLI mode
-  dt_storage_piwigo_params_t *p = (dt_storage_piwigo_params_t *)g_malloc0(sizeof(dt_storage_piwigo_params_t));
+  dt_storage_piwigo_params_t *p =
+    (dt_storage_piwigo_params_t *)g_malloc0(sizeof(dt_storage_piwigo_params_t));
 
   if(!p) return NULL;
 
@@ -1301,7 +1371,8 @@ void *get_params(dt_imageio_module_storage_t *self)
       switch(index)
       {
         case 0: // Create album
-          p->parent_album_id = _piwigo_album_id(dt_bauhaus_combobox_get_text(ui->parent_album_list), ui->albums);
+          p->parent_album_id =
+            _piwigo_album_id(dt_bauhaus_combobox_get_text(ui->parent_album_list), ui->albums);
           p->album = g_strdup(gtk_entry_get_text(ui->new_album_entry));
           p->new_album = TRUE;
           break;
@@ -1313,7 +1384,8 @@ void *get_params(dt_imageio_module_storage_t *self)
           if(p->album == NULL)
           {
             // Something went wrong...
-            dt_print(DT_DEBUG_ALWAYS, "Something went wrong.. album index %d = NULL\n", index - 2);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "Something went wrong.. album index %d = NULL\n", index - 2);
             goto cleanup;
           }
 
@@ -1321,7 +1393,8 @@ void *get_params(dt_imageio_module_storage_t *self)
 
           if(!p->album_id)
           {
-            dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_piwigo] cannot find album `%s'!\n", p->album);
+            dt_print(DT_DEBUG_ALWAYS,
+                     "[imageio_storage_piwigo] cannot find album `%s'!\n", p->album);
             goto cleanup;
           }
 
@@ -1341,25 +1414,30 @@ void *get_params(dt_imageio_module_storage_t *self)
     return NULL;
 }
 
-int set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
+int set_params(dt_imageio_module_storage_t *self,
+               const void *params,
+               const int size)
 {
-  if(size != self->params_size(self)) return 1;
+  if(size != self->params_size(self))
+    return 1;
   // gui stuff not updated, as sensitive user data is not stored in the preset.
   // TODO: store name/hash in kwallet/etc module and get encrypted stuff from there!
   return 0;
 }
 
-int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
+gboolean supported(dt_imageio_module_storage_t *storage,
+                   dt_imageio_module_format_t *format)
 {
   if(strcmp(format->mime(NULL), "image/jpeg") == 0)
-    return 1;
+    return TRUE;
   else if(strcmp(format->mime(NULL), "image/png") == 0)
-    return 1;
+    return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
-void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
+void free_params(dt_imageio_module_storage_t *self,
+                 dt_imageio_module_data_t *params)
 {
   dt_storage_piwigo_params_t *p = (dt_storage_piwigo_params_t *)params;
 

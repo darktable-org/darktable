@@ -38,7 +38,7 @@ struct dt_iop_module_t;
 typedef struct dt_dev_history_item_t
 {
   struct dt_iop_module_t *module; // pointer to image operation module
-  int32_t enabled;                // switched respective module on/off
+  gboolean enabled;               // switched respective module on/off
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   char op_name[20];
@@ -48,7 +48,7 @@ typedef struct dt_dev_history_item_t
   gboolean multi_name_hand_edited;
   GList *forms;        // snapshot of dt_develop_t->forms
   int num;             // num of history on database
-  int32_t focus_hash;  // used to determine whether or not to start a
+  gboolean focus_hash;  // used to determine whether or not to start a
                        // new item or to merge down
 } dt_dev_history_item_t;
 
@@ -151,7 +151,7 @@ typedef struct dt_develop_t
                         // gui_init'ed.
   gboolean gui_leaving;  // set if everything is scheduled to shut down.
   gboolean gui_synch;    // set to TRUE by the render threads if gui_update should be called in the modules.
-  int32_t focus_hash;   // determines whether to start a new history item or to merge down.
+  gboolean focus_hash;   // determines whether to start a new history item or to merge down.
   gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
   gboolean preview_input_changed, preview2_input_changed;
 
@@ -359,10 +359,10 @@ void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
 void dt_dev_process_preview2(dt_develop_t *dev);
 
-void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
-void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
+void dt_dev_load_image(dt_develop_t *dev, const dt_imgid_t imgid);
+void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid);
 /** checks if provided imgid is the image currently in develop */
-int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
+gboolean dt_dev_is_current_image(dt_develop_t *dev, const dt_imgid_t imgid);
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op);
 void dt_dev_add_history_item_ext(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
@@ -384,10 +384,10 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
-void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid);
+void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,
-                             const int imgid,
+                             const dt_imgid_t imgid,
                              const gboolean no_image,
                              const gboolean snapshot);
 void dt_dev_read_history(dt_develop_t *dev);
@@ -624,7 +624,7 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
  *
  */
 void dt_dev_image(
-  uint32_t imgid,
+  dt_imgid_t imgid,
   size_t width,
   size_t height,
   int history_end,
@@ -633,7 +633,7 @@ void dt_dev_image(
   size_t *processed_height);
 
 void dt_dev_image_ext(
-  uint32_t imgid,
+  dt_imgid_t imgid,
   size_t width,
   size_t height,
   int history_end,

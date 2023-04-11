@@ -232,7 +232,9 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
-int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean *single_image)
+int dt_load_from_string(const gchar *input,
+                        const gboolean open_image_in_dr,
+                        gboolean *single_image)
 {
   int32_t id = 0;
   if(input == NULL || input[0] == '\0') return 0;
@@ -273,7 +275,8 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id,
+                          DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
       gboolean loaded = (buf.buf != NULL);
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       if(!loaded)
@@ -311,7 +314,8 @@ static void dt_codepaths_init()
   // first, enable whatever codepath this CPU supports
   {
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
-    darktable.codepath.SSE2 = (__builtin_cpu_supports("sse") && __builtin_cpu_supports("sse2"));
+    darktable.codepath.SSE2 = (__builtin_cpu_supports("sse")
+                               && __builtin_cpu_supports("sse2"));
 #else
     dt_cpu_flags_t flags = dt_detect_cpu_features();
     darktable.codepath.SSE2 = ((flags & (CPU_FLAG_SSE)) && (flags & (CPU_FLAG_SSE2)));
@@ -328,7 +332,8 @@ static void dt_codepaths_init()
 #if defined(__SSE__)
   if(darktable.codepath._no_intrinsics)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
   }
 #endif
 }
@@ -389,13 +394,16 @@ static size_t _get_mipmap_size()
   return res->total_memory / 1024lu * fraction;
 }
 
-void check_resourcelevel(const char *key, int *fractions, const int level)
+void check_resourcelevel(const char *key,
+                         int *fractions,
+                         const int level)
 {
   const int g = level * 4;
   gchar out[128] = { 0 };
   if(!dt_conf_key_exists(key))
   {
-    g_snprintf(out, 126, "%i %i %i %i", fractions[g], fractions[g+1], fractions[g+2], fractions[g+3]);
+    g_snprintf(out, 126, "%i %i %i %i",
+               fractions[g], fractions[g+1], fractions[g+2], fractions[g+3]);
     dt_conf_set_string(key, out);
   }
   else
@@ -435,7 +443,7 @@ void dt_dump_pfm_file(
      path,
      written,
      modname,
-     cpu ? "cpu" : "GPU", 
+     cpu ? "cpu" : "GPU",
      (input && output) ? "diff_" : ((!input && !output) ? "" : ((input) ? "in_" : "out_")),
      (bpp != 16) ? "M" : "C",
      (bpp==2) ? "ppm" : "pfm");
@@ -446,7 +454,7 @@ void dt_dump_pfm_file(
   FILE *f = g_fopen(fname, "wb");
   if(f == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode\n", head, fname); 
+    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode\n", head, fname);
     return;
   }
 
@@ -464,7 +472,7 @@ void dt_dump_pfm_file(
     }
   }
 
-  dt_print(DT_DEBUG_ALWAYS, "%20s %s,  %dx%d, bpp=%d\n", head, fname, width, height, bpp);
+  dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d\n", head, fname, width, height, bpp);
   fclose(f);
   written += 1;
 }
@@ -479,7 +487,7 @@ void dt_dump_pfm(
 {
   if(!darktable.dump_pfm_module) return;
   if(!modname) return;
-  if(!dt_str_commasubstring(darktable.dump_pfm_module, modname)) return; 
+  if(!dt_str_commasubstring(darktable.dump_pfm_module, modname)) return;
 
   dt_dump_pfm_file(modname, data, width, height, bpp, filename, "[dt_dump_pfm]", FALSE, FALSE, TRUE);
 }
@@ -495,7 +503,7 @@ void dt_dump_pipe_pfm(
 {
   if(!darktable.dump_pfm_pipe) return;
   if(!mod) return;
-  if(!dt_str_commasubstring(darktable.dump_pfm_pipe, mod)) return; 
+  if(!dt_str_commasubstring(darktable.dump_pfm_pipe, mod)) return;
 
   dt_dump_pfm_file(pipe, data, width, height, bpp, mod, "[dt_dump_pipe_pfm]", input, !input, TRUE);
 }
@@ -537,8 +545,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   darktable.start_wtime = start_wtime;
   if(!sse2_supported)
-    dt_print(DT_DEBUG_ALWAYS, "[dt_init] SSE2 instruction set is unavailable.\n"
-                              "[dt_init] expect a LOT of functionality to be broken. you have been warned.\n");
+    dt_print
+      (DT_DEBUG_ALWAYS,
+       "[dt_init] SSE2 instruction set is unavailable.\n"
+       "[dt_init] expect a LOT of functionality to be broken. you have been warned.\n");
 
   darktable.progname = argv[0];
 
@@ -909,7 +919,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         CHKSIGDBG(DT_SIGNAL_METADATA_UPDATE);
         else
         {
-          dt_print(DT_DEBUG_SIGNAL, "[dt_init] unknown signal name: '%s'. use 'ALL' to enable debug for all or use full signal name\n", str);
+          dt_print(DT_DEBUG_SIGNAL,
+                   "[dt_init] unknown signal name: '%s'. use 'ALL'"
+                   " to enable debug for all or use full signal name\n", str);
           return usage(argv[0]);
         }
         g_free(str);
@@ -918,15 +930,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
-      else if((argv[k][1] == 't' && argc > k + 1) || (!strcmp(argv[k], "--threads") && argc > k + 1))
+      else if((argv[k][1] == 't' && argc > k + 1)
+              || (!strcmp(argv[k], "--threads")
+                  && argc > k + 1))
       {
         const int possible = dt_get_num_procs();
         const int desired = atol(argv[k + 1]);
         darktable.num_openmp_threads = CLAMP(desired, 1, possible);
         if(desired > possible)
-          dt_print(DT_DEBUG_ALWAYS, "[dt_init --threads] requested %d ompthreads restricted to %d\n",
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_init --threads] requested %d ompthreads restricted to %d\n",
             desired, possible);
-        dt_print(DT_DEBUG_ALWAYS, "[dt_init --threads] using %d threads for openmp parallel sections\n",
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[dt_init --threads] using %d threads for openmp parallel sections\n",
           darktable.num_openmp_threads);
         k++;
         argv[k-1] = NULL;
@@ -942,7 +958,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         if(*c == '=' && *(c + 1) != '\0')
         {
           *c++ = '\0';
-          dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)g_malloc(sizeof(dt_conf_string_entry_t));
+          dt_conf_string_entry_t *entry =
+            (dt_conf_string_entry_t *)g_malloc(sizeof(dt_conf_string_entry_t));
           entry->key = g_strdup(keyval);
           entry->value = g_strdup(c);
           config_override = g_slist_append(config_override, entry);
@@ -1022,7 +1039,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
 
   // get valid directories
-  dt_loc_init(datadir_from_command, moduledir_from_command, localedir_from_command, configdir_from_command, cachedir_from_command, tmpdir_from_command);
+  dt_loc_init(datadir_from_command,
+              moduledir_from_command,
+              localedir_from_command,
+              configdir_from_command,
+              cachedir_from_command,
+              tmpdir_from_command);
 
   dt_print(DT_DEBUG_MEMORY, "[memory] at startup\n");
   dt_print_mem_usage();
@@ -1052,7 +1074,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       if(found)
         set_env = FALSE;
       else
-        new_xdg_data_dirs = g_strjoin(G_SEARCHPATH_SEPARATOR_S, sharedir, xdg_data_dirs, NULL);
+        new_xdg_data_dirs =
+          g_strjoin(G_SEARCHPATH_SEPARATOR_S, sharedir, xdg_data_dirs, NULL);
     }
     else
     {
@@ -1062,10 +1085,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       if(!g_strcmp0(sharedir, "/usr/local/share")
          || !g_strcmp0(sharedir, "/usr/local/share/")
          || !g_strcmp0(sharedir, "/usr/share") || !g_strcmp0(sharedir, "/usr/share/"))
-        new_xdg_data_dirs = g_strdup("/usr/local/share/" G_SEARCHPATH_SEPARATOR_S "/usr/share/");
+        new_xdg_data_dirs = g_strdup("/usr/local/share/"
+                                     G_SEARCHPATH_SEPARATOR_S "/usr/share/");
       else
-        new_xdg_data_dirs = g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "/usr/local/share/" G_SEARCHPATH_SEPARATOR_S
-                                            "/usr/share/", sharedir);
+        new_xdg_data_dirs =
+          g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "/usr/local/share/"
+                          G_SEARCHPATH_SEPARATOR_S "/usr/share/", sharedir);
 #else
       set_env = FALSE;
 #endif
@@ -1088,7 +1113,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // I doubt that connecting to dbus for darktable-cli makes sense
     darktable.dbus = dt_dbus_init();
 
-    // make sure that we have no stale global progress bar visible. thus it's run as early as possible
+    // make sure that we have no stale global progress bar
+    // visible. thus it's run as early as possible
     dt_control_progress_init(darktable.control);
   }
 
@@ -1121,9 +1147,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // set the interface language and prepare selection for prefs
   darktable.l10n = dt_l10n_init(init_gui);
 
-  const int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
+  const int last_configure_version =
+    dt_conf_get_int("performance_configuration_version_completed");
 
-  // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
+  // we need this REALLY early so that error messages can be shown,
+  // however after gtk_disable_setlocale
   if(init_gui)
   {
 #ifdef GDK_WINDOWING_WAYLAND
@@ -1161,7 +1189,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       gboolean image_loaded_elsewhere = FALSE;
 #ifndef MAC_INTEGRATION
       // send the images to the other instance via dbus
-      dt_print(DT_DEBUG_ALWAYS, "[dt_init] trying to open the images in the running instance\n");
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_init] trying to open the images in the running instance\n");
 
       GDBusConnection *connection = NULL;
       for(int i = 1; i < argc; i++)
@@ -1172,10 +1201,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         if(filename == NULL) continue;
         if(!connection) connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
         // ... and send it to the running instance of darktable
-        image_loaded_elsewhere = g_dbus_connection_call_sync(connection, "org.darktable.service", "/darktable",
-                                                             "org.darktable.service.Remote", "Open",
-                                                             g_variant_new("(s)", filename), NULL,
-                                                             G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL) != NULL;
+        image_loaded_elsewhere =
+          g_dbus_connection_call_sync(connection, "org.darktable.service", "/darktable",
+                                      "org.darktable.service.Remote", "Open",
+                                      g_variant_new("(s)", filename), NULL,
+                                      G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL) != NULL;
         g_free(filename);
       }
       if(connection) g_object_unref(connection);
@@ -1230,10 +1260,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
      2 mipmap size
      3 opencl available
   */
-  /* special modes are meant to be used for debugging & testing,
-     they are hidden in the ui menu and must be activated via --conf resourcelevel="xxx"
-     here all values are absolutes in MB as we require fixed settings.
-     reference, mini and notebook require a cl capable system with 16GB of ram and 2GB of free video ram
+  /* special modes are meant to be used for debugging & testing, they
+     are hidden in the ui menu and must be activated via --conf
+     resourcelevel="xxx" here all values are absolutes in MB as we
+     require fixed settings.  reference, mini and notebook require a
+     cl capable system with 16GB of ram and 2GB of free video ram
   */
   static int ref_resources[12] = {
       8192,  32,  512, 2048,   // reference
@@ -1241,8 +1272,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       4096,  32,  512, 1024,   // simple notebook with integrated graphics
   };
 
-  /* This is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
-     all values are fractions val/1024 of total memory (0-2) or available OpenCL memory
+  /* This is where the sync is to be done if the enum for pref
+     resourcelevel in darktableconfig.xml.in is changed.  all values
+     are fractions val/1024 of total memory (0-2) or available OpenCL
+     memory
   */
   static int fractions[16] = {
       128,    4,  64,  400, // small
@@ -1319,8 +1352,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_mipmap_cache_init(darktable.mipmap_cache);
 
   // The GUI must be initialized before the views, because the init()
-  // functions of the views depend on darktable.control->accels_* to register
-  // their keyboard accelerators
+  // functions of the views depend on darktable.control->accels_* to
+  // register their keyboard accelerators
 
   if(init_gui)
   {
@@ -1337,7 +1370,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
-  // check whether we were able to load darkroom view. if we failed, we'll crash everywhere later on.
+  // check whether we were able to load darkroom view. if we failed,
+  // we'll crash everywhere later on.
   if(!darktable.develop)
   {
     dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init develop system, aborting.\n");
@@ -1370,18 +1404,21 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_metadata_init();
 
   if(darktable.dump_pfm_module)
-    dt_print(DT_DEBUG_ALWAYS, "[dt_init] writing intermediate pfm files for module '%s'\n",
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_init] writing intermediate pfm files for module '%s'\n",
       darktable.dump_pfm_module);
 
   if(darktable.dump_pfm_pipe)
-    dt_print(DT_DEBUG_ALWAYS, "[dt_init] writing pfm files for module '%s' processing the pipeline\n",
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_init] writing pfm files for module '%s' processing the pipeline\n",
       darktable.dump_pfm_pipe);
 
   if(init_gui)
   {
 #ifdef HAVE_GPHOTO2
-    // Initialize the camera control.
-    // this is done late so that the gui can react to the signal sent but before switching to lighttable!
+    // Initialize the camera control.  this is done late so that the
+    // gui can react to the signal sent but before switching to
+    // lighttable!
     darktable.camctl = dt_camctl_new();
 #endif
 
@@ -1420,7 +1457,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     const char *mode = "lighttable";
 #ifdef HAVE_GAME
-    // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
+    // april 1st: you have to earn using dt first! or know that you
+    // can switch views with keyboard shortcuts
     time_t now;
     time(&now);
     struct tm lt;
@@ -1437,13 +1475,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
     }
 #endif
-    // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
-    // having another call later is ok
+    // we have to call dt_ctl_switch_mode_to() here already to not run
+    // into a lua deadlock.  having another call later is ok
     dt_ctl_switch_mode_to(mode);
 
 #ifndef MAC_INTEGRATION
-    // load image(s) specified on cmdline.
-    // this has to happen after lua is initialized as image import can run lua code
+    // load image(s) specified on cmdline.  this has to happen after
+    // lua is initialized as image import can run lua code
     if(argc == 2)
     {
       // If only one image is listed, attempt to load it in darkroom
@@ -1452,7 +1490,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     else if(argc > 2)
     {
       // when multiple names are given, fire up a background job to import them
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
+      dt_control_add_job(darktable.control,
+                         DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
 #endif
 
@@ -1465,18 +1504,20 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
          _("show this information again"), _("understood"));
 
     if(not_again || (last_configure_version == 0))
-      dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
+      dt_conf_set_int("performance_configuration_version_completed",
+                      DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
   }
   free(config_info);
 
-  // last but not least construct the popup that asks the user about images whose xmp files are newer than the
-  // db entry
+  // last but not least construct the popup that asks the user about
+  // images whose xmp files are newer than the db entry
   if(init_gui && changed_xmp_files)
   {
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
 
-  dt_print(DT_DEBUG_CONTROL, "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
+  dt_print(DT_DEBUG_CONTROL,
+           "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
 
   return 0;
 }
@@ -1516,14 +1557,28 @@ void dt_get_sysresource_level()
   {
     const int oldgrp = res->group;
     res->group = 4 * level;
-    dt_print(DT_DEBUG_ALWAYS, "[dt_get_sysresource_level] switched to %i as `%s'\n", level, config);
-    dt_print(DT_DEBUG_ALWAYS, "  total mem:       %luMB\n", res->total_memory / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS, "  mipmap cache:    %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS, "  available mem:   %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS, "  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_get_sysresource_level] switched to %i as `%s'\n",
+             level, config);
+    dt_print(DT_DEBUG_ALWAYS,
+             "  total mem:       %luMB\n",
+             res->total_memory / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_ALWAYS,
+             "  mipmap cache:    %luMB\n",
+             _get_mipmap_size() / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_ALWAYS,
+             "  available mem:   %luMB\n",
+             dt_get_available_mem() / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_ALWAYS,
+             "  singlebuff:      %luMB\n",
+             dt_get_singlebuffer_mem() / 1024lu / 1024lu);
 #ifdef HAVE_OPENCL
-    dt_print(DT_DEBUG_ALWAYS, "  OpenCL tune mem: %s\n", ((tunecl & DT_OPENCL_TUNE_MEMSIZE) && (level >= 0)) ? "WANTED" : "OFF");
-    dt_print(DT_DEBUG_ALWAYS, "  OpenCL pinned:   %s\n", ((tunecl & DT_OPENCL_TUNE_PINNED) && (level >= 0)) ? "WANTED" : "OFF");
+    dt_print(DT_DEBUG_ALWAYS,
+             "  OpenCL tune mem: %s\n",
+             ((tunecl & DT_OPENCL_TUNE_MEMSIZE) && (level >= 0)) ? "WANTED" : "OFF");
+    dt_print(DT_DEBUG_ALWAYS,
+             "  OpenCL pinned:   %s\n",
+             ((tunecl & DT_OPENCL_TUNE_PINNED) && (level >= 0)) ? "WANTED" : "OFF");
 #endif
     res->group = oldgrp;
   }
@@ -1629,7 +1684,8 @@ void dt_cleanup()
       while(snaps_to_remove[i])
       {
         // make file to remove writable, mostly problem on windows.
-        g_chmod(snaps_to_remove[i], S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+        g_chmod(snaps_to_remove[i],
+                S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
         dt_print(DT_DEBUG_SQL, "[db backup] removing old snap: %s... ", snaps_to_remove[i]);
         const int retunlink = g_remove(snaps_to_remove[i++]);
@@ -1676,7 +1732,7 @@ void dt_cleanup()
    Two special cases are supported also:
    a) if you combine with DT_DEBUG_VERBOSE, output will only be written if dt had
       been started with -d verbose
-   b) 'thread' may be identical to DT_DEBUG_ALWAYS to write output 
+   b) 'thread' may be identical to DT_DEBUG_ALWAYS to write output
 */
 void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
@@ -1714,7 +1770,7 @@ void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
   fflush(stdout);
 }
 
-void *dt_alloc_align(size_t alignment, size_t size)
+void *dt_alloc_align(const size_t alignment, const size_t size)
 {
   const size_t aligned_size = dt_round_size(size, alignment);
 #if defined(__FreeBSD_version) && __FreeBSD_version < 700013
@@ -1722,8 +1778,9 @@ void *dt_alloc_align(size_t alignment, size_t size)
 #elif defined(_WIN32)
   return _aligned_malloc(aligned_size, alignment);
 #elif defined(_DEBUG)
-  // for a debug build, ensure that we get a crash if we use plain free() to release the allocated memory, by
-  // returning a pointer which isn't a valid memory block address
+  // for a debug build, ensure that we get a crash if we use plain
+  // free() to release the allocated memory, by returning a pointer
+  // which isn't a valid memory block address
   void *ptr = NULL;
   if(posix_memalign(&ptr, alignment, aligned_size + alignment)) return NULL;
   short *offset = (short*)(((char*)ptr) + alignment - sizeof(short));
@@ -1757,7 +1814,8 @@ void dt_free_align(void *mem)
 #elif defined(_DEBUG)
 void dt_free_align(void *mem)
 {
-  // on a debug build, we deliberately offset the returned pointer from dt_alloc_align, so eliminate the offset
+  // on a debug build, we deliberately offset the returned pointer
+  // from dt_alloc_align, so eliminate the offset
   if(mem)
   {
     short offset = ((short*)mem)[-1];
@@ -1773,22 +1831,31 @@ void dt_show_times(const dt_times_t *start, const char *prefix)
   {
     dt_times_t end;
     dt_get_times(&end);
-    char buf[140]; /* Arbitrary size, should be lots big enough for everything used in DT */
-    snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock,
+    char buf[140]; /* Arbitrary size, should be lots big enough for
+                    * everything used in DT */
+    snprintf(buf, sizeof(buf),
+             "%s took %.3f secs (%.3f CPU)",
+             prefix, end.clock - start->clock,
              end.user - start->user);
     dt_print(DT_DEBUG_PERF, "%s\n", buf);
   }
 }
 
-void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *suffix, ...)
+void dt_show_times_f(const dt_times_t *start,
+                     const char *prefix,
+                     const char *suffix, ...)
 {
   /* Skip all the calculations an everything if -d perf isn't on */
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_times_t end;
     dt_get_times(&end);
-    char buf[160]; /* Arbitrary size, should be lots big enough for everything used in DT */
-    const int n = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU) ", prefix, end.clock - start->clock,
+    char buf[160]; /* Arbitrary size, should be lots big enough for
+                    * everything used in DT */
+    const int n = snprintf(buf,
+                           sizeof(buf),
+                           "%s took %.3f secs (%.3f CPU) ",
+                           prefix, end.clock - start->clock,
                            end.user - start->user);
     if(n < sizeof(buf) - 1)
     {
@@ -1841,20 +1908,28 @@ void dt_configure_runtime_performance(const int old, char *info)
   const size_t bits = CHAR_BIT * sizeof(void *);
   const gboolean sufficient = mem >= 4096 && threads >= 2;
 
-  dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] found a %s %zu-bit system with %zu Mb ram and %zu cores\n",
-    (sufficient) ? "sufficient" : "low performance", bits, mem, threads);
+  dt_print(DT_DEBUG_DEV,
+           "[dt_configure_runtime_performance] found a %s %zu-bit"
+           " system with %zu Mb ram and %zu cores\n",
+           (sufficient) ? "sufficient" : "low performance",
+           bits, mem, threads);
 
-  // All runtime conf settings only write data if there is no valid data found in conf
+  // All runtime conf settings only write data if there is no valid
+  // data found in conf
   if(!dt_conf_key_not_empty("ui/performance"))
   {
     dt_conf_set_bool("ui/performance", !sufficient);
-    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] ui/performance=%s\n", (sufficient) ? "FALSE" : "TRUE");
+    dt_print(DT_DEBUG_DEV,
+             "[dt_configure_runtime_performance] ui/performance=%s\n",
+             (sufficient) ? "FALSE" : "TRUE");
   }
 
   if(!dt_conf_key_not_empty("resourcelevel"))
   {
     dt_conf_set_string("resourcelevel", (sufficient) ? "default" : "small");
-    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] resourcelevel=%s\n", (sufficient) ? "default" : "small");
+    dt_print(DT_DEBUG_DEV,
+             "[dt_configure_runtime_performance] resourcelevel=%s\n",
+             (sufficient) ? "default" : "small");
   }
 
   if(!dt_conf_key_not_empty("cache_disk_backend_full"))
@@ -1863,15 +1938,19 @@ void dt_configure_runtime_performance(const int old, char *info)
     guint64 freecache = 0;
     dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
     GFile *gfile = g_file_new_for_path(cachedir);
-    GFileInfo *gfileinfo = g_file_query_filesystem_info(gfile, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, NULL);
+    GFileInfo *gfileinfo =
+      g_file_query_filesystem_info(gfile, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, NULL);
     if(gfileinfo != NULL)
-      freecache = g_file_info_get_attribute_uint64(gfileinfo, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
+      freecache =
+        g_file_info_get_attribute_uint64(gfileinfo, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
     g_object_unref(gfile);
     g_object_unref(gfileinfo);
     const gboolean largedisk = freecache > (8lu << 20);
     // enable cache_disk_backend_full when user has over 8gb free diskspace
     dt_conf_set_bool("cache_disk_backend_full", largedisk);
-    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] cache_disk_backend_full=%s\n", (largedisk) ? "TRUE" : "FALSE");
+    dt_print(DT_DEBUG_DEV,
+             "[dt_configure_runtime_performance] cache_disk_backend_full=%s\n",
+             (largedisk) ? "TRUE" : "FALSE");
   }
 
   // we might add some info now but only for non-fresh installs

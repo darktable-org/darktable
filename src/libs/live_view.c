@@ -69,7 +69,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_live_view_t
 {
-  int imgid;
+  dt_imgid_t imgid;
   int splitline_rotation;
   double overlay_x0, overlay_x1, overlay_y0, overlay_y1;
   double splitline_x, splitline_y; // 0..1
@@ -107,10 +107,9 @@ const char *name(dt_lib_module_t *self)
   return _("live view");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"tethering", NULL};
-  return v;
+  return DT_VIEW_TETHERING;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -446,7 +445,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   const gboolean use_splitline = (dt_bauhaus_combobox_get(lib->overlay_splitline) == 1);
 
   // OVERLAY
-  int imgid = 0;
+  dt_imgid_t imgid = NO_IMGID;
   switch(dt_bauhaus_combobox_get(lib->overlay))
   {
     case OVERLAY_SELECTED:
@@ -456,7 +455,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       imgid = lib->imgid;
       break;
   }
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     cairo_save(cr);
     const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
@@ -639,7 +638,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
   dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
   int result = 0;
 
-  int imgid = 0;
+  dt_imgid_t imgid = NO_IMGID;
   switch(dt_bauhaus_combobox_get(lib->overlay))
   {
     case OVERLAY_SELECTED:
@@ -650,7 +649,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       break;
   }
 
-  if(imgid > 0 && dt_bauhaus_combobox_get(lib->overlay_splitline))
+  if(dt_is_valid_imgid(imgid) && dt_bauhaus_combobox_get(lib->overlay_splitline))
   {
     const double width = lib->overlay_x1 - lib->overlay_x0;
     const double height = lib->overlay_y1 - lib->overlay_y0;

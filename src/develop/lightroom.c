@@ -239,7 +239,7 @@ typedef struct lr2dt
   float lr, dt;
 } lr2dt_t;
 
-char *dt_get_lightroom_xmp(int imgid)
+char *dt_get_lightroom_xmp(dt_imgid_t imgid)
 {
   char pathname[DT_MAX_FILENAME_LEN];
   gboolean from_cache = TRUE;
@@ -326,7 +326,7 @@ static float lr2dt_clarity(float value)
   return get_interpolate(lr2dt_clarity_table, value);
 }
 
-static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int params_size, char *imported,
+static void dt_add_hist(dt_imgid_t imgid, char *operation, dt_iop_params_t *params, int params_size, char *imported,
                         size_t imported_len, int version, int *import_count)
 {
   int32_t num = 0;
@@ -482,7 +482,7 @@ static gboolean _skip_comma(const char **startptr)
 }
 
 /* lrop handle the Lr operation and convert it as a dt iop */
-static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
+static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t imgid,
                   const xmlChar *name, const xmlChar *value, const xmlNodePtr node, lr_data_t *data)
 {
   const float hfactor = 3.0 / 9.0; // hue factor adjustment (use 3 out of 9 boxes in colorzones)
@@ -1000,7 +1000,7 @@ static int _has_list(char *name)
 };
 
 /* handle a specific xpath */
-static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, int imgid, xmlXPathContext *ctx, const xmlChar *xpath, lr_data_t *data)
+static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, dt_imgid_t imgid, xmlXPathContext *ctx, const xmlChar *xpath, lr_data_t *data)
 {
   xmlXPathObject *xpathObj = xmlXPathEvalExpression(xpath, ctx);
 
@@ -1069,7 +1069,7 @@ static inline float round5(double x)
   return round(x * 100000.f) / 100000.f;
 }
 
-gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
+gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto)
 {
   gboolean refresh_needed = FALSE;
   char imported[256] = { 0 };

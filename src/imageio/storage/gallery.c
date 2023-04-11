@@ -192,7 +192,7 @@ static gint sort_pos(pair_t *a, pair_t *b)
   return a->pos - b->pos;
 }
 
-int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
+int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const dt_imgid_t imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
@@ -573,16 +573,16 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   return 0;
 }
 
-int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
+gboolean supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
 {
   const char *mime = format->mime(NULL);
-  if(strcmp(mime, "image/jpeg") == 0) return 1;
-  if(strcmp(mime, "image/png") == 0) return 1;
-  if(strcmp(mime, "image/webp") == 0) return 1;
-  if(strcmp(mime, "image/avif") == 0) return 1;
-  if(strcmp(mime, "image/jxl") == 0) return 1;
+  if(strcmp(mime, "image/jpeg") == 0) return TRUE;
+  if(strcmp(mime, "image/png") == 0) return TRUE;
+  if(strcmp(mime, "image/webp") == 0) return TRUE;
+  if(strcmp(mime, "image/avif") == 0) return TRUE;
+  if(strcmp(mime, "image/jxl") == 0) return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
 // clang-format off

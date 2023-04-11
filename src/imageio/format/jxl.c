@@ -103,7 +103,7 @@ int bpp(dt_imageio_module_data_t *data)
 
 int write_image(struct dt_imageio_module_data_t *data, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename, void *exif, int exif_len,
-                int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
+                dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
 {
   // Return error code by default
   int ret = 1;

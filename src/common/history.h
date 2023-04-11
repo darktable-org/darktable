@@ -59,7 +59,7 @@ typedef struct dt_history_copy_item_t
 {
   GList *selops;
   GtkTreeView *items;
-  int copied_imageid;
+  dt_imgid_t copied_imageid;
   gboolean full_copy;
   gboolean copy_iop_order;
 } dt_history_copy_item_t;
@@ -76,22 +76,22 @@ gboolean dt_history_merge_module_into_history(struct dt_develop_t *dev_dest,
                                               const gboolean auto_init);
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
-gboolean dt_history_copy_and_paste_on_image(const int32_t imgid,
-                                            const int32_t dest_imgid,
+gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
+                                            const dt_imgid_t dest_imgid,
                                             const gboolean merge,
                                             GList *ops,
                                             const gboolean copy_iop_order,
                                             const gboolean copy_full);
 
 /** delete all history for the given image */
-void dt_history_delete_on_image(const int32_t imgid);
+void dt_history_delete_on_image(const dt_imgid_t imgid);
 
 /** as above but control whether to record undo/redo */
-void dt_history_delete_on_image_ext(const int32_t imgid, const gboolean undo);
+void dt_history_delete_on_image_ext(const dt_imgid_t imgid, const gboolean undo);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
-gboolean dt_history_copy(const int imgid);
-gboolean dt_history_copy_parts(const int imgid);
+gboolean dt_history_copy(const dt_imgid_t imgid);
+gboolean dt_history_copy_parts(const dt_imgid_t imgid);
 gboolean dt_history_paste_on_list(const GList *list, gboolean undo);
 gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo);
 
@@ -104,7 +104,7 @@ static inline gboolean dt_history_module_skip_copy(const int flags)
 gboolean dt_history_load_and_apply_on_list(gchar *filename, const GList *list);
 
 /** load a dt file and applies to specified image */
-gboolean dt_history_load_and_apply(const int imgid,
+gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
                                    gchar *filename,
                                    const gboolean history_only);
 
@@ -113,10 +113,10 @@ gboolean dt_history_delete_on_list(const GList *list, const gboolean undo);
 
 /** compress history stack */
 int dt_history_compress_on_list(const GList *imgs);
-void dt_history_compress_on_image(const int32_t imgid);
+void dt_history_compress_on_image(const dt_imgid_t imgid);
 
 /** truncate history stack */
-void dt_history_truncate_on_image(const int32_t imgid, const int32_t history_end);
+void dt_history_truncate_on_image(const dt_imgid_t imgid, const int32_t history_end);
 
 /* duplicate an history list */
 GList *dt_history_duplicate(GList *hist);
@@ -138,18 +138,18 @@ char *dt_history_get_name_label(const char *name,
                                 const gboolean markup);
 
 /** get list of history items for image */
-GList *dt_history_get_items(const int32_t imgid,
+GList *dt_history_get_items(const dt_imgid_t imgid,
                             const gboolean enabled,
                             const gboolean markup);
 
 /** get list of history items for image as a nice string */
-char *dt_history_get_items_as_string(const int32_t imgid);
+char *dt_history_get_items_as_string(const dt_imgid_t imgid);
 
 /** get a single history item as string with enabled status */
 char *dt_history_item_as_string(const char *name, const gboolean enabled);
 
 /* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists(const int32_t imgid,
+gboolean dt_history_check_module_exists(const dt_imgid_t imgid,
                                         const char *operation,
                                         const gboolean enabled);
 
@@ -159,23 +159,23 @@ gboolean dt_history_check_module_exists_list(GList *hist,
                                              const gboolean enabled);
 
 /** calculate history hash and save it to database*/
-void dt_history_hash_write_from_history(const int32_t imgid,
+void dt_history_hash_write_from_history(const dt_imgid_t imgid,
                                         const dt_history_hash_t type);
 
 /** return the hash history status */
-dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
+dt_history_hash_t dt_history_hash_get_status(const dt_imgid_t imgid);
 
 /** return true if mipmap_hash = current_hash */
-gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid);
+gboolean dt_history_hash_is_mipmap_synced(const dt_imgid_t imgid);
 
 /** update mipmap hash to db (= current_hash) */
-void dt_history_hash_set_mipmap(const int32_t imgid);
+void dt_history_hash_set_mipmap(const dt_imgid_t imgid);
 
 /** write hash values to db */
-void dt_history_hash_write(const int32_t imgid, const dt_history_hash_values_t *const hash);
+void dt_history_hash_write(const dt_imgid_t imgid, const dt_history_hash_values_t *const hash);
 
 /** read hash values from db */
-void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash);
+void dt_history_hash_read(const dt_imgid_t imgid, dt_history_hash_values_t *hash);
 
 /** release memory for hash values */
 void dt_history_hash_free(dt_history_hash_values_t *hash);

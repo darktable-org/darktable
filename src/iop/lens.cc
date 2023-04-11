@@ -16,6 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// LensFun can return NAN on coordinate transforms, so we need to tell the compiler
+// that non-finite numbers are in use in this source file even if we have globally
+// enabled the finite-math-only optimization.  Otherwise, it may optimize away
+// conditionals based on isnan() or isfinite().
+#ifdef __GNUC__
+#pragma GCC optimize ("no-finite-math-only")
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

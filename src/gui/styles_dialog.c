@@ -32,12 +32,12 @@
 #endif
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
-static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid);
+static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t imgid);
 
 typedef struct dt_gui_styles_dialog_t
 {
   gboolean edit;
-  int32_t imgid;
+  dt_imgid_t imgid;
   gchar *nameorig;
   GtkWidget *name, *description, *duplicate;
   GtkTreeView *items;
@@ -60,18 +60,18 @@ typedef enum _style_items_columns_t
 
 static int _single_selected_imgid()
 {
-  int imgid = -1;
+  dt_imgid_t imgid = NO_IMGID;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid FROM main.selected_images",
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(imgid == -1)
+    if(!dt_is_valid_imgid(imgid))
       imgid = sqlite3_column_int(stmt, 0);
     else
     {
-      imgid = -1;
+      imgid = NO_IMGID;
       break;
     }
   }
@@ -473,7 +473,7 @@ static void _gui_styles_update_toggled(GtkCellRendererToggle *cell,
   gtk_tree_path_free(path);
 }
 
-void dt_gui_styles_dialog_new(int imgid)
+void dt_gui_styles_dialog_new(dt_imgid_t imgid)
 {
   _gui_styles_dialog_run(FALSE, NULL, imgid);
 }
@@ -488,7 +488,7 @@ static gint _g_list_find_module_by_name(gconstpointer a, gconstpointer b)
   return strncmp(((dt_iop_module_t *)a)->op, b, strlen(((dt_iop_module_t *)a)->op));
 }
 
-static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
+static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t imgid)
 {
   char title[512];
 
@@ -626,7 +626,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   }
 
   /* update */
-  if(edit && imgid != -1)
+  if(edit && dt_is_valid_imgid(imgid))
   {
     renderer = gtk_cell_renderer_toggle_new();
     gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
@@ -847,7 +847,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 typedef struct _preview_data_t
 {
   char style_name[128];
-  int imgid;
+  dt_imgid_t imgid;
   gboolean first_draw;
   cairo_surface_t *surface;
   guint8 *hash;
@@ -858,7 +858,7 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
 {
   _preview_data_t *data = (_preview_data_t *)user_data;
 
-  if(data->imgid > 0 && !data->first_draw && !data->surface)
+  if(dt_is_valid_imgid(data->imgid) && !data->first_draw && !data->surface)
     data->surface = dt_gui_get_style_preview(data->imgid, data->style_name);
 
   if(data->surface)
@@ -878,7 +878,7 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
   return FALSE;
 }
 
-GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
+GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 {
   static _preview_data_t data = { "", -1, FALSE, NULL, NULL, 0};
 
@@ -962,7 +962,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 
   g_list_free_full(items, dt_style_item_free);
 
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
@@ -980,7 +980,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
   return ht;
 }
 
-cairo_surface_t *dt_gui_get_style_preview(const uint32_t imgid, const char *name)
+cairo_surface_t *dt_gui_get_style_preview(const dt_imgid_t imgid, const char *name)
 {
   const int psize = dt_conf_get_int("ui/style/preview_size");
   cairo_surface_t *surface = dt_imageio_preview(imgid, psize, psize, -1, name);

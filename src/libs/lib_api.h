@@ -43,7 +43,7 @@ struct dt_view_t;
 REQUIRED(const char *, name, struct dt_lib_module_t *self);
 
 /** get the views which the module should be loaded in. */
-REQUIRED(const char **, views, struct dt_lib_module_t *self);
+REQUIRED(enum dt_view_type_flags_t, views, struct dt_lib_module_t *self);
 /** get the container which the module should be placed in */
 REQUIRED(uint32_t, container, struct dt_lib_module_t *self);
 /** check if module should use a expander or not, default implementation

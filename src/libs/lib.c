@@ -69,12 +69,7 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *vie
     return FALSE;
   }
 
-  const char **views = module->views(module);
-  for(const char **iter = views; *iter; iter++)
-  {
-    if(!strcmp(*iter, "*") || !strcmp(*iter, view->module_name)) return TRUE;
-  }
-  return FALSE;
+  return module->views(module) & view->view(view);
 }
 
 /** calls module->cleanup and closes the dl connection. */

@@ -5822,12 +5822,11 @@ void reload_defaults(dt_iop_module_t *module)
 
     // focal length should be available in exif data if lens is
     // electronically coupled to the camera
-    f_length = isfinite(img->exif_focal_length)
-      && img->exif_focal_length > 0.0f ? img->exif_focal_length : f_length;
+    f_length = (img->exif_focal_length > 0.0f && img->exif_focal_length <= 1000000.0f)
+      ? img->exif_focal_length : f_length;
     // crop factor of the camera is often not available and user will
     // need to set it manually in the gui
-    crop_factor = isfinite(img->exif_crop)
-      && img->exif_crop > 0.0f ? img->exif_crop : crop_factor;
+    crop_factor = (img->exif_crop > 0.0f && img->exif_crop <= 1000.0f) ? img->exif_crop : crop_factor;
   }
 
   // init defaults:

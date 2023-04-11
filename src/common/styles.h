@@ -63,7 +63,7 @@ void dt_style_item_free(gpointer data);
  */
 gboolean dt_styles_create_from_image(const char *name,
                                      const char *description,
-                                     const int32_t imgid,
+                                     const dt_imgid_t imgid,
                                      GList *items,
                                      const gboolean copy_iop_order);
 
@@ -75,7 +75,7 @@ void dt_styles_create_from_style(const char *name,
                                  const char *newname,
                                  const char *description,
                                  GList *filter,
-                                 const int32_t imgid,
+                                 const dt_imgid_t imgid,
                                  GList *update,
                                  const gboolean copy_iop_order,
                                  const gboolean update_iop_order);
@@ -85,7 +85,7 @@ void dt_styles_update(const char *name,
                       const char *newname,
                       const char *description,
                       GList *filter,
-                      const int32_t imgid,
+                      const dt_imgid_t imgid,
                       GList *update,
                       const gboolean copy_iop_order,
                       const gboolean update_iop_order);
@@ -106,11 +106,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
 void dt_styles_apply_to_image(const char *name,
                               const gboolean duplicate,
                               const gboolean overwrite,
-                              const int32_t imgid);
+                              const dt_imgid_t imgid);
 
 /** applies the style to the currently edited image in the darkroom.
     does nothing if not called with a proper dev struct initialized */
-void dt_styles_apply_to_dev(const char *name, const int32_t imgid);
+void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid);
 
 /** delete a style by name */
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise);
@@ -131,13 +131,13 @@ gboolean dt_styles_has_module_order(const char *name);
 GList *dt_styles_get_list(const char *filter);
 
 /** get a list of items for a named style
-    if imgid != -1, then styles from the corresponding image are also reported if they are
+    if dt_is_valid_imgid(imgid), then styles from the corresponding image are also reported if they are
     not already part of the style. If with_multi_name is TRUE the name field will contains
     the multi_name.
 */
 GList *dt_styles_get_item_list(const char *name,
                                const gboolean localized,
-                               const int imgid,
+                               const dt_imgid_t imgid,
                                const gboolean with_multi_name);
 
 /** get list of items for a named style as a nice string */

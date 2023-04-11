@@ -54,10 +54,9 @@ const char *name(dt_lib_module_t *self)
   return _("styles");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -134,7 +133,7 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   GtkTreeModel* model;
   GtkTreePath* path;
   GtkTreeIter iter;
-  int imgid = -1;
+  dt_imgid_t imgid = NO_IMGID;
 
   if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(self), &x, &y, FALSE, &model, &path, &iter))
   {

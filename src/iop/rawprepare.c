@@ -626,7 +626,7 @@ static int _image_is_normalized(const dt_image_t *const image)
 
 static gboolean _image_set_rawcrops(
         dt_iop_module_t *self,
-        const uint32_t imgid,
+        const dt_imgid_t imgid,
         const int left,
         const int right,
         const int top,
