@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2045,7 +2045,7 @@ static void _sort_history_pretty_print(const char *buf, char *out, size_t outsiz
       const dt_introspection_type_enum_tuple_t *list = _collection_sort_names;
       while(list->name && list->value != sortid) list++;
 
-      c = snprintf(out, outsize, "%s%s (%s)", (k > 0) ? " - " : "", list->name,
+      c = snprintf(out, outsize, "%s%s (%s)", (k > 0) ? " - " : "", _(list->name),
                    (sortorder) ? _("DESC") : _("ASC"));
       out += c;
       outsize -= c;
