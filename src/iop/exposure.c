@@ -115,6 +115,7 @@ typedef struct dt_iop_exposure_global_data_t
   int kernel_exposure;
 } dt_iop_exposure_global_data_t;
 
+#define EXPOSURE_CORRECTION_UNDEFINED (-FLT_MAX)
 
 const char *name()
 {
@@ -392,7 +393,7 @@ static void _compute_correction(dt_iop_module_t *self,
 {
   const dt_iop_exposure_params_t *const p = (const dt_iop_exposure_params_t *const)p1;
 
-  *correction = NAN;
+  *correction = EXPOSURE_CORRECTION_UNDEFINED;
 
   if(histogram == NULL) return;
 
@@ -647,7 +648,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_label_set_text(g->deflicker_used_EC, "");
   dt_iop_gui_enter_critical_section(self);
-  g->deflicker_computed_exposure = NAN;
+  g->deflicker_computed_exposure = EXPOSURE_CORRECTION_UNDEFINED;
   dt_iop_gui_leave_critical_section(self);
 
   switch(p->mode)
@@ -935,7 +936,7 @@ static gboolean _show_computed(gpointer user_data)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
-  if(!isnan(g->deflicker_computed_exposure))
+  if(g->deflicker_computed_exposure != EXPOSURE_CORRECTION_UNDEFINED)
   {
     gchar *str = g_strdup_printf(_("%.2f EV"), g->deflicker_computed_exposure);
 
@@ -1141,7 +1142,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 
   dt_iop_gui_enter_critical_section(self);
-  g->deflicker_computed_exposure = NAN;
+  g->deflicker_computed_exposure = EXPOSURE_CORRECTION_UNDEFINED;
   dt_iop_gui_leave_critical_section(self);
 
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
