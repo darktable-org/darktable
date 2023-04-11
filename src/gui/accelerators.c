@@ -1029,7 +1029,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     gchar *lua_command = _shortcut_lua_command(widget, &lua_shortcut, preset_name);
     if(lua_command)
     {
-      gchar *lua_escaped = g_markup_printf_escaped("\n\nlua: <tt>%s</tt>%s %s", lua_command,
+      gchar *lua_escaped = g_markup_printf_escaped("\n\nLua: <tt>%s</tt>%s %s", lua_command,
                                     show_element == 1 ? _("ctrl+v") : _("right long click") , _("to copy lua command"));
       markup_text = dt_util_dstrcat(markup_text, "%s", lua_escaped);
       g_free(lua_escaped);
