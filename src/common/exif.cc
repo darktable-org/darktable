@@ -371,7 +371,7 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.version_name",         "Xmp.dc.creator",
         "Xmp.dc.publisher",                   "Xmp.dc.title",
         "Xmp.dc.description",                 "Xmp.dc.rights",
-        "Xmp.xmpMM.DerivedFrom" };
+        "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom" };
 
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys);
 // the number of XmpBag XmpSeq keys that dt uses
