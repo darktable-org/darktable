@@ -472,7 +472,7 @@ void dt_dump_pfm_file(
     }
   }
 
-  dt_print(DT_DEBUG_ALWAYS, "%20s %s,  %dx%d, bpp=%d\n", head, fname, width, height, bpp);
+  dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d\n", head, fname, width, height, bpp);
   fclose(f);
   written += 1;
 }
