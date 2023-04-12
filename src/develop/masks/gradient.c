@@ -636,9 +636,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-    const float pr_d = darktable.develop->preview_downsampling;
-    // transformed to backbuf dimensions
-    const float as = DT_PIXEL_APPLY_DPI(20) / (pr_d * zoom_scale);
+    const float as = dt_masks_sensitive_dist(zoom_scale);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     gboolean in, inb, ins;
@@ -984,59 +982,25 @@ static void _gradient_draw_arrow(cairo_t *cr,
   const float pivot_start_x = pts[4];
   const float pivot_start_y = pts[5];
 
+  // draw pivot points
+
+  dt_masks_draw_arrow(cr,
+                      pivot_start_x, pivot_start_y,
+                      pivot_end_x,   pivot_end_y,
+                      zoom_scale, TRUE);
+
+  dt_masks_line_stroke(cr, FALSE, FALSE, selected, zoom_scale);
+
   // draw anchor point
+
   dt_masks_draw_anchor(cr, selected, zoom_scale, anchor_x, anchor_y);
 
-  // draw pivot points
-  {
-    if(border_selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  // start side of the gradient (this is the control point for
+  // rotating the gradient).
+  cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
+  cairo_fill_preserve(cr);
 
-    // from start to end
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_move_to(cr, pivot_start_x, pivot_start_y);
-    cairo_line_to(cr, pivot_end_x, pivot_end_y);
-    cairo_stroke(cr);
-
-    // start side of the gradient
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
-    cairo_fill_preserve(cr);
-    cairo_stroke(cr);
-
-    // end side of the gradient
-    cairo_arc(cr, pivot_end_x, pivot_end_y, 1.0f / zoom_scale, 0, 2.0f * M_PI);
-    cairo_fill_preserve(cr);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_stroke(cr);
-
-    // draw arrow on the end of the gradient to clearly display the direction
-
-    // size & width of the arrow
-    const float arrow_angle = 0.25f;
-    const float arrow_length = 15.0f / zoom_scale;
-
-    const float a_dx = anchor_x - pivot_end_x;
-    const float a_dy = pivot_end_y - anchor_y;
-    const float angle = atan2f(a_dx, a_dy) - M_PI / 2.0f;
-
-    const float arrow_x1 = pivot_end_x + (arrow_length * cosf(angle + arrow_angle));
-    const float arrow_x2 = pivot_end_x + (arrow_length * cosf(angle - arrow_angle));
-    const float arrow_y1 = pivot_end_y + (arrow_length * sinf(angle + arrow_angle));
-    const float arrow_y2 = pivot_end_y + (arrow_length * sinf(angle - arrow_angle));
-
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_move_to(cr, pivot_end_x, pivot_end_y);
-    cairo_line_to(cr, arrow_x1, arrow_y1);
-    cairo_line_to(cr, arrow_x2, arrow_y2);
-    cairo_line_to(cr, pivot_end_x, pivot_end_y);
-    cairo_close_path(cr);
-    cairo_fill_preserve(cr);
-    cairo_stroke(cr);
-  }
+  dt_masks_line_stroke(cr, FALSE, FALSE, selected, zoom_scale);
 }
 
 static void _gradient_events_post_expose(cairo_t *cr,

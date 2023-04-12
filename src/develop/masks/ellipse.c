@@ -113,7 +113,7 @@ static int _ellipse_point_close_to_path(const float x,
                                         float *points,
                                         const int points_count)
 {
-  const float as2 = as * as;
+  const float as2 = as; // * as;
 
   const float lastx = points[2 * (points_count - 1)];
   const float lasty = points[2 * (points_count - 1) + 1];
@@ -1221,7 +1221,7 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     // transformed to backbuf dimensions
-    const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
+    const float as = dt_masks_sensitive_dist(zoom_scale);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
 
@@ -1262,22 +1262,21 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
     {
       dt_masks_form_gui_points_t *gpt =
         (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+      const float as2 = as * as;
+
       for(int i = 1; i < _nb_ctrl_point() - 1; i++)
       {
+        const float dist_b = sqf(x - gpt->border[i * 2]) + sqf(y - gpt->border[i * 2 +1]);
+        const float dist_p = sqf(x - gpt->points[i * 2]) + sqf(y - gpt->points[i * 2 + 1]);
+
         // prefer border points over shape itself in case of near
         // overlap for ease of pickup
-        if(x - gpt->border[i * 2] > -as*2.0f
-           && x - gpt->border[i * 2] < as*2.0f
-           && y - gpt->border[i * 2 + 1] > -as*2.0f
-           && y - gpt->border[i * 2 + 1] < as*2.0f)
+        if(dist_b < as2)
         {
           gui->point_border_selected = i;
           break;
         }
-        if(x - gpt->points[i * 2] > -as
-           && x - gpt->points[i * 2] < as
-           && y - gpt->points[i * 2 + 1] > -as
-           && y - gpt->points[i * 2 + 1] < as)
+        if(dist_p < as2)
         {
           gui->point_selected = i;
           break;
