@@ -412,7 +412,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, const int formid)
   fdest->source[0] = fbase->source[0];
   fdest->source[1] = fbase->source[1];
   fdest->version = fbase->version;
-  snprintf(fdest->name, sizeof(fdest->name), _("copy of %s"), fbase->name);
+  snprintf(fdest->name, sizeof(fdest->name), _("copy of `%s'"), fbase->name);
 
   darktable.develop->forms = g_list_append(dev->forms, fdest);
 
