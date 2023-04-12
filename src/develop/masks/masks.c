@@ -920,8 +920,10 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT imgid, formid, form, name, version, points, points_count, source, num "
-      "FROM main.masks_history WHERE imgid = ?1 ORDER BY num",
+      "SELECT imgid, formid, form, name, version, points, points_count, source, num"
+      " FROM main.masks_history"
+      " WHERE imgid = ?1"
+      " ORDER BY num",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1022,7 +1024,7 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
-     "INSERT INTO main.masks_history (imgid, num, formid, form, name, "
+     "INSERT INTO main.masks_history (imgid, num, formid, form, name,"
      "                                version, points, points_count,source)"
      " VALUES (?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
      -1, &stmt, NULL);
