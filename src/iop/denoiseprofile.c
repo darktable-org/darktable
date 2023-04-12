@@ -66,11 +66,11 @@
 
 typedef enum dt_iop_denoiseprofile_mode_t
 {
-  MODE_NLMEANS = 0,
-  MODE_WAVELETS = 1,
-  MODE_VARIANCE = 2,
-  MODE_NLMEANS_AUTO = 3,
-  MODE_WAVELETS_AUTO = 4
+  MODE_NLMEANS = 0,       // $DESCRIPTION: "non-local means"
+  MODE_NLMEANS_AUTO = 3,  // $DESCRIPTION: "non-local means auto"
+  MODE_WAVELETS = 1,      // $DESCRIPTION: "wavelets"
+  MODE_WAVELETS_AUTO = 4, // $DESCRIPTION: "wavelets auto"
+  MODE_VARIANCE = 2,      // $DESCRIPTION: "compute variance"
 } dt_iop_denoiseprofile_mode_t;
 
 typedef enum dt_iop_denoiseprofile_wavelet_mode_t
@@ -3075,129 +3075,99 @@ static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  const unsigned mode = dt_bauhaus_combobox_get(w);
-  switch(mode)
-  {
-    case 0:
-      p->mode = MODE_NLMEANS;
-      gtk_widget_hide(g->box_wavelets);
-      gtk_widget_hide(g->box_variance);
-      gtk_widget_show_all(g->box_nlm);
-      break;
-    case 1:
-      p->mode = MODE_NLMEANS_AUTO;
-      gtk_widget_hide(g->box_wavelets);
-      gtk_widget_hide(g->box_variance);
-      gtk_widget_show_all(g->box_nlm);
-      gtk_widget_set_visible(g->radius, FALSE);
-      gtk_widget_set_visible(g->nbhood, FALSE);
-      gtk_widget_set_visible(g->scattering, FALSE);
-      break;
-    case 2:
-      p->mode = MODE_WAVELETS;
-      gtk_widget_hide(g->box_nlm);
-      gtk_widget_hide(g->box_variance);
-      gtk_widget_show_all(g->box_wavelets);
-      gtk_widget_set_visible(GTK_WIDGET(g->wavelet_color_mode), p->use_new_vst);
-      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs),
-                             p->use_new_vst && (p->wavelet_color_mode == MODE_RGB));
-      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0),
-                             p->use_new_vst && (p->wavelet_color_mode == MODE_Y0U0V0));
-      break;
-    case 3:
-      p->mode = MODE_WAVELETS_AUTO;
-      gtk_widget_hide(g->box_nlm);
-      gtk_widget_hide(g->box_variance);
-      gtk_widget_show_all(g->box_wavelets);
-      gtk_widget_set_visible(GTK_WIDGET(g->wavelet_color_mode), p->use_new_vst);
-      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs),
-                             p->use_new_vst && (p->wavelet_color_mode == MODE_RGB));
-      gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0),
-                             p->use_new_vst && (p->wavelet_color_mode == MODE_Y0U0V0));
-      break;
-    case 4:
-      p->mode = MODE_VARIANCE;
-      gtk_widget_hide(g->box_wavelets);
-      gtk_widget_hide(g->box_nlm);
-      gtk_widget_show_all(g->box_variance);
-      break;
-  }
-  const gboolean auto_mode =
-    (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
-  gtk_widget_set_visible(g->shadows, p->use_new_vst && !auto_mode);
-  gtk_widget_set_visible(g->bias, p->use_new_vst && !auto_mode);
-  gtk_widget_set_visible(g->overshooting, auto_mode);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_iop_denoiseprofile_gui_data_t *g =
     (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
 
-  if(w == g->wavelet_color_mode)
+  if(!w || w == g->mode)
   {
-    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs),
-                           p->wavelet_color_mode == MODE_RGB);
-    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0),
-                           p->wavelet_color_mode == MODE_Y0U0V0);
+    switch(p->mode)
+    {
+      case MODE_NLMEANS:
+        gtk_widget_hide(g->box_wavelets);
+        gtk_widget_hide(g->box_variance);
+        gtk_widget_show_all(g->box_nlm);
+        break;
+      case MODE_NLMEANS_AUTO:
+        gtk_widget_hide(g->box_wavelets);
+        gtk_widget_hide(g->box_variance);
+        gtk_widget_show_all(g->box_nlm);
+        gtk_widget_set_visible(g->radius, FALSE);
+        gtk_widget_set_visible(g->nbhood, FALSE);
+        gtk_widget_set_visible(g->scattering, FALSE);
+        break;
+      case MODE_WAVELETS:
+        gtk_widget_hide(g->box_nlm);
+        gtk_widget_hide(g->box_variance);
+        gtk_widget_show_all(g->box_wavelets);
+        break;
+      case MODE_WAVELETS_AUTO:
+        gtk_widget_hide(g->box_nlm);
+        gtk_widget_hide(g->box_variance);
+        gtk_widget_show_all(g->box_wavelets);
+        break;
+      case MODE_VARIANCE:
+        gtk_widget_hide(g->box_wavelets);
+        gtk_widget_hide(g->box_nlm);
+        gtk_widget_show_all(g->box_variance);
+        break;
+    }
+  }
+
+  if(!w || w == g->wavelet_color_mode)
+  {
     if(p->wavelet_color_mode == MODE_RGB)
       g->channel = DT_DENOISE_PROFILE_ALL;
     else
       g->channel = DT_DENOISE_PROFILE_Y0;
   }
-  else if(w == g->overshooting)
-  {
-    const float gain = p->overshooting;
-    float a = p->a[1];
-    if(p->a[0] == -1.0)
-    {
-      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
-      a = interpolated.a[1];
-    }
-    // set the sliders as visible while we are setting their values
-    // otherwise a log message appears
-    if(p->mode == MODE_NLMEANS_AUTO)
-    {
-      gtk_widget_set_visible(g->radius, TRUE);
-      gtk_widget_set_visible(g->scattering, TRUE);
-      dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
-      dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
-      gtk_widget_set_visible(g->radius, FALSE);
-      gtk_widget_set_visible(g->scattering, FALSE);
-    }
-    else
-    {
-      // we are in wavelets mode.
-      // we need to show the box_nlm, setting the sliders to visible is not enough
-      gtk_widget_show_all(g->box_nlm);
-      dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
-      dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
-      gtk_widget_hide(g->box_nlm);
-    }
-    gtk_widget_set_visible(g->shadows, TRUE);
-    gtk_widget_set_visible(g->bias, TRUE);
-    dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
-    dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
-    gtk_widget_set_visible(g->shadows, FALSE);
-    gtk_widget_set_visible(g->bias, FALSE);
-  }
-  else if(w == g->use_new_vst)
-  {
-    const gboolean auto_mode =
-      (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
-    gtk_widget_set_visible(g->shadows, p->use_new_vst && !auto_mode);
-    gtk_widget_set_visible(g->bias, p->use_new_vst && !auto_mode);
-    gtk_widget_set_visible(g->wavelet_color_mode, p->use_new_vst);
 
+  if(!w || w == g->mode || w == g->wavelet_color_mode || w == g->use_new_vst)
+  {
     if(!p->use_new_vst
        && p->wavelet_color_mode == MODE_Y0U0V0)
       p->wavelet_color_mode = MODE_RGB;
+
+    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs),
+                            p->wavelet_color_mode == MODE_RGB);
+    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0),
+                            p->wavelet_color_mode == MODE_Y0U0V0);
+  }
+
+  if(!w || w == g->overshooting)
+  {
+    float a = p->a[1];
+    if(p->a[0] == -1.0)
+    {
+      dt_bauhaus_combobox_set(g->profile, 0);
+
+      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+      a = interpolated.a[1];
+    }
+
+    if((p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO))
+    {
+      const float gain = p->overshooting;
+      dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
+    }
+  }
+
+  if(!w || w == g->mode || w == g->use_new_vst)
+  {
+
+    const gboolean auto_mode =
+      (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
+    const gboolean wavelet_mode =
+      (p->mode == MODE_WAVELETS) || (p->mode == MODE_WAVELETS_AUTO);
+    gtk_widget_set_visible(g->overshooting, auto_mode);
+    gtk_widget_set_visible(g->wavelet_color_mode, p->use_new_vst && wavelet_mode);
+    gtk_widget_set_visible(g->shadows, p->use_new_vst && !auto_mode);
+    gtk_widget_set_visible(g->bias, p->use_new_vst && !auto_mode);
   }
 }
 
@@ -3207,80 +3177,18 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
 
   dt_bauhaus_combobox_set(g->profile, -1);
-  unsigned combobox_index = 0;
-  switch(p->mode)
+  int i = 1;
+  for(GList *iter = g->profiles; iter; iter = g_list_next(iter), i++)
   {
-    case MODE_NLMEANS:
-      combobox_index = 0;
-      gtk_widget_hide(g->box_wavelets);
-      gtk_widget_hide(g->box_variance);
-      gtk_widget_show_all(g->box_nlm);
-      break;
-    case MODE_NLMEANS_AUTO:
-      combobox_index = 1;
-      gtk_widget_hide(g->box_wavelets);
-      gtk_widget_hide(g->box_variance);
-      gtk_widget_show_all(g->box_nlm);
-      gtk_widget_set_visible(g->radius, FALSE);
-      gtk_widget_set_visible(g->nbhood, FALSE);
-      gtk_widget_set_visible(g->scattering, FALSE);
-      break;
-    case MODE_WAVELETS:
-      combobox_index = 2;
-      gtk_widget_hide(g->box_nlm);
-      gtk_widget_hide(g->box_variance);
-      gtk_widget_show_all(g->box_wavelets);
-      break;
-    case MODE_WAVELETS_AUTO:
-      combobox_index = 3;
-      gtk_widget_hide(g->box_nlm);
-      gtk_widget_hide(g->box_variance);
-      gtk_widget_show_all(g->box_wavelets);
-      break;
-    case MODE_VARIANCE:
-      combobox_index = 4;
-      gtk_widget_hide(g->box_wavelets);
-      gtk_widget_hide(g->box_nlm);
-      gtk_widget_show_all(g->box_variance);
-      if(dt_bauhaus_combobox_length(g->mode) == 4)
-      {
-        dt_bauhaus_combobox_add(g->mode, _("compute variance"));
-      }
-      break;
-  }
-  float a = p->a[1];
-  if(p->a[0] == -1.0)
-  {
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
-    a = interpolated.a[1];
-  }
-  if((p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO))
-  {
-    const float gain = p->overshooting;
-    dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
-    dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
-    dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
-    dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
-  }
-  dt_bauhaus_combobox_set(g->mode, combobox_index);
-  if(p->a[0] == -1.0)
-  {
-    dt_bauhaus_combobox_set(g->profile, 0);
-  }
-  else
-  {
-    int i = 1;
-    for(GList *iter = g->profiles; iter; iter = g_list_next(iter), i++)
+    dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
+    if(!memcmp(profile->a, p->a, sizeof(float) * 3)
+        && !memcmp(profile->b, p->b, sizeof(float) * 3))
     {
-      dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
-      if(!memcmp(profile->a, p->a, sizeof(float) * 3)
-         && !memcmp(profile->b, p->b, sizeof(float) * 3))
-      {
-        dt_bauhaus_combobox_set(g->profile, i);
-        break;
-      }
+      dt_bauhaus_combobox_set(g->profile, i);
+      break;
     }
   }
+
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe),
                                p->wb_adaptive_anscombe);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm),
@@ -3289,18 +3197,6 @@ void gui_update(dt_iop_module_t *self)
                          !p->fix_anscombe_and_nlmeans_norm);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_new_vst), p->use_new_vst);
   gtk_widget_set_visible(g->use_new_vst, !p->use_new_vst);
-  const gboolean auto_mode =
-    (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
-  const gboolean wavelet_mode =
-    (p->mode == MODE_WAVELETS) || (p->mode == MODE_WAVELETS_AUTO);
-  gtk_widget_set_visible(g->overshooting, auto_mode);
-  gtk_widget_set_visible(g->wavelet_color_mode, p->use_new_vst && wavelet_mode);
-  gtk_widget_set_visible(g->shadows, p->use_new_vst && !auto_mode);
-  gtk_widget_set_visible(g->bias, p->use_new_vst && !auto_mode);
-  gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs),
-                         p->wavelet_color_mode == MODE_RGB);
-  gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0),
-                         p->wavelet_color_mode == MODE_Y0U0V0);
   if((p->wavelet_color_mode == MODE_Y0U0V0) && (g->channel < DT_DENOISE_PROFILE_Y0))
   {
     g->channel = DT_DENOISE_PROFILE_Y0;
@@ -3312,6 +3208,8 @@ void gui_update(dt_iop_module_t *self)
     g->channel = DT_DENOISE_PROFILE_ALL;
     gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
   }
+
+  gui_changed(self, NULL, NULL);
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -3877,17 +3775,12 @@ void gui_init(dt_iop_module_t *self)
 
   g->wb_adaptive_anscombe = dt_bauhaus_toggle_from_params(self, "wb_adaptive_anscombe");
 
-  g->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->mode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(g->mode, _("non-local means"));
-  dt_bauhaus_combobox_add(g->mode, _("non-local means auto"));
-  dt_bauhaus_combobox_add(g->mode, _("wavelets"));
-  dt_bauhaus_combobox_add(g->mode, _("wavelets auto"));
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
   const gboolean compute_variance =
     dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
-  if(compute_variance) dt_bauhaus_combobox_add(g->mode, _("compute variance"));
-  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
+  const int pos = dt_bauhaus_combobox_get_from_value(g->mode, MODE_VARIANCE);
+  if(!compute_variance && pos != -1)
+    dt_bauhaus_combobox_remove_at(g->mode, pos);
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);

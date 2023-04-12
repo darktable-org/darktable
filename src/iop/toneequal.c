@@ -3424,7 +3424,6 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
 
   g->method = dt_bauhaus_combobox_from_params(self, "method");
-  dt_bauhaus_combobox_remove_at(g->method, DT_TONEEQ_LAST);
   gtk_widget_set_tooltip_text
     (g->method,
      _("preview the mask and chose the estimator that gives you the\n"
