@@ -740,41 +740,40 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     {
       const int inrow = row + roi_out->y;
       const int incol = col + roi_out->x;
-      const size_t idx = (size_t)inrow * roi_in->width + incol;
       const size_t odx = (size_t)row * roi_out->width + col;
 
-      if((inrow < roi_in->height) && (incol < roi_in->width))
+      if((inrow >= 0) && (inrow < roi_in->height) && (incol >= 0) && (incol < roi_in->width))
       {
-        output[odx] = tmpout[idx];
-        if(do_masking)
+        const size_t ppos = _raw_to_plane(pwidth, inrow, incol);
+        const size_t idx = (size_t)inrow * roi_in->width + incol;
+
+        output[odx] = do_masking ? fminf(0.2f, 0.2f * luminance[ppos]) : tmpout[idx];
+        if(do_masking && (inrow > 0) && (incol > 0) && (inrow < roi_in->height-1) && (incol < roi_in->width-1))
         {
-          output[odx] = 0.1f * fmaxf(0.0f, output[odx]);
-          if((inrow > 0) && (incol > 0) && (inrow < roi_in->height-1) && (incol < roi_in->width-1))
+          const int color = (filters == 9u) ? FCxtrans(inrow, incol, roi_in, xtrans) : FC(inrow, incol, filters);
+          const uint32_t pid = _get_segment_id(&isegments[color], ppos);
+
+          if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && pid)
           {
-            const int color = (filters == 9u) ? FCxtrans(inrow, incol, roi_in, xtrans) : FC(inrow, incol, filters);
-            const size_t ppos = _raw_to_plane(pwidth, inrow, incol);
-            const uint32_t pid = _get_segment_id(&isegments[color], ppos);
-            const gboolean isegment = (pid > 1) && (pid < isegments[color].nr);
- 
-            if(vmode == DT_HIGHLIGHTS_MASK_COMBINE)
-            {
-              if(isegment)
-                output[odx] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
-            }
-            else if(vmode == DT_HIGHLIGHTS_MASK_CANDIDATING)
-            {
-              if(isegment && !feqf(isegments[color].val1[pid], 0.0f, 1e-9))
-                output[odx] = 1.0f;
-            }
-            else if(vmode == DT_HIGHLIGHTS_MASK_STRENGTH)
-            {
-              const uint32_t allid = _get_segment_id(segall, ppos);
-              const gboolean allseg = (allid > 1) && (allid < segall->nr);
-              output[odx] = 0.1f * luminance[ppos] + (allseg ? strength * gradient[ppos] : 0.0f);
-            }
+            output[odx] += (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
+          }
+
+          else if(vmode == DT_HIGHLIGHTS_MASK_CANDIDATING)
+          {
+            if(pid && !feqf(isegments[color].val1[pid], 0.0f, 1e-9))
+              output[odx] += 1.0f;
+          }
+
+          else if(vmode == DT_HIGHLIGHTS_MASK_STRENGTH)
+          {
+            const uint32_t allid = _get_segment_id(segall, ppos);
+            const gboolean allseg = (allid > 1) && (allid < segall->nr);
+            output[odx] += allseg ? strength * gradient[ppos] : 0.0f;
           }
         }
       }
+      else
+        output[odx] = 0.0f;
     }
   }
 
