@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-10 09:04+0200\n"
-"PO-Revision-Date: 2023-04-10 09:05+0200\n"
+"POT-Creation-Date: 2023-04-12 09:36+0200\n"
+"PO-Revision-Date: 2023-04-12 09:36+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2466,7 +2466,7 @@ msgstr "Préserver les couleurs"
 #: ../src/iop/lens.cc:3459 ../src/iop/retouch.c:463 ../src/libs/collect.c:1907
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1025
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:131
-#: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2657
+#: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2826
 msgid "none"
 msgstr "Sans"
 
@@ -2643,7 +2643,7 @@ msgstr "Ratio d’aspect"
 #. // portrait / landscape
 #: ../build/lib/darktable/plugins/introspection_borders.c:130
 #: ../build/lib/darktable/plugins/introspection_borders.c:265
-#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2360
+#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2507
 msgid "orientation"
 msgstr "Orientation"
 
@@ -2675,19 +2675,19 @@ msgstr "Décalage du cadre interne"
 #: ../build/lib/darktable/plugins/introspection_borders.c:327
 #: ../src/gui/preferences.c:844 ../src/iop/ashift.c:6286
 #: ../src/iop/basicadj.c:632 ../src/iop/flip.c:472 ../src/iop/flip.c:474
-#: ../src/iop/levels.c:636 ../src/iop/rgblevels.c:1048
+#: ../src/iop/levels.c:636 ../src/iop/rgblevels.c:1050
 msgid "auto"
 msgstr "Auto"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:328
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:309
-#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2362
+#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2509
 msgid "portrait"
 msgstr "Portrait"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:329
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:305
-#: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2362
+#: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2509
 msgid "landscape"
 msgstr "Paysage"
 
@@ -2770,7 +2770,7 @@ msgstr "Aberrations chromatiques importantes"
 #: ../src/gui/gtk.c:2957 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:354
 #: ../src/iop/channelmixer.c:618 ../src/iop/channelmixer.c:628
 #: ../src/iop/channelmixerrgb.c:4580 ../src/iop/colorzones.c:2263
-#: ../src/iop/temperature.c:1934 ../src/iop/temperature.c:2128
+#: ../src/iop/temperature.c:1935 ../src/iop/temperature.c:2129
 #: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:260
 #: ../src/libs/histogram.c:2396
 msgid "red"
@@ -2783,8 +2783,8 @@ msgstr "Rouge"
 #: ../src/gui/gtk.c:2958 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:359
 #: ../src/iop/channelmixer.c:619 ../src/iop/channelmixer.c:634
 #: ../src/iop/channelmixerrgb.c:4581 ../src/iop/colorzones.c:2266
-#: ../src/iop/temperature.c:1918 ../src/iop/temperature.c:1936
-#: ../src/iop/temperature.c:2129 ../src/libs/collect.c:1791
+#: ../src/iop/temperature.c:1919 ../src/iop/temperature.c:1937
+#: ../src/iop/temperature.c:2130 ../src/libs/collect.c:1791
 #: ../src/libs/filters/colors.c:262 ../src/libs/histogram.c:2388
 msgid "green"
 msgstr "Vert"
@@ -2796,7 +2796,7 @@ msgstr "Vert"
 #: ../src/gui/gtk.c:2959 ../src/iop/bilateral.cc:364
 #: ../src/iop/channelmixer.c:620 ../src/iop/channelmixer.c:640
 #: ../src/iop/channelmixerrgb.c:4582 ../src/iop/colorzones.c:2268
-#: ../src/iop/temperature.c:1938 ../src/iop/temperature.c:2130
+#: ../src/iop/temperature.c:1939 ../src/iop/temperature.c:2131
 #: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:263
 #: ../src/libs/histogram.c:2380
 msgid "blue"
@@ -3268,13 +3268,13 @@ msgstr "Troncature du gamut"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:302
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:201
 #: ../src/common/colorspaces.c:1251 ../src/common/colorspaces.c:1484
-#: ../src/libs/print_settings.c:1283
+#: ../src/libs/print_settings.c:1340
 msgid "sRGB"
 msgstr "sRVB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:303
 #: ../src/common/colorspaces.c:1260 ../src/common/colorspaces.c:1486
-#: ../src/libs/print_settings.c:1290
+#: ../src/libs/print_settings.c:1347
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RVB (compatible)"
 
@@ -4172,7 +4172,7 @@ msgstr "Corrections"
 #: ../src/iop/denoiseprofile.c:3881 ../src/iop/exposure.c:1149
 #: ../src/iop/levels.c:679 ../src/iop/profile_gamma.c:668
 #: ../src/libs/copy_history.c:401 ../src/libs/export.c:1274
-#: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
+#: ../src/libs/image.c:599 ../src/libs/print_settings.c:2866
 #: ../src/libs/styles.c:848 ../src/views/darkroom.c:2369
 msgid "mode"
 msgstr "Mode"
@@ -4550,7 +4550,7 @@ msgstr "Ratio RVB"
 
 #: ../build/lib/darktable/plugins/introspection_temperature.c:66
 #: ../build/lib/darktable/plugins/introspection_temperature.c:121
-#: ../src/iop/temperature.c:1940
+#: ../src/iop/temperature.c:1941
 msgid "emerald"
 msgstr "Émeraude"
 
@@ -5164,7 +5164,7 @@ msgid "history"
 msgstr "Historique"
 
 #: ../src/common/collection.c:662 ../src/common/colorlabels.c:342
-#: ../src/develop/lightroom.c:1550 ../src/dtgtk/thumbnail.c:1388
+#: ../src/develop/lightroom.c:1550 ../src/dtgtk/thumbnail.c:1560
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:93
 msgid "color label"
@@ -5199,7 +5199,7 @@ msgstr "Géolocalisation"
 msgid "grouping"
 msgstr "Groupe"
 
-#: ../src/common/collection.c:682 ../src/dtgtk/thumbnail.c:1400
+#: ../src/common/collection.c:682 ../src/dtgtk/thumbnail.c:1575
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:129
 #: ../src/libs/metadata_view.c:337
 msgid "local copy"
@@ -5231,7 +5231,7 @@ msgstr "Rechercher"
 
 #: ../src/common/collection.c:1420 ../src/common/colorlabels.c:335
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
-#: ../src/iop/colorzones.c:2265 ../src/iop/temperature.c:1924
+#: ../src/iop/colorzones.c:2265 ../src/iop/temperature.c:1925
 #: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "Jaune"
@@ -5308,7 +5308,7 @@ msgstr[1] "<b>%d</b> images sélectionnées parmi <b>%d</b>"
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2328
 #: ../src/develop/blend_gui.c:2376 ../src/gui/guides.c:729
 #: ../src/iop/channelmixerrgb.c:4591 ../src/iop/levels.c:666
-#: ../src/iop/rgblevels.c:935
+#: ../src/iop/rgblevels.c:937
 msgid "gray"
 msgstr "Gris"
 
@@ -5523,7 +5523,7 @@ msgid "aqua"
 msgstr "Aqua"
 
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
-#: ../src/iop/temperature.c:1922
+#: ../src/iop/temperature.c:1923
 msgid "cyan"
 msgstr "Cyan"
 
@@ -5589,7 +5589,7 @@ msgid "dark magenta"
 msgstr "Magenta foncé"
 
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
-#: ../src/iop/colorzones.c:2270 ../src/iop/temperature.c:1920
+#: ../src/iop/colorzones.c:2270 ../src/iop/temperature.c:1921
 msgid "magenta"
 msgstr "Magenta"
 
@@ -6436,7 +6436,7 @@ msgstr "Diffuseur"
 #: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:574
 #: ../src/imageio/format/pdf.c:576 ../src/imageio/storage/gallery.c:169
 #: ../src/imageio/storage/gallery.c:170 ../src/imageio/storage/latex.c:169
-#: ../src/imageio/storage/piwigo.c:1008 ../src/libs/filtering.c:69
+#: ../src/imageio/storage/piwigo.c:1058 ../src/libs/filtering.c:69
 msgid "title"
 msgstr "Titre"
 
@@ -6623,7 +6623,7 @@ msgstr "Rejeter"
 msgid "style with name '%s' already exists"
 msgstr "Le style « %s » existe déjà"
 
-#: ../src/common/styles.c:270 ../src/common/styles.c:1773
+#: ../src/common/styles.c:270 ../src/common/styles.c:1774
 #: ../src/libs/styles.c:54
 msgid "styles"
 msgstr "Styles"
@@ -6662,28 +6662,28 @@ msgstr[1] "Les styles ont été appliqués."
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "Module « %s », version non cohérente : %d != %d"
 
-#: ../src/common/styles.c:1121
+#: ../src/common/styles.c:1122
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "Le style « %s » est appliqué à l’image actuelle"
 
-#: ../src/common/styles.c:1375
+#: ../src/common/styles.c:1376
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "Impossible de remplacer le style « %s »"
 
-#: ../src/common/styles.c:1381
+#: ../src/common/styles.c:1382
 #, c-format
 msgid "style file for %s exists"
 msgstr "Le fichier du style « %s » existe déjà"
 
-#: ../src/common/styles.c:1664
+#: ../src/common/styles.c:1665
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "Le style « %s » a été importé"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1708
+#: ../src/common/styles.c:1709
 #, c-format
 msgid "could not read file `%s'"
 msgstr "Impossible de lire le fichier « %s »"
@@ -7789,7 +7789,7 @@ msgstr "Conditions de fusion sur le canal gris"
 #: ../src/develop/blend_gui.c:2329 ../src/develop/blend_gui.c:2377
 #: ../src/iop/channelmixerrgb.c:4580 ../src/iop/denoiseprofile.c:3784
 #: ../src/iop/rawdenoise.c:895 ../src/iop/rgbcurve.c:1357
-#: ../src/iop/rgblevels.c:1001 ../src/libs/filters/colors.c:137
+#: ../src/iop/rgblevels.c:1003 ../src/libs/filters/colors.c:137
 msgid "R"
 msgstr "R"
 
@@ -7800,7 +7800,7 @@ msgstr "Conditions de fusion sur le canal rouge"
 #: ../src/develop/blend_gui.c:2335 ../src/develop/blend_gui.c:2383
 #: ../src/iop/channelmixerrgb.c:4581 ../src/iop/denoiseprofile.c:3785
 #: ../src/iop/rawdenoise.c:896 ../src/iop/rgbcurve.c:1358
-#: ../src/iop/rgblevels.c:1002 ../src/libs/filters/colors.c:143
+#: ../src/iop/rgblevels.c:1004 ../src/libs/filters/colors.c:143
 msgid "G"
 msgstr "V"
 
@@ -7811,7 +7811,7 @@ msgstr "Conditions de fusion sur le canal vert"
 #: ../src/develop/blend_gui.c:2341 ../src/develop/blend_gui.c:2389
 #: ../src/iop/channelmixerrgb.c:4582 ../src/iop/denoiseprofile.c:3786
 #: ../src/iop/rawdenoise.c:897 ../src/iop/rgbcurve.c:1359
-#: ../src/iop/rgblevels.c:1003 ../src/libs/filters/colors.c:146
+#: ../src/iop/rgblevels.c:1005 ../src/libs/filters/colors.c:146
 msgid "B"
 msgstr "B"
 
@@ -7900,7 +7900,7 @@ msgstr "Réinitialise les paramètres de fusion conditionnelle"
 #: ../src/develop/blend_gui.c:2531 ../src/iop/atrous.c:1668
 #: ../src/iop/colorzones.c:2401 ../src/iop/denoiseprofile.c:3781
 #: ../src/iop/rawdenoise.c:892 ../src/iop/rgbcurve.c:1356
-#: ../src/iop/rgblevels.c:1000 ../src/iop/tonecurve.c:1132
+#: ../src/iop/rgblevels.c:1002 ../src/iop/tonecurve.c:1132
 msgid "channel"
 msgstr "Canal"
 
@@ -8649,6 +8649,11 @@ msgstr "<b>Tourner</b> : déplacer"
 msgid "[SHAPE] remove shape"
 msgstr "[FORME] Supprimer la forme"
 
+#: ../src/develop/masks/masks.c:304
+#, c-format
+msgid "group `%s'"
+msgstr "Groupe « %s »"
+
 #: ../src/develop/masks/masks.c:415
 #, c-format
 msgid "copy of %s"
@@ -8787,7 +8792,7 @@ msgstr ""
 "Probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d’historique."
 
-#: ../src/develop/pixelpipe_hb.c:2732
+#: ../src/develop/pixelpipe_hb.c:2750
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -9003,15 +9008,15 @@ msgstr "Tout"
 msgid "double-click to reset"
 msgstr "Double clic pour réinitialiser"
 
-#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:172
+#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:175
 msgid "current"
 msgstr "Actuelle"
 
-#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:148
+#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:151
 msgid "leader"
 msgstr "Tête de groupe"
 
-#: ../src/dtgtk/thumbnail.c:148
+#: ../src/dtgtk/thumbnail.c:150
 msgid ""
 "\n"
 "click here to set this image as group leader\n"
@@ -9020,12 +9025,12 @@ msgstr ""
 "Cliquer ici pour définir cette image comme tête de groupe\n"
 
 #. and the number of grouped images
-#: ../src/dtgtk/thumbnail.c:183 ../src/libs/filters/grouping.c:144
+#: ../src/dtgtk/thumbnail.c:187 ../src/libs/filters/grouping.c:144
 #: ../src/libs/filters/grouping.c:169
 msgid "grouped images"
 msgstr "Images groupées"
 
-#: ../src/dtgtk/thumbnail.c:762 ../src/dtgtk/thumbnail.c:1449
+#: ../src/dtgtk/thumbnail.c:820 ../src/dtgtk/thumbnail.c:1635
 #: ../src/iop/ashift.c:6186 ../src/iop/ashift.c:6275 ../src/iop/ashift.c:6277
 #: ../src/iop/ashift.c:6279 ../src/libs/navigation.c:110
 #: ../src/libs/navigation.c:190
@@ -9913,7 +9918,7 @@ msgid "slideshow"
 msgstr "Diaporama"
 
 #. Print button
-#: ../src/gui/gtk.c:1189 ../src/libs/print_settings.c:2706
+#: ../src/gui/gtk.c:1189 ../src/libs/print_settings.c:2876
 msgid "print"
 msgstr "Impression"
 
@@ -11318,7 +11323,7 @@ msgstr "Taille des bords non valide, 0 est utilisé"
 
 #: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:316
 #: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:331
-#: ../src/imageio/storage/gallery.c:370 ../src/imageio/storage/piwigo.c:1137
+#: ../src/imageio/storage/gallery.c:370 ../src/imageio/storage/piwigo.c:1202
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "Impossible d’exporter le fichier « %s »"
@@ -11333,7 +11338,7 @@ msgstr "Entrer le titre du PDF"
 
 #. paper size
 #. // papers
-#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2353
+#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2500
 msgid "paper size"
 msgstr "Taille du papier"
 
@@ -11578,7 +11583,7 @@ msgstr ""
 "Les variables supportent les substitutions comme le shell bash.\n"
 "Taper « $( » pour activer la complétion et voir la liste des variables."
 
-#: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/piwigo.c:1029
+#: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/piwigo.c:1079
 msgid "on conflict"
 msgstr "Sur conflit"
 
@@ -11587,13 +11592,13 @@ msgid "create unique filename"
 msgstr "Créer un fichier unique"
 
 #. DT_COPY_HISTORY_APPEND
-#: ../src/imageio/storage/disk.c:186 ../src/imageio/storage/piwigo.c:1033
+#: ../src/imageio/storage/disk.c:186 ../src/imageio/storage/piwigo.c:1083
 #: ../src/libs/copy_history.c:406 ../src/libs/image.c:603
 #: ../src/libs/styles.c:440 ../src/libs/styles.c:623 ../src/libs/styles.c:852
 msgid "overwrite"
 msgstr "Écraser"
 
-#: ../src/imageio/storage/disk.c:187 ../src/imageio/storage/piwigo.c:1031
+#: ../src/imageio/storage/disk.c:187 ../src/imageio/storage/piwigo.c:1081
 #: ../src/libs/styles.c:439 ../src/libs/styles.c:622
 msgid "skip"
 msgstr "Sauter"
@@ -11664,44 +11669,44 @@ msgstr "Modèle de livre LaTeX"
 msgid "enter the title of the book"
 msgstr "Entrer le titre du livre"
 
-#: ../src/imageio/storage/piwigo.c:500
+#: ../src/imageio/storage/piwigo.c:522
 msgid "authenticated"
 msgstr "Authentifié"
 
-#: ../src/imageio/storage/piwigo.c:508 ../src/imageio/storage/piwigo.c:523
-#: ../src/imageio/storage/piwigo.c:535
+#: ../src/imageio/storage/piwigo.c:532 ../src/imageio/storage/piwigo.c:547
+#: ../src/imageio/storage/piwigo.c:559
 msgid "not authenticated"
 msgstr "Non authentifié"
 
-#: ../src/imageio/storage/piwigo.c:514
+#: ../src/imageio/storage/piwigo.c:538
 msgid "not authenticated, cannot reach server"
 msgstr "Non authentifié, impossible de contacter le serveur"
 
-#: ../src/imageio/storage/piwigo.c:563 ../src/imageio/storage/piwigo.c:650
+#: ../src/imageio/storage/piwigo.c:587 ../src/imageio/storage/piwigo.c:675
 msgid "create new album"
 msgstr "Créer un nouvel album"
 
-#: ../src/imageio/storage/piwigo.c:651
+#: ../src/imageio/storage/piwigo.c:676
 msgid "---"
 msgstr "---"
 
-#: ../src/imageio/storage/piwigo.c:693
+#: ../src/imageio/storage/piwigo.c:721
 msgid "cannot refresh albums"
 msgstr "Impossible de rafraîchir la liste d’albums"
 
-#: ../src/imageio/storage/piwigo.c:891
+#: ../src/imageio/storage/piwigo.c:929
 msgid "piwigo"
 msgstr "Piwigo"
 
-#: ../src/imageio/storage/piwigo.c:916
+#: ../src/imageio/storage/piwigo.c:954
 msgid "accounts"
 msgstr "Compte"
 
-#: ../src/imageio/storage/piwigo.c:931 ../src/imageio/storage/piwigo.c:935
+#: ../src/imageio/storage/piwigo.c:972 ../src/imageio/storage/piwigo.c:978
 msgid "server"
 msgstr "Serveur"
 
-#: ../src/imageio/storage/piwigo.c:932 ../src/imageio/storage/piwigo.c:943
+#: ../src/imageio/storage/piwigo.c:974 ../src/imageio/storage/piwigo.c:989
 msgid ""
 "the server name\n"
 "default protocol is https\n"
@@ -11711,99 +11716,98 @@ msgstr ""
 "Le protocole par défaut est « https »,\n"
 "utiliser « http » si le serveur n’est pas sécurisé."
 
-#: ../src/imageio/storage/piwigo.c:942 ../src/imageio/storage/piwigo.c:946
+#: ../src/imageio/storage/piwigo.c:987 ../src/imageio/storage/piwigo.c:993
 msgid "user"
 msgstr "Utilisateur"
 
-#: ../src/imageio/storage/piwigo.c:952 ../src/imageio/storage/piwigo.c:956
+#: ../src/imageio/storage/piwigo.c:1000 ../src/imageio/storage/piwigo.c:1005
 msgid "password"
 msgstr "Mot de passe"
 
 #. login button
-#: ../src/imageio/storage/piwigo.c:961
+#: ../src/imageio/storage/piwigo.c:1010
 msgid "login"
 msgstr "Connexion"
 
-#: ../src/imageio/storage/piwigo.c:962
+#: ../src/imageio/storage/piwigo.c:1011
 msgid "piwigo login"
 msgstr "Login"
 
 #. permissions list
-#: ../src/imageio/storage/piwigo.c:976
+#: ../src/imageio/storage/piwigo.c:1025
 msgid "visible to"
 msgstr "Visible par"
 
-#: ../src/imageio/storage/piwigo.c:978
+#: ../src/imageio/storage/piwigo.c:1027
 msgid "everyone"
 msgstr "Tout le monde"
 
-#: ../src/imageio/storage/piwigo.c:979
+#: ../src/imageio/storage/piwigo.c:1028
 msgid "contacts"
 msgstr "Contacts"
 
-#: ../src/imageio/storage/piwigo.c:980
+#: ../src/imageio/storage/piwigo.c:1029
 msgid "friends"
 msgstr "Amis"
 
-#: ../src/imageio/storage/piwigo.c:981
+#: ../src/imageio/storage/piwigo.c:1030
 msgid "family"
 msgstr "Famille"
 
-#: ../src/imageio/storage/piwigo.c:982
+#: ../src/imageio/storage/piwigo.c:1031
 msgid "you"
 msgstr "Vous"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:989
+#: ../src/imageio/storage/piwigo.c:1038
 msgid "album"
 msgstr "Album"
 
-#: ../src/imageio/storage/piwigo.c:995
+#: ../src/imageio/storage/piwigo.c:1045
 msgid "refresh album list"
 msgstr "Rafraîchir la liste d’albums"
 
 #. Album title
-#: ../src/imageio/storage/piwigo.c:1013
+#: ../src/imageio/storage/piwigo.c:1063
 msgid "new album"
 msgstr "Nouvel album"
 
 #. parent album list
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:1021
+#: ../src/imageio/storage/piwigo.c:1071
 msgid "parent album"
 msgstr "Album parent"
 
-#: ../src/imageio/storage/piwigo.c:1025
+#: ../src/imageio/storage/piwigo.c:1075
 msgid "click login button to start"
 msgstr "Appuyer sur connexion pour commencer"
 
-#: ../src/imageio/storage/piwigo.c:1030
+#: ../src/imageio/storage/piwigo.c:1080
 msgid "don't check"
 msgstr "Ne pas vérifier"
 
-#: ../src/imageio/storage/piwigo.c:1032
+#: ../src/imageio/storage/piwigo.c:1082
 msgid "update metadata"
 msgstr "Mise à jour des métadonnées"
 
-#: ../src/imageio/storage/piwigo.c:1156
+#: ../src/imageio/storage/piwigo.c:1221
 msgid "cannot create a new piwigo album!"
 msgstr "Impossible de créer un nouvel album piwigo."
 
-#: ../src/imageio/storage/piwigo.c:1174
+#: ../src/imageio/storage/piwigo.c:1240
 msgid "could not update to piwigo!"
 msgstr "Impossible de mettre piwigo à jour."
 
-#: ../src/imageio/storage/piwigo.c:1188
+#: ../src/imageio/storage/piwigo.c:1255
 msgid "could not upload to piwigo!"
 msgstr "Impossible d’exporter sur piwigo."
 
-#: ../src/imageio/storage/piwigo.c:1217
+#: ../src/imageio/storage/piwigo.c:1284
 #, c-format
 msgid "%d/%d skipped (already exists)"
 msgstr "%d/%d ignorée (existe déjà)"
 
-#. this makes sense only if the export was successful
-#: ../src/imageio/storage/piwigo.c:1222
+#: ../src/imageio/storage/piwigo.c:1290
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
@@ -12393,7 +12397,7 @@ msgstr ""
 "Fonctionne sur les canaux RVB."
 
 #: ../src/iop/basecurve.c:2173 ../src/iop/basicadj.c:612
-#: ../src/iop/rgbcurve.c:1423 ../src/iop/rgblevels.c:1070
+#: ../src/iop/rgbcurve.c:1423 ../src/iop/rgblevels.c:1072
 #: ../src/iop/tonecurve.c:1182
 msgid "method to preserve colors when applying contrast"
 msgstr ""
@@ -13452,7 +13456,7 @@ msgstr ""
 msgid "picker"
 msgstr "Pipette"
 
-#: ../src/iop/channelmixerrgb.c:4404 ../src/iop/temperature.c:2046
+#: ../src/iop/channelmixerrgb.c:4404 ../src/iop/temperature.c:2047
 msgid "set white balance to detected from area"
 msgstr "Choisir la balance des blancs depuis une zone"
 
@@ -13460,7 +13464,7 @@ msgstr "Choisir la balance des blancs depuis une zone"
 msgid "illuminant"
 msgstr "Illuminant"
 
-#: ../src/iop/channelmixerrgb.c:4414 ../src/iop/temperature.c:2106
+#: ../src/iop/channelmixerrgb.c:4414 ../src/iop/temperature.c:2107
 msgid "temperature"
 msgstr "Température"
 
@@ -14909,26 +14913,26 @@ msgstr ""
 "« Perceptif » est adapté à la photographie."
 
 #: ../src/iop/colorout.c:878 ../src/libs/export.c:1258
-#: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2646
+#: ../src/libs/print_settings.c:2465 ../src/libs/print_settings.c:2815
 #: ../src/views/darkroom.c:2504 ../src/views/lighttable.c:1180
 msgid "perceptual"
 msgstr "Perceptif"
 
 #: ../src/iop/colorout.c:879 ../src/libs/export.c:1259
-#: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
+#: ../src/libs/print_settings.c:2466 ../src/libs/print_settings.c:2816
 #: ../src/views/darkroom.c:2505 ../src/views/lighttable.c:1181
 msgid "relative colorimetric"
 msgstr "Colorimétrie relative"
 
 #: ../src/iop/colorout.c:880 ../src/libs/export.c:1260
-#: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
+#: ../src/libs/print_settings.c:2467 ../src/libs/print_settings.c:2817
 #: ../src/views/darkroom.c:2506 ../src/views/lighttable.c:1182
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Saturation"
 
 #: ../src/iop/colorout.c:881 ../src/libs/export.c:1261
-#: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
+#: ../src/libs/print_settings.c:2468 ../src/libs/print_settings.c:2818
 #: ../src/views/darkroom.c:2507 ../src/views/lighttable.c:1183
 msgid "absolute colorimetric"
 msgstr "Colorimétrie absolue"
@@ -15342,7 +15346,7 @@ msgid "variance computed on the blue channel"
 msgstr "La variance calculée sur le canal bleu"
 
 #: ../src/iop/denoiseprofile.c:3873 ../src/libs/export.c:1216
-#: ../src/libs/print_settings.c:2272 ../src/libs/print_settings.c:2597
+#: ../src/libs/print_settings.c:2407 ../src/libs/print_settings.c:2764
 msgid "profile"
 msgstr "Profil"
 
@@ -16186,7 +16190,7 @@ msgstr ""
 
 #. Add export intent combo
 #: ../src/iop/filmic.c:1600 ../src/libs/export.c:1239
-#: ../src/libs/print_settings.c:2323 ../src/libs/print_settings.c:2642
+#: ../src/libs/print_settings.c:2463 ../src/libs/print_settings.c:2811
 #: ../src/views/darkroom.c:2510 ../src/views/lighttable.c:1186
 msgid "intent"
 msgstr "Rendu"
@@ -17367,8 +17371,8 @@ msgstr "Corrections réellement effectuées"
 msgid "this module is deprecated. please use the RGB levels module instead."
 msgstr "Ce module est déprécié, utiliser « Niveau RVB » à la place."
 
-#: ../src/iop/levels.c:114 ../src/iop/levels.c:625 ../src/iop/rgblevels.c:982
-#: ../src/iop/rgblevels.c:1012
+#: ../src/iop/levels.c:114 ../src/iop/levels.c:625 ../src/iop/rgblevels.c:984
+#: ../src/iop/rgblevels.c:1014
 msgid "levels"
 msgstr "Niveaux"
 
@@ -17376,30 +17380,30 @@ msgstr "Niveaux"
 msgid "adjust black, white and mid-gray points"
 msgstr "Ajuste les points noir, blanc et gris moyen"
 
-#: ../src/iop/levels.c:623 ../src/iop/rgblevels.c:1014
+#: ../src/iop/levels.c:623 ../src/iop/rgblevels.c:1016
 msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
 msgstr ""
 "Déplacer les barres pour régler les points noir, gris et blanc. Agit sur le "
 "canal L."
 
-#: ../src/iop/levels.c:637 ../src/iop/rgblevels.c:1050
+#: ../src/iop/levels.c:637 ../src/iop/rgblevels.c:1052
 msgid "apply auto levels"
 msgstr "Niveaux automatiques"
 
-#: ../src/iop/levels.c:641 ../src/iop/rgblevels.c:1025
+#: ../src/iop/levels.c:641 ../src/iop/rgblevels.c:1027
 msgid "pick black point from image"
 msgstr "Choisir le point noir dans l’image"
 
-#: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1031
+#: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1033
 msgid "pick medium gray point from image"
 msgstr "Choisir le point gris dans l’image"
 
-#: ../src/iop/levels.c:649 ../src/iop/rgblevels.c:1037
+#: ../src/iop/levels.c:649 ../src/iop/rgblevels.c:1039
 msgid "pick white point from image"
 msgstr "Choisir le point blanc dans l’image"
 
-#: ../src/iop/levels.c:662 ../src/iop/rgblevels.c:934
+#: ../src/iop/levels.c:662 ../src/iop/rgblevels.c:936
 msgid "black"
 msgstr "Noir"
 
@@ -17411,7 +17415,7 @@ msgstr "Centile des noirs"
 msgid "gray percentile"
 msgstr "Centile des gris"
 
-#: ../src/iop/levels.c:670 ../src/iop/rgblevels.c:936
+#: ../src/iop/levels.c:670 ../src/iop/rgblevels.c:938
 msgid "white"
 msgstr "Blanc"
 
@@ -18370,7 +18374,7 @@ msgstr ""
 "lumière moyenne d’une zone de l’image."
 
 #: ../src/iop/relight.c:279 ../src/libs/export.c:1134
-#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2378
+#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2527
 msgid "width"
 msgstr "Largeur"
 
@@ -18660,19 +18664,19 @@ msgstr "Logarithmique (base 2)"
 msgid "exponential (base 2)"
 msgstr "Exponentielle (base 2)"
 
-#: ../src/iop/rgbcurve.c:1351 ../src/iop/rgblevels.c:997
+#: ../src/iop/rgbcurve.c:1351 ../src/iop/rgblevels.c:999
 msgid "choose between linked and independent channels."
 msgstr "Choisir entre les canaux indépendants ou liés"
 
-#: ../src/iop/rgbcurve.c:1357 ../src/iop/rgblevels.c:1001
+#: ../src/iop/rgbcurve.c:1357 ../src/iop/rgblevels.c:1003
 msgid "curve nodes for r channel"
 msgstr "Point de contrôle pour le canal R"
 
-#: ../src/iop/rgbcurve.c:1358 ../src/iop/rgblevels.c:1002
+#: ../src/iop/rgbcurve.c:1358 ../src/iop/rgblevels.c:1004
 msgid "curve nodes for g channel"
 msgstr "Point de contrôle pour le canal V"
 
-#: ../src/iop/rgbcurve.c:1359 ../src/iop/rgblevels.c:1003
+#: ../src/iop/rgbcurve.c:1359 ../src/iop/rgblevels.c:1005
 msgid "curve nodes for b channel"
 msgstr "Point de contrôle pour le canal B"
 
@@ -18685,7 +18689,7 @@ msgid "adjust black, white and mid-gray points in RGB color space"
 msgstr ""
 "Ajuste les points noir, blanc et gris moyen dans l’espace de couleur RVB"
 
-#: ../src/iop/rgblevels.c:1056
+#: ../src/iop/rgblevels.c:1058
 msgid ""
 "apply auto levels based on a region defined by the user\n"
 "click and drag to draw the area\n"
@@ -19071,92 +19075,92 @@ msgstr "Matrice de couleurs « %s » non trouvée pour l’image"
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Impossible de récupérer la balance des blancs du boîtier pour « %s »"
 
-#: ../src/iop/temperature.c:1630
+#: ../src/iop/temperature.c:1631
 msgctxt "white balance"
 msgid "as shot"
 msgstr "Boîtier"
 
 #. old "spot", reason: describes exactly what'll happen
-#: ../src/iop/temperature.c:1633
+#: ../src/iop/temperature.c:1634
 msgctxt "white balance"
 msgid "from image area"
 msgstr "Depuis une zone de l’image"
 
-#: ../src/iop/temperature.c:1634
+#: ../src/iop/temperature.c:1635
 msgctxt "white balance"
 msgid "user modified"
 msgstr "Manuel"
 
 #. old "camera neutral", reason: better matches intent
-#: ../src/iop/temperature.c:1636
+#: ../src/iop/temperature.c:1637
 msgctxt "white balance"
 msgid "camera reference"
 msgstr "Neutre boîtier"
 
-#: ../src/iop/temperature.c:1919 ../src/iop/temperature.c:1937
+#: ../src/iop/temperature.c:1920 ../src/iop/temperature.c:1938
 msgid "green channel coefficient"
 msgstr "Coefficient du canal vert"
 
-#: ../src/iop/temperature.c:1921
+#: ../src/iop/temperature.c:1922
 msgid "magenta channel coefficient"
 msgstr "Coefficient du canal magenta"
 
-#: ../src/iop/temperature.c:1923
+#: ../src/iop/temperature.c:1924
 msgid "cyan channel coefficient"
 msgstr "Coefficient du canal cyan"
 
-#: ../src/iop/temperature.c:1925
+#: ../src/iop/temperature.c:1926
 msgid "yellow channel coefficient"
 msgstr "Coefficient du canal jaune"
 
-#: ../src/iop/temperature.c:1935
+#: ../src/iop/temperature.c:1936
 msgid "red channel coefficient"
 msgstr "Coefficient du canal rouge"
 
-#: ../src/iop/temperature.c:1939
+#: ../src/iop/temperature.c:1940
 msgid "blue channel coefficient"
 msgstr "Coefficient du canal bleu"
 
-#: ../src/iop/temperature.c:1941
+#: ../src/iop/temperature.c:1942
 msgid "emerald channel coefficient"
 msgstr "Coefficient du canal émeraude"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
-#: ../src/iop/temperature.c:2028 ../src/iop/temperature.c:2041
-#: ../src/iop/temperature.c:2048 ../src/iop/temperature.c:2054
-#: ../src/iop/temperature.c:2073
+#: ../src/iop/temperature.c:2029 ../src/iop/temperature.c:2042
+#: ../src/iop/temperature.c:2049 ../src/iop/temperature.c:2055
+#: ../src/iop/temperature.c:2074
 msgid "settings"
 msgstr "Paramètres"
 
-#: ../src/iop/temperature.c:2028
+#: ../src/iop/temperature.c:2029
 msgid "as shot"
 msgstr "Boîtier"
 
 # infinitif
-#: ../src/iop/temperature.c:2031
+#: ../src/iop/temperature.c:2032
 msgid "set white balance to as shot"
 msgstr "Choisit la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:2041
+#: ../src/iop/temperature.c:2042
 msgid "from image area"
 msgstr "Depuis une zone de l’image"
 
-#: ../src/iop/temperature.c:2048
+#: ../src/iop/temperature.c:2049
 msgid "user modified"
 msgstr "Manuel"
 
 # infinitif
-#: ../src/iop/temperature.c:2051
+#: ../src/iop/temperature.c:2052
 msgid "set white balance to user modified"
 msgstr "Choisit la balance des blancs utilisateur"
 
-#: ../src/iop/temperature.c:2054
+#: ../src/iop/temperature.c:2055
 msgid "camera reference"
 msgstr "Neutre boîtier"
 
 # 3e personne
-#: ../src/iop/temperature.c:2059
+#: ../src/iop/temperature.c:2060
 msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
@@ -19164,45 +19168,45 @@ msgstr ""
 "Positionne la balance des couleurs sur le point de référence du boîtier,\n"
 "D65 dans la plupart des cas."
 
-#: ../src/iop/temperature.c:2074
+#: ../src/iop/temperature.c:2075
 msgid "choose white balance setting"
 msgstr "Choisir un paramètre de balance des blancs"
 
-#: ../src/iop/temperature.c:2079
+#: ../src/iop/temperature.c:2080
 msgid "finetune"
 msgstr "Ajustement"
 
-#: ../src/iop/temperature.c:2081
+#: ../src/iop/temperature.c:2082
 msgid "fine tune camera's white balance setting"
 msgstr "Ajustement fin de la balance des blancs"
 
-#: ../src/iop/temperature.c:2092
+#: ../src/iop/temperature.c:2093
 msgctxt "section"
 msgid "scene illuminant temp"
 msgstr "Température de l’illuminant de scène"
 
-#: ../src/iop/temperature.c:2093
+#: ../src/iop/temperature.c:2094
 msgid "click to cycle color mode on sliders"
 msgstr "Clic pour changer le mode des contrôles"
 
-#: ../src/iop/temperature.c:2107
+#: ../src/iop/temperature.c:2108
 msgid "color temperature (in Kelvin)"
 msgstr "Température de couleur (°K)"
 
-#: ../src/iop/temperature.c:2113
+#: ../src/iop/temperature.c:2114
 msgid "tint"
 msgstr "Teinte"
 
-#: ../src/iop/temperature.c:2116
+#: ../src/iop/temperature.c:2117
 msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
 msgstr ""
 "Teinte de la couleur de l’image, du magenta (valeur < 1) au vert (valeur > 1)"
 
-#: ../src/iop/temperature.c:2122
+#: ../src/iop/temperature.c:2123
 msgid "channel coefficients"
 msgstr "Coefficients des canaux"
 
-#: ../src/iop/temperature.c:2157
+#: ../src/iop/temperature.c:2158
 msgid "white balance disabled for camera"
 msgstr "Balance des blancs désactivée pour le boîtier"
 
@@ -19796,7 +19800,7 @@ msgstr "Placement"
 msgid "size is relative to"
 msgstr "La taille est relative à"
 
-#: ../src/iop/watermark.c:1146 ../src/libs/print_settings.c:2508
+#: ../src/iop/watermark.c:1146 ../src/libs/print_settings.c:2665
 msgid "alignment"
 msgstr "Alignement"
 
@@ -20472,7 +20476,7 @@ msgid "resolution in dot per inch"
 msgstr "Résolution en points par pouce"
 
 #: ../src/libs/export.c:1138 ../src/libs/metadata_view.c:148
-#: ../src/libs/print_settings.c:2382
+#: ../src/libs/print_settings.c:2531
 msgid "height"
 msgstr "Hauteur"
 
@@ -20517,11 +20521,11 @@ msgstr ""
 "uniquement pour certains formats."
 
 #: ../src/libs/export.c:1218 ../src/libs/export.c:1257
-#: ../src/libs/print_settings.c:2600 ../src/libs/print_settings.c:2645
+#: ../src/libs/print_settings.c:2767 ../src/libs/print_settings.c:2814
 msgid "image settings"
 msgstr "Paramètres d’image"
 
-#: ../src/libs/export.c:1230 ../src/libs/print_settings.c:2634
+#: ../src/libs/export.c:1230 ../src/libs/print_settings.c:2801
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr ""
@@ -20569,7 +20573,7 @@ msgstr ""
 "couleurs\n"
 "(non adapté à la photographie)."
 
-#: ../src/libs/export.c:1267 ../src/libs/print_settings.c:2655
+#: ../src/libs/export.c:1267 ../src/libs/print_settings.c:2824
 msgid "style"
 msgstr "Style"
 
@@ -20577,18 +20581,18 @@ msgstr "Style"
 msgid "temporary style to use while exporting"
 msgstr "Style temporaire à utiliser à l’exportation"
 
-#: ../src/libs/export.c:1275 ../src/libs/print_settings.c:2697
+#: ../src/libs/export.c:1275 ../src/libs/print_settings.c:2867
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "Définit si les éléments du style sont à ajouter à l’historique\n"
 "ou remplace ce dernier"
 
-#: ../src/libs/export.c:1278 ../src/libs/print_settings.c:2699
+#: ../src/libs/export.c:1278 ../src/libs/print_settings.c:2869
 msgid "replace history"
 msgstr "Remplacer l’historique"
 
-#: ../src/libs/export.c:1278 ../src/libs/print_settings.c:2699
+#: ../src/libs/export.c:1278 ../src/libs/print_settings.c:2869
 msgid "append history"
 msgstr "Ajouter à l’historique"
 
@@ -22969,115 +22973,115 @@ msgid "print settings"
 msgstr "Paramètres d’impression"
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
-#: ../src/libs/print_settings.c:334 ../src/libs/print_settings.c:711
+#: ../src/libs/print_settings.c:358 ../src/libs/print_settings.c:755
 #, c-format
 msgid "processing `%s' for `%s'"
 msgstr "Lancement de l’impression de « %s » sur « %s »"
 
-#: ../src/libs/print_settings.c:362
+#: ../src/libs/print_settings.c:388
 #, c-format
 msgid "cannot open printer profile `%s'"
 msgstr "Impossible d’ouvrir le profil d’impression « %s »"
 
-#: ../src/libs/print_settings.c:371
+#: ../src/libs/print_settings.c:399
 #, c-format
 msgid "error getting output profile for image %d"
 msgstr "Erreur de récupération du profil de sortie pour l’image %d"
 
-#: ../src/libs/print_settings.c:380
+#: ../src/libs/print_settings.c:411
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "Impossible d’appliquer le profil d’impression « %s » !"
 
-#: ../src/libs/print_settings.c:533
+#: ../src/libs/print_settings.c:575
 msgid "failed to create temporary PDF for printing"
 msgstr "Échec de la création du PDF temporaire pour l’impression"
 
-#: ../src/libs/print_settings.c:579
+#: ../src/libs/print_settings.c:621
 msgid "maximum image per page reached"
 msgstr "Nombre maximum d’image par page atteint"
 
-#: ../src/libs/print_settings.c:666
+#: ../src/libs/print_settings.c:709
 msgid "cannot print until a picture is selected"
 msgstr "Impossible d’imprimer tant qu’une image n’est pas sélectionnée"
 
-#: ../src/libs/print_settings.c:671
+#: ../src/libs/print_settings.c:714
 msgid "cannot print until a printer is selected"
 msgstr "Impossible d’imprimer tant qu’une imprimante n’est pas sélectionnée"
 
-#: ../src/libs/print_settings.c:676
+#: ../src/libs/print_settings.c:719
 msgid "cannot print until a paper is selected"
 msgstr "Impossible d’imprimer tant qu’un papier n’est pas sélectionné"
 
 #. in this case no need to release from cache what we couldn't get
-#: ../src/libs/print_settings.c:703
+#: ../src/libs/print_settings.c:747
 #, c-format
 msgid "cannot get image %d for printing"
 msgstr "Impossible de récupérer l’image %d pour l’impression"
 
-#: ../src/libs/print_settings.c:873
+#: ../src/libs/print_settings.c:919
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (DPI : %d)"
 
-#: ../src/libs/print_settings.c:2252
+#: ../src/libs/print_settings.c:2385
 msgctxt "section"
 msgid "printer"
 msgstr "Imprimante"
 
-#: ../src/libs/print_settings.c:2264 ../src/libs/print_settings.c:2272
-#: ../src/libs/print_settings.c:2323
+#: ../src/libs/print_settings.c:2398 ../src/libs/print_settings.c:2407
+#: ../src/libs/print_settings.c:2463
 msgid "printer"
 msgstr "Imprimante"
 
-#: ../src/libs/print_settings.c:2264
+#: ../src/libs/print_settings.c:2398
 msgid "media"
 msgstr "Type du papier"
 
-#: ../src/libs/print_settings.c:2282
+#: ../src/libs/print_settings.c:2419
 msgid "color management in printer driver"
 msgstr "Gestion des couleurs par l’imprimante"
 
-#: ../src/libs/print_settings.c:2314
+#: ../src/libs/print_settings.c:2452
 #, c-format
 msgid "printer ICC profiles in %s or %s"
 msgstr ""
 "Profils ICC d’imprimantes dans « %s »\n"
 "ou « %s »"
 
-#: ../src/libs/print_settings.c:2333
+#: ../src/libs/print_settings.c:2474
 msgid "black point compensation"
 msgstr "Compensation du point noir"
 
-#: ../src/libs/print_settings.c:2341
+#: ../src/libs/print_settings.c:2487
 msgid "activate black point compensation when applying the printer profile"
 msgstr ""
 "Active la compensation du point noir lors de l’application du profil "
 "d’imprimante"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:2347
+#: ../src/libs/print_settings.c:2494
 msgctxt "section"
 msgid "page"
 msgstr "Page"
 
-#: ../src/libs/print_settings.c:2368
+#: ../src/libs/print_settings.c:2516
 msgid "measurement units"
 msgstr "Unité de mesure"
 
-#: ../src/libs/print_settings.c:2376
+#: ../src/libs/print_settings.c:2524
 msgid "image width/height"
 msgstr "Largeur/hauteur"
 
-#: ../src/libs/print_settings.c:2380
+#: ../src/libs/print_settings.c:2529
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:2388
+#: ../src/libs/print_settings.c:2537
 msgid "scale factor"
 msgstr "Facteur d’agrandissement"
 
-#: ../src/libs/print_settings.c:2393
+#: ../src/libs/print_settings.c:2543
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -23091,46 +23095,46 @@ msgstr ""
 "une qualité d’impression médiocre)."
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2407
+#: ../src/libs/print_settings.c:2557
 msgid "top margin"
 msgstr "Marge haute"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2411
+#: ../src/libs/print_settings.c:2561
 msgid "left margin"
 msgstr "Marge gauche"
 
-#: ../src/libs/print_settings.c:2414
+#: ../src/libs/print_settings.c:2564
 msgid "lock"
 msgstr "Sync"
 
-#: ../src/libs/print_settings.c:2415
+#: ../src/libs/print_settings.c:2566
 msgid "change all margins uniformly"
 msgstr "Change toutes les marges uniformément"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2419
+#: ../src/libs/print_settings.c:2570
 msgid "right margin"
 msgstr "Marge droite"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2423
+#: ../src/libs/print_settings.c:2574
 msgid "bottom margin"
 msgstr "Marge basse"
 
-#: ../src/libs/print_settings.c:2456
+#: ../src/libs/print_settings.c:2607
 msgid "display grid"
 msgstr "Afficher la grille"
 
-#: ../src/libs/print_settings.c:2466
+#: ../src/libs/print_settings.c:2618
 msgid "snap to grid"
 msgstr "Aligner sur la grille"
 
-#: ../src/libs/print_settings.c:2476
+#: ../src/libs/print_settings.c:2631
 msgid "borderless mode required"
 msgstr "Mode sans bordure requis"
 
-#: ../src/libs/print_settings.c:2479
+#: ../src/libs/print_settings.c:2634
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
@@ -23141,16 +23145,16 @@ msgstr ""
 "en dessous de celles de l’imprimante."
 
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2486
+#: ../src/libs/print_settings.c:2641
 msgctxt "section"
 msgid "image layout"
 msgstr "Disposition de l’image"
 
-#: ../src/libs/print_settings.c:2524
+#: ../src/libs/print_settings.c:2682
 msgid "new image area"
 msgstr "Nouvelle zone d’image"
 
-#: ../src/libs/print_settings.c:2525
+#: ../src/libs/print_settings.c:2684
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
@@ -23160,53 +23164,53 @@ msgstr ""
 "Clic+glisser sur la page pour placer la zone,\n"
 "puis y déposer une image depuis le bandeau."
 
-#: ../src/libs/print_settings.c:2529
+#: ../src/libs/print_settings.c:2688
 msgid "delete image area"
 msgstr "Supprimer zone image"
 
-#: ../src/libs/print_settings.c:2530
+#: ../src/libs/print_settings.c:2690
 msgid "delete the currently selected image area"
 msgstr "Supprime la zone d’image actuellement sélectionnée"
 
-#: ../src/libs/print_settings.c:2533
+#: ../src/libs/print_settings.c:2693
 msgid "clear layout"
 msgstr "Effacer composition"
 
-#: ../src/libs/print_settings.c:2534
+#: ../src/libs/print_settings.c:2695
 msgid "remove all image areas from the page"
 msgstr "Enlève toutes les zones d’image de la page"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2549
+#: ../src/libs/print_settings.c:2712
 msgid "image area x origin (in current unit)"
 msgstr "X de la zone d’image (dans l’unité sélectionnée)"
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2553
+#: ../src/libs/print_settings.c:2716
 msgid "image area y origin (in current unit)"
 msgstr "Y de la zone d’image (dans l’unité sélectionnée)"
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2564
+#: ../src/libs/print_settings.c:2727
 msgid "image area width (in current unit)"
 msgstr "Largeur de la zone d’image (dans l’unité sélectionnée)"
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2568
+#: ../src/libs/print_settings.c:2731
 msgid "image area height (in current unit)"
 msgstr "Hauteur de la zone d’image (dans l’unité sélectionnée)"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:2590
+#: ../src/libs/print_settings.c:2757
 msgctxt "section"
 msgid "print settings"
 msgstr "Paramètres d’impression"
 
-#: ../src/libs/print_settings.c:2677
+#: ../src/libs/print_settings.c:2846
 msgid "temporary style to use while printing"
 msgstr "Style temporaire à utiliser lors de l’exportation"
 
-#: ../src/libs/print_settings.c:2707
+#: ../src/libs/print_settings.c:2878
 msgid "print with current settings"
 msgstr "Imprime avec les réglages actuels"
 
