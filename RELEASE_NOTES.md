@@ -392,11 +392,12 @@ The following is a summary of the main features added to darktable
   enabled. Shortcuts assigned to the sliders can be used to adjust
   brush size/hardness while drawing.
 
-- Improve the mask editing by make it easier to select the path's
-  segments. In some cases it was difficult to select a segment and
-  instead the whole path mask was selected and so moved. The on canvas
-  drawing of the masks has also been improved to be more consistent
-  for all kind of forms.
+- Improve the mask editing by making it easier to select masks'
+  control points and more specifically the path's segments. In some
+  cases it was difficult to select a segment and instead the whole
+  path mask was selected and so moved. The on canvas drawing of the
+  masks has also been improved to be more consistent for all kind of
+  forms.
 
 ## Bug Fixes
 
