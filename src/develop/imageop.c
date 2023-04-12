@@ -2455,9 +2455,7 @@ static void _header_size_callback(GtkWidget *widget,
   g_list_free(children);
   g_free(config);
 
-  GtkAllocation header_allocation;
-  gtk_widget_get_allocation(header, &header_allocation);
-  if(header_allocation.width > 1) gtk_widget_size_allocate(header, &header_allocation);
+  dt_gui_widget_reallocate_now(header);
 }
 
 gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
