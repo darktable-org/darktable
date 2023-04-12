@@ -1122,17 +1122,6 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
 
-  /* first destroy all buttons in list */
-  dt_gui_container_destroy_children(GTK_CONTAINER(d->history_box));
-
-  /* add default which always should be */
-  int num = -1;
-  GtkWidget *widget =
-    _lib_history_create_button(self, num, _("original"),
-                               FALSE, FALSE, TRUE,
-                               darktable.develop->history_end == 0, FALSE);
-  gtk_box_pack_start(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
-  num++;
 
   d->record_history_level -= 1;
 
@@ -1166,8 +1155,27 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   else
     d->record_undo = TRUE;
 
+  dt_lib_gui_queue_update(self);
+}
+
+void gui_update(dt_lib_module_t *self)
+{
+  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
+
   /* lock history mutex */
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
+
+  /* first destroy all buttons in list */
+  dt_gui_container_destroy_children(GTK_CONTAINER(d->history_box));
+
+  /* add default which always should be */
+  GtkWidget *widget =
+    _lib_history_create_button(self, -1, _("original"),
+                               FALSE, FALSE, TRUE,
+                               darktable.develop->history_end == 0, FALSE);
+  gtk_box_pack_end(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
+
+  int num = 0;
 
   /* iterate over history items and add them to list*/
   for(const GList *history = darktable.develop->history;
@@ -1191,13 +1199,13 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     g_signal_connect(G_OBJECT(widget), "query-tooltip",
                      G_CALLBACK(_changes_tooltip_callback), (void *)hitem);
 
-    gtk_box_pack_start(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
-    gtk_box_reorder_child(GTK_BOX(d->history_box), widget, 0);
+    gtk_box_pack_end(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
     num++;
   }
 
   /* show all widgets */
   gtk_widget_show_all(d->history_box);
+  dt_gui_widget_reallocate_now(d->history_box);
 
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 }
