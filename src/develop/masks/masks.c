@@ -2275,7 +2275,6 @@ int dt_masks_point_in_form_exact(const float x,
          ? points[points_start * 2 + 1]
          : points_start;
 
-    const float yf = (float)y;
     int nb = 0;
 
     for(int i = start, next = start + 1; i < points_count;)
@@ -2289,8 +2288,8 @@ int dt_masks_point_in_form_exact(const float x,
         next = isnan(y2) ? start : (int)y2;
         continue;
       }
-      if(((yf <= y2 && yf > y1)
-          || (yf >= y2 && yf < y1))
+      if(((y <= y2 && y > y1)
+          || (y >= y2 && y < y1))
          && (points[i * 2] > x))
         nb++;
 
@@ -2324,7 +2323,6 @@ int dt_masks_point_in_form_near(const float x,
       ? points[points_start * 2 + 1]
       : points_start;
 
-    const float yf = (float)y;
     int nb = 0;
     for(int i = start, next = start + 1; i < points_count;)
     {
@@ -2337,7 +2335,8 @@ int dt_masks_point_in_form_near(const float x,
         next = isnan(y2) ? start : (int)y2;
         continue;
       }
-      if((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1))
+      if((y <= y2 && y > y1)
+         || (y >= y2 && y < y1))
       {
         if(points[i * 2] > x)
           nb++;

@@ -2122,8 +2122,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   // are we near a point or feather ?
   const guint nb = g_list_length(form->points);
 
-  pzx *= darktable.develop->preview_pipe->backbuf_width;
-  pzy *= darktable.develop->preview_pipe->backbuf_height;
+  pzx *= wd;
+  pzy *= ht;
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
