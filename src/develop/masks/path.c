@@ -1922,8 +1922,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
   // centre view will have zoom_scale * backbuf_width pixels, we want
   // the handle offset to scale with DPI:
-  // transformed to backbuf dimensions
-  const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
+  const float as = dt_masks_sensitive_dist(zoom_scale);
+
   if(!gui) return 0;
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -2189,7 +2189,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   gboolean in = FALSE, inb = FALSE, ins = FALSE;
   int near = 0;
   float dist = 0;
-  _path_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
+  _path_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;
   if(near < 0)
   {

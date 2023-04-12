@@ -587,7 +587,7 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-    const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
+    const float as = dt_masks_sensitive_dist(zoom_scale);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     gboolean in, inb, ins;
@@ -628,17 +628,17 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
       dt_masks_form_gui_points_t *gpt =
         (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
+      const float as2 = as * as;
+      const float dist_b = sqf(x - gpt->border[2]) + sqf(y - gpt->border[3]);
+      const float dist_p = sqf(x - gpt->points[2]) + sqf(y - gpt->points[3]);
+
       // prefer border point over shape itself in case of near overlap
       // for ease of pickup
-      if(x - gpt->border[2] > -as && x - gpt->border[2] < as &&
-         y - gpt->border[3] > -as && y - gpt->border[3] < as)
+      if(dist_b < as2)
       {
         gui->point_border_selected = 1;
       }
-      else if(x - gpt->points[2] > -as
-              && x - gpt->points[2] < as
-              && y - gpt->points[3] > -as
-              && y - gpt->points[3] < as)
+      else if(dist_p < as2)
       {
         gui->point_selected = 1;
       }
