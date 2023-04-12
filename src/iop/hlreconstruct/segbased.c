@@ -135,7 +135,6 @@ static void _calc_plane_candidates(const float *plane,
   {
     seg->val1[id] = 0.0f;
     seg->val2[id] = 0.0f;
-    seg->ref[id] = 0;
     // avoid very small segments
     if((seg->ymax[id] - seg->ymin[id] > 2) && (seg->xmax[id] - seg->xmin[id] > 2))
     {
@@ -184,7 +183,6 @@ static void _calc_plane_candidates(const float *plane,
         {
           seg->val1[id] = fminf(clipval, sum / fmaxf(1.0f, pix));
           seg->val2[id] = refavg[testref];
-          seg->ref[id] = testref;
         }
       }
     }
@@ -488,8 +486,12 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
   const size_t p_size =  dt_round_size((size_t) pwidth * pheight, 64);
 
-  float *fbuffer = dt_alloc_align_float((HL_FLOAT_PLANES) * p_size);
-  if(!fbuffer) return;
+  float *fbuffer = dt_alloc_align_float(HL_FLOAT_PLANES * p_size);
+  if(!fbuffer)
+  {
+    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate intermediate buffers\n");
+    return;
+  }
 
   float *plane[HL_FLOAT_PLANES];
   for(int i = 0; i < HL_FLOAT_PLANES; i++)
@@ -499,9 +501,21 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   for(int i = 0; i < HL_RGB_PLANES; i++)
     refavg[i] = plane[HL_SEGMENT_PLANES + i];
 
+  gboolean segerror = FALSE;
+
   dt_iop_segmentation_t isegments[HL_SEGMENT_PLANES];
   for(int i = 0; i < HL_SEGMENT_PLANES; i++)
-    dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER +1, segmentation_limit);
+    segerror |= dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER+1, segmentation_limit);
+
+  if(segerror)
+  {
+    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate segmentation buffers\n");
+    for(int i = 0; i < HL_SEGMENT_PLANES; i++)
+      dt_segmentation_free_struct(&isegments[i]);
+
+    dt_free_align(fbuffer);
+    return;
+  }
 
   const int xshifter = ((filters != 9u) && (FC(0, 0, filters) == 1)) ? 1 : 2;
 
@@ -741,7 +755,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
             if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)
               output[odx] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
             else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg)
-              output[odx] = (ppos == isegments[color].ref[pid]) ? 1.0f : 0.6f;
+              output[odx] = 1.0f;
             else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)
               output[odx] += strength * gradient[ppos];
           }
