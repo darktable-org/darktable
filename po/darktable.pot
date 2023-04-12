@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-12 09:35+0200\n"
+"POT-Creation-Date: 2023-04-12 10:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8089,7 +8089,7 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:415
 #, c-format
-msgid "copy of %s"
+msgid "copy of `%s'"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:974
