@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-12 09:36+0200\n"
-"PO-Revision-Date: 2023-04-12 09:36+0200\n"
+"POT-Creation-Date: 2023-04-12 10:27+0200\n"
+"PO-Revision-Date: 2023-04-12 10:28+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8656,7 +8656,7 @@ msgstr "Groupe « %s »"
 
 #: ../src/develop/masks/masks.c:415
 #, c-format
-msgid "copy of %s"
+msgid "copy of `%s'"
 msgstr "Copie de « %s »"
 
 #: ../src/develop/masks/masks.c:974
