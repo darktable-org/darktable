@@ -1621,7 +1621,7 @@ GList *_lib_masks_get_selected(dt_lib_module_t *self)
   return res;
 }
 
-static void _lib_masks_recreate_list(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
   /* first destroy all buttons in list */
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -1629,7 +1629,6 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
   if(darktable.gui->reset) return;
 
   ++darktable.gui->reset;
-  // if(lm->treeview) gtk_widget_destroy(lm->treeview);
 
   // if a treeview is already present, let's get the currently selected items
   // as we are going to recreate the tree.
@@ -1712,7 +1711,21 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   --darktable.gui->reset;
 
+  dt_gui_widget_reallocate_now(lm->treeview);
+}
+
+static void _lib_masks_recreate_list(dt_lib_module_t *self)
+{
+  dt_lib_masks_t *lm = self->data;
+  dt_lib_gui_queue_update(self);
+
+  if(darktable.gui->reset) return;
+  ++darktable.gui->reset;
+
   _update_all_properties(lm);
+
+  --darktable.gui->reset;
+
 }
 
 static gboolean _update_foreach(GtkTreeModel *model,

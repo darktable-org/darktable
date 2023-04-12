@@ -736,9 +736,8 @@ static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/style/applymode", mode);
 }
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
@@ -761,12 +760,12 @@ static void _styles_changed_callback(gpointer instance, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
   _gui_styles_update_view(d);
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _collection_updated_callback(gpointer instance,
@@ -776,24 +775,23 @@ static void _collection_updated_callback(gpointer instance,
                                          const int next,
                                          dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_queue_postponed_update(self, _update);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer data)
 {
-  _update((dt_lib_module_t *)data);
+  dt_lib_gui_queue_update((dt_lib_module_t *)data);
 }
 
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)malloc(sizeof(dt_lib_styles_t));
   self->data = (void *)d;
-  self->timeout_handle = 0;
   d->edit_button = NULL;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *w;
@@ -921,14 +919,10 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
-
-  _update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
-
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_styles_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
@@ -968,7 +962,7 @@ void gui_reset(dt_lib_module_t *self)
   }
   g_list_free_full(all_styles, dt_style_free);
   dt_database_release_transaction(darktable.db);
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 

@@ -449,6 +449,8 @@ void dt_gui_menu_popup(GtkMenu *menu, GtkWidget *button, GdkGravity widget_ancho
 
 void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y);
 
+void dt_gui_widget_reallocate_now(GtkWidget *widget);
+
 // event handler for "key-press-event" of GtkTreeView to decide if focus switches to GtkSearchEntry
 gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEntry *entry);
 

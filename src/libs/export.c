@@ -171,9 +171,8 @@ uint32_t container(dt_lib_module_t *self)
     return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   const dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
@@ -188,19 +187,19 @@ static void _update(dt_lib_module_t *self)
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
                                          dt_collection_properties_t changed_property, gpointer imgs, int next,
                                          dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_queue_postponed_update(self, _update);
+  dt_lib_gui_queue_update(self);
 }
 
 gboolean _is_int(double value)
@@ -590,7 +589,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   if(mstorage) mstorage->gui_reset(mstorage);
 
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void set_format_by_name(dt_lib_export_t *d, const char *name)
@@ -1053,7 +1052,6 @@ void set_preferences(void *menu, dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
-  self->timeout_handle = 0;
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -1375,7 +1373,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_on_storage_list_changed), self);

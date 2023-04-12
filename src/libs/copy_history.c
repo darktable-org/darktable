@@ -71,9 +71,8 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   const int nbimgs = dt_act_on_get_images_nb(TRUE, FALSE);
@@ -219,7 +218,7 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
   if(dt_is_valid_imgid(id) && dt_history_copy(id))
   {
     d->is_full_copy = TRUE;
-    _update(self);
+    dt_lib_gui_queue_update(self);
   }
 }
 
@@ -233,7 +232,7 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   if(dt_is_valid_imgid(id) && dt_history_copy_parts(id))
   {
     d->is_full_copy = FALSE;
-    _update(self);
+    dt_lib_gui_queue_update(self);
   }
 }
 
@@ -317,12 +316,12 @@ static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
   const int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
-  _update((dt_lib_module_t *)user_data);
+  dt_lib_gui_queue_update((dt_lib_module_t *)user_data);
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _collection_updated_callback(gpointer instance,
@@ -332,17 +331,17 @@ static void _collection_updated_callback(gpointer instance,
                                          const int next,
                                          dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_queue_postponed_update(self, _update);
+  dt_lib_gui_queue_update(self);
 }
 
 void gui_reset(dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 int position(const dt_lib_module_t *self)
@@ -354,7 +353,6 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
-  self->timeout_handle = 0;
 
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);
@@ -423,13 +421,10 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
-
-  _update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_image_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,

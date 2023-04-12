@@ -3314,6 +3314,14 @@ void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float
   cairo_fill(cr);
 }
 
+void dt_gui_widget_reallocate_now(GtkWidget *widget)
+{
+  GtkAllocation allocation = {};
+  gtk_widget_get_allocation(widget, &allocation);
+  if(allocation.width > 1)
+    gtk_widget_size_allocate(widget, &allocation);
+}
+
 gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEntry *entry)
 {
   if(gtk_search_entry_handle_event(entry, (GdkEvent *)event))

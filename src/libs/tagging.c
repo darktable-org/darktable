@@ -67,6 +67,7 @@ typedef struct dt_lib_tagging_t
     int expand_timeout, scroll_timeout, last_y;
     gboolean root, tag_source;
   } drag;
+  gboolean update_selected_tags;
 } dt_lib_tagging_t;
 
 typedef struct dt_tag_op_t
@@ -138,7 +139,6 @@ static void _unselect_all_in_view(GtkTreeView *view)
 
 static void _update_atdetach_buttons(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(FALSE, FALSE) > 0);
@@ -593,15 +593,21 @@ static void _tree_select_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer,
   g_object_set(renderer, "active", active, "inconsistent", inconsistent, NULL);
 }
 
-static void _postponed_update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  _init_treeview(self, 0);
+  dt_lib_tagging_t *d = self->data;
+  if(d->update_selected_tags)
+    _init_treeview(self, 0);
+  d->update_selected_tags = FALSE;
+
   _update_atdetach_buttons(self);
 }
 
 static void _lib_tagging_redraw_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_queue_postponed_update(self, _postponed_update);
+  dt_lib_tagging_t *d = self->data;
+  d->update_selected_tags = TRUE;
+  dt_lib_gui_queue_update(self);
 }
 
 static void _lib_tagging_tags_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -616,7 +622,7 @@ static void _collection_updated_callback(gpointer instance, dt_collection_change
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   d->collection[0] = '\0';
-  _update_atdetach_buttons(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _raise_signal_tag_changed(dt_lib_module_t *self)
@@ -881,7 +887,6 @@ static void _delete_tree_path(GtkTreeModel *model, GtkTreeIter *iter, gboolean r
 static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  _init_treeview(self, 0);
   if(!d->tree_flag && d->suggestion_flag)
   {
     _init_treeview(self, 1);
@@ -890,7 +895,8 @@ static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *
     _update_sel_on_tree(d->tree_flag ? GTK_TREE_MODEL(d->dictionary_treestore)
                                     : GTK_TREE_MODEL(d->dictionary_liststore));
 
-  _update_atdetach_buttons(self);
+  d->update_selected_tags = TRUE;
+  dt_lib_gui_queue_update(self);
 }
 
 static void _set_keyword(dt_lib_module_t *self)
@@ -1286,7 +1292,7 @@ static gboolean _click_on_view_attached(GtkWidget *view, GdkEventButton *event, 
       if(valid_tag)
       {
         gtk_tree_selection_select_path(selection, path);
-        _update_atdetach_buttons(self);
+        dt_lib_gui_queue_update(self);
         if(event->type == GDK_BUTTON_PRESS && event->button == 3)
         {
           _pop_menu_attached(view, event, self);
@@ -2341,7 +2347,7 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
       else
       {
         gtk_tree_selection_select_path(selection, path);
-        _update_atdetach_buttons(self);
+        dt_lib_gui_queue_update(self);
         if(button_pressed == 3)
         {
           _pop_menu_dictionary(view, event, self);
@@ -2705,7 +2711,7 @@ void gui_reset(dt_lib_module_t *self)
   gtk_entry_set_text(d->entry, "");
   _set_keyword(self);
   _init_treeview(self, 1);
-  _update_atdetach_buttons(self);
+  dt_lib_gui_queue_update(self);
 }
 
 int position(const dt_lib_module_t *self)
@@ -2815,7 +2821,7 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
 
 static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer data)
 {
-  _update_atdetach_buttons((dt_lib_module_t *)data);
+  dt_lib_gui_queue_update((dt_lib_module_t *)data);
 }
 
 static void _dnd_clear_root(dt_lib_module_t *self)
@@ -3039,7 +3045,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)calloc(sizeof(dt_lib_tagging_t),1);
   self->data = (void *)d;
   d->last_tag = NULL;
-  self->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -3272,7 +3277,6 @@ void gui_init(dt_lib_module_t *self)
   _init_treeview(self, 0);
   _set_keyword(self);
   _init_treeview(self, 1);
-  _update_atdetach_buttons(self);
 
   dt_action_register(DT_ACTION(self), N_("tag"), _lib_tagging_tag_show, GDK_KEY_t, GDK_CONTROL_MASK);
   dt_action_register(DT_ACTION(self), N_("redo last tag"), _lib_tagging_tag_redo, GDK_KEY_t, GDK_MOD1_MASK);
@@ -3280,7 +3284,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
@@ -3482,7 +3485,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   if(!d->tree_flag && d->suggestion_flag)
   {
     _init_treeview(self, 1);
-    _update_atdetach_buttons(self);
+    dt_lib_gui_queue_update(self);
   }
 }
 

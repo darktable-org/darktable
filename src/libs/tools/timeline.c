@@ -805,7 +805,11 @@ static void _lib_timeline_collection_changed(gpointer instance, dt_collection_ch
                                              dt_collection_properties_t changed_property, gpointer imgs, int next,
                                              gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_gui_queue_update(user_data);
+}
+
+void gui_update(dt_lib_module_t *self)
+{
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   // we read the collect bounds
@@ -820,7 +824,6 @@ static void _lib_timeline_collection_changed(gpointer instance, dt_collection_ch
   // in any case we redraw the strip (to reflect any selected image change)
   cairo_surface_destroy(strip->surface);
   strip->surface = NULL;
-  gtk_widget_queue_draw(strip->timeline);
 }
 
 
@@ -1419,9 +1422,6 @@ void gui_init(dt_lib_module_t *self)
                    self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->timeline, TRUE, TRUE, 0);
-
-  // we update the selection with actual collect rules
-  _lib_timeline_collection_changed(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL, -1, self);
 
   gtk_widget_show_all(self->widget);
   /* initialize view manager proxy */

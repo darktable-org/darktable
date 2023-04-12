@@ -769,6 +769,22 @@ void dt_lib_init_presets(dt_lib_module_t *module)
   sqlite3_finalize(stmt);
 }
 
+static gboolean _lib_draw_callback(GtkWidget *widget, gpointer cr, dt_lib_module_t *self)
+{
+  if(!self->gui_uptodate && self->gui_update)
+    self->gui_update(self);
+
+  self->gui_uptodate = TRUE;
+
+  return FALSE;
+}
+
+void dt_lib_gui_queue_update(dt_lib_module_t *module)
+{
+  module->gui_uptodate = FALSE;
+  gtk_widget_queue_draw(module->widget);
+}
+
 static void dt_lib_init_module(void *m)
 {
   dt_lib_module_t *module = (dt_lib_module_t *)m;
@@ -780,6 +796,10 @@ static void dt_lib_init_module(void *m)
   {
     module->gui_init(module);
     g_object_ref_sink(module->widget);
+
+    if(module->gui_update)
+      g_signal_connect(G_OBJECT(module->widget), "draw",
+                       G_CALLBACK(_lib_draw_callback), module);
   }
 }
 
@@ -1178,41 +1198,6 @@ dt_lib_module_t *dt_lib_get_module(const char *name)
   }
 
   return NULL;
-}
-
-/* callback function for delayed update after user interaction */
-static gboolean _postponed_update(gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  self->timeout_handle = 0;
-  if(self->_postponed_update)
-    self->_postponed_update(self);
-
-  return FALSE; // cancel the timer
-}
-
-/** queue a delayed call of update function after user interaction */
-void dt_lib_queue_postponed_update(dt_lib_module_t *mod, void (*update_fn)(dt_lib_module_t *self))
-{
-  if(mod->timeout_handle)
-  {
-    // here we're making sure the event fires at last hover
-    // and we won't have avalanche of events in the mean time.
-    g_source_remove(mod->timeout_handle);
-  }
-  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
-  mod->_postponed_update = update_fn;
-  mod->timeout_handle = g_timeout_add(delay, _postponed_update, mod);
-}
-
-void dt_lib_cancel_postponed_update(dt_lib_module_t *mod)
-{
-  mod->_postponed_update = NULL;
-  if(mod->timeout_handle)
-  {
-    g_source_remove(mod->timeout_handle);
-    mod->timeout_handle = 0;
-  }
 }
 
 gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod)

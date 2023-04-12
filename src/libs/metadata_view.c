@@ -462,7 +462,7 @@ static int lua_update_metadata(lua_State*L);
 #endif
 
 /* update all values to reflect mouse over image id or no data at all */
-static void _metadata_view_update_values(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
   int32_t count = 0;
@@ -1035,7 +1035,7 @@ static void _jump_to_accel(dt_action_t *data)
 static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  if(dt_control_running()) _metadata_view_update_values(self);
+  if(dt_control_running()) dt_lib_gui_queue_update(self);
 }
 
 static char *_get_current_configuration(dt_lib_module_t *self)

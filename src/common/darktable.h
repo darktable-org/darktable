@@ -160,7 +160,7 @@ typedef int32_t dt_imgid_t;
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
-#define DT_MODULE_VERSION 24 // version of dt's module interface
+#define DT_MODULE_VERSION 25 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
