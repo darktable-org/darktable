@@ -104,8 +104,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
   const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-  const float pr_d = darktable.develop->preview_downsampling;
-  const float as = DT_PIXEL_APPLY_DPI(5) / (pr_d * zoom_scale);  // transformed to backbuf dimensions
+  const float as = dt_masks_sensitive_dist(zoom_scale);
 
   // we first don't do anything if we are inside a scrolling session
 
@@ -742,4 +741,3 @@ const dt_masks_functions_t dt_masks_functions_group = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
