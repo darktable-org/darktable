@@ -301,7 +301,7 @@ static void _set_group_name_from_module(dt_iop_module_t *module,
                                         dt_masks_form_t *grp)
 {
   gchar *module_label = dt_history_item_get_name(module);
-  snprintf(grp->name, sizeof(grp->name), "grp %s", module_label);
+  snprintf(grp->name, sizeof(grp->name), _("group `%s'"), module_label);
   g_free(module_label);
 }
 
