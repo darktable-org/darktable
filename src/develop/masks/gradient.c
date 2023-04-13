@@ -55,7 +55,7 @@ static void _gradient_get_distance(const float x,
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
-  const float as2 = as * as;
+  const float as2 = sqf(as);
 
   float close_to_controls = FALSE;
 
@@ -80,8 +80,11 @@ static void _gradient_get_distance(const float x,
   // check if we are close to borders
   for(int i = 0; i < gpt->border_count; i++)
   {
-    if((x - gpt->border[i * 2]) * (x - gpt->border[i * 2])
-       + (y - gpt->border[i * 2 + 1]) * (y - gpt->border[i * 2 + 1]) < as2)
+    const float dx = x - gpt->border[i * 2];
+    const float dy = y - gpt->border[i * 2 + 1];
+    const float dd = sqf(dx) + sqf(dy);
+
+    if(dd < as2)
     {
       *inside_border = TRUE;
       return;
@@ -91,8 +94,11 @@ static void _gradient_get_distance(const float x,
   // check if we are close to main line
   for(int i = _nb_ctrl_point(); i < gpt->points_count; i++)
   {
-    if((x - gpt->points[i * 2]) * (x - gpt->points[i * 2])
-       + (y - gpt->points[i * 2 + 1]) * (y - gpt->points[i * 2 + 1]) < as2)
+    const float dx = x - gpt->points[i * 2];
+    const float dy = y - gpt->points[i * 2 + 1];
+    const float dd = sqf(dx) + sqf(dy);
+
+    if(dd < as2)
     {
       *inside = TRUE;
       return;
@@ -1064,6 +1070,7 @@ static void _gradient_events_post_expose(cairo_t *cr,
 
   const gboolean selected = (gui->group_selected == index)
     && (gui->form_selected || gui->form_dragging);
+
   // draw main line
   _gradient_draw_lines(FALSE, cr, selected, zoom_scale,
                        gpt->points, gpt->points_count, xref, yref);

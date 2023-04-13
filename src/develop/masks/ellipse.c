@@ -113,7 +113,7 @@ static int _ellipse_point_close_to_path(const float x,
                                         float *points,
                                         const int points_count)
 {
-  const float as2 = as; // * as;
+  const float as2 = sqf(as);
 
   const float lastx = points[2 * (points_count - 1)];
   const float lasty = points[2 * (points_count - 1) + 1];
@@ -1262,7 +1262,7 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
     {
       dt_masks_form_gui_points_t *gpt =
         (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-      const float as2 = as * as;
+      const float as2 = sqf(as);
 
       for(int i = 1; i < _nb_ctrl_point() - 1; i++)
       {
