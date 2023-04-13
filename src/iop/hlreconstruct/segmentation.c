@@ -74,6 +74,15 @@ static inline void _push_stack(int xpos, int ypos, dt_ff_stack_t *stack)
   stack->pos++;
 }
 
+static inline void _clear_segment_slot(dt_iop_segmentation_t *seg, uint32_t id)
+{
+  if(id > seg->slots-1)
+    return;
+
+  seg->size[id] = seg->xmin[id] = seg->xmax[id] = seg->ymin[id] = seg->ymax[id] = 0;
+  seg->val1[id] = seg->val2[id] = 0.0f;
+}
+
 static inline dt_pos_t * _pop_stack(dt_ff_stack_t *stack)
 {
   if(stack->pos > 0)
@@ -85,11 +94,11 @@ static inline dt_pos_t * _pop_stack(dt_ff_stack_t *stack)
 
 static inline uint32_t _get_segment_id(dt_iop_segmentation_t *seg, const size_t loc)
 {
-  if(loc >= (size_t)(seg->width * seg->height))
+  if(loc >= (size_t)(seg->width * (seg->height-seg->border)))
     return 0;
 
   const uint32_t id = seg->data[loc] & (DT_SEG_ID_MASK-1);
-  return ((id < seg->slots -1) && (id > 1)) ? id : 0;
+  return ((id < seg->nr) && (id > 1)) ? id : 0;
 }
 
 static inline int _test_dilate(const uint32_t *img, const size_t i, const size_t w1, const int radius)
@@ -210,12 +219,15 @@ static inline void _dilating(const uint32_t *img,
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   dt_omp_firstprivate(img, o, height, w1, border, radius) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
-  for(size_t row = border; row < height - border; row++)
+  for(int row = border; row < height - border; row++)
   {
-    for(size_t col = border, i = row*w1 + col; col < w1 - border; col++, i++)
+    for(int col = border; col < w1 - border; col++)
+    {
+      const size_t i = (size_t)row*w1 + col;
       o[i] = _test_dilate(img, i, w1, radius) ? 1 : 0;
+    }
   }
 }
 
@@ -338,12 +350,15 @@ static inline void _eroding(const uint32_t *img,
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   dt_omp_firstprivate(img, o, height, w1, border, radius) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
-  for(size_t row = border; row < height - border; row++)
+  for(int row = border; row < height - border; row++)
   {
-    for(size_t col = border, i = row*w1 + col; col < w1 - border; col++, i++)
+    for(int col = border; col < w1 - border; col++)
+    {
+      const size_t i = (size_t)row*w1 + col; 
       o[i] = _test_erode(img, i, w1, radius) ? 1 : 0;
+    }
   }
 }
 
@@ -378,7 +393,6 @@ static gboolean _floodfill_segmentize(int yin,
 
   const int border = seg->border;
   uint32_t *d = seg->data;
-
   int xp = 0;
   int yp = 0;
   size_t rp = 0;
@@ -386,17 +400,9 @@ static gboolean _floodfill_segmentize(int yin,
   int max_x = xin;
   int min_y = yin;
   int max_y = yin;
-
   int cnt = 0;
   stack->pos = 0;
-
-  seg->size[id] = 0;
-  seg->val1[id] = 0.0f;
-  seg->val2[id] = 0.0f;
-  seg->xmin[id] = min_x;
-  seg->xmax[id] = max_x;
-  seg->ymin[id] = min_y;
-  seg->ymax[id] = max_y;
+  _clear_segment_slot(seg, id);
 
   _push_stack(xin, yin, stack);
   while(stack->pos)
@@ -419,7 +425,7 @@ static gboolean _floodfill_segmentize(int yin,
         xp = x;
         yp = yUp;
         rp = yp*w + xp;
-        if(xp > border+2 && d[rp] == 0)
+        if(xp > border+1 && d[rp] == 0)
         {
           min_x = MIN(min_x, xp);
           max_x = MAX(max_x, xp);
@@ -438,7 +444,7 @@ static gboolean _floodfill_segmentize(int yin,
         xp = x;
         yp = yDown;
         rp = yp*w + xp;
-        if(yp < h-border-3 && d[rp] == 0)
+        if(yp < h-border-2 && d[rp] == 0)
         {
           min_x = MIN(min_x, xp);
           max_x = MAX(max_x, xp);
@@ -462,7 +468,7 @@ static gboolean _floodfill_segmentize(int yin,
           xp = xr;
           yp = yUp;
           rp = yp*w + xp;
-          if(yp > border+2 && d[rp] == 0)
+          if(yp > border+1 && d[rp] == 0)
           {
             min_x = MIN(min_x, xp);
             max_x = MAX(max_x, xp);
@@ -482,7 +488,7 @@ static gboolean _floodfill_segmentize(int yin,
           xp = xr;
           yp = yDown;
           rp = yp*w + xp;
-          if(yp < h-border-3 && d[rp] == 0)
+          if(yp < h-border-2 && d[rp] == 0)
           {
             min_x = MIN(min_x, xp);
             max_x = MAX(max_x, xp);
@@ -498,7 +504,7 @@ static gboolean _floodfill_segmentize(int yin,
       xp = xr;
       yp = y;
       rp = yp*w + xp;
-      if(xp < w-border-3 && d[rp] == 0) 
+      if(xp < w-border-2 && d[rp] == 0) 
       {
         min_x = MIN(min_x, xp);
         max_x = MAX(max_x, xp);
@@ -523,7 +529,7 @@ static gboolean _floodfill_segmentize(int yin,
           xp = xl;
           yp = yUp;
           rp = yp*w + xp;
-          if(yp > border+2 && d[rp] == 0)
+          if(yp > border+1 && d[rp] == 0)
           {
             min_x = MIN(min_x, xp);
             max_x = MAX(max_x, xp);
@@ -543,7 +549,7 @@ static gboolean _floodfill_segmentize(int yin,
           xp = xl;
           yp = yDown;
           rp = yp*w + xp;
-          if(yp < h-border-3 && d[rp] == 0)
+          if(yp < h-border-2 && d[rp] == 0)
           {
             min_x = MIN(min_x, xp);
             max_x = MAX(max_x, xp);
@@ -561,7 +567,7 @@ static gboolean _floodfill_segmentize(int yin,
       xp = xl;
       yp = y;
       rp = yp*w + xp;
-      if(xp > border+2 && d[rp] == 0)
+      if(xp > border+1 && d[rp] == 0)
       {
         min_x = MIN(min_x, xp);
         max_x = MAX(max_x, xp);
@@ -574,18 +580,12 @@ static gboolean _floodfill_segmentize(int yin,
   }
 
   // safety
-  seg->size[id] = cnt;
-  seg->xmin[id] = min_x;
-  seg->xmax[id] = max_x;
-  seg->ymin[id] = min_y;
-  seg->ymax[id] = max_y;
-  if(cnt < 4)
+  if(cnt < 4) // To avoid oversegmentizing we only use segments with a minimum size of 4
   {
-    // To avoid oversegmentizing we only use segments with a minimum size
-    // In any case we want to revert border markings too
-    for(int row = min_y-1; row <= max_y+1; row++)
+    // data in too In any case we want to revert border markings too
+    for(int row = min_y; row <= max_y; row++)
     {
-      for(int col = min_x-1; col <= max_x+1; col++)
+      for(int col = min_x; col <= max_x; col++)
       {
         size_t loc = (size_t)w*row + col;
         if(d[loc] == id)
@@ -594,11 +594,20 @@ static gboolean _floodfill_segmentize(int yin,
           d[loc] = 0;
       }
     }
-    return FALSE;
+  }
+  else
+  {
+    seg->size[id] = cnt;
+    seg->xmin[id] = min_x;
+    seg->xmax[id] = max_x;
+    seg->ymin[id] = min_y;
+    seg->ymax[id] = max_y;
+
+    seg->nr += 1;
+    _clear_segment_slot(seg, id+1);
   }
 
-  seg->nr += 1;
-  return TRUE;
+  return (cnt > 3);
 }
 
 // User interface
@@ -719,7 +728,7 @@ gboolean dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
   const int slots = MAX(256, MIN(islots, DT_SEG_ID_MASK - 2));
   const size_t bsize = (size_t) width * height * sizeof(uint32_t);
 
-  seg->data =   dt_alloc_align(64, bsize);
+  seg->data =   dt_calloc_align(64, bsize);
   seg->tmp =    dt_alloc_align(64, bsize);
   seg->size =   dt_alloc_align(64, slots * sizeof(int));
   seg->xmin =   dt_alloc_align(64, slots * sizeof(int));
@@ -737,13 +746,15 @@ gboolean dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
     return TRUE;
   }
 
-  // allocation is fine so we now set starters
+  // allocation is fine so we now define struct data and initialize first two ununsed lines for safety
   seg->nr = 2;
   seg->border = border;
   seg->slots = slots;
   seg->width = width;
   seg->height = height;
-  seg->val1[0] = seg->val2[0] = seg->val1[1] = seg->val2[1] = 0.0f;
+  _clear_segment_slot(seg, 0);
+  _clear_segment_slot(seg, 1);
+
   return FALSE;
 }
 
