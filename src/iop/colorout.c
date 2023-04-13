@@ -495,6 +495,8 @@ static int _transform_cmatrix(const dt_iop_colorout_data_t *const d,
   return is_linear != 0; // not done if nonlinear, need to apply tonecurve
 }
 
+/*
+Code introduced in commit https://github.com/darktable-org/darktable/commit/22239a23377618822e7c466d44386cd293451a2a
 static void _transform_lcms(const dt_iop_colorout_data_t *const d,
                             float *restrict out,
                             const float *restrict in,
@@ -530,6 +532,41 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
   }
   dt_omploop_sfence();
 }
+*/
+
+static void _transform_lcms(const dt_iop_colorout_data_t *const d,
+                            float *restrict out,
+                            const float *restrict in,
+                            const int width,
+                            const int height)
+{
+  const gboolean gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(d, in, out, width, height, gamutcheck) \
+  schedule(static)
+#endif
+  for(int row = 0; row < height; row++)
+  {
+    const size_t l = (size_t)4 * row * width;
+
+    cmsDoTransform(d->xform, in+l, out+l, width);
+
+    if(gamutcheck)
+    {
+      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+      for(int j = 0; j < width; j++)
+      {
+        if(out[l + 4*j + 0] < 0.0f || out[l + 4*j + 1] < 0.0f || out[l + 4*j + 2] < 0.0f)
+        {
+          copy_pixel_nontemporal(out + l + 4*j, cyan);
+        }
+      }
+    }
+  }
+  dt_omploop_sfence();
+}
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -554,7 +591,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    _transform_lcms(d, out, (float*)ivoid, npixels);
+    _transform_lcms(d, out, (float*)ivoid, width, height);
   }
 }
 
