@@ -71,7 +71,7 @@ DT_MODULE_INTROSPECTION(7, dt_iop_lens_params_t)
 typedef enum dt_iop_lens_method_t
 {
   DT_IOP_LENS_METHOD_EMBEDDED_METADATA = 0, // $DESCRIPTION: "embedded metadata"
-  DT_IOP_LENS_METHOD_LENSFUN = 1 // $DESCRIPTION: "lensfun database"
+  DT_IOP_LENS_METHOD_LENSFUN = 1 // $DESCRIPTION: "Lensfun database"
 } dt_iop_lens_method_t;
 
 typedef enum dt_iop_lens_modify_flag_t
@@ -2432,7 +2432,7 @@ void init_global(dt_iop_module_so_t *module)
       userdbts > sysdbts ? dt_iop_lensfun_db->UserUpdatesLocation : sysdbpath;
     if(dt_iop_lensfun_db->Load(dbpath) != LF_NO_ERROR)
       dt_print(DT_DEBUG_ALWAYS,
-               "[iop_lens]: could not load lensfun database in `%s'!\n", dbpath);
+               "[iop_lens]: could not load Lensfun database in `%s'!\n", dbpath);
     else
       dt_iop_lensfun_db->Load(dt_iop_lensfun_db->UserLocation);
 #else
@@ -2443,13 +2443,13 @@ void init_global(dt_iop_module_so_t *module)
     if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[iop_lens]: could not load lensfun database in `%s'!\n", sysdbpath);
+               "[iop_lens]: could not load Lensfun database in `%s'!\n", sysdbpath);
 #endif
       g_free(dt_iop_lensfun_db->HomeDataDir);
       dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", (char *)NULL);
       if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[iop_lens]: could not load lensfun database in `%s'!\n",
+                 "[iop_lens]: could not load Lensfun database in `%s'!\n",
                  dt_iop_lensfun_db->HomeDataDir);
 #ifdef LF_MAX_DATABASE_VERSION
     }
@@ -3298,7 +3298,7 @@ static void _display_errors(struct dt_iop_module_t *self)
     dt_iop_set_module_trouble_message
       (self, _("camera/lens not found"),
        _("please select your lens manually\n"
-         "you might also want to check if your lensfun database is up-to-date\n"
+         "you might also want to check if your Lensfun database is up-to-date\n"
          "by running lensfun-update-data"),
        "camera/lens not found");
   }
