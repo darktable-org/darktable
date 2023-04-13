@@ -96,6 +96,10 @@
   #endif
 #endif
 
+#ifdef HAVE_LIBHEIF
+#include <libheif/heif.h>
+#endif
+
 #include "dbus.h"
 
 #if defined(__SUNOS__)
@@ -1330,6 +1334,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   MagickWandGenesis();
 #endif
 
+#ifdef HAVE_LIBHEIF
+  heif_init(NULL);
+#endif
+
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 #ifdef HAVE_OPENCL
@@ -1665,6 +1673,10 @@ void dt_cleanup()
   DestroyMagick();
 #elif defined HAVE_IMAGEMAGICK
   MagickWandTerminus();
+#endif
+
+#ifdef HAVE_LIBHEIF
+  heif_deinit();
 #endif
 
   dt_guides_cleanup(darktable.guides);
