@@ -989,11 +989,14 @@ static int _circle_get_points_border(dt_develop_t *dev,
                                      const dt_iop_module_t *module)
 {
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
-  float x = 0.0f, y = 0.0f;
-  x = circle->center[0], y = circle->center[1];
+
+  const float x = circle->center[0];
+  const float y = circle->center[1];
+
   if(source)
   {
-    float xs = form->source[0], ys = form->source[1];
+    const float xs = form->source[0];
+    const float ys = form->source[1];
     return _circle_get_points_source(dev, x, y, xs, ys,
                                      circle->radius, circle->radius, 0,
                                      points, points_count,
@@ -1007,7 +1010,7 @@ static int _circle_get_points_border(dt_develop_t *dev,
     {
       if(border)
       {
-        float outer_radius = circle->radius + circle->border;
+        const float outer_radius = circle->radius + circle->border;
         return form->functions->get_points(dev, x, y,
                                            outer_radius, outer_radius, 0,
                                            border, border_count);
@@ -1029,7 +1032,8 @@ static int _circle_get_source_area(dt_iop_module_t *module,
 {
   // we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
-  float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
+  const float wd = piece->pipe->iwidth;
+  const float ht = piece->pipe->iheight;
 
   // compute the points we need to transform (center and circumference of circle)
   const float outer_radius = circle->radius + circle->border;
