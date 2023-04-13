@@ -584,7 +584,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   d->size = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("paper size"),
                                          _("paper size of the PDF\neither one from the list or "
-                                           "\"<width> [unit] x <height> <unit>\n"
+                                           "\"<width> [unit] x <height> <unit>\"\n"
                                            "example: 210 mm x 2.97 cm"),
                                          0, size_toggle_callback, self, NULL);
   dt_bauhaus_combobox_set_editable(d->size, 1);

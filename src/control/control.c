@@ -164,7 +164,7 @@ void dt_control_init(dt_control_t *s)
 
   s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
     "lua",
-    C_("accel", "lua scripts"),
+    C_("accel", "Lua scripts"),
     .target = NULL,
     .owner = NULL,
     .next = &s->actions_fallbacks };
