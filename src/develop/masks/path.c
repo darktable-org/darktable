@@ -1055,8 +1055,7 @@ static void _path_get_distance(const float x,
   // and we check if it's inside form
   if(gpt->points_count > 2 + _nb_ctrl_point(corner_count))
   {
-    const float as2 = as * as;
-    //float as2 = 1600.0 * as1;
+    const float as2 = sqf(as);
     float last = gpt->points[gpt->points_count * 2 - 1];
     int nb = 0;
     int near_form = 0;

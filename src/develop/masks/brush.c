@@ -1159,7 +1159,7 @@ static void _brush_get_distance(const float x,
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
-  const float as2 = as * as;
+  const float as2 = sqf(as);
 
   // we first check if we are inside the source form
 

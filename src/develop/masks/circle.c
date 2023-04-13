@@ -628,7 +628,7 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
       dt_masks_form_gui_points_t *gpt =
         (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
-      const float as2 = as * as;
+      const float as2 = sqf(as);
       const float dist_b = sqf(x - gpt->border[2]) + sqf(y - gpt->border[3]);
       const float dist_p = sqf(x - gpt->points[2]) + sqf(y - gpt->points[3]);
 
