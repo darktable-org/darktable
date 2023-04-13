@@ -512,6 +512,10 @@ The following is a summary of the main features added to darktable
   algorithm. This may lead to a small difference on the border of the
   image and will avoids some possible redish borders.
 
+- Fix issue in highlights reconstruction segmentation algorithm where
+  the mask display could be broken due to accessing some non
+  initialized data.
+
 - Avoid XMP writing if not requested and image was not altered. This
   is rule is properly followed now also when importing RAW + JPEG.
 
