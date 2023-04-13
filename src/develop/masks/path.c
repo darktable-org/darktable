@@ -1046,9 +1046,19 @@ static void _path_get_distance(const float x,
   }
 
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x, y, gpt->border,
-                                   _nb_ctrl_point(corner_count), gpt->border_count))
-    return;
+  if(!dt_masks_point_in_form_near(x, y, gpt->border,
+                                  _nb_ctrl_point(corner_count), gpt->border_count,
+                                  as, near))
+  {
+    if(*near != -1)
+    {
+      *inside_border = TRUE;
+    }
+    else
+      return;
+  }
+  else
+    *inside_border = TRUE;
 
   *inside = TRUE;
 
@@ -1058,7 +1068,6 @@ static void _path_get_distance(const float x,
     const float as2 = sqf(as);
     float last = gpt->points[gpt->points_count * 2 - 1];
     int nb = 0;
-    int near_form = 0;
     int current_seg = 1;
 
     float x_min = FLT_MAX, y_min = FLT_MAX;
@@ -1095,7 +1104,6 @@ static void _path_get_distance(const float x,
 
       if(dd < as2)
       {
-        near_form = 1;
         if(current_seg == 0)
           *near = corner_count - 1;
         else
@@ -1108,7 +1116,6 @@ static void _path_get_distance(const float x,
 
       last = yy;
     }
-    *inside_border = !((nb & 1) || (near_form));
 
     const float cx = x - (x_min + (x_max - x_min) / 2.0f);
     const float cy = y - (y_min + (y_max - y_min) / 2.0f);
@@ -2190,6 +2197,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   float dist = 0;
   _path_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;
+
+  // no segment selected, set form or source selection
   if(near < 0)
   {
     if(ins)

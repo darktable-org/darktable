@@ -106,59 +106,6 @@ static int _ellipse_point_in_polygon(const float x,
   return t;
 }
 
-// check if point is close to path - segment by segment
-static int _ellipse_point_close_to_path(const float x,
-                                        const float y,
-                                        const float as,
-                                        float *points,
-                                        const int points_count)
-{
-  const float as2 = sqf(as);
-
-  const float lastx = points[2 * (points_count - 1)];
-  const float lasty = points[2 * (points_count - 1) + 1];
-
-  for(int i = 0; i < points_count; i++)
-  {
-    const float px = points[2 * i];
-    const float py = points[2 * i + 1];
-
-    const float r1 = x - lastx;
-    const float r2 = y - lasty;
-    const float r3 = px - lastx;
-    const float r4 = py - lasty;
-
-    const float d = r1 * r3 + r2 * r4;
-    const float l = sqf(r3) + sqf(r4);
-    const float p = d / l;
-
-    float xx = 0.0f, yy = 0.0f;
-
-    if(p < 0 || (px == lastx && py == lasty))
-    {
-      xx = lastx;
-      yy = lasty;
-    }
-    else if(p > 1)
-    {
-      xx = px;
-      yy = py;
-    }
-    else
-    {
-      xx = lastx + p * r3;
-      yy = lasty + p * r4;
-    }
-
-    const float dx = x - xx;
-    const float dy = y - yy;
-
-    if(sqf(dx) + sqf(dy) < as2)
-      return 1;
-  }
-  return 0;
-}
-
 static void _ellipse_get_distance(const float x,
                                   const float y,
                                   const float as,
@@ -214,25 +161,23 @@ static void _ellipse_get_distance(const float x,
     *dist = fminf(*dist, bd);
   }
 
-  *inside_source = 0;
+  *inside_source = FALSE;
+
+  *near = -1;
 
   // we check if it's inside borders
-  if(_ellipse_point_in_polygon(x, y, gpt->border + 10, gpt->border_count - 5) < 0)
+  if(!dt_masks_point_in_form_near(x, y, gpt->border, _nb_ctrl_point(),
+                                  gpt->border_count, as, near))
   {
-    *inside = FALSE;
-    *inside_border = FALSE;
-    *near = -1;
-    return;
+    if(*near != -1)
+      *inside_border = TRUE;
+    else
+      return;
   }
+  else
+    *inside_border= TRUE;
 
   *inside = TRUE;
-  *near = 0;
-  *inside_border = TRUE;
-
-  if(_ellipse_point_in_polygon(x, y, gpt->points + 10, gpt->points_count - 5) >= 0)
-    *inside_border = FALSE;
-  if(_ellipse_point_close_to_path(x, y, as, gpt->points + 10, gpt->points_count - 5))
-    *near = 1;
 }
 
 static void _ellipse_draw_shape(const gboolean borders,

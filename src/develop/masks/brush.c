@@ -1209,18 +1209,31 @@ static void _brush_get_distance(const float x,
   // we check if it's inside borders
   if(gpt->border_count > 2 + _nb_ctrl_point(corner_count))
   {
+    *near = -1;
+
     float last = gpt->border[gpt->border_count * 2 - 1];
     int nb = 0;
     for(int i = _nb_ctrl_point(corner_count); i < gpt->border_count; i++)
     {
-      const float yy = gpt->border[i * 2 + 1];
-      if(((y<=yy && y>last) || (y>=yy && y<last))
-         && (gpt->border[i * 2] > x))
+      const float x1 = gpt->border[i * 2];
+      const float y1 = gpt->border[i * 2 + 1];
+      const float dd = sqf(x1 - x) + sqf(y1 - y);
+
+      if(dd < as2)
+        *near = i * 2;
+
+      if(((y<=y1 && y>last) || (y>=y1 && y<last))
+         && (x1 > x))
         nb++;
-      last = yy;
+      last = y1;
     }
-    *inside = *inside_border = (nb & 1) == 1;
+
+    // near or inside the border
+    if(*near != -1 || (nb & 1))
+      *inside = *inside_border = TRUE;
   }
+
+  *near = -1;
 
   // and we check if we are near a segment
   if(gpt->points_count > 2 + _nb_ctrl_point(corner_count))
@@ -2445,6 +2458,8 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
   int near;
   _brush_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;
+
+  // no segment selected, set form or source selection
   if(near < 0)
   {
     if(ins)
@@ -2462,6 +2477,7 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
       gui->form_selected = TRUE;
     }
   }
+
   dt_control_queue_redraw_center();
   if(!gui->form_selected && !gui->border_selected && gui->seg_selected < 0) return 0;
   if(gui->edit_mode != DT_MASKS_EDIT_FULL) return 0;
