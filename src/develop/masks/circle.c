@@ -95,14 +95,17 @@ static void _circle_get_distance(const float x,
   *dist = fminf(*dist, bd);
 
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x, y, gpt->border, 1, gpt->border_count)) return;
+  if(!dt_masks_point_in_form_near(x, y, gpt->border, 1, gpt->border_count, as, near))
+  {
+    if(*near != -1)
+      *inside_border = TRUE;
+    else
+      return;
+  }
+  else
+    *inside_border= TRUE;
 
   *inside = TRUE;
-  *near = 0;
-
-  // and we check if it's inside form
-  *inside_border = !(dt_masks_point_in_form_near(x, y, gpt->points, 1,
-                                                 gpt->points_count, as, near));
 }
 
 static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
