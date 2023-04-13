@@ -637,6 +637,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float as = dt_masks_sensitive_dist(zoom_scale);
+    const float as2 = sqf(as);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     gboolean in, inb, ins;
@@ -647,18 +648,11 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
     const dt_masks_form_gui_points_t *gpt =
       (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
-    if(gpt
-       && (x - gpt->points[2]) * (x - gpt->points[2])
-       + (y - gpt->points[3]) * (y - gpt->points[3]) < as)
-    {
-      gui->pivot_selected = TRUE;
-      gui->form_selected = TRUE;
-      gui->border_selected = FALSE;
-    }
-    else if(gpt
-            && (x - gpt->points[4]) * (x - gpt->points[4])
-            + (y - gpt->points[5]) * (y - gpt->points[5])
-               < as)
+    // compute distance from pivot end/start
+    const float dist_ps = gpt ? sqf(x - gpt->points[2]) + sqf(y - gpt->points[3]) : FLT_MAX;
+    const float dist_pe = gpt ? sqf(x - gpt->points[4]) + sqf(y - gpt->points[5]) : FLT_MAX;
+
+    if(dist_ps < as2 || dist_pe < as2)
     {
       gui->pivot_selected = TRUE;
       gui->form_selected = TRUE;
