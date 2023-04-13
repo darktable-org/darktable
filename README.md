@@ -58,7 +58,7 @@ Requirements
 * Linux (64-bit)
 * FreeBSD (64-bit)
 * Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
-* macOS
+* macOS 11.3 and later
 
 *Big-endian platforms are not supported.*
 
@@ -101,14 +101,14 @@ you can build the software yourself following the instructions [below](#building
 *When using a pre-built package, ensure that it has been built with Lua, OpenCL, OpenMP and Colord support.
 These are optional and will not prevent darktable from running if missing,
 but their absence will degrade the user experience.
-Notably, some Flatpak, Snap and Appimage packages lack OpenCL and Lua support.*
+Notably, some Flatpak, Snap and AppImage packages lack OpenCL and Lua support.*
 
 ### Development snapshot
 
 The development snapshot reflects the current state of the master branch. It is intended for testing and is generally not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
 
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
-* No pre-compiled packages are provided for the master branch on macOS and Windows. See how to build it manually below.
+* [Binary packages are provided for macOS and Windows on a nightly basis](https://github.com/darktable-org/darktable/actions/workflows/nightly.yml) (x86_64 only).
 
 Updating from older versions
 ----------------------------
@@ -151,10 +151,11 @@ Building
 
 ### Dependencies
 
-Compatible compilers:
-* Clang: 8 and later
-* GCC: 8 and later
-* MinGW-w64: 6 and later
+Compatible compilers/toolchains:
+* Clang: 12 and later
+* GCC: 12 and later
+* MinGW-w64: 10 and later
+* XCode: 13.2 and later
 
 Required dependencies (minimum version):
 * CMake 3.18
@@ -192,7 +193,7 @@ Optional dependencies (no version requirement):
 To install all the dependencies on Linux systems, you may use the source repositories of your distribution
 (provided they are up-to-date):
 
-#### Fedora and RHEL
+#### Fedora and RHEL/CentOS
 
 ```bash
 sudo dnf builddep darktable
@@ -325,19 +326,23 @@ Now, your custom-built darktable is ready to be used just like any pre-packaged 
 
 Alternatively, you can use a manual build to pass custom arguments.
 
-##### Linux/macOS
+##### Linux
 
 ```bash
-mkdir build/
-cd build/
+mkdir build
+cd build
 cmake -DCMAKE_INSTALL_PREFIX=/opt/darktable/ ..
-make
-sudo make install
+cmake --build .
+sudo cmake --install .
 ```
+
+##### macOS
+
+See [Homebrew](https://github.com/darktable-org/darktable/blob/master/packaging/macosx/BUILD_hb.txt) or [MacPorts](https://github.com/darktable-org/darktable/blob/master/packaging/macosx/BUILD.txt) instructions.
 
 ##### Windows
 
-See https://github.com/darktable-org/darktable/tree/master/packaging/windows
+See [these instructions](https://github.com/darktable-org/darktable/tree/master/packaging/windows).
 
 ### Using
 
@@ -377,7 +382,7 @@ There are many ways you can contribute to the darktable project:
 * Write a blog about darktable
 * Create a tutorial for darktable
 * Help expand the [user wiki](https://github.com/darktable-org/darktable/wiki) or [user manual](https://github.com/darktable-org/dtdocs)
-* Answer questions on the [user mailing list](https://www.mail-archive.com/darktable-user@lists.darktable.org/) or the [pixls.us forums](https://discuss.pixls.us)
+* Answer questions on the [user mailing list](https://www.mail-archive.com/darktable-user@lists.darktable.org/) or the [pixls.us forum](https://discuss.pixls.us/c/software/darktable/19)
 * Share your ideas on the [developer mailing list](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)
 * Test [releases](https://www.darktable.org/install/)
 * Review [pull requests](https://github.com/darktable-org/darktable/pulls)
