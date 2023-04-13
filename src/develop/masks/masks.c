@@ -2311,10 +2311,11 @@ int dt_masks_point_in_form_near(const float x,
                                 int *near)
 {
   // we use ray casting algorithm to avoid most problems with
-  // horizontal segments, y should be rounded as int so that there's
-  // very little chance than y==points...
+  // horizontal segments.
 
-  // TODO : distance is only evaluated in x, not y...
+  const float distance2 = sqf(distance);
+
+  *near = -1;
 
   if(points_count > 2 + points_start)
   {
@@ -2326,8 +2327,14 @@ int dt_masks_point_in_form_near(const float x,
     int nb = 0;
     for(int i = start, next = start + 1; i < points_count;)
     {
+      const float x1 = points[i * 2];
       const float y1 = points[i * 2 + 1];
       const float y2 = points[next * 2 + 1];
+      const float dd = sqf(x1 - x) + sqf(y1 - y);
+
+      if(dd < distance2)
+        *near = i * 2;
+
       //if we need to jump to skip points (in case of deleted point,
       //because of self-intersection)
       if(isnan(points[next * 2]))
@@ -2338,11 +2345,8 @@ int dt_masks_point_in_form_near(const float x,
       if((y <= y2 && y > y1)
          || (y >= y2 && y < y1))
       {
-        if(points[i * 2] > x)
+        if(x1 > x)
           nb++;
-        if(points[i * 2] - x < distance
-           && points[i * 2] - x > -distance)
-          *near = i * 2;
       }
 
       if(next == start) break;
