@@ -828,7 +828,7 @@ void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar *prese
   gchar *lua_command = _shortcut_lua_command(widget, shortcut, preset_name);
   if(!lua_command) return;
   gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), lua_command, -1);
-  dt_control_log(_("lua script command copied to clipboard:\n\n<tt>%s</tt>"), lua_command);
+  dt_control_log(_("Lua script command copied to clipboard:\n\n<tt>%s</tt>"), lua_command);
   g_free(lua_command);
 }
 
@@ -1030,7 +1030,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     if(lua_command)
     {
       gchar *lua_escaped = g_markup_printf_escaped("\n\nLua: <tt>%s</tt>%s %s", lua_command,
-                                    show_element == 1 ? _("ctrl+v") : _("right long click") , _("to copy lua command"));
+                                    show_element == 1 ? _("ctrl+v") : _("right long click") , _("to copy Lua command"));
       markup_text = dt_util_dstrcat(markup_text, "%s", lua_escaped);
       g_free(lua_escaped);
       g_free(lua_command);
