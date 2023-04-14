@@ -555,8 +555,8 @@ The following is a summary of the main features added to darktable
 
 - Set imported EXR image size to the extent of valid data window only.
 
-- Properly translate the collection names in the recent collection
-  history pop-up.
+- Properly translate collection sort names in the recent collection
+  sort history pop-up.
 
 ## Lua
 
