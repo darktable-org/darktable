@@ -2683,8 +2683,8 @@ void dt_masks_draw_anchor(cairo_t *cr,
   cairo_set_dash(cr, NULL, 0, 0);
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_rectangle(cr,
-                  x - (anchor_size * 0.5),
-                  y - (anchor_size * 0.5),
+                  x - (anchor_size * 0.5f),
+                  y - (anchor_size * 0.5f),
                   anchor_size,
                   anchor_size);
   cairo_fill_preserve(cr);
@@ -2769,10 +2769,7 @@ void dt_masks_stroke_arrow(cairo_t *cr,
                            const int group,
                            const float zoom_scale)
 {
-  double dashed[] = { 4.0, 4.0 };
-  dashed[0] /= zoom_scale;
-  dashed[1] /= zoom_scale;
-
+  double dashed[] = { 0, 0 };
   cairo_set_dash(cr, dashed, 0, 0);
 
   if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
@@ -2827,29 +2824,33 @@ void dt_masks_line_stroke(cairo_t *cr,
 {
   const double size_border     = DT_PIXEL_APPLY_DPI(1.0);
   const double size_source     = DT_PIXEL_APPLY_DPI(1.5);
-  const double size_mask       = DT_PIXEL_APPLY_DPI(2.5);
-  const double factor_selected = DT_PIXEL_APPLY_DPI(1.9);
+  const double size_mask       = DT_PIXEL_APPLY_DPI(1.7);
+  const double factor_selected = DT_PIXEL_APPLY_DPI(1.5);
 
-  double dashed[] = { 4.0, 4.0 };
+  double dashed[] = { DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(4.0) };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
 
-  dt_draw_set_color_overlay(cr, FALSE, selected ? 1.0 : 0.6);
+  // first the background draw, darker
+  dt_draw_set_color_overlay(cr, FALSE, selected ? 0.8 : 0.5);
   cairo_set_dash(cr, dashed, border ? len : 0, 0);
 
   const double line_width =
-    (border ? size_border : (source ? size_source : size_mask))
-    * (selected ? factor_selected : 1.0);
+    ((border ? size_border : (source ? size_source : size_mask))
+     * (selected ? factor_selected : 1.0)) / zoom_scale;
 
-  cairo_set_line_width(cr, line_width / zoom_scale);
+  cairo_set_line_width(cr, line_width);
 
   cairo_stroke_preserve(cr);
 
-  cairo_set_line_width(cr, (line_width / 2.0) / zoom_scale);
+  // second the forground draw, lighter (same size as darker if selected)
+  cairo_set_line_width
+    (cr, (line_width / (selected && !border ? 1.0 : 2.0)));
 
-  dt_draw_set_color_overlay(cr, TRUE, selected ? 1.0 : 0.6);
+  dt_draw_set_color_overlay(cr, TRUE, selected ? 0.9 : 0.6);
   cairo_set_dash(cr, dashed, border ? len : 0, 4);
+
   cairo_stroke(cr);
 }
 
