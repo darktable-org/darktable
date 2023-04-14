@@ -111,7 +111,7 @@ static inline int _test_dilate(const uint32_t *img, const size_t i, const size_t
 
   const size_t w2 = 2*w1;
   retval = img[i-w2-1] | img[i-w2]   | img[i-w2+1] |
-           img[i-w1-2] | img[i-w1+2] | 
+           img[i-w1-2] | img[i-w1+2] |
            img[i-2]    | img[i+2] |
            img[i+w1-2] | img[i+w1+2] |
            img[i+w2-1] | img[i+w2]   | img[i+w2+1];
@@ -120,9 +120,9 @@ static inline int _test_dilate(const uint32_t *img, const size_t i, const size_t
   const size_t w3 = 3*w1;
   retval = img[i-w3-2] | img[i-w3-1] | img[i-w3] | img[i-w3+1] | img[i-w3+2] |
            img[i-w2-3] | img[i-w2-2] | img[i-w2+2] | img[i-w2+3] |
-           img[i-w1-3] | img[i-w1+3] | 
-           img[i-3]    | img[i+3]    | 
-           img[i+w1-3] | img[i+w1+3] | 
+           img[i-w1-3] | img[i-w1+3] |
+           img[i-3]    | img[i+3]    |
+           img[i+w1-3] | img[i+w1+3] |
            img[i+w2-3] | img[i+w2-2] | img[i+w2+2] | img[i+w2+3] |
            img[i+w3-2] | img[i+w3-1] | img[i+w3] | img[i+w3+1] | img[i+w3+2]; 
   if(retval || (radius < 4)) return retval;
@@ -130,26 +130,26 @@ static inline int _test_dilate(const uint32_t *img, const size_t i, const size_t
   const size_t w4 = 4*w1;
   retval = img[i-w4-2] | img[i-w4-1] | img[i-w4] | img[i-w4+1] | img[i-w4+2] |
            img[i-w3-3] | img[i-w3+3] |
-           img[i-w2-4] | img[i-w2+4] | 
-           img[i-w1-4] | img[i-w1+4] | 
-           img[i-4]    | img[i+4] | 
-           img[i+w1-4] | img[i+w1+4] | 
-           img[i+w2-4] | img[i+w2+4] | 
+           img[i-w2-4] | img[i-w2+4] |
+           img[i-w1-4] | img[i-w1+4] |
+           img[i-4]    | img[i+4] |
+           img[i+w1-4] | img[i+w1+4] |
+           img[i+w2-4] | img[i+w2+4] |
            img[i+w3-3] | img[i+w3+3] |
-           img[i+w4-2] | img[i+w4-1] | img[i+w4] | img[i+w4+1] | img[i+w4+2]; 
+           img[i+w4-2] | img[i+w4-1] | img[i+w4] | img[i+w4+1] | img[i+w4+2];
   if(retval || (radius < 5)) return retval;
 
   const size_t w5 = 5*w1;
   retval = img[i-w5-2] | img[i-w5-1] | img[i-w5] | img[i-w5+1] | img[i-w5+2] |
-           img[i-w4-4] | img[i-w4+4] |
+           img[i-w4-4] | img[i-w4-3] | img[i-w4+3] | img[i-w4+4] |
            img[i-w3-4] | img[i-w3+4] |
-           img[i-w2-5] | img[i-w2+5] | 
-           img[i-w1-5] | img[i-w1+5] | 
-           img[i-5]    | img[i+5] | 
-           img[i+w1-5] | img[i+w1+5] | 
-           img[i+w2-5] | img[i+w2+5] |  
-           img[i+w3-4] | img[i+w3+4] | 
-           img[i+w4-4] | img[i+w4+4] |
+           img[i-w2-5] | img[i-w2+5] |
+           img[i-w1-5] | img[i-w1+5] |
+           img[i-5]    | img[i+5] |
+           img[i+w1-5] | img[i+w1+5] |
+           img[i+w2-5] | img[i+w2+5] |
+           img[i+w3-4] | img[i+w3+4] |
+           img[i+w4-4] | img[i+w4-3] | img[i+w4+3] | img[i+w4+4] |
            img[i+w5-2] | img[i+w5-1] | img[i+w5] | img[i+w5+1] | img[i+w5+2]; 
   if(retval || (radius < 6)) return retval;
 
@@ -158,54 +158,53 @@ static inline int _test_dilate(const uint32_t *img, const size_t i, const size_t
            img[i-w5-4] | img[i-w5-3] | img[i-w5+3] | img[i-w5+4] |
            img[i-w4-5] | img[i-w4+5] |
            img[i-w3-5] | img[i-w3+5] |
-           img[i-w2-6] | img[i-w2+6] | 
-           img[i-w1-6] | img[i-w1+6] | 
-           img[i-6]    | img[i+6] | 
-           img[i+w1-6] | img[i+w1+6] | 
-           img[i+w2-6] | img[i+w2+6] |  
-           img[i+w3-5] | img[i+w3+5] | 
+           img[i-w2-6] | img[i-w2+6] |
+           img[i-w1-6] | img[i-w1+6] |
+           img[i-6]    | img[i+6] |
+           img[i+w1-6] | img[i+w1+6] |
+           img[i+w2-6] | img[i+w2+6] |
+           img[i+w3-5] | img[i+w3+5] |
            img[i+w4-5] | img[i+w4+5] |
            img[i+w5-4] | img[i+w5-3] | img[i+w5+3] | img[i+w5+4] |
            img[i+w6-2] | img[i+w6-1] | img[i+w6] | img[i+w6+1] | img[i+w6+2] ;
   if(retval || (radius < 7)) return retval;
 
   const size_t w7 = 7*w1;
-  retval = img[i-w7-3] | img[i-w7-2] | img[i-w7-1] | img[i-w7] | img[i-w7+1] | img[i-w7+2] | img[i-w7+3] | 
-           img[i-w6-4] | img[i-w6-3] | img[i-w6+3] | img[i-w6+4] | 
-           img[i-w5-5] | img[i-w5+5] |
+  retval = img[i-w7-3] | img[i-w7-2] | img[i-w7-1] | img[i-w7] | img[i-w7+1] | img[i-w7+2] | img[i-w7+3] |
+           img[i-w6-4] | img[i-w6-3] | img[i-w6+3] | img[i-w6+4] |
+           img[i-w5-6] | img[i-w5-5] | img[i-w5+5] | img[i-w5+6] |
            img[i-w4-6] | img[i-w4+6] |
-           img[i-w3-6] | img[i-w3+6] |
-           img[i-w2-7] | img[i-w2+7] | 
-           img[i-w1-7] | img[i-w1+7] | 
-           img[i-7]    | img[i+7] | 
-           img[i+w1-7] | img[i+w1+7] | 
-           img[i+w2-7] | img[i+w2+7] |  
-           img[i+w3-6] | img[i+w3+6] | 
+           img[i-w3-7] | img[i-w3-6] | img[i-w3+6] | img[i-w3+7] |
+           img[i-w2-7] | img[i-w2+7] |
+           img[i-w1-7] | img[i-w1+7] |
+           img[i-7]    | img[i+7] |
+           img[i+w1-7] | img[i+w1+7] |
+           img[i+w2-7] | img[i+w2+7] |
+           img[i+w3-7] | img[i+w3-6] | img[i+w3+6] | img[i+w3+7] |
            img[i+w4-6] | img[i+w4+6] |
-           img[i+w5-5] | img[i+w5+5] |
-           img[i+w6-4] | img[i+w6-3] | img[i+w6+3] | img[i+w6+4] | 
+           img[i+w5-6] | img[i+w5-5] | img[i+w5+5] | img[i+w5+6] |
+           img[i+w6-4] | img[i+w6-3] | img[i+w6+3] | img[i+w6+4] |
            img[i+w7-3] | img[i+w7-2] | img[i+w7-1] | img[i+w7] | img[i+w7+1] | img[i+w7+2] | img[i+w7+3];
   if(retval || (radius < 8)) return retval;
 
   const size_t w8 = 8*w1;
-  retval = img[i-w8-3] | img[i-w8-2] | img[i-w8-1] | img[i-w8] | img[i-w8+1] | img[i-w8+2] | img[i-w8-3] | 
-           img[i-w7-5] | img[i-w7-4] | img[i-w7+4] | img[i-w7+5] | 
-           img[i-w6-6] | img[i-w6-5] | img[i-w6+5] | img[i-w6+6] | 
-           img[i-w5-7] | img[i-w5-6] | img[i-w5+6] | img[i-w5+7] | 
-           img[i-w4-7] | img[i-w4+7] |
-           img[i-w3-8] | img[i-w3-7] | img[i-w3+7] | img[i-w3+8] | 
-           img[i-w2-8] | img[i-w2+8] | 
-           img[i-w1-8] | img[i-w1+8] | 
-           img[i-8]    | img[i+8] | 
-           img[i+w1-8] | img[i+w1+8] | 
-           img[i+w2-8] | img[i+w2+8] |  
-           img[i+w3-8] | img[i+w3-7] | img[i+w3+7] | img[i+w3+8] | 
-           img[i+w4-7] | img[i+w4+7] |
-           img[i+w5-7] | img[i+w5-6] | img[i+w5+6] | img[i+w5+7] | 
-           img[i+w6-6] | img[i+w6-5] | img[i+w6+5] | img[i+w6+6] | 
-           img[i+w7-5] | img[i+w7-4] | img[i+w7+4] | img[i+w7+5] | 
-           img[i+w8-3] | img[i+w8-2] | img[i+w8-1] | img[i+w8] | img[i+w8+1] | img[i+w8+2] | img[i+w8+3];
-
+  retval = img[i-w8-4] | img[i-w8-3] | img[i-w8-2] | img[i-w8-1] | img[i-w8] | img[i-w8+1] | img[i-w8+2] | img[i-w8+3] | img[i-w8+4] |
+           img[i-w7-6] | img[i-w7-5] | img[i-w7-4] | img[i-w7+4] | img[i-w7+5] | img[i-w7+6] |
+           img[i-w6-6] | img[i-w6-5] | img[i-w6+5] | img[i-w6+6] |
+           img[i-w5-7] | img[i-w5+6] |
+           img[i-w4-8] | img[i-w4-7] | img[i-w4+7] | img[i-w4+8] |
+           img[i-w3-8] | img[i-w3-7] | img[i-w3+7] | img[i-w3+8] |
+           img[i-w2-8] | img[i-w2+8] |
+           img[i-w1-8] | img[i-w1+8] |
+           img[i-8]    | img[i+8] |
+           img[i+w1-8] | img[i+w1+8] |
+           img[i+w2-8] | img[i+w2+8] |
+           img[i+w3-8] | img[i+w3-7] | img[i+w3+7] | img[i+w3+8] |
+           img[i+w4-8] | img[i+w4-7] | img[i+w4+7] | img[i+w4+8] |
+           img[i+w5-7] | img[i+w5+7] |
+           img[i+w6-6] | img[i+w6-5] | img[i+w6+5] | img[i+w6+6] |
+           img[i+w7-6] | img[i+w7-5] | img[i+w7-4] | img[i+w7+4] | img[i+w7+5] | img[i-w7+6] |
+           img[i+w8-4] | img[i+w8-3] | img[i+w8-2] | img[i+w8-1] | img[i+w8] | img[i+w8+1] | img[i+w8+2] | img[i+w8+3] | img[i+w8+4];
   return retval;
 }
 
@@ -241,19 +240,18 @@ static inline int _test_erode(const uint32_t *img, const size_t i, const size_t 
 
   const size_t w2 = 2*w1;
   retval = img[i-w2-1] & img[i-w2]   & img[i-w2+1] &
-           img[i-w1-2] & img[i-w1+2] & 
+           img[i-w1-2] & img[i-w1+2] &
            img[i-2]    & img[i+2] &
            img[i+w1-2] & img[i+w1+2] &
            img[i+w2-1] & img[i+w2]   & img[i+w2+1];
-
   if((retval == 0) || (radius < 3)) return retval;
 
   const size_t w3 = 3*w1;
   retval = img[i-w3-2] & img[i-w3-1] & img[i-w3] & img[i-w3+1] & img[i-w3+2] &
            img[i-w2-3] & img[i-w2-2] & img[i-w2+2] & img[i-w2+3] &
-           img[i-w1-3] & img[i-w1+3] & 
-           img[i-3]    & img[i+3]    & 
-           img[i+w1-3] & img[i+w1+3] & 
+           img[i-w1-3] & img[i-w1+3] &
+           img[i-3]    & img[i+3]    &
+           img[i+w1-3] & img[i+w1+3] &
            img[i+w2-3] & img[i+w2-2] & img[i+w2+2] & img[i+w2+3] &
            img[i+w3-2] & img[i+w3-1] & img[i+w3] & img[i+w3+1] & img[i+w3+2]; 
   if((retval == 0) || (radius < 4)) return retval;
@@ -261,9 +259,9 @@ static inline int _test_erode(const uint32_t *img, const size_t i, const size_t 
   const size_t w4 = 4*w1;
   retval = img[i-w4-2] & img[i-w4-1] & img[i-w4] & img[i-w4+1] & img[i-w4+2] &
            img[i-w3-3] & img[i-w3+3] &
-           img[i-w2-4] & img[i-w2+4] & 
-           img[i-w1-4] & img[i-w1+4] & 
-           img[i-4]    & img[i+4] & 
+           img[i-w2-4] & img[i-w2+4] &
+           img[i-w1-4] & img[i-w1+4] &
+           img[i-4]    & img[i+4] &
            img[i+w1-4] & img[i+w1+4] & 
            img[i+w2-4] & img[i+w2+4] & 
            img[i+w3-3] & img[i+w3+3] &
@@ -272,71 +270,16 @@ static inline int _test_erode(const uint32_t *img, const size_t i, const size_t 
 
   const size_t w5 = 5*w1;
   retval = img[i-w5-2] & img[i-w5-1] & img[i-w5] & img[i-w5+1] & img[i-w5+2] &
-           img[i-w4-4] & img[i-w4+4] &
+           img[i-w4-4] & img[i-w4-3] & img[i-w4+3] & img[i-w4+4] &
            img[i-w3-4] & img[i-w3+4] &
-           img[i-w2-5] & img[i-w2+5] & 
-           img[i-w1-5] & img[i-w1+5] & 
-           img[i-5]    & img[i+5] & 
-           img[i+w1-5] & img[i+w1+5] & 
-           img[i+w2-5] & img[i+w2+5] &  
-           img[i+w3-4] & img[i+w3+4] & 
-           img[i+w4-4] & img[i+w4+4] &
+           img[i-w2-5] & img[i-w2+5] &
+           img[i-w1-5] & img[i-w1+5] &
+           img[i-5]    & img[i+5] &
+           img[i+w1-5] & img[i+w1+5] &
+           img[i+w2-5] & img[i+w2+5] &
+           img[i+w3-4] & img[i+w3+4] &
+           img[i+w4-4] & img[i+w4-3] & img[i+w4+3] & img[i+w4+4] &
            img[i+w5-2] & img[i+w5-1] & img[i+w5] & img[i+w5+1] & img[i+w5+2]; 
-  if((retval == 0) || (radius < 6)) return retval;
-
-  const size_t w6 = 6*w1;
-  retval = img[i-w6-2] & img[i-w6-1] & img[i-w6] & img[i-w6+1] & img[i-w6+2] &
-           img[i-w5-4] & img[i-w5-3] & img[i-w5+3] & img[i-w5+4] &
-           img[i-w4-5] & img[i-w4+5] &
-           img[i-w3-5] & img[i-w3+5] &
-           img[i-w2-6] & img[i-w2+6] & 
-           img[i-w1-6] & img[i-w1+6] & 
-           img[i-6]    & img[i+6] & 
-           img[i+w1-6] & img[i+w1+6] & 
-           img[i+w2-6] & img[i+w2+6] &  
-           img[i+w3-5] & img[i+w3+5] & 
-           img[i+w4-5] & img[i+w4+5] &
-           img[i+w5-4] & img[i+w5-3] & img[i+w5+3] & img[i+w5+4] &
-           img[i+w6-2] & img[i+w6-1] & img[i+w6] & img[i+w6+1] & img[i+w6+2] ;
-  if((retval == 0) || (radius < 7)) return retval;
-
-  const size_t w7 = 7*w1;
-  retval = img[i-w7-3] & img[i-w7-2] & img[i-w7-1] & img[i-w7] & img[i-w7+1] & img[i-w7+2] & img[i-w7+3] & 
-           img[i-w6-4] & img[i-w6-3] & img[i-w6+3] & img[i-w6+4] & 
-           img[i-w5-5] & img[i-w5+5] &
-           img[i-w4-6] & img[i-w4+6] &
-           img[i-w3-6] & img[i-w3+6] &
-           img[i-w2-7] & img[i-w2+7] & 
-           img[i-w1-7] & img[i-w1+7] & 
-           img[i-7]    & img[i+7] & 
-           img[i+w1-7] & img[i+w1+7] & 
-           img[i+w2-7] & img[i+w2+7] &  
-           img[i+w3-6] & img[i+w3+6] & 
-           img[i+w4-6] & img[i+w4+6] &
-           img[i+w5-5] & img[i+w5+5] &
-           img[i+w6-4] & img[i+w6-3] & img[i+w6+3] & img[i+w6+4] & 
-           img[i+w7-3] & img[i+w7-2] & img[i+w7-1] & img[i+w7] & img[i+w7+1] & img[i+w7+2] & img[i+w7+3];
-  if((retval == 0) || (radius < 8)) return retval;
-
-  const size_t w8 = 8*w1;
-  retval = img[i-w8-3] & img[i-w8-2] & img[i-w8-1] & img[i-w8] & img[i-w8+1] & img[i-w8+2] & img[i-w8-3] & 
-           img[i-w7-5] & img[i-w7-4] & img[i-w7+4] & img[i-w7+5] & 
-           img[i-w6-6] & img[i-w6-5] & img[i-w6+5] & img[i-w6+6] & 
-           img[i-w5-7] & img[i-w5-6] & img[i-w5+6] & img[i-w5+7] & 
-           img[i-w4-7] & img[i-w4+7] &
-           img[i-w3-8] & img[i-w3-7] & img[i-w3+7] & img[i-w3+8] & 
-           img[i-w2-8] & img[i-w2+8] & 
-           img[i-w1-8] & img[i-w1+8] & 
-           img[i-8]    & img[i+8] & 
-           img[i+w1-8] & img[i+w1+8] & 
-           img[i+w2-8] & img[i+w2+8] &  
-           img[i+w3-8] & img[i+w3-7] & img[i+w3+7] & img[i+w3+8] & 
-           img[i+w4-7] & img[i+w4+7] &
-           img[i+w5-7] & img[i+w5-6] & img[i+w5+6] & img[i+w5+7] & 
-           img[i+w6-6] & img[i+w6-5] & img[i+w6+5] & img[i+w6+6] & 
-           img[i+w7-5] & img[i+w7-4] & img[i+w7+4] & img[i+w7+5] & 
-           img[i+w8-3] & img[i+w8-2] & img[i+w8-1] & img[i+w8] & img[i+w8+1] & img[i+w8+2] & img[i+w8+3];
-
   return retval;
 }
 
@@ -575,12 +518,11 @@ static gboolean _floodfill_segmentize(int yin,
         max_y = MAX(max_y, yp);
         d[rp] = DT_SEG_ID_MASK | id;
       }
-      cnt++;
     }
   }
 
-  // safety
-  if(cnt < 4) // To avoid oversegmentizing we only use segments with a minimum size of 4
+  const gboolean success = cnt > 3;
+  if(!success) // To avoid oversegmentizing we only use segments with a minimum size of 4
   {
     // data in too In any case we want to revert border markings too
     for(int row = min_y; row <= max_y; row++)
@@ -607,7 +549,7 @@ static gboolean _floodfill_segmentize(int yin,
     _clear_segment_slot(seg, id+1);
   }
 
-  return (cnt > 3);
+  return success;
 }
 
 // User interface
@@ -648,58 +590,23 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   dt_free_align(stack.el);
 }
 
-void dt_segments_transform_dilate(dt_iop_segmentation_t *seg, const int radius)
+void dt_segments_combine(dt_iop_segmentation_t *seg, const int radius)
 {
   uint32_t *img = seg->data;
   const int width = seg->width;
   const int height = seg->height;
   const int border = seg->border;
-  const size_t bsize = (size_t) width * height * sizeof(uint32_t);
   _intimage_borderfill(img, width, height, 0, border);
-
-  if(radius < 1)
-    return;
 
   _dilating(img, seg->tmp, width, height, border, radius);
-  memcpy(img, seg->tmp, bsize);
-  _intimage_borderfill(img, width, height, 0, border);
-}
-
-void dt_segments_transform_erode(dt_iop_segmentation_t *seg, const int radius)
-{
-  uint32_t *img = seg->data;
-  const int width = seg->width;
-  const int height = seg->height;
-  const int border = seg->border;
-  const size_t bsize = (size_t) width * height * sizeof(uint32_t);
-
-  if(radius < 1)
+  if(radius > 3)
   {
-    _intimage_borderfill(img, width, height, 0, border);
-    return;
+    _intimage_borderfill(seg->tmp, width, height, 1, border);
+    _eroding(seg->tmp, img, width, height, border, radius-3);
   }
+  else
+    memcpy(img, seg->tmp, (size_t) width * height * sizeof(uint32_t));
 
-  _intimage_borderfill(img, width, height, 1, border);
-  _eroding(img, seg->tmp, width, height, border, radius);
-  memcpy(img, seg->tmp, bsize);
-  _intimage_borderfill(img, width, height, 0, border);
-}
-
-void dt_segments_transform_closing(dt_iop_segmentation_t *seg, const int radius)
-{
-  uint32_t *img = seg->data;
-  const int width = seg->width;
-  const int height = seg->height;
-  const int border = seg->border;
-  _intimage_borderfill(img, width, height, 0, border);
-
-  if(radius < 1)
-    return;
-
-  _dilating(img, seg->tmp, width, height, border, radius);
-
-  _intimage_borderfill(seg->tmp, width, height, 1, border);
-  _eroding(seg->tmp, img, width, height, border, radius);
   _intimage_borderfill(img, width, height, 0, border);
 }
 
