@@ -1596,7 +1596,7 @@ static int _image_read_duplicates(const uint32_t id,
     img->version = version;
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
-    if(grpid != -1)
+    if(dt_is_valid_imgid(grpid))
     {
       // now it is safe to set the duplicate group-id
       dt_grouping_add_to_group(grpid, newid);

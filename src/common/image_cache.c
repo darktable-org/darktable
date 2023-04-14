@@ -248,7 +248,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
     else
       img->aspect_ratio = (float )img->height / (float )img->width;
   }
-  if(img->id <= 0) return;
+  if(!dt_is_valid_imgid(img->id)) return;
 
   sqlite3_stmt *stmt;
   // clang-format off
