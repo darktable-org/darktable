@@ -120,6 +120,10 @@ static void _ellipse_get_distance(const float x,
   (void)num_points; // unused arg, keep compiler from complaining
 
   *dist = FLT_MAX;
+  *inside = FALSE;
+  *inside_border = FALSE;
+  *inside_source = FALSE;
+  *near = -1;
 
   if(!gui) return;
 
@@ -160,8 +164,6 @@ static void _ellipse_get_distance(const float x,
     const float bd = sqf(bx) + sqf(by);
     *dist = fminf(*dist, bd);
   }
-
-  *inside_source = FALSE;
 
   *near = -1;
 
