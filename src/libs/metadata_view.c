@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -738,7 +738,13 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_exif_focal_length:
-        (void)g_snprintf(text, sizeof(text), "%.0f mm", (double)img->exif_focal_length);
+        if(img->exif_crop && (img->exif_crop != 1.0f))
+          (void)g_snprintf(text, sizeof(text), "%.0f mm (%.0f mm FF equiv, crop %.0f)",
+                           (double)img->exif_focal_length,
+                           (double)img->exif_crop * img->exif_focal_length,
+                           (double)img->exif_crop);
+        else
+          (void)g_snprintf(text, sizeof(text), "%.0f mm", (double)img->exif_focal_length);
         _metadata_update_value(md_exif_focal_length, text, self);
         break;
 
