@@ -589,6 +589,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type,
     GList *history_temp = NULL;
     int hist_end = 0;
 
+    g_list_free_full(dev->iop_order_list, free);
     if(action == DT_ACTION_UNDO)
     {
       history_temp = dt_history_duplicate(hist->before_snapshot);
@@ -634,13 +635,11 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type,
     dt_pthread_mutex_lock(&dev->history_mutex);
 
     // set history and modules to dev
-    GList *history_temp2 = dev->history;
+    g_list_free_full(dev->history, dt_dev_free_history_item);
     dev->history = history_temp;
     dev->history_end = hist_end;
-    g_list_free_full(history_temp2, dt_dev_free_history_item);
-    GList *iop_temp2 = dev->iop;
+    g_list_free(dev->iop);
     dev->iop = iop_temp;
-    g_list_free(iop_temp2);
 
     // topology has changed
     if(pipe_remove)
