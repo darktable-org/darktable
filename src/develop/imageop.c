@@ -525,11 +525,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   if(!next) return; // what happened ???
 
   if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE
-      (darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-       dt_history_duplicate(darktable.develop->history),
-       darktable.develop->history_end,
-       dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
 
   // we must pay attention if priority is 0
   const gboolean is_zero = (module->multi_priority == 0);
@@ -594,9 +590,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
 
   // we save the current state of history (with the new multi_priorities)
   if(dev->gui_attached)
-  {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-  }
 
   // rebuild the accelerators (to point to an extant module)
   dt_iop_connect_accels_multi(module->so);
