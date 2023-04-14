@@ -28,7 +28,8 @@
 #include <sqlite3.h>
 #include <inttypes.h>
 
-void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
+void dt_image_cache_allocate(void *data,
+                             dt_cache_entry_t *entry)
 {
   entry->cost = sizeof(dt_image_t);
 
@@ -40,16 +41,19 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure,"
-      "       aperture, iso, focal_length, datetime_taken, flags, crop, orientation,"
-      "       focus_distance, raw_parameters, longitude, latitude, altitude, color_matrix,"
-      "       colorspace, version, raw_black, raw_maximum, aspect_ratio, exposure_bias,"
-      "       import_timestamp, change_timestamp, export_timestamp, print_timestamp, output_width, output_height"
+      "SELECT id, group_id, film_id, width, height, filename, maker, model,"
+      "       lens, exposure, aperture, iso, focal_length, datetime_taken, flags,"
+      "       crop, orientation, focus_distance, raw_parameters,"
+      "       longitude, latitude, altitude, color_matrix, colorspace, version,"
+      "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
+      "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
+      "       output_width, output_height"
       "  FROM main.images"
       "  WHERE id = ?1",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
+
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     img->id = sqlite3_column_int(stmt, 0);
@@ -161,7 +165,8 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   }
   sqlite3_finalize(stmt);
   img->cache_entry = entry; // init backref
-  // could downgrade lock write->read on entry->lock if we were using concurrencykit..
+  // could downgrade lock write->read on entry->lock if we were using
+  // concurrencykit..
   dt_image_refresh_makermodel(img);
 }
 
@@ -198,12 +203,15 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
 void dt_image_cache_print(dt_image_cache_t *cache)
 {
   dt_print(DT_DEBUG_ALWAYS,
-           "[image cache] fill %.2f/%.2f MB (%.2f%%)\n", cache->cache.cost / (1024.0 * 1024.0),
+           "[image cache] fill %.2f/%.2f MB (%.2f%%)\n",
+           cache->cache.cost / (1024.0 * 1024.0),
            cache->cache.cost_quota / (1024.0 * 1024.0),
            (float)cache->cache.cost / (float)cache->cache.cost_quota);
 }
 
-dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const dt_imgid_t imgid, char mode)
+dt_image_t *dt_image_cache_get(dt_image_cache_t *cache,
+                               const dt_imgid_t imgid,
+                               const char mode)
 {
   if(!dt_is_valid_imgid(imgid)) return NULL;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
@@ -213,7 +221,9 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const dt_imgid_t imgid, 
   return img;
 }
 
-dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const dt_imgid_t imgid, char mode)
+dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache,
+                                   const dt_imgid_t imgid,
+                                   const char mode)
 {
   if(!dt_is_valid_imgid(imgid)) return NULL;
   dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
@@ -225,7 +235,8 @@ dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const dt_imgid_t img
 }
 
 // drops the read lock on an image struct
-void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
+void dt_image_cache_read_release(dt_image_cache_t *cache,
+                                 const dt_image_t *img)
 {
   if(!img || img->id <= 0) return;
   // just force the dt_image_t struct to make sure it has been locked before.
@@ -235,7 +246,9 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
 // drops the write privileges on an image struct.
 // this triggers a write-through to sql, and if the setting
 // is present, also to xmp sidecar files (safe setting).
-void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_image_cache_write_mode_t mode)
+void dt_image_cache_write_release(dt_image_cache_t *cache,
+                                  dt_image_t *img,
+                                  const dt_image_cache_write_mode_t mode)
 {
   union {
       struct dt_image_raw_parameters_t s;
@@ -252,19 +265,20 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
 
   sqlite3_stmt *stmt;
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images"
-                              " SET width = ?1, height = ?2, filename = ?3, maker = ?4, model = ?5,"
-                              "     lens = ?6, exposure = ?7, aperture = ?8, iso = ?9, focal_length = ?10,"
-                              "     focus_distance = ?11, film_id = ?12, datetime_taken = ?13, flags = ?14,"
-                              "     crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18,"
-                              "     longitude = ?19, latitude = ?20, altitude = ?21, color_matrix = ?22,"
-                              "     colorspace = ?23, raw_black = ?24, raw_maximum = ?25,"
-                              "     aspect_ratio = ROUND(?26,1), exposure_bias = ?27,"
-                              "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
-                              "     print_timestamp = ?31, output_width = ?32, output_height = ?33"
-                              " WHERE id = ?34",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.images"
+     " SET width = ?1, height = ?2, filename = ?3, maker = ?4, model = ?5,"
+     "     lens = ?6, exposure = ?7, aperture = ?8, iso = ?9, focal_length = ?10,"
+     "     focus_distance = ?11, film_id = ?12, datetime_taken = ?13, flags = ?14,"
+     "     crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18,"
+     "     longitude = ?19, latitude = ?20, altitude = ?21, color_matrix = ?22,"
+     "     colorspace = ?23, raw_black = ?24, raw_maximum = ?25,"
+     "     aspect_ratio = ROUND(?26,1), exposure_bias = ?27,"
+     "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
+     "     print_timestamp = ?31, output_width = ?32, output_height = ?33"
+     " WHERE id = ?34",
+     -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
@@ -289,7 +303,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->geoloc.longitude);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->geoloc.latitude);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 21, img->geoloc.elevation);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 22, &img->d65_color_matrix, sizeof(img->d65_color_matrix), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 22, &img->d65_color_matrix,
+                             sizeof(img->d65_color_matrix), SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->colorspace);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->raw_black_level);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_white_point);
@@ -308,7 +323,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 34, img->id);
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
-    dt_print(DT_DEBUG_ALWAYS, "[image_cache_write_release] sqlite3 error %d\n", rc);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
 
   // TODO: make this work in relaxed mode, too.
@@ -323,13 +339,15 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
 
 
 // remove the image from the cache
-void dt_image_cache_remove(dt_image_cache_t *cache, const dt_imgid_t imgid)
+void dt_image_cache_remove(dt_image_cache_t *cache,
+                           const dt_imgid_t imgid)
 {
   dt_cache_remove(&cache->cache, imgid);
 }
 
 /* set timestamps */
-void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
+void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache,
+                                         const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -361,7 +379,8 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
+void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
+                                           const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -373,7 +392,8 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const dt_img
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
+void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
+                                         const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -385,7 +405,8 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const dt_imgid
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid)
+void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
+                                        const dt_imgid_t imgid)
 {
   if(!dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
