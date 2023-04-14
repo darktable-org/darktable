@@ -1066,8 +1066,6 @@ static void _path_get_distance(const float x,
   if(gpt->points_count > 2 + _nb_ctrl_point(corner_count))
   {
     const float as2 = sqf(as);
-    float last = gpt->points[gpt->points_count * 2 - 1];
-    int nb = 0;
     int current_seg = 1;
 
     float x_min = FLT_MAX, y_min = FLT_MAX;
@@ -1109,12 +1107,6 @@ static void _path_get_distance(const float x,
         else
           *near = current_seg - 1;
       }
-
-      if(((y<=yy && y>last) || (y>=yy && y<last))
-         && (gpt->points[i * 2] > x))
-        nb++;
-
-      last = yy;
     }
 
     const float cx = x - (x_min + (x_max - x_min) / 2.0f);
@@ -1122,8 +1114,6 @@ static void _path_get_distance(const float x,
     const float dd = sqf(cx) + sqf(cy);
     *dist = fminf(*dist, dd);
   }
-  else
-    *inside_border = TRUE;
 }
 
 static int _path_get_points_border(dt_develop_t *dev,
