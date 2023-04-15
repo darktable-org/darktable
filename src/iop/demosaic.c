@@ -1212,8 +1212,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_dev_reload_image(self->dev, self->dev->image_storage.id);
   }
 
-  // as some modes change behaviour for previous pipeline modules we possibly do a reprocess
-  if((w == g->demosaic_method_bayer) || (w == g->demosaic_method_xtrans))
+  // as the dual modes change behaviour for previous pipeline modules we do a reprocess
+  if(isdual && (w == g->demosaic_method_bayer || w == g->demosaic_method_xtrans))
     dt_dev_reprocess_center(self->dev);
 }
 
