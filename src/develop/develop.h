@@ -470,10 +470,6 @@ struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev,
                                                 struct dt_iop_module_t *base);
 /** remove an existent module */
 void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
-/** update "show" values of the multi instance part (show_move, show_delete, ...) */
-void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module);
-/** same, but for all modules */
-void dt_dev_modules_update_multishow(dt_develop_t *dev);
 /** generates item multi-instance name */
 gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
 
