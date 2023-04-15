@@ -99,34 +99,6 @@ typedef enum dt_dev_pixelpipe_status_t
   DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
 } dt_dev_pixelpipe_status_t;
 
-typedef enum dt_dev_pixelpipe_display_mask_t
-{
-  DT_DEV_PIXELPIPE_DISPLAY_NONE = 0,
-  DT_DEV_PIXELPIPE_DISPLAY_MASK = 1 << 0,
-  DT_DEV_PIXELPIPE_DISPLAY_CHANNEL = 1 << 1,
-  DT_DEV_PIXELPIPE_DISPLAY_OUTPUT = 1 << 2,
-  DT_DEV_PIXELPIPE_DISPLAY_L = 1 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_a = 2 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_b = 3 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_R = 4 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_G = 5 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_B = 6 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_GRAY = 7 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_LCH_C = 8 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_LCH_h = 9 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz = 13 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3, // show module's output
-                                               // without processing
-                                               // by later iops
-  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
-  DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
-} dt_dev_pixelpipe_display_mask_t;
-
 typedef enum dt_clipping_preview_mode_t
 {
   DT_CLIPPING_PREVIEW_GAMUT = 0,
