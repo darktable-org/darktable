@@ -287,7 +287,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_lowlight_gui_data_t *g = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
   dt_bauhaus_slider_set(g->scale_blueness, p->blueness);
-  dt_iop_cancel_history_update(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -704,7 +703,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
       dt_iop_lowlight_get_params(p, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   }
   else if(event->y > height)
   {
@@ -742,7 +741,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
       p->transition_x[k] = d->transition_x[k];
       p->transition_y[k] = d->transition_y[k];
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     gtk_widget_queue_draw(self->widget);
   }
   else if(event->button == 1)
@@ -815,7 +814,6 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
-  self->timeout_handle = 0;
   c->mouse_radius = 1.0 / DT_IOP_LOWLIGHT_BANDS;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -841,7 +839,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }

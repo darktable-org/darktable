@@ -990,7 +990,6 @@ static void reset_mix(dt_iop_module_t *self)
 void gui_update(struct dt_iop_module_t *self)
 {
   reset_mix(self);
-  dt_iop_cancel_history_update(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1370,7 +1369,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
       get_params(p, c->channel2, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel);
   }
   else if(event->y > height)
   {
@@ -1430,7 +1429,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       p->y[c->channel2][k] = d->y[c->channel2][k];
     }
     gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel2);
   }
   else if(event->button == 1)
   {
@@ -1496,7 +1495,7 @@ static void mix_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   p->mix = dt_bauhaus_slider_get(slider);
   gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, slider);
 }
 
 enum
@@ -1592,7 +1591,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
         break;
       }
 
-      dt_iop_queue_history_update(self, FALSE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, target + ch1);
     }
     else // radius
     {
@@ -1656,7 +1655,6 @@ void gui_init(struct dt_iop_module_t *self)
     (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
-  self->timeout_handle = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
   c->in_curve = FALSE;
@@ -1699,7 +1697,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
   dt_draw_curve_destroy(c->minmax_curve);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }

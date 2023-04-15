@@ -568,7 +568,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_cancel_history_update(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -791,7 +790,7 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
       dt_iop_rawdenoise_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel);
   }
   else
   {
@@ -816,7 +815,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
       p->x[ch][k] = d->x[ch][k];
       p->y[ch][k] = d->y[ch][k];
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     gtk_widget_queue_draw(self->widget);
   }
   else if(event->button == 1)
@@ -911,7 +910,6 @@ void gui_init(dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
-  self->timeout_handle = 0;
   c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -949,7 +947,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", c->channel);
   dt_draw_curve_destroy(c->transition_curve);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }

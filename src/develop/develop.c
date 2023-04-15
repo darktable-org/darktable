@@ -372,6 +372,7 @@ restart:
 
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing");
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
+  dev->gui_previous_pipe_time = dt_get_wtime();
 
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
@@ -1059,21 +1060,36 @@ void dt_dev_add_history_item_ext(
   _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
 }
 
-void _dev_add_history_item(
+static gboolean _dev_undo_start_record_target(dt_develop_t *dev, gpointer target)
+{
+  const double this_time = dt_get_wtime();
+  if(target && target == dev->gui_previous_target
+     && this_time < MIN(dev->gui_previous_time + 15.f,
+                        dev->gui_previous_pipe_time + 5.f))
+  {
+    return FALSE;
+  }
+
+  dt_dev_undo_start_record(dev);
+
+  dev->gui_previous_target = target;
+  dev->gui_previous_time = this_time;
+  dev->gui_previous_pipe_time = G_MAXFLOAT;
+
+  return TRUE;
+}
+
+static void _dev_add_history_item(
         dt_develop_t *dev,
         dt_iop_module_t *module,
         const gboolean enable,
         const gboolean new_item,
-        const gpointer widget)
+        const gpointer target)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
-  const gboolean record_undo = !widget || widget != dev->gui_previous_widget;
-
-  if(record_undo)
-    dt_dev_undo_start_record(dev);
-
-  dev->gui_previous_widget = widget;
+  const gboolean need_end_record =
+    _dev_undo_start_record_target(dev, target);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1111,12 +1127,12 @@ void _dev_add_history_item(
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
+  if(need_end_record)
+    dt_dev_undo_end_record(dev);
+
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    if(record_undo)
-      dt_dev_undo_end_record(dev);
-
     if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* redraw */
@@ -1132,13 +1148,13 @@ void dt_dev_add_history_item(
   _dev_add_history_item(dev, module, enable, FALSE, NULL);
 }
 
-void dt_dev_add_history_item_widget(
+void dt_dev_add_history_item_target(
         dt_develop_t *dev,
         dt_iop_module_t *module,
         gboolean enable,
-        gpointer widget)
+        gpointer target)
 {
-  _dev_add_history_item(dev, module, enable, FALSE, widget);
+  _dev_add_history_item(dev, module, enable, FALSE, target);
 }
 
 void dt_dev_add_new_history_item(
@@ -1186,7 +1202,18 @@ void dt_dev_add_masks_history_item(
         dt_iop_module_t *module,
         gboolean enable)
 {
-  dt_dev_undo_start_record(dev);
+  gpointer target = NULL;
+
+  dt_masks_form_t *form = dev->form_visible;
+  dt_masks_form_gui_t *gui = dev->form_gui;
+  if(form && gui)
+  {
+    dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    if(fpt) target = GINT_TO_POINTER(fpt->formid);
+  }
+
+  const gboolean need_end_record =
+    _dev_undo_start_record_target(dev, target);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1199,11 +1226,11 @@ void dt_dev_add_masks_history_item(
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
-  if(dev->gui_attached)
-  {
-    /* signal that history has changed */
+  if(need_end_record)
     dt_dev_undo_end_record(dev);
 
+  if(dev->gui_attached)
+  {
     /* recreate mask list */
     dt_dev_masks_list_change(dev);
 
@@ -3510,7 +3537,7 @@ void dt_dev_undo_start_record(dt_develop_t *dev)
   if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
 
-  dev->gui_previous_widget = NULL;
+  dev->gui_previous_target = NULL;
 }
 
 void dt_dev_undo_end_record(dt_develop_t *dev)
