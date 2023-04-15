@@ -232,7 +232,7 @@ typedef struct dt_iop_module_t
   dt_dev_pixelpipe_display_mask_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the
    * module in focus. gui mode only. */
-  int32_t suppress_mask;
+  gboolean suppress_mask;
   /** place to store the picked color of module input. */
   dt_aligned_pixel_t picked_color, picked_color_min, picked_color_max;
   /** place to store the picked color of module output (before blending). */
