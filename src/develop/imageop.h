@@ -229,7 +229,7 @@ typedef struct dt_iop_module_t
   dt_dev_request_flags_t request_histogram;
   /** set to 1 if you want the mask to be transferred into alpha
    * channel during next eval. gui mode only. */
-  int request_mask_display;
+  dt_dev_pixelpipe_display_mask_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the
    * module in focus. gui mode only. */
   int32_t suppress_mask;

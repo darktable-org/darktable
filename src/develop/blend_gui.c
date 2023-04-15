@@ -1330,7 +1330,7 @@ static gboolean _blendop_blendif_showmask_clicked(GtkToggleButton *button,
 
   if(event->button == 1)
   {
-    const int has_mask_display =
+    const gboolean has_mask_display =
       module->request_mask_display
       & (DT_DEV_PIXELPIPE_DISPLAY_MASK
          | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
@@ -1349,7 +1349,7 @@ static gboolean _blendop_blendif_showmask_clicked(GtkToggleButton *button,
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
     else
       module->request_mask_display |=
-        (has_mask_display ? 0 : DT_DEV_PIXELPIPE_DISPLAY_MASK);
+        (has_mask_display ? DT_DEV_PIXELPIPE_DISPLAY_NONE : DT_DEV_PIXELPIPE_DISPLAY_MASK);
 
     gtk_toggle_button_set_active
       (button,
@@ -3322,7 +3322,7 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
   if(darktable.gui->reset) return;
   if(!module) return;
 
-  const int has_mask_display =
+  const gboolean has_mask_display =
     module->request_mask_display
     & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
 
