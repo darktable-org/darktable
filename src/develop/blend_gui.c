@@ -2750,7 +2750,7 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
 
     bd->masks_polarity = dt_iop_togglebutton_new
       (module, "blend`tools",
-       N_("toggle polarity of drawn mask"), NULL,
+       N_("toggle polarity of drawn mask.\nthis feature is needed when combined with parametric masks."), NULL,
        G_CALLBACK(_blendop_masks_polarity_callback),
        FALSE, 0, 0, dtgtk_cairo_paint_plusminus, hbox);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_polarity),
