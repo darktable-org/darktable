@@ -3459,47 +3459,6 @@ void dt_iop_refresh_all(dt_iop_module_t *module)
   dt_iop_refresh_preview2(module);
 }
 
-static gboolean _postponed_history_update(gpointer data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t*)data;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  self->timeout_handle = 0;
-  return FALSE; //cancel the timer
-}
-
-/** queue a delayed call of the add_history function after user
-    interaction, to capture parameter updates (but not too often). */
-void dt_iop_queue_history_update(dt_iop_module_t *module,
-                                 const gboolean extend_prior)
-{
-  if(module->timeout_handle && extend_prior)
-  {
-    // we already queued an update, but we don't want to have the
-    // update happen until the timeout expires without any activity,
-    // so cancel the queued callback
-    g_source_remove(module->timeout_handle);
-  }
-  if(!module->timeout_handle || extend_prior)
-  {
-    // adaptively set the timeout to 150% of the average time the past
-    // several pixelpipe runs took, clamped to keep updates from
-    // appearing to be too sluggish (though early iops such as
-    // rawdenoise may have multiple very slow iops following them,
-    // leading to >1000ms processing times)
-    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1200);
-    module->timeout_handle = g_timeout_add(delay, _postponed_history_update, module);
-  }
-}
-
-void dt_iop_cancel_history_update(dt_iop_module_t *module)
-{
-  if(module->timeout_handle)
-  {
-    g_source_remove(module->timeout_handle);
-    module->timeout_handle = 0;
-  }
-}
-
 const char **dt_iop_set_description(dt_iop_module_t *module,
                                     const char *main_text,
                                     const char *purpose,
@@ -3584,7 +3543,7 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
 
   dt_iop_color_picker_reset(module, TRUE);
 
-  dt_dev_add_history_item_widget(darktable.develop, module, TRUE, widget);
+  dt_dev_add_history_item_target(darktable.develop, module, TRUE, widget);
 }
 
 enum
