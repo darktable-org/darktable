@@ -19,7 +19,6 @@
 #include "lua/styles.h"
 #include "common/debug.h"
 #include "common/styles.h"
-#include "gui/accelerators.h"
 #include "lua/glist.h"
 #include "lua/image.h"
 #include "lua/types.h"
