@@ -23,44 +23,40 @@ IGNORED_PRESETS = {"Auto", "Kelvin", "Measured", "AsShot", "As Shot", "Preset",
                  "Illuminator1", "Illuminator2", "Uncorrected"}
 
 FL_PRESET_REPLACE = {
-  "Fluorescent" : "CoolWhiteFluorescent",
-  "FluorescentP1" : "DayWhiteFluorescent",
-  "FluorescentP2" : "DaylightFluorescent",
-  "FluorescentM1" : "WarmWhiteFluorescent",
-  "FluorescentD"  : "DaylightFluorescent",
-  "FluorescentN"  : "NeutralFluorescent",
-  "FluorescentW"  : "WhiteFluorescent",
-  "Daylight Fluorescent" : "DaylightFluorescent",
-  "Day White Fluorescent" : "DayWhiteFluorescent",
-  "White Fluorescent" : "WhiteFluorescent",
-  "Unknown (0x600)" : "Underwater",
-  "Sunny" : "DirectSunlight",
-  "Fine Weather" : "DirectSunlight",
-  "Tungsten (Incandescent)" : "Tungsten",
-  "ISO Studio Tungsten" : "Tungsten",
-  "Cool WHT FL" : "CoolWhiteFluorescent",
-  "Daylight FL" : "DaylightFluorescent",
-  "Warm WHT FL" : "WarmWhiteFluorescent",
-  "Warm White Fluorescent" : "WarmWhiteFluorescent",
-  "White FL" : "WhiteFluorescent",
-  "Mercury Lamp" : "HighTempMercuryVaporFluorescent",
-  "Day White FL" : "DayWhiteFluorescent",
-  "Sodium Lamp" : "SodiumVaporFluorescent",
-  "3000K (Tungsten light)" : "Tungsten",
-  "4000K (Cool white fluorescent)" : "CoolWhiteFluorescent",
-  "5300K (Fine Weather)" : "Daylight",
-  "5500K (Flash)" : "Flash",
-  "6000K (Cloudy)" : "Cloudy",
-  "7500K (Fine Weather with Shade)" : "Shade",
-  }
+    "Fluorescent": "Cool White Fluorescent",
+    "FluorescentP1": "Day White Fluorescent",
+    "FluorescentP2": "Daylight Fluorescent",
+    "FluorescentM1": "Warm White Fluorescent",
+    "FluorescentD": "Daylight Fluorescent",
+    "FluorescentN": "Neutral Fluorescent",
+    "FluorescentW": "White Fluorescent",
+    "Unknown (0x600)": "Underwater",
+    "Sunny": "Direct Sunlight",
+    "Fine Weather": "Direct Sunlight",
+    "Tungsten (Incandescent)": "Tungsten",
+    "ISO Studio Tungsten": "Tungsten",
+    "Cool WHT FL": "Cool White Fluorescent",
+    "Daylight FL": "Daylight Fluorescent",
+    "Warm WHT FL": "Warm White Fluorescent",
+    "White FL": "White Fluorescent",
+    "Mercury Lamp": "High Temp. Mercury-Vapor Fluorescent",
+    "Day White FL": "Day White Fluorescent",
+    "Sodium Lamp": "Sodium-Vapor Fluorescent",
+    "3000K (Tungsten light)": "Tungsten",
+    "4000K (Cool white fluorescent)": "Cool White Fluorescent",
+    "5300K (Fine Weather)": "Daylight",
+    "5500K (Flash)": "Flash",
+    "6000K (Cloudy)": "Cloudy",
+    "7500K (Fine Weather with Shade)": "Shade",
+}
 
-PRESET_ORDER = ["DirectSunlight", "Daylight", "D55", "Shade","Cloudy",
-              "Tungsten", "Incandescent","Fluorescent",
-              "WarmWhiteFluorescent", "CoolWhiteFluorescent",
-              "DayWhiteFluorescent","DaylightFluorescent",
-              "DaylightFluorescent", "NeutralFluorescent", "WhiteFluorescent",
-              "HighTempMercuryVaporFluorescent", "HTMercury",
-              "SodiumVaporFluorescent", "Underwater", "Flash", "Unknown"]
+PRESET_ORDER = ["Direct Sunlight", "Daylight", "D55", "Shade", "Cloudy",
+                "Tungsten", "Incandescent", "Fluorescent",
+                "Warm White Fluorescent", "Cool White Fluorescent",
+                "Day White Fluorescent", "Daylight Fluorescent",
+                "Neutral Fluorescent", "White Fluorescent",
+                "High Temp. Mercury-Vapor Fluorescent", "HTMercury",
+                "Sodium-Vapor Fluorescent", "Underwater", "Flash", "Unknown"]
 
 PRESET_SORT_MAPPING = {}
 
@@ -213,16 +209,14 @@ for filename in sys.argv[1:]:
             eprint("Warning: Fuji does not seem to produce any sensible data for finetuning! If all finetuned values are identical, use one with no finetuning (0)")
             finetune = int(values[3]) / 20 # Fuji has -180..180 but steps are every 20
             gm_skew = gm_skew or (int(values[1].replace(',','')) != 0)
-        elif tag == "White Balance Fine Tune" and maker == "SONY" and preset == "CoolWhiteFluorescent":
+        elif tag == "White Balance Fine Tune" and maker == "SONY" and preset == "Cool White Fluorescent":
             # Sony's Fluorescent Fun
             if values[0] == "-1":
-                preset = "WarmWhiteFluorescent"
-            elif values[0] == "0":
-                preset = "CoolWhiteFluorescent"
+                preset = "Warm White Fluorescent"
             elif values[0] == "1":
-                preset = "DayWhiteFluorescent"
+                preset = "Day White Fluorescent"
             elif values[0] == "2":
-                preset = "DaylightFluorescent"
+                preset = "Daylight Fluorescent"
             else:
                 eprint("Warning: Unknown Sony Fluorescent WB Preset!")
         elif tag == "White Balance Bracket": # olympus
@@ -248,10 +242,10 @@ for filename in sys.argv[1:]:
         eprint("WARNING: Couldn't find model in cameras.xml ('{0}', '{1}')".format(maker, model))
 
     for preset_arr in listed_presets:
-        # ugly hack. Canon's Fluorescent is listed as WhiteFluorescent in usermanual
+        # ugly hack. Canon's Fluorescent is listed as White Fluorescent (4000K) in usermanual
         preset_arrv = list(preset_arr)
         if maker and maker == "Canon" and preset_arrv[0] == "Fluorescent":
-            preset_arrv[0] = "WhiteFluorescent"
+            preset_arrv[0] = "Cool White Fluorescent"
         if preset_arrv[0] in FL_PRESET_REPLACE:
             preset_arrv[0] = FL_PRESET_REPLACE[preset_arrv[0]]
         if preset_arrv[0] not in IGNORED_PRESETS:
@@ -360,9 +354,15 @@ for maker in set([p[0] for p in found_presets]):
     maker_dict = []
     maker_presets = [p for p in found_presets if p[0] == maker]
     for model in set([p[1] for p in maker_presets]):
-        model_dict = [{'name':p[2], 'tuning':p[3], 'channels':[p[4], p[5], p[6], 0]} for p in maker_presets if p[1] == model]
-        maker_dict.append({'model': model, 'presets': model_dict})
-    wb_dict.append({'maker': maker, 'models': maker_dict})
+        model_dict = [
+            {"name": p[2], "tuning": p[3], "channels": [p[4], p[5], p[6], 0]}
+            if p[3]
+            else {"name": p[2], "channels": [p[4], p[5], p[6], 0]}
+            for p in maker_presets
+            if p[1] == model
+        ]
+        maker_dict.append({"model": model, "presets": model_dict})
+    wb_dict.append({"maker": maker, "models": maker_dict})
 
 # print json formatted code
 print(json.dumps({'version': 1, 'wb_presets': wb_dict}, indent=2))

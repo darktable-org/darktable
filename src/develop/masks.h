@@ -23,6 +23,7 @@
 #include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
+#include "gui/gtk.h"
 
 #include <assert.h>
 
@@ -948,6 +949,11 @@ void dt_masks_line_stroke(cairo_t *cr,
                           const gboolean source,
                           const gboolean selected,
                           const float zoom_scale);
+
+static inline float dt_masks_sensitive_dist(float zoom_scale)
+{
+  return DT_PIXEL_APPLY_DPI(7) / zoom_scale;
+}
 
 #ifdef __cplusplus
 } // extern "C"

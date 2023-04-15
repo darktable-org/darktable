@@ -132,6 +132,7 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *color_smoothing;
   GtkWidget *demosaic_method_bayer;
   GtkWidget *demosaic_method_xtrans;
+  GtkWidget *demosaic_method_bayerfour;
   GtkWidget *dual_thrs;
   GtkWidget *lmmse_refine;
   gboolean visual_mask;
@@ -1004,11 +1005,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->dual_thrs = p->dual_thrs;
   d->lmmse_refine = p->lmmse_refine;
   dt_iop_demosaic_method_t use_method = p->demosaicing_method;
+
   const gboolean xmethod = use_method & DT_DEMOSAIC_XTRANS;
-  const gboolean bayer   = (self->dev->image_storage.buf_dsc.filters != 9u);
+  const gboolean bayer4  = self->dev->image_storage.flags & DT_IMAGE_4BAYER;
+  const gboolean bayer   = (self->dev->image_storage.buf_dsc.filters != 9u) && !bayer4;
+  const gboolean xtrans = self->dev->image_storage.buf_dsc.filters == 9u;
 
   if(bayer && xmethod)   use_method = DT_IOP_DEMOSAIC_RCD;
-  if(!bayer && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  if(xtrans && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+
+  // we don't have to fully check for available bayer4 modes here as process() takes care of this 
+  if(bayer4)             use_method &= ~DT_DEMOSAIC_DUAL;
 
   if(use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
     use_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
@@ -1090,7 +1097,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     piece->process_tiling_ready = FALSE;
   }
 
-  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  if(bayer4)
   {
     // 4Bayer images not implemented in OpenCL yet
     piece->process_cl_ready = 0;
@@ -1127,7 +1134,9 @@ void reload_defaults(dt_iop_module_t *module)
   else if(module->dev->image_storage.buf_dsc.filters == 9u)
     d->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
   else
-    d->demosaicing_method = DT_IOP_DEMOSAIC_RCD;
+    d->demosaicing_method = module->dev->image_storage.flags & DT_IMAGE_4BAYER
+                            ? DT_IOP_DEMOSAIC_VNG4
+                            : DT_IOP_DEMOSAIC_RCD;
 
   module->hide_enable_button = TRUE;
 
@@ -1141,34 +1150,48 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
+  const gboolean bayer4  = self->dev->image_storage.flags & DT_IMAGE_4BAYER;
+  const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u) && !bayer4;
+  const gboolean xtrans = self->dev->image_storage.buf_dsc.filters == 9u;
+
   dt_iop_demosaic_method_t use_method = p->demosaicing_method;
   const gboolean xmethod = use_method & DT_DEMOSAIC_XTRANS;
 
   if(bayer && xmethod)   use_method = DT_IOP_DEMOSAIC_RCD;
-  if(!bayer && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  if(xtrans && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+
+  const gboolean bayerpassing =
+   (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+   || (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR); 
+
+  if(bayer4 && !(bayerpassing || (use_method == DT_IOP_DEMOSAIC_VNG4)))
+    use_method = DT_IOP_DEMOSAIC_VNG4;
 
   const gboolean isppg = (use_method == DT_IOP_DEMOSAIC_PPG);
-  const gboolean isdual = (use_method & DT_DEMOSAIC_DUAL);
+  const gboolean isdual = (use_method & DT_DEMOSAIC_DUAL) && !bayer4;
   const gboolean islmmse = (use_method == DT_IOP_DEMOSAIC_LMMSE);
-  const gboolean passing = ((use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-                            (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-                            (use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-                            (use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
+  const gboolean passing = 
+    bayerpassing
+    || (use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
+    || (use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX);
 
   gtk_widget_set_visible(g->demosaic_method_bayer, bayer);
-  gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
+  gtk_widget_set_visible(g->demosaic_method_bayerfour, bayer4);
+  gtk_widget_set_visible(g->demosaic_method_xtrans, xtrans);
 
   // we might have a wrong method dur to xtrans/bayer - mode mismatch
   if(bayer)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, use_method);
-  else
+  else if(xtrans)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, use_method);
+  else
+    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayerfour, use_method);
+
   p->demosaicing_method = use_method;
 
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
-  gtk_widget_set_visible(g->greeneq, !passing);
-  gtk_widget_set_visible(g->color_smoothing, !passing && !isdual);
+  gtk_widget_set_visible(g->greeneq, !passing && !bayer4);
+  gtk_widget_set_visible(g->color_smoothing, !passing && !isdual && !bayer4);
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
 
@@ -1188,8 +1211,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
     dt_dev_reload_image(self->dev, self->dev->image_storage.id);
   }
-  // as some modes change behaviour for previous pipeline modules we possibly do a reprocess
-  if((w == g->demosaic_method_bayer) || (w == g->demosaic_method_xtrans))
+
+  // as the dual modes change behaviour for previous pipeline modules we do a reprocess
+  if(isdual && (w == g->demosaic_method_bayer || w == g->demosaic_method_xtrans))
     dt_dev_reprocess_center(self->dev);
 }
 
@@ -1233,12 +1257,21 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->demosaic_method_bayer = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
-  for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 9);
+
+  const int xtranspos = dt_bauhaus_combobox_get_from_value(g->demosaic_method_bayer, DT_DEMOSAIC_XTRANS);
+
+  for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, xtranspos);
   gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nLMMSE is suited best for high ISO images.\ndual demosaicers double processing time."));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
-  for(int i=0;i<9;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
+  for(int i=0;i<xtranspos;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\ndual demosaicers double processing time."));
+
+  g->demosaic_method_bayerfour = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
+  for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayerfour, xtranspos);
+  for(int i=0;i<2;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayerfour, 0);
+  for(int i=0;i<4;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayerfour, 1);
+  gtk_widget_set_tooltip_text(g->demosaic_method_bayerfour, _("Bayer4 sensor demosaicing methods."));
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
   dt_bauhaus_slider_set_digits(g->median_thrs, 3);

@@ -100,10 +100,8 @@ typedef struct dt_lib_module_t
   GtkWidget *widget;
   /** expander containing the widget. */
   GtkWidget *expander;
-  /** callback for delayed update after user interaction */
-  void (*_postponed_update)(struct dt_lib_module_t *self);
-  /** ID of timer for delayed callback */
-  guint timeout_handle;
+  /** does gui need to be updated if visible */
+  gboolean gui_uptodate;
 
   GtkWidget *arrow;
   GtkWidget *reset_button;
@@ -119,6 +117,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded);
 /** get the expanded state of a plugin */
 gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module);
+/** queue plugin gui to be updated if visible */
+void dt_lib_gui_queue_update(dt_lib_module_t *module);
 
 extern const struct dt_action_def_t dt_action_def_lib;
 
@@ -140,11 +140,6 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name);
 /** add or replace a preset for this operation. */
 void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params,
                         const int32_t params_size, gboolean readonly);
-
-/** queue a delayed call of update function after user interaction */
-void dt_lib_queue_postponed_update(dt_lib_module_t *mod, void (*update_fn)(dt_lib_module_t *self));
-/** cancel any previously-queued callback */
-void dt_lib_cancel_postponed_update(dt_lib_module_t *mod);
 
 // apply a preset to the given module
 gboolean dt_lib_presets_apply(const gchar *preset, const gchar *module_name, int module_version);

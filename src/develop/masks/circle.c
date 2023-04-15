@@ -95,14 +95,17 @@ static void _circle_get_distance(const float x,
   *dist = fminf(*dist, bd);
 
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x, y, gpt->border, 1, gpt->border_count)) return;
+  if(!dt_masks_point_in_form_near(x, y, gpt->border, 1, gpt->border_count, as, near))
+  {
+    if(*near != -1)
+      *inside_border = TRUE;
+    else
+      return;
+  }
+  else
+    *inside_border= TRUE;
 
   *inside = TRUE;
-  *near = 0;
-
-  // and we check if it's inside form
-  *inside_border = !(dt_masks_point_in_form_near(x, y, gpt->points, 1,
-                                                 gpt->points_count, as, near));
 }
 
 static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
@@ -587,7 +590,7 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-    const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
+    const float as = dt_masks_sensitive_dist(zoom_scale);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     gboolean in, inb, ins;
@@ -628,17 +631,17 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
       dt_masks_form_gui_points_t *gpt =
         (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
+      const float as2 = sqf(as);
+      const float dist_b = sqf(x - gpt->border[2]) + sqf(y - gpt->border[3]);
+      const float dist_p = sqf(x - gpt->points[2]) + sqf(y - gpt->points[3]);
+
       // prefer border point over shape itself in case of near overlap
       // for ease of pickup
-      if(x - gpt->border[2] > -as && x - gpt->border[2] < as &&
-         y - gpt->border[3] > -as && y - gpt->border[3] < as)
+      if(dist_b < as2)
       {
         gui->point_border_selected = 1;
       }
-      else if(x - gpt->points[2] > -as
-              && x - gpt->points[2] < as
-              && y - gpt->points[3] > -as
-              && y - gpt->points[3] < as)
+      else if(dist_p < as2)
       {
         gui->point_selected = 1;
       }
@@ -989,11 +992,14 @@ static int _circle_get_points_border(dt_develop_t *dev,
                                      const dt_iop_module_t *module)
 {
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
-  float x = 0.0f, y = 0.0f;
-  x = circle->center[0], y = circle->center[1];
+
+  const float x = circle->center[0];
+  const float y = circle->center[1];
+
   if(source)
   {
-    float xs = form->source[0], ys = form->source[1];
+    const float xs = form->source[0];
+    const float ys = form->source[1];
     return _circle_get_points_source(dev, x, y, xs, ys,
                                      circle->radius, circle->radius, 0,
                                      points, points_count,
@@ -1007,7 +1013,7 @@ static int _circle_get_points_border(dt_develop_t *dev,
     {
       if(border)
       {
-        float outer_radius = circle->radius + circle->border;
+        const float outer_radius = circle->radius + circle->border;
         return form->functions->get_points(dev, x, y,
                                            outer_radius, outer_radius, 0,
                                            border, border_count);
@@ -1029,7 +1035,8 @@ static int _circle_get_source_area(dt_iop_module_t *module,
 {
   // we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
-  float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
+  const float wd = piece->pipe->iwidth;
+  const float ht = piece->pipe->iheight;
 
   // compute the points we need to transform (center and circumference of circle)
   const float outer_radius = circle->radius + circle->border;

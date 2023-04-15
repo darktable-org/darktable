@@ -375,7 +375,7 @@ static const gchar *_action_find_effect_combo(dt_action_t *ac, const dt_action_e
   if(el->effects == dt_action_effect_selection && ef > DT_ACTION_EFFECT_COMBO_SEPARATOR)
   {
     dt_introspection_type_enum_tuple_t *values
-      = g_hash_table_lookup(darktable.control->combo_introspection, ac);
+      = g_hash_table_lookup(darktable.bauhaus->combo_introspection, ac);
     if(values)
     {
       values += ef - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1;
@@ -387,7 +387,7 @@ static const gchar *_action_find_effect_combo(dt_action_t *ac, const dt_action_e
     else
     {
       gchar **strings
-        = g_hash_table_lookup(darktable.control->combo_list, ac);
+        = g_hash_table_lookup(darktable.bauhaus->combo_list, ac);
       if(strings)
         return strings[ef - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1];
       else
@@ -794,7 +794,7 @@ static gchar *_shortcut_lua_command(GtkWidget *widget, dt_shortcut_t *s, gchar *
     {
       int value = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
       dt_introspection_type_enum_tuple_t *values
-        = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
+        = g_hash_table_lookup(darktable.bauhaus->combo_introspection, s->action);
       for(int i = 0; values && values->name; values++, i++)
       {
         if(values->value == value)
@@ -828,7 +828,7 @@ void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar *prese
   gchar *lua_command = _shortcut_lua_command(widget, shortcut, preset_name);
   if(!lua_command) return;
   gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), lua_command, -1);
-  dt_control_log(_("lua script command copied to clipboard:\n\n<tt>%s</tt>"), lua_command);
+  dt_control_log(_("Lua script command copied to clipboard:\n\n<tt>%s</tt>"), lua_command);
   g_free(lua_command);
 }
 
@@ -1029,8 +1029,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     gchar *lua_command = _shortcut_lua_command(widget, &lua_shortcut, preset_name);
     if(lua_command)
     {
-      gchar *lua_escaped = g_markup_printf_escaped("\n\nlua: <tt>%s</tt>%s %s", lua_command,
-                                    show_element == 1 ? _("ctrl+v") : _("right long click") , _("to copy lua command"));
+      gchar *lua_escaped = g_markup_printf_escaped("\n\nLua: <tt>%s</tt>%s %s", lua_command,
+                                    show_element == 1 ? _("ctrl+v") : _("right long click") , _("to copy Lua command"));
       markup_text = dt_util_dstrcat(markup_text, "%s", lua_escaped);
       g_free(lua_escaped);
       g_free(lua_command);
@@ -1568,7 +1568,7 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
     gtk_combo_box_set_row_separator_func(combo_box, _effects_separator_func, NULL, NULL);
 
     dt_introspection_type_enum_tuple_t *values
-      = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
+      = g_hash_table_lookup(darktable.bauhaus->combo_introspection, s->action);
     if(values)
     {
       // insert empty/separator row
@@ -1585,7 +1585,7 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
     else
     {
       gchar **strings
-        = g_hash_table_lookup(darktable.control->combo_list, s->action);
+        = g_hash_table_lookup(darktable.bauhaus->combo_list, s->action);
       if(strings)
       {
         // insert empty/separator row
@@ -2679,7 +2679,7 @@ static gboolean _find_combo_effect(const gchar **effects, const gchar *token, dt
     const char *entry = NULL;
 
     dt_introspection_type_enum_tuple_t *values
-      = g_hash_table_lookup(darktable.control->combo_introspection, ac);
+      = g_hash_table_lookup(darktable.bauhaus->combo_introspection, ac);
     if(values)
     {
       while((entry = (values[++effect].description ? values[effect].description : values[effect].name)))
@@ -2688,7 +2688,7 @@ static gboolean _find_combo_effect(const gchar **effects, const gchar *token, dt
     else
     {
       gchar **strings
-        = g_hash_table_lookup(darktable.control->combo_list, ac);
+        = g_hash_table_lookup(darktable.bauhaus->combo_list, ac);
       if(strings)
       {
         while((entry = strings[++effect]))

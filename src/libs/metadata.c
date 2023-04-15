@@ -200,9 +200,8 @@ static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_modul
   _text_set_italic(d->textview[i], multi);
 }
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
   GList *imgs = dt_act_on_get_images(FALSE, FALSE, FALSE);
@@ -295,7 +294,7 @@ static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t
 {
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     _reset_edited_state(i, (dt_lib_metadata_t *)self->data);
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
@@ -304,7 +303,7 @@ static void _collection_updated_callback(gpointer instance, dt_collection_change
 {
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     _reset_edited_state(i, (dt_lib_metadata_t *)self->data);
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _append_kv(GList **l, const gchar *key, const gchar *value)
@@ -358,7 +357,7 @@ static void _write_metadata(GtkTextView *textview, dt_lib_module_t *self)
 
   dt_image_synch_xmps(imgs);
   g_list_free(imgs);
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
@@ -405,7 +404,7 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
         {
           for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
             _reset_edited_state(i, d);
-          _update(self);
+          dt_lib_gui_queue_update(self);
           gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
           return TRUE;
         }
@@ -538,7 +537,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       _save_edited_textview(i, d);
 
-  dt_lib_queue_postponed_update(self, _update);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _toggled_callback(gchar *path_str, gpointer user_data, const int column)
@@ -759,8 +758,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
-  self->timeout_handle = 0;
-
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   self->widget = GTK_WIDGET(grid);
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
@@ -840,14 +837,11 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(self->widget, TRUE);
-
-  _update(self);
   _update_layout(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
@@ -1031,7 +1025,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   // force the ui refresh to update the info from preset
   g_list_free(d->last_act_on);
   d->last_act_on = NULL;
-  _update(self);
+  dt_lib_gui_queue_update(self);
   return 0;
 }
 // clang-format off

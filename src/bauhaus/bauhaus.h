@@ -221,6 +221,7 @@ typedef struct dt_bauhaus_t
 
   // initialise or connect accelerators in set_label
   int skip_accel;
+  GHashTable *combo_introspection, *combo_list;
 
   // appearance relevant stuff:
   // sizes and fonts:
@@ -355,6 +356,7 @@ gboolean dt_bauhaus_combobox_set_entry_label(GtkWidget *widget, const int pos, c
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *w, const char *text);
 gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *w, int value);
+int dt_bauhaus_combobox_get_from_value(GtkWidget *widget, int value);
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos);
 void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,

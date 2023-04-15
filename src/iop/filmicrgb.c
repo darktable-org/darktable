@@ -114,9 +114,8 @@ typedef enum dt_iop_filmicrgb_methods_type_t
   DT_FILMIC_METHOD_MAX_RGB = 1,           // $DESCRIPTION: "max RGB"
   DT_FILMIC_METHOD_LUMINANCE = 2,         // $DESCRIPTION: "luminance Y"
   DT_FILMIC_METHOD_POWER_NORM = 3,        // $DESCRIPTION: "RGB power norm"
-  DT_FILMIC_METHOD_EUCLIDEAN_NORM_V2 = 5, // $DESCRIPTION: "RGB euclidean norm"
   DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1 = 4, // $DESCRIPTION: "RGB euclidean norm (legacy)"
-  DT_FILMIC_METHOD_LAST = 6, // this must always be greatest of the numbers above + 1
+  DT_FILMIC_METHOD_EUCLIDEAN_NORM_V2 = 5, // $DESCRIPTION: "RGB euclidean norm"
 } dt_iop_filmicrgb_methods_type_t;
 
 
@@ -2957,12 +2956,6 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->custom_grey), p->custom_grey);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->enable_highlight_reconstruction), p->enable_highlight_reconstruction);
 
-  if(p->preserve_color == DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1 && dt_bauhaus_combobox_length(g->preserve_color) < DT_FILMIC_METHOD_LAST)
-  {
-    dt_bauhaus_combobox_add_full(g->preserve_color, _("RGB euclidean norm (legacy)"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                 GINT_TO_POINTER(DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1), NULL, TRUE);
-  }
-
   gui_changed(self, NULL, NULL);
 }
 
@@ -4359,7 +4352,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original colors are preserved.\n"
                                                    "may reinforce chromatic aberrations and chroma noise,\n"
                                                    "so ensure they are properly corrected elsewhere."));
-  dt_bauhaus_combobox_remove_at(g->preserve_color, DT_FILMIC_METHOD_LAST - 1); // hide legacy Euclidean norm by default
+  // hide legacy Euclidean norm by default
+  const int pos = dt_bauhaus_combobox_get_from_value(g->preserve_color, DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1);
+  dt_bauhaus_combobox_remove_at(g->preserve_color, pos);
 
   // Curve type
   g->highlights = dt_bauhaus_combobox_from_params(self, "highlights");

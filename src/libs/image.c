@@ -175,9 +175,8 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_refresh_exif();
 }
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   const int nbimgs = dt_act_on_get_images_nb(FALSE, FALSE);
 
@@ -261,19 +260,19 @@ static void _update(dt_lib_module_t *self)
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
                                          dt_collection_properties_t changed_property, gpointer imgs, int next,
                                          dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_queue_postponed_update(self, _update);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _image_preference_changed(gpointer instance, gpointer user_data)
@@ -384,7 +383,7 @@ static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 
   d->imageid = dt_act_on_get_main_image();
 
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void paste_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
@@ -455,7 +454,6 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
-  self->timeout_handle = 0;
 
   static struct dt_action_def_t notebook_def = { };
   self->widget = GTK_WIDGET(dt_ui_notebook_new(&notebook_def));
@@ -627,7 +625,6 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(DT_ACTION(self), N_("duplicate virgin"), _duplicate_virgin, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   d->imageid = 0;
-  _update(self);
   _image_preference_changed(NULL, self); // update delete button label/tooltip
 }
 #undef ellipsize_button
@@ -636,12 +633,11 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   d->imageid = 0;
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_preference_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);

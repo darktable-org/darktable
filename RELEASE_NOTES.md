@@ -392,6 +392,16 @@ The following is a summary of the main features added to darktable
   enabled. Shortcuts assigned to the sliders can be used to adjust
   brush size/hardness while drawing.
 
+- Improve the mask editing by making it easier to select masks'
+  control points and more specifically the path's segments. In some
+  cases it was difficult to select a segment and instead the whole
+  path mask was selected and so moved. The on canvas drawing of the
+  masks has also been improved to be more consistent for all kind of
+  forms.
+
+- Show the full-frame equivalent focal length and crop factor in the
+  image information module.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
@@ -505,6 +515,10 @@ The following is a summary of the main features added to darktable
   algorithm. This may lead to a small difference on the border of the
   image and will avoids some possible redish borders.
 
+- Fix issue in highlights reconstruction segmentation algorithm where
+  the mask display could be broken due to accessing some non
+  initialized data.
+
 - Avoid XMP writing if not requested and image was not altered. This
   is rule is properly followed now also when importing RAW + JPEG.
 
@@ -543,6 +557,12 @@ The following is a summary of the main features added to darktable
   segment was barely distinguishable due to a bug.
 
 - Set imported EXR image size to the extent of valid data window only.
+
+- Properly translate collection sort names in the recent collection
+  sort history pop-up.
+
+- Fix dual demosaicing options for Bayer4 sensor cameras where only
+  VNG4 and PassThrough are supported.
 
 ## Lua
 

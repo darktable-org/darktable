@@ -301,7 +301,7 @@ static void _set_group_name_from_module(dt_iop_module_t *module,
                                         dt_masks_form_t *grp)
 {
   gchar *module_label = dt_history_item_get_name(module);
-  snprintf(grp->name, sizeof(grp->name), "grp %s", module_label);
+  snprintf(grp->name, sizeof(grp->name), _("group `%s'"), module_label);
   g_free(module_label);
 }
 
@@ -412,7 +412,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, const int formid)
   fdest->source[0] = fbase->source[0];
   fdest->source[1] = fbase->source[1];
   fdest->version = fbase->version;
-  snprintf(fdest->name, sizeof(fdest->name), _("copy of %s"), fbase->name);
+  snprintf(fdest->name, sizeof(fdest->name), _("copy of `%s'"), fbase->name);
 
   darktable.develop->forms = g_list_append(dev->forms, fdest);
 
@@ -920,8 +920,10 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT imgid, formid, form, name, version, points, points_count, source, num "
-      "FROM main.masks_history WHERE imgid = ?1 ORDER BY num",
+      "SELECT imgid, formid, form, name, version, points, points_count, source, num"
+      " FROM main.masks_history"
+      " WHERE imgid = ?1"
+      " ORDER BY num",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1022,7 +1024,7 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
-     "INSERT INTO main.masks_history (imgid, num, formid, form, name, "
+     "INSERT INTO main.masks_history (imgid, num, formid, form, name,"
      "                                version, points, points_count,source)"
      " VALUES (?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
      -1, &stmt, NULL);
@@ -2273,7 +2275,6 @@ int dt_masks_point_in_form_exact(const float x,
          ? points[points_start * 2 + 1]
          : points_start;
 
-    const float yf = (float)y;
     int nb = 0;
 
     for(int i = start, next = start + 1; i < points_count;)
@@ -2287,8 +2288,8 @@ int dt_masks_point_in_form_exact(const float x,
         next = isnan(y2) ? start : (int)y2;
         continue;
       }
-      if(((yf <= y2 && yf > y1)
-          || (yf >= y2 && yf < y1))
+      if(((y <= y2 && y > y1)
+          || (y >= y2 && y < y1))
          && (points[i * 2] > x))
         nb++;
 
@@ -2310,10 +2311,11 @@ int dt_masks_point_in_form_near(const float x,
                                 int *near)
 {
   // we use ray casting algorithm to avoid most problems with
-  // horizontal segments, y should be rounded as int so that there's
-  // very little chance than y==points...
+  // horizontal segments.
 
-  // TODO : distance is only evaluated in x, not y...
+  const float distance2 = sqf(distance);
+
+  *near = -1;
 
   if(points_count > 2 + points_start)
   {
@@ -2322,12 +2324,17 @@ int dt_masks_point_in_form_near(const float x,
       ? points[points_start * 2 + 1]
       : points_start;
 
-    const float yf = (float)y;
     int nb = 0;
     for(int i = start, next = start + 1; i < points_count;)
     {
+      const float x1 = points[i * 2];
       const float y1 = points[i * 2 + 1];
       const float y2 = points[next * 2 + 1];
+      const float dd = sqf(x1 - x) + sqf(y1 - y);
+
+      if(dd < distance2)
+        *near = i * 2;
+
       //if we need to jump to skip points (in case of deleted point,
       //because of self-intersection)
       if(isnan(points[next * 2]))
@@ -2335,13 +2342,11 @@ int dt_masks_point_in_form_near(const float x,
         next = isnan(y2) ? start : (int)y2;
         continue;
       }
-      if((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1))
+      if((y <= y2 && y > y1)
+         || (y >= y2 && y < y1))
       {
-        if(points[i * 2] > x)
+        if(x1 > x)
           nb++;
-        if(points[i * 2] - x < distance
-           && points[i * 2] - x > -distance)
-          *near = i * 2;
       }
 
       if(next == start) break;
@@ -2678,8 +2683,8 @@ void dt_masks_draw_anchor(cairo_t *cr,
   cairo_set_dash(cr, NULL, 0, 0);
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_rectangle(cr,
-                  x - (anchor_size * 0.5),
-                  y - (anchor_size * 0.5),
+                  x - (anchor_size * 0.5f),
+                  y - (anchor_size * 0.5f),
                   anchor_size,
                   anchor_size);
   cairo_fill_preserve(cr);
@@ -2764,10 +2769,7 @@ void dt_masks_stroke_arrow(cairo_t *cr,
                            const int group,
                            const float zoom_scale)
 {
-  double dashed[] = { 4.0, 4.0 };
-  dashed[0] /= zoom_scale;
-  dashed[1] /= zoom_scale;
-
+  double dashed[] = { 0, 0 };
   cairo_set_dash(cr, dashed, 0, 0);
 
   if((gui->group_selected == group) && (gui->form_selected || gui->form_dragging))
@@ -2822,29 +2824,33 @@ void dt_masks_line_stroke(cairo_t *cr,
 {
   const double size_border     = DT_PIXEL_APPLY_DPI(1.0);
   const double size_source     = DT_PIXEL_APPLY_DPI(1.5);
-  const double size_mask       = DT_PIXEL_APPLY_DPI(2.5);
-  const double factor_selected = DT_PIXEL_APPLY_DPI(1.9);
+  const double size_mask       = DT_PIXEL_APPLY_DPI(1.7);
+  const double factor_selected = DT_PIXEL_APPLY_DPI(1.5);
 
-  double dashed[] = { 4.0, 4.0 };
+  double dashed[] = { DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(4.0) };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
 
-  dt_draw_set_color_overlay(cr, FALSE, selected ? 1.0 : 0.6);
+  // first the background draw, darker
+  dt_draw_set_color_overlay(cr, FALSE, selected ? 0.8 : 0.5);
   cairo_set_dash(cr, dashed, border ? len : 0, 0);
 
   const double line_width =
-    (border ? size_border : (source ? size_source : size_mask))
-    * (selected ? factor_selected : 1.0);
+    ((border ? size_border : (source ? size_source : size_mask))
+     * (selected ? factor_selected : 1.0)) / zoom_scale;
 
-  cairo_set_line_width(cr, line_width / zoom_scale);
+  cairo_set_line_width(cr, line_width);
 
   cairo_stroke_preserve(cr);
 
-  cairo_set_line_width(cr, (line_width / 2.0) / zoom_scale);
+  // second the forground draw, lighter (same size as darker if selected)
+  cairo_set_line_width
+    (cr, (line_width / (selected && !border ? 1.0 : 2.0)));
 
-  dt_draw_set_color_overlay(cr, TRUE, selected ? 1.0 : 0.6);
+  dt_draw_set_color_overlay(cr, TRUE, selected ? 0.9 : 0.6);
   cairo_set_dash(cr, dashed, border ? len : 0, 4);
+
   cairo_stroke(cr);
 }
 

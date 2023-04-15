@@ -2210,6 +2210,12 @@ static void _lib_collect_update_history_visibility(dt_lib_module_t *self)
   gtk_widget_set_visible(d->history_box, !hide);
 }
 
+void gui_update(dt_lib_module_t *self)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  update_view(d->rule + d->active_rule);
+}
+
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
@@ -2275,7 +2281,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
 
   // update list of proposals
   d->active_rule = active;
-  update_view(d->rule + d->active_rule);
+  dt_lib_gui_queue_update(self);
   --darktable.gui->reset;
 }
 

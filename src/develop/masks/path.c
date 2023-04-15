@@ -1046,20 +1046,26 @@ static void _path_get_distance(const float x,
   }
 
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x, y, gpt->border,
-                                   _nb_ctrl_point(corner_count), gpt->border_count))
-    return;
+  if(!dt_masks_point_in_form_near(x, y, gpt->border,
+                                  _nb_ctrl_point(corner_count), gpt->border_count,
+                                  as, near))
+  {
+    if(*near != -1)
+    {
+      *inside_border = TRUE;
+    }
+    else
+      return;
+  }
+  else
+    *inside_border = TRUE;
 
   *inside = TRUE;
 
   // and we check if it's inside form
   if(gpt->points_count > 2 + _nb_ctrl_point(corner_count))
   {
-    const float as2 = as * as;
-    //float as2 = 1600.0 * as1;
-    float last = gpt->points[gpt->points_count * 2 - 1];
-    int nb = 0;
-    int near_form = 0;
+    const float as2 = sqf(as);
     int current_seg = 1;
 
     float x_min = FLT_MAX, y_min = FLT_MAX;
@@ -1096,28 +1102,18 @@ static void _path_get_distance(const float x,
 
       if(dd < as2)
       {
-        near_form = 1;
         if(current_seg == 0)
           *near = corner_count - 1;
         else
           *near = current_seg - 1;
       }
-
-      if(((y<=yy && y>last) || (y>=yy && y<last))
-         && (gpt->points[i * 2] > x))
-        nb++;
-
-      last = yy;
     }
-    *inside_border = !((nb & 1) || (near_form));
 
     const float cx = x - (x_min + (x_max - x_min) / 2.0f);
     const float cy = y - (y_min + (y_max - y_min) / 2.0f);
     const float dd = sqf(cx) + sqf(cy);
     *dist = fminf(*dist, dd);
   }
-  else
-    *inside_border = TRUE;
 }
 
 static int _path_get_points_border(dt_develop_t *dev,
@@ -1922,8 +1918,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
   // centre view will have zoom_scale * backbuf_width pixels, we want
   // the handle offset to scale with DPI:
-  // transformed to backbuf dimensions
-  const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
+  const float as = dt_masks_sensitive_dist(zoom_scale);
+
   if(!gui) return 0;
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -2122,8 +2118,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   // are we near a point or feather ?
   const guint nb = g_list_length(form->points);
 
-  pzx *= darktable.develop->preview_pipe->backbuf_width;
-  pzy *= darktable.develop->preview_pipe->backbuf_height;
+  pzx *= wd;
+  pzy *= ht;
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
@@ -2189,8 +2185,10 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   gboolean in = FALSE, inb = FALSE, ins = FALSE;
   int near = 0;
   float dist = 0;
-  _path_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
+  _path_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;
+
+  // no segment selected, set form or source selection
   if(near < 0)
   {
     if(ins)
