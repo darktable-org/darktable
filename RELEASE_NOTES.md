@@ -558,6 +558,9 @@ The following is a summary of the main features added to darktable
 - Properly translate collection sort names in the recent collection
   sort history pop-up.
 
+- Fix dual demosaicing options for Bayer4 sensor cameras where only
+  VNG4 and PassThrough are supported.
+
 ## Lua
 
 ### API Version
