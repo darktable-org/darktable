@@ -1063,11 +1063,17 @@ void _dev_add_history_item(
         dt_develop_t *dev,
         dt_iop_module_t *module,
         const gboolean enable,
-        const gboolean new_item)
+        const gboolean new_item,
+        const gpointer widget)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
-  dt_dev_undo_start_record(dev);
+  const gboolean record_undo = !widget || widget != dev->gui_previous_widget;
+
+  if(record_undo)
+    dt_dev_undo_start_record(dev);
+
+  dev->gui_previous_widget = widget;
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1108,7 +1114,8 @@ void _dev_add_history_item(
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    dt_dev_undo_end_record(dev);
+    if(record_undo)
+      dt_dev_undo_end_record(dev);
 
     if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
@@ -1122,7 +1129,16 @@ void dt_dev_add_history_item(
         dt_iop_module_t *module,
         gboolean enable)
 {
-  _dev_add_history_item(dev, module, enable, FALSE);
+  _dev_add_history_item(dev, module, enable, FALSE, NULL);
+}
+
+void dt_dev_add_history_item_widget(
+        dt_develop_t *dev,
+        dt_iop_module_t *module,
+        gboolean enable,
+        gpointer widget)
+{
+  _dev_add_history_item(dev, module, enable, FALSE, widget);
 }
 
 void dt_dev_add_new_history_item(
@@ -1130,7 +1146,7 @@ void dt_dev_add_new_history_item(
         dt_iop_module_t *module,
         gboolean enable)
 {
-  _dev_add_history_item(dev, module, enable, TRUE);
+  _dev_add_history_item(dev, module, enable, TRUE, NULL);
 }
 
 void dt_dev_add_masks_history_item_ext(
@@ -3493,6 +3509,8 @@ void dt_dev_undo_start_record(dt_develop_t *dev)
   /* record current history state : before change (needed for undo) */
   if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
+
+  dev->gui_previous_widget = NULL;
 }
 
 void dt_dev_undo_end_record(dt_develop_t *dev)

@@ -120,9 +120,10 @@ struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
   gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
-                        // gui_init'ed.
+                         // gui_init'ed.
   gboolean gui_leaving;  // set if everything is scheduled to shut down.
   gboolean gui_synch;    // set to TRUE by the render threads if gui_update should be called in the modules.
+  gpointer gui_previous_widget;  // widget that was changed last time. If same again, don't save undo.
   gboolean focus_hash;   // determines whether to start a new history item or to merge down.
   gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
   gboolean preview_input_changed, preview2_input_changed;
@@ -343,6 +344,10 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev,
 void dt_dev_add_history_item(dt_develop_t *dev,
                              struct dt_iop_module_t *module,
                              const gboolean enable);
+void dt_dev_add_history_item_widget(dt_develop_t *dev,
+                                    struct dt_iop_module_t *module,
+                                    const gboolean enable,
+                                    const gpointer widget);
 void dt_dev_add_new_history_item(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
                                  const gboolean enable);
