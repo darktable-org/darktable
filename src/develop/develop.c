@@ -3487,13 +3487,7 @@ void dt_dev_undo_start_record(dt_develop_t *dev)
 
   /* record current history state : before change (needed for undo) */
   if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
-  {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE
-      (darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-       dt_history_duplicate(dev->history),
-       dev->history_end,
-       dt_ioppr_iop_order_copy_deep(dev->iop_order_list));
-  }
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
 }
 
 void dt_dev_undo_end_record(dt_develop_t *dev)
@@ -3502,9 +3496,7 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
 
   /* record current history state : after change (needed for undo) */
   if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
-  {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-  }
 }
 
 void dt_dev_image_ext(

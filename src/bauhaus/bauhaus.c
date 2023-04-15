@@ -3197,6 +3197,8 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     }
     else
     {
+      dt_dev_undo_start_record(darktable.develop);
+
       d->is_dragging = -1;
       if(!dt_modifier_is(event->state, 0))
         darktable.bauhaus->mouse_x = ex;
@@ -3225,6 +3227,8 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
     if(d->timeout_handle) g_source_remove(d->timeout_handle);
     d->timeout_handle = 0;
     dt_bauhaus_slider_set_normalized(w, d->pos);
+
+    dt_dev_undo_end_record(darktable.develop);
 
     return TRUE;
   }

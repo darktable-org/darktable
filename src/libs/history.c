@@ -57,7 +57,6 @@ typedef struct dt_lib_history_t
   int record_history_level; // set to +1 in signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
                             // and back to -1 in DT_SIGNAL_DEVELOP_HISTORY_CHANGE. We want
                             // to avoid multiple will-change before a change cb.
-  // previous_* below store values sent by signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
   GList *previous_snapshot;
   int previous_history_end;
   GList *previous_iop_order_list;
@@ -82,11 +81,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
                                                               gpointer user_data);
 /* signal callback for history change */
-static void _lib_history_will_change_callback(gpointer instance,
-                                              GList *history,
-                                              const int history_end,
-                                              GList *iop_order_list,
-                                              gpointer user_data);
+static void _lib_history_will_change_callback(gpointer instance, gpointer user_data);
 
 static void _lib_history_change_callback(gpointer instance, gpointer user_data);
 
@@ -594,6 +589,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type,
     GList *history_temp = NULL;
     int hist_end = 0;
 
+    g_list_free_full(dev->iop_order_list, free);
     if(action == DT_ACTION_UNDO)
     {
       history_temp = dt_history_duplicate(hist->before_snapshot);
@@ -639,13 +635,11 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type,
     dt_pthread_mutex_lock(&dev->history_mutex);
 
     // set history and modules to dev
-    GList *history_temp2 = dev->history;
+    g_list_free_full(dev->history, dt_dev_free_history_item);
     dev->history = history_temp;
     dev->history_end = hist_end;
-    g_list_free_full(history_temp2, dt_dev_free_history_item);
-    GList *iop_temp2 = dev->iop;
+    g_list_free(dev->iop);
     dev->iop = iop_temp;
-    g_list_free(iop_temp2);
 
     // topology has changed
     if(pipe_remove)
@@ -698,27 +692,18 @@ static void _lib_history_module_remove_callback(gpointer instance,
   dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY, module, &_history_invalidate_cb);
 }
 
-static void _lib_history_will_change_callback(gpointer instance,
-                                              GList *history,
-                                              const int history_end,
-                                              GList *iop_order_list,
-                                              gpointer user_data)
+static void _lib_history_will_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *lib = (dt_lib_history_t *)self->data;
 
-  if(lib->record_undo && (lib->record_history_level == 0))
+  if(lib->record_history_level++ == 0 && lib->record_undo)
   {
-    // history is about to change, here we want to record as snapshot
-    // of the history for the undo record previous history
-    g_list_free_full(lib->previous_snapshot, free);
-    g_list_free_full(lib->previous_iop_order_list, free);
-    lib->previous_snapshot = history;
-    lib->previous_history_end = history_end;
-    lib->previous_iop_order_list = iop_order_list;
+    lib->previous_snapshot = dt_history_duplicate(darktable.develop->history);
+    lib->previous_history_end = darktable.develop->history_end;
+    lib->previous_iop_order_list =
+      dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list);
   }
-
-  lib->record_history_level += 1;
 }
 
 static gchar *_lib_history_change_text(dt_introspection_field_t *field,
@@ -1122,16 +1107,17 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
 
-
-  d->record_history_level -= 1;
-
-  if(d->record_undo == TRUE && (d->record_history_level == 0))
+  if(--d->record_history_level == 0 && d->record_undo == TRUE)
   {
     /* record undo/redo history snapshot */
     dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
-    hist->before_snapshot = dt_history_duplicate(d->previous_snapshot);
+    hist->before_snapshot = d->previous_snapshot;
     hist->before_end = d->previous_history_end;
-    hist->before_iop_order_list = dt_ioppr_iop_order_copy_deep(d->previous_iop_order_list);
+    hist->before_iop_order_list = d->previous_iop_order_list;
+
+    d->previous_snapshot = NULL;
+    d->previous_history_end = 0;
+    d->previous_iop_order_list = NULL;
 
     hist->after_snapshot = dt_history_duplicate(darktable.develop->history);
     hist->after_end = darktable.develop->history_end;
