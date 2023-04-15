@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-13 17:25+0200\n"
-"PO-Revision-Date: 2023-04-13 17:27+0200\n"
+"POT-Creation-Date: 2023-04-15 12:08+0200\n"
+"PO-Revision-Date: 2023-04-15 12:11+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6027,7 +6027,7 @@ msgstr "Erreur de lancement de darktable"
 
 #: ../src/common/database.c:2778 ../src/libs/collect.c:3000
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1702
-#: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1195
+#: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1201
 #: ../src/libs/recentcollect.c:294 ../src/libs/modulegroups.c:3465
 #: ../src/libs/styles.c:438 ../src/libs/styles.c:621 ../src/libs/tagging.c:1484
 #: ../src/libs/tagging.c:1572 ../src/libs/tagging.c:1653
@@ -6785,7 +6785,7 @@ msgstr "Au-dessus du niveau de la mer"
 msgid "below sea level"
 msgstr "Sous le niveau de la mer"
 
-#: ../src/common/utility.c:557 ../src/libs/metadata_view.c:881
+#: ../src/common/utility.c:557 ../src/libs/metadata_view.c:887
 msgid "m"
 msgstr "M"
 
@@ -7708,7 +7708,7 @@ msgid "reverse"
 msgstr "Inverser"
 
 #: ../src/develop/blend_gui.c:140 ../src/imageio/format/webp.c:413
-#: ../src/libs/metadata.c:571 ../src/libs/metadata_view.c:1194
+#: ../src/libs/metadata.c:571 ../src/libs/metadata_view.c:1200
 msgid "default"
 msgstr "Défaut"
 
@@ -8547,37 +8547,37 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s a été importé"
 msgstr[1] "%s ont été importés"
 
-#: ../src/develop/masks/brush.c:1342 ../src/develop/masks/brush.c:1396
+#: ../src/develop/masks/brush.c:1355 ../src/develop/masks/brush.c:1409
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr "Dureté : %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1358 ../src/develop/masks/brush.c:1456
-#: ../src/develop/masks/circle.c:145 ../src/develop/masks/circle.c:190
-#: ../src/develop/masks/ellipse.c:537 ../src/develop/masks/ellipse.c:599
-#: ../src/develop/masks/path.c:1275
+#: ../src/develop/masks/brush.c:1371 ../src/develop/masks/brush.c:1469
+#: ../src/develop/masks/circle.c:148 ../src/develop/masks/circle.c:193
+#: ../src/develop/masks/ellipse.c:484 ../src/develop/masks/ellipse.c:546
+#: ../src/develop/masks/path.c:1272
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "Taille : %3.2f%%"
 
-#: ../src/develop/masks/brush.c:3230
+#: ../src/develop/masks/brush.c:3246
 msgid "[BRUSH] change size"
 msgstr "[PINCEAU] Changer la taille"
 
-#: ../src/develop/masks/brush.c:3232
+#: ../src/develop/masks/brush.c:3248
 msgid "[BRUSH] change hardness"
 msgstr "[PINCEAU] Changer la dureté"
 
-#: ../src/develop/masks/brush.c:3234
+#: ../src/develop/masks/brush.c:3250
 msgid "[BRUSH] change opacity"
 msgstr "[PINCEAU] Changer l’opacité"
 
-#: ../src/develop/masks/brush.c:3246
+#: ../src/develop/masks/brush.c:3262
 #, c-format
 msgid "brush #%d"
 msgstr "Pinceau #%d"
 
-#: ../src/develop/masks/brush.c:3259
+#: ../src/develop/masks/brush.c:3275
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
@@ -8586,35 +8586,35 @@ msgstr ""
 "<b>Taille</b> : molette • <b>Dureté</b> : Maj+molette\n"
 "<b>Opacité</b> : Ctrl+molette (%d%%)"
 
-#: ../src/develop/masks/brush.c:3262
+#: ../src/develop/masks/brush.c:3278
 msgid "<b>size</b>: scroll"
 msgstr "<b>Taille</b> : défiler"
 
-#: ../src/develop/masks/circle.c:134 ../src/develop/masks/circle.c:178
-#: ../src/develop/masks/ellipse.c:523 ../src/develop/masks/ellipse.c:584
-#: ../src/develop/masks/path.c:1207
+#: ../src/develop/masks/circle.c:137 ../src/develop/masks/circle.c:181
+#: ../src/develop/masks/ellipse.c:470 ../src/develop/masks/ellipse.c:531
+#: ../src/develop/masks/path.c:1204
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "Adoucissement : %3.2f%%"
 
-#: ../src/develop/masks/circle.c:1507
+#: ../src/develop/masks/circle.c:1510
 msgid "[CIRCLE] change size"
 msgstr "[CERCLE] Changer la taille"
 
-#: ../src/develop/masks/circle.c:1509
+#: ../src/develop/masks/circle.c:1512
 msgid "[CIRCLE] change feather size"
 msgstr "[CERCLE] Changer la taille d’adoucissement"
 
-#: ../src/develop/masks/circle.c:1511
+#: ../src/develop/masks/circle.c:1514
 msgid "[CIRCLE] change opacity"
 msgstr "[CERCLE] Changer l’opacité"
 
-#: ../src/develop/masks/circle.c:1524
+#: ../src/develop/masks/circle.c:1527
 #, c-format
 msgid "circle #%d"
 msgstr "Cercle #%d"
 
-#: ../src/develop/masks/circle.c:1535 ../src/develop/masks/path.c:3487
+#: ../src/develop/masks/circle.c:1538 ../src/develop/masks/path.c:3486
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -8623,37 +8623,37 @@ msgstr ""
 "<b>Taille</b> : molette • <b>Taille d’adoucissement</b> : Maj+molette\n"
 "<b>Opacité</b> : Ctrl+molette (%d%%)"
 
-#: ../src/develop/masks/ellipse.c:509 ../src/develop/masks/ellipse.c:568
+#: ../src/develop/masks/ellipse.c:456 ../src/develop/masks/ellipse.c:515
 #, c-format
 msgid "rotation: %3.f°"
 msgstr "Rotation : %3.f°"
 
-#: ../src/develop/masks/ellipse.c:2121
+#: ../src/develop/masks/ellipse.c:2068
 msgid "[ELLIPSE] change size"
 msgstr "[ELLIPSE] Changer la taille"
 
-#: ../src/develop/masks/ellipse.c:2124
+#: ../src/develop/masks/ellipse.c:2071
 msgid "[ELLIPSE] change feather size"
 msgstr "[ELLIPSE] Changer la taille d’adoucissement"
 
-#: ../src/develop/masks/ellipse.c:2127 ../src/develop/masks/ellipse.c:2136
+#: ../src/develop/masks/ellipse.c:2074 ../src/develop/masks/ellipse.c:2083
 msgid "[ELLIPSE] rotate shape"
 msgstr "[ELLIPSE] Tourner la forme"
 
-#: ../src/develop/masks/ellipse.c:2130
+#: ../src/develop/masks/ellipse.c:2077
 msgid "[ELLIPSE] change opacity"
 msgstr "[ELLIPSE] Changer l’opacité"
 
-#: ../src/develop/masks/ellipse.c:2133
+#: ../src/develop/masks/ellipse.c:2080
 msgid "[ELLIPSE] switch feathering mode"
 msgstr "[ELLIPSE] Changer le mode d’adoucissement"
 
-#: ../src/develop/masks/ellipse.c:2143
+#: ../src/develop/masks/ellipse.c:2090
 #, c-format
 msgid "ellipse #%d"
 msgstr "Ellipse #%d"
 
-#: ../src/develop/masks/ellipse.c:2181
+#: ../src/develop/masks/ellipse.c:2128
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -8662,11 +8662,11 @@ msgstr ""
 "<b>Taille</b> : molette • <b>Taille d’adoucissement</b> : Maj+molette\n"
 "<b>Rotation</b> : Ctrl+Maj+molette • <b>Opacité</b> : Ctrl+molette (%d%%)."
 
-#: ../src/develop/masks/ellipse.c:2185
+#: ../src/develop/masks/ellipse.c:2132
 msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>Tourner</b> : Ctrl+déplacer"
 
-#: ../src/develop/masks/ellipse.c:2188
+#: ../src/develop/masks/ellipse.c:2135
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
@@ -8770,52 +8770,52 @@ msgstr "Utiliser les mêmes masques que"
 msgid "masks can not contain themselves"
 msgstr "Les masques ne peuvent pas se contenir eux-mêmes"
 
-#: ../src/develop/masks/path.c:3430
+#: ../src/develop/masks/path.c:3429
 msgid "[PATH creation] add a smooth node"
 msgstr "[CHEMIN création] Ajouter un nœud doux"
 
-#: ../src/develop/masks/path.c:3432
+#: ../src/develop/masks/path.c:3431
 msgid "[PATH creation] add a sharp node"
 msgstr "[CHEMIN création] Ajouter un nœud dur"
 
-#: ../src/develop/masks/path.c:3434
+#: ../src/develop/masks/path.c:3433
 msgid "[PATH creation] terminate path creation"
 msgstr "[CHEMIN création] Terminer la création"
 
-#: ../src/develop/masks/path.c:3436
+#: ../src/develop/masks/path.c:3435
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[CHEMIN sur nœud] Changer le nœud doux/dur"
 
-#: ../src/develop/masks/path.c:3438
+#: ../src/develop/masks/path.c:3437
 msgid "[PATH on node] remove the node"
 msgstr "[CHEMIN sur nœud] Supprimer le nœud"
 
-#: ../src/develop/masks/path.c:3440
+#: ../src/develop/masks/path.c:3439
 msgid "[PATH on feather] reset curvature"
 msgstr "[CHEMIN sur adoucissement] Réinitialiser la courbure"
 
-#: ../src/develop/masks/path.c:3442
+#: ../src/develop/masks/path.c:3441
 msgid "[PATH on segment] add node"
 msgstr "[CHEMIN sur segment] Ajouter un nœud"
 
-#: ../src/develop/masks/path.c:3444
+#: ../src/develop/masks/path.c:3443
 msgid "[PATH] change size"
 msgstr "[CHEMIN] Changer la taille"
 
-#: ../src/develop/masks/path.c:3446
+#: ../src/develop/masks/path.c:3445
 msgid "[PATH] change feather size"
 msgstr "[CHEMIN] Changer la taille de l’adoucissement"
 
-#: ../src/develop/masks/path.c:3448
+#: ../src/develop/masks/path.c:3447
 msgid "[PATH] change opacity"
 msgstr "[CHEMIN] Changer l’opacité"
 
-#: ../src/develop/masks/path.c:3460
+#: ../src/develop/masks/path.c:3459
 #, c-format
 msgid "path #%d"
 msgstr "Chemin #%d"
 
-#: ../src/develop/masks/path.c:3470
+#: ../src/develop/masks/path.c:3469
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -8823,7 +8823,7 @@ msgstr ""
 "<b>Ajouter un nœud</b> : clic • <b>Ajouter un nœud dur</b> : Ctrl+clic\n"
 "<b>Annuler</b> : clic droit"
 
-#: ../src/develop/masks/path.c:3473
+#: ../src/develop/masks/path.c:3472
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -8831,7 +8831,7 @@ msgstr ""
 "<b>Ajouter un nœud</b> : clic • <b>Ajouter un nœud dur</b> : Ctrl+clic\n"
 "<b>Terminer le chemin</b> : clic droit"
 
-#: ../src/develop/masks/path.c:3476
+#: ../src/develop/masks/path.c:3475
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -8839,7 +8839,7 @@ msgstr ""
 "<b>Déplacer un nœud</b> : déplacer • <b>Supprimer un nœud</b> : clic droit\n"
 "<b>Passer au mode doux ou dur</b> : Ctrl+clic"
 
-#: ../src/develop/masks/path.c:3480
+#: ../src/develop/masks/path.c:3479
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
@@ -8847,7 +8847,7 @@ msgstr ""
 "<b>Courbe du nœud</b> : déplacer\n"
 "<b>Réinitialiser la courbe</b> : clic droit"
 
-#: ../src/develop/masks/path.c:3484
+#: ../src/develop/masks/path.c:3483
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
@@ -11917,7 +11917,7 @@ msgstr "Correctif ou créatif"
 #: ../src/iop/channelmixerrgb.c:235 ../src/iop/clipping.c:321
 #: ../src/iop/clipping.c:323 ../src/iop/colorbalancergb.c:186
 #: ../src/iop/colorin.c:137 ../src/iop/crop.c:145 ../src/iop/crop.c:147
-#: ../src/iop/demosaic.c:292 ../src/iop/denoiseprofile.c:726
+#: ../src/iop/demosaic.c:293 ../src/iop/denoiseprofile.c:726
 #: ../src/iop/denoiseprofile.c:728 ../src/iop/diffuse.c:146
 #: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:131 ../src/iop/exposure.c:133
 #: ../src/iop/flip.c:111 ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
@@ -12955,7 +12955,7 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:79 ../src/iop/cacorrect.c:81
 #: ../src/iop/cacorrectrgb.c:171 ../src/iop/cacorrectrgb.c:173
-#: ../src/iop/demosaic.c:290 ../src/iop/highlights.c:180
+#: ../src/iop/demosaic.c:291 ../src/iop/highlights.c:180
 #: ../src/iop/highlights.c:182 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:159
@@ -12965,7 +12965,7 @@ msgid "linear, raw, scene-referred"
 msgstr "Relatif à la scène, linéaire, RAW"
 
 #: ../src/iop/cacorrect.c:80 ../src/iop/cacorrectrgb.c:172
-#: ../src/iop/demosaic.c:291 ../src/iop/invert.c:121
+#: ../src/iop/demosaic.c:292 ../src/iop/invert.c:121
 #: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:160
 #: ../src/iop/temperature.c:214
 msgid "linear, raw"
@@ -14820,7 +14820,7 @@ msgstr ""
 "Convertit n’importe quelle entrée RVB en RVB de référence pour le pipeline\n"
 "en utilisant les profils de couleur pour redéfinir les valeurs RVB."
 
-#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:90 ../src/iop/demosaic.c:289
+#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:90 ../src/iop/demosaic.c:290
 #: ../src/iop/rawprepare.c:158
 msgid "mandatory"
 msgstr "Obligatoire"
@@ -15067,7 +15067,7 @@ msgstr "Priorité à des couleurs de remplacement spécifiques"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
-#: ../src/iop/colorreconstruction.c:1261 ../src/iop/demosaic.c:1272
+#: ../src/iop/colorreconstruction.c:1261 ../src/iop/demosaic.c:1303
 #: ../src/iop/highlights.c:1180
 msgid "not applicable"
 msgstr "Non applicable"
@@ -15270,26 +15270,26 @@ msgstr ""
 "Seuil pour la détection de la frange, valeurs plus grandes pour moins de "
 "suppression de la frange"
 
-#: ../src/iop/demosaic.c:283
+#: ../src/iop/demosaic.c:284
 msgid "demosaic"
 msgstr "Dématriçage"
 
-#: ../src/iop/demosaic.c:288
+#: ../src/iop/demosaic.c:289
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Reconstruit des pixels RVB complets\n"
 "à partir de la lecture d’un capteur à grille de filtres colorés."
 
-#: ../src/iop/demosaic.c:866
+#: ../src/iop/demosaic.c:867
 msgid "[dual demosaic_cl] internal problem"
 msgstr "[double dématriçage Opencl] problème interne"
 
-#: ../src/iop/demosaic.c:1105
+#: ../src/iop/demosaic.c:1112
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Matrice de couleurs « %s » non trouvée pour une image de Bayer"
 
-#: ../src/iop/demosaic.c:1239
+#: ../src/iop/demosaic.c:1264
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -15302,7 +15302,7 @@ msgstr ""
 " • LMMSE est adapté aux images à haut ISO\n"
 "Un double dématriçage double le temps de traitement."
 
-#: ../src/iop/demosaic.c:1243
+#: ../src/iop/demosaic.c:1268
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -15312,7 +15312,11 @@ msgstr ""
 "Markesteijn 3 passes et chroma domaine fréquentiel sont lents.\n"
 "Un double dématriçage double le temps de traitement."
 
-#: ../src/iop/demosaic.c:1247
+#: ../src/iop/demosaic.c:1274
+msgid "Bayer4 sensor demosaicing methods."
+msgstr "Méthode de dématriçage pour les capteurs de Bayer."
+
+#: ../src/iop/demosaic.c:1278
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -15321,7 +15325,7 @@ msgstr ""
 "Seuil pour une passe médiane supplémentaire.\n"
 "Indiquer « 0.0 » pour désactiver, « 1.0 » pour ignorer les bords."
 
-#: ../src/iop/demosaic.c:1252
+#: ../src/iop/demosaic.c:1283
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -15333,7 +15337,7 @@ msgstr ""
 "pour favoriser\n"
 "les basses fréquences (aplats)."
 
-#: ../src/iop/demosaic.c:1260
+#: ../src/iop/demosaic.c:1291
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -15342,15 +15346,15 @@ msgstr ""
 "Le pas « Médian » fait la moyenne de la sortie, le pas « Raffinement »\n"
 "ajoute un nouveau calcul des canaux rouges et bleus."
 
-#: ../src/iop/demosaic.c:1263
+#: ../src/iop/demosaic.c:1294
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:1266
+#: ../src/iop/demosaic.c:1297
 msgid "green channels matching method"
 msgstr "Méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:1273
+#: ../src/iop/demosaic.c:1304
 msgid "demosaicing is only used for color raw images"
 msgstr "« Dématriçage » est uniquement utilisé pour les images RAW"
 
@@ -20101,7 +20105,7 @@ msgstr "Fichiers"
 #: ../src/libs/filtering.c:862 ../src/libs/filtering.c:929
 #: ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1894
 #: ../src/libs/image.c:464 ../src/libs/image.c:574 ../src/libs/image.c:582
-#: ../src/libs/metadata.c:613 ../src/libs/metadata_view.c:1227
+#: ../src/libs/metadata.c:613 ../src/libs/metadata_view.c:1233
 msgid "metadata"
 msgstr "Métadonnées"
 
@@ -20126,7 +20130,7 @@ msgid "collections settings"
 msgstr "Préférences des collections"
 
 #: ../src/libs/collect.c:3001 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1195
+#: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1201
 #: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057
 #: ../src/libs/tagging.c:3472
@@ -20134,7 +20138,7 @@ msgid "save"
 msgstr "Enregistrer"
 
 #: ../src/libs/collect.c:3021 ../src/libs/export.c:1047
-#: ../src/libs/metadata.c:707 ../src/libs/metadata_view.c:1307
+#: ../src/libs/metadata.c:707 ../src/libs/metadata_view.c:1313
 #: ../src/libs/recentcollect.c:362 ../src/libs/tagging.c:3494
 msgid "preferences..."
 msgstr "Préférences…"
@@ -22249,11 +22253,11 @@ msgstr "Éditeur de métadonnées"
 msgid "<leave unchanged>"
 msgstr "<laisser non modifié>"
 
-#: ../src/libs/metadata.c:570 ../src/libs/metadata_view.c:1193
+#: ../src/libs/metadata.c:570 ../src/libs/metadata_view.c:1199
 msgid "metadata settings"
 msgstr "Configuration des métadonnées"
 
-#: ../src/libs/metadata.c:619 ../src/libs/metadata_view.c:1238
+#: ../src/libs/metadata.c:619 ../src/libs/metadata_view.c:1244
 msgid "visible"
 msgstr "Visible"
 
@@ -22490,17 +22494,27 @@ msgstr ""
 msgid "%+.2f EV"
 msgstr "%+.2f IL"
 
-#: ../src/libs/metadata_view.c:752
+#: ../src/libs/metadata_view.c:742
+#, c-format
+msgid "%.1f mm (%.1f mm FF equiv, crop %.1f)"
+msgstr "%.1f mm (%.1f mm FF, facteur %.1f)"
+
+#: ../src/libs/metadata_view.c:747
+#, c-format
+msgid "%.1f mm"
+msgstr "%.1f mm"
+
+#: ../src/libs/metadata_view.c:758
 #, c-format
 msgid "infinity"
 msgstr "Infini"
 
-#: ../src/libs/metadata_view.c:756
+#: ../src/libs/metadata_view.c:762
 #, c-format
 msgid "%.2f m"
 msgstr "%.2f M"
 
-#: ../src/libs/metadata_view.c:1233
+#: ../src/libs/metadata_view.c:1239
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -22510,7 +22524,7 @@ msgstr ""
 " • Décocher pour masquer les métadonnées non voulues.\n"
 "Si des réglages différents sont nécessaires utiliser les préréglages."
 
-#: ../src/libs/metadata_view.c:1389
+#: ../src/libs/metadata_view.c:1395
 msgid "jump to film roll"
 msgstr "Aller à la pellicule"
 
@@ -25414,9 +25428,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "no image selected !"
 #~ msgstr "Aucune image sélectionnée !"
-
-#~ msgid "demosaicing method"
-#~ msgstr "Méthode de dématriçage"
 
 #~ msgid "no embedded metadata and lensfun disabled"
 #~ msgstr "Pas de métadonnées intégrées et lensfun désactivé"
