@@ -399,6 +399,9 @@ The following is a summary of the main features added to darktable
   masks has also been improved to be more consistent for all kind of
   forms.
 
+- Show the full-frame equivalent focal length and crop factor in the
+  image information module.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
