@@ -472,7 +472,6 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]}; 
   const dt_aligned_pixel_t cube_coeffs = { powf(clips[0], 1.0f / HL_POWERF), powf(clips[1], 1.0f / HL_POWERF), powf(clips[2], 1.0f / HL_POWERF)};
 
-  const int combining = MAX(1, (int) data->combine);
   const int recovery_mode = data->recovery;
   const float strength = data->strength;
 
@@ -582,12 +581,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     dt_masks_extend_border(plane[i], pwidth, pheight, HL_BORDER);
 
   for(int p = 0; p < HL_RGB_PLANES; p++)
-  {
-    // We prefer to have slightly wider segment borders for a possibly better chosen candidate
-    dt_segments_transform_dilate(&isegments[p], combining);
-    if(combining > 2)
-      dt_segments_transform_erode(&isegments[p], combining / 3);
-  }
+    dt_segments_combine(&isegments[p], data->combine);
 
   if(dt_get_num_threads() >= HL_RGB_PLANES)
   {
@@ -651,7 +645,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
   if(do_recovery || do_masking)
   {
-    dt_segments_transform_closing(segall, recovery_close);
+    dt_segments_combine(segall, recovery_close);
     dt_iop_image_fill(gradient, fminf(1.0f, 5.0f * strength), pwidth, pheight, 1);
     dt_iop_image_fill(distance, 0.0f, pwidth, pheight, 1);
 #ifdef _OPENMP
