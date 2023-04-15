@@ -3270,7 +3270,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     // (re)set the header mask indicator too
     if(module->mask_indicator)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator), FALSE);
-    module->suppress_mask = 0;
+    module->suppress_mask = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
 
     _box_set_visible(bd->bottom_box, FALSE);
@@ -3326,7 +3326,7 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     module->request_mask_display
     & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
 
-  const int suppress = module->suppress_mask;
+  const gboolean suppress = module->suppress_mask;
 
   if((module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && module->blend_data)
   {
@@ -3334,7 +3334,7 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
     module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-    module->suppress_mask = 0;
+    module->suppress_mask = FALSE;
 
     // (re)set the header mask indicator too
     ++darktable.gui->reset;
