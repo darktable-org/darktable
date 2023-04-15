@@ -1071,7 +1071,6 @@ void _styles_apply_to_image_ext(const char *name,
     {
       dt_dev_reload_history_items(darktable.develop);
       dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
-      dt_dev_modules_update_multishow(darktable.develop);
     }
 
     /* update xmp file */

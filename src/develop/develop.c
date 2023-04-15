@@ -1310,9 +1310,6 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
-  // we update show params for multi-instances for each other instances
-  dt_dev_modules_update_multishow(dev);
-
   dt_unlock_image(dev->image_storage.id);
 }
 
@@ -2908,59 +2905,6 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
                                   DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     /* redraw */
     dt_control_queue_redraw_center();
-  }
-}
-
-void _dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module)
-{
-  // We count the number of other instances
-  int nb_instances = 0;
-  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-
-    if(mod->instance == module->instance) nb_instances++;
-  }
-
-  dt_iop_module_t *mod_prev = dt_iop_gui_get_previous_visible_module(module);
-  dt_iop_module_t *mod_next = dt_iop_gui_get_next_visible_module(module);
-
-  const gboolean move_next =
-    (mod_next && mod_next->iop_order != INT_MAX)
-    ? dt_ioppr_check_can_move_after_iop(dev->iop, module, mod_next)
-    : -1.0;
-  const gboolean move_prev =
-    (mod_prev && mod_prev->iop_order != INT_MAX)
-    ? dt_ioppr_check_can_move_before_iop(dev->iop, module, mod_prev)
-    : -1.0;
-
-  module->multi_show_new = !(module->flags() & IOP_FLAGS_ONE_INSTANCE);
-  module->multi_show_close = (nb_instances > 1);
-  if(mod_next)
-    module->multi_show_up = move_next;
-  else
-    module->multi_show_up = 0;
-  if(mod_prev)
-    module->multi_show_down = move_prev;
-  else
-    module->multi_show_down = 0;
-}
-
-void dt_dev_modules_update_multishow(dt_develop_t *dev)
-{
-  if(darktable.unmuted & DT_DEBUG_IOPORDER)
-    dt_ioppr_check_iop_order(dev, 0, "dt_dev_modules_update_multishow");
-
-  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-
-    // only for visible modules
-    GtkWidget *expander = mod->expander;
-    if(expander && gtk_widget_is_visible(expander))
-    {
-      _dev_module_update_multishow(dev, mod);
-    }
   }
 }
 

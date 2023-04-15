@@ -2955,9 +2955,6 @@ static void _on_drag_data_received(GtkWidget *widget,
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
         module_src->expander, g_value_get_int(&gv));
 
-    // we update the headers
-    dt_dev_modules_update_multishow(module_src->dev);
-
     dt_dev_add_history_item(module_src->dev, module_src, TRUE);
 
     if(darktable.unmuted & DT_DEBUG_IOPORDER)
@@ -3137,9 +3134,6 @@ void enter(dt_view_t *self)
         dt_iop_request_focus(module);
     }
   }
-
-  // update module multishow state now modules are loaded
-  dt_dev_modules_update_multishow(dev);
 
   // image should be there now.
   float zoom_x, zoom_y;
