@@ -324,10 +324,6 @@ typedef struct dt_iop_module_t
   int multi_priority; // user may change this
   char multi_name[128]; // user may change this name
   gboolean multi_name_hand_edited;
-  gboolean multi_show_close;
-  gboolean multi_show_up;
-  gboolean multi_show_down;
-  gboolean multi_show_new;
   GtkWidget *multimenu_button;
 
   /** delayed-event handling */
