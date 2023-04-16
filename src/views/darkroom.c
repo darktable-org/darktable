@@ -2960,7 +2960,8 @@ static void _on_drag_data_received(GtkWidget *widget,
 
     dt_dev_add_history_item(module_src->dev, module_src, TRUE);
 
-    dt_ioppr_check_iop_order(module_src->dev, 0, "_on_drag_data_received end");
+    if(darktable.unmuted & DT_DEBUG_IOPORDER)
+      dt_ioppr_check_iop_order(module_src->dev, 0, "_on_drag_data_received end");
 
     // rebuild the accelerators
     dt_iop_connect_accels_multi(module_src->so);

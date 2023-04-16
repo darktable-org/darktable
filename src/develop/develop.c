@@ -1273,7 +1273,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
 {
-  dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext begin");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext begin");
+
   const int end_prev = dev->history_end;
   dev->history_end = cnt;
 
@@ -1319,7 +1321,8 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
 
   dt_ioppr_check_duplicate_iop_order(&dev->iop, dev->history);
 
-  dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext end");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext end");
 
   // check if masks have changed
   int masks_changed = 0;
@@ -2329,7 +2332,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     sqlite3_finalize(stmt);
   }
 
-  dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
 
   dt_masks_read_masks_history(dev, imgid);
 
@@ -2897,7 +2901,8 @@ void _dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *mod
 
 void dt_dev_modules_update_multishow(dt_develop_t *dev)
 {
-  dt_ioppr_check_iop_order(dev, 0, "dt_dev_modules_update_multishow");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev, 0, "dt_dev_modules_update_multishow");
 
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
