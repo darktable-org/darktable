@@ -405,7 +405,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
 
   else if(_has_prefix(variable, "EXIF.FOCAL.LENGTH")
           || _has_prefix(variable, "EXIF_FOCAL_LENGTH"))
-    result = g_strdup_printf("%d", (int)params->data->exif_focal_length);
+    result = g_strdup_printf("%.1f", params->data->exif_focal_length);
 
   else if(_has_prefix(variable, "EXIF.FOCUS.DISTANCE")
           || _has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
