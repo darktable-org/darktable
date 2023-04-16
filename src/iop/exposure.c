@@ -305,14 +305,17 @@ void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_exposure_params_t *d = module->default_params;
 
-  const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean scene_raw =
+     dt_image_is_rawprepare_supported(&module->dev->image_storage)
+     && dt_is_scene_referred();
 
   d->mode = EXPOSURE_MODE_MANUAL;
 
-  if(is_scene_referred && module->multi_priority == 0)
+  if(scene_raw && module->multi_priority == 0)
   {
-    d->exposure = 0.7f;
-    d->black = -0.000244140625f;
+    const gboolean mono = dt_image_is_monochrome(&module->dev->image_storage);
+    d->exposure = mono ? 0.0f : 0.7f;
+    d->black =    mono ? 0.0f : -0.000244140625f;
     d->compensate_exposure_bias = TRUE;
   }
   else
