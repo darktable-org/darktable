@@ -960,11 +960,13 @@ void _styles_apply_to_image_ext(const char *name,
 
     dt_dev_read_history_ext(dev_dest, newimgid, TRUE, -1);
 
-    dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image ");
+    if(darktable.unmuted & DT_DEBUG_IOPORDER)
+      dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image ");
 
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
-    dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
+    if(darktable.unmuted & DT_DEBUG_IOPORDER)
+      dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
     dt_print(DT_DEBUG_IOPORDER,
              "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
@@ -1026,7 +1028,8 @@ void _styles_apply_to_image_ext(const char *name,
 
     g_list_free_full(si_list, dt_style_item_free);
 
-    dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
+    if(darktable.unmuted & DT_DEBUG_IOPORDER)
+      dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
     dt_undo_lt_history_t *hist = NULL;
     if(undo)

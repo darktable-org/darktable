@@ -547,21 +547,30 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   // This prepends the default modules and converts just in case it's an empty history
   dt_dev_read_history_ext(dev_dest, dest_imgid, TRUE, -1);
 
-  dt_ioppr_check_iop_order(dev_src, imgid, "_history_copy_and_paste_on_image_merge ");
-  dt_ioppr_check_iop_order(dev_dest, dest_imgid, "_history_copy_and_paste_on_image_merge ");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev_src, imgid,
+                             "_history_copy_and_paste_on_image_merge ");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev_dest, dest_imgid,
+                             "_history_copy_and_paste_on_image_merge ");
 
   dt_dev_pop_history_items_ext(dev_src, dev_src->history_end);
   dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
-  dt_ioppr_check_iop_order(dev_src, imgid, "_history_copy_and_paste_on_image_merge 1");
-  dt_ioppr_check_iop_order(dev_dest, dest_imgid, "_history_copy_and_paste_on_image_merge 1");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev_src, imgid,
+                             "_history_copy_and_paste_on_image_merge 1");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev_dest, dest_imgid,
+                             "_history_copy_and_paste_on_image_merge 1");
 
   GList *mod_list = NULL;
   GList *autoinit_list = NULL;
 
   if(ops)
   {
-    dt_print(DT_DEBUG_IOPORDER, "[history_copy_and_paste_on_image_merge] selected modules\n");
+    dt_print(DT_DEBUG_IOPORDER,
+             "[history_copy_and_paste_on_image_merge] selected modules\n");
     // copy only selected history entries
     for(const GList *l = g_list_last(ops); l; l = g_list_previous(l))
     {
@@ -594,9 +603,11 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
       dt_iop_module_t *mod_src = (dt_iop_module_t *)(modules_src->data);
 
       // copy from history only if
-      if((_search_history_by_module(dev_src, mod_src) != NULL) // module is in history of source image
+      if((_search_history_by_module(dev_src, mod_src) != NULL)
+         // module is in history of source image
          && !(mod_src->default_enabled && mod_src->enabled
-              && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) // it's not a enabled by default module with unmodified settings
+              && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size)
+              // it's not a enabled by default module with unmodified settings
               && !dt_iop_is_hidden(mod_src))
          && (copy_full || !dt_history_module_skip_copy(mod_src->flags()))
         )
@@ -630,7 +641,9 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   // update iop-order list to have entries for the new modules
   dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
 
-  dt_ioppr_check_iop_order(dev_dest, dest_imgid, "_history_copy_and_paste_on_image_merge 2");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev_dest, dest_imgid,
+                           "_history_copy_and_paste_on_image_merge 2");
 
   // write history and forms to db
   dt_dev_write_history_ext(dev_dest, dest_imgid);
