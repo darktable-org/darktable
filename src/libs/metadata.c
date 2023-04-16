@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,6 +55,7 @@ typedef struct dt_lib_metadata_t
   char *name[DT_METADATA_NUMBER];
   GtkWidget *label[DT_METADATA_NUMBER];
   GtkWidget *apply_button;
+  gboolean init_layout;
   GList *last_act_on;
 } dt_lib_metadata_t;
 
