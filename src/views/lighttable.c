@@ -395,7 +395,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // Let's show full preview if in that state...
   _lighttable_check_layout(self);
 
-  if(!darktable.collection || darktable.collection->count <= 0)
+  if(!darktable.collection || dt_collection_get_count_no_group(darktable.collection) <= 0)
   {
     // thumbtable displays an help message
   }

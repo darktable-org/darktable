@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2218,7 +2218,7 @@ void gui_update(dt_lib_module_t *self)
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *const d = (dt_lib_collect_t *)self->data;
 
   // we check if something has changed since last call
   if(d->view_rule != -1) return;
@@ -2279,7 +2279,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     _set_tooltip(d->rule + i);
   }
 
-  // update list of proposals
+  // update list of proposals if the module's contents are visible
   d->active_rule = active;
   dt_lib_gui_queue_update(self);
   --darktable.gui->reset;
@@ -2340,7 +2340,7 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
   set_properties(d);
   c->view_rule = -1;
   if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, property, NULL);
 }
 
 static void _history_save(dt_lib_collect_t *d)
@@ -2537,8 +2537,9 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
 
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
-  if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  if(order)
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, item, NULL);
   _history_save(d);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
@@ -2586,7 +2587,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
   }
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, property, NULL);
   _history_save(c);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
