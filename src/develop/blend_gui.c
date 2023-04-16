@@ -620,15 +620,10 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode,
         (data->masks_combine_combo,
          data->module->blend_params->mask_combine
           & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL));
-      gtk_widget_hide(GTK_WIDGET(data->masks_invert_combo));
       gtk_widget_show(GTK_WIDGET(data->masks_combine_combo));
     }
     else
     {
-      dt_bauhaus_combobox_set_from_value
-        (data->masks_invert_combo,
-         data->module->blend_params->mask_combine & DEVELOP_COMBINE_INV);
-      gtk_widget_show(GTK_WIDGET(data->masks_invert_combo));
       gtk_widget_hide(GTK_WIDGET(data->masks_combine_combo));
     }
 
@@ -793,21 +788,6 @@ static void _blendop_masks_combine_callback(GtkWidget *combo,
     _blendop_blendif_update_tab(data->module, data->tab);
   }
 
-  _blendif_clean_output_channels(data->module);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
-static void _blendop_masks_invert_callback(GtkWidget *combo,
-                                           dt_iop_gui_blend_data_t *data)
-{
-  const unsigned int invert =
-    GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(data->masks_invert_combo))
-    & DEVELOP_COMBINE_INV;
-
-  if(invert)
-    data->module->blend_params->mask_combine |= DEVELOP_COMBINE_INV;
-  else
-    data->module->blend_params->mask_combine &= ~DEVELOP_COMBINE_INV;
   _blendif_clean_output_channels(data->module);
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
@@ -3192,9 +3172,6 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   dt_bauhaus_combobox_set_from_value
     (bd->masks_combine_combo,
      module->blend_params->mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL));
-  dt_bauhaus_combobox_set_from_value
-    (bd->masks_invert_combo,
-     module->blend_params->mask_combine & DEVELOP_COMBINE_INV);
   dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
   dt_bauhaus_combobox_set_from_value
     (bd->masks_feathering_guide_combo,
@@ -3231,12 +3208,10 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   {
     if(bd->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
     {
-      gtk_widget_hide(GTK_WIDGET(bd->masks_invert_combo));
       gtk_widget_show(GTK_WIDGET(bd->masks_combine_combo));
     }
     else
     {
-      gtk_widget_show(GTK_WIDGET(bd->masks_invert_combo));
       gtk_widget_hide(GTK_WIDGET(bd->masks_combine_combo));
     }
 
@@ -3559,14 +3534,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_combine_combo),
                          dt_get_help_url("masks_combined"));
 
-    bd->masks_invert_combo = _combobox_new_from_list
-      (module,
-       N_("invert mask"),
-       dt_develop_invert_mask_names, NULL,
-       _("apply mask in normal or inverted mode"));
-    g_signal_connect(G_OBJECT(bd->masks_invert_combo), "value-changed",
-                     G_CALLBACK(_blendop_masks_invert_callback), bd);
-
     bd->details_slider = dt_bauhaus_slider_new_with_range(module, -1.0f, 1.0f, 0, 0.0f, 2);
     dt_bauhaus_widget_set_label(bd->details_slider, N_("blend"), N_("details threshold"));
     dt_bauhaus_slider_set_format(bd->details_slider, "%");
@@ -3686,8 +3653,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     bd->bottom_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
     gtk_box_pack_start(GTK_BOX(bd->bottom_box),
                        GTK_WIDGET(bd->masks_combine_combo), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->bottom_box),
-                       GTK_WIDGET(bd->masks_invert_combo), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box),
                        hbox, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box),
