@@ -399,7 +399,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
     module->histogram_max[2] = module->histogram_max[3] = 0;
   module->histogram_middle_grey = FALSE;
   module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-  module->suppress_mask = 0;
+  module->suppress_mask = FALSE;
   module->enabled = module->default_enabled = FALSE; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
   module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
