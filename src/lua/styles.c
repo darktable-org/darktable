@@ -261,7 +261,7 @@ int dt_lua_style_apply(lua_State *L)
   }
 
   if(darktable.develop && darktable.develop->image_storage.id == imgid)
-    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s can't called from darkroom view.  Use darktable.gui.action() instead\n", __FUNCTION__);
+    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s can't be called from darkroom view.  Use darktable.gui.action() instead\n", __FUNCTION__);
   else
   {
     dt_styles_apply_to_image(style.name, FALSE, FALSE, imgid);
