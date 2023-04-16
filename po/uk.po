@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-13 17:25+0200\n"
-"PO-Revision-Date: 2023-04-14 14:47+0300\n"
+"POT-Creation-Date: 2023-04-15 12:08+0200\n"
+"PO-Revision-Date: 2023-04-15 20:22+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1202,7 +1202,7 @@ msgstr ""
 "Якщо клікати середньою кнопкою миші для масштабування, рівень масштабування "
 "циклічно змінюватиметься між 100%, 200% і підгонкою до панелі перегляду. В "
 "іншому випадку він перемикається між розміром панелі перегляду та 100%, а "
-"клавішу 'ctrl' можна використовувати для керування рівнем масштабування."
+"клавішу Ctrl можна використовувати для керування рівнем масштабування."
 
 #: ../build/bin/preferences_gen.h:4726
 msgid "pattern for the image information line"
@@ -1300,7 +1300,7 @@ msgstr "Розгортати одночасно лише один модуль �
 #: ../build/bin/preferences_gen.h:5184
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
-"Ця опція перемикає поведінку натискання з shift в режимі темної кімнати."
+"Ця опція перемикає поведінку натискання з Shift в режимі темної кімнати."
 
 #: ../build/bin/preferences_gen.h:5206
 msgid "only collapse modules in current group"
@@ -1476,10 +1476,12 @@ msgid ""
 "display-referred workflow is based on Lab modules and will auto-apply base "
 "curve, white balance and the legacy module pipe order."
 msgstr ""
-"\"На основі сцен\" базується на лінійних модулях і автоматично\n"
-"застосовуватиме filmic або sigmoid, калібрування кольору та експозицію.\n"
-"\"На основі відображення\" базується на Lab модулях і автоматично\n"
-"застосовуватиме базову криву, баланс білого та застарілий порядок модулів у "
+"\"На основі сцен\" базується на лінійних модулях і автоматично "
+"застосовуватиме\n"
+"модулі 'Filmic RGB' або 'Сигмоїда', 'Калібрування кольору' та 'Експозиція'.\n"
+"\"На основі відображення\" базується на Lab модулях і автоматично "
+"застосовуватиме\n"
+"модулі 'Базова крива', 'Баланс білого' та застарілий порядок модулів у "
 "конвеєрі."
 
 #: ../build/bin/preferences_gen.h:5825
@@ -1976,7 +1978,7 @@ msgid ""
 msgstr ""
 "Якщо ввімкнено, використовуйте коліщатко миші для прокрутки бічної панелі "
 "модулів.\n"
-"Використовуйте ctrl+alt з коліщатком миші для введення даних.\n"
+"Використовуйте Ctrl+Alt з коліщатком миші для введення даних.\n"
 "Коли вимкнено, ця поведінка змінюється на зворотну."
 
 #: ../build/bin/preferences_gen.h:7348
@@ -5862,14 +5864,14 @@ msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
 msgstr ""
-"Метод демозаїки RCD було встановлено за замовчуванням замість PPG через "
+"Метод демозаїкізації RCD було встановлено за замовчуванням замість PPG через "
 "кращу якість та продуктивність."
 
 #: ../src/common/darktable.c:1978
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
-"Щодо демозаїки масштабованих зображень в режимі темної кімнати перегляньте "
-"відповідний параметр в \"налаштування > темна кімната\""
+"Щодо демозаїкізації масштабованих зображень в режимі темної кімнати "
+"перегляньте відповідний параметр в \"Налаштування > Темна кімната\""
 
 #: ../src/common/darktable.c:1984
 msgid ""
@@ -5884,8 +5886,8 @@ msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
-"Ви більше не знайдете старих параметрів, замість цього \"в налаштування > "
-"обробка\" використовуйте:"
+"Ви більше не знайдете старих параметрів, замість цього \"в Налаштування > "
+"Обробка\" використовуйте:"
 
 #: ../src/common/darktable.c:1988
 msgid "1) darktable resources"
@@ -5995,7 +5997,7 @@ msgstr "Помилка запуску darktable"
 
 #: ../src/common/database.c:2778 ../src/libs/collect.c:3000
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1702
-#: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1195
+#: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1201
 #: ../src/libs/recentcollect.c:294 ../src/libs/modulegroups.c:3465
 #: ../src/libs/styles.c:438 ../src/libs/styles.c:621 ../src/libs/tagging.c:1484
 #: ../src/libs/tagging.c:1572 ../src/libs/tagging.c:1653
@@ -6743,7 +6745,7 @@ msgstr "над рівнем моря"
 msgid "below sea level"
 msgstr "нижче рівня моря"
 
-#: ../src/common/utility.c:557 ../src/libs/metadata_view.c:881
+#: ../src/common/utility.c:557 ../src/libs/metadata_view.c:887
 msgid "m"
 msgstr "м"
 
@@ -7697,7 +7699,7 @@ msgid "reverse"
 msgstr "Зворотна"
 
 #: ../src/develop/blend_gui.c:140 ../src/imageio/format/webp.c:413
-#: ../src/libs/metadata.c:571 ../src/libs/metadata_view.c:1194
+#: ../src/libs/metadata.c:571 ../src/libs/metadata_view.c:1200
 msgid "default"
 msgstr "Замовчування"
 
@@ -7981,7 +7983,7 @@ msgid ""
 "ctrl+click or right-click to select an area"
 msgstr ""
 "Виберіть колір із зображення\n"
-"ctrl+клік або клік правою кнопкою миші, щоб вибрати область"
+"Ctrl+клік або клік правою кнопкою миші, щоб вибрати область"
 
 #: ../src/develop/blend_gui.c:2557
 msgid ""
@@ -7991,7 +7993,7 @@ msgid ""
 msgstr ""
 "Встановлює діапазон на основі області із зображення\n"
 "Перетягніть, щоб використати вхідне зображення\n"
-"ctrl+перетягування - використати вихідне зображення"
+"Ctrl+перетягування - використати вихідне зображення"
 
 #: ../src/develop/blend_gui.c:2562
 msgid "invert all channel's polarities"
@@ -8307,8 +8309,8 @@ msgid ""
 "hover over parametric mask slider to select channel for display"
 msgstr ""
 "Показати маску та/або канал кольору.\n"
-"ctrl+клік - показати маску,\n"
-"shift+клік - показати канал.\n"
+"Ctrl+клік - показати маску,\n"
+"Shift+клік - показати канал.\n"
 "Наведіть курсор на повзунок параметричної маски, щоб вибрати канал для "
 "відображення"
 
@@ -8418,7 +8420,7 @@ msgid ""
 "ctrl+click to reapply any automatic presets"
 msgstr ""
 "Скинути параметри\n"
-"ctrl+клік - повторно застосувати будь-які автоматичні пресети"
+"Ctrl+клік - повторно застосувати будь-які автоматичні пресети"
 
 #: ../src/develop/imageop.c:2845
 msgid ""
@@ -8501,7 +8503,7 @@ msgid ""
 "ctrl+click to %s"
 msgstr ""
 "%s\n"
-"ctrl+click – %s"
+"Ctrl+клік – %s"
 
 #: ../src/develop/lightroom.c:1083
 msgid "cannot find lightroom XMP!"
@@ -8521,136 +8523,136 @@ msgstr[0] "%s було імпортовано"
 msgstr[1] "%s було імпортовано"
 msgstr[2] "%s було імпортовано"
 
-#: ../src/develop/masks/brush.c:1342 ../src/develop/masks/brush.c:1396
+#: ../src/develop/masks/brush.c:1355 ../src/develop/masks/brush.c:1409
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr "Жорсткість: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1358 ../src/develop/masks/brush.c:1456
-#: ../src/develop/masks/circle.c:145 ../src/develop/masks/circle.c:190
-#: ../src/develop/masks/ellipse.c:537 ../src/develop/masks/ellipse.c:599
-#: ../src/develop/masks/path.c:1275
+#: ../src/develop/masks/brush.c:1371 ../src/develop/masks/brush.c:1469
+#: ../src/develop/masks/circle.c:148 ../src/develop/masks/circle.c:193
+#: ../src/develop/masks/ellipse.c:484 ../src/develop/masks/ellipse.c:546
+#: ../src/develop/masks/path.c:1272
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "Розмір: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:3230
+#: ../src/develop/masks/brush.c:3246
 msgid "[BRUSH] change size"
 msgstr "[ПЕНЗЕЛЬ] змінити розмір"
 
-#: ../src/develop/masks/brush.c:3232
+#: ../src/develop/masks/brush.c:3248
 msgid "[BRUSH] change hardness"
 msgstr "[ПЕНЗЕЛЬ] змінити жорсткість"
 
-#: ../src/develop/masks/brush.c:3234
+#: ../src/develop/masks/brush.c:3250
 msgid "[BRUSH] change opacity"
 msgstr "[ПЕНЗЕЛЬ] змінити непрозорість"
 
-#: ../src/develop/masks/brush.c:3246
+#: ../src/develop/masks/brush.c:3262
 #, c-format
 msgid "brush #%d"
 msgstr "Пензель #%d"
 
-#: ../src/develop/masks/brush.c:3259
+#: ../src/develop/masks/brush.c:3275
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>розмір</b>: прокрутка, <b>жорсткість</b>: shift+прокрутка\n"
-"<b>непрозорість</b>: ctrl+прокрутка (%d%%)"
+"<b>розмір</b>: прокрутка, <b>жорсткість</b>: Shift+прокрутка\n"
+"<b>непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/brush.c:3262
+#: ../src/develop/masks/brush.c:3278
 msgid "<b>size</b>: scroll"
 msgstr "<b>розмір</b>: прокрутка"
 
-#: ../src/develop/masks/circle.c:134 ../src/develop/masks/circle.c:178
-#: ../src/develop/masks/ellipse.c:523 ../src/develop/masks/ellipse.c:584
-#: ../src/develop/masks/path.c:1207
+#: ../src/develop/masks/circle.c:137 ../src/develop/masks/circle.c:181
+#: ../src/develop/masks/ellipse.c:470 ../src/develop/masks/ellipse.c:531
+#: ../src/develop/masks/path.c:1204
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "Розмір розтушовки: %3.2f%%"
 
-#: ../src/develop/masks/circle.c:1507
+#: ../src/develop/masks/circle.c:1510
 msgid "[CIRCLE] change size"
 msgstr "[КОЛО] змінити розмір"
 
-#: ../src/develop/masks/circle.c:1509
+#: ../src/develop/masks/circle.c:1512
 msgid "[CIRCLE] change feather size"
 msgstr "[КОЛО] змінити розмір розтушовки"
 
-#: ../src/develop/masks/circle.c:1511
+#: ../src/develop/masks/circle.c:1514
 msgid "[CIRCLE] change opacity"
 msgstr "[КОЛО] змінити непрозорість"
 
-#: ../src/develop/masks/circle.c:1524
+#: ../src/develop/masks/circle.c:1527
 #, c-format
 msgid "circle #%d"
 msgstr "Коло #%d"
 
-#: ../src/develop/masks/circle.c:1535 ../src/develop/masks/path.c:3487
+#: ../src/develop/masks/circle.c:1538 ../src/develop/masks/path.c:3486
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: shift+прокрутка\n"
-"<b>непрозорість</b>: ctrl+прокрутка (%d%%)"
+"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: Shift+прокрутка\n"
+"<b>непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/ellipse.c:509 ../src/develop/masks/ellipse.c:568
+#: ../src/develop/masks/ellipse.c:456 ../src/develop/masks/ellipse.c:515
 #, c-format
 msgid "rotation: %3.f°"
 msgstr "Обертання: %3.f°"
 
-#: ../src/develop/masks/ellipse.c:2121
+#: ../src/develop/masks/ellipse.c:2068
 msgid "[ELLIPSE] change size"
 msgstr "[ЕЛІПС] змінити розмір"
 
-#: ../src/develop/masks/ellipse.c:2124
+#: ../src/develop/masks/ellipse.c:2071
 msgid "[ELLIPSE] change feather size"
 msgstr "[ЕЛІПС] змінити розмір розтушовки"
 
-#: ../src/develop/masks/ellipse.c:2127 ../src/develop/masks/ellipse.c:2136
+#: ../src/develop/masks/ellipse.c:2074 ../src/develop/masks/ellipse.c:2083
 msgid "[ELLIPSE] rotate shape"
 msgstr "[ЕЛІПС] обертати фігуру"
 
-#: ../src/develop/masks/ellipse.c:2130
+#: ../src/develop/masks/ellipse.c:2077
 msgid "[ELLIPSE] change opacity"
 msgstr "[ЕЛІПС] змінити непрозорість"
 
-#: ../src/develop/masks/ellipse.c:2133
+#: ../src/develop/masks/ellipse.c:2080
 msgid "[ELLIPSE] switch feathering mode"
 msgstr "[ЕЛІПС] перемкнути режим розтушовки"
 
-#: ../src/develop/masks/ellipse.c:2143
+#: ../src/develop/masks/ellipse.c:2090
 #, c-format
 msgid "ellipse #%d"
 msgstr "Еліпс #%d"
 
-#: ../src/develop/masks/ellipse.c:2181
+#: ../src/develop/masks/ellipse.c:2128
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: shift+прокрутка\n"
-"<b>обертання</b>: ctrl+shift+прокрутка, <b>непрозорість</b>: ctrl+прокрутка "
+"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: Shift+прокрутка\n"
+"<b>обертання</b>: Ctrl+Shift+прокрутка, <b>непрозорість</b>: Ctrl+прокрутка "
 "(%d%%)"
 
-#: ../src/develop/masks/ellipse.c:2185
+#: ../src/develop/masks/ellipse.c:2132
 msgid "<b>rotate</b>: ctrl+drag"
-msgstr "<b>обертання</b>: ctrl+перетягування"
+msgstr "<b>обертання</b>: Ctrl+перетягування"
 
-#: ../src/develop/masks/ellipse.c:2188
+#: ../src/develop/masks/ellipse.c:2135
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
 "ctrl+scroll (%d%%)"
 msgstr ""
-"<b>режим розтушовки</b>: shift+клік, <b>rotate</b>: ctrl+перетягування\n"
-"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: shift+прокрутка, "
-"<b>непрозорість</b>: ctrl+прокрутка (%d%%)"
+"<b>режим розтушовки</b>: Shift+клік, <b>rotate</b>: Ctrl+перетягування\n"
+"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: Shift+прокрутка, "
+"<b>непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/gradient.c:131 ../src/develop/masks/gradient.c:175
 #, c-format
@@ -8693,8 +8695,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>вигин</b>: прокрутка, <b>стиснення</b>: shift+прокрутка\n"
-"<b>обертання</b>: клік+перетягування, <b>непрозорість</b>: ctrl+прокрутка "
+"<b>вигин</b>: прокрутка, <b>стиснення</b>: Shift+прокрутка\n"
+"<b>обертання</b>: клік+перетягування, <b>непрозорість</b>: Ctrl+прокрутка "
 "(%d%%)"
 
 #: ../src/develop/masks/gradient.c:1592
@@ -8703,8 +8705,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>вигин</b>: прокрутка, <b>стиснення</b>: shift+прокрутка\n"
-"<b>непрозорість</b>: ctrl+прокрутка (%d%%)"
+"<b>вигин</b>: прокрутка, <b>стиснення</b>: Shift+прокрутка\n"
+"<b>непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1595
 msgid "<b>rotate</b>: drag"
@@ -8746,76 +8748,76 @@ msgstr "Використати фігури з модуля"
 msgid "masks can not contain themselves"
 msgstr "Маски не можуть містити себе"
 
-#: ../src/develop/masks/path.c:3430
+#: ../src/develop/masks/path.c:3429
 msgid "[PATH creation] add a smooth node"
 msgstr "[КОНТУР - створення] додати плавний вузол"
 
-#: ../src/develop/masks/path.c:3432
+#: ../src/develop/masks/path.c:3431
 msgid "[PATH creation] add a sharp node"
 msgstr "[КОНТУР - створення] додати гострий вузол"
 
-#: ../src/develop/masks/path.c:3434
+#: ../src/develop/masks/path.c:3433
 msgid "[PATH creation] terminate path creation"
 msgstr "[КОНТУР - створення] завершити створення контуру"
 
-#: ../src/develop/masks/path.c:3436
+#: ../src/develop/masks/path.c:3435
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[КОНТУР - на вузлі] перемкнутися між плавним і гострим вузлом"
 
-#: ../src/develop/masks/path.c:3438
+#: ../src/develop/masks/path.c:3437
 msgid "[PATH on node] remove the node"
 msgstr "[КОНТУР - на вузлі] видалити вузол"
 
-#: ../src/develop/masks/path.c:3440
+#: ../src/develop/masks/path.c:3439
 msgid "[PATH on feather] reset curvature"
 msgstr "[КОНТУР - розтушовка] скинути вигин"
 
-#: ../src/develop/masks/path.c:3442
+#: ../src/develop/masks/path.c:3441
 msgid "[PATH on segment] add node"
 msgstr "[КОНТУР - на сегменті] додати вузол"
 
-#: ../src/develop/masks/path.c:3444
+#: ../src/develop/masks/path.c:3443
 msgid "[PATH] change size"
 msgstr "[КОНТУР] змінити розмір"
 
-#: ../src/develop/masks/path.c:3446
+#: ../src/develop/masks/path.c:3445
 msgid "[PATH] change feather size"
 msgstr "[КОНТУР] змінити розмір розтушовки"
 
-#: ../src/develop/masks/path.c:3448
+#: ../src/develop/masks/path.c:3447
 msgid "[PATH] change opacity"
 msgstr "[КОНТУР] змінити непрозорість"
 
-#: ../src/develop/masks/path.c:3460
+#: ../src/develop/masks/path.c:3459
 #, c-format
 msgid "path #%d"
 msgstr "Контур #%d"
 
-#: ../src/develop/masks/path.c:3470
+#: ../src/develop/masks/path.c:3469
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>додати вузол</b>: клік, <b>додати гострий вузол</b>:ctrl+клік\n"
+"<b>додати вузол</b>: клік, <b>додати гострий вузол</b>:Ctrl+клік\n"
 "<b>скасування</b>: правий клік"
 
-#: ../src/develop/masks/path.c:3473
+#: ../src/develop/masks/path.c:3472
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>додати вузол</b>: клік, <b>додати гострий вузол</b>:ctrl+клік\n"
+"<b>додати вузол</b>: клік, <b>додати гострий вузол</b>: Ctrl+клік\n"
 "<b>закінчити контур</b>: правий клік"
 
-#: ../src/develop/masks/path.c:3476
+#: ../src/develop/masks/path.c:3475
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
 "<b>перемістити вузол</b>: перетягнути, <b>видалити вузол</b>: правий клік\n"
-"<b>перемкнути плавний/різкий режим</b>: ctrl+клік"
+"<b>перемкнути плавний/різкий режим</b>: Ctrl+клік"
 
-#: ../src/develop/masks/path.c:3480
+#: ../src/develop/masks/path.c:3479
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
@@ -8823,13 +8825,13 @@ msgstr ""
 "<b>вигин вузла</b>: перетягнути\n"
 "<b>скинути вигин</b>: правий клік"
 
-#: ../src/develop/masks/path.c:3484
+#: ../src/develop/masks/path.c:3483
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
 msgstr ""
 "<b>перемістити сегмент</b>: перетягнути\n"
-"<b>додати вузол</b>: ctrl+клік"
+"<b>додати вузол</b>: Ctrl+клік"
 
 #: ../src/develop/pixelpipe_hb.c:499
 msgid "enabled as required"
@@ -9316,23 +9318,23 @@ msgstr "pgupdown"
 
 #: ../src/gui/accelerators.c:96 ../src/views/view.c:1186
 msgid "shift"
-msgstr "shift"
+msgstr "Shift"
 
 #: ../src/gui/accelerators.c:97 ../src/views/view.c:1187
 msgid "ctrl"
-msgstr "ctrl"
+msgstr "Ctrl"
 
 #: ../src/gui/accelerators.c:98 ../src/views/view.c:1188
 msgid "alt"
-msgstr "alt"
+msgstr "Alt"
 
 #: ../src/gui/accelerators.c:99
 msgid "cmd"
-msgstr "cmd"
+msgstr "Cmd"
 
 #: ../src/gui/accelerators.c:100
 msgid "altgr"
-msgstr "Права alt"
+msgstr "Права Alt"
 
 #: ../src/gui/accelerators.c:109 ../src/gui/accelerators.c:156
 #: ../src/libs/tagging.c:1782
@@ -9382,11 +9384,11 @@ msgstr "Перемикач"
 
 #: ../src/gui/accelerators.c:131
 msgid "ctrl-toggle"
-msgstr "ctrl-перемикач"
+msgstr "Ctrl-перемикач"
 
 #: ../src/gui/accelerators.c:132
 msgid "ctrl-on"
-msgstr "ctrl-вмикання"
+msgstr "Ctrl-вмикання"
 
 #: ../src/gui/accelerators.c:133
 msgid "right-toggle"
@@ -9402,7 +9404,7 @@ msgstr "Активація"
 
 #: ../src/gui/accelerators.c:146
 msgid "ctrl-activate"
-msgstr "ctrl-активація"
+msgstr "Ctrl-активація"
 
 #: ../src/gui/accelerators.c:147
 msgid "right-activate"
@@ -9553,7 +9555,7 @@ msgstr "Подвійний клік, щоб визначити новий при
 
 #: ../src/gui/accelerators.c:952
 msgid "shift+alt+scroll to change height"
-msgstr "shift+alt+прокрутка для зміни висоти"
+msgstr "Shift+Alt+прокрутка для зміни висоти"
 
 #: ../src/gui/accelerators.c:972
 msgid ""
@@ -9569,11 +9571,11 @@ msgstr "Натисніть, щоб відкрити конфігурацію п�
 
 #: ../src/gui/accelerators.c:974
 msgid "ctrl+click to add to quick access panel\n"
-msgstr "ctrl+клік, щоб додати до панелі швидкого доступу\n"
+msgstr "Ctrl+клік, щоб додати до панелі швидкого доступу\n"
 
 #: ../src/gui/accelerators.c:975
 msgid "ctrl+click to remove from quick access panel\n"
-msgstr "ctrl+клік, щоб видалити з панелі швидкого доступу\n"
+msgstr "Ctrl+клік, щоб видалити з панелі швидкого доступу\n"
 
 #: ../src/gui/accelerators.c:976
 msgid "scroll to change default speed"
@@ -9585,7 +9587,7 @@ msgstr "Правий клік, щоб вийти з режиму зіставл�
 
 #: ../src/gui/accelerators.c:1033
 msgid "ctrl+v"
-msgstr "ctrl+v"
+msgstr "Ctrl+v"
 
 #: ../src/gui/accelerators.c:1033
 msgid "right long click"
@@ -9664,7 +9666,7 @@ msgid ""
 "right-click to cancel"
 msgstr ""
 "Визначте прискорювач, натиснувши клавішу, за бажанням поєднану з клавішами-"
-"модифікаторами (ctrl/shift/alt)\n"
+"модифікаторами (Ctrl/Shift/Alt)\n"
 "Клавіша може бути двічі або тричі натиснута з довгим останнім натисканням\n"
 "Утримуючи клавішу, можна (двічі/тричі/довго) натиснути на комбінацію кнопок "
 "миші\n"
@@ -11871,7 +11873,7 @@ msgstr "коригуюче чи креативне"
 #: ../src/iop/channelmixerrgb.c:235 ../src/iop/clipping.c:321
 #: ../src/iop/clipping.c:323 ../src/iop/colorbalancergb.c:186
 #: ../src/iop/colorin.c:137 ../src/iop/crop.c:145 ../src/iop/crop.c:147
-#: ../src/iop/demosaic.c:292 ../src/iop/denoiseprofile.c:726
+#: ../src/iop/demosaic.c:293 ../src/iop/denoiseprofile.c:726
 #: ../src/iop/denoiseprofile.c:728 ../src/iop/diffuse.c:146
 #: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:131 ../src/iop/exposure.c:133
 #: ../src/iop/flip.c:111 ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
@@ -12013,8 +12015,8 @@ msgid ""
 "shift+click to only fit lens shift"
 msgstr ""
 "Автоматично коригувати вертикальні спотворення перспективи\n"
-"ctrl+клік - лише обертання\n"
-"shift+клік - лише зміщення об'єктива"
+"Ctrl+клік - лише обертання\n"
+"Shift+клік - лише зміщення об'єктива"
 
 #: ../src/iop/ashift.c:6236
 msgid ""
@@ -12023,8 +12025,8 @@ msgid ""
 "shift+click to only fit lens shift"
 msgstr ""
 "Автоматично коригувати горизонтальні спотворення перспективи\n"
-"ctrl+клік - лише обертання\n"
-"shift+клік - лише зміщення об'єктива"
+"Ctrl+клік - лише обертання\n"
+"Shift+клік - лише зміщення об'єктива"
 
 #: ../src/iop/ashift.c:6240
 msgid ""
@@ -12036,9 +12038,9 @@ msgid ""
 msgstr ""
 "Автоматично коригувати вертикальні та горизонтальні спотворення перспективи, "
 "обертання, зміщення об'єктива в обох напрямках та зсув по діагоналі\n"
-"ctrl+клік - лише обертання\n"
-"shift+клік - лише зміщення об'єктива\n"
-"ctrl+shift+клік - лише обертання та зміщення об'єктива"
+"Ctrl+клік - лише обертання\n"
+"Shift+клік - лише зміщення об'єктива\n"
+"Ctrl+Shift+клік - лише обертання та зміщення об'єктива"
 
 #: ../src/iop/ashift.c:6247
 msgid ""
@@ -12048,9 +12050,9 @@ msgid ""
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
 "Автоматично проаналізувати структуру ліній на зображенні\n"
-"ctrl+клік для додаткового покращення контурів\n"
-"shift+клік для додаткового покращення деталей\n"
-"ctrl+shift+клік для поєднання обох методів"
+"Ctrl+клік для додаткового покращення контурів\n"
+"Shift+клік для додаткового покращення деталей\n"
+"Ctrl+Shift+клік для поєднання обох методів"
 
 #: ../src/iop/ashift.c:6252
 msgid "manually define perspective rectangle"
@@ -12902,7 +12904,7 @@ msgstr "Коригувати хроматичні аберації для сен
 
 #: ../src/iop/cacorrect.c:79 ../src/iop/cacorrect.c:81
 #: ../src/iop/cacorrectrgb.c:171 ../src/iop/cacorrectrgb.c:173
-#: ../src/iop/demosaic.c:290 ../src/iop/highlights.c:180
+#: ../src/iop/demosaic.c:291 ../src/iop/highlights.c:180
 #: ../src/iop/highlights.c:182 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:159
@@ -12912,7 +12914,7 @@ msgid "linear, raw, scene-referred"
 msgstr "лінійний простір, raw, на основі сцен"
 
 #: ../src/iop/cacorrect.c:80 ../src/iop/cacorrectrgb.c:172
-#: ../src/iop/demosaic.c:291 ../src/iop/invert.c:121
+#: ../src/iop/demosaic.c:292 ../src/iop/invert.c:121
 #: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:160
 #: ../src/iop/temperature.c:214
 msgid "linear, raw"
@@ -13329,7 +13331,7 @@ msgid ""
 "with chromatic adaptation. either set it to reference\n"
 "or disable chromatic adaptation here."
 msgstr ""
-"Модуль балансу білого не використовує референсне\n"
+"Модуль 'Баланс білого' не використовує референсне\n"
 "джерело світла камери, що спричинить тут проблеми\n"
 "з хроматичною адаптацією. Або встановіть його в референсе\n"
 "значення або вимкніть тут хроматичну адаптацію."
@@ -13775,8 +13777,8 @@ msgstr ""
 msgid ""
 "this module is deprecated. better use new local contrast module instead."
 msgstr ""
-"Цей модуль застарілий. Краще використовувати новий модуль локального "
-"контрасту замість нього."
+"Цей модуль застарілий. Краще використовувати новий модуль 'Локальний "
+"контраст' замість нього."
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:445
 msgid "amount"
@@ -13795,8 +13797,8 @@ msgid ""
 "this module is deprecated. please use the crop, orientation and/or rotate "
 "and perspective modules instead."
 msgstr ""
-"Цей модуль застарілий. Натомість краще використовувати модулі 'кадрування', "
-"'орієнтація' та/або 'обертання та перспектива'."
+"Цей модуль застарілий. Натомість краще використовувати модулі 'Кадрування', "
+"'Орієнтація' та/або 'Обертання та перспектива'."
 
 #: ../src/iop/clipping.c:309
 msgid "crop and rotate"
@@ -14009,7 +14011,7 @@ msgid ""
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
 "<b>переміщення</b>: перетягування, <b>переміщення по вертикалі</b>: "
-"shift+перетягування, <b>переміщення по горизонталі</b>: ctrl+перетягування\n"
+"Shift+перетягування, <b>переміщення по горизонталі</b>: Ctrl+перетягування\n"
 "<b>випрямлення</b>: перетягування правою кнопкою, <b>фіксація змін</b>: "
 "подвійний клік"
 
@@ -14570,11 +14572,11 @@ msgstr "визначається профілем, Lab"
 
 #: ../src/iop/colorchecker.c:289
 msgid "it8 skin tones"
-msgstr "Тони шкіри it8"
+msgstr "Тони шкіри IT8"
 
 #: ../src/iop/colorchecker.c:303
 msgid "helmholtz/kohlrausch monochrome"
-msgstr "монохром Гельмгольц/Кольрауш"
+msgstr "Монохром Гельмгольц/Кольрауш"
 
 #: ../src/iop/colorchecker.c:319
 msgid "Fuji Astia emulation"
@@ -14616,7 +14618,7 @@ msgstr ""
 "Натисніть, щоб вибрати\n"
 "Подвійний клік - скидання\n"
 "Клік правою кнопкою - видалити зразок\n"
-"shift+click при виборі кольору - замінити зразок"
+"Shift+клік при виборі кольору - замінити зразок"
 
 #: ../src/iop/colorchecker.c:1278
 msgid "patch"
@@ -14768,7 +14770,7 @@ msgstr ""
 "Перетворює будь-який вхід RGB на референсний RGB конвеєра\n"
 "використовуючи кольорові профілі для відображення RGB значень"
 
-#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:90 ../src/iop/demosaic.c:289
+#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:90 ../src/iop/demosaic.c:290
 #: ../src/iop/rawprepare.c:158
 msgid "mandatory"
 msgstr "Обов'язковий модуль"
@@ -14973,7 +14975,7 @@ msgstr "inconsistent output"
 
 #: ../src/iop/colorreconstruction.c:666
 msgid "module `color reconstruction' failed"
-msgstr "Модуль `відновлення кольору' не спрацював"
+msgstr "Модуль 'Відновлення кольору' не спрацював"
 
 #: ../src/iop/colorreconstruction.c:1237
 msgid "spatial"
@@ -15007,7 +15009,7 @@ msgstr "Коли і як давати пріоритет певним кольо
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Тон відтінку, якому слід надавати перевагу над іншими відтінками"
 
-#: ../src/iop/colorreconstruction.c:1261 ../src/iop/demosaic.c:1272
+#: ../src/iop/colorreconstruction.c:1261 ../src/iop/demosaic.c:1303
 #: ../src/iop/highlights.c:1180
 msgid "not applicable"
 msgstr "Не застосовується"
@@ -15083,8 +15085,8 @@ msgid ""
 msgstr ""
 "Створити криву на основі області із зображення\n"
 "Перетягніть, щоб створити плоску криву\n"
-"ctrl+перетягування - створити позитивну криву\n"
-"shift+перетягування - створити негативну криву"
+"Ctrl+перетягування - створити позитивну криву\n"
+"Shift+перетягування - створити негативну криву"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2442
@@ -15164,7 +15166,7 @@ msgid ""
 "b>: ctrl+drag"
 msgstr ""
 "<b>переміщення</b>: перетягування, <b>переміщення по вертикалі</b>: "
-"shift+перетягування, <b>переміщення по горизонталі</b>: ctrl+перетягування"
+"Shift+перетягування, <b>переміщення по горизонталі</b>: Ctrl+перетягування"
 
 #: ../src/iop/defringe.c:71
 msgid "defringe"
@@ -15210,25 +15212,25 @@ msgstr "Радіус для виявлення кайми"
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr "Поріг для видалення кайми, вищі значення означають менше видалення"
 
-#: ../src/iop/demosaic.c:283
+#: ../src/iop/demosaic.c:284
 msgid "demosaic"
 msgstr "Демозаїкізація"
 
-#: ../src/iop/demosaic.c:288
+#: ../src/iop/demosaic.c:289
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Реконструювати повні RGB-пікселі з даних масиву кольорових фільтрів сенсора"
 
-#: ../src/iop/demosaic.c:866
+#: ../src/iop/demosaic.c:867
 msgid "[dual demosaic_cl] internal problem"
 msgstr "[dual demosaic_cl] внутрішня проблема"
 
-#: ../src/iop/demosaic.c:1105
+#: ../src/iop/demosaic.c:1112
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Матрицю кольорів `%s' не знайдено для Quad Bayer зображення!"
 
-#: ../src/iop/demosaic.c:1239
+#: ../src/iop/demosaic.c:1264
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -15240,7 +15242,7 @@ msgstr ""
 "LMMSE найкраще підходить для зображень з високим значенням ISO.\n"
 "Варіанти з двома методами подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:1243
+#: ../src/iop/demosaic.c:1268
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -15250,7 +15252,11 @@ msgstr ""
 "domain chroma повільні.\n"
 "Варіанти з двома методами подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:1247
+#: ../src/iop/demosaic.c:1274
+msgid "Bayer4 sensor demosaicing methods."
+msgstr "Методи демозаїкізації Quad Bayer."
+
+#: ../src/iop/demosaic.c:1278
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -15260,19 +15266,19 @@ msgstr ""
 "0.0 - вимикає медіанну фільтрацію\n"
 "1.0 - ігнорувати контури"
 
-#: ../src/iop/demosaic.c:1252
+#: ../src/iop/demosaic.c:1283
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
 "set to 1.0 for flat content\n"
 "toggle to visualize the mask"
 msgstr ""
-"Поріг контрасту для подвійної демозаїки.\n"
+"Поріг контрасту для подвійної демозаїкізації.\n"
 "0.0 - для високочастотного вмісту\n"
 "1.0 - для плоского вмісту\n"
 "Перемикач візуалізує маску"
 
-#: ../src/iop/demosaic.c:1260
+#: ../src/iop/demosaic.c:1291
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -15280,16 +15286,16 @@ msgstr ""
 "Кроки уточнення LMMSE. Медіанні кроки усереднюють вихід,\n"
 "уточнення додає певний перерахунок червоних та синіх каналів"
 
-#: ../src/iop/demosaic.c:1263
+#: ../src/iop/demosaic.c:1294
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 "Кількість медіанних проходів згладжування кольорів після демозаїкізації"
 
-#: ../src/iop/demosaic.c:1266
+#: ../src/iop/demosaic.c:1297
 msgid "green channels matching method"
 msgstr "Метод вирівнювання зелених каналів"
 
-#: ../src/iop/demosaic.c:1273
+#: ../src/iop/demosaic.c:1304
 msgid "demosaicing is only used for color raw images"
 msgstr "Демозаїкізація використовується лише для кольорових raw зображень"
 
@@ -16299,17 +16305,17 @@ msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
 msgstr ""
-"Не вдалося виділити пам'ять для відновлення переекспонованого в filmic, "
+"Не вдалося виділити пам'ять для відновлення переекспонованого в Filmic, "
 "перевірте налаштування оперативної пам'яті"
 
 #: ../src/iop/filmicrgb.c:1920 ../src/iop/filmicrgb.c:2181
 msgid "filmic works only on RGB input"
-msgstr "filmic працює лише з RGB входом"
+msgstr "Filmic працює лише з RGB входом"
 
 #: ../src/iop/filmicrgb.c:2066
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
-"Не вдалося виділити пам'ять в GPU для відновлення переекспонованого в filmic"
+"Не вдалося виділити пам'ять в GPU для відновлення переекспонованого в Filmic"
 
 #: ../src/iop/filmicrgb.c:3216
 msgid "look only"
@@ -16374,7 +16380,7 @@ msgid ""
 "the dark curve is the desaturation curve."
 msgstr ""
 "Використовуйте параметри нижче, щоб встановити вузли.\n"
-"Яскрава крива - це крива тонового відображення filmic.\n"
+"Яскрава крива - це крива тонового відображення Filmic.\n"
 "Темна крива - це крива десатурації."
 
 #: ../src/iop/filmicrgb.c:4102
@@ -16594,7 +16600,7 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
-"Виберіть бажаний вигин filmic сплайну у світлих тонах.\n"
+"Виберіть бажаний вигин Filmic сплайну у світлих тонах.\n"
 "Жорсткий використовує високу кривизну, що призводить до більшого тонального "
 "стиснення.\n"
 "М'який використовує низьку кривизну, що призводить до меншого тонального "
@@ -16606,7 +16612,7 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
-"Виберіть бажаний вигин filmic сплайну у тінях.\n"
+"Виберіть бажаний вигин Filmic сплайну у тінях.\n"
 "Жорсткий використовує високу кривизну, що призводить до більшого тонального "
 "стиснення.\n"
 "М'який використовує низьку кривизну, що призводить до меншого тонального "
@@ -17370,8 +17376,8 @@ msgid ""
 "ctrl+scroll"
 msgstr ""
 "<b>додати точку</b>: клік з перетягуванням\n"
-"<b>розмір</b>: прокрутка - <b>сила</b>: shift+прокрутка - <b>напрямок</b>: "
-"ctrl+прокрутка"
+"<b>розмір</b>: прокрутка - <b>сила</b>: Shift+прокрутка - <b>напрямок</b>: "
+"Ctrl+прокрутка"
 
 #: ../src/iop/liquify.c:3720
 msgid ""
@@ -17380,8 +17386,8 @@ msgid ""
 "ctrl+scroll"
 msgstr ""
 "<b>додати лінію</b>: клік\n"
-"<b>розмір</b>: прокрутка - <b>сила</b>: shift+прокрутка - <b>напрямок</b>: "
-"ctrl+прокрутка"
+"<b>розмір</b>: прокрутка - <b>сила</b>: Shift+прокрутка - <b>напрямок</b>: "
+"Ctrl+прокрутка"
 
 #: ../src/iop/liquify.c:3723
 msgid ""
@@ -17390,8 +17396,8 @@ msgid ""
 "ctrl+scroll"
 msgstr ""
 "<b>додати криву</b>: клік\n"
-"<b>розмір</b>: прокрутка - <b>сила</b>: shift+прокрутка - <b>напрямок</b>: "
-"ctrl+прокрутка"
+"<b>розмір</b>: прокрутка - <b>сила</b>: Shift+прокрутка - <b>напрямок</b>: "
+"Ctrl+прокрутка"
 
 #: ../src/iop/liquify.c:3774
 msgid ""
@@ -17447,8 +17453,8 @@ msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
-"<b>додати вузол</b>: ctrl+клік - <b>видалити контур</b>: правий клік\n"
-"<b>перемкнути лінія/крива</b>: ctrl+alt+клік"
+"<b>додати вузол</b>: Ctrl+клік - <b>видалити контур</b>: правий клік\n"
+"<b>перемкнути лінія/крива</b>: Ctrl+Alt+клік"
 
 #: ../src/iop/liquify.c:3813
 msgid ""
@@ -17458,7 +17464,7 @@ msgid ""
 msgstr ""
 "<b>переміщення</b>клікніть і перетягніть - <b>показати/приховати елементи "
 "керування розтушовкою</b>: клік\n"
-"<b>автозгладжування, виступи, згладжування, симетричність</b>: ctrl+клік - "
+"<b>автозгладжування, виступи, згладжування, симетричність</b>: Ctrl+клік - "
 "<b>прибрати</b>: клік правою кнопкою"
 
 #: ../src/iop/liquify.c:3817 ../src/iop/liquify.c:3819
@@ -17483,7 +17489,7 @@ msgid ""
 "<b>linear, grow, and shrink</b>: ctrl+click"
 msgstr ""
 "<b>інтенсивність деформації</b>: перетягування\n"
-"<b>лінійний режим, режим зростання, режим зменшення</b>: ctrl+клік"
+"<b>лінійний режим, режим зростання, режим зменшення</b>: Ctrl+клік"
 
 #: ../src/iop/lowlight.c:86
 msgid "lowlight vision"
@@ -17802,7 +17808,7 @@ msgstr "Червоний фільтр"
 #: ../src/iop/monochrome.c:547
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
-"Перетягуйте та прокручуйте колесико миші для\n"
+"Перетягуйте та прокручуйте коліщатко миші для\n"
 "налаштування віртуального кольорового фільтра"
 
 #: ../src/iop/monochrome.c:563
@@ -18280,7 +18286,7 @@ msgid ""
 "ctrl+click to select an area"
 msgstr ""
 "Виберіть центр заповнення світлом\n"
-"ctrl+клік - вибрати область"
+"Ctrl+клік - вибрати область"
 
 #: ../src/iop/relight.c:276
 msgid "toggle tool for picking median lightness in image"
@@ -18396,7 +18402,7 @@ msgstr "Лікувальний пензель"
 #. overwrite tooltip ourself to handle shift+click
 #: ../src/iop/retouch.c:2276
 msgid "ctrl+click to change tool for current form"
-msgstr "ctrl+клік - змінити інструмент для поточної фігури"
+msgstr "Ctrl+клік - змінити інструмент для поточної фігури"
 
 #: ../src/iop/retouch.c:2277
 msgid "shift+click to set the tool as default"
@@ -19251,7 +19257,7 @@ msgid ""
 "shift+scroll for large steps; ctrl+scroll for small steps"
 msgstr ""
 "Прокрутка над зображенням змінює експозицію тону\n"
-"shift+прокрутка - великі кроки; ctrl+прокрутка - маленькі кроки"
+"Shift+прокрутка - великі кроки; Ctrl+прокрутка - маленькі кроки"
 
 #: ../src/iop/toneequal.c:2201
 msgid "some parameters are out-of-bounds"
@@ -19927,8 +19933,8 @@ msgid ""
 msgstr ""
 "`%' відповідає будь-якому тексту\n"
 "Клік - включити ієрархію + підієрархії (суфікс `*')\n"
-"shift+клік - включити лише поточну ієрархію (без суфікса)\n"
-"ctrl+клік - включити лише підієрархії (суфікс `|%')"
+"Shift+клік - включити лише поточну ієрархію (без суфікса)\n"
+"Ctrl+клік - включити лише підієрархії (суфікс `|%')"
 
 #: ../src/libs/collect.c:2174
 #, no-c-format
@@ -19940,8 +19946,8 @@ msgid ""
 msgstr ""
 "`%' відповідає будь-якому тексту\n"
 "Клік - включити місце + вкладені місця (суфікс `*')\n"
-"shift+клік - включити лише поточне місця (без суфікса)\n"
-"ctrl+клік - включити лише вкладені місця (суфікс `|%')"
+"Shift+клік - включити лише поточне місце (без суфікса)\n"
+"Ctrl+клік - включити лише вкладені місця (суфікс `|%')"
 
 #: ../src/libs/collect.c:2186
 #, no-c-format
@@ -19953,8 +19959,8 @@ msgid ""
 msgstr ""
 "`%' відповідає будь-якому тексту\n"
 "Клік - включити поточну папку + підпапки (суфікс `*')\n"
-"shift+клік - включити лише поточну папку (без суфікса)\n"
-"ctrl+клік - включити лише підпапки (суфікс `|%')"
+"Shift+клік - включити лише поточну папку (без суфікса)\n"
+"Ctrl+клік - включити лише підпапки (суфікс `|%')"
 
 #: ../src/libs/collect.c:2197
 #, no-c-format
@@ -20005,7 +20011,7 @@ msgstr "Файли"
 #: ../src/libs/filtering.c:862 ../src/libs/filtering.c:929
 #: ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1894
 #: ../src/libs/image.c:464 ../src/libs/image.c:574 ../src/libs/image.c:582
-#: ../src/libs/metadata.c:613 ../src/libs/metadata_view.c:1227
+#: ../src/libs/metadata.c:613 ../src/libs/metadata_view.c:1233
 msgid "metadata"
 msgstr "Метадані"
 
@@ -20030,7 +20036,7 @@ msgid "collections settings"
 msgstr "Налаштування колекцій зображень"
 
 #: ../src/libs/collect.c:3001 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1195
+#: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1201
 #: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057
 #: ../src/libs/tagging.c:3472
@@ -20038,7 +20044,7 @@ msgid "save"
 msgstr "Зберегти"
 
 #: ../src/libs/collect.c:3021 ../src/libs/export.c:1047
-#: ../src/libs/metadata.c:707 ../src/libs/metadata_view.c:1307
+#: ../src/libs/metadata.c:707 ../src/libs/metadata_view.c:1313
 #: ../src/libs/recentcollect.c:362 ../src/libs/tagging.c:3494
 msgid "preferences..."
 msgstr "Уподобання..."
@@ -20116,7 +20122,7 @@ msgid ""
 "ctrl+click or right-click to select an area"
 msgstr ""
 "Увімкнути піпетку кольору\n"
-"ctrl+клік або клік правою кнопкою - вибрати область"
+"Ctrl+клік або клік правою кнопкою - вибрати область"
 
 #: ../src/libs/colorpicker.c:597
 msgid "pick color"
@@ -20845,7 +20851,7 @@ msgid ""
 "ctrl+click to remove pinned rules too"
 msgstr ""
 "Скинути\n"
-"Клік з утриманням ctrl видалить також закріплені правила"
+"Клік з утриманням Ctrl видалить також закріплені правила"
 
 #: ../src/libs/filters/colors.c:140
 msgid "Y"
@@ -20868,7 +20874,7 @@ msgid ""
 msgstr ""
 "Фільтрувати за кольоровою позначкою зображень\n"
 "Клікніть, щоб перемкнути вибір кольорової позначки\n"
-"Клікніть з утриманням ctrl для виключення кольорової позначки\n"
+"Клікніть з утриманням Ctrl для виключення кольорової позначки\n"
 "сіра кнопка впливає на всі кольорові позначки"
 
 #. create the filter combobox
@@ -20927,7 +20933,7 @@ msgid ""
 "ctrl+click to select multiple values"
 msgstr ""
 "Клік для вибору імені файлу\n"
-"Клік з утриманням ctrl для вибору кількох значень"
+"Клік з утриманням Ctrl для вибору кількох значень"
 
 #: ../src/libs/filters/filename.c:432
 msgid ""
@@ -20935,7 +20941,7 @@ msgid ""
 "ctrl+click to select multiple values"
 msgstr ""
 "Клік для вибору розширення файлу\n"
-"Клік з утриманням ctrl для вибору кількох значень"
+"Клік з утриманням Ctrl для вибору кількох значень"
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
 msgid "ungrouped images"
@@ -21074,7 +21080,7 @@ msgid ""
 "double operation: two ctrl-Z to undo"
 msgstr ""
 "Застосувати зміщення та геокоординати до відповідних зображень\n"
-"Це подвійна операція: потрібно два ctrl-Z для скасування"
+"Це подвійна операція: потрібно два Ctrl-z для скасування"
 
 #: ../src/libs/geotagging.c:373 ../src/libs/geotagging.c:1910
 msgid "apply geo-location to matching images"
@@ -21384,7 +21390,7 @@ msgid ""
 "ctrl+click to truncate history to the selected item"
 msgstr ""
 "Створити мінімальну історію змін, яка створює ідентичне зображення\n"
-"ctrl-клік - обрізати історію до вибраного елемента"
+"Ctrl-клік - обрізати історію до вибраного елемента"
 
 #: ../src/libs/history.c:149
 msgid "create a style from the current history stack"
@@ -22018,10 +22024,10 @@ msgstr ""
 "Список місць користувачів,\n"
 "Натисніть, щоб показати або приховати місце на карті:\n"
 " - прокрутка всередині фігури - змінити її розмір\n"
-" - прокрутка з <shift> або <ctrl> - змінити ширину або висоту\n"
+" - прокрутка з <Shift> або <Ctrl> - змінити ширину або висоту\n"
 " - клікніть всередині фігури та перетягніть її, щоб змінити її положення\n"
-" - ctrl+клік, щоб перемістити зображення зсередини місця\n"
-"ctrl+клік, щоб відредагувати назву місця\n"
+" - Ctrl+клік, щоб перемістити зображення зсередини місця\n"
+"Ctrl+клік, щоб відредагувати назву місця\n"
 " - символ '|' розбиває назву на кілька рівнів\n"
 " - для видалення групи місць очистіть її назву\n"
 " - натисніть клавішу Enter, щоб перевірити нову назву, клавішу Escape, щоб "
@@ -22137,11 +22143,11 @@ msgstr "Редактор метаданих"
 msgid "<leave unchanged>"
 msgstr "<залишити незмінним>"
 
-#: ../src/libs/metadata.c:570 ../src/libs/metadata_view.c:1193
+#: ../src/libs/metadata.c:570 ../src/libs/metadata_view.c:1199
 msgid "metadata settings"
 msgstr "Налаштування метаданих"
 
-#: ../src/libs/metadata.c:619 ../src/libs/metadata_view.c:1238
+#: ../src/libs/metadata.c:619 ../src/libs/metadata_view.c:1244
 msgid "visible"
 msgstr "Видимі"
 
@@ -22177,7 +22183,7 @@ msgid ""
 "escape to exit the popup window"
 msgstr ""
 "Текст метаданих.\n"
-"ctrl+Enter вставляє новий рядок (обережно, це, можливо, несумісно зі "
+"Ctrl+Enter вставляє новий рядок (обережно, це, можливо, несумісно зі "
 "стандартними метаданими).\n"
 "<залишити незмінним> - вибрані зображення мають різні метадані.\n"
 "У такому випадку клік правою кнопкою дає можливість вибрати щось із них.\n"
@@ -22364,17 +22370,27 @@ msgstr ""
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
 
-#: ../src/libs/metadata_view.c:752
+#: ../src/libs/metadata_view.c:742
+#, c-format
+msgid "%.1f mm (%.1f mm FF equiv, crop %.1f)"
+msgstr "%.1f мм (%.1f мм еквівалент, Кроп %.1f)"
+
+#: ../src/libs/metadata_view.c:747
+#, c-format
+msgid "%.1f mm"
+msgstr "%.1f мм"
+
+#: ../src/libs/metadata_view.c:758
 #, c-format
 msgid "infinity"
 msgstr "нескінченність"
 
-#: ../src/libs/metadata_view.c:756
+#: ../src/libs/metadata_view.c:762
 #, c-format
 msgid "%.2f m"
 msgstr "%.2f м"
 
-#: ../src/libs/metadata_view.c:1233
+#: ../src/libs/metadata_view.c:1239
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -22384,7 +22400,7 @@ msgstr ""
 "Зніміть позначку, щоб приховати метадані, які вас не цікавлять.\n"
 "Якщо потрібні різні налаштування, використовуйте пресети."
 
-#: ../src/libs/metadata_view.c:1389
+#: ../src/libs/metadata_view.c:1395
 msgid "jump to film roll"
 msgstr "Перейти до плівки"
 
@@ -23893,7 +23909,7 @@ msgid ""
 "configuration"
 msgstr ""
 "Визначити прискорювачі\n"
-"Клікніть з утриманням ctrl, щоб вимкнути підтвердження перезапису\n"
+"Клікніть з утриманням Ctrl, щоб вимкнути підтвердження перезапису\n"
 "\n"
 "Наведіть курсор на віджет і натисніть клавіші в комбінації з кліками миші чи "
 "прокручуванням чи переміщенням\n"
@@ -25192,9 +25208,6 @@ msgstr "Дії за допомогою миші"
 #~ "відновити прискорювачі за замовчуванням\n"
 #~ " або ті, які були при запуску\n"
 #~ " або ті, які були при відкритті діалогового вікна налаштування\n"
-
-#~ msgid "demosaicing method"
-#~ msgstr "метод"
 
 #~ msgid "no embedded metadata and lensfun disabled"
 #~ msgstr "без вбудованих метаданих і lensfun вимкнено"
