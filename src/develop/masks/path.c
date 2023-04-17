@@ -2269,12 +2269,15 @@ static void _path_events_post_expose(cairo_t *cr,
   {
     const int k = gui->point_edited;
     // uncomment this part if you want to see "real" control points
-    /*cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
-    cairo_line_to(cr, gui->points[k*6],gui->points[k*6+1]);
+    /*
+    cairo_move_to(cr, gpt->points[k*6+2], gpt->points[k*6+3]);
+    cairo_line_to(cr, gpt->points[k*6], gpt->points[k*6+1]);
     cairo_stroke(cr);
-    cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
-    cairo_line_to(cr, gui->points[k*6+4],gui->points[k*6+5]);
-    cairo_stroke(cr);*/
+    cairo_move_to(cr, gpt->points[k*6+2], gpt->points[k*6+3]);
+    cairo_line_to(cr, gpt->points[k*6+4], gpt->points[k*6+5]);
+    cairo_stroke(cr);
+    */
+
     float ffx = 0.0f, ffy = 0.0f;
     _path_ctrl2_to_feather(gpt->points[k * 6 + 2],
                            gpt->points[k * 6 + 3],
