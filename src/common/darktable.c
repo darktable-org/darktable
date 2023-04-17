@@ -2010,6 +2010,21 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
+  if(old < 14)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL global config parameters 'per device' data has been recreated with an updated name."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("If you're using device names in 'opencl_device_priority' you should update them to the new names."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
+
   #undef INFO_HEADER
 }
 
