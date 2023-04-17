@@ -2395,8 +2395,8 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
                                  (dt_collection_get_filter_flags(collection) & ~COLLECTION_FILTER_FILM_ID));
 
   /* update query and at last the visual */
-  if(maybe_changed && collection->clone)
-    dt_collection_update(collection);  // originals get updated by signal handler in selection.c
+  if(maybe_changed)
+    dt_collection_update(collection);
 
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
