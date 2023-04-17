@@ -2872,7 +2872,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
 
 float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe,
                               const dt_iop_module_t *raster_mask_source,
-                              const int raster_mask_id,
+                              const dt_mask_id_t raster_mask_id,
                               const dt_iop_module_t *target_module,
                               gboolean *free_mask)
 {

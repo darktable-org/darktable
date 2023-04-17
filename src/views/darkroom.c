@@ -3063,7 +3063,7 @@ void enter(dt_view_t *self)
   }
   dt_masks_change_form_gui(NULL);
   dev->form_gui->pipe_hash = 0;
-  dev->form_gui->formid = 0;
+  dev->form_gui->formid = NO_MASKID;
   dev->gui_leaving = FALSE;
   dev->gui_module = NULL;
 
