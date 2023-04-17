@@ -2462,7 +2462,7 @@ static void _accel_paste(dt_action_t *action)
   if(ret)
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_MODULE, imgs);
+                               DT_COLLECTION_PROP_UNDEF, imgs);
   else
     g_list_free(imgs);
 
@@ -2479,7 +2479,7 @@ static void _accel_paste_parts(dt_action_t *action)
   if(ret)
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_MODULE, imgs);
+                               DT_COLLECTION_PROP_UNDEF, imgs);
   else
     g_list_free(imgs);
 
@@ -2493,7 +2493,7 @@ static void _accel_hist_discard(dt_action_t *action)
   if(ret)
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_MODULE, imgs);
+                               DT_COLLECTION_PROP_UNDEF, imgs);
   else
     g_list_free(imgs);
 }

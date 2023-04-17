@@ -893,15 +893,15 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
     dt_conf_set_int("plugins/lighttable/collect/num_rules", new_rule + 1);
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", new_rule);
-    int property = date_only ? DT_COLLECTION_PROP_DAY : DT_COLLECTION_PROP_TIME;
-    dt_conf_set_int(confname, property);
+    dt_conf_set_int(confname, date_only ? DT_COLLECTION_PROP_DAY : DT_COLLECTION_PROP_TIME);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", new_rule);
     dt_conf_set_int(confname, 0);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", new_rule);
     dt_conf_set_string(confname, coll);
     g_free(coll);
 
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, property, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
+                               NULL);
   }
 }
 
@@ -1123,11 +1123,11 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
     {
       char confname[200] = { 0 };
       snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", nb_rules - 1);
-      int property = dt_conf_get_int(confname);
-      if(property == DT_COLLECTION_PROP_TIME || property == DT_COLLECTION_PROP_DAY)
+      if(dt_conf_get_int(confname) == DT_COLLECTION_PROP_TIME)
       {
         dt_conf_set_int("plugins/lighttable/collect/num_rules", nb_rules - 1);
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, property, NULL);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                                   NULL);
 
         strip->selecting = FALSE;
       }
