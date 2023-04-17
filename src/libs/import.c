@@ -703,9 +703,9 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
           gboolean already_imported = FALSE;
           if(d->import_case == DT_IMPORT_INPLACE)
           {
-            /* check if image is already imported, using previously fetched filroll id */
+            /* check if image is already imported, using previously fetched filmroll id */
             if(filmroll_id != -1)
-              already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
+              already_imported = dt_image_get_id(filmroll_id, filename) == NO_IMGID ? FALSE : TRUE;
           }
           else
           {
