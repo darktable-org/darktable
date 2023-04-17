@@ -2739,9 +2739,10 @@ void dt_dev_masks_list_update(dt_develop_t *dev)
   if(dev->proxy.masks.module && dev->proxy.masks.list_update)
     dev->proxy.masks.list_update(dev->proxy.masks.module);
 }
+
 void dt_dev_masks_list_remove(dt_develop_t *dev,
-                              const int formid,
-                              const int parentid)
+                              dt_mask_id_t formid,
+                              dt_mask_id_t parentid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.list_remove)
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);

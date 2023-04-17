@@ -193,7 +193,7 @@ typedef struct dt_develop_blend_params_t
   /** how masks are combined */
   uint32_t mask_combine;
   /** id of mask in current pipeline */
-  uint32_t mask_id;
+  dt_mask_id_t mask_id;
   /** blendif mask */
   uint32_t blendif;
   /** feathering radius */
@@ -215,7 +215,7 @@ typedef struct dt_develop_blend_params_t
   float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
   dt_dev_operation_t raster_mask_source;
   int raster_mask_instance;
-  int raster_mask_id;
+  dt_mask_id_t raster_mask_id;
   gboolean raster_mask_invert;
 } dt_develop_blend_params_t;
 

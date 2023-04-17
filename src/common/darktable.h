@@ -157,6 +157,10 @@ typedef int32_t dt_imgid_t;
 #define NO_IMGID (0)
 #define dt_is_valid_imgid(n) ((n) > NO_IMGID)
 
+typedef int32_t dt_mask_id_t;
+#define NO_MASKID (0)
+#define dt_is_valid_maskid(n) ((n) > NO_MASKID)
+
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 

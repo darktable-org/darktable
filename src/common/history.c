@@ -259,12 +259,12 @@ static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list,
 }
 
 // fills used with formid, if it is a group it recurs and fill all sub-forms
-static void _fill_used_forms(GList *forms_list, const int formid, int *used, const int nb)
+static void _fill_used_forms(GList *forms_list, const dt_mask_id_t formid, int *used, const int nb)
 {
   // first, we search for the formid in used table
   for(int i = 0; i < nb; i++)
   {
-    if(used[i] == 0)
+    if(used[i] == NO_MASKID)
     {
       // we store the formid
       used[i] = formid;

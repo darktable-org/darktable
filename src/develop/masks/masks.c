@@ -1439,7 +1439,7 @@ void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module,
 
   dt_masks_form_t *grp = dt_masks_create_ext(DT_MASKS_GROUP);
 
-  const int grid = module->blend_params->mask_id;
+  const dt_mask_id_t grid = module->blend_params->mask_id;
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
   if(form)
   {
@@ -1470,7 +1470,7 @@ void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton,
 {
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  if(module->blend_params->mask_id == 0)
+  if(!dt_is_valid_maskid(module->blend_params->mask_id))
   {
     bd->masks_shown = DT_MASKS_EDIT_OFF;
     return;
@@ -1489,7 +1489,7 @@ static void _menu_no_masks(struct dt_iop_module_t *module)
   dt_masks_form_t *grp = _group_from_module(darktable.develop, module);
   if(grp) dt_masks_form_remove(module, NULL, grp);
 
-  module->blend_params->mask_id = 0;
+  module->blend_params->mask_id = NO_MASKID;
 
   // and we update the iop
   dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
@@ -1549,7 +1549,7 @@ void dt_masks_iop_use_same_as(dt_iop_module_t *module,
   if(!module || !src) return;
 
   // we get the source group
-  int srcid = src->blend_params->mask_id;
+  dt_mask_id_t srcid = src->blend_params->mask_id;
   dt_masks_form_t *src_grp = dt_masks_get_from_id(darktable.develop, srcid);
   if(!src_grp || src_grp->type != DT_MASKS_GROUP) return;
 
@@ -1824,7 +1824,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
       // is the form the base group of the iop ?
       if(id == m->blend_params->mask_id)
       {
-        m->blend_params->mask_id = 0;
+        m->blend_params->mask_id = NO_MASKID;
         dt_masks_iop_update(m);
         dt_dev_add_history_item(darktable.develop, m, TRUE);
       }
@@ -1874,7 +1874,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
 }
 
 float dt_masks_form_change_opacity(dt_masks_form_t *form,
-                                   const int parentid,
+                                   const dt_mask_id_t parentid,
                                    const float amount)
 {
   if(!form) return 0;
@@ -1883,7 +1883,7 @@ float dt_masks_form_change_opacity(dt_masks_form_t *form,
 
   // we first need to test if the opacity can be set to the form
   if(form->type & DT_MASKS_GROUP) return 0;
-  const int id = form->formid;
+  const dt_mask_id_t id = form->formid;
 
   // so we change the value inside the group
   for(GList *fpts = grp->points; fpts; fpts = g_list_next(fpts))
@@ -1906,7 +1906,7 @@ float dt_masks_form_change_opacity(dt_masks_form_t *form,
 }
 
 void dt_masks_form_move(dt_masks_form_t *grp,
-                        const int formid,
+                        const dt_mask_id_t formid,
                         const int up)
 {
   if(!grp || !(grp->type & DT_MASKS_GROUP)) return;
@@ -1941,7 +1941,7 @@ void dt_masks_form_move(dt_masks_form_t *grp,
 }
 
 static int _find_in_group(dt_masks_form_t *grp,
-                          const int formid)
+                          const dt_mask_id_t formid)
 {
   if(!(grp->type & DT_MASKS_GROUP)) return 0;
   if(grp->formid == formid) return 1;
@@ -2156,7 +2156,7 @@ static int _masks_cleanup_unused(GList **_forms,
     dt_develop_blend_params_t *blend_params = hist->blend_params;
     if(blend_params)
     {
-      if(blend_params->mask_id > 0)
+      if(dt_is_valid_maskid(blend_params->mask_id))
         _cleanup_unused_recurs(forms, blend_params->mask_id, used, nbf);
     }
     num++;

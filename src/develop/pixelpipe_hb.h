@@ -296,7 +296,7 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 // helper function to pass a raster mask through a (so far) processed pipe
 float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe,
                               const struct dt_iop_module_t *raster_mask_source,
-                              const int raster_mask_id,
+                              const dt_mask_id_t raster_mask_id,
                               const struct dt_iop_module_t *target_module,
                               gboolean *free_mask);
 // some helper functions related to the details mask interface

@@ -114,7 +114,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module,
                                          const int up,
                                          const uint32_t state,
                                          dt_masks_form_t *form,
-                                         const int parentid,
+                                         const dt_mask_id_t parentid,
                                          dt_masks_form_gui_t *gui,
                                          const int index)
 {
@@ -210,7 +210,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module,
                                          const int type,
                                          const uint32_t state,
                                          dt_masks_form_t *form,
-                                         const int parentid,
+                                         const dt_mask_id_t parentid,
                                          dt_masks_form_gui_t *gui,
                                          const int index)
 {
@@ -394,12 +394,12 @@ static int _circle_events_button_released(struct dt_iop_module_t *module,
                                           const int which,
                                           const uint32_t state,
                                           dt_masks_form_t *form,
-                                          const int parentid,
+                                          const dt_mask_id_t parentid,
                                           dt_masks_form_gui_t *gui,
                                           const int index)
 {
   if(which == 3
-     && parentid > 0
+     && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we hide the form
@@ -525,7 +525,7 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module,
                                       const double pressure,
                                       const int which,
                                       dt_masks_form_t *form,
-                                      const int parentid,
+                                      const dt_mask_id_t parentid,
                                       dt_masks_form_gui_t *gui,
                                       const int index)
 {
