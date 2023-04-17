@@ -571,7 +571,7 @@ The following is a summary of the main features added to darktable
 - Do not truncate focal length on thumbnails to avoid loss of
   precision of displaying values.
 
-- Let exposure module to neutral settings for non RAW images.
+- Let exposure module to set neutral settings for non-RAW images.
 
 ## Lua
 
