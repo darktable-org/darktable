@@ -568,7 +568,7 @@ The following is a summary of the main features added to darktable
 - Fix dual demosaicing options for Quad Bayer sensor cameras where
   only VNG4 and PassThrough are supported.
 
-- Do not truncate focal length on thumbnails to avoid lost of
+- Do not truncate focal length on thumbnails to avoid loss of
   precision of displaying values.
 
 - Let exposure module to neutral settings for non RAW images.
