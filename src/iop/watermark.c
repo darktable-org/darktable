@@ -258,7 +258,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->rotate = o->rotate;
-    n->scale_base = o->sizeto;
+    n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
     // let scale_img and scale_svg at the default values
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->text, "", sizeof(n->text));
@@ -304,7 +304,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->rotate = o->rotate;
-    n->scale_base = o->sizeto;
+    n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
     // let scale_img and scale_svg at the default values
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->text, o->text, sizeof(n->text));
@@ -352,7 +352,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->rotate = o->rotate;
-    n->scale_base = o->sizeto;
+    n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
     // let scale_img and scale_svg at the default values
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->text, o->text, sizeof(n->text));
