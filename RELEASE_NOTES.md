@@ -403,7 +403,7 @@ The following is a summary of the main features added to darktable
   image information module.
 
 - Added options in the watermark module for more fine-grained control
-  of the watermark scaling. In conjunction with the new 'text-fixedsize'
+  of the watermark scaling. In conjunction with the new 'fixed-size-text'
   template it is now possible to insert text with constant font size.
 
 ## Bug Fixes
