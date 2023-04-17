@@ -1064,9 +1064,11 @@ void dt_dev_add_history_item_ext(
 static gboolean _dev_undo_start_record_target(dt_develop_t *dev, gpointer target)
 {
   const double this_time = dt_get_wtime();
+  const double merge_time = dev->gui_previous_time + dt_conf_get_float("darkroom/undo/merge_same_secs");
+  const double review_time = dev->gui_previous_pipe_time + dt_conf_get_float("darkroom/undo/review_secs");
+  dev->gui_previous_pipe_time = merge_time;
   if(target && target == dev->gui_previous_target
-     && this_time < MIN(dev->gui_previous_time + 15.f,
-                        dev->gui_previous_pipe_time + 5.f))
+     && this_time < MIN(merge_time, review_time))
   {
     return FALSE;
   }
@@ -1075,7 +1077,6 @@ static gboolean _dev_undo_start_record_target(dt_develop_t *dev, gpointer target
 
   dev->gui_previous_target = target;
   dev->gui_previous_time = this_time;
-  dev->gui_previous_pipe_time = G_MAXFLOAT;
 
   return TRUE;
 }
