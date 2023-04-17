@@ -53,7 +53,8 @@
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 
-void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
+void dt_dev_init(dt_develop_t *dev,
+                 const gboolean gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
   dev->full_preview = FALSE;
@@ -717,8 +718,8 @@ void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid)
 float dt_dev_get_zoom_scale(
         dt_develop_t *dev,
         dt_dev_zoom_t zoom,
-        int closeup_factor,
-        int preview)
+        const int closeup_factor,
+        const int preview)
 {
   float zoom_scale;
 
@@ -1151,7 +1152,7 @@ void dt_dev_add_history_item(
 void dt_dev_add_history_item_target(
         dt_develop_t *dev,
         dt_iop_module_t *module,
-        gboolean enable,
+        const gboolean enable,
         gpointer target)
 {
   _dev_add_history_item(dev, module, enable, FALSE, target);
@@ -1160,7 +1161,7 @@ void dt_dev_add_history_item_target(
 void dt_dev_add_new_history_item(
         dt_develop_t *dev,
         dt_iop_module_t *module,
-        gboolean enable)
+        const gboolean enable)
 {
   _dev_add_history_item(dev, module, enable, TRUE, NULL);
 }
@@ -1168,8 +1169,8 @@ void dt_dev_add_new_history_item(
 void dt_dev_add_masks_history_item_ext(
         dt_develop_t *dev,
         dt_iop_module_t *_module,
-        gboolean _enable,
-        gboolean no_image)
+        const gboolean _enable,
+        const gboolean no_image)
 {
   dt_iop_module_t *module = _module;
   gboolean enable = _enable;
@@ -1200,7 +1201,7 @@ void dt_dev_add_masks_history_item_ext(
 void dt_dev_add_masks_history_item(
         dt_develop_t *dev,
         dt_iop_module_t *module,
-        gboolean enable)
+        const gboolean enable)
 {
   gpointer target = NULL;
 
@@ -1517,7 +1518,7 @@ void dt_dev_write_history(dt_develop_t *dev)
   dt_dev_write_history_ext(dev, dev->image_storage.id);
 }
 
-static int _dev_get_module_nb_records()
+static int _dev_get_module_nb_records(void)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2494,7 +2495,7 @@ void dt_dev_reprocess_preview(dt_develop_t *dev)
 void dt_dev_check_zoom_bounds(dt_develop_t *dev,
                               float *zoom_x,
                               float *zoom_y,
-                              dt_dev_zoom_t zoom,
+                              const dt_dev_zoom_t zoom,
                               const int closeup,
                               float *boxww,
                               float *boxhh)
@@ -2664,7 +2665,7 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return 0.0;
 }
 
-void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
+void dt_dev_modulegroups_set(dt_develop_t *dev, const uint32_t group)
 {
   if(dev->proxy.modulegroups.module
      && dev->proxy.modulegroups.set
@@ -2740,7 +2741,9 @@ void dt_dev_masks_list_update(dt_develop_t *dev)
   if(dev->proxy.masks.module && dev->proxy.masks.list_update)
     dev->proxy.masks.list_update(dev->proxy.masks.module);
 }
-void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid)
+void dt_dev_masks_list_remove(dt_develop_t *dev,
+                              const int formid,
+                              const int parentid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.list_remove)
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
@@ -2971,12 +2974,16 @@ gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
   return label;
 }
 
-int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
+int dt_dev_distort_transform(dt_develop_t *dev,
+                             float *points,
+                             const size_t points_count)
 {
   return dt_dev_distort_transform_plus
     (dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
-int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count)
+int dt_dev_distort_backtransform(dt_develop_t *dev,
+                                 float *points,
+                                 const size_t points_count)
 {
   return dt_dev_distort_backtransform_plus
     (dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
