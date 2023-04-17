@@ -745,10 +745,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float svg_width, svg_height;
 
   // help to reduce the number of if clauses
-  bool svg_calc_heightfromwidth;   // calculate svg_height from svg_width if TRUE
-                                   // calculate svg_width from svg_height if FALSE
-  float svg_calc_base;             // this value is used as svg_width or svg_height,
-                                   // depending on svg_calc_heightfromwidth
+  gboolean svg_calc_heightfromwidth;   // calculate svg_height from svg_width if TRUE
+                                       // calculate svg_width from svg_height if FALSE
+  float svg_calc_base;                 // this value is used as svg_width or svg_height,
+                                       // depending on svg_calc_heightfromwidth
 
   switch (data->scale_base)
   {
