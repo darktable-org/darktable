@@ -26,7 +26,7 @@
 #include "dtgtk/gradientslider.h"
 #include "gui/color_picker_proxy.h"
 
-#define DEVELOP_BLEND_VERSION (11)
+#define DEVELOP_BLEND_VERSION (12)
 
 #ifdef __cplusplus
 extern "C" {
