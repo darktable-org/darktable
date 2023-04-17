@@ -402,6 +402,10 @@ The following is a summary of the main features added to darktable
 - Show the full-frame equivalent focal length and crop factor in the
   image information module.
 
+- Added options in the watermark module for more fine-grained control
+  of the watermark scaling. In conjunction with the new 'text-fixedsize'
+  template it is now possible to insert text with constant font size.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
