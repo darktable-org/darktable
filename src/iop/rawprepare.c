@@ -411,13 +411,11 @@ void process(
     const float *const in = (const float *const)ivoid;
     float *const out = (float *const)ovoid;
 
-    const float sub = d->sub[0], div = d->div[0];
-
     const int ch = piece->colors;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, csx, csy, div, in, out, roi_in, roi_out, sub) \
+    dt_omp_firstprivate(ch, csx, csy, d, in, out, roi_in, roi_out) \
     schedule(static) collapse(3)
 #endif
     for(int j = 0; j < roi_out->height; j++)
@@ -429,7 +427,7 @@ void process(
           const size_t pin = (size_t)ch * (roi_in->width * (j + csy) + csx + i) + c;
           const size_t pout = (size_t)ch * (j * roi_out->width + i) + c;
 
-          out[pout] = (in[pin] - sub) / div;
+          out[pout] = (in[pin] - d->sub[c]) / d->div[c];
         }
       }
     }
@@ -754,17 +752,10 @@ void commit_params(
       : (float)UINT16_MAX;
 
     const float white = (float)p->raw_white_point / normalizer;
-    float black = 0;
     for(int i = 0; i < 4; i++)
     {
-      black += p->raw_black_level_separate[i] / normalizer;
-    }
-    black /= 4.0f;
-
-    for(int i = 0; i < 4; i++)
-    {
-      d->sub[i] = black;
-      d->div[i] = (white - black);
+      d->sub[i] = (float)p->raw_black_level_separate[i] / normalizer;
+      d->div[i] = (white - d->sub[i]);
     }
   }
 
@@ -773,7 +764,7 @@ void commit_params(
   {
     black += (float)p->raw_black_level_separate[i];
   }
-  d->rawprepare.raw_black_level = (uint16_t)(black / 4.0f);
+  d->rawprepare.raw_black_level = (uint16_t)roundf(black / 4.0f);
   d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(p->flat_field == FLAT_FIELD_EMBEDDED)
@@ -871,9 +862,22 @@ void gui_update(dt_iop_module_t *self)
       dt_bauhaus_slider_set(g->black_level_separate[i], av / 4);
   }
 
-  // don't show upper three black levels for monochromes
-  for(int i = 1; i < 4; i++)
+  const gboolean is_sraw = (self->dev->image_storage.flags & DT_IMAGE_S_RAW) != 0;
+
+  // monochromes also have the sRaw flag set
+  if(is_sraw && !is_monochrome)
+  {
+    // we might have to deal with old edits, so copy
+    for(int i = 0; i < 4; i++)
+      if(p->raw_black_level_separate[i] == 0)
+        dt_bauhaus_slider_set(g->black_level_separate[i], p->raw_black_level_separate[0]);
+  }
+
+  // don't show upper three black levels for monochromes, nor last one for sRaws
+  for(int i = 1; i < 3; i++)
     gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);
+
+  gtk_widget_set_visible(g->black_level_separate[3], !(is_monochrome || is_sraw));
 
   gtk_widget_set_visible(g->flat_field, _check_gain_maps(self, NULL));
   dt_bauhaus_combobox_set(g->flat_field, p->flat_field);
@@ -894,6 +898,19 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       const int val = p->raw_black_level_separate[0];
       for(int i = 1; i < 4; i++)
         dt_bauhaus_slider_set(g->black_level_separate[i], val);
+    }
+  }
+
+  const gboolean is_sraw = (self->dev->image_storage.flags & DT_IMAGE_S_RAW) != 0;
+
+  // monochromes also have the sRaw flag set
+  if(is_sraw && !is_monochrome)
+  {
+    if(w == g->black_level_separate[0] || w == g->black_level_separate[1] || w == g->black_level_separate[2])
+    {
+      const float sum = (float)p->raw_black_level_separate[0] + (float)p->raw_black_level_separate[1]
+                        + (float)p->raw_black_level_separate[2];
+      dt_bauhaus_slider_set(g->black_level_separate[3], (uint16_t)roundf(sum / 3.0f));
     }
   }
 }
