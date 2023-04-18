@@ -221,7 +221,7 @@ typedef struct dt_lr_develop_blend_params_t
   /** mixing opacity */
   float opacity;
   /** id of mask in current pipeline */
-  uint32_t mask_id;
+  dt_mask_id_t mask_id;
   /** blendif mask */
   uint32_t blendif;
   /** blur radius */

@@ -1332,7 +1332,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
                                         const int up,
                                         const uint32_t state,
                                         dt_masks_form_t *form,
-                                        const int parentid,
+                                        const dt_mask_id_t parentid,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
@@ -1490,7 +1490,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
                                         const int type,
                                         const uint32_t state,
                                         dt_masks_form_t *form,
-                                        const int parentid,
+                                        const dt_mask_id_t parentid,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
@@ -1723,7 +1723,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
     if(g_list_shorter_than(form->points, 3))
     {
       // if the form doesn't below to a group, we don't delete it
-      if(parentid <= 0) return 1;
+      if(!dt_is_valid_maskid(parentid)) return 1;
 
       // we hide the form
       if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
@@ -1790,7 +1790,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
     }
     return 1;
   }
-  else if(which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if(which == 3 && dt_is_valid_maskid(parentid) && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
@@ -1831,7 +1831,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
                                          const int which,
                                          const uint32_t state,
                                          dt_masks_form_t *form,
-                                         const int parentid,
+                                         const dt_mask_id_t parentid,
                                          dt_masks_form_gui_t *gui,
                                          const int index)
 {
@@ -2193,7 +2193,7 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
                                      const double pressure,
                                      const int which,
                                      dt_masks_form_t *form,
-                                     const int parentid,
+                                     const dt_mask_id_t parentid,
                                      dt_masks_form_gui_t *gui,
                                      const int index)
 {

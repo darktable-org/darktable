@@ -2739,16 +2739,17 @@ void dt_dev_masks_list_update(dt_develop_t *dev)
   if(dev->proxy.masks.module && dev->proxy.masks.list_update)
     dev->proxy.masks.list_update(dev->proxy.masks.module);
 }
+
 void dt_dev_masks_list_remove(dt_develop_t *dev,
-                              const int formid,
-                              const int parentid)
+                              dt_mask_id_t formid,
+                              dt_mask_id_t parentid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.list_remove)
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
 }
 void dt_dev_masks_selection_change(dt_develop_t *dev,
                                    struct dt_iop_module_t *module,
-                                   const int selectid)
+                                   const dt_mask_id_t selectid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.selection_change)
     dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);

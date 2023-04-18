@@ -798,9 +798,9 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, const gboolean copy
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
       {
         dt_iop_commit_blend_params(module, base->blend_params);
-        if(base->blend_params->mask_id > 0)
+        if(dt_is_valid_maskid(base->blend_params->mask_id))
         {
-          module->blend_params->mask_id = 0;
+          module->blend_params->mask_id = NO_MASKID;
           dt_masks_iop_use_same_as(module, base);
         }
       }
@@ -2107,7 +2107,7 @@ static void _gui_reset_callback(GtkButton *button,
      || !dt_gui_presets_autoapply_for_module(module))
   {
     // if a drawn mask is set, remove it from the list
-    if(module->blend_params->mask_id > 0)
+    if(dt_is_valid_maskid(module->blend_params->mask_id))
     {
       dt_masks_form_t *grp =
         dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);

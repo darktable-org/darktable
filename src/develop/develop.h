@@ -241,12 +241,12 @@ typedef struct dt_develop_t
       struct dt_lib_module_t *module;
       /* treview list refresh */
       void (*list_change)(struct dt_lib_module_t *self);
-      void (*list_remove)(struct dt_lib_module_t *self, int formid, int parentid);
+      void (*list_remove)(struct dt_lib_module_t *self, dt_mask_id_t formid, dt_mask_id_t parentid);
       void (*list_update)(struct dt_lib_module_t *self);
       /* selected forms change */
       void (*selection_change)(struct dt_lib_module_t *self,
                                struct dt_iop_module_t *module,
-                               const int selectid);
+                               const dt_mask_id_t selectid);
     } masks;
 
     // what is the ID of the module currently doing pipeline chromatic
@@ -457,10 +457,10 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
  */
 void dt_dev_masks_list_change(dt_develop_t *dev);
 void dt_dev_masks_list_update(dt_develop_t *dev);
-void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid);
+void dt_dev_masks_list_remove(dt_develop_t *dev, dt_mask_id_t formid, dt_mask_id_t parentid);
 void dt_dev_masks_selection_change(dt_develop_t *dev,
                                    struct dt_iop_module_t *module,
-                                   const int selectid);
+                                   const dt_mask_id_t selectid);
 
 /*
  * multi instances
