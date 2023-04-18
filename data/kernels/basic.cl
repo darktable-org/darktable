@@ -167,8 +167,10 @@ rawprepare_4f(read_only image2d_t in, write_only image2d_t out,
 
   if(x >= width || y >= height) return;
 
+  const float4 black4 = (const float4)(black[0], black[1], black[2], black[3]);
+  const float4 div4 = (const float4)(div[0], div[1], div[2], div[3]);
   float4 pixel = read_imagef(in, sampleri, (int2)(x + cx, y + cy));
-  pixel.xyz = (pixel.xyz - black[0]) / div[0];
+  pixel.xyz = (pixel.xyz - black4.xyz) / div4.xyz;
 
   write_imagef(out, (int2)(x, y), pixel);
 }

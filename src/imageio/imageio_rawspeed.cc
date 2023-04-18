@@ -248,7 +248,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       }
       black /= 4.0f;
 
-      img->raw_black_level = CLAMP(black, 0, UINT16_MAX);
+      img->raw_black_level = CLAMP(roundf(black), 0, UINT16_MAX);
     }
 
     /*
