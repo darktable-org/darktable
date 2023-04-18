@@ -411,6 +411,9 @@ The following is a summary of the main features added to darktable
   creating fewer undo records. This also makes using undo more
   effective because it doesn't step through every micro change.
 
+- Improve the ISO range selection widget for the auto apply presets
+  dialog.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
