@@ -1867,7 +1867,7 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
 
 static void _lib_masks_selection_change(dt_lib_module_t *self,
                                         struct dt_iop_module_t *module,
-                                        const int selectid)
+                                        const dt_mask_id_t selectid)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   if(!lm->treeview) return;

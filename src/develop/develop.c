@@ -2749,7 +2749,7 @@ void dt_dev_masks_list_remove(dt_develop_t *dev,
 }
 void dt_dev_masks_selection_change(dt_develop_t *dev,
                                    struct dt_iop_module_t *module,
-                                   const int selectid)
+                                   const dt_mask_id_t selectid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.selection_change)
     dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
