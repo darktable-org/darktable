@@ -406,6 +406,11 @@ The following is a summary of the main features added to darktable
   of the watermark scaling. In conjunction with the new 'fixed-size-text'
   template it is now possible to insert text with constant font size.
 
+- Make successive changes to sliders (for example by dragging,
+  scrolling or shortcuts) and other widgets more responsive by
+  creating fewer undo records. This also makes using undo more
+  effective because it doesn't step through every micro change.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
