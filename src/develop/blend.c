@@ -1442,7 +1442,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     {
       uint32_t mode;
       float opacity;
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
     } dt_develop_blend_params1_t;
 
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
@@ -1468,7 +1468,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** mixing opacity */
       float opacity;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** blendif parameters */
@@ -1506,7 +1506,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** mixing opacity */
       float opacity;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** blendif parameters */
@@ -1542,7 +1542,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** mixing opacity */
       float opacity;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** blur radius */
@@ -1585,7 +1585,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** how masks are combined */
       uint32_t mask_combine;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** blur radius */
@@ -1633,7 +1633,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** how masks are combined */
       uint32_t mask_combine;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** blur radius */
@@ -1675,7 +1675,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** how masks are combined */
       uint32_t mask_combine;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** blur radius */
@@ -1717,7 +1717,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** how masks are combined */
       uint32_t mask_combine;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** feathering radius */
@@ -1772,7 +1772,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** how masks are combined */
       uint32_t mask_combine;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** feathering radius */
@@ -1791,7 +1791,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
       dt_dev_operation_t raster_mask_source;
       int raster_mask_instance;
-      int raster_mask_id;
+      dt_mask_id_t raster_mask_id;
       gboolean raster_mask_invert;
     } dt_develop_blend_params9_t;
 
@@ -1839,7 +1839,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       /** how masks are combined */
       uint32_t mask_combine;
       /** id of mask in current pipeline */
-      uint32_t mask_id;
+      dt_mask_id_t mask_id;
       /** blendif mask */
       uint32_t blendif;
       /** feathering radius */
@@ -1859,7 +1859,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
       float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
       dt_dev_operation_t raster_mask_source;
       int raster_mask_instance;
-      int raster_mask_id;
+      dt_mask_id_t raster_mask_id;
       gboolean raster_mask_invert;
     } dt_develop_blend_params10_t;
 

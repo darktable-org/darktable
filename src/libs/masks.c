@@ -173,7 +173,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
          || (dev->mask_form_selected_id && dev->mask_form_selected_id != sel->formid))
         continue;;
 
-      if(prop == DT_MASKS_PROPERTY_OPACITY && fpt->parentid)
+      if(prop == DT_MASKS_PROPERTY_OPACITY && dt_is_valid_maskid(fpt->parentid))
       {
         const float new_opacity = dt_masks_form_change_opacity(sel, fpt->parentid,
                                                          value - d->last_value[prop]);
@@ -255,7 +255,7 @@ static void _lib_masks_get_values(GtkTreeModel *model,
                                   GtkTreeIter *iter,
                                   dt_iop_module_t **module,
                                   int *groupid,
-                                  int *formid)
+                                  dt_mask_id_t *formid)
 {
   // returns module & groupid & formid if requested
   if(module ) gtk_tree_model_get(model, iter, TREE_MODULE, module, -1);
@@ -324,7 +324,7 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 {
   if(!grp || !(grp->type & DT_MASKS_GROUP)) return;
   // we get the new formid
-  const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "formid"));
+  const dt_mask_id_t id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "formid"));
   dt_iop_module_t *module = g_object_get_data(G_OBJECT(button), "module");
 
   // we add the form in this group
@@ -361,10 +361,10 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int id = -1;
+      dt_mask_id_t id = NO_MASKID;
       _lib_masks_get_values(model, &iter, NULL, NULL, &id);
 
-      if(id > 0)
+      if(dt_is_valid_maskid(id))
       {
         dt_masks_point_group_t *fpt =
           (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
@@ -573,8 +573,8 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = NO_MASKID;
+      dt_mask_id_t id = NO_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -634,8 +634,8 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = NO_MASKID;
+      dt_mask_id_t id = NO_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -696,8 +696,8 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
 
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = NO_MASKID;
+      dt_mask_id_t id = NO_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -742,13 +742,13 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
 
 static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
                                                GtkTreeIter *iter,
-                                               const int first_id,
-                                               const int second_id)
+                                               const dt_mask_id_t first_id,
+                                               const dt_mask_id_t second_id)
 {
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
 
-  int grid = -1;
-  int id = -1;
+  dt_mask_id_t grid = NO_MASKID;
+  dt_mask_id_t id = NO_MASKID;
   _lib_masks_get_values(model, iter, NULL, &grid, &id);
 
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -812,14 +812,14 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
 
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = NO_IMGID;
+      dt_mask_id_t id = NO_IMGID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       GtkTreeIter *prev_iter = gtk_tree_iter_copy(&iter);
       gtk_tree_model_iter_previous(model, prev_iter);
-      int prev_grid = -1;
-      int prev_id = -1;
+      dt_mask_id_t prev_grid = NO_IMGID;
+      dt_mask_id_t prev_id = NO_IMGID;
       _lib_masks_get_values(model, prev_iter, NULL, &prev_grid, &prev_id);
 
       if(_is_first_tree_item(model, prev_iter))
@@ -1026,7 +1026,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 
   dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
-  grp2->formid = 0;
+  grp2->formid = NO_MASKID;
   dt_masks_group_ungroup(grp2, grp);
 
   // don't call dt_masks_change_form_gui because it triggers a selection change again
@@ -1410,7 +1410,7 @@ static gboolean _tree_query_tooltip(GtkWidget *widget,
   return show;
 }
 
-static void _is_form_used(const int formid,
+static void _is_form_used(const dt_mask_id_t formid,
                           dt_masks_form_t *grp,
                           char *text,
                           const size_t text_length,
@@ -1560,12 +1560,12 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
 gboolean _find_mask_iter_by_values(GtkTreeModel *model,
                                    GtkTreeIter *iter,
                                    const dt_iop_module_t *module,
-                                   const int formid,
+                                   const dt_mask_id_t formid,
                                    const int level)
 {
   do
   {
-    int fid = -1;
+    dt_mask_id_t fid = NO_MASKID;
     dt_iop_module_t *mod;
     _lib_masks_get_values(model, iter, &mod, NULL, &fid);
     gboolean found = (fid == formid)
@@ -1782,8 +1782,8 @@ static gboolean _remove_foreach(GtkTreeModel *model,
 {
   if(!iter) return 0;
   GList **rl = (GList **)data;
-  const int refid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "formid"));
-  const int refgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "groupid"));
+  const dt_mask_id_t refid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "formid"));
+  const dt_mask_id_t refgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "groupid"));
 
   int grid = -1;
   int id = -1;
@@ -1797,7 +1797,7 @@ static gboolean _remove_foreach(GtkTreeModel *model,
   return 0;
 }
 
-static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parentid)
+static void _lib_masks_remove_item(dt_lib_module_t *self, dt_mask_id_t formid, dt_mask_id_t parentid)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   // for each node , we refresh the string
@@ -1829,7 +1829,7 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
                                               GtkTreeSelection *selection,
                                               GtkTreeIter *iter,
                                               struct dt_iop_module_t *module,
-                                              const int selectid,
+                                              const dt_mask_id_t selectid,
                                               const int level)
 {
   gboolean found = FALSE;
@@ -1837,7 +1837,7 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
   GtkTreeIter i = *iter;
   do
   {
-    int id = -1;
+    dt_mask_id_t id = NO_MASKID;
     dt_iop_module_t *mod;
     _lib_masks_get_values(model, &i, &mod, NULL, &id);
 
@@ -1867,7 +1867,7 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
 
 static void _lib_masks_selection_change(dt_lib_module_t *self,
                                         struct dt_iop_module_t *module,
-                                        const int selectid)
+                                        const dt_mask_id_t selectid)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   if(!lm->treeview) return;
