@@ -573,7 +573,7 @@ The following is a summary of the main features added to darktable
 - Properly translate collection sort names in the recent collection
   sort history pop-up.
 
-- Fix dual demosaicing options for Quad Bayer sensor cameras where
+- Fix dual demosaicing options for 4-color Bayer sensor cameras where
   only VNG4 and PassThrough are supported.
 
 - Do not truncate focal length on thumbnails to avoid loss of
