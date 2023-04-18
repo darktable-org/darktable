@@ -331,7 +331,6 @@ typedef struct dt_iop_module_t
   GtkWidget *multimenu_button;
 
   /** delayed-event handling */
-  guint timeout_handle;
   guint label_recompute_handle;
 
   void (*process_plain)(struct dt_iop_module_t *self,
@@ -527,11 +526,6 @@ void dt_iop_refresh_center(dt_iop_module_t *module);
 void dt_iop_refresh_preview(dt_iop_module_t *module);
 void dt_iop_refresh_preview2(dt_iop_module_t *module);
 void dt_iop_refresh_all(dt_iop_module_t *module);
-
-/** queue a delayed call to dt_dev_add_history_item to capture module parameters */
-void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior);
-/** cancel any previously-queued history update */
-void dt_iop_cancel_history_update(dt_iop_module_t *module);
 
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
