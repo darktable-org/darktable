@@ -1533,7 +1533,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
 
-  dt_iop_cancel_history_update(self);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -1888,7 +1887,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
     {
       // no vertex was close, create a new one!
       c->selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, liny);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     }
   }
   else
@@ -1983,7 +1982,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
             if(dist < min) c->selected = selected;
           }
 
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
           gtk_widget_queue_draw(self->widget);
         }
       }
@@ -2000,7 +1999,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
         p->basecurve[ch][k].y = d->basecurve[ch][k].y;
       }
       c->selected = -2; // avoid motion notify re-inserting immediately.
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
       gtk_widget_queue_draw(self->widget);
       return TRUE;
     }
@@ -2012,7 +2011,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
       float reset_value = c->selected == 0 ? 0 : 1;
       basecurve[c->selected].y = basecurve[c->selected].x = reset_value;
       gtk_widget_queue_draw(self->widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
       return TRUE;
     }
 
@@ -2025,7 +2024,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->basecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     return TRUE;
   }
   return FALSE;
@@ -2053,7 +2052,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
   dt_iop_basecurve_sanity_check(self, widget);
 
   gtk_widget_queue_draw(widget);
-  dt_iop_queue_history_update(self, FALSE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   return TRUE;
 }
 
@@ -2159,7 +2158,6 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1;
   c->loglogscale = 0;
-  self->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -2214,7 +2212,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->minmax_curve);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }
