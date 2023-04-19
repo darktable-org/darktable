@@ -509,8 +509,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
        && !dt_gui_long_click(event->time, darktable.bauhaus->opentime))
     {
       // counts as double click, reset:
-      const dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
-      dt_bauhaus_combobox_set(GTK_WIDGET(darktable.bauhaus->current), d->defpos);
+      dt_bauhaus_widget_reset(GTK_WIDGET(darktable.bauhaus->current));
       dt_bauhaus_widget_reject(darktable.bauhaus->current);
       gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
                                  GTK_STATE_FLAG_FOCUSED, FALSE);
@@ -1252,7 +1251,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   _bauhaus_widget_init(w, self);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->entries = g_ptr_array_new_full(4, free_combobox_entry);
-  d->defpos = 0;
+  d->defpos = -1;
   d->active = -1;
   d->editable = 0;
   d->text_align = DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT;
@@ -1327,7 +1326,7 @@ void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 
 void dt_bauhaus_combobox_add_section(GtkWidget *widget, const char *text)
 {
-  dt_bauhaus_combobox_add_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT, NULL, NULL, FALSE);
+  dt_bauhaus_combobox_add_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT, GINT_TO_POINTER(-1), NULL, FALSE);
 }
 
 void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align)
@@ -1346,6 +1345,7 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhau
   dt_bauhaus_combobox_entry_t *entry = new_combobox_entry(text, align, sensitive, data, free_func);
   g_ptr_array_add(d->entries, entry);
   if(d->active < 0) d->active = 0;
+  if(d->defpos < 0 && sensitive) d->defpos = GPOINTER_TO_INT(data);
 }
 
 gboolean dt_bauhaus_combobox_set_entry_label(GtkWidget *widget, const int pos, const gchar *label)
@@ -2716,7 +2716,6 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
 
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-  const dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(w->quad_paint && (event->x > allocation.width - _widget_get_quad_width(w)))
   {
     dt_bauhaus_widget_press_quad(widget);
@@ -2736,7 +2735,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
     {
       // never called, as we popup the other window under your cursor before.
       // (except in weird corner cases where the popup is under the -1st entry
-      dt_bauhaus_combobox_set(widget, d->defpos);
+      dt_bauhaus_widget_reset(widget);
       dt_bauhaus_hide_popup();
     }
     else
@@ -2916,7 +2915,7 @@ void dt_bauhaus_widget_reset(GtkWidget *widget)
     dt_bauhaus_slider_set(widget, d->defpos);
   }
   else
-    dt_bauhaus_combobox_set(widget, w->data.combobox.defpos);
+    dt_bauhaus_combobox_set_from_value(widget, w->data.combobox.defpos);
 
   return;
 }
@@ -3504,6 +3503,9 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
   if(effect == DT_ACTION_EFFECT_SET)
     return dt_bauhaus_slider_get(widget);
 
+  if(effect == DT_ACTION_EFFECT_RESET)
+    return fabsf(dt_bauhaus_slider_get(widget) - d->defpos) > 1e-5;
+
   return d->pos +
          ( d->min == -d->max                             ? DT_VALUE_PATTERN_PLUS_MINUS :
          ( d->min == 0 && (d->max == 1 || d->max == 100) ? DT_VALUE_PATTERN_PERCENTAGE : 0 ));
@@ -3551,8 +3553,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       g_idle_add(combobox_idle_value_changed, widget);
       break;
     case DT_ACTION_EFFECT_RESET:
-      value = dt_bauhaus_combobox_get_default(widget);
-      dt_bauhaus_combobox_set(widget, value);
+      dt_bauhaus_widget_reset(widget);
       break;
     default:
       value = effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1;
@@ -3570,6 +3571,9 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
 
   if(element == DT_ACTION_ELEMENT_BUTTON || !w->data.combobox.entries->len)
     return dt_bauhaus_widget_get_quad_active(widget);
+
+  if(effect == DT_ACTION_EFFECT_RESET)
+    return dt_bauhaus_combobox_get_data(widget) != GINT_TO_POINTER(dt_bauhaus_combobox_get_default(widget));
 
   for(int i = value; i >= 0; i--)
   {
