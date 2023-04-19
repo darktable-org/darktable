@@ -238,10 +238,14 @@ static inline float _detail_mask_threshold(const float level, const gboolean det
   return 0.005f * (detail ? powf(level, 2.0f) : 1.0f - powf(fabs(level), 0.5f ));
 }
 
-static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const float level)
+static void _refine_with_detail_mask(struct dt_iop_module_t *self,
+                                     struct dt_dev_pixelpipe_iop_t *piece,
+                                     float *mask,
+                                     const struct dt_iop_roi_t *const roi_in,
+                                     const struct dt_iop_roi_t *const roi_out,
+                                     const float level)
 {
   if(level == 0.0f) return;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
 
   const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
@@ -257,10 +261,9 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   const int iheight = p->rawdetail_mask_roi.height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
-  if(info)
-    dt_print(DT_DEBUG_ALWAYS,
-             "[_refine_with_detail_mask] in module %s %ix%i --> %ix%i\n",
-             self->op, iwidth, iheight, owidth, oheight);
+  dt_print_pipe(DT_DEBUG_PIPE,
+       "refine_with_detail_mask on CPU",
+       piece->pipe, self->so->op, roi_in, roi_out, "\n");
 
   const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
 
@@ -341,45 +344,18 @@ static size_t _develop_mask_get_post_operations(const dt_develop_blend_params_t 
   return index;
 }
 
-
-static inline float *_develop_blend_process_copy_region(const float *const restrict input, const size_t iwidth,
-                                                        const size_t xoffs, const size_t yoffs,
-                                                        const size_t owidth, const size_t oheight)
-{
-  const size_t ioffset = yoffs * iwidth + xoffs;
-  float *const restrict output = dt_alloc_align_float(owidth * oheight);
-  if(output == NULL)
-  {
-    return NULL;
-  }
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-        dt_omp_firstprivate(input, output, iwidth, ioffset, owidth, oheight)
-#endif
-  for(size_t y = 0; y < oheight; y++)
-  {
-    const size_t iindex = y * iwidth + ioffset;
-    const size_t oindex = y * owidth;
-    memcpy(output + oindex, input + iindex, sizeof(float) * owidth);
-  }
-
-  return output;
-}
-
-static inline void _develop_blend_process_free_region(float *const restrict input)
-{
-  dt_free_align(input);
-}
-
-
-static void _develop_blend_process_feather(const float *const guide, float *const mask, const size_t width,
-                                           const size_t height, const int ch, const float guide_weight,
-                                           const float feathering_radius, const float scale)
+static void _develop_blend_process_feather(const float *const guide,
+                                           float *const mask,
+                                           const size_t width,
+                                           const size_t height,
+                                           const int ch,
+                                           const float guide_weight,
+                                           const float feathering_radius,
+                                           const float scale)
 {
   const float sqrt_eps = 1.f;
-  int w = (int)(2 * feathering_radius * scale + 0.5f);
-  if(w < 1) w = 1;
+  const int w = MAX(1, (int)(2 * feathering_radius * scale + 0.5f));
+
 
   float *const restrict mask_bak = dt_alloc_align_float(width * height);
   if(mask_bak)
@@ -391,11 +367,13 @@ static void _develop_blend_process_feather(const float *const guide, float *cons
 }
 
 
-static void _develop_blend_process_mask_tone_curve(float *const restrict mask, const size_t buffsize,
-                                                   const float contrast, const float brightness,
+static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
+                                                   const size_t buffsize,
+                                                   const float contrast,
+                                                   const float brightness,
                                                    const float opacity)
 {
-  const float mask_epsilon = 16 * FLT_EPSILON;  // empirical mask threshold for fully transparent masks
+  const float mask_epsilon = 16.0f * FLT_EPSILON;  // empirical mask threshold for fully transparent masks
   const float e = expf(3.f * contrast);
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) schedule(static) aligned(mask:64) \
@@ -425,49 +403,59 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask, c
 }
 
 
-void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                              const void *const ivoid, void *const ovoid, const struct dt_iop_roi_t *const roi_in,
+void dt_develop_blend_process(struct dt_iop_module_t *self,
+                              struct dt_dev_pixelpipe_iop_t *piece,
+                              const void *const ivoid,
+                              void *const ovoid,
+                              const struct dt_iop_roi_t *const roi_in,
                               const struct dt_iop_roi_t *const roi_out)
 {
-  if(piece->pipe->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return;
+  if(piece->pipe->bypass_blendif
+     && self->dev->gui_attached
+     && (self == self->dev->gui_module))
+    return;
 
   const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
   if(!d) return;
 
-  const unsigned int mask_mode = d->mask_mode;
+  const uint32_t mask_mode = d->mask_mode;
   // check if blend is disabled
   if(!(mask_mode & DEVELOP_MASK_ENABLED)) return;
 
   const size_t ch = piece->colors;           // the number of channels in the buffer
-  const int xoffs = roi_out->x - roi_in->x;
-  const int yoffs = roi_out->y - roi_in->y;
-  const int iwidth = roi_in->width;
-  const int iheight = roi_in->height;
   const int owidth = roi_out->width;
   const int oheight = roi_out->height;
-  const size_t buffsize = (size_t)owidth * oheight;
-  const float iscale = roi_in->scale;
-  const float oscale = roi_out->scale;
-  const gboolean rois_equal = iwidth == owidth || iheight == oheight || xoffs == 0 || yoffs == 0;
+  const size_t obuffsize = (size_t)owidth * oheight;
 
-  // In most cases of blending-enabled modules input and output of the module have
-  // the exact same dimensions. Only in very special cases we allow a module's input
-  // to exceed its output. This is namely the case for the spot removal module where
-  // the source of a patch might lie outside the roi of the output image. Therefore:
-  // We can only handle blending if roi_out and roi_in have the same scale and
-  // if roi_out fits into the area given by roi_in. xoffs and yoffs describe the relative
-  // offset of the input image to the output image.
-  if(oscale != iscale || xoffs < 0 || yoffs < 0
-     || ((xoffs > 0 || yoffs > 0) && (owidth + xoffs > iwidth || oheight + yoffs > iheight)))
+  const int dy = roi_out->y - roi_in->y;
+  const int dx = roi_out->x - roi_in->x;
+
+  const gboolean rois_equal = (roi_in->width == owidth) && (roi_in->height == oheight);
+  const gboolean inside_roi = (roi_in->width - dx >= owidth)
+                           && (roi_in->height - dy >= oheight);
+
+  /* In most cases of blending-enabled modules input and output of the module have
+     the exact same dimensions.
+     In some cases the module's input exceeds its output.
+     Examples are the spot removal and repaint module where the source of a patch
+     might lie outside the roi of the output image. Therefore:
+     We can only handle blending if roi_out and roi_in have the same scale and
+     if roi_out fits into the area given by roi_in.
+  */
+  if(!inside_roi)
   {
-    dt_control_log(_("skipped blending in module '%s': working area mismatch"), self->op);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "dt_develop_blend on CPU",
+       piece->pipe, self->so->op, roi_in, roi_out, "skip blending, work area mismatch\n");
     return;
   }
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
-    (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe)
-     && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
+    (self->dev->gui_attached
+      && (self == self->dev->gui_module)
+      && (piece->pipe == self->dev->pipe)
+      && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
@@ -476,7 +464,9 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global opacity value)
-  const gboolean suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
+  const gboolean suppress_mask = self->suppress_mask
+                                 && self->dev->gui_attached
+                                 && (self == self->dev->gui_module)
                                  && (piece->pipe == self->dev->pipe)
                                  && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
 
@@ -487,19 +477,22 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   // get the clipped opacity value  0 - 1
   const float opacity = fminf(fmaxf(d->opacity / 100.0f, 0.0f), 1.0f);
 
-  // allocate space for blend mask
-  float *const restrict _mask = dt_alloc_align_float(buffsize);
-  if(!_mask)
-  {
-    dt_control_log(_("could not allocate buffer for blending"));
-    return;
-  }
+  // allocate space for blend mask used by roi_out
+  float *const restrict _mask = dt_alloc_align_float(obuffsize);
+
+  dt_print_pipe(DT_DEBUG_PIPE,
+     "dt_develop_blend_process on CPU",
+     piece->pipe, self->so->op, roi_in, roi_out, 
+     _mask ? "\n" : "could not allocate buffer for blending\n");
+
+  if(!_mask) return;
+
   float *const restrict mask = _mask;
 
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
   {
     // blend uniformly (no drawn or parametric mask)
-    dt_iop_image_fill(mask,opacity,owidth,oheight,1);  //mask[k] = opacity;
+    dt_iop_image_fill(mask, opacity, owidth, oheight, 1); // mask[k] = value;
   }
   else if(mask_mode & DEVELOP_MASK_RASTER)
   {
@@ -512,12 +505,15 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     {
       // invert if required
       if(d->raster_mask_invert)
+      {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(buffsize, mask, opacity, raster_mask) \
+        dt_omp_firstprivate(obuffsize, mask, opacity, raster_mask) \
         schedule(static)
 #endif
-        for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
+        for(size_t i = 0; i < obuffsize; i++)
+          mask[i] = (1.0 - raster_mask[i]) * opacity;
+      }
       else
       {
         dt_iop_image_scaled_copy(mask, raster_mask, opacity, owidth, oheight, 1); //mask[k] = opacity * raster_mask[k];
@@ -528,7 +524,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     {
       // fallback for when the raster mask couldn't be applied
       const float value = d->raster_mask_invert ? 0.0 : 1.0;
-      dt_iop_image_fill(mask, value, owidth, oheight, 1);  //mask[k] = value;
+      dt_iop_image_fill(mask, value, owidth, oheight, 1);  // mask[k] = value;
     }
   }
   else
@@ -593,15 +589,20 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
         const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
-        float *restrict guide = (float *restrict)ivoid;
-        if(!rois_equal)
-          guide = _develop_blend_process_copy_region(guide, ch * iwidth, ch * xoffs, ch * yoffs,
-                                                     ch * owidth, ch * oheight);
-        if(guide)
-          _develop_blend_process_feather(guide, mask, owidth, oheight, ch, guide_weight,
+        if(rois_equal)
+          _develop_blend_process_feather((float *restrict)ivoid, mask, owidth, oheight, ch, guide_weight,
                                          d->feathering_radius, roi_out->scale / piece->iscale);
-        if(!rois_equal)
-          _develop_blend_process_free_region(guide);
+        else
+        {
+          float *const restrict guide = dt_alloc_align_float(obuffsize * ch);
+          if(guide)
+          {
+            dt_iop_copy_image_roi(guide, (float *restrict)ivoid, ch, roi_in, roi_out, 0);
+            _develop_blend_process_feather(guide, mask, owidth, oheight, ch, guide_weight,
+                                         d->feathering_radius, roi_out->scale / piece->iscale);
+            dt_free_align(guide);
+          }
+        }
       }
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
@@ -624,7 +625,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       }
       else if(operation == DEVELOP_MASK_POST_TONE_CURVE)
       {
-        _develop_blend_process_mask_tone_curve(mask, buffsize, d->contrast, d->brightness, opacity);
+        _develop_blend_process_mask_tone_curve(mask, obuffsize, d->contrast, d->brightness, opacity);
       }
     }
   }
@@ -673,11 +674,15 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 }
 
 #ifdef HAVE_OPENCL
-static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *roi_in,
-                                const struct dt_iop_roi_t *roi_out, const float level, const int devid)
+static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
+                                        struct dt_dev_pixelpipe_iop_t *piece,
+                                        float *mask,
+                                        const struct dt_iop_roi_t *roi_in,
+                                        const struct dt_iop_roi_t *roi_out,
+                                        const float level,
+                                        const int devid)
 {
   if(level == 0.0f) return;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
 
   const int detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
@@ -694,19 +699,16 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   const int iheight = p->rawdetail_mask_roi.height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
-  if(info)
-    dt_print(DT_DEBUG_ALWAYS,
-             "[_refine_with_detail_mask_cl] in module %s %ix%i --> %ix%i\n",
-             self->op, iwidth, iheight, owidth, oheight);
+  dt_print_pipe(DT_DEBUG_PIPE,
+       "refine_with_detail_mask on GPU",
+       piece->pipe, self->so->op, roi_in, roi_out, "\n");
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
-  if(lum == NULL) goto error;
   tmp = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float));
-  if(tmp == NULL) goto error;
   out = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
-  if(out == NULL) goto error;
   blur = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
-  if(blur == NULL) goto error;
+  if((lum == NULL) || (tmp == NULL) || (out == NULL) || (blur == NULL))
+    goto error;
 
   err = dt_opencl_write_host_to_device(devid, p->rawdetail_mask_data, tmp, iwidth, iheight, sizeof(float));
   if(err != CL_SUCCESS)
@@ -795,13 +797,13 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   dt_free_align(lum);
   lum = NULL;
 
-  const int msize = owidth * oheight;
+  const size_t msize = (size_t)owidth * oheight;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
   schedule(simd:static) aligned(mask, warp_mask : 64)
  #endif
-  for(int idx = 0; idx < msize; idx++)
+  for(size_t idx = 0; idx < msize; idx++)
   {
     mask[idx] = mask[idx] * warp_mask[idx];
   }
@@ -823,51 +825,53 @@ static inline void _blend_process_cl_exchange(cl_mem *a, cl_mem *b)
   *b = tmp;
 }
 
-int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in,
+int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
+                                struct dt_dev_pixelpipe_iop_t *piece,
+                                cl_mem dev_in,
+                                cl_mem dev_out,
+                                const struct dt_iop_roi_t *roi_in,
                                 const struct dt_iop_roi_t *roi_out)
 {
-  if(piece->pipe->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return TRUE;
+  if(piece->pipe->bypass_blendif
+      && self->dev->gui_attached
+      && (self == self->dev->gui_module))
+    return TRUE;
 
   dt_develop_blend_params_t *const d = (dt_develop_blend_params_t *const)piece->blendop_data;
   if(!d) return TRUE;
 
-  const unsigned int mask_mode = d->mask_mode;
+  const uint32_t mask_mode = d->mask_mode;
   // check if blend is disabled: just return, output is already in dev_out
   if(!(mask_mode & DEVELOP_MASK_ENABLED)) return TRUE;
 
-  const int ch = piece->colors; // the number of channels in the buffer
-  const int xoffs = roi_out->x - roi_in->x;
-  const int yoffs = roi_out->y - roi_in->y;
-  const int iwidth = roi_in->width;
-  const int iheight = roi_in->height;
+  const size_t ch = piece->colors;           // the number of channels in the buffer
   const int owidth = roi_out->width;
   const int oheight = roi_out->height;
-  const size_t buffsize = (size_t)owidth * oheight;
-  const float iscale = roi_in->scale;
-  const float oscale = roi_out->scale;
-  const gboolean rois_equal = iwidth == owidth || iheight == oheight || xoffs == 0 || yoffs == 0;
+  const size_t obuffsize = (size_t)owidth * oheight;
 
-  // In most cases of blending-enabled modules input and output of the module have
-  // the exact same dimensions. Only in very special cases we allow a module's input
-  // to exceed its output. This is namely the case for the spot removal module where
-  // the source of a patch might lie outside the roi of the output image. Therefore:
-  // We can only handle blending if roi_out and roi_in have the same scale and
-  // if roi_out fits into the area given by roi_in. xoffs and yoffs describe the relative
-  // offset of the input image to the output image. */
-  if(oscale != iscale || xoffs < 0 || yoffs < 0
-     || ((xoffs > 0 || yoffs > 0) && (owidth + xoffs > iwidth || oheight + yoffs > iheight)))
+  const int dy = roi_out->y - roi_in->y;
+  const int dx = roi_out->x - roi_in->x;
+
+  const gboolean rois_equal = (roi_in->width == owidth) && (roi_in->height == oheight);
+  const gboolean inside_roi = (roi_in->width - dx >= owidth)
+                           && (roi_in->height - dy >= oheight);
+
+  // see comments in non-OpenCL code
+  if(!inside_roi)
   {
-    dt_control_log(_("skipped blending in module '%s': working area mismatch"), self->op);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "dt_develop_blend on GPU",
+       piece->pipe, self->so->op, roi_in, roi_out, "skip OpenCL blending, work area mismatch\n");
     return TRUE;
   }
-
   // only non-zero if mask_display was set by an _earlier_ module
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display
-      = (self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe)
+      = (self->dev->gui_attached
+         && (self == self->dev->gui_module)
+         && (piece->pipe == self->dev->pipe)
          && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
             ? self->request_mask_display
             : DT_DEV_PIXELPIPE_DISPLAY_NONE;
@@ -878,7 +882,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
-  const gboolean suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
+  const gboolean suppress_mask = self->suppress_mask
+                                 && self->dev->gui_attached
+                                 && (self == self->dev->gui_module)
                                  && (piece->pipe == self->dev->pipe)
                                  && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
 
@@ -890,12 +896,16 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const float opacity = fminf(fmaxf(d->opacity / 100.0f, 0.0f), 1.0f);
 
   // allocate space for blend mask
-  float *_mask = dt_alloc_align_float(buffsize);
+  float *_mask = dt_alloc_align_float(obuffsize);
+
+  dt_print_pipe(DT_DEBUG_PIPE,
+     "dt_develop_blend on GPU",
+     piece->pipe, self->so->op, roi_in, roi_out, 
+     _mask ? "\n" : "could not allocate buffer for blending\n");
+
   if(!_mask)
-  {
-    dt_control_log(_("could not allocate buffer for blending"));
     return FALSE;
-  }
+
   float *const mask = _mask;
 
   // setup some kernels
@@ -929,7 +939,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   int kernel_display_channel = darktable.opencl->blendop->kernel_blendop_display_channel;
 
   const int devid = piece->pipe->devid;
-  const int offs[2] = { xoffs, yoffs };
+  const size_t offs[2] = { dx, dy };
   const size_t sizes[] = { ROUNDUPDWD(owidth, devid), ROUNDUPDHT(oheight, devid), 1 };
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -1001,15 +1011,18 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     {
       // invert if required
       if(d->raster_mask_invert)
+      {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-        dt_omp_firstprivate(buffsize, mask, opacity) \
+        dt_omp_firstprivate(obuffsize, mask, opacity) \
         shared(raster_mask)
 #endif
-        for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
+        for(size_t i = 0; i < obuffsize; i++)
+          mask[i] = (1.0 - raster_mask[i]) * opacity;
+      }
       else
       {
-        dt_iop_image_scaled_copy(mask, raster_mask,opacity, owidth, oheight, 1); //mask[k] = opacity * raster_mask[k];
+        dt_iop_image_scaled_copy(mask, raster_mask, opacity, owidth, oheight, 1); //mask[k] = opacity * raster_mask[k];
       }
       if(free_mask) dt_free_align(raster_mask);
     }
@@ -1080,12 +1093,19 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_finish(devid);
 
     // get parametric mask (if any) and apply global opacity
-    const unsigned blendif = d->blendif;
-    const unsigned int mask_combine = d->mask_combine;
-    dt_opencl_set_kernel_args(devid, kernel_mask, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_mask_1),
-      CLARG(dev_mask_2), CLARG(owidth), CLARG(oheight), CLARG(opacity), CLARG(blendif), CLARG(dev_blendif_params),
-      CLARG(mask_mode), CLARG(mask_combine), CLARRAY(2, offs), CLARG(dev_profile_info), CLARG(dev_profile_lut),
-      CLARG(use_profile));
+    const uint32_t blendif = d->blendif;
+    const uint32_t mask_combine = d->mask_combine;
+
+    dt_opencl_set_kernel_args(devid, kernel_mask, 0,
+      CLARG(dev_in), CLARG(dev_out),
+      CLARG(dev_mask_1), CLARG(dev_mask_2),
+      CLARG(owidth), CLARG(oheight),
+      CLARG(opacity),
+      CLARG(blendif),
+      CLARG(dev_blendif_params),
+      CLARG(mask_mode), CLARG(mask_combine),
+      CLARRAY(2, offs),
+      CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_profile));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS)
     {
@@ -1114,7 +1134,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
           dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
           if(dev_guide == NULL) goto error;
           guide = dev_guide;
-          size_t origin_1[] = { xoffs, yoffs, 0 };
+          size_t origin_1[] = { dx, dy, 0 };
           size_t origin_2[] = { 0, 0, 0 };
           err = dt_opencl_enqueue_copy_image(devid, dev_in, guide, origin_2, origin_1, region);
           if(err != CL_SUCCESS) goto error;
@@ -1130,8 +1150,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       }
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
-        int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
-        if(w < 1) w = 1;
+        const int w = MAX(1, (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f));
         const float sqrt_eps = 1.0f;
         const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
