@@ -262,7 +262,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE,
-       "refine_with_detail_mask on CPU",
+       "refine_detail_mask on CPU",
        piece->pipe, self->so->op, roi_in, roi_out, "\n");
 
   const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
@@ -699,8 +699,8 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   const int iheight = p->rawdetail_mask_roi.height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
-  dt_print_pipe(DT_DEBUG_PIPE,
-       "refine_with_detail_mask on GPU",
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+       "refine_detail_mask on GPU",
        piece->pipe, self->so->op, roi_in, roi_out, "\n");
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
@@ -714,7 +714,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[refine_with_detail_mask_cl] write rawdetail_mask_data: %s\n",
+             "[refine_detail_mask_cl] write rawdetail_mask_data: %s\n",
              cl_errstr(err));
     goto error;
   }
@@ -726,7 +726,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[refine_with_detail_mask_cl] kernel_read_mask: %s\n",
+               "[refine_detail_mask_cl] kernel_read_mask: %s\n",
                cl_errstr(err));
       goto error;
     }
@@ -739,7 +739,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[refine_with_detail_mask_cl] kernel_calc_blend: %s\n",
+               "[refine_detail_mask_cl] kernel_calc_blend: %s\n",
                cl_errstr(err));
       goto error;
     }
@@ -759,7 +759,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL,
-                 "[refine_with_detail_mask_cl] kernel_mask_blur: %s\n",
+                 "[refine_detail_mask_cl] kernel_mask_blur: %s\n",
                  cl_errstr(err));
         goto error;
       }
@@ -778,7 +778,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[refine_with_detail_mask_cl] kernel_write_mask: %s\n", cl_errstr(err));
+               "[refine_detail_mask_cl] kernel_write_mask: %s\n", cl_errstr(err));
       goto error;
     }
   }
@@ -939,7 +939,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   int kernel_display_channel = darktable.opencl->blendop->kernel_blendop_display_channel;
 
   const int devid = piece->pipe->devid;
-  const size_t offs[2] = { dx, dy };
+  const int offs[2] = { dx, dy };
   const size_t sizes[] = { ROUNDUPDWD(owidth, devid), ROUNDUPDHT(oheight, devid), 1 };
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
