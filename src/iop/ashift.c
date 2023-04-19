@@ -287,10 +287,10 @@ typedef struct dt_iop_ashift_params_t
   float aspect;      // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "aspect adjust"
   dt_iop_ashift_mode_t mode;     // $DEFAULT: ASHIFT_MODE_GENERIC $DESCRIPTION: "lens model"
   dt_iop_ashift_crop_t cropmode; // $DEFAULT: ASHIFT_CROP_LARGEST $DESCRIPTION: "automatic cropping"
-  float cl;          // $DEFAULT: 0.0
-  float cr;          // $DEFAULT: 1.0
-  float ct;          // $DEFAULT: 0.0
-  float cb;          // $DEFAULT: 1.0
+  float cl;          // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 1.0
+  float cr;          // $DEFAULT: 1.0 $MIN: 0.0 $MAX: 1.0
+  float ct;          // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 1.0
+  float cb;          // $DEFAULT: 1.0 $MIN: 0.0 $MAX: 1.0
   float last_drawn_lines[MAX_SAVED_LINES * 4];
   int last_drawn_lines_count;
   float last_quad_lines[8];
@@ -5754,7 +5754,11 @@ void commit_params(struct dt_iop_module_t *self,
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
 
-  if(gui_has_focus(self))
+  if(gui_has_focus(self)
+     || isnan(p->cl)
+     || isnan(p->cr)
+     || isnan(p->ct)
+     || isnan(p->cb))
   {
     // if gui has focus we want to see the full uncropped image
     d->cl = 0.0f;
