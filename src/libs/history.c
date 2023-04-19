@@ -681,6 +681,9 @@ static void _lib_history_will_change_callback(gpointer instance, gpointer user_d
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *lib = (dt_lib_history_t *)self->data;
 
+  gtk_container_foreach(GTK_CONTAINER(lib->history_box),
+                        (GtkCallback)gtk_widget_set_has_tooltip, NULL);
+
   if(lib->record_history_level++ == 0 && lib->record_undo)
   {
     /* record undo/redo history snapshot */
