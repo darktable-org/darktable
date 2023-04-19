@@ -49,7 +49,6 @@
 // NaN-safe: NaN compares false and will result in 0.0
 // also does not force promotion of floats to doubles, but will use the type of its argument
 #define CLIP(x) (((x) >= 0) ? ((x) <= 1 ? (x) : 1) : 0)
-#define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
 
 // clip luminance values to be between 0 and 100
 #define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
@@ -59,14 +58,49 @@
 #define CLAMPF(a, mn, mx) ((a) >= (mn) ? ((a) <= (mx) ? (a) : (mx)) : (mn))
 //#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
-#if defined(__SSE__)
-#define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
-#endif
-
 static inline float clamp_range_f(const float x, const float low, const float high)
 {
   return x > high ? high : (x < low ? low : x);
 }
+
+//*****************
+// functions to check for non-finite values
+// with -ffinite-math-only, the compiler is free to elide checks based
+// on isnan(), isinf(), and isfinite() because it can reason that these
+// return constant values since it has been told explicitly that all
+// numeric values are finite.  These versions override that directive
+// to let use use NAN and INFINITY as flag values.
+
+// Start by telling the compiler that non-finite values may occur.  As
+// a side-effect, these functions will not be inlined even though we
+// have declared them "inline" (to avoid unused-function warnings)
+// when called from code with different optimization flags.
+#ifdef __GNUC__
+#pragma GCC push_options
+#pragma GCC optimize ("-fno-finite-math-only")
+#endif
+
+static inline gboolean dt_isnan(float val)
+{
+  return isnan(val);
+}
+
+static inline gboolean dt_isinf(float val)
+{
+  return isinf(val);
+}
+
+static inline gboolean dt_isfinite(float val)
+{
+  return isfinite(val);
+}
+
+#ifdef __GNUC__
+#pragma GCC pop_options
+#endif
+
+// end of functions to check for non-finite values
+//*****************
 
 // test floats difference smaller than eps
 static inline gboolean feqf(const float v1, const float v2, const float eps)
