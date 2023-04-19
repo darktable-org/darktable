@@ -37,7 +37,6 @@
 #include "gui/color_picker_proxy.h"
 
 #include <assert.h>
-#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2442,7 +2441,7 @@ static gboolean _dev_pixelpipe_process_rec(
           const float f = ((float *)(*output))[k];
           if(isnan(f))
             hasnan = 1;
-          else if(isinf(f))
+          else if(dt_isinf(f))
             hasinf = 1;
           else
           {
@@ -2479,7 +2478,7 @@ static gboolean _dev_pixelpipe_process_rec(
         const float f = ((float *)(*output))[k];
         if(isnan(f))
           hasnan = 1;
-        else if(isinf(f))
+        else if(dt_isinf(f))
           hasinf = 1;
         else
         {
