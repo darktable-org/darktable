@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/math.h"
 #include "common/styles.h"
 #include "common/undo.h"
 #include "control/conf.h"
@@ -805,7 +806,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field,
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    if(*(float*)o != *(float*)p && (isfinite(*(float*)o) || isfinite(*(float*)p)))
+    if(*(float*)o != *(float*)p && (dt_isfinite(*(float*)o) || dt_isfinite(*(float*)p)))
       return g_strdup_printf("%s\t%.4f\t\u2192\t%.4f", d, *(float*)o, *(float*)p);
     break;
   case DT_INTROSPECTION_TYPE_INT:

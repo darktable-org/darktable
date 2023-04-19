@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/calculator.h"
 #include "common/darktable.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -29,7 +30,6 @@
 #include "osx/osx.h"
 #endif
 
-#include <math.h>
 #include <strings.h>
 
 #include <pango/pangocairo.h>
@@ -3071,7 +3071,8 @@ static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event
         // unnormalized input, user was typing this:
         const float old_value = dt_bauhaus_slider_get_val(GTK_WIDGET(darktable.bauhaus->current));
         const float new_value = dt_calculator_solve(old_value, darktable.bauhaus->keys);
-        if(isfinite(new_value)) dt_bauhaus_slider_set_val(GTK_WIDGET(darktable.bauhaus->current), new_value);
+        if(dt_isfinite(new_value))
+          dt_bauhaus_slider_set_val(GTK_WIDGET(darktable.bauhaus->current), new_value);
         darktable.bauhaus->keys_cnt = 0;
         memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
         dt_bauhaus_hide_popup();
@@ -3333,14 +3334,16 @@ void dt_bauhaus_vimkey_exec(const char *input)
       old_value = dt_bauhaus_slider_get(w);
       new_value = dt_calculator_solve(old_value, input);
       dt_print(DT_DEBUG_ALWAYS, " = %f\n", new_value);
-      if(isfinite(new_value)) dt_bauhaus_slider_set(w, new_value);
+      if(dt_isfinite(new_value))
+        dt_bauhaus_slider_set(w, new_value);
       break;
     case DT_BAUHAUS_COMBOBOX:
       // TODO: what about text as entry?
       old_value = dt_bauhaus_combobox_get(w);
       new_value = dt_calculator_solve(old_value, input);
       dt_print(DT_DEBUG_ALWAYS, " = %f\n", new_value);
-      if(isfinite(new_value)) dt_bauhaus_combobox_set(w, new_value);
+      if(dt_isfinite(new_value))
+        dt_bauhaus_combobox_set(w, new_value);
       break;
     default:
       break;
