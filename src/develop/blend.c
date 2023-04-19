@@ -1431,6 +1431,34 @@ static uint32_t _blend_legacy_blend_mode(uint32_t legacy_blend_mode)
   return (blend_reverse ? DEVELOP_BLEND_REVERSE : 0) | blend_mode;
 }
 
+static void _fix_masks_combine(dt_develop_blend_params_t *bp)
+{
+  // only for drawn masks where DEVELOP_COMBINE_INV has been
+  // deprecated.
+
+  if(bp->mask_mode & DEVELOP_MASK_MASK)
+  {
+    // if set we replace it with DEVELOP_COMBINE_MASKS_POS
+    // both DEVELOP_COMBINE_INV & DEVELOP_COMBINE_MASKS_POS are giving
+    // the very same result.
+    const gboolean m_inv = bp->mask_combine & DEVELOP_COMBINE_INV;
+    const gboolean m_pos = bp->mask_combine & DEVELOP_COMBINE_MASKS_POS;
+
+    if(m_inv && !m_pos)
+    {
+      // remove INV add POS to give the same effect
+      bp->mask_combine &= ~DEVELOP_COMBINE_INV;
+      bp->mask_combine |= DEVELOP_COMBINE_MASKS_POS;
+    }
+    else if(m_inv && m_pos)
+    {
+      // both set, remove INV and remove POS, invert of invert is a nop
+      bp->mask_combine &= ~DEVELOP_COMBINE_INV;
+      bp->mask_combine &= ~DEVELOP_COMBINE_MASKS_POS;
+    }
+  }
+}
+
 /** update blendop params from older versions */
 int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const old_params,
                                    const int old_version, void *new_params, const int new_version,
@@ -1454,7 +1482,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 1 && new_version == 11)
+  if(old_version == 1 && new_version == 12)
   {
     /** blend legacy parameters version 1 */
     typedef struct dt_develop_blend_params1_t
@@ -1477,7 +1505,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 2 && new_version == 11)
+  if(old_version == 2 && new_version == 12)
   {
     /** blend legacy parameters version 2 */
     typedef struct dt_develop_blend_params2_t
@@ -1515,7 +1543,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 3 && new_version == 11)
+  if(old_version == 3 && new_version == 12)
   {
     /** blend legacy parameters version 3 */
     typedef struct dt_develop_blend_params3_t
@@ -1551,7 +1579,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 4 && new_version == 11)
+  if(old_version == 4 && new_version == 12)
   {
     /** blend legacy parameters version 4 */
     typedef struct dt_develop_blend_params4_t
@@ -1586,11 +1614,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->radius;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
-
     return 0;
   }
 
-  if(old_version == 5 && new_version == 11)
+  if(old_version == 5 && new_version == 12)
   {
     /** blend legacy parameters version 5 (identical to version 6)*/
     typedef struct dt_develop_blend_params5_t
@@ -1634,11 +1661,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blendif = (o->blendif & (1u << DEVELOP_BLENDIF_active) ? o->blendif | 31 : o->blendif)
                  & ~(1u << DEVELOP_BLENDIF_active);
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
-
+    _fix_masks_combine(n);
     return 0;
   }
 
-  if(old_version == 6 && new_version == 11)
+  if(old_version == 6 && new_version == 12)
   {
     /** blend legacy parameters version 6 (identical to version 7) */
     typedef struct dt_develop_blend_params6_t
@@ -1677,10 +1704,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    _fix_masks_combine(n);
     return 0;
   }
 
-  if(old_version == 7 && new_version == 11)
+  if(old_version == 7 && new_version == 12)
   {
     /** blend legacy parameters version 7 */
     typedef struct dt_develop_blend_params7_t
@@ -1719,10 +1747,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    _fix_masks_combine(n);
     return 0;
   }
 
-  if(old_version == 8 && new_version == 11)
+  if(old_version == 8 && new_version == 12)
   {
     /** blend legacy parameters version 8 */
     typedef struct dt_develop_blend_params8_t
@@ -1773,10 +1802,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->contrast = o->contrast;
     n->brightness = o->brightness;
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    _fix_masks_combine(n);
     return 0;
   }
 
-  if(old_version == 9 && new_version == 11)
+  if(old_version == 9 && new_version == 12)
   {
     /** blend legacy parameters version 9 */
     typedef struct dt_develop_blend_params9_t
@@ -1836,10 +1866,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->raster_mask_instance = o->raster_mask_instance;
     n->raster_mask_id = o->raster_mask_id;
     n->raster_mask_invert = o->raster_mask_invert;
+    _fix_masks_combine(n);
     return 0;
   }
 
-  if(old_version == 10 && new_version == 11)
+  if(old_version == 10 && new_version == 12)
   {
     /** blend legacy parameters version 10 */
     typedef struct dt_develop_blend_params10_t
@@ -1912,9 +1943,22 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->raster_mask_instance = o->raster_mask_instance;
     n->raster_mask_id = o->raster_mask_id;
     n->raster_mask_invert = o->raster_mask_invert;
+
+    _fix_masks_combine(n);
+
     return 0;
   }
+  if(old_version == 11 && new_version == 12)
+  {
+    if(length != sizeof(dt_develop_blend_params_t)) return 1;
 
+    dt_develop_blend_params_t *o = (dt_develop_blend_params_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+
+    *n = *o;
+    _fix_masks_combine(n);
+    return 0;
+  }
   return 1;
 }
 

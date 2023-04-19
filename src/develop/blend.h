@@ -26,7 +26,7 @@
 #include "dtgtk/gradientslider.h"
 #include "gui/color_picker_proxy.h"
 
-#define DEVELOP_BLEND_VERSION (11)
+#define DEVELOP_BLEND_VERSION (12)
 
 #ifdef __cplusplus
 extern "C" {
@@ -319,7 +319,6 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *blend_modes_combo;
   GtkWidget *blend_modes_blend_order;
   GtkWidget *blend_mode_parameter_slider;
-  GtkWidget *masks_invert_combo;
   GtkWidget *opacity_slider;
   GtkWidget *masks_feathering_guide_combo;
   GtkWidget *feathering_radius_slider;
@@ -485,4 +484,3 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
