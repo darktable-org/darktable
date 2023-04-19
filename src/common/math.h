@@ -49,7 +49,6 @@
 // NaN-safe: NaN compares false and will result in 0.0
 // also does not force promotion of floats to doubles, but will use the type of its argument
 #define CLIP(x) (((x) >= 0) ? ((x) <= 1 ? (x) : 1) : 0)
-#define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
 
 // clip luminance values to be between 0 and 100
 #define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
@@ -58,10 +57,6 @@
 // Nan-safe: NaN compares false and will result in mn
 #define CLAMPF(a, mn, mx) ((a) >= (mn) ? ((a) <= (mx) ? (a) : (mx)) : (mn))
 //#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-
-#if defined(__SSE__)
-#define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
-#endif
 
 static inline float clamp_range_f(const float x, const float low, const float high)
 {
