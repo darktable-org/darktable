@@ -193,20 +193,25 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
   }
   else if(roi_in->width >= roi_out->width && roi_in->height >= roi_out->height)
   {
-    const size_t dy = roi_out->y - roi_in->y;
-    const size_t dx = ch * roi_out->x - roi_in->x;
-    const size_t lwidth = sizeof(float) * roi_out->width * ch;
+    const int dy = roi_out->y - roi_in->y;
+    const int dx = roi_out->x - roi_in->x;
+    const gboolean inside = (roi_in->width - dx >= roi_out->width)
+                         && (roi_in->height - dy >= roi_out->height);
+
+    if(!inside)
+      dt_print(DT_DEBUG_ALWAYS,"copy_image_roi roi_in does not include roi_out area\n");
+
+    const size_t width = sizeof(float) * roi_out->width * ch;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, out, roi_in, roi_out) \
-  dt_omp_sharedconst(dx, dy, lwidth) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, dx, dy, width) \
   schedule(static)
 #endif
     for(size_t row = 0; row < roi_out->height; row++)
     {
-      float *o = out + ch * row * roi_out->width;
-      const float *i = in + ch * roi_in->width * (row + dy) + dx;
-      memcpy(o, i, lwidth);
+      float *o = out + (size_t)(ch * row * roi_out->width);
+      const float *i = in + (size_t)(ch * (roi_in->width * (row + dy) + dx));
+      memcpy(o, i, width);
     }
   }
   else

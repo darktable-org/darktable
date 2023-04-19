@@ -3094,7 +3094,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
   dt_print(DT_DEBUG_MASKS,
-           "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i)",
+           "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i)\n",
            mode, roi_in->width, roi_in->height);
   return FALSE;
 
