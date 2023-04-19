@@ -414,6 +414,11 @@ The following is a summary of the main features added to darktable
 - Improve the ISO range selection widget for the auto apply presets
   dialog.
 
+- In the drawn mask blending mode there was in addition to the "toggle
+  polarity" - found in all blending modes - the combo box "invert
+  mask". Both where doing the very same thing so the later has been
+  removed.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
