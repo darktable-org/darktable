@@ -2270,8 +2270,8 @@ int dt_masks_point_in_form_exact(const float x,
 
   if(points_count > 2 + points_start)
   {
-    const int start = isnan(points[points_start * 2])
-      && !isnan(points[points_start * 2 + 1])
+    const int start = (points[points_start * 2] == DT_INVALID_COORDINATE
+                       && points[points_start * 2 + 1] != DT_INVALID_COORDINATE)
          ? points[points_start * 2 + 1]
          : points_start;
 
@@ -2283,9 +2283,9 @@ int dt_masks_point_in_form_exact(const float x,
       const float y2 = points[next * 2 + 1];
       //if we need to skip points (in case of deleted point, because
       //of self-intersection)
-      if(isnan(points[next * 2]))
+      if(points[next * 2] == DT_INVALID_COORDINATE)
       {
-        next = isnan(y2) ? start : (int)y2;
+        next = (y2 == DT_INVALID_COORDINATE) ? start : (int)y2;
         continue;
       }
       if(((y <= y2 && y > y1)
@@ -2320,7 +2320,7 @@ int dt_masks_point_in_form_near(const float x,
   if(points_count > 2 + points_start)
   {
     const int start =
-      isnan(points[points_start * 2]) && !isnan(points[points_start * 2 + 1])
+      (points[points_start * 2] == DT_INVALID_COORDINATE && points[points_start * 2 + 1] != DT_INVALID_COORDINATE)
       ? points[points_start * 2 + 1]
       : points_start;
 
@@ -2337,9 +2337,9 @@ int dt_masks_point_in_form_near(const float x,
 
       //if we need to jump to skip points (in case of deleted point,
       //because of self-intersection)
-      if(isnan(points[next * 2]))
+      if(points[next * 2] == DT_INVALID_COORDINATE)
       {
-        next = isnan(y2) ? start : (int)y2;
+        next = (y2 == DT_INVALID_COORDINATE) ? start : (int)y2;
         continue;
       }
       if((y <= y2 && y > y1)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+// dt_calculator_solve returns NAN on ill-formed input, so we need to tell the compiler
+// that non-finite numbers are in use in this source file even if we have globally
+// enabled the finite-math-only optimization.  Otherwise, it may optimize away
+// conditionals based on isnan() or isfinite().
+#ifdef __GNUC__
+#pragma GCC optimize ("no-finite-math-only")
+#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

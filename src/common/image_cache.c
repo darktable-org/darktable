@@ -118,7 +118,7 @@ void dt_image_cache_allocate(void *data,
     if(sqlite3_column_type(stmt, 28) == SQLITE_FLOAT)
       img->exif_exposure_bias = sqlite3_column_double(stmt, 28);
     else
-      img->exif_exposure_bias = NAN;
+      img->exif_exposure_bias = DT_EXIF_TAG_UNINITIALIZED;
     img->import_timestamp = sqlite3_column_int64(stmt, 29);
     img->change_timestamp = sqlite3_column_int64(stmt, 30);
     img->export_timestamp = sqlite3_column_int64(stmt, 31);

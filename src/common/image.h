@@ -127,6 +127,8 @@ typedef enum dt_exif_image_orientation_t
   EXIF_ORIENTATION_TRANSVERSE        = 7
 } dt_exif_image_orientation_t;
 
+#define DT_EXIF_TAG_UNINITIALIZED (-FLT_MAX)
+
 typedef enum dt_image_orientation_t
 {
   ORIENTATION_NULL    = -1,     //-1, or autodetect
