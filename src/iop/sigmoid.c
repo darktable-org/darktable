@@ -157,7 +157,7 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
   const float paper_response = magnitude * powf(film_response / (paper_exp + film_response), paper_power);
 
   // Safety check for very large floats that cause numerical errors
-  return isnan(paper_response) ? magnitude : paper_response;
+  return dt_isnan(paper_response) ? magnitude : paper_response;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
