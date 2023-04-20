@@ -2118,7 +2118,7 @@ static float _action_process_skip_mouse(gpointer target,
                                         const dt_action_effect_t effect,
                                         const float move_size)
 {
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     switch(effect)
     {
@@ -2153,7 +2153,7 @@ static float _action_process_preview(gpointer target,
 {
   dt_develop_t *lib = darktable.view_manager->proxy.darkroom.view->data;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(lib->full_preview)
     {
@@ -2223,7 +2223,7 @@ static float _action_process_move(gpointer target,
 {
   dt_develop_t *dev = darktable.view_manager->proxy.darkroom.view->data;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();

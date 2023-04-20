@@ -307,7 +307,7 @@ static void _update_with_move(dt_midi_device_t *midi,
   float new_position = dt_shortcut_move(midi->id, timestamp, controller, move);
 
   const int new_pattern =
-    isnan(new_position) ? 1
+    DT_ACTION_IS_INVALID(new_position) ? 1
     : fmodf(new_position, DT_VALUE_PATTERN_ACTIVE) == DT_VALUE_PATTERN_SUM ? 2
     : new_position >= DT_VALUE_PATTERN_PERCENTAGE ? 2
     : new_position >= DT_VALUE_PATTERN_PLUS_MINUS ? 3
@@ -353,6 +353,9 @@ static void _update_with_move(dt_midi_device_t *midi,
     }
   }
 
+  if(DT_ACTION_IS_INVALID(new_position))
+    return;
+
   int rotor_position = 0;
   if(new_position >= 0)
   {
@@ -367,7 +370,7 @@ static void _update_with_move(dt_midi_device_t *midi,
       }
     }
   }
-  else if(!isnan(new_position))
+  else
   {
     const int c = - new_position;
     if(c > 1)
@@ -377,10 +380,6 @@ static void _update_with_move(dt_midi_device_t *midi,
       else
         rotor_position = fmodf(c * 9.0f - 10.f, 128);
     }
-  }
-  else
-  {
-    /*if(midi->last_known[controller] == 0)*/ return;
   }
 
   midi->last_known[controller] = rotor_position;
@@ -662,7 +661,7 @@ static gboolean _update_devices(gpointer user_data)
     dt_midi_device_t *midi = devices->data;
 
     for(int i = 0; i < midi->num_knobs && midi->portmidi_out; i++)
-      _update_with_move(midi, 0, i + midi->first_knob, NAN);
+      _update_with_move(midi, 0, i + midi->first_knob, DT_READ_ACTION_ONLY);
 
     gint global = midi->behringer == 'M' ? 0
                 : midi->behringer == 'C' ? 1

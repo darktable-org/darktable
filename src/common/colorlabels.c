@@ -281,9 +281,9 @@ const char *dt_colorlabels_to_string(int label)
 
 static float _action_process_color_label(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  float return_value = NAN;
+  float return_value = DT_ACTION_NOT_VALID;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
     dt_colorlabels_toggle_label_on_list(imgs, element ? element - 1 : 5, TRUE);

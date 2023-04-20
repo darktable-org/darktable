@@ -192,7 +192,7 @@ static float _action_process_toggle(gpointer target,
 {
   float value = gtk_toggle_button_get_active(target);
 
-  if(!isnan(move_size) &&
+  if(DT_PERFORM_ACTION(move_size) &&
      !((effect == DT_ACTION_EFFECT_ON
         || effect == DT_ACTION_EFFECT_ON_CTRL
         || effect == DT_ACTION_EFFECT_ON_RIGHT) && value)
@@ -237,7 +237,7 @@ static float _action_process_button(gpointer target,
 {
   if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
 
-  if(!isnan(move_size) && gtk_widget_is_sensitive(target))
+  if(DT_PERFORM_ACTION(move_size) && gtk_widget_is_sensitive(target))
   {
     if(effect != DT_ACTION_EFFECT_ACTIVATE
       || !g_signal_handler_find(target, G_SIGNAL_MATCH_ID,
@@ -262,7 +262,7 @@ static float _action_process_button(gpointer target,
     }
   }
 
-  return NAN;
+  return DT_ACTION_NOT_VALID;
 }
 
 static const gchar *_entry_set_element = NULL;
@@ -272,7 +272,7 @@ static float _action_process_entry(gpointer target,
                                    dt_action_effect_t effect,
                                    float move_size)
 {
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     switch(effect)
     {
@@ -299,7 +299,7 @@ static float _action_process_entry(gpointer target,
   else if(effect == DT_ACTION_EFFECT_SET)
     gtk_entry_set_text(target, _entry_set_element);
 
-  return NAN;
+  return DT_ACTION_NOT_VALID;
 }
 
 static const dt_shortcut_fallback_t _action_fallbacks_toggle[]
@@ -3319,7 +3319,7 @@ static float _process_action(dt_action_t *action,
                              float move_size,
                              gchar **fb_log)
 {
-  float return_value = NAN;
+  float return_value = DT_ACTION_NOT_VALID;
 
   dt_action_t *owner = action;
   while(owner && owner->type >= DT_ACTION_TYPE_SECTION) owner = owner->owner;
@@ -3382,11 +3382,11 @@ static float _process_action(dt_action_t *action,
     }
   }
 
-  if(action->type == DT_ACTION_TYPE_COMMAND && action->target && !isnan(move_size))
+  if(action->type == DT_ACTION_TYPE_COMMAND && action->target && DT_PERFORM_ACTION(move_size))
   {
     ((dt_action_callback_t*)action->target)(action);
   }
-  else if(action->type == DT_ACTION_TYPE_PRESET && owner && !isnan(move_size))
+  else if(action->type == DT_ACTION_TYPE_PRESET && owner && DT_PERFORM_ACTION(move_size))
   {
     if(owner->type == DT_ACTION_TYPE_LIB)
     {
@@ -3412,7 +3412,7 @@ static float _process_action(dt_action_t *action,
             || definition->no_widget
             || (action_target && !dt_action_widget_invisible(action_target))))
     {
-      if(!isnan(move_size) &&
+      if(DT_PERFORM_ACTION(move_size) &&
          (definition->elements[element].effects != dt_action_effect_value
           || effect != DT_ACTION_EFFECT_SET))
       {
@@ -3447,6 +3447,9 @@ static float _process_action(dt_action_t *action,
       ++stacknum;
       if(lua_isnil(L, -1)) goto lua_end;
 
+      if(!DT_PERFORM_ACTION(move_size))
+        move_size = NAN;
+
       lua_pushstring(L, action->label);
       lua_pushstring(L, definition->elements[element].name);
       lua_pushstring(L, definition->elements[element].effects[effect]);
@@ -3456,12 +3459,15 @@ static float _process_action(dt_action_t *action,
 
       return_value = lua_tonumber(L, -1);
 
+      if(dt_isnan(return_value))
+        return_value = DT_ACTION_NOT_VALID;
+
 lua_end:
       lua_pop(L, stacknum);
       dt_lua_unlock();
     }
 #endif
-    else if(!isnan(move_size))
+    else if(DT_PERFORM_ACTION(move_size))
       dt_action_widget_toast(action, action_target, "not active");
   }
 
@@ -3495,7 +3501,7 @@ static void _ungrab_at_focus_loss()
 
 static float _process_shortcut(float move_size)
 {
-  float return_value = NAN;
+  float return_value = DT_ACTION_NOT_VALID;
 
   dt_print(DT_DEBUG_INPUT | DT_DEBUG_VERBOSE,
             "  [_process_shortcut] processing shortcut: %s\n",
@@ -3505,17 +3511,18 @@ static float _process_shortcut(float move_size)
   fsc.action = NULL;
   fsc.element  = 0;
 
-  gchar *fb_log = darktable.control->mapping_widget && !isnan(move_size)
+  gchar *fb_log = darktable.control->mapping_widget && DT_PERFORM_ACTION(move_size)
                 ? g_strdup_printf("[ %s ]", _shortcut_description(&fsc))
                 : NULL;
 
   if(_shortcut_match(&fsc, &fb_log))
   {
-    move_size *= fsc.speed;
+    if(DT_PERFORM_ACTION(move_size))
+      move_size *= fsc.speed;
 
     if(fsc.effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
     {
-      if(move_size < .0f)
+      if(DT_PERFORM_ACTION(move_size) && move_size < .0f)
       {
         fsc.effect = DT_ACTION_EFFECT_DEFAULT_DOWN;
         move_size *= -1;
@@ -3526,7 +3533,7 @@ static float _process_shortcut(float move_size)
 
     return_value =  _process_action(fsc.action, fsc.instance, fsc.element, fsc.effect, move_size, &fb_log);
   }
-  else if(!isnan(move_size) && !fsc.action)
+  else if(DT_PERFORM_ACTION(move_size) && !fsc.action)
   {
     dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc));
   }
@@ -3553,23 +3560,23 @@ float dt_action_process(const gchar *action,
   if(!ac)
   {
     dt_print(DT_DEBUG_ALWAYS, "[dt_action_process] action path '%s' not found\n", action);
-    return NAN;;
+    return DT_ACTION_NOT_VALID;
   }
 
   if(ac->owner == &darktable.control->actions_lua)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_action_process] lua action '%s' triggered from lua\n", action);
-    return NAN;;
+    return DT_ACTION_NOT_VALID;
   }
 
   const dt_view_type_flags_t vws = _find_views(ac);
   if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view)))
   {
-    if(!isnan(move_size))
+    if(DT_PERFORM_ACTION(move_size))
       dt_print(DT_DEBUG_ALWAYS,
               "[dt_action_process] action '%s' not valid for current view\n", action);
-    return NAN;
+    return DT_ACTION_NOT_VALID;
   }
 
   dt_action_element_t el = DT_ACTION_ELEMENT_DEFAULT;
@@ -3592,7 +3599,7 @@ float dt_action_process(const gchar *action,
           dt_print(DT_DEBUG_ALWAYS,
                    "[dt_action_process] element '%s' not valid for action '%s'\n",
                    element, action);
-          return NAN;
+          return DT_ACTION_NOT_VALID;
         }
       }
 
@@ -3606,7 +3613,7 @@ float dt_action_process(const gchar *action,
           dt_print(DT_DEBUG_ALWAYS,
                    "[dt_action_process] effect '%s' not valid for action '%s'\n",
                    effect, action);
-          return NAN;
+          return DT_ACTION_NOT_VALID;
         }
       }
     }
@@ -3645,9 +3652,9 @@ static guint _key_modifiers_clean(guint mods)
   return mods | dt_modifier_shortcuts;
 }
 
-float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size)
+float dt_shortcut_move(dt_input_device_t id, guint time, guint move, float move_size)
 {
-  if(!isnan(size))
+  if(DT_PERFORM_ACTION(move_size))
     _interrupt_delayed_release(TRUE); // reenters dt_shortcut_move
 
   _sc.move_device = id;
@@ -3658,7 +3665,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
   if(_shortcut_is_move(&_sc))
   {
     _sc.effect =  DT_ACTION_EFFECT_DEFAULT_MOVE;
-    _sc.direction = size > 0 ? DT_SHORTCUT_UP : DT_SHORTCUT_DOWN;
+    _sc.direction = move_size > 0 ? DT_SHORTCUT_UP : DT_SHORTCUT_DOWN;
   }
   else
     _sc.effect = DT_ACTION_EFFECT_DEFAULT_KEY;
@@ -3667,8 +3674,8 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
     _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
 
   float return_value = 0;
-  if(isnan(size))
-    return_value = _process_shortcut(size);
+  if(!DT_PERFORM_ACTION(move_size))
+    return_value = _process_shortcut(move_size);
   else
   {
     gboolean key_or_button_released = (id == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE
@@ -3717,7 +3724,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
     else
     {
       if(!_pressed_keys || (key_or_button_released && !_sc.button))
-        return_value = _process_shortcut(size);
+        return_value = _process_shortcut(move_size);
       else
       {
         // pressed_keys can be emptied if losing grab during processing
@@ -3727,7 +3734,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
           _sc.key_device = device_key->key_device;
           _sc.key = device_key->key;
 
-          return_value = _process_shortcut(size);
+          return_value = _process_shortcut(move_size);
         }
       }
     }
@@ -3998,7 +4005,7 @@ gboolean dt_shortcut_key_active(dt_input_device_t id, guint key)
   dt_shortcut_t saved_sc = _sc;
   _sc = (dt_shortcut_t) {.key_device = id, .key = key};
 
-  float value = dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, NAN);
+  float value = dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, DT_READ_ACTION_ONLY);
 
   _sc = saved_sc;
 
