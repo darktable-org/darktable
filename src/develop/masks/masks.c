@@ -84,7 +84,7 @@ static int _get_opacity(dt_masks_form_gui_t *gui,
   const dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
   if(!sel) return 0;
 
-  const int formid = sel->formid;
+  const dt_mask_id_t formid = sel->formid;
 
   // look for apacity
   const dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, fpt->parentid);
@@ -232,7 +232,8 @@ void dt_masks_gui_form_remove(dt_masks_form_t *form,
 {
   dt_masks_form_gui_points_t *gpt =
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-  gui->pipe_hash = gui->formid = 0;
+  gui->pipe_hash = 0;
+  gui->formid = NO_MASKID;
 
   if(gpt)
   {
@@ -255,7 +256,8 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form,
   {
     if(gui->pipe_hash != darktable.develop->preview_pipe->backbuf_hash)
     {
-      gui->pipe_hash = gui->formid = 0;
+      gui->pipe_hash = 0;
+      gui->formid = NO_MASKID;
       g_list_free_full(gui->points, dt_masks_form_gui_points_free);
       gui->points = NULL;
     }
@@ -283,7 +285,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form,
 
 static void _check_id(dt_masks_form_t *form)
 {
-  int nid = 100;
+  dt_mask_id_t nid = 100;
   for(GList *forms = darktable.develop->forms; forms; )
   {
     dt_masks_form_t *ff = (dt_masks_form_t *)forms->data;
@@ -400,7 +402,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
   if(gui) dev->form_gui->formid = form->formid;
 }
 
-int dt_masks_form_duplicate(dt_develop_t *dev, const int formid)
+int dt_masks_form_duplicate(dt_develop_t *dev, const dt_mask_id_t formid)
 {
   // we create a new empty form
   dt_masks_form_t *fbase = dt_masks_get_from_id(dev, formid);
@@ -839,7 +841,7 @@ int dt_masks_legacy_params(dt_develop_t *dev,
   return res;
 }
 
-static int form_id = 0;
+static dt_mask_id_t form_id = 0;
 
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
@@ -935,7 +937,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
 
     // we get the values
 
-    const int formid = sqlite3_column_int(stmt, 1);
+    const dt_mask_id_t formid = sqlite3_column_int(stmt, 1);
     const int num = sqlite3_column_int(stmt, 8);
     const dt_masks_type_t type = sqlite3_column_int(stmt, 2);
     dt_masks_form_t *form = dt_masks_create(type);
@@ -1411,7 +1413,7 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
   if(value && form)
   {
     grp = dt_masks_create_ext(DT_MASKS_GROUP);
-    grp->formid = 0;
+    grp->formid = NO_MASKID;
     dt_masks_group_ungroup(grp, form);
   }
 
@@ -1421,7 +1423,7 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
   darktable.develop->form_gui->edit_mode = value;
 
   ++darktable.gui->reset;
-  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? form->formid : 0);
+  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? form->formid : NO_MASKID);
   --darktable.gui->reset;
 
   if(bd->masks_support)
@@ -1432,7 +1434,7 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
 }
 
 void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module,
-                                        const int formid,
+                                        const dt_mask_id_t formid,
                                         const dt_masks_edit_mode_t value)
 {
   if(!module) return;
@@ -1453,13 +1455,13 @@ void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module,
   }
 
   dt_masks_form_t *grp2 = dt_masks_create_ext(DT_MASKS_GROUP);
-  grp2->formid = 0;
+  grp2->formid = NO_MASKID;
   dt_masks_group_ungroup(grp2, grp);
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = value;
 
   ++darktable.gui->reset;
-  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? formid : 0);
+  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? formid : NO_MASKID);
   --darktable.gui->reset;
 
   dt_control_queue_redraw_center();
@@ -1511,7 +1513,7 @@ static void _menu_add_shape(struct dt_iop_module_t *module,
 }
 
 static void _menu_add_exist(dt_iop_module_t *module,
-                            const int formid)
+                            const dt_mask_id_t formid)
 {
   if(!module) return;
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
@@ -2105,7 +2107,7 @@ void dt_masks_update_image(dt_develop_t *dev)
 // adds formid to used array
 // if formid is a group it adds all the forms that belongs to that group
 static void _cleanup_unused_recurs(GList *forms,
-                                   const int formid,
+                                   const dt_mask_id_t formid,
                                    int *used,
                                    const int nb)
 {
