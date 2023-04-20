@@ -18,6 +18,7 @@
 
 #ifdef HAVE_LIBRAW
 #include "common/darktable.h"
+#include "common/math.h"
 #include "imageio_common.h"
 #include "imageio_gm.h"
 #include "develop/develop.h"
