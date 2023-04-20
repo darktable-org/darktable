@@ -288,12 +288,12 @@ extern const dt_introspection_type_enum_tuple_t dt_develop_invert_mask_names[];
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
-  int blendif_support;
-  int blend_inited;
-  int blendif_inited;
-  int masks_support;
-  int masks_inited;
-  int raster_inited;
+  gboolean blendif_support;
+  gboolean blend_inited;
+  gboolean blendif_inited;
+  gboolean masks_support;
+  gboolean masks_inited;
+  gboolean raster_inited;
 
   dt_develop_blend_colorspace_t csp;
   dt_iop_module_t *module;

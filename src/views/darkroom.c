@@ -952,7 +952,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   // commit image ops to db
   dt_dev_write_history(dev);
 
-  const int32_t new_imgid = dev->image_storage.id;
+  const dt_imgid_t new_imgid = dev->image_storage.id;
 
   // be sure light table will update the thumbnail
   if(!dt_history_hash_is_mipmap_synced(new_imgid))

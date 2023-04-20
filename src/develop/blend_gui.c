@@ -2133,7 +2133,7 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget,
 
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  dt_dev_pixelpipe_display_mask_t mode = 0;
+  dt_dev_pixelpipe_display_mask_t mode = DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // depending on shift modifiers we activate channel and/or mask display
   if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
@@ -2640,7 +2640,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
     g_signal_connect(G_OBJECT(bd->colorpicker_set_values), "toggled",
                      G_CALLBACK(_update_gradient_slider_pickers), module);
 
-    bd->blendif_inited = 1;
+    bd->blendif_inited = TRUE;
   }
 }
 
@@ -2788,7 +2788,7 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(hbox), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(abox), TRUE, TRUE, 0);
 
-    bd->masks_inited = 1;
+    bd->masks_inited = TRUE;
   }
 }
 
@@ -2945,7 +2945,7 @@ void dt_iop_gui_init_raster(GtkWidget *blendw, dt_iop_module_t *module)
 
     gtk_box_pack_start(GTK_BOX(bd->raster_box), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-    bd->raster_inited = 1;
+    bd->raster_inited = TRUE;
   }
 }
 
@@ -3676,7 +3676,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     gtk_widget_set_name(GTK_WIDGET(bd->bottom_box), "blending-box");
     gtk_widget_set_name(GTK_WIDGET(iopw), "blending-wrapper");
 
-    bd->blend_inited = 1;
+    bd->blend_inited = TRUE;
 
     ++darktable.bauhaus->skip_accel;
     --darktable.gui->reset;

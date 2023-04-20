@@ -245,7 +245,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
                                      const struct dt_iop_roi_t *const roi_out,
                                      const float level)
 {
-  if(level == 0.0f) return;
+  if(feqf(level, 0.0f, 1e-6)) return;
 
   const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
@@ -682,7 +682,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
                                         const float level,
                                         const int devid)
 {
-  if(level == 0.0f) return;
+  if(feqf(level, 0.0f, 1e-6)) return;
 
   const int detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
