@@ -519,7 +519,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       {
         const dt_develop_blend_params_t *const bp =
           (const dt_develop_blend_params_t *)piece->blendop_data;
-        if(bp->details != 0.0f)
+        if(!feqf(bp->details, 0.0f, 1e-6))
           pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_REQUIRED;
       }
     }
@@ -2985,7 +2985,7 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
                                      const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0)
+  if(!(p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED))
   {
     if(p->rawdetail_mask_data)
       dt_dev_clear_rawdetail_mask(p);
@@ -3032,7 +3032,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
                                         const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0)
+  if(!(p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED))
   {
     if(p->rawdetail_mask_data)
       dt_dev_clear_rawdetail_mask(p);
@@ -3117,7 +3117,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe,
 {
   if(!pipe->rawdetail_mask_data) return NULL;
   gboolean valid = FALSE;
-  const int check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
+  const dt_develop_detail_mask_t check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
 
   GList *source_iter;
   for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
