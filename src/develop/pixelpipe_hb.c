@@ -330,8 +330,6 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_imgid = NO_IMGID;
   pipe->next_important_module = FALSE;
 
-  dt_dev_clear_rawdetail_mask(pipe);
-
   if(pipe->forms)
   {
     g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
@@ -365,6 +363,9 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
   }
   g_list_free(pipe->nodes);
   pipe->nodes = NULL;
+
+  dt_dev_clear_rawdetail_mask(pipe);
+
   // also cleanup iop here
   if(pipe->iop)
   {
