@@ -597,6 +597,12 @@ The following is a summary of the main features added to darktable
 
 - Let exposure module to set neutral settings for non-RAW images.
 
+- Fixing details masks while switching to darkroom which could lead to
+  a crash.
+
+- Fixing feathering masks in certain modules (Lens, Retouch, Liquify,
+  Spot removal).
+
 ## Lua
 
 ### API Version
