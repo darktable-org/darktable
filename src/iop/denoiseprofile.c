@@ -3254,7 +3254,7 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_gui_data_t *c = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
 
-  if(!isnan(c->variance_R))
+  if(!dt_isnan(c->variance_R))
   {
     gchar *str = g_strdup_printf("%.2f", c->variance_R);
     ++darktable.gui->reset;
@@ -3262,7 +3262,7 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
     --darktable.gui->reset;
     g_free(str);
   }
-  if(!isnan(c->variance_G))
+  if(!dt_isnan(c->variance_G))
   {
     gchar *str = g_strdup_printf("%.2f", c->variance_G);
     ++darktable.gui->reset;
@@ -3270,7 +3270,7 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget,
     --darktable.gui->reset;
     g_free(str);
   }
-  if(!isnan(c->variance_B))
+  if(!dt_isnan(c->variance_B))
   {
     gchar *str = g_strdup_printf("%.2f", c->variance_B);
     ++darktable.gui->reset;
