@@ -172,13 +172,13 @@ The following is a summary of the main features added to darktable
 
   - Loader for JPEG2000 file format
 
-## Other Changes
-
 - Add global <kbd>right-click</kbd> and drad to fix image
   rotation. This can now be used at any moment in darkroom as long as
   the currently focused module is not using this shortcut. This allows
   for fast rotation correction without having to open the Rotation and
   Perspective module.
+
+## Other Changes
 
 - Add OpenCL support to the Sigmoid module.
 
