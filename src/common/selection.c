@@ -313,7 +313,7 @@ void dt_selection_select_range(dt_selection_t *selection, dt_imgid_t imgid)
   sqlite3_finalize(stmt);
 
   // if imgid not in collection, nothing to do
-  if(er < 1) return;
+  if(er < 0) return;
 
   // if last_single_id not in collection, we either use last selected image or first collected one
   int srid = selection->last_single_id;
