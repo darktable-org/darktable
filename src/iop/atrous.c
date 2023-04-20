@@ -1542,7 +1542,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
                 : ch1 == atrous_c ? atrous_ct
                 : ch1;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     gchar *toast = NULL;
 

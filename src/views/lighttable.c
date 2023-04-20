@@ -635,7 +635,7 @@ static float _action_process_infos(gpointer target, const dt_action_element_t el
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(effect != DT_ACTION_EFFECT_ON)
     {
@@ -673,7 +673,7 @@ enum
 
 static float _action_process_move(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  if(isnan(move_size)) return 0; // FIXME return should be relative position
+  if(!DT_PERFORM_ACTION(move_size)) return 0; // FIXME return should be relative position
 
   int action = GPOINTER_TO_INT(target);
 
