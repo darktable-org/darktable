@@ -174,7 +174,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   /* precalcs */
   const float eps = 0.0001f;
   float lwmax;
-  float tmp_lwmax = NAN;
+  float tmp_lwmax = -FLT_MAX;
 
   // Drago needs the absolute Lmax value of the image. In pixelpipe FULL we can not reliably get this value
   // as the pixelpipe might only see part of the image (region of interest). Therefore we try to get lwmax from
@@ -186,7 +186,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     dt_iop_gui_leave_critical_section(self);
 
     // note that the case 'hash == 0' on first invocation in a session implies that g->lwmax
-    // is NAN which initiates special handling below to avoid inconsistent results. in all
+    // is -FLT_MAX which initiates special handling below to avoid inconsistent results. in all
     // other cases we make sure that the preview pipe has left us with proper readings for
     // lwmax. if data are not yet there we need to wait (with timeout).
     if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
@@ -198,7 +198,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 
   // in all other cases we calculate lwmax here
-  if(isnan(tmp_lwmax))
+  if(tmp_lwmax == -FLT_MAX)
   {
     lwmax = eps;
 #ifdef _OPENMP
@@ -350,7 +350,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(d->operator== OPERATOR_DRAGO)
   {
     const float eps = 0.0001f;
-    float tmp_lwmax = NAN;
+    float tmp_lwmax = -FLT_MAX;
 
     // see comments in process() about lwmax value
     if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
@@ -366,7 +366,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_iop_gui_leave_critical_section(self);
     }
 
-    if(isnan(tmp_lwmax))
+    if(tmp_lwmax == -FLT_MAX)
     {
       dt_opencl_local_buffer_t flocopt
         = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
@@ -610,7 +610,7 @@ void gui_update(struct dt_iop_module_t *self)
   gui_changed(self, NULL, 0);
 
   dt_iop_gui_enter_critical_section(self);
-  g->lwmax = NAN;
+  g->lwmax = -FLT_MAX;
   g->hash = 0;
   dt_iop_gui_leave_critical_section(self);
 }
@@ -619,7 +619,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_global_tonemap_gui_data_t *g = IOP_GUI_ALLOC(global_tonemap);
 
-  g->lwmax = NAN;
+  g->lwmax = -FLT_MAX;
   g->hash = 0;
 
   g->operator = dt_bauhaus_combobox_from_params(self, N_("operator"));
