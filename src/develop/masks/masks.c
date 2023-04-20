@@ -1200,7 +1200,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
                                    const double x,
                                    const double y,
-                                   const int up,
+                                   const gboolean up,
                                    const uint32_t state)
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
@@ -1909,7 +1909,7 @@ float dt_masks_form_change_opacity(dt_masks_form_t *form,
 
 void dt_masks_form_move(dt_masks_form_t *grp,
                         const dt_mask_id_t formid,
-                        const int up)
+                        const gboolean up)
 {
   if(!grp || !(grp->type & DT_MASKS_GROUP)) return;
 
@@ -2321,8 +2321,8 @@ int dt_masks_point_in_form_near(const float x,
 
   if(points_count > 2 + points_start)
   {
-    const int start =
-      (points[points_start * 2] == DT_INVALID_COORDINATE && points[points_start * 2 + 1] != DT_INVALID_COORDINATE)
+    const int start = (points[points_start * 2] == DT_INVALID_COORDINATE
+                       && points[points_start * 2 + 1] != DT_INVALID_COORDINATE)
       ? points[points_start * 2 + 1]
       : points_start;
 
@@ -2391,7 +2391,7 @@ float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
   return s;
 }
 
-float dt_masks_change_size(gboolean up,
+float dt_masks_change_size(const gboolean up,
                            const float value,
                            const float min,
                            const float max)
@@ -2404,7 +2404,7 @@ float dt_masks_change_size(gboolean up,
   return CLAMP(v, min, max);
 }
 
-float dt_masks_change_rotation(gboolean up,
+float dt_masks_change_rotation(const gboolean up,
                                const float value,
                                const gboolean is_degree)
 {
