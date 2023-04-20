@@ -17,6 +17,7 @@ How to make disk image with darktable application bundle from source (using Home
 
      Reinstall graphicsmagick:
 
+     $ export HOMEBREW_NO_INSTALL_FROM_API=1
      $ brew reinstall --build-from-source graphicsmagick
 
      Now you have a statically linked GraphicsMagick library.
