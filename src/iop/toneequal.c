@@ -223,7 +223,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   float step; // scrolling step
 
   // 14 int to pack - contiguous memory
-  int mask_display;
+  gboolean mask_display;
   int max_histogram;
   int buf_width;
   int buf_height;
@@ -1981,7 +1981,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
-    g->mask_display = 0;
+    g->mask_display = FALSE;
     return;
   }
   else
@@ -3275,7 +3275,7 @@ static void _develop_ui_pipe_started_callback(gpointer instance,
   {
     // if module is not active, disable mask preview
     dt_iop_gui_enter_critical_section(self);
-    g->mask_display = 0;
+    g->mask_display = FALSE;
     dt_iop_gui_leave_critical_section(self);
   }
 

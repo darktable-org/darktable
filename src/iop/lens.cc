@@ -695,7 +695,7 @@ static void _process_lf(dt_iop_module_t *self,
 
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
-  const int mask_display = piece->pipe->mask_display;
+  const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
 
   const unsigned int pixelformat = ch == 3
     ? LF_CR_3(RED, GREEN, BLUE)
