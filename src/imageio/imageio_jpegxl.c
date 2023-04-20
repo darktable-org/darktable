@@ -218,7 +218,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
         // According to libjxl docs, the only situation where an ICC profile is not available is when the image has an
         // unknown or xyb color space. But dt does not support such images, so in this case we should refuse to import
         // the image. If in the future dt will support the xyb color space, we can add code here to handle that case.
-        dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] WARNING: the imaga '%s' has an unknown or xyb color space. We do not import such images\n", filename);
+        dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] WARNING: the image '%s' has an unknown or xyb color space. We do not import such images\n", filename);
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
