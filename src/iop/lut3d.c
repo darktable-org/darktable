@@ -815,7 +815,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         for(int j=0; j < 3; j++)
         {
           lclut[i+j] = dt_atof(token[j]);
-          if(isnan(lclut[i+j]))
+          if(dt_isnan(lclut[i+j]))
           {
             dt_print(DT_DEBUG_ALWAYS, "[lut3d] error - invalid number line %d\n", (int)i/3);
             dt_control_log(_("error - cube LUT invalid number line %d"), (int)i/3);
