@@ -2457,7 +2457,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
 
   dt_iop_gui_leave_critical_section(self);
 
-  if(isnan(exposure_in)) return; // something went wrong
+  if(dt_isnan(exposure_in)) return; // something went wrong
 
   // Rescale and shift Cairo drawing coordinates
   const float wd = dev->preview_pipe->backbuf_width;
