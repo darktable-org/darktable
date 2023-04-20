@@ -41,7 +41,9 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 
   if(!inputfile)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] Cannot open file for read: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[jpegxl_open] ERROR: cannot open file for read: '%s'\n",
+             filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -54,7 +56,9 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
   if(fread(read_buffer, 1, inputFileSize, inputfile) != inputFileSize)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[jpegxl_open] Failed to read %zu bytes: %s\n", inputFileSize, filename);
+             "[jpegxl_open] ERROR: failed to read %zu bytes from '%s'\n",
+             inputFileSize,
+             filename);
     free(read_buffer);
     fclose(inputfile);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -239,7 +243,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         // images, so in this case we should refuse to import the image. If in the future dt
         // will support the XYB color space, we can add code here to handle that case.
         dt_print(DT_DEBUG_ALWAYS,
-                 "[jpegxl_open] WARNING: the image '%s' has an unknown or xyb color space. "
+                 "[jpegxl_open] ERROR: the image '%s' has an unknown or XYB color space. "
                  "We do not import such images\n",
                  filename);
         JxlResizableParallelRunnerDestroy(runner);
@@ -263,7 +267,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         JxlDecoderDestroy(decoder);
         g_free(read_buffer);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[jpegxl_open] could not alloc full buffer for image: %s\n",
+                 "[jpegxl_open] ERROR: could not alloc full buffer for image: '%s'\n",
                  img->filename);
         return DT_IMAGEIO_CACHE_FULL;
       }
