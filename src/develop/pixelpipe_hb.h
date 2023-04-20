@@ -169,7 +169,7 @@ typedef struct dt_dev_pixelpipe_t
   // running in a tiling context?
   gboolean tiling;
   // should this pixelpipe display a mask in the end?
-  int mask_display;
+  dt_dev_pixelpipe_display_mask_t mask_display;
   // should this pixelpipe completely suppressed the blendif module?
   gboolean bypass_blendif;
   // input data based on this timestamp:
