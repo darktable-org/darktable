@@ -301,7 +301,7 @@ void dt_selection_select_range(dt_selection_t *selection, dt_imgid_t imgid)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int id = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
     if(id == selection->last_single_id) sr = rc;
 
     if(id == imgid) er = rc;
@@ -316,11 +316,11 @@ void dt_selection_select_range(dt_selection_t *selection, dt_imgid_t imgid)
   if(er < 0) return;
 
   // if last_single_id not in collection, we either use last selected image or first collected one
-  int srid = selection->last_single_id;
+  dt_imgid_t srid = selection->last_single_id;
   if(sr < 0)
   {
     sr = 0;
-    srid = -1;
+    srid = NO_IMGID;
     // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
