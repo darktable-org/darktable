@@ -2810,7 +2810,7 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
 {
   GtkNotebook *notebook = GTK_NOTEBOOK(target);
   GtkWidget *reset_page = gtk_notebook_get_nth_page(notebook, element);
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     switch(effect)
     {
@@ -2841,7 +2841,7 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
 
   const int c = gtk_notebook_get_current_page(notebook);
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
     dt_action_widget_toast(NULL, GTK_WIDGET(notebook),
                            gtk_notebook_get_tab_label_text(notebook, gtk_notebook_get_nth_page(notebook, c)));
 
@@ -2865,7 +2865,7 @@ static float _action_process_focus_tabs(gpointer target, dt_action_element_t ele
   if(notebook)
     return _action_process_tabs(notebook, element, effect, move_size);
 
-  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("does not contain pages"));
+  if(DT_PERFORM_ACTION(move_size)) dt_action_widget_toast(target, NULL, _("does not contain pages"));
   return NAN;
 }
 

@@ -45,7 +45,7 @@
 
 static float _action_process_accels_show(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(darktable.view_manager->accels_window.window == NULL)
     {
@@ -75,7 +75,7 @@ static float _action_process_modifiers(gpointer target, dt_action_element_t elem
 {
   GdkModifierType mask = 1;
   if(element) mask <<= element + 1; // ctrl = 4, alt = 8
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(dt_modifier_shortcuts & mask)
     {

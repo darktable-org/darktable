@@ -295,7 +295,7 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
   dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(dt_view_lighttable_preview_state(darktable.view_manager))
     {
