@@ -230,9 +230,9 @@ enum
 
 static float _action_process_rating(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  float return_value = NAN;
+  float return_value = DT_ACTION_NOT_VALID;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(element != DT_VIEW_REJECT)
     {

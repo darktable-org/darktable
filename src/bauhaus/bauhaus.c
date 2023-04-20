@@ -3420,7 +3420,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
   dt_bauhaus_widget_t *bhw = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_slider_data_t *d = &bhw->data.slider;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     switch(element)
     {
@@ -3534,7 +3534,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   int value = dt_bauhaus_combobox_get(widget);
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(element == DT_ACTION_ELEMENT_BUTTON || !w->data.combobox.entries->len)
     {
@@ -3625,8 +3625,8 @@ static float _action_process_focus_slider(gpointer target, dt_action_element_t e
   if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_SLIDER))
     return _action_process_slider(widget, DT_ACTION_ELEMENT_VALUE, effect, move_size);
 
-  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many sliders"));
-  return NAN;
+  if(DT_PERFORM_ACTION(move_size)) dt_action_widget_toast(target, NULL, _("not that many sliders"));
+  return DT_ACTION_NOT_VALID;
 }
 
 static float _action_process_focus_combo(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -3635,8 +3635,8 @@ static float _action_process_focus_combo(gpointer target, dt_action_element_t el
   if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_COMBOBOX))
     return _action_process_combo(widget, DT_ACTION_ELEMENT_SELECTION, effect, move_size);
 
-  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many dropdowns"));
-  return NAN;
+  if(DT_PERFORM_ACTION(move_size)) dt_action_widget_toast(target, NULL, _("not that many dropdowns"));
+  return DT_ACTION_NOT_VALID;
 }
 
 static float _action_process_focus_button(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -3644,14 +3644,14 @@ static float _action_process_focus_button(gpointer target, dt_action_element_t e
   GtkWidget *widget = ((dt_iop_module_t *)target)->widget;
   if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_BUTTON))
   {
-    if(!isnan(move_size))
+    if(DT_PERFORM_ACTION(move_size))
       _action_process_button(widget, effect);
 
     return dt_bauhaus_widget_get_quad_active(widget);
   }
 
-  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many buttons"));
-  return NAN;
+  if(DT_PERFORM_ACTION(move_size)) dt_action_widget_toast(target, NULL, _("not that many buttons"));
+  return DT_ACTION_NOT_VALID;
 }
 
 static const dt_action_element_def_t _action_elements_slider[]

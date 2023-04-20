@@ -3598,7 +3598,7 @@ static float _action_process(gpointer target,
 {
   dt_iop_module_t *module = target;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     switch(element)
     {
