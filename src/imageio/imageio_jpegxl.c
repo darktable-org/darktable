@@ -21,11 +21,13 @@
 #include <jxl/decode.h>
 #include <jxl/resizable_parallel_runner.h>
 
+#include "common/exif.h"
 #include "common/image.h"
 #include "imageio/imageio_common.h"
-#include "common/exif.h"
 
-dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
+                                           const char *filename,
+                                           dt_mipmap_buffer_t *mbuf)
 {
 
   JxlDecoderStatus status;
@@ -39,7 +41,9 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
   if(!inputfile)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] Cannot open file for read: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[jpegxl_open] ERROR: cannot open file for read: '%s'\n",
+             filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -51,7 +55,10 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
   if(fread(read_buffer, 1, inputFileSize, inputfile) != inputFileSize)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] Failed to read %zu bytes: %s\n", inputFileSize, filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[jpegxl_open] ERROR: failed to read %zu bytes from '%s'\n",
+             inputFileSize,
+             filename);
     free(read_buffer);
     fclose(inputfile);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -102,7 +109,12 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
-  if(JxlDecoderSubscribeEvents(decoder, JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_BOX | JXL_DEC_FULL_IMAGE) != JXL_DEC_SUCCESS)
+  if(JxlDecoderSubscribeEvents(decoder,
+                               JXL_DEC_BASIC_INFO |
+                               JXL_DEC_COLOR_ENCODING |
+                               JXL_DEC_BOX |
+                               JXL_DEC_FULL_IMAGE)
+     != JXL_DEC_SUCCESS)
   {
     dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JxlDecoderSubscribeEvents failed\n");
     JxlResizableParallelRunnerDestroy(runner);
@@ -174,28 +186,34 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
     if(status == JXL_DEC_BOX)
     {
-      if(img->exif_inited) continue;  // There is no need for fallback reading of Exif data if Exiv2 has already done it for us
+      // There is no need for fallback reading of Exif data if Exiv2 has already done it for us
+      if(img->exif_inited) continue;
 
       JxlBoxType type;
 
-      JxlDecoderReleaseBoxBuffer(decoder);	// Calling JxlDecoderReleaseBoxBuffer when no buffer is set is not an error
+      // Calling JxlDecoderReleaseBoxBuffer when no buffer is set is not an error
+      JxlDecoderReleaseBoxBuffer(decoder);
 
-      // Box decompression is not yet supported due to the lack of test images with brotli compressed Exif data.
+      // Box decompression is not yet supported due to the lack of test images
+      // with brotli compressed Exif data.
       status = JxlDecoderGetBoxType(decoder, type, JXL_FALSE);
       if(status != JXL_DEC_SUCCESS) continue;
 
       // Initially we get the full size of a box (the content of the box will be less)
       status = JxlDecoderGetBoxSizeRaw(decoder, &exif_size);
-      // If the size is too small, it doesn't even make sense to check the type. At least 4 bytes are occupied
-      // by the box type and another 4 by the "offset of the start of Exif data" field (if it was Exif).
-      // Therefore, the size of 8 bytes excludes the presence of the data we are looking for.
+      // If the size is too small, it doesn't even make sense to check the type. At least
+      // 4 bytes are occupied by the box type and another 4 by the "offset of the start
+      // of Exif data" field (if it was Exif). Therefore, the size of 8 bytes excludes
+      // the presence of the data we are looking for.
       if((status != JXL_DEC_SUCCESS) || (exif_size <= 8)) continue;
 
       if(memcmp(type, "Exif", 4) == 0)
       {
-        // To get the Exif payload size we need to subtract 4 bytes of the box type FourCC. See also
-        // https://github.com/libjxl/libjxl/issues/2022 and https://github.com/darktable-org/darktable/pull/13463
-        // In short: we may be subtracting too little, but it is safer to do so than to subtract too much.
+        // To get the Exif payload size we need to subtract 4 bytes of the box type FourCC.
+        // See also https://github.com/libjxl/libjxl/issues/2022 and
+        // https://github.com/darktable-org/darktable/pull/13463
+        // In short: we may be subtracting too little, but it is safer to do so
+        // than to subtract too much.
         exif_size -= 4;
         exif_data = g_try_malloc0(exif_size);
         if(!exif_data) continue;
@@ -205,20 +223,29 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
     if(status == JXL_DEC_COLOR_ENCODING)
     {
-      if(JxlDecoderGetICCProfileSize(decoder, &pixel_format, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size) == JXL_DEC_SUCCESS)
+      if(JxlDecoderGetICCProfileSize(decoder, &pixel_format, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size)
+         == JXL_DEC_SUCCESS)
       {
         if(icc_size)
         {
           img->profile_size = icc_size;
           img->profile = (uint8_t *)g_malloc0(icc_size);
-          JxlDecoderGetColorAsICCProfile(decoder, &pixel_format, JXL_COLOR_PROFILE_TARGET_DATA, img->profile, icc_size);
+          JxlDecoderGetColorAsICCProfile(decoder,
+                                         &pixel_format,
+                                         JXL_COLOR_PROFILE_TARGET_DATA,
+                                         img->profile,
+                                         icc_size);
         }
       } else
       {
-        // According to libjxl docs, the only situation where an ICC profile is not available is when the image has an
-        // unknown or xyb color space. But dt does not support such images, so in this case we should refuse to import
-        // the image. If in the future dt will support the xyb color space, we can add code here to handle that case.
-        dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] WARNING: the imaga '%s' has an unknown or xyb color space. We do not import such images\n", filename);
+        // According to libjxl docs, the only situation where an ICC profile is not available
+        // is when the image has an unknown or XYB color space. But dt does not support such
+        // images, so in this case we should refuse to import the image. If in the future dt
+        // will support the XYB color space, we can add code here to handle that case.
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[jpegxl_open] ERROR: the image '%s' has an unknown or XYB color space. "
+                 "We do not import such images\n",
+                 filename);
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
@@ -239,16 +266,22 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         g_free(read_buffer);
-        dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] could not alloc full buffer for image: %s\n", img->filename);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[jpegxl_open] ERROR: could not alloc full buffer for image: '%s'\n",
+                 img->filename);
         return DT_IMAGEIO_CACHE_FULL;
       }
-      JxlDecoderSetImageOutBuffer(decoder, &pixel_format, mipbuf, basicinfo.xsize * basicinfo.ysize * 4 * 4);
+      JxlDecoderSetImageOutBuffer(decoder,
+                                  &pixel_format,
+                                  mipbuf,
+                                  basicinfo.xsize * basicinfo.ysize * 4 * 4);
       continue;    // go to next iteration to process rest of the input
     }
 
-    // If the image is an animation, more full frames may be decoded. We do not check and reject the image
-    // if it is an animation, but only read the first frame. It hardly makes sense to process such an image,
-    // but perhaps the user intends to use dt as a DAM for such images.
+    // If the image is an animation, more full frames may be decoded. We do not
+    // check and reject the image if it is an animation, but only read the first
+    // frame. It hardly makes sense to process such an image, but perhaps the
+    // user intends to use dt as a DAM for such images.
     if (status == JXL_DEC_FULL_IMAGE)
       break;    // Terminate processing
 
@@ -258,10 +291,15 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
   {
     JxlDecoderReleaseBoxBuffer(decoder);
     // First 4 bytes of Exif blob is an offset of the actual Exif data
-    const uint32_t exif_offset = exif_data[0] << 24 | exif_data[1] << 16 | exif_data[2] << 8 | exif_data[3];
+    const uint32_t exif_offset = exif_data[0] << 24 |
+                                 exif_data[1] << 16 |
+                                 exif_data[2] <<  8 |
+                                 exif_data[3];
     if(exif_size > 4 + exif_offset)
     {
-      dt_exif_read_from_blob(img, exif_data + 4 + exif_offset, exif_size - 4 - exif_offset);
+      dt_exif_read_from_blob(img,
+                             exif_data + 4 + exif_offset,
+                             exif_size - 4 - exif_offset);
     }
     g_free(exif_data);
   }
