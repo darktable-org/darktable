@@ -419,6 +419,17 @@ The following is a summary of the main features added to darktable
   mask". Both where doing the very same thing so the later has been
   removed.
 
+- Support the encoder ring and button lights of the Behringer X-Touch
+  Compact via midi. Unmapped encoder presses fall back to reset the
+  encoder.
+
+- Midi buttons mapped to the reset effect of a slider or combo (either
+  directly or via fallback, like the row below the faders of the
+  X-Touch Compact) light up if the current value is not the default.
+
+- Resetting a combo (by double clicking or via a shortcut) that has
+  sub headers will now select the first selectable item.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
