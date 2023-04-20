@@ -285,8 +285,12 @@ void dt_selection_select_range(dt_selection_t *selection, dt_imgid_t imgid)
 {
   if(!selection->collection) return;
 
-  // selecting a range requires at least one image to be selected already
-  if(!dt_collection_get_selected_count(darktable.collection)) return;
+  // if no selection is made, add the selected image to the selection and return
+  if(!dt_collection_get_selected_count(darktable.collection))
+  {
+    dt_selection_select(selection, imgid);
+    return;
+  }
 
   /* get start and end rows for range selection */
   sqlite3_stmt *stmt;
