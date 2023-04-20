@@ -1861,7 +1861,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    all_ok = isnan(*(float*)p)
+    all_ok = dt_isnan(*(float*)p)
       || ((*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max));
     break;
   case DT_INTROSPECTION_TYPE_INT:
