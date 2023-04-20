@@ -20,10 +20,10 @@
 
 #include <glib.h>
 
-#define DT_READ_ACTION_ONLY -FLT_MAX
-#define DT_ACTION_NOT_VALID -FLT_MAX
-#define DT_PERFORM_ACTION(move_size) (move_size != DT_READ_ACTION_ONLY)
-#define DT_ACTION_IS_INVALID(value) (value == DT_ACTION_NOT_VALID)
+#define DT_READ_ACTION_ONLY (-FLT_MAX)
+#define DT_ACTION_NOT_VALID (-FLT_MAX)
+#define DT_PERFORM_ACTION(move_size) ((move_size) != DT_READ_ACTION_ONLY)
+#define DT_ACTION_IS_INVALID(value) ((value) == DT_ACTION_NOT_VALID)
 
 typedef enum dt_action_type_t
 {
