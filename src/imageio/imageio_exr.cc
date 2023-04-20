@@ -127,7 +127,6 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
       {
         // utcOffset can be ignored for now, see dt_datetime_exif_to_numbers()
         char *datetime = strdup(Imf::capDate(header).c_str());
-        dt_exif_sanitize_datetime(datetime);
         dt_datetime_exif_to_img(img, datetime);
         free(datetime);
       }
