@@ -215,11 +215,11 @@ static inline void _diffuse_error(
 static inline float _clipnan(const float x)
 {
   // convert NaN to 0.5, otherwise clamp to between 0.0 and 1.0
-  return (x > 0.0f) ? ((x < 1.0f) ? x    // 0 < x < 1
-                                  : 1.0f // x >= 1
+  return (x >= 0.0f) ? ((x < 1.0f) ? x    // 0 <= x < 1
+                                   : 1.0f // x >= 1
                        )
-         : isnan(x) ? 0.5f  // x is NaN
-                    : 0.0f; // x <= 0
+         : dt_isnan(x) ? 0.5f  // x is NaN
+                       : 0.0f; // x <= 0
 }
 
 static inline void _clipnan_pixel(

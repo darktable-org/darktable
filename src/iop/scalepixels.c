@@ -236,7 +236,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->x_scale = 1.0f;
   d->y_scale = 1.0f;
 
-  if(isnan(p->pixel_aspect_ratio) || p->pixel_aspect_ratio <= 0.0f || p->pixel_aspect_ratio == 1.0f)
+  if(dt_isnan(p->pixel_aspect_ratio) || p->pixel_aspect_ratio <= 0.0f || p->pixel_aspect_ratio == 1.0f)
     piece->enabled = FALSE;
 }
 
@@ -259,7 +259,7 @@ void reload_defaults(dt_iop_module_t *self)
 
   d->pixel_aspect_ratio = image->pixel_aspect_ratio;
 
-  self->default_enabled = (!isnan(d->pixel_aspect_ratio) &&
+  self->default_enabled = (!dt_isnan(d->pixel_aspect_ratio) &&
                            d->pixel_aspect_ratio > 0.0f &&
                            d->pixel_aspect_ratio != 1.0f);
 
