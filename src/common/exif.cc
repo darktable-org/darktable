@@ -483,25 +483,6 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData,
 }
 #define FIND_XMP_TAG(key) dt_exif_read_xmp_tag(xmpData, &pos, key)
 
-// exiftool (but apparently not exiv2) convert
-// e.g. "2017:10:23 12:34:56" to "2017-10-23T12:34:54" (ISO)
-// and some vendors incorrectly use "2017/10/23"
-// revert this to the format expected by exif and darktable
-void dt_exif_sanitize_datetime(char *datetime)
-{
-  // replace 'T' by ' ' (space)
-  char *c;
-  while((c = strchr(datetime, 'T')) != NULL)
-  {
-    *c = ' ';
-  }
-  // replace '-' and '/' with ':' but limit the length to avoid
-  // replacing '-' sign before the TZ specifier
-  while((c = strpbrk(datetime, "-/")) && (c - datetime < 18))
-  {
-    *c = ':';
-  }
-}
 
 // FIXME: according to http://www.exiv2.org/doc/classExiv2_1_1Metadatum.html#63c2b87249ba96679c29e01218169124
 // there is no need to pass xmpData
@@ -644,7 +625,6 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
        || FIND_XMP_TAG("Xmp.photoshop.DateCreated"))
     {
       char *datetime = strdup(pos->toString().c_str());
-      dt_exif_sanitize_datetime(datetime);
       dt_datetime_exif_to_img(img, datetime);
       free(datetime);
     }
@@ -754,7 +734,6 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
         datetime = g_string_append(datetime, time);
         free(time);
       }
-      dt_exif_sanitize_datetime(datetime->str);
       dt_datetime_exif_to_img(img, datetime->str);
       g_string_free(datetime, TRUE);
     }
@@ -954,7 +933,6 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData,
      && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
     dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
-    dt_exif_sanitize_datetime(exif_datetime_taken);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
        && pos->size() > 1)
     {
