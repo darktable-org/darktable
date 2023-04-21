@@ -703,6 +703,8 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const dt_imgid_t imgid)
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
+
+  dev->requested_id = dev->image_storage.id;
 }
 
 void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid)
