@@ -95,6 +95,11 @@ static inline gboolean dt_isfinite(float val)
   return isfinite(val);
 }
 
+static inline gboolean dt_isnormal(float val)
+{
+  return isnormal(val);
+}
+
 #ifdef __GNUC__
 #pragma GCC pop_options
 #endif
