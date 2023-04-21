@@ -162,7 +162,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_exposure_bias = img->exif_exposure_bias;
     params->data->exif_aperture = img->exif_aperture;
     params->data->exif_focal_length = img->exif_focal_length;
-    if(!isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
+    if(!dt_isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
       params->data->exif_focus_distance = img->exif_focus_distance;
     params->data->longitude = img->geoloc.longitude;
     params->data->latitude = img->geoloc.latitude;

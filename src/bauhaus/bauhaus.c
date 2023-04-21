@@ -16,14 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// dt_calculator_solve returns NAN on ill-formed input, so we need to tell the compiler
-// that non-finite numbers are in use in this source file even if we have globally
-// enabled the finite-math-only optimization.  Otherwise, it may optimize away
-// conditionals based on isnan() or isfinite().
-#ifdef __GNUC__
-#pragma GCC optimize ("no-finite-math-only")
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "common/calculator.h"
 #include "common/darktable.h"
@@ -2790,7 +2782,7 @@ char *dt_bauhaus_slider_get_text(GtkWidget *w, float val)
 
 void dt_bauhaus_slider_set(GtkWidget *widget, float pos)
 {
-  if(isnan(pos)) return;
+  if(dt_isnan(pos)) return;
 
   // this is the public interface function, translate by bounds and call set_normalized
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
@@ -3252,7 +3244,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
   {
     const float r = slider_right_pos((float)w3, w);
 
-    if(isnan(darktable.bauhaus->mouse_x))
+    if(dt_isnan(darktable.bauhaus->mouse_x))
     {
       if(dt_modifier_is(event->state, 0))
         dt_bauhaus_slider_set_normalized(w, (ex / w3) / r);
