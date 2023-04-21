@@ -814,11 +814,10 @@ static void _fire_darkroom_image_loaded_event(const bool clean, const dt_imgid_t
 
 #endif
 
+static gboolean _dev_load_requested_image(gpointer user_data);
+
 static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
-  // stop crazy users from sleeping on key-repeat spacebar:
-  if(dev->image_loading) return;
-
   // deactivate module label timer if set
   if(darktable.develop->gui_module
      && darktable.develop->gui_module->label_recompute_handle)
@@ -840,7 +839,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
   // if the previous shown image is selected and the selection is unique
   // then we change the selected image to the new one
-  if(dt_is_valid_imgid(dev->image_storage.id))
+  if(dt_is_valid_imgid(dev->requested_id))
   {
     sqlite3_stmt *stmt;
     // clang-format off
@@ -854,7 +853,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
     gboolean follow = FALSE;
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      if(sqlite3_column_int(stmt, 0) == dev->image_storage.id
+      if(sqlite3_column_int(stmt, 0) == dev->requested_id
          && sqlite3_step(stmt) != SQLITE_ROW)
       {
         follow = TRUE;
@@ -884,11 +883,39 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
     dt_image_set_aspect_ratio(dev->image_storage.id, TRUE);
   }
 
-  // clean the undo list
-  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
-
   // prevent accels_window to refresh
   darktable.view_manager->accels_window.prevent_refresh = TRUE;
+
+  // get current plugin in focus before defocus
+  if(darktable.develop->gui_module)
+  {
+    dt_conf_set_string("plugins/darkroom/active",
+                       darktable.develop->gui_module->op);
+  }
+
+  // store last active group
+  dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
+
+  // commit any pending changes in focused module
+  dt_iop_request_focus(NULL);
+
+  g_assert(dev->gui_attached);
+
+  // commit image ops to db
+  dt_dev_write_history(dev);
+
+  dev->requested_id = imgid;
+
+  g_idle_add(_dev_load_requested_image, dev);
+}
+
+static gboolean _dev_load_requested_image(gpointer user_data)
+{
+  dt_develop_t *dev = user_data;
+  const dt_imgid_t imgid = dev->requested_id;
+
+  if(dev->image_storage.id == NO_IMGID
+     && dev->image_storage.id == imgid) return G_SOURCE_REMOVE;
 
   // make sure we can destroy and re-setup the pixel pipes.
   // we acquire the pipe locks, which will block the processing threads
@@ -901,13 +928,12 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex))
   {
 
-  #ifdef USE_LUA
+#ifdef USE_LUA
 
   _fire_darkroom_image_loaded_event(FALSE, imgid);
 
 #endif
-
-  return;
+  return G_SOURCE_CONTINUE;
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->pipe_mutex))
   {
@@ -919,7 +945,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
 #endif
 
-   return;
+   return G_SOURCE_CONTINUE;
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->preview2_pipe_mutex))
   {
@@ -932,43 +958,29 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
 #endif
 
-   return;
+   return G_SOURCE_CONTINUE;
   }
 
-  // get current plugin in focus before defocus
-  gchar *active_plugin = NULL;
-  if(darktable.develop->gui_module)
-  {
-    active_plugin = g_strdup(darktable.develop->gui_module->op);
-  }
-
-  // store last active group
-  dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
-
-  dt_iop_request_focus(NULL);
-
-  g_assert(dev->gui_attached);
-
-  // commit image ops to db
-  dt_dev_write_history(dev);
-
-  const dt_imgid_t new_imgid = dev->image_storage.id;
+  const dt_imgid_t old_imgid = dev->image_storage.id;
 
   // be sure light table will update the thumbnail
-  if(!dt_history_hash_is_mipmap_synced(new_imgid))
+  if(!dt_history_hash_is_mipmap_synced(old_imgid))
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, new_imgid);
-    dt_image_update_final_size(new_imgid);
-    dt_image_synch_xmp(new_imgid);
-    dt_history_hash_set_mipmap(new_imgid);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, old_imgid);
+    dt_image_update_final_size(old_imgid);
+    dt_image_synch_xmp(old_imgid);
+    dt_history_hash_set_mipmap(old_imgid);
 #ifdef USE_LUA
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
         LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-history-changed",
-        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(old_imgid),
         LUA_ASYNC_DONE);
 #endif
   }
+
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   // cleanup visible masks
   if(!dev->form_gui)
@@ -1015,7 +1027,6 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
       module->multi_priority = 0;
       module->multi_name[0] = '\0';
       dt_iop_reload_defaults(module);
-      dt_iop_gui_update(module);
     }
     else // else we delete it and remove it from the panel
     {
@@ -1102,6 +1113,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   dt_dev_masks_list_change(dev);
 
   /* Now we can request focus again and write a safe plugins/darkroom/active */
+  const char *active_plugin = dt_conf_get_string_const("plugins/darkroom/active");
   if(active_plugin)
   {
     gboolean valid = FALSE;
@@ -1111,7 +1123,6 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
       if(dt_iop_module_is(module->so, active_plugin))
       {
         valid = TRUE;
-        dt_conf_set_string("plugins/darkroom/active", active_plugin);
         dt_iop_request_focus(module);
       }
     }
@@ -1119,7 +1130,6 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
     {
       dt_conf_set_string("plugins/darkroom/active", "");
     }
-    g_free(active_plugin);
   }
 
   // Signal develop initialize
@@ -1156,6 +1166,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
 #endif
 
+  return G_SOURCE_REMOVE;
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
@@ -1178,9 +1189,8 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
 
 static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
-  if(dev->image_loading) return;
 
-  const dt_imgid_t imgid = dev->image_storage.id;
+  const dt_imgid_t imgid = dev->requested_id;
   int new_offset = 1;
   dt_imgid_t new_id = NO_IMGID;
 
@@ -3262,7 +3272,7 @@ void leave(dt_view_t *self)
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
         LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-history-changed",
-        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
         LUA_ASYNC_DONE);
 #endif
   }
