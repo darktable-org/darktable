@@ -757,7 +757,7 @@ void gui_update(dt_lib_module_t *self)
         {
           (void)g_snprintf(text, sizeof(text), _("infinity"));
         }
-        else if(!(isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
+        else if(!(dt_isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
         {
           (void)g_snprintf(text, sizeof(text), _("%.2f m"), (double)img->exif_focus_distance);
         }
