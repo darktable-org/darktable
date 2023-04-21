@@ -1441,7 +1441,7 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
   const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
   for(int k = 0; ok && k < num_coeffs; k++)
   {
-    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f)
+    if(!dt_isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f)
       ok = FALSE;
   }
   if(ok)

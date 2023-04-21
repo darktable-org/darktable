@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ static void to_charpath_length(lua_State *L, luaA_Type type_id, void *c_out, int
 static int push_protected_double(lua_State *L, luaA_Type type_id, const void *c_in)
 {
   double value = *(double *)c_in;
-  if(!isnormal(value))
+  if(!dt_isnormal(value))
   {
     lua_pushnil(L);
   }

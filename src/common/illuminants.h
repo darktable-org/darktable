@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -402,7 +402,7 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
 
   // Check coeffs
   for(int k = 0; has_valid_coeffs && k < num_coeffs; k++)
-    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) has_valid_coeffs = FALSE;
+    if(!dt_isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) has_valid_coeffs = FALSE;
 
   if(!has_valid_coeffs) return FALSE;
 

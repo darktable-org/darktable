@@ -704,8 +704,8 @@ static inline gboolean _gradient_is_canonical(const float x,
                                               const float wd,
                                               const float ht)
 {
-  return (isnormal(x)
-          && isnormal(y)
+  return (dt_isnormal(x)
+          && dt_isnormal(y)
           && x >= -wd
           && x <= 2 * wd
           && y >= -ht
@@ -936,7 +936,7 @@ static void _gradient_draw_lines(const gboolean borders,
 
   while(count < points_count)
   {
-    if(!isnormal(points[count * 2]))
+    if(!dt_isnormal(points[count * 2]))
     {
       count++;
       continue;
@@ -954,7 +954,7 @@ static void _gradient_draw_lines(const gboolean borders,
     cairo_move_to(cr, x, y);
 
     count++;
-    for(; count < points_count && isnormal(points[count * 2]); count++)
+    for(; count < points_count && dt_isnormal(points[count * 2]); count++)
     {
       if(!_gradient_is_canonical(points[count * 2], points[count * 2 + 1], wd, ht))
         break;
