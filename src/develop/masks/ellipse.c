@@ -1914,7 +1914,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   for(int n = 0; n < ellpts; n++)
   {
     // just in case that transform throws surprising values
-    if(!(isnormal(ell[2 * n]) && isnormal(ell[2 * n + 1]))) continue;
+    if(!(dt_isnormal(ell[2 * n]) && dt_isnormal(ell[2 * n + 1]))) continue;
 
     xmin = MIN(xmin, ell[2 * n]);
     xmax = MAX(xmax, ell[2 * n]);

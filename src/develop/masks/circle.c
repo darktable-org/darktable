@@ -1333,7 +1333,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   for(int n = 0; n < circpts; n++)
   {
     // just in case that transform throws surprising values
-    if(!(isnormal(circ[2 * n]) && isnormal(circ[2 * n + 1]))) continue;
+    if(!(dt_isnormal(circ[2 * n]) && dt_isnormal(circ[2 * n + 1]))) continue;
 
     xmin = MIN(xmin, circ[2 * n]);
     xmax = MAX(xmax, circ[2 * n]);
