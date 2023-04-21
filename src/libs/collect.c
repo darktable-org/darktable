@@ -2214,6 +2214,7 @@ void gui_update(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
   update_view(d->rule + d->active_rule);
+  dt_gui_widget_reallocate_now(GTK_WIDGET(d->view));
 }
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
