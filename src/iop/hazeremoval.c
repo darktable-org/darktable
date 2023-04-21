@@ -559,7 +559,8 @@ void process(struct dt_iop_module_t *self,
     dt_iop_gui_leave_critical_section(self);
   }
   // In all other cases we calculate distance_max and A0 here.
-  if(isnan(distance_max)) distance_max = ambient_light(img_in, w1, &A0, compatibility_mode);
+  if(dt_isnan(distance_max))
+    distance_max = ambient_light(img_in, w1, &A0, compatibility_mode);
   // PREVIEW pixelpipe stores values.
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
@@ -793,7 +794,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_iop_gui_leave_critical_section(self);
   }
   // In all other cases we calculate distance_max and A0 here.
-  if(isnan(distance_max))
+  if(dt_isnan(distance_max))
     distance_max = ambient_light_cl(self, devid, img_in, w1, &A0,
                                     compatibility_mode);
   // PREVIEW pixelpipe stores values.
