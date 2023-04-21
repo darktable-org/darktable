@@ -156,6 +156,7 @@ typedef struct dt_develop_t
   // calling into the cache explicitly. this should never be accessed directly, but
   // by the iop through the copy their respective pixelpipe holds, for thread-safety.
   dt_image_t image_storage;
+  dt_imgid_t requested_id;
 
   // history stack
   dt_pthread_mutex_t history_mutex;
