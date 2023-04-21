@@ -1185,7 +1185,7 @@ void gui_init(struct dt_iop_module_t *self)
      _("\"correction\" automatically adjust exposure\n"
        "such that the input lightness is mapped to the target.\n"
        "\"measure\" simply shows how an input color is mapped by\n"
-       " the exposure compensation and can be used to define a target."),
+       "the exposure compensation and can be used to define a target."),
      0, _spot_settings_changed_callback, self,
      N_("correction"),
      N_("measure"));
