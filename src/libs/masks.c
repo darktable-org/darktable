@@ -229,8 +229,8 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
       min += sum / count;
     }
 
-    if(isnan(min)) min = _masks_properties[prop].min;
-    if(isnan(max)) max = _masks_properties[prop].max;
+    if(dt_isnan(min)) min = _masks_properties[prop].min;
+    if(dt_isnan(max)) max = _masks_properties[prop].max;
     dt_bauhaus_slider_set_soft_range(widget, min, max);
 
     dt_bauhaus_slider_set(widget, sum / count);

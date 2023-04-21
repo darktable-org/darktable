@@ -2432,14 +2432,14 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       int hasinf = 0, hasnan = 0;
       dt_aligned_pixel_t min = { FLT_MAX };
-      dt_aligned_pixel_t max = { FLT_MIN };
+      dt_aligned_pixel_t max = { -FLT_MAX };
 
       for(int k = 0; k < 4 * roi_out->width * roi_out->height; k++)
       {
         if((k & 3) < 3)
         {
           const float f = ((float *)(*output))[k];
-          if(isnan(f))
+          if(dt_isnan(f))
             hasnan = 1;
           else if(dt_isinf(f))
             hasinf = 1;
@@ -2471,12 +2471,12 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       int hasinf = 0, hasnan = 0;
       float min = FLT_MAX;
-      float max = FLT_MIN;
+      float max = -FLT_MAX;
 
       for(int k = 0; k < roi_out->width * roi_out->height; k++)
       {
         const float f = ((float *)(*output))[k];
-        if(isnan(f))
+        if(dt_isnan(f))
           hasnan = 1;
         else if(dt_isinf(f))
           hasinf = 1;
