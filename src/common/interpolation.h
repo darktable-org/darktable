@@ -107,11 +107,6 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const
                                       const float x, const float y, const int width, const int height,
                                       const int linestride);
 
-// same as above for single channel images (i.e., masks). no SSE or CPU code paths for now
-void dt_interpolation_compute_pixel1c(const struct dt_interpolation *itor, const float *in, float *out,
-                                      const float x, const float y, const int width, const int height,
-                                      const int linestride);
-
 /** Get an interpolator from type
  * @param type Interpolator to search for
  * @return requested interpolator or default if not found (this function can't fail)
