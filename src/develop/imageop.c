@@ -2203,11 +2203,13 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module),
                                GTK_STATE_FLAG_SELECTED, TRUE);
 
-    if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
+    if(module->operation_tags_filter())
+      dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_iop_connect_accels_multi(module->so);
 
-    if(module->gui_focus) module->gui_focus(module, TRUE);
+    if(module->gui_focus)
+      module->gui_focus(module, TRUE);
 
     /* redraw the expander */
     gtk_widget_queue_draw(module->expander);
@@ -2220,7 +2222,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     // update last preset name to get the update preset entry
     gboolean writeprotect = FALSE;
     gchar *name = dt_get_active_preset_name(module, &writeprotect);
-    if(!writeprotect && name) dt_gui_store_last_preset(name);
+    if(!writeprotect && name)
+      dt_gui_store_last_preset(name);
     g_free(name);
   }
 

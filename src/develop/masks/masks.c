@@ -1400,7 +1400,7 @@ dt_masks_edit_mode_t dt_masks_get_edit_mode(struct dt_iop_module_t *module)
 }
 
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
-                            dt_masks_edit_mode_t value)
+                            const dt_masks_edit_mode_t value)
 {
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
@@ -1417,13 +1417,13 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
     dt_masks_group_ungroup(grp, form);
   }
 
-  if(bd) bd->masks_shown = value;
-
+  bd->masks_shown = value;
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
 
   ++darktable.gui->reset;
-  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? form->formid : NO_MASKID);
+  dt_dev_masks_selection_change(darktable.develop, NULL,
+                                value && form ? form->formid : NO_MASKID);
   --darktable.gui->reset;
 
   if(bd->masks_support)
