@@ -863,7 +863,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
     && _exif_read_exif_tag(exifData, &posc, "Exif.Fujifilm.ChromaticAberrationParams")
     && _exif_read_exif_tag(exifData, &posv, "Exif.Fujifilm.VignettingParams"))
   {
-    // Validate
+    // X-Trans IV/V
     if(posd->count() == 19 && posc->count() == 29 && posv->count() == 19)
     {
       const int nc = 9;
@@ -874,6 +874,7 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
         const float kd = posd->toFloat(i + 1);
         const float kc = posc->toFloat(i + 1);
         const float kv = posv->toFloat(i + 1);
+        // check that the knots position is the same for distortion, ca and vignetting,
         if (kd != kc || kd != kv)
         {
           img->exif_correction_type = CORRECTION_TYPE_NONE;
@@ -885,6 +886,50 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
         img->exif_correction_data.fuji.ca_r[i] = posc->toFloat(i + 10);
         img->exif_correction_data.fuji.ca_b[i] = posc->toFloat(i + 19);
         img->exif_correction_data.fuji.vignetting[i] = posv->toFloat(i + 10);
+      }
+
+      // Account for the 1.25x crop modes in some Fuji cameras
+      if(FIND_EXIF_TAG("Exif.Fujifilm.CropMode")
+         && (pos->toLong() == 2 || pos->toLong() == 4))
+        img->exif_correction_data.fuji.cropf = 1.25f;
+      else
+        img->exif_correction_data.fuji.cropf = 1;
+    }
+    // X-Trans I/II/III
+    else if(posd->count() == 23 && posc->count() == 31 && posv->count() == 23)
+    {
+      const int nc = 11;
+      img->exif_correction_type = CORRECTION_TYPE_FUJI;
+      img->exif_correction_data.fuji.nc = nc;
+      for(int i = 0; i < nc; i++)
+      {
+        const float kd = posd->toFloat(i + 1);
+        float kc = 0;
+        // ca data doesn't provide first knot (0)
+        if(i != 0) kc = posc->toFloat(i);
+        const float kv = posv->toFloat(i + 1);
+        // check that the knots position is the same for distortion, ca and vignetting,
+        if (kd != kc || kd != kv)
+        {
+          img->exif_correction_type = CORRECTION_TYPE_NONE;
+          break;
+        }
+
+        img->exif_correction_data.fuji.knots[i] = kd;
+        img->exif_correction_data.fuji.distortion[i] = posd->toFloat(i + 12);
+
+        // ca data doesn't provide first knot (0)
+        if(i == 0)
+        {
+          img->exif_correction_data.fuji.ca_r[i] = 0;
+          img->exif_correction_data.fuji.ca_b[i] = 0;
+        }
+        else
+        {
+          img->exif_correction_data.fuji.ca_r[i] = posc->toFloat(i + 10);
+          img->exif_correction_data.fuji.ca_b[i] = posc->toFloat(i + 20);
+        }
+        img->exif_correction_data.fuji.vignetting[i] = posv->toFloat(i + 12);
       }
 
       // Account for the 1.25x crop modes in some Fuji cameras
