@@ -164,7 +164,7 @@ typedef union dt_image_correction_data_t
   struct {
     int nc;
     float cropf;
-    float knots[9], distortion[9], ca_r[9], ca_b[9], vignetting[9];
+    float knots[11], distortion[11], ca_r[11], ca_b[11], vignetting[11];
   } fuji;
   struct {
     int planes;
