@@ -1600,9 +1600,10 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
 
   if(event->button == 1)
   {
+    dt_iop_request_focus(self);
+
     ++darktable.gui->reset;
 
-    dt_iop_request_focus(self);
     dt_iop_color_picker_reset(self, FALSE);
 
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,
