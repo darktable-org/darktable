@@ -49,6 +49,7 @@ gboolean dt_dev_pixelpipe_cache_init(
   cache->hash = (uint64_t *)calloc(entries, sizeof(uint64_t));
   cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
   cache->modname = (char **)calloc(entries, sizeof(char *));
+  cache->ioporder = (int32_t *)calloc(entries, sizeof(int32_t));
 
   for(int k = 0; k < entries; k++)
   {
@@ -58,6 +59,7 @@ gboolean dt_dev_pixelpipe_cache_init(
     cache->hash[k] = -1;
     cache->used[k] = 1;
     cache->modname[k] = NULL;
+    cache->ioporder[k] = 0;
   }
   if(!size) return TRUE;
 
@@ -111,6 +113,8 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
   cache->size = NULL;
   free(cache->modname);
   cache->modname = NULL;
+  free(cache->ioporder);
+  cache->ioporder = NULL;
 }
 
 uint64_t dt_dev_pixelpipe_cache_basichash(
@@ -319,8 +323,7 @@ static gboolean _get_by_hash(
           const uint64_t hash,
           const size_t size,
           void **data,
-          dt_iop_buffer_dsc_t **dsc,
-          const char *const name)
+          dt_iop_buffer_dsc_t **dsc)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
@@ -350,9 +353,10 @@ static gboolean _get_by_hash(
         ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
         ASAN_UNPOISON_MEMORY_REGION(*data, size);
 
-        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_get", pipe, name, NULL, NULL,
-          "HIT line%3i, age %4i at %p hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-          k, cache->used[k], cache->data[k], cache->hash[k], cache->basichash[k]); 
+        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_get",
+          pipe, cache->modname[k], NULL, NULL,
+          "HIT line%3i, iop%3i, age %4i at %p hash%22" PRIu64 ", basic%22" PRIu64 "\n",
+          k, cache->ioporder[k], cache->used[k], cache->data[k], cache->hash[k], cache->basichash[k]); 
 
         // in case of a hit it's always good to further keep the cacheline as important
         cache->used[k] = -cache->entries;
@@ -371,7 +375,7 @@ gboolean dt_dev_pixelpipe_cache_get(
            const size_t size,
            void **data,
            dt_iop_buffer_dsc_t **dsc,
-           char *name,
+           struct dt_iop_module_t *module,
            const gboolean important)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
@@ -380,7 +384,7 @@ gboolean dt_dev_pixelpipe_cache_get(
     cache->used[k]++; // age all entries
 
   // cache keeps history and we have a cache hit, so no new buffer
-  if(cache->entries > DT_PIPECACHE_MIN && _get_by_hash(pipe, hash, size, data, dsc, name))
+  if(cache->entries > DT_PIPECACHE_MIN && _get_by_hash(pipe, hash, size, data, dsc))
     return FALSE;
 
   // We need a fresh buffer as there was no hit.
@@ -424,10 +428,12 @@ gboolean dt_dev_pixelpipe_cache_get(
   cache->hash[cline]      = masking ? -1 : hash;
   cache->used[cline]      = masking ? 8 * VERY_OLD_CACHE_WEIGHT
                                     : (important ? -cache->entries : 0);
-  cache->modname[cline] = name;
+  cache->modname[cline]   = module  ? module->so->op : NULL;
+  cache->ioporder[cline]  = module  ? module->iop_order : 0;
   cache->misses++;
 
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get", pipe, name, NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get",
+    pipe, cache->modname[cline], NULL, NULL,
     "%s %s line%3i, age %4i at %p. hash%22" PRIu64 ", basic%22" PRIu64 "\n",
      newdata ? "new" : "   ",
      important ? "important" : (masking ? "masking  " : "         "),
@@ -446,6 +452,7 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
     cache->basichash[k] = -1;
     cache->hash[k] = -1;
     cache->used[k] = VERY_OLD_CACHE_WEIGHT;
+    cache->ioporder[k] = 0;
     ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
   }
 }
@@ -461,11 +468,32 @@ void dt_dev_pixelpipe_cache_flush_all_but(
     cache->basichash[k] = -1;
     cache->hash[k] = -1;
     cache->used[k] = VERY_OLD_CACHE_WEIGHT;
+    cache->ioporder[k] = 0;
     ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
   }
 }
 
-void dt_dev_pixelpipe_cache_reweight(
+void dt_dev_pixelpipe_cache_invalidate_later(
+        struct dt_dev_pixelpipe_t *pipe,
+        struct dt_iop_module_t *module)
+{
+  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  const int32_t order = module ? module->iop_order : 0;
+  if(order < 1) return;
+
+  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
+  {
+    if(cache->ioporder[k] > order)
+    {
+      cache->basichash[k] = -1;
+      cache->hash[k] = -1;
+      cache->used[k] = 8 * cache->used[k];
+      cache->ioporder[k] = 0;
+    }
+  }
+}
+
+void dt_dev_pixelpipe_important_cacheline(
        struct dt_dev_pixelpipe_t *pipe,
        void *data,
        const size_t size)
@@ -473,14 +501,16 @@ void dt_dev_pixelpipe_cache_reweight(
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if((cache->data[k] == data) && (size == cache->size[k]))
+    if((cache->data[k] == data)
+        && (size == cache->size[k])
+        && (cache->used[k] < 8 * VERY_OLD_CACHE_WEIGHT))
       cache->used[k] = -cache->entries;
   }
 }
 
-void dt_dev_pixelpipe_cache_unweight(
-       struct dt_dev_pixelpipe_t *pipe,
-       void *data)
+void dt_dev_pixelpipe_invalidate_cacheline(struct dt_dev_pixelpipe_t *pipe,
+                                           void *data,
+                                           const gboolean invalid)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
@@ -489,21 +519,8 @@ void dt_dev_pixelpipe_cache_unweight(
     {
       cache->basichash[k] = -1;
       cache->hash[k] = -1;
-      cache->used[k] = 8 * VERY_OLD_CACHE_WEIGHT;
-    }
-  }
-}
-
-void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *data)
-{
-  for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
-  {
-    if(cache->data[k] == data)
-    {
-      cache->basichash[k] = -1;
-      cache->hash[k] = -1;
-      cache->used[k] = VERY_OLD_CACHE_WEIGHT;
-      ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
+      cache->used[k] = VERY_OLD_CACHE_WEIGHT * (invalid ? 8 : 1);
+      cache->ioporder[k] = 0;
     }
   }
 }

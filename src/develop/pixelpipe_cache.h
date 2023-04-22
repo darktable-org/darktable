@@ -41,6 +41,7 @@ typedef struct dt_dev_pixelpipe_cache_t
   uint64_t *basichash;
   uint64_t *hash;
   int32_t *used;
+  int32_t *ioporder;
   // debugging helpers
   char **modname; 
   // profiling:
@@ -72,7 +73,7 @@ uint64_t dt_dev_pixelpipe_cache_basichash_prior(const dt_imgid_t imgid, struct d
   Returned flag is TRUE for a new buffer
 */
 gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint64_t basichash, const uint64_t hash,
-                               const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, char *modname, const gboolean important);
+                               const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, struct dt_iop_module_t *module, const gboolean important);
 
 /** test availability of a cache line without destroying another, if it is not found. */
 gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const uint64_t hash, const size_t size);
@@ -83,14 +84,14 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache);
 /** invalidates all cachelines except those containing items for the given module/parameter combination */
 void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint64_t basichash);
 
+/** invalidates all cachelines for modules with at least the same iop_order */
+void dt_dev_pixelpipe_cache_invalidate_later(struct dt_dev_pixelpipe_t *pipe, struct dt_iop_module_t *module);
+
 /** makes this buffer very important after it has been pulled from the cache. */
-void dt_dev_pixelpipe_cache_reweight(struct dt_dev_pixelpipe_t *pipe, void *data, const size_t size);
+void dt_dev_pixelpipe_important_cacheline(struct dt_dev_pixelpipe_t *pipe, void *data, const size_t size);
 
-/** markes this buffer as to be ignored */
-void dt_dev_pixelpipe_cache_unweight(struct dt_dev_pixelpipe_t *pipe, void *data);
-
-/** mark the given cache line pointer as invalid. */
-void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *data);
+/** mark the given cache line as invalid or to be ignored */
+void dt_dev_pixelpipe_invalidate_cacheline(struct dt_dev_pixelpipe_t *pipe, void *data, const gboolean invalid);
 
 /** print out cache lines/hashes and do a cache cleanup */
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);

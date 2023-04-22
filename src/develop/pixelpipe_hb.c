@@ -1438,9 +1438,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(cache_available)
   {
     dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
-                               output, out_format,
-                               (module) ? module->so->op : NULL,
-                               FALSE);
+                               output, out_format, module, FALSE);
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;
@@ -1593,9 +1591,7 @@ static gboolean _dev_pixelpipe_process_rec(
   }
   pipe->next_important_module = FALSE;
   dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
-                             output, out_format,
-                             module ? module->so->op : NULL,
-                             important);
+                             output, out_format, module, important);
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -2335,7 +2331,7 @@ static gboolean _dev_pixelpipe_process_rec(
 
     /* input is still only on GPU? Let's invalidate CPU input buffer then */
     if(valid_input_on_gpu_only)
-      dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, input, TRUE);
   }
   else
   {
@@ -2355,7 +2351,7 @@ static gboolean _dev_pixelpipe_process_rec(
 #endif // HAVE_OPENCL
 
   if(pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE)
-    dt_dev_pixelpipe_cache_unweight(pipe, *output);
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
 
   char histogram_log[32] = "";
   if(!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE))
@@ -2404,7 +2400,7 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       // give the input buffer to the currently focused plugin more weight.
       // the user is likely to change that one soon, so keep it in cache.
-      dt_dev_pixelpipe_cache_reweight(pipe, input, roi_in.width * roi_in.height * in_bpp);
+      dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
     }
 
     // we check for an important hint after processing the module as we
@@ -2415,7 +2411,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(needs_histo)
   {
     pipe->nocache = TRUE;
-    dt_dev_pixelpipe_cache_unweight(pipe, *output);
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
   }
 
   // warn on NaN or infinity
