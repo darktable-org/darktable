@@ -454,13 +454,13 @@ The following is a summary of the main features added to darktable
   "Create HDR"
 
 - Pixelpipe cache safety and performance improvements. This makes
-  better hit when looking in the cache and so allow for better
-  performances.
+  better hit when looking in the cache and so allows for better
+  performance.
 
 - Fix some pixel-pipe cache issues related to mask visualization and
   module's internal histogram (like RGB Curve for example). This
-  ensure better hit in the cache leading to better performance and
-  also avoid some refresh issues in some cases.
+  ensures better hit in the cache leading to better performance and
+  also avoids some refresh issues in some cases.
 
 - Fix "--threads n" restricts OMP threads to specified number (does
   not allow for more threads than available on the host.
@@ -491,7 +491,7 @@ The following is a summary of the main features added to darktable
 - Fix some minor memory leaks in some modules.
 
 - Fix a possible crash when selecting the original module history
-  state and compression the history.
+  state and compressing the history.
 
 - Fix a possible crash in gradient mask creation due to an issue in
   the implemented parallelism.
@@ -501,9 +501,9 @@ The following is a summary of the main features added to darktable
   mismatches reported.
 
 - Fix different issues on the mask manager. It is now possible for all
-  masks kind to be added continuously. Also the brush was not properly
+  mask kinds to be added continuously. Also the brush was not properly
   displayed after being created from the mask manager. A crash when
-  creating gradient from the mask manager has been fixed. For all
+  creating gradients from the mask manager has been fixed. For all
   shapes the editable state is properly set after being created making
   it possible to move and resize the different parts.
 
