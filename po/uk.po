@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-04-17 13:18+0200\n"
-"PO-Revision-Date: 2023-04-19 12:08+0300\n"
+"PO-Revision-Date: 2023-04-22 22:03+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2387,11 +2387,11 @@ msgstr "Автоматичне кадрування"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:361
 #: ../build/lib/darktable/plugins/introspection_highlights.c:311
 msgid "generic"
-msgstr "Загальне"
+msgstr "Загальна"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:362
 msgid "specific"
-msgstr "Уточнене"
+msgstr "Уточнена"
 
 #. DEVELOP_MASK_DISABLED
 #: ../build/lib/darktable/plugins/introspection_ashift.c:366
@@ -4115,7 +4115,7 @@ msgstr "4096 px (неймовірно повільно)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:312
 msgid "flat generic"
-msgstr "Загальне (гладкий режим)"
+msgstr "Загальна (гладкий режим)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:313
 msgid "small segments"
