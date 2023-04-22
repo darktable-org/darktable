@@ -87,15 +87,15 @@ void dt_image_cache_allocate(void *data,
     uint32_t tmp = sqlite3_column_int(stmt, 18);
     memcpy(&img->legacy_flip, &tmp, sizeof(dt_image_raw_parameters_t));
     if(sqlite3_column_type(stmt, 19) == SQLITE_FLOAT)
-      img->geoloc.longitude = sqlite3_column_double(stmt, 19);
+      img->geoloc.longitude = dt_gps_convert_sql_to_img((float)sqlite3_column_double(stmt, 19));
     else
       img->geoloc.longitude = DT_INVALID_GPS_COORDINATE;
     if(sqlite3_column_type(stmt, 20) == SQLITE_FLOAT)
-      img->geoloc.latitude = sqlite3_column_double(stmt, 20);
+      img->geoloc.latitude = dt_gps_convert_sql_to_img((float)sqlite3_column_double(stmt, 20));
     else
       img->geoloc.latitude = DT_INVALID_GPS_COORDINATE;
     if(sqlite3_column_type(stmt, 21) == SQLITE_FLOAT)
-      img->geoloc.elevation = sqlite3_column_double(stmt, 21);
+      img->geoloc.elevation = dt_gps_convert_sql_to_img((float)sqlite3_column_double(stmt, 21));
     else
       img->geoloc.elevation = DT_INVALID_GPS_COORDINATE;
     const void *color_matrix = sqlite3_column_blob(stmt, 22);
@@ -300,9 +300,9 @@ void dt_image_cache_write_release(dt_image_cache_t *cache,
   flip.s = img->legacy_flip;
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, flip.u);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, img->group_id);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->geoloc.longitude);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->geoloc.latitude);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 21, img->geoloc.elevation);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, dt_gps_convert_img_to_sql(img->geoloc.longitude));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, dt_gps_convert_img_to_sql(img->geoloc.latitude));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 21, dt_gps_convert_img_to_sql(img->geoloc.elevation));
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 22, &img->d65_color_matrix,
                              sizeof(img->d65_color_matrix), SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->colorspace);

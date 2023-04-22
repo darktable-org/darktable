@@ -233,7 +233,7 @@ static inline gboolean _has_prefix(char **str, const char *prefix)
 
 static char *_variables_get_longitude(dt_variables_params_t *params)
 {
-  if(params->data->longitude == DT_INVALID_GPS_COORDINATE)
+  if(!dt_valid_gps_coordinate(params->data->longitude))
     return g_strdup("");
   if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
      && g_strcmp0(params->jobcode, "infos") == 0)
@@ -249,7 +249,7 @@ static char *_variables_get_longitude(dt_variables_params_t *params)
 
 static char *_variables_get_latitude(dt_variables_params_t *params)
 {
-  if(params->data->latitude == DT_INVALID_GPS_COORDINATE)
+  if(!dt_valid_gps_coordinate(params->data->latitude))
     return g_strdup("");
   if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
      && g_strcmp0(params->jobcode, "infos") == 0)
@@ -428,11 +428,11 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   {
     gchar *parts[4] = { 0 };
     int i = 0;
-    if(params->data->latitude != DT_INVALID_GPS_COORDINATE)
+    if(dt_valid_gps_coordinate(params->data->latitude))
       parts[i++] = _variables_get_latitude(params);
-    if(params->data->longitude != DT_INVALID_GPS_COORDINATE)
+    if(dt_valid_gps_coordinate(params->data->longitude))
       parts[i++] = _variables_get_longitude(params);
-    if(params->data->elevation != DT_INVALID_GPS_COORDINATE)
+    if(dt_valid_gps_coordinate(params->data->elevation))
       parts[i++] = g_strdup_printf("%.2f", params->data->elevation);
 
     result = g_strjoinv(", ", parts);

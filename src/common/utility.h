@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <math.h>
 #include <gtk/gtk.h>
 #include <string.h>
 #include <librsvg/rsvg.h>
@@ -74,6 +75,20 @@ cairo_surface_t *dt_util_get_logo_text(const float size);
 /** special value to indicate an invalid or unitialized coordinate (replaces */
 /** former use of NAN and isnan() by the most negative float) **/
 #define DT_INVALID_GPS_COORDINATE (-FLT_MAX)
+static inline gboolean dt_valid_gps_coordinate(float value)
+{
+  return value > DT_INVALID_GPS_COORDINATE;
+}
+/** we keep the value NAN in the database and .XMP for backward compatibility,
+ ** so provide functions to convert back and forth **/
+static inline float dt_gps_convert_sql_to_img(float value)
+{
+  return dt_valid_gps_coordinate(value) ? value : DT_INVALID_GPS_COORDINATE;
+}
+static inline float dt_gps_convert_img_to_sql(float value)
+{
+  return dt_valid_gps_coordinate(value) ? value : NAN;
+}
 
 gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);

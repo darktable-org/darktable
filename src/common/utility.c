@@ -511,7 +511,7 @@ gchar *dt_util_latitude_str(float latitude)
   gchar *c = OSD_COORDINATES_CHR_N;
   float integral, fractional;
 
-  if(latitude == DT_INVALID_GPS_COORDINATE)
+  if(!dt_valid_gps_coordinate(latitude))
     return NULL;
 
   if(latitude < 0)
@@ -530,7 +530,7 @@ gchar *dt_util_longitude_str(float longitude)
   gchar *c = OSD_COORDINATES_CHR_E;
   float integral, fractional;
 
-  if(longitude == DT_INVALID_GPS_COORDINATE)
+  if(!dt_valid_gps_coordinate(longitude))
     return NULL;
 
   if(longitude < 0)
@@ -548,7 +548,7 @@ gchar *dt_util_elevation_str(float elevation)
 {
   const gchar *c = OSD_ELEVATION_ASL;
 
-  if(elevation == DT_INVALID_GPS_COORDINATE)
+  if(!dt_valid_gps_coordinate(elevation))
     return NULL;
 
   if(elevation < 0)

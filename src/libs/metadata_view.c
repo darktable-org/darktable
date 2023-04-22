@@ -826,7 +826,7 @@ void gui_update(dt_lib_module_t *self)
 //          break;
 
       case md_geotagging_lat:
-        if(img->geoloc.latitude == DT_INVALID_GPS_COORDINATE)
+        if(!dt_valid_gps_coordinate(img->geoloc.latitude))
         {
           _metadata_update_value(md_geotagging_lat, NODATA_STRING, self);
         }
@@ -848,7 +848,7 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_geotagging_lon:
-        if(img->geoloc.longitude == DT_INVALID_GPS_COORDINATE)
+        if(!dt_valid_gps_coordinate(img->geoloc.longitude))
         {
           _metadata_update_value(md_geotagging_lon, NODATA_STRING, self);
         }
@@ -870,7 +870,7 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_geotagging_ele:
-        if(img->geoloc.elevation == DT_INVALID_GPS_COORDINATE)
+        if(!dt_valid_gps_coordinate(img->geoloc.elevation))
         {
           _metadata_update_value(md_geotagging_ele, NODATA_STRING, self);
         }

@@ -2537,7 +2537,7 @@ static void _view_map_center_on_image(dt_view_t *self, const dt_imgid_t imgid)
     dt_image_geoloc_t geoloc;
     dt_image_get_location(imgid, &geoloc);
 
-    if(geoloc.longitude != DT_INVALID_GPS_COORDINATE && geoloc.latitude != DT_INVALID_GPS_COORDINATE)
+    if(dt_valid_gps_coordinate(geoloc.longitude) && dt_valid_gps_coordinate(geoloc.latitude))
     {
       int zoom;
       g_object_get(G_OBJECT(lib->map), "zoom", &zoom, NULL);
