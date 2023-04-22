@@ -91,9 +91,9 @@ static void _show_2_times(const dt_times_t *start,
  * @param idx index to filter
  * @param length length of line
  */
-static inline int clip(int i,
-                       const int min,
-                       const int max,
+static inline ssize_t clip(ssize_t i,
+                       const ssize_t min,
+                       const ssize_t max,
                        enum border_mode mode)
 {
   switch(mode)
@@ -595,13 +595,13 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
 
     // Apply the kernel
     float s = 0.f;
-    for(int i = ytap_first; i < ytap_last; i++)
+    for(ssize_t i = ytap_first; i < ytap_last; i++)
     {
-      const int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      const ssize_t clip_y = clip(iy + i, 0, height - 1, bordermode);
       float h = 0.0f;
-      for(int j = xtap_first; j < xtap_last; j++)
+      for(ssize_t j = xtap_first; j < xtap_last; j++)
       {
-        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
+        const ssize_t clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * samplestride;
         h += kernelh[j] * ipixel[0];
       }
@@ -629,7 +629,7 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
                                                    const float y,
                                                    const int width,
                                                    const int height,
-                                                   const int linestride)
+                                                   const size_t linestride)
 {
   assert(itor->width < (MAX_HALF_FILTER_WIDTH + 1));
 
@@ -660,22 +660,27 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
     in = (float *)in + linestride * iy + ix * 4;
     in = in - (itor->width - 1) * (4 + linestride);
 
+    const size_t itor_width = 2 * itor->width;
+
     // Apply the kernel
     dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
-    for(int i = 0; i < 2 * itor->width; i++)
+    for(size_t i = 0; i < itor_width; i++)
     {
       dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
-      for(int j = 0; j < 2 * itor->width; j++)
+      for(size_t j = 0; j < itor_width; j++)
       {
+        const float kern = kernelh[j];
+        dt_aligned_pixel_t inpx;
+        copy_pixel(inpx, in + 4*j);
         for_each_channel(c)
-          h[c] += kernelh[j] * in[j * 4 + c];
+          h[c] = h[c] + kern * inpx[c];
       }
       for_each_channel(c)
         pixel[c] += kernelv[i] * h[c];
       in += linestride;
     }
 
-    for_each_channel(c)
+    for_each_channel(c,aligned(out))
       out[c] = oonorm * pixel[c];
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
@@ -701,27 +706,30 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
 
     // Apply the kernel
     dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
-    for(int i = ytap_first; i < ytap_last; i++)
+    for(ssize_t i = ytap_first; i < ytap_last; i++)
     {
-      const int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      const ssize_t clip_y = clip(iy + i, 0, height - 1, bordermode);
       dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
-      for(int j = xtap_first; j < xtap_last; j++)
+      const float *ipixel = in + clip_y * linestride;
+      for(ssize_t j = xtap_first; j < xtap_last; j++)
       {
-        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
-        const float *ipixel = in + clip_y * linestride + clip_x * 4;
+        const ssize_t clip_x = clip(ix + j, 0, width - 1, bordermode);
+        dt_aligned_pixel_t inpx;
+        copy_pixel(inpx, ipixel + 4 * clip_x);
+        const float kern = kernelh[j];
         for_each_channel(c)
-          h[c] += kernelh[j] * ipixel[c];
+          h[c] += kern * inpx[c];
       }
       for_each_channel(c)
         pixel[c] += kernelv[i] * h[c];
     }
 
-    for_each_channel(c)
+    for_each_channel(c,aligned(out))
       out[c] = oonorm * pixel[c];
   }
   else
   {
-    for_each_channel(c)
+    for_each_channel(c,aligned(out))
       out[c] = 0.0f;
   }
 }
@@ -803,13 +811,13 @@ static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *
 
     // Apply the kernel
     __m128 pixel = _mm_setzero_ps();
-    for(int i = ytap_first; i < ytap_last; i++)
+    for(ssize_t i = ytap_first; i < ytap_last; i++)
     {
-      int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      ssize_t clip_y = clip(iy + i, 0, height - 1, bordermode);
       __m128 h = _mm_setzero_ps();
-      for(int j = xtap_first; j < xtap_last; j++)
+      for(ssize_t j = xtap_first; j < xtap_last; j++)
       {
-        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
+        const ssize_t clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * 4;
         h = h + _mm_set1_ps(kernelh[j]) * *((__m128 *)ipixel);
       }
