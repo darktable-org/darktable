@@ -172,7 +172,7 @@ The following is a summary of the main features added to darktable
 
   - Loader for JPEG2000 file format
 
-- Add global <kbd>right-click</kbd> and drad to fix image
+- Add global <kbd>right-click</kbd> and drag to fix image
   rotation. This can now be used at any moment in darkroom as long as
   the currently focused module is not using this shortcut. This allows
   for fast rotation correction without having to open the Rotation and
@@ -304,7 +304,7 @@ The following is a summary of the main features added to darktable
 - Write Exif data to the eXIf PNG chunk if using Exiv2 version newer
   than 0.27.x. This is the new standard way to store Exif data in PNGs.
 
-- Makes laplacian highlights recovery mode less memory hangry (save
+- Makes laplacian highlights recovery mode less memory hungry (save
   around 40%) and allow for a large speed up. This makes this recovery
   mode lot more usable and allows for more recovery iterations.
 
@@ -434,7 +434,7 @@ The following is a summary of the main features added to darktable
 
 - Fix the reset of the sort order to 'filename' on every collection change.
 
-- Remove the commit button from the crop module has it was not used
+- Remove the commit button from the crop module as it was not used
   anymore.
 
 - Fix the reset of modules with specific default parameters to ensure
@@ -475,7 +475,7 @@ The following is a summary of the main features added to darktable
 
 - Fix the update preset entry in the presets menu to allow for it to
   be activated in more situations. For example after entering in the
-  darkroom and modifying the some parameters in the module the update
+  darkroom and modifying some parameters in the module the update
   preset entry was not selectable. It was necessary to first select
   the preset and then changing the parameters.
 
@@ -548,7 +548,7 @@ The following is a summary of the main features added to darktable
   initialized data.
 
 - Avoid XMP writing if not requested and image was not altered. This
-  is rule is properly followed now also when importing RAW + JPEG.
+  rule is properly followed now also when importing RAW + JPEG.
 
 - Make sure the database timestamp is always set when possibly writing
   a sidecar xmp file.
