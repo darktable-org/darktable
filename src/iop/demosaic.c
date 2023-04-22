@@ -92,6 +92,7 @@ typedef enum dt_iop_demosaic_qual_flags_t
 {
   // either perform full scale demosaicing or choose simple half scale
   // or third scale interpolation instead
+  DT_DEMOSAIC_DEFAULT                 = 0,
   DT_DEMOSAIC_FULL_SCALE              = 1 << 0,
   DT_DEMOSAIC_ONLY_VNG_LINEAR         = 1 << 1,
 } dt_iop_demosaic_qual_flags_t;
@@ -216,17 +217,16 @@ static gboolean get_thumb_quality(int width, int height)
 
 // set flags for demosaic quality based on factors besides demosaic
 // method (e.g. config, scale, pixelpipe type)
-static int demosaic_qual_flags(
+static dt_iop_demosaic_qual_flags_t demosaic_qual_flags(
         const dt_dev_pixelpipe_iop_t *const piece,
         const dt_image_t *const img,
         const dt_iop_roi_t *const roi_out)
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   const gboolean is_xtrans = filters == 9u;
-  const int pipe = piece->pipe->type & DT_DEV_PIXELPIPE_ANY; 
 
-  int flags = 0;
-  switch(pipe)
+  dt_iop_demosaic_qual_flags_t flags = DT_DEMOSAIC_DEFAULT;
+  switch(piece->pipe->type & DT_DEV_PIXELPIPE_ANY)
   {
     case DT_DEV_PIXELPIPE_FULL:
       flags |= DT_DEMOSAIC_FULL_SCALE;
@@ -235,7 +235,10 @@ static int demosaic_qual_flags(
       flags |= DT_DEMOSAIC_FULL_SCALE;
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
-      flags |= (get_thumb_quality(roi_out->width, roi_out->height)) ? DT_DEMOSAIC_FULL_SCALE : 0;
+      flags |= ((piece->pipe->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED)
+                || (get_thumb_quality(roi_out->width, roi_out->height)))
+                  ? DT_DEMOSAIC_FULL_SCALE
+                  : DT_DEMOSAIC_DEFAULT;
       break;
     default: // make C not complain about missing enum members
       break;

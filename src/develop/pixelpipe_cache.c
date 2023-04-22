@@ -123,8 +123,14 @@ uint64_t dt_dev_pixelpipe_cache_basichash(
 
   // we use the the imgid and pipe type for the hash
   const uint32_t hashing_pipemode[2] = {(uint32_t)imgid, (uint32_t)pipe->type };
-  const char *pstr = (const char *)hashing_pipemode;
+
+  char *pstr = (char *)hashing_pipemode;
   for(size_t ip = 0; ip < sizeof(hashing_pipemode); ip++)
+    hash = ((hash << 5) + hash) ^ pstr[ip];
+
+  // also use the details mask roi
+  pstr = (char *)&pipe->rawdetail_mask_roi;
+  for(size_t ip = 0; ip < sizeof(dt_iop_roi_t); ip++)
     hash = ((hash << 5) + hash) ^ pstr[ip];
 
   // go through all modules up to position and compute a hash using the operation and params.
