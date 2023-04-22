@@ -704,17 +704,23 @@ void expose(
     cairo_restore(cri);
   }
 
-  // display mask if we have a current module activated or if the masks manager module is expanded
+  // display mask if we have a current module activated or if the
+  // masks manager module is expanded
 
-  const gboolean display_masks = (dev->gui_module && dev->gui_module->enabled
-                                  && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
-                                 || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+  const gboolean display_masks =
+    (dev->gui_module && dev->gui_module->enabled
+     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+    || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
   // draw colorpicker for in focus module or execute module callback hook
-  // FIXME: draw picker in gui_post_expose() hook in libs/colorpicker.c -- catch would be that live samples would appear over guides, softproof/gamut text overlay would be hidden by picker
+  // FIXME: draw picker in gui_post_expose() hook in
+  // libs/colorpicker.c -- catch would be that live samples would
+  // appear over guides, softproof/gamut text overlay would be hidden
+  // by picker
   if(dt_iop_color_picker_is_visible(dev))
   {
-    GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
+    GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample,
+                       .next = NULL };
     _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
                            &samples, TRUE);
   }
@@ -723,11 +729,13 @@ void expose(
     if(dev->form_visible && display_masks)
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
     // module
-    if(dev->gui_module && dev->gui_module != dev->proxy.rotate && dev->gui_module->gui_post_expose
+    if(dev->gui_module && dev->gui_module != dev->proxy.rotate
+       && dev->gui_module->gui_post_expose
        && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     {
       cairo_save(cri);
-      dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+      dev->gui_module->gui_post_expose(dev->gui_module, cri,
+                                       width, height, pointerx, pointery);
       cairo_restore(cri);
     }
   }
