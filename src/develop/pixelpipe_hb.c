@@ -119,18 +119,23 @@ void dt_print_pipe(dt_debug_thread_t thread,
   }
   char buf[3][128];
   char vbuf[2048] = { 0 };
-  char rois[1024] = { 0 };
+  char roi[512] = { 0 };
+  char roo[512] = { 0 };
   char name[128] = { 0 };
   char masking[64] = { 0 };
 
   snprintf(buf[0], sizeof(buf[0]), "%.4f", dt_get_wtime() - darktable.start_wtime);
   snprintf(buf[1], sizeof(buf[1]), "[%s]", title);
   snprintf(buf[2], sizeof(buf[2]), "%s", mod);
-  if(roi_in && roi_out)
-  {
-    snprintf(rois, sizeof(rois),
-             "(%4i/%4i) %4ix%4i scale=%.4f --> (%4i/%4i) %4ix%4i scale=%.4f",
+  if(roi_in)
+    snprintf(roi, sizeof(roi),
+             "(%4i/%4i) %4ix%4i scale=%.4f%s",
              roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
+             roi_in && roi_out ? " -> " : "");
+  if(roi_out)
+  {
+    snprintf(roo, sizeof(roo),
+             "(%4i/%4i) %4ix%4i scale=%.4f",
              roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
   }
 
@@ -148,8 +153,8 @@ void dt_print_pipe(dt_debug_thread_t thread,
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11s %-28s %-14s %-20s %s%s %s",
-         buf[0], buf[1], name, buf[2], rois, masking, vbuf);
+  printf("%11s %-28s %-14s %-20s %s%s%s %s",
+         buf[0], buf[1], name, buf[2], roi, roo, masking, vbuf);
   fflush(stdout);
 }
 
@@ -236,6 +241,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
 
   pipe->rawdetail_mask_data = NULL;
   pipe->want_detail_mask = DT_DEV_DETAIL_MASK_NONE;
+  memset(&pipe->rawdetail_mask_roi, 0, sizeof(dt_iop_roi_t));
 
   pipe->processing = FALSE;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
@@ -2977,6 +2983,7 @@ void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
 {
   if(pipe->rawdetail_mask_data) dt_free_align(pipe->rawdetail_mask_data);
   pipe->rawdetail_mask_data = NULL;
+  memset(&pipe->rawdetail_mask_roi, 0, sizeof(dt_iop_roi_t));
 }
 
 gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
@@ -3013,9 +3020,9 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   wboff ? 1.0f : piece->pipe->dsc.temperature.coeffs[2]};
   dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
   dt_free_align(tmp);
-  dt_print(DT_DEBUG_MASKS,
-           "[dt_dev_write_rawdetail_mask] %i (%ix%i)\n",
-           mode, roi_in->width, roi_in->height);
+  dt_print_pipe(DT_DEBUG_PIPE,
+                      "write detail mask on CPU",
+                      piece->pipe, "", roi_in, NULL, "mode %i\n", mode);
   return FALSE;
 
   error:
@@ -3093,9 +3100,9 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  dt_print(DT_DEBUG_MASKS,
-           "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i)\n",
-           mode, roi_in->width, roi_in->height);
+  dt_print_pipe(DT_DEBUG_PIPE,
+                      "write detail mask on GPU",
+                      piece->pipe, "", roi_in, NULL, "mode %i\n", mode);
   return FALSE;
 
   error:

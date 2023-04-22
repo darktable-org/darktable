@@ -289,7 +289,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   schedule(simd:static) aligned(mask, warp_mask : 64)
  #endif
   for(size_t idx =0; idx < msize; idx++)
-    mask[idx] = mask[idx] * warp_mask[idx];
+    mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
   dt_free_align(warp_mask);
 
   return;
@@ -481,7 +481,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   float *const restrict _mask = dt_alloc_align_float(obuffsize);
 
   dt_print_pipe(DT_DEBUG_PIPE,
-     "dt_develop_blend_process on CPU",
+     "dt_develop_blend on CPU",
      piece->pipe, self->so->op, roi_in, roi_out, 
      _mask ? "\n" : "could not allocate buffer for blending\n");
 
@@ -804,9 +804,8 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   schedule(simd:static) aligned(mask, warp_mask : 64)
  #endif
   for(size_t idx = 0; idx < msize; idx++)
-  {
-    mask[idx] = mask[idx] * warp_mask[idx];
-  }
+    mask[idx] = mask[idx] * CLIP(warp_mask[idx]);
+
   dt_free_align(warp_mask);
   return;
 
