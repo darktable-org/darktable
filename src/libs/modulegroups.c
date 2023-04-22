@@ -433,7 +433,9 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
   }
 }
 
-static void _sync_visibility(GtkWidget *widget, dt_lib_modulegroups_basic_item_t *item)
+static void _sync_visibility(GtkWidget *widget,
+                             GParamSpec *pspec,
+                             dt_lib_modulegroups_basic_item_t *item)
 {
   if(widget == item->temp_widget)
     gtk_widget_set_visible(item->widget, gtk_widget_get_visible(item->temp_widget));
@@ -593,19 +595,13 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gtk_widget_set_tooltip_text(item->widget, txt);
     g_free(txt);
 
-    gtk_widget_add_events(item->widget     , GDK_VISIBILITY_NOTIFY_MASK);
-    g_signal_connect(item->widget     , "show", G_CALLBACK(_sync_visibility), item);
-    g_signal_connect(item->widget     , "hide", G_CALLBACK(_sync_visibility), item);
-    gtk_widget_add_events(item->old_parent , GDK_VISIBILITY_NOTIFY_MASK);
-    g_signal_connect(item->old_parent , "show", G_CALLBACK(_sync_visibility), item);
-    g_signal_connect(item->old_parent , "hide", G_CALLBACK(_sync_visibility), item);
-    gtk_widget_add_events(item->temp_widget, GDK_VISIBILITY_NOTIFY_MASK);
-    g_signal_connect(item->temp_widget, "show", G_CALLBACK(_sync_visibility), item);
-    g_signal_connect(item->temp_widget, "hide", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->widget      , "notify::visible", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->old_parent  , "notify::visible", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->temp_widget , "notify::visible", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &item->temp_widget);
     g_signal_connect_swapped(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(_basics_remove_widget), item);
 
-    _sync_visibility(item->widget, item);
+    _sync_visibility(item->widget, NULL, item);
   }
 
   // if it's the first widget of a module, we need to create the module box structure
