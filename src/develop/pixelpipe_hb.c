@@ -264,7 +264,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
 
-  return dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, size, memlimit);
+  return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
 static void get_output_format(
@@ -319,7 +319,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   // blocks while busy and sets shutdown bit:
   dt_dev_pixelpipe_cleanup_nodes(pipe);
   // so now it's safe to clean up cache:
-  dt_dev_pixelpipe_cache_cleanup(&(pipe->cache));
+  dt_dev_pixelpipe_cache_cleanup(pipe);
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
   dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
@@ -1438,9 +1438,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(cache_available)
   {
     dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
-                               output, out_format,
-                               (module) ? module->so->op : NULL,
-                               FALSE);
+                               output, out_format, module, FALSE);
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;
@@ -1593,9 +1591,7 @@ static gboolean _dev_pixelpipe_process_rec(
   }
   pipe->next_important_module = FALSE;
   dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
-                             output, out_format,
-                             module ? module->so->op : NULL,
-                             important);
+                             output, out_format, module, important);
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -2335,7 +2331,7 @@ static gboolean _dev_pixelpipe_process_rec(
 
     /* input is still only on GPU? Let's invalidate CPU input buffer then */
     if(valid_input_on_gpu_only)
-      dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, input, TRUE);
   }
   else
   {
@@ -2355,7 +2351,7 @@ static gboolean _dev_pixelpipe_process_rec(
 #endif // HAVE_OPENCL
 
   if(pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE)
-    dt_dev_pixelpipe_cache_unweight(pipe, *output);
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
 
   char histogram_log[32] = "";
   if(!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE))
@@ -2404,7 +2400,7 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       // give the input buffer to the currently focused plugin more weight.
       // the user is likely to change that one soon, so keep it in cache.
-      dt_dev_pixelpipe_cache_reweight(pipe, input, roi_in.width * roi_in.height * in_bpp);
+      dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
     }
 
     // we check for an important hint after processing the module as we
@@ -2415,7 +2411,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(needs_histo)
   {
     pipe->nocache = TRUE;
-    dt_dev_pixelpipe_cache_unweight(pipe, *output);
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
   }
 
   // warn on NaN or infinity
@@ -2699,7 +2695,7 @@ gboolean dt_dev_pixelpipe_process(
 restart:
 
   // check if we should obsolete caches
-  if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(&(pipe->cache));
+  if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(pipe);
   pipe->cache_obsolete = FALSE;
 
   // mask display off as a starting point
@@ -2759,7 +2755,7 @@ restart:
       dt_capabilities_remove("opencl");
     }
 
-    dt_dev_pixelpipe_flush_caches(pipe);
+    dt_dev_pixelpipe_cache_flush(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
 
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
@@ -2821,11 +2817,6 @@ restart:
 
   pipe->processing = FALSE;
   return FALSE;
-}
-
-void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe)
-{
-  dt_dev_pixelpipe_cache_flush(&pipe->cache);
 }
 
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
