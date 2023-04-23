@@ -2796,7 +2796,7 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
 typedef struct raster_combo_entry_t
 {
   dt_iop_module_t *module;
-  int id;
+  dt_mask_id_t id;
 } raster_combo_entry_t;
 
 static void _raster_combo_populate(GtkWidget *w,
@@ -2810,7 +2810,7 @@ static void _raster_combo_populate(GtkWidget *w,
   raster_combo_entry_t *entry =
     (raster_combo_entry_t *)malloc(sizeof(raster_combo_entry_t));
   entry->module = NULL;
-  entry->id = 0;
+  entry->id = NO_MASKID;
   dt_bauhaus_combobox_add_full(w, _("no mask used"),
                                DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free, TRUE);
 
@@ -2828,7 +2828,7 @@ static void _raster_combo_populate(GtkWidget *w,
     g_hash_table_iter_init(&masks_iter, iop->raster_mask.source.masks);
     while(g_hash_table_iter_next(&masks_iter, &key, &value))
     {
-      const int id = GPOINTER_TO_INT(key);
+      const dt_mask_id_t id = GPOINTER_TO_INT(key);
       const char *modulename = (char *)value;
       entry = (raster_combo_entry_t *)malloc(sizeof(raster_combo_entry_t));
       entry->module = iop;

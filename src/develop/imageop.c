@@ -411,7 +411,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   module->raster_mask.source.masks =
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
-  module->raster_mask.sink.id = 0;
+  module->raster_mask.sink.id = NO_MASKID;
 
   // only reference cached results of dlopen:
   module->module = so->module;
@@ -860,7 +860,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
                                          GdkEventKey *event,
                                          dt_iop_module_t *module)
 {
-  int ended = 0;
+  gboolean ended = FALSE;
 
   if(event->type == GDK_FOCUS_CHANGE
      || event->keyval == GDK_KEY_Return
@@ -894,11 +894,11 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
     dt_dev_write_history(darktable.develop);
     dt_image_synch_xmp(darktable.develop->image_storage.id);
 
-    ended = 1;
+    ended = TRUE;
   }
   else if(event->keyval == GDK_KEY_Escape)
   {
-    ended = 1;
+    ended = TRUE;
   }
 
   if(ended)
@@ -1793,7 +1793,7 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
   }
 
   module->raster_mask.sink.source = NULL;
-  module->raster_mask.sink.id = 0;
+  module->raster_mask.sink.id = NO_MASKID;
 }
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
@@ -3241,7 +3241,7 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priorit
   module->multi_priority = new_priority;
 }
 
-gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id)
+gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, dt_mask_id_t id)
 {
   GHashTableIter iter;
   gpointer key, value;
