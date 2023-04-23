@@ -2268,7 +2268,8 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget,
 }
 
 
-#define COLORSTOPS(gradient) sizeof(gradient) / sizeof(dt_iop_gui_blendif_colorstop_t), gradient
+#define COLORSTOPS(gradient) sizeof(gradient) / sizeof(dt_iop_gui_blendif_colorstop_t), \
+                             gradient
 
 const dt_iop_gui_blendif_channel_t Lab_channels[]
     = { { N_("L"), N_("sliders for L channel"), 1.0f / 100.0f,
@@ -2970,8 +2971,8 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
 
 
 static gboolean _add_blendmode_combo(GtkWidget *combobox,
-                                     dt_develop_blend_mode_t start,
-                                     dt_develop_blend_mode_t end)
+                                     const dt_develop_blend_mode_t start,
+                                     const dt_develop_blend_mode_t end)
 {
   return dt_bauhaus_combobox_add_introspection(combobox,
                                                NULL,
