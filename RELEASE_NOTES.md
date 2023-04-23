@@ -436,6 +436,10 @@ The following is a summary of the main features added to darktable
   is ready. Any further changes that were made to the previous image
   while waiting will be discarded.
 
+- Enable per-color black point manual adjustment for non-CFA
+  (a.k.a. linear) raw images. Note that file embedded levels might
+  still not be set automatically on import.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
