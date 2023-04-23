@@ -501,7 +501,8 @@ void dt_develop_blendif_rgb_jzczhz_blend
    const float *const a,
    float *const b,
    const struct dt_iop_roi_t *const roi_in,
-   const struct dt_iop_roi_t *const roi_out, const float *const mask,
+   const struct dt_iop_roi_t *const roi_out,
+   const float *const mask,
    const dt_dev_pixelpipe_display_mask_t request_mask_display);
 
 
