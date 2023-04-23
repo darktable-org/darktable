@@ -471,9 +471,9 @@ static void _reorder_gui_module_list(dt_develop_t *dev)
   }
 }
 
-static int _rebuild_multi_priority(GList *history_list)
+static gboolean _rebuild_multi_priority(GList *history_list)
 {
-  int changed = 0;
+  gboolean changed = FALSE;
   for(const GList *history = history_list; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)history->data;
@@ -483,16 +483,16 @@ static int _rebuild_multi_priority(GList *history_list)
     if(hitem->module && hitem->module->multi_priority != hitem->multi_priority)
     {
       dt_iop_update_multi_priority(hitem->module, hitem->multi_priority);
-      changed = 1;
+      changed = TRUE;
     }
   }
   return changed;
 }
 
-static int _create_deleted_modules(GList **_iop_list, GList *history_list)
+static gboolean _create_deleted_modules(GList **_iop_list, GList *history_list)
 {
   GList *iop_list = *_iop_list;
-  int changed = 0;
+  gboolean changed = FALSE;
   gboolean done = FALSE;
 
   GList *l = history_list;
@@ -504,7 +504,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
     // this fixes the duplicate module when undo: hitem->multi_priority = 0;
     if(hitem->module == NULL)
     {
-      changed = 1;
+      changed = TRUE;
 
       const dt_iop_module_t *base_module =
         dt_iop_get_module_from_list(iop_list, hitem->op_name);
@@ -589,26 +589,26 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type,
     GList *iop_temp = g_list_copy(dev->iop);
 
     // topology has changed?
-    int pipe_remove = 0;
+    gboolean pipe_remove = FALSE;
 
     // we have to check if multi_priority has changed since history was saved
     // we will adjust it here
     if(_rebuild_multi_priority(history_temp))
     {
-      pipe_remove = 1;
+      pipe_remove = TRUE;
       iop_temp = g_list_sort(iop_temp, dt_sort_iop_by_order);
     }
 
     // check if this undo a delete module and re-create it
     if(_create_deleted_modules(&iop_temp, history_temp))
     {
-      pipe_remove = 1;
+      pipe_remove = TRUE;
     }
 
     // check if this is a redo of a delete module or an undo of an add module
     if(_check_deleted_instances(dev, &iop_temp, history_temp))
     {
-      pipe_remove = 1;
+      pipe_remove = TRUE;
     }
 
     // disable recording undo as the _lib_history_change_callback will
@@ -1172,7 +1172,7 @@ void gui_update(dt_lib_module_t *self)
 static void _lib_history_truncate(gboolean compress)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  if(!imgid) return;
+  if(!dt_is_valid_maskid(imgid)) return;
 
   dt_dev_undo_start_record(darktable.develop);
 
@@ -1246,8 +1246,12 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
                                                      gpointer user_data)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  static int reset = 0;
+  if(!dt_is_valid_maskid(imgid)) return FALSE;
+
+  static gboolean reset = FALSE;
+
   if(reset) return FALSE;
+
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
 
   // ctrl-click just show the corresponding module in modulegroups
@@ -1266,7 +1270,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
-  reset = 1;
+  reset = TRUE;
 
   /* deactivate all toggle buttons */
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
@@ -1279,7 +1283,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
   }
   g_list_free(children);
 
-  reset = 0;
+  reset = FALSE;
   if(darktable.gui->reset) return FALSE;
 
   dt_dev_undo_start_record(darktable.develop);
@@ -1312,7 +1316,7 @@ static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
 void gui_reset(dt_lib_module_t *self)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  if(!imgid) return;
+  if(!dt_is_valid_maskid(imgid)) return;
 
   if(!dt_conf_get_bool("ask_before_discard")
      || dt_gui_show_yes_no_dialog
