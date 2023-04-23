@@ -3710,7 +3710,7 @@ int button_pressed(dt_view_t *self,
     return 1;
   }
 
-  if(which == 2) // Middle mouse button
+  if(which == 2  && type == GDK_BUTTON_PRESS) // Middle mouse button
   {
     // zoom to 1:1 2:1 and back
     int procw, proch;
