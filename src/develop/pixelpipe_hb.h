@@ -41,12 +41,6 @@ extern "C" {
 struct dt_iop_module_t;
 struct dt_iop_order_iccprofile_info_t;
 
-typedef struct dt_dev_pixelpipe_raster_mask_t
-{
-  int id; // 0 is reserved for the reusable masks written in blend.c
-  float *mask;
-} dt_dev_pixelpipe_raster_mask_t;
-
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
@@ -75,7 +69,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   // the following are used internally for caching:
   dt_iop_buffer_dsc_t dsc_in, dsc_out;
 
-  GHashTable *raster_masks; // GList* of dt_dev_pixelpipe_raster_mask_t
+  GHashTable *raster_masks;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
