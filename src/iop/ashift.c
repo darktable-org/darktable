@@ -3232,7 +3232,7 @@ static int _do_get_structure_auto(dt_iop_module_t *module,
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(module->dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(module->dev->preview_pipe);
     dt_dev_reprocess_preview(module->dev);
     goto error;
   }
@@ -3284,7 +3284,7 @@ static void _do_get_structure_lines(dt_iop_module_t *self)
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
     dt_dev_reprocess_preview(self->dev);
     return;
   }
@@ -3332,7 +3332,7 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
     dt_dev_reprocess_preview(self->dev);
     return;
   }
@@ -5445,7 +5445,7 @@ void gui_reset(struct dt_iop_module_t *self)
   _gui_update_structure_states(self, NULL);
   // force to reprocess the preview, otherwise the buffer is ko
   dt_dev_invalidate_all(self->dev);
-  dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+  dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
 }
 
 static void cropmode_callback(GtkWidget *widget, gpointer user_data)

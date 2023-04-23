@@ -39,14 +39,7 @@ extern "C" {
  * will be freed at the end.
  */
 struct dt_iop_module_t;
-struct dt_dev_raster_mask_t;
 struct dt_iop_order_iccprofile_info_t;
-
-typedef struct dt_dev_pixelpipe_raster_mask_t
-{
-  int id; // 0 is reserved for the reusable masks written in blend.c
-  float *mask;
-} dt_dev_pixelpipe_raster_mask_t;
 
 typedef struct dt_dev_pixelpipe_iop_t
 {
@@ -76,7 +69,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   // the following are used internally for caching:
   dt_iop_buffer_dsc_t dsc_in, dsc_out;
 
-  GHashTable *raster_masks; // GList* of dt_dev_pixelpipe_raster_mask_t
+  GHashTable *raster_masks;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -252,9 +245,6 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
 
 // destroys all allocated data.
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
-
-// flushes all cached data. useful if input pixels unexpectedly change.
-void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe);
 
 // wrapper for cleanup_nodes, create_nodes, synch_all and synch_top,
 // decides upon changed event which one to take on. also locks
