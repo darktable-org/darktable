@@ -2878,7 +2878,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
     memset(module->blend_params->raster_mask_source, 0,
            sizeof(module->blend_params->raster_mask_source));
     module->blend_params->raster_mask_instance = 0;
-    module->blend_params->raster_mask_id = 0;
+    module->blend_params->raster_mask_id = NO_MASKID;
   }
 
   dt_dev_add_history_item(module->dev, module, TRUE);

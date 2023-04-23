@@ -282,7 +282,7 @@ typedef struct dt_iop_module_t
       /** the module that provides the raster mask (if any). keep in
        * sync with blend_params! */
       struct dt_iop_module_t *source;
-      int id;
+      dt_mask_id_t id;
     } sink;
   } raster_mask;
   /** child widget which is added to the GtkExpander. copied from module_so_t. */
