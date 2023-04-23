@@ -430,6 +430,12 @@ The following is a summary of the main features added to darktable
 - Resetting a combo (by double clicking or via a shortcut) that has
   sub headers will now select the first selectable item.
 
+- Image change requests in the darkroom (space/backspace/click in
+  filmstrip) used to be quietly ignored if a recalculation was
+  currently ongoing. Now, they will be processed as soon as the pipe
+  is ready. Any further changes that were made to the previous image
+  while waiting will be discarded.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
