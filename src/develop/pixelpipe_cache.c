@@ -31,11 +31,13 @@ static inline int _to_mb(size_t m)
 }
 
 gboolean dt_dev_pixelpipe_cache_init(
-           dt_dev_pixelpipe_cache_t *cache,
+           struct dt_dev_pixelpipe_t *pipe,
            const int entries,
            const size_t size,
            const size_t limit)
 {
+  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+
   cache->entries = entries;
   cache->allmem = cache->queries = cache->misses = 0;
   cache->memlimit = limit;
@@ -92,8 +94,10 @@ gboolean dt_dev_pixelpipe_cache_init(
   return FALSE;
 }
 
-void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
+void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe)
 {
+  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+
   for(int k = 0; k < cache->entries; k++)
   {
     dt_free_align(cache->data[k]);
@@ -443,8 +447,10 @@ gboolean dt_dev_pixelpipe_cache_get(
   return TRUE;
 }
 
-void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
+void dt_dev_pixelpipe_cache_flush(struct dt_dev_pixelpipe_t *pipe)
 {
+  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+
   // we don't use zero here for "swapping pipelines" having only two lines
   cache->queries = cache->misses = cache->queries & 1;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
@@ -458,9 +464,11 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
 }
 
 void dt_dev_pixelpipe_cache_flush_all_but(
-        dt_dev_pixelpipe_cache_t *cache,
-        uint64_t basichash)
+        struct dt_dev_pixelpipe_t *pipe,
+        const uint64_t basichash)
 {
+  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->basichash[k] == basichash)
@@ -478,6 +486,7 @@ void dt_dev_pixelpipe_cache_invalidate_later(
         struct dt_iop_module_t *module)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+
   const int32_t order = module ? module->iop_order : 0;
   if(order < 1) return;
 

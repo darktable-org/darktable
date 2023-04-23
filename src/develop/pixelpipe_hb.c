@@ -264,7 +264,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
 
-  return dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, size, memlimit);
+  return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
 static void get_output_format(
@@ -319,7 +319,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   // blocks while busy and sets shutdown bit:
   dt_dev_pixelpipe_cleanup_nodes(pipe);
   // so now it's safe to clean up cache:
-  dt_dev_pixelpipe_cache_cleanup(&(pipe->cache));
+  dt_dev_pixelpipe_cache_cleanup(pipe);
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
   dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
@@ -2695,7 +2695,7 @@ gboolean dt_dev_pixelpipe_process(
 restart:
 
   // check if we should obsolete caches
-  if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(&(pipe->cache));
+  if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(pipe);
   pipe->cache_obsolete = FALSE;
 
   // mask display off as a starting point
@@ -2755,7 +2755,7 @@ restart:
       dt_capabilities_remove("opencl");
     }
 
-    dt_dev_pixelpipe_flush_caches(pipe);
+    dt_dev_pixelpipe_cache_flush(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
 
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
@@ -2817,11 +2817,6 @@ restart:
 
   pipe->processing = FALSE;
   return FALSE;
-}
-
-void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe)
-{
-  dt_dev_pixelpipe_cache_flush(&pipe->cache);
 }
 
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
