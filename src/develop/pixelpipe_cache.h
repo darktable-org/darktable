@@ -52,16 +52,16 @@ typedef struct dt_dev_pixelpipe_cache_t
 /** constructs a new cache with given cache line count (entries) and float buffer entry size in bytes.
   \param[out] returns 0 if fail to allocate mem cache.
 */
-gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size, size_t limit);
-void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache);
+gboolean dt_dev_pixelpipe_cache_init(struct dt_dev_pixelpipe_t *pipe, const int entries, const size_t size, const size_t limit);
+void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe);
 
 /** creates a hopefully unique hash from the complete module stack up to the module-th. */
-uint64_t dt_dev_pixelpipe_cache_basichash(const dt_imgid_t imgid, struct dt_dev_pixelpipe_t *pipe, int position);
+uint64_t dt_dev_pixelpipe_cache_basichash(const dt_imgid_t imgid, struct dt_dev_pixelpipe_t *pipe, const int position);
 /** creates a hopefully unique hash from the complete module stack up to the module-th, including current viewport. */
 uint64_t dt_dev_pixelpipe_cache_hash(const dt_imgid_t imgid, const struct dt_iop_roi_t *roi,
-                                     struct dt_dev_pixelpipe_t *pipe, int position);
+                                     struct dt_dev_pixelpipe_t *pipe, const int position);
 /** return both of the above hashes */
-void dt_dev_pixelpipe_cache_fullhash(const dt_imgid_t imgid, const dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int position,
+void dt_dev_pixelpipe_cache_fullhash(const dt_imgid_t imgid, const dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, const int position,
                                      uint64_t *basichash, uint64_t *fullhash);
 /** get the basichash for the last enabled module prior to the specified one */
 uint64_t dt_dev_pixelpipe_cache_basichash_prior(const dt_imgid_t imgid, struct dt_dev_pixelpipe_t *pipe,
@@ -79,10 +79,10 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
 gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const uint64_t hash, const size_t size);
 
 /** invalidates all cachelines. */
-void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache);
+void dt_dev_pixelpipe_cache_flush(struct dt_dev_pixelpipe_t *pipe);
 
 /** invalidates all cachelines except those containing items for the given module/parameter combination */
-void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint64_t basichash);
+void dt_dev_pixelpipe_cache_flush_all_but(struct dt_dev_pixelpipe_t *pipe, const uint64_t basichash);
 
 /** invalidates all cachelines for modules with at least the same iop_order */
 void dt_dev_pixelpipe_cache_invalidate_later(struct dt_dev_pixelpipe_t *pipe, struct dt_iop_module_t *module);

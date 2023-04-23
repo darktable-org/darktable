@@ -319,14 +319,14 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   {
     dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
-    dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(dev->preview_pipe);
     dev->preview_loading = FALSE;
   }
 
   // if raw loaded, get new mipf
   if(dev->preview_input_changed)
   {
-    dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(dev->preview_pipe);
     dev->preview_input_changed = FALSE;
   }
 
@@ -440,14 +440,14 @@ void dt_dev_process_preview2_job(dt_develop_t *dev)
   {
     dt_dev_pixelpipe_cleanup_nodes(dev->preview2_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview2_pipe, dev);
-    dt_dev_pixelpipe_flush_caches(dev->preview2_pipe);
+    dt_dev_pixelpipe_cache_flush(dev->preview2_pipe);
     dev->preview2_loading = FALSE;
   }
 
   // if raw loaded, get new mipf
   if(dev->preview2_input_changed)
   {
-    dt_dev_pixelpipe_flush_caches(dev->preview2_pipe);
+    dt_dev_pixelpipe_cache_flush(dev->preview2_pipe);
     dev->preview2_input_changed = 0;
   }
 
@@ -573,7 +573,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     // init pixel pipeline
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
-    if(dev->image_force_reload) dt_dev_pixelpipe_flush_caches(dev->pipe);
+    if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(dev->pipe);
     dev->image_force_reload = FALSE;
     if(dev->gui_attached)
     {
