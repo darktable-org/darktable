@@ -658,7 +658,6 @@ static inline float4 filmic_chroma_v5(const float4 i,
                                       const float sigma_toe, const float sigma_shoulder, const float saturation,
                                       const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
                                       const float latitude_min, const float latitude_max, const float output_power,
-                                      const dt_iop_filmicrgb_methods_type_t variant,
                                       const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
                                       const dt_iop_filmicrgb_curve_type_t type[2],
                                       constant const float *const matrix_in, constant const float *const matrix_out,
@@ -672,7 +671,7 @@ static inline float4 filmic_chroma_v5(const float4 i,
   // later in log_tonemapping_v2 and the ratios will be then incorrect.
   // This would result in colorful patches darker than their surrounding in places
   // where the raw data is clipped.
-  float norm = clamp(get_pixel_norm(i, variant, profile_info, lut, use_work_profile), norm_min, norm_max);
+  float norm = clamp(get_pixel_norm(i, DT_FILMIC_METHOD_MAX_RGB, profile_info, lut, use_work_profile), norm_min, norm_max);
 
   // Save the ratios
   float4 ratios = i / (float4)norm;
@@ -1023,7 +1022,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
       o = filmic_chroma_v5(i, dynamic_range, black_exposure, grey_value,
                            profile_info, lut, use_work_profile,
                            sigma_toe, sigma_shoulder, saturation,
-                           M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power, variant,
+                           M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power,
                            color_science, type, matrix_in, matrix_out, display_black, display_white,
                            use_output_profile, export_matrix_in, export_matrix_out,
                            norm_min, norm_max);
