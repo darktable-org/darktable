@@ -492,7 +492,7 @@ void dt_dev_pixelpipe_cache_invalidate_later(
 
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if(cache->ioporder[k] > order)
+    if(cache->ioporder[k] >= order)
     {
       cache->basichash[k] = -1;
       cache->hash[k] = -1;
