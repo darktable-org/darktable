@@ -39,7 +39,6 @@ extern "C" {
  * will be freed at the end.
  */
 struct dt_iop_module_t;
-struct dt_dev_raster_mask_t;
 struct dt_iop_order_iccprofile_info_t;
 
 typedef struct dt_dev_pixelpipe_raster_mask_t
