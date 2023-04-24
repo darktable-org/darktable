@@ -721,7 +721,15 @@ void commit_params(struct dt_iop_module_t *self,
     {
       // calculate coefficients for L channel
       for(int i=0;i<N;i++) b[i] = p->target_L[i];
+// ignore the false warning that appeared in gcc 13
+#if !defined(__has_warning)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
       for(int i=N;i<N+4;i++) b[i] = 0;
+#if !defined(__has_warning)
+#pragma GCC diagnostic pop
+#endif
       gauss_solve_triangular(A, pivot, b, N4);
       for(int i=0;i<N+4;i++) d->coeff_L[i] = b[i];
       // calculate coefficients for a channel
