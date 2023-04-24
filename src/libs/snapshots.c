@@ -380,7 +380,7 @@ int button_pressed(struct dt_lib_module_t *self,
     return 0;
   }
 
-  if(d->selected >= 0 && which == 1)
+  if(d->selected >= 0 && which != GDK_BUTTON_MIDDLE)
   {
     if(d->on_going) return 1;
 
