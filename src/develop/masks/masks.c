@@ -897,7 +897,7 @@ void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms)
   dev->forms = forms_tmp;
 }
 
-dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id)
+dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, dt_mask_id_t id)
 {
   for(; forms; forms = g_list_next(forms))
   {
@@ -907,7 +907,7 @@ dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id)
   return NULL;
 }
 
-dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, const int id)
+dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, const dt_mask_id_t id)
 {
   return dt_masks_get_from_id_ext(dev->forms, id);
 }
@@ -1472,7 +1472,7 @@ void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton,
 {
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  if(!dt_is_valid_maskid(module->blend_params->mask_id))
+  if(module->blend_params->mask_id == NO_MASKID)
   {
     bd->masks_shown = DT_MASKS_EDIT_OFF;
     return;

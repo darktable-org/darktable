@@ -157,8 +157,17 @@ typedef int32_t dt_imgid_t;
 #define NO_IMGID (0)
 #define dt_is_valid_imgid(n) ((n) > NO_IMGID)
 
+/*
+  A dt_mask_id_t can be
+  0  -> a formless mask
+  >0 -> having a form
+  INVALID_MASKID is used while testing in mask manager
+*/
+
 typedef int32_t dt_mask_id_t;
+#define INVALID_MASKID (-1)
 #define NO_MASKID (0)
+// testing for a valid form
 #define dt_is_valid_maskid(n) ((n) > NO_MASKID)
 
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
