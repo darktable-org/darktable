@@ -452,7 +452,6 @@ static inline float *dt_calloc_align_float(const size_t pixels)
   return (float*)__builtin_assume_aligned(buf, 64);
 }
 size_t dt_round_size(const size_t size, const size_t alignment);
-size_t dt_round_size_sse(const size_t size);
 
 #ifdef _WIN32
 void dt_free_align(void *mem);

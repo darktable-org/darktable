@@ -1810,13 +1810,6 @@ size_t dt_round_size(const size_t size, const size_t alignment)
   return ((size % alignment) == 0) ? size : ((size - 1) / alignment + 1) * alignment;
 }
 
-size_t dt_round_size_sse(const size_t size)
-{
-  // Round the size of a buffer to the closest 64 higher multiple
-  return dt_round_size(size, 64);
-}
-
-
 #ifdef _WIN32
 void dt_free_align(void *mem)
 {
