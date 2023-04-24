@@ -1589,14 +1589,14 @@ static const extraction_result_t _extract_patches(const float *const restrict in
   return result;
 }
 
-void extract_color_checker(const float *const restrict in,
-                           float *const restrict out,
-                           const dt_iop_roi_t *const roi_in,
-                           dt_iop_channelmixer_rgb_gui_data_t *g,
-                           const dt_colormatrix_t RGB_to_XYZ,
-                           const dt_colormatrix_t XYZ_to_RGB,
-                           const dt_colormatrix_t XYZ_to_CAM,
-                           const dt_adaptation_t kind)
+static void _extract_color_checker(const float *const restrict in,
+                                   float *const restrict out,
+                                   const dt_iop_roi_t *const roi_in,
+                                   dt_iop_channelmixer_rgb_gui_data_t *g,
+                                   const dt_colormatrix_t RGB_to_XYZ,
+                                   const dt_colormatrix_t XYZ_to_RGB,
+                                   const dt_colormatrix_t XYZ_to_CAM,
+                                   const dt_adaptation_t kind)
 {
   float *const restrict patches = dt_alloc_align_float(g->checker->patches * 4);
 
@@ -2024,8 +2024,8 @@ void process(struct dt_iop_module_t *self,
     if(g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
       dt_iop_gui_enter_critical_section(self);
-      extract_color_checker(in, out, roi_in, g, RGB_to_XYZ,
-                            XYZ_to_RGB, XYZ_to_CAM, data->adaptation);
+      _extract_color_checker(in, out, roi_in, g, RGB_to_XYZ,
+                             XYZ_to_RGB, XYZ_to_CAM, data->adaptation);
       g->run_profile = FALSE;
       dt_iop_gui_leave_critical_section(self);
     }
