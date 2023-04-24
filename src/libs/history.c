@@ -1172,7 +1172,7 @@ void gui_update(dt_lib_module_t *self)
 static void _lib_history_truncate(gboolean compress)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  if(!dt_is_valid_maskid(imgid)) return;
+  if(!dt_is_valid_imgid(imgid)) return;
 
   dt_dev_undo_start_record(darktable.develop);
 
@@ -1246,7 +1246,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget,
                                                      gpointer user_data)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  if(!dt_is_valid_maskid(imgid)) return FALSE;
+  if(!dt_is_valid_imgid(imgid)) return FALSE;
 
   static gboolean reset = FALSE;
 
@@ -1316,7 +1316,7 @@ static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
 void gui_reset(dt_lib_module_t *self)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
-  if(!dt_is_valid_maskid(imgid)) return;
+  if(!dt_is_valid_imgid(imgid)) return;
 
   if(!dt_conf_get_bool("ask_before_discard")
      || dt_gui_show_yes_no_dialog

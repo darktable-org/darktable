@@ -361,7 +361,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      dt_mask_id_t id = NO_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, NULL, &id);
 
       if(dt_is_valid_maskid(id))
@@ -573,8 +573,8 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      dt_mask_id_t grid = NO_MASKID;
-      dt_mask_id_t id = NO_MASKID;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -634,8 +634,8 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      dt_mask_id_t grid = NO_MASKID;
-      dt_mask_id_t id = NO_MASKID;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -696,8 +696,8 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
 
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      dt_mask_id_t grid = NO_MASKID;
-      dt_mask_id_t id = NO_MASKID;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -747,8 +747,8 @@ static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
 {
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
 
-  dt_mask_id_t grid = NO_MASKID;
-  dt_mask_id_t id = NO_MASKID;
+  dt_mask_id_t grid = INVALID_MASKID;
+  dt_mask_id_t id = INVALID_MASKID;
   _lib_masks_get_values(model, iter, NULL, &grid, &id);
 
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -812,14 +812,14 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
 
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      dt_mask_id_t grid = NO_IMGID;
-      dt_mask_id_t id = NO_IMGID;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       GtkTreeIter *prev_iter = gtk_tree_iter_copy(&iter);
       gtk_tree_model_iter_previous(model, prev_iter);
-      dt_mask_id_t prev_grid = NO_IMGID;
-      dt_mask_id_t prev_id = NO_IMGID;
+      dt_mask_id_t prev_grid = INVALID_MASKID;
+      dt_mask_id_t prev_id = INVALID_MASKID;
       _lib_masks_get_values(model, prev_iter, NULL, &prev_grid, &prev_id);
 
       if(_is_first_tree_item(model, prev_iter))
@@ -858,14 +858,14 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
 
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       GtkTreeIter *next_iter = gtk_tree_iter_copy(&iter);
       gtk_tree_model_iter_next(model, next_iter);
-      int next_grid = -1;
-      int next_id = -1;
+      dt_mask_id_t next_grid = INVALID_MASKID;
+      dt_mask_id_t next_id = INVALID_MASKID;
       _lib_masks_get_values(model, next_iter, NULL, &next_grid, &next_id);
 
       if(_is_first_tree_item(model, &iter))
@@ -901,8 +901,8 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, &module, &grid, &id);
 
       dt_masks_form_remove(module, dt_masks_get_from_id(darktable.develop, grid),
@@ -928,11 +928,11 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
   GtkTreeIter iter;
   if(gtk_tree_model_get_iter(model, &iter, item))
   {
-    int id = -1;
+    dt_mask_id_t id = INVALID_MASKID;
     _lib_masks_get_values(model, &iter, NULL, NULL, &id);
 
-    const int nid = dt_masks_form_duplicate(darktable.develop, id);
-    if(nid > 0)
+    const dt_mask_id_t nid = dt_masks_form_duplicate(darktable.develop, id);
+    if(dt_is_valid_maskid(nid))
     {
       dt_dev_masks_selection_change(darktable.develop, NULL, nid);
       //_lib_masks_recreate_list(self);
@@ -951,7 +951,7 @@ static void _tree_cell_edited(GtkCellRendererText *cell,
   GtkTreeIter iter;
   if(!gtk_tree_model_get_iter_from_string(model, &iter, path_string)) return;
 
-  int id = -1;
+  dt_mask_id_t id = INVALID_MASKID;
   _lib_masks_get_values(model, &iter, NULL, NULL, &id);
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
   if(!form) return;
@@ -990,8 +990,8 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
 
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
@@ -1565,7 +1565,7 @@ gboolean _find_mask_iter_by_values(GtkTreeModel *model,
 {
   do
   {
-    dt_mask_id_t fid = NO_MASKID;
+    dt_mask_id_t fid = INVALID_MASKID;
     dt_iop_module_t *mod;
     _lib_masks_get_values(model, iter, &mod, NULL, &fid);
     gboolean found = (fid == formid)
@@ -1837,7 +1837,7 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model,
   GtkTreeIter i = *iter;
   do
   {
-    dt_mask_id_t id = NO_MASKID;
+    dt_mask_id_t id = INVALID_MASKID;
     dt_iop_module_t *mod;
     _lib_masks_get_values(model, &i, &mod, NULL, &id);
 
