@@ -458,9 +458,6 @@ inline static double genrand_res53_mix(struct sfmt_state_t *s)
  * The new BSD License is applied to this software, see LICENSE.txt
  */
 
-#ifndef SFMT_SSE2_H
-#define SFMT_SSE2_H
-
 PRE_ALWAYS static __m128i mm_recursion(__m128i *a, __m128i *b, __m128i c, __m128i d,
                                        __m128i mask) ALWAYSINLINE;
 
@@ -570,7 +567,6 @@ inline static void gen_rand_array(struct sfmt_state_t *s, w128_t *array, int siz
   }
 }
 
-#endif
 /**
  * @file  SFMT.c
  * @brief SIMD oriented Fast Mersenne Twister(SFMT)
@@ -585,8 +581,6 @@ inline static void gen_rand_array(struct sfmt_state_t *s, w128_t *array, int siz
  */
 #include <assert.h>
 #include <string.h>
-//#include "SFMT.h"
-//#include "SFMT-params.h"
 
 #if defined(__BIG_ENDIAN__) && !defined(__amd64) && !defined(BIG_ENDIAN64)
 #define BIG_ENDIAN64 1
