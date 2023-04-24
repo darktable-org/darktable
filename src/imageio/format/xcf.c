@@ -172,7 +172,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       while(g_hash_table_iter_next(&rm_iter, &key, &value))
       {
         gboolean free_mask = TRUE;
-        float *raster_mask = dt_dev_get_raster_mask(pipe, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
+        float *raster_mask = dt_dev_get_raster_mask(piece, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
 
         if(!raster_mask)
         {

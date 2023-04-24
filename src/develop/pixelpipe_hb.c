@@ -2867,7 +2867,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
 
-float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe,
+float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
                               const dt_iop_module_t *raster_mask_source,
                               const dt_mask_id_t raster_mask_id,
                               const dt_iop_module_t *target_module,
@@ -2880,9 +2880,21 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe,
   float *raster_mask = NULL;
 
   GList *source_iter;
-  for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
+  for(source_iter = piece->pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
   {
     const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
+
+    if((candidate->module == target_module)
+       || (candidate->module->iop_order >= target_module->iop_order))
+    {
+      dt_control_log
+        (_("can't take a rastermask from later in the pipeline"));
+
+      dt_print(DT_DEBUG_ALWAYS, "Can't get raster mask for `%s' from `%s' as that is later in the pipeline\n",
+                      target_module->so->op, raster_mask_source->so->op);
+      return NULL;
+    }
+
     if(candidate->module == raster_mask_source)
       break;
   }
