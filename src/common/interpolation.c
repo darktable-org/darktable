@@ -194,10 +194,10 @@ static inline size_t increase_for_alignment(const size_t l,
  * ------------------------------------------------------------------------*/
 
 static float maketaps_bilinear(float *taps,
-                               size_t num_taps,
-                               float  width,
-                               float first_tap,
-                               float interval)
+                               const size_t num_taps,
+                               const float  width,
+                               const float first_tap,
+                               const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   dt_aligned_pixel_t iter;
@@ -220,16 +220,16 @@ static float maketaps_bilinear(float *taps,
   }
   return 1.0f; //kernel norm is 1.0f by construction
 }
-  
+
 /* --------------------------------------------------------------------------
  * Bicubic interpolation
  * ------------------------------------------------------------------------*/
 
 static float maketaps_bicubic(float *taps,
-                              size_t num_taps,
-                              float  width,
-                              float first_tap,
-                              float interval)
+                              const size_t num_taps,
+                              const float  width,
+                              const float first_tap,
+                              const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   static const dt_aligned_pixel_t half = { .5f, .5f, .5f, .5f };
@@ -291,7 +291,7 @@ static float maketaps_bicubic(float *taps,
   }
   return 1.0f; //kernel norm is 1.0f by construction
 }
-  
+
 /* --------------------------------------------------------------------------
  * Lanczos interpolation
  * ------------------------------------------------------------------------*/
@@ -301,7 +301,7 @@ static float maketaps_bicubic(float *taps,
 #if 0
 // Reference version left here for ... documentation
 static inline float
-lanczos(float width, float t)
+lanczos(const float width, const float t)
 {
   float r;
 
@@ -338,10 +338,10 @@ lanczos(float width, float t)
  * range check.  */
 
 static float maketaps_lanczos(float *taps,
-                              size_t num_taps,
-                              float width,
-                              float first_tap,
-                              float interval)
+                              const size_t num_taps,
+                              const float width,
+                              const float first_tap,
+                              const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   dt_aligned_pixel_t iter;
@@ -408,7 +408,7 @@ static float maketaps_lanczos(float *taps,
     norm += taps[i];
   return norm;
 }
-  
+
 #undef DT_LANCZOS_EPSILON
 
 /* --------------------------------------------------------------------------
