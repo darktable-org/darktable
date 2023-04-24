@@ -551,8 +551,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(!sse2_supported)
     dt_print
       (DT_DEBUG_ALWAYS,
-       "[dt_init] SSE2 instruction set is unavailable.\n"
-       "[dt_init] expect a LOT of functionality to be broken. you have been warned.\n");
+       "[dt_init] SSE2 is unavailable, some functions will be noticeably slower.\n");
 
   darktable.progname = argv[0];
 
