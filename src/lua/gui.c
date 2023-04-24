@@ -122,17 +122,22 @@ static int _action_cb(lua_State *L)
   const gchar *element = lua_type(L, arg) == LUA_TSTRING ? luaL_checkstring(L, arg++) : NULL;
   const gchar *effect = lua_type(L, arg) == LUA_TSTRING ? luaL_checkstring(L, arg++) : NULL;
 
-  float move_size = NAN;
+  float move_size = DT_READ_ACTION_ONLY;
 
   if(lua_type(L, arg) == LUA_TSTRING && strlen(luaL_checkstring(L, arg)) == 0)
-    arg++; // "" -> NAN
+    arg++; // "" -> DT_READ_ACTION_ONLY
   else if(lua_type(L, arg) != LUA_TNONE)
     move_size = luaL_checknumber(L, arg++);
+  if(dt_isnan(move_size))
+    move_size = DT_READ_ACTION_ONLY;
 
   if(lua_type(L, arg) == LUA_TNUMBER)
     instance = luaL_checkinteger(L, arg++);
 
   float ret_val = dt_action_process(action, instance, element, effect, move_size);
+
+  if(DT_ACTION_IS_INVALID(ret_val))
+    ret_val = NAN;
 
   lua_pushnumber(L, ret_val);
 

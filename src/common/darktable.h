@@ -157,6 +157,19 @@ typedef int32_t dt_imgid_t;
 #define NO_IMGID (0)
 #define dt_is_valid_imgid(n) ((n) > NO_IMGID)
 
+/*
+  A dt_mask_id_t can be
+  0  -> a formless mask
+  >0 -> having a form
+  INVALID_MASKID is used while testing in mask manager
+*/
+
+typedef int32_t dt_mask_id_t;
+#define INVALID_MASKID (-1)
+#define NO_MASKID (0)
+// testing for a valid form
+#define dt_is_valid_maskid(n) ((n) > NO_MASKID)
+
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
@@ -165,7 +178,7 @@ typedef int32_t dt_imgid_t;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 13
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 14
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:

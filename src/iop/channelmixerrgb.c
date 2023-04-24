@@ -922,6 +922,7 @@ static inline void _loop_switch(const float *const restrict in,
 #endif
 
 static inline void _auto_detect_WB(const float *const restrict in,
+                                   float *const restrict temp,
                                    dt_illuminant_t illuminant,
                                    const size_t width,
                                    const size_t height,
@@ -941,13 +942,6 @@ static inline void _auto_detect_WB(const float *const restrict in,
    *  https://hal.inria.fr/inria-00548686/document
    *
   */
-
-   float *const restrict temp = dt_alloc_align_float(width * height * ch);
-   if(!temp)
-   {
-     dt_print(DT_DEBUG_ALWAYS,"[auto detect WB] unable to allocate memory, skipping white balance\n");
-     return;
-   }
 
    // Convert RGB to xy
 #ifdef _OPENMP
@@ -1107,8 +1101,6 @@ static inline void _auto_detect_WB(const float *const restrict in,
 
   for(size_t c = 0; c < 2; c++)
     xyz[c] = norm_D50 * (xyY[c] / elements) + D50[c];
-
-  dt_free_align(temp);
 }
 
 #if defined(__GNUC__) && defined(_WIN32)
@@ -1597,14 +1589,14 @@ static const extraction_result_t _extract_patches(const float *const restrict in
   return result;
 }
 
-void extract_color_checker(const float *const restrict in,
-                           float *const restrict out,
-                           const dt_iop_roi_t *const roi_in,
-                           dt_iop_channelmixer_rgb_gui_data_t *g,
-                           const dt_colormatrix_t RGB_to_XYZ,
-                           const dt_colormatrix_t XYZ_to_RGB,
-                           const dt_colormatrix_t XYZ_to_CAM,
-                           const dt_adaptation_t kind)
+static void _extract_color_checker(const float *const restrict in,
+                                   float *const restrict out,
+                                   const dt_iop_roi_t *const roi_in,
+                                   dt_iop_channelmixer_rgb_gui_data_t *g,
+                                   const dt_colormatrix_t RGB_to_XYZ,
+                                   const dt_colormatrix_t XYZ_to_RGB,
+                                   const dt_colormatrix_t XYZ_to_CAM,
+                                   const dt_adaptation_t kind)
 {
   float *const restrict patches = dt_alloc_align_float(g->checker->patches * 4);
 
@@ -2032,8 +2024,8 @@ void process(struct dt_iop_module_t *self,
     if(g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
       dt_iop_gui_enter_critical_section(self);
-      extract_color_checker(in, out, roi_in, g, RGB_to_XYZ,
-                            XYZ_to_RGB, XYZ_to_CAM, data->adaptation);
+      _extract_color_checker(in, out, roi_in, g, RGB_to_XYZ,
+                             XYZ_to_RGB, XYZ_to_CAM, data->adaptation);
       g->run_profile = FALSE;
       dt_iop_gui_leave_critical_section(self);
     }
@@ -2045,8 +2037,12 @@ void process(struct dt_iop_module_t *self,
       {
         // detection on full image only
         dt_iop_gui_enter_critical_section(self);
-        _auto_detect_WB(in, data->illuminant_type, roi_in->width, roi_in->height,
+        // compute "AI" white balance.  We can use our output buffer
+        // as scratch space since we will be overwriting it afterwards
+        // anyway
+        _auto_detect_WB(in, out, data->illuminant_type, roi_in->width, roi_in->height,
                         ch, RGB_to_XYZ, g->XYZ);
+        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
         dt_iop_gui_leave_critical_section(self);
       }
 

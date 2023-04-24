@@ -3593,21 +3593,35 @@
     <type>float</type>
     <default>1.0</default>
     <shortdescription>the multiplier that is applied to any slider value change</shortdescription>
-    <longdescription>any slider value change will be multiplied by this number, when changing slider while NOT holding SHIFT or CTRL modifiers</longdescription>
+    <longdescription>any slider value change will be multiplied by this number, when slider precision is set to normal</longdescription>
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/scale_rough_step_multiplier</name>
     <type>float</type>
     <default>10.0</default>
     <shortdescription>the multiplier that is applied to any slider rough value change</shortdescription>
-    <longdescription>any slider value change will be multiplied by this number, when changing slider while holding SHIFT modifier</longdescription>
+    <longdescription>any slider value change will be multiplied by this number, when slider precision is set to coarse</longdescription>
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/scale_precise_step_multiplier</name>
     <type>float</type>
     <default>0.1</default>
     <shortdescription>the multiplier that is applied to any slider precise value change</shortdescription>
-    <longdescription>any slider value change will be multiplied by this number, when changing slider while holding CTRL modifier</longdescription>
+    <longdescription>any slider value change will be multiplied by this number, when slider precision is set to fine</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/undo/merge_same_secs</name>
+    <type>float</type>
+    <default>10</default>
+    <shortdescription>the interval within which same widget changes are merged for undo</shortdescription>
+    <longdescription>when continously manipulating the same widget (slider, curve) no new undo records are created during this time</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/undo/review_secs</name>
+    <type>float</type>
+    <default>2</default>
+    <shortdescription>create new undo record after reviewing last change to same widget this long</shortdescription>
+    <longdescription>when continuing to change the same widget after a period of review allow undo to return to this state</longdescription>
   </dtconfig>
   <dtconfig>
     <name>performance_configuration_version_completed</name>

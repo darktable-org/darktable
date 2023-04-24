@@ -229,10 +229,10 @@ typedef struct dt_iop_module_t
   dt_dev_request_flags_t request_histogram;
   /** set to 1 if you want the mask to be transferred into alpha
    * channel during next eval. gui mode only. */
-  int request_mask_display;
+  dt_dev_pixelpipe_display_mask_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the
    * module in focus. gui mode only. */
-  int32_t suppress_mask;
+  gboolean suppress_mask;
   /** place to store the picked color of module input. */
   dt_aligned_pixel_t picked_color, picked_color_min, picked_color_max;
   /** place to store the picked color of module output (before blending). */
@@ -282,7 +282,7 @@ typedef struct dt_iop_module_t
       /** the module that provides the raster mask (if any). keep in
        * sync with blend_params! */
       struct dt_iop_module_t *source;
-      int id;
+      dt_mask_id_t id;
     } sink;
   } raster_mask;
   /** child widget which is added to the GtkExpander. copied from module_so_t. */
@@ -324,14 +324,9 @@ typedef struct dt_iop_module_t
   int multi_priority; // user may change this
   char multi_name[128]; // user may change this name
   gboolean multi_name_hand_edited;
-  gboolean multi_show_close;
-  gboolean multi_show_up;
-  gboolean multi_show_down;
-  gboolean multi_show_new;
   GtkWidget *multimenu_button;
 
   /** delayed-event handling */
-  guint timeout_handle;
   guint label_recompute_handle;
 
   void (*process_plain)(struct dt_iop_module_t *self,
@@ -527,11 +522,6 @@ void dt_iop_refresh_center(dt_iop_module_t *module);
 void dt_iop_refresh_preview(dt_iop_module_t *module);
 void dt_iop_refresh_preview2(dt_iop_module_t *module);
 void dt_iop_refresh_all(dt_iop_module_t *module);
-
-/** queue a delayed call to dt_dev_add_history_item to capture module parameters */
-void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior);
-/** cancel any previously-queued history update */
-void dt_iop_cancel_history_update(dt_iop_module_t *module);
 
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,

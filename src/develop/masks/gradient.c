@@ -113,7 +113,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module,
                                            const int up,
                                            const uint32_t state,
                                            dt_masks_form_t *form,
-                                           const int parentid,
+                                           const dt_mask_id_t parentid,
                                            dt_masks_form_gui_t *gui,
                                            const int index)
 {
@@ -201,7 +201,7 @@ static int _gradient_events_button_pressed(struct dt_iop_module_t *module,
                                            const int type,
                                            const uint32_t state,
                                            dt_masks_form_t *form,
-                                           const int parentid,
+                                           const dt_mask_id_t parentid,
                                            dt_masks_form_gui_t *gui,
                                            const int index)
 {
@@ -341,12 +341,12 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module,
                                             const int which,
                                             const uint32_t state,
                                             dt_masks_form_t *form,
-                                            const int parentid,
+                                            const dt_mask_id_t parentid,
                                             dt_masks_form_gui_t *gui,
                                             const int index)
 {
   if(which == 3
-     && parentid > 0
+     && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we hide the form
@@ -563,7 +563,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
                                         const double pressure,
                                         const int which,
                                         dt_masks_form_t *form,
-                                        const int parentid,
+                                        const dt_mask_id_t parentid,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
@@ -704,8 +704,8 @@ static inline gboolean _gradient_is_canonical(const float x,
                                               const float wd,
                                               const float ht)
 {
-  return (isnormal(x)
-          && isnormal(y)
+  return (dt_isnormal(x)
+          && dt_isnormal(y)
           && x >= -wd
           && x <= 2 * wd
           && y >= -ht
@@ -936,7 +936,7 @@ static void _gradient_draw_lines(const gboolean borders,
 
   while(count < points_count)
   {
-    if(!isnormal(points[count * 2]))
+    if(!dt_isnormal(points[count * 2]))
     {
       count++;
       continue;
@@ -954,7 +954,7 @@ static void _gradient_draw_lines(const gboolean borders,
     cairo_move_to(cr, x, y);
 
     count++;
-    for(; count < points_count && isnormal(points[count * 2]); count++)
+    for(; count < points_count && dt_isnormal(points[count * 2]); count++)
     {
       if(!_gradient_is_canonical(points[count * 2], points[count * 2 + 1], wd, ht))
         break;

@@ -75,7 +75,7 @@ typedef enum dt_iop_retouch_algo_type_t {
 
 typedef struct dt_iop_retouch_form_data_t
 {
-  int formid; // from masks, form->formid
+  dt_mask_id_t formid; // from masks, form->formid
   int scale;  // 0==original image; 1..RETOUCH_MAX_SCALES==scale; RETOUCH_MAX_SCALES+1==residual
   dt_iop_retouch_algo_type_t algorithm;  // clone, heal, blur, fill
 
@@ -237,7 +237,7 @@ int legacy_params(dt_iop_module_t *self,
   {
     typedef struct dt_iop_retouch_form_data_v1_t
     {
-      int formid; // from masks, form->formid
+      dt_mask_id_t formid; // from masks, form->formid
       int scale;  // 0==original image; 1..RETOUCH_MAX_SCALES==scale; RETOUCH_MAX_SCALES+1==residual
       dt_iop_retouch_algo_type_t algorithm; // clone, heal, blur, fill
 
@@ -347,10 +347,10 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const int formid)
+static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const dt_mask_id_t formid)
 {
   int index = -1;
-  if(formid > 0)
+  if(dt_is_valid_maskid(formid))
   {
     int i = 0;
 
@@ -368,7 +368,7 @@ static int rt_get_selected_shape_id()
   return darktable.develop->mask_form_selected_id;
 }
 
-static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self, int formid)
+static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self, dt_mask_id_t formid)
 {
   dt_masks_point_group_t *form_point_group = NULL;
 
@@ -392,7 +392,7 @@ static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self, in
   return form_point_group;
 }
 
-static float rt_get_shape_opacity(dt_iop_module_t *self, const int formid)
+static float rt_get_shape_opacity(dt_iop_module_t *self, const dt_mask_id_t formid)
 {
   float opacity = 0.f;
 
@@ -541,7 +541,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 // helpers
 //---------------------------------------------------------------------------------
 
-static void rt_masks_form_change_opacity(dt_iop_module_t *self, int formid, float opacity)
+static void rt_masks_form_change_opacity(dt_iop_module_t *self, dt_mask_id_t formid, float opacity)
 {
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
   if(grpt)
@@ -553,7 +553,7 @@ static void rt_masks_form_change_opacity(dt_iop_module_t *self, int formid, floa
   }
 }
 
-static float rt_masks_form_get_opacity(dt_iop_module_t *self, int formid)
+static float rt_masks_form_get_opacity(dt_iop_module_t *self, dt_mask_id_t formid)
 {
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
   if(grpt)
@@ -582,7 +582,7 @@ static int rt_allow_create_form(dt_iop_module_t *self)
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   if(p)
   {
-    allow = (p->rt_forms[RETOUCH_NO_FORMS - 1].formid == 0);
+    allow = (p->rt_forms[RETOUCH_NO_FORMS - 1].formid == NO_MASKID);
   }
   return allow;
 }
@@ -630,7 +630,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
   // check if there is a shape on this scale
   for(int i = 0; i < RETOUCH_NO_FORMS && count == 0; i++)
   {
-    if(p->rt_forms[i].formid != 0 && p->rt_forms[i].scale == scale) count++;
+    if(dt_is_valid_maskid(p->rt_forms[i].formid) && p->rt_forms[i].scale == scale) count++;
   }
 
   // if there are shapes on this scale, make the cut shapes button sensitive
@@ -656,8 +656,8 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
   {
     if(p->rt_forms[i].scale == scale)
     {
-      const int grid = self->blend_params->mask_id;
-      const int formid = p->rt_forms[i].formid;
+      const dt_mask_id_t grid = self->blend_params->mask_id;
+      const dt_mask_id_t formid = p->rt_forms[i].formid;
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
       if(form)
       {
@@ -672,7 +672,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
   }
 
   dt_masks_form_t *grp2 = dt_masks_create_ext(DT_MASKS_GROUP);
-  grp2->formid = 0;
+  grp2->formid = NO_MASKID;
   dt_masks_group_ungroup(grp2, grp);
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = bd->masks_shown;
@@ -703,7 +703,7 @@ static void rt_resynch_params(struct dt_iop_module_t *self)
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       if(grpt)
       {
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
 
         // search for the form on the shapes array
         const int form_index = rt_get_index_from_formid(p, formid);
@@ -1267,7 +1267,7 @@ static int rt_scale_has_shapes(dt_iop_retouch_params_t *p, const int scale)
   int has_shapes = 0;
 
   for(int i = 0; i < RETOUCH_NO_FORMS && has_shapes == 0; i++)
-    has_shapes = (p->rt_forms[i].formid != 0 && p->rt_forms[i].scale == scale);
+    has_shapes = (dt_is_valid_maskid(p->rt_forms[i].formid) && p->rt_forms[i].scale == scale);
 
   return has_shapes;
 }
@@ -2545,7 +2545,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self,
       const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       if(grpt)
       {
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
         const int index = rt_get_index_from_formid(p, formid);
         if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
         {
@@ -2623,7 +2623,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self,
 static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self,
                                                 struct dt_dev_pixelpipe_iop_t *piece,
                                                 dt_iop_roi_t *roi_in,
-                                                const int formid_src,
+                                                const dt_mask_id_t formid_src,
                                                 const int fl_src,
                                                 const int ft_src,
                                                 const int fw_src,
@@ -2650,7 +2650,7 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self,
       const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       if(grpt)
       {
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
 
         // just need the previous forms
         if(formid == formid_src) break;
@@ -2743,7 +2743,7 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self,
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       if(grpt)
       {
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
         const int index = rt_get_index_from_formid(p, formid);
 
         if(p->rt_forms[index].algorithm != DT_IOP_RETOUCH_HEAL
@@ -3387,9 +3387,9 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: invalid form\n");
           continue;
         }
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
         const float form_opacity = grpt->opacity;
-        if(formid == 0)
+        if(!dt_is_valid_maskid(formid))
         {
           dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: form is null\n");
           continue;
@@ -4193,9 +4193,9 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: invalid form\n");
           continue;
         }
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
         const float form_opacity = grpt->opacity;
-        if(formid == 0)
+        if(!dt_is_valid_maskid(formid))
         {
           dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: form is null\n");
           continue;

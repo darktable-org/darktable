@@ -115,6 +115,7 @@ typedef struct dt_iop_exposure_global_data_t
   int kernel_exposure;
 } dt_iop_exposure_global_data_t;
 
+#define EXPOSURE_CORRECTION_UNDEFINED (-FLT_MAX)
 
 const char *name()
 {
@@ -305,14 +306,17 @@ void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_exposure_params_t *d = module->default_params;
 
-  const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean scene_raw =
+     dt_image_is_rawprepare_supported(&module->dev->image_storage)
+     && dt_is_scene_referred();
 
   d->mode = EXPOSURE_MODE_MANUAL;
 
-  if(is_scene_referred && module->multi_priority == 0)
+  if(scene_raw && module->multi_priority == 0)
   {
-    d->exposure = 0.7f;
-    d->black = -0.000244140625f;
+    const gboolean mono = dt_image_is_monochrome(&module->dev->image_storage);
+    d->exposure = mono ? 0.0f : 0.7f;
+    d->black =    mono ? 0.0f : -0.000244140625f;
     d->compensate_exposure_bias = TRUE;
   }
   else
@@ -389,7 +393,7 @@ static void _compute_correction(dt_iop_module_t *self,
 {
   const dt_iop_exposure_params_t *const p = (const dt_iop_exposure_params_t *const)p1;
 
-  *correction = NAN;
+  *correction = EXPOSURE_CORRECTION_UNDEFINED;
 
   if(histogram == NULL) return;
 
@@ -539,7 +543,7 @@ static float _get_exposure_bias(const struct dt_iop_module_t *self)
     bias = self->dev->image_storage.exif_exposure_bias;
 
   // sanity checks, don't trust exif tags too much
-  if(!isnan(bias))
+  if(bias != DT_EXIF_TAG_UNINITIALIZED)
     return CLAMP(bias, -5.0f, 5.0f);
   else
     return 0.0f;
@@ -644,7 +648,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_label_set_text(g->deflicker_used_EC, "");
   dt_iop_gui_enter_critical_section(self);
-  g->deflicker_computed_exposure = NAN;
+  g->deflicker_computed_exposure = EXPOSURE_CORRECTION_UNDEFINED;
   dt_iop_gui_leave_critical_section(self);
 
   switch(p->mode)
@@ -932,7 +936,7 @@ static gboolean _show_computed(gpointer user_data)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
-  if(!isnan(g->deflicker_computed_exposure))
+  if(g->deflicker_computed_exposure != EXPOSURE_CORRECTION_UNDEFINED)
   {
     gchar *str = g_strdup_printf(_("%.2f EV"), g->deflicker_computed_exposure);
 
@@ -1138,7 +1142,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 
   dt_iop_gui_enter_critical_section(self);
-  g->deflicker_computed_exposure = NAN;
+  g->deflicker_computed_exposure = EXPOSURE_CORRECTION_UNDEFINED;
   dt_iop_gui_leave_critical_section(self);
 
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
@@ -1181,7 +1185,7 @@ void gui_init(struct dt_iop_module_t *self)
      _("\"correction\" automatically adjust exposure\n"
        "such that the input lightness is mapped to the target.\n"
        "\"measure\" simply shows how an input color is mapped by\n"
-       " the exposure compensation and can be used to define a target."),
+       "the exposure compensation and can be used to define a target."),
      0, _spot_settings_changed_callback, self,
      N_("correction"),
      N_("measure"));

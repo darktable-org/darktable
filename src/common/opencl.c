@@ -80,6 +80,8 @@ static gboolean _opencl_build_program(const int dev,
 
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 
+static char *_strsep(char **stringp, const char *delim);
+
 /** parse a single token of priority string and store priorities in priority_list */
 static void _opencl_priority_parse(dt_opencl_t *cl,
                                    char *configstr,
@@ -498,7 +500,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].used_global_mem = 0;
   cl->dev[dev].nvidia_sm_20 = 0;
   cl->dev[dev].vendor = NULL;
-  cl->dev[dev].name = NULL;
+  cl->dev[dev].fullname = NULL;
   cl->dev[dev].cname = NULL;
   cl->dev[dev].options = NULL;
   cl->dev[dev].memory_in_use = 0;
@@ -521,11 +523,14 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].runtime_error = DT_OPENCL_TUNE_NOTHING;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
-  char *infostr = NULL;
-  size_t infostr_size;
+  char *device_name = NULL;
+  size_t device_name_size;
+
+  char *device_name_cleaned = NULL;
+
+  char *fullname = NULL;
 
   char *cname = NULL;
-  size_t cname_size;
 
   char *vendor = NULL;
   size_t vendor_size;
@@ -547,8 +552,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   char *dtcache = calloc(PATH_MAX, sizeof(char));
   char *cachedir = calloc(PATH_MAX, sizeof(char));
-  char *devname = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
+  char *alnum_fullname = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
   char *drvversion = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
+  char *platform_display_name = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
   char *platform_name = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
   char *platform_vendor = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
 
@@ -576,7 +582,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                            sizeof(cl_uint), &vendor_id, NULL);
 
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_NAME,
-                                  (void **)&infostr, &infostr_size);
+                                  (void **)&device_name, &device_name_size);
   if(err != CL_SUCCESS)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
@@ -586,25 +592,18 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     goto end;
   }
 
-  // get the canonical device name
-  cname_size = infostr_size;
-  cname = malloc(cname_size);
-  _ascii_str_canonical(infostr, cname, cname_size);
-  cl->dev[dev].name = strdup(infostr);
-  cl->dev[dev].cname = strdup(cname);
-
-  // take every detected device into account of checksum
-  cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
+  gboolean has_platform_name = TRUE;
 
   err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PLATFORM,
                                                  sizeof(cl_platform_id), &platform_id, NULL);
   if(err != CL_SUCCESS)
   {
+    has_platform_name = FALSE;
     g_strlcpy(platform_vendor, "no platform id", DT_OPENCL_CBUFFSIZE);
-    g_strlcpy(platform_name, "no platform id", DT_OPENCL_CBUFFSIZE);
+    g_strlcpy(platform_display_name, "no platform id", DT_OPENCL_CBUFFSIZE);
     dt_print_nts(DT_DEBUG_OPENCL,
                  "  *** could not get platform id for device `%s' : %s\n",
-                 cl->dev[dev].name, cl_errstr(err));
+                 device_name, cl_errstr(err));
   }
   else
   {
@@ -612,10 +611,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
       (platform_id, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platform_name, NULL);
     if(err != CL_SUCCESS)
     {
+      has_platform_name = FALSE;
+      g_strlcpy(platform_display_name, "???", DT_OPENCL_CBUFFSIZE);
       dt_print_nts(DT_DEBUG_OPENCL,
                    "  *** could not get platform name for device `%s' : %s\n",
-                   cl->dev[dev].name, cl_errstr(err));
-      g_strlcpy(platform_name, "???", DT_OPENCL_CBUFFSIZE);
+                   device_name, cl_errstr(err));
     }
 
     err = (cl->dlocl->symbols->dt_clGetPlatformInfo)
@@ -624,20 +624,48 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     {
       dt_print_nts(DT_DEBUG_OPENCL,
                    "  *** could not get platform vendor for device `%s' : %s\n",
-                   cl->dev[dev].name, cl_errstr(err));
+                   device_name, cl_errstr(err));
       g_strlcpy(platform_vendor, "???", DT_OPENCL_CBUFFSIZE);
     }
   }
 
+  if(has_platform_name)
+    g_strlcpy(platform_display_name, platform_name, DT_OPENCL_CBUFFSIZE);
+  else
+    g_strlcpy(platform_name, "unknownplatform", DT_OPENCL_CBUFFSIZE);
+
+
+  device_name_cleaned = strdup(device_name);
+  // If platform_vendor starts with Mesa (matches also Mesa/X.org) remove
+  // everything starting with the first open parenthesis and removes trailing
+  // white spaces.
+  if(!strncasecmp(platform_vendor, "Mesa", 4))
+  {
+    device_name_cleaned = g_strchomp(_strsep(&device_name_cleaned, "("));
+  }
+
+  // get the fullname
+  fullname = g_strdup_printf("%s %s", platform_name, device_name_cleaned);
+
+  // get the canonical fullname
+  cname = _ascii_str_canonical(fullname, NULL , 0);
+
+  // take every detected platform and device into account of checksum
+  cl->crc = crc32(cl->crc, (const unsigned char *)platform_name, strlen(platform_name));
+  cl->crc = crc32(cl->crc, (const unsigned char *)device_name, strlen(device_name));
+
+  cl->dev[dev].fullname = strdup(fullname);
+  cl->dev[dev].cname = strdup(cname);
+
   const gboolean newdevice = dt_opencl_read_device_config(dev);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   DEVICE:                   %d: '%s'%s\n",
-               k, infostr, (newdevice) ? ", NEW" : "" );
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   CANONICAL NAME:           %s\n", cname);
+               k, device_name, (newdevice) ? ", NEW" : "" );
   dt_print_nts(DT_DEBUG_OPENCL,
                "   PLATFORM NAME & VENDOR:   %s, %s\n",
-               platform_name, platform_vendor);
+               platform_display_name, platform_vendor);
+  dt_print_nts(DT_DEBUG_OPENCL,
+               "   CANONICAL NAME:           %s\n", cl->dev[dev].cname);
 
   err = dt_opencl_get_device_info(cl, devid, CL_DRIVER_VERSION,
                                   (void **)&driverversion, &driverversion_size);
@@ -681,7 +709,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   {
     // very lame attempt to detect support for atomic float add in global memory.
     // we need compute model sm_20, but let's try for all nvidia devices :(
-    cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(infostr);
+    cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(device_name);
   }
 
   const gboolean is_cpu_device = (type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
@@ -872,12 +900,13 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   double tstart, tend, tdiff;
   dt_loc_get_user_cache_dir(dtcache, PATH_MAX * sizeof(char));
 
-  int len = MIN(strlen(infostr),1024 * sizeof(char));;
+  int len = MIN(strlen(fullname),1024 * sizeof(char));;
   int j = 0;
   // remove non-alphanumeric chars from device name
   for(int i = 0; i < len; i++)
-    if(isalnum(infostr[i])) devname[j++] = infostr[i];
-  devname[j] = 0;
+    if(isalnum(fullname[i])) alnum_fullname[j++] = fullname[i];
+  alnum_fullname[j] = 0;
+
   len = MIN(strlen(driverversion), 1024 * sizeof(char));
   j = 0;
   // remove non-alphanumeric chars from driver version
@@ -886,7 +915,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   drvversion[j] = 0;
   snprintf(cachedir, PATH_MAX * sizeof(char),
            "%s" G_DIR_SEPARATOR_S "cached_v%d_kernels_for_%s_%s",
-    dtcache, DT_OPENCL_KERNELS, devname, drvversion);
+    dtcache, DT_OPENCL_KERNELS, alnum_fullname, drvversion);
   if(g_mkdir_with_parents(cachedir, 0700) == -1)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
@@ -1062,7 +1091,9 @@ end:
   // we always write the device config to keep track of disabled devices
   dt_opencl_write_device_config(dev);
 
-  free(infostr);
+  free(device_name);
+  free(device_name_cleaned);
+  free(fullname);
   free(cname);
   free(vendor);
   free(driverversion);
@@ -1070,8 +1101,9 @@ end:
 
   free(dtcache);
   free(cachedir);
-  free(devname);
+  free(alnum_fullname);
   free(drvversion);
+  free(platform_display_name);
   free(platform_name);
   free(platform_vendor);
 
@@ -1328,7 +1360,7 @@ void dt_opencl_init(
                  "[opencl_init] OpenCL successfully initialized."
                  " Internal numbers and names of available devices:\n");
     for(int i = 0; i < dev; i++)
-      dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init]\t\t%d\t'%s'\n", i, cl->dev[i].name);
+      dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init]\t\t%d\t'%s'\n", i, cl->dev[i].fullname);
   }
   else
   {
@@ -1464,7 +1496,7 @@ finally:
         free(cl->dev[i].eventtags);
       }
       free((void *)(cl->dev[i].vendor));
-      free((void *)(cl->dev[i].name));
+      free((void *)(cl->dev[i].fullname));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
     }
@@ -1514,7 +1546,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         dt_print_nts(DT_DEBUG_OPENCL,
                      " [opencl_summary_statistics] device '%s' (%d):"
                      " peak memory usage %zu bytes (%.1f MB)%s\n",
-                     cl->dev[i].name, i, cl->dev[i].peak_memory,
+                     cl->dev[i].fullname, i, cl->dev[i].peak_memory,
                      (float)cl->dev[i].peak_memory/(1024*1024),
                      (cl->dev[i].runtime_error & DT_OPENCL_TUNE_MEMSIZE)
                        ? ", clmem runtime problem"
@@ -1529,7 +1561,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
                        " [opencl_summary_statistics] device '%s' (%d): %d"
                        " out of %d events were "
                        "successful and %d events lost. max event=%d%s%s\n",
-                       cl->dev[i].name, i, cl->dev[i].totalsuccess,
+                       cl->dev[i].fullname, i, cl->dev[i].totalsuccess,
                        cl->dev[i].totalevents, cl->dev[i].totallost,
                        cl->dev[i].maxeventslot,
                        (cl->dev[i].maxeventslot > 1024)
@@ -1543,7 +1575,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         {
           dt_print_nts(DT_DEBUG_OPENCL,
                        " [opencl_summary_statistics] device '%s' (%d): NOT utilized\n",
-                       cl->dev[i].name, i);
+                       cl->dev[i].fullname, i);
         }
       }
 
@@ -1556,7 +1588,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       }
 
       free((void *)(cl->dev[i].vendor));
-      free((void *)(cl->dev[i].name));
+      free((void *)(cl->dev[i].fullname));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
     }
@@ -3570,7 +3602,7 @@ void dt_opencl_check_tuning(const int devid)
                " use %luMB (pinning=%s) on device `%s' id=%i\n",
                level, cl->dev[devid].used_available / 1024lu / 1024lu,
                (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED) ? "ON" : "OFF",
-               cl->dev[devid].name, devid);
+               cl->dev[devid].fullname, devid);
     return;
   }
 
@@ -3603,7 +3635,7 @@ void dt_opencl_check_tuning(const int devid)
        cl->dev[devid].used_available / 1024lu / 1024lu,
        (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_MEMSIZE) ? "ON" : "OFF",
        (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED)  ? "ON" : "OFF",
-       cl->dev[devid].name, devid);
+       cl->dev[devid].fullname, devid);
 }
 
 cl_ulong dt_opencl_get_device_available(const int devid)
@@ -4126,7 +4158,7 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   // now display profiling info
   dt_print(DT_DEBUG_OPENCL,
            "[opencl_profiling] profiling device %d ('%s'):\n",
-           devid, cl->dev[devid].name);
+           devid, cl->dev[devid].fullname);
 
   float total = 0.0f;
   for(int i = 1; i < items; i++)

@@ -113,8 +113,8 @@ static void _path_border_get_XY(const float p0x,
   // so we can have the resulting point
   if(dx == 0 && dy == 0)
   {
-    *xb = NAN;
-    *yb = NAN;
+    *xb = DT_INVALID_COORDINATE;
+    *yb = DT_INVALID_COORDINATE;
     return;
   }
   const double l = 1.0 / sqrt(dx * dx + dy * dy);
@@ -415,14 +415,14 @@ static void _path_points_recurs(float *p1,
                                 const int withborder)
 {
   // we calculate points if needed
-  if(isnan(path_min[0]))
+  if(path_min[0] == DT_INVALID_COORDINATE)
   {
     _path_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmin,
                         p1[4] + (p2[4] - p1[4]) * tmin * tmin * (3.0 - 2.0 * tmin),
                         path_min, path_min + 1,
                         border_min, border_min + 1);
   }
-  if(isnan(path_max[0]))
+  if(path_max[0] == DT_INVALID_COORDINATE)
   {
     _path_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmax,
                         p1[4] + (p2[4] - p1[4]) * tmax * tmax * (3.0 - 2.0 * tmax),
@@ -456,7 +456,8 @@ static void _path_points_recurs(float *p1,
 
   // we split in two part
   double tx = (tmin + tmax) / 2.0;
-  float c[2] = { NAN, NAN }, b[2] = { NAN, NAN };
+  float c[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
+  float b[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
   float rc[2] = { 0 }, rb[2] = { 0 };
   _path_points_recurs(p1, p2, tmin, tx, path_min, c, border_min, b, rc, rb,
                       dpoints, dborder, withborder);
@@ -480,7 +481,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
 
   for(int i = _nb_ctrl_point(nb_corners); i < border_count; i++)
   {
-    if(isnan(border[i * 2]) || isnan(border[i * 2 + 1]))
+    if((border[i * 2] == DT_INVALID_COORDINATE) || (border[i * 2 + 1] == DT_INVALID_COORDINATE))
     {
       border[i * 2] = border[i * 2 - 2];
       border[i * 2 + 1] = border[i * 2 - 1];
@@ -767,10 +768,10 @@ static int _path_get_pts_border(dt_develop_t *dev,
     // and we determine all points by recursion (to be sure the
     // distance between 2 points is <=1)
     float rc[2] = { 0 }, rb[2] = { 0 };
-    float bmin[2] = { NAN, NAN };
-    float bmax[2] = { NAN, NAN };
-    float cmin[2] = { NAN, NAN };
-    float cmax[2] = { NAN, NAN };
+    float bmin[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
+    float bmax[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
+    float cmin[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
+    float cmax[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
 
     _path_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax,
                         rc, rb, dpoints, dborder, border && (nb >= 3));
@@ -789,9 +790,9 @@ static int _path_get_pts_border(dt_develop_t *dev,
 
     if(dborder)
     {
-      if(isnan(rb[0]))
+      if(rb[0] == DT_INVALID_COORDINATE)
       {
-        if(isnan(dt_masks_dynbuf_get(dborder, - 2)))
+        if(dt_masks_dynbuf_get(dborder, - 2) == DT_INVALID_COORDINATE)
         {
           dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
           dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
@@ -812,12 +813,12 @@ static int _path_get_pts_border(dt_develop_t *dev,
     {
       // we get the next point (start of the next segment) t=0.00001f
       // to workaround rounding effects with full optimization that
-      // result in bmax[0] NOT being set to NAN when t=0 and the two
-      // points in p3 are identical (as is the case on a control node
-      // set to sharp corner)
+      // result in bmax[0] NOT being set to DT_INVALID_COORDINATE when
+      // t=0 and the two points in p3 are identical (as is the case on
+      // a control node set to sharp corner)
       _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1],
                           0.00001f, p3[4], cmin, cmin + 1, bmax, bmax + 1);
-      if(isnan(bmax[0]))
+      if(bmax[0] == DT_INVALID_COORDINATE)
       {
         _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1],
                             0.00001f, p3[4], cmin, cmin + 1, bmax, bmax + 1);
@@ -943,23 +944,23 @@ static int _path_get_pts_border(dt_develop_t *dev,
           const int w = (dt_masks_dynbuf_buffer(intersections))[ i * 2 + 1];
           if(v <= w)
           {
-            (*border)[v * 2] = NAN;
+            (*border)[v * 2] = DT_INVALID_COORDINATE;
             (*border)[v * 2 + 1] = w;
           }
           else
           {
             if(w > _nb_ctrl_point(nb))
             {
-              if(isnan((*border)[nb * 6]) && isnan((*border)[nb * 6 + 1]))
+              if(((*border)[nb * 6] == DT_INVALID_COORDINATE) && ((*border)[nb * 6 + 1] == DT_INVALID_COORDINATE))
                 (*border)[nb * 6 + 1] = w;
-              else if(isnan((*border)[nb * 6]))
+              else if((*border)[nb * 6] == DT_INVALID_COORDINATE)
                 (*border)[nb * 6 + 1] = MAX((*border)[nb * 6 + 1], w);
               else
                 (*border)[nb * 6 + 1] = w;
-              (*border)[nb * 6] = NAN;
+              (*border)[nb * 6] = DT_INVALID_COORDINATE;
             }
-            (*border)[v * 2] = NAN;
-            (*border)[v * 2 + 1] = NAN;
+            (*border)[v * 2] = DT_INVALID_COORDINATE;
+            (*border)[v * 2 + 1] = DT_INVALID_COORDINATE;
           }
         }
       }
@@ -1075,9 +1076,9 @@ static void _path_get_distance(const float x,
     {
       //if we need to jump to skip points (in case of deleted point,
       //because of self-intersection)
-      if(isnan(gpt->points[i * 2]))
+      if(gpt->points[i * 2] == DT_INVALID_COORDINATE)
       {
-        if(isnan(gpt->points[i * 2 + 1]))
+        if(gpt->points[i * 2 + 1] == DT_INVALID_COORDINATE)
           break;
         i = (int)gpt->points[i * 2 + 1] - 1;
         continue;
@@ -1138,7 +1139,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
                                        const int up,
                                        const uint32_t state,
                                        dt_masks_form_t *form,
-                                       const int parentid,
+                                       const dt_mask_id_t parentid,
                                        dt_masks_form_gui_t *gui,
                                        const int index)
 {
@@ -1297,7 +1298,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
                                        const int type,
                                        const uint32_t state,
                                        dt_masks_form_t *form,
-                                       const int parentid,
+                                       const dt_mask_id_t parentid,
                                        dt_masks_form_gui_t *gui,
                                        const int index)
 {
@@ -1625,7 +1626,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
     if(g_list_shorter_than(form->points, 4))
     {
       // if the form doesn't belong to a group, we don't delete it
-      if(parentid <= 0) return 1;
+      if(!dt_is_valid_maskid(parentid)) return 1;
 
       // we hide the form
       if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
@@ -1700,7 +1701,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
     return 1;
   }
   else if(which == 3
-          && parentid > 0
+          && dt_is_valid_maskid(parentid)
           && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we hide the form
@@ -1742,7 +1743,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module,
                                         const int which,
                                         const uint32_t state,
                                         dt_masks_form_t *form,
-                                        const int parentid,
+                                        const dt_mask_id_t parentid,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
@@ -1909,7 +1910,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
                                     const double pressure,
                                     const int which,
                                     dt_masks_form_t *form,
-                                    const int parentid,
+                                    const dt_mask_id_t parentid,
                                     dt_masks_form_gui_t *gui,
                                     const int index)
 {
@@ -2269,12 +2270,15 @@ static void _path_events_post_expose(cairo_t *cr,
   {
     const int k = gui->point_edited;
     // uncomment this part if you want to see "real" control points
-    /*cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
-    cairo_line_to(cr, gui->points[k*6],gui->points[k*6+1]);
+    /*
+    cairo_move_to(cr, gpt->points[k*6+2], gpt->points[k*6+3]);
+    cairo_line_to(cr, gpt->points[k*6], gpt->points[k*6+1]);
     cairo_stroke(cr);
-    cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
-    cairo_line_to(cr, gui->points[k*6+4],gui->points[k*6+5]);
-    cairo_stroke(cr);*/
+    cairo_move_to(cr, gpt->points[k*6+2], gpt->points[k*6+3]);
+    cairo_line_to(cr, gpt->points[k*6+4], gpt->points[k*6+5]);
+    cairo_stroke(cr);
+    */
+
     float ffx = 0.0f, ffy = 0.0f;
     _path_ctrl2_to_feather(gpt->points[k * 6 + 2],
                            gpt->points[k * 6 + 3],
@@ -2298,9 +2302,9 @@ static void _path_events_post_expose(cairo_t *cr,
     int dep = 1;
     for(int i = _nb_ctrl_point(nb); i < gpt->border_count; i++)
     {
-      if(isnan(gpt->border[i * 2]))
+      if(gpt->border[i * 2] == DT_INVALID_COORDINATE)
       {
-        if(isnan(gpt->border[i * 2 + 1])) break;
+        if(gpt->border[i * 2 + 1] == DT_INVALID_COORDINATE) break;
         i = gpt->border[i * 2 + 1] - 1;
         continue;
       }
@@ -2443,9 +2447,9 @@ static void _path_bounding_box_raw(const float *const points,
     // we look at the borders
     const float xx = border[i * 2];
     const float yy = border[i * 2 + 1];
-    if(isnan(xx))
+    if(xx == DT_INVALID_COORDINATE)
     {
-     if(isnan(yy)) break; // that means we have to skip the end of the border path
+     if(yy == DT_INVALID_COORDINATE) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -2796,9 +2800,9 @@ static int _path_get_mask(const dt_iop_module_t *const module,
 
     // now we check p1 value to know if we have to skip a part
     if(next == i) next = 0;
-    while(isnan(pf1[0]))
+    while(pf1[0] == DT_INVALID_COORDINATE)
     {
-      if(isnan(pf1[1]))
+      if(pf1[1] == DT_INVALID_COORDINATE)
         next = i - 1;
       else
         next = p1[1];
@@ -3087,9 +3091,9 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   {
     const float xx = border[2 * i];
     const float yy = border[2 * i + 1];
-    if(isnan(xx))
+    if(xx == DT_INVALID_COORDINATE)
     {
-      if(isnan(yy)) break; // that means we have to skip the end of the border path
+      if(yy == DT_INVALID_COORDINATE) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -3149,9 +3153,9 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   {
     const float xx = border[i * 2];
     const float yy = border[i * 2 + 1];
-    if(isnan(xx))
+    if(xx == DT_INVALID_COORDINATE)
     {
-      if(isnan(yy)) break; // that means we have to skip the end of the border path
+      if(yy == DT_INVALID_COORDINATE) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
@@ -3360,9 +3364,9 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
 
       // now we check p1 value to know if we have to skip a part
       if(next == i) next = 0;
-      while(isnan(pf1[0]))
+      while(pf1[0] == DT_INVALID_COORDINATE)
       {
-        if(isnan(pf1[1]))
+        if(pf1[1] == DT_INVALID_COORDINATE)
           next = i - 1;
         else
           next = p1[1];

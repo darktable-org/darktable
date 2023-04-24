@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "common/calculator.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
+#include "common/math.h"
 #include "control/conf.h"
 
 #include <glib.h>
@@ -148,14 +149,14 @@ int dt_conf_get_int_fast(const char *name)
 {
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value))
+  if(dt_isnan(new_value))
   {
     //we've got garbage, check default
     const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
-      if(isnan(new_value))
+      if(dt_isnan(new_value))
         new_value = 0.0;
       else
       {
@@ -191,14 +192,14 @@ int64_t dt_conf_get_int64_fast(const char *name)
 {
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value))
+  if(dt_isnan(new_value))
   {
     //we've got garbage, check default
     const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
-      if(isnan(new_value))
+      if(dt_isnan(new_value))
         new_value = 0.0;
       else
       {
@@ -234,14 +235,14 @@ float dt_conf_get_float_fast(const char *name)
 {
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value))
+  if(dt_isnan(new_value))
   {
     //we've got garbage, check default
     const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
-      if(isnan(new_value))
+      if(dt_isnan(new_value))
         new_value = 0.0;
       else
       {
@@ -357,7 +358,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const int min = item->min ? (int)dt_calculator_solve(1, item->min) : INT_MIN;
       const int max = item->max ? (int)dt_calculator_solve(1, item->max) : INT_MAX;
       // if garbage, use default
-      const int val = isnan(v) ? dt_confgen_get_int(name, DT_DEFAULT) : (int)v;
+      const int val = dt_isnan(v) ? dt_confgen_get_int(name, DT_DEFAULT) : (int)v;
       result = g_strdup_printf("%d", CLAMP(val, min, max));
     }
     break;
@@ -368,7 +369,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const int64_t min = item->min ? (int64_t)dt_calculator_solve(1, item->min) : INT64_MIN;
       const int64_t max = item->max ? (int64_t)dt_calculator_solve(1, item->max) : INT64_MAX;
       // if garbage, use default
-      const int64_t val = isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
+      const int64_t val = dt_isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
       result = g_strdup_printf("%"PRId64, CLAMP(val, min, max));
     }
     break;
@@ -379,7 +380,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const float min = item->min ? (float)dt_calculator_solve(1, item->min) : -FLT_MAX;
       const float max = item->max ? (float)dt_calculator_solve(1, item->max) : FLT_MAX;
       // if garbage, use default
-      const float val = isnan(v) ? dt_confgen_get_float(name, DT_DEFAULT) : v;
+      const float val = dt_isnan(v) ? dt_confgen_get_float(name, DT_DEFAULT) : v;
       result = g_strdup_printf("%f", CLAMP(val, min, max));
     }
     break;
@@ -638,13 +639,13 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
   switch(kind)
   {
   case DT_MIN:
-    return isnan(value) ? INT_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
+    return dt_isnan(value) ? INT_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
     break;
   case DT_MAX:
-    return isnan(value) ? INT_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
+    return dt_isnan(value) ? INT_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
     break;
   default:
-    return isnan(value) ? 0.0f : (value > 0 ? value + 0.5f : value - 0.5f);
+    return dt_isnan(value) ? 0.0f : (value > 0 ? value + 0.5f : value - 0.5f);
     break;
   }
   return (int)value;
@@ -676,13 +677,13 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
   switch(kind)
   {
   case DT_MIN:
-    return isnan(value) ? INT64_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
+    return dt_isnan(value) ? INT64_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
     break;
   case DT_MAX:
-    return isnan(value) ? INT64_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
+    return dt_isnan(value) ? INT64_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
     break;
   default:
-    return isnan(value) ? 0.0f : (value > 0 ? value + 0.5f : value - 0.5f);
+    return dt_isnan(value) ? 0.0f : (value > 0 ? value + 0.5f : value - 0.5f);
     break;
   }
   return (int64_t)value;
@@ -722,15 +723,15 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
   {
   case DT_MIN:
     // to anyone askig FLT_MIN is superclose to 0, not furthest value from 0 possible in float
-    return isnan(value) ? -FLT_MAX : value;
+    return dt_isnan(value) ? -FLT_MAX : value;
     break;
   case DT_MAX:
-    return isnan(value) ? FLT_MAX : value;
+    return dt_isnan(value) ? FLT_MAX : value;
     break;
   default:
     break;
   }
-  return isnan(value) ? 0.0f : value;
+  return dt_isnan(value) ? 0.0f : value;
 }
 
 gboolean dt_conf_is_default(const char *name)

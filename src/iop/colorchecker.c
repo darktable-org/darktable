@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"
@@ -289,7 +290,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("it8 skin tones"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  // helmholtz/kohlrausch effect applied to black and white conversion.
+  // Helmholtz/Kohlrausch effect applied to black and white conversion.
   // implemented by wmader as an iop and matched as a clut for increased
   // flexibility. this was done using darktable-chart and this is copied
   // from the resulting dtstyle output file:
@@ -300,7 +301,7 @@ void init_presets(dt_iop_module_so_t *self)
       hk_params_input, strlen(hk_params_input), &params_len);
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(hk_params);
-  dt_gui_presets_add_generic(_("helmholtz/kohlrausch monochrome"), self->op,
+  dt_gui_presets_add_generic(_("Helmholtz/Kohlrausch monochrome"), self->op,
                              self->version(), hk_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(hk_params);
 

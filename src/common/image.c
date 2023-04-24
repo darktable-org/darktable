@@ -1995,7 +1995,7 @@ void dt_image_init(dt_image_t *img)
   g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
   img->exif_crop = 1.0;
   img->exif_exposure = 0;
-  img->exif_exposure_bias = NAN;
+  img->exif_exposure_bias = DT_EXIF_TAG_UNINITIALIZED;
   img->exif_aperture = 0;
   img->exif_iso = 0;
   img->exif_focal_length = 0;
@@ -3006,11 +3006,10 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
   if((image_storage) && (image_storage->exif_exposure_bias))
   {
     // sanity checks because I don't trust exif tags too much
-    if(image_storage->exif_exposure_bias == NAN
+    if(image_storage->exif_exposure_bias == DT_EXIF_TAG_UNINITIALIZED
        || image_storage->exif_exposure_bias != image_storage->exif_exposure_bias
-       || isnan(image_storage->exif_exposure_bias)
        || CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f) != image_storage->exif_exposure_bias)
-      return 0.0f; // isnan
+      return 0.0f;
     else
       return CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f);
   }

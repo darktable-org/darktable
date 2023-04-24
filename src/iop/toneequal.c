@@ -223,7 +223,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   float step; // scrolling step
 
   // 14 int to pack - contiguous memory
-  int mask_display;
+  gboolean mask_display;
   int max_histogram;
   int buf_width;
   int buf_height;
@@ -1297,22 +1297,17 @@ static int compute_channels_factors(const float factors[PIXEL_CHAN],
   // approximation for x = { CHANNELS }
   assert(PIXEL_CHAN == 8);
 
-  int valid = 1;
-
   #ifdef _OPENMP
   #pragma omp parallel for simd default(none) schedule(static) \
-    aligned(factors, out, centers_params:64) dt_omp_firstprivate(factors, out, sigma, centers_params) shared(valid)
+    aligned(factors, out, centers_params:64) dt_omp_firstprivate(factors, out, sigma, centers_params)
   #endif
   for(int i = 0; i < CHANNELS; ++i)
   {
-     // Compute the new channels factors
+    // Compute the new channels factors; pixel_correction clamps the factors, so we don't
+    // need to check for validity here
     out[i] = pixel_correction(centers_params[i], factors, sigma);
-
-    // check they are in [-2, 2] EV and not NAN
-    if(isnan(out[i]) || out[i] < 0.25f || out[i] > 4.0f) valid = 0;
   }
-
-  return valid;
+  return 1;
 }
 
 
@@ -1981,7 +1976,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
-    g->mask_display = 0;
+    g->mask_display = FALSE;
     return;
   }
   else
@@ -2462,7 +2457,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
 
   dt_iop_gui_leave_critical_section(self);
 
-  if(isnan(correction) || isnan(exposure_in)) return; // something went wrong
+  if(dt_isnan(exposure_in)) return; // something went wrong
 
   // Rescale and shift Cairo drawing coordinates
   const float wd = dev->preview_pipe->backbuf_width;
@@ -3275,7 +3270,7 @@ static void _develop_ui_pipe_started_callback(gpointer instance,
   {
     // if module is not active, disable mask preview
     dt_iop_gui_enter_critical_section(self);
-    g->mask_display = 0;
+    g->mask_display = FALSE;
     dt_iop_gui_leave_critical_section(self);
   }
 

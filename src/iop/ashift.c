@@ -287,10 +287,10 @@ typedef struct dt_iop_ashift_params_t
   float aspect;      // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "aspect adjust"
   dt_iop_ashift_mode_t mode;     // $DEFAULT: ASHIFT_MODE_GENERIC $DESCRIPTION: "lens model"
   dt_iop_ashift_crop_t cropmode; // $DEFAULT: ASHIFT_CROP_LARGEST $DESCRIPTION: "automatic cropping"
-  float cl;          // $DEFAULT: 0.0
-  float cr;          // $DEFAULT: 1.0
-  float ct;          // $DEFAULT: 0.0
-  float cb;          // $DEFAULT: 1.0
+  float cl;          // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 1.0
+  float cr;          // $DEFAULT: 1.0 $MIN: 0.0 $MAX: 1.0
+  float ct;          // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 1.0
+  float cb;          // $DEFAULT: 1.0 $MIN: 0.0 $MAX: 1.0
   float last_drawn_lines[MAX_SAVED_LINES * 4];
   int last_drawn_lines_count;
   float last_quad_lines[8];
@@ -1116,9 +1116,10 @@ void distort_mask(struct dt_iop_module_t *self,
       pin[1] -= roi_in->y;
 
       // get output values by interpolation from input image
-      dt_interpolation_compute_pixel1c
-        (interpolation, in, _out + i, pin[0], pin[1], roi_in->width,
-         roi_in->height, roi_in->width);
+      _out[i] = dt_interpolation_compute_sample(interpolation, in,
+                                                pin[0], pin[1],
+                                                roi_in->width, roi_in->height,
+                                                1, roi_in->width);
     }
   }
 }
@@ -2161,25 +2162,25 @@ static double model_fitness(double *params, void *data)
   int pcount = 0;
 
   // fill in fit parameters from params[]. Attention: order matters!!!
-  if(isnan(rotation))
+  if(dt_isnan(rotation))
   {
     rotation = ilogit(params[pcount], -rotation_range, rotation_range);
     pcount++;
   }
 
-  if(isnan(lensshift_v))
+  if(dt_isnan(lensshift_v))
   {
     lensshift_v = ilogit(params[pcount], -lensshift_v_range, lensshift_v_range);
     pcount++;
   }
 
-  if(isnan(lensshift_h))
+  if(dt_isnan(lensshift_h))
   {
     lensshift_h = ilogit(params[pcount], -lensshift_h_range, lensshift_h_range);
     pcount++;
   }
 
-  if(isnan(shear))
+  if(dt_isnan(shear))
   {
     shear = ilogit(params[pcount], -shear_range, shear_range);
     pcount++;
@@ -2406,19 +2407,19 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module,
 
   // fit was successful: now consolidate the results (order matters!!!)
   pcount = 0;
-  fit.rotation = isnan(fit.rotation)
+  fit.rotation = dt_isnan(fit.rotation)
     ? ilogit(params[pcount++], -fit.rotation_range, fit.rotation_range)
     : fit.rotation;
 
-  fit.lensshift_v = isnan(fit.lensshift_v)
+  fit.lensshift_v = dt_isnan(fit.lensshift_v)
     ? ilogit(params[pcount++], -fit.lensshift_v_range, fit.lensshift_v_range)
     : fit.lensshift_v;
 
-  fit.lensshift_h = isnan(fit.lensshift_h)
+  fit.lensshift_h = dt_isnan(fit.lensshift_h)
     ? ilogit(params[pcount++], -fit.lensshift_h_range, fit.lensshift_h_range)
     : fit.lensshift_h;
 
-  fit.shear = isnan(fit.shear)
+  fit.shear = dt_isnan(fit.shear)
     ? ilogit(params[pcount++], -fit.shear_range, fit.shear_range)
     : fit.shear;
 
@@ -2578,9 +2579,9 @@ static double crop_fitness(double *params, void *data)
   const float ht = cropfit->height;
 
   // get variable and constant parameters, respectively
-  const float x = isnan(cropfit->x) ? params[0] : cropfit->x;
-  const float y = isnan(cropfit->y) ? params[1] : cropfit->y;
-  const float alpha = isnan(cropfit->alpha) ? params[2] : cropfit->alpha;
+  const float x = dt_isnan(cropfit->x) ? params[0] : cropfit->x;
+  const float y = dt_isnan(cropfit->y) ? params[1] : cropfit->y;
+  const float alpha = dt_isnan(cropfit->alpha) ? params[2] : cropfit->alpha;
 
   // the center of the rectangle in input image coordinates
   const float Pc[3] = { x * wd, y * ht, 1.0f };
@@ -2765,9 +2766,9 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   if(iter >= NMS_CROP_ITERATIONS) goto failed;
 
   // the fit did converge -> get clipping margins out of params:
-  cropfit.x = isnan(cropfit.x) ? params[0] : cropfit.x;
-  cropfit.y = isnan(cropfit.y) ? params[1] : cropfit.y;
-  cropfit.alpha = isnan(cropfit.alpha) ? params[2] : cropfit.alpha;
+  cropfit.x = dt_isnan(cropfit.x) ? params[0] : cropfit.x;
+  cropfit.y = dt_isnan(cropfit.y) ? params[1] : cropfit.y;
+  cropfit.alpha = dt_isnan(cropfit.alpha) ? params[2] : cropfit.alpha;
 
   // the area of the best fitting rectangle
   const float A = fabs(crop_fitness(params, (void*)&cropfit));
@@ -3232,7 +3233,7 @@ static int _do_get_structure_auto(dt_iop_module_t *module,
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(module->dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(module->dev->preview_pipe);
     dt_dev_reprocess_preview(module->dev);
     goto error;
   }
@@ -3284,7 +3285,7 @@ static void _do_get_structure_lines(dt_iop_module_t *self)
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
     dt_dev_reprocess_preview(self->dev);
     return;
   }
@@ -3332,7 +3333,7 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
   {
     dt_control_log(_("data pending - please repeat"));
     // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
     dt_dev_reprocess_preview(self->dev);
     return;
   }
@@ -5445,7 +5446,7 @@ void gui_reset(struct dt_iop_module_t *self)
   _gui_update_structure_states(self, NULL);
   // force to reprocess the preview, otherwise the buffer is ko
   dt_dev_invalidate_all(self->dev);
-  dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+  dt_dev_pixelpipe_cache_flush(self->dev->preview_pipe);
 }
 
 static void cropmode_callback(GtkWidget *widget, gpointer user_data)
@@ -5754,7 +5755,11 @@ void commit_params(struct dt_iop_module_t *self,
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
 
-  if(gui_has_focus(self))
+  if(gui_has_focus(self)
+     || dt_isnan(p->cl)
+     || dt_isnan(p->cr)
+     || dt_isnan(p->ct)
+     || dt_isnan(p->cb))
   {
     // if gui has focus we want to see the full uncropped image
     d->cl = 0.0f;

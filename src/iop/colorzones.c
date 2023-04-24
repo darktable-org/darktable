@@ -1606,7 +1606,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, i
       curve[node].y = new_y;
     }
 
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
   }
 
   gtk_widget_queue_draw(widget);
@@ -1825,7 +1825,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
       {
         dt_iop_colorzones_get_params(p, c, c->channel, c->mouse_x, c->mouse_y, c->mouse_radius);
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       }
     }
     else if(event->y > height)
@@ -1862,7 +1862,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
         c->selected = _add_node(curve, &p->curve_num_nodes[ch], linx, liny);
 
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       }
     }
     else
@@ -1964,7 +1964,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
         }
 
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
         gtk_widget_queue_draw(self->widget);
       }
 
@@ -1982,7 +1982,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       dt_bauhaus_combobox_set(c->interpolator, p->curve_type[ch]);
 
       dt_iop_color_picker_reset(self, TRUE);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       gtk_widget_queue_draw(self->widget);
 
       return TRUE;
@@ -2008,7 +2008,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
 
       dt_iop_color_picker_reset(self, TRUE);
       gtk_widget_queue_draw(self->widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       return TRUE;
     }
 
@@ -2138,7 +2138,7 @@ static void _interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
     p->curve_type[g->channel] = MONOTONE_HERMITE;
 
   dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -2291,7 +2291,7 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
                      ? curve[node].y
                      : dt_draw_curve_calc_value(c->minmax_curve[ch], x);
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     float bottop = -1e6;
     switch(effect)
@@ -2345,7 +2345,6 @@ void gui_reset(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->edit_by_area = 0;
   c->display_mask = FALSE;
-  self->timeout_handle = 0;
   c->mouse_radius = 1.f / DT_IOP_COLORZONES_BANDS;
 
   _reset_display_selection(self);
@@ -2387,7 +2386,6 @@ void gui_init(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->edit_by_area = 0;
   c->display_mask = FALSE;
-  self->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -2511,8 +2509,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[g->channel]);
 
-  dt_iop_cancel_history_update(self);
-
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -2522,8 +2518,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/colorzones/gui_channel", c->channel);
 
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++) dt_draw_curve_destroy(c->minmax_curve[ch]);
-
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }

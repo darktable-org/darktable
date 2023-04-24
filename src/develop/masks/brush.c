@@ -244,8 +244,8 @@ static void _brush_border_get_XY(const float p0x,
   // so we can have the resulting point
   if(dx == 0 && dy == 0)
   {
-    *xb = NAN;
-    *yb = NAN;
+    *xb = DT_INVALID_COORDINATE;
+    *yb = DT_INVALID_COORDINATE;
     return;
   }
   const float l = 1.0f / sqrtf(dx * dx + dy * dy);
@@ -597,7 +597,7 @@ static void _brush_points_recurs(float *p1,
   const gboolean withpayload = (dpayload != NULL);
 
   // we calculate points if needed
-  if(isnan(points_min[0]))
+  if(points_min[0] == DT_INVALID_COORDINATE)
   {
     _brush_border_get_XY(p1[0], p1[1], p1[2], p1[3],
                          p2[2], p2[3], p2[0], p2[1], tmin,
@@ -605,7 +605,7 @@ static void _brush_points_recurs(float *p1,
                          points_min,
                          points_min + 1, border_min, border_min + 1);
   }
-  if(isnan(points_max[0]))
+  if(points_max[0] == DT_INVALID_COORDINATE)
   {
     _brush_border_get_XY(p1[0], p1[1], p1[2], p1[3],
                          p2[2], p2[3], p2[0], p2[1], tmax,
@@ -631,12 +631,12 @@ static void _brush_points_recurs(float *p1,
 
     if(withborder)
     {
-      if(isnan(border_max[0]))
+      if(border_max[0] == DT_INVALID_COORDINATE)
       {
         border_max[0] = border_min[0];
         border_max[1] = border_min[1];
       }
-      else if(isnan(border_min[0]))
+      else if(border_min[0] == DT_INVALID_COORDINATE)
       {
         border_min[0] = border_max[0];
         border_min[1] = border_max[1];
@@ -670,7 +670,8 @@ static void _brush_points_recurs(float *p1,
 
   // we split in two part
   double tx = (tmin + tmax) / 2.0;
-  float c[2] = { NAN, NAN }, b[2] = { NAN, NAN };
+  float c[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
+  float b[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
   float rc[2], rb[2], rp[2];
   _brush_points_recurs(p1, p2, tmin, tx, points_min, c,
                        border_min, b, rc, rb, rp, dpoints, dborder, dpayload);
@@ -961,10 +962,10 @@ static int _brush_get_pts_border(dt_develop_t *dev,
     // and we determine all points by recursion (to be sure the
     // distance between 2 points is <=1)
     float rc[2], rb[2], rp[2];
-    float bmin[2] = { NAN, NAN };
-    float bmax[2] = { NAN, NAN };
-    float cmin[2] = { NAN, NAN };
-    float cmax[2] = { NAN, NAN };
+    float bmin[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
+    float bmax[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
+    float cmin[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
+    float cmax[2] = { DT_INVALID_COORDINATE, DT_INVALID_COORDINATE };
 
     _brush_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax,
                          bmin, bmax, rc, rb, rp, dpoints, dborder, dpayload);
@@ -978,9 +979,9 @@ static int _brush_get_pts_border(dt_develop_t *dev,
 
     if(dborder)
     {
-      if(isnan(rb[0]))
+      if(rb[0] == DT_INVALID_COORDINATE)
       {
-        if(isnan(dt_masks_dynbuf_get(dborder, -2)))
+        if(dt_masks_dynbuf_get(dborder, -2) == DT_INVALID_COORDINATE)
         {
           dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
           dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
@@ -998,7 +999,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
       _brush_border_get_XY(p3[0], p3[1], p3[2], p3[3],
                            p4[2], p4[3], p4[0], p4[1], 0, p3[4], cmin, cmin + 1,
                            bmax, bmax + 1);
-      if(isnan(bmax[0]))
+      if(bmax[0] == DT_INVALID_COORDINATE)
       {
         _brush_border_get_XY(p3[0], p3[1], p3[2], p3[3],
                              p4[2], p4[3], p4[0], p4[1], 0.0001, p3[4], cmin,
@@ -1332,7 +1333,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
                                         const int up,
                                         const uint32_t state,
                                         dt_masks_form_t *form,
-                                        const int parentid,
+                                        const dt_mask_id_t parentid,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
@@ -1490,7 +1491,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
                                         const int type,
                                         const uint32_t state,
                                         dt_masks_form_t *form,
-                                        const int parentid,
+                                        const dt_mask_id_t parentid,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
@@ -1723,7 +1724,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
     if(g_list_shorter_than(form->points, 3))
     {
       // if the form doesn't below to a group, we don't delete it
-      if(parentid <= 0) return 1;
+      if(!dt_is_valid_maskid(parentid)) return 1;
 
       // we hide the form
       if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
@@ -1790,7 +1791,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
     }
     return 1;
   }
-  else if(which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if(which == 3 && dt_is_valid_maskid(parentid) && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
@@ -1831,7 +1832,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module,
                                          const int which,
                                          const uint32_t state,
                                          dt_masks_form_t *form,
-                                         const int parentid,
+                                         const dt_mask_id_t parentid,
                                          dt_masks_form_gui_t *gui,
                                          const int index)
 {
@@ -2193,7 +2194,7 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
                                      const double pressure,
                                      const int which,
                                      dt_masks_form_t *form,
-                                     const int parentid,
+                                     const dt_mask_id_t parentid,
                                      dt_masks_form_gui_t *gui,
                                      const int index)
 {

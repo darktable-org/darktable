@@ -1144,32 +1144,32 @@ cleanup:
   bright /= 100.f;
   contr /= 100.f;
 
-  if(isnan(expcomp))
+  if(dt_isnan(expcomp))
   {
     expcomp = 0.f;
     dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!!!\n");
   }
-  if(isnan(black))
+  if(dt_isnan(black))
   {
     black = 0.f;
     dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!!!\n");
   }
-  if(isnan(bright))
+  if(dt_isnan(bright))
   {
     bright = 0.f;
     dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!!!\n");
   }
-  if(isnan(contr))
+  if(dt_isnan(contr))
   {
     contr = 0.f;
     dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!!!\n");
   }
-  if(isnan(hlcompr))
+  if(dt_isnan(hlcompr))
   {
     hlcompr = 0.f;
     dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!!!\n");
   }
-  if(isnan(hlcomprthresh))
+  if(dt_isnan(hlcomprthresh))
   {
     hlcomprthresh = 0.f;
     dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!!!\n");

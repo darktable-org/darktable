@@ -91,9 +91,9 @@ static void _show_2_times(const dt_times_t *start,
  * @param idx index to filter
  * @param length length of line
  */
-static inline int clip(int i,
-                       const int min,
-                       const int max,
+static inline ssize_t clip(ssize_t i,
+                       const ssize_t min,
+                       const ssize_t max,
                        enum border_mode mode)
 {
   switch(mode)
@@ -194,10 +194,10 @@ static inline size_t increase_for_alignment(const size_t l,
  * ------------------------------------------------------------------------*/
 
 static float maketaps_bilinear(float *taps,
-                               size_t num_taps,
-                               float  width,
-                               float first_tap,
-                               float interval)
+                               const size_t num_taps,
+                               const float  width,
+                               const float first_tap,
+                               const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   dt_aligned_pixel_t iter;
@@ -220,16 +220,16 @@ static float maketaps_bilinear(float *taps,
   }
   return 1.0f; //kernel norm is 1.0f by construction
 }
-  
+
 /* --------------------------------------------------------------------------
  * Bicubic interpolation
  * ------------------------------------------------------------------------*/
 
 static float maketaps_bicubic(float *taps,
-                              size_t num_taps,
-                              float  width,
-                              float first_tap,
-                              float interval)
+                              const size_t num_taps,
+                              const float  width,
+                              const float first_tap,
+                              const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   static const dt_aligned_pixel_t half = { .5f, .5f, .5f, .5f };
@@ -291,7 +291,7 @@ static float maketaps_bicubic(float *taps,
   }
   return 1.0f; //kernel norm is 1.0f by construction
 }
-  
+
 /* --------------------------------------------------------------------------
  * Lanczos interpolation
  * ------------------------------------------------------------------------*/
@@ -301,7 +301,7 @@ static float maketaps_bicubic(float *taps,
 #if 0
 // Reference version left here for ... documentation
 static inline float
-lanczos(float width, float t)
+lanczos(const float width, const float t)
 {
   float r;
 
@@ -338,10 +338,10 @@ lanczos(float width, float t)
  * range check.  */
 
 static float maketaps_lanczos(float *taps,
-                              size_t num_taps,
-                              float width,
-                              float first_tap,
-                              float interval)
+                              const size_t num_taps,
+                              const float width,
+                              const float first_tap,
+                              const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   dt_aligned_pixel_t iter;
@@ -408,7 +408,7 @@ static float maketaps_lanczos(float *taps,
     norm += taps[i];
   return norm;
 }
-  
+
 #undef DT_LANCZOS_EPSILON
 
 /* --------------------------------------------------------------------------
@@ -595,13 +595,13 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
 
     // Apply the kernel
     float s = 0.f;
-    for(int i = ytap_first; i < ytap_last; i++)
+    for(ssize_t i = ytap_first; i < ytap_last; i++)
     {
-      const int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      const ssize_t clip_y = clip(iy + i, 0, height - 1, bordermode);
       float h = 0.0f;
-      for(int j = xtap_first; j < xtap_last; j++)
+      for(ssize_t j = xtap_first; j < xtap_last; j++)
       {
-        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
+        const ssize_t clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * samplestride;
         h += kernelh[j] * ipixel[0];
       }
@@ -629,7 +629,7 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
                                                    const float y,
                                                    const int width,
                                                    const int height,
-                                                   const int linestride)
+                                                   const size_t linestride)
 {
   assert(itor->width < (MAX_HALF_FILTER_WIDTH + 1));
 
@@ -660,22 +660,27 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
     in = (float *)in + linestride * iy + ix * 4;
     in = in - (itor->width - 1) * (4 + linestride);
 
+    const size_t itor_width = 2 * itor->width;
+
     // Apply the kernel
     dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
-    for(int i = 0; i < 2 * itor->width; i++)
+    for(size_t i = 0; i < itor_width; i++)
     {
       dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
-      for(int j = 0; j < 2 * itor->width; j++)
+      for(size_t j = 0; j < itor_width; j++)
       {
+        const float kern = kernelh[j];
+        dt_aligned_pixel_t inpx;
+        copy_pixel(inpx, in + 4*j);
         for_each_channel(c)
-          h[c] += kernelh[j] * in[j * 4 + c];
+          h[c] = h[c] + kern * inpx[c];
       }
       for_each_channel(c)
         pixel[c] += kernelv[i] * h[c];
       in += linestride;
     }
 
-    for_each_channel(c)
+    for_each_channel(c,aligned(out))
       out[c] = oonorm * pixel[c];
   }
   else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
@@ -701,27 +706,30 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
 
     // Apply the kernel
     dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
-    for(int i = ytap_first; i < ytap_last; i++)
+    for(ssize_t i = ytap_first; i < ytap_last; i++)
     {
-      const int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      const ssize_t clip_y = clip(iy + i, 0, height - 1, bordermode);
       dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
-      for(int j = xtap_first; j < xtap_last; j++)
+      const float *ipixel = in + clip_y * linestride;
+      for(ssize_t j = xtap_first; j < xtap_last; j++)
       {
-        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
-        const float *ipixel = in + clip_y * linestride + clip_x * 4;
+        const ssize_t clip_x = clip(ix + j, 0, width - 1, bordermode);
+        dt_aligned_pixel_t inpx;
+        copy_pixel(inpx, ipixel + 4 * clip_x);
+        const float kern = kernelh[j];
         for_each_channel(c)
-          h[c] += kernelh[j] * ipixel[c];
+          h[c] += kern * inpx[c];
       }
       for_each_channel(c)
         pixel[c] += kernelv[i] * h[c];
     }
 
-    for_each_channel(c)
+    for_each_channel(c,aligned(out))
       out[c] = oonorm * pixel[c];
   }
   else
   {
-    for_each_channel(c)
+    for_each_channel(c,aligned(out))
       out[c] = 0.0f;
   }
 }
@@ -803,13 +811,13 @@ static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *
 
     // Apply the kernel
     __m128 pixel = _mm_setzero_ps();
-    for(int i = ytap_first; i < ytap_last; i++)
+    for(ssize_t i = ytap_first; i < ytap_last; i++)
     {
-      int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      ssize_t clip_y = clip(iy + i, 0, height - 1, bordermode);
       __m128 h = _mm_setzero_ps();
-      for(int j = xtap_first; j < xtap_last; j++)
+      for(ssize_t j = xtap_first; j < xtap_last; j++)
       {
-        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
+        const ssize_t clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * 4;
         h = h + _mm_set1_ps(kernelh[j]) * *((__m128 *)ipixel);
       }
@@ -842,114 +850,6 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
 #endif
     return dt_interpolation_compute_pixel4c_plain(itor, in, out, x, y,
                                                   width, height, linestride);
-}
-
-static void dt_interpolation_compute_pixel1c_plain(const struct dt_interpolation *itor,
-                                                   const float *in,
-                                                   float *out,
-                                                   const float x,
-                                                   const float y,
-                                                   const int width,
-                                                   const int height,
-                                                   const int linestride)
-{
-  assert(itor->width < (MAX_HALF_FILTER_WIDTH + 1));
-
-  // Quite a bit of space for kernels
-  float kernelh[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
-  float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
-
-  // Compute both horizontal and vertical kernels
-  float normh = compute_upsampling_kernel(itor, kernelh, NULL, x);
-  float normv = compute_upsampling_kernel(itor, kernelv, NULL, y);
-
-  // Precompute the inverse of the filter norm for later use
-  const float oonorm = (1.f / (normh * normv));
-
-  /* Now 2 cases, the pixel + filter width goes outside the image
-   * in that case we have to use index clipping to keep all reads
-   * in the input image (slow path) or we are sure it won't fall
-   * outside and can do more simple code */
-  int ix = (int)x;
-  int iy = (int)y;
-
-  if(ix >= (itor->width - 1) && iy >= (itor->width - 1) && ix < (width - itor->width)
-    && iy < (height - itor->width))
-  {
-    // Inside image boundary case
-
-    // Go to top left pixel
-    in = (float *)in + linestride * iy + ix;
-    in = in - (itor->width - 1) * (1 + linestride);
-
-    // Apply the kernel
-    float pixel = 0.0f;
-    for(int i = 0; i < 2 * itor->width; i++)
-    {
-      float h = 0.0f;
-      for(int j = 0; j < 2 * itor->width; j++)
-      {
-        h += kernelh[j] * in[j];
-      }
-      pixel += kernelv[i] * h;
-      in += linestride;
-    }
-
-    *out = oonorm * pixel;
-  }
-  else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
-  {
-    // At least a valid coordinate
-
-    // Point to the upper left pixel index wise
-    iy -= itor->width - 1;
-    ix -= itor->width - 1;
-
-    static const enum border_mode bordermode = INTERPOLATION_BORDER_MODE;
-    assert(bordermode != BORDER_CLAMP); // XXX in clamp mode, norms would be wrong
-
-    int xtap_first;
-    int xtap_last;
-    prepare_tap_boundaries(&xtap_first, &xtap_last, bordermode, 2 * itor->width, ix, width);
-
-    int ytap_first;
-    int ytap_last;
-    prepare_tap_boundaries(&ytap_first, &ytap_last, bordermode, 2 * itor->width, iy, height);
-
-    // Apply the kernel
-    float pixel = 0.0f;
-    for(int i = ytap_first; i < ytap_last; i++)
-    {
-      const int clip_y = clip(iy + i, 0, height - 1, bordermode);
-      float h = 0.0f;
-      for(int j = xtap_first; j < xtap_last; j++)
-      {
-        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
-        const float *ipixel = in + clip_y * linestride + clip_x;
-        h += kernelh[j] * *ipixel;
-      }
-      pixel += kernelv[i] * h;
-    }
-
-    *out = oonorm * pixel;
-  }
-  else
-  {
-    *out = 0.0f;
-  }
-}
-
-void dt_interpolation_compute_pixel1c(const struct dt_interpolation *itor,
-                                      const float *in,
-                                      float *out,
-                                      const float x,
-                                      const float y,
-                                      const int width,
-                                      const int height,
-                                      const int linestride)
-{
-  return dt_interpolation_compute_pixel1c_plain(itor, in, out, x, y,
-                                                width, height, linestride);
 }
 
 /* --------------------------------------------------------------------------

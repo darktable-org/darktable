@@ -704,17 +704,23 @@ void expose(
     cairo_restore(cri);
   }
 
-  // display mask if we have a current module activated or if the masks manager module is expanded
+  // display mask if we have a current module activated or if the
+  // masks manager module is expanded
 
-  const gboolean display_masks = (dev->gui_module && dev->gui_module->enabled
-                                  && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
-                                 || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+  const gboolean display_masks =
+    (dev->gui_module && dev->gui_module->enabled
+     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+    || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
   // draw colorpicker for in focus module or execute module callback hook
-  // FIXME: draw picker in gui_post_expose() hook in libs/colorpicker.c -- catch would be that live samples would appear over guides, softproof/gamut text overlay would be hidden by picker
+  // FIXME: draw picker in gui_post_expose() hook in
+  // libs/colorpicker.c -- catch would be that live samples would
+  // appear over guides, softproof/gamut text overlay would be hidden
+  // by picker
   if(dt_iop_color_picker_is_visible(dev))
   {
-    GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
+    GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample,
+                       .next = NULL };
     _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
                            &samples, TRUE);
   }
@@ -723,11 +729,13 @@ void expose(
     if(dev->form_visible && display_masks)
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
     // module
-    if(dev->gui_module && dev->gui_module != dev->proxy.rotate && dev->gui_module->gui_post_expose
+    if(dev->gui_module && dev->gui_module != dev->proxy.rotate
+       && dev->gui_module->gui_post_expose
        && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     {
       cairo_save(cri);
-      dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+      dev->gui_module->gui_post_expose(dev->gui_module, cri,
+                                       width, height, pointerx, pointery);
       cairo_restore(cri);
     }
   }
@@ -814,11 +822,10 @@ static void _fire_darkroom_image_loaded_event(const bool clean, const dt_imgid_t
 
 #endif
 
+static gboolean _dev_load_requested_image(gpointer user_data);
+
 static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
-  // stop crazy users from sleeping on key-repeat spacebar:
-  if(dev->image_loading) return;
-
   // deactivate module label timer if set
   if(darktable.develop->gui_module
      && darktable.develop->gui_module->label_recompute_handle)
@@ -840,7 +847,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
   // if the previous shown image is selected and the selection is unique
   // then we change the selected image to the new one
-  if(dt_is_valid_imgid(dev->image_storage.id))
+  if(dt_is_valid_imgid(dev->requested_id))
   {
     sqlite3_stmt *stmt;
     // clang-format off
@@ -854,7 +861,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
     gboolean follow = FALSE;
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      if(sqlite3_column_int(stmt, 0) == dev->image_storage.id
+      if(sqlite3_column_int(stmt, 0) == dev->requested_id
          && sqlite3_step(stmt) != SQLITE_ROW)
       {
         follow = TRUE;
@@ -884,11 +891,39 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
     dt_image_set_aspect_ratio(dev->image_storage.id, TRUE);
   }
 
-  // clean the undo list
-  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
-
   // prevent accels_window to refresh
   darktable.view_manager->accels_window.prevent_refresh = TRUE;
+
+  // get current plugin in focus before defocus
+  if(darktable.develop->gui_module)
+  {
+    dt_conf_set_string("plugins/darkroom/active",
+                       darktable.develop->gui_module->op);
+  }
+
+  // store last active group
+  dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
+
+  // commit any pending changes in focused module
+  dt_iop_request_focus(NULL);
+
+  g_assert(dev->gui_attached);
+
+  // commit image ops to db
+  dt_dev_write_history(dev);
+
+  dev->requested_id = imgid;
+
+  g_idle_add(_dev_load_requested_image, dev);
+}
+
+static gboolean _dev_load_requested_image(gpointer user_data)
+{
+  dt_develop_t *dev = user_data;
+  const dt_imgid_t imgid = dev->requested_id;
+
+  if(dev->image_storage.id == NO_IMGID
+     && dev->image_storage.id == imgid) return G_SOURCE_REMOVE;
 
   // make sure we can destroy and re-setup the pixel pipes.
   // we acquire the pipe locks, which will block the processing threads
@@ -901,13 +936,12 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex))
   {
 
-  #ifdef USE_LUA
+#ifdef USE_LUA
 
   _fire_darkroom_image_loaded_event(FALSE, imgid);
 
 #endif
-
-  return;
+  return G_SOURCE_CONTINUE;
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->pipe_mutex))
   {
@@ -919,7 +953,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
 #endif
 
-   return;
+   return G_SOURCE_CONTINUE;
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->preview2_pipe_mutex))
   {
@@ -932,43 +966,29 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
 #endif
 
-   return;
+   return G_SOURCE_CONTINUE;
   }
 
-  // get current plugin in focus before defocus
-  gchar *active_plugin = NULL;
-  if(darktable.develop->gui_module)
-  {
-    active_plugin = g_strdup(darktable.develop->gui_module->op);
-  }
-
-  // store last active group
-  dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
-
-  dt_iop_request_focus(NULL);
-
-  g_assert(dev->gui_attached);
-
-  // commit image ops to db
-  dt_dev_write_history(dev);
-
-  const int32_t new_imgid = dev->image_storage.id;
+  const dt_imgid_t old_imgid = dev->image_storage.id;
 
   // be sure light table will update the thumbnail
-  if(!dt_history_hash_is_mipmap_synced(new_imgid))
+  if(!dt_history_hash_is_mipmap_synced(old_imgid))
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, new_imgid);
-    dt_image_update_final_size(new_imgid);
-    dt_image_synch_xmp(new_imgid);
-    dt_history_hash_set_mipmap(new_imgid);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, old_imgid);
+    dt_image_update_final_size(old_imgid);
+    dt_image_synch_xmp(old_imgid);
+    dt_history_hash_set_mipmap(old_imgid);
 #ifdef USE_LUA
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
         LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-history-changed",
-        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(old_imgid),
         LUA_ASYNC_DONE);
 #endif
   }
+
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   // cleanup visible masks
   if(!dev->form_gui)
@@ -1015,7 +1035,6 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
       module->multi_priority = 0;
       module->multi_name[0] = '\0';
       dt_iop_reload_defaults(module);
-      dt_iop_gui_update(module);
     }
     else // else we delete it and remove it from the panel
     {
@@ -1102,6 +1121,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
   dt_dev_masks_list_change(dev);
 
   /* Now we can request focus again and write a safe plugins/darkroom/active */
+  const char *active_plugin = dt_conf_get_string_const("plugins/darkroom/active");
   if(active_plugin)
   {
     gboolean valid = FALSE;
@@ -1111,7 +1131,6 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
       if(dt_iop_module_is(module->so, active_plugin))
       {
         valid = TRUE;
-        dt_conf_set_string("plugins/darkroom/active", active_plugin);
         dt_iop_request_focus(module);
       }
     }
@@ -1119,7 +1138,6 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
     {
       dt_conf_set_string("plugins/darkroom/active", "");
     }
-    g_free(active_plugin);
   }
 
   // Signal develop initialize
@@ -1156,6 +1174,7 @@ static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 
 #endif
 
+  return G_SOURCE_REMOVE;
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
@@ -1178,9 +1197,8 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
 
 static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
-  if(dev->image_loading) return;
 
-  const dt_imgid_t imgid = dev->image_storage.id;
+  const dt_imgid_t imgid = dev->requested_id;
   int new_offset = 1;
   dt_imgid_t new_id = NO_IMGID;
 
@@ -2118,7 +2136,7 @@ static float _action_process_skip_mouse(gpointer target,
                                         const dt_action_effect_t effect,
                                         const float move_size)
 {
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     switch(effect)
     {
@@ -2153,7 +2171,7 @@ static float _action_process_preview(gpointer target,
 {
   dt_develop_t *lib = darktable.view_manager->proxy.darkroom.view->data;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(lib->full_preview)
     {
@@ -2223,7 +2241,7 @@ static float _action_process_move(gpointer target,
 {
   dt_develop_t *dev = darktable.view_manager->proxy.darkroom.view->data;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
@@ -2955,12 +2973,10 @@ static void _on_drag_data_received(GtkWidget *widget,
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
         module_src->expander, g_value_get_int(&gv));
 
-    // we update the headers
-    dt_dev_modules_update_multishow(module_src->dev);
-
     dt_dev_add_history_item(module_src->dev, module_src, TRUE);
 
-    dt_ioppr_check_iop_order(module_src->dev, 0, "_on_drag_data_received end");
+    if(darktable.unmuted & DT_DEBUG_IOPORDER)
+      dt_ioppr_check_iop_order(module_src->dev, 0, "_on_drag_data_received end");
 
     // rebuild the accelerators
     dt_iop_connect_accels_multi(module_src->so);
@@ -3065,7 +3081,7 @@ void enter(dt_view_t *self)
   }
   dt_masks_change_form_gui(NULL);
   dev->form_gui->pipe_hash = 0;
-  dev->form_gui->formid = 0;
+  dev->form_gui->formid = NO_MASKID;
   dev->gui_leaving = FALSE;
   dev->gui_module = NULL;
 
@@ -3136,9 +3152,6 @@ void enter(dt_view_t *self)
         dt_iop_request_focus(module);
     }
   }
-
-  // update module multishow state now modules are loaded
-  dt_dev_modules_update_multishow(dev);
 
   // image should be there now.
   float zoom_x, zoom_y;
@@ -3267,7 +3280,7 @@ void leave(dt_view_t *self)
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
         LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-history-changed",
-        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
         LUA_ASYNC_DONE);
 #endif
   }
@@ -3715,7 +3728,7 @@ int button_pressed(dt_view_t *self,
     return 1;
   }
 
-  if(which == 2) // Middle mouse button
+  if(which == 2  && type == GDK_BUTTON_PRESS) // Middle mouse button
   {
     // zoom to 1:1 2:1 and back
     int procw, proch;

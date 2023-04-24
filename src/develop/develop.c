@@ -53,7 +53,8 @@
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 
-void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
+void dt_dev_init(dt_develop_t *dev,
+                 const gboolean gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
   dev->full_preview = FALSE;
@@ -318,14 +319,14 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   {
     dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
-    dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(dev->preview_pipe);
     dev->preview_loading = FALSE;
   }
 
   // if raw loaded, get new mipf
   if(dev->preview_input_changed)
   {
-    dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
+    dt_dev_pixelpipe_cache_flush(dev->preview_pipe);
     dev->preview_input_changed = FALSE;
   }
 
@@ -372,6 +373,7 @@ restart:
 
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing");
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
+  dev->gui_previous_pipe_time = dt_get_wtime();
 
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
@@ -438,14 +440,14 @@ void dt_dev_process_preview2_job(dt_develop_t *dev)
   {
     dt_dev_pixelpipe_cleanup_nodes(dev->preview2_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview2_pipe, dev);
-    dt_dev_pixelpipe_flush_caches(dev->preview2_pipe);
+    dt_dev_pixelpipe_cache_flush(dev->preview2_pipe);
     dev->preview2_loading = FALSE;
   }
 
   // if raw loaded, get new mipf
   if(dev->preview2_input_changed)
   {
-    dt_dev_pixelpipe_flush_caches(dev->preview2_pipe);
+    dt_dev_pixelpipe_cache_flush(dev->preview2_pipe);
     dev->preview2_input_changed = 0;
   }
 
@@ -571,7 +573,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     // init pixel pipeline
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
-    if(dev->image_force_reload) dt_dev_pixelpipe_flush_caches(dev->pipe);
+    if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(dev->pipe);
     dev->image_force_reload = FALSE;
     if(dev->gui_attached)
     {
@@ -701,6 +703,8 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const dt_imgid_t imgid)
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
+
+  dev->requested_id = dev->image_storage.id;
 }
 
 void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid)
@@ -716,8 +720,8 @@ void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid)
 float dt_dev_get_zoom_scale(
         dt_develop_t *dev,
         dt_dev_zoom_t zoom,
-        int closeup_factor,
-        int preview)
+        const int closeup_factor,
+        const int preview)
 {
   float zoom_scale;
 
@@ -1059,15 +1063,37 @@ void dt_dev_add_history_item_ext(
   _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
 }
 
-void _dev_add_history_item(
+static gboolean _dev_undo_start_record_target(dt_develop_t *dev, gpointer target)
+{
+  const double this_time = dt_get_wtime();
+  const double merge_time = dev->gui_previous_time + dt_conf_get_float("darkroom/undo/merge_same_secs");
+  const double review_time = dev->gui_previous_pipe_time + dt_conf_get_float("darkroom/undo/review_secs");
+  dev->gui_previous_pipe_time = merge_time;
+  if(target && target == dev->gui_previous_target
+     && this_time < MIN(merge_time, review_time))
+  {
+    return FALSE;
+  }
+
+  dt_dev_undo_start_record(dev);
+
+  dev->gui_previous_target = target;
+  dev->gui_previous_time = this_time;
+
+  return TRUE;
+}
+
+static void _dev_add_history_item(
         dt_develop_t *dev,
         dt_iop_module_t *module,
         const gboolean enable,
-        const gboolean new_item)
+        const gboolean new_item,
+        const gpointer target)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
-  dt_dev_undo_start_record(dev);
+  const gboolean need_end_record =
+    _dev_undo_start_record_target(dev, target);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1105,11 +1131,12 @@ void _dev_add_history_item(
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
+  if(need_end_record)
+    dt_dev_undo_end_record(dev);
+
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    dt_dev_undo_end_record(dev);
-
     if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* redraw */
@@ -1122,22 +1149,31 @@ void dt_dev_add_history_item(
         dt_iop_module_t *module,
         gboolean enable)
 {
-  _dev_add_history_item(dev, module, enable, FALSE);
+  _dev_add_history_item(dev, module, enable, FALSE, NULL);
+}
+
+void dt_dev_add_history_item_target(
+        dt_develop_t *dev,
+        dt_iop_module_t *module,
+        const gboolean enable,
+        gpointer target)
+{
+  _dev_add_history_item(dev, module, enable, FALSE, target);
 }
 
 void dt_dev_add_new_history_item(
         dt_develop_t *dev,
         dt_iop_module_t *module,
-        gboolean enable)
+        const gboolean enable)
 {
-  _dev_add_history_item(dev, module, enable, TRUE);
+  _dev_add_history_item(dev, module, enable, TRUE, NULL);
 }
 
 void dt_dev_add_masks_history_item_ext(
         dt_develop_t *dev,
         dt_iop_module_t *_module,
-        gboolean _enable,
-        gboolean no_image)
+        const gboolean _enable,
+        const gboolean no_image)
 {
   dt_iop_module_t *module = _module;
   gboolean enable = _enable;
@@ -1168,9 +1204,20 @@ void dt_dev_add_masks_history_item_ext(
 void dt_dev_add_masks_history_item(
         dt_develop_t *dev,
         dt_iop_module_t *module,
-        gboolean enable)
+        const gboolean enable)
 {
-  dt_dev_undo_start_record(dev);
+  gpointer target = NULL;
+
+  dt_masks_form_t *form = dev->form_visible;
+  dt_masks_form_gui_t *gui = dev->form_gui;
+  if(form && gui)
+  {
+    dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
+    if(fpt) target = GINT_TO_POINTER(fpt->formid);
+  }
+
+  const gboolean need_end_record =
+    _dev_undo_start_record_target(dev, target);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1183,11 +1230,11 @@ void dt_dev_add_masks_history_item(
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
-  if(dev->gui_attached)
-  {
-    /* signal that history has changed */
+  if(need_end_record)
     dt_dev_undo_end_record(dev);
 
+  if(dev->gui_attached)
+  {
     /* recreate mask list */
     dt_dev_masks_list_change(dev);
 
@@ -1265,15 +1312,14 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
-  // we update show params for multi-instances for each other instances
-  dt_dev_modules_update_multishow(dev);
-
   dt_unlock_image(dev->image_storage.id);
 }
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
 {
-  dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext begin");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext begin");
+
   const int end_prev = dev->history_end;
   dev->history_end = cnt;
 
@@ -1319,7 +1365,8 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
 
   dt_ioppr_check_duplicate_iop_order(&dev->iop, dev->history);
 
-  dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext end");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext end");
 
   // check if masks have changed
   int masks_changed = 0;
@@ -1471,7 +1518,7 @@ void dt_dev_write_history(dt_develop_t *dev)
   dt_dev_write_history_ext(dev, dev->image_storage.id);
 }
 
-static int _dev_get_module_nb_records()
+static int _dev_get_module_nb_records(void)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2329,7 +2376,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     sqlite3_finalize(stmt);
   }
 
-  dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
+  if(darktable.unmuted & DT_DEBUG_IOPORDER)
+    dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
 
   dt_masks_read_masks_history(dev, imgid);
 
@@ -2447,7 +2495,7 @@ void dt_dev_reprocess_preview(dt_develop_t *dev)
 void dt_dev_check_zoom_bounds(dt_develop_t *dev,
                               float *zoom_x,
                               float *zoom_y,
-                              dt_dev_zoom_t zoom,
+                              const dt_dev_zoom_t zoom,
                               const int closeup,
                               float *boxww,
                               float *boxhh)
@@ -2617,7 +2665,7 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return 0.0;
 }
 
-void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
+void dt_dev_modulegroups_set(dt_develop_t *dev, const uint32_t group)
 {
   if(dev->proxy.modulegroups.module
      && dev->proxy.modulegroups.set
@@ -2693,14 +2741,17 @@ void dt_dev_masks_list_update(dt_develop_t *dev)
   if(dev->proxy.masks.module && dev->proxy.masks.list_update)
     dev->proxy.masks.list_update(dev->proxy.masks.module);
 }
-void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid)
+
+void dt_dev_masks_list_remove(dt_develop_t *dev,
+                              dt_mask_id_t formid,
+                              dt_mask_id_t parentid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.list_remove)
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
 }
 void dt_dev_masks_selection_change(dt_develop_t *dev,
                                    struct dt_iop_module_t *module,
-                                   const int selectid)
+                                   const dt_mask_id_t selectid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.selection_change)
     dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
@@ -2860,58 +2911,6 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   }
 }
 
-void _dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module)
-{
-  // We count the number of other instances
-  int nb_instances = 0;
-  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-
-    if(mod->instance == module->instance) nb_instances++;
-  }
-
-  dt_iop_module_t *mod_prev = dt_iop_gui_get_previous_visible_module(module);
-  dt_iop_module_t *mod_next = dt_iop_gui_get_next_visible_module(module);
-
-  const gboolean move_next =
-    (mod_next && mod_next->iop_order != INT_MAX)
-    ? dt_ioppr_check_can_move_after_iop(dev->iop, module, mod_next)
-    : -1.0;
-  const gboolean move_prev =
-    (mod_prev && mod_prev->iop_order != INT_MAX)
-    ? dt_ioppr_check_can_move_before_iop(dev->iop, module, mod_prev)
-    : -1.0;
-
-  module->multi_show_new = !(module->flags() & IOP_FLAGS_ONE_INSTANCE);
-  module->multi_show_close = (nb_instances > 1);
-  if(mod_next)
-    module->multi_show_up = move_next;
-  else
-    module->multi_show_up = 0;
-  if(mod_prev)
-    module->multi_show_down = move_prev;
-  else
-    module->multi_show_down = 0;
-}
-
-void dt_dev_modules_update_multishow(dt_develop_t *dev)
-{
-  dt_ioppr_check_iop_order(dev, 0, "dt_dev_modules_update_multishow");
-
-  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-
-    // only for visible modules
-    GtkWidget *expander = mod->expander;
-    if(expander && gtk_widget_is_visible(expander))
-    {
-      _dev_module_update_multishow(dev, mod);
-    }
-  }
-}
-
 gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
 {
   gchar *label;
@@ -2923,12 +2922,16 @@ gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
   return label;
 }
 
-int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
+int dt_dev_distort_transform(dt_develop_t *dev,
+                             float *points,
+                             const size_t points_count)
 {
   return dt_dev_distort_transform_plus
     (dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
-int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count)
+int dt_dev_distort_backtransform(dt_develop_t *dev,
+                                 float *points,
+                                 const size_t points_count)
 {
   return dt_dev_distort_backtransform_plus
     (dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
@@ -3487,13 +3490,9 @@ void dt_dev_undo_start_record(dt_develop_t *dev)
 
   /* record current history state : before change (needed for undo) */
   if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
-  {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE
-      (darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-       dt_history_duplicate(dev->history),
-       dev->history_end,
-       dt_ioppr_iop_order_copy_deep(dev->iop_order_list));
-  }
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
+
+  dev->gui_previous_target = NULL;
 }
 
 void dt_dev_undo_end_record(dt_develop_t *dev)
@@ -3502,9 +3501,7 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
 
   /* record current history state : after change (needed for undo) */
   if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
-  {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-  }
 }
 
 void dt_dev_image_ext(

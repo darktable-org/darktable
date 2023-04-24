@@ -259,8 +259,13 @@ int dt_lua_style_apply(lua_State *L)
     luaA_to(L, dt_style_t, &style, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_styles_apply_to_image(style.name, FALSE, FALSE, imgid);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(darktable.develop && darktable.develop->image_storage.id == imgid)
+    dt_styles_apply_to_dev(style.name, imgid);
+  else
+  {
+    dt_styles_apply_to_image(style.name, FALSE, FALSE, imgid);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  }
   return 1;
 }
 
@@ -345,6 +350,7 @@ int dt_lua_init_styles(lua_State *L)
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "create");
   lua_pushcfunction(L, dt_lua_style_apply);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "apply");
   lua_pushcfunction(L, dt_lua_style_import);

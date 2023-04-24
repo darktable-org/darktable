@@ -18,6 +18,7 @@
 
 #ifdef HAVE_LIBRAW
 #include "common/darktable.h"
+#include "common/math.h"
 #include "imageio_common.h"
 #include "imageio_gm.h"
 #include "develop/develop.h"
@@ -295,7 +296,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   // but seems to be the best available. LibRaw crx decoder can actually
   // decode the raw data, but internal metadata like wb_coeffs, crops etc.
   // are not populated into libraw structure, or image is not of CFA type.
-  if(raw->rawdata.color.cam_mul[0] == 0.0f || isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
+  if(raw->rawdata.color.cam_mul[0] == 0.0f || dt_isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
   {
     dt_print(DT_DEBUG_ALWAYS, "[libraw_open] detected unsupported image `%s'\n", img->filename);
     goto error;

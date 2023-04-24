@@ -37,7 +37,6 @@
 #include "gui/color_picker_proxy.h"
 
 #include <assert.h>
-#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -120,18 +119,23 @@ void dt_print_pipe(dt_debug_thread_t thread,
   }
   char buf[3][128];
   char vbuf[2048] = { 0 };
-  char rois[1024] = { 0 };
+  char roi[512] = { 0 };
+  char roo[512] = { 0 };
   char name[128] = { 0 };
   char masking[64] = { 0 };
 
   snprintf(buf[0], sizeof(buf[0]), "%.4f", dt_get_wtime() - darktable.start_wtime);
   snprintf(buf[1], sizeof(buf[1]), "[%s]", title);
   snprintf(buf[2], sizeof(buf[2]), "%s", mod);
-  if(roi_in && roi_out)
-  {
-    snprintf(rois, sizeof(rois),
-             "(%4i/%4i) %4ix%4i scale=%.4f --> (%4i/%4i) %4ix%4i scale=%.4f",
+  if(roi_in)
+    snprintf(roi, sizeof(roi),
+             "(%4i/%4i) %4ix%4i scale=%.4f%s",
              roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
+             roi_in && roi_out ? " -> " : "");
+  if(roi_out)
+  {
+    snprintf(roo, sizeof(roo),
+             "(%4i/%4i) %4ix%4i scale=%.4f",
              roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
   }
 
@@ -149,8 +153,8 @@ void dt_print_pipe(dt_debug_thread_t thread,
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11s %-28s %-14s %-20s %s%s %s",
-         buf[0], buf[1], name, buf[2], rois, masking, vbuf);
+  printf("%11s %-28s %-14s %-20s %s%s%s %s",
+         buf[0], buf[1], name, buf[2], roi, roo, masking, vbuf);
   fflush(stdout);
 }
 
@@ -237,6 +241,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
 
   pipe->rawdetail_mask_data = NULL;
   pipe->want_detail_mask = DT_DEV_DETAIL_MASK_NONE;
+  memset(&pipe->rawdetail_mask_roi, 0, sizeof(dt_iop_roi_t));
 
   pipe->processing = FALSE;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
@@ -259,7 +264,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
 
-  return dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, size, memlimit);
+  return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
 static void get_output_format(
@@ -314,7 +319,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   // blocks while busy and sets shutdown bit:
   dt_dev_pixelpipe_cleanup_nodes(pipe);
   // so now it's safe to clean up cache:
-  dt_dev_pixelpipe_cache_cleanup(&(pipe->cache));
+  dt_dev_pixelpipe_cache_cleanup(pipe);
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
   dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
@@ -329,8 +334,6 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = NO_IMGID;
   pipe->next_important_module = FALSE;
-
-  dt_dev_clear_rawdetail_mask(pipe);
 
   if(pipe->forms)
   {
@@ -365,6 +368,9 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
   }
   g_list_free(pipe->nodes);
   pipe->nodes = NULL;
+
+  dt_dev_clear_rawdetail_mask(pipe);
+
   // also cleanup iop here
   if(pipe->iop)
   {
@@ -519,7 +525,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       {
         const dt_develop_blend_params_t *const bp =
           (const dt_develop_blend_params_t *)piece->blendop_data;
-        if(bp->details != 0.0f)
+        if(!feqf(bp->details, 0.0f, 1e-6))
           pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_REQUIRED;
       }
     }
@@ -1432,9 +1438,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(cache_available)
   {
     dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
-                               output, out_format,
-                               (module) ? module->so->op : NULL,
-                               FALSE);
+                               output, out_format, module, FALSE);
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;
@@ -1587,9 +1591,7 @@ static gboolean _dev_pixelpipe_process_rec(
   }
   pipe->next_important_module = FALSE;
   dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
-                             output, out_format,
-                             module ? module->so->op : NULL,
-                             important);
+                             output, out_format, module, important);
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -2329,7 +2331,7 @@ static gboolean _dev_pixelpipe_process_rec(
 
     /* input is still only on GPU? Let's invalidate CPU input buffer then */
     if(valid_input_on_gpu_only)
-      dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, input, TRUE);
   }
   else
   {
@@ -2349,7 +2351,7 @@ static gboolean _dev_pixelpipe_process_rec(
 #endif // HAVE_OPENCL
 
   if(pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE)
-    dt_dev_pixelpipe_cache_unweight(pipe, *output);
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
 
   char histogram_log[32] = "";
   if(!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE))
@@ -2398,7 +2400,7 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       // give the input buffer to the currently focused plugin more weight.
       // the user is likely to change that one soon, so keep it in cache.
-      dt_dev_pixelpipe_cache_reweight(pipe, input, roi_in.width * roi_in.height * in_bpp);
+      dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
     }
 
     // we check for an important hint after processing the module as we
@@ -2409,7 +2411,7 @@ static gboolean _dev_pixelpipe_process_rec(
   if(needs_histo)
   {
     pipe->nocache = TRUE;
-    dt_dev_pixelpipe_cache_unweight(pipe, *output);
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
   }
 
   // warn on NaN or infinity
@@ -2432,16 +2434,16 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       int hasinf = 0, hasnan = 0;
       dt_aligned_pixel_t min = { FLT_MAX };
-      dt_aligned_pixel_t max = { FLT_MIN };
+      dt_aligned_pixel_t max = { -FLT_MAX };
 
       for(int k = 0; k < 4 * roi_out->width * roi_out->height; k++)
       {
         if((k & 3) < 3)
         {
           const float f = ((float *)(*output))[k];
-          if(isnan(f))
+          if(dt_isnan(f))
             hasnan = 1;
-          else if(isinf(f))
+          else if(dt_isinf(f))
             hasinf = 1;
           else
           {
@@ -2471,14 +2473,14 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       int hasinf = 0, hasnan = 0;
       float min = FLT_MAX;
-      float max = FLT_MIN;
+      float max = -FLT_MAX;
 
       for(int k = 0; k < roi_out->width * roi_out->height; k++)
       {
         const float f = ((float *)(*output))[k];
-        if(isnan(f))
+        if(dt_isnan(f))
           hasnan = 1;
-        else if(isinf(f))
+        else if(dt_isinf(f))
           hasinf = 1;
         else
         {
@@ -2693,7 +2695,7 @@ gboolean dt_dev_pixelpipe_process(
 restart:
 
   // check if we should obsolete caches
-  if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(&(pipe->cache));
+  if(pipe->cache_obsolete) dt_dev_pixelpipe_cache_flush(pipe);
   pipe->cache_obsolete = FALSE;
 
   // mask display off as a starting point
@@ -2753,7 +2755,7 @@ restart:
       dt_capabilities_remove("opencl");
     }
 
-    dt_dev_pixelpipe_flush_caches(pipe);
+    dt_dev_pixelpipe_cache_flush(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
 
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
@@ -2817,11 +2819,6 @@ restart:
   return FALSE;
 }
 
-void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe)
-{
-  dt_dev_pixelpipe_cache_flush(&pipe->cache);
-}
-
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
                                      struct dt_develop_t *dev,
                                      const int width_in,
@@ -2872,7 +2869,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
 
 float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe,
                               const dt_iop_module_t *raster_mask_source,
-                              const int raster_mask_id,
+                              const dt_mask_id_t raster_mask_id,
                               const dt_iop_module_t *target_module,
                               gboolean *free_mask)
 {
@@ -2977,6 +2974,7 @@ void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
 {
   if(pipe->rawdetail_mask_data) dt_free_align(pipe->rawdetail_mask_data);
   pipe->rawdetail_mask_data = NULL;
+  memset(&pipe->rawdetail_mask_roi, 0, sizeof(dt_iop_roi_t));
 }
 
 gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
@@ -2985,7 +2983,7 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
                                      const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0)
+  if(!(p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED))
   {
     if(p->rawdetail_mask_data)
       dt_dev_clear_rawdetail_mask(p);
@@ -3013,9 +3011,9 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   wboff ? 1.0f : piece->pipe->dsc.temperature.coeffs[2]};
   dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
   dt_free_align(tmp);
-  dt_print(DT_DEBUG_MASKS,
-           "[dt_dev_write_rawdetail_mask] %i (%ix%i)\n",
-           mode, roi_in->width, roi_in->height);
+  dt_print_pipe(DT_DEBUG_PIPE,
+                      "write detail mask on CPU",
+                      piece->pipe, "", roi_in, NULL, "mode %i\n", mode);
   return FALSE;
 
   error:
@@ -3032,7 +3030,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
                                         const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0)
+  if(!(p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED))
   {
     if(p->rawdetail_mask_data)
       dt_dev_clear_rawdetail_mask(p);
@@ -3093,9 +3091,9 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  dt_print(DT_DEBUG_MASKS,
-           "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i)",
-           mode, roi_in->width, roi_in->height);
+  dt_print_pipe(DT_DEBUG_PIPE,
+                      "write detail mask on GPU",
+                      piece->pipe, "", roi_in, NULL, "mode %i\n", mode);
   return FALSE;
 
   error:
@@ -3117,7 +3115,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe,
 {
   if(!pipe->rawdetail_mask_data) return NULL;
   gboolean valid = FALSE;
-  const int check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
+  const dt_develop_detail_mask_t check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
 
   GList *source_iter;
   for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))

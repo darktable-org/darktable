@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 
 #include "develop/blend.h"
 
-// format flags stored into the presets database; the FOR_NOT_ variants are negated to keep existing presets
+// format flags stored into the presets database; the FOR_NOT_
+// variants are negated to keep existing presets
 typedef enum dt_gui_presets_format_flag_t
 {
   FOR_LDR = 1 << 0,
@@ -74,7 +75,7 @@ void dt_gui_presets_init();
 
 /** add or replace a generic (i.e. non-exif specific) preset for this operation. */
 void dt_gui_presets_add_generic(const char *name,
-                                dt_dev_operation_t op,
+                                const dt_dev_operation_t op,
                                 const int32_t version,
                                 const void *params,
                                 const int32_t params_size,
@@ -83,7 +84,7 @@ void dt_gui_presets_add_generic(const char *name,
 
 /** same as add_generic but also supply blendop parameters for the presets. */
 void dt_gui_presets_add_with_blendop(const char *name,
-                                     dt_dev_operation_t op,
+                                     const dt_dev_operation_t op,
                                      const int32_t version,
                                      const void *params,
                                      const int32_t params_size,
@@ -92,50 +93,50 @@ void dt_gui_presets_add_with_blendop(const char *name,
 
 /** update match strings for maker, model, lens. */
 void dt_gui_presets_update_mml(const char *name,
-                               dt_dev_operation_t op,
+                               const dt_dev_operation_t op,
                                const int32_t version,
                                const char *maker,
                                const char *model,
                                const char *lens);
 /** update ranges for iso, aperture, exposure, and focal length, respectively. */
 void dt_gui_presets_update_iso(const char *name,
-                               dt_dev_operation_t op,
+                               const dt_dev_operation_t op,
                                const int32_t version,
                                const float min,
                                const float max);
 void dt_gui_presets_update_av(const char *name,
-                              dt_dev_operation_t op,
+                              const dt_dev_operation_t op,
                               const int32_t version,
                               const float min,
                               const float max);
 void dt_gui_presets_update_tv(const char *name,
-                              dt_dev_operation_t op,
+                              const dt_dev_operation_t op,
                               const int32_t version,
                               const float min,
                               const float max);
 void dt_gui_presets_update_fl(const char *name,
-                              dt_dev_operation_t op,
+                              const dt_dev_operation_t op,
                               const int32_t version,
                               const float min,
                               const float max);
 /** update ldr flag: 0-don't care, 1-low dynamic range, 2-raw */
 void dt_gui_presets_update_ldr(const char *name,
-                               dt_dev_operation_t op,
+                               const dt_dev_operation_t op,
                                const int32_t version,
                                const int ldrflag);
 /** set auto apply property of preset. */
 void dt_gui_presets_update_autoapply(const char *name,
-                                     dt_dev_operation_t op,
+                                     const dt_dev_operation_t op,
                                      const int32_t version,
                                      const int autoapply);
 /** set filter mode. if 1, the preset will only show for matching images. */
 void dt_gui_presets_update_filter(const char *name,
-                                  dt_dev_operation_t op,
+                                  const dt_dev_operation_t op,
                                   const int32_t version,
                                   const int filter);
 
 /** show a popup menu without initialized module. */
-void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op,
+void dt_gui_presets_popup_menu_show_for_params(const dt_dev_operation_t op,
                                                const int32_t version,
                                                void *params,
                                                const int32_t params_size,

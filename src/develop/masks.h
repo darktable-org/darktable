@@ -171,8 +171,8 @@ typedef struct dt_masks_point_gradient_t
 /** structure used to store all forms's id for a group */
 typedef struct dt_masks_point_group_t
 {
-  int formid;
-  int parentid;
+  dt_mask_id_t formid;
+  dt_mask_id_t parentid;
   int state;
   float opacity;
 } dt_masks_point_group_t;
@@ -265,16 +265,16 @@ typedef struct dt_masks_functions_t
                      const double pressure,
                      const int which,
                      struct dt_masks_form_t *form,
-                     const int parentid,
+                     const dt_imgid_t parentid,
                      struct dt_masks_form_gui_t *gui,
                      const int index);
   int (*mouse_scrolled)(struct dt_iop_module_t *module,
                         float pzx,
                         float pzy,
-                        const int up,
+                        const gboolean up,
                         uint32_t state,
                         struct dt_masks_form_t *form,
-                        const int parentid,
+                        const dt_imgid_t parentid,
                         struct dt_masks_form_gui_t *gui,
                         const int index);
   int (*button_pressed)(struct dt_iop_module_t *module,
@@ -285,7 +285,7 @@ typedef struct dt_masks_functions_t
                         const int type,
                         const uint32_t state,
                         struct dt_masks_form_t *form,
-                        const int parentid,
+                        const dt_imgid_t parentid,
                         struct dt_masks_form_gui_t *gui,
                         const int index);
   int (*button_released)(struct dt_iop_module_t *module,
@@ -294,7 +294,7 @@ typedef struct dt_masks_functions_t
                          const int which,
                          const uint32_t state,
                          struct dt_masks_form_t *form,
-                         const int parentid,
+                         const dt_imgid_t parentid,
                          struct dt_masks_form_gui_t *gui,
                          const int index);
   void (*post_expose)(cairo_t *cr,
@@ -316,7 +316,7 @@ typedef struct dt_masks_form_t
   // name of the form
   char name[128];
   // id used to store the form
-  int formid;
+  dt_mask_id_t formid;
   // version of the form
   int version;
 } dt_masks_form_t;
@@ -392,9 +392,13 @@ typedef struct dt_masks_form_gui_t
   dt_masks_pressure_sensitivity_t pressure_sensitivity;
 
   // ids
-  int formid;
+  dt_mask_id_t formid;
   uint64_t pipe_hash;
 } dt_masks_form_gui_t;
+
+/** special value to indicate an invalid or unitialized coordinate (replaces */
+/** former use of NAN and isnan() by the most negative float) **/
+#define DT_INVALID_COORDINATE (-FLT_MAX)
 
 /** the shape-specific function tables */
 extern const dt_masks_functions_t dt_masks_functions_circle;
@@ -495,9 +499,9 @@ dt_masks_form_t *dt_masks_create_ext(dt_masks_type_t type);
 /** replace dev->forms with forms */
 void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms);
 /** returns a form with formid == id from a list of forms */
-dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id);
+dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, dt_mask_id_t id);
 /** returns a form with formid == id from dev->forms */
-dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id);
+dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, dt_mask_id_t id);
 
 /** read the forms from the db */
 void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid);
@@ -535,7 +539,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
                                    const double x,
                                    const double y,
-                                   const int up,
+                                   const gboolean up,
                                    const uint32_t state);
 void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  cairo_t *cr,
@@ -572,9 +576,9 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget,
                                          struct dt_iop_module_t *module);
 dt_masks_edit_mode_t dt_masks_get_edit_mode(struct dt_iop_module_t *module);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module,
-                            dt_masks_edit_mode_t value);
+                            const dt_masks_edit_mode_t value);
 void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module,
-                                        const int formid,
+                                        const dt_mask_id_t formid,
                                         const dt_masks_edit_mode_t value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
 void dt_masks_iop_combo_populate(GtkWidget *w,
@@ -589,13 +593,13 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
                           dt_masks_form_t *grp,
                           dt_masks_form_t *form);
 float dt_masks_form_change_opacity(dt_masks_form_t *form,
-                                   const int parentid,
+                                   const dt_imgid_t parentid,
                                    const float amount);
 void dt_masks_form_move(dt_masks_form_t *grp,
-                        const int formid,
-                        const int up);
+                        const dt_mask_id_t formid,
+                        const gboolean up);
 int dt_masks_form_duplicate(dt_develop_t *dev,
-                            const int formid);
+                            const dt_mask_id_t formid);
 /* returns a duplicate tof form, including the formid */
 dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form);
 /* duplicate the list of forms, replace item in the list with form with the same formid */
@@ -619,12 +623,12 @@ float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
                            const int k,
                            const gboolean border);
 
-float dt_masks_change_size(gboolean up,
+float dt_masks_change_size(const gboolean up,
                            const float value,
                            const float min,
                            const float max);
 
-float dt_masks_change_rotation(gboolean up,
+float dt_masks_change_rotation(const gboolean up,
                                const float value,
                                const gboolean is_degree);
 
@@ -726,7 +730,7 @@ static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_
 }
 
 static inline
-dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
+dt_masks_dynbuf_t *dt_masks_dynbuf_init(const size_t size, const char *tag)
 {
   assert(size > 0);
   dt_masks_dynbuf_t *a = (dt_masks_dynbuf_t *)calloc(1, sizeof(dt_masks_dynbuf_t));
@@ -749,7 +753,7 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
 }
 
 static inline
-void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
+void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, const float value)
 {
   assert(a != NULL);
   assert(a->pos <= a->size);
@@ -762,7 +766,7 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
 }
 
 static inline
-void dt_masks_dynbuf_add_2(dt_masks_dynbuf_t *a, float value1, float value2)
+void dt_masks_dynbuf_add_2(dt_masks_dynbuf_t *a, const float value1, const float value2)
 {
   assert(a != NULL);
   assert(a->pos <= a->size);
@@ -823,7 +827,7 @@ void dt_masks_dynbuf_add_zeros(dt_masks_dynbuf_t *a, const int n)
 
 
 static inline
-float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, int offset)
+float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, const int offset)
 {
   assert(a != NULL);
   // offset: must be negative distance relative to end of buffer
@@ -833,7 +837,7 @@ float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, int offset)
 }
 
 static inline
-void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, int offset, float value)
+void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, const int offset, const float value)
 {
   assert(a != NULL);
   // offset: must be negative distance relative to end of buffer
@@ -885,7 +889,7 @@ void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
 }
 
 static inline
-int dt_masks_roundup(int num, int mult)
+int dt_masks_roundup(const int num, const int mult)
 {
   const int rem = num % mult;
 
@@ -950,7 +954,7 @@ void dt_masks_line_stroke(cairo_t *cr,
                           const gboolean selected,
                           const float zoom_scale);
 
-static inline float dt_masks_sensitive_dist(float zoom_scale)
+static inline float dt_masks_sensitive_dist(const float zoom_scale)
 {
   return DT_PIXEL_APPLY_DPI(7) / zoom_scale;
 }

@@ -172,13 +172,13 @@ The following is a summary of the main features added to darktable
 
   - Loader for JPEG2000 file format
 
-## Other Changes
-
-- Add global <kbd>right-click</kbd> and drad to fix image
+- Add global <kbd>right-click</kbd> and drag to fix image
   rotation. This can now be used at any moment in darkroom as long as
   the currently focused module is not using this shortcut. This allows
   for fast rotation correction without having to open the Rotation and
   Perspective module.
+
+## Other Changes
 
 - Add OpenCL support to the Sigmoid module.
 
@@ -304,7 +304,7 @@ The following is a summary of the main features added to darktable
 - Write Exif data to the eXIf PNG chunk if using Exiv2 version newer
   than 0.27.x. This is the new standard way to store Exif data in PNGs.
 
-- Makes laplacian highlights recovery mode less memory hangry (save
+- Makes laplacian highlights recovery mode less memory hungry (save
   around 40%) and allow for a large speed up. This makes this recovery
   mode lot more usable and allows for more recovery iterations.
 
@@ -402,11 +402,49 @@ The following is a summary of the main features added to darktable
 - Show the full-frame equivalent focal length and crop factor in the
   image information module.
 
+- Added options in the watermark module for more fine-grained control
+  of the watermark scaling. In conjunction with the new 'fixed-size-text'
+  template it is now possible to insert text with constant font size.
+
+- Make successive changes to sliders (for example by dragging,
+  scrolling or shortcuts) and other widgets more responsive by
+  creating fewer undo records. This also makes using undo more
+  effective because it doesn't step through every micro change.
+
+- Improve the ISO range selection widget for the auto apply presets
+  dialog.
+
+- In the drawn mask blending mode there was in addition to the "toggle
+  polarity" - found in all blending modes - the combo box "invert
+  mask". Both where doing the very same thing so the later has been
+  removed.
+
+- Support the encoder ring and button lights of the Behringer X-Touch
+  Compact via midi. Unmapped encoder presses fall back to reset the
+  encoder.
+
+- Midi buttons mapped to the reset effect of a slider or combo (either
+  directly or via fallback, like the row below the faders of the
+  X-Touch Compact) light up if the current value is not the default.
+
+- Resetting a combo (by double clicking or via a shortcut) that has
+  sub headers will now select the first selectable item.
+
+- Image change requests in the darkroom (space/backspace/click in
+  filmstrip) used to be quietly ignored if a recalculation was
+  currently ongoing. Now, they will be processed as soon as the pipe
+  is ready. Any further changes that were made to the previous image
+  while waiting will be discarded.
+
+- Enable per-color black point manual adjustment for non-CFA
+  (a.k.a. linear) raw images. Note that file embedded levels might
+  still not be set automatically on import.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
 
-- Remove the commit button from the crop module has it was not used
+- Remove the commit button from the crop module as it was not used
   anymore.
 
 - Fix the reset of modules with specific default parameters to ensure
@@ -426,13 +464,13 @@ The following is a summary of the main features added to darktable
   "Create HDR"
 
 - Pixelpipe cache safety and performance improvements. This makes
-  better hit when looking in the cache and so allow for better
-  performances.
+  better hit when looking in the cache and so allows for better
+  performance.
 
 - Fix some pixel-pipe cache issues related to mask visualization and
   module's internal histogram (like RGB Curve for example). This
-  ensure better hit in the cache leading to better performance and
-  also avoid some refresh issues in some cases.
+  ensures better hit in the cache leading to better performance and
+  also avoids some refresh issues in some cases.
 
 - Fix "--threads n" restricts OMP threads to specified number (does
   not allow for more threads than available on the host.
@@ -447,7 +485,7 @@ The following is a summary of the main features added to darktable
 
 - Fix the update preset entry in the presets menu to allow for it to
   be activated in more situations. For example after entering in the
-  darkroom and modifying the some parameters in the module the update
+  darkroom and modifying some parameters in the module the update
   preset entry was not selectable. It was necessary to first select
   the preset and then changing the parameters.
 
@@ -463,7 +501,7 @@ The following is a summary of the main features added to darktable
 - Fix some minor memory leaks in some modules.
 
 - Fix a possible crash when selecting the original module history
-  state and compression the history.
+  state and compressing the history.
 
 - Fix a possible crash in gradient mask creation due to an issue in
   the implemented parallelism.
@@ -473,9 +511,9 @@ The following is a summary of the main features added to darktable
   mismatches reported.
 
 - Fix different issues on the mask manager. It is now possible for all
-  masks kind to be added continuously. Also the brush was not properly
+  mask kinds to be added continuously. Also the brush was not properly
   displayed after being created from the mask manager. A crash when
-  creating gradient from the mask manager has been fixed. For all
+  creating gradients from the mask manager has been fixed. For all
   shapes the editable state is properly set after being created making
   it possible to move and resize the different parts.
 
@@ -520,7 +558,7 @@ The following is a summary of the main features added to darktable
   initialized data.
 
 - Avoid XMP writing if not requested and image was not altered. This
-  is rule is properly followed now also when importing RAW + JPEG.
+  rule is properly followed now also when importing RAW + JPEG.
 
 - Make sure the database timestamp is always set when possibly writing
   a sidecar xmp file.
@@ -561,8 +599,19 @@ The following is a summary of the main features added to darktable
 - Properly translate collection sort names in the recent collection
   sort history pop-up.
 
-- Fix dual demosaicing options for Bayer4 sensor cameras where only
-  VNG4 and PassThrough are supported.
+- Fix dual demosaicing options for 4-color Bayer sensor cameras where
+  only VNG4 and PassThrough are supported.
+
+- Do not truncate focal length on thumbnails to avoid loss of
+  precision of displaying values.
+
+- Let exposure module to set neutral settings for non-RAW images.
+
+- Fixing details masks while switching to darkroom which could lead to
+  a crash.
+
+- Fixing feathering masks in certain modules (Lens, Retouch, Liquify,
+  Spot removal).
 
 ## Lua
 

@@ -67,7 +67,7 @@ extern "C" {
 #define DT_OPENCL_DEFAULT_COMPILE_AMD ("-cl-fast-relaxed-math")
 #define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math")
 #define DT_OPENCL_DEFAULT_COMPILE ("")
-#define DT_CLDEVICE_HEAD ("cldevice_v4_")
+#define DT_CLDEVICE_HEAD ("cldevice_v5_")
 
 // version for current darktable cl kernels
 // this is reflected in the kernel directory and allows to
@@ -142,7 +142,7 @@ typedef struct dt_opencl_device_t
   int maxeventslot;
   int nvidia_sm_20;
   const char *vendor;
-  const char *name;
+  const char *fullname;
   const char *cname;
   const char *options;
   cl_int summary;
