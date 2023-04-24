@@ -536,14 +536,6 @@ static inline gboolean dt_is_aligned(const void *pointer, const size_t byte_coun
     return (uintptr_t)pointer % byte_count == 0;
 }
 
-static inline void * dt_check_sse_aligned(void * pointer)
-{
-  if(dt_is_aligned(pointer, 64))
-    return __builtin_assume_aligned(pointer, 64);
-  else
-    return NULL;
-}
-
 int dt_capabilities_check(char *capability);
 void dt_capabilities_add(char *capability);
 void dt_capabilities_remove(char *capability);
