@@ -1914,11 +1914,11 @@ static inline void filmic_v5(const float *const restrict in, float *const restri
 
     // Save Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_original = { 0.f };
-    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
+    RGB_to_Ych(pix_in, input_matrix, Ych_original);
 
     // Get final Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_final = { 0.f };
-    pipe_RGB_to_Ych(pix_out, input_matrix, Ych_final);
+    RGB_to_Ych(pix_out, input_matrix, Ych_final);
 
     Ych_final[1] = fminf(Ych_original[1], Ych_final[1]);
 
