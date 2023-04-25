@@ -613,6 +613,9 @@ The following is a summary of the main features added to darktable
 - Fixing feathering masks in certain modules (Lens, Retouch, Liquify,
   Spot removal).
 
+- Fix some rare cases where masks are not displayed when trying to
+  edit them after just starting darktable or changing of module group.
+
 ## Lua
 
 ### API Version
