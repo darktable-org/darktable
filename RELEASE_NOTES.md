@@ -616,6 +616,8 @@ The following is a summary of the main features added to darktable
 - Fix some rare cases where masks are not displayed when trying to
   edit them after just starting darktable or changing of module group.
 
+- Fix slideshow not working properly on HiDPI displays.
+
 ## Lua
 
 ### API Version
