@@ -785,17 +785,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       // calculate coefficients for L channel
       for(int i=0;i<N;i++) b[i] = p->target_L[i];
-      for(int i=N;i<N+4;i++) b[i] = 0;
+      for(int i=N;i<N4;i++) b[i] = 0;
       gauss_solve_triangular(A, pivot, b, N4);
       for(int i=0;i<N+4;i++) d->coeff_L[i] = b[i];
       // calculate coefficients for a channel
       for(int i=0;i<N;i++) b[i] = p->target_a[i];
-      for(int i=N;i<N+4;i++) b[i] = 0;
+      for(int i=N;i<N4;i++) b[i] = 0;
       gauss_solve_triangular(A, pivot, b, N4);
       for(int i=0;i<N+4;i++) d->coeff_a[i] = b[i];
       // calculate coefficients for b channel
       for(int i=0;i<N;i++) b[i] = p->target_b[i];
-      for(int i=N;i<N+4;i++) b[i] = 0;
+      for(int i=N;i<N4;i++) b[i] = 0;
       gauss_solve_triangular(A, pivot, b, N4);
       for(int i=0;i<N+4;i++) d->coeff_b[i] = b[i];
     }
