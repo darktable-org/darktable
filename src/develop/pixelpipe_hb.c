@@ -2888,9 +2888,13 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
        || (candidate->module->iop_order >= target_module->iop_order))
     {
       dt_control_log
-        (_("can't take a rastermask from later in the pipeline"));
+        (_("module `%s' can't get raster mask from module `%s'"
+           "as that is processed later in the pixel pipe.\n"
+           "raster mask is ignored."),
+           target_module->so->op, raster_mask_source->so->op);
 
-      dt_print(DT_DEBUG_ALWAYS, "Can't get raster mask for `%s' from `%s' as that is later in the pipeline\n",
+      dt_print(DT_DEBUG_ALWAYS, "module `%s' can't get raster mask from module `%s'"
+                                " as that is processed later in the pixel pipe\n",
                       target_module->so->op, raster_mask_source->so->op);
       return NULL;
     }
@@ -2899,6 +2903,7 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
       break;
   }
 
+  // we found the raster_mask source module
   if(source_iter)
   {
     const dt_dev_pixelpipe_iop_t *source_piece =
@@ -2946,8 +2951,12 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
               }
               else
               {
-                dt_print(DT_DEBUG_ALWAYS,
-                         "skipped transforming mask due to lack of memory\n");
+                dt_print_pipe(DT_DEBUG_ALWAYS,
+                      "distort raster mask",
+                      piece->pipe, module->module->op,
+                      &module->processed_roi_in, &module->processed_roi_out,
+                      "skipped transforming mask due to lack of memory\n");
+                return NULL;
               }
             }
             else if(!module->module->distort_mask
@@ -2956,19 +2965,12 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
                         || module->processed_roi_in.x != module->processed_roi_out.x
                         || module->processed_roi_in.y != module->processed_roi_out.y))
             {
-              dt_print(DT_DEBUG_ALWAYS,
-                       "FIXME: module `%s' changed the roi from %d x %d @ %d /"
-                       " %d to %d x %d | %d / %d but doesn't have "
-                       "distort_mask() implemented!\n",
-                       module->module->op,
-                       module->processed_roi_in.width,
-                       module->processed_roi_in.height,
-                       module->processed_roi_in.x,
-                       module->processed_roi_in.y,
-                       module->processed_roi_out.width,
-                       module->processed_roi_out.height,
-                       module->processed_roi_out.x,
-                       module->processed_roi_out.y);
+              dt_print_pipe(DT_DEBUG_ALWAYS,
+                      "distort raster mask",
+                      piece->pipe, module->module->op,
+                      &module->processed_roi_in, &module->processed_roi_out,
+                      "misses distort_mask()\n");
+              return NULL;
             }
           }
 
