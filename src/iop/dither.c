@@ -46,14 +46,26 @@ DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
 typedef enum dt_iop_dither_type_t
 {
-  DITHER_RANDOM,      // $DESCRIPTION: "random"
-  DITHER_FS1BIT,      // $DESCRIPTION: "Floyd-Steinberg 1-bit B&W"
-  DITHER_FS4BIT_GRAY, // $DESCRIPTION: "Floyd-Steinberg 4-bit gray"
-  DITHER_FS8BIT,      // $DESCRIPTION: "Floyd-Steinberg 8-bit RGB"
-  DITHER_FS16BIT,     // $DESCRIPTION: "Floyd-Steinberg 16-bit RGB"
-  DITHER_FSAUTO       // $DESCRIPTION: "Floyd-Steinberg auto"
+  DITHER_RANDOM = 0,      // $DESCRIPTION: "random"
+  DITHER_FS1BIT = 1,      // $DESCRIPTION: "Floyd-Steinberg 1-bit B&W"
+  DITHER_FS1BIT_COLOR = 6,// $DESCRIPTION: "Floyd-Steinberg 1-bit RGB"
+  DITHER_FS2BIT_GRAY = 7, // $DESCRIPTION: "Floyd-Steinberg 2-bit gray"
+  DITHER_FS2BIT = 8,      // $DESCRIPTION: "Floyd-Steinberg 2-bit RGB"
+  DITHER_FS4BIT_GRAY = 2, // $DESCRIPTION: "Floyd-Steinberg 4-bit gray"
+  DITHER_FS4BIT = 9,      // $DESCRIPTION: "Floyd-Steinberg 4-bit RGB"
+  DITHER_FS8BIT = 3,      // $DESCRIPTION: "Floyd-Steinberg 8-bit RGB"
+  DITHER_FS16BIT = 4,     // $DESCRIPTION: "Floyd-Steinberg 16-bit RGB"
+  DITHER_FSAUTO = 5,      // $DESCRIPTION: "Floyd-Steinberg auto"
+  POSTER_2 = 0x101,	  // $DESCRIPTION: "Posterize 2 levels per channel"
+  POSTER_3 = 0x102,	  // $DESCRIPTION: "Posterize 3 levels per channel"
+  POSTER_4 = 0x103,	  // $DESCRIPTION: "Posterize 4 levels per channel"
+  POSTER_5 = 0x104,	  // $DESCRIPTION: "Posterize 5 levels per channel"
+  POSTER_6 = 0x105,	  // $DESCRIPTION: "Posterize 6 levels per channel"
+  POSTER_7 = 0x106,	  // $DESCRIPTION: "Posterize 7 levels per channel"
+  POSTER_8 = 0x107,	  // $DESCRIPTION: "Posterize 8 levels per channel"
 } dt_iop_dither_type_t;
 
+#define POSTERIZE_FLAG 0x100
 
 typedef struct dt_iop_dither_params_t
 {
@@ -94,10 +106,16 @@ const char *name()
   return _("dithering");
 }
 
+const char *aliases()
+{
+  return _("posterize|reduce bit-depth");
+}
+
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("reduce banding and posterization effects in output JPEGs by adding random noise"),
-                                      _("corrective"),
+  return dt_iop_set_description(self, _("reduce banding and posterization effects in output\n"
+                                        "JPEGs by adding random noise, or reduce bit depth"),
+                                      _("corrective, artistic"),
                                       _("non-linear, RGB, display-referred"),
                                       _("non-linear, RGB"),
                                       _("non-linear, RGB, display-referred"));
@@ -170,10 +188,7 @@ static inline void _nearest_color(
     const float in = _rgb_to_gray(val);
     const float new = _quantize(in,f,rf);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(val, err : 16)
-#endif
-    for(int c = 0; c < 4; c++)
+    for_each_channel(c, aligned(val,err))
     {
       err[c] = val[c] - new;
       val[c] = new;
@@ -182,16 +197,13 @@ static inline void _nearest_color(
   else
   {
     // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-#ifdef _OPENMP
-#pragma omp simd aligned(val, err : 16)
-#endif
-  for(int c = 0; c < 4; c++)
-  {
-    const float old = val[c];
-    const float new = _quantize(old, f, rf);
-    err[c] = old - new;
-    val[c] = new;
-  }
+    for_each_channel(c, aligned(val, err))
+    {
+      const float old = val[c];
+      const float new = _quantize(old, f, rf);
+      err[c] = old - new;
+      val[c] = new;
+    }
   }
 }
 
@@ -200,10 +212,7 @@ static inline void _diffuse_error(
         const float *const restrict err,
         const float factor)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(val, err)
-#endif
-  for(int c = 0; c < 4; c++)
+  for_each_channel(c, aligned(val,err))
   {
     val[c] += err[c] * factor;
   }
@@ -226,11 +235,42 @@ static inline void _clipnan_pixel(
         float *const restrict out,
         const float *const restrict in)
 {
-#ifdef _OPENMP
-#pragma omp simd aligned(in, out : 16)
-#endif
-  for(int c = 0; c < 4; c++)
+  for_each_channel(c, aligned(in,out))
     out[c] = _clipnan(in[c]);
+}
+
+static int _get_posterize_levels(const dt_iop_dither_data_t *const data)
+{
+  int levels = 65536;
+  switch(data->dither_type)
+  {
+    case POSTER_2:
+      levels = 2;
+      break;
+    case POSTER_3:
+      levels = 3;
+      break;
+    case POSTER_4:
+      levels = 4;
+      break;
+    case POSTER_5:
+      levels = 5;
+      break;
+    case POSTER_6:
+      levels = 6;
+      break;
+    case POSTER_7:
+      levels = 7;
+      break;
+    case POSTER_8:
+      levels = 8;
+      break;
+    default:
+      // this function won't ever be called for FS or random-noise dithering
+      __builtin_unreachable();
+      break;
+  }
+  return levels;
 }
 
 static int _get_dither_parameters(
@@ -250,9 +290,25 @@ static int _get_dither_parameters(
       graymode = 1;
       *levels = MAX(2, MIN(bds + 1, 256));
       break;
+    case DITHER_FS1BIT_COLOR:
+      graymode = 0;
+      *levels = MAX(2, MIN(bds + 1, 4));
+      break;
+    case DITHER_FS2BIT_GRAY:
+      graymode = 1;
+      *levels = 4;
+      break;
+    case DITHER_FS2BIT:
+      graymode = 0;
+      *levels = 4;
+      break;
     case DITHER_FS4BIT_GRAY:
       graymode = 1;
       *levels = MAX(16, MIN(15 * bds + 1, 256));
+      break;
+    case DITHER_FS4BIT:
+      graymode = 0;
+      *levels = 16;
       break;
     case DITHER_FS8BIT:
       graymode = 0;
@@ -302,9 +358,9 @@ static int _get_dither_parameters(
         graymode = -1;
       }
       break;
-    case DITHER_RANDOM:
+    default:
       // this function won't ever be called for that type
-      // instead, process_random() will be called
+      // instead, process_random() or process_posterize() will be called
       __builtin_unreachable();
       break;
   }
@@ -348,7 +404,7 @@ static void process_floyd_steinberg(
   }
 
   const float f = levels - 1;
-  const float rf = 1.0 / f;
+  const float rf = 1.0f / f;
   dt_aligned_pixel_t err;
 
   // dither without error diffusion on very tiny images
@@ -516,8 +572,8 @@ static void process_random(
 
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
-  dt_omp_firstprivate(dither, height, width) \
-  dt_omp_sharedconst(tea_states, ivoid, ovoid)
+  dt_omp_firstprivate(dither, height, width, ivoid, ovoid) \
+  dt_omp_sharedconst(tea_states)
 #endif
   {
     // get a pointer to each thread's private buffer *outside* the for loop, to avoid a function call per iteration
@@ -536,10 +592,7 @@ static void process_random(
         encrypt_tea(tea_state);
         float dith = dither * tpdf(tea_state[0]);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(in, out : 64)
-#endif
-        for(int c = 0; c < 4; c++)
+        for_each_channel(c,aligned(in,out:64))
         {
           out[4*i+c] = CLIP(in[4*i+c] + dith);
         }
@@ -547,6 +600,45 @@ static void process_random(
     }
   }
   free_tea_states(tea_states);
+}
+
+static void process_posterize(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        const void *const ivoid,
+        void *const ovoid,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_dither_data_t *const data = (dt_iop_dither_data_t *)piece->data;
+
+  const size_t width = roi_in->width;
+  const size_t height = roi_in->height;
+  assert(piece->colors == 4);
+
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+  const size_t npixels = width * height;
+
+  const int levels = _get_posterize_levels(data);
+  const float f = levels - 1;
+  const float rf = 1.0f / f;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, in, out, f, rf) \
+  schedule(static)
+#endif
+  for(int k = 0; k < npixels; k++)
+  {
+    dt_aligned_pixel_t pixel;
+    // quantize the pixel into the desired number of levels per color channel
+    for_each_channel(c)
+      pixel[c] = _quantize(in[4*k + c], f, rf);
+    // and write the quantized result to the output buffer
+    copy_pixel_nontemporal(out + 4*k, pixel);
+  }
+  dt_omploop_sfence(); // ensure that all nontemporal write complete before proceeding
 }
 
 
@@ -558,10 +650,16 @@ void process(
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
+
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
   if(data->dither_type == DITHER_RANDOM)
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
+  else if(data->dither_type & POSTERIZE_FLAG)
+    process_posterize(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
   {
     const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
