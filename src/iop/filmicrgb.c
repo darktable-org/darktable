@@ -4568,7 +4568,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     {
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("highlights saturation mix"));
       gtk_widget_set_tooltip_text(g->saturation, _("positive values ensure saturation is kept unchanged over the whole range.\n"
-                                                   "negative values bleache highlights at constant hue and luminance.\n"
+                                                   "negative values bleach highlights at constant hue and luminance.\n"
                                                    "zero is an equal mix of both strategies."));
       gtk_widget_set_visible(GTK_WIDGET(g->preserve_color), FALSE);
     }
