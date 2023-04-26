@@ -1425,14 +1425,14 @@ static gboolean _dev_pixelpipe_process_rec(
     (pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     && (module != NULL)
     && dt_iop_module_is(module->so, "gamma");
- 
+
   // we also never want any cached data is in masking mode
   if(!gamma_preview
       && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
       && !pipe->nocache)
   {
     dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
-    // dt_dev_pixelpipe_cache_available() tests for masking mode and returns FALSE in that case 
+    // dt_dev_pixelpipe_cache_available() tests for masking mode and returns FALSE in that case
     cache_available = dt_dev_pixelpipe_cache_available(pipe, hash, bufsize);
   }
   if(cache_available)
@@ -2904,9 +2904,10 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
            "raster mask is ignored."),
            target_module->so->op, raster_mask_source->so->op);
 
-      dt_print(DT_DEBUG_ALWAYS, "module `%s' can't get raster mask from module `%s'"
-                                " as that is processed later in the pixel pipe\n",
-                      target_module->so->op, raster_mask_source->so->op);
+      dt_print(DT_DEBUG_ALWAYS,
+               "module `%s' can't get raster mask from module `%s'"
+               " as that is processed later in the pixel pipe\n",
+               target_module->so->op, raster_mask_source->so->op);
       return NULL;
     }
 
