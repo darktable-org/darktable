@@ -458,7 +458,7 @@ void gui_init(dt_lib_module_t *self)
   static struct dt_action_def_t notebook_def = { };
   self->widget = GTK_WIDGET(dt_ui_notebook_new(&notebook_def));
   dt_action_define(DT_ACTION(self), NULL, N_("page"), GTK_WIDGET(self->widget), &notebook_def);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
+  dt_gui_add_help_link(self->widget, "image");
 
   GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("images"), NULL);
   GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("metadata"), NULL);

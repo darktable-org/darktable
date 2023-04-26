@@ -1997,7 +1997,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_thumbtable_t *table =
     (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
   table->widget = gtk_layout_new(NULL, NULL);
-  dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
+  dt_gui_add_help_link(table->widget, "lighttable_filemanager");
 
   // get thumb generation pref for reference in case of change
   const char *tx = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
@@ -2343,17 +2343,17 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table,
     if(mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
       gtk_widget_set_name(table->widget, "thumbtable-filemanager");
-      dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
+      dt_gui_add_help_link(table->widget, "lighttable_filemanager");
     }
     else if(mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
       gtk_widget_set_name(table->widget, "thumbtable-filmstrip");
-      dt_gui_add_help_link(table->widget, dt_get_help_url("filmstrip"));
+      dt_gui_add_help_link(table->widget, "filmstrip");
     }
     else if(mode == DT_THUMBTABLE_MODE_ZOOM)
     {
       gtk_widget_set_name(table->widget, "thumbtable-zoom");
-      dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_zoomable"));
+      dt_gui_add_help_link(table->widget, "lighttable_zoomable");
     }
 
     // if needed, we block/unblock drag and drop
