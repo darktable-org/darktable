@@ -964,7 +964,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
   const int height = MAX(iheight, oheight);
   const int ch = piece->colors;
   const int tmpbufwidth = owidth * 2 * 3;
-  const size_t tmpbufsize = (size_t)tmpbufwidth * oheight * sizeof(float);  
+  const size_t tmpbufsize = (size_t)tmpbufwidth * oheight * sizeof(float);
   const size_t tmpbuflen = d->inverse
     ? (size_t)oheight * owidth * 2 * 3 * sizeof(float)
     : MAX((size_t)oheight * owidth * 2 * 3, (size_t)iheight * iwidth * ch) * sizeof(float);
@@ -1626,7 +1626,16 @@ static inline float _interpolate_linear_spline(const float *xi,
                                                const float x)
 {
   if(x < xi[0])
-    return yi[0];
+  {
+    const float dydx = (yi[1] - yi[0]) / (xi[1] - xi[0]);
+    return yi[0] + (x - xi[0]) * dydx;
+  }
+
+  if(x > xi[ni - 1])
+  {
+    const float dydx = (yi[ni - 1] - yi[ni - 2]) / (xi[ni - 1] - xi[ni - 2]);
+    return yi[ni - 1] + (x - xi[ni - 1]) * dydx;
+  }
 
   for(int i = 1; i < ni; i++)
   {
@@ -1643,7 +1652,6 @@ static inline float _interpolate_linear_spline(const float *xi,
 
 static int _init_coeffs_md(const dt_image_t *img,
                            const dt_iop_lens_params_t *p,
-                           const float scale,
                            float knots[MAXKNOTS],
                            float cor_rgb[3][MAXKNOTS],
                            float vig[MAXKNOTS])
@@ -1661,11 +1669,11 @@ static int _init_coeffs_md(const dt_image_t *img,
          && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] =
-          (p->cor_dist_ft * cd->sony.distortion[i] * powf(2, -14) + 1) * scale;
+          (p->cor_dist_ft * cd->sony.distortion[i] * powf(2, -14) + 1);
       }
       else if(cor_rgb)
       {
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = scale;
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
       }
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
@@ -1695,11 +1703,11 @@ static int _init_coeffs_md(const dt_image_t *img,
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] =
-          (p->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1) * scale;
+          (p->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1);
       }
       else if(cor_rgb)
       {
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = scale;
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
       }
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
@@ -1739,7 +1747,7 @@ static int _init_coeffs_md(const dt_image_t *img,
           const float r_cor =
             cd->dng.cwarp[c][0] + cd->dng.cwarp[c][1]*pw2
             + cd->dng.cwarp[c][2]*pw4 + cd->dng.cwarp[c][3]*pw6;
-          cor_rgb[c][i] = (p->cor_dist_ft * (r_cor - 1.0f) + 1.0f) * scale;
+          cor_rgb[c][i] = (p->cor_dist_ft * (r_cor - 1.0f) + 1.0f);
         }
 
         if(cd->dng.planes == 1)
@@ -1775,9 +1783,8 @@ static float _get_autoscale_md(dt_iop_module_t *self,
   const float tested = 200.0f;
 
   float knots[MAXKNOTS], cor_rgb[3][MAXKNOTS];
-  // Default the scale to one for the benefit of init_coeffs
 
-  const int nc = _init_coeffs_md(img, p, 1.0f, knots, cor_rgb, NULL);
+  const int nc = _init_coeffs_md(img, p, knots, cor_rgb, NULL);
   // Compute the new scale
   float scale = 0.0f;
   for(float i = 0.0f; i < tested; i++)
@@ -1856,7 +1863,7 @@ static void _commit_params_md(dt_iop_module_t *self,
      || (d->scale_md > 1.1f)) // enforce an autoscale if unproper data
     d->scale_md = _get_autoscale_md(self, p);
 
-  d->nc = _init_coeffs_md(img, p, 1.0f / d->scale_md, d->knots, d->cor_rgb, d->vig);
+  d->nc = _init_coeffs_md(img, p, d->knots, d->cor_rgb, d->vig);
 
   if(self->dev->gui_attached && g
      && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
@@ -1902,8 +1909,8 @@ static int _distort_transform_md(dt_iop_module_t *self,
 
     for(int k = 0; k < 10; k++)
     {
-      const float cx = p1 - w2;
-      const float cy = p2 - h2;
+      const float cx = (p1 - w2) / d->scale_md;
+      const float cy = (p2 - h2) / d->scale_md;
       const float dr =
         _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
 
@@ -1940,8 +1947,8 @@ static int _distort_backtransform_md(dt_iop_module_t *self,
 
   for(size_t i = 0; i < 2*points_count; i += 2)
   {
-    const float cx = points[i] - w2;
-    const float cy = points[i + 1] - h2;
+    const float cx = (points[i] - w2) / d->scale_md;
+    const float cy = (points[i + 1] - h2) / d->scale_md;
     const float dr =
       _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
 
@@ -1981,8 +1988,8 @@ static void _distort_mask_md(struct dt_iop_module_t *self,
   {
     for(int x = 0; x < roi_out->width; x++)
     {
-      const float cx = roi_out->x + x - w2;
-      const float cy = roi_out->y + y - h2;
+      const float cx = (roi_out->x + x - w2) / d->scale_md;
+      const float cy = (roi_out->y + y - h2) / d->scale_md;
       const float dr =
         _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
       const float xs = dr*cx + w2 - roi_in->x;
@@ -2057,8 +2064,8 @@ static void _process_md(struct dt_iop_module_t *self,
     for(int x = 0; x < roi_out->width; x++)
     {
       const size_t odx = 4 * (y * roi_out->width + x);
-      const float cx = roi_out->x + x - w2;
-      const float cy = roi_out->y + y - h2;
+      const float cx = (roi_out->x + x - w2) / d->scale_md;
+      const float cy = (roi_out->y + y - h2) / d->scale_md;
 
       const float radius = r*sqrtf(cx*cx + cy*cy);
       for_three_channels(c)
@@ -2108,8 +2115,8 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   const int xoff = roi_in->x;
   const int yoff = roi_in->y;
   const int width = roi_in->width, height = roi_in->height;
-  const float cxs[] = { xoff - w2, xoff + (width - 1) - w2 };
-  const float cys[] = { yoff - h2, yoff + (height - 1) - h2 };
+  const float cxs[] = { (xoff - w2) / d->scale_md, (xoff + (width - 1) - w2) / d->scale_md };
+  const float cys[] = { (yoff - h2) / d->scale_md, (yoff + (height - 1) - h2) / d->scale_md };
 
   float xm = FLT_MAX;
   float xM = -FLT_MAX;
@@ -2119,7 +2126,7 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   // Sweep along the top and bottom rows of the ROI
   for(int i = 0; i < width; i++)
   {
-    const float cx = xoff + i - w2;
+    const float cx = (xoff + i - w2) / d->scale_md;
     for(int j = 0; j < 2; j++)
     {
       const float cy = cys[j];
@@ -2151,7 +2158,7 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   // Sweep along the left and right columns of the ROI
   for(int j = 0; j < height; j++)
   {
-    const float cy = yoff + j - h2;
+    const float cy = (yoff + j - h2) / d->scale_md;
     for(int i = 0; i < 2; i++)
     {
       const float cx = cxs[i];
