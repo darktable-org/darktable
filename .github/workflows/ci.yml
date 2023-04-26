@@ -50,7 +50,7 @@ jobs:
           - { label: ubuntu-latest, code: latest }
         compiler:
           - { compiler: GNU12,  CC: gcc-12,   CXX: g++-12,     packages: gcc-12 g++-12 }
-          - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
+          - { compiler: LLVM15, CC: clang-15, CXX: clang++-15, packages: clang-15 libomp-15-dev llvm-15-dev libc++-15-dev libc++abi1-15 lld-15 clang-tools-15 mlir-15-tools libmlir-15-dev}
         btype:
           - Release
         target:
