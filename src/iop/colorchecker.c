@@ -540,8 +540,8 @@ void commit_params(struct dt_iop_module_t *self,
   dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
 
   d->num_patches = MIN(MAX_PATCHES, p->num_patches);
-  const int N = d->num_patches, N4 = N + 4;
-  for(int k = 0; k < N; k++)
+  const unsigned N = MAX(0, d->num_patches), N4 = N + 4;
+  for(unsigned k = 0; k < N; ++k)
   {
     d->source_Lab[3*k+0] = p->source_L[k];
     d->source_Lab[3*k+1] = p->source_a[k];
@@ -550,7 +550,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   // initialize coefficients with default values that will be
   // used for N<=4 and if coefficient matrix A is singular
-  for(int i=0;i<4+N;i++)
+  for(unsigned i = 0; i < N4; ++i)
   {
     d->coeff_L[i] = 0;
     d->coeff_a[i] = 0;
@@ -703,37 +703,36 @@ void commit_params(struct dt_iop_module_t *self,
     double *A = malloc(sizeof(*A) * N4 * N4);
     double *b = malloc(sizeof(*b) * N4);
     // coefficients from nonlinear radial kernel functions
-    for(int j=0;j<N;j++)
-      for(int i=j;i<N;i++)
-        A[j*N4+i] = A[i*N4+j] = kernel(d->source_Lab+3*i, d->source_Lab+3*j);
+    for(unsigned j = 0; j < N; ++j)
+      for(unsigned i = j; i < N; ++i)
+        A[j * N4 + i] = A[i * N4 + j] = kernel(d->source_Lab + 3 * i, d->source_Lab + 3 * j);
     // coefficients from constant and linear functions
-    for(int i=0;i<N;i++) A[i*N4+N+0] = A[(N+0)*N4+i] = 1;
-    for(int i=0;i<N;i++) A[i*N4+N+1] = A[(N+1)*N4+i] = d->source_Lab[3*i+0];
-    for(int i=0;i<N;i++) A[i*N4+N+2] = A[(N+2)*N4+i] = d->source_Lab[3*i+1];
-    for(int i=0;i<N;i++) A[i*N4+N+3] = A[(N+3)*N4+i] = d->source_Lab[3*i+2];
+    for(unsigned i = 0; i < N; ++i) A[i * N4 + N + 0] = A[(N + 0) * N4 + i] = 1;
+    for(unsigned i = 0; i < N; ++i) A[i * N4 + N + 1] = A[(N + 1) * N4 + i] = d->source_Lab[3 * i + 0];
+    for(unsigned i = 0; i < N; ++i) A[i * N4 + N + 2] = A[(N + 2) * N4 + i] = d->source_Lab[3 * i + 1];
+    for(unsigned i = 0; i < N; ++i) A[i * N4 + N + 3] = A[(N + 3) * N4 + i] = d->source_Lab[3 * i + 2];
     // lower-right zero block
-    for(int j=N;j<N4;j++)
-      for(int i=N;i<N4;i++)
-        A[j*N4+i] = 0;
+    for(unsigned j = N; j < N4; ++j)
+      for(unsigned i = N; i < N4; ++i) A[j * N4 + i] = 0;
     // make coefficient matrix triangular
     int *pivot = malloc(sizeof(*pivot) * N4);
     if(gauss_make_triangular(A, pivot, N4))
     {
       // calculate coefficients for L channel
-      for(int i=0;i<N;i++) b[i] = p->target_L[i];
-      for(int i=N;i<N4;i++) b[i] = 0;
+      for(unsigned i = 0; i < N; ++i) b[i] = p->target_L[i];
+      for(unsigned i = N; i < N4; ++i) b[i] = 0;
       gauss_solve_triangular(A, pivot, b, N4);
-      for(int i=0;i<N+4;i++) d->coeff_L[i] = b[i];
+      for(unsigned i = 0; i < N4; ++i) d->coeff_L[i] = b[i];
       // calculate coefficients for a channel
-      for(int i=0;i<N;i++) b[i] = p->target_a[i];
-      for(int i=N;i<N4;i++) b[i] = 0;
+      for(unsigned i = 0; i < N; ++i) b[i] = p->target_a[i];
+      for(unsigned i = N; i < N4; ++i) b[i] = 0;
       gauss_solve_triangular(A, pivot, b, N4);
-      for(int i=0;i<N+4;i++) d->coeff_a[i] = b[i];
+      for(unsigned i = 0; i < N4; ++i) d->coeff_a[i] = b[i];
       // calculate coefficients for b channel
-      for(int i=0;i<N;i++) b[i] = p->target_b[i];
-      for(int i=N;i<N4;i++) b[i] = 0;
+      for(unsigned i = 0; i < N; ++i) b[i] = p->target_b[i];
+      for(unsigned i = N; i < N4; ++i) b[i] = 0;
       gauss_solve_triangular(A, pivot, b, N4);
-      for(int i=0;i<N+4;i++) d->coeff_b[i] = b[i];
+      for(unsigned i = 0; i < N4; ++i) d->coeff_b[i] = b[i];
     }
     // free resources
     free(pivot);
