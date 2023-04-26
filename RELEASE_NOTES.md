@@ -440,6 +440,10 @@ The following is a summary of the main features added to darktable
   (a.k.a. linear) raw images. Note that file embedded levels might
   still not be set automatically on import.
 
+- Enhance dithering module with posterization modes and masking, and
+  rename it "dither or posterize" to make the new functionality more
+  easily discoverable.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection change.
