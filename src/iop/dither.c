@@ -75,7 +75,7 @@ typedef struct dt_iop_dither_params_t
   {
     float radius;   // reserved for future extensions
     float range[4]; // reserved for future extensions {0,0,1,1}
-    float damping;  // $MIN: -200.0 $MAX: 0.0 $DEFAULT: -200.0 $DESCRIPTION: "damping"
+    float damping;  // $MIN: -200.0 $MAX: 0.0 $DEFAULT: -100.0 $DESCRIPTION: "damping"
   } random;
 } dt_iop_dither_params_t;
 
@@ -128,7 +128,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -283,7 +283,6 @@ static int _get_dither_parameters(
   *levels = 65536;
   const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
   const int bds = (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) ? 1 : l1 * l1;
-
   switch(data->dither_type)
   {
     case DITHER_FS1BIT:
