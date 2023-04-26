@@ -2687,6 +2687,12 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(button, "toggled", G_CALLBACK(_fallbacks_toggled), shortcuts_view);
   gtk_box_pack_start(GTK_BOX(button_bar), button, TRUE, FALSE, 0);
 
+  button = gtk_button_new_with_label(_("help"));
+  gtk_widget_set_tooltip_text(button, _("open help page for shortcuts"));
+  dt_gui_add_help_link(button, "shortcuts");
+  g_signal_connect(button, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+
   button = gtk_button_new_with_label(_("restore..."));
   gtk_widget_set_tooltip_text(button, _("restore default shortcuts or previous state"));
   g_signal_connect(button, "clicked", G_CALLBACK(_restore_clicked), NULL);

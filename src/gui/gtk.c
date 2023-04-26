@@ -22,6 +22,7 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/file_location.h"
+#include "common/l10n.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "gui/guides.h"
@@ -2549,8 +2550,174 @@ gboolean dt_gui_show_yes_no_dialog(const char *title, const char *format, ...)
 // TODO: should that go to another place than gtk.c?
 void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 {
-  g_object_set_data(G_OBJECT(widget), "dt-help-url", (void *)link);
+  g_object_set_data(G_OBJECT(widget), "dt-help-url", dt_get_help_url(link));
   gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
+}
+
+// TODO: this doesn't work for all widgets. the reason being that the GtkEventBox we put libs/iops into catches events.
+char *dt_gui_get_help_url(GtkWidget *widget)
+{
+  while(widget)
+  {
+    // if the widget doesn't have a help url set go up the widget hierarchy to find a parent that has an url
+    gchar *help_url = g_object_get_data(G_OBJECT(widget), "dt-help-url");
+
+    if(help_url)
+      return help_url;
+
+    // TODO: shall we cross from libs/iops to the core gui? if not, here is the place to break out of the loop
+
+    widget = gtk_widget_get_parent(widget);
+  }
+
+  return NULL;
+}
+
+static char *_get_base_url()
+{
+  const gboolean use_default_url =
+    dt_conf_get_bool("context_help/use_default_url");
+  const char *c_base_url = dt_confgen_get("context_help/url", DT_DEFAULT);
+  char *base_url = dt_conf_get_string("context_help/url");
+
+  if(use_default_url)
+  {
+    // want to use default URL, reset darktablerc
+    dt_conf_set_string("context_help/url", c_base_url);
+    return g_strdup(c_base_url);
+  }
+  else
+    return base_url;
+}
+
+void dt_gui_show_help(GtkWidget *widget)
+{
+  // TODO: When the widget doesn't have a help url set we should probably look at the parent(s)
+  gchar *help_url = dt_gui_get_help_url(widget);
+  if(help_url && *help_url)
+  {
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+    dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
+    char *base_url = _get_base_url();
+
+    // The base_url is: docs.darktable.org/usermanual
+    // The full format for the documentation pages is:
+    //    <base-url>/<ver>/<lang>[/path/to/page]
+    // Where:
+    //   <ver>  = development | 3.6 | 3.8 ...
+    //   <lang> = en / fr ...              (default = en)
+
+    // in case of a standard release, append the dt version to the url
+    if(dt_is_dev_version())
+    {
+      base_url = dt_util_dstrcat(base_url, "development/");
+    }
+    else
+    {
+      char *ver = dt_version_major_minor();
+      base_url = dt_util_dstrcat(base_url, "%s/", ver);
+      g_free(ver);
+    }
+
+    char *last_base_url = dt_conf_get_string("context_help/last_url");
+
+    // if url is https://www.darktable.org/usermanual/,
+    // it is the old deprecated url and we need to update it
+    if(!last_base_url
+        || !*last_base_url
+        || (strcmp(base_url, last_base_url) != 0))
+    {
+      g_free(last_base_url);
+      last_base_url = base_url;
+
+      // ask the user if darktable.org may be accessed
+      if(dt_gui_show_yes_no_dialog(_("access the online usermanual?"),
+                                    _("do you want to access `%s'?"), last_base_url))
+      {
+        dt_conf_set_string("context_help/last_url", last_base_url);
+      }
+      else
+      {
+        g_free(base_url);
+        base_url = NULL;
+      }
+    }
+    if(base_url)
+    {
+      char *lang = "en";
+      GError *error = NULL;
+
+      // array of languages the usermanual supports.
+      // NULL MUST remain the last element of the array
+      const char *supported_languages[] =
+        { "en", "fr", "de", "eo", "es", "gl", "it", "pl", "pt-br", "uk", NULL };
+      int lang_index = 0;
+      gboolean is_language_supported = FALSE;
+
+      if(darktable.l10n != NULL)
+      {
+        dt_l10n_language_t *language = NULL;
+        if(darktable.l10n->selected != -1)
+            language = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
+        if(language != NULL)
+          lang = language->code;
+        while(supported_languages[lang_index])
+        {
+          gchar *nlang = g_strdup(lang);
+
+          // try lang as-is
+          if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
+          {
+            is_language_supported = TRUE;
+          }
+
+          if(!is_language_supported)
+          {
+            // keep only first part up to _
+            for(gchar *p = nlang; *p; p++)
+              if(*p == '_') *p = '\0';
+
+            if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
+            {
+              is_language_supported = TRUE;
+            }
+          }
+
+          g_free(nlang);
+          if(is_language_supported) break;
+
+          lang_index++;
+        }
+      }
+
+      // language not found, default to EN
+      if(!is_language_supported) lang_index = 0;
+
+      char *url = g_build_path("/", base_url, supported_languages[lang_index], help_url, NULL);
+
+      // TODO: call the web browser directly so that file:// style base for local installs works
+      const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), &error);
+      g_free(base_url);
+      g_free(url);
+      if(uri_success)
+      {
+        dt_control_log(_("help url opened in web browser"));
+      }
+      else
+      {
+        dt_control_log(_("error while opening help url in web browser"));
+        if(error != NULL) // uri_success being FALSE should guarantee that
+        {
+          fprintf (stderr, "unable to read file: %s\n", error->message);
+          g_error_free (error);
+        }
+      }
+    }
+  }
+  else
+  {
+    dt_control_log(_("there is no help available for this element"));
+  }
 }
 
 // load a CSS theme

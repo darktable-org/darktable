@@ -277,7 +277,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->camera = camera;
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
-        dt_gui_add_help_link(ib, dt_get_help_url("import_camera"));
+        dt_gui_add_help_link(ib, "import_camera");
       }
       if(camera->can_tether == TRUE)
       {
@@ -285,14 +285,14 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->tethered_shoot = GTK_BUTTON(tb);
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
-        dt_gui_add_help_link(tb, dt_get_help_url("import_camera"));
+        dt_gui_add_help_link(tb, "import_camera");
       }
 
       gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmount camera"))), FALSE, FALSE, 0);
       d->unmount_camera = GTK_BUTTON(um);
       g_signal_connect(G_OBJECT(um), "clicked", G_CALLBACK(_lib_import_unmount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(um)), GTK_ALIGN_CENTER);
-      dt_gui_add_help_link(um, dt_get_help_url("mount_camera"));
+      dt_gui_add_help_link(um, "mount_camera");
 
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
@@ -323,7 +323,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
       g_signal_connect(G_OBJECT(im), "clicked", G_CALLBACK(_lib_import_mount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(im)), GTK_ALIGN_CENTER);
-      dt_gui_add_help_link(im, dt_get_help_url("mount_camera"));
+      dt_gui_add_help_link(im, "mount_camera");
 
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
@@ -1702,6 +1702,12 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
       _("cancel"), GTK_RESPONSE_CANCEL,
       _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
       NULL);
+
+  GtkWidget *help = gtk_dialog_add_button(GTK_DIALOG(d->from.dialog), _("help"),
+                                          GTK_RESPONSE_NONE); //GTK_RESPONSE_HELP aligns left
+  dt_gui_add_help_link(help, "import_dialog");
+  g_signal_handlers_disconnect_by_data(help, d->from.dialog);
+  g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
