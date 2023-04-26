@@ -618,6 +618,8 @@ The following is a summary of the main features added to darktable
 
 - Fix slideshow not working properly on HiDPI displays.
 
+- Fix crashes while using raster masks after reordering the pixelpipe.
+
 ## Lua
 
 ### API Version
