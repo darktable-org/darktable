@@ -128,6 +128,7 @@ src/common/ratings.c
 src/common/styles.c
 src/common/utility.c
 src/common/variables.c
+src/common/wb_presets.c
 src/control/control.c
 src/control/crawler.c
 src/control/jobs/camera_jobs.c
