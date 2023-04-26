@@ -930,16 +930,12 @@ static void compute_round_stamp_extent(cairo_rectangle_int_t *const restrict sta
   Our stamp is stored in a rectangular region.
 */
 
-/*static*/ void apply_round_stamp(cairo_rectangle_int_t *const restrict stamp_extent,
-                              const dt_liquify_warp_t *const restrict warp,
+static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
                               float complex *global_map,
                               const cairo_rectangle_int_t *const restrict global_map_extent)
 {
   const size_t iradius = round(cabsf(warp->radius - warp->point));
   assert(iradius > 0);
-
-  stamp_extent->x = stamp_extent->y = -iradius;
-  stamp_extent->width = stamp_extent->height = 2 * iradius + 1;
 
   // 0.5 is factored in so the warp starts to degenerate when the
   // strength arrow crosses the warp radius.
@@ -960,16 +956,14 @@ static void compute_round_stamp_extent(cairo_rectangle_int_t *const restrict sta
     return;
   }
 
-  cairo_rectangle_int_t mmext = *stamp_extent;
-  mmext.x += (int) round(crealf(warp->point));
-  mmext.y += (int) round(cimagf(warp->point));
-
   // point into the global distortion map at the center of the circle
   const size_t global_width = global_map_extent->width;
+  const size_t stamp_x = (size_t) round(crealf(warp->point));
+  const size_t stamp_y = (size_t) round(cimagf(warp->point));
   float complex *const center
     = (global_map
-       + (mmext.y + iradius - global_map_extent->y) * global_width
-       + mmext.x + iradius - global_map_extent->x);
+       + (stamp_y - global_map_extent->y) * global_width
+       + stamp_x - global_map_extent->x);
 
   // The expensive operation here is hypotf ().  By dividing the
   // circle in quadrants and doing only the inside we have to calculate
@@ -1030,60 +1024,6 @@ static void compute_round_stamp_extent(cairo_rectangle_int_t *const restrict sta
   }
 
   dt_free_align((void*) lookup_table);
-}
-
-/*
-  Applies a stamp at a specified position.
-
-  Applies a stamp at the position specified by @a point and adds the
-  resulting vector field to the global distortion map @a global_map.
-
-  The global distortion map is a map of relative pixel displacements
-  encompassing all our paths.
-*/
-
-/*static*/ void add_to_global_distortion_map
-  (float complex *global_map,
-   const cairo_rectangle_int_t *const restrict global_map_extent,
-   const dt_liquify_warp_t *const restrict warp,
-   const float complex *const restrict stamp,
-   const cairo_rectangle_int_t *stamp_extent)
-{
-  cairo_rectangle_int_t mmext = *stamp_extent;
-  mmext.x += (int) round(crealf(warp->point));
-  mmext.y += (int) round(cimagf(warp->point));
-  cairo_rectangle_int_t cmmext = mmext;
-  cairo_region_t *mmreg = cairo_region_create_rectangle(&mmext);
-  cairo_region_intersect_rectangle(mmreg, global_map_extent);
-  cairo_region_get_extents(mmreg, &cmmext);
-  free(mmreg);
-
-  const size_t cmm_width = cmmext.width;
-  const size_t cmm_x = cmmext.x;
-  const size_t cmm_height = cmmext.height;
-  const size_t cmm_y = cmmext.y;
-  const size_t mm_width = mmext.width;
-  const size_t mm_x = mmext.y;
-  const size_t mm_y = mmext.y;
-  const size_t global_width = global_map_extent->width;
-  const size_t global_x = global_map_extent->x;
-  const size_t global_y = global_map_extent->y;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(stamp, global_map, cmm_x, cmm_y, cmm_width, cmm_height, \
-                      mm_x, mm_y, mm_width, global_x, global_y, global_width) \
-  schedule(static)
-#endif
-  for(size_t y = cmm_y; y < cmm_y + cmm_height; y++)
-  {
-    const float complex *const srcrow = stamp + ((y - mm_y) * mm_width);
-    float complex *const destrow = global_map + ((y - global_y) * global_width);
-    for(int x = cmm_x; x < cmm_x + cmm_width; x++)
-    {
-      destrow[x - global_x] -= srcrow[x - mm_x];
-    }
-  }
 }
 
 /*
@@ -1208,8 +1148,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
   for(const GSList *i = interpolated; i; i = g_slist_next(i))
   {
     const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
-    cairo_rectangle_int_t r;
-    apply_round_stamp(&r, warp, map, map_extent);
+    apply_round_stamp(warp, map, map_extent);
   }
 
   if(inverted)
