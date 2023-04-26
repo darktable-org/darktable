@@ -1695,30 +1695,78 @@ static int _init_coeffs_md(const dt_image_t *img,
   }
   else if(img->exif_correction_type == CORRECTION_TYPE_FUJI)
   {
-    const int nc = cd->fuji.nc;
+    float knots_in[MAXKNOTS] = { 0 };
+    float cor_rgb_in[MAXKNOTS];
+    float cor_ca_r_in[MAXKNOTS];
+    float cor_ca_b_in[MAXKNOTS];
+    float vig_in[MAXKNOTS];
+
+    int j = 0;
+
+    // add a knot with no corrections at 0 value if not existing
+    // TODO(sgotti) we should try if, by using a spline cubic monotonic
+    // interpolation instead of a linear interpolation, the provided spline
+    // returns no corrections for the center.
+    int ncin = cd->fuji.nc;
+    if(cd->fuji.knots[0] > 0.f)
+    {
+      knots_in[j] = 0;
+      cor_rgb_in[j] = 1;
+      cor_ca_r_in[j] = 0;
+      cor_ca_b_in[j] = 0;
+      vig_in[j] = 1;
+
+      ncin++;
+      j++;
+    }
+
+    for(int i = 0; i < cd->fuji.nc; i++, j++)
+    {
+      knots_in[j] = cd->fuji.cropf * cd->fuji.knots[i];
+      cor_rgb_in[j] = (p->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1);
+      cor_ca_r_in[j] = cd->fuji.ca_r[i];
+      cor_ca_b_in[j] = cd->fuji.ca_b[i];
+      vig_in[j] = 1 - p->cor_vig_ft * (1 - cd->fuji.vignetting[i] / 100);
+    }
+
+    // convert from spline related to source image (input is source image
+    // radius) to spline related to dest image (input is dest image radius)
+    const int nc = MAXKNOTS;
+
     for(int i = 0; i < nc; i++)
     {
-      knots[i] = cd->fuji.cropf * cd->fuji.knots[i];
+      const float rin = (float)i / (float)(nc - 1);
+      const float m = _interpolate_linear_spline(knots_in, cor_rgb_in, ncin, rin);
+      const float r = rin / m;
+      knots[i] = r;
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] =
-          (p->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1);
+        for(int c = 0; c < 3; c++)
+        {
+          cor_rgb[c][i] = m;
+        }
       }
       else if(cor_rgb)
       {
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
       }
+
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
-        cor_rgb[0][i] *= cd->fuji.ca_r[i] + 1;
-        cor_rgb[2][i] *= cd->fuji.ca_b[i] + 1;
+        const float mcar = _interpolate_linear_spline(knots_in, cor_ca_r_in, ncin, rin);
+        const float mcab = _interpolate_linear_spline(knots_in, cor_ca_b_in, ncin, rin);
+        cor_rgb[0][i] *= mcar + 1;
+        cor_rgb[2][i] *= mcab + 1;
       }
 
       if(vig && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
-        vig[i] = 1 - p->cor_vig_ft * (1 - cd->fuji.vignetting[i] / 100);
-      else if(vig)
+      {
+        const float mv = _interpolate_linear_spline(knots_in, vig_in, ncin, rin);
+        vig[i] = mv;
+      } else if(vig) {
         vig[i] = 1;
+      }
     }
 
     return nc;
