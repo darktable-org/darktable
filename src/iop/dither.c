@@ -103,12 +103,12 @@ typedef struct dt_iop_dither_data_t
 
 const char *name()
 {
-  return _("dithering");
+  return _("dither or posterize");
 }
 
 const char *aliases()
 {
-  return _("posterize|reduce bit-depth");
+  return _("dithering|posterization|reduce bit-depth");
 }
 
 const char **description(struct dt_iop_module_t *self)
