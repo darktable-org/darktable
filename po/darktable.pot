@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-26 10:19+0200\n"
+"POT-Creation-Date: 2023-04-26 23:12+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2445,7 +2445,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
 #: ../src/iop/atrous.c:1522 ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:335
-#: ../src/iop/dither.c:662 ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:670
+#: ../src/iop/dither.c:759 ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:670
 #: ../src/iop/sharpen.c:440
 msgid "radius"
 msgstr ""
@@ -3055,7 +3055,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2280 ../src/iop/channelmixer.c:617
-#: ../src/iop/channelmixerrgb.c:4524 ../src/iop/colorchecker.c:1292
+#: ../src/iop/channelmixerrgb.c:4524 ../src/iop/colorchecker.c:1448
 #: ../src/iop/colorize.c:349 ../src/iop/colorzones.c:2401
 #: ../src/iop/exposure.c:1235
 msgid "lightness"
@@ -3071,7 +3071,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2296 ../src/iop/basicadj.c:624
 #: ../src/iop/channelmixer.c:616 ../src/iop/colisa.c:306
 #: ../src/iop/colorbalance.c:2062 ../src/iop/colorbalancergb.c:1888
-#: ../src/iop/colorchecker.c:1310 ../src/iop/colorcontrast.c:90
+#: ../src/iop/colorchecker.c:1483 ../src/iop/colorcontrast.c:90
 #: ../src/iop/colorcorrection.c:275 ../src/iop/colorize.c:343
 #: ../src/iop/colorzones.c:2402 ../src/iop/lowpass.c:588
 #: ../src/iop/soften.c:373 ../src/iop/velvia.c:84 ../src/iop/vibrance.c:72
@@ -3140,8 +3140,8 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:108
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:175
-#: ../build/lib/darktable/plugins/introspection_dither.c:62
-#: ../build/lib/darktable/plugins/introspection_dither.c:141
+#: ../build/lib/darktable/plugins/introspection_dither.c:73
+#: ../build/lib/darktable/plugins/introspection_dither.c:152
 #: ../build/lib/darktable/plugins/introspection_highlights.c:119
 #: ../build/lib/darktable/plugins/introspection_highlights.c:228
 msgid "method"
@@ -3413,33 +3413,77 @@ msgstr ""
 msgid "central radius"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_dither.c:92
-#: ../build/lib/darktable/plugins/introspection_dither.c:161
+#: ../build/lib/darktable/plugins/introspection_dither.c:103
+#: ../build/lib/darktable/plugins/introspection_dither.c:172
 msgid "damping"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_dither.c:179
+#: ../build/lib/darktable/plugins/introspection_dither.c:190
 msgid "random"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_dither.c:180
+#: ../build/lib/darktable/plugins/introspection_dither.c:191
 msgid "Floyd-Steinberg 1-bit B&W"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_dither.c:181
+#: ../build/lib/darktable/plugins/introspection_dither.c:192
+msgid "Floyd-Steinberg 1-bit RGB"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:193
+msgid "Floyd-Steinberg 2-bit gray"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:194
+msgid "Floyd-Steinberg 2-bit RGB"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:195
 msgid "Floyd-Steinberg 4-bit gray"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_dither.c:182
+#: ../build/lib/darktable/plugins/introspection_dither.c:196
+msgid "Floyd-Steinberg 4-bit RGB"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:197
 msgid "Floyd-Steinberg 8-bit RGB"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_dither.c:183
+#: ../build/lib/darktable/plugins/introspection_dither.c:198
 msgid "Floyd-Steinberg 16-bit RGB"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_dither.c:184
+#: ../build/lib/darktable/plugins/introspection_dither.c:199
 msgid "Floyd-Steinberg auto"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:200
+msgid "Posterize 2 levels per channel"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:201
+msgid "Posterize 3 levels per channel"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:202
+msgid "Posterize 4 levels per channel"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:203
+msgid "Posterize 5 levels per channel"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:204
+msgid "Posterize 6 levels per channel"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:205
+msgid "Posterize 7 levels per channel"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_dither.c:206
+msgid "Posterize 8 levels per channel"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:79
@@ -8449,7 +8493,7 @@ msgstr ""
 msgid "fixed"
 msgstr ""
 
-#: ../src/dtgtk/range.c:487 ../src/iop/colorchecker.c:1316
+#: ../src/dtgtk/range.c:487 ../src/iop/colorchecker.c:1493
 msgid "relative"
 msgstr ""
 
@@ -11164,7 +11208,7 @@ msgstr ""
 #: ../src/iop/ashift.c:131 ../src/iop/channelmixer.c:139
 #: ../src/iop/channelmixerrgb.c:232 ../src/iop/clipping.c:320
 #: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:185
-#: ../src/iop/colorchecker.c:127 ../src/iop/colorcorrection.c:77
+#: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:77
 #: ../src/iop/crop.c:144 ../src/iop/lut3d.c:141
 msgid "corrective or creative"
 msgstr ""
@@ -11649,7 +11693,7 @@ msgstr ""
 #: ../src/iop/basecurve.c:352 ../src/iop/cacorrect.c:78
 #: ../src/iop/cacorrectrgb.c:170 ../src/iop/colorreconstruction.c:135
 #: ../src/iop/defringe.c:82 ../src/iop/denoiseprofile.c:725
-#: ../src/iop/dither.c:100 ../src/iop/flip.c:110 ../src/iop/hazeremoval.c:112
+#: ../src/iop/flip.c:110 ../src/iop/hazeremoval.c:112
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:73
 #: ../src/iop/invert.c:119 ../src/iop/lens.cc:224 ../src/iop/nlmeans.c:95
 #: ../src/iop/profile_gamma.c:102 ../src/iop/rawdenoise.c:130
@@ -11669,7 +11713,7 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:354 ../src/iop/basicadj.c:149
 #: ../src/iop/colorbalance.c:163 ../src/iop/colorbalancergb.c:187
-#: ../src/iop/dither.c:102 ../src/iop/filmicrgb.c:359
+#: ../src/iop/dither.c:120 ../src/iop/filmicrgb.c:359
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:103
@@ -11677,7 +11721,7 @@ msgstr ""
 msgid "non-linear, RGB"
 msgstr ""
 
-#: ../src/iop/basecurve.c:355 ../src/iop/dither.c:101 ../src/iop/dither.c:103
+#: ../src/iop/basecurve.c:355 ../src/iop/dither.c:119 ../src/iop/dither.c:121
 #: ../src/iop/filmicrgb.c:360 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
 #: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
@@ -13620,19 +13664,19 @@ msgstr ""
 msgid "checkerboard size"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:116
+#: ../src/iop/colorchecker.c:118
 msgid "color look up table"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:121
+#: ../src/iop/colorchecker.c:123
 msgid "profile|lut|color grading"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:126
+#: ../src/iop/colorchecker.c:129
 msgid "perform color space corrections and apply looks"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:128 ../src/iop/colorchecker.c:130
+#: ../src/iop/colorchecker.c:131 ../src/iop/colorchecker.c:133
 #: ../src/iop/colorize.c:106 ../src/iop/colormapping.c:154
 #: ../src/iop/colorout.c:91 ../src/iop/colorreconstruction.c:136
 #: ../src/iop/colorzones.c:146 ../src/iop/defringe.c:83 ../src/iop/levels.c:139
@@ -13641,44 +13685,44 @@ msgstr ""
 msgid "linear or non-linear, Lab, display-referred"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:129
+#: ../src/iop/colorchecker.c:132
 msgid "defined by profile, Lab"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:290
+#: ../src/iop/colorchecker.c:294
 msgid "it8 skin tones"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:304
+#: ../src/iop/colorchecker.c:310
 msgid "Helmholtz/Kohlrausch monochrome"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:320
+#: ../src/iop/colorchecker.c:327
 msgid "Fuji Astia emulation"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:333
+#: ../src/iop/colorchecker.c:341
 msgid "Fuji Classic Chrome emulation"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:346
+#: ../src/iop/colorchecker.c:355
 msgid "Fuji Monochrome emulation"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:359
+#: ../src/iop/colorchecker.c:369
 msgid "Fuji Provia emulation"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:372
+#: ../src/iop/colorchecker.c:383
 msgid "Fuji Velvia emulation"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:778 ../src/iop/colorchecker.c:1284
+#: ../src/iop/colorchecker.c:841 ../src/iop/colorchecker.c:1436
 #, c-format
 msgid "patch #%d"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1148
+#: ../src/iop/colorchecker.c:1283
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -13689,43 +13733,43 @@ msgid ""
 "shift+click while color picking to replace patch"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1279
+#: ../src/iop/colorchecker.c:1431
 msgid "patch"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1280
+#: ../src/iop/colorchecker.c:1432
 msgid "color checker patch"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1291
+#: ../src/iop/colorchecker.c:1446
 msgid ""
 "adjust target color Lab 'L' channel\n"
 "lower values darken target color while higher brighten it"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1295
+#: ../src/iop/colorchecker.c:1454
 msgid ""
 "adjust target color Lab 'a' channel\n"
 "lower values shift target color towards greens while higher shift towards "
 "magentas"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1296
+#: ../src/iop/colorchecker.c:1457
 msgid "green-magenta offset"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1302
+#: ../src/iop/colorchecker.c:1466
 msgid ""
 "adjust target color Lab 'b' channel\n"
 "lower values shift target color towards blues while higher shift towards "
 "yellows"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1303
+#: ../src/iop/colorchecker.c:1469
 msgid "blue-yellow offset"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1309
+#: ../src/iop/colorchecker.c:1478
 msgid ""
 "adjust target color saturation\n"
 "adjusts 'a' and 'b' channels of target color in Lab space simultaneously\n"
@@ -13733,18 +13777,18 @@ msgid ""
 "higher saturation"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1314
+#: ../src/iop/colorchecker.c:1487
 msgid "target color"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1315
+#: ../src/iop/colorchecker.c:1490
 msgid ""
 "control target color of the patches\n"
 "relative - target color is relative from the patch original color\n"
 "absolute - target color is absolute Lab value"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1317
+#: ../src/iop/colorchecker.c:1494
 msgid "absolute"
 msgstr ""
 
@@ -14695,34 +14739,42 @@ msgid ""
 "this can be used to inpaint highlights."
 msgstr ""
 
-#: ../src/iop/dither.c:94 ../src/iop/vignette.c:980
-msgid "dithering"
+#: ../src/iop/dither.c:106
+msgid "dither or posterize"
 msgstr ""
 
-#: ../src/iop/dither.c:99
+#: ../src/iop/dither.c:111
+msgid "dithering|posterization|reduce bit-depth"
+msgstr ""
+
+#: ../src/iop/dither.c:116
 msgid ""
-"reduce banding and posterization effects in output JPEGs by adding random "
-"noise"
+"reduce banding and posterization effects in output\n"
+"JPEGs by adding random noise, or reduce bit depth"
+msgstr ""
+
+#: ../src/iop/dither.c:118
+msgid "corrective, artistic"
 msgstr ""
 
 #. add the preset.
-#: ../src/iop/dither.c:128
+#: ../src/iop/dither.c:146
 msgid "dither"
 msgstr ""
 
-#: ../src/iop/dither.c:661
+#: ../src/iop/dither.c:758
 msgid "radius for blurring step"
 msgstr ""
 
-#: ../src/iop/dither.c:673
+#: ../src/iop/dither.c:770
 msgid "the gradient range where to apply random dither"
 msgstr ""
 
-#: ../src/iop/dither.c:674
+#: ../src/iop/dither.c:771
 msgid "gradient range"
 msgstr ""
 
-#: ../src/iop/dither.c:682
+#: ../src/iop/dither.c:779
 msgid "damping level of random dither"
 msgstr ""
 
@@ -17941,6 +17993,10 @@ msgctxt "section"
 msgid "position / form"
 msgstr ""
 
+#: ../src/iop/vignette.c:980
+msgid "dithering"
+msgstr ""
+
 #: ../src/iop/vignette.c:991
 msgid "the radii scale of vignette for start of fall-off"
 msgstr ""
@@ -19318,7 +19374,7 @@ msgstr ""
 #: ../src/libs/geotagging.c:371
 msgid ""
 "apply offset and geo-location to matching images\n"
-"double operation: two ctrl-Z to undo"
+"double operation: two ctrl-z to undo"
 msgstr ""
 
 #: ../src/libs/geotagging.c:373 ../src/libs/geotagging.c:1910
