@@ -536,7 +536,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     /* use a raster mask from another module earlier in the pipe */
     gboolean free_mask = FALSE; // if no transformations were applied
                                 // we get the cached original back
-    float *raster_mask = dt_dev_get_raster_mask(piece->pipe,
+    float *raster_mask = dt_dev_get_raster_mask(piece,
                                                 self->raster_mask.sink.source,
                                                 self->raster_mask.sink.id,
                                                 self, &free_mask);
@@ -1081,7 +1081,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     /* use a raster mask from another module earlier in the pipe */
     gboolean free_mask = FALSE; // if no transformations were applied
                                 // we get the cached original back
-    float *raster_mask = dt_dev_get_raster_mask(piece->pipe,
+    float *raster_mask = dt_dev_get_raster_mask(piece,
                                                 self->raster_mask.sink.source,
                                                 self->raster_mask.sink.id,
                                                 self, &free_mask);
