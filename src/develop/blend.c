@@ -725,11 +725,11 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   // TODO: should we skip raster masks?
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, 0))
   {
-    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(0), _mask);
+    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(NO_MASKID), _mask);
   }
   else
   {
-    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(0));
+    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(NO_MASKID));
     dt_free_align(_mask);
   }
 }
@@ -1371,7 +1371,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
 
   // check if we should store the mask for export or use in subsequent modules
   // TODO: should we skip raster masks?
-  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, 0))
+  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, NO_MASKID))
   {
     //  get back final mask from the device to store it for later use
     if(!(mask_mode & DEVELOP_MASK_RASTER))
@@ -1380,11 +1380,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                           owidth, oheight, sizeof(float));
       if(err != CL_SUCCESS) goto error;
     }
-    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(0), _mask);
+    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(NO_MASKID), _mask);
     }
   else
   {
-    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(0));
+    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(NO_MASKID));
     dt_free_align(_mask);
   }
 
