@@ -406,7 +406,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   module->suppress_mask = FALSE;
   module->enabled = module->default_enabled = FALSE; // all modules disabled by default.
-  g_strlcpy(module->op, so->op, 20);
+  g_strlcpy(module->op, so->op, sizeof(module->op));
   module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
   module->raster_mask.source.masks =
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
