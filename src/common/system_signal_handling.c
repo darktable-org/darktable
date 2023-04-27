@@ -101,7 +101,8 @@ static void _dt_sigsegv_handler(int param)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   gchar *pid_arg = g_strdup_printf("%d", (int)getpid());
   gchar *comm_arg = g_strdup_printf("%s/gdb_commands", datadir);
-  gchar *log_arg = g_strdup_printf("set logging on %s", name_used);
+  gchar *logenable = g_strdup_printf("set logging enabled on");
+  gchar *setlogfile = g_strdup_printf("set logging file %s", name_used);
 
   if((pid = fork()) != -1)
   {
@@ -116,7 +117,7 @@ static void _dt_sigsegv_handler(int param)
     }
     else
     {
-      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch", "-ex", log_arg, "-x", comm_arg, NULL))
+      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch", "-ex", setlogfile, "-ex", logenable, "-x", comm_arg, NULL))
       {
         delete_file = TRUE;
         g_printerr("an error occurred while trying to execute gdb. please check if gdb is installed on your "
@@ -133,7 +134,8 @@ static void _dt_sigsegv_handler(int param)
   if(delete_file) g_unlink(name_used);
   g_free(pid_arg);
   g_free(comm_arg);
-  g_free(log_arg);
+  g_free(logenable);
+  g_free(setlogfile);
   g_free(name_used);
 
   /* pass it further to the old handler*/
