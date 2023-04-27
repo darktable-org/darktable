@@ -32,7 +32,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
-#undef NDEBUG
 #include <assert.h>
 #include <cairo.h>
 #include <complex.h>
