@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
 #include "common/math.h"
@@ -928,39 +929,40 @@ static void compute_round_stamp_extent(cairo_rectangle_int_t *const restrict sta
   Our stamp is stored in a rectangular region.
 */
 
-static void build_round_stamp(float complex **pstamp,
-                               cairo_rectangle_int_t *const restrict stamp_extent,
-                               const dt_liquify_warp_t *const restrict warp)
+static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
+                              float complex *global_map,
+                              const cairo_rectangle_int_t *const restrict global_map_extent)
 {
-  const int iradius = round(cabsf(warp->radius - warp->point));
+  const size_t iradius = round(cabsf(warp->radius - warp->point));
   assert(iradius > 0);
-
-  stamp_extent->x = stamp_extent->y = -iradius;
-  stamp_extent->width = stamp_extent->height = 2 * iradius + 1;
 
   // 0.5 is factored in so the warp starts to degenerate when the
   // strength arrow crosses the warp radius.
   float complex strength = 0.5f * (warp->strength - warp->point);
   strength = (warp->status & DT_LIQUIFY_STATUS_INTERPOLATED) ?
     (strength * STAMP_RELOCATION) : strength;
-  const float abs_strength = cabsf(strength);
-
-  float complex *restrict stamp =
-    calloc(sizeof(float complex), (size_t)stamp_extent->width * stamp_extent->height);
+  const float abs_strength
+    = cabsf(strength) * (warp->type == DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK ? -1.0f : 1.0f);
 
   // lookup table: map of distance from center point => warp
-  const int table_size = iradius * LOOKUP_OVERSAMPLE;
+  const size_t table_size = iradius * LOOKUP_OVERSAMPLE;
   const float *const restrict lookup_table =
     build_lookup_table(table_size, warp->control1, warp->control2);
-  if(!stamp || !lookup_table)
+  if(!lookup_table)
   {
-    *pstamp = stamp;
     dt_free_align((void*)lookup_table);
     dt_print(DT_DEBUG_ALWAYS,"[liquify] out of memory, round stamp skipped\n");
     return;
   }
-  // points into buffer at the center of the circle
-  float complex *const center = stamp + 2 * iradius * iradius + 2 * iradius;
+
+  // point into the global distortion map at the center of the circle
+  const size_t global_width = global_map_extent->width;
+  const size_t stamp_x = (size_t) round(crealf(warp->point));
+  const size_t stamp_y = (size_t) round(cimagf(warp->point));
+  float complex *const center
+    = (global_map
+       + (stamp_y - global_map_extent->y) * global_width
+       + stamp_x - global_map_extent->x);
 
   // The expensive operation here is hypotf ().  By dividing the
   // circle in quadrants and doing only the inside we have to calculate
@@ -969,98 +971,58 @@ static void build_round_stamp(float complex **pstamp,
   // doesn't work for OSX see issue #7349
   #if defined(_OPENMP) && !defined(__APPLE__)
   #pragma omp parallel for schedule(static) default(none) \
-    dt_omp_firstprivate(iradius, strength, abs_strength, table_size)   \
-    dt_omp_sharedconst(center, warp, stamp_extent, lookup_table, LOOKUP_OVERSAMPLE)
+    dt_omp_firstprivate(iradius, strength, abs_strength, table_size, global_width) \
+    dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent)
   #endif
-
-  for(int y = 0; y <= iradius; y++)
+  for(size_t y = 0; y <= iradius; y++)
   {
-    for(int x = 0; x <= iradius; x++)
+    const float complex y_i = y * I;
+    const float complex minus_y_i = -y * I;
+    const float y2 = y*y;
+    for(size_t x = 0; x <= iradius; x++)
     {
       // faster than hypotf(), and we know we won't have overflow or denormals
-      const float dist = sqrtf(x*x + y*y);
-      const int idist = round(dist * LOOKUP_OVERSAMPLE);
+      const float dist = sqrtf((float)x*x + y2);
+      const size_t idist = round(dist * LOOKUP_OVERSAMPLE);
       if(idist >= table_size)
         // idist will only grow bigger in this row
         break;
 
       // pointers into the 4 quadrants of the circle
       // quadrant count is ccw from positive x-axis
-      float complex *const q1 = center - y * stamp_extent->width + x;
-      float complex *const q2 = center - y * stamp_extent->width - x;
-      float complex *const q3 = center + y * stamp_extent->width - x;
-      float complex *const q4 = center + y * stamp_extent->width + x;
+      float complex *const q1 = center - y * global_width + x;
+      float complex *const q2 = center - y * global_width - x;
+      float complex *const q3 = center + y * global_width - x;
+      float complex *const q4 = center + y * global_width + x;
 
-      float abs_lookup = abs_strength * lookup_table[idist] / iradius;
-
-      switch(warp->type)
+      if(warp->type == DT_LIQUIFY_WARP_TYPE_LINEAR)
       {
-         case DT_LIQUIFY_WARP_TYPE_RADIAL_GROW:
-           *q1 = abs_lookup * ( x - y * I);
-           *q2 = abs_lookup * (-x - y * I);
-           *q3 = abs_lookup * (-x + y * I);
-           *q4 = abs_lookup * ( x + y * I);
-           break;
-
-         case DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK:
-           *q1 = -abs_lookup * ( x - y * I);
-           *q2 = -abs_lookup * (-x - y * I);
-           *q3 = -abs_lookup * (-x + y * I);
-           *q4 = -abs_lookup * ( x + y * I);
-           break;
-
-         default:
-           *q1 = *q2 = *q3 = *q4 = strength * lookup_table[idist];
-           break;
+        const float complex w_strength = -strength * lookup_table[idist];
+        *q1 += w_strength;
+        if(x!=0)
+          *q2 += w_strength;
+        if(x!=0&&y!=0)
+          *q3 += w_strength;
+        if(y!=0)
+          *q4 += w_strength;
+      }
+      else
+      {
+        // DT_LIQUIFY_WARP_TYPE_RADIAL_GROW or _SHRINK
+        // abs_strength is negative for _SHRINK
+        const float abs_lookup = abs_strength * lookup_table[idist] / iradius;
+        *q1 += abs_lookup * ( x + minus_y_i);
+        if(x!=0)
+          *q2 += abs_lookup * (-x + minus_y_i);
+        if(x!=0&&y!=0)
+          *q3 += abs_lookup * (-x + y_i);
+        if(y!=0)
+          *q4 += abs_lookup * ( x + y_i);
       }
     }
   }
 
-  dt_free_align((void *) lookup_table);
-  *pstamp = stamp;
-}
-
-/*
-  Applies a stamp at a specified position.
-
-  Applies a stamp at the position specified by @a point and adds the
-  resulting vector field to the global distortion map @a global_map.
-
-  The global distortion map is a map of relative pixel displacements
-  encompassing all our paths.
-*/
-
-static void add_to_global_distortion_map
-  (float complex *global_map,
-   const cairo_rectangle_int_t *const restrict global_map_extent,
-   const dt_liquify_warp_t *const restrict warp,
-   const float complex *const restrict stamp,
-   const cairo_rectangle_int_t *stamp_extent)
-{
-  cairo_rectangle_int_t mmext = *stamp_extent;
-  mmext.x += (int) round(crealf(warp->point));
-  mmext.y += (int) round(cimagf(warp->point));
-  cairo_rectangle_int_t cmmext = mmext;
-  cairo_region_t *mmreg = cairo_region_create_rectangle(&mmext);
-  cairo_region_intersect_rectangle(mmreg, global_map_extent);
-  cairo_region_get_extents(mmreg, &cmmext);
-  free(mmreg);
-
-  #ifdef _OPENMP
-  #pragma omp parallel for schedule (static) default (shared)
-  #endif
-
-  for(int y = cmmext.y; y < cmmext.y + cmmext.height; y++)
-  {
-    const float complex *const srcrow = stamp + ((y - mmext.y) * mmext.width);
-    float complex *const destrow = global_map
-      + ((y - global_map_extent->y) * global_map_extent->width);
-
-    for(int x = cmmext.x; x < cmmext.x + cmmext.width; x++)
-    {
-      destrow[x - global_map_extent->x] -= srcrow[x - mmext.x];
-    }
-  }
+  dt_free_align((void*) lookup_table);
 }
 
 /*
@@ -1084,28 +1046,27 @@ static void _apply_global_distortion_map(struct dt_iop_module_t *module,
   const struct dt_interpolation * const interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
-  #ifdef _OPENMP
-  #pragma omp parallel for schedule (static) default (shared)
-  #endif
+  const size_t min_y = MAX(roi_out->y, extent->y);
+  const size_t max_y = MIN(roi_out->y + roi_out->height, extent->y + extent->height);
 
-  for(int y = extent->y; y < extent->y + extent->height; y++)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, map, ch, ch_width, extent, roi_in, roi_out, \
+                      min_y, max_y, interpolation)                       \
+  schedule(static)
+#endif
+  for(size_t y = min_y; y < max_y; y++)
   {
-    // point inside roi_out ?
-    if(y >= roi_out->y && y < roi_out->y + roi_out->height)
+    const size_t min_x = MAX(roi_out->x, extent->x);
+    const size_t max_x = MIN(roi_out->x + roi_out->width, extent->x + extent->width);
+    const float complex *row = map + (y - extent->y) * extent->width + (min_x - extent->x);
+    float* out_sample = out + ch * ((y - roi_out->y) * roi_out->width - roi_out->x);
+    for(size_t x = min_x; x < max_x; x++)
     {
-      const float complex *row = map + (y - extent->y) * extent->width;
-      float* out_sample = out + ((y - roi_out->y) * roi_out->width +
-                               extent->x - roi_out->x) * ch;
-      for(int x = extent->x; x < extent->x + extent->width; x++)
+      if(*row != 0) // point actually warped?
       {
-        if(
-          // point inside roi_out ?
-          (x >= roi_out->x && x < roi_out->x + roi_out->width) &&
-          // point actually warped ?
-          (*row != 0))
-        {
-          if(ch == 1)
-            *out_sample = dt_interpolation_compute_sample(interpolation,
+        if(ch == 1)
+          out_sample[x] = dt_interpolation_compute_sample(interpolation,
                                                           in,
                                                           x + crealf(*row) - roi_in->x,
                                                           y + cimagf(*row) - roi_in->y,
@@ -1113,21 +1074,19 @@ static void _apply_global_distortion_map(struct dt_iop_module_t *module,
                                                           roi_in->height,
                                                           ch,
                                                           ch_width);
-          else
-            dt_interpolation_compute_pixel4c(
-              interpolation,
-              in,
-              out_sample,
-              x + crealf(*row) - roi_in->x,
-              y + cimagf(*row) - roi_in->y,
-              roi_in->width,
-              roi_in->height,
-              ch_width);
+        else
+          dt_interpolation_compute_pixel4c(
+            interpolation,
+            in,
+            out_sample + ch*x,
+            x + crealf(*row) - roi_in->x,
+            y + cimagf(*row) - roi_in->y,
+            roi_in->width,
+            roi_in->height,
+            ch_width);
 
-        }
-        ++row;
-        out_sample += ch;
       }
+      ++row;
     }
   }
 }
@@ -1188,11 +1147,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
   for(const GSList *i = interpolated; i; i = g_slist_next(i))
   {
     const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
-    float complex *stamp = NULL;
-    cairo_rectangle_int_t r;
-    build_round_stamp(&stamp, &r, warp);
-    add_to_global_distortion_map(map, map_extent, warp, stamp, &r);
-    free((void *) stamp);
+    apply_round_stamp(warp, map, map_extent);
   }
 
   if(inverted)
@@ -1203,10 +1158,11 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // copy map into imap(inverted map).
     // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
 
-    #ifdef _OPENMP
-    #pragma omp parallel for schedule (static) default (shared)
-    #endif
-
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(map, map_extent, imap)  \
+  schedule(static)
+#endif
     for(int y = 0; y <  map_extent->height; y++)
     {
       const float complex *const row = map + y * map_extent->width;
@@ -1230,10 +1186,11 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // distortion mask is only used to compute a final displacement of
     // points.
 
-    #ifdef _OPENMP
-    #pragma omp parallel for schedule (static) default (shared)
-    #endif
-
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(imap, map_extent) \
+  schedule(static)
+#endif
     for(int y = 0; y <  map_extent->height; y++)
     {
       float complex *const row = imap + y * map_extent->width;
@@ -1460,33 +1417,17 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_out)
 {
   // 1. copy the whole image (we'll change only a small part of it)
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, roi_in, roi_out) \
-  schedule(static)
-#endif
-  for(int i = 0; i < roi_out->height; i++)
-  {
-    float *destrow = out + (size_t) i * roi_out->width;
-    const float *srcrow = in
-      + (size_t) (roi_in->width * (i + roi_out->y - roi_in->y) + roi_out->x - roi_in->x);
-
-    memcpy(destrow, srcrow, sizeof(float) * roi_out->width);
-  }
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, 1);
 
   // 2. build the distortion map
-
   cairo_rectangle_int_t map_extent;
   float complex *map = NULL;
   _build_global_distortion_map(self, piece, roi_in->scale, FALSE,
                                roi_out, &map_extent, FALSE, &map);
-
   if(map == NULL)
     return;
 
   // 3. apply the map
-
   if(map_extent.width != 0 && map_extent.height != 0)
   {
     const int ch = piece->colors;
@@ -1496,7 +1437,6 @@ void distort_mask(struct dt_iop_module_t *self,
   }
 
   dt_free_align((void *) map);
-
 }
 
 void process(struct dt_iop_module_t *module,
@@ -1506,42 +1446,21 @@ void process(struct dt_iop_module_t *module,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, module, piece->colors,
+                                        in, out, roi_in, roi_out))
+    return;
   // 1. copy the whole image (we'll change only a small part of it)
-
-  const int ch = piece->colors;
-  assert(ch == 4);
-
-  const int height = MIN(roi_in->height, roi_out->height);
-  const int width = MIN(roi_in->width, roi_out->width);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, height, in, out, roi_in, roi_out, width) \
-  schedule(static)
-#endif
-  for(int i = 0; i < height; i++)
-  {
-    float *destrow = (float *)out + (size_t)ch * i * roi_out->width;
-    const float *srcrow = (float *)in
-      + (size_t)ch * (roi_in->width * (i + roi_out->y - roi_in->y)
-                      + roi_out->x - roi_in->x);
-
-    memcpy(destrow, srcrow, sizeof(float) * ch * width);
-  }
+  dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, 1);
 
   // 2. build the distortion map
-
   cairo_rectangle_int_t map_extent;
   float complex *map = NULL;
-
   _build_global_distortion_map(module, piece, roi_in->scale, FALSE,
                                roi_out, &map_extent, FALSE, &map);
-
   if(map == NULL)
     return;
 
   // 3. apply the map
-
   if(map_extent.width != 0 && map_extent.height != 0)
     _apply_global_distortion_map(module, piece, in, out, roi_in, roi_out, map, &map_extent);
 
