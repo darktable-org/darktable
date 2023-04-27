@@ -429,7 +429,7 @@ public:
    *    vd_ : dimensionality of value vectors
    * nData_ : number of points in the input
    */
-  PermutohedralLattice(size_t nData_, int nThreads_ = 1, size_t grid_points = ~0L) : nData(nData_), nThreads(nThreads_)
+  PermutohedralLattice(size_t nData_, size_t nThreads_ = 1, size_t grid_points = ~0L) : nData(nData_), nThreads(nThreads_)
   {
     // Allocate storage for various arrays
     float *scaleFactorTmp = new float[D];
@@ -473,7 +473,7 @@ public:
     size_t points = ((D+1) * nData) < effective_MP ? ((D+1) * nData) : effective_MP;
 
     hashTables = new HashTable[nThreads];
-    for(int i = 0; i < nThreads; i++)
+    for(size_t i = 0; i < nThreads; i++)
     {
        hashTables[i].setSize(points / nThreads);
     }
@@ -647,7 +647,7 @@ public:
     size_t total_grows = hashTables[0].auto_grow;
     size_t init_bytes = hashTables[0].init_alloc;
     size_t total_entries = hashTables[0].size();
-    for(int i = 1; i < nThreads; i++)
+    for(size_t i = 1; i < nThreads; i++)
     {
        alloc_entries += hashTables[i].maxFill();
        total_entries += hashTables[i].size();
@@ -660,7 +660,7 @@ public:
     /* Merge the multiple hash tables into one, creating an offset remap table. */
     int **offset_remap = new int *[nThreads];
     size_t remap_bytes = 0;
-    for(int i = 1; i < nThreads; i++)
+    for(size_t i = 1; i < nThreads; i++)
     {
       const Key *oldKeys = hashTables[i].getKeys();
       const Value *oldVals = hashTables[i].getValues();
@@ -700,7 +700,7 @@ public:
       }
     }
 
-    for(int i = 1; i < nThreads; i++) delete[] offset_remap[i];
+    for(size_t i = 1; i < nThreads; i++) delete[] offset_remap[i];
     delete[] offset_remap;
   }
 
@@ -779,7 +779,7 @@ public:
 
 private:
   size_t nData;
-  int nThreads;
+  size_t nThreads;
   const float *scaleFactor;
   const int *canonical;
 
