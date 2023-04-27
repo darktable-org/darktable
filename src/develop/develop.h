@@ -185,6 +185,8 @@ typedef struct dt_develop_t
   GList *forms;
   struct dt_masks_form_t *form_visible;
   struct dt_masks_form_gui_t *form_gui;
+  gboolean was_in_creation; // flag to pass state between button
+                            // pressed/released
   // all forms to be linked here for cleanup:
   GList *allforms;
 

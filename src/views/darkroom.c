@@ -3508,7 +3508,6 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   }
 }
 
-
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   dt_develop_t *dev = darktable.develop;
@@ -3541,11 +3540,33 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   // rotate
   if(which == 3 && dev->proxy.rotate)
     handled = dev->proxy.rotate->button_released(dev->proxy.rotate, x, y, which, state);
+
   if(handled) return handled;
+
   // masks
   if(dev->form_visible)
     handled = dt_masks_events_button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
+
+  // display form?
+  if(which == 3
+     && !dev->was_in_creation)
+  {
+    dt_masks_edit_mode_t edit_mode =
+      dt_masks_get_edit_mode(dev->gui_module);
+
+    edit_mode = edit_mode == DT_MASKS_EDIT_OFF
+      ? DT_MASKS_EDIT_FULL
+      : DT_MASKS_EDIT_OFF;
+
+    dt_masks_set_edit_mode(dev->gui_module, edit_mode);
+    handled = TRUE;
+  }
+
+  dev->was_in_creation = FALSE;
+
+  if(handled) return handled;
+
   // module
   if(dev->gui_module && dev->gui_module->button_released
      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
@@ -3710,6 +3731,11 @@ int button_pressed(dt_view_t *self,
       return 1;
     }
   }
+
+  dev->was_in_creation =
+    (which != 3)
+    || !dev->form_gui
+    || dev->form_gui->creation;
 
   // masks
   if(dev->form_visible)

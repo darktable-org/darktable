@@ -5174,7 +5174,7 @@ int button_released(struct dt_iop_module_t *self,
     float dx = pts[0] - pts[2];
     float dy = pts[1] - pts[3];
     if(sqrt(dx * dx + dy * dy) /* zoom_scale */ < DT_PIXEL_APPLY_DPI(25))
-      return TRUE;
+      return FALSE;
 
     if(dx < 0)
     {
