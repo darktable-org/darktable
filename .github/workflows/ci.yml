@@ -163,16 +163,17 @@ jobs:
           cd "${SRC_DIR}/src/tests/integration/"
           ./run.sh --no-opencl --no-deltae --fast-fail
 
-  Win64:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+  Windows:
+    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
       matrix:
         btype:
           - Debug
-        compiler:
-          - { compiler: GNU,  CC: gcc,   CXX: g++ }
+        msystem:
+          #- CLANG64
+          - UCRT64
         target:
           - skiptest
         generator:
@@ -183,8 +184,6 @@ jobs:
       run:
         shell: msys2 {0}
     env:
-      CC: ${{ matrix.compiler.CC }}
-      CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
@@ -196,9 +195,8 @@ jobs:
     steps:
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: ucrt64
+          msystem: ${{ matrix.msystem }}
           install: >-
-            base-devel
             git
             intltool
             po4a
@@ -256,7 +254,6 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Check if it runs
-        if: ${{success() && matrix.compiler.compiler == 'GNU' }} # LLVM build on windws for some reason breaks in imageio_rawspeed...
         run: |
           $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe --version || true
@@ -274,7 +271,7 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.generator }}
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
