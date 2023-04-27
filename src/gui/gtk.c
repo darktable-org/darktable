@@ -2573,6 +2573,15 @@ char *dt_gui_get_help_url(GtkWidget *widget)
   return NULL;
 }
 
+void dt_gui_dialog_add_help(GtkDialog *dialog, const char *topic)
+{
+  GtkWidget *help = gtk_dialog_add_button(dialog, _("help"),
+                                          GTK_RESPONSE_NONE); //GTK_RESPONSE_HELP aligns left
+  dt_gui_add_help_link(help, topic);
+  g_signal_handlers_disconnect_by_data(help, dialog);
+  g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+}
+
 static char *_get_base_url()
 {
   const gboolean use_default_url =

@@ -1702,12 +1702,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
       _("cancel"), GTK_RESPONSE_CANCEL,
       _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
       NULL);
-
-  GtkWidget *help = gtk_dialog_add_button(GTK_DIALOG(d->from.dialog), _("help"),
-                                          GTK_RESPONSE_NONE); //GTK_RESPONSE_HELP aligns left
-  dt_gui_add_help_link(help, "import_dialog");
-  g_signal_handlers_disconnect_by_data(help, d->from.dialog);
-  g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  dt_gui_dialog_add_help(GTK_DIALOG(d->from.dialog), "import_dialog");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);

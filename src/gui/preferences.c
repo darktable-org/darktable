@@ -527,13 +527,13 @@ void dt_gui_preferences_show()
 
   //setup tabs
   init_tab_general(_preferences_dialog, stack, tweak_widgets);
-  init_tab_import(_preferences_dialog, stack);
-  init_tab_lighttable(_preferences_dialog, stack);
-  init_tab_darkroom(_preferences_dialog, stack);
-  init_tab_processing(_preferences_dialog, stack);
-  init_tab_security(_preferences_dialog, stack);
-  init_tab_storage(_preferences_dialog, stack);
-  init_tab_misc(_preferences_dialog, stack);
+  init_tab_import(_preferences_dialog, stack, N_("import"));
+  init_tab_lighttable(_preferences_dialog, stack, N_("lighttable"));
+  init_tab_darkroom(_preferences_dialog, stack, N_("darkroom"));
+  init_tab_processing(_preferences_dialog, stack, N_("processing"));
+  init_tab_security(_preferences_dialog, stack, N_("security"));
+  init_tab_storage(_preferences_dialog, stack, N_("storage"));
+  init_tab_misc(_preferences_dialog, stack, N_("miscellaneous"));
   init_tab_accels(stack);
   init_tab_presets(stack);
 

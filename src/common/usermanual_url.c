@@ -97,6 +97,7 @@ dt_help_url urls_db[] =
   {"shortcuts",                  "preferences-settings/shortcuts/"},
   {"presets",                    "preferences-settings/presets/"},
   {"css_tweaks",                 "preferences-settings/general/#css-theme-modifications"},
+  {"preset_dialog",              "darkroom/processing-modules/presets/#creating-and-editing-presets"},
 
   // iop links
   {"ashift",                     "module-reference/processing-modules/rotate-perspective/"},
