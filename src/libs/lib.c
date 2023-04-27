@@ -795,7 +795,7 @@ static void dt_lib_init_module(void *m)
   if(darktable.gui)
   {
     module->gui_init(module);
-    g_object_ref_sink(module->widget);
+    if(module->widget) g_object_ref_sink(module->widget);
 
     if(module->gui_update)
       g_signal_connect(G_OBJECT(module->widget), "draw",
