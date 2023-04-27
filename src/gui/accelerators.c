@@ -3102,6 +3102,8 @@ void dt_shortcuts_load(const gchar *ext, const gboolean clear)
 
 void dt_shortcuts_reinitialise(dt_action_t *action)
 {
+  dt_control_log(_("reinitialising input devices"));
+
   for(GSList *d = darktable.control->input_drivers; d; d = d->next)
   {
     const dt_input_driver_definition_t *driver = d->data;
@@ -3118,8 +3120,6 @@ void dt_shortcuts_reinitialise(dt_action_t *action)
   FILE *f = g_fopen(actions_file, "wb");
   _dump_actions(f, darktable.control->actions);
   fclose(f);
-
-  dt_control_log(_("input devices reinitialised"));
 }
 
 void dt_shortcuts_select_view(dt_view_type_flags_t view)

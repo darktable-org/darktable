@@ -43,22 +43,12 @@ const char *name(dt_lib_module_t *self)
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  return DT_VIEW_ALL;
+  return DT_VIEW_NONE;
 }
 
 uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_TOP_CENTER;
-}
-
-int expandable(dt_lib_module_t *self)
-{
-  return 0;
-}
-
-int position(const dt_lib_module_t *self)
-{
-  return 1;
 }
 
 typedef struct dt_midi_device_t
@@ -564,6 +554,8 @@ static void _midi_open_devices(dt_lib_module_t *self)
       {
         dt_print(DT_DEBUG_INPUT, "[_midi_open_devices] opened midi device '%s' via '%s' as midi%d\n",
                  info->name, info->interf, dev);
+        if(!cur_dev || !*cur_dev)
+          dt_control_log(_("%s opened as midi%d"), info->name, dev);
       }
 
       dt_midi_device_t *midi = (dt_midi_device_t *)g_malloc0(sizeof(dt_midi_device_t));
@@ -683,11 +675,6 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_capabilities_add("midi");
 
-  if(!self->widget)
-  {
-    self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_no_show_all(self->widget, TRUE);
-  }
   self->data = NULL;
 
   _midi_open_devices(self);
