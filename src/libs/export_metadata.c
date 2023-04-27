@@ -289,6 +289,11 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   d->dialog = dialog;
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
 
+  GtkWidget *help = gtk_dialog_add_button(GTK_DIALOG(dialog), _("help"), GTK_RESPONSE_NONE); //GTK_RESPONSE_HELP aligns left
+  dt_gui_add_help_link(help, "export_dialog");
+  g_signal_handlers_disconnect_by_data(help, dialog);
+  g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 

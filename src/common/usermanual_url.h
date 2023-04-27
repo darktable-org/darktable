@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-char *dt_get_help_url(char *name);
+char *dt_get_help_url(const char *name);
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

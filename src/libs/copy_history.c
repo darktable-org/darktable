@@ -402,7 +402,7 @@ void gui_init(dt_lib_module_t *self)
      pastemode_combobox_changed, self,
      N_("append"),     // DT_COPY_HISTORY_APPEND
      N_("overwrite")); // DT_COPY_HISTORY_OVERWRITE
-  dt_gui_add_help_link(d->pastemode, dt_get_help_url("history"));
+  dt_gui_add_help_link(d->pastemode, "history");
   gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
 
   d->load_button = dt_action_button_new
