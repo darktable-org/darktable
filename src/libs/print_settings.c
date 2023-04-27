@@ -2285,7 +2285,7 @@ void gui_init(dt_lib_module_t *self)
     (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("print_overview"));
+  dt_gui_add_help_link(self->widget, "print_overview");
 
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
@@ -2384,7 +2384,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(C_("section", "printer"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("print_settings_printer"));
+  dt_gui_add_help_link(self->widget, "print_settings_printer");
   d->printers = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
@@ -2493,7 +2493,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(C_("section", "page"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("print_settings_page"));
+  dt_gui_add_help_link(self->widget, "print_settings_page");
 
   //// papers
 
@@ -2640,7 +2640,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(C_("section", "image layout"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("print_image_layout"));
+  dt_gui_add_help_link(self->widget, "print_image_layout");
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxdim), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxinfo), TRUE, TRUE, 0);
@@ -2756,7 +2756,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(C_("section", "print settings"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("print_settings"));
+  dt_gui_add_help_link(self->widget, "print_settings");
 
   //  Add export profile combo
 
@@ -2879,7 +2879,7 @@ void gui_init(dt_lib_module_t *self)
                                            GDK_KEY_p, GDK_CONTROL_MASK);
   d->print_button = GTK_BUTTON(button);
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-  dt_gui_add_help_link(button, dt_get_help_url("print_settings_button"));
+  dt_gui_add_help_link(button, "print_settings_button");
 
   g_free(system_profile_dir);
   g_free(user_profile_dir);

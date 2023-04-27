@@ -590,7 +590,7 @@ static void _add_wrapped_box(GtkWidget *container,
   gtk_container_add(GTK_CONTAINER(event_box), revealer);
   gtk_container_add(GTK_CONTAINER(container), event_box);
   // event box is needed so that one can click into the area to get help
-  dt_gui_add_help_link(event_box, dt_get_help_url(help_url));
+  dt_gui_add_help_link(event_box, help_url);
 }
 
 static void _box_set_visible(GtkBox *box, gboolean visible)
@@ -3486,7 +3486,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_blend_mode_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo),
-                         dt_get_help_url("masks_blending_op"));
+                         "masks_blending_op");
     gtk_box_pack_start(GTK_BOX(blend_modes_hbox), bd->blend_modes_combo, TRUE, TRUE, 0);
 
     bd->blend_modes_blend_order = dt_iop_togglebutton_new
@@ -3534,7 +3534,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     g_signal_connect(G_OBJECT(bd->masks_combine_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_combine_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_combine_combo),
-                         dt_get_help_url("masks_combined"));
+                         "masks_combined");
 
     bd->details_slider = dt_bauhaus_slider_new_with_range(module, -1.0f, 1.0f, 0, 0.0f, 2);
     dt_bauhaus_widget_set_label(bd->details_slider, N_("blend"), N_("details threshold"));
@@ -3638,7 +3638,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                        GTK_WIDGET(presets_button), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_box), FALSE, FALSE, 0);
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_modes_box),
-                         dt_get_help_url("masks_blending"));
+                         "masks_blending");
     gtk_widget_set_name(GTK_WIDGET(bd->masks_modes_box), "blending-tabs");
 
     bd->top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
