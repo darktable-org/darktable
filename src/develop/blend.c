@@ -279,8 +279,8 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   dt_dev_pixelpipe_t *p = piece->pipe;
   if(p->rawdetail_mask_data == NULL) return;
 
-  const int iwidth  = p->rawdetail_mask_roi.width;
-  const int iheight = p->rawdetail_mask_roi.height;
+  const int iwidth  = p->detail_width;
+  const int iheight = p->detail_height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE,
@@ -756,8 +756,8 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   dt_dev_pixelpipe_t *p = piece->pipe;
   if(p->rawdetail_mask_data == NULL) return;
 
-  const int iwidth  = p->rawdetail_mask_roi.width;
-  const int iheight = p->rawdetail_mask_roi.height;
+  const int iwidth  = p->detail_width;
+  const int iheight = p->detail_height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,

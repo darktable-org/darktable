@@ -240,8 +240,8 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_imgid = NO_IMGID;
 
   pipe->rawdetail_mask_data = NULL;
-  pipe->want_detail_mask = DT_DEV_DETAIL_MASK_NONE;
-  memset(&pipe->rawdetail_mask_roi, 0, sizeof(dt_iop_roi_t));
+  pipe->want_detail_mask = FALSE;
+  pipe->detail_width = pipe->detail_height = 0;
 
   pipe->processing = FALSE;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
@@ -459,14 +459,6 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
   const dt_image_t *img      = &pipe->image;
   const dt_imgid_t imgid     = img->id;
   const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
-  const gboolean raw_img     = dt_image_is_raw(img);
-
-  pipe->want_detail_mask &= DT_DEV_DETAIL_MASK_REQUIRED;
-
-  if(raw_img)
-    pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_DEMOSAIC;
-  else if(rawprep_img)
-    pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_RAWPREPARE;
 
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
@@ -526,7 +518,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
         const dt_develop_blend_params_t *const bp =
           (const dt_develop_blend_params_t *)piece->blendop_data;
         if(!feqf(bp->details, 0.0f, 1e-6))
-          pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_REQUIRED;
+          pipe->want_detail_mask = TRUE;
       }
     }
   }
@@ -3005,23 +2997,15 @@ void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
 {
   if(pipe->rawdetail_mask_data) dt_free_align(pipe->rawdetail_mask_data);
   pipe->rawdetail_mask_data = NULL;
-  memset(&pipe->rawdetail_mask_roi, 0, sizeof(dt_iop_roi_t));
+  pipe->detail_width = pipe->detail_height = 0;
 }
 
 gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
                                      float *const rgb,
                                      const dt_iop_roi_t *const roi_in,
-                                     const int mode)
+                                     const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(!(p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED))
-  {
-    if(p->rawdetail_mask_data)
-      dt_dev_clear_rawdetail_mask(p);
-    return FALSE;
-  }
-  if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
-
   dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
@@ -3031,20 +3015,16 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
   if((mask == NULL) || (tmp == NULL)) goto error;
 
   p->rawdetail_mask_data = mask;
-  memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
+  p->detail_width = roi_in->width;
+  p->detail_height = roi_in->height;
 
-  const gboolean nocoeff =
-    (p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) == DT_DEV_DETAIL_MASK_RAWPREPARE;
-  const gboolean wboff = !piece->pipe->dsc.temperature.enabled || nocoeff;
-
-  const dt_aligned_pixel_t wb = { wboff ? 1.0f : piece->pipe->dsc.temperature.coeffs[0],
-                                  wboff ? 1.0f : piece->pipe->dsc.temperature.coeffs[1],
-                                  wboff ? 1.0f : piece->pipe->dsc.temperature.coeffs[2]};
+  const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
+  const dt_aligned_pixel_t wb = { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
+                                  wboff ? 1.0f : p->dsc.temperature.coeffs[1],
+                                  wboff ? 1.0f : p->dsc.temperature.coeffs[2]};
   dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
   dt_free_align(tmp);
-  dt_print_pipe(DT_DEBUG_PIPE,
-                      "write detail mask on CPU",
-                      piece->pipe, "", roi_in, NULL, "mode %i\n", mode);
+  dt_print_pipe(DT_DEBUG_PIPE, "write detail mask on CPU", p, "", roi_in, NULL, "\n");
   return FALSE;
 
   error:
@@ -3058,18 +3038,9 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
 gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
                                         cl_mem in,
                                         const dt_iop_roi_t *const roi_in,
-                                        const int mode)
+                                        const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(!(p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED))
-  {
-    if(p->rawdetail_mask_data)
-      dt_dev_clear_rawdetail_mask(p);
-    return FALSE;
-  }
-
-  if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
-
   dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
@@ -3090,14 +3061,12 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
   {
     const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
-    const gboolean nocoeff =
-      (p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) == DT_DEV_DETAIL_MASK_RAWPREPARE;
-    const gboolean wboff = !piece->pipe->dsc.temperature.enabled || nocoeff;
+    const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
 
     const dt_aligned_pixel_t wb =
-      { wboff ? 1.0f : piece->pipe->dsc.temperature.coeffs[0],
-        wboff ? 1.0f : piece->pipe->dsc.temperature.coeffs[1],
-        wboff ? 1.0f : piece->pipe->dsc.temperature.coeffs[2]};
+      { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
+        wboff ? 1.0f : p->dsc.temperature.coeffs[1],
+        wboff ? 1.0f : p->dsc.temperature.coeffs[2]};
 
     err = dt_opencl_enqueue_kernel_2d_args
       (devid, kernel, width, height,
@@ -3118,13 +3087,12 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   }
 
   p->rawdetail_mask_data = mask;
-  memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
+  p->detail_width = roi_in->width;
+  p->detail_height = roi_in->height;
 
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  dt_print_pipe(DT_DEBUG_PIPE,
-                      "write detail mask on GPU",
-                      piece->pipe, "", roi_in, NULL, "mode %i\n", mode);
+  dt_print_pipe(DT_DEBUG_PIPE, "write detail mask on GPU", p, "", roi_in, NULL, "\n");
   return FALSE;
 
   error:
@@ -3140,13 +3108,12 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
 // this expects a mask prepared by the demosaicer and distorts the
 // mask through all pipeline modules until target
-float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe,
+float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
                                   float *src,
                                   const dt_iop_module_t *target_module)
 {
-  if(!pipe->rawdetail_mask_data) return NULL;
   gboolean valid = FALSE;
-  const dt_develop_detail_mask_t check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
+  const gboolean raw_img = dt_image_is_raw(&pipe->image);
 
   GList *source_iter;
   for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
@@ -3154,14 +3121,14 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe,
     const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
     if(dt_iop_module_is(candidate->module->so, "demosaic")
        && candidate->enabled
-       && (check == DT_DEV_DETAIL_MASK_DEMOSAIC))
+       && raw_img)
     {
       valid = TRUE;
       break;
     }
     if(dt_iop_module_is(candidate->module->so, "rawprepare")
        && candidate->enabled
-       && (check == DT_DEV_DETAIL_MASK_RAWPREPARE))
+       && !raw_img)
     {
       valid = TRUE;
       break;
@@ -3171,7 +3138,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe,
   if(!valid) return NULL;
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
            "[dt_dev_distort_detail_mask] (%ix%i) for module %s\n",
-           pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height,
+           pipe->detail_width, pipe->detail_height,
            target_module->op);
 
   float *resmask = src;
@@ -3213,19 +3180,11 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe,
                     || module->processed_roi_in.height != module->processed_roi_out.height
                     || module->processed_roi_in.x != module->processed_roi_out.x
                     || module->processed_roi_in.y != module->processed_roi_out.y))
-              dt_print(DT_DEBUG_ALWAYS,
-                       "FIXME: module `%s' changed the roi from %d x %d @ %d /"
-                       " %d to %d x %d | %d / %d but doesn't have "
-                       "distort_mask() implemented!\n",
-                       module->module->op,
-                       module->processed_roi_in.width,
-                       module->processed_roi_in.height,
-                       module->processed_roi_in.x,
-                       module->processed_roi_in.y,
-                       module->processed_roi_out.width,
-                       module->processed_roi_out.height,
-                       module->processed_roi_out.x,
-                       module->processed_roi_out.y);
+              dt_print_pipe(DT_DEBUG_ALWAYS,
+                      "distort raster mask",
+                      pipe, module->module->op,
+                      &module->processed_roi_in, &module->processed_roi_out,
+                      "misses distort_mask()\n");
 
         if(module->module == target_module) break;
       }

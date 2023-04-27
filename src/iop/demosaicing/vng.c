@@ -630,7 +630,9 @@ static int process_vng_cl(
         CLARG(dev_tmp), CLARG(dev_aux), CLARG(width), CLARG(height));
       if(err != CL_SUCCESS) goto error;
     }
-    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
+
+    if(piece->pipe->want_detail_mask)
+      dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, TRUE);
 
     if(scaled)
     {
