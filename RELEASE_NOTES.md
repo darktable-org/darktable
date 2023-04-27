@@ -629,6 +629,8 @@ The following is a summary of the main features added to darktable
 
 - Fix crashes while using raster masks after reordering the pixelpipe.
 
+- Fix details mask for images in blown-out parts of the image.
+
 ## Lua
 
 ### API Version
