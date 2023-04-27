@@ -252,13 +252,19 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
   dt_iop_highpass_data_t *data = (dt_iop_highpass_data_t *)piece->data;
   const float *const in = (float *)ivoid;
   float *out = (float *)ovoid;
-  const int ch = 4;
 
   /* the blend code at the end assumes at least 4 channels, and we never get more than four */
   assert(piece->colors == ch);
@@ -269,10 +275,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in) \
-  shared(out) \
-  schedule(static)
+  dt_omp_firstprivate(npixels,in,out)  \
+  schedule(simd:static)
 #endif
   for(size_t k = 0; k < (size_t)npixels; k++)
     out[k] = 100.0f - LCLIP(in[4 * k]); // only L in Lab space
@@ -286,7 +290,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_box_mean(out, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
-  const float contrast_scale = ((data->contrast / 100.0) * 7.5);
+  // combine the contrast factor from user settings with the averaging
+  // factor to save a multiplication per pixel
+  const float contrast_scale = ((data->contrast / 100.0f) * 7.5f) * 0.5f;
   /* Blend the inverted blurred L channel with the original input.  Because we packed the L values */
   /* and are inserting the result in the same buffer containing the L values, we need to work in */
   /* reverse order */
@@ -294,31 +300,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* would clobber values still needed by other threads. */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, contrast_scale, npixels) \
-  dt_omp_sharedconst(in) \
-  shared(out, data) \
+  dt_omp_firstprivate(contrast_scale, npixels, in, out)  \
   schedule(static)
 #endif
   for(size_t k = npixels - 1; k > npixels/4; k--)
   {
-    size_t index = ch * k;
-    // Mix out and in
-    const float L = out[k] * 0.5 + in[index] * 0.5;
-    out[index] = LCLIP(50.0f + ((L - 50.0f) * contrast_scale));
-    out[index + 1] = out[index + 2] = 0.0f; // desaturate a and b in Lab space
-    out[index + 3] = in[index + 3]; // copy the alpha channel in case it is in use
+    dt_aligned_pixel_t hipass = { 0.0f, 0.0f, 0.0f, 0.0f };  // a=b=0 to desaturate, alpha doesn't matter
+   // Mix out and in
+    const float L = (out[k] + in[4*k]) - 100.0f;
+    hipass[0] = CLAMP((L  * contrast_scale) + 50.0f, 0.0f, 100.0f);
+    copy_pixel(out + 4*k, hipass);
   }
   /* process the final quarter of the pixels */
   for(ssize_t k = npixels/4; k >= 0; k--)
   {
-    size_t index = ch * k;
+    dt_aligned_pixel_t hipass = { 0.0f, 0.0f, 0.0f, 0.0f };  // a=b=0 to desaturate, alpha doesn't matter
     // Mix out and in
-    const float L = out[k] * 0.5 + in[index] * 0.5;
-    out[index] = LCLIP(50.0f + ((L - 50.0f) * contrast_scale));
-    out[index + 1] = out[index + 2] = 0.0f; // desaturate a and b in Lab space
-    out[index + 3] = in[index + 3]; // copy the alpha channel in case it is in use
+    const float L = (out[k] + in[4*k]) - 100.0f;
+    hipass[0] = CLAMP((L * contrast_scale) + 50.0f, 0.0f, 100.0f);
+    copy_pixel(out + 4*k, hipass);
   }
-
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
