@@ -445,6 +445,9 @@ The following is a summary of the main features added to darktable
   rename it "dither or posterize" to make the new functionality more
   easily discoverable.
 
+- Add Help buttons to several dialogs and preferences tabs to directly
+  launch the online manual.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
