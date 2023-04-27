@@ -9,37 +9,38 @@ permissions:
   contents: read
 
 jobs:
-  Win64:
+  Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable win64
+    name: Nightly darktable Windows
     runs-on: windows-latest
     strategy:
       fail-fast: true
       matrix:
-        btype: [Release]
-        compiler:
-          - { compiler: GNU,  CC: gcc,   CXX: g++ }
+        btype:
+          - Release
+        msystem:
+          - UCRT64
+        target:
+          - skiptest
+        generator:
+          - Ninja
         eco: [-DBINARY_PACKAGE_BUILD=ON]
-        target: [skiptest]
     defaults:
       run:
         shell: msys2 {0}
     env:
-      CC: ${{ matrix.compiler.CC }}
-      CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
+      GENERATOR: ${{ matrix.generator }}
     steps:
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: ucrt64
+          msystem: ${{ matrix.msystem }}
           install: >-
-            base-devel
             git
             intltool
             po4a
@@ -103,6 +104,7 @@ jobs:
       - name: Check if it runs
         run: |
           $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
+          echo "Testing RUN!"
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
                  --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
@@ -119,7 +121,7 @@ jobs:
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
       - name: Get version info
-        run: |      
+        run: |
           cd ${SRC_DIR}
           echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
@@ -212,7 +214,7 @@ jobs:
         run: |
           ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
       - name: Get version info
-        run: |      
+        run: |
           cd ${{ env.SRC_DIR }}
           echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
       - name: Package upload
@@ -222,4 +224,3 @@ jobs:
           name: darktable-${{ env.VERSION }}.dmg
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
           retention-days: 2
-
