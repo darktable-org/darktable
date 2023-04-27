@@ -252,6 +252,31 @@ error:
 }
 #endif
 
+static void _blend(const float *const restrict in,
+                   float *const restrict out,
+                   const double contrast_scale,
+                   const size_t npixels)
+{
+  /* Blend the inverted blurred L channel with the original input.  Because we packed the L values */
+  /* and are inserting the result in the same buffer containing the L values, we need to work in */
+  /* reverse order */
+  /* We can only do the final 3/4 in parallel here, because updating the first quarter in one thread */
+  /* would clobber values still needed by other threads. */
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(contrast_scale, npixels, in, out)  \
+  schedule(static)
+#endif
+  for(size_t k = npixels - 1; k >= npixels/4; k--)
+  {
+    dt_aligned_pixel_t hipass = { 0.0f, 0.0f, 0.0f, 0.0f };  // a=b=0 to desaturate, alpha doesn't matter
+   // Mix out and in
+    const float L = (out[k] + in[4*k]) - 100.0f;
+    hipass[0] = CLAMP((L * contrast_scale) + 50.0f, 0.0f, 100.0f);
+    copy_pixel(out + 4*k, hipass);
+  }
+}
+
 void process(struct dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
@@ -293,26 +318,11 @@ void process(struct dt_iop_module_t *self,
   // combine the contrast factor from user settings with the averaging
   // factor to save a multiplication per pixel
   const float contrast_scale = ((data->contrast / 100.0f) * 7.5f) * 0.5f;
-  /* Blend the inverted blurred L channel with the original input.  Because we packed the L values */
-  /* and are inserting the result in the same buffer containing the L values, we need to work in */
-  /* reverse order */
-  /* We can only do the final 3/4 in parallel here, because updating the first quarter in one thread */
-  /* would clobber values still needed by other threads. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(contrast_scale, npixels, in, out)  \
-  schedule(static)
-#endif
-  for(size_t k = npixels - 1; k > npixels/4; k--)
-  {
-    dt_aligned_pixel_t hipass = { 0.0f, 0.0f, 0.0f, 0.0f };  // a=b=0 to desaturate, alpha doesn't matter
-   // Mix out and in
-    const float L = (out[k] + in[4*k]) - 100.0f;
-    hipass[0] = CLAMP((L  * contrast_scale) + 50.0f, 0.0f, 100.0f);
-    copy_pixel(out + 4*k, hipass);
-  }
-  /* process the final quarter of the pixels */
-  for(ssize_t k = npixels/4; k >= 0; k--)
+
+  _blend(in, out, contrast_scale, npixels);    // only does final 3/4 of given pixels, so repeat
+  _blend(in, out, contrast_scale, npixels/4);  // only does final 3/4 of given pixels
+  /* process the remaining sixteenth of the pixels */
+  for(ssize_t k = npixels/16 - 1; k >= 0; k--)
   {
     dt_aligned_pixel_t hipass = { 0.0f, 0.0f, 0.0f, 0.0f };  // a=b=0 to desaturate, alpha doesn't matter
     // Mix out and in
