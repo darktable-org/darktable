@@ -138,6 +138,7 @@ The following is a summary of the main features added to darktable
   - Color Balance (legacy)
   - Levels (legacy)
   - Relight
+  - Liquify
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
@@ -446,7 +447,8 @@ The following is a summary of the main features added to darktable
 
 ## Bug Fixes
 
-- Fix the reset of the sort order to 'filename' on every collection change.
+- Fix the reset of the sort order to 'filename' on every collection
+  change.
 
 - Remove the commit button from the crop module as it was not used
   anymore.
