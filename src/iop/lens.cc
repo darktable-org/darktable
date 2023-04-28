@@ -1784,8 +1784,6 @@ static float _get_autoscale_md(dt_iop_module_t *self,
                                dt_iop_lens_params_t *p)
 {
   const dt_image_t *img = &(self->dev->image_storage);
-  if(img->exif_correction_type == CORRECTION_TYPE_DNG)
-    return 1.0f;
 
   // FIXME: get those from rawprepare IOP somehow !!!
   const float iwd2 = 0.5f *(img->width - img->crop_x - img->crop_right),
