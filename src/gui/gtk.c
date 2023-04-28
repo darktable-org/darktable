@@ -3496,6 +3496,7 @@ void dt_gui_widget_reallocate_now(GtkWidget *widget)
   gtk_widget_get_allocation(widget, &allocation);
   if(allocation.width > 1)
     gtk_widget_size_allocate(widget, &allocation);
+  gtk_widget_queue_resize(widget);
 }
 
 gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEntry *entry)
