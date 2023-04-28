@@ -164,3 +164,9 @@ endif(APPLE)
 
 set_property(GLOBAL PROPERTY DT_PLUGIN_IOPS ${_iop_list})
 set_property(GLOBAL PROPERTY DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT ${_iop_default_visible_list})
+
+# workaround for GCC 13
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 13)
+  target_compile_options(colorchecker PRIVATE -Wno-error=stringop-overflow)
+  target_compile_options(demosaic PRIVATE -Wno-error=stringop-overflow)
+endif()
