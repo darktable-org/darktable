@@ -276,12 +276,12 @@ static inline void fast_eigf_surface_blur(float *const restrict image,
   const size_t num_elem_ds = ds_width * ds_height;
   const size_t num_elem = width * height;
 
-  float *const restrict mask = dt_alloc_align_float(dt_round_size_sse(num_elem));
-  float *const restrict ds_image = dt_alloc_align_float(dt_round_size_sse(num_elem_ds));
-  float *const restrict ds_mask = dt_alloc_align_float(dt_round_size_sse(num_elem_ds));
+  float *const restrict mask = dt_alloc_align_float(num_elem);
+  float *const restrict ds_image = dt_alloc_align_float(num_elem_ds);
+  float *const restrict ds_mask = dt_alloc_align_float(num_elem_ds);
   // average - variance arrays: store the guide and mask averages and variances
-  float *const restrict ds_av = dt_alloc_align_float(dt_round_size_sse(num_elem_ds * 4));
-  float *const restrict av = dt_alloc_align_float(dt_round_size_sse(num_elem * 4));
+  float *const restrict ds_av = dt_alloc_align_float(num_elem_ds * 4);
+  float *const restrict av = dt_alloc_align_float(num_elem * 4);
 
   if(!ds_image || !ds_mask || !ds_av || !av)
   {

@@ -987,20 +987,9 @@ void toneeq_process(struct dt_iop_module_t *self,
   dt_iop_toneequalizer_gui_data_t *const g =
     (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  const float *const restrict in = dt_check_sse_aligned((float *const)ivoid);
-  float *const restrict out = dt_check_sse_aligned((float *const)ovoid);
+  const float *const restrict in = (float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
   float *restrict luminance = NULL;
-
-  if(in == NULL || out == NULL)
-  {
-    // Pointers are not 64-bits aligned, and SSE code will segfault
-    dt_control_log(_("tone equalizer in/out buffer are ill-aligned,"
-                     " please report the bug to the developers"));
-    dt_print(DT_DEBUG_ALWAYS,
-             "tone equalizer in/out buffer are ill-aligned,"
-             " please report the bug to the developers\n");
-    return;
-  }
 
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;

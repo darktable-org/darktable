@@ -452,7 +452,6 @@ static inline float *dt_calloc_align_float(const size_t pixels)
   return (float*)__builtin_assume_aligned(buf, 64);
 }
 size_t dt_round_size(const size_t size, const size_t alignment);
-size_t dt_round_size_sse(const size_t size);
 
 #ifdef _WIN32
 void dt_free_align(void *mem);
@@ -535,14 +534,6 @@ static inline gboolean dt_modifiers_include(const GdkModifierType state,
 static inline gboolean dt_is_aligned(const void *pointer, const size_t byte_count)
 {
     return (uintptr_t)pointer % byte_count == 0;
-}
-
-static inline void * dt_check_sse_aligned(void * pointer)
-{
-  if(dt_is_aligned(pointer, 64))
-    return __builtin_assume_aligned(pointer, 64);
-  else
-    return NULL;
 }
 
 int dt_capabilities_check(char *capability);
