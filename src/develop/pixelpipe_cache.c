@@ -129,7 +129,15 @@ uint64_t dt_dev_pixelpipe_cache_basichash(
   // bernstein hash (djb2)
   uint64_t hash = 5381;
 
-  // we use the the imgid and pipe type for the hash
+  /* What do we use for the basic hash
+       1) imgid as all structures using the hash might possibly contain data from other images
+       2) pipe->type for the cache it's important to keep status of fast mode included here
+           also, we might use the hash also for different pipe.
+       3) pipe->want_detail_mask make sure old cachelines from before activating details are
+          not valid any more.
+          Do we have to keep the roi of details mask? No as that is always defined by roi_in
+          of the mask writing module (rawprepare or demosaic)
+  */ 
   const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
@@ -138,12 +146,6 @@ uint64_t dt_dev_pixelpipe_cache_basichash(
   for(size_t ip = 0; ip < sizeof(hashing_pipemode); ip++)
     hash = ((hash << 5) + hash) ^ pstr[ip];
 
-/*
-  // also use the details mask roi?
-  pstr = (char *)&pipe->rawdetail_mask_roi;
-  for(size_t ip = 0; ip < sizeof(dt_iop_roi_t); ip++)
-    hash = ((hash << 5) + hash) ^ pstr[ip];
-*/
   // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
   for(int k = 0; k < position && pieces; k++)
