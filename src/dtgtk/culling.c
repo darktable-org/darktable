@@ -655,6 +655,12 @@ static gboolean _event_button_press(GtkWidget *widget,
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
 
+  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  {
+    // make sure any edition field loses the focus
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+  }
+
   if(event->button == 2)
   {
     // if shift is pressed, we work only with image hovered
