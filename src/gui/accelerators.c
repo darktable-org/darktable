@@ -930,6 +930,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
   gchar *markup_text = NULL;
   gchar *description = NULL;
   dt_action_t *action = NULL;
+  dt_action_def_t const *def = NULL;
   int show_element = 0;
   dt_shortcut_t lua_shortcut = { .speed = 1.0 };
 
@@ -956,24 +957,38 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
 
     if(!strcmp(widget_name, "shortcuts_view"))
     {
-      markup_text = g_markup_printf_escaped("%s\n%s\n%s",
-                                            _("press Delete to delete selected shortcut"),
-                                            _("double-click to add new shortcut"),
-                                            _("start typing for incremental search"));
       GSequenceIter  *shortcut_iter = NULL;
       gtk_tree_model_get(model, &iter, 0, &shortcut_iter, -1);
+      markup_text = g_markup_printf_escaped("%s%s%s",
+                                            _("start typing for incremental search"),
+                                            _highlighted_action ? _("\npress Delete to delete selected shortcut") : "",
+                                            (GPOINTER_TO_UINT(shortcut_iter) < NUM_CATEGORIES) ? "" :
+                                            _("\ndouble-click to add new shortcut"));
 
       if(GPOINTER_TO_UINT(shortcut_iter) >= NUM_CATEGORIES)
         lua_shortcut = *(dt_shortcut_t*)g_sequence_get(shortcut_iter);
     }
     else
     {
-      markup_text = g_markup_printf_escaped("%s\n%s%s\n%s",
-                                            _("click to filter shortcut list"),
-                                            _highlighted_action ? _("right click to show action of selected shortcut\n") : "",
-                                            _("double-click to define new shortcut"),
-                                            _("start typing for incremental search"));
       gtk_tree_model_get(model, &iter, 0, &action, -1);
+      def = _action_find_definition(action);
+      markup_text = g_markup_printf_escaped("%s\n%s%s%s%s%s",
+                                            _("start typing for incremental search"),
+                                            _("click to filter shortcuts list"),
+                                            _highlighted_action ?
+                                            _("\nright click to show action of selected shortcut")
+                                            : "",
+                                            def || action->type > DT_ACTION_TYPE_SECTION ?
+                                            _("\ndouble-click to define new shortcut")
+                                            : "",
+                                            def ?
+                                            "\n\nmultiple shortcuts can be defined for the same action;"
+                                            "\na different element, effect, speed or instance can be set for each in the shortcuts list."
+                                            : "",
+                                            def && def->fallbacks && action->type != DT_ACTION_TYPE_FALLBACK ?
+                                            "\n\nwith fallbacks enabled, the same shortcut can be used with additional modifiers"
+                                            "\nor mouse scroll/clicks/moves to affect a different element or change the effect or speed."
+                                            : "");
     }
   }
   else if(preset_name)
@@ -1024,7 +1039,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
     }
   }
 
-  const dt_action_def_t *def = _action_find_definition(action);
+  if(!def) def = _action_find_definition(action);
   const gboolean has_fallbacks = def && def->fallbacks;
 
   const gchar *element_name = NULL;
@@ -1900,7 +1915,9 @@ static void _fill_action_fields(GtkTreeViewColumn *column,
   if(!data)
   {
     const dt_action_def_t *def = _action_find_definition(action);
-    text = def ? _(def->name) : "";
+    text = def ? _(def->name) :
+           action->type == DT_ACTION_TYPE_COMMAND ? _("command") :
+           action->type == DT_ACTION_TYPE_PRESET ? _("preset") : "";
   }
 
   int weight = PANGO_WEIGHT_NORMAL;
@@ -1929,9 +1946,7 @@ static void _action_row_activated(GtkTreeView *tree_view,
   _sc.element = DT_ACTION_ELEMENT_DEFAULT;
   _sc.instance = 0;
 
-  if(_action_find_definition(_sc.action)
-     || (_sc.action->type > DT_ACTION_TYPE_SECTION && _sc.action->type < DT_ACTION_TYPE_WIDGET))
-
+  if(_sc.action->type > DT_ACTION_TYPE_SECTION || _action_find_definition(_sc.action))
     _grab_in_tree_view(tree_view);
   else
     _sc.action = NULL;
