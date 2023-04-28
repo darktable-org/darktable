@@ -279,8 +279,8 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   dt_dev_pixelpipe_t *p = piece->pipe;
   if(p->rawdetail_mask_data == NULL) return;
 
-  const int iwidth  = p->rawdetail_mask_roi.width;
-  const int iheight = p->rawdetail_mask_roi.height;
+  const int iwidth  = p->detail_width;
+  const int iheight = p->detail_height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE,
@@ -517,12 +517,14 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   // allocate space for blend mask used by roi_out
   float *const restrict _mask = dt_alloc_align_float(obuffsize);
 
-  dt_print_pipe(DT_DEBUG_PIPE,
-     "dt_develop_blend on CPU",
-     piece->pipe, self->so->op, roi_in, roi_out,
-     _mask ? "\n" : "could not allocate buffer for blending\n");
-
-  if(!_mask) return;
+  if(!_mask)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "dt_develop_blend on CPU",
+       piece->pipe, self->so->op, roi_in, roi_out,
+       "could not allocate buffer for blending\n");
+    return;
+  }
 
   float *const restrict mask = _mask;
 
@@ -540,6 +542,11 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
                                                 self->raster_mask.sink.source,
                                                 self->raster_mask.sink.id,
                                                 self, &free_mask);
+
+    dt_print_pipe(DT_DEBUG_PIPE,
+      "blend raster mask on CPU",
+      piece->pipe, self->so->op, roi_in, roi_out,
+      "%sraster mask found\n", raster_mask ? "" : "**no** ");
 
     if(raster_mask)
     {
@@ -570,6 +577,10 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   }
   else
   {
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend with form on CPU",
+       piece->pipe, self->so->op, roi_in, roi_out,
+       "\n");
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one
@@ -723,13 +734,14 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
 
   // check if we should store the mask for export or use in subsequent modules
   // TODO: should we skip raster masks?
-  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, 0))
+  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, NO_MASKID))
   {
-    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(0), _mask);
+    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(NO_MASKID), _mask);
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
   }
   else
   {
-    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(0));
+    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(NO_MASKID));
     dt_free_align(_mask);
   }
 }
@@ -756,8 +768,8 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   dt_dev_pixelpipe_t *p = piece->pipe;
   if(p->rawdetail_mask_data == NULL) return;
 
-  const int iwidth  = p->rawdetail_mask_roi.width;
-  const int iheight = p->rawdetail_mask_roi.height;
+  const int iwidth  = p->detail_width;
+  const int iheight = p->detail_height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
@@ -966,13 +978,14 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   // allocate space for blend mask
   float *_mask = dt_alloc_align_float(obuffsize);
 
-  dt_print_pipe(DT_DEBUG_PIPE,
-     "dt_develop_blend on GPU",
-     piece->pipe, self->so->op, roi_in, roi_out,
-     _mask ? "\n" : "could not allocate buffer for blending\n");
-
   if(!_mask)
-    return FALSE;
+  {
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "dt_develop_blend on GPU",
+       piece->pipe, self->so->op, roi_in, roi_out,
+       "could not allocate buffer for blending\n");
+   return FALSE;
+  }
 
   float *const mask = _mask;
 
@@ -1086,6 +1099,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                                 self->raster_mask.sink.id,
                                                 self, &free_mask);
 
+    dt_print_pipe(DT_DEBUG_PIPE,
+      "blend raster mask on GPU",
+      piece->pipe, self->so->op, roi_in, roi_out,
+      "%sraster mask found\n", raster_mask ? "" : "**no** ");
+
     if(raster_mask)
     {
       // invert if required
@@ -1097,7 +1115,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
         shared(raster_mask)
 #endif
         for(size_t i = 0; i < obuffsize; i++)
-          mask[i] = (1.0 - raster_mask[i]) * opacity;
+          mask[i] = (1.0f - raster_mask[i]) * opacity;
       }
       else
       {
@@ -1125,6 +1143,10 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
   else
   {
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend with form on GPU",
+       piece->pipe, self->so->op, roi_in, roi_out,
+       "\n");
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one
@@ -1371,7 +1393,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
 
   // check if we should store the mask for export or use in subsequent modules
   // TODO: should we skip raster masks?
-  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, 0))
+  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, NO_MASKID))
   {
     //  get back final mask from the device to store it for later use
     if(!(mask_mode & DEVELOP_MASK_RASTER))
@@ -1380,11 +1402,12 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                           owidth, oheight, sizeof(float));
       if(err != CL_SUCCESS) goto error;
     }
-    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(0), _mask);
-    }
+    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(NO_MASKID), _mask);
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+  }
   else
   {
-    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(0));
+    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(NO_MASKID));
     dt_free_align(_mask);
   }
 

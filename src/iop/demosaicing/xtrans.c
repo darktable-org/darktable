@@ -2192,7 +2192,9 @@ static int process_markesteijn_cl(
       dt_opencl_release_mem_object(dev_edge_out);
       dev_edge_in = dev_edge_out = NULL;
     }
-    dt_dev_write_rawdetail_mask_cl(piece, dev_tmp, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
+
+    if(piece->pipe->want_detail_mask)
+      dt_dev_write_rawdetail_mask_cl(piece, dev_tmp, roi_in, TRUE);
 
     if(scaled)
     {

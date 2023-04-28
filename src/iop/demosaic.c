@@ -235,7 +235,7 @@ static dt_iop_demosaic_qual_flags_t demosaic_qual_flags(
       flags |= DT_DEMOSAIC_FULL_SCALE;
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
-      flags |= ((piece->pipe->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED)
+      flags |= (piece->pipe->want_detail_mask
                 || (get_thumb_quality(roi_out->width, roi_out->height)))
                   ? DT_DEMOSAIC_FULL_SCALE
                   : DT_DEMOSAIC_DEFAULT;
@@ -684,7 +684,8 @@ void process(
         dt_free_align(in);
     }
 
-    dt_dev_write_rawdetail_mask(piece, tmp, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
+    if(piece->pipe->want_detail_mask)
+      dt_dev_write_rawdetail_mask(piece, tmp, roi_in, TRUE);
 
     if((demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast)
     {
@@ -1090,12 +1091,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       piece->process_cl_ready = FALSE;
   }
 
+  if(use_method & DT_DEMOSAIC_DUAL)
+    piece->pipe->want_detail_mask = TRUE;
+
   // green-equilibrate over full image excludes tiling
   // The details mask is written inside process, this does not allow tiling.
   if((d->green_eq == DT_IOP_GREEN_EQ_FULL
       || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
-      || ((use_method & DT_DEMOSAIC_DUAL) && (d->dual_thrs > 0.0f))
-      || (piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_DEMOSAIC)))
+      || piece->pipe->want_detail_mask)
   {
     piece->process_tiling_ready = FALSE;
   }
