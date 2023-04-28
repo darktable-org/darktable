@@ -1795,6 +1795,8 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
       dt_masks_iop_update(module);
       dt_masks_update_image(darktable.develop);
     }
+    dt_toast_log(_("'%s' removed"), form->name);
+
     if(ok && grp->points == NULL) dt_masks_form_remove(module, NULL, grp);
     return;
   }
