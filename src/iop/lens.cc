@@ -1773,12 +1773,27 @@ static int _init_coeffs_md(const dt_image_t *img,
   return 0;
 }
 
+// _get_autoscale_md calculates the optimal scaling value to show the maximum
+// visibile image box after distortion correction
+// It does so by walking from the normalized radius [0, 1] at the shorter image
+// border to 1.
+// TODO(sgotti) Theoretically, since the distortion function should always be
+// monotonic and the center is always the center of the image, we should only
+// look at the the shorter image radius and 1 ignoring intermediate values
 static float _get_autoscale_md(dt_iop_module_t *self,
                                dt_iop_lens_params_t *p)
 {
   const dt_image_t *img = &(self->dev->image_storage);
   if(img->exif_correction_type == CORRECTION_TYPE_DNG)
     return 1.0f;
+
+  // FIXME: get those from rawprepare IOP somehow !!!
+  const float iwd2 = 0.5f *(img->width - img->crop_x - img->crop_right),
+              iht2 = 0.5f *(img->height - img->crop_y - img->crop_bottom);
+
+  const float r = sqrtf(iwd2 * iwd2 + iht2 * iht2);
+  const float sr = fminf(iwd2, iht2);
+  const float srr = sr / r;
 
   const float tested = 200.0f;
 
@@ -1789,10 +1804,11 @@ static float _get_autoscale_md(dt_iop_module_t *self,
   float scale = 0.0f;
   for(float i = 0.0f; i < tested; i++)
   {
-    for(int j = 0; j < 3; j++)
-      scale = fmaxf(scale,
-                    _interpolate_linear_spline(knots, cor_rgb[j],
-                                               nc, 0.5f + 0.5f * i / (tested - 1.0f)));
+    for(int j = 0; j < 3; j++) {
+      const float x = srr + (1 - srr) * i / (tested - 1.0f);
+      float cur_scale = _interpolate_linear_spline(knots, cor_rgb[j], nc, x);
+      scale = fmaxf(scale,cur_scale);
+    }
   }
   return scale;
 }
