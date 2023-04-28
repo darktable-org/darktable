@@ -21,10 +21,6 @@
 #include "common/opencl.h"
 #include "develop/pixelpipe_hb.h"
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

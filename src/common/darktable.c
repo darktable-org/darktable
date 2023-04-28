@@ -551,8 +551,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(!sse2_supported)
     dt_print
       (DT_DEBUG_ALWAYS,
-       "[dt_init] SSE2 instruction set is unavailable.\n"
-       "[dt_init] expect a LOT of functionality to be broken. you have been warned.\n");
+       "[dt_init] SSE2 is unavailable, some functions will be noticeably slower.\n");
 
   darktable.progname = argv[0];
 
@@ -1810,13 +1809,6 @@ size_t dt_round_size(const size_t size, const size_t alignment)
   // Round the size of a buffer to the closest higher multiple
   return ((size % alignment) == 0) ? size : ((size - 1) / alignment + 1) * alignment;
 }
-
-size_t dt_round_size_sse(const size_t size)
-{
-  // Round the size of a buffer to the closest 64 higher multiple
-  return dt_round_size(size, 64);
-}
-
 
 #ifdef _WIN32
 void dt_free_align(void *mem)

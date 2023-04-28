@@ -704,16 +704,15 @@ void dt_group_events_post_expose(cairo_t *cr,
                                  dt_masks_form_gui_t *gui);
 
 /** code for dynamic handling of intermediate buffers */
-static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_t size)
+static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_t newsize)
 {
-  const size_t newsize = dt_round_size_sse(sizeof(float) * size) / sizeof(float);
   float *newbuf = dt_alloc_align_float(newsize);
   if (!newbuf)
   {
     // not much we can do here except emit an error message
     dt_print(DT_DEBUG_ALWAYS,
              "critical: out of memory for dynbuf '%s' with size request %zu!\n",
-             a->tag, size);
+             a->tag, newsize);
     return FALSE;
   }
   if (a->buffer)
