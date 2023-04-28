@@ -1915,7 +1915,9 @@ static void _fill_action_fields(GtkTreeViewColumn *column,
   if(!data)
   {
     const dt_action_def_t *def = _action_find_definition(action);
-    text = def ? _(def->name) : "";
+    text = def ? _(def->name) :
+           action->type == DT_ACTION_TYPE_COMMAND ? _("command") :
+           action->type == DT_ACTION_TYPE_PRESET ? _("preset") : "";
   }
 
   int weight = PANGO_WEIGHT_NORMAL;
