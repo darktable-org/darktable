@@ -453,6 +453,18 @@ The following is a summary of the main features added to darktable
 - Add Help buttons to several dialogs and preferences tabs to directly
   launch the online manual.
 
+- New version of Fimic color science v7 (2023) which has been set as
+  the default. The color preservation mode has been removed and a new
+  slider is proposed to control the highlights saturation. This slider
+  give a mix between the max RGB chroma preservation mode and the no
+  preservation mode.
+
+- Add support for some more metadata keys to be imported:
+  - Iptc.Application2.Byline
+  - Iptc.Application2.DateCreated
+  - Iptc.Application2.TimeCreated
+  - Exif.Image.ImageDescription
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
@@ -635,6 +647,8 @@ The following is a summary of the main features added to darktable
 - Fix crashes while using raster masks after reordering the pixelpipe.
 
 - Fix details mask for images in blown-out parts of the image.
+
+- Allow adding color patch on 7x7 grid of the Color Checker module.
 
 ## Lua
 
