@@ -139,6 +139,7 @@ The following is a summary of the main features added to darktable
   - Levels (legacy)
   - Relight
   - Liquify
+  - Color Mapping
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
@@ -172,6 +173,10 @@ The following is a summary of the main features added to darktable
   - The luminance mask calculation for the Tone Equalizer.
 
   - Loader for JPEG2000 file format
+
+  - The "acquire clusters" operation in the Color Mapping module has
+    been speed up by a factor of 30 to 200, making the results
+    perceptually instantaneous on clicking the button.
 
 - Add global <kbd>right-click</kbd> and drag to fix image
   rotation. This can now be used at any moment in darkroom as long as
