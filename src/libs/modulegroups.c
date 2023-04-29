@@ -3877,14 +3877,15 @@ static void _manage_show_window(dt_lib_module_t *self)
   // reset button
   hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *help = gtk_button_new_with_label(_("help"));
+  d->preset_reset_btn = gtk_button_new_with_label(_("reset"));
+  g_signal_connect(G_OBJECT(d->preset_reset_btn), "button-press-event", G_CALLBACK(_manage_editor_reset), self);
+  gtk_box_pack_end(GTK_BOX(hb2), d->preset_reset_btn, FALSE, TRUE, 0);
+
+  GtkWidget *help = gtk_button_new_with_label(_("?"));
   dt_gui_add_help_link(help, "modulegroups");
   g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
   gtk_box_pack_end(GTK_BOX(hb2), help, FALSE, FALSE, 0);
 
-  d->preset_reset_btn = gtk_button_new_with_label(_("reset"));
-  g_signal_connect(G_OBJECT(d->preset_reset_btn), "button-press-event", G_CALLBACK(_manage_editor_reset), self);
-  gtk_box_pack_end(GTK_BOX(hb2), d->preset_reset_btn, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vb_main), hb2, FALSE, TRUE, 0);
 
   // we load the presets list

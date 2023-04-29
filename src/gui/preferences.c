@@ -412,17 +412,17 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_box_pack_start(GTK_BOX(usercssbox), scroll, TRUE, TRUE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *button = gtk_button_new_with_label(_("help"));
-  gtk_widget_set_tooltip_text(button, _("open help page for CSS tweaks"));
-  dt_gui_add_help_link(button, "css_tweaks");
-  g_signal_connect(button, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
-  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   tw->save_button = gtk_button_new_with_label(C_("usercss", "save CSS and apply"));
   g_signal_connect(G_OBJECT(tw->save_button), "clicked", G_CALLBACK(save_usercss_callback), tw);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(usercss_dialog_callback), tw);
   gtk_box_pack_end(GTK_BOX(hbox), tw->save_button, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(tw->save_button, _("click to save and apply the CSS tweaks entered in this editor"));
+  GtkWidget *button = gtk_button_new_with_label(_("?"));
+  gtk_widget_set_tooltip_text(button, _("open help page for CSS tweaks"));
+  dt_gui_add_help_link(button, "css_tweaks");
+  g_signal_connect(button, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
   //set textarea text from file or default
   char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
@@ -865,18 +865,18 @@ static void init_tab_presets(GtkWidget *stack)
   g_signal_connect(G_OBJECT(tree), "key-press-event", G_CALLBACK(dt_gui_search_start), search_presets);
   gtk_tree_view_set_search_entry(tree, GTK_ENTRY(search_presets));
 
-  GtkWidget *button = gtk_button_new_with_label(_("help"));
-  dt_gui_add_help_link(button, "presets");
-  g_signal_connect(button, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
-  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-
-  button = gtk_button_new_with_label(C_("preferences", "import..."));
+  GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_preset), (gpointer)model);
 
   button = gtk_button_new_with_label(C_("preferences", "export..."));
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_preset), (gpointer)model);
+
+  button = gtk_button_new_with_label(_("?"));
+  dt_gui_add_help_link(button, "presets");
+  g_signal_connect(button, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
 

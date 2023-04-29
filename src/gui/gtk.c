@@ -2575,8 +2575,10 @@ char *dt_gui_get_help_url(GtkWidget *widget)
 
 void dt_gui_dialog_add_help(GtkDialog *dialog, const char *topic)
 {
-  GtkWidget *help = gtk_dialog_add_button(dialog, _("help"),
-                                          GTK_RESPONSE_NONE); //GTK_RESPONSE_HELP aligns left
+  GtkWidget *help = gtk_dialog_add_button(dialog, _("?"), GTK_RESPONSE_NONE);
+  GtkWidget *box = gtk_widget_get_parent(help);
+  gtk_button_box_set_child_non_homogeneous(GTK_BUTTON_BOX(box), help, TRUE);
+  gtk_box_reorder_child(GTK_BOX(box), help, 0);
   dt_gui_add_help_link(help, topic);
   g_signal_handlers_disconnect_by_data(help, dialog);
   g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
