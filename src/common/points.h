@@ -32,6 +32,7 @@ typedef struct dt_points_state_t
 {
   uint64_t state0;
   uint64_t state1;
+  char pad[64];  // ensure that each instance is in a different cache line
 } dt_points_state_t;
 
 typedef struct dt_points_t
