@@ -283,24 +283,27 @@ static int get_cluster(const float *col, const int n, float2 *mean)
 static void kmeans(const float *col, const int width, const int height, const int n, float2 *mean_out,
                    float2 *var_out, float *weight_out)
 {
-  const int nit = 40;                       // number of iterations
-  const int samples = width * height * 0.2; // samples: only a fraction of the buffer.
+  const int nit = 40;                       // max number of iterations
 
   float2 *const mean = malloc(sizeof(float2) * n);
   float2 *const var = malloc(sizeof(float2) * n);
   int *const cnt = malloc(sizeof(int) * n);
   int count;
 
-  float a_min = FLT_MAX, b_min = FLT_MAX, a_max = FLT_MIN, b_max = FLT_MIN;
+  float a_min = FLT_MAX, b_min = FLT_MAX, a_max = -FLT_MAX, b_max = -FLT_MAX;
 
-  for(int s = 0; s < samples; s++)
+  const size_t npixels = (size_t)height * width;
+  // find the extremes of a/b color channels
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(col, npixels) \
+  reduction(min: a_min, b_min) reduction(max: a_max, b_max) \
+  schedule(static)
+#endif
+  for(size_t k = 0; k < npixels; k++)
   {
-    const int j = CLAMP(dt_points_get() * height, 0, height - 1);
-    const int i = CLAMP(dt_points_get() * width, 0, width - 1);
-
-    const float a = col[4 * (width * j + i) + 1];
-    const float b = col[4 * (width * j + i) + 2];
-
+    const float a = col[4 * k + 1];
+    const float b = col[4 * k + 2];
     a_min = fminf(a, a_min);
     a_max = fmaxf(a, a_max);
     b_min = fminf(b, b_min);
@@ -317,48 +320,59 @@ static void kmeans(const float *col, const int width, const int height, const in
   }
   for(int it = 0; it < nit; it++)
   {
-    for(int k = 0; k < n; k++) cnt[k] = 0;
-// randomly sample col positions inside roi
+    size_t cnt_size;
+    int *cnt_perthread = dt_calloc_perthread(n,sizeof(int),&cnt_size);
+    size_t var_size;
+    float2 *var_perthread = dt_calloc_perthread(n,sizeof(float2),&var_size);
+    size_t mean_size;
+    float2 *mean_perthread = dt_calloc_perthread(n,sizeof(float2),&mean_size);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(cnt, height, mean, n, samples, var, width) \
-    shared(col, mean_out) \
-    schedule(static)
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(col, npixels, n, mean_perthread, mean_size, \
+                      cnt_perthread, cnt_size, var_perthread, var_size, mean_out)
 #endif
-    for(int s = 0; s < samples; s++)
     {
-      const int j = CLAMP(dt_points_get() * height, 0, height - 1);
-      const int i = CLAMP(dt_points_get() * width, 0, width - 1);
-      // for each sample: determine cluster, update new mean, update var
-      for(int k = 0; k < n; k++)
+      const unsigned int threadnum = dt_get_thread_num();
+      float2 *t_var = dt_get_bythread(var_perthread,var_size,threadnum);
+      float2 *t_mean = dt_get_bythread(mean_perthread,mean_size,threadnum);
+      int *t_cnt = dt_get_bythread(cnt_perthread,cnt_size,threadnum);
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for(size_t k = 0; k < npixels; k++)
       {
-        const float L = col[4 * (width * j + i)];
-        const dt_aligned_pixel_t Lab = { L, col[4 * (width * j + i) + 1], col[4 * (width * j + i) + 2] };
-        // determine dist to mean_out
+        dt_aligned_pixel_t Lab;
+        copy_pixel(Lab, col + 4*k);
         const int c = get_cluster(Lab, n, mean_out);
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-        cnt[c]++;
-// update mean, var
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-        var[c][0] += Lab[1] * Lab[1];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-        var[c][1] += Lab[2] * Lab[2];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-        mean[c][0] += Lab[1];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-        mean[c][1] += Lab[2];
+        t_cnt[c]++;
+        // update mean, var
+        t_var[c][0] += Lab[1] * Lab[1];
+        t_var[c][1] += Lab[2] * Lab[2];
+        t_mean[c][0] += Lab[1];
+        t_mean[c][1] += Lab[2];
       }
     }
+    // accumulate the per-thread statistics
+    for(size_t clus = 0; clus < n; clus++)
+    {
+      cnt[clus] = 0;
+      mean[clus][0] = mean[clus][1] = 0.0f;
+      var[clus][0] = var[clus][1] = 0.0f;
+      for(size_t t = 0; t < dt_get_num_threads(); t++)
+      {
+        const int *t_cnt = dt_get_bythread(cnt_perthread,cnt_size,t);
+        cnt[clus] += t_cnt[clus];
+        const float2 *t_mean = dt_get_bythread(mean_perthread,mean_size,t);
+        mean[clus][0] += t_mean[clus][0];
+        mean[clus][1] += t_mean[clus][1];
+        const float2 *t_var = dt_get_bythread(var_perthread,var_size,t);
+        var[clus][0] += t_var[clus][0];
+        var[clus][1] += t_var[clus][1];
+      }
+    }
+    dt_free_align(cnt_perthread);
+    dt_free_align(var_perthread);
+    dt_free_align(mean_perthread);
     // swap old/new means
     for(int k = 0; k < n; k++)
     {
