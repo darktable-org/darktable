@@ -172,7 +172,7 @@ The following is a summary of the main features added to darktable
 
   - The luminance mask calculation for the Tone Equalizer.
 
-  - Loader for JPEG2000 file format
+  - Loader for JPEG2000 file format.
 
   - The "acquire clusters" operation in the Color Mapping module has
     been speed up by a factor of 30 to 200, making the results
