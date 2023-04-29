@@ -291,9 +291,6 @@ void process(struct dt_iop_module_t *self,
   const float *const in = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  /* the blend code at the end assumes at least 4 channels, and we never get more than four */
-  assert(piece->colors == ch);
-
 /* create inverted image and then blur */
 /* since we use only the L channel, pack the values together instead of every fourth float */
 /* to reduce cache pressure and memory bandwidth during the blur operation */
