@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-29 00:27+0200\n"
+"POT-Creation-Date: 2023-04-29 09:39+0200\n"
 "PO-Revision-Date: 2023-04-29 00:30+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -6882,6 +6882,138 @@ msgstr "Sous le niveau de la mer"
 #: ../src/common/utility.c:557 ../src/libs/metadata_view.c:887
 msgid "m"
 msgstr "M"
+
+#. Column 1 - "make" of the camera.
+#. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
+#. * Column 3 - WB name.
+#. * Column 4 - Fine tuning. MUST be in increasing order. 0 for no fine tuning.
+#. *	      It is enough to give only the extreme values, the other values
+#. *	      will be interpolated.
+#. * Column 5 - Channel multipliers.
+#. *
+#. * Minolta's ALPHA and MAXXUM models are treated as the Dynax model.
+#. *
+#. * WB name is standardized to one of the following:
+#. "Sunlight" and other variation should be switched to this:
+#: ../src/common/wb_presets.c:42 ../src/iop/lowlight.c:323
+msgid "daylight"
+msgstr "Lumière du jour"
+
+#. Probably same as above:
+#: ../src/common/wb_presets.c:44
+msgid "direct sunlight"
+msgstr "Soleil de face"
+
+#: ../src/common/wb_presets.c:45
+msgid "cloudy"
+msgstr "Nuageux"
+
+#. "Shadows" should be switched to this:
+#: ../src/common/wb_presets.c:47
+msgid "shade"
+msgstr "Ombragé"
+
+#: ../src/common/wb_presets.c:48
+msgid "incandescent"
+msgstr "Incandescent"
+
+#: ../src/common/wb_presets.c:49
+msgid "incandescent warm"
+msgstr "Incandescent (chaud)"
+
+#. Same as "Incandescent":
+#: ../src/common/wb_presets.c:51
+msgid "tungsten"
+msgstr "Tungstène"
+
+#: ../src/common/wb_presets.c:52
+msgid "fluorescent"
+msgstr "Fluorescent"
+
+#. In Canon cameras and some newer Nikon cameras:
+#: ../src/common/wb_presets.c:54
+msgid "fluorescent high"
+msgstr "Fluorescent (fort)"
+
+#: ../src/common/wb_presets.c:55
+msgid "cool white fluorescent"
+msgstr "Fluorescent (blanc/froid)"
+
+#: ../src/common/wb_presets.c:56
+msgid "warm white fluorescent"
+msgstr "Fluorescent (blanc/chaud)"
+
+#: ../src/common/wb_presets.c:57
+msgid "daylight fluorescent"
+msgstr "Fluorescent (jour)"
+
+#: ../src/common/wb_presets.c:58
+msgid "neutral fluorescent"
+msgstr "Fluorescent (neutre)"
+
+#: ../src/common/wb_presets.c:59
+msgid "white fluorescent"
+msgstr "Fluorescent (blanc)"
+
+#. In some newer Nikon cameras:
+#: ../src/common/wb_presets.c:61
+msgid "sodium-vapor fluorescent"
+msgstr "Fluorescent (sodium)"
+
+#: ../src/common/wb_presets.c:62
+msgid "day white fluorescent"
+msgstr "Fluorescent (blanc/jour)"
+
+#: ../src/common/wb_presets.c:63
+msgid "high temp. mercury-vapor fluorescent"
+msgstr "Fluorescent (mercure, haute T)"
+
+#. found in Nikon Coolpix P1000
+#: ../src/common/wb_presets.c:65
+msgid "high temp. mercury-vapor"
+msgstr "Mercure, haute-température"
+
+#. On Some Panasonic
+#: ../src/common/wb_presets.c:67
+msgid "D55"
+msgstr "D55"
+
+#: ../src/common/wb_presets.c:69
+msgid "flash"
+msgstr "Flash"
+
+#. For Olympus with no real "Flash" preset:
+#: ../src/common/wb_presets.c:71
+msgid "flash (auto mode)"
+msgstr "Flash (mode auto)"
+
+#: ../src/common/wb_presets.c:72
+msgid "evening sun"
+msgstr "Lumière du soir"
+
+#: ../src/common/wb_presets.c:73
+msgid "underwater"
+msgstr "Sous l’eau"
+
+#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2447
+msgid "black & white"
+msgstr "Noir et blanc"
+
+#: ../src/common/wb_presets.c:76
+msgid "spot WB"
+msgstr "BdB spot"
+
+#: ../src/common/wb_presets.c:77
+msgid "manual WB"
+msgstr "BdB manuelle"
+
+#: ../src/common/wb_presets.c:78
+msgid "camera WB"
+msgstr "BdB du boîtier"
+
+#: ../src/common/wb_presets.c:79
+msgid "auto WB"
+msgstr "BdB automatique"
 
 #: ../src/control/control.c:66 ../src/gui/accelerators.c:138
 #: ../src/views/darkroom.c:2162
@@ -17764,10 +17896,6 @@ msgstr "Simule la vision de nuit humaine"
 msgid "linear, XYZ"
 msgstr "Linéaire, XYZ"
 
-#: ../src/iop/lowlight.c:323
-msgid "daylight"
-msgstr "Lumière du jour"
-
 #: ../src/iop/lowlight.c:341
 msgid "indoor bright"
 msgstr "Intérieur clair"
@@ -24589,10 +24717,6 @@ msgid "select colors to indicate clipping"
 msgstr "Sélectionne les couleurs indiquant le troncature"
 
 #: ../src/views/darkroom.c:2447
-msgid "black & white"
-msgstr "Noir et blanc"
-
-#: ../src/views/darkroom.c:2447
 msgid "red & blue"
 msgstr "Rouge et bleu"
 
@@ -25916,84 +26040,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "highlights recovery"
 #~ msgstr "Récupération des hautes lumières"
-
-#~ msgid "direct sunlight"
-#~ msgstr "Soleil de face"
-
-#~ msgid "cloudy"
-#~ msgstr "Nuageux"
-
-#~ msgid "shade"
-#~ msgstr "Ombragé"
-
-#~ msgid "incandescent"
-#~ msgstr "Incandescent"
-
-#~ msgid "incandescent warm"
-#~ msgstr "Incandescent (chaud)"
-
-#~ msgid "tungsten"
-#~ msgstr "Tungstène"
-
-#~ msgid "fluorescent"
-#~ msgstr "Fluorescent"
-
-#~ msgid "fluorescent high"
-#~ msgstr "Fluorescent (fort)"
-
-#~ msgid "cool white fluorescent"
-#~ msgstr "Fluorescent (blanc/ froid)"
-
-#~ msgid "warm white fluorescent"
-#~ msgstr "Fluorescent (blanc/chaud)"
-
-#~ msgid "daylight fluorescent"
-#~ msgstr "Fluorescent (jour)"
-
-#~ msgid "neutral fluorescent"
-#~ msgstr "Fluorescent (neutre)"
-
-#~ msgid "white fluorescent"
-#~ msgstr "Fluorescent (blanc)"
-
-#~ msgid "sodium-vapor fluorescent"
-#~ msgstr "Fluorescent (sodium)"
-
-#~ msgid "day white fluorescent"
-#~ msgstr "Fluorescent (blanc/jour)"
-
-#~ msgid "high temp. mercury-vapor fluorescent"
-#~ msgstr "Fluorescent (mercure, haute T)"
-
-#~ msgid "high temp. mercury-vapor"
-#~ msgstr "Mercure, haute-température"
-
-#~ msgid "D55"
-#~ msgstr "D55"
-
-#~ msgid "flash"
-#~ msgstr "Flash"
-
-#~ msgid "flash (auto mode)"
-#~ msgstr "Flash (mode auto)"
-
-#~ msgid "evening sun"
-#~ msgstr "Lumière du soir"
-
-#~ msgid "underwater"
-#~ msgstr "Sous l’eau"
-
-#~ msgid "spot WB"
-#~ msgstr "BdB spot"
-
-#~ msgid "manual WB"
-#~ msgstr "BdB manuelle"
-
-#~ msgid "camera WB"
-#~ msgstr "BdB du boîtier"
-
-#~ msgid "auto WB"
-#~ msgstr "BdB automatique"
 
 #~ msgid "applies only to lossy setting"
 #~ msgstr "Uniquement pour la compression avec perte"
