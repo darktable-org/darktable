@@ -519,7 +519,7 @@ static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pix
   // clamp the exponent to the suported range
   static const dt_aligned_pixel_t lower_bound = { -126.99999f, -126.99999f, -126.99999f, -126.99999f };
   static const dt_aligned_pixel_t upper_bound = {  129.00000f,  129.00000f,  129.00000f,  129.00000f };
-  static const dt_aligned_pixel_t half = { 0.5f, 0.5f, 0.5f, 0.5f };
+  static const dt_aligned_pixel_t v_half = { 0.5f, 0.5f, 0.5f, 0.5f };
   dt_aligned_pixel_t x;
   dt_vector_min(x, input, upper_bound);
   dt_vector_max(x, x, lower_bound);
@@ -527,7 +527,7 @@ static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pix
   // split the input value into fraction and exponent
   dt_aligned_pixel_t x_adj;
   for_four_channels(c)
-    x_adj[c] = x[c] - half[c];
+    x_adj[c] = x[c] - v_half[c];
   dt_aligned_pixel_t ipart;
   dt_vector_round(x_adj, ipart);
   dt_aligned_pixel_t fpart;
