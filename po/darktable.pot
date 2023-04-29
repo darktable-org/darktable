@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-29 00:27+0200\n"
+"POT-Creation-Date: 2023-04-29 09:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6412,6 +6412,138 @@ msgstr ""
 
 #: ../src/common/utility.c:557 ../src/libs/metadata_view.c:887
 msgid "m"
+msgstr ""
+
+#. Column 1 - "make" of the camera.
+#. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
+#. * Column 3 - WB name.
+#. * Column 4 - Fine tuning. MUST be in increasing order. 0 for no fine tuning.
+#. *	      It is enough to give only the extreme values, the other values
+#. *	      will be interpolated.
+#. * Column 5 - Channel multipliers.
+#. *
+#. * Minolta's ALPHA and MAXXUM models are treated as the Dynax model.
+#. *
+#. * WB name is standardized to one of the following:
+#. "Sunlight" and other variation should be switched to this:
+#: ../src/common/wb_presets.c:42 ../src/iop/lowlight.c:323
+msgid "daylight"
+msgstr ""
+
+#. Probably same as above:
+#: ../src/common/wb_presets.c:44
+msgid "direct sunlight"
+msgstr ""
+
+#: ../src/common/wb_presets.c:45
+msgid "cloudy"
+msgstr ""
+
+#. "Shadows" should be switched to this:
+#: ../src/common/wb_presets.c:47
+msgid "shade"
+msgstr ""
+
+#: ../src/common/wb_presets.c:48
+msgid "incandescent"
+msgstr ""
+
+#: ../src/common/wb_presets.c:49
+msgid "incandescent warm"
+msgstr ""
+
+#. Same as "Incandescent":
+#: ../src/common/wb_presets.c:51
+msgid "tungsten"
+msgstr ""
+
+#: ../src/common/wb_presets.c:52
+msgid "fluorescent"
+msgstr ""
+
+#. In Canon cameras and some newer Nikon cameras:
+#: ../src/common/wb_presets.c:54
+msgid "fluorescent high"
+msgstr ""
+
+#: ../src/common/wb_presets.c:55
+msgid "cool white fluorescent"
+msgstr ""
+
+#: ../src/common/wb_presets.c:56
+msgid "warm white fluorescent"
+msgstr ""
+
+#: ../src/common/wb_presets.c:57
+msgid "daylight fluorescent"
+msgstr ""
+
+#: ../src/common/wb_presets.c:58
+msgid "neutral fluorescent"
+msgstr ""
+
+#: ../src/common/wb_presets.c:59
+msgid "white fluorescent"
+msgstr ""
+
+#. In some newer Nikon cameras:
+#: ../src/common/wb_presets.c:61
+msgid "sodium-vapor fluorescent"
+msgstr ""
+
+#: ../src/common/wb_presets.c:62
+msgid "day white fluorescent"
+msgstr ""
+
+#: ../src/common/wb_presets.c:63
+msgid "high temp. mercury-vapor fluorescent"
+msgstr ""
+
+#. found in Nikon Coolpix P1000
+#: ../src/common/wb_presets.c:65
+msgid "high temp. mercury-vapor"
+msgstr ""
+
+#. On Some Panasonic
+#: ../src/common/wb_presets.c:67
+msgid "D55"
+msgstr ""
+
+#: ../src/common/wb_presets.c:69
+msgid "flash"
+msgstr ""
+
+#. For Olympus with no real "Flash" preset:
+#: ../src/common/wb_presets.c:71
+msgid "flash (auto mode)"
+msgstr ""
+
+#: ../src/common/wb_presets.c:72
+msgid "evening sun"
+msgstr ""
+
+#: ../src/common/wb_presets.c:73
+msgid "underwater"
+msgstr ""
+
+#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2447
+msgid "black & white"
+msgstr ""
+
+#: ../src/common/wb_presets.c:76
+msgid "spot WB"
+msgstr ""
+
+#: ../src/common/wb_presets.c:77
+msgid "manual WB"
+msgstr ""
+
+#: ../src/common/wb_presets.c:78
+msgid "camera WB"
+msgstr ""
+
+#: ../src/common/wb_presets.c:79
+msgid "auto WB"
 msgstr ""
 
 #: ../src/control/control.c:66 ../src/gui/accelerators.c:138
@@ -16207,10 +16339,6 @@ msgstr ""
 msgid "linear, XYZ"
 msgstr ""
 
-#: ../src/iop/lowlight.c:323
-msgid "daylight"
-msgstr ""
-
 #: ../src/iop/lowlight.c:341
 msgid "indoor bright"
 msgstr ""
@@ -22429,10 +22557,6 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2445
 msgid "select colors to indicate clipping"
-msgstr ""
-
-#: ../src/views/darkroom.c:2447
-msgid "black & white"
 msgstr ""
 
 #: ../src/views/darkroom.c:2447
