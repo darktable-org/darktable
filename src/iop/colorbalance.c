@@ -516,7 +516,7 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     _process_lgg_curveonly(in, out, npixels, lift, gamma_inv, gain);
     return;
   }
-  
+
   const dt_aligned_pixel_t grey4 = { grey, grey, grey, grey };
   const dt_aligned_pixel_t saturation4 = { saturation, saturation, saturation, saturation };
   const dt_aligned_pixel_t saturation_out4
@@ -637,7 +637,7 @@ static void _process_sop(const dt_aligned_pixel_t in,
                          const float contrast,
                          const dt_aligned_pixel_t contrast_power)
 {
-#ifdef __SSE2__ 
+#ifdef __SSE2__
   if(darktable.codepath.SSE2)
   {
     _process_sop_sse(in, out, npixels, lift, gamma, gain, grey, saturation,
@@ -1800,7 +1800,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
     for(int i=0; i<3; i++)
     {
       if(i == 0)
-        gtk_label_set_text(GTK_LABEL(g->main_label), _(long_label[0]));
+        gtk_label_set_text(GTK_LABEL(g->main_label), Q_(long_label[0]));
       else
       {
         GtkWidget *label = dt_ui_section_label_new(Q_(long_label[i]));
