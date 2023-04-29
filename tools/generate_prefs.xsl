@@ -19,7 +19,7 @@
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   viewport = gtk_viewport_new(NULL, NULL);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
-  GtkWidget *help = gtk_button_new_with_label(_("help"));
+  GtkWidget *help = gtk_button_new_with_label(_("?"));
   gtk_widget_set_halign(help, GTK_ALIGN_END);
   g_object_set_data_full(G_OBJECT(help), "dt-help-url",
                          g_strdup_printf("preferences-settings/%s/", title), g_free);
