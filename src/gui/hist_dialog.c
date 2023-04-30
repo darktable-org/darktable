@@ -221,9 +221,9 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
     (gtk_dialog_new_with_buttons(
       iscopy ? _("select parts to copy") : _("select parts to paste"),
       GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      _("_cancel"),      GTK_RESPONSE_CANCEL,
       _("select _all"),  GTK_RESPONSE_YES,
       _("select _none"), GTK_RESPONSE_NONE,
+      _("_cancel"),      GTK_RESPONSE_CANCEL,
       _("_ok"),          GTK_RESPONSE_OK,
       NULL));
   dt_gui_dialog_add_help(dialog, "copy_history");
