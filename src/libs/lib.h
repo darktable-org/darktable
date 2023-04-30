@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,12 +18,14 @@
 
 #pragma once
 
-#include "common/darktable.h"
-#include "common/iop_profile.h"
-#include "views/view.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <glib.h>
+
+#include "common/darktable.h"
+#include "common/iop_profile.h"
+#include "views/view.h"
+#include "gui/presets.h"
 
 #ifdef USE_LUA
 #include "lua/call.h"
@@ -138,8 +140,13 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name);
 /** preset stuff for lib */
 
 /** add or replace a preset for this operation. */
-void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params,
-                        const int32_t params_size, gboolean readonly);
+void dt_lib_presets_add(const char *name,
+                        const char *plugin_name,
+                        const int32_t version,
+                        const void *params,
+                        const int32_t params_size,
+                        const gboolean readonly,
+                        const dt_gui_presets_format_flag_t format);
 
 // apply a preset to the given module
 gboolean dt_lib_presets_apply(const gchar *preset, const gchar *module_name, int module_version);
