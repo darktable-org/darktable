@@ -584,6 +584,14 @@ static inline void dt_vector_powf(const dt_aligned_pixel_t input,
   dt_vector_exp2(log, output);
 }
 
+static inline void dt_vector_pow1(const dt_aligned_pixel_t input,
+                                  const float power,
+                                  dt_aligned_pixel_t output)
+{
+  const dt_aligned_pixel_t vpower = { power, power, power, power };
+  dt_vector_powf(input, vpower, output);
+}
+
 static inline void dt_vector_add(dt_aligned_pixel_t sum,
                                  const dt_aligned_pixel_t v1,
                                  const dt_aligned_pixel_t v2)
@@ -608,6 +616,14 @@ static inline void dt_vector_mul(dt_aligned_pixel_t result,
     result[c] = v1[c] * v2[c];
 }
 
+static inline void dt_vector_mul1(dt_aligned_pixel_t result,
+                                 const dt_aligned_pixel_t in,
+                                 const float scale)
+{
+  for_four_channels(c, aligned(result,in))
+    result[c] = in[c] * scale;
+}
+
 static inline void dt_vector_div(dt_aligned_pixel_t result,
                                  const dt_aligned_pixel_t v1,
                                  const dt_aligned_pixel_t v2)
@@ -616,6 +632,13 @@ static inline void dt_vector_div(dt_aligned_pixel_t result,
     result[c] = v1[c] / v2[c];
 }
 
+static inline void dt_vector_div1(dt_aligned_pixel_t result,
+                                 const dt_aligned_pixel_t in,
+                                 const float divisor)
+{
+  for_four_channels(c, aligned(result,in))
+    result[c] = in[c] / divisor;
+}
 
 static inline float dt_vector_channel_max(const dt_aligned_pixel_t pixel)
 {
@@ -633,6 +656,12 @@ static inline void dt_vector_clip(dt_aligned_pixel_t values)
   static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
   dt_vector_max(values, values, zero);
   dt_vector_min(values, values, one);
+}
+
+static inline void dt_vector_clipneg(dt_aligned_pixel_t values)
+{
+  static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_vector_max(values, values, zero);
 }
 
 /** Compute approximate sines, four at a time.
