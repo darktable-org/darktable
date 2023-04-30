@@ -134,7 +134,7 @@ typedef struct dt_iop_shadhi_params_t
   float highlights_ccorrect; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "highlights color adjustment"
   unsigned int flags;        // $DEFAULT: UNBOUND_DEFAULT
   float low_approximation;   // $DEFAULT: 0.000001
-  dt_iop_shadhi_algo_t shadhi_algo; // $DEFAULT: SHADHI_ALGO_GAUSSIAN $DESCRIPTION: "soften with" $DEFAULT: 0
+  dt_iop_shadhi_algo_t shadhi_algo; // $DEFAULT: SHADHI_ALGO_BILATERAL $DESCRIPTION: "soften with"
 } dt_iop_shadhi_params_t;
 
 typedef struct dt_iop_shadhi_gui_data_t
