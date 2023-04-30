@@ -60,9 +60,12 @@ typedef struct dt_lib_t
       int statistic;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);
-      void (*set_sample_box_area)(struct dt_lib_module_t *self, const dt_boundingbox_t size);
-      void (*set_sample_point)(struct dt_lib_module_t *self, const float pos[2]);
-      void (*setup_sample)(struct dt_lib_module_t *self, const gboolean denoise,
+      void (*set_sample_box_area)(struct dt_lib_module_t *self,
+                                  const dt_boundingbox_t size);
+      void (*set_sample_point)(struct dt_lib_module_t *self,
+                               const float pos[2]);
+      void (*setup_sample)(struct dt_lib_module_t *self,
+                           const gboolean denoise,
                            const gboolean pick_output);
     } colorpicker;
 
@@ -74,7 +77,9 @@ typedef struct dt_lib_t
                       int width, int height,
                       const dt_iop_order_iccprofile_info_t *const profile_info_from,
                       const dt_iop_order_iccprofile_info_t *const profile_info_to);
-      // FIXME: now that PR #5532 is merged, define this as dt_atomic_int and include "common/atomic.h" and use dt_atomic_set_int() and dt_atomic_get_int()
+      // FIXME: now that PR #5532 is merged, define this as
+      // dt_atomic_int and include "common/atomic.h" and use
+      // dt_atomic_set_int() and dt_atomic_get_int()
       gboolean is_linear;
     } histogram;
 
@@ -116,7 +121,8 @@ void dt_lib_cleanup(dt_lib_t *lib);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
 /** set an expand/collapse plugin expander */
-void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded);
+void dt_lib_gui_set_expanded(dt_lib_module_t *module,
+                             const gboolean expanded);
 /** get the expanded state of a plugin */
 gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module);
 /** queue plugin gui to be updated if visible */
@@ -130,9 +136,11 @@ dt_lib_module_t *dt_lib_get_module(const char *name);
 /** get the visible state of a plugin */
 gboolean dt_lib_is_visible(dt_lib_module_t *module);
 /** set the visible state of a plugin */
-void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible);
+void dt_lib_set_visible(dt_lib_module_t *module,
+                        const gboolean visible);
 /** check if a plugin is to be shown in a given view */
-gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view);
+gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
+                                   const dt_view_t *view);
 
 /** returns the localized plugin name for a given plugin_name. must not be freed. */
 gchar *dt_lib_get_localized_name(const gchar *plugin_name);
@@ -149,14 +157,25 @@ void dt_lib_presets_add(const char *name,
                         const dt_gui_presets_format_flag_t format);
 
 // apply a preset to the given module
-gboolean dt_lib_presets_apply(const gchar *preset, const gchar *module_name, int module_version);
+gboolean dt_lib_presets_apply(const gchar *preset,
+                              const gchar *module_name,
+                              const int module_version);
 // duplicate a preset
-gchar *dt_lib_presets_duplicate(const gchar *preset, const gchar *module_name, int module_version);
+gchar *dt_lib_presets_duplicate(const gchar *preset,
+                                const gchar *module_name,
+                                const int module_version);
 // remove a preset
-void dt_lib_presets_remove(const gchar *preset, const gchar *module_name, int module_version);
+void dt_lib_presets_remove(const gchar *preset,
+                           const gchar *module_name,
+                           const int module_version);
 // update a preset
-void dt_lib_presets_update(const gchar *preset, const gchar *module_name, int module_version, const gchar *newname,
-                           const gchar *desc, const void *params, const int32_t params_size);
+void dt_lib_presets_update(const gchar *preset,
+                           const gchar *module_name,
+                           const int module_version,
+                           const gchar *newname,
+                           const gchar *desc,
+                           const void *params,
+                           const int32_t params_size);
 // know if the module can autoapply presets
 gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
 
@@ -165,13 +184,17 @@ gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
  */
 
 /** set the colorpicker area selection tool and size, box[k] 0.0 - 1.0 */
-void dt_lib_colorpicker_set_box_area(dt_lib_t *lib, const dt_boundingbox_t box);
+void dt_lib_colorpicker_set_box_area(dt_lib_t *lib,
+                                     const dt_boundingbox_t box);
 
 /** set the colorpicker point selection tool and position */
-void dt_lib_colorpicker_set_point(dt_lib_t *lib, const float pos[2]);
+void dt_lib_colorpicker_set_point(dt_lib_t *lib,
+                                  const float pos[2]);
 
 /** setup colorpicker options */
-void dt_lib_colorpicker_setup(dt_lib_t *lib, const gboolean denoise, const gboolean pick_output);
+void dt_lib_colorpicker_setup(dt_lib_t *lib,
+                              const gboolean denoise,
+                              const gboolean pick_output);
 
 /** sorter callback to add a lib in the list of libs after init */
 gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b);
@@ -179,11 +202,12 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b);
 void dt_lib_init_presets(dt_lib_module_t *module);
 
 /** handle Enter key for dialog. Note it uses GTK_RESPONSE_ACCEPT code */
-gboolean dt_handle_dialog_enter(GtkWidget *widget, GdkEventKey *event, gpointer data);
+gboolean dt_handle_dialog_enter(GtkWidget *widget,
+                                GdkEventKey *event,
+                                gpointer data);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
