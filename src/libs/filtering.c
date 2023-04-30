@@ -293,41 +293,41 @@ void init_presets(dt_lib_module_t *self)
   params.rule[2].mode = 0;
   params.rule[2].off = 0;
   params.rule[2].topbar = 1;
-  dt_lib_presets_add(_("initial setting"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("initial setting"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   // based on aspect-ratio
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[1;1]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("square"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("square"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, ">=1.01", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("landscape"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("landscape"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "<=0.99", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   // presets based on import
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
                DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, "[-0000:00:01 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("imported: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("imported: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
                DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, "[-0000:00:30 00:00:00;now]", PARAM_STRING_SIZE);
   dt_lib_presets_add(_("imported: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params),
-                     TRUE);
+                     TRUE, 0);
 
   // presets based on image metadata (image taken)
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_TIME, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[-0000:00:01 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("taken: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_TIME, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[-0000:00:30 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
 #undef CLEAR_PARAMS
 }

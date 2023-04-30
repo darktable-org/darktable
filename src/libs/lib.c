@@ -1066,8 +1066,13 @@ void dt_lib_cleanup(dt_lib_t *lib)
   }
 }
 
-void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params,
-                        const int32_t params_size, gboolean readonly)
+void dt_lib_presets_add(const char *name,
+                        const char *plugin_name,
+                        const int32_t version,
+                        const void *params,
+                        const int32_t params_size,
+                        const gboolean readonly,
+                        const dt_gui_presets_format_flag_t format)
 {
   dt_lib_presets_remove(name, plugin_name, version);
 
@@ -1075,7 +1080,7 @@ void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "INSERT INTO data.presets"
+      "INSERT OR REPLACE INTO data.presets"
       " (name, description, operation, op_version, op_params, "
       "  blendop_params, blendop_version, enabled, model, maker, lens, "
       "  iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
@@ -1084,14 +1089,19 @@ void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t
       " VALUES "
       "  (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
       "   '%', '%', 0, 340282346638528859812000000000000000000, 0, 10000000, 0, 100000000, 0,"
-      "   1000, ?5, 0, 0, 0, 0)",
+      "   1000, ?5, ?6, 0, 0, ?7)",
       -1, &stmt, NULL);
   // clang-format on
+
+  const int autoapply = format == 0 ? 0 : 1;
+
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, params, params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, readonly);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, autoapply);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, format);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }

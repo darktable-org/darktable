@@ -868,7 +868,8 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 
   char *params = calloc(sizeof(char), params_size);
   memcpy(params + 4, string, params_size - metadata_nb);
-  dt_lib_presets_add(name, self->plugin_name, self->version(), params, params_size, TRUE);
+  dt_lib_presets_add(name, self->plugin_name, self->version(),
+                     params, params_size, TRUE, 0);
   free(params);
 }
 

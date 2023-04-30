@@ -135,6 +135,13 @@ static void _image_loaded_callback(gpointer instance, gpointer user_data)
   update(self);
 }
 
+static void _preferences_changed(gpointer instance, gpointer self)
+{
+  // reload presets as they are based on the actual workflow which
+  // could have been changed.
+  init_presets((dt_lib_module_t *)self);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)malloc(sizeof(dt_lib_ioporder_t));
@@ -152,6 +159,8 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_image_loaded_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                             G_CALLBACK(_image_loaded_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                                  G_CALLBACK(_preferences_changed), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -161,6 +170,8 @@ void gui_cleanup(dt_lib_module_t *self)
   if(d->widget) gtk_widget_destroy(d->widget);
   free(self->data);
   self->data = NULL;
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_preferences_changed), self);
 }
 
 void gui_reset (dt_lib_module_t *self)
@@ -192,20 +203,26 @@ void init_presets(dt_lib_module_t *self)
   char *params = NULL;
   GList *list;
 
+  const gboolean is_display_referred = dt_is_display_referred();
+
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, (int32_t)size, TRUE);
+  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE,
+                     is_display_referred ? FOR_RAW | FOR_LDR : 0);
   free(params);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 for RAW input (default)"), self->plugin_name, self->version(), (const char *)params, (int32_t)size,
-                     TRUE);
+  dt_lib_presets_add(_("v3.0 for RAW input (default)"), self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE,
+                     is_display_referred ? 0 : FOR_RAW);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30_JPG);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"), self->plugin_name, self->version(), (const char *)params, (int32_t)size,
-                     TRUE);
+  dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"), self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE,
+                     is_display_referred ? 0 : FOR_LDR);
   free(params);
 }
 
