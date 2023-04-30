@@ -141,6 +141,7 @@ The following is a summary of the main features added to darktable
   - Liquify
   - Color Mapping
   - High-pass filter
+  - Shadows and Highlights
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
@@ -465,6 +466,10 @@ The following is a summary of the main features added to darktable
   - Iptc.Application2.DateCreated
   - Iptc.Application2.TimeCreated
   - Exif.Image.ImageDescription
+
+- The Shadows and Highlights module is now using the Bilateral filter
+  by default has it will avoid most of the haloing making it a better
+  default.
 
 ## Bug Fixes
 
