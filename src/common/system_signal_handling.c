@@ -55,8 +55,8 @@ typedef void(dt_signal_handler_t)(int);
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 #endif
 
-// deer graphicsmagick, please stop messing with the stuff that you should not be touching at all.
-// based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
+// Dear GraphicsMagick, please stop messing with the stuff that you should not be touching at all.
+// Based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
 #if !defined(_WIN32)
 static const int _signals_to_preserve[] = { SIGHUP,  SIGINT,  SIGQUIT, SIGILL,  SIGABRT, SIGBUS, SIGFPE,
                                             SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGXCPU, SIGXFSZ };
