@@ -553,15 +553,6 @@ static void rt_masks_form_change_opacity(dt_iop_module_t *self, dt_mask_id_t for
   }
 }
 
-static float rt_masks_form_get_opacity(dt_iop_module_t *self, dt_mask_id_t formid)
-{
-  dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
-  if(grpt)
-    return grpt->opacity;
-  else
-    return 1.0f;
-}
-
 static void rt_paste_forms_from_scale(dt_iop_retouch_params_t *p,
                                       const int source_scale,
                                       const int dest_scale)
@@ -1659,7 +1650,9 @@ void gui_post_expose (struct dt_iop_module_t *self,
   if(shape_id > 0)
   {
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, shape_id));
+    dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, shape_id);
+    if(grpt)
+      dt_bauhaus_slider_set(g->sl_mask_opacity, grpt->opacity);
     --darktable.gui->reset;
   }
 }
