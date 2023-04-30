@@ -2254,10 +2254,10 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("restore shortcuts"),
                                                   GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button))),
                                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                  _("_cancel"), GTK_RESPONSE_REJECT,
                                                   _("_defaults"), _DEFAULTS,
                                                   _("_startup"), _STARTUP,
                                                   _("_edits"), _EDITS,
+                                                  _("_cancel"), GTK_RESPONSE_REJECT,
                                                   NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
 
