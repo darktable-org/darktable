@@ -58,8 +58,9 @@ typedef enum dt_iop_orientation_t
 
 static const float _aspect_ratios[]
   = { DT_IOP_BORDERS_ASPECT_IMAGE_VALUE,
-      3.0f, 95.0f / 33.0f, 2.0f, 16.0f / 9.0f, PHI, 3.0f / 2.0f, 297.0f / 210.0f, M_SQRT2, 4.0f / 3.0f, 1.0f,
-      DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE };
+      3.0f, 95.0f / 33.0f, 2.0f, 16.0f / 9.0f, 5.0f / 3.0f, PHI, 3.0f / 2.0f,
+      297.0f / 210.0f, M_SQRT2, 7.0f / 5.0f, 4.0f / 3.0f, 14.0f / 11.0f,
+      5.0f / 4.0f, 1.0f, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE };
 static const float _pos_h_ratios[] = { 0.5f, 1.0f / 3.0f, 3.0f / 8.0f, 5.0f / 8.0f, 2.0f / 3.0f };
 static const float _pos_v_ratios[] = { 0.5f, 1.0f / 3.0f, 3.0f / 8.0f, 5.0f / 8.0f, 2.0f / 3.0f };
 
@@ -358,8 +359,9 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   }
 
   // sanity check.
-  roi_out->width = CLAMP(roi_out->width, 1, 3 * roi_in->width);
-  roi_out->height = CLAMP(roi_out->height, 1, 3 * roi_in->height);
+  const size_t max_dim = MAX(roi_in->width, roi_in->height);
+  roi_out->width = CLAMP(roi_out->width, 1, 3 * max_dim);
+  roi_out->height = CLAMP(roi_out->height, 1, 3 * max_dim);
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -942,11 +944,15 @@ void gui_init(struct dt_iop_module_t *self)
                                N_("95:33"),
                                N_("2:1"),
                                N_("16:9"),
+                               N_("5:3"),
                                N_("golden cut"),
-                               N_("3:2"),
+                               N_("3:2 (4x6, 10x15cm)"),
                                N_("A4"),
                                N_("DIN"),
+                               N_("7:5"),
                                N_("4:3"),
+                               N_("14:11"),
+                               N_("5:4 (8x10)"),
                                N_("square"),
                                N_("constant border"),
                                N_("custom..."));
