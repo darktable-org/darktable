@@ -759,10 +759,9 @@ float dt_dev_get_zoom_scale(
   return zoom_scale;
 }
 
-void dt_dev_load_image_ext(
-        dt_develop_t *dev,
-        const dt_imgid_t imgid,
-        const int32_t snapshot_id)
+void dt_dev_load_image_ext(dt_develop_t *dev,
+                           const dt_imgid_t imgid,
+                           const int32_t snapshot_id)
 {
   dt_lock_image(imgid);
 
@@ -2847,7 +2846,8 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   return module;
 }
 
-void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
+void dt_dev_invalidate_history_module(GList *list,
+                                      dt_iop_module_t *module)
 {
   for(; list; list = g_list_next(list))
   {
@@ -3504,17 +3504,16 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 }
 
-void dt_dev_image_ext(
-  dt_imgid_t imgid,
-  size_t width,
-  size_t height,
-  int history_end,
-  uint8_t **buf,
-  size_t *processed_width,
-  size_t *processed_height,
-  int border_size,
-  gboolean iso_12646,
-  int32_t snapshot_id)
+void dt_dev_image_ext(const dt_imgid_t imgid,
+                      const size_t width,
+                      const size_t height,
+                      const int history_end,
+                      uint8_t **buf,
+                      size_t *processed_width,
+                      size_t *processed_height,
+                      const int border_size,
+                      const gboolean iso_12646,
+                      const int32_t snapshot_id)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
@@ -3555,14 +3554,13 @@ void dt_dev_image_ext(
   dt_dev_cleanup(&dev);
 }
 
-void dt_dev_image(
-  dt_imgid_t imgid,
-  size_t width,
-  size_t height,
-  int history_end,
-  uint8_t **buf,
-  size_t *processed_width,
-  size_t *processed_height)
+void dt_dev_image(const dt_imgid_t imgid,
+                  const size_t width,
+                  const size_t height,
+                  const int history_end,
+                  uint8_t **buf,
+                  size_t *processed_width,
+                  size_t *processed_height)
 {
   // create a dev
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,19 +64,23 @@ void update(dt_lib_module_t *self)
     if(!self->expander) return;
 
     d->widget = gtk_label_new("");
-    g_signal_connect(G_OBJECT(d->widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &d->widget);
+    g_signal_connect(G_OBJECT(d->widget), "destroy",
+                     G_CALLBACK(gtk_widget_destroyed), &d->widget);
     gtk_widget_show(d->widget);
-    gtk_box_pack_start(GTK_BOX(dtgtk_expander_get_header(DTGTK_EXPANDER(self->expander))), d->widget, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(dtgtk_expander_get_header(DTGTK_EXPANDER(self->expander))),
+                       d->widget, TRUE, TRUE, 0);
 
     gtk_widget_destroy(self->arrow);
     self->arrow = NULL;
   }
 
-  const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(darktable.develop->iop_order_list);
+  const dt_iop_order_t kind =
+    dt_ioppr_get_iop_order_list_kind(darktable.develop->iop_order_list);
 
   if(kind == DT_IOP_ORDER_CUSTOM)
   {
-    gchar *iop_order_list = dt_ioppr_serialize_text_iop_order_list(darktable.develop->iop_order_list);
+    gchar *iop_order_list =
+      dt_ioppr_serialize_text_iop_order_list(darktable.develop->iop_order_list);
     gboolean found = FALSE;
     int index = 0;
 
@@ -171,10 +175,16 @@ void gui_cleanup(dt_lib_module_t *self)
   free(self->data);
   self->data = NULL;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_image_loaded_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_image_loaded_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_image_loaded_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_preferences_changed), self);
 }
 
-void gui_reset (dt_lib_module_t *self)
+void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
 
@@ -191,7 +201,9 @@ void gui_reset (dt_lib_module_t *self)
     dt_dev_pixelpipe_rebuild(darktable.develop);
 
     d->current_mode = DT_IOP_ORDER_V30;
-    if(d->widget) gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
+    if(d->widget)
+      gtk_label_set_text(GTK_LABEL(d->widget),
+                         _(dt_iop_order_string(d->current_mode)));
 
     g_list_free_full(iop_order_list, free);
   }
@@ -254,7 +266,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 void *get_params(dt_lib_module_t *self, int *size)
 {
   size_t p_size = 0;
-  void *params = dt_ioppr_serialize_iop_order_list(darktable.develop->iop_order_list, &p_size);
+  void *params = dt_ioppr_serialize_iop_order_list(darktable.develop->iop_order_list,
+                                                   &p_size);
   *size = (int)p_size;
 
   return params;
