@@ -285,7 +285,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on CPU",
-       piece->pipe, self->so->op, roi_in, roi_out, "\n");
+       piece->pipe, self, roi_in, roi_out, "\n");
 
   const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
 
@@ -481,7 +481,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                   "dt_develop_blend on CPU",
-                  piece->pipe, self->so->op, roi_in, roi_out,
+                  piece->pipe, self, roi_in, roi_out,
                   "skip blending, work area mismatch\n");
     return;
   }
@@ -521,7 +521,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "dt_develop_blend on CPU",
-       piece->pipe, self->so->op, roi_in, roi_out,
+       piece->pipe, self, roi_in, roi_out,
        "could not allocate buffer for blending\n");
     return;
   }
@@ -535,19 +535,15 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   }
   else if(mask_mode & DEVELOP_MASK_RASTER)
   {
-    /* use a raster mask from another module earlier in the pipe */
-    gboolean free_mask = FALSE; // if no transformations were applied
-                                // we get the cached original back
+    /* use a raster mask from another module earlier in the pipe
+       dt_dev_get_raster_mask() sets a flag if the returned mask has been
+       distorted and thus must be deallocated by the caller
+    */
+    gboolean free_mask;
     float *raster_mask = dt_dev_get_raster_mask(piece,
                                                 self->raster_mask.sink.source,
                                                 self->raster_mask.sink.id,
                                                 self, &free_mask);
-
-    dt_print_pipe(DT_DEBUG_PIPE,
-      "blend raster mask on CPU",
-      piece->pipe, self->so->op, roi_in, roi_out,
-      "%sraster mask found\n", raster_mask ? "" : "**no** ");
-
     if(raster_mask)
     {
       // invert if required
@@ -579,7 +575,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "blend with form on CPU",
-       piece->pipe, self->so->op, roi_in, roi_out,
+       piece->pipe, self, roi_in, roi_out,
        "\n");
     // we blend with a drawn and/or parametric mask
 
@@ -774,7 +770,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
        "refine_detail_mask on GPU",
-       piece->pipe, self->so->op, roi_in, roi_out, "\n");
+       piece->pipe, self, roi_in, roi_out, "\n");
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
   tmp = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float));
@@ -939,7 +935,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                   "dt_develop_blend on GPU",
-                  piece->pipe, self->so->op, roi_in, roi_out,
+                  piece->pipe, self, roi_in, roi_out,
                   "skip OpenCL blending, work area mismatch\n");
     return TRUE;
   }
@@ -982,7 +978,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "dt_develop_blend on GPU",
-       piece->pipe, self->so->op, roi_in, roi_out,
+       piece->pipe, self, roi_in, roi_out,
        "could not allocate buffer for blending\n");
    return FALSE;
   }
@@ -1091,19 +1087,15 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
   else if(mask_mode & DEVELOP_MASK_RASTER)
   {
-    /* use a raster mask from another module earlier in the pipe */
-    gboolean free_mask = FALSE; // if no transformations were applied
-                                // we get the cached original back
+    /* use a raster mask from another module earlier in the pipe
+       dt_dev_get_raster_mask() sets a flag if the returned mask has been
+       distorted and thus must be deallocated by the caller
+    */
+    gboolean free_mask;
     float *raster_mask = dt_dev_get_raster_mask(piece,
                                                 self->raster_mask.sink.source,
                                                 self->raster_mask.sink.id,
                                                 self, &free_mask);
-
-    dt_print_pipe(DT_DEBUG_PIPE,
-      "blend raster mask on GPU",
-      piece->pipe, self->so->op, roi_in, roi_out,
-      "%sraster mask found\n", raster_mask ? "" : "**no** ");
-
     if(raster_mask)
     {
       // invert if required
@@ -1145,8 +1137,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "blend with form on GPU",
-       piece->pipe, self->so->op, roi_in, roi_out,
-       "\n");
+       piece->pipe, self, roi_in, roi_out, "\n");
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one

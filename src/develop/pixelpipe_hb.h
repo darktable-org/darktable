@@ -92,7 +92,7 @@ typedef struct dt_dev_pixelpipe_t
 {
   // store history/zoom caches
   dt_dev_pixelpipe_cache_t cache;
-  // set to non-zero in order to obsolete old cache entries on next pixelpipe run
+  // set to TRUE in order to obsolete old cache entries on next pixelpipe run
   gboolean cache_obsolete;
   // input buffer
   float *input;
@@ -280,7 +280,7 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
                               const struct dt_iop_module_t *raster_mask_source,
                               const dt_mask_id_t raster_mask_id,
-                              const struct dt_iop_module_t *target_module,
+                              struct dt_iop_module_t *target_module,
                               gboolean *free_mask);
 // some helper functions related to the details mask interface
 void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe);
@@ -300,7 +300,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 void dt_print_pipe(dt_debug_thread_t thread,
                    const char *title,
                    dt_dev_pixelpipe_t *pipe,
-                   const char *mod,
+                   struct dt_iop_module_t *mod,
                    const dt_iop_roi_t *roi_in,
                    const dt_iop_roi_t *roi_out,
                    const char *msg, ...);
