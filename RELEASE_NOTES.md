@@ -471,6 +471,9 @@ The following is a summary of the main features added to darktable
   by default has it will avoid most of the haloing making it a better
   default.
 
+- Add some standard print sizes (5x7, 8x10, 11x14) to the list of
+  predefined aspect ratios in Borders module.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
