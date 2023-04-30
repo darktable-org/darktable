@@ -659,6 +659,9 @@ The following is a summary of the main features added to darktable
 
 - Allow adding color patch on 7x7 grid of the Color Checker module.
 
+- Feathering input fixed while using distorting modules like retouch
+  or lens.
+
 ## Lua
 
 ### API Version
