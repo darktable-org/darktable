@@ -138,8 +138,6 @@ typedef struct dt_dev_pixelpipe_t
   int detail_height;
   gboolean want_detail_mask;
 
-  // we have to keep track of the next processing module to use an iop cacheline with high priority
-  gboolean next_important_module;
   // avoid cached data for processed module
   gboolean nocache;
 

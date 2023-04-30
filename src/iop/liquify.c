@@ -303,7 +303,7 @@ const char **description(struct dt_iop_module_t *self)
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS;
+  return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS | IOP_FLAGS_CACHE_IMPORTANT;
 }
 
 int flags()

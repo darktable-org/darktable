@@ -155,7 +155,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_CACHE_IMPORTANT;
 }
 
 int default_colorspace(dt_iop_module_t *self,
@@ -1374,9 +1374,6 @@ void process(dt_iop_module_t *self,
     num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
-  self->cache_next_important =
-    ((data->iterations * (data->radius + data->radius_center)) > 16);
-
   gboolean out_of_memory = FALSE;
 
   // wavelets scales buffers
@@ -1649,9 +1646,6 @@ int process_cl(struct dt_iop_module_t *self,
   const int diffusion_scales =
     num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
-
-  self->cache_next_important =
-    ((data->iterations * (data->radius + data->radius_center)) > 16);
 
   // wavelets scales buffers
   cl_mem HF[MAX_NUM_SCALES];

@@ -339,7 +339,6 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = NO_IMGID;
-  pipe->next_important_module = FALSE;
 
   if(pipe->forms)
   {
@@ -1341,19 +1340,11 @@ static inline gboolean _check_good_pipe(dt_dev_pixelpipe_t *pipe)
          && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE);
 }
 
-static inline gboolean _check_module_next_important(dt_dev_pixelpipe_t *pipe,
-                                                    dt_iop_module_t *module)
-{
-  if(!_check_good_pipe(pipe)) return FALSE;
-  return ((module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NEXT)
-          || module->cache_next_important);
-}
-
 static inline gboolean _check_module_now_important(dt_dev_pixelpipe_t *pipe,
                                                    dt_iop_module_t *module)
 {
   if(!_check_good_pipe(pipe)) return FALSE;
-  return (module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NOW);
+  return (module->flags() & IOP_FLAGS_CACHE_IMPORTANT);
 }
 
 #ifdef HAVE_OPENCL
@@ -1588,9 +1579,7 @@ static gboolean _dev_pixelpipe_process_rec(
     important = (dt_iop_module_is(module->so, "gamma"));
     important |= _check_module_now_important(pipe, module);
     // we might have a hint from the previous module for being important
-    important |= pipe->next_important_module;
   }
-  pipe->next_important_module = FALSE;
   dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
                              output, out_format, module, important);
 
@@ -2402,10 +2391,6 @@ static gboolean _dev_pixelpipe_process_rec(
       // the user is likely to change that one soon, so keep it in cache.
       dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
     }
-
-    // we check for an important hint after processing the module as we
-    // want to track a runtime hint too.
-    pipe->next_important_module = _check_module_next_important(pipe, module);
   }
 
   if(needs_histo)
@@ -2616,7 +2601,6 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(
 #ifdef HAVE_OPENCL
   dt_opencl_check_tuning(pipe->devid);
 #endif
-  pipe->next_important_module = FALSE;
   gboolean ret = _dev_pixelpipe_process_rec(pipe, dev, output,
                                             cl_mem_output, out_format, roi_out,
                                             modules, pieces, pos);

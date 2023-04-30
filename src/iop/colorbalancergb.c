@@ -190,7 +190,7 @@ const char **description(struct dt_iop_module_t *self)
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_CACHE_IMPORTANT;
 }
 
 int default_group()
@@ -555,8 +555,6 @@ void process(struct dt_iop_module_t *self,
   const struct dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
-
-  self->cache_next_important = TRUE; // The cpu code is pretty heavy stuff so an importance hint
 
   // work profile can't be fetched in commit_params since it is not yet initialised
   // work_profile->matrix_in === RGB_to_XYZ
