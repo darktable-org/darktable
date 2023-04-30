@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2019-2020 darktable developers.
+ *    Copyright (C) 2019-2023 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ static inline float dt_rgb_norm(const float *in, const int norm, const dt_iop_or
   }
   else if (norm == DT_RGB_NORM_NORM)
   {
-    return powf(in[0] * in[0] + in[1] * in[1] + in[2] * in[2], 0.5f);
+    return sqrtf(in[0] * in[0] + in[1] * in[1] + in[2] * in[2]);
   }
   else if (norm == DT_RGB_NORM_POWER)
   {

@@ -109,7 +109,7 @@ static inline float _local_std_deviation(const float *p, const int w)
 
 static float _calc_weight(const float *s, const size_t loc, const int w, const float clipval)
 {
-  const float smoothness = fmaxf(0.0f, 1.0f - 10.0f * powf(_local_std_deviation(&s[loc], w), 0.5f));
+  const float smoothness = fmaxf(0.0f, 1.0f - 10.0f * sqrtf(_local_std_deviation(&s[loc], w)));
   float val = 0.0f;
   for(int y = -1; y < 2; y++)
   {
