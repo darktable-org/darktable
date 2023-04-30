@@ -117,11 +117,12 @@ static void _dt_sigsegv_handler(int param)
     }
     else
     {
-      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch", "-ex", setlogfile, "-ex", logenable, "-x", comm_arg, NULL))
+      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch",
+                "-ex", setlogfile, "-ex", logenable, "-x", comm_arg, NULL))
       {
         delete_file = TRUE;
-        g_printerr("an error occurred while trying to execute gdb. please check if gdb is installed on your "
-                   "system.\n");
+        g_printerr("an error occurred while trying to execute gdb. "
+                   "please check if gdb is installed on your system.\n");
       }
     }
   }
@@ -172,10 +173,11 @@ static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionI
   }
   else
   {
-    gchar *exception_message = g_strdup_printf("An unhandled exception occurred.\nBacktrace will be written to: %s "
-                                               "after you click on the OK button.\nIf you report this issue, "
-                                               "please share this backtrace with the developers.\n",
-                                               name_used);
+    gchar *exception_message = g_strdup_printf
+      ("An unhandled exception occurred.\nBacktrace will be written to: %s "
+       "after you click on the OK button.\nIf you report this issue, "
+       "please share this backtrace with the developers.\n",
+       name_used);
     wchar_t *wexception_message = g_utf8_to_utf16(exception_message, -1, NULL, NULL, NULL);
     MessageBoxW(0, wexception_message, L"Error!", MB_OK);
     g_free(exception_message);
@@ -248,8 +250,8 @@ void dt_set_signal_handlers()
   Set up exception handler for backtrace on Windows
   Works when there is NO SIGSEGV handler installed
 
-  SetUnhandledExceptionFilter handler must be saved on the first invocation
-  as GraphicsMagick is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
+  SetUnhandledExceptionFilter handler must be saved on the first invocation as GraphicsMagick
+  is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
   Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
   */
 
