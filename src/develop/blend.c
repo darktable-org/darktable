@@ -59,7 +59,7 @@ static dt_develop_blend_params_t _default_blendop_params
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
         { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-        { 0 }, 0, 0, FALSE };
+        { 0 }, 0, INVALID_MASKID, FALSE };
 
 static inline dt_develop_blend_colorspace_t
 _blend_default_module_blend_colorspace(dt_iop_module_t *module,
@@ -730,14 +730,14 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
 
   // check if we should store the mask for export or use in subsequent modules
   // TODO: should we skip raster masks?
-  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, NO_MASKID))
+  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID))
   {
-    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(NO_MASKID), _mask);
+    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
   }
   else
   {
-    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(NO_MASKID));
+    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
   }
 }
@@ -1384,7 +1384,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
 
   // check if we should store the mask for export or use in subsequent modules
   // TODO: should we skip raster masks?
-  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, NO_MASKID))
+  if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID))
   {
     //  get back final mask from the device to store it for later use
     if(!(mask_mode & DEVELOP_MASK_RASTER))
@@ -1393,12 +1393,12 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                           owidth, oheight, sizeof(float));
       if(err != CL_SUCCESS) goto error;
     }
-    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(NO_MASKID), _mask);
+    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
   }
   else
   {
-    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(NO_MASKID));
+    g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
   }
 
