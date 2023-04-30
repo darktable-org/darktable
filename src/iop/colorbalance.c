@@ -296,6 +296,9 @@ void init_presets(dt_iop_module_so_t *self)
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 }
 
+static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+static const dt_aligned_pixel_t one = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 #ifdef _OPENMP
 #pragma omp declare simd simdlen(4)
 #endif
@@ -315,7 +318,8 @@ static inline void _apply_CDL(dt_aligned_pixel_t x,
 {
   dt_aligned_pixel_t res;
   for_each_channel(c)
-    res[c] = MAX(slope[c] * x[c] + offset[c], 0.0f);
+    res[c] = slope[c] * x[c] + offset[c];
+  dt_vector_max(res, res, zero);	// clip away negatives
   dt_vector_powf(res, power, x);
 }
 
@@ -323,8 +327,9 @@ static inline void _apply_fulcrum_contrast(dt_aligned_pixel_t rgb,
                                            const dt_aligned_pixel_t grey,
                                            const dt_aligned_pixel_t contrast_power)
 {
+  dt_vector_max(rgb, rgb, zero);	// clip away negatives
   for_each_channel(c)
-    rgb[c] = MAX(rgb[c], 0.0f) / grey[c];
+    rgb[c] /= grey[c];
   dt_vector_powf(rgb, contrast_power, rgb);
   for_each_channel(c)
     rgb[c] *= grey[c];
@@ -352,9 +357,9 @@ static void _process_legacy(const dt_aligned_pixel_t in,
     for_each_channel(c)
     {
       // lift gamma gain - apply lift and gain
-      rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
-      rgb[c] = MAX(rgb[c], 0.0f);
+      rgb[c] = ((( rgb[c] - one[c]) * lift[c]) + one[c]) * gain[c];
     }
+    dt_vector_max(rgb, rgb, zero);  // clip away negatives
     // lift gamma gain - apply gamma
     dt_vector_powf(rgb, gamma_inv, rgb);
 
@@ -374,24 +379,16 @@ static void _apply_lgg(dt_aligned_pixel_t rgb,
                        const dt_aligned_pixel_t gamma_inv,
                        const dt_aligned_pixel_t gain)
 {
-  for_each_channel(c)
-  {
-    // clip away negatives
-    rgb[c] = MAX(rgb[c], 0.0f);
-  }
+  dt_vector_max(rgb, rgb, zero);  	// clip away negatives
   // RGB gamma correction
   static const dt_aligned_pixel_t power = { 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f, 1.0f/2.2f };
   dt_vector_powf(rgb, power, rgb);
   for_each_channel(c)
   {
     // lift gamma gain - apply lift and gain
-    rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
+    rgb[c] = ((( rgb[c] - one[c]) * lift[c]) + one[c]) * gain[c];
   }
-  for_each_channel(c)
-  {
-    // clip away negatives
-    rgb[c] = MAX(rgb[c], 0.0f);
-  }
+  dt_vector_max(rgb, rgb, zero);	// clip away negatives
   dt_vector_powf(rgb, gamma_inv, rgb);
 }
 
@@ -433,8 +430,8 @@ static void _process_lgg_sse(const dt_aligned_pixel_t in,
   const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
   const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
   const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
-  const __m128 zero = _mm_setzero_ps();
-  const __m128 one = _mm_set1_ps(1.0);
+  const __m128 mm_zero = _mm_setzero_ps();
+  const __m128 mm_one = _mm_set1_ps(1.0);
   const __m128 gamma_inv_RGB = _mm_set1_ps(1.0f/2.2f);
   const __m128 lift = _mm_load_ps(lift_);
   const __m128 gamma_inv = _mm_load_ps(gamma_inv_);
@@ -458,11 +455,11 @@ static void _process_lgg_sse(const dt_aligned_pixel_t in,
     }
 
     // RGB gamma adjustment
-    rgb = _mm_pow_ps(_mm_max_ps(rgb, zero), gamma_inv_RGB);
+    rgb = _mm_pow_ps(_mm_max_ps(rgb, mm_zero), gamma_inv_RGB);
 
     // regular lift gamma gain
-    rgb = ((rgb - one) * lift + one) * gain;
-    rgb = _mm_max_ps(rgb, zero);
+    rgb = ((rgb - mm_one) * lift + mm_one) * gain;
+    rgb = _mm_max_ps(rgb, mm_zero);
     rgb = _mm_pow_ps(rgb, gamma_inv);
 
     // adjust main saturation output
@@ -476,7 +473,7 @@ static void _process_lgg_sse(const dt_aligned_pixel_t in,
     // fulcrum contrast
     if(run_contrast)
     {
-      rgb = _mm_max_ps(rgb, zero);
+      rgb = _mm_max_ps(rgb, mm_zero);
       rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
     }
 
@@ -572,7 +569,7 @@ static void _process_sop_sse(const dt_aligned_pixel_t in,
   const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
   const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
   const int run_contrast = fabsf(contrast_amt - 1.0f) > 1e-6;
-  const __m128 zero = _mm_setzero_ps();
+  const __m128 mm_zero = _mm_setzero_ps();
   const __m128 lift = _mm_load_ps(lift_);
   const __m128 gamma = _mm_load_ps(gamma_);
   const __m128 gain = _mm_load_ps(gain_);
@@ -598,7 +595,7 @@ static void _process_sop_sse(const dt_aligned_pixel_t in,
         rgb = rgb * gain + lift;
 
         //power
-        rgb = _mm_max_ps(rgb, zero);
+        rgb = _mm_max_ps(rgb, mm_zero);
         rgb = _mm_pow_ps(rgb, gamma);
 
         // adjust main saturation output
@@ -612,7 +609,7 @@ static void _process_sop_sse(const dt_aligned_pixel_t in,
         // fulcrum contrast
         if(run_contrast)
         {
-          rgb = _mm_max_ps(rgb, zero);
+          rgb = _mm_max_ps(rgb, mm_zero);
           rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
         }
 
