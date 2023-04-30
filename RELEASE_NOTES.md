@@ -140,6 +140,7 @@ The following is a summary of the main features added to darktable
   - Relight
   - Liquify
   - Color Mapping
+  - High-pass filter
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
