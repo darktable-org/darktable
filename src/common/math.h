@@ -426,7 +426,7 @@ static inline void dt_vector_min(dt_aligned_pixel_t min,
 #ifdef __SSE__
   *((__m128*)min) = _mm_min_ps(*((__m128*)v1), *((__m128*)v2));
 #else
-  for_four_channel(c)
+  for_four_channels(c)
     min[c] = MIN(v1[c], v2[c]);
 #endif
 }
@@ -438,7 +438,7 @@ static inline void dt_vector_max(dt_aligned_pixel_t max,
 #ifdef __SSE__
   *((__m128*)max) = _mm_max_ps(*((__m128*)v1), *((__m128*)v2));
 #else
-  for_four_channel(c)
+  for_four_channels(c)
     max[c] = MAX(v1[c], v2[c]);
 #endif
 }
