@@ -1528,6 +1528,8 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
 
 void init_presets(dt_lib_module_t *self)
 {
+  self->pref_based_presets = TRUE;
+
   /*
     For the record, one can create the preset list by using the following code:
 

@@ -1129,6 +1129,26 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   return module->expander;
 }
 
+static void _preferences_changed(gpointer instance, gpointer self)
+{
+  // reload presets if they are based on the actual workflow which
+  // could have been changed after editing the preferences.
+
+  dt_lib_t *lib = (dt_lib_t *)self;
+
+  GList *p = lib->plugins;
+
+  while(p)
+  {
+    dt_lib_module_t *lmod = (dt_lib_module_t *)p->data;
+
+    if(lmod->pref_based_presets)
+      dt_lib_init_presets(lmod);
+
+    p = g_list_next(p);
+  }
+}
+
 void dt_lib_init(dt_lib_t *lib)
 {
   // Setting everything to null initially
@@ -1138,10 +1158,14 @@ void dt_lib_init(dt_lib_t *lib)
                                                   dt_lib_load_module,
                                                   dt_lib_init_module,
                                                   dt_lib_sort_plugins);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                                  G_CALLBACK(_preferences_changed), lib);
 }
 
 void dt_lib_cleanup(dt_lib_t *lib)
 {
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_preferences_changed), lib);
   while(lib->plugins)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(lib->plugins->data);

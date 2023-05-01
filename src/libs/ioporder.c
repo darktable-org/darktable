@@ -139,13 +139,6 @@ static void _image_loaded_callback(gpointer instance, gpointer user_data)
   update(self);
 }
 
-static void _preferences_changed(gpointer instance, gpointer self)
-{
-  // reload presets as they are based on the actual workflow which
-  // could have been changed.
-  init_presets((dt_lib_module_t *)self);
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)malloc(sizeof(dt_lib_ioporder_t));
@@ -163,8 +156,6 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_image_loaded_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                             G_CALLBACK(_image_loaded_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                                  G_CALLBACK(_preferences_changed), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -180,8 +171,6 @@ void gui_cleanup(dt_lib_module_t *self)
                                      G_CALLBACK(_image_loaded_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_image_loaded_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_preferences_changed), self);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -214,6 +203,8 @@ void init_presets(dt_lib_module_t *self)
   size_t size = 0;
   char *params = NULL;
   GList *list;
+
+  self->pref_based_presets = TRUE;
 
   const gboolean is_display_referred = dt_is_display_referred();
 
