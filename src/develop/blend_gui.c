@@ -3542,7 +3542,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     gtk_widget_set_tooltip_text
       (bd->details_slider,
        _("adjust the threshold for the details mask (using raw data),\n"
-         "positive values selects areas with strong details,\n"
+         "positive values select areas with strong details,\n"
          "negative values select flat areas"));
     g_signal_connect(G_OBJECT(bd->details_slider), "value-changed",
                      G_CALLBACK(_blendop_blendif_details_callback), bd);

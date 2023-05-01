@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2642,7 +2642,7 @@ void dt_gui_show_help(GtkWidget *widget)
       last_base_url = base_url;
 
       // ask the user if darktable.org may be accessed
-      if(dt_gui_show_yes_no_dialog(_("access the online usermanual?"),
+      if(dt_gui_show_yes_no_dialog(_("access the online user manual?"),
                                     _("do you want to access `%s'?"), last_base_url))
       {
         dt_conf_set_string("context_help/last_url", last_base_url);
