@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2022 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1080,7 +1080,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   if(!pathname)
   {
-    if(!iauto) dt_control_log(_("cannot find lightroom XMP!"));
+    if(!iauto) dt_control_log(_("cannot find Lightroom XMP!"));
     return FALSE;
   }
 
