@@ -94,8 +94,8 @@ typedef struct retouch_user_data_t
   dt_dev_pixelpipe_iop_t *piece;
   dt_iop_roi_t roi;
   int display_scale;
-  int mask_display;
-  int suppress_mask;
+  gboolean mask_display;
+  gboolean suppress_mask;
 } retouch_user_data_t;
 
 typedef struct dt_iop_retouch_params_t
@@ -122,9 +122,9 @@ typedef struct dt_iop_retouch_params_t
 typedef struct dt_iop_retouch_gui_data_t
 {
   int copied_scale; // scale to be copied to another scale
-  int mask_display; // should we expose masks?
-  int suppress_mask;         // do not process masks
-  int display_wavelet_scale; // display current wavelet scale
+  gboolean mask_display; // should we expose masks?
+  gboolean suppress_mask;    // do not process masks
+  gboolean display_wavelet_scale; // display current wavelet scale
   int displayed_wavelet_scale; // was display wavelet scale already used?
   int preview_auto_levels;   // should we calculate levels automatically?
   float preview_levels[3];   // values for the levels
@@ -363,7 +363,7 @@ static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const dt_mask_id
   return index;
 }
 
-static int rt_get_selected_shape_id()
+static dt_mask_id_t rt_get_selected_shape_id()
 {
   return darktable.develop->mask_form_selected_id;
 }
@@ -475,12 +475,14 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 
   ++darktable.gui->reset;
 
-  int selection_changed = 0;
+  gboolean selection_changed = FALSE;
 
   const int index = rt_get_selected_shape_index(p);
   if(index >= 0)
   {
-    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_get_shape_opacity(self, p->rt_forms[index].formid));
+    const float opacity = rt_get_shape_opacity(self, p->rt_forms[index].formid);
+    if(opacity >= 0.0f)
+      dt_bauhaus_slider_set(g->sl_mask_opacity, opacity);
 
     if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
     {
@@ -490,7 +492,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->cmb_blur_type, p->blur_type);
       dt_bauhaus_slider_set(g->sl_blur_radius, p->blur_radius);
 
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
     else if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
     {
@@ -504,7 +506,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->cmb_fill_mode, p->fill_mode);
       rt_display_selected_fill_color(g, p);
 
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
 
     if(p->algorithm != p->rt_forms[index].algorithm)
@@ -516,7 +518,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), (p->algorithm == DT_IOP_RETOUCH_BLUR));
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), (p->algorithm == DT_IOP_RETOUCH_FILL));
 
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
 
     if(selection_changed) rt_show_hide_controls(self);
@@ -524,7 +526,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 
   rt_display_selected_shapes_lbl(g);
 
-  const int creation_continuous = (darktable.develop->form_gui && darktable.develop->form_gui->creation_continuous
+  const gboolean creation_continuous = (darktable.develop->form_gui && darktable.develop->form_gui->creation_continuous
                                    && darktable.develop->form_gui->creation_continuous_module == self);
 
   if(index >= 0 && !creation_continuous)
@@ -541,16 +543,22 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 // helpers
 //---------------------------------------------------------------------------------
 
-static void rt_masks_form_change_opacity(dt_iop_module_t *self, dt_mask_id_t formid, float opacity)
+static gboolean rt_masks_form_change_opacity(dt_iop_module_t *self, dt_mask_id_t formid, float opacity)
 {
+  gboolean changed = FALSE;
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
   if(grpt)
   {
-    grpt->opacity = CLAMP(opacity, 0.05f, 1.0f);
-    dt_conf_set_float("plugins/darkroom/masks/opacity", grpt->opacity);
-
-    dt_dev_add_masks_history_item(darktable.develop, self, TRUE);
+    const float new_opacity = CLAMP(opacity, 0.05f, 1.0f);
+    if(!feqf(grpt->opacity, new_opacity, 1e-6))
+    {
+      grpt->opacity = new_opacity;
+      dt_conf_set_float("plugins/darkroom/masks/opacity", grpt->opacity);
+      dt_dev_add_masks_history_item(darktable.develop, self, TRUE);
+      changed = TRUE;
+    }
   }
+  return changed;
 }
 
 static float rt_masks_form_get_opacity(dt_iop_module_t *self, dt_mask_id_t formid)
@@ -917,9 +925,9 @@ static void rt_clamp_minmax(float levels_old[3], float levels_new[3])
   }
 }
 
-static int rt_shape_is_being_added(dt_iop_module_t *self, const int shape_type)
+static gboolean rt_shape_is_being_added(dt_iop_module_t *self, const dt_masks_type_t shape_type)
 {
-  int being_added = 0;
+  gboolean being_added = FALSE;
 
   if(self->dev->form_gui && self->dev->form_visible
      && ((self->dev->form_gui->creation && self->dev->form_gui->creation_module == self)
@@ -934,12 +942,12 @@ static int rt_shape_is_being_added(dt_iop_module_t *self, const int shape_type)
         if(grpt)
         {
           const dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, grpt->formid);
-          if(form) being_added = (form->type & shape_type);
+          if(form) being_added = (form->type == shape_type);
         }
       }
     }
     else
-      being_added = (self->dev->form_visible->type & shape_type);
+      being_added = (self->dev->form_visible->type == shape_type);
   }
   return being_added;
 }
@@ -1534,7 +1542,7 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
   // if blend module is displaying mask do not display wavelet scales
-  if(self->request_mask_display && !g->mask_display)
+  if((self->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE) && !g->mask_display)
   {
     dt_control_log(_("cannot display scales when the blending mask is displayed"));
 
@@ -1634,15 +1642,14 @@ static void rt_mask_opacity_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  const int shape_id = rt_get_selected_shape_id();
+  const dt_mask_id_t shape_id = rt_get_selected_shape_id();
 
-  if(shape_id > 0)
+  if(dt_is_valid_maskid(shape_id))
   {
     const float opacity = dt_bauhaus_slider_get(slider);
-    rt_masks_form_change_opacity(self, shape_id, opacity);
+    if(rt_masks_form_change_opacity(self, shape_id, opacity))
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_post_expose (struct dt_iop_module_t *self,
@@ -1654,9 +1661,9 @@ void gui_post_expose (struct dt_iop_module_t *self,
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  const int shape_id = rt_get_selected_shape_id();
+  const dt_mask_id_t shape_id = rt_get_selected_shape_id();
 
-  if(shape_id > 0)
+  if(dt_is_valid_maskid(shape_id))
   {
     ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, shape_id));
@@ -1748,7 +1755,7 @@ static gboolean rt_add_shape_callback(GtkWidget *widget,
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  const int creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
+  const gboolean creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
 
   rt_add_shape(widget, creation_continuous, self);
 
@@ -1879,7 +1886,7 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
 
   // if blend module is displaying mask do not display it here
-  if(module->request_mask_display && !g->mask_display)
+  if((module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE) && !g->mask_display)
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
 
@@ -2194,9 +2201,9 @@ void change_image(struct dt_iop_module_t *self)
   if(g)
   {
     g->copied_scale = -1;
-    g->mask_display = 0;
-    g->suppress_mask = 0;
-    g->display_wavelet_scale = 0;
+    g->mask_display = FALSE;
+    g->suppress_mask = FALSE;
+    g->display_wavelet_scale = FALSE;
     g->displayed_wavelet_scale = 0;
     g->first_scale_visible = RETOUCH_MAX_SCALES + 1;
 
@@ -3363,7 +3370,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
   dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)piece->blendop_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
   dt_iop_roi_t *roi_layer = &usr_d->roi;
-  const int mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
+  const gboolean mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
 
   // when the requested scales is grather than max scales the residual image index will be different from the one
   // defined by the user,
@@ -3537,7 +3544,7 @@ void process(struct dt_iop_module_t *self,
   dwt_params_t *dwt_p = NULL;
 
   const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
-  const int display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : 0;
+  const gboolean display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : FALSE;
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -3553,7 +3560,7 @@ void process(struct dt_iop_module_t *self,
   usr_data.self = self;
   usr_data.piece = piece;
   usr_data.roi = *roi_rt;
-  usr_data.mask_display = 0;
+  usr_data.mask_display = FALSE;
   usr_data.suppress_mask = (g && g->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
                             && (piece->pipe == self->dev->pipe));
   usr_data.display_scale = p->curr_scale;
@@ -3574,7 +3581,7 @@ void process(struct dt_iop_module_t *self,
 
     piece->pipe->mask_display = g->mask_display ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     piece->pipe->bypass_blendif = TRUE;
-    usr_data.mask_display = 1;
+    usr_data.mask_display = TRUE;
   }
 
   if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
@@ -4169,7 +4176,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
   dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)self->global_data;
   const int devid = piece->pipe->devid;
   dt_iop_roi_t *roi_layer = &usr_d->roi;
-  const int mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
+  const gboolean mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
 
   // when the requested scales is grather than max scales the residual image index will be different from the one
   // defined by the user,
@@ -4360,7 +4367,7 @@ int process_cl(struct dt_iop_module_t *self,
   dwt_params_cl_t *dwt_p = NULL;
 
   const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
-  const int display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : 0;
+  const gboolean display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : FALSE;
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -4384,7 +4391,7 @@ int process_cl(struct dt_iop_module_t *self,
   usr_data.self = self;
   usr_data.piece = piece;
   usr_data.roi = *roi_rt;
-  usr_data.mask_display = 0;
+  usr_data.mask_display = FALSE;
   usr_data.suppress_mask = (g && g->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
                             && (piece->pipe == self->dev->pipe));
   usr_data.display_scale = p->curr_scale;
@@ -4412,7 +4419,7 @@ int process_cl(struct dt_iop_module_t *self,
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
     piece->pipe->bypass_blendif = TRUE;
-    usr_data.mask_display = 1;
+    usr_data.mask_display = TRUE;
   }
 
   if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
