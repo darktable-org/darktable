@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2022 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -139,7 +139,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.middle_grey_contrast = 1.0f;
   p.contrast_skewness = 0.0f;
   p.color_processing = DT_SIGMOID_METHOD_RGB_RATIO;
-  dt_gui_presets_add_generic(_("reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("Reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Declared here as it is used in the commit params function
