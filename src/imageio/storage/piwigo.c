@@ -926,7 +926,7 @@ static void _piwigo_refresh_clicked(GtkButton *button, gpointer data)
 
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-  return _("piwigo");
+  return _("Piwigo");
 }
 
 void gui_init(dt_imageio_module_storage_t *self)
@@ -1008,7 +1008,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // login button
   button = gtk_button_new_with_label(_("login"));
-  gtk_widget_set_tooltip_text(button, _("piwigo login"));
+  gtk_widget_set_tooltip_text(button, _("Piwigo login"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_piwigo_login_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
 
@@ -1218,7 +1218,7 @@ int store(dt_imageio_module_storage_t *self,
     if(p->new_album)
     {
       status = _piwigo_api_create_new_album(p);
-      if(!status) dt_control_log(_("cannot create a new piwigo album!"));
+      if(!status) dt_control_log(_("cannot create a new Piwigo album!"));
     }
 
     if(status)
@@ -1236,8 +1236,8 @@ int store(dt_imageio_module_storage_t *self,
         if(!status)
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[imageio_storage_piwigo] could not update to piwigo!\n");
-          dt_control_log(_("could not update to piwigo!"));
+                   "[imageio_storage_piwigo] could not update to Piwigo!\n");
+          dt_control_log(_("could not update to Piwigo!"));
           result = 1;
         }
       }
@@ -1251,8 +1251,8 @@ int store(dt_imageio_module_storage_t *self,
         if(!status)
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[imageio_storage_piwigo] could not upload to piwigo!\n");
-          dt_control_log(_("could not upload to piwigo!"));
+                   "[imageio_storage_piwigo] could not upload to Piwigo!\n");
+          dt_control_log(_("could not upload to Piwigo!"));
           result = 1;
         }
         else if(p->new_album)
@@ -1287,8 +1287,8 @@ cleanup:
   {
     // this makes sense only if the export was successful
     dt_control_log
-      (ngettext("%d/%d exported to piwigo webalbum",
-                "%d/%d exported to piwigo webalbum", num),
+      (ngettext("%d/%d exported to Piwigo webalbum",
+                "%d/%d exported to Piwigo webalbum", num),
        num, total);
   }
   return result;
