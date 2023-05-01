@@ -1328,7 +1328,7 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     dt_gui_menu_popup(darktable.gui->presets_popup_menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
   }
   else
-    dt_control_log(_("no userdefined presets for favorite modules were found"));
+    dt_control_log(_("no user-defined presets for favorite modules were found"));
 }
 
 static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem, gchar *name)
