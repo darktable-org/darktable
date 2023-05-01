@@ -113,6 +113,8 @@ typedef struct dt_lib_module_t
   GtkWidget *arrow;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
+
+  gboolean pref_based_presets;
 } dt_lib_module_t;
 
 void dt_lib_init(dt_lib_t *lib);
