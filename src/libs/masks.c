@@ -455,7 +455,7 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  int change = 0;
+  gboolean change = FALSE;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
   {
@@ -463,8 +463,8 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -483,7 +483,7 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
             _set_iter_name(lm, dt_masks_get_from_id(darktable.develop, id),
                            pt->state, pt->opacity, model,
                            &iter);
-            change = 1;
+            change = TRUE;
             break;
           }
         }
@@ -507,7 +507,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  int change = 0;
+  gboolean change = FALSE;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
   {
@@ -515,8 +515,8 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int grid = -1;
-      int id = -1;
+      dt_mask_id_t grid = INVALID_MASKID;
+      dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grid);
@@ -540,7 +540,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
               _set_iter_name(lm, dt_masks_get_from_id(darktable.develop, id),
                              pt->state, pt->opacity, model,
                              &iter);
-              change = 1;
+              change = TRUE;
             }
             break;
           }
@@ -565,7 +565,7 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  int change = 0;
+  gboolean change = FALSE;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
   {
@@ -598,7 +598,7 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
               _set_iter_name(lm, dt_masks_get_from_id(darktable.develop, id),
                              pt->state, pt->opacity, model,
                              &iter);
-              change = 1;
+              change = TRUE;
             }
             break;
           }
@@ -623,7 +623,7 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  int change = 0;
+  gboolean change = FALSE;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
 
   for(const GList *items_iter = items;
@@ -659,7 +659,7 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
               _set_iter_name(lm, dt_masks_get_from_id(darktable.develop, id),
                              pt->state, pt->opacity, model,
                              &iter);
-              change = 1;
+              change = TRUE;
             }
             break;
           }
@@ -684,7 +684,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  int change = 0;
+  gboolean change = FALSE;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
 
   for(const GList *items_iter = items;
@@ -722,7 +722,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
               _set_iter_name(lm, dt_masks_get_from_id(darktable.develop, id),
                              pt->state, pt->opacity, model,
                              &iter);
-              change = 1;
+              change = TRUE;
             }
             break;
           }
