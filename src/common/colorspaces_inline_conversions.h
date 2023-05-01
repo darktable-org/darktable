@@ -1022,10 +1022,20 @@ static const dt_colormatrix_t XYZ_D65_to_LMS_2006_D65
         { -0.394427f, 1.175800f, 0.106423f, 0.f },
         { 0.064856f, -0.076250f, 0.559067f, 0.f } };
 
+static const dt_colormatrix_t XYZ_D65_to_LMS_2006_D65_trans
+    = { {  0.257085f, -0.394427f,  0.064856f, 0.f },
+        {  0.859943f,  1.175800f, -0.076250f, 0.f },
+        { -0.031061f,  0.106423f,  0.559067f, 0.f } };
+
 static const dt_colormatrix_t LMS_2006_D65_to_XYZ_D65
     = { { 1.80794659f, -1.29971660f, 0.34785879f, 0.f },
         { 0.61783960f, 0.39595453f, -0.04104687f, 0.f },
         { -0.12546960f, 0.20478038f, 1.74274183f, 0.f } };
+
+static const dt_colormatrix_t LMS_2006_D65_to_XYZ_D65_trans
+    = { {  1.80794659f,  0.61783960f, -0.12546960f, 0.f },
+        { -1.29971660f,  0.39595453f,  0.20478038f, 0.f },
+        {  0.34785879f, -0.04104687f,  1.74274183f, 0.f } };
 
 
 #ifdef _OPENMP
@@ -1033,7 +1043,7 @@ static const dt_colormatrix_t LMS_2006_D65_to_XYZ_D65
 #endif
 static inline void XYZ_to_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
-  dot_product(XYZ, XYZ_D65_to_LMS_2006_D65, LMS);
+  dt_apply_transposed_color_matrix(XYZ, XYZ_D65_to_LMS_2006_D65_trans, LMS);
 }
 
 #ifdef _OPENMP
@@ -1041,7 +1051,7 @@ static inline void XYZ_to_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t L
 #endif
 static inline void LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
-  dot_product(LMS, LMS_2006_D65_to_XYZ_D65, XYZ);
+  dt_apply_transposed_color_matrix(LMS, LMS_2006_D65_to_XYZ_D65_trans, XYZ);
 }
 
 /*
