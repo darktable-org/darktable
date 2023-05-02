@@ -1722,7 +1722,7 @@ static int _init_coeffs_md(const dt_image_t *img,
 
     for(int i = 0; i < nc; i++)
     {
-      const float r = (float) i / (float) (nc);
+      const float r = (float) i / (float) (nc - 1);
       knots[i] = r;
       if(cor_rgb) cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
       if(vig)     vig[i] = 1.0f;
