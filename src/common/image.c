@@ -179,10 +179,9 @@ static void _image_set_monochrome_flag(const dt_imgid_t imgid,
                                        const gboolean monochrome,
                                        const gboolean undo_on)
 {
-  dt_image_t *img = NULL;
   gboolean changed = FALSE;
 
-  img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(img)
   {
     const int mask_bw = dt_image_monochrome_flags(img);

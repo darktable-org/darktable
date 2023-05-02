@@ -1577,7 +1577,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   // flag was already set? only apply presets once in the lifetime of
   // a history stack.  (the flag will be cleared when removing it).
-  if(!run || image->id <= 0)
+  if(!run || !dt_is_valid_imgid(image->id))
   {
     // Next section is to recover old edits where all modules with
     // default parameters were not recorded in the db nor in the .XMP.
