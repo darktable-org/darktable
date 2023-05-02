@@ -168,7 +168,7 @@ static inline float fastlog2(const float x)
 }
 
 // ensure that any changes here are synchronized with data/kernels/extended.cl
-static inline float fastlog (const float x)
+static inline float fastlog(const float x)
 {
   return DT_M_LN2f * fastlog2(x);
 }
