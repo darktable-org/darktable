@@ -68,20 +68,6 @@ static LPTOP_LEVEL_EXCEPTION_FILTER _dt_exceptionfilter_old_handler = NULL;
 #define _NUM_SIGNALS_TO_PRESERVE (sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]))
 static dt_signal_handler_t *_orig_sig_handlers[_NUM_SIGNALS_TO_PRESERVE] = { NULL };
 
-#if(defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || (defined(OpenBSD) && (OpenBSD < 201305))       \
-    || defined(__SUNOS__)
-static int dprintf(int fd, const char *fmt, ...) __attribute__((format(printf, 2, 3)))
-{
-  va_list ap;
-  FILE *f = fdopen(fd, "a");
-  va_start(ap, fmt);
-  int rc = vfprintf(f, fmt, ap);
-  fclose(f);
-  va_end(ap);
-  return rc;
-}
-#endif
-
 #if !defined(__APPLE__) && !defined(_WIN32)
 static void _dt_sigsegv_handler(int param)
 {
