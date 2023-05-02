@@ -74,7 +74,7 @@ The following is a summary of the main features added to darktable
   default values"
 
   This new generic feature has permitted to clean-up some hacks to try
-  to do the same kind support at the module levels and which was
+  to do the same kind support at the module level and which was
   anyway limited.
 
 - Rework the workflow setting, we now have the choice between:
@@ -95,7 +95,7 @@ The following is a summary of the main features added to darktable
 
 - Add support for Color Harmony Guide lines in RYB vectorscope.
 
-  There is 9 color harmony guides proposed:
+  There are 9 color harmony guides proposed:
   - Monochromatic
   - Analogous
   - Analogous complementary
@@ -143,6 +143,7 @@ The following is a summary of the main features added to darktable
   - Color Mapping
   - High-pass filter
   - Shadows and Highlights
+  - Lens
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
@@ -207,9 +208,13 @@ The following is a summary of the main features added to darktable
 
 - Add OpenCL support to the Sigmoid module.
 
+- Add OpenMP support to XCF export for better performances.
+
+- Add OpenMP support to the RGBE loader for better performances.
+
 - Do not invalidate snapshot anymore when the history is changed
   (compressed or reset). All snapshot are now stored with their full
-  history and can be reconstruct properly.
+  history and can be reconstructed properly.
 
 - Module "Levels" has been deprecated, use "Levels RGB" instead.
 
@@ -231,6 +236,19 @@ The following is a summary of the main features added to darktable
   of the scene-referred group.
 
 - Add support for loading QOI images.
+
+- Add support for writing metadata to XCF format (see notes below).
+
+- Read Exif metadata from AVIF, HEIC and JPEG XL images using native
+  libraries if Exiv2 does not support it.
+
+- Write Exif data to the eXIf PNG chunk if using Exiv2 version newer
+  than 0.27.x. This is the new standard way to store Exif data in PNGs.
+
+- Export masks for EXRs as extra channels.
+
+- Re-enable loading of BigTIFF images by attempting the native
+  libtiff-based reader first.
 
 - Redesign the export and thumbnails generation.
 
@@ -259,12 +277,6 @@ The following is a summary of the main features added to darktable
   - Allows finetuning of scale,
   - Add an auto-scale button.
   - Improve overall module performance of about 8%.
-
-- Add OpenMP support to XCF export for better performances.
-
-- Add support for writing metadata to XCF format (see notes below).
-
-- Add OpenMP support to the RGBE loader for better performances.
 
 - Added section headers to the sort by drop-down (files, times, etc).
 
@@ -323,12 +335,6 @@ The following is a summary of the main features added to darktable
   is selected via an element, hold or toggle via an effect. All mapped
   shortcuts are shown in the tooltip of the preview layout button.
 
-- Read Exif metadata from AVIF, HEIC and JPEG XL images using native
-  libraries if Exiv2 does not support it.
-
-- Write Exif data to the eXIf PNG chunk if using Exiv2 version newer
-  than 0.27.x. This is the new standard way to store Exif data in PNGs.
-
 - Makes laplacian highlights recovery mode less memory hungry (save
   around 40%) and allow for a large speed up. This makes this recovery
   mode lot more usable and allows for more recovery iterations.
@@ -341,8 +347,6 @@ The following is a summary of the main features added to darktable
   supported ApertureValue. This is the only metadata tag available in
   Leica M Monochrom, M8, M9 & M10 DNGs.
 
-- Export masks for EXRs as extra channels.
-
 - The search filter has been improved to also search the camera's brand
   and model.
 
@@ -353,9 +357,6 @@ The following is a summary of the main features added to darktable
   previous one. It makes no sense adding some multi-instance for some
   modules for example. So this new default should fit better in the
   workflow.
-
-- Re-enable loading of BigTIFF images by attempting the native
-  libtiff-based reader first.
 
 - The brush path is now a bit more transparent to better see what is
   actually painted.
