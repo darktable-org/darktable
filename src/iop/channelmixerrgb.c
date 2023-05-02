@@ -725,6 +725,7 @@ static inline void _loop_switch(const float *const restrict in,
       break;
     case DT_ADAPTATION_RGB:
     case DT_ADAPTATION_LAST:
+    default:
       // RGB_to_LMS not applied, since we are not adapting WB
       dt_colormatrix_mul(MIX_to_XYZ, RGB_to_XYZ, MIX);
       break;
