@@ -1575,6 +1575,24 @@ static void _init_presets(dt_iop_module_so_t *module_so)
   sqlite3_finalize(stmt);
 }
 
+static void _iop_preferences_changed(gpointer instance, gpointer self)
+{
+  // reload presets if they are based on the actual workflow which
+  // could have been changed after editing the preferences.
+
+  GList *iop = (GList *)self;
+
+  while(iop)
+  {
+    dt_iop_module_so_t *mod = (dt_iop_module_so_t *)iop->data;
+
+    if(mod->pref_based_presets)
+      _init_presets(mod);
+
+    iop = g_list_next(iop);
+  }
+}
+
 static void _init_presets_actions(dt_iop_module_so_t *module)
 {
   /** load shortcuts for presets **/
@@ -1651,6 +1669,10 @@ void dt_iop_load_modules_so(void)
   darktable.iop = dt_module_load_modules
     ("/plugins", sizeof(dt_iop_module_so_t),
      dt_iop_load_module_so, _init_module_so, NULL);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                                  G_CALLBACK(_iop_preferences_changed),
+                                  (gpointer)(darktable.iop));
 }
 
 int dt_iop_load_module(dt_iop_module_t *module,
@@ -1733,6 +1755,10 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 
 void dt_iop_unload_modules_so()
 {
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_iop_preferences_changed),
+                                     (gpointer)(darktable.iop));
+
   while(darktable.iop)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;

@@ -273,6 +273,8 @@ int legacy_params(dt_iop_module_t *self,
 
 void init_presets(dt_iop_module_so_t *self)
 {
+  self->pref_based_presets = TRUE;
+
   dt_gui_presets_add_generic
     (_("magic lantern defaults"), self->op,
      self->version(),
@@ -284,22 +286,24 @@ void init_presets(dt_iop_module_so_t *self)
                                  .compensate_exposure_bias = FALSE},
      sizeof(dt_iop_exposure_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
+  const gboolean is_scene_referred = dt_is_scene_referred();
 
-  // For scene-referred workflow, since filmic doesn't brighten as base curve does,
-  // we need an initial exposure boost. This preset has the same value as what is
-  // auto-applied (see reload_default below) for scene-referred workflow.
-  dt_gui_presets_add_generic
-    (_("scene-referred default"), self->op, self->version(),
-     &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
-                                 .black = -0.000244140625f,
-                                 .exposure = 0.7f,
-                                 .deflicker_percentile = 50.0f,
-                                 .deflicker_target_level = -4.0f,
-                                 .compensate_exposure_bias = TRUE},
-     sizeof(dt_iop_exposure_params_t), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  if(is_scene_referred)
+  {
+    // For scene-referred workflow, since filmic doesn't brighten as base curve does,
+    // we need an initial exposure boost. This preset has the same value as what is
+    // auto-applied (see reload_default below) for scene-referred workflow.
+    dt_gui_presets_add_generic
+      (_("scene-referred default"), self->op, self->version(),
+       NULL, 0,
+       1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
-                            self->version(), FOR_RAW);
+    dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
+                              self->version(), FOR_RAW);
+
+    dt_gui_presets_update_autoapply(_("scene-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
 }
 
 void reload_defaults(dt_iop_module_t *module)

@@ -203,6 +203,8 @@ typedef struct dt_iop_module_so_t
 
   // introspection related data
   gboolean have_introspection;
+  // contains preset which are depending on preference (workflow)
+  gboolean pref_based_presets;
 } dt_iop_module_so_t;
 
 typedef struct dt_iop_module_t
