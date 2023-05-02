@@ -706,7 +706,7 @@ static inline void _loop_switch(const float *const restrict in,
                                 const dt_adaptation_t kind,
                                 const dt_iop_channelmixer_rgb_version_t version)
 {
-  dt_colormatrix_t RGB_to_LMS;
+  dt_colormatrix_t RGB_to_LMS = { { 0.0f, 0.0f, 0.0f, 0.0f } };
   dt_colormatrix_t MIX_to_XYZ;
   switch (kind)
   {
