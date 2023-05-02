@@ -1725,7 +1725,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
                " END",
            preset_table[legacy],
-           is_display_referred?"":"basecurve");
+           is_display_referred ? "" : "basecurve");
   // clang-format on
   // query for all modules at once:
   sqlite3_stmt *stmt;
@@ -1988,7 +1988,7 @@ void _dev_write_history(dt_develop_t *dev, const dt_imgid_t imgid)
 }
 
 // helper function for debug strings
-char * _print_validity(gboolean state)
+char *_print_validity(gboolean state)
 {
   if(state)
     return "ok";

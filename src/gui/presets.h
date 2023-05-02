@@ -24,10 +24,10 @@
 // variants are negated to keep existing presets
 typedef enum dt_gui_presets_format_flag_t
 {
-  FOR_LDR = 1 << 0,
-  FOR_RAW = 1 << 1,
-  FOR_HDR = 1 << 2,
-  FOR_NOT_MONO = 1 << 3,
+  FOR_LDR       = 1 << 0,
+  FOR_RAW       = 1 << 1,
+  FOR_HDR       = 1 << 2,
+  FOR_NOT_MONO  = 1 << 3,
   FOR_NOT_COLOR = 1 << 4
 } dt_gui_presets_format_flag_t;
 
