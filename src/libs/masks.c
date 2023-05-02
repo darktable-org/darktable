@@ -509,7 +509,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   gboolean change = FALSE;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
-  for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
+  for(const GList *items_iter = g_list_last(items); items_iter; items_iter = g_list_previous(items_iter))
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
     GtkTreeIter iter;
@@ -740,10 +740,10 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
   }
 }
 
-static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
-                                               GtkTreeIter *iter,
-                                               const dt_mask_id_t first_id,
-                                               const dt_mask_id_t second_id)
+static void _swap_last_secondlast_item_visibility(dt_lib_masks_t *lm,
+                                                   GtkTreeIter *iter,
+                                                   const dt_mask_id_t secondlast_id,
+                                                   const dt_mask_id_t last_id)
 {
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
 
@@ -756,20 +756,20 @@ static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
   if(grp)
   {
     // we search the entries and change the state
-    // the new first entry is removed the SHOW state and
-    // the new second node is set SHOW state + UNION if no operator defined yet.
-    for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
+    // the new last entry is removed the SHOW state and
+    // the new second last node is set SHOW state + UNION if no operator defined yet.
+    for(const GList *pts = g_list_last(grp->points); pts; pts = g_list_previous(pts))
     {
       dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
       gboolean changed = FALSE;
-      if(pt->formid == first_id)
+      if(pt->formid == last_id)
       {
         pt->state &= ~DT_MASKS_STATE_SHOW;
         changed = TRUE;
       }
-      else if(pt->formid == second_id)
+      else if(pt->formid == secondlast_id)
       {
-        // ensure that at leat an operator is defined as we are
+        // ensure that at least an operator is defined as we are
         // going to show this mask operator.
         if((pt->state & DT_MASKS_STATE_OP) == DT_MASKS_STATE_NONE)
           pt->state |= DT_MASKS_STATE_UNION;
@@ -785,12 +785,12 @@ static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
   }
 }
 
-static gboolean _is_first_tree_item(GtkTreeModel *model, GtkTreeIter *iter)
+static gboolean _is_last_tree_item(GtkTreeModel *model, GtkTreeIter *iter)
 {
   GtkTreeIter *tmp = gtk_tree_iter_copy(iter);
-  const gboolean is_first_item = !gtk_tree_model_iter_previous(model, tmp);
+  const gboolean is_last_item = !gtk_tree_model_iter_next(model, tmp);
   gtk_tree_iter_free(tmp);
-  return is_first_item;
+  return is_last_item;
 }
 
 static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
@@ -822,14 +822,14 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
       dt_mask_id_t prev_id = INVALID_MASKID;
       _lib_masks_get_values(model, prev_iter, NULL, &prev_grid, &prev_id);
 
-      if(_is_first_tree_item(model, prev_iter))
+      if(_is_last_tree_item(model, &iter))
       {
-        _swap_first_second_item_visibility(lm, &iter, id, prev_id);
+        _swap_last_secondlast_item_visibility(lm, &iter, id, prev_id);
       }
 
       gtk_tree_iter_free(prev_iter);
 
-      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 0);
+      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 1);
     }
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
@@ -868,14 +868,14 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
       dt_mask_id_t next_id = INVALID_MASKID;
       _lib_masks_get_values(model, next_iter, NULL, &next_grid, &next_id);
 
-      if(_is_first_tree_item(model, &iter))
+      if(_is_last_tree_item(model, next_iter))
       {
-        _swap_first_second_item_visibility(lm, &iter, next_id, id);
+        _swap_last_secondlast_item_visibility(lm, &iter, next_id, id);
       }
 
       gtk_tree_iter_free(next_iter);
 
-      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 1);
+      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 0);
     }
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
@@ -1287,22 +1287,22 @@ static int _tree_button_pressed(GtkWidget *treeview,
         gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
 
         item = gtk_menu_item_new_with_label(_("mode: union"));
-        gtk_widget_set_sensitive(item, !is_first_row);
+        gtk_widget_set_sensitive(item, !is_last_row);
         g_signal_connect(item, "activate", (GCallback)_tree_union, self);
         gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("mode: intersection"));
-        gtk_widget_set_sensitive(item, !is_first_row);
+        gtk_widget_set_sensitive(item, !is_last_row);
         g_signal_connect(item, "activate", (GCallback)_tree_intersection, self);
         gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("mode: difference"));
-        gtk_widget_set_sensitive(item, !is_first_row);
+        gtk_widget_set_sensitive(item, !is_last_row);
         g_signal_connect(item, "activate", (GCallback)_tree_difference, self);
         gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("mode: exclusion"));
-        gtk_widget_set_sensitive(item, !is_first_row);
+        gtk_widget_set_sensitive(item, !is_last_row);
         g_signal_connect(item, "activate", (GCallback)_tree_exclusion, self);
         gtk_menu_shell_append(menu, item);
       }
@@ -1491,7 +1491,30 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
   {
     // we just add it to the tree
     GtkTreeIter child;
-    gtk_tree_store_append(treestore, &child, toplevel);
+
+    if (toplevel)
+    {
+      // we are within a group
+      gtk_tree_store_prepend(treestore, &child, toplevel);
+    }
+    else
+    {
+      // skip all groups first
+      GtkTreeModel *model = GTK_TREE_MODEL(treestore);
+      int pos = 0;
+      GtkTreeIter iter;
+      gtk_tree_model_get_iter_first(model, &iter);
+
+      do
+      {
+        if (gtk_tree_model_iter_has_child(model, &iter))
+          ++pos;
+      } while(gtk_tree_model_iter_next(model, &iter));
+
+      // insert the child immediately after the last group
+      gtk_tree_store_insert(treestore, &child, NULL, pos);
+    }
+
     gtk_tree_store_set(treestore, &child,
                        TREE_TEXT, str,
                        TREE_MODULE, module,
@@ -1528,7 +1551,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
 
     // we add the group node to the tree
     GtkTreeIter child;
-    gtk_tree_store_append(treestore, &child, toplevel);
+    gtk_tree_store_prepend(treestore, &child, toplevel);
     gtk_tree_store_set(treestore, &child,
                        TREE_TEXT, str,
                        TREE_MODULE, module,
