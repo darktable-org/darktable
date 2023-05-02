@@ -1573,7 +1573,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   const gboolean is_raw = dt_image_is_raw(image);
   const gboolean is_modern_chroma = dt_is_scene_referred();
-  const gboolean is_mono = dt_image_is_monochrome(image);
 
   // flag was already set? only apply presets once in the lifetime of
   // a history stack.  (the flag will be cleared when removing it).
@@ -1644,45 +1643,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean is_display_referred = dt_is_display_referred();
   const gboolean is_workflow_none = !is_scene_referred && !is_display_referred;
 
-  //  Add scene-referred workflow
-  //  Note that we cannot use a preset for FilmicRGB as the default values are
-  //  dynamically computed depending on the actual exposure compensation
-  //  (see reload_default routine in filmicrgb.c)
-
-  const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
-
-  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
-
-  const gboolean auto_apply_filmic =
-    (is_raw || is_mono) && (strcmp(workflow, "scene-referred (filmic)") == 0);
-  const gboolean auto_apply_sigmoid =
-    (is_raw || is_mono) && (strcmp(workflow, "scene-referred (sigmoid)") == 0);
-  const gboolean auto_apply_exposure =
-    auto_apply_filmic || auto_apply_sigmoid;
-  const gboolean auto_apply_basecurve =
-    (is_raw || is_mono) && (strcmp(workflow, "display-referred (legacy)") == 0);
-  const gboolean auto_apply_cat =
-    has_matrix && is_modern_chroma;
-
-  if(auto_apply_filmic || auto_apply_sigmoid || auto_apply_cat || auto_apply_basecurve)
-  {
-    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-
-      if(((auto_apply_exposure && dt_iop_module_is(module->so, "exposure"))
-          || (auto_apply_filmic && dt_iop_module_is(module->so, "filmicrgb"))
-          || (auto_apply_sigmoid && dt_iop_module_is(module->so, "sigmoid"))
-          || (auto_apply_basecurve && dt_iop_module_is(module->so, "basecurve"))
-          || (auto_apply_cat && dt_iop_module_is(module->so, "channelmixerrgb")))
-         && !dt_history_check_module_exists(imgid, module->op, FALSE)
-         && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
-      {
-        _dev_insert_module(dev, module, imgid);
-      }
-    }
-  }
-
   // select all presets from one of the following table and add them
   // into memory.history. Note that this is appended to possibly
   // already present default modules.
@@ -1731,7 +1691,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   sqlite3_stmt *stmt;
 
   int iformat = 0;
-  if(dt_image_is_rawprepare_supported(image))
+  if(dt_image_is_raw(image))
     iformat |= FOR_RAW;
   else
     iformat |= FOR_LDR;
