@@ -509,7 +509,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   gboolean change = FALSE;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
-  for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
+  for(const GList *items_iter = g_list_last(items); items_iter; items_iter = g_list_previous(items_iter))
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
     GtkTreeIter iter;
@@ -1287,22 +1287,22 @@ static int _tree_button_pressed(GtkWidget *treeview,
         gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
 
         item = gtk_menu_item_new_with_label(_("mode: union"));
-        gtk_widget_set_sensitive(item, !is_first_row);
+        gtk_widget_set_sensitive(item, !is_last_row);
         g_signal_connect(item, "activate", (GCallback)_tree_union, self);
         gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("mode: intersection"));
-        gtk_widget_set_sensitive(item, !is_first_row);
+        gtk_widget_set_sensitive(item, !is_last_row);
         g_signal_connect(item, "activate", (GCallback)_tree_intersection, self);
         gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("mode: difference"));
-        gtk_widget_set_sensitive(item, !is_first_row);
+        gtk_widget_set_sensitive(item, !is_last_row);
         g_signal_connect(item, "activate", (GCallback)_tree_difference, self);
         gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("mode: exclusion"));
-        gtk_widget_set_sensitive(item, !is_first_row);
+        gtk_widget_set_sensitive(item, !is_last_row);
         g_signal_connect(item, "activate", (GCallback)_tree_exclusion, self);
         gtk_menu_shell_append(menu, item);
       }
@@ -1491,7 +1491,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
   {
     // we just add it to the tree
     GtkTreeIter child;
-    gtk_tree_store_append(treestore, &child, toplevel);
+    gtk_tree_store_prepend(treestore, &child, toplevel);
     gtk_tree_store_set(treestore, &child,
                        TREE_TEXT, str,
                        TREE_MODULE, module,
@@ -1528,7 +1528,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
 
     // we add the group node to the tree
     GtkTreeIter child;
-    gtk_tree_store_append(treestore, &child, toplevel);
+    gtk_tree_store_prepend(treestore, &child, toplevel);
     gtk_tree_store_set(treestore, &child,
                        TREE_TEXT, str,
                        TREE_MODULE, module,
