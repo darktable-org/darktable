@@ -271,7 +271,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-void init_presets (dt_iop_module_so_t *self)
+void init_presets(dt_iop_module_so_t *self)
 {
   dt_gui_presets_add_generic
     (_("magic lantern defaults"), self->op,

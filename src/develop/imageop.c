@@ -1350,7 +1350,8 @@ void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
 
 static void _init_presets(dt_iop_module_so_t *module_so)
 {
-  if(module_so->init_presets) module_so->init_presets(module_so);
+  if(module_so->init_presets)
+    module_so->init_presets(module_so);
 
   // this seems like a reasonable place to check for and update legacy
   // presets.
@@ -1414,14 +1415,14 @@ static void _init_presets(dt_iop_module_so_t *module_so)
 
       dt_print(DT_DEBUG_PARAMS,
                "[imageop_init_presets] found version %d for '%s' preset '%s'\n",
-        old_params_version, module_so->op, name);
+               old_params_version, module_so->op, name);
 
       DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
          "UPDATE data.presets"
          " SET op_version=?1"
          " WHERE operation=?2 AND name=?3", -1,
-                                  &stmt2, NULL);
+         &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, old_params_version);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, module_so->op, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, name, -1, SQLITE_TRANSIENT);
@@ -1735,8 +1736,10 @@ void dt_iop_unload_modules_so()
   while(darktable.iop)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;
-    if(module->cleanup_global) module->cleanup_global(module);
-    if(module->module) g_module_close(module->module);
+    if(module->cleanup_global)
+      module->cleanup_global(module);
+    if(module->module)
+      g_module_close(module->module);
     free(darktable.iop->data);
     darktable.iop = g_list_delete_link(darktable.iop, darktable.iop);
   }
