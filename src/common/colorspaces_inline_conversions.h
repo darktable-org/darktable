@@ -902,10 +902,10 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   const float p = 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  static const dt_colormatrix_t M_transposed = {
-      { 0.41478972f, -0.2015100f, -0.0166008f, 0.0f },
-      { 0.57999900f,  1.1206490f,  0.2648000f, 0.0f },
-      { 0.01464800f,  0.0531008f,  0.6684799f, 0.0f },
+  static const dt_colormatrix_t M = {
+      { 0.41478972f, 0.579999f, 0.0146480f, 0.0f },
+      { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
+      { -0.0166008f, 0.264800f, 0.6684799f, 0.0f },
   };
   static const dt_colormatrix_t A_transposed = {
       { 0.5f,       3.524000f,  0.199076f, 0.0f },
@@ -922,16 +922,19 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   XYZ[2] = XYZ_D65[2];
 
   // X'Y'Z -> L'M'S'
-  dt_apply_transposed_color_matrix(XYZ, M_transposed, LMS);
-  dt_vector_mul1(LMS, LMS, 1.0f/10000.0f);
-  dt_vector_clipneg(LMS);
-  dt_vector_pow1(LMS, n, LMS);
-  for_each_channel(i, aligned(LMS))
-    LMS[i] = (c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]);
-  dt_vector_pow1(LMS, p, LMS);
+#ifdef _OPENMP
+#pragma omp simd aligned(LMS, XYZ:16) aligned(M:64)
+#endif
+  for(int i = 0; i < 3; i++)
+  {
+    LMS[i] = M[i][0] * XYZ[0] + M[i][1] * XYZ[1] + M[i][2] * XYZ[2];
+    LMS[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);
+    LMS[i] = powf((c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]), p);
+  }
 
   // L'M'S' -> Izazbz
-  dt_apply_transposed_color_matrix(LMS, A_transposed, JzAzBz);
+  for_each_channel(c)
+    JzAzBz[c] = A_transposed[0][c] * LMS[0] + A_transposed[1][c] * LMS[1] + A_transposed[2][c] * LMS[2];
   // Iz -> Jz
   JzAzBz[0] = fmaxf(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
 }
@@ -943,7 +946,7 @@ static inline void dt_JzAzBz_2_JzCzhz(const dt_aligned_pixel_t JzAzBz, dt_aligne
 {
   float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / (2.0f * DT_M_PI_F);
   JzCzhz[0] = JzAzBz[0];
-  JzCzhz[1] = dt_fast_hypotf(JzAzBz[1], JzAzBz[2]);
+  JzCzhz[1] = hypotf(JzAzBz[1], JzAzBz[2]);
   JzCzhz[2] = var_H >= 0.0f ? var_H : 1.0f + var_H;
 }
 
@@ -971,37 +974,42 @@ static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_p
   const float p_inv = 1.0f / 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  static const dt_colormatrix_t AI_trans = {
-      {  1.0f,                 1.0f,                 1.0f,                0.0f },
-      {  0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f, 0.0f },
-      {  0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f, 0.0f },
+  const dt_colormatrix_t MI = {
+      {  1.9242264357876067f, -1.0047923125953657f,  0.0376514040306180f, 0.0f },
+      {  0.3503167620949991f,  0.7264811939316552f, -0.0653844229480850f, 0.0f },
+      { -0.0909828109828475f, -0.3127282905230739f,  1.5227665613052603f, 0.0f },
   };
-  static const dt_colormatrix_t MI_trans = {
-      {  1.9242264357876067f,  0.3503167620949991f, -0.0909828109828475f, 0.0f },
-      { -1.0047923125953657f,  0.7264811939316552f, -0.3127282905230739f, 0.0f },
-      {  0.0376514040306180f, -0.0653844229480850f,  1.5227665613052603f, 0.0f },
+  const dt_colormatrix_t AI = {
+      {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+      {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+      {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f },
   };
 
+  dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t IzAzBz = { 0.0f, 0.0f, 0.0f, 0.0f };
+
   IzAzBz[0] = JzAzBz[0] + d0;
   IzAzBz[0] = fmaxf(IzAzBz[0] / (1.0f + d - d * IzAzBz[0]), 0.f);
   IzAzBz[1] = JzAzBz[1];
   IzAzBz[2] = JzAzBz[2];
 
   // IzAzBz -> LMS
-  dt_aligned_pixel_t LMS;
-  dt_apply_transposed_color_matrix(IzAzBz,AI_trans, LMS);
-  dt_vector_clipneg(LMS);
-  dt_vector_pow1(LMS, p_inv, LMS);
-  for_each_channel(i, aligned(LMS))
-    LMS[i] = (c1 - LMS[i]) / (c3 * LMS[i] - c2);
-  dt_vector_clipneg(LMS);
-  dt_vector_pow1(LMS, n_inv, LMS);
-  dt_vector_mul1(LMS, LMS, 10000.0f);
+#ifdef _OPENMP
+#pragma omp simd aligned(LMS, IzAzBz:16) aligned(AI:64)
+#endif
+  for(int i = 0; i < 3; i++)
+  {
+    LMS[i] = AI[i][0] * IzAzBz[0] + AI[i][1] * IzAzBz[1] + AI[i][2] * IzAzBz[2];
+    LMS[i] = powf(fmaxf(LMS[i], 0.0f), p_inv);
+    LMS[i] = 10000.f * powf(fmaxf((c1 - LMS[i]) / (c3 * LMS[i] - c2), 0.0f), n_inv);
+  }
 
   // LMS -> X'Y'Z
-  dt_aligned_pixel_t XYZ;
-  dt_apply_transposed_color_matrix(LMS, MI_trans, XYZ);
+#ifdef _OPENMP
+#pragma omp simd aligned(LMS, XYZ:16) aligned(MI:64)
+#endif
+  for(int i = 0; i < 3; i++) XYZ[i] = MI[i][0] * LMS[0] + MI[i][1] * LMS[1] + MI[i][2] * LMS[2];
 
   // X'Y'Z -> XYZ_D65
   XYZ_D65[0] = (XYZ[0] + (b - 1.0f) * XYZ[2]) / b;
