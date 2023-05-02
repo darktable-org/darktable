@@ -2381,20 +2381,8 @@ static gboolean _dev_pixelpipe_process_rec(
      && (module->request_histogram & DT_REQUEST_EXPANDED);
 
   if(needs_histo)
+  {
     dt_print_pipe(DT_DEBUG_PIPE, "internal histogram", pipe, module, NULL, NULL, "\n");
-
-  if((pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE) && !needs_histo)
-  {
-    if(module && module == darktable.develop->gui_module)
-    {
-      // give the input buffer to the currently focused plugin more weight.
-      // the user is likely to change that one soon, so keep it in cache.
-      dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
-    }
-  }
-
-  if(needs_histo)
-  {
     pipe->nocache = TRUE;
     dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
   }
