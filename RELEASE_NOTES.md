@@ -189,6 +189,22 @@ The following is a summary of the main features added to darktable
 
 ## Other Changes
 
+- Overhaul the color picker code. No longer unnecessarily run pickers
+  in many cases, resulting in speedups. The picker code is now tuned
+  for contemporary processors. It uses recent OpenMP features,
+  resulting in more succinct code. The pickers now only runs a
+  time-consuming denoise pass when used via the filmic module (in
+  which case removing noise makes the automatic tuning more
+  robust). No longer warn when working on monochrome images. Various
+  other cleanup, de-duplication, optimization, and generally tidying.
+
+- Modernize the histogram calculation code. Remove SSE code (which
+  provides no speed-ups), but use it as a model for the optimized code
+  using recent OpenMP features. Remove various unused bits of code,
+  and provide a consistent internal API. In certain cases this code
+  will produce marginally more accurate results. In some cases the new
+  code uses substantially less memory.
+
 - Add OpenCL support to the Sigmoid module.
 
 - Do not invalidate snapshot anymore when the history is changed
@@ -662,6 +678,10 @@ The following is a summary of the main features added to darktable
 
 - Feathering input fixed while using distorting modules like retouch
   or lens.
+
+- Fix a long-standing potential memory bug in interpolation code,
+  though one which never occurred due to how that code is used in
+  darktable.
 
 ## Lua
 
