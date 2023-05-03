@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -40,7 +41,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 typedef enum dt_iop_sigmoid_methods_type_t
 {
   DT_SIGMOID_METHOD_PER_CHANNEL = 0,     // $DESCRIPTION: "per channel"
-  DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "rgb ratio"
+  DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "RGB ratio"
 } dt_iop_sigmoid_methods_type_t;
 
 

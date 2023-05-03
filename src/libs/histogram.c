@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <stdint.h>
 
 #include "bauhaus/bauhaus.h"
@@ -144,7 +145,7 @@ dt_lib_histogram_color_harmony_t dt_color_harmonies[DT_LIB_HISTOGRAM_HARMONY_N] 
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] =
 { N_("vectorscope"),
   N_("waveform"),
-  N_("rgb parade"),
+  N_("RGB parade"),
   N_("histogram")
 };
 
