@@ -3082,6 +3082,28 @@ void reload_defaults(dt_iop_module_t *module)
   }
 }
 
+void init_presets(dt_iop_module_so_t *self)
+{
+  // auto-applied scene-referred default
+  self->pref_based_presets = TRUE;
+
+  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
+  const gboolean auto_apply_filmic = strcmp(workflow, "scene-referred (filmic)") == 0;
+
+  if(auto_apply_filmic)
+  {
+    dt_gui_presets_add_generic
+      (_("scene-referred default"), self->op, self->version(),
+       NULL, 0,
+       1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+    dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
+                              self->version(), FOR_RAW);
+
+    dt_gui_presets_update_autoapply(_("scene-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
+}
 
 void init_global(dt_iop_module_so_t *module)
 {
