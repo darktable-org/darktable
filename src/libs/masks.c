@@ -825,7 +825,6 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
       if(_is_last_tree_item(model, &iter))
       {
         _swap_last_secondlast_item_visibility(lm, &iter, id, prev_id);
-        // _swap_first_second_item_visibility(lm, &iter, id, prev_id);
       }
 
       gtk_tree_iter_free(prev_iter);
@@ -872,7 +871,6 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
       if(_is_last_tree_item(model, next_iter))
       {
         _swap_last_secondlast_item_visibility(lm, &iter, next_id, id);
-        // _swap_first_second_item_visibility(lm, &iter, next_id, id);
       }
 
       gtk_tree_iter_free(next_iter);
@@ -1493,7 +1491,17 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
   {
     // we just add it to the tree
     GtkTreeIter child;
-    gtk_tree_store_prepend(treestore, &child, toplevel);
+
+    if (toplevel)
+    {
+      // place groups on top
+      gtk_tree_store_prepend(treestore, &child, toplevel);
+    }
+    else
+    {
+      gtk_tree_store_append(treestore, &child, toplevel);
+    }
+
     gtk_tree_store_set(treestore, &child,
                        TREE_TEXT, str,
                        TREE_MODULE, module,
