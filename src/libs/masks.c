@@ -740,10 +740,10 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
   }
 }
 
-static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
-                                               GtkTreeIter *iter,
-                                               const dt_mask_id_t first_id,
-                                               const dt_mask_id_t second_id)
+static void _swap_last_secondlast_item_visibility(dt_lib_masks_t *lm,
+                                                   GtkTreeIter *iter,
+                                                   const dt_mask_id_t secondlast_id,
+                                                   const dt_mask_id_t last_id)
 {
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
 
@@ -756,20 +756,20 @@ static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
   if(grp)
   {
     // we search the entries and change the state
-    // the new first entry is removed the SHOW state and
-    // the new second node is set SHOW state + UNION if no operator defined yet.
-    for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
+    // the new last entry is removed the SHOW state and
+    // the new second last node is set SHOW state + UNION if no operator defined yet.
+    for(const GList *pts = g_list_last(grp->points); pts; pts = g_list_previous(pts))
     {
       dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
       gboolean changed = FALSE;
-      if(pt->formid == first_id)
+      if(pt->formid == last_id)
       {
         pt->state &= ~DT_MASKS_STATE_SHOW;
         changed = TRUE;
       }
-      else if(pt->formid == second_id)
+      else if(pt->formid == secondlast_id)
       {
-        // ensure that at leat an operator is defined as we are
+        // ensure that at least an operator is defined as we are
         // going to show this mask operator.
         if((pt->state & DT_MASKS_STATE_OP) == DT_MASKS_STATE_NONE)
           pt->state |= DT_MASKS_STATE_UNION;
@@ -785,12 +785,12 @@ static void _swap_first_second_item_visibility(dt_lib_masks_t *lm,
   }
 }
 
-static gboolean _is_first_tree_item(GtkTreeModel *model, GtkTreeIter *iter)
+static gboolean _is_last_tree_item(GtkTreeModel *model, GtkTreeIter *iter)
 {
   GtkTreeIter *tmp = gtk_tree_iter_copy(iter);
-  const gboolean is_first_item = !gtk_tree_model_iter_previous(model, tmp);
+  const gboolean is_last_item = !gtk_tree_model_iter_next(model, tmp);
   gtk_tree_iter_free(tmp);
-  return is_first_item;
+  return is_last_item;
 }
 
 static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
@@ -822,14 +822,15 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
       dt_mask_id_t prev_id = INVALID_MASKID;
       _lib_masks_get_values(model, prev_iter, NULL, &prev_grid, &prev_id);
 
-      if(_is_first_tree_item(model, prev_iter))
+      if(_is_last_tree_item(model, &iter))
       {
-        _swap_first_second_item_visibility(lm, &iter, id, prev_id);
+        _swap_last_secondlast_item_visibility(lm, &iter, id, prev_id);
+        // _swap_first_second_item_visibility(lm, &iter, id, prev_id);
       }
 
       gtk_tree_iter_free(prev_iter);
 
-      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 0);
+      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 1);
     }
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
@@ -868,14 +869,15 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
       dt_mask_id_t next_id = INVALID_MASKID;
       _lib_masks_get_values(model, next_iter, NULL, &next_grid, &next_id);
 
-      if(_is_first_tree_item(model, &iter))
+      if(_is_last_tree_item(model, next_iter))
       {
-        _swap_first_second_item_visibility(lm, &iter, next_id, id);
+        _swap_last_secondlast_item_visibility(lm, &iter, next_id, id);
+        // _swap_first_second_item_visibility(lm, &iter, next_id, id);
       }
 
       gtk_tree_iter_free(next_iter);
 
-      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 1);
+      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 0);
     }
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
