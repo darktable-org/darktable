@@ -271,6 +271,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->work_profile_info = NULL;
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
+  pipe->runs = 0;
 
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
@@ -1439,7 +1440,7 @@ static gboolean _dev_pixelpipe_process_rec(
   {
     dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
     // dt_dev_pixelpipe_cache_available() tests for masking mode and returns FALSE in that case
-    cache_available = dt_dev_pixelpipe_cache_available(pipe, hash, bufsize);
+    cache_available = dt_dev_pixelpipe_cache_available(pipe, hash, basichash, bufsize);
   }
   if(cache_available)
   {
@@ -2665,6 +2666,7 @@ gboolean dt_dev_pixelpipe_process(
 {
   pipe->processing = TRUE;
   pipe->nocache = FALSE;
+  pipe->runs++;
   pipe->opencl_enabled = dt_opencl_running();
   pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type)
                                        : -1; // try to get/lock opencl resource
