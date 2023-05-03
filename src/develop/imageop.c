@@ -2031,12 +2031,6 @@ void dt_iop_commit_params(dt_iop_module_t *module,
     piece->hash = hash;
 
     free(str);
-
-    dt_print(DT_DEBUG_PARAMS,
-             "[dt_iop_commit_params] [%s] committed for %s with hash %lu\n",
-             dt_dev_pixelpipe_type_to_str(pipe->type),
-             module->op,
-             (long unsigned int)piece->hash);
   }
 }
 
