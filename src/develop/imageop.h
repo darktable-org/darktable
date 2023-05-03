@@ -415,7 +415,8 @@ void dt_iop_commit_params(dt_iop_module_t *module,
                           struct dt_develop_blend_params_t *blendop_params,
                           struct dt_dev_pixelpipe_t *pipe,
                           struct dt_dev_pixelpipe_iop_t *piece);
-void dt_iop_commit_blend_params(dt_iop_module_t *module,
+
+dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const struct dt_develop_blend_params_t *blendop_params);
 /** make sure the raster mask is advertised if available */
 void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode);
