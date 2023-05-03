@@ -2868,7 +2868,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
 
   if(entry->module)
   {
-    reprocess = dt_iop_is_raster_mask_used(entry->module, 0) == FALSE;
+    reprocess = dt_iop_is_raster_mask_used(entry->module, BLEND_RASTER_ID) == FALSE;
     g_hash_table_add(entry->module->raster_mask.source.users, module);
 
     // update blend_params!
@@ -2882,7 +2882,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
     memset(module->blend_params->raster_mask_source, 0,
            sizeof(module->blend_params->raster_mask_source));
     module->blend_params->raster_mask_instance = 0;
-    module->blend_params->raster_mask_id = NO_MASKID;
+    module->blend_params->raster_mask_id = INVALID_MASKID;
   }
 
   dt_dev_add_history_item(module->dev, module, TRUE);

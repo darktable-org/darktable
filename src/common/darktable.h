@@ -167,6 +167,7 @@ typedef int32_t dt_imgid_t;
 typedef int32_t dt_mask_id_t;
 #define INVALID_MASKID (-1)
 #define NO_MASKID (0)
+#define BLEND_RASTER_ID (0)
 // testing for a valid form
 #define dt_is_valid_maskid(n) ((n) > NO_MASKID)
 
