@@ -339,11 +339,11 @@ void dt_image_init(dt_image_t *img);
 /** Refresh makermodel from the raw and exif values **/
 void dt_image_refresh_makermodel(dt_image_t *img);
 /** returns non-zero if the image contains low-dynamic range data. */
-int dt_image_is_ldr(const dt_image_t *img);
+gboolean dt_image_is_ldr(const dt_image_t *img);
 /** returns non-zero if the image contains mosaic data. */
-int dt_image_is_raw(const dt_image_t *img);
+gboolean dt_image_is_raw(const dt_image_t *img);
 /** returns non-zero if the image contains float data. */
-int dt_image_is_hdr(const dt_image_t *img);
+gboolean dt_image_is_hdr(const dt_image_t *img);
 /** set the monochrome flags if monochrome is TRUE and clear it otherwise */
 void dt_image_set_monochrome_flag(const dt_imgid_t imgid, const gboolean monochrome);
 /** returns non-zero if this image was taken using a monochrome camera */
