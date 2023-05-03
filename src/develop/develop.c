@@ -1639,9 +1639,32 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
+  //  get current workflow and image characteristics
+
   const gboolean is_scene_referred = dt_is_scene_referred();
   const gboolean is_display_referred = dt_is_display_referred();
   const gboolean is_workflow_none = !is_scene_referred && !is_display_referred;
+  const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
+
+  //  set filters
+
+  int iformat = 0;
+  if(dt_image_is_raw(image))
+    iformat |= FOR_RAW;
+  else
+    iformat |= FOR_LDR;
+
+  if(has_matrix)
+    iformat |= FOR_MATRIX;
+
+  if(dt_image_is_hdr(image))
+    iformat |= FOR_HDR;
+
+  int excluded = 0;
+  if(dt_image_monochrome_flags(image))
+    excluded |= FOR_NOT_MONO;
+  else
+    excluded |= FOR_NOT_COLOR;
 
   // select all presets from one of the following table and add them
   // into memory.history. Note that this is appended to possibly
@@ -1687,22 +1710,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            preset_table[legacy],
            is_display_referred ? "" : "basecurve");
   // clang-format on
+
   // query for all modules at once:
   sqlite3_stmt *stmt;
-
-  int iformat = 0;
-  if(dt_image_is_raw(image))
-    iformat |= FOR_RAW;
-  else
-    iformat |= FOR_LDR;
-  if(dt_image_is_hdr(image))
-    iformat |= FOR_HDR;
-
-  int excluded = 0;
-  if(dt_image_monochrome_flags(image))
-    excluded |= FOR_NOT_MONO;
-  else
-    excluded |= FOR_NOT_COLOR;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
