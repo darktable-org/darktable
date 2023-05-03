@@ -138,26 +138,26 @@ static void _image_local_copy_full_path(const dt_imgid_t imgid,
                                         char *pathname,
                                         const size_t pathname_len);
 
-int dt_image_is_ldr(const dt_image_t *img)
+gboolean dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
   if((img->flags & DT_IMAGE_LDR) || !strcasecmp(c, ".jpg") || !strcasecmp(c, ".png")
      || !strcasecmp(c, ".ppm"))
-    return 1;
+    return TRUE;
   else
-    return 0;
+    return FALSE;
 }
 
-int dt_image_is_hdr(const dt_image_t *img)
+gboolean dt_image_is_hdr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
   if((img->flags & DT_IMAGE_HDR) || !strcasecmp(c, ".exr") || !strcasecmp(c, ".hdr")
      || !strcasecmp(c, ".pfm"))
-    return 1;
+    return TRUE;
   else
-    return 0;
+    return FALSE;
 }
 
 // NULL terminated list of supported non-RAW extensions
@@ -165,9 +165,9 @@ int dt_image_is_hdr(const dt_image_t *img)
 //    = { ".jpeg", ".jpg",  ".pfm", ".hdr", ".exr", ".pxn", ".tif", ".tiff", ".png",
 //        ".j2c",  ".j2k",  ".jp2", ".jpc", ".gif", ".jpc", ".jp2", ".bmp",  ".dcm",
 //        ".jng",  ".miff", ".mng", ".pbm", ".pnm", ".ppm", ".pgm", NULL };
-int dt_image_is_raw(const dt_image_t *img)
+gboolean dt_image_is_raw(const dt_image_t *img)
 {
-  return (img->flags & DT_IMAGE_RAW);
+  return (img->flags & DT_IMAGE_RAW) == DT_IMAGE_RAW;
 }
 
 gboolean dt_image_is_monochrome(const dt_image_t *img)
