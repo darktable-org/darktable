@@ -617,7 +617,7 @@ int process_cl(struct dt_iop_module_t *self,
   cl_mem dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
   dt_print_pipe(DT_DEBUG_PARAMS,
-    "matrix conversion on GPU", piece->pipe, self ? self->so->op : "",
+    "matrix conversion on GPU", piece->pipe, self,
                     roi_in, roi_out, "`%s'\n", dt_colorspaces_get_name(d->type, NULL));
   int kernel;
   float cmat[9], lmat[9];
@@ -1197,7 +1197,7 @@ void process(struct dt_iop_module_t *self,
     d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
 
   dt_print_pipe(DT_DEBUG_PARAMS,
-    "matrix conversion on CPU", piece->pipe, self ? self->so->op : "",
+    "matrix conversion on CPU", piece->pipe, self,
                     roi_in, roi_out, "`%s'\n", dt_colorspaces_get_name(d->type, NULL));
 
   if(d->type == DT_COLORSPACE_LAB)

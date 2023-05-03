@@ -362,11 +362,6 @@ static gboolean _get_by_hash(
         ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
         ASAN_UNPOISON_MEMORY_REGION(*data, size);
 
-        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_get",
-          pipe, cache->modname[k], NULL, NULL,
-          "HIT line%3i, iop%3i, age %4i at %p hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-          k, cache->ioporder[k], cache->used[k], cache->data[k], cache->hash[k], cache->basichash[k]); 
-
         // in case of a hit it's always good to further keep the cacheline as important
         cache->used[k] = -cache->entries;
         return TRUE;
@@ -394,8 +389,12 @@ gboolean dt_dev_pixelpipe_cache_get(
 
   // cache keeps history and we have a cache hit, so no new buffer
   if(cache->entries > DT_PIPECACHE_MIN && _get_by_hash(pipe, hash, size, data, dsc))
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
+          pipe, module, NULL, NULL,
+          "hash%22" PRIu64 ", basic%22" PRIu64 "\n", hash, basichash); 
     return FALSE;
-
+  }
   // We need a fresh buffer as there was no hit.
   //
   // Pipes with two cache lines have pre-allocated memory, but we must
@@ -442,7 +441,7 @@ gboolean dt_dev_pixelpipe_cache_get(
   cache->misses++;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get",
-    pipe, cache->modname[cline], NULL, NULL,
+    pipe, module, NULL, NULL,
     "%s %s line%3i, age %4i at %p. hash%22" PRIu64 ", basic%22" PRIu64 "\n",
      newdata ? "new" : "   ",
      important ? "important" : (masking ? "masking  " : "         "),
@@ -545,10 +544,6 @@ static size_t _free_cacheline(
         struct dt_dev_pixelpipe_t *pipe)
 {
   const size_t removed = cache->size[k];
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "free pipe cacheline",
-    pipe, cache->modname[k], NULL, NULL,
-    "line%3i, age %4i, size=%iMB\n", k, cache->used[k], _to_mb(removed));
-
   dt_free_align(cache->data[k]);
   cache->allmem -= removed;
   cache->size[k] = 0;
@@ -620,7 +615,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
     }
   }
 
-  dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_checkmem", pipe, "", NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_checkmem", pipe, NULL, NULL, NULL,
     "%i lines (important=%i, used=%i). Cache: freed=%iMB (bad=%i low=%i high=%i). Now using %iMB, limit=%iMB\n",
     cache->entries, _important_lines(cache), _used_lines(cache), _to_mb(freed),
     bad_grp, low_grp, high_grp, _to_mb(cache->allmem), _to_mb(cache->memlimit));
@@ -629,7 +624,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
-  dt_print_pipe(DT_DEBUG_PIPE, "cache report", pipe, "", NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE, "cache report", pipe, NULL, NULL, NULL,
     "%i lines (important=%i, used=%i). Used %iMB, limit=%iMB. Hitrate=%.2f\n",
     cache->entries, _important_lines(cache), _used_lines(cache),
     _to_mb(cache->allmem), _to_mb(cache->memlimit), (cache->queries - cache->misses) / (float)cache->queries);

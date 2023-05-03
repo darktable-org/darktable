@@ -695,7 +695,7 @@ void process(
     if(scaled)
     {
       roi = *roi_out;
-      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self->so->op, roi_in, roi_out, "\n");
+      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
       dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo, roi.width, roo.width);
       dt_free_align(tmp);
     }
@@ -855,7 +855,7 @@ int process_cl(
 
   if(scaled)
   {
-    dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self->so->op, roi_in, roi_out, "\n");
+    dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");
     // scale aux buffer to output buffer
     const int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
     if(err != CL_SUCCESS)

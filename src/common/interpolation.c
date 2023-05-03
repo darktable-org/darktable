@@ -1175,7 +1175,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
   int r;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                "resample_plain", NULL, itor->name, roi_in, roi_out, "\n");
+                "resample_plain", NULL, NULL, roi_in, roi_out, "%s\n",itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
@@ -1420,7 +1420,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
   cl_mem dev_vmeta = NULL;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                "resample_cl", NULL, itor->name, roi_in, roi_out, "\n");
+                "resample_cl", NULL, NULL, roi_in, roi_out, "%s\n", itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
@@ -1632,7 +1632,7 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
   int r;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                "resample_1c_plain", NULL, itor->name, roi_in, roi_out, "\n");
+                "resample_1c_plain", NULL, NULL, roi_in, roi_out, "%s\n", itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
