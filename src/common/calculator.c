@@ -112,6 +112,7 @@ static token_t *get_token(parser_state_t *self)
         token->data.operator= O_MULTIPLY;
         return token;
       case '/':
+      case ':':
         self->p++;
         token->type = T_OPERATOR;
         token->data.operator= O_DIVISION;
