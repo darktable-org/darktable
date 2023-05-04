@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -244,7 +244,7 @@ static void test_log_tonemapping_v2(void **state)
   ti = testimg_gen_grey_space(TESTIMG_STD_WIDTH);
   for_testimg_pixels_p_xy(ti)
   {
-    float ret = log_tonemapping_v2(p[0], grey, black, dyn_range);
+    float ret = log_tonemapping_v2_1ch(p[0], grey, black, dyn_range);
     TR_DEBUG("%e => %e", p[0], ret);
     float exp = testimg_val_to_log(p[0]);
     if(exp < MIN)
