@@ -855,7 +855,6 @@ static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_
   }
 }
 
-
 #ifdef _OPENMP
 #pragma omp declare simd uniform(grey, black, dynamic_range)
 #endif
@@ -889,7 +888,11 @@ static inline void log_tonemapping_v2(dt_aligned_pixel_t mapped,
   for_each_channel(c, aligned(mapped, x))
     scaled[c] = (x[c] / grey);
   dt_aligned_pixel_t log;
-  dt_vector_log2(scaled, log);
+  // We can't use dt_vector_log here because its result is enough different to make
+  // some integration tests fail.  Hopefully the compiler will be able to substitute
+  // its own vectorized version of log2f().
+  for_each_channel(c,aligned(scaled,log))
+    log[c] = log2f(scaled[c]);
   for_each_channel(c)
     mapped[c] = (log[c] - black) / dynamic_range;
   dt_vector_clip(mapped);
@@ -1653,7 +1656,9 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in,
 }
 
 
-static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, dt_aligned_pixel_t Ych_final, const float saturation)
+static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original,
+                                        dt_aligned_pixel_t Ych_final,
+                                        const float saturation)
 {
   // Note : Ych is normalized trough the LMS conversion,
   // meaning c is actually a saturation (saturation ~= chroma / brightness).
@@ -1685,29 +1690,35 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, d
                       ? chroma_final + delta_chroma // allow resaturation only if filmic desaturated, allow desat anytime
                       : chroma_final;
 
-  Ych_final[1] = fmaxf(chroma_final / Ych_final[0], 0.f);
+  Ych_final[1] = MAX(chroma_final / Ych_final[0], 0.f);
 }
 
 
-static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_colormatrix_t matrix_out,
-                                   const float display_black, const float display_white,
-                                   const dt_aligned_pixel_t Ych_in, dt_aligned_pixel_t RGB_out)
+static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in_trans,
+                                   const dt_colormatrix_t matrix_out,
+                                   const dt_colormatrix_t matrix_out_trans,
+                                   const float display_black,
+                                   const float display_white,
+                                   const dt_aligned_pixel_t Ych_in,
+                                   dt_aligned_pixel_t RGB_out)
 {
   // Heuristic: if there are negatives, calculate the amount (luminance) of white light that
   // would need to be mixed in to bring the pixel back in gamut.
   dt_aligned_pixel_t RGB_brightened = { 0.f };
-  Ych_to_RGB(Ych_in, matrix_out, RGB_brightened);
+  Ych_to_RGB(Ych_in, matrix_out_trans, RGB_brightened);
   const float min_pix = MIN(MIN(RGB_brightened[0], RGB_brightened[1]), RGB_brightened[2]);
   const float black_offset = MAX(-min_pix, 0.f);
   for_each_channel(c) RGB_brightened[c] += black_offset;
   dt_aligned_pixel_t Ych_brightened = { 0.f };
-  RGB_to_Ych(RGB_brightened, matrix_in, Ych_brightened);
+  RGB_to_Ych(RGB_brightened, matrix_in_trans, Ych_brightened);
 
   // Increase the input luminance a little by the value we calculated above.
   // Note, however, that this doesn't actually desaturate the color like mixing
   // white would do. We will next find the chroma change needed to bring the pixel
   // into gamut.
-  const float Y = CLAMP((Ych_in[0] + Ych_brightened[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black), CIE_Y_1931_to_CIE_Y_2006(display_white));
+  const float Y = CLAMP((Ych_in[0] + Ych_brightened[0]) / 2.f,
+                        CIE_Y_1931_to_CIE_Y_2006(display_black),
+                        CIE_Y_1931_to_CIE_Y_2006(display_white));
 
   const float cos_h = Ych_in[2];
   const float sin_h = Ych_in[3];
@@ -1715,21 +1726,32 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_co
 
   // Go to RGB, using existing luminance and hue and the new chroma
   const dt_aligned_pixel_t Ych = { Y, new_chroma, cos_h, sin_h };
-  Ych_to_RGB(Ych, matrix_out, RGB_out);
+  Ych_to_RGB(Ych, matrix_out_trans, RGB_out);
 
   // Clamp in target RGB as a final catch-all
-  for_each_channel(c, aligned(RGB_out)) RGB_out[c] = CLAMP(RGB_out[c], 0.f, display_white);
+  for_each_channel(c, aligned(RGB_out))
+    RGB_out[c] = CLAMP(RGB_out[c], 0.f, display_white);
 }
 
 
 #ifdef _OPENMP
-#pragma omp declare simd uniform(input_matrix, output_matrix, export_input_matrix, export_output_matrix, use_output_profile) \
-  aligned(Ych_final, Ych_original, pix_out:16) aligned(input_matrix, output_matrix, export_input_matrix, export_output_matrix:64)
+#pragma omp declare simd \
+  uniform(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix, use_output_profile) \
+  aligned(Ych_final, Ych_original, pix_out:16) \
+  aligned(input_matrix_trans, output_matrix, export_input_matrix_trans, export_output_matrix:64)
 #endif
-static inline void gamut_mapping(dt_aligned_pixel_t Ych_final, dt_aligned_pixel_t Ych_original, dt_aligned_pixel_t pix_out,
-                                 const dt_colormatrix_t input_matrix, const dt_colormatrix_t output_matrix,
-                                 const dt_colormatrix_t export_input_matrix, const dt_colormatrix_t export_output_matrix,
-                                 const float display_black, const float display_white, const float saturation,
+static inline void gamut_mapping(dt_aligned_pixel_t Ych_final,
+                                 dt_aligned_pixel_t Ych_original,
+                                 dt_aligned_pixel_t pix_out,
+                                 const dt_colormatrix_t input_matrix_trans,
+                                 const dt_colormatrix_t output_matrix,
+                                 const dt_colormatrix_t output_matrix_trans,
+                                 const dt_colormatrix_t export_input_matrix_trans,
+                                 const dt_colormatrix_t export_output_matrix,
+                                 const dt_colormatrix_t export_output_matrix_trans,
+                                 const float display_black,
+                                 const float display_white,
+                                 const float saturation,
                                  const int use_output_profile)
 {
   // Force final hue to original
@@ -1749,53 +1771,68 @@ static inline void gamut_mapping(dt_aligned_pixel_t Ych_final, dt_aligned_pixel_
   {
     // Now, it is still possible that one channel > display white because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    gamut_check_RGB(input_matrix, output_matrix, display_black, display_white, Ych_final, pix_out);
+    gamut_check_RGB(input_matrix_trans, output_matrix, output_matrix_trans,
+                    display_black, display_white, Ych_final, pix_out);
   }
   else
   {
     // Now, it is still possible that one channel > display white because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    gamut_check_RGB(export_input_matrix, export_output_matrix, display_black, display_white, Ych_final, pix_out);
+    gamut_check_RGB(export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
+                    display_black, display_white, Ych_final, pix_out);
 
     // Go from export RGB to CIE LMS 2006 D65
     dt_aligned_pixel_t LMS = { 0.f };
-    dot_product(pix_out, export_input_matrix, LMS);
+    dt_apply_transposed_color_matrix(pix_out, export_input_matrix_trans, LMS);
 
     // Go from CIE LMS 2006 D65 to pipeline RGB D50
-    dot_product(LMS, output_matrix, pix_out);
+    dt_apply_transposed_color_matrix(LMS, output_matrix_trans, pix_out);
   }
 }
 
 
-static int filmic_v4_prepare_matrices(dt_colormatrix_t input_matrix, dt_colormatrix_t output_matrix,
-                                       dt_colormatrix_t export_input_matrix, dt_colormatrix_t export_output_matrix,
-                                       const dt_iop_order_iccprofile_info_t *const work_profile,
-                                       const dt_iop_order_iccprofile_info_t *const export_profile)
+static int filmic_v4_prepare_matrices(dt_colormatrix_t input_matrix_trans,
+                                      dt_colormatrix_t output_matrix,
+                                      dt_colormatrix_t output_matrix_trans,
+                                      dt_colormatrix_t export_input_matrix_trans,
+                                      dt_colormatrix_t export_output_matrix,
+                                      dt_colormatrix_t export_output_matrix_trans,
+                                      const dt_iop_order_iccprofile_info_t *const work_profile,
+                                      const dt_iop_order_iccprofile_info_t *const export_profile)
 
 {
-  prepare_RGB_Yrg_matrices(work_profile, input_matrix, output_matrix);
+  dt_colormatrix_t input_temp = { { 0.0f } };
+  prepare_RGB_Yrg_matrices(work_profile, input_temp, output_matrix);
+  dt_colormatrix_transpose(input_matrix_trans, input_temp);
+  dt_colormatrix_transpose(output_matrix_trans, output_matrix);
 
   // If the pipeline output profile is supported (matrix profile), we gamut map against it
   const int use_output_profile = (export_profile != NULL);
   if(use_output_profile)
   {
-    prepare_RGB_Yrg_matrices(export_profile, export_input_matrix, export_output_matrix);
+    prepare_RGB_Yrg_matrices(export_profile, input_temp, export_output_matrix);
+    dt_colormatrix_transpose(export_input_matrix_trans, input_temp);
+    dt_colormatrix_transpose(export_output_matrix_trans, export_output_matrix);
   }
 
   return use_output_profile;
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd uniform(work_profile, data, spline, norm_min, norm_max, display_black, display_white, type) \
+#pragma omp declare simd \
+  uniform(work_profile, data, spline, norm_min, norm_max, display_black, display_white, type) \
   aligned(pix_in, pix_out:16)
 #endif
-static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in, dt_aligned_pixel_t pix_out,
+static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
+                                        dt_aligned_pixel_t pix_out,
                                         const dt_iop_filmicrgb_methods_type_t type,
                                         const dt_iop_order_iccprofile_info_t *const work_profile,
                                         const dt_iop_filmicrgb_data_t *const data,
                                         const dt_iop_filmic_rgb_spline_t spline,
-                                        const float norm_min, const float norm_max,
-                                        const float display_black, const float display_white)
+                                        const float norm_min,
+                                        const float norm_max,
+                                        const float display_black,
+                                        const float display_white)
     {
   // Norm must be clamped early to the valid input range, otherwise it will be clamped
   // later in log_tonemapping_v2 and the ratios will be then incorrect.
@@ -1805,7 +1842,8 @@ static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in, dt_alig
 
   // Save the ratios
   dt_aligned_pixel_t ratios = { 0.0f };
-  for_each_channel(c,aligned(pix_in)) ratios[c] = pix_in[c] / norm;
+  for_each_channel(c,aligned(pix_in))
+    ratios[c] = pix_in[c] / norm;
 
   // Log tone-mapping
   norm = log_tonemapping_v2_1ch(norm, data->grey_source, data->black_source, data->dynamic_range);
@@ -1819,125 +1857,155 @@ static inline void norm_tone_mapping_v4(const dt_aligned_pixel_t pix_in, dt_alig
               data->output_power);
 
   // Restore RGB
-  for_each_channel(c,aligned(pix_out)) pix_out[c] = ratios[c] * norm;
+  for_each_channel(c,aligned(pix_out))
+    pix_out[c] = ratios[c] * norm;
 }
 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(data, spline, display_black, display_white) \
   aligned(pix_in, pix_out:16)
 #endif
-static inline void RGB_tone_mapping_v4(const dt_aligned_pixel_t pix_in, dt_aligned_pixel_t pix_out,
+static inline void RGB_tone_mapping_v4(const dt_aligned_pixel_t pix_in,
+                                       dt_aligned_pixel_t pix_out,
                                        const dt_iop_filmicrgb_data_t *const data,
                                        const dt_iop_filmic_rgb_spline_t spline,
-                                       const float display_black, const float display_white)
+                                       const float display_black,
+                                       const float display_white)
 {
-  for_each_channel(c,aligned(pix_in, pix_out))
+  dt_aligned_pixel_t mapped;
+  log_tonemapping_v2(mapped, pix_in, data->grey_source, data->black_source, data->dynamic_range);
+//  for_each_channel(c,aligned(mapped))
+  for(size_t c = 0; c < 3; c++)
   {
-    // Log tone-mapping
-    pix_out[c] = log_tonemapping_v2_1ch(pix_in[c], data->grey_source, data->black_source, data->dynamic_range);
-
-    // Filmic S curve on RGB
-    // Apply the transfer function of the display
-    pix_out[c] = powf(CLAMP(filmic_spline(pix_out[c], spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
-                                                spline.latitude_min, spline.latitude_max, spline.type),
-                            0.f,  // individual components can always go to zero, luminance is clamped later
-                            display_white), data->output_power);
+    mapped[c] = filmic_spline(mapped[c], spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
+                              spline.latitude_min, spline.latitude_max, spline.type);
   }
+  for_each_channel(c,aligned(mapped))
+  {
+    // individual components can always go to zero, luminance is clamped later
+    mapped[c] = CLAMP(mapped[c], 0.0f, display_white);
+  }
+  dt_vector_pow1(mapped, data->output_power, pix_out);
 }
 
-static inline void filmic_chroma_v4(const float *const restrict in, float *const restrict out,
+static inline void filmic_chroma_v4(const float *const restrict in,
+                                    float *const restrict out,
                                     const dt_iop_order_iccprofile_info_t *const work_profile,
                                     const dt_iop_order_iccprofile_info_t *const export_profile,
                                     const dt_iop_filmicrgb_data_t *const data,
-                                    const dt_iop_filmic_rgb_spline_t spline, const int variant,
-                                    const size_t width, const size_t height,
+                                    const dt_iop_filmic_rgb_spline_t spline,
+                                    const int variant,
+                                    const size_t width,
+                                    const size_t height,
                                     const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
-                                    const float display_black, const float display_white)
+                                    const float display_black,
+                                    const float display_white)
 {
   // See colorbalancergb.c for details
-  dt_colormatrix_t input_matrix;         // pipeline RGB -> LMS 2006
-  dt_colormatrix_t output_matrix;        // LMS 2006 -> pipeline RGB
-  dt_colormatrix_t export_input_matrix;  // output RGB -> LMS 2006
-  dt_colormatrix_t export_output_matrix; // LMS 2006 -> output RGB
+  dt_colormatrix_t input_matrix_trans;         // pipeline RGB -> LMS 2006
+  dt_colormatrix_t output_matrix;              // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t output_matrix_trans;        // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t export_input_matrix_trans;  // output RGB -> LMS 2006
+  dt_colormatrix_t export_output_matrix;       // LMS 2006 -> output RGB
+  dt_colormatrix_t export_output_matrix_trans; // LMS 2006 -> output RGB
 
-  const int use_output_profile = filmic_v4_prepare_matrices(input_matrix, output_matrix, export_input_matrix,
-                                                            export_output_matrix, work_profile, export_profile);
+  const int use_output_profile
+    = filmic_v4_prepare_matrices(input_matrix_trans, output_matrix, output_matrix_trans,
+                                 export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
+                                 work_profile, export_profile);
 
   const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix, output_matrix, \
-    variant, spline, display_white, display_black, export_input_matrix, export_output_matrix, \
-    use_output_profile, norm_min, norm_max)    \
+    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
+                        output_matrix_trans, variant, spline, display_white, display_black, \
+                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
+                        use_output_profile, norm_min, norm_max)         \
     schedule(simd :static)
 #endif
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
-    float *const restrict pix_out = out + k;
-
-    norm_tone_mapping_v4(pix_in, pix_out, variant, work_profile, data, spline, norm_min, norm_max, display_black, display_white);
+    dt_aligned_pixel_t pix_out;
+    norm_tone_mapping_v4(pix_in, pix_out, variant, work_profile, data, spline,
+                         norm_min, norm_max, display_black, display_white);
 
     // Save Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_original = { 0.f };
-    RGB_to_Ych(pix_in, input_matrix, Ych_original);
+    RGB_to_Ych(pix_in, input_matrix_trans, Ych_original);
 
     // Get final Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_final = { 0.f };
-    RGB_to_Ych(pix_out, input_matrix, Ych_final);
+    RGB_to_Ych(pix_out, input_matrix_trans, Ych_final);
 
-    gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix, output_matrix, export_input_matrix,
-                  export_output_matrix, display_black, display_white, data->saturation, use_output_profile);
+    gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix_trans, output_matrix, output_matrix_trans,
+                  export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
+                  display_black, display_white, data->saturation, use_output_profile);
+    copy_pixel_nontemporal(out + k, pix_out);
   }
+  dt_omploop_sfence();	// ensure that nontemporal writes complete before we attempt to read output
 }
 
-static inline void filmic_split_v4(const float *const restrict in, float *const restrict out,
-                                    const dt_iop_order_iccprofile_info_t *const work_profile,
-                                    const dt_iop_order_iccprofile_info_t *const export_profile,
-                                    const dt_iop_filmicrgb_data_t *const data,
-                                    const dt_iop_filmic_rgb_spline_t spline, const int variant,
-                                    const size_t width, const size_t height,
-                                    const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
-                                    const float display_black, const float display_white)
+static inline void filmic_split_v4(const float *const restrict in,
+                                   float *const restrict out,
+                                   const dt_iop_order_iccprofile_info_t *const work_profile,
+                                   const dt_iop_order_iccprofile_info_t *const export_profile,
+                                   const dt_iop_filmicrgb_data_t *const data,
+                                   const dt_iop_filmic_rgb_spline_t spline,
+                                   const int variant,
+                                   const size_t width,
+                                   const size_t height,
+                                   const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
+                                   const float display_black,
+                                   const float display_white)
 
 {
   // See colorbalancergb.c for details
-  dt_colormatrix_t input_matrix;         // pipeline RGB -> LMS 2006
-  dt_colormatrix_t output_matrix;        // LMS 2006 -> pipeline RGB
-  dt_colormatrix_t export_input_matrix;  // output RGB -> LMS 2006
-  dt_colormatrix_t export_output_matrix; // LMS 2006 -> output RGB
+  dt_colormatrix_t input_matrix_trans;         // pipeline RGB -> LMS 2006
+  dt_colormatrix_t output_matrix;              // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t output_matrix_trans;        // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t export_input_matrix_trans;  // output RGB -> LMS 2006
+  dt_colormatrix_t export_output_matrix;       // LMS 2006 -> output RGB
+  dt_colormatrix_t export_output_matrix_trans; // LMS 2006 -> output RGB
 
-  const int use_output_profile = filmic_v4_prepare_matrices(input_matrix, output_matrix, export_input_matrix,
-                                                            export_output_matrix, work_profile, export_profile);
+  const int use_output_profile
+    = filmic_v4_prepare_matrices(input_matrix_trans, output_matrix, output_matrix_trans,
+                                 export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
+                                 work_profile, export_profile);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix, output_matrix, \
-    variant, spline, display_white, display_black, export_input_matrix, export_output_matrix, \
-    use_output_profile)   \
+    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
+                        output_matrix_trans, variant, spline, display_white, display_black, \
+                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
+                        use_output_profile)                             \
     schedule(simd :static)
 #endif
   for(size_t k = 0; k < 4 * height * width; k += 4)
   {
     const float *const restrict pix_in = in + k;
-    float *const restrict pix_out = out + k;
+    dt_aligned_pixel_t pix_out;
 
     RGB_tone_mapping_v4(pix_in, pix_out, data, spline, display_black, display_white);
 
     // Save Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_original = { 0.f };
-    RGB_to_Ych(pix_in, input_matrix, Ych_original);
+    RGB_to_Ych(pix_in, input_matrix_trans, Ych_original);
 
     // Get final Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_final = { 0.f };
-    RGB_to_Ych(pix_out, input_matrix, Ych_final);
+    RGB_to_Ych(pix_out, input_matrix_trans, Ych_final);
 
-    Ych_final[1] = fminf(Ych_original[1], Ych_final[1]);
+    Ych_final[1] = MIN(Ych_original[1], Ych_final[1]);
 
-    gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix, output_matrix, export_input_matrix,
-                  export_output_matrix, display_black, display_white, data->saturation, use_output_profile);
+    gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix_trans, output_matrix, output_matrix_trans,
+                  export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
+                  display_black, display_white, data->saturation, use_output_profile);
+    copy_pixel_nontemporal(out + k, pix_out);
   }
+  dt_omploop_sfence();	// ensure that nontemporal writes complete before we attempt to read output
 }
 
 
@@ -1951,52 +2019,61 @@ static inline void filmic_v5(const float *const restrict in, float *const restri
 
 {
   // See colorbalancergb.c for details
-  dt_colormatrix_t input_matrix;         // pipeline RGB -> LMS 2006
-  dt_colormatrix_t output_matrix;        // LMS 2006 -> pipeline RGB
-  dt_colormatrix_t export_input_matrix;  // output RGB -> LMS 2006
-  dt_colormatrix_t export_output_matrix; // LMS 2006 -> output RGB
+  dt_colormatrix_t input_matrix_trans;         // pipeline RGB -> LMS 2006
+  dt_colormatrix_t output_matrix;              // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t output_matrix_trans;        // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t export_input_matrix_trans;  // output RGB -> LMS 2006
+  dt_colormatrix_t export_output_matrix;       // LMS 2006 -> output RGB
+  dt_colormatrix_t export_output_matrix_trans; // LMS 2006 -> output RGB
 
-  const int use_output_profile = filmic_v4_prepare_matrices(input_matrix, output_matrix, export_input_matrix,
-                                                            export_output_matrix, work_profile, export_profile);
+  const int use_output_profile
+    = filmic_v4_prepare_matrices(input_matrix_trans, output_matrix, output_matrix_trans,
+                                 export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
+                                 work_profile, export_profile);
 
   const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix, output_matrix, \
-    spline, display_white, display_black, norm_min, norm_max, export_input_matrix, export_output_matrix, \
-    use_output_profile)   \
+    dt_omp_firstprivate(width, height, data, in, out, work_profile, input_matrix_trans, output_matrix, \
+                        output_matrix_trans, spline, display_white, display_black, norm_min, norm_max, \
+                        export_input_matrix_trans, export_output_matrix, export_output_matrix_trans, \
+                        use_output_profile)                             \
     schedule(simd :static)
 #endif
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     const float *const restrict pix_in = in + k;
-    float *const restrict pix_out = out + k;
 
     dt_aligned_pixel_t max_rgb = { 0.f };
     dt_aligned_pixel_t naive_rgb = { 0.f };
 
     RGB_tone_mapping_v4(pix_in, naive_rgb, data, spline, display_black, display_white);
-    norm_tone_mapping_v4(pix_in, max_rgb, DT_FILMIC_METHOD_MAX_RGB, work_profile, data, spline, norm_min, norm_max, display_black, display_white);
+    norm_tone_mapping_v4(pix_in, max_rgb, DT_FILMIC_METHOD_MAX_RGB, work_profile, data,
+                         spline, norm_min, norm_max, display_black, display_white);
 
     // Mix max RGB with naive RGB
+    dt_aligned_pixel_t pix_out;
     for_each_channel(c, aligned(pix_out, max_rgb, naive_rgb))
       pix_out[c] = (0.5f - data->saturation) * naive_rgb[c] + (0.5f + data->saturation) * max_rgb[c];
 
     // Save Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_original = { 0.f };
-    RGB_to_Ych(pix_in, input_matrix, Ych_original);
+    RGB_to_Ych(pix_in, input_matrix_trans, Ych_original);
 
     // Get final Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_final = { 0.f };
-    RGB_to_Ych(pix_out, input_matrix, Ych_final);
+    RGB_to_Ych(pix_out, input_matrix_trans, Ych_final);
 
     Ych_final[1] = fminf(Ych_original[1], Ych_final[1]);
 
-    gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix, output_matrix, export_input_matrix,
-                  export_output_matrix, display_black, display_white, 0.f, use_output_profile);
+    gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix_trans, output_matrix, output_matrix_trans,
+                  export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
+                  display_black, display_white, data->saturation, use_output_profile);
+    copy_pixel_nontemporal(out + k, pix_out);
   }
+  dt_omploop_sfence();	// ensure that nontemporal writes complete before we attempt to read output
 }
 
 
@@ -2355,8 +2432,11 @@ error:
 }
 
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_filmicrgb_data_t *const d = (dt_iop_filmicrgb_data_t *)piece->data;
   dt_iop_filmicrgb_global_data_t *const gd = (dt_iop_filmicrgb_global_data_t *)self->global_data;
@@ -2388,13 +2468,19 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int use_work_profile = (work_profile == NULL) ? 0 : 1;
 
   // See colorbalancergb.c for details
-  dt_colormatrix_t input_matrix;         // pipeline RGB -> LMS 2006
-  dt_colormatrix_t output_matrix;        // LMS 2006 -> pipeline RGB
-  dt_colormatrix_t export_input_matrix;  // output RGB -> LMS 2006
-  dt_colormatrix_t export_output_matrix; // LMS 2006 -> output RGB
+  dt_colormatrix_t input_matrix_trans;         // pipeline RGB -> LMS 2006
+  dt_colormatrix_t output_matrix;              // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t output_matrix_trans;        // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t export_input_matrix_trans;  // output RGB -> LMS 2006
+  dt_colormatrix_t export_output_matrix;       // LMS 2006 -> output RGB
+  dt_colormatrix_t export_output_matrix_trans; // LMS 2006 -> output RGB
 
-  const int use_output_profile = filmic_v4_prepare_matrices(input_matrix, output_matrix, export_input_matrix,
-                                                            export_output_matrix, work_profile, export_profile);
+  const int use_output_profile
+    = filmic_v4_prepare_matrices(input_matrix_trans, output_matrix, output_matrix_trans,
+                                 export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
+                                 work_profile, export_profile);
+  dt_colormatrix_t input_matrix;
+  dt_colormatrix_transpose(input_matrix, input_matrix_trans);
 
   const float norm_min = exp_tonemapping_v2(0.f, d->grey_source, d->black_source, d->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, d->grey_source, d->black_source, d->dynamic_range);
@@ -2415,12 +2501,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(use_output_profile)
   {
+    dt_colormatrix_t export_input_matrix;
+    dt_colormatrix_transpose(export_input_matrix, export_input_matrix_trans);
     export_input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), export_input_matrix);
     export_output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), export_output_matrix);
   }
 
   // used to adjust noise level depending on size. Don't amplify noise if magnified > 100%
-  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+  const float scale = MAX(piece->iscale / roi_in->scale, 1.f);
 
   // get the number of OpenCL threads
   uint16_t is_clipped = 0;
@@ -2850,7 +2938,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
     toe_log -= balance_correction;
     shoulder_log -= balance_correction;
     toe_log = fmaxf(toe_log, xmin);
-    shoulder_log = fminf(shoulder_log, xmax);
+    shoulder_log = MIN(shoulder_log, xmax);
 
     // y coordinates
     toe_display = (toe_log * contrast + linear_intercept);
