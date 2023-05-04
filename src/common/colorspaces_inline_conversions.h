@@ -923,26 +923,13 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   // X'Y'Z -> L'M'S'
   dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_apply_transposed_color_matrix(XYZ, M_transposed, LMS);
-  for_each_channel(i, aligned(LMS))
-  {
-    LMS[i] = fmaxf(LMS[i] / 10000.f, 0.0f);
-  }
-  for_each_channel(i, aligned(LMS))
-  {
-    LMS[i] = powf(LMS[i], n);	// if we're lucky, the compiler substitutes a vectorized powf()
-  }
+#ifdef _OPENMP
+#pragma omp simd aligned(LMS, XYZ:16)
+#endif
   for(int i = 0; i < 3; i++)
   {
-    // to avoid changing the results compared to previous code, we
-    // deliberately use a non-vectorizable loop here to force the
-    // compiler to use an actual division instruction instead of the
-    // packed approximate reciprocal instruction (which has 3E-4
-    // relative error)
-    LMS[i] = (c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]);
-  }
-  for_each_channel(i, aligned(LMS))
-  {
-    LMS[i] = powf(LMS[i], p);	// if we're lucky, the compiler substitutes a vectorized powf()
+    LMS[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);
+    LMS[i] = powf((c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]), p);
   }
 
   // L'M'S' -> Izazbz
@@ -1025,7 +1012,7 @@ static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_p
   for_each_channel(i, aligned(LMS))
   {
     // if we're lucky, the compiler substitutes a vectorized powf()
-    LMS[i] = 100000.f * powf(LMS[i], n_inv);
+    LMS[i] = 10000.f * powf(LMS[i], n_inv);
   }
 
   // LMS -> X'Y'Z
