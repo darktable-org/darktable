@@ -1111,7 +1111,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                     dt_bauhaus_slider_from_params(self, N_("exposure")));
-  gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
+  gtk_widget_set_tooltip_text(g->exposure,
+                              _("adjust the exposure correction.  Right-click to\n"
+                                "type a specific value between -18 and +18."));
   dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
