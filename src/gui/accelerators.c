@@ -1037,6 +1037,22 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                             _("scroll to change default speed"),
                                             _("right click to exit mapping mode"));
     }
+    else if(DT_IS_BAUHAUS_WIDGET(widget)
+            && DT_BAUHAUS_WIDGET(widget)->type == DT_BAUHAUS_SLIDER
+            && darktable.control->element == 2) // DT_ACTION_ELEMENT_FORCE
+    {
+      float hard_min = dt_bauhaus_slider_get_hard_min(widget);
+      float hard_max = dt_bauhaus_slider_get_hard_max(widget);
+      if(dt_bauhaus_slider_get_soft_min(widget) != hard_min ||
+         dt_bauhaus_slider_get_soft_max(widget) != hard_max)
+      {
+        original_markup = dt_util_dstrcat(original_markup, _("%sright-click to type a specific value between <b>%s</b> and <b>%s</b>"
+                                                             "\nor hold ctrl+shift while dragging to ignore soft limits."),
+                                          original_markup ? "\n\n" : "",
+                                          dt_bauhaus_slider_get_text(widget, hard_min),
+                                          dt_bauhaus_slider_get_text(widget, hard_max));
+      }
+    }
   }
 
   if(!def) def = _action_find_definition(action);
