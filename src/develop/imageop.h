@@ -416,6 +416,10 @@ void dt_iop_commit_params(dt_iop_module_t *module,
                           struct dt_dev_pixelpipe_t *pipe,
                           struct dt_dev_pixelpipe_iop_t *piece);
 
+/** make sure that blend_params are in sync with the iop struct
+   Also watch out for a raster mask source module to get it's first `target`,
+   dt_iop_commit_blend_params() either returns NULL or the source module.
+*/
 dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const struct dt_develop_blend_params_t *blendop_params);
 /** make sure the raster mask is advertised if available */
@@ -447,7 +451,7 @@ extern const struct dt_action_def_t dt_action_def_iop;
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data);
 
 /** let plugins have breakpoints: */
-int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
+gboolean dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
 
 /** allow plugins to relinquish CPU and go to sleep for some time */
 void dt_iop_nap(int32_t usec);
