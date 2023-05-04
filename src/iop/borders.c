@@ -937,7 +937,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->aspect, self, NULL, N_("aspect"),
-                               _("select the aspect ratio or right click and type your own (w:h)"),
+                               _("select the aspect ratio (right click on slider below to type your own w:h)"),
                                0, aspect_changed, self,
                                N_("image"),
                                N_("3:1"),
@@ -956,11 +956,11 @@ void gui_init(struct dt_iop_module_t *self)
                                N_("square"),
                                N_("constant border"),
                                N_("custom..."));
-  dt_bauhaus_combobox_set_editable(g->aspect, 1);
+  dt_bauhaus_combobox_set_editable(g->aspect, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
 
   g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
-  gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio"));
+  gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio (right click to enter number or w:h)"));
 
   g->aspect_orient = dt_bauhaus_combobox_from_params(self, "aspect_orient");
   gtk_widget_set_tooltip_text(g->aspect_orient, _("aspect ratio orientation of the image with border"));
