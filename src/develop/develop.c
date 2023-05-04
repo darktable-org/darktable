@@ -1671,18 +1671,19 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // already present default modules.
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
-  char query[1024];
+  char query[2048];
   // clang-format off
 
   const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
 
   snprintf(query, sizeof(query),
            "INSERT OR REPLACE INTO memory.history"
-           " SELECT ?1, 0, op_version, operation, op_params,"
+           " SELECT ?1, 0, op_version, operation AS op, op_params,"
            "       enabled, blendop_params, blendop_version,"
            "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
            "       %s, multi_name_hand_edited"
            " FROM %s"
+           // only auto-applied presets matching the camera/lens/focal/format/exposure
            " WHERE ( (autoapply=1"
            "          AND ((?2 LIKE model AND ?3 LIKE maker)"
            "               OR (?4 LIKE model AND ?5 LIKE maker))"
@@ -1691,9 +1692,17 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "          AND ?9 BETWEEN aperture_min AND aperture_max"
            "          AND ?10 BETWEEN focal_length_min AND focal_length_max"
            "          AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
+           // skip non iop modules:
            "   AND operation NOT IN"
            "       ('ioporder', 'metadata', 'modulegroups', 'export',"
            "        'tagging', 'collect', '%s')"
+           // select all user's auto presets or the hard-coded presets (for the workflow)
+           // if non auto-presets for the same operation found.
+           "   AND (writeprotect = 0"
+           "        OR (SELECT NOT EXISTS"
+           "             (SELECT op"
+           "              FROM presets"
+           "              WHERE autoapply = 1 AND operation = op AND writeprotect = 0)))"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            // auto module:
            //  ON  : we take as the preset label either the multi-name
