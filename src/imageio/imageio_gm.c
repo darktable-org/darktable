@@ -38,8 +38,10 @@
 // libraries in reduced quality - slow and only 8-bit
 static gboolean _supported_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "tif", "tiff", "pbm", "pgm",  "ppm", "pnm", "gif",  "jpc", "jp2",
-                                         "bmp", "dcm",  "jng", "miff", "mng", "pam", "webp", "jxl", NULL };
+  const char *extensions_whitelist[] = { "tiff", "tif", "pbm", "pgm", "ppm", "pnm",
+                                         "webp", "jpc", "jp2", "bmp", "dcm", "jng",
+                                         "miff", "mng", "pam", "gif", "jxl", "fit",
+                                         "fits", "fts", NULL };
   gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
