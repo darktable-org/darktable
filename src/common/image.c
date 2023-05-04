@@ -812,22 +812,22 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
                                     darktable.develop->pipe->iwidth,
                                     darktable.develop->pipe->iheight,
                                     &ww, &hh);
-  }
 
-  dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  if(ww == imgtmp->final_width
-     && hh == imgtmp->final_height)
-  {
-    dt_cache_release(&darktable.image_cache->cache, imgtmp->cache_entry);
-  }
-  else
-  {
-    imgtmp->final_width = ww;
-    imgtmp->final_height = hh;
-    dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+    if(ww == imgtmp->final_width
+       && hh == imgtmp->final_height)
+    {
+      dt_cache_release(&darktable.image_cache->cache, imgtmp->cache_entry);
+    }
+    else
+    {
+      imgtmp->final_width = ww;
+      imgtmp->final_height = hh;
+      dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+    }
   }
 }
 
