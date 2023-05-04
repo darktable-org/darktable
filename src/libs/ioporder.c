@@ -136,8 +136,14 @@ void update(dt_lib_module_t *self)
 
 static void _image_loaded_callback(gpointer instance, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  update(self);
+  // only in darkroom, so let's avoid any update when in lighttable
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
+  {
+    dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+    update(self);
+  }
 }
 
 void gui_init(dt_lib_module_t *self)
