@@ -2997,7 +2997,7 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
   return dtgtk_expander_get_frame(DTGTK_EXPANDER(module->expander));
 }
 
-int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
+gboolean dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 {
   if(pipe != dev->preview_pipe
      && pipe != dev->preview2_pipe)
@@ -3006,14 +3006,14 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
   if(pipe != dev->preview_pipe
      && pipe != dev->preview2_pipe
      && pipe->changed == DT_DEV_PIPE_ZOOMED)
-    return 1;
+    return TRUE;
 
   if((pipe->changed != DT_DEV_PIPE_UNCHANGED
       && pipe->changed != DT_DEV_PIPE_ZOOMED)
      || dev->gui_leaving)
-    return 1;
+    return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
 void dt_iop_nap(int32_t usec)
