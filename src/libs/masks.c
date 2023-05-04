@@ -1494,12 +1494,24 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
 
     if (toplevel)
     {
-      // place groups on top
+      // we are within a group
       gtk_tree_store_prepend(treestore, &child, toplevel);
     }
     else
     {
-      gtk_tree_store_append(treestore, &child, toplevel);
+      // skip all groups first
+      GtkTreeModel *model = GTK_TREE_MODEL(treestore);
+      GtkTreeIter iter;
+      gtk_tree_model_get_iter_first(model, &iter);
+      int pos = 0;
+
+      while (gtk_tree_model_iter_has_child(model, &iter)) {
+        ++pos;
+        gtk_tree_model_iter_next(model, &iter);
+      }
+
+      // insert the child immediately after the last group
+      gtk_tree_store_insert(treestore, &child, NULL, pos);
     }
 
     gtk_tree_store_set(treestore, &child,
