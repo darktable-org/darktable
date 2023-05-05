@@ -929,11 +929,14 @@ static inline void precondition_v2(const float *const in,
 #endif
   for(size_t j = 0; j < 4U * npixels; j += 4)
   {
+    dt_aligned_pixel_t precond;
     for_each_channel(c,aligned(in,buf,wb))
     {
-      buf[j+c] = 2.0f * powf(MAX(in[j+c] / wb[c] + b, 0.0f), expon[c]) / denom[c];
+      precond[c] = 2.0f * powf(MAX(in[j+c] / wb[c] + b, 0.0f), expon[c]) / denom[c];
     }
+    copy_pixel_nontemporal(buf + j, precond);
   }
+  dt_omploop_sfence(); // ensure that nontemporal writes complete before we read the output
 }
 
 // this backtransform aims at being a low bias backtransform
@@ -1039,7 +1042,7 @@ static inline void precondition_Y0U0V0(const float *const in,
                                        const float a,
                                        const dt_aligned_pixel_t p,
                                        const float b,
-                                       const dt_colormatrix_t toY0U0V0)
+                                       const dt_colormatrix_t toY0U0V0_trans)
 {
   const dt_aligned_pixel_t expon = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
   const dt_aligned_pixel_t scale = { 2.0f / ((-p[0] + 2) * sqrtf(a)),
@@ -1048,7 +1051,7 @@ static inline void precondition_Y0U0V0(const float *const in,
                                      1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0) \
+  dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0_trans) \
   dt_omp_sharedconst(expon, scale) \
   schedule(static)
 #endif
@@ -1059,17 +1062,11 @@ static inline void precondition_Y0U0V0(const float *const in,
     {
       tmp[c] = powf(MAX(in[j+c] + b, 0.0f), expon[c]) * scale[c];
     }
-    for(int c = 0; c < 3; c++)
-    {
-      float sum = 0.0f;
-      for_each_channel(k,aligned(toY0U0V0))
-      {
-        sum += toY0U0V0[c][k] * tmp[k];
-      }
-      buf[j+c] = sum;
-    }
-    buf[j+3] = 0;
+    dt_aligned_pixel_t yuv;
+    dt_apply_transposed_color_matrix(tmp, toY0U0V0_trans, yuv);
+    copy_pixel_nontemporal(buf + j, yuv);
   }
+  dt_omploop_sfence(); // ensure that nontemporal writes complete before we read the output
 }
 
 static inline void backtransform_Y0U0V0(float *const buf,
@@ -1080,7 +1077,7 @@ static inline void backtransform_Y0U0V0(float *const buf,
                                         const float b,
                                         const float bias,
                                         const dt_aligned_pixel_t wb,
-                                        const dt_colormatrix_t toRGB)
+                                        const dt_colormatrix_t toRGB_trans)
 {
   const dt_aligned_pixel_t bias_wb = { bias * wb[0], bias * wb[1], bias * wb[2], 0.0f };
 
@@ -1095,19 +1092,13 @@ static inline void backtransform_Y0U0V0(float *const buf,
                                      1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, wd, b, bias_wb, toRGB, expon, scale)  \
+  dt_omp_firstprivate(buf, ht, wd, b, bias_wb, toRGB_trans, expon, scale)  \
   schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
     dt_aligned_pixel_t rgb = { 0.0f }; // "unused" fourth element enables vectorization
-    for(int k = 0; k < 3; k++)
-    {
-      for_each_channel(c,aligned(toRGB,buf))
-      {
-        rgb[k] += toRGB[k][c] * buf[j+c];
-      }
-    }
+    dt_apply_transposed_color_matrix(buf + j, toRGB_trans, rgb);
     for_each_channel(c,aligned(buf))
     {
       const float x = MAX(rgb[c], 0.0f);
@@ -1411,14 +1402,16 @@ static void process_wavelets(struct dt_iop_module_t *self,
     DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
 
   // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
-  dt_colormatrix_t toY0U0V0 = { { 1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f },
-                                { 0.5f,      0.0f,      -0.5f },
-                                {  0.25f,     -0.5f,     0.25f } };
+  dt_colormatrix_t toY0U0V0 = { { 1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f, 0.0f },
+                                {  0.5f,      0.0f,    -0.5f,      0.0f },
+                                {  0.25f,    -0.5f,     0.25f,     0.0f },
+                                {  0.0f,      0.0f,     0.0f,      0.0f } };
 
   // "unused" fourth element enables vectorization:
-  dt_colormatrix_t toRGB = { { 0.0f, 0.0f, 0.0f },
-                             { 0.0f, 0.0f, 0.0f },
-                             { 0.0f, 0.0f, 0.0f } };
+  dt_colormatrix_t toRGB = { { 0.0f, 0.0f, 0.0f, 0.0f },
+                             { 0.0f, 0.0f, 0.0f, 0.0f },
+                             { 0.0f, 0.0f, 0.0f, 0.0f },
+                             { 0.0f, 0.0f, 0.0f, 0.0f }};
   set_up_conversion_matrices(toY0U0V0, toRGB, wb);
 
   // more strength in Y0U0V0 in order to get a similar smoothing as in other modes
@@ -1431,6 +1424,13 @@ static void process_wavelets(struct dt_iop_module_t *self,
       toY0U0V0[k][c] /= (d->strength * compensate_strength * in_scale);
       toRGB[k][c] *= (d->strength * compensate_strength * in_scale);
     }
+  // make transposed copies of the conversion matrices for more efficient
+  // vectorized multiplication
+  dt_colormatrix_t toY0U0V0_trans;
+  dt_colormatrix_transpose(toY0U0V0_trans,toY0U0V0);
+  dt_colormatrix_t toRGB_trans;
+  dt_colormatrix_transpose(toRGB_trans,toRGB);
+  
   for_each_channel(i)
     wb[i] *= d->strength * compensate_strength * in_scale;
 
@@ -1452,7 +1452,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
     precondition_Y0U0V0(in, precond, width, height,
                         d->a[1] * compensate_p,
                         p, d->b[1],
-                        toY0U0V0);
+                        toY0U0V0_trans);
   }
 
   debug_dump_PFM(piece, "transformed", precond, width, height, 0);
@@ -1503,7 +1503,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
   else
   {
     backtransform_Y0U0V0(out, width, height, d->a[1] * compensate_p,
-                         p, d->b[1], d->bias - 0.5 * logf(in_scale), wb, toRGB);
+                         p, d->b[1], d->bias - 0.5 * logf(in_scale), wb, toRGB_trans);
   }
 
   dt_free_align(buf);

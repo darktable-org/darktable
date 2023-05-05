@@ -275,14 +275,15 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
 
 #undef SUM_PIXEL_EPILOGUE
 #define SUM_PIXEL_EPILOGUE                                                                                   \
+  dt_aligned_pixel_t det;									             \
   for_each_channel(c)      										     \
   {													     \
     sum[c] /= wgt[c];                                                   				     \
     pcoarse[c] = sum[c];                                                                                     \
-    const float det = (px[c] - sum[c]);									     \
-    pdetail[c] = det;    		                                              			     \
-    sum_sq.v[c] += (det*det);					                                             \
+    det[c] = (px[c] - sum[c]);									             \
+    sum_sq.v[c] += (det[c]*det[c]);					                                     \
   }                                                                       				     \
+  copy_pixel_nontemporal(pdetail, det);                                                                      \
   px += 4;                                                                                                   \
   pdetail += 4;                                                                                              \
   pcoarse += 4;
