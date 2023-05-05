@@ -4,6 +4,11 @@
 #include "common/dwt.h"
 #include "develop/openmp_maths.h"
 
+// uncomment the following to use nontemporal writes in the decomposition
+// on a 32-core Threadripper, nt writes are 8% slower wiith one thread,
+// break even at 8 threads, and are 8% faster with 32 and 64 threads
+//#define USE_NONTEMPORAL
+
 // B spline filter
 #define BSPLINE_FSIZE 5
 
@@ -51,11 +56,11 @@ static inline void sparse_scalar_product(const dt_aligned_pixel_t buf, const siz
 {
   // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
   // e.g. RRRRR - GGGGG - BBBBB
-  const float filter[BSPLINE_FSIZE] = { 1.0f / 16.0f,
-                                        4.0f / 16.0f,
-                                        6.0f / 16.0f,
-                                        4.0f / 16.0f,
-                                        1.0f / 16.0f };
+  static const float filter[BSPLINE_FSIZE] = { 1.0f / 16.0f,
+                                               4.0f / 16.0f,
+                                               6.0f / 16.0f,
+                                               4.0f / 16.0f,
+                                               1.0f / 16.0f };
 
   if(clip_negatives)
   {
@@ -124,15 +129,18 @@ static inline void _bspline_horizontal(const float *const restrict temp, float *
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in, out:64) aligned(tempbuf:16)
 #endif
-inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict out,
+static inline void blur_2D_Bspline(const float *const restrict in,
+                                   float *const restrict out,
                                    float *const restrict tempbuf,
-                                   const size_t width, const size_t height, const int mult, const gboolean clip_negatives)
+                                   const size_t width,
+                                   const size_t height,
+                                   const int mult,
+                                   const gboolean clip_negatives)
 {
   // À-trous B-spline interpolation/blur shifted by mult
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(width, height, mult)  \
-    dt_omp_sharedconst(out, in, tempbuf, clip_negatives) \
+    dt_omp_firstprivate(in, out, tempbuf, width, height, mult, clip_negatives) \
     schedule(static)
   #endif
   for(size_t row = 0; row < height; row++)
@@ -146,23 +154,32 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
     // Convolve B-spline filter horizontally over current row
     for(size_t j = 0; j < width; j++)
     {
+#if USE_NONTEMPORAL
+      dt_aligned_pixel_t blur;
+      _bspline_horizontal(temp, blur, j, width, mult, clip_negatives);
+      copy_pixel_nontemporal(out + (i * width + j) * 4, blur);
+#else
       _bspline_horizontal(temp, out + (i * width + j) * 4, j, width, mult, clip_negatives);
+#endif
     }
   }
+  dt_omploop_sfence();  // ensure that nontemporal writes complete before we attempt to read the output
 }
 
 
-inline static void decompose_2D_Bspline(const float *const DT_ALIGNED_PIXEL restrict in,
-                                        float *const DT_ALIGNED_PIXEL restrict HF,
-                                        float *const DT_ALIGNED_PIXEL restrict LF,
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, HF, LF:64) aligned(tempbuf:16)
+#endif
+inline static void decompose_2D_Bspline(const float *const in,
+                                        float *const HF,
+                                        float *const restrict LF,
                                         const size_t width, const size_t height, const int mult,
                                         float *const tempbuf, size_t padded_size)
 {
   // Blur and compute the decimated wavelet at once
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(width, height, mult, padded_size) \
-    dt_omp_sharedconst(in, HF, LF, tempbuf)  \
+    dt_omp_firstprivate(width, height, mult, padded_size, in, HF, LF, tempbuf) \
     schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
@@ -177,13 +194,25 @@ inline static void decompose_2D_Bspline(const float *const DT_ALIGNED_PIXEL rest
     for(size_t j = 0; j < width; j++)
     {
       const size_t index = 4U * (i * width + j);
+#if USE_NONTEMPORAL
+      dt_aligned_pixel_t blur;
+      _bspline_horizontal(temp, blur, j, width, mult, TRUE); // always clip negatives
+      copy_pixel_nontemporal(LF + index, blur);
+      // compute the HF component by subtracting the LF from the original input
+      for_four_channels(c)
+        HF[index + c] = in[index + c] - blur[c];
+#else
       _bspline_horizontal(temp, LF + index, j, width, mult, TRUE); // always clip negatives
       // compute the HF component by subtracting the LF from the original input
       for_four_channels(c)
         HF[index + c] = in[index + c] - LF[index + c];
+#endif
     }
   }
+  dt_omploop_sfence();  // ensure that nontemporal writes complete before we attempt to read the output
 }
+
+#undef USE_NONTEMPORAL
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
