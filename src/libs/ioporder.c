@@ -32,7 +32,6 @@ typedef struct dt_lib_ioporder_t
 {
   int current_mode;
   GList *last_custom_iop_order;
-  GtkWidget *widget;
 } dt_lib_ioporder_t;
 
 const char *name(dt_lib_module_t *self)
@@ -58,22 +57,6 @@ int position(const dt_lib_module_t *self)
 void update(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
-
-  if(!d->widget)
-  {
-    if(!self->expander) return;
-
-    d->widget = gtk_label_new("");
-    g_signal_connect(G_OBJECT(d->widget), "destroy",
-                     G_CALLBACK(gtk_widget_destroyed), &d->widget);
-    gtk_widget_show(d->widget);
-    gtk_box_pack_start(GTK_BOX(dtgtk_expander_get_header(DTGTK_EXPANDER(self->expander))),
-                       d->widget, TRUE, TRUE, 0);
-
-    if(self->arrow)
-      gtk_widget_destroy(self->arrow);
-    self->arrow = NULL;
-  }
 
   const dt_iop_order_t kind =
     dt_ioppr_get_iop_order_list_kind(darktable.develop->iop_order_list);
@@ -107,7 +90,7 @@ void update(dt_lib_module_t *self)
 
       if(!strcmp(iop_order_list, iop_list_text))
       {
-        gtk_label_set_text(GTK_LABEL(d->widget), name);
+        dt_lib_gui_set_label(self, name);
         d->current_mode = index;
         found = TRUE;
         g_free(iop_list_text);
@@ -124,20 +107,26 @@ void update(dt_lib_module_t *self)
     if(!found)
     {
       d->current_mode = DT_IOP_ORDER_CUSTOM;
-      gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
+      dt_lib_gui_set_label(self, _(dt_iop_order_string(d->current_mode)));
     }
   }
   else
   {
     d->current_mode = kind;
-    gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
+    dt_lib_gui_set_label(self, _(dt_iop_order_string(d->current_mode)));
   }
 }
 
 static void _image_loaded_callback(gpointer instance, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  update(self);
+  // only in darkroom, so let's avoid any update when in lighttable
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
+  {
+    dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+    update(self);
+  }
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -146,8 +135,8 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  self->no_control_widgets = TRUE;
 
-  d->widget = NULL; // initialise in first update when header has been set up
   d->current_mode = -1;
   d->last_custom_iop_order = NULL;
 
@@ -161,9 +150,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
-
-  if(d->widget) gtk_widget_destroy(d->widget);
   free(self->data);
   self->data = NULL;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
@@ -191,10 +177,7 @@ void gui_reset(dt_lib_module_t *self)
     dt_dev_pixelpipe_rebuild(darktable.develop);
 
     d->current_mode = DT_IOP_ORDER_V30;
-    if(d->widget)
-      gtk_label_set_text(GTK_LABEL(d->widget),
-                         _(dt_iop_order_string(d->current_mode)));
-
+    dt_lib_gui_set_label(self, _(dt_iop_order_string(d->current_mode)));
     g_list_free_full(iop_order_list, free);
   }
 }
