@@ -499,6 +499,9 @@ The following is a summary of the main features added to darktable
 - Make all remaining color-picker buttons accessible via shortcuts and
   lua.
 
+- Added tooltip to edges of sliders with soft limits on how to set
+  values outside those boundaries.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
