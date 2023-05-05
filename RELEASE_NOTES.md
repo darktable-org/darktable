@@ -238,7 +238,7 @@ The following is a summary of the main features added to darktable
 - The default module group has been removed. It is better to use one
   of the scene-referred group.
 
-- Add support for loading QOI images.
+- Add support for loading QOI and FITS images.
 
 - Add support for writing metadata to XCF format (see notes below).
 
