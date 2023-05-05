@@ -1501,14 +1501,15 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
     {
       // skip all groups first
       GtkTreeModel *model = GTK_TREE_MODEL(treestore);
+      int pos = 0;
       GtkTreeIter iter;
       gtk_tree_model_get_iter_first(model, &iter);
-      int pos = 0;
 
-      while (gtk_tree_model_iter_has_child(model, &iter)) {
-        ++pos;
-        gtk_tree_model_iter_next(model, &iter);
-      }
+      do
+      {
+        if (gtk_tree_model_iter_has_child(model, &iter))
+          ++pos;
+      } while(gtk_tree_model_iter_next(model, &iter));
 
       // insert the child immediately after the last group
       gtk_tree_store_insert(treestore, &child, NULL, pos);
