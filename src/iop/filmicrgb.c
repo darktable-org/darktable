@@ -1265,28 +1265,6 @@ static inline void init_reconstruct(const float *const restrict in,
   dt_omploop_sfence();  // ensure that nontemporal write complete before we attempt to read the output
 }
 
-
-static inline void wavelets_detail_level(const float *const detail,
-                                         const float *const restrict LF,
-                                         float *const HF,
-                                         const size_t width,
-                                         const size_t height)
-{
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(width, height, HF, LF, detail)   \
-  schedule(simd:static) \
-  aligned(HF, LF, detail : 64)
-#endif
-  for(size_t k = 0; k < height * width; k++)
-  {
-    dt_aligned_pixel_t pix_out;
-    for_each_channel(c, aligned(detail, LF))
-      pix_out[c] = detail[4*k + c] - LF[4*k + c];
-    copy_pixel(HF + 4*k, pix_out);
-  }
-}
-
 static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *const piece)
 {
   /* How many wavelets scales do we need to compute at current zoom level ?
