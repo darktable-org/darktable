@@ -2121,8 +2121,10 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const gboolean run_fast = !data->enable_highlight_reconstruction || piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   // without reconstruction: in + out + 1ch_mask
-  // with reconstruction: in + out + 2 * tmp + 2 * LF + temp + ratios + 1ch_mask
-  tiling->factor = run_fast ? 2.25f : 8.25f;
+  // with reconstruction: in + out + reconst + inpaint + 2 * scales + temp + 1ch_mask
+  // with HQ reconstruction: in + out + reconst + inpaint + tmp + 2 * scales + temp + ratios + 1ch_mask + 1ch_norms
+  const float hq = data->high_quality_reconstruction > 0 ? 1.25f : 0.0f;
+  tiling->factor = run_fast ? 2.25f : (7.25f + hq);
   tiling->factor_cl = run_fast ? 9.0f : 9.0f;
 
   tiling->maxbuf = 1.0f;
