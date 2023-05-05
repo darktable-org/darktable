@@ -110,11 +110,13 @@ typedef struct dt_lib_module_t
   /** does gui need to be updated if visible */
   gboolean gui_uptodate;
 
+  GtkWidget *label;
   GtkWidget *arrow;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
 
   gboolean pref_based_presets;
+  gboolean no_control_widgets;
 } dt_lib_module_t;
 
 void dt_lib_init(dt_lib_t *lib);
@@ -143,6 +145,10 @@ void dt_lib_set_visible(dt_lib_module_t *module,
 /** check if a plugin is to be shown in a given view */
 gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
                                    const dt_view_t *view);
+
+/** set module label */
+void dt_lib_gui_set_label(dt_lib_module_t *module,
+                          const char *label);
 
 /** returns the localized plugin name for a given plugin_name. must not be freed. */
 gchar *dt_lib_get_localized_name(const gchar *plugin_name);
