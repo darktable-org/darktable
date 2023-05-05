@@ -1011,6 +1011,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
   g->border_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->border_picker), _("pick border color from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("border color"), g->border_picker, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -1023,6 +1024,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->frame_colorpick), FALSE, TRUE, 0);
   g->frame_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->frame_picker), _("pick frame line color from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("frame line color"), g->frame_picker, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 }
 

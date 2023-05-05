@@ -1023,19 +1023,19 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_area_scroll_callback), self);
 
   c->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "black", c->blackpick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("black"), c->blackpick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
   g_signal_connect(G_OBJECT(c->blackpick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   c->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "gray", c->greypick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("gray"), c->greypick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
   g_signal_connect(G_OBJECT(c->greypick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   c->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "white", c->whitepick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("white"), c->whitepick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
   g_signal_connect(G_OBJECT(c->whitepick), "toggled", G_CALLBACK(_color_picker_callback), self);
@@ -1048,12 +1048,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), pick_hbox, TRUE, TRUE, 0);
 
   c->bt_auto_levels = gtk_button_new_with_label(_("auto"));
-  dt_action_define_iop(self, NULL, "auto levels", c->bt_auto_levels, &dt_action_def_button);
+  dt_action_define_iop(self, NULL, N_("auto levels"), c->bt_auto_levels, &dt_action_def_button);
   gtk_widget_set_tooltip_text(c->bt_auto_levels, _("apply auto levels"));
 
   c->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
   dt_gui_add_class(c->bt_select_region, "dt_transparent_background");
-  dt_action_define_iop(self, NULL, "auto region", c->bt_select_region, &dt_action_def_toggle);
+  dt_action_define_iop(self, NULL, N_("auto region"), c->bt_select_region, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->bt_select_region,
                               _("apply auto levels based on a region defined by the user\n"
                                 "click and drag to draw the area\n"
