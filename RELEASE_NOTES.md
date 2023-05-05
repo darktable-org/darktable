@@ -502,6 +502,11 @@ The following is a summary of the main features added to darktable
 - Added tooltip to edges of sliders with soft limits on how to set
   values outside those boundaries.
 
+- Reverse the sort order of the shapes in mask manager groups so that
+  the lowest ranking shape is at the bottom of the group. For
+  consistency the sort order of shapes outside of a group has been
+  changed.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
