@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2022 darktable developers.
+   Copyright (C) 2022-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -117,15 +117,17 @@ static inline float Ych_max_chroma_without_negatives(const dt_colormatrix_t matr
 
 
 #ifdef _OPENMP
-#pragma omp declare simd uniform(matrix) aligned(in, out:16) aligned(matrix:64)
+#pragma omp declare simd uniform(matrix_trans) aligned(in, out:16) aligned(matrix_trans:64)
 #endif
-static inline void RGB_to_Ych(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix, dt_aligned_pixel_t out)
+static inline void RGB_to_Ych(const dt_aligned_pixel_t in,
+                              const dt_colormatrix_t matrix_trans,
+                              dt_aligned_pixel_t out)
 {
   dt_aligned_pixel_t LMS = { 0.f };
   dt_aligned_pixel_t Yrg = { 0.f };
 
   // go from pipeline RGB to CIE 2006 LMS D65
-  dot_product(in, matrix, LMS);
+  dt_apply_transposed_color_matrix(in, matrix_trans, LMS);
 
   // go from CIE LMS 2006 to Kirk/Filmlight Yrg
   LMS_to_Yrg(LMS, Yrg);
@@ -136,9 +138,11 @@ static inline void RGB_to_Ych(const dt_aligned_pixel_t in, const dt_colormatrix_
 
 
 #ifdef _OPENMP
-#pragma omp declare simd uniform(matrix) aligned(in, out:16) aligned(matrix:64)
+#pragma omp declare simd uniform(matrix_trans) aligned(in, out:16) aligned(matrix_trans:64)
 #endif
-static inline void Ych_to_RGB(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix, dt_aligned_pixel_t out)
+static inline void Ych_to_RGB(const dt_aligned_pixel_t in,
+                              const dt_colormatrix_t matrix_trans,
+                              dt_aligned_pixel_t out)
 {
   dt_aligned_pixel_t LMS = { 0.f };
   dt_aligned_pixel_t Yrg = { 0.f };
@@ -150,7 +154,7 @@ static inline void Ych_to_RGB(const dt_aligned_pixel_t in, const dt_colormatrix_
   Yrg_to_LMS(Yrg, LMS);
 
   // go from CIE LMS 2006 to pipeline RGB
-  dot_product(LMS, matrix, out);
+  dt_apply_transposed_color_matrix(LMS, matrix_trans, out);
 }
 
 
