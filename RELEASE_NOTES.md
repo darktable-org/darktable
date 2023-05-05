@@ -496,6 +496,9 @@ The following is a summary of the main features added to darktable
 - Add some standard print sizes (5x7, 8x10, 11x14) to the list of
   predefined aspect ratios in Borders module.
 
+- Make all remaining color-picker buttons accessible via shortcuts and
+  lua.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
