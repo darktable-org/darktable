@@ -411,7 +411,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   module->raster_mask.source.masks =
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
-  module->raster_mask.sink.id = NO_MASKID;
+  module->raster_mask.sink.id = INVALID_MASKID;
 
   // only reference cached results of dlopen:
   module->module = so->module;
@@ -1787,8 +1787,12 @@ void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
   }
 }
 
-// make sure that blend_params are in sync with the iop struct
-void dt_iop_commit_blend_params(dt_iop_module_t *module,
+/* make sure that blend_params are in sync with the iop struct
+   Also watch out for a raster mask source module to get it's first `target`
+   entry, if so we invalidate all cachelines from modules with a higher iop order.
+   To support this, dt_iop_commit_blend_params() either returns NULL or the source module.
+*/
+dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const dt_develop_blend_params_t *blendop_params)
 {
   if(module->raster_mask.sink.source)
@@ -1811,18 +1815,20 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
       {
         if(m->multi_priority == blendop_params->raster_mask_instance)
         {
+          const gboolean in_use = dt_iop_is_raster_mask_used(m, blendop_params->raster_mask_id);
           g_hash_table_insert(m->raster_mask.source.users,
                               module, GINT_TO_POINTER(blendop_params->raster_mask_id));
           module->raster_mask.sink.source = m;
           module->raster_mask.sink.id = blendop_params->raster_mask_id;
-          return;
+          return in_use ? NULL : m;
         }
       }
     }
   }
 
   module->raster_mask.sink.source = NULL;
-  module->raster_mask.sink.id = NO_MASKID;
+  module->raster_mask.sink.id = INVALID_MASKID;
+  return NULL;
 }
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
@@ -1996,8 +2002,9 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
   memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
   // this should be redundant! (but is not)
-  dt_iop_commit_blend_params(module, blendop_params);
-
+  dt_iop_module_t *inserted = dt_iop_commit_blend_params(module, blendop_params);
+  if(inserted)
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, inserted);
 #ifdef HAVE_OPENCL
   // assume process_cl is ready, commit_params can overwrite this.
   if(module->process_cl)
@@ -2990,7 +2997,7 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
   return dtgtk_expander_get_frame(DTGTK_EXPANDER(module->expander));
 }
 
-int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
+gboolean dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 {
   if(pipe != dev->preview_pipe
      && pipe != dev->preview2_pipe)
@@ -2999,14 +3006,14 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
   if(pipe != dev->preview_pipe
      && pipe != dev->preview2_pipe
      && pipe->changed == DT_DEV_PIPE_ZOOMED)
-    return 1;
+    return TRUE;
 
   if((pipe->changed != DT_DEV_PIPE_UNCHANGED
       && pipe->changed != DT_DEV_PIPE_ZOOMED)
      || dev->gui_leaving)
-    return 1;
+    return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
 void dt_iop_nap(int32_t usec)

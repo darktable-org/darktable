@@ -310,15 +310,11 @@ icc_end:
 
         header.channels().insert(layername, Imf::Channel(pixel_type, 1, 1, true));
 
-        gboolean free_mask = TRUE;
+        gboolean free_mask;
         float *raster_mask = dt_dev_get_raster_mask(piece, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
 
         if(!raster_mask)
-        {
-          // this should never happen
-          dt_print(DT_DEBUG_ALWAYS, "[exr export] error: can't get raster mask from `%s'\n", piece->module->name());
           return 1;
-        }
 
         if(pixel_type == Imf::PixelType::FLOAT)
         {
