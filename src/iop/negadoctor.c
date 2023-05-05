@@ -845,6 +845,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row1);
   gtk_widget_set_tooltip_text(g->Dmin_sampler , _("pick color of film material from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("film material"), g->Dmin_sampler, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(page1), GTK_WIDGET(row1), FALSE, FALSE, 0);
 
@@ -911,6 +912,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row3);
   gtk_widget_set_tooltip_text(g->WB_low_sampler, _("pick shadows color from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("shadows"), g->WB_low_sampler, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row3), FALSE, FALSE, 0);
 
@@ -948,6 +950,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row2);
   gtk_widget_set_tooltip_text(g->WB_high_sampler , _("pick illuminant color from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("illuminant"), g->WB_high_sampler, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row2), FALSE, FALSE, 0);
 
