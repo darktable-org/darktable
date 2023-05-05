@@ -2412,6 +2412,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA, hbox, IOP_CS_LCH);
   gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(c->colorpicker, "keep-active");
+  dt_action_define_iop(self, N_("pickers"), N_("show color"), c->colorpicker, &dt_action_def_toggle);
   c->colorpicker_set_values = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, hbox, IOP_CS_LCH);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(c->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
@@ -2421,6 +2422,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                            "drag to create a flat curve\n"
                                                            "ctrl+drag to create a positive curve\n"
                                                            "shift+drag to create a negative curve"));
+  dt_action_define_iop(self, N_("pickers"), N_("create curve"), c->colorpicker_set_values, &dt_action_def_toggle);
 
   // the nice graph
   c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/colorzones/aspect_percent"));
