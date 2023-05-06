@@ -1965,7 +1965,7 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
   // scanning for new devices; this manifests as a crash during long
   // import sessions.  So disable the scan while we're importing, even
   // though we aren't using GPhoto2 to do the importing
-  dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
+  struct dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   camctl->import_ui = TRUE;
   _import_from_dialog_new(self);
   _import_from_dialog_run(self);
