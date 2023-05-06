@@ -750,8 +750,6 @@ int process_cl(
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
   cl_mem high_image = NULL;
   cl_mem low_image = NULL;
-  cl_mem blend = NULL;
-  cl_mem details = NULL;
   cl_mem dev_aux = NULL;
   const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && (data->dual_thrs > 0.0f) && !run_fast);
   const int devid = piece->pipe->devid;
@@ -823,25 +821,18 @@ int process_cl(
   // This is dual demosaicing only stuff
   const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
 
-  int width = roi_out->width;
-  int height = roi_out->height;
   // need to reserve scaled auxiliary buffer or use dev_out
   if(scaled)
   {
     dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
     if(dev_aux == NULL)
       goto finish;
-    width = roi_in->width;
-    height = roi_in->height;
   }
   else
     dev_aux = dev_out;
 
-  // here we have work to be done only for dual demosaicers
-  blend = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
-  details = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
-  low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-  if((blend == NULL) || (low_image == NULL) || (details == NULL)) goto finish;
+  low_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+  if(low_image == NULL) goto finish;
 
   if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE))
   {
@@ -850,7 +841,7 @@ int process_cl(
       retval = FALSE;
       goto finish;
     }
-    retval = dual_demosaic_cl(self, piece, details, blend, high_image, low_image, dev_aux, width, height, showmask);
+    retval = dual_demosaic_cl(self, piece, high_image, low_image, dev_aux, roi_in, showmask);
   }
 
   if(scaled)
@@ -865,8 +856,6 @@ int process_cl(
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
-  dt_opencl_release_mem_object(details);
-  dt_opencl_release_mem_object(blend);
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   if(!retval) dt_control_log(_("[dual demosaic_cl] internal problem"));
   return retval;
@@ -1038,8 +1027,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   }
 
   if(use_method & DT_DEMOSAIC_DUAL)
+  {
+    dt_dev_pixelpipe_usedetails(piece->pipe);
     d->color_smoothing = 0;
-
+  }
   d->demosaicing_method = use_method;
 
   // OpenCL only supported by some of the demosaicing methods
@@ -1091,8 +1082,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       piece->process_cl_ready = FALSE;
   }
 
-  if(use_method & DT_DEMOSAIC_DUAL)
-    piece->pipe->want_detail_mask = TRUE;
 
   // green-equilibrate over full image excludes tiling
   // The details mask is written inside process, this does not allow tiling.

@@ -272,15 +272,14 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
 
-  float *tmp = NULL;
   float *lum = NULL;
   float *warp_mask = NULL;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->rawdetail_mask_data == NULL) return;
+  if(p->details.data == NULL) return;
 
-  const int iwidth  = p->detail_width;
-  const int iheight = p->detail_height;
+  const int iwidth  = p->details.roi.width;
+  const int iheight = p->details.roi.height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE,
@@ -289,14 +288,11 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
 
   const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
 
-  tmp = dt_alloc_align_float(bufsize);
   lum = dt_alloc_align_float(bufsize);
-  if((tmp == NULL) || (lum == NULL)) goto error;
+  if(!lum) goto error;
 
-  dt_masks_calc_detail_mask(p->rawdetail_mask_data, lum, tmp,
-                            iwidth, iheight, threshold, detail);
-  dt_free_align(tmp);
-  tmp = NULL;
+  if(dt_masks_calc_detail_mask(&p->details, lum, threshold, detail))
+    goto error;
 
   // here we have the slightly blurred full detail mask available
   warp_mask = dt_dev_distort_detail_mask(p, lum, self);
@@ -321,7 +317,6 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   dt_control_log(_("detail mask blending error"));
   dt_free_align(warp_mask);
   dt_free_align(lum);
-  dt_free_align(tmp);
 }
 
 static size_t
@@ -762,10 +757,10 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->rawdetail_mask_data == NULL) return;
+  if(p->details.data == NULL) return;
 
-  const int iwidth  = p->detail_width;
-  const int iheight = p->detail_height;
+  const int iwidth  = p->details.roi.width;
+  const int iheight = p->details.roi.height;
   const int owidth  = roi_out->width;
   const int oheight = roi_out->height;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
@@ -779,7 +774,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if((lum == NULL) || (tmp == NULL) || (out == NULL) || (blur == NULL))
     goto error;
 
-  err = dt_opencl_write_host_to_device(devid, p->rawdetail_mask_data, tmp,
+  err = dt_opencl_write_host_to_device(devid, p->details.data, tmp,
                                        iwidth, iheight, sizeof(float));
   if(err != CL_SUCCESS)
   {

@@ -215,8 +215,12 @@ void dt_dev_pixelpipe_cache_fullhash(
 {
   uint64_t hash = *basichash = dt_dev_pixelpipe_cache_basichash(imgid, pipe, position);
   // also include roi data
-  const char *str = (const char *)roi;
+  char *str = (char *)roi;
   for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
+    hash = ((hash << 5) + hash) ^ str[i];
+
+  str = (char *)&pipe->details.hash;
+  for(size_t i = 0; i < sizeof(uint64_t); i++)
     hash = ((hash << 5) + hash) ^ str[i];
   *fullhash = hash;
 }
