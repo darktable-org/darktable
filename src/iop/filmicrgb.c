@@ -30,12 +30,9 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/chromatic_adaptation.h"
-#include "common/darktable.h"
 #include "common/bspline.h"
-#include "common/dwt.h"
 #include "common/gamut_mapping.h"
 #include "common/image.h"
-#include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -43,7 +40,6 @@
 #include "develop/imageop_gui.h"
 #include "develop/imageop_math.h"
 #include "develop/noise_generator.h"
-#include "develop/openmp_maths.h"
 #include "develop/tiling.h"
 #include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
@@ -59,7 +55,6 @@
 #include "gui/draw.h"
 
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
