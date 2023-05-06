@@ -394,13 +394,17 @@ static char *_sanitize_confgen(const char *name, const char *value)
     break;
     case DT_ENUM:
     {
-      char *v = g_strdup_printf("[%s]", value);
-      if(!strstr(item->enum_values, v))
-        result = g_strdup(dt_confgen_get(name, DT_DEFAULT));
-      else
-        result = g_strdup(value);
+      size_t n = strlen(value);
+      char *v = item->enum_values;
+      while(v++)
+      {
+        if(!g_ascii_strncasecmp(value, v, n) && v[n] == ']')
+          return g_strndup(v, n);
 
-      g_free(v);
+        v = strchr(v, '[');
+      }
+
+      result = g_strdup(dt_confgen_get(name, DT_DEFAULT));
     }
     break;
     default:
