@@ -42,6 +42,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+//#define VECTORIZE_POWF
+
 // which version of the non-local means code should be used?  0=old
 // (this file), 1=new (src/common/nlmeans_core.c)
 #define USE_NEW_IMPL_CL 0
@@ -832,8 +834,7 @@ static inline void precondition(const float *const in,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, npixels, in, sigma2_plus_3_8) \
-  shared(a) \
+  dt_omp_firstprivate(buf, npixels, in, sigma2_plus_3_8, a)       \
   schedule(static)
 #endif
   for(size_t j = 0; j < 4U * npixels; j += 4)
@@ -862,8 +863,7 @@ static inline void backtransform(float *const buf,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, npixels, sigma2_plus_1_8, sqrt_3_2)   \
-  shared(a) \
+  dt_omp_firstprivate(buf, npixels, sigma2_plus_1_8, sqrt_3_2, a) \
   schedule(static)
 #endif
   for(size_t j = 0; j < 4U * npixels; j += 4)
@@ -923,17 +923,23 @@ static inline void precondition_v2(const float *const in,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, buf, in, b, wb) \
-  dt_omp_sharedconst(expon, denom) \
+  dt_omp_firstprivate(npixels, buf, in, b, wb, expon, denom) \
   schedule(static)
 #endif
   for(size_t j = 0; j < 4U * npixels; j += 4)
   {
+    dt_aligned_pixel_t scaled;
+    for_each_channel(c,aligned(in,wb))
+      scaled[c] = MAX(in[j+c] / wb[c] + b, 0.0f);
     dt_aligned_pixel_t precond;
-    for_each_channel(c,aligned(in,buf,wb))
-    {
-      precond[c] = 2.0f * powf(MAX(in[j+c] / wb[c] + b, 0.0f), expon[c]) / denom[c];
-    }
+#ifdef VECTORIZE_POWF
+    dt_vector_powf(scaled, expon, precond);
+#else
+    for_each_channel(c,aligned(scaled,expon))
+      precond[c] = powf(scaled[c], expon[c]);
+#endif
+    for_each_channel(c,aligned(denom))
+      precond[c] = 2.0f * precond[c] / denom[c];
     copy_pixel_nontemporal(buf + j, precond);
   }
   dt_omploop_sfence(); // ensure that nontemporal writes complete before we read the output
@@ -1019,19 +1025,27 @@ static inline void backtransform_v2(float *const buf,
                                      1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, buf, b, bias, wb)   \
-  dt_omp_sharedconst(expon,denom) \
+  dt_omp_firstprivate(npixels, buf, b, bias, wb, expon, denom)        \
   schedule(static)
 #endif
   for(size_t j = 0; j < 4U * npixels; j += 4)
   {
+    dt_aligned_pixel_t z1;
     for_each_channel(c,aligned(buf,wb))
     {
       const float x = MAX(buf[j+c], 0.0f);
       const float delta = x * x + bias;
-      const float z1 = (x + sqrtf(MAX(delta, 0.0f))) / denom[c];
-      buf[j+c] = wb[c] * (powf(z1, expon[c]) - b);
+      z1[c] = (x + sqrtf(MAX(delta, 0.0f))) / denom[c];
     }
+    dt_aligned_pixel_t back;
+#ifdef VECTORIZE_POWF
+    dt_vector_powf(z1, expon, back);
+#else
+    for_each_channel(c)
+      back[c] = powf(z1[c], expon[c]);
+#endif
+    for_each_channel(c,aligned(buf))
+      buf[j+c] = wb[c] * (back[c] - b);
   }
 }
 
@@ -1051,17 +1065,23 @@ static inline void precondition_Y0U0V0(const float *const in,
                                      1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0_trans) \
-  dt_omp_sharedconst(expon, scale) \
+  dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0_trans, expon, scale)      \
   schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
     dt_aligned_pixel_t tmp; // "unused" fourth element enables vectorization
+#ifdef VECTORIZE_POWF
+    dt_aligned_pixel_t clamped;
     for_each_channel(c,aligned(in))
-    {
+      clamped[c] = MAX(in[j+c] + b, 0.0f);
+    dt_vector_powf(clamped, expon, tmp);
+    for_each_channel(c,aligned(scale))
+      tmp[c] *= scale[c];
+#else
+    for_each_channel(c,aligned(in))
       tmp[c] = powf(MAX(in[j+c] + b, 0.0f), expon[c]) * scale[c];
-    }
+#endif
     dt_aligned_pixel_t yuv;
     dt_apply_transposed_color_matrix(tmp, toY0U0V0_trans, yuv);
     copy_pixel_nontemporal(buf + j, yuv);
@@ -1099,13 +1119,21 @@ static inline void backtransform_Y0U0V0(float *const buf,
   {
     dt_aligned_pixel_t rgb = { 0.0f }; // "unused" fourth element enables vectorization
     dt_apply_transposed_color_matrix(buf + j, toRGB_trans, rgb);
+    dt_aligned_pixel_t z1;
     for_each_channel(c,aligned(buf))
     {
       const float x = MAX(rgb[c], 0.0f);
       const float delta = x * x + bias_wb[c];
-      const float z1 = (x + sqrtf(MAX(delta, 0.0f))) * scale[c];
-      buf[j+c] = powf(z1, expon[c]) - b;
+      z1[c] = (x + sqrtf(MAX(delta, 0.0f))) * scale[c];
     }
+#ifdef VECTORIZE_POWF
+    dt_vector_powf(z1, expon, z1);
+#else
+    for_each_channel(c,aligned(expon))
+      z1[c] = powf(z1[c], expon[c]);
+#endif
+    for_each_channel(c,aligned(buf))
+      buf[j+c] = z1[c] - b;
   }
 }
 
