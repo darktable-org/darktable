@@ -135,7 +135,7 @@ The following is a summary of the main features added to darktable
   - Nega Doctor
   - Channel Mixer RGB (CIECAM16, linear Bradford, XYZ and nonlinear Bradford).
   - Filmic (legacy)
-  - Filmic RGB
+  - Filmic RGB (including highlights reconstruction)
   - Color Balance
   - Color Balance (legacy)
   - Levels (legacy)
