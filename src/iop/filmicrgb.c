@@ -30,12 +30,9 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/chromatic_adaptation.h"
-#include "common/darktable.h"
 #include "common/bspline.h"
-#include "common/dwt.h"
 #include "common/gamut_mapping.h"
 #include "common/image.h"
-#include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -43,7 +40,6 @@
 #include "develop/imageop_gui.h"
 #include "develop/imageop_math.h"
 #include "develop/noise_generator.h"
-#include "develop/openmp_maths.h"
 #include "develop/tiling.h"
 #include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
@@ -59,7 +55,6 @@
 #include "gui/draw.h"
 
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -1257,33 +1252,12 @@ static inline void init_reconstruct(const float *const restrict in,
 #endif
   for(size_t k = 0; k < height * width; k++)
   {
+    dt_aligned_pixel_t re;
     for_each_channel(c,aligned(in,mask,reconstructed))
-      reconstructed[4*k + c] = MAX(in[4*k + c] * (1.f - mask[k]), 0.0f);
+      re[c] = MAX(in[4*k + c] * (1.f - mask[k]), 0.0f);
+    copy_pixel_nontemporal(reconstructed + 4*k, re);
   }
-}
-
-
-static inline void wavelets_detail_level(const float *const detail,
-                                         const float *const restrict LF,
-                                         float *const HF,
-                                         float *const restrict texture,
-                                         const size_t width,
-                                         const size_t height)
-{
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(width, height, HF, LF, detail, texture)   \
-  schedule(simd:static) \
-  aligned(HF, LF, detail, texture : 64)
-#endif
-  for(size_t k = 0; k < height * width; k++)
-  {
-    dt_aligned_pixel_t pix_out;
-    for_each_channel(c, aligned(detail, LF))
-      pix_out[c] = detail[4*k + c] - LF[4*k + c];
-    copy_pixel(HF + 4*k, pix_out);
-    copy_pixel(texture + 4*k, pix_out);
-  }
+  dt_omploop_sfence();  // ensure that nontemporal write complete before we attempt to read the output
 }
 
 static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *const piece)
@@ -1326,13 +1300,12 @@ static inline gint reconstruct_highlights(const float *const restrict in,
     = dt_alloc_align_float(4 * roi_out->width * roi_out->height);  // low-frequencies RGB
   float *const restrict HF_RGB
     = dt_alloc_align_float(4 * roi_out->width * roi_out->height);  // high-frequencies RGB
-  float *const restrict HF_grey
-    = dt_alloc_align_float(4 * roi_out->width * roi_out->height);  // high-frequencies RGB backup
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp = dt_alloc_align_float(dt_get_num_threads() * 4 * roi_out->width);
+  size_t padded_size;
+  float *const restrict temp = dt_alloc_perthread_float(4 * roi_out->width, &padded_size);
 
-  if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
+  if(!LF_even || !LF_odd || !HF_RGB || !temp)
   {
     dt_control_log(_("filmic highlights reconstruction failed to allocate memory, check your RAM settings"));
     success = FALSE;
@@ -1386,15 +1359,9 @@ static inline gint reconstruct_highlights(const float *const restrict in,
 
     const int mult = 1 << s; // fancy-pants C notation for 2^s with integer type, don't be afraid
 
-    // Compute wavelets low-frequency scales
-    blur_2D_Bspline(detail, LF, temp, roi_out->width, roi_out->height, mult, TRUE); // clip negatives
-
-    // Compute wavelets high-frequency scales and save the minimum of texture over the RGB channels
-    // Note : HF_RGB = detail - LF, HF_grey = max(HF_RGB)
+    // Compute wavelets - split data into high- and low-frequency scales
     float *texture = HF_RGB_temp;
-    // =>> w_d_l writes same data to both HF_RBG_temp and texture; the former is not overwritten until the next
-    // =>> iteration,so we can just use HF_RGB_temp as texture instead of HF_grey and save a buffer
-    wavelets_detail_level(detail, LF, HF_RGB_temp, texture, roi_out->width, roi_out->height);
+    decompose_2D_Bspline(detail, HF_RGB_temp, LF, roi_out->width, roi_out->height, mult, temp, padded_size);
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes
     blur_2D_Bspline(HF_RGB_temp, HF_RGB, temp, roi_out->width, roi_out->height, 1, TRUE); // clip negatives
@@ -1414,7 +1381,6 @@ error:
   if(LF_even) dt_free_align(LF_even);
   if(LF_odd) dt_free_align(LF_odd);
   if(HF_RGB) dt_free_align(HF_RGB);
-  if(HF_grey) dt_free_align(HF_grey);
   return success;
 }
 
@@ -2114,9 +2080,12 @@ static inline void compute_ratios(const float *const restrict in,
   {
     const float norm = MAX(get_pixel_norm(in + k, variant, work_profile), NORM_MIN);
     norms[k / 4] = norm;
+    dt_aligned_pixel_t ratio;
     for_each_channel(c,aligned(ratios,in))
-      ratios[k + c] = in[k + c] / norm;
+      ratio[c] = in[k + c] / norm;
+    copy_pixel_nontemporal(ratios + k, ratio);
   }
+  dt_omploop_sfence();	// ensure that nontemporal writes complete before we attempt to read output
 }
 
 
@@ -2147,8 +2116,10 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const gboolean run_fast = !data->enable_highlight_reconstruction || piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   // without reconstruction: in + out + 1ch_mask
-  // with reconstruction: in + out + 2 * tmp + 2 * LF + 2 * temp + ratios + 1ch_mask
-  tiling->factor = run_fast ? 2.25f : 9.25f;
+  // with reconstruction: in + out + reconst + inpaint + 2 * scales + temp + 1ch_mask
+  // with HQ reconstruction: in + out + reconst + inpaint + tmp + 2 * scales + temp + ratios + 1ch_mask + 1ch_norms
+  const float hq = data->high_quality_reconstruction > 0 ? 1.25f : 0.0f;
+  tiling->factor = run_fast ? 2.25f : (7.25f + hq);
   tiling->factor_cl = run_fast ? 9.0f : 9.0f;
 
   tiling->maxbuf = 1.0f;
