@@ -1961,9 +1961,21 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   d->import_case = (widget == GTK_WIDGET(d->import_inplace)) ? DT_IMPORT_INPLACE : DT_IMPORT_COPY;
+#ifdef HAVE_GPHOTO2
+  // on some systems, GPhoto2 is somewhat prone to crashing while
+  // scanning for new devices; this manifests as a crash during long
+  // import sessions.  So disable the scan while we're importing, even
+  // though we aren't using GPhoto2 to do the importing
+  struct dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
+  camctl->import_ui = TRUE;
+#endif
   _import_from_dialog_new(self);
   _import_from_dialog_run(self);
   _import_from_dialog_free(self);
+#ifdef HAVE_GPHOTO2
+  // OK to resume periodic scans for new GPhoto2 devices
+  camctl->import_ui = FALSE;
+#endif
 }
 
 #ifdef HAVE_GPHOTO2
