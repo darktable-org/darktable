@@ -631,7 +631,7 @@ static int process_vng_cl(
       if(err != CL_SUCCESS) goto error;
     }
 
-    if(piece->pipe->want_detail_mask)
+    if(piece->pipe->want_detail_mask && !(data->demosaicing_method & DT_DEMOSAIC_DUAL))
       dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, TRUE);
 
     if(scaled)

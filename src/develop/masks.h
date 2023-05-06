@@ -671,17 +671,11 @@ void dt_masks_blur_9x9(float *const src,
                        const int width,
                        const int height,
                        const float sigma);
-void dt_masks_calc_rawdetail_mask(float *const src,
-                                  float *const out,
-                                  float *const tmp,
-                                  const int width,
-                                  const int height,
+gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
+                                  float *const src,
                                   const dt_aligned_pixel_t wb);
-void dt_masks_calc_detail_mask(float *const src,
+gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
                                float *const out,
-                               float *const tmp,
-                               const int width,
-                               const int height,
                                const float threshold,
                                const gboolean detail);
 

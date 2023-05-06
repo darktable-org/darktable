@@ -430,14 +430,18 @@ int dt_masks_blur_fast(float *const restrict src,
   return 6;
 }
 
-void dt_masks_calc_rawdetail_mask(float *const restrict src,
-                                  float *const restrict mask,
-                                  float *const restrict tmp,
-                                  const int width,
-                                  const int height,
+gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
+                                  float *const restrict src,
                                   const dt_aligned_pixel_t wb)
 {
-  const size_t msize = width * height;
+  const int width = details->roi.width;
+  const int height = details->roi.height;
+  float *mask = details->data;
+
+  const size_t msize = (size_t)width * height;
+  float *tmp = dt_alloc_align_float(msize);
+  if(!tmp) return TRUE;
+
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(tmp, src, msize, wb) \
@@ -474,6 +478,8 @@ void dt_masks_calc_rawdetail_mask(float *const restrict src,
     }
   }
   dt_masks_extend_border(mask, width, height, 1);
+  dt_free_align(tmp);
+  return FALSE;
 }
 
 static inline float _calcBlendFactor(float val, float threshold)
@@ -484,15 +490,16 @@ static inline float _calcBlendFactor(float val, float threshold)
     return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
 }
 
-void dt_masks_calc_detail_mask(float *const restrict src,
+gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
                                float *const restrict out,
-                               float *const restrict tmp,
-                               const int width,
-                               const int height,
                                const float threshold,
                                const gboolean detail)
 {
-  const size_t msize = width * height;
+  const size_t msize = (size_t) details->roi.width * details->roi.height;
+  float *tmp = dt_alloc_align_float(msize);
+  if(!tmp) return TRUE;
+
+  float *src = details->data;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(src, tmp, msize, threshold, detail, out) \
@@ -503,7 +510,9 @@ void dt_masks_calc_detail_mask(float *const restrict src,
     const float blend = CLIP(_calcBlendFactor(src[idx], threshold));
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
-  dt_masks_blur_9x9(tmp, out, width, height, 2.0f);
+  dt_masks_blur_9x9(tmp, out, details->roi.width, details->roi.height, 2.0f);
+  dt_free_align(tmp);
+  return FALSE;
 }
 #undef FAST_BLUR_5
 #undef FAST_BLUR_9

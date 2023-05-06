@@ -82,6 +82,13 @@ typedef enum dt_dev_pixelpipe_change_t
   DT_DEV_PIPE_ZOOMED = 1 << 3 // zoom event, preview pipe does not need changes
 } dt_dev_pixelpipe_change_t;
 
+typedef struct dt_dev_detail_mask_t
+{
+  dt_iop_roi_t roi;
+  uint64_t hash;
+  float *data;
+} dt_dev_detail_mask_t;
+
 /**
  * this encapsulates the pixelpipe.
  * a develop module will need several of these:
@@ -133,13 +140,12 @@ typedef struct dt_dev_pixelpipe_t
 
   // the data for the luminance mask are kept in a buffer written by demosaic or rawprepare
   // as we have to scale the mask later we keep size at that stage
-  float *rawdetail_mask_data;
-  int detail_width;
-  int detail_height;
   gboolean want_detail_mask;
+  struct dt_dev_detail_mask_t details;
 
   // we have to keep track of the next processing module to use an iop cacheline with high priority
   gboolean next_important_module;
+
   // avoid cached data for processed module
   gboolean nocache;
 
@@ -254,6 +260,8 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 // force a rebuild of the pipe, needed when a module order is changed for example
 void dt_dev_pixelpipe_rebuild(struct dt_develop_t *dev);
 
+// switch on details mask processing
+void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe);
 // process region of interest of pixels. returns TRUE if pipe was altered during processing.
 gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                              struct dt_develop_t *dev,

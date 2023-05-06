@@ -247,9 +247,8 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = NO_IMGID;
 
-  pipe->rawdetail_mask_data = NULL;
+  memset(&pipe->details, 0, sizeof(dt_dev_detail_mask_t));
   pipe->want_detail_mask = FALSE;
-  pipe->detail_width = pipe->detail_height = 0;
 
   pipe->processing = FALSE;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
@@ -532,7 +531,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
         const dt_develop_blend_params_t *const bp =
           (const dt_develop_blend_params_t *)piece->blendop_data;
         if(!feqf(bp->details, 0.0f, 1e-6))
-          pipe->want_detail_mask = TRUE;
+          dt_dev_pixelpipe_usedetails(pipe);
       }
     }
   }
@@ -626,6 +625,15 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
                                   pipe->iwidth, pipe->iheight,
                                   &pipe->processed_width,
                                   &pipe->processed_height);
+}
+
+void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe)
+{
+  if(!pipe->want_detail_mask)
+  {
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, NULL);
+  }
+  pipe->want_detail_mask = TRUE;
 }
 
 static void _dump_pipe_pfm_diff(
@@ -3020,9 +3028,8 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
 
 void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
 {
-  if(pipe->rawdetail_mask_data) dt_free_align(pipe->rawdetail_mask_data);
-  pipe->rawdetail_mask_data = NULL;
-  pipe->detail_width = pipe->detail_height = 0;
+  if(pipe->details.data) dt_free_align(pipe->details.data);
+  memset(&pipe->details, 0, sizeof(dt_dev_detail_mask_t));
 }
 
 gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
@@ -3036,26 +3043,30 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
   const int width = roi_in->width;
   const int height = roi_in->height;
   float *mask = dt_alloc_align_float((size_t)width * height);
-  float *tmp = dt_alloc_align_float((size_t)width * height);
-  if((mask == NULL) || (tmp == NULL)) goto error;
+  if(!mask) goto error;
 
-  p->rawdetail_mask_data = mask;
-  p->detail_width = roi_in->width;
-  p->detail_height = roi_in->height;
+  p->details.data = mask;
+  memcpy(&p->details.roi, roi_in, sizeof(dt_iop_roi_t));
 
   const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
   const dt_aligned_pixel_t wb = { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
                                   wboff ? 1.0f : p->dsc.temperature.coeffs[1],
                                   wboff ? 1.0f : p->dsc.temperature.coeffs[2]};
-  dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
-  dt_free_align(tmp);
+  if(dt_masks_calc_rawdetail_mask(&p->details, rgb, wb))
+    goto error;
+
+  uint64_t hash = 5381;
+  const char *str = (const char *)&p->details.roi;
+  for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
+    hash = ((hash << 5) + hash) ^ str[i];
+  p->details.hash = hash;
+
   dt_print_pipe(DT_DEBUG_PIPE, "write detail mask on CPU", p, NULL, roi_in, NULL, "\n");
   return FALSE;
 
   error:
   dt_print(DT_DEBUG_ALWAYS, "[dt_dev_write_rawdetail_mask] couldn't write detail mask\n");
   dt_free_align(mask);
-  dt_free_align(tmp);
   return TRUE;
 }
 
@@ -3111,9 +3122,14 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
     if(err != CL_SUCCESS) goto error;
   }
 
-  p->rawdetail_mask_data = mask;
-  p->detail_width = roi_in->width;
-  p->detail_height = roi_in->height;
+  p->details.data = mask;
+  memcpy(&p->details.roi, roi_in, sizeof(dt_iop_roi_t));
+
+  uint64_t hash = 5381;
+  const char *str = (const char *)&p->details.roi;
+  for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
+    hash = ((hash << 5) + hash) ^ str[i];
+  p->details.hash = hash;
 
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
@@ -3163,7 +3179,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
   if(!valid) return NULL;
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
            "[dt_dev_distort_detail_mask] (%ix%i) for module %s\n",
-           pipe->detail_width, pipe->detail_height,
+           pipe->details.roi.width, pipe->details.roi.height,
            target_module->op);
 
   float *resmask = src;
@@ -3206,7 +3222,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
                     || module->processed_roi_in.x != module->processed_roi_out.x
                     || module->processed_roi_in.y != module->processed_roi_out.y))
               dt_print_pipe(DT_DEBUG_ALWAYS,
-                      "distort raster mask",
+                      "distort details mask",
                       pipe, module->module,
                       &module->processed_roi_in, &module->processed_roi_out,
                       "misses distort_mask()\n");
