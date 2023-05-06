@@ -1003,7 +1003,7 @@ void *dt_update_cameras_thread(void *ptr)
   }
   while(dt_control_running())
   {
-    g_usleep(100000);
+    g_usleep(250000);  // 1/4 second
     dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
 
     const dt_view_t *cv = (darktable.view_manager)
@@ -1013,13 +1013,20 @@ void *dt_update_cameras_thread(void *ptr)
     if(camctl)
     {
       if((camctl->import_ui == FALSE) && (cv && (cv->view(cv) == DT_VIEW_LIGHTTABLE)))
+//TODO:  && import module is expanded and visible
       {
         camctl->ticker += 1;
         if((camctl->ticker & camctl->tickmask) == 0)
+        {
+          // we've rolled over the current scan interval, so check for
+          // new/removed cameras and decide how long to wait until the
+          // next scan based on the result: one second if there was a
+          // change, eight seconds if not
           camctl->tickmask = (dt_camctl_update_cameras(camctl)) ? 0x03 : 0x1F;
+        }
       }
       else
-        camctl->tickmask = 3; // want to be responsive right after other modes are done
+        camctl->tickmask = 3; // want to be responsive right after other modes are done - scan in one second
     }
   }
   return 0;
