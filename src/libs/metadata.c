@@ -498,7 +498,7 @@ static gboolean _lost_focus(GtkWidget *textview,
   }
   else
   {
-    _write_metadata(textview, self);
+    _write_metadata(GTK_TEXT_VIEW(textview), self);
   }
   
   return FALSE;
