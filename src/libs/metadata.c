@@ -496,6 +496,11 @@ static gboolean _lost_focus(GtkWidget *textview,
     _set_text_buffer(buffer, _("<leave unchanged>"));
     _text_set_italic(GTK_TEXT_VIEW(textview), TRUE);
   }
+  else
+  {
+    _write_metadata(textview, self);
+  }
+  
   return FALSE;
 }
 
