@@ -533,7 +533,6 @@ void process(struct dt_iop_module_t *self,
       out[0] = in[0] + dt_lut_lookup_2d_1c(data->grain_lut, (noise * strength) * GRAIN_LIGHTNESS_STRENGTH_SCALE, in[0] / 100.0f);
       out[1] = in[1];
       out[2] = in[2];
-//      out[3] = in[3];
 
       out += 4;
       in += 4;
