@@ -3067,8 +3067,10 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
   return FALSE;
 
   error:
-  dt_print(DT_DEBUG_ALWAYS, "[dt_dev_write_rawdetail_mask] couldn't write detail mask\n");
-  dt_free_align(mask);
+  dt_print_pipe(DT_DEBUG_ALWAYS,
+           "write detail mask on CPU", p, NULL, roi_in, NULL,
+           "couldn't write detail mask\n");
+  dt_dev_clear_rawdetail_mask(p);
   return TRUE;
 }
 
@@ -3091,38 +3093,30 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
   cl_int err = CL_SUCCESS;
   mask = dt_alloc_align_float((size_t)width * height);
-  if(mask == NULL) goto error;
   out = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-  if(out == NULL) goto error;
   tmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
-  if(tmp == NULL) goto error;
+  if((mask == NULL) || (tmp == NULL) || (out == NULL)) goto error;
 
-  {
-    const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
-    const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
+  const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
 
-    const dt_aligned_pixel_t wb =
+  const dt_aligned_pixel_t wb =
       { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
         wboff ? 1.0f : p->dsc.temperature.coeffs[1],
         wboff ? 1.0f : p->dsc.temperature.coeffs[2]};
 
-    err = dt_opencl_enqueue_kernel_2d_args
-      (devid, kernel, width, height,
+  err = dt_opencl_enqueue_kernel_2d_args
+      (devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
        CLARG(tmp), CLARG(in), CLARG(width), CLARG(height),
        CLARG(wb[0]), CLARG(wb[1]), CLARG(wb[2]));
-    if(err != CL_SUCCESS) goto error;
-  }
-  {
-    const int kernel = darktable.opencl->blendop->kernel_write_scharr_mask;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-      CLARG(tmp), CLARG(out), CLARG(width), CLARG(height));
-    if(err != CL_SUCCESS) goto error;
-  }
+  if(err != CL_SUCCESS) goto error;
 
-  {
-    err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
-    if(err != CL_SUCCESS) goto error;
-  }
+  err = dt_opencl_enqueue_kernel_2d_args
+      (devid, darktable.opencl->blendop->kernel_write_scharr_mask, width, height,
+       CLARG(tmp), CLARG(out), CLARG(width), CLARG(height));
+  if(err != CL_SUCCESS) goto error;
+
+  err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
+  if(err != CL_SUCCESS) goto error;
 
   p->details.data = mask;
   memcpy(&p->details.roi, roi_in, sizeof(dt_iop_roi_t));
@@ -3139,18 +3133,19 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   return FALSE;
 
   error:
-  dt_print(DT_DEBUG_ALWAYS,
-           "[dt_dev_write_rawdetail_mask_cl] couldn't write detail mask: %s\n", cl_errstr(err));
+  dt_print_pipe(DT_DEBUG_ALWAYS,
+           "write detail mask on GPU", p, NULL, roi_in, NULL,
+           "couldn't write detail mask: %s\n", cl_errstr(err));
   dt_dev_clear_rawdetail_mask(p);
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  dt_free_align(mask);
+  dt_dev_clear_rawdetail_mask(p);
   return TRUE;
 }
 #endif
 
-// this expects a mask prepared by the demosaicer and distorts the
-// mask through all pipeline modules until target
+// this expects a mask prepared by rawprepare or demosaic and distorts it
+// through all pipeline modules until target
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
                                   float *src,
                                   const dt_iop_module_t *target_module)
@@ -3177,12 +3172,10 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
       break;
     }
   }
-
   if(!valid) return NULL;
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
-           "[dt_dev_distort_detail_mask] (%ix%i) for module %s\n",
-           pipe->details.roi.width, pipe->details.roi.height,
-           target_module->op);
+
+  dt_print_pipe(DT_DEBUG_MASKS,
+           "distort detail mask", pipe, target_module, &pipe->details.roi, NULL, "\n");
 
   float *resmask = src;
   float *inmask  = src;
@@ -3205,11 +3198,8 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
         {
           float *tmp = dt_alloc_align_float((size_t)module->processed_roi_out.width
                                             * module->processed_roi_out.height);
-          dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
-                   "   %s %ix%i -> %ix%i\n",
-                   module->module->op,
-                   module->processed_roi_in.width, module->processed_roi_in.height,
-                   module->processed_roi_out.width, module->processed_roi_out.height);
+          dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
+             "distort detail mask", pipe, module->module, &module->processed_roi_in, &module->processed_roi_out, "\n");
 
           module->module->distort_mask(module->module, module, inmask, tmp,
                                        &module->processed_roi_in,
