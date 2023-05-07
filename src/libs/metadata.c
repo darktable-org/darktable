@@ -496,7 +496,19 @@ static gboolean _lost_focus(GtkWidget *textview,
     _set_text_buffer(buffer, _("<leave unchanged>"));
     _text_set_italic(GTK_TEXT_VIEW(textview), TRUE);
   }
+  else
+  {
+    _write_metadata(GTK_TEXT_VIEW(textview), self);
+  }
+
   return FALSE;
+}
+
+int mouse_leave(struct dt_lib_module_t *self)
+{
+  _write_metadata(NULL, self);
+
+  return 0;
 }
 
 int position(const dt_lib_module_t *self)
@@ -568,7 +580,7 @@ static void _mouse_over_image_callback(gpointer instance,
   // if editing don't lose the current entry
   const int32_t img = dt_control_get_mouse_over_id();
 
-  if(img == -1)
+  if(img == 0)
   { // exits thumbnails zone
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       _restore_edited_textview(i, d);
