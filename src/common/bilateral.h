@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ typedef struct dt_bilateral_t
   int width, height;
   int numslices, sliceheight, slicerows; //height--in input image, rows--in grid
   float sigma_s, sigma_r;
+  float sigma_s_inv, sigma_r_inv;  // reciprocals of sigma_s and sigma_r to avoid divisions
   float *buf __attribute__((aligned(64)));
 } __attribute__((packed)) dt_bilateral_t;
 

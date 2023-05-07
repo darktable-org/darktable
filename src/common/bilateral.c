@@ -16,8 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/** Note :
+ * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
+ * fp-contract=fast enables hardware-accelerated Fused Multiply-Add
+**/
+#if defined(__GNUC__)
+#pragma GCC optimize("finite-math-only", "fp-contract=fast", "fast-math", "no-math-errno")
+#endif
+
 #include "common/bilateral.h"
 #include "common/darktable.h" // for CLAMPS, dt_alloc_align, dt_free_align
+#include "develop/imageop.h"
 #include <glib.h>             // for MIN, MAX
 #include <math.h>             // for roundf
 #include <stdlib.h>           // for size_t, free, malloc, NULL
@@ -56,11 +65,14 @@ void dt_bilateral_grid_size(dt_bilateral_t *b,
   // dimensions, compute the effective sigma_s for the grid.
   b->sigma_s = MAX(height / _y, width / _x);
   b->sigma_r = L_range / _z;
+  // cache the reciprocals so that we can multiply instead of dividing to get a grid point
+  b->sigma_s_inv = 1.0f / b->sigma_s;
+  b->sigma_r_inv = 1.0f / b->sigma_r;
   // Compute the grid size in light of the actual adjusted values for
   // sigma_s and sigma_r
-  b->size_x = (int)ceilf(width / b->sigma_s) + 1;
-  b->size_y = (int)ceilf(height / b->sigma_s) + 1;
-  b->size_z = (int)ceilf(L_range / b->sigma_r) + 1;
+  b->size_x = (int)ceilf(width * b->sigma_s_inv) + 1;
+  b->size_y = (int)ceilf(height * b->sigma_s_inv) + 1;
+  b->size_z = (int)ceilf(L_range * b->sigma_r_inv) + 1;
 #if 0
   if(b->sigma_s != sigma_s)
     dt_print(DT_DEBUG_ALWAYS,
@@ -131,9 +143,9 @@ static size_t image_to_grid(const dt_bilateral_t *const b,
                             float *yf,
                             float *zf)
 {
-  float x = CLAMPS(i / b->sigma_s, 0, b->size_x - 1);
-  float y = CLAMPS(j / b->sigma_s, 0, b->size_y - 1);
-  float z = CLAMPS(L / b->sigma_r, 0, b->size_z - 1);
+  float x = CLAMPS(i * b->sigma_s_inv, 0, b->size_x - 1);
+  float y = CLAMPS(j * b->sigma_s_inv, 0, b->size_y - 1);
+  float z = CLAMPS(L * b->sigma_r_inv, 0, b->size_z - 1);
   const int xi = MIN((int)x, b->size_x - 2);
   const int yi = MIN((int)y, b->size_y - 2);
   const int zi = MIN((int)z, b->size_z - 2);
@@ -149,8 +161,8 @@ static size_t image_to_relgrid(const dt_bilateral_t *const b,
                                float *xf,
                                float *zf)
 {
-  float x = CLAMPS(i / b->sigma_s, 0, b->size_x - 1);
-  float z = CLAMPS(L / b->sigma_r, 0, b->size_z - 1);
+  float x = CLAMPS(i * b->sigma_s_inv, 0, b->size_x - 1);
+  float z = CLAMPS(L * b->sigma_r_inv, 0, b->size_z - 1);
   const int xi = MIN((int)x, b->size_x - 2);
   const int zi = MIN((int)z, b->size_z - 2);
   *xf = x - xi;
@@ -214,8 +226,8 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, oy, oz, ox, sigma_s, buf, offsets) \
-  shared(b)
+  dt_omp_firstprivate(in, b, oy, sigma_s, buf, offsets)  \
+  schedule(static)
 #endif
   for(int slice = 0; slice < b->numslices; slice++)
   {
@@ -224,11 +236,11 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
     // compute the first row of the final grid which this slice
     // splats, and subtract that from the first row the current thread
     // should use to get an offset
-    const int slice_offset = slice * b->slicerows - (int)(firstrow / b->sigma_s);
+    const int slice_offset = slice * b->slicerows - (int)(firstrow * b->sigma_s_inv);
     // now iterate over the rows of the current horizontal slice
     for(int j = firstrow; j < lastrow; j++)
     {
-      float y = CLAMPS(j / b->sigma_s, 0, b->size_y - 1);
+      float y = CLAMPS(j * b->sigma_s_inv, 0, b->size_y - 1);
       const int yi = MIN((int)y, b->size_y - 2);
       const float yf = y - yi;
       const size_t base = (size_t)(yi + slice_offset) * oy;
@@ -264,7 +276,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
   for(int slice = 1 ; slice < nthreads; slice++)
   {
     // compute the first row of the final grid which this slice splats
-    const int destrow = (int)(slice * b->sliceheight / b->sigma_s);
+    const int destrow = (int)(slice * b->sliceheight * b->sigma_s_inv);
     float *dest = buf + destrow * oy;
     // now iterate over the grid rows splatted for this slice
     for(int j = slice * b->slicerows; j < (slice+1)*b->slicerows; j++)
@@ -299,8 +311,8 @@ static void blur_line_z(float *buf,
   const float w2 = 2.f / 16.f;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w1, w2) \
-    shared(buf)
+  dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w1, w2, buf) \
+  schedule(static)
 #endif
   for(int k = 0; k < size1; k++)
   {
@@ -348,8 +360,8 @@ static void blur_line(float *buf,
   const float w2 = 1.f / 16.f;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w0, w1, w2) \
-    shared(buf)
+  dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w0, w1, w2, buf) \
+  schedule(static)
 #endif
   for(int k = 0; k < size1; k++)
   {
@@ -423,7 +435,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(b, in, out, norm, ox, oy, oz, height, width, buf)  \
-  collapse(2)
+  schedule(static) collapse(2)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -471,7 +483,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(b, in, out, norm, oy, oz, ox, buf, width, height)  \
-  collapse(2)
+  schedule(static) collapse(2)
 #endif
   for(int j = 0; j < height; j++)
   {
