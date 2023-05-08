@@ -551,11 +551,11 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
       {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(obuffsize, mask, raster_mask) \
+        dt_omp_firstprivate(obuffsize, opacity, mask, raster_mask) \
         schedule(static)
 #endif
         for(size_t i = 0; i < obuffsize; i++)
-          mask[i] = 1.0 - raster_mask[i];
+          mask[i] = (1.0f - raster_mask[i]) * opacity;
       }
       else
       {
@@ -1070,10 +1070,10 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(obuffsize, mask, raster_mask)
+        dt_omp_firstprivate(obuffsize, opacity, mask, raster_mask)
 #endif
         for(size_t i = 0; i < obuffsize; i++)
-          mask[i] = 1.0f - raster_mask[i];
+          mask[i] = (1.0f - raster_mask[i]) * opacity;
       }
       else
       {
