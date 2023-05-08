@@ -145,6 +145,7 @@ The following is a summary of the main features added to darktable
   - High-pass filter
   - Shadows and Highlights
   - Lens
+  - Grain
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
