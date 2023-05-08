@@ -3136,7 +3136,6 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   dt_print_pipe(DT_DEBUG_ALWAYS,
            "write detail mask on GPU", p, NULL, roi_in, NULL,
            "couldn't write detail mask: %s\n", cl_errstr(err));
-  dt_dev_clear_rawdetail_mask(p);
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
   dt_dev_clear_rawdetail_mask(p);
