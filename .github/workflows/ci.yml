@@ -19,6 +19,7 @@ on:
         - "data/style/**"
         - "data/themes/**"
         - "data/watermarks/**"
+        - "tools/*"
         - "**.md"
   pull_request:
     branches:
@@ -33,6 +34,7 @@ on:
         - "data/style/**"
         - "data/themes/**"
         - "data/watermarks/**"
+        - "tools/*"
         - "**.md"
 
 permissions:
