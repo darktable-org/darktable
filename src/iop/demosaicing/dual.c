@@ -65,8 +65,8 @@ static void dual_demosaic(
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(blend, rgb_data, vng_image, width, height) \
-  schedule(simd:static) aligned(blend, vng_image, rgb_data : 64)
+  dt_omp_firstprivate(blend, rgb_data, width, height) \
+  schedule(simd:static) aligned(blend, rgb_data : 64)
 #endif
     for(int idx = 0; idx < width * height; idx++)
     {

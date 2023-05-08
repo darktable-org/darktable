@@ -750,10 +750,13 @@ int process_cl(
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
   cl_mem high_image = NULL;
   cl_mem low_image = NULL;
-  cl_mem dev_aux = NULL;
-  const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && (data->dual_thrs > 0.0f) && !run_fast);
+
+  const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && !run_fast);
   const int devid = piece->pipe->devid;
   gboolean retval = FALSE;
+
+  if(dual)
+    high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
      demosaicing_method == DT_IOP_DEMOSAIC_PPG ||
@@ -766,9 +769,6 @@ int process_cl(
   {
     if(dual)
     {
-      high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(high_image == NULL)
-        return FALSE;
       if(!process_rcd_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE))
         goto finish;
     }
@@ -778,7 +778,7 @@ int process_cl(
        return FALSE;
     }
   }
-  else if(demosaicing_method ==  DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
+  else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
   {
     if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, FALSE))
       return FALSE;
@@ -794,11 +794,8 @@ int process_cl(
   {
     if(dual)
     {
-      high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(high_image == NULL)
-        return FALSE;
       if(!process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE))
-        return FALSE;
+        goto finish;
     }
     else
     {
@@ -818,19 +815,6 @@ int process_cl(
     goto finish;
   }
 
-  // This is dual demosaicing only stuff
-  const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
-
-  // need to reserve scaled auxiliary buffer or use dev_out
-  if(scaled)
-  {
-    dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-    if(dev_aux == NULL)
-      goto finish;
-  }
-  else
-    dev_aux = dev_out;
-
   low_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
   if(low_image == NULL) goto finish;
 
@@ -841,22 +825,31 @@ int process_cl(
       retval = FALSE;
       goto finish;
     }
-    retval = dual_demosaic_cl(self, piece, high_image, low_image, dev_aux, roi_in, showmask);
+    retval = dual_demosaic_cl(self, piece, high_image, low_image, high_image, roi_in, showmask);
   }
+  dt_opencl_release_mem_object(low_image);
+  low_image = NULL;
 
-  if(scaled)
+  if(roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
-    dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");
-    // scale aux buffer to output buffer
-    const int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
+    dt_print_pipe(DT_DEBUG_PIPE, "copy_dual_cl", piece->pipe, self, roi_in, roi_out, "\n");
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { roi_in->width, roi_in->height, 1 };
+    const int err = dt_opencl_enqueue_copy_image(devid, high_image, dev_out, origin, origin, region);
     if(err != CL_SUCCESS)
       retval = FALSE;
   }
-
+  else
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_dual_cl", piece->pipe, self, roi_in, roi_out, "\n");
+    const int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, high_image, roi_out, roi_in);
+    if(err != CL_SUCCESS)
+      retval = FALSE;
+  }
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
-  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+
   if(!retval) dt_control_log(_("[dual demosaic_cl] internal problem"));
   return retval;
 }
