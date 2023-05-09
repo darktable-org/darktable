@@ -1,7 +1,7 @@
 
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "lua/film.h"
 #include "common/debug.h"
 #include "common/film.h"
+#includd "common/utility.h"
 #include "common/grealpath.h"
 #include "lua/database.h"
 #include "lua/image.h"

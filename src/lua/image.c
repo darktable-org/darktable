@@ -29,6 +29,7 @@
 #include "common/metadata.h"
 #include "common/ratings.h"
 #include "common/datetime.h"
+#include "common/utility.h"
 #include "views/view.h"
 #include "lua/database.h"
 #include "lua/film.h"
