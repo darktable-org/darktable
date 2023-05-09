@@ -942,7 +942,7 @@ void gui_init(struct dt_iop_module_t *self)
                                N_("image"),
                                N_("3:1"),
                                N_("95:33"),
-                               N_("Cinemascope 2.39:1"),
+                               N_("CinemaScope 2.39:1"),
                                N_("2:1"),
                                N_("16:9"),
                                N_("5:3"),
