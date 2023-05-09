@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2022 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ typedef struct dt_print_t
 {
   dt_print_info_t *pinfo;
   dt_images_box *imgs;
-  int32_t last_selected;
+  dt_imgid_t last_selected;
 }
 dt_print_t;
 
@@ -60,7 +60,9 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_PRINT;
 }
 
-static void _print_mipmaps_updated_signal_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data)
+static void _print_mipmaps_updated_signal_callback(gpointer instance,
+                                                   dt_imgid_t imgid,
+                                                   gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
@@ -116,12 +118,16 @@ static void _film_strip_activated(const dt_imgid_t imgid, void *data)
   dt_control_queue_redraw();
 }
 
-static void _view_print_filmstrip_activate_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data)
+static void _view_print_filmstrip_activate_callback(gpointer instance,
+                                                    dt_imgid_t imgid,
+                                                    gpointer user_data)
 {
   if(dt_is_valid_imgid(imgid)) _film_strip_activated(imgid, user_data);
 }
 
-static void _view_print_settings(const dt_view_t *view, dt_print_info_t *pinfo, dt_images_box *imgs)
+static void _view_print_settings(const dt_view_t *view,
+                                 dt_print_info_t *pinfo,
+                                 dt_images_box *imgs)
 {
   dt_print_t *prt = (dt_print_t *)view->data;
 
@@ -130,9 +136,14 @@ static void _view_print_settings(const dt_view_t *view, dt_print_info_t *pinfo, 
   dt_control_queue_redraw();
 }
 
-static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
-                                   GtkSelectionData *selection_data, guint target_type, guint time,
-                                   gpointer data)
+static void _drag_and_drop_received(GtkWidget *widget,
+                                    GdkDragContext *context,
+                                    gint x,
+                                    gint y,
+                                    GtkSelectionData *selection_data,
+                                    guint target_type,
+                                    guint time,
+                                    gpointer data)
 {
   const dt_view_t *self = (dt_view_t *)data;
   dt_print_t *prt = (dt_print_t *)self->data;
@@ -147,8 +158,11 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
   dt_control_queue_redraw_center();
 }
 
-static gboolean _drag_motion_received(GtkWidget *widget, GdkDragContext *dc,
-                                      const gint x, const gint y, const guint time,
+static gboolean _drag_motion_received(GtkWidget *widget,
+                                      GdkDragContext *dc,
+                                      const gint x,
+                                      const gint y,
+                                      const guint time,
                                       gpointer data)
 {
   const dt_view_t *self = (dt_view_t *)data;
@@ -178,9 +192,12 @@ void cleanup(dt_view_t *self)
   free(prt);
 }
 
-static void _expose_print_page(dt_view_t *self, cairo_t *cr,
-                              const int32_t width, const int32_t height,
-                              const int32_t pointerx, const int32_t pointery)
+static void _expose_print_page(dt_view_t *self,
+                               cairo_t *cr,
+                               const int32_t width,
+                               const int32_t height,
+                               const int32_t pointerx,
+                               const int32_t pointery)
 {
   dt_print_t *prt = (dt_print_t *)self->data;
 
@@ -278,7 +295,12 @@ static void _expose_print_page(dt_view_t *self, cairo_t *cr,
   cairo_fill (cr);
 }
 
-void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
+void expose(dt_view_t *self,
+            cairo_t *cri,
+            int32_t width_i,
+            int32_t height_i,
+            int32_t pointerx,
+            int32_t pointery)
 {
   // clear the current surface
   dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_PRINT_BG);
@@ -290,7 +312,11 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   _expose_print_page(self, cri, width_i, height_i, pointerx, pointery);
 }
 
-void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+void mouse_moved(dt_view_t *self,
+                 double x,
+                 double y,
+                 double pressure,
+                 int which)
 {
   const dt_print_t *prt = (dt_print_t *)self->data;
 
@@ -355,13 +381,14 @@ gboolean try_enter(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
-  dt_print_t *prt=(dt_print_t*)self->data;
+  dt_print_t *prt = (dt_print_t*)self->data;
 
   /* scroll filmstrip to the first selected image */
   if(prt->imgs->imgid_to_load >= 0)
   {
     // change active image
-    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), prt->imgs->box[0].imgid, TRUE);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui),
+                                   prt->imgs->box[0].imgid, TRUE);
     dt_view_active_images_reset(FALSE);
     dt_view_active_images_add(prt->imgs->imgid_to_load, TRUE);
   }
@@ -387,16 +414,17 @@ void enter(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
-  dt_print_t *prt=(dt_print_t*)self->data;
+  dt_print_t *prt = (dt_print_t*)self->data;
 
   /* disconnect from mipmap updated signal */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_print_mipmaps_updated_signal_callback),
-                               (gpointer)self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_print_mipmaps_updated_signal_callback),
+                                     (gpointer)self);
 
   /* disconnect from filmstrip image activate */
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                               G_CALLBACK(_view_print_filmstrip_activate_callback),
-                               (gpointer)self);
+                                     G_CALLBACK(_view_print_filmstrip_activate_callback),
+                                     (gpointer)self);
 
   dt_printing_clear_boxes(prt->imgs);
 //  g_signal_disconnect(widget, "drag-data-received", G_CALLBACK(_drag_and_drop_received));
