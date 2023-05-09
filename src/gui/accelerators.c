@@ -237,6 +237,8 @@ static float _action_process_button(gpointer target,
 {
   if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
 
+  dt_lib_gui_update(g_object_get_data(G_OBJECT(target), "module"));
+
   if(DT_PERFORM_ACTION(move_size) && gtk_widget_is_sensitive(target))
   {
     if(effect != DT_ACTION_EFFECT_ACTIVATE
@@ -4750,6 +4752,7 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self,
     if(accel_key && (self->actions.type != DT_ACTION_TYPE_IOP_INSTANCE
                      || darktable.control->accel_initialising))
       dt_shortcut_register(ac, 0, 0, accel_key, mods);
+    g_object_set_data(G_OBJECT(button), "module", self);
   }
 
   return button;
