@@ -504,6 +504,13 @@ static gboolean _lost_focus(GtkWidget *textview,
   return FALSE;
 }
 
+int mouse_leave(struct dt_lib_module_t *self)
+{
+  _write_metadata(NULL, self);
+  
+  return 0;
+}
+
 int position(const dt_lib_module_t *self)
 {
   return 510;
