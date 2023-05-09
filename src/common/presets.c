@@ -80,12 +80,12 @@ void dt_presets_save_to_file(const int rowid,
     const gchar *model = (gchar *)sqlite3_column_text(stmt, 6);
     const gchar *maker = (gchar *)sqlite3_column_text(stmt, 7);
     const gchar *lens = (gchar *)sqlite3_column_text(stmt, 8);
-    const float iso_min = sqlite3_column_double(stmt, 9);
-    const float iso_max = sqlite3_column_double(stmt, 10);
-    const float exposure_min = sqlite3_column_double(stmt, 11);
-    const float exposure_max = sqlite3_column_double(stmt, 12);
-    const float aperture_min = sqlite3_column_double(stmt, 13);
-    const float aperture_max = sqlite3_column_double(stmt, 14);
+    const double iso_min = sqlite3_column_double(stmt, 9);
+    const double iso_max = sqlite3_column_double(stmt, 10);
+    const double exposure_min = sqlite3_column_double(stmt, 11);
+    const double exposure_max = sqlite3_column_double(stmt, 12);
+    const double aperture_min = sqlite3_column_double(stmt, 13);
+    const double aperture_max = sqlite3_column_double(stmt, 14);
     const int focal_length_min = sqlite3_column_double(stmt, 15);
     const int focal_length_max = sqlite3_column_double(stmt, 16);
     const int op_version = sqlite3_column_int(stmt, 17);
@@ -206,10 +206,10 @@ static int get_preset_element_int(xmlDocPtr doc, gchar *name)
   return result;
 }
 
-static int get_preset_element_float(xmlDocPtr doc, gchar *name)
+static double get_preset_element_double(xmlDocPtr doc, gchar *name)
 {
   gchar *value = get_preset_element(doc, name);
-  const float result = value ? atof(value) : 0.0f;
+  const double result = value ? atof(value) : 0.0;
   g_free(value);
   return result;
 }
@@ -234,12 +234,12 @@ gboolean dt_presets_import_from_file(const char *preset_path)
   gchar *model = get_preset_element(doc, "model");
   gchar *maker = get_preset_element(doc, "maker");
   gchar *lens = get_preset_element(doc, "lens");
-  const float iso_min = get_preset_element_float(doc, "iso_min");
-  const float iso_max = get_preset_element_float(doc, "iso_max");
-  const float exposure_min = get_preset_element_float(doc, "exposure_min");
-  const float exposure_max = get_preset_element_float(doc, "exposure_max");
-  const float aperture_min = get_preset_element_float(doc, "aperture_min");
-  const float aperture_max = get_preset_element_float(doc, "aperture_max");
+  const double iso_min = get_preset_element_double(doc, "iso_min");
+  const double iso_max = get_preset_element_double(doc, "iso_max");
+  const double exposure_min = get_preset_element_double(doc, "exposure_min");
+  const double exposure_max = get_preset_element_double(doc, "exposure_max");
+  const double aperture_min = get_preset_element_double(doc, "aperture_min");
+  const double aperture_max = get_preset_element_double(doc, "aperture_max");
   const int focal_length_min = get_preset_element_int(doc, "focal_length_min");
   const int focal_length_max = get_preset_element_int(doc, "focal_length_max");
   gchar *op_params = get_preset_element(doc, "op_params");
