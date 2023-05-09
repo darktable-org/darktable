@@ -2297,8 +2297,8 @@ int dt_exif_read_blob(uint8_t **buf,
       // GPS data
       dt_remove_exif_geotag(exifData);
       const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if(cimg->geoloc.longitude != DT_INVALID_GPS_COORDINATE
-	 && cimg->geoloc.latitude != DT_INVALID_GPS_COORDINATE)
+      if(dt_valid_gps_coordinate(cimg->geoloc.longitude)
+	 && dt_valid_gps_coordinate(cimg->geoloc.latitude))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->geoloc.longitude < 0) ? "W" : "E";
@@ -2319,7 +2319,7 @@ int dt_exif_read_blob(uint8_t **buf,
         g_free(long_str);
         g_free(lat_str);
       }
-      if(cimg->geoloc.elevation != DT_INVALID_GPS_COORDINATE)
+      if(dt_valid_gps_coordinate(cimg->geoloc.elevation))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSAltitudeRef"] = (cimg->geoloc.elevation < 0) ? "1" : "0";
@@ -4121,7 +4121,7 @@ static void dt_set_xmp_exif_geotag(Exiv2::XmpData &xmpData,
 {
   dt_remove_xmp_exif_geotag(xmpData);
 
-  if(longitude!= DT_INVALID_GPS_COORDINATE && latitude != DT_INVALID_GPS_COORDINATE)
+  if(dt_valid_gps_coordinate(longitude) && dt_valid_gps_coordinate(latitude))
   {
     char long_dir = 'E';
     char lat_dir = 'N';
@@ -4154,7 +4154,7 @@ static void dt_set_xmp_exif_geotag(Exiv2::XmpData &xmpData,
     g_free(str);
   }
 
-  if(altitude != DT_INVALID_GPS_COORDINATE)
+  if(dt_valid_gps_coordinate(altitude))
   {
     xmpData["Xmp.exif.GPSAltitudeRef"] = (altitude < 0) ? "1" : "0";
 
