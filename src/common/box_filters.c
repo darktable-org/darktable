@@ -16,6 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef __GNUC__
+#pragma GCC optimize ("finite-math-only", "no-math-errno", "fp-contract=fast", "fast-math")
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -29,10 +33,6 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 
-#ifdef __GNUC__
-#pragma GCC optimize ("finite-math-only")
-#endif
-
 static void _blur_horizontal_1ch(float *const restrict buf,
     const int height,
     const int width,
@@ -42,8 +42,7 @@ static void _blur_horizontal_1ch(float *const restrict buf,
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width, padded_size) \
-  dt_omp_sharedconst(buf, scanlines) \
+  dt_omp_firstprivate(radius, height, width, padded_size, buf, scanlines) \
   schedule(static)
 #endif
   for(int y = 0; y < height; y++)
@@ -106,8 +105,7 @@ static void _blur_horizontal_2ch(float *const restrict buf,
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width, padded_size)   \
-  dt_omp_sharedconst(buf, scanlines) \
+  dt_omp_firstprivate(radius, height, width, padded_size, buf, scanlines) \
   schedule(static)
 #endif
   for(int y = 0; y < height; y++)
@@ -384,8 +382,7 @@ static void _blur_horizontal_4ch(float *const restrict buf,
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width, padded_size) \
-  dt_omp_sharedconst(buf, scanlines) \
+  dt_omp_firstprivate(radius, height, width, padded_size, buf, scanlines) \
   schedule(static)
 #endif
   for(int y = 0; y < height; y++)
@@ -929,9 +926,7 @@ static void _blur_vertical_1ch(float *const restrict buf,
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width, padded_size) \
-  shared(darktable) \
-  dt_omp_sharedconst(buf, scanlines) \
+  dt_omp_firstprivate(radius, height, width, padded_size, buf, scanlines) \
   schedule(static)
 #endif
   for(int x = 0; x < width; x += 16)
@@ -1022,8 +1017,7 @@ static void box_mean_vert_1ch_Kahan(float *const buf,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, radius, padded_size) \
-  dt_omp_sharedconst(buf, scratch_buf) \
+  dt_omp_firstprivate(width, height, radius, padded_size, buf, scratch_buf) \
   schedule(static)
 #endif
   for(size_t col = 0; col < width; col += 16)
@@ -1060,8 +1054,7 @@ static void dt_box_mean_4ch_Kahan(float *const buf,
     float *const restrict scanlines = dt_alloc_perthread_float(4*width,&padded_size);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, radius, padded_size) \
-  dt_omp_sharedconst(buf, scanlines) \
+  dt_omp_firstprivate(width, height, radius, padded_size, buf, scanlines) \
   schedule(static)
 #endif
     for(size_t row = 0; row < height; row++)
@@ -1306,8 +1299,7 @@ static void box_max_1ch(float *const buf,
   float *const restrict scratch_buffers = dt_alloc_perthread_float(scratch_size,&allocsize);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(w, width, height, buf, allocsize) \
-  dt_omp_sharedconst(scratch_buffers) \
+  dt_omp_firstprivate(w, width, height, buf, allocsize, scratch_buffers) \
   schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
@@ -1318,8 +1310,7 @@ static void box_max_1ch(float *const buf,
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none)           \
-  dt_omp_firstprivate(w, width, height, buf, allocsize, eff_height) \
-  dt_omp_sharedconst(scratch_buffers) \
+  dt_omp_firstprivate(w, width, height, buf, allocsize, eff_height, scratch_buffers) \
   schedule(static)
 #endif
   for(int col = 0; col < (width & ~15); col += 16)
@@ -1466,8 +1457,7 @@ static void box_min_1ch(float *const buf,
   float *const restrict scratch_buffers = dt_alloc_perthread_float(scratch_size,&allocsize);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(w, width, height, buf, allocsize) \
-  dt_omp_sharedconst(scratch_buffers) \
+  dt_omp_firstprivate(w, width, height, buf, allocsize, scratch_buffers) \
   schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
@@ -1478,8 +1468,7 @@ static void box_min_1ch(float *const buf,
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none)           \
-  dt_omp_firstprivate(w, width, height, buf,allocsize, eff_height) \
-  dt_omp_sharedconst(scratch_buffers) \
+  dt_omp_firstprivate(w, width, height, buf,allocsize, eff_height, scratch_buffers) \
   schedule(static)
 #endif
   for(size_t col = 0; col < (width & ~15); col += 16)
