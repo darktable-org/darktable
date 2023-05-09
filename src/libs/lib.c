@@ -830,6 +830,18 @@ static gboolean _lib_draw_callback(GtkWidget *widget,
   return FALSE;
 }
 
+static gboolean _lib_mouse_leave_callback(GtkWidget *widget,
+                                          GdkEventCrossing *e,
+                                          gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+
+  if(self->mouse_leave)
+    self->mouse_leave(self);
+
+  return TRUE;
+}
+
 void dt_lib_gui_queue_update(dt_lib_module_t *module)
 {
   module->gui_uptodate = FALSE;
@@ -846,6 +858,7 @@ static void dt_lib_init_module(void *m)
   if(darktable.gui)
   {
     module->gui_init(module);
+
     if(module->widget)
     {
       g_object_ref_sink(module->widget);
@@ -1060,6 +1073,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   GtkWidget *expander = dtgtk_expander_new(header, module->widget);
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
+  GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
 
   /* setup the header box */
@@ -1069,6 +1083,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_signal_connect(G_OBJECT(header_evb), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
+
+  /* connect mouse button callbacks for focus and presets */
+  g_signal_connect(G_OBJECT(body_evb), "leave-notify-event",
+                   G_CALLBACK(_lib_mouse_leave_callback), module);
 
   /*
    * initialize the header widgets
