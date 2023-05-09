@@ -30,6 +30,7 @@
 #include "common/printing.h"
 #include "common/styles.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "common/variables.h"
 #include "control/jobs.h"
 #include "dtgtk/resetlabel.h"

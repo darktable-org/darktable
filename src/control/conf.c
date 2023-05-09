@@ -24,6 +24,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "common/math.h"
+#include "common/utility.h"
 #include "control/conf.h"
 
 #include <glib.h>

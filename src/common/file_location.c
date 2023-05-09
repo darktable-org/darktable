@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023x darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #endif
 
 #include "common/grealpath.h"
+#include "common/utility.h"
 #include "darktable.h"
 #include "file_location.h"
 #include "whereami.h"

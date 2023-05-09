@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"

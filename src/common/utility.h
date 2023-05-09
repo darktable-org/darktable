@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include <math.h>
+#include "common/darktable.h"
+#include "common/math.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <librsvg/rsvg.h>
@@ -72,15 +73,19 @@ dt_logo_season_t dt_util_get_logo_season(void);
 cairo_surface_t *dt_util_get_logo(const float size);
 cairo_surface_t *dt_util_get_logo_text(const float size);
 
-/** special value to indicate an invalid or unitialized coordinate (replaces */
-/** former use of NAN and isnan() by the most negative float) **/
-#define DT_INVALID_GPS_COORDINATE (-FLT_MAX)
+/** special value to indicate an invalid or unitialized coordinate (plan to
+ ** replace use of NAN and isnan() by the most negative float) to enable
+ ** -ffinite-math-only.  MUST use test function below rather than simply
+ ** comparing against the flag value, since NAN *always* compares false **/
+#define DT_INVALID_GPS_COORDINATE NAN
+//#define DT_INVALID_GPS_COORDINATE (-FLT_MAX)
 static inline gboolean dt_valid_gps_coordinate(float value)
 {
-  return value > DT_INVALID_GPS_COORDINATE;
+  return !dt_isnan(value) && value > DT_INVALID_GPS_COORDINATE;
+//  return value > DT_INVALID_GPS_COORDINATE;
 }
 /** we keep the value NAN in the database and .XMP for backward compatibility,
- ** so provide functions to convert back and forth **/
+ ** so provide functions to convert back and forth as needed **/
 static inline float dt_gps_convert_sql_to_img(float value)
 {
   return dt_valid_gps_coordinate(value) ? value : DT_INVALID_GPS_COORDINATE;

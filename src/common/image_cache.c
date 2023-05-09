@@ -22,6 +22,7 @@
 #include "common/exif.h"
 #include "common/image.h"
 #include "common/datetime.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 

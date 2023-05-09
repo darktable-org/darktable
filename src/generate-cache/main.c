@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2022 darktable developers.
+    Copyright (C) 2015-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
 #include "common/file_location.h"
 #include "common/history.h"      // for dt_history_hash_set_mipmap
+#include "common/utility.h"
 #include "config.h"              // for GETTEXT_PACKAGE, etc
 #include "control/conf.h"        // for dt_conf_get_bool
 

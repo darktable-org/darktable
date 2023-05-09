@@ -28,6 +28,7 @@
 #include "common/file_location.h"
 #include "common/iop_order.h"
 #include "common/styles.h"
+#include "common/utility.h"
 #include "common/history.h"
 #ifdef HAVE_ICU
 #include "common/sqliteicu.h"

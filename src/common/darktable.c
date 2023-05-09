@@ -55,6 +55,7 @@
 #include "common/points.h"
 #include "common/resource_limits.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"

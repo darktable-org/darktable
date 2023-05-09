@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/utility.h"
 #include "control/signal.h"
 #include "gui/gtk.h"
 #include "views/view.h"

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "common/grouping.h"
 #include "control/conf.h"
 #include "control/control.h"

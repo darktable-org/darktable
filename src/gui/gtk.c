@@ -25,6 +25,7 @@
 #include "common/l10n.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/utility.h"
 #include "gui/guides.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"

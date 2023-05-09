@@ -27,6 +27,7 @@
 #include "common/debug.h"
 #include "common/history.h"
 #include "common/image.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "crawler.h"

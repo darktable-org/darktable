@@ -46,7 +46,6 @@
 #include "common/database.h"
 #include "common/dtpthread.h"
 #include "common/dttypes.h"
-#include "common/utility.h"
 #include "common/wb_presets.h"
 #ifdef _WIN32
 #include "win/getrusage.h"
@@ -56,6 +55,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
+#include <gtk/gtk.h>
 #include <inttypes.h>
 #include <json-glib/json-glib.h>
 #include <lua/lua.h>

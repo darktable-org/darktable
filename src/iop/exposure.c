@@ -31,6 +31,7 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"

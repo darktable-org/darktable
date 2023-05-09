@@ -25,6 +25,7 @@
 #include "common/iop_order.h"
 #include "common/ratings.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "common/metadata.h"
 #include "control/control.h"
 

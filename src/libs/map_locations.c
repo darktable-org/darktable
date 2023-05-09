@@ -18,6 +18,7 @@
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/map_locations.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/accelerators.h"

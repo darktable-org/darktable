@@ -23,6 +23,7 @@
 #include "common/metadata.h"
 #include "common/tags.h"
 #include "common/datetime.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"

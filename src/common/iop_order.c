@@ -24,6 +24,7 @@
 #include "common/iop_order.h"
 #include "common/styles.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/pixelpipe.h"
 

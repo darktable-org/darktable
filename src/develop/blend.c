@@ -22,6 +22,7 @@
 #include "common/imagebuf.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"

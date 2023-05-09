@@ -47,6 +47,7 @@
 #include "common/illuminants.h"
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
+#include "common/utility.h"
 #include "develop/imageop_math.h"
 #include "develop/openmp_maths.h"
 #include "gui/accelerators.h"

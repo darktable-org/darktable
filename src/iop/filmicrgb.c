@@ -34,6 +34,7 @@
 #include "common/gamut_mapping.h"
 #include "common/image.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"

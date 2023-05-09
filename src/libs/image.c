@@ -26,6 +26,7 @@
 #include "common/undo.h"
 #include "common/metadata.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/jobs/control_jobs.h"

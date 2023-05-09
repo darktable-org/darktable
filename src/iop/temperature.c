@@ -29,6 +29,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "common/wb_presets.h"
 #include "control/control.h"
 #include "control/conf.h"

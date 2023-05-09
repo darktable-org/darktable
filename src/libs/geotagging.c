@@ -23,6 +23,7 @@
 #include "common/gpx.h"
 #include "common/geo.h"
 #include "common/datetime.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "dtgtk/button.h"
 #include "control/jobs.h"
