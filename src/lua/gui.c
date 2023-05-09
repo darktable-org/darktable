@@ -66,7 +66,7 @@ static int _selection_cb(lua_State *L)
 
 static int _hovered_cb(lua_State *L)
 {
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
   if(!dt_is_valid_imgid(mouse_over_id))
   {
     lua_pushnil(L);
