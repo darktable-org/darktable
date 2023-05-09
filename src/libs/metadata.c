@@ -573,7 +573,7 @@ static void _mouse_over_image_callback(gpointer instance,
   // if editing don't lose the current entry
   const int32_t img = dt_control_get_mouse_over_id();
 
-  if(img == -1)
+  if(img == 0)
   { // exits thumbnails zone
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       _restore_edited_textview(i, d);
