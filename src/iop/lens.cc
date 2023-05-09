@@ -1755,8 +1755,7 @@ static int _init_coeffs_md(const dt_image_t *img,
         // Pixel value is to be divided by (1 + dvig) to correct vignetting
         // Scale dvig according to fine-tune: 0 for no correction, 1 for
         // correction specified by metadata, and 2 to double the correction.
-        // Store the square root since _process_md will square the value
-        vig[i] = sqrtf(1.0f / (1.0f + p->cor_vig_ft * dvig));
+        vig[i] = 1.0f / (1.0f + p->cor_vig_ft * dvig);
       }
     }
     return nc;
@@ -2038,7 +2037,7 @@ static void _process_md(struct dt_iop_module_t *self,
           _interpolate_linear_spline(d->knots, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
 
         for_each_channel(c)
-          buf[idx + c] /= (sf != 0.0f) ? sf*sf : 1.0f;
+          buf[idx + c] /= (sf != 0.0f) ? sf : 1.0f;
       }
     }
   }
