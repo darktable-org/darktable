@@ -333,7 +333,6 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
                                 N_("HDR"),
                                 N_("marked for deletion"),
                                 N_("auto-applying presets applied"),
-                                N_("legacy flag. set for all new images"),
                                 N_("local copy"),
                                 N_("has .txt"),
                                 N_("has .wav"),
@@ -404,42 +403,36 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
     tooltip_parts[next_tooltip_part++] = _(flag_descriptions[6]);
   }
 
-  if(img->flags & DT_IMAGE_NO_LEGACY_PRESETS)
-  {
-    value[8] = 'p';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[7]);
-  }
-
   if(img->flags & DT_IMAGE_LOCAL_COPY)
   {
-    value[9] = 'c';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[8]);
+    value[8] = 'c';
+    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[7]);
   }
 
   if(img->flags & DT_IMAGE_HAS_TXT)
   {
-    value[10] = 't';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[9]);
+    value[9] = 't';
+    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[8]);
   }
 
   if(img->flags & DT_IMAGE_HAS_WAV)
   {
-    value[11] = 'w';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
+    value[10] = 'w';
+    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[9]);
   }
 
   if(dt_image_monochrome_flags(img))
   {
-    value[12] = 'm';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[11]);
+    value[11] = 'm';
+    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
   }
 
   const int loader = (unsigned int)img->loader < LOADER_COUNT ? img->loader : 0;
-  value[13] = loaders_info[loader].flag;
+  value[12] = loaders_info[loader].flag;
   char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders_info[loader].tooltip));
   tooltip_parts[next_tooltip_part++] = loader_tooltip;
 
-  value[14] = '\0';
+  value[13] = '\0';
 
   flags_tooltip = g_strjoinv("\n", tooltip_parts);
   g_free(loader_tooltip);
