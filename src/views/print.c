@@ -297,9 +297,10 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   // if we are not hovering over a thumbnail in the filmstrip -> show
   // metadata of first opened image.
 
-  const int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  const dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
 
-  if(prt->imgs->count == 1 && mouse_over_id != prt->imgs->box[0].imgid)
+  if(prt->imgs->count == 1
+     && mouse_over_id != prt->imgs->box[0].imgid)
   {
     dt_control_set_mouse_over_id(prt->imgs->box[0].imgid);
   }

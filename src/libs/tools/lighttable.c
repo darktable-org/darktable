@@ -306,10 +306,10 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
     {
       if(effect != DT_ACTION_EFFECT_OFF)
       {
-        if(dt_control_get_mouse_over_id() != -1)
+        if(dt_is_valid_imgid(dt_control_get_mouse_over_id()))
         {
-          gboolean sticky = effect == DT_ACTION_EFFECT_HOLD_TOGGLE;
-          gboolean focus = element == DT_ACTION_ELEMENT_FOCUS_DETECT;
+          const gboolean sticky = effect == DT_ACTION_EFFECT_HOLD_TOGGLE;
+          const gboolean focus = element == DT_ACTION_ELEMENT_FOCUS_DETECT;
 
           dt_view_lighttable_set_preview_state(darktable.view_manager, TRUE, sticky, focus);
         }

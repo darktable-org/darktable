@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,9 +80,10 @@ static void _insert_in_list(GList **list, const dt_imgid_t imgid, gboolean only_
 // test if the cache is still valid
 static gboolean _test_cache(dt_act_on_cache_t *cache)
 {
-  const int mouseover = dt_control_get_mouse_over_id();
+  const dt_imgid_t mouseover = dt_control_get_mouse_over_id();
 
-  if(cache->ok && cache->image_over == mouseover
+  if(cache->ok
+     && cache->image_over == mouseover
      && cache->inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
      && g_slist_length(cache->active_imgs) == g_slist_length(darktable.view_manager->active_images))
   {
@@ -128,7 +129,7 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
    *  if ordered is TRUE, we return the list in the gui order. Otherwise the order is undefined (but quicker)
    **/
 
-  const int mouseover = dt_control_get_mouse_over_id();
+  const dt_imgid_t mouseover = dt_control_get_mouse_over_id();
 
   dt_act_on_cache_t *cache;
   if(only_visible)
@@ -144,7 +145,7 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
 
   GList *l = NULL;
   gboolean inside_sel = FALSE;
-  if(mouseover > 0)
+  if(dt_is_valid_imgid(mouseover))
   {
     // column 1,2,3
     if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside ||
@@ -152,7 +153,9 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
     {
       // column 1,2
       sqlite3_stmt *stmt;
-      gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
+      gchar *query = g_strdup_printf("SELECT imgid"
+                                     " FROM main.selected_images"
+                                     " WHERE imgid=%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {

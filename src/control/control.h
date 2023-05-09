@@ -254,8 +254,8 @@ int dt_control_running();
 
 // thread-safe interface between core and gui.
 // is the locking really needed?
-int32_t dt_control_get_mouse_over_id();
-void dt_control_set_mouse_over_id(int32_t value);
+dt_imgid_t dt_control_get_mouse_over_id();
+void dt_control_set_mouse_over_id(dt_imgid_t value);
 
 float dt_control_get_dev_zoom_x();
 void dt_control_set_dev_zoom_x(float value);

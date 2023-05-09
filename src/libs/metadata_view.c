@@ -464,7 +464,7 @@ static int lua_update_metadata(lua_State*L);
 /* update all values to reflect mouse over image id or no data at all */
 void gui_update(dt_lib_module_t *self)
 {
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
   int32_t count = 0;
 
   gchar *images = NULL;
@@ -602,7 +602,7 @@ void gui_update(dt_lib_module_t *self)
 
   g_free(images);
 
-  int img_id = mouse_over_id;
+  dt_imgid_t img_id = mouse_over_id;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
 
   if(!img) goto fill_minuses;

@@ -3417,7 +3417,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   const int32_t capht = self->height - 2*tb;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
   if(!dt_is_valid_imgid(mouse_over_id))
   {
     mouse_over_id = dev->image_storage.id;

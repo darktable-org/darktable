@@ -1280,7 +1280,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   table->dragging = FALSE;
 
   if((abs(table->drag_dx) + abs(table->drag_dy)) <= DT_PIXEL_APPLY_DPI(8)
-     && dt_control_get_mouse_over_id() < 1)
+     && !dt_is_valid_imgid(dt_control_get_mouse_over_id()))
   {
     // if we are on empty area and have detect no real movement, we deselect
     dt_selection_clear(darktable.selection);
