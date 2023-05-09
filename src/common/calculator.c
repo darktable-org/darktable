@@ -37,6 +37,7 @@ typedef enum operators_t
   O_DIVISION,
   O_MODULO,
   O_POWER,
+  O_RATIO,
   O_LEFTROUND,
   O_RIGHTROUND,
 } operators_t;
@@ -125,6 +126,11 @@ static token_t *get_token(parser_state_t *self)
         self->p++;
         token->type = T_OPERATOR;
         token->data.operator= O_POWER;
+        return token;
+      case ':':
+        self->p++;
+        token->type = T_OPERATOR;
+        token->data.operator= O_RATIO;
         return token;
       case '(':
         self->p++;
@@ -220,7 +226,9 @@ static float parse_multiplicative_expression(parser_state_t *self)
   {
     const operators_t operator= self->token->data.operator;
 
-    if(operator!= O_MULTIPLY &&operator!= O_DIVISION &&operator!= O_MODULO) return left;
+    if(operator != O_MULTIPLY && operator != O_DIVISION && operator != O_MODULO
+      && operator != O_RATIO)
+      return left;
 
     free(self->token);
     self->token = get_token(self);
@@ -233,6 +241,8 @@ static float parse_multiplicative_expression(parser_state_t *self)
       left /= right;
     else if(operator== O_MODULO)
       left = fmodf(left, right);
+    else if(operator == O_RATIO)
+      left = MAX(left,right) / MIN(left,right);
   }
 
   return left;
@@ -343,6 +353,7 @@ float dt_calculator_solve(const float x, const char *formula)
       //       case O_DIVISION:
       //       case O_MODULO:
       //       case O_POWER:
+      //       case O_RATIO:
       //         operator = self->token->data.operator;
       //         free(self->token);
       //         self->token = get_token(self);
@@ -362,6 +373,7 @@ float dt_calculator_solve(const float x, const char *formula)
   //     case O_DIVISION: result = x / res; break;
   //     case O_MODULO: result = fmodf(x, res); break;
   //     case O_POWER: result = powf(x, res); break;
+  //     case O_RATIO: result = max(x,res) / min(X,res); break;
   //     default: break;
   //   }
 
