@@ -798,7 +798,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
 
   float blurmat[13];
   dt_masks_blur_9x9_coeff(blurmat, 2.0f);
-  cl_mem dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 13, blurmat);
+  cl_mem dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(blurmat), blurmat);
   if(dev_blurmat != NULL)
   {
     err = dt_opencl_enqueue_kernel_2d_args

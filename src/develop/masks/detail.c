@@ -505,7 +505,7 @@ gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
   float *tmp = dt_alloc_align_float(msize);
   if(!tmp)
   {
-    memset(out, 0, msize * sizeof(float));
+    dt_iop_image_fill(out, 0.0f, details->roi.width, details->roi.height, 1);
     return TRUE;
   }
 
