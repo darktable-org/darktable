@@ -787,7 +787,7 @@ static void aspect_changed(GtkWidget *combo, dt_iop_module_t *self)
     g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
     p->aspect = _aspect_ratios[which];
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set(g->aspect_slider,p->aspect);
+    dt_bauhaus_slider_set(g->aspect_slider, MAX(1.0f, p->aspect));
     --darktable.gui->reset;
   }
   dt_iop_color_picker_reset(self, TRUE);
@@ -846,6 +846,25 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   int k;
   if(!w || w == g->aspect_slider)
   {
+    if(p->aspect < 1.0f)
+    {
+      ++darktable.gui->reset;
+      if(p->aspect > 0.0f)
+      {
+        p->aspect = 1.0f / p->aspect;
+        if(p->aspect_orient != DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO)
+        {
+          p->aspect_orient = p->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE
+                          ? DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT
+                          : DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE;
+          dt_bauhaus_combobox_set_from_value(g->aspect_orient, p->aspect_orient);
+        }
+      }
+      dt_bauhaus_widget_reset(g->aspect_slider); // reset soft min
+      dt_bauhaus_slider_set(g->aspect_slider, MAX(1.0f, p->aspect));
+      --darktable.gui->reset;
+    }
+
     for(k = 0; k < DT_IOP_BORDERS_ASPECT_COUNT; k++)
     {
       if(fabsf(p->aspect - _aspect_ratios[k]) < 0.01f)
@@ -961,6 +980,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
   gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio (right click to enter number or w:h)"));
+  dt_bauhaus_slider_set_default(g->aspect_slider, 1.0f);
+  dt_bauhaus_slider_set_hard_min(g->aspect_slider, 1.0f / dt_bauhaus_slider_get_hard_max(g->aspect_slider));
 
   g->aspect_orient = dt_bauhaus_combobox_from_params(self, "aspect_orient");
   gtk_widget_set_tooltip_text(g->aspect_orient, _("aspect ratio orientation of the image with border"));
