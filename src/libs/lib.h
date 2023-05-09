@@ -131,6 +131,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module,
 gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module);
 /** queue plugin gui to be updated if visible */
 void dt_lib_gui_queue_update(dt_lib_module_t *module);
+void dt_lib_gui_update(dt_lib_module_t *module);
 
 extern const struct dt_action_def_t dt_action_def_lib;
 

@@ -822,10 +822,7 @@ static gboolean _lib_draw_callback(GtkWidget *widget,
                                    gpointer cr,
                                    dt_lib_module_t *self)
 {
-  if(!self->gui_uptodate && self->gui_update)
-    self->gui_update(self);
-
-  self->gui_uptodate = TRUE;
+  dt_lib_gui_update(self);
 
   return FALSE;
 }
@@ -834,6 +831,15 @@ void dt_lib_gui_queue_update(dt_lib_module_t *module)
 {
   module->gui_uptodate = FALSE;
   gtk_widget_queue_draw(module->widget);
+}
+
+void dt_lib_gui_update(dt_lib_module_t *module)
+{
+  if(module && module->gui_update && !module->gui_uptodate)
+  {
+    module->gui_update(module);
+    module->gui_uptodate = TRUE;
+  }
 }
 
 static void dt_lib_init_module(void *m)
