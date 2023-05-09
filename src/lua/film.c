@@ -20,7 +20,7 @@
 #include "lua/film.h"
 #include "common/debug.h"
 #include "common/film.h"
-#includd "common/utility.h"
+#include "common/utility.h"
 #include "common/grealpath.h"
 #include "lua/database.h"
 #include "lua/image.h"
