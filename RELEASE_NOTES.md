@@ -701,6 +701,9 @@ The following is a summary of the main features added to darktable
   though one which never occurred due to how that code is used in
   darktable.
 
+- Rework the handling of the metadata editor to prevent possible data
+  loss.
+
 ## Lua
 
 ### API Version
