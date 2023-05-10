@@ -230,11 +230,11 @@ void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */
-int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
+int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, dt_colormatrix_t *matrix, float *lutr, float *lutg,
                                                  float *lutb, const int lutsize);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given output profile, returns 0 on success. */
-int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
+int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, dt_colormatrix_t *matrix, float *lutr, float *lutg,
                                                   float *lutb, const int lutsize);
 
 /** wrapper to get the name from a color profile. this tries to handle character encodings. */
@@ -354,4 +354,3 @@ void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3]);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

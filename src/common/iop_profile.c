@@ -780,13 +780,13 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
     dt_colormatrix_copy(matrix_in, profile_info->matrix_in);
     dt_colormatrix_t matrix_out;
     dt_colormatrix_copy(matrix_out, profile_info->matrix_out);
-    if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, matrix_in,
+    if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, &matrix_in,
                                                     profile_info->lut_in[0],
                                                     profile_info->lut_in[1],
                                                     profile_info->lut_in[2],
                                                     profile_info->lutsize) == 0
        && dt_is_valid_colormatrix(matrix_in[0][0])
-       && dt_colorspaces_get_matrix_from_output_profile(rgb_profile, matrix_out,
+       && dt_colorspaces_get_matrix_from_output_profile(rgb_profile, &matrix_out,
                                                         profile_info->lut_out[0],
                                                         profile_info->lut_out[1],
                                                         profile_info->lut_out[2],
@@ -967,7 +967,7 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
                                      const dt_colorspaces_color_profile_type_t type,
                                      const char *filename,
                                      const int intent,
-                                     const dt_colormatrix_t matrix_in)
+                                     const dt_colormatrix_t *matrix_in)
 {
   dt_iop_order_iccprofile_info_t *profile_info =
     dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);

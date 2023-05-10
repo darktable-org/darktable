@@ -730,7 +730,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
   if(d->mode != DT_PROFILE_NORMAL || force_lcms2
-     || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
+     || dt_colorspaces_get_matrix_from_output_profile(output, &d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
                                                       LUT_SAMPLES))
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
@@ -749,7 +749,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
 
     if(d->mode != DT_PROFILE_NORMAL
-       || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
+       || dt_colorspaces_get_matrix_from_output_profile(output, &d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
                                                         LUT_SAMPLES))
     {
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);

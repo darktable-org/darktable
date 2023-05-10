@@ -867,7 +867,7 @@ static inline void _cmatrix_fastpath_clipping(float *const restrict out,
   const dt_aligned_pixel_t lmatrix_row0 = { lmatrix[0][0], lmatrix[1][0], lmatrix[2][0], 0.0f };
   const dt_aligned_pixel_t lmatrix_row1 = { lmatrix[0][1], lmatrix[1][1], lmatrix[2][1], 0.0f };
   const dt_aligned_pixel_t lmatrix_row2 = { lmatrix[0][2], lmatrix[1][2], lmatrix[2][2], 0.0f };
-  
+
   // this function is called from inside a parallel for loop, so no need for further parallelization
   for(size_t k = 0; k < npixels; k++)
   {
@@ -1001,7 +1001,7 @@ static inline void _cmatrix_proper_clipping(float *const restrict out,
   const dt_aligned_pixel_t lmatrix_row0 = { lmatrix[0][0], lmatrix[1][0], lmatrix[2][0], 0.0f };
   const dt_aligned_pixel_t lmatrix_row1 = { lmatrix[0][1], lmatrix[1][1], lmatrix[2][1], 0.0f };
   const dt_aligned_pixel_t lmatrix_row2 = { lmatrix[0][2], lmatrix[1][2], lmatrix[2][2], 0.0f };
-  
+
   // this function is called from inside a parallel for loop, so no need for further parallelization
   for(size_t k = 0; k < npixels; k++)
   {
@@ -1432,7 +1432,7 @@ void commit_params(struct dt_iop_module_t *self,
   {
     // user wants us to clip to a given RGB profile
     if(dt_colorspaces_get_matrix_from_input_profile
-       (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
+       (d->input, &d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
         LUT_SAMPLES))
     {
       piece->process_cl_ready = FALSE;
@@ -1448,16 +1448,16 @@ void commit_params(struct dt_iop_module_t *self,
     {
       float lutr[1], lutg[1], lutb[1];
       dt_colormatrix_t omat;
-      dt_colorspaces_get_matrix_from_output_profile(d->nrgb, omat, lutr, lutg, lutb, 1);
+      dt_colorspaces_get_matrix_from_output_profile(d->nrgb, &omat, lutr, lutg, lutb, 1);
       dt_colormatrix_mul(d->nmatrix, omat, d->cmatrix);
-      dt_colorspaces_get_matrix_from_input_profile(d->nrgb, d->lmatrix,
+      dt_colorspaces_get_matrix_from_input_profile(d->nrgb, &d->lmatrix,
                                                    lutr, lutg, lutb, 1);
     }
   }
   else
   {
     // default mode: unbound processing
-    if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix,
+    if(dt_colorspaces_get_matrix_from_input_profile(d->input, &d->cmatrix,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
@@ -1500,7 +1500,7 @@ void commit_params(struct dt_iop_module_t *self,
     d->input = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC709, "",
                                           DT_PROFILE_DIRECTION_IN)->profile;
     d->clear_input = FALSE;
-    if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix,
+    if(dt_colorspaces_get_matrix_from_input_profile(d->input, &d->cmatrix,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
@@ -1539,7 +1539,7 @@ void commit_params(struct dt_iop_module_t *self,
   dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work,
                                       d->filename_work, DT_INTENT_PERCEPTUAL);
   dt_ioppr_set_pipe_input_profile_info(self->dev, piece->pipe, d->type,
-                                       d->filename, p->intent, d->cmatrix);
+                                       d->filename, p->intent, &d->cmatrix);
 }
 
 void init_pipe(struct dt_iop_module_t *self,

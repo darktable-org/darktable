@@ -103,7 +103,7 @@ static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self
                                                           const char *filename,
                                                           dt_colorspaces_profile_direction_t direction);
 
-static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
+static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, dt_colormatrix_t *matrix, float *lutr, float *lutg,
                                                   float *lutb, const int lutsize, const int input)
 {
   // create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
@@ -212,13 +212,13 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, dt_colormatr
   return 0;
 }
 
-int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
+int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, dt_colormatrix_t *matrix, float *lutr, float *lutg,
                                                  float *lutb, const int lutsize)
 {
   return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1);
 }
 
-int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
+int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, dt_colormatrix_t *matrix, float *lutr, float *lutg,
                                                   float *lutb, const int lutsize)
 {
   return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0);
