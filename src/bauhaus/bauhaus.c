@@ -3050,7 +3050,7 @@ static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event
       if(darktable.bauhaus->keys_cnt + 2 < 64
          && (event->keyval == GDK_KEY_space || event->keyval == GDK_KEY_KP_Space ||              // SPACE
              event->keyval == GDK_KEY_percent ||                                                 // %
-             (event->string[0] >= 40 && event->string[0] <= 57) ||                               // ()+-*/.,0-9
+             (event->string[0] >= 40 && event->string[0] <= 58) ||                               // ()+-*/.,0-9:
              event->keyval == GDK_KEY_asciicircum || event->keyval == GDK_KEY_dead_circumflex || // ^
              event->keyval == GDK_KEY_X || event->keyval == GDK_KEY_x))                          // Xx
       {
