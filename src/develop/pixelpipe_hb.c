@@ -1739,10 +1739,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                 roi_in.width, roi_in.height, in_bpp);
           if(cl_mem_input == NULL)
           {
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_pixelpipe] [%s] couldn't generate input buffer"
-                     " for module `%s'\n",
-                     dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't generate input buffer");
             success_opencl = FALSE;
           }
 
@@ -1753,10 +1752,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                         in_bpp);
             if(err != CL_SUCCESS)
             {
-              dt_print(DT_DEBUG_OPENCL,
-                       "[opencl_pixelpipe] [%s] couldn't copy image to opencl"
-                       " device for module `%s'\n",
-                       dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+              dt_print_pipe(DT_DEBUG_OPENCL,
+                "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                  "couldn't copy image to opencl device");
               success_opencl = FALSE;
             }
           }
@@ -1775,10 +1773,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                   roi_out->width, roi_out->height, bpp);
           if(*cl_mem_output == NULL)
           {
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_pixelpipe] [%s] couldn't allocate output buffer"
-                     " for module `%s'\n",
-                     dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't allocate output buffer");
             success_opencl = FALSE;
           }
         }
@@ -2012,11 +2009,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                            in_bpp);
           if(err != CL_SUCCESS)
           {
-            /* late opencl error */
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_pixelpipe (a)] [%s] late opencl error detected while"
-                     " copying back to cpu buffer: %s\n",
-                     dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't copy data back to host memory (A)");
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = TRUE;
             return TRUE;
@@ -2181,12 +2176,10 @@ static gboolean _dev_pixelpipe_process_rec(
                                                              roi_in.height, in_bpp);
             if(err != CL_SUCCESS)
             {
+              dt_print_pipe(DT_DEBUG_OPENCL,
+                "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                  "couldn't copy data back to host memory (B)");
               /* late opencl error, not likely to happen here */
-              dt_print(DT_DEBUG_OPENCL,
-                       "[opencl_pixelpipe (e)] [%s] late opencl error"
-                       " detected while copying "
-                       "back to cpu buffer: %s\n",
-                       dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
               /* that's all we do here, we later make sure to invalidate cache line */
             }
             else
@@ -2219,10 +2212,9 @@ static gboolean _dev_pixelpipe_process_rec(
       else
       {
         /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_pixelpipe] [%s] could not run module `%s' on gpu."
-                 " falling back to cpu path\n",
-                 dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+        dt_print_pipe(DT_DEBUG_OPENCL,
+           "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't run module on GPG, falling back to CPU");
 
         // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
 
@@ -2244,11 +2236,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                            in_bpp);
           if(err != CL_SUCCESS)
           {
-            /* late opencl error */
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_pixelpipe (b)] [%s] late opencl error detected"
-                     " while copying back to cpu buffer: %s\n",
-                     dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't copy data back to host memory (C)");
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = TRUE;
             return TRUE;
@@ -2274,10 +2264,6 @@ static gboolean _dev_pixelpipe_process_rec(
     else
     {
       /* we are not allowed to use opencl for this module */
-
-      // fprintf(stderr, "[opencl_pixelpipe 3] for module `%s', have bufs %p and %p \n", module->op,
-      // cl_mem_input, *cl_mem_output);
-
       *cl_mem_output = NULL;
 
       /* cleanup unneeded opencl buffer, and copy back to CPU buffer */
@@ -2286,14 +2272,12 @@ static gboolean _dev_pixelpipe_process_rec(
         const cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
                                                          roi_in.width, roi_in.height,
                                                          in_bpp);
-        // if(rand() % 5 == 0) err = !CL_SUCCESS; // Test code: simulate spurious failures
+
         if(err != CL_SUCCESS)
         {
-          /* late opencl error */
-          dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_pixelpipe (c)] [%s] late opencl error detected"
-                   " while copying back to cpu buffer: %s\n",
-                   dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
+          dt_print_pipe(DT_DEBUG_OPENCL,
+            "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+              "couldn't copy data back to host memory (D)");
           dt_opencl_release_mem_object(cl_mem_input);
           pipe->opencl_error = TRUE;
           return TRUE;
