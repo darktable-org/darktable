@@ -556,7 +556,6 @@ void process(struct dt_iop_module_t *self,
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
 
-  self->cache_next_important = TRUE; // The cpu code is pretty heavy stuff so an importance hint
 
   // work profile can't be fetched in commit_params since it is not yet initialised
   // work_profile->matrix_in === RGB_to_XYZ
