@@ -509,6 +509,11 @@ The following is a summary of the main features added to darktable
   consistency the sort order of shapes outside of a group has been
   changed.
 
+- Add some new aspect ratios in the border module:
+  - CinemaScope
+  - US Letter
+  - US Legal
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
@@ -706,6 +711,8 @@ The following is a summary of the main features added to darktable
 
 - Fix import of auto-applied presets where the upper bound of ISO,
   aperture and exposure could be set as the lower bound.
+
+- Fix entering custom aspect ration in the border module.
 
 ## Lua
 
