@@ -698,13 +698,6 @@ static inline void _luma_chroma(const dt_aligned_pixel_t input,
   }
 }
 
-void dt_colormatrix_copy(dt_colormatrix_t out, const dt_colormatrix_t in)
-{
-  for(size_t i = 0; i < 4; i++)
-    for_each_channel(c)
-      out[i][c] = in[i][c];
-}
-
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16)
 #endif

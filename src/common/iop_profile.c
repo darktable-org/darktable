@@ -775,20 +775,27 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   // get the matrix
   if(rgb_profile)
   {
-    if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, profile_info->matrix_in,
+    // work around false GCC12 warnings about accessing 64 bytes in a 16-byte parameter
+    dt_colormatrix_t matrix_in;
+    dt_colormatrix_copy(matrix_in, profile_info->matrix_in);
+    dt_colormatrix_t matrix_out;
+    dt_colormatrix_copy(matrix_out, profile_info->matrix_out);
+    if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, matrix_in,
                                                     profile_info->lut_in[0],
                                                     profile_info->lut_in[1],
                                                     profile_info->lut_in[2],
                                                     profile_info->lutsize) == 0
-       && dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
-       && dt_colorspaces_get_matrix_from_output_profile(rgb_profile, profile_info->matrix_out,
+       && dt_is_valid_colormatrix(matrix_in[0][0])
+       && dt_colorspaces_get_matrix_from_output_profile(rgb_profile, matrix_out,
                                                         profile_info->lut_out[0],
                                                         profile_info->lut_out[1],
                                                         profile_info->lut_out[2],
                                                         profile_info->lutsize) == 0
-       && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
+       && dt_is_valid_colormatrix(matrix_out[0][0]))
     {
+      dt_colormatrix_copy(profile_info->matrix_in, matrix_in);
       transpose_3xSSE(profile_info->matrix_in, profile_info->matrix_in_transposed);
+      dt_colormatrix_copy(profile_info->matrix_out, matrix_out);
       transpose_3xSSE(profile_info->matrix_out, profile_info->matrix_out_transposed);
     }
     else

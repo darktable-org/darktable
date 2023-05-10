@@ -166,6 +166,13 @@ static inline void pack_3xSSE_to_3x3(const dt_colormatrix_t input, float output[
   output[8] = input[2][2];
 }
 
+static inline void dt_colormatrix_copy(dt_colormatrix_t out, const dt_colormatrix_t in)
+{
+  for(size_t i = 0; i < 4; i++)
+    for_each_channel(c)
+      out[i][c] = in[i][c];
+}
+
 // vectorized multiplication of padded 3x3 matrices
 static inline void dt_colormatrix_mul(dt_colormatrix_t dst, const dt_colormatrix_t m1, const dt_colormatrix_t m2)
 {
