@@ -1036,6 +1036,8 @@ static void _dev_add_history_item_ext(
       dev->preview2_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
     }
   }
+  if((module->enabled) && (!no_image))
+    module->iopcache_hint = TRUE;
 }
 
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op)
