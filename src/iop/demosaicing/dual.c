@@ -139,7 +139,7 @@ gboolean dual_demosaic_cl(
 
   float blurmat[13];
   dt_masks_blur_9x9_coeff(blurmat, 2.0f);
-  dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 13, blurmat);
+  dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(blurmat), blurmat);
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_mask_blur, width, height,
       CLARG(mask), CLARG(tmp), CLARG(width), CLARG(height), CLARG(dev_blurmat));

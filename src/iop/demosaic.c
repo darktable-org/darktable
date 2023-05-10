@@ -753,7 +753,8 @@ int process_cl(
 
   const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && !run_fast);
   const int devid = piece->pipe->devid;
-  gboolean retval = FALSE;
+
+  gboolean allok = FALSE;
 
   if(dual)
     high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
@@ -770,7 +771,11 @@ int process_cl(
     if(dual)
     {
       if(!process_rcd_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE))
+      {
+        dt_print_pipe(DT_DEBUG_OPENCL, "dual demosaic cl", piece->pipe, self, roi_in, roi_out,
+          "couldn't process rcd\n");
         goto finish;
+      }
     }
     else
     {
@@ -795,7 +800,11 @@ int process_cl(
     if(dual)
     {
       if(!process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE))
+      {
+        dt_print_pipe(DT_DEBUG_OPENCL, "dual demosaic cl", piece->pipe, self, roi_in, roi_out,
+          "couldn't process process_markesteijn3\n");
         goto finish;
+      }
     }
     else
     {
@@ -811,7 +820,7 @@ int process_cl(
 
   if(!dual)
   {
-    retval = TRUE;
+    allok = TRUE;
     goto finish;
   }
 
@@ -822,36 +831,84 @@ int process_cl(
   {
     if(!color_smoothing_cl(self, piece, low_image, low_image, roi_in, 2))
     {
-      retval = FALSE;
+      dt_print_pipe(DT_DEBUG_OPENCL, "dual demosaic cl", piece->pipe, self, roi_in, roi_out,
+        "smoothing problem\n");
       goto finish;
     }
-    retval = dual_demosaic_cl(self, piece, high_image, low_image, high_image, roi_in, showmask);
+    if(!dual_demosaic_cl(self, piece, high_image, low_image, high_image, roi_in, showmask))
+    {
+      dt_print_pipe(DT_DEBUG_OPENCL, "dual demosaic cl", piece->pipe, self, roi_in, roi_out,
+        "mixer problem\n");
+      goto finish;
+    }
   }
+  else
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "dual demosaic cl", piece->pipe, self, roi_in, roi_out,
+      "vng demosaicing problem\n");
+    goto finish;
+  }
+
   dt_opencl_release_mem_object(low_image);
   low_image = NULL;
 
   if(roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
-    dt_print_pipe(DT_DEBUG_PIPE, "copy_dual_cl", piece->pipe, self, roi_in, roi_out, "\n");
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { roi_in->width, roi_in->height, 1 };
-    const int err = dt_opencl_enqueue_copy_image(devid, high_image, dev_out, origin, origin, region);
+    const cl_int err = dt_opencl_enqueue_copy_image(devid, high_image, dev_out, origin, origin, region);
     if(err != CL_SUCCESS)
-      retval = FALSE;
+    {
+      dt_print_pipe(DT_DEBUG_OPENCL, "dual demosaic cl", piece->pipe, self, roi_in, roi_out,
+      "copy high image to dev out problem\n");
+      goto finish;
+    }
   }
   else
   {
-    dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_dual_cl", piece->pipe, self, roi_in, roi_out, "\n");
-    const int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, high_image, roi_out, roi_in);
+    cl_int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, high_image, roi_out, roi_in);
+    if(err == DT_OPENCL_PROCESS_CL)
+    {
+      const int bpp = sizeof(float) * 4;
+      // We ran into a "vertical number of taps exceeds the vertical workgroupsize" problem
+      // Instead of redoing the whole thing we do an internal fallback to cpu here 
+      float *in = dt_alloc_align_float((size_t)roi_in->width * roi_in->height * bpp);
+      float *out = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * bpp);
+      if(out && in)
+      {
+        err = dt_opencl_read_host_from_device(devid, in, high_image, roi_in->width, roi_in->height, bpp);
+        if(err == CL_SUCCESS)
+        {
+          dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in, 0, 0);
+          err = dt_opencl_write_host_to_device(devid, out, dev_out, roi_out->width, roi_out->height, bpp);
+          if(err == CL_SUCCESS)
+          {
+            dt_print_pipe(DT_DEBUG_OPENCL, "dual demosaic cl", piece->pipe, self, roi_in, roi_out,
+            "did fast cpu fallback\n");
+            allok = TRUE;
+          }
+        }
+      }
+      dt_free_align(in);
+      dt_free_align(out);
+      if(allok)
+        goto finish;
+    }
+
     if(err != CL_SUCCESS)
-      retval = FALSE;
+    {
+      dt_print_pipe(DT_DEBUG_OPENCL, "dual demosaic cl", piece->pipe, self, roi_in, roi_out,
+        "dt_iop_clip_and_zoom_roi_cl problem: %s on device %i\n", cl_errstr(err), devid);
+        goto finish;
+    }
   }
+  allok = TRUE;
+
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
 
-  if(!retval) dt_control_log(_("[dual demosaic_cl] internal problem"));
-  return retval;
+  return allok;
 }
 #endif
 
