@@ -58,8 +58,8 @@ typedef enum dt_iop_orientation_t
 
 static const float _aspect_ratios[]
   = { DT_IOP_BORDERS_ASPECT_IMAGE_VALUE,
-      3.0f, 95.0f / 33.0f, 2.0f, 16.0f / 9.0f, 5.0f / 3.0f, PHI, 3.0f / 2.0f,
-      297.0f / 210.0f, M_SQRT2, 7.0f / 5.0f, 4.0f / 3.0f, 14.0f / 11.0f,
+      3.0f, 95.0f / 33.0f, 2.39f, 2.0f, 16.0f / 9.0f, 5.0f / 3.0f, 14.0f / 8.5f, PHI, 16.0f / 10.0f,
+      3.0f / 2.0f, 297.0f / 210.0f, M_SQRT2, 7.0f / 5.0f, 4.0f / 3.0f, 11.0f / 8.5f, 14.0f / 11.0f,
       5.0f / 4.0f, 1.0f, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE };
 static const float _pos_h_ratios[] = { 0.5f, 1.0f / 3.0f, 3.0f / 8.0f, 5.0f / 8.0f, 2.0f / 3.0f };
 static const float _pos_v_ratios[] = { 0.5f, 1.0f / 3.0f, 3.0f / 8.0f, 5.0f / 8.0f, 2.0f / 3.0f };
@@ -937,30 +937,34 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->aspect, self, NULL, N_("aspect"),
-                               _("select the aspect ratio or right click and type your own (w:h)"),
+                               _("select the aspect ratio (right click on slider below to type your own w:h)"),
                                0, aspect_changed, self,
                                N_("image"),
                                N_("3:1"),
                                N_("95:33"),
+                               N_("CinemaScope 2.39:1"),
                                N_("2:1"),
                                N_("16:9"),
                                N_("5:3"),
+                               N_("US Legal 8.5x14"),
                                N_("golden cut"),
+                               N_("16:10"),
                                N_("3:2 (4x6, 10x15cm)"),
                                N_("A4"),
                                N_("DIN"),
                                N_("7:5"),
                                N_("4:3"),
+                               N_("US Letter 8.5x11"),
                                N_("14:11"),
                                N_("5:4 (8x10)"),
                                N_("square"),
                                N_("constant border"),
                                N_("custom..."));
-  dt_bauhaus_combobox_set_editable(g->aspect, 1);
+  dt_bauhaus_combobox_set_editable(g->aspect, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
 
   g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
-  gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio"));
+  gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio (right click to enter number or w:h)"));
 
   g->aspect_orient = dt_bauhaus_combobox_from_params(self, "aspect_orient");
   gtk_widget_set_tooltip_text(g->aspect_orient, _("aspect ratio orientation of the image with border"));
