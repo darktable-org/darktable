@@ -704,6 +704,9 @@ The following is a summary of the main features added to darktable
 - Rework the handling of the metadata editor to prevent possible data
   loss.
 
+- Fix import of auto-applied presets where the upper bound of ISO,
+  aperture and exposure could be set as the lower bound.
+
 ## Lua
 
 ### API Version
