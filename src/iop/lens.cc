@@ -66,7 +66,7 @@ extern "C" {
 #error lensfun 0.3.95 is not supported since its API is not backward compatible with lensfun stable release.
 #endif
 
-DT_MODULE_INTROSPECTION(7, dt_iop_lens_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_lens_params_t)
 
 typedef enum dt_iop_lens_method_t
 {
@@ -112,6 +112,12 @@ typedef enum dt_iop_lens_mode_t
   DT_IOP_LENS_MODE_DISTORT = 1, // $DESCRIPTION: "distort"
 } dt_iop_lens_mode_t;
 
+typedef enum dt_iop_lens_embedded_metadata_version
+{
+  DT_IOP_LENS_EMBEDDED_METADATA_VERSION_1 = 0,
+  DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2 = 1
+} dt_iop_lens_embedded_metadata_version;
+
 typedef struct dt_iop_lens_params_t
 {
   dt_iop_lens_method_t method; // $DEFAULT: DT_IOP_LENS_METHOD_LENSFUN $DESCRIPTION: "correction method"
@@ -141,7 +147,11 @@ typedef struct dt_iop_lens_params_t
   float cor_vig_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "vignetting fine-tune"
   // TODO should be possible to also add tca fine tune modifications
 
-  float cor_scale;  // $DEFAULT: 1 $MIN: 0.9 $MAX: 1.1 $DESCRIPTION: "scale fine-tune"
+  // scale_md_v1 is used by embedded metadata algorithm v1. Kept for backward compatibility
+  float scale_md_v1;  // $DEFAULT: 1 $MIN: 0.9 $MAX: 1.1 $DESCRIPTION: "scale fine-tune"
+  dt_iop_lens_embedded_metadata_version md_version;
+  // scale_md is the image scaling. Doesn't affect the spline.
+  float scale_md;  // $DEFAULT: 1 $MIN: 0.1 $MAX: 2.0 $DESCRIPTION: "image scale"
 } dt_iop_lens_params_t;
 
 typedef struct dt_iop_lens_gui_modifier_t
@@ -163,7 +173,8 @@ typedef struct dt_iop_lens_gui_data_t
   GtkWidget *modflags, *target_geom, *reverse, *tca_override, *tca_r, *tca_b, *scale;
   GtkWidget *find_lens_button;
   GtkWidget *find_camera_button;
-  GtkWidget *cor_dist_ft, *cor_vig_ft, *cor_scale;
+  GtkWidget *cor_dist_ft, *cor_vig_ft, *scale_md;
+  GtkWidget *use_latest_md_algo;
   GtkLabel *message;
   int corrections_done;
   gboolean lensfun_trouble;
@@ -202,9 +213,13 @@ typedef struct dt_iop_lens_data_t
   /* embedded metadata data */
   float cor_dist_ft;
   float cor_vig_ft;
+  // scale_md_v1 is used by embedded metadata algorithm v1. Kept for backward compatibility
+  float scale_md_v1;
+  // scale of the image.
   float scale_md;
+  dt_iop_lens_embedded_metadata_version md_version;
   int nc;
-  float knots[MAXKNOTS], cor_rgb[3][MAXKNOTS], vig[MAXKNOTS];
+  float knots_dist[MAXKNOTS], knots_vig[MAXKNOTS], cor_rgb[3][MAXKNOTS], vig[MAXKNOTS];
 } dt_iop_lens_data_t;
 
 
@@ -333,7 +348,7 @@ int legacy_params(
         void *new_params,
         const int new_version)
 {
-  if(old_version == 2 && new_version == 7)
+  if(old_version == 2 && new_version == 8)
   {
     // legacy params of version 2; version 1 comes from ancient times
     // and seems to be forgotten by now.
@@ -381,12 +396,17 @@ int legacy_params(
     n->cor_vig_ft = 1.f;
 
     // new in v7
-    n->cor_scale = 0.0f;
+    n->scale_md_v1 = 0.0f;
+
+    // new in v8
+    n->scale_md = 1.0f;
+    // use new metadata version v2
+    n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
 
     return 0;
   }
 
-  if(old_version == 3 && new_version == 7)
+  if(old_version == 3 && new_version == 8)
   {
     typedef struct
     {
@@ -430,12 +450,17 @@ int legacy_params(
     n->cor_vig_ft = 1.f;
 
     // new in v7
-    n->cor_scale = 0.0f;
+    n->scale_md_v1 = 0.0f;
+
+    // new in v8
+    n->scale_md = 1.0f;
+    // use new metadata version v2
+    n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
 
     return 0;
   }
 
-  if(old_version == 4 && new_version == 7)
+  if(old_version == 4 && new_version == 8)
   {
     typedef struct
     {
@@ -480,12 +505,17 @@ int legacy_params(
     n->cor_vig_ft = 1.f;
 
     // new in v7
-    n->cor_scale = 0.0f;
+    n->scale_md_v1 = 0.0f;
+
+    // new in v8
+    n->scale_md = 1.0f;
+    // use new metadata version v2
+    n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
 
     return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 5 && new_version == 7)
+  if(old_version == 5 && new_version == 8)
   {
     typedef struct
     {
@@ -531,12 +561,17 @@ int legacy_params(
     n->cor_vig_ft = 1.f;
 
     // new in v7
-    n->cor_scale = 0.0f;
+    n->scale_md_v1 = 0.0f;
+
+    // new in v8
+    n->scale_md = 1.0f;
+    // use new metadata version v2
+    n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
 
     return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 6 && new_version == 7)
+  if(old_version == 6 && new_version == 8)
   {
     typedef struct
     {
@@ -566,7 +601,6 @@ int legacy_params(
 
     *n = *d; // start with a fresh copy of default parameters
 
-    // The unique method in previous versions was lensfun
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -585,9 +619,78 @@ int legacy_params(
     n->cor_vig_ft = o->cor_vig_ft;
 
     // new in v7
-    n->cor_scale = 0.0f;
+    n->scale_md_v1 = 0.0f;
+
+    // new in v8
+    n->scale_md = 1.0f;
+    // if current method is metadata then use old metadata version v1 for
+    // backward compatibility
+    if (o->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
+      n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_1;
+    else
+      n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
 
     return o->modified == 0 ? -1 : 0;
+  }
+
+  if(old_version == 7 && new_version == 8)
+  {
+    typedef struct
+    {
+      dt_iop_lens_method_t method;
+      int modify_flags;
+      int inverse;
+      float scale;
+      float crop;
+      float focal;
+      float aperture;
+      float distance;
+      int target_geom;
+      char camera[128];
+      char lens[128];
+      gboolean tca_override;
+      float tca_r;
+      float tca_b;
+      float cor_dist_ft;
+      float cor_vig_ft;
+      float cor_scale;
+    } dt_iop_lens_params_v7_t;
+
+
+    const dt_iop_lens_params_v7_t *o = (dt_iop_lens_params_v7_t *)old_params;
+    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
+    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->method = o->method;
+    n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
+    n->inverse = (dt_iop_lens_mode_t)o->inverse;
+    n->scale = o->scale;
+    n->crop = o->crop;
+    n->focal = o->focal;
+    n->aperture = o->aperture;
+    n->distance = o->distance;
+    n->target_geom = (dt_iop_lens_lenstype_t)o->target_geom;
+    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
+    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    n->tca_override = o->tca_override;
+    n->tca_r = o->tca_r;
+    n->tca_b = o->tca_b;
+    n->cor_dist_ft = o->cor_dist_ft;
+    n->cor_vig_ft = o->cor_vig_ft;
+    n->scale_md_v1 = o->cor_scale;
+
+    // new in v8
+    n->scale_md = 1.0f;
+    // if current method is metadata then use old metadata version v1 for
+    // backward compatibility
+    if (o->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
+      n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_1;
+    else
+      n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
+
+    return 0;
   }
   return 1;
 }
@@ -964,7 +1067,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
   const int height = MAX(iheight, oheight);
   const int ch = piece->colors;
   const int tmpbufwidth = owidth * 2 * 3;
-  const size_t tmpbufsize = (size_t)tmpbufwidth * oheight * sizeof(float);  
+  const size_t tmpbufsize = (size_t)tmpbufwidth * oheight * sizeof(float);
   const size_t tmpbuflen = d->inverse
     ? (size_t)oheight * owidth * 2 * 3 * sizeof(float)
     : MAX((size_t)oheight * owidth * 2 * 3, (size_t)iheight * iwidth * ch) * sizeof(float);
@@ -1641,10 +1744,11 @@ static inline float _interpolate_linear_spline(const float *xi,
   return yi[ni - 1];
 }
 
-static int _init_coeffs_md(const dt_image_t *img,
+static int _init_coeffs_md_v1(const dt_image_t *img,
                            const dt_iop_lens_params_t *p,
                            const float scale,
-                           float knots[MAXKNOTS],
+                           float knots_dist[MAXKNOTS],
+                           float knots_vig[MAXKNOTS],
                            float cor_rgb[3][MAXKNOTS],
                            float vig[MAXKNOTS])
 {
@@ -1655,7 +1759,7 @@ static int _init_coeffs_md(const dt_image_t *img,
     int nc = cd->sony.nc;
     for(int i = 0; i < nc; i++)
     {
-      knots[i] = (float) (i + 0.5) / (nc - 1);
+      knots_dist[i] = knots_vig[i] = (float) (i + 0.5) / (nc - 1);
 
       if(cor_rgb
          && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
@@ -1676,9 +1780,13 @@ static int _init_coeffs_md(const dt_image_t *img,
 
       if(vig
          && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+      {
         vig[i] = powf (2, 0.5f
                        - powf(2,
                               p->cor_vig_ft * cd->sony.vignetting[i] * powf(2, -13)  - 1));
+        // use the square of the correction factor
+        vig[i] *= vig[i];
+      }
       else if(vig)
         vig[i] = 1;
     }
@@ -1690,7 +1798,7 @@ static int _init_coeffs_md(const dt_image_t *img,
     const int nc = cd->fuji.nc;
     for(int i = 0; i < nc; i++)
     {
-      knots[i] = cd->fuji.cropf * cd->fuji.knots[i];
+      knots_dist[i] = knots_vig[i] = cd->fuji.cropf * cd->fuji.knots[i];
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
@@ -1708,7 +1816,11 @@ static int _init_coeffs_md(const dt_image_t *img,
       }
 
       if(vig && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+      {
         vig[i] = 1 - p->cor_vig_ft * (1 - cd->fuji.vignetting[i] / 100);
+        // use the square of the correction factor
+        vig[i] *= vig[i];
+      }
       else if(vig)
         vig[i] = 1;
     }
@@ -1722,8 +1834,8 @@ static int _init_coeffs_md(const dt_image_t *img,
 
     for(int i = 0; i < nc; i++)
     {
-      const float r = (float) i / (float) (nc);
-      knots[i] = r;
+      const float r = (float) i / (float) (nc - 1);
+      knots_dist[i] = knots_vig[i] = r;
       if(cor_rgb) cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
       if(vig)     vig[i] = 1.0f;
 
@@ -1755,8 +1867,7 @@ static int _init_coeffs_md(const dt_image_t *img,
         // Pixel value is to be divided by (1 + dvig) to correct vignetting
         // Scale dvig according to fine-tune: 0 for no correction, 1 for
         // correction specified by metadata, and 2 to double the correction.
-        // Store the square root since _process_md will square the value
-        vig[i] = sqrtf(1.0f / (1.0f + p->cor_vig_ft * dvig));
+        vig[i] = 1.0f / (1.0f + p->cor_vig_ft * dvig);
       }
     }
     return nc;
@@ -1765,7 +1876,7 @@ static int _init_coeffs_md(const dt_image_t *img,
   return 0;
 }
 
-static float _get_autoscale_md(dt_iop_module_t *self,
+static float _get_autoscale_md_v1(dt_iop_module_t *self,
                                dt_iop_lens_params_t *p)
 {
   const dt_image_t *img = &(self->dev->image_storage);
@@ -1774,30 +1885,255 @@ static float _get_autoscale_md(dt_iop_module_t *self,
 
   const float tested = 200.0f;
 
-  float knots[MAXKNOTS], cor_rgb[3][MAXKNOTS];
+  float knots_dist[MAXKNOTS], knots_vig[MAXKNOTS], cor_rgb[3][MAXKNOTS];
   // Default the scale to one for the benefit of init_coeffs
 
-  const int nc = _init_coeffs_md(img, p, 1.0f, knots, cor_rgb, NULL);
+  const int nc = _init_coeffs_md_v1(img, p, 1.0f, knots_dist, knots_vig, cor_rgb, NULL);
   // Compute the new scale
   float scale = 0.0f;
   for(float i = 0.0f; i < tested; i++)
   {
     for(int j = 0; j < 3; j++)
       scale = fmaxf(scale,
-                    _interpolate_linear_spline(knots, cor_rgb[j],
+                    _interpolate_linear_spline(knots_dist, cor_rgb[j],
                                                nc, 0.5f + 0.5f * i / (tested - 1.0f)));
   }
   return scale;
 }
 
-static void _autoscale_pressed_md(GtkWidget *button, gpointer user_data)
+static int _init_coeffs_md_v2(const dt_image_t *img,
+                           const dt_iop_lens_params_t *p,
+                           float knots_dist[MAXKNOTS],
+                           float knots_vig[MAXKNOTS],
+                           float cor_rgb[3][MAXKNOTS],
+                           float vig[MAXKNOTS])
 {
+  const dt_image_correction_data_t *cd = &img->exif_correction_data;
+
+  int nc = 0;
+
+  if(img->exif_correction_type == CORRECTION_TYPE_SONY)
+  {
+    nc = cd->sony.nc;
+    for(int i = 0; i < nc; i++)
+    {
+      knots_dist[i] = knots_vig[i] = (float) (i + 0.5) / (nc - 1);
+
+      if(cor_rgb
+         && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      {
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] =
+          (p->cor_dist_ft * cd->sony.distortion[i] * powf(2, -14) + 1);
+      }
+      else if(cor_rgb)
+      {
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
+      }
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+      {
+        cor_rgb[0][i] *= cd->sony.ca_r[i] * powf(2, -21) + 1;
+        cor_rgb[2][i] *= cd->sony.ca_b[i] * powf(2, -21) + 1;
+      }
+
+      if(vig
+         && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+        vig[i] = powf (2, 0.5f
+                       - powf(2,
+                              p->cor_vig_ft * cd->sony.vignetting[i] * powf(2, -13)  - 1));
+      else if(vig)
+        vig[i] = 1;
+    }
+  }
+  else if(img->exif_correction_type == CORRECTION_TYPE_FUJI)
+  {
+    float knots_in[MAXKNOTS] = { 0 };
+    float cor_rgb_in[MAXKNOTS];
+    float cor_ca_r_in[MAXKNOTS];
+    float cor_ca_b_in[MAXKNOTS];
+
+    int j = 0;
+
+    // add a knot with no corrections at 0 value if not existing
+    // TODO(sgotti) instead of adding a knot at 0 we could try using
+    // a spline cubic monotonic interpolation or a polynomial fit instead of a
+    // linear interpolation.
+    int ncin = 0;
+    if(cd->fuji.knots[0] > 0.f)
+    {
+      knots_in[j] = 0;
+      cor_rgb_in[j] = 1;
+      cor_ca_r_in[j] = 0;
+      cor_ca_b_in[j] = 0;
+
+      knots_vig[j] = 0;
+      vig[j] = 1;
+
+      ncin++;
+      j++;
+    }
+
+    for(int i = 0; i < cd->fuji.nc; i++, j++)
+    {
+      knots_in[j] = cd->fuji.cropf * cd->fuji.knots[i];
+      cor_rgb_in[j] = p->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1;
+      cor_ca_r_in[j] = cd->fuji.ca_r[i];
+      cor_ca_b_in[j] = cd->fuji.ca_b[i];
+
+      // vignetting correction is applied before distortion correction. So the
+      // spline is related to the source image before distortion.
+      knots_vig[j] = cd->fuji.cropf * cd->fuji.knots[i];
+      if(vig && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+      {
+        vig[j] = 1 - p->cor_vig_ft * (1 - cd->fuji.vignetting[i] / 100);
+      } else if(vig) {
+        vig[j] = 1;
+      }
+
+      ncin++;
+    }
+
+    // convert from spline related to source image (input is source image
+    // radius) to spline related to dest image (input is dest image radius)
+    nc = MAXKNOTS;
+
+    for(int i = 0; i < nc; i++)
+    {
+      const float rin = (float)i / (float)(nc - 1);
+      const float m = _interpolate_linear_spline(knots_in, cor_rgb_in, ncin, rin);
+      const float r = rin / m;
+      knots_dist[i] = r;
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          cor_rgb[c][i] = m;
+        }
+      }
+      else if(cor_rgb)
+      {
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1;
+      }
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+      {
+        const float mcar = _interpolate_linear_spline(knots_in, cor_ca_r_in, ncin, rin);
+        const float mcab = _interpolate_linear_spline(knots_in, cor_ca_b_in, ncin, rin);
+        cor_rgb[0][i] *= mcar + 1;
+        cor_rgb[2][i] *= mcab + 1;
+      }
+    }
+  }
+  else if(img->exif_correction_type == CORRECTION_TYPE_DNG)
+  {
+    nc = MAXKNOTS;
+
+    for(int i = 0; i < nc; i++)
+    {
+      const float r = (float) i / (float) (nc - 1);
+      knots_dist[i] = knots_vig[i] = r;
+      if(cor_rgb) cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
+      if(vig)     vig[i] = 1.0f;
+
+      const float pw2 = powf(r, 2.0f), pw4 = powf(r, 4.0f), pw6 = powf(r, 6.0f);
+      if(cor_rgb
+         && cd->dng.has_warp
+         && p->modify_flags & (DT_IOP_LENS_MODIFY_FLAG_DISTORTION
+                               | DT_IOP_LENS_MODIFY_FLAG_TCA))
+      {
+        // Convert the polynomial to a spline by evaluating it at each knot
+        for(int c = 0; c < cd->dng.planes; c++)
+        {
+          const float r_cor =
+            cd->dng.cwarp[c][0] + cd->dng.cwarp[c][1]*pw2
+            + cd->dng.cwarp[c][2]*pw4 + cd->dng.cwarp[c][3]*pw6;
+          cor_rgb[c][i] = (p->cor_dist_ft * (r_cor - 1.0f) + 1.0f);
+        }
+
+        if(cd->dng.planes == 1)
+          cor_rgb[2][i] = cor_rgb[1][i] = cor_rgb[0][i];
+      }
+
+      if(vig
+         && cd->dng.has_vignette
+         && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING))
+      {
+        const float dvig = cd->dng.cvig[0]*pw2 + cd->dng.cvig[1]*pw4 + cd->dng.cvig[2]*pw6
+                         + cd->dng.cvig[3]*powf(r, 8.0f) + cd->dng.cvig[4]*powf(r, 10.0f);
+        // Pixel value is to be divided by (1 + dvig) to correct vignetting
+        // Scale dvig according to fine-tune: 0 for no correction, 1 for
+        // correction specified by metadata, and 2 to double the correction.
+        vig[i] = 1.0f / (1.0f + p->cor_vig_ft * dvig);
+      }
+    }
+  }
+
+  // calculate the optimal scaling value to show the maximum
+  // visibile image box after distortion correction
+  // It does so by walking from the normalized radius [0, 1] at the shorter image
+  // border to 1.
+  // TODO(sgotti) Theoretically, since the distortion function should always be
+  // monotonic and the center is always the center of the image, we should only
+  // look at the the shorter image radius and 1 ignoring intermediate values
+
+  // FIXME: get those from rawprepare IOP somehow !!!
+  const float iwd2 = 0.5f *(img->width - img->crop_x - img->crop_right),
+              iht2 = 0.5f *(img->height - img->crop_y - img->crop_bottom);
+
+  const float r = sqrtf(iwd2 * iwd2 + iht2 * iht2);
+  const float sr = fminf(iwd2, iht2);
+  const float srr = sr / r;
+
+  const float tested = 200.0f;
+
+  // Compute the new scale
+  float scale = 0.0f;
+  for(float i = 0.0f; i < tested; i++)
+  {
+    for(int j = 0; j < 3; j++) {
+      const float x = srr + (1.0f - srr) * i / (tested - 1.0f);
+      float cur_scale = _interpolate_linear_spline(knots_dist, cor_rgb[j], nc, x);
+      scale = fmaxf(scale,cur_scale);
+    }
+  }
+
+  // scale spline
+  for(int i = 0; i < nc; i++)
+  {
+    knots_dist[i] *= scale;
+    for(int c = 0; c < 3; c++)
+    {
+      cor_rgb[c][i] /= scale;
+    }
+  }
+
+  return nc;
+}
+
+static void _use_latest_md_algo_callback(GtkWidget *button, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
-  const float scale = _get_autoscale_md(self, p);
-  dt_bauhaus_slider_set(g->cor_scale, scale);
+  p->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
+  p->scale_md_v1 = 0.0f;
+
+  gui_changed(self, NULL, NULL);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+
+static void _autoscale_pressed_md(GtkWidget *button, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+
+  dt_bauhaus_slider_set(g->scale_md, 1.0f);
 }
 
 static int _check_corrections_md(dt_iop_lens_data_t *d)
@@ -1850,13 +2186,24 @@ static void _commit_params_md(dt_iop_module_t *self,
   d->cor_dist_ft = p->cor_dist_ft;
   d->cor_vig_ft = p->cor_vig_ft;
 
-  d->scale_md = p->cor_scale;
+  d->md_version = p->md_version;
 
-  if((d->scale_md < 0.9f)
-     || (d->scale_md > 1.1f)) // enforce an autoscale if unproper data
-    d->scale_md = _get_autoscale_md(self, p);
+  if(d->md_version == DT_IOP_LENS_EMBEDDED_METADATA_VERSION_1)
+  {
+    d->scale_md_v1 = p->scale_md_v1;
+    if((d->scale_md_v1 < 0.9f) || (d->scale_md_v1 > 1.1f)) // enforce an autoscale if unproper data
+      d->scale_md_v1 = _get_autoscale_md_v1(self, p);
 
-  d->nc = _init_coeffs_md(img, p, 1.0f / d->scale_md, d->knots, d->cor_rgb, d->vig);
+    d->nc = _init_coeffs_md_v1(img, p, 1.0f / d->scale_md_v1, d->knots_dist, d->knots_vig, d->cor_rgb, d->vig);
+  }
+  else if(d->md_version == DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2)
+  {
+    d->nc = _init_coeffs_md_v2(img, p, d->knots_dist, d->knots_vig, d->cor_rgb, d->vig);
+  }
+
+  d->scale_md = p->scale_md;
+  if((d->scale_md < 0.1f) || (d->scale_md > 2.0f)) // reset image scale if unproper data
+    d->scale_md = 1.0f;
 
   if(self->dev->gui_attached && g
      && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
@@ -1891,6 +2238,7 @@ static int _distort_transform_md(dt_iop_module_t *self,
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
     return 0;
 
+  const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * piece->buf_in.width;
   const float h2 = 0.5f * piece->buf_in.height;
   const float r = 1 / sqrtf(w2*w2 + h2*h2);
@@ -1902,10 +2250,10 @@ static int _distort_transform_md(dt_iop_module_t *self,
 
     for(int k = 0; k < 10; k++)
     {
-      const float cx = p1 - w2;
-      const float cy = p2 - h2;
+      const float cx = (p1 - w2) * inv_scale_md;
+      const float cy = (p2 - h2) * inv_scale_md;
       const float dr =
-        _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
+        _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
 
       const float dist1 = points[i] - (dr*cx + w2), dist2 = points[i + 1] - (dr*cy + h2);
 
@@ -1934,16 +2282,17 @@ static int _distort_backtransform_md(dt_iop_module_t *self,
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
     return 0;
 
+  const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * piece->buf_in.width;
   const float h2 = 0.5f * piece->buf_in.height;
   const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
 
   for(size_t i = 0; i < 2*points_count; i += 2)
   {
-    const float cx = points[i] - w2;
-    const float cy = points[i + 1] - h2;
+    const float cx = (points[i] - w2) * inv_scale_md;
+    const float cy = (points[i + 1] - h2) * inv_scale_md;
     const float dr =
-      _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
+      _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
 
     points[i] = dr*cx + w2;
     points[i + 1] = dr*cy + h2;
@@ -1964,6 +2313,7 @@ static void _distort_mask_md(struct dt_iop_module_t *self,
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
     return dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
 
+  const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
   const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
@@ -1974,17 +2324,17 @@ static void _distort_mask_md(struct dt_iop_module_t *self,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(roi_in, roi_out, d, in, out, interpolation) \
-  dt_omp_sharedconst(w2, h2, r) \
+  dt_omp_sharedconst(inv_scale_md, w2, h2, r) \
   schedule(static) collapse(2)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
     for(int x = 0; x < roi_out->width; x++)
     {
-      const float cx = roi_out->x + x - w2;
-      const float cy = roi_out->y + y - h2;
+      const float cx = (roi_out->x + x - w2) * inv_scale_md;
+      const float cy = (roi_out->y + y - h2) * inv_scale_md;
       const float dr =
-        _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
+        _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
       const float xs = dr*cx + w2 - roi_in->x;
       const float ys = dr*cy + h2 - roi_in->y;
       out[y * roi_out->width + x] =
@@ -2006,6 +2356,7 @@ static void _process_md(struct dt_iop_module_t *self,
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
     return dt_iop_copy_image_roi((float *)ovoid, (float *)ivoid, 4, roi_in, roi_out, TRUE);
 
+  const float inv_scale_md = 1.0f / d->scale_md;
   const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
   const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
@@ -2035,10 +2386,10 @@ static void _process_md(struct dt_iop_module_t *self,
         const float cx = roi_in->x + x - w2;
         const float cy = roi_in->y + y - h2;
         const float sf =
-          _interpolate_linear_spline(d->knots, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
+          _interpolate_linear_spline(d->knots_vig, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
 
         for_each_channel(c)
-          buf[idx + c] /= (sf != 0.0f) ? sf*sf : 1.0f;
+          buf[idx + c] /= (sf != 0.0f) ? sf : 1.0f;
       }
     }
   }
@@ -2049,7 +2400,7 @@ static void _process_md(struct dt_iop_module_t *self,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(roi_in, roi_out, buf, d, out, interpolation) \
-  dt_omp_sharedconst(w2, h2, r) \
+  dt_omp_sharedconst(inv_scale_md, w2, h2, r) \
   schedule(static) collapse(2)
 #endif
   for(int y = 0; y < roi_out->height; y++)
@@ -2057,14 +2408,14 @@ static void _process_md(struct dt_iop_module_t *self,
     for(int x = 0; x < roi_out->width; x++)
     {
       const size_t odx = 4 * (y * roi_out->width + x);
-      const float cx = roi_out->x + x - w2;
-      const float cy = roi_out->y + y - h2;
+      const float cx = (roi_out->x + x - w2) * inv_scale_md;
+      const float cy = (roi_out->y + y - h2) * inv_scale_md;
 
       const float radius = r*sqrtf(cx*cx + cy*cy);
       for_three_channels(c)
       {
         const float dr =
-          _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, radius);
+          _interpolate_linear_spline(d->knots_dist, d->cor_rgb[c], d->nc, radius);
         const float xs = dr*cx + w2 - roi_in->x;
         const float ys = dr*cy + h2 - roi_in->y;
         out[odx+c] = dt_interpolation_compute_sample
@@ -2074,7 +2425,7 @@ static void _process_md(struct dt_iop_module_t *self,
       // use green data for alpha channel
       {
         const float dr =
-          _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, radius);
+          _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1], d->nc, radius);
         const float xs = dr*cx + w2 - roi_in->x;
         const float ys = dr*cy + h2 - roi_in->y;
         out[odx+3] = dt_interpolation_compute_sample
@@ -2099,6 +2450,7 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   if(!d->nc || d->modify_flags==DT_IOP_LENS_MODFLAG_NONE)
     return;
 
+  const float inv_scale_md = 1.0f / d->scale_md;
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
   const float w2 = 0.5f * orig_w;
@@ -2108,8 +2460,8 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   const int xoff = roi_in->x;
   const int yoff = roi_in->y;
   const int width = roi_in->width, height = roi_in->height;
-  const float cxs[] = { xoff - w2, xoff + (width - 1) - w2 };
-  const float cys[] = { yoff - h2, yoff + (height - 1) - h2 };
+  const float cxs[] = { (xoff - w2) * inv_scale_md, (xoff + (width - 1) - w2) * inv_scale_md };
+  const float cys[] = { (yoff - h2) * inv_scale_md, (yoff + (height - 1) - h2) * inv_scale_md };
 
   float xm = FLT_MAX;
   float xM = -FLT_MAX;
@@ -2119,13 +2471,13 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   // Sweep along the top and bottom rows of the ROI
   for(int i = 0; i < width; i++)
   {
-    const float cx = xoff + i - w2;
+    const float cx = (xoff + i - w2) * inv_scale_md;
     for(int j = 0; j < 2; j++)
     {
       const float cy = cys[j];
       for_three_channels(c)
       {
-        const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc,
+        const float dr = _interpolate_linear_spline(d->knots_dist, d->cor_rgb[c], d->nc,
                                                     r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
@@ -2136,7 +2488,7 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
       }
       // Also scan roi for vignetting
       {
-        const float dr = _interpolate_linear_spline(d->knots, d->vig, d->nc,
+        const float dr = _interpolate_linear_spline(d->knots_vig, d->vig, d->nc,
                                                     r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
@@ -2151,13 +2503,13 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   // Sweep along the left and right columns of the ROI
   for(int j = 0; j < height; j++)
   {
-    const float cy = yoff + j - h2;
+    const float cy = (yoff + j - h2) * inv_scale_md;
     for(int i = 0; i < 2; i++)
     {
       const float cx = cxs[i];
       for_three_channels(c)
       {
-        const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc,
+        const float dr = _interpolate_linear_spline(d->knots_dist, d->cor_rgb[c], d->nc,
                                                     r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
@@ -2168,7 +2520,7 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
       }
       // Also scan roi for vignetting
       {
-        const float dr = _interpolate_linear_spline(d->knots, d->vig, d->nc,
+        const float dr = _interpolate_linear_spline(d->knots_vig, d->vig, d->nc,
                                                     r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
@@ -2603,7 +2955,9 @@ void reload_defaults(dt_iop_module_t *module)
   {
     // prefer embedded metadata if available
     d->method = DT_IOP_LENS_METHOD_EMBEDDED_METADATA;
-    d->cor_scale = _get_autoscale_md(module, d);
+    // use new metadata algorithm
+    d->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
+    d->scale_md = 1.0f;
   }
 
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)module->gui_data;
@@ -3353,9 +3707,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       ? cd->dng.has_vignette
       : TRUE;
 
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_latest_md_algo), FALSE);
+    gtk_widget_set_visible(g->use_latest_md_algo, p->md_version != DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2);
+
     gtk_widget_set_visible(g->cor_dist_ft, has_warp);
     gtk_widget_set_visible(g->cor_vig_ft, has_vign);
-    gtk_widget_set_visible(g->cor_scale, has_warp);
 
     gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
@@ -3491,6 +3847,14 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box_md = self->widget =
     gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
+  g->use_latest_md_algo = gtk_check_button_new_with_label(_("use latest algorithm"));
+  gtk_widget_set_tooltip_text(g->use_latest_md_algo,
+                              _("you're using an old version of the algorithm.\n"
+                                "once enabled, you won't be able to\n"
+                                "return back to old algorithm."));
+  gtk_box_pack_start(GTK_BOX(box_md), g->use_latest_md_algo, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->use_latest_md_algo), "toggled", G_CALLBACK(_use_latest_md_algo_callback), self);
+
   g->cor_dist_ft = dt_bauhaus_slider_from_params(self, "cor_dist_ft");
   dt_bauhaus_slider_set_digits(g->cor_dist_ft, 3);
   gtk_widget_set_tooltip_text(g->cor_dist_ft,
@@ -3500,12 +3864,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->cor_vig_ft, 3);
   gtk_widget_set_tooltip_text(g->cor_vig_ft, _("tune the vignette correction"));
 
-  g->cor_scale = dt_bauhaus_slider_from_params(self, "cor_scale");
-  dt_bauhaus_slider_set_digits(g->cor_scale, 4);
-  dt_bauhaus_widget_set_quad_paint(g->cor_scale, dtgtk_cairo_paint_refresh, 0, NULL);
-  g_signal_connect(G_OBJECT(g->cor_scale), "quad-pressed",
+  g->scale_md = dt_bauhaus_slider_from_params(self, "scale_md");
+  dt_bauhaus_slider_set_digits(g->scale_md, 4);
+  dt_bauhaus_widget_set_quad_paint(g->scale_md, dtgtk_cairo_paint_refresh, 0, NULL);
+  g_signal_connect(G_OBJECT(g->scale_md), "quad-pressed",
                    G_CALLBACK(_autoscale_pressed_md), self);
-  gtk_widget_set_tooltip_text(g->cor_scale, _("override automatic scale"));
+  gtk_widget_set_tooltip_text(g->scale_md, _("image scaling"));
 
   // main widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
