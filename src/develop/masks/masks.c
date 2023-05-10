@@ -389,7 +389,13 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
     grpt->formid = form->formid;
     grpt->parentid = grp->formid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
-    if(grp->points) grpt->state |= DT_MASKS_STATE_UNION;
+    if(grp->points)
+    {
+      if(form->type == DT_MASKS_BRUSH)
+        grpt->state |= DT_MASKS_STATE_SUM;
+      else
+        grpt->state |= DT_MASKS_STATE_UNION;
+    }
     grpt->opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
     grp->points = g_list_append(grp->points, grpt);
     // we save the group
