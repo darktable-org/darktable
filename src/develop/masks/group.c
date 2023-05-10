@@ -363,7 +363,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
   for(int i = 0; i < nb; i++)
   {
     const double start = dt_get_wtime();
-    if(states[i] & DT_MASKS_STATE_UNION)
+    if(states[i] & (DT_MASKS_STATE_UNION | DT_MASKS_STATE_SUM))
     {
       for(int y = 0; y < h[i]; y++)
       {
@@ -614,6 +614,50 @@ static void _combine_masks_difference(float *const restrict dest,
   }
 }
 
+static void _combine_masks_sum(float *const restrict dest,
+                               float *const restrict newmask,
+                               const size_t npixels,
+                               const float opacity,
+                               const int inverted)
+{
+  if(inverted)
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - newmask[index]);
+      dest[index] = MIN(1.0f, dest[index] + mask);
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * newmask[index];
+      dest[index] = MIN(1.0f, dest[index] + mask);
+    }
+  }
+}
+
 static void _combine_masks_exclusion(float *const restrict dest,
                                      float *const restrict newmask,
                                      const size_t npixels,
@@ -715,6 +759,10 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
         else if(state & DT_MASKS_STATE_DIFFERENCE)
         {
           _combine_masks_difference(buffer, bufs, npixels, op, inverted);
+        }
+        else if(state & DT_MASKS_STATE_SUM)
+        {
+          _combine_masks_sum(buffer, bufs, npixels, op, inverted);
         }
         else if(state & DT_MASKS_STATE_EXCLUSION)
         {
