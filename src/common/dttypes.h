@@ -20,7 +20,7 @@
 
 // uncomment the next line to use something other than NAN to signal an invalid color matrix
 // leave commented out for backward compatibility in case some instances have been missed.
-#define NO_COLORMATRIX_NAN
+//#define NO_COLORMATRIX_NAN
 
 #include <float.h>
 #include <math.h>
