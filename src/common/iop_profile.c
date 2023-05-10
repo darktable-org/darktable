@@ -779,26 +779,22 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
                                                     profile_info->lut_in[0],
                                                     profile_info->lut_in[1],
                                                     profile_info->lut_in[2],
-                                                    profile_info->lutsize)
-       || dt_colorspaces_get_matrix_from_output_profile(rgb_profile, profile_info->matrix_out,
+                                                    profile_info->lutsize) == 0
+       && dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
+       && dt_colorspaces_get_matrix_from_output_profile(rgb_profile, profile_info->matrix_out,
                                                         profile_info->lut_out[0],
                                                         profile_info->lut_out[1],
                                                         profile_info->lut_out[2],
-                                                        profile_info->lutsize))
-    {
-      _mark_as_nonmatrix_profile(profile_info);
-      _clear_lut_curves(profile_info);
-    }
-    else if(!dt_is_valid_colormatrix(profile_info->matrix_in[0][0])
-            || !dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
-    {
-      _mark_as_nonmatrix_profile(profile_info);
-      _clear_lut_curves(profile_info);
-    }
-    else
+                                                        profile_info->lutsize) == 0
+       && dt_is_valid_colormatrix(profile_info->matrix_out[0][0]))
     {
       transpose_3xSSE(profile_info->matrix_in, profile_info->matrix_in_transposed);
       transpose_3xSSE(profile_info->matrix_out, profile_info->matrix_out_transposed);
+    }
+    else
+    {
+      _mark_as_nonmatrix_profile(profile_info);
+      _clear_lut_curves(profile_info);
     }
   }
 
