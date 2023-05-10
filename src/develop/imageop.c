@@ -391,7 +391,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   module->multi_priority = 0;
   module->multi_name_hand_edited = FALSE;
   module->iop_order = 0;
-  module->cache_next_important = FALSE;
   for(int k = 0; k < 3; k++)
   {
     module->picked_color[k] = module->picked_output_color[k] = 0.0f;
@@ -412,6 +411,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
+  module->iopcache_hint = FALSE;
 
   // only reference cached results of dlopen:
   module->module = so->module;

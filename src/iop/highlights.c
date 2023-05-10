@@ -828,21 +828,9 @@ void commit_params(struct dt_iop_module_t *self,
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
-  // check for heavy computing here to possibly give an iop cache hint
-  gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
-                  || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS));
-
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  if(g)
-  {
-    // the clipped visualizer for linears is not implemented in cl
-    if((g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
-      piece->process_cl_ready = FALSE;
-    // only give a heavy hint if we are not in masking mode
-    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
-      heavy = FALSE;
-  }
-  self->cache_next_important = heavy;
+  if(g && (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
+    piece->process_cl_ready = FALSE;
 }
 
 void init_global(dt_iop_module_so_t *module)

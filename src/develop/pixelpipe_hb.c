@@ -341,7 +341,6 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = NO_IMGID;
-  pipe->next_important_module = FALSE;
 
   if(pipe->forms)
   {
@@ -1344,27 +1343,6 @@ static gboolean _pixelpipe_process_on_CPU(
     return FALSE;
 }
 
-static inline gboolean _check_good_pipe(dt_dev_pixelpipe_t *pipe)
-{
-  return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
-         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE);
-}
-
-static inline gboolean _check_module_next_important(dt_dev_pixelpipe_t *pipe,
-                                                    dt_iop_module_t *module)
-{
-  if(!_check_good_pipe(pipe)) return FALSE;
-  return ((module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NEXT)
-          || module->cache_next_important);
-}
-
-static inline gboolean _check_module_now_important(dt_dev_pixelpipe_t *pipe,
-                                                   dt_iop_module_t *module)
-{
-  if(!_check_good_pipe(pipe)) return FALSE;
-  return (module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NOW);
-}
-
 #ifdef HAVE_OPENCL
 static inline gboolean _opencl_pipe_isok(dt_dev_pixelpipe_t *pipe)
 {
@@ -1593,13 +1571,8 @@ static gboolean _dev_pixelpipe_process_rec(
   if((pipe->type & DT_DEV_PIXELPIPE_FULL)
       && module
       && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE))
-  {
     important = (dt_iop_module_is(module->so, "gamma"));
-    important |= _check_module_now_important(pipe, module);
-    // we might have a hint from the previous module for being important
-    important |= pipe->next_important_module;
-  }
-  pipe->next_important_module = FALSE;
+
   dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
                              output, out_format, module, important);
 
@@ -1766,10 +1739,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                 roi_in.width, roi_in.height, in_bpp);
           if(cl_mem_input == NULL)
           {
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_pixelpipe] [%s] couldn't generate input buffer"
-                     " for module `%s'\n",
-                     dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't generate input buffer");
             success_opencl = FALSE;
           }
 
@@ -1780,10 +1752,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                         in_bpp);
             if(err != CL_SUCCESS)
             {
-              dt_print(DT_DEBUG_OPENCL,
-                       "[opencl_pixelpipe] [%s] couldn't copy image to opencl"
-                       " device for module `%s'\n",
-                       dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+              dt_print_pipe(DT_DEBUG_OPENCL,
+                "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                  "couldn't copy image to opencl device");
               success_opencl = FALSE;
             }
           }
@@ -1802,10 +1773,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                   roi_out->width, roi_out->height, bpp);
           if(*cl_mem_output == NULL)
           {
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_pixelpipe] [%s] couldn't allocate output buffer"
-                     " for module `%s'\n",
-                     dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't allocate output buffer");
             success_opencl = FALSE;
           }
         }
@@ -2039,11 +2009,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                            in_bpp);
           if(err != CL_SUCCESS)
           {
-            /* late opencl error */
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_pixelpipe (a)] [%s] late opencl error detected while"
-                     " copying back to cpu buffer: %s\n",
-                     dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't copy data back to host memory (A)");
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = TRUE;
             return TRUE;
@@ -2177,9 +2145,9 @@ static gboolean _dev_pixelpipe_process_rec(
       /* finally check, if we were successful */
       if(success_opencl)
       {
-        /* Nice, everything went fine */
+        /* Nice, everything went fine
 
-        /* Copying device buffers back to host memory is an expensive
+           Copying device buffers back to host memory is an expensive
            operation but is required for the iop cache.  As the gpu
            memory is very restricted we can't use that for a cache.
            The iop cache hit rate is much more important for the UI
@@ -2188,10 +2156,14 @@ static gboolean _dev_pixelpipe_process_rec(
 
              a) for the currently focused iop, as that is the iop
                 which is most likely to change next
-             b) if there is a hint for a module doing heavy processing.
-             c) only for full or preview pipe
-        */
-        if((module == darktable.develop->gui_module) || important)
+             b) if there is a hint for changed parameters in history via the flag
+             c) we got an important hint for some special cases
+       */
+
+        if(darktable.develop->gui_attached
+           && ((module == darktable.develop->gui_module)
+                || important
+                || module->iopcache_hint))
         {
           /* write back input into cache for faster re-usal (full pipe or preview) */
           if(cl_mem_input != NULL
@@ -2204,12 +2176,10 @@ static gboolean _dev_pixelpipe_process_rec(
                                                              roi_in.height, in_bpp);
             if(err != CL_SUCCESS)
             {
+              dt_print_pipe(DT_DEBUG_OPENCL,
+                "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                  "couldn't copy data back to host memory (B)");
               /* late opencl error, not likely to happen here */
-              dt_print(DT_DEBUG_OPENCL,
-                       "[opencl_pixelpipe (e)] [%s] late opencl error"
-                       " detected while copying "
-                       "back to cpu buffer: %s\n",
-                       dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
               /* that's all we do here, we later make sure to invalidate cache line */
             }
             else
@@ -2242,10 +2212,9 @@ static gboolean _dev_pixelpipe_process_rec(
       else
       {
         /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
-        dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_pixelpipe] [%s] could not run module `%s' on gpu."
-                 " falling back to cpu path\n",
-                 dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+        dt_print_pipe(DT_DEBUG_OPENCL,
+           "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't run module on GPG, falling back to CPU");
 
         // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
 
@@ -2267,11 +2236,9 @@ static gboolean _dev_pixelpipe_process_rec(
                                                            in_bpp);
           if(err != CL_SUCCESS)
           {
-            /* late opencl error */
-            dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_pixelpipe (b)] [%s] late opencl error detected"
-                     " while copying back to cpu buffer: %s\n",
-                     dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+                "couldn't copy data back to host memory (C)");
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = TRUE;
             return TRUE;
@@ -2297,10 +2264,6 @@ static gboolean _dev_pixelpipe_process_rec(
     else
     {
       /* we are not allowed to use opencl for this module */
-
-      // fprintf(stderr, "[opencl_pixelpipe 3] for module `%s', have bufs %p and %p \n", module->op,
-      // cl_mem_input, *cl_mem_output);
-
       *cl_mem_output = NULL;
 
       /* cleanup unneeded opencl buffer, and copy back to CPU buffer */
@@ -2309,14 +2272,12 @@ static gboolean _dev_pixelpipe_process_rec(
         const cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
                                                          roi_in.width, roi_in.height,
                                                          in_bpp);
-        // if(rand() % 5 == 0) err = !CL_SUCCESS; // Test code: simulate spurious failures
+
         if(err != CL_SUCCESS)
         {
-          /* late opencl error */
-          dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_pixelpipe (c)] [%s] late opencl error detected"
-                   " while copying back to cpu buffer: %s\n",
-                   dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
+          dt_print_pipe(DT_DEBUG_OPENCL,
+            "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
+              "couldn't copy data back to host memory (D)");
           dt_opencl_release_mem_object(cl_mem_input);
           pipe->opencl_error = TRUE;
           return TRUE;
@@ -2392,34 +2353,32 @@ static gboolean _dev_pixelpipe_process_rec(
   // in case we get this buffer from the cache in the future, cache some stuff:
   **out_format = piece->dsc_out = pipe->dsc;
 
-  const gboolean needs_histo = module
+  // special cases for active modules with available gui
+  if(module
      && darktable.develop->gui_attached
-     && module->expanded
-     && module->enabled
-     && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
-     && (module->request_histogram & DT_REQUEST_EXPANDED);
-
-  if(needs_histo)
-    dt_print_pipe(DT_DEBUG_PIPE, "internal histogram", pipe, module, NULL, NULL, "\n");
-
-  if((pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE) && !needs_histo)
+     && module->enabled)
   {
-    if(module && module == darktable.develop->gui_module)
+    // Possibly give the input buffer of the current module more weight
+    // as the user is likely to change that one soon (again), so keep it in cache.
+    if((pipe->type & DT_DEV_PIXELPIPE_FULL)
+        && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+        && ((module == darktable.develop->gui_module) || module->iopcache_hint))
     {
-      // give the input buffer to the currently focused plugin more weight.
-      // the user is likely to change that one soon, so keep it in cache.
+      dt_print_pipe(DT_DEBUG_PIPE, "UI hints importance", pipe, module, &roi_in, roi_out,
+        "%s\n", module->iopcache_hint ? "last history change" : "module in focus");
+
       dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
+      module->iopcache_hint = FALSE;
     }
 
-    // we check for an important hint after processing the module as we
-    // want to track a runtime hint too.
-    pipe->next_important_module = _check_module_next_important(pipe, module);
-  }
-
-  if(needs_histo)
-  {
-    pipe->nocache = TRUE;
-    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
+    if(module->expanded
+       && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
+       && (module->request_histogram & DT_REQUEST_EXPANDED))
+    {
+      dt_print_pipe(DT_DEBUG_PIPE, "internal histogram", pipe, module, &roi_in, roi_out, "\n");
+      pipe->nocache = TRUE;
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
+    }
   }
 
   // warn on NaN or infinity
@@ -2440,7 +2399,7 @@ static gboolean _dev_pixelpipe_process_rec(
     if((*out_format)->datatype == TYPE_FLOAT
        && (*out_format)->channels == 4)
     {
-      int hasinf = 0, hasnan = 0;
+      gboolean hasinf = FALSE, hasnan = FALSE;
       dt_aligned_pixel_t min = { FLT_MAX };
       dt_aligned_pixel_t max = { -FLT_MAX };
 
@@ -2450,9 +2409,9 @@ static gboolean _dev_pixelpipe_process_rec(
         {
           const float f = ((float *)(*output))[k];
           if(dt_isnan(f))
-            hasnan = 1;
+            hasnan = TRUE;
           else if(dt_isinf(f))
-            hasinf = 1;
+            hasinf = TRUE;
           else
           {
             min[k & 3] = fmin(f, min[k & 3]);
@@ -2479,7 +2438,7 @@ static gboolean _dev_pixelpipe_process_rec(
     }
     else if((*out_format)->datatype == TYPE_FLOAT && (*out_format)->channels == 1)
     {
-      int hasinf = 0, hasnan = 0;
+      gboolean hasinf = FALSE, hasnan = FALSE;
       float min = FLT_MAX;
       float max = -FLT_MAX;
 
@@ -2487,9 +2446,9 @@ static gboolean _dev_pixelpipe_process_rec(
       {
         const float f = ((float *)(*output))[k];
         if(dt_isnan(f))
-          hasnan = 1;
+          hasnan = TRUE;
         else if(dt_isinf(f))
-          hasinf = 1;
+          hasinf = TRUE;
         else
         {
           min = fmin(f, min);
@@ -2624,7 +2583,6 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(
 #ifdef HAVE_OPENCL
   dt_opencl_check_tuning(pipe->devid);
 #endif
-  pipe->next_important_module = FALSE;
   gboolean ret = _dev_pixelpipe_process_rec(pipe, dev, output,
                                             cl_mem_output, out_format, roi_out,
                                             modules, pieces, pos);
