@@ -295,13 +295,15 @@ static float *_process_opposed(
             {
               const size_t idx = grp + y * roi_in->width + x;
               const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+x, roi_in, xtrans) : FC(mrow+y, mcol+x, filters);
-              const gboolean clipped = fmaxf(0.0f, input[idx]) >= clips[color];
+              const gboolean clipped = input[idx] >= clips[color];
               mbuff[color] += (clipped) ? 1 : 0;
-              anyclipped |= clipped;
             }
           }
           for_three_channels(c)
+          {
             mask[c * msize + mrow * mwidth + mcol] = (mbuff[c]) ? 1 : 0;
+            anyclipped |= (mbuff[c]) ? 1 : 0;
+          }
         }
       }
 
@@ -331,10 +333,11 @@ static float *_process_opposed(
           }
         }
 
+        const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */ 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, xtrans, clips, mask, filters, msize, mwidth) \
+  dt_omp_firstprivate(input, roi_in, xtrans, clips, lo_clips, mask, filters, msize, mwidth) \
   reduction(+ : sums, cnts) \
   schedule(static) collapse(2)
 #endif
@@ -344,10 +347,11 @@ static float *_process_opposed(
           {
             const size_t idx = row * roi_in->width + col;
             const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-            const float inval = fmaxf(0.0f, input[idx]); 
+            const float inval = input[idx]; 
 
             /* we only use the unclipped photosites very close the true clipped data to calculate the chrominance offset */
-            if((inval < clips[color]) && (inval > (0.2f * clips[color])) && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
+            if((inval < clips[color]) && (inval > lo_clips[color])
+               && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
             {
               sums[color] += inval - _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
               cnts[color] += 1.0f;
@@ -384,11 +388,11 @@ static float *_process_opposed(
       {
         const size_t idx = row * roi_in->width + col;
         const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-        const float inval = fmaxf(0.0f, input[idx]);
+        const float inval = MAX(0.0f, input[idx]);
         if(inval >= clips[color])
         {
           const float ref = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
-          tmpout[idx] = fmaxf(inval, ref + chrominance[color]);
+          tmpout[idx] = MAX(inval, ref + chrominance[color]);
         }
         else
           tmpout[idx] = inval;
@@ -417,11 +421,11 @@ static float *_process_opposed(
         else
         { 
           const int color = (filters == 9u) ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
-          oval = fmaxf(0.0f, input[ix]);
+          oval = MAX(0.0f, input[ix]);
           if(oval >= clips[color])
           {
             const float ref = _calc_refavg(&input[ix], xtrans, filters, irow, icol, roi_in, TRUE);
-            oval = fmaxf(oval, ref + chrominance[color]);
+            oval = MAX(oval, ref + chrominance[color]);
           }
         }
       }
