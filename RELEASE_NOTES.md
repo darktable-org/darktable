@@ -514,6 +514,9 @@ The following is a summary of the main features added to darktable
   - US Letter
   - US Legal
 
+- Improve clarity and usability of dialog to confirm further action
+  upon failure of physical file deletion or moving to trash.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
