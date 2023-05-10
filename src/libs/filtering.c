@@ -1341,6 +1341,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
       gtk_widget_destroy(d->rule[i].w_main);
       d->rule[i].w_main = NULL;
       d->rule[i].w_special_box = NULL;
+      d->rule[i].w_pin = NULL;
     }
   }
 
