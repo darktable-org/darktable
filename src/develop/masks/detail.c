@@ -495,9 +495,19 @@ gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
                                const float threshold,
                                const gboolean detail)
 {
+  if((details->roi.width <= 0)
+     || (details->roi.height <= 0)
+     || !details->data
+     || (details->hash == 0))
+    return TRUE;
+
   const size_t msize = (size_t) details->roi.width * details->roi.height;
   float *tmp = dt_alloc_align_float(msize);
-  if(!tmp) return TRUE;
+  if(!tmp)
+  {
+    dt_iop_image_fill(out, 0.0f, details->roi.width, details->roi.height, 1);
+    return TRUE;
+  }
 
   float *src = details->data;
 #ifdef _OPENMP
@@ -510,7 +520,9 @@ gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
     const float blend = CLIP(_calcBlendFactor(src[idx], threshold));
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
-  dt_masks_blur_9x9(tmp, out, details->roi.width, details->roi.height, 2.0f);
+  // for very small images the blurring should be slightly less to have an effect at all
+  const float blurring = (MIN(details->roi.width, details->roi.height) < 500) ? 1.5f : 2.0f;
+  dt_masks_blur_9x9(tmp, out, details->roi.width, details->roi.height, blurring);
   dt_free_align(tmp);
   return FALSE;
 }
