@@ -729,15 +729,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
    */
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
+  GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
   if(d->mode != DT_PROFILE_NORMAL || force_lcms2
-     || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-                                                      LUT_SAMPLES))
+     || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
+                                                      d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     piece->process_cl_ready = FALSE;
     d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                           out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
   }
+  GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
 
   // user selected a non-supported output profile, check that:
   if(!d->xform && !dt_is_valid_colormatrix(d->cmatrix[0][0]))
@@ -748,9 +750,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
              out_profile->name);
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
 
+    GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
     if(d->mode != DT_PROFILE_NORMAL
-       || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-                                                        LUT_SAMPLES))
+       || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
+                                                        d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       piece->process_cl_ready = FALSE;
@@ -758,6 +761,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                             out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
     }
+    GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
   }
 
   if(out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2)

@@ -1428,12 +1428,12 @@ void commit_params(struct dt_iop_module_t *self,
   }
 
   // prepare transformation matrix or lcms2 transforms as fallback
+  GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
   if(d->nrgb)
   {
     // user wants us to clip to a given RGB profile
-    if(dt_colorspaces_get_matrix_from_input_profile
-       (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-        LUT_SAMPLES))
+    if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix,
+                                                    d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       piece->process_cl_ready = FALSE;
       dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
@@ -1467,6 +1467,7 @@ void commit_params(struct dt_iop_module_t *self,
                                             TYPE_LabA_FLT, p->intent, 0);
     }
   }
+  GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
 
   // we might have failed generating the clipping transformations, check that:
   if(d->nrgb && ((!d->xform_cam_nrgb && !dt_is_valid_colormatrix(d->nmatrix[0][0]))
@@ -1500,6 +1501,7 @@ void commit_params(struct dt_iop_module_t *self,
     d->input = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC709, "",
                                           DT_PROFILE_DIRECTION_IN)->profile;
     d->clear_input = FALSE;
+    GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
     if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
@@ -1509,6 +1511,7 @@ void commit_params(struct dt_iop_module_t *self,
       d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
     }
+    GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
   }
 
   d->nonlinearlut = FALSE;
