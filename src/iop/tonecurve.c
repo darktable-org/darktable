@@ -598,12 +598,14 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
 
   // Gamma 2.0 - no contrast
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(linear_L[k], 2.0f);
+  for(int k = 1; k < 6; k++)
+    p.tonecurve[ch_L][k].y = linear_L[k] * linear_L[k];
   dt_gui_presets_add_generic(_("gamma 2.0"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma 0.5 - no contrast
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(linear_L[k], 0.5f);
+  for(int k = 1; k < 6; k++)
+    p.tonecurve[ch_L][k].y = sqrtf(linear_L[k]);
   dt_gui_presets_add_generic(_("gamma 0.5"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1138,6 +1140,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO, hbox);
   gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click or right-click to select an area"));
+  dt_action_define_iop(self, NULL, N_("pick color"), c->colorpicker, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 

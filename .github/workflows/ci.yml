@@ -19,6 +19,7 @@ on:
         - "data/style/**"
         - "data/themes/**"
         - "data/watermarks/**"
+        - "tools/*"
         - "**.md"
   pull_request:
     branches:
@@ -33,6 +34,7 @@ on:
         - "data/style/**"
         - "data/themes/**"
         - "data/watermarks/**"
+        - "tools/*"
         - "**.md"
 
 permissions:
@@ -50,7 +52,7 @@ jobs:
           - { label: ubuntu-latest, code: latest }
         compiler:
           - { compiler: GNU12,  CC: gcc-12,   CXX: g++-12,     packages: gcc-12 g++-12 }
-          - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
+          - { compiler: LLVM15, CC: clang-15, CXX: clang++-15, packages: clang-15 libomp-15-dev llvm-15-dev libc++-15-dev libc++abi1-15 lld-15 clang-tools-15 mlir-15-tools libmlir-15-dev}
         btype:
           - Release
         target:
@@ -163,16 +165,17 @@ jobs:
           cd "${SRC_DIR}/src/tests/integration/"
           ./run.sh --no-opencl --no-deltae --fast-fail
 
-  Win64:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+  Windows:
+    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
       matrix:
         btype:
           - Debug
-        compiler:
-          - { compiler: GNU,  CC: gcc,   CXX: g++ }
+        msystem:
+          #- CLANG64
+          - UCRT64
         target:
           - skiptest
         generator:
@@ -183,8 +186,6 @@ jobs:
       run:
         shell: msys2 {0}
     env:
-      CC: ${{ matrix.compiler.CC }}
-      CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
@@ -196,9 +197,8 @@ jobs:
     steps:
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: ucrt64
+          msystem: ${{ matrix.msystem }}
           install: >-
-            base-devel
             git
             intltool
             po4a
@@ -256,7 +256,6 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Check if it runs
-        if: ${{success() && matrix.compiler.compiler == 'GNU' }} # LLVM build on windws for some reason breaks in imageio_rawspeed...
         run: |
           $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe --version || true
@@ -274,7 +273,7 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.generator }}
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true

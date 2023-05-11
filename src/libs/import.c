@@ -277,7 +277,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->camera = camera;
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
-        dt_gui_add_help_link(ib, dt_get_help_url("import_camera"));
+        dt_gui_add_help_link(ib, "import_camera");
       }
       if(camera->can_tether == TRUE)
       {
@@ -285,14 +285,14 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->tethered_shoot = GTK_BUTTON(tb);
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
-        dt_gui_add_help_link(tb, dt_get_help_url("import_camera"));
+        dt_gui_add_help_link(tb, "import_camera");
       }
 
       gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmount camera"))), FALSE, FALSE, 0);
       d->unmount_camera = GTK_BUTTON(um);
       g_signal_connect(G_OBJECT(um), "clicked", G_CALLBACK(_lib_import_unmount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(um)), GTK_ALIGN_CENTER);
-      dt_gui_add_help_link(um, dt_get_help_url("mount_camera"));
+      dt_gui_add_help_link(um, "mount_camera");
 
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
@@ -323,7 +323,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
       g_signal_connect(G_OBJECT(im), "clicked", G_CALLBACK(_lib_import_mount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(im)), GTK_ALIGN_CENTER);
-      dt_gui_add_help_link(im, dt_get_help_url("mount_camera"));
+      dt_gui_add_help_link(im, "mount_camera");
 
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
@@ -1702,6 +1702,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
       _("cancel"), GTK_RESPONSE_CANCEL,
       _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
       NULL);
+  dt_gui_dialog_add_help(GTK_DIALOG(d->from.dialog), "import_dialog");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
@@ -1960,9 +1961,21 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   d->import_case = (widget == GTK_WIDGET(d->import_inplace)) ? DT_IMPORT_INPLACE : DT_IMPORT_COPY;
+#ifdef HAVE_GPHOTO2
+  // on some systems, GPhoto2 is somewhat prone to crashing while
+  // scanning for new devices; this manifests as a crash during long
+  // import sessions.  So disable the scan while we're importing, even
+  // though we aren't using GPhoto2 to do the importing
+  struct dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
+  camctl->import_ui = TRUE;
+#endif
   _import_from_dialog_new(self);
   _import_from_dialog_run(self);
   _import_from_dialog_free(self);
+#ifdef HAVE_GPHOTO2
+  // OK to resume periodic scans for new GPhoto2 devices
+  camctl->import_ui = FALSE;
+#endif
 }
 
 #ifdef HAVE_GPHOTO2

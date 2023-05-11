@@ -786,11 +786,12 @@ static int process_rcd_cl(
     dt_opencl_release_mem_object(dev_green_eq);
     dev_green_eq = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
 
-    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
+    if(piece->pipe->want_detail_mask)
+      dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, TRUE);
 
     if(scaled)
     {
-      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self->so->op, roi_in, roi_out, "\n");
+      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");
       // scale aux buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
       if(err != CL_SUCCESS) goto error;

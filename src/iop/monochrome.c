@@ -140,9 +140,9 @@ void init_presets(dt_iop_module_so_t *self)
   // dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
-static float color_filter(const float ai, const float bi, const float a, const float b, const float size)
+static float color_filter(const float ai, const float bi, const float a, const float b, const float dbl_size)
 {
-  return dt_fast_expf(-CLAMPS(((ai - a) * (ai - a) + (bi - b) * (bi - b)) / (2.0 * size), 0.0f, 1.0f));
+  return dt_fast_expf(-CLAMPS(((ai - a) * (ai - a) + (bi - b) * (bi - b)) / dbl_size, 0.0f, 1.0f));
 }
 
 static float envelope(const float L)
@@ -153,7 +153,7 @@ static float envelope(const float L)
   if(x < beta)
   {
     // return 1.0f-fabsf(x/beta-1.0f)^2
-    const float tmp = fabsf(x / beta - 1.0f);
+    const float tmp = (x / beta - 1.0f); // no need for fabsf since we square the value
     return 1.0f - tmp * tmp;
   }
   else
@@ -169,7 +169,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
-  const float sigma2 = (d->size * 128.0) * (d->size * 128.0f);
+  const float sigma2 = 2.0f * (d->size * 128.0f) * (d->size * 128.0f);
 // first pass: evaluate color filter:
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   const float *const restrict in = (const float *)i;
@@ -177,15 +177,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float d_a = d->a;
   const float d_b = d->b;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(in, out, npixels, sigma2, d_a, d_b) \
-  schedule(static)
+  schedule(simd:static) aligned(in, out:64)
 #endif
   for(int k = 0; k < 4*npixels; k += 4)
   {
     out[k+0] = 100.0f * color_filter(in[k+1], in[k+2], d_a, d_b, sigma2);
     out[k+1] = out[k+2] = 0.0f;
-    out[k+3] = in[k+3];
   }
 
   // second step: blur filter contribution:
@@ -202,9 +201,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float highlights = d->highlights;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(in, out, npixels, highlights) \
-  schedule(static)
+  schedule(simd:static) aligned(in, out:64)
 #endif
   for(int k = 0; k < 4*npixels; k += 4)
   {

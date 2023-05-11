@@ -235,7 +235,7 @@ static dt_iop_demosaic_qual_flags_t demosaic_qual_flags(
       flags |= DT_DEMOSAIC_FULL_SCALE;
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
-      flags |= ((piece->pipe->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED)
+      flags |= (piece->pipe->want_detail_mask
                 || (get_thumb_quality(roi_out->width, roi_out->height)))
                   ? DT_DEMOSAIC_FULL_SCALE
                   : DT_DEMOSAIC_DEFAULT;
@@ -684,7 +684,8 @@ void process(
         dt_free_align(in);
     }
 
-    dt_dev_write_rawdetail_mask(piece, tmp, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
+    if(piece->pipe->want_detail_mask)
+      dt_dev_write_rawdetail_mask(piece, tmp, roi_in, TRUE);
 
     if((demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast)
     {
@@ -694,7 +695,7 @@ void process(
     if(scaled)
     {
       roi = *roi_out;
-      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self->so->op, roi_in, roi_out, "\n");
+      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
       dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo, roi.width, roo.width);
       dt_free_align(tmp);
     }
@@ -749,12 +750,13 @@ int process_cl(
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
   cl_mem high_image = NULL;
   cl_mem low_image = NULL;
-  cl_mem blend = NULL;
-  cl_mem details = NULL;
-  cl_mem dev_aux = NULL;
-  const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && (data->dual_thrs > 0.0f) && !run_fast);
+
+  const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && !run_fast);
   const int devid = piece->pipe->devid;
   gboolean retval = FALSE;
+
+  if(dual)
+    high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
      demosaicing_method == DT_IOP_DEMOSAIC_PPG ||
@@ -767,9 +769,6 @@ int process_cl(
   {
     if(dual)
     {
-      high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(high_image == NULL)
-        return FALSE;
       if(!process_rcd_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE))
         goto finish;
     }
@@ -779,7 +778,7 @@ int process_cl(
        return FALSE;
     }
   }
-  else if(demosaicing_method ==  DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
+  else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
   {
     if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, FALSE))
       return FALSE;
@@ -795,11 +794,8 @@ int process_cl(
   {
     if(dual)
     {
-      high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(high_image == NULL)
-        return FALSE;
       if(!process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE))
-        return FALSE;
+        goto finish;
     }
     else
     {
@@ -819,28 +815,8 @@ int process_cl(
     goto finish;
   }
 
-  // This is dual demosaicing only stuff
-  const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
-
-  int width = roi_out->width;
-  int height = roi_out->height;
-  // need to reserve scaled auxiliary buffer or use dev_out
-  if(scaled)
-  {
-    dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-    if(dev_aux == NULL)
-      goto finish;
-    width = roi_in->width;
-    height = roi_in->height;
-  }
-  else
-    dev_aux = dev_out;
-
-  // here we have work to be done only for dual demosaicers
-  blend = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
-  details = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
-  low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-  if((blend == NULL) || (low_image == NULL) || (details == NULL)) goto finish;
+  low_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+  if(low_image == NULL) goto finish;
 
   if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE))
   {
@@ -849,25 +825,18 @@ int process_cl(
       retval = FALSE;
       goto finish;
     }
-    retval = dual_demosaic_cl(self, piece, details, blend, high_image, low_image, dev_aux, width, height, showmask);
+    retval = dual_demosaic_cl(self, piece, high_image, low_image, high_image, roi_in, showmask);
   }
+  dt_opencl_release_mem_object(low_image);
+  low_image = NULL;
 
-  if(scaled)
-  {
-    dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self->so->op, roi_in, roi_out, "\n");
-    // scale aux buffer to output buffer
-    const int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
-    if(err != CL_SUCCESS)
-      retval = FALSE;
-  }
+  if(dt_iop_clip_and_zoom_roi_cl(devid, dev_out, high_image, roi_out, roi_in) == CL_SUCCESS)
+    retval = TRUE;
 
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
-  dt_opencl_release_mem_object(details);
-  dt_opencl_release_mem_object(blend);
-  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
-  if(!retval) dt_control_log(_("[dual demosaic_cl] internal problem"));
+
   return retval;
 }
 #endif
@@ -1037,8 +1006,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   }
 
   if(use_method & DT_DEMOSAIC_DUAL)
+  {
+    dt_dev_pixelpipe_usedetails(piece->pipe);
     d->color_smoothing = 0;
-
+  }
   d->demosaicing_method = use_method;
 
   // OpenCL only supported by some of the demosaicing methods
@@ -1090,12 +1061,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       piece->process_cl_ready = FALSE;
   }
 
+
   // green-equilibrate over full image excludes tiling
   // The details mask is written inside process, this does not allow tiling.
   if((d->green_eq == DT_IOP_GREEN_EQ_FULL
       || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
-      || ((use_method & DT_DEMOSAIC_DUAL) && (d->dual_thrs > 0.0f))
-      || (piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_DEMOSAIC)))
+      || piece->pipe->want_detail_mask)
   {
     piece->process_tiling_ready = FALSE;
   }

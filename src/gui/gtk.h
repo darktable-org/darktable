@@ -411,6 +411,9 @@ char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup
 gboolean dt_gui_show_yes_no_dialog(const char *title, const char *format, ...);
 
 void dt_gui_add_help_link(GtkWidget *widget, const char *link);
+char *dt_gui_get_help_url(GtkWidget *widget);
+void dt_gui_dialog_add_help(GtkDialog *dialog, const char *topic);
+void dt_gui_show_help(GtkWidget *widget);
 
 // load a CSS theme
 void dt_gui_load_theme(const char *theme);

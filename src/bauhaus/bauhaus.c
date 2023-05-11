@@ -90,6 +90,7 @@ static void _combobox_next_sensitive(dt_bauhaus_widget_t *w, int delta, const gb
 {
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
 
+  delta *= dt_accel_get_speed_multiplier(GTK_WIDGET(w), 0);
   int new_pos = d->active;
   int step = delta > 0 ? 1 : -1;
   int cur = new_pos + step;
@@ -2976,7 +2977,7 @@ static void _bauhaus_slider_value_change(dt_bauhaus_widget_t *w)
   if(!GTK_IS_WIDGET(w)) return;
 
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  if(d->is_changed && !d->timeout_handle && !darktable.gui->reset)
+  if(d->is_changed && !d->timeout_handle)
   {
     if(w->field)
     {
@@ -3004,17 +3005,17 @@ static void _bauhaus_slider_value_change(dt_bauhaus_widget_t *w)
     _highlight_changed_notebook_tab(GTK_WIDGET(w), NULL);
     g_signal_emit_by_name(G_OBJECT(w), "value-changed");
     d->is_changed = 0;
-  }
 
-  if(d->is_changed && d->is_dragging && !d->timeout_handle)
-    d->timeout_handle = g_idle_add(_bauhaus_slider_value_change_dragging, w);
+    if(d->is_dragging)
+      d->timeout_handle = g_idle_add(_bauhaus_slider_value_change_dragging, w);
+  }
 }
 
 static gboolean _bauhaus_slider_value_change_dragging(gpointer data)
 {
   dt_bauhaus_widget_t *w = data;
   w->data.slider.timeout_handle = 0;
-  _bauhaus_slider_value_change(data);
+  _bauhaus_slider_value_change(w);
   return G_SOURCE_REMOVE;
 }
 
@@ -3030,9 +3031,11 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   rpos = (rpos - d->min) / (d->max - d->min);
   d->pos = d->curve(rpos, DT_BAUHAUS_SET);
   gtk_widget_queue_draw(GTK_WIDGET(w));
-  d->is_changed = -1;
-
-  _bauhaus_slider_value_change(w);
+  if(!darktable.gui->reset)
+  {
+    d->is_changed = -1;
+    _bauhaus_slider_value_change(w);
+  }
 }
 
 static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -3047,7 +3050,7 @@ static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event
       if(darktable.bauhaus->keys_cnt + 2 < 64
          && (event->keyval == GDK_KEY_space || event->keyval == GDK_KEY_KP_Space ||              // SPACE
              event->keyval == GDK_KEY_percent ||                                                 // %
-             (event->string[0] >= 40 && event->string[0] <= 57) ||                               // ()+-*/.,0-9
+             (event->string[0] >= 40 && event->string[0] <= 58) ||                               // ()+-*/.,0-9:
              event->keyval == GDK_KEY_asciicircum || event->keyval == GDK_KEY_dead_circumflex || // ^
              event->keyval == GDK_KEY_X || event->keyval == GDK_KEY_x))                          // Xx
       {

@@ -74,7 +74,7 @@ The following is a summary of the main features added to darktable
   default values"
 
   This new generic feature has permitted to clean-up some hacks to try
-  to do the same kind support at the module levels and which was
+  to do the same kind support at the module level and which was
   anyway limited.
 
 - Rework the workflow setting, we now have the choice between:
@@ -95,7 +95,7 @@ The following is a summary of the main features added to darktable
 
 - Add support for Color Harmony Guide lines in RYB vectorscope.
 
-  There is 9 color harmony guides proposed:
+  There are 9 color harmony guides proposed:
   - Monochromatic
   - Analogous
   - Analogous complementary
@@ -126,7 +126,7 @@ The following is a summary of the main features added to darktable
   - Denoise Profile
   - Invert
   - Local Contrast with Local Laplacian
-  - Lowpass
+  - Low-pass Filter
   - RGB Levels
   - Input Color Profile
   - Lowlight vision
@@ -135,9 +135,19 @@ The following is a summary of the main features added to darktable
   - Nega Doctor
   - Channel Mixer RGB (CIECAM16, linear Bradford, XYZ and nonlinear Bradford).
   - Filmic (legacy)
+  - Filmic RGB (including highlights reconstruction)
+  - Color Balance
   - Color Balance (legacy)
   - Levels (legacy)
   - Relight
+  - Liquify
+  - Color Mapping
+  - High-pass filter
+  - Shadows and Highlights
+  - Lens
+  - Grain
+  - Monochrome
+  - In-paint opposed highlights reconstruction
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
@@ -150,10 +160,10 @@ The following is a summary of the main features added to darktable
     Retouch, Tone Equalizer and Zone System (deprecated). Meaning all
     those modules have parts now running faster.
 
-  - The box blur filter used by the focus peaking, the guided filter for
-    blending, the new highlight recovery algorithms, and the Bloom,
-    Highpass, and Soften modules. Meaning all those modules and
-    features have parts now running faster.
+  - The box blur filter used by the focus peaking, the guided filter
+    for blending, the new highlight recovery algorithms, and the
+    Bloom, High-pass, Haze removal, and Soften modules. Meaning all
+    those modules and features have parts now running faster.
 
   - The Edge-Avoiding a-trous Wavelet used by those modules Contrast
     Equalizer and Denoise (Profiled). Meaning those modules have parts
@@ -168,9 +178,16 @@ The following is a summary of the main features added to darktable
   - All the blending modes in Lab & RGB for the Display & Scene
     referred workflows have been optimized.
 
+  - The color adaptation matrices have been transposed to allow for
+    vectorization.
+
   - The luminance mask calculation for the Tone Equalizer.
 
-  - Loader for JPEG2000 file format
+  - Loader for JPEG2000 file format.
+
+  - The "acquire clusters" operation in the Color Mapping module has
+    been speed up by a factor of 30 to 200, making the results
+    perceptually instantaneous on clicking the button.
 
 - Add global <kbd>right-click</kbd> and drag to fix image
   rotation. This can now be used at any moment in darkroom as long as
@@ -180,11 +197,31 @@ The following is a summary of the main features added to darktable
 
 ## Other Changes
 
+- Overhaul the color picker code. No longer unnecessarily run pickers
+  in many cases, resulting in speedups. The picker code is now tuned
+  for contemporary processors. It uses recent OpenMP features,
+  resulting in more succinct code. The pickers now only runs a
+  time-consuming denoise pass when used via the filmic module (in
+  which case removing noise makes the automatic tuning more
+  robust). No longer warn when working on monochrome images. Various
+  other cleanup, de-duplication, optimization, and generally tidying.
+
+- Modernize the histogram calculation code. Remove SSE code (which
+  provides no speed-ups), but use it as a model for the optimized code
+  using recent OpenMP features. Remove various unused bits of code,
+  and provide a consistent internal API. In certain cases this code
+  will produce marginally more accurate results. In some cases the new
+  code uses substantially less memory.
+
 - Add OpenCL support to the Sigmoid module.
+
+- Add OpenMP support to XCF export for better performances.
+
+- Add OpenMP support to the RGBE loader for better performances.
 
 - Do not invalidate snapshot anymore when the history is changed
   (compressed or reset). All snapshot are now stored with their full
-  history and can be reconstruct properly.
+  history and can be reconstructed properly.
 
 - Module "Levels" has been deprecated, use "Levels RGB" instead.
 
@@ -205,7 +242,20 @@ The following is a summary of the main features added to darktable
 - The default module group has been removed. It is better to use one
   of the scene-referred group.
 
-- Add support for loading QOI images.
+- Add support for loading QOI and FITS images.
+
+- Add support for writing metadata to XCF format (see notes below).
+
+- Read Exif metadata from AVIF, HEIC and JPEG XL images using native
+  libraries if Exiv2 does not support it.
+
+- Write Exif data to the eXIf PNG chunk if using Exiv2 version newer
+  than 0.27.x. This is the new standard way to store Exif data in PNGs.
+
+- Export masks for EXRs as extra channels.
+
+- Re-enable loading of BigTIFF images by attempting the native
+  libtiff-based reader first.
 
 - Redesign the export and thumbnails generation.
 
@@ -234,12 +284,6 @@ The following is a summary of the main features added to darktable
   - Allows finetuning of scale,
   - Add an auto-scale button.
   - Improve overall module performance of about 8%.
-
-- Add OpenMP support to XCF export for better performances.
-
-- Add support for writing metadata to XCF format (see notes below).
-
-- Add OpenMP support to the RGBE loader for better performances.
 
 - Added section headers to the sort by drop-down (files, times, etc).
 
@@ -298,12 +342,6 @@ The following is a summary of the main features added to darktable
   is selected via an element, hold or toggle via an effect. All mapped
   shortcuts are shown in the tooltip of the preview layout button.
 
-- Read Exif metadata from AVIF, HEIC and JPEG XL images using native
-  libraries if Exiv2 does not support it.
-
-- Write Exif data to the eXIf PNG chunk if using Exiv2 version newer
-  than 0.27.x. This is the new standard way to store Exif data in PNGs.
-
 - Makes laplacian highlights recovery mode less memory hungry (save
   around 40%) and allow for a large speed up. This makes this recovery
   mode lot more usable and allows for more recovery iterations.
@@ -316,8 +354,6 @@ The following is a summary of the main features added to darktable
   supported ApertureValue. This is the only metadata tag available in
   Leica M Monochrom, M8, M9 & M10 DNGs.
 
-- Export masks for EXRs as extra channels.
-
 - The search filter has been improved to also search the camera's brand
   and model.
 
@@ -328,9 +364,6 @@ The following is a summary of the main features added to darktable
   previous one. It makes no sense adding some multi-instance for some
   modules for example. So this new default should fit better in the
   workflow.
-
-- Re-enable loading of BigTIFF images by attempting the native
-  libtiff-based reader first.
 
 - The brush path is now a bit more transparent to better see what is
   actually painted.
@@ -440,9 +473,55 @@ The following is a summary of the main features added to darktable
   (a.k.a. linear) raw images. Note that file embedded levels might
   still not be set automatically on import.
 
+- Enhance dithering module with posterization modes and masking, and
+  rename it "dither or posterize" to make the new functionality more
+  easily discoverable.
+
+- Add Help buttons to several dialogs and preferences tabs to directly
+  launch the online manual.
+
+- New version of Fimic color science v7 (2023) which has been set as
+  the default. The color preservation mode has been removed and a new
+  slider is proposed to control the highlights saturation. This slider
+  give a mix between the max RGB chroma preservation mode and the no
+  preservation mode.
+
+- Add support for some more metadata keys to be imported:
+  - Iptc.Application2.Byline
+  - Iptc.Application2.DateCreated
+  - Iptc.Application2.TimeCreated
+  - Exif.Image.ImageDescription
+
+- The Shadows and Highlights module is now using the Bilateral filter
+  by default has it will avoid most of the haloing making it a better
+  default.
+
+- Add some standard print sizes (5x7, 8x10, 11x14) to the list of
+  predefined aspect ratios in Borders module.
+
+- Make all remaining color-picker buttons accessible via shortcuts and
+  lua.
+
+- Added tooltip to edges of sliders with soft limits on how to set
+  values outside those boundaries.
+
+- Reverse the sort order of the shapes in mask manager groups so that
+  the lowest ranking shape is at the bottom of the group. For
+  consistency the sort order of shapes outside of a group has been
+  changed.
+
+- Add some new aspect ratios in the border module:
+  - CinemaScope
+  - US Letter
+  - US Legal
+
+- Improve clarity and usability of dialog to confirm further action
+  upon failure of physical file deletion or moving to trash.
+
 ## Bug Fixes
 
-- Fix the reset of the sort order to 'filename' on every collection change.
+- Fix the reset of the sort order to 'filename' on every collection
+  change.
 
 - Remove the commit button from the crop module as it was not used
   anymore.
@@ -612,6 +691,32 @@ The following is a summary of the main features added to darktable
 
 - Fixing feathering masks in certain modules (Lens, Retouch, Liquify,
   Spot removal).
+
+- Fix some rare cases where masks are not displayed when trying to
+  edit them after just starting darktable or changing of module group.
+
+- Fix slideshow not working properly on HiDPI displays.
+
+- Fix crashes while using raster masks after reordering the pixelpipe.
+
+- Fix details mask for images in blown-out parts of the image.
+
+- Allow adding color patch on 7x7 grid of the Color Checker module.
+
+- Feathering input fixed while using distorting modules like retouch
+  or lens.
+
+- Fix a long-standing potential memory bug in interpolation code,
+  though one which never occurred due to how that code is used in
+  darktable.
+
+- Rework the handling of the metadata editor to prevent possible data
+  loss.
+
+- Fix import of auto-applied presets where the upper bound of ISO,
+  aperture and exposure could be set as the lower bound.
+
+- Fix entering custom aspect ration in the border module.
 
 ## Lua
 

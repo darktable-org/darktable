@@ -42,11 +42,10 @@ typedef struct dt_dev_pixelpipe_cache_t
   uint64_t *hash;
   int32_t *used;
   int32_t *ioporder;
-  // debugging helpers
-  char **modname; 
+  uint64_t calls;
   // profiling:
-  uint64_t queries;
-  uint64_t misses;
+  uint64_t tests;
+  uint64_t hits;
 } dt_dev_pixelpipe_cache_t;
 
 /** constructs a new cache with given cache line count (entries) and float buffer entry size in bytes.
@@ -76,7 +75,7 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
                                const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, struct dt_iop_module_t *module, const gboolean important);
 
 /** test availability of a cache line without destroying another, if it is not found. */
-gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const uint64_t hash, const size_t size);
+gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const uint64_t hash, const uint64_t basichash, const size_t size);
 
 /** invalidates all cachelines. */
 void dt_dev_pixelpipe_cache_flush(struct dt_dev_pixelpipe_t *pipe);

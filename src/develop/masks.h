@@ -671,17 +671,11 @@ void dt_masks_blur_9x9(float *const src,
                        const int width,
                        const int height,
                        const float sigma);
-void dt_masks_calc_rawdetail_mask(float *const src,
-                                  float *const out,
-                                  float *const tmp,
-                                  const int width,
-                                  const int height,
+gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
+                                  float *const src,
                                   const dt_aligned_pixel_t wb);
-void dt_masks_calc_detail_mask(float *const src,
+gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
                                float *const out,
-                               float *const tmp,
-                               const int width,
-                               const int height,
                                const float threshold,
                                const gboolean detail);
 
@@ -704,16 +698,15 @@ void dt_group_events_post_expose(cairo_t *cr,
                                  dt_masks_form_gui_t *gui);
 
 /** code for dynamic handling of intermediate buffers */
-static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_t size)
+static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_t newsize)
 {
-  const size_t newsize = dt_round_size_sse(sizeof(float) * size) / sizeof(float);
   float *newbuf = dt_alloc_align_float(newsize);
   if (!newbuf)
   {
     // not much we can do here except emit an error message
     dt_print(DT_DEBUG_ALWAYS,
              "critical: out of memory for dynbuf '%s' with size request %zu!\n",
-             a->tag, size);
+             a->tag, newsize);
     return FALSE;
   }
   if (a->buffer)

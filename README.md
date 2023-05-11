@@ -20,7 +20,7 @@ darktable is **not** a free Adobe® Lightroom® replacement.
    - [Latest release](#latest-release)
    - [Development snapshot](#development-snapshot)
 5. [Updating from older versions](#updating-from-older-versions)
-6. [Obtaining extensions](#obtainin-extensions)
+6. [Obtaining extensions](#obtaining-extensions)
 7. [Building](#building)
    - [Dependencies](#dependencies)
    - [Get the source](#get-the-source)

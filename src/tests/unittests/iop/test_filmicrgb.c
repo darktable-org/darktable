@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -244,7 +244,7 @@ static void test_log_tonemapping_v2(void **state)
   ti = testimg_gen_grey_space(TESTIMG_STD_WIDTH);
   for_testimg_pixels_p_xy(ti)
   {
-    float ret = log_tonemapping_v2(p[0], grey, black, dyn_range);
+    float ret = log_tonemapping_v2_1ch(p[0], grey, black, dyn_range);
     TR_DEBUG("%e => %e", p[0], ret);
     float exp = testimg_val_to_log(p[0]);
     if(exp < MIN)
@@ -263,7 +263,7 @@ static void test_log_tonemapping_v2(void **state)
   ti = testimg_gen_grey_space(TESTIMG_STD_WIDTH);
   for_testimg_pixels_p_xy(ti)
   {
-    float ret = log_tonemapping_v2(p[0], (grey / 2.0f), black, dyn_range);
+    float ret = log_tonemapping_v2_1ch(p[0], (grey / 2.0f), black, dyn_range);
     TR_DEBUG("%e => %e", p[0], ret);
     float exp = testimg_val_to_log(p[0] * 2.0f);  // *2.0 means +1EV
     if(exp < MIN)
@@ -285,7 +285,7 @@ static void test_log_tonemapping_v2(void **state)
   ti = testimg_gen_grey_max_dr();
   for_testimg_pixels_p_xy(ti)
   {
-    float ret = log_tonemapping_v2(p[0], grey, black, dyn_range);
+    float ret = log_tonemapping_v2_1ch(p[0], grey, black, dyn_range);
     TR_DEBUG("{%e, %e, %e, %e} => %e", p[0], p[1], p[2], p[3], ret);
     assert_true(ret >= MIN);
     assert_true(ret <= MAX);
@@ -297,7 +297,7 @@ static void test_log_tonemapping_v2(void **state)
   ti = testimg_gen_grey_max_dr_neg();
   for_testimg_pixels_p_xy(ti)
   {
-    float ret = log_tonemapping_v2(p[0], grey, black, dyn_range);
+    float ret = log_tonemapping_v2_1ch(p[0], grey, black, dyn_range);
     TR_DEBUG("{%e, %e, %e, %e} => %e", p[0], p[1], p[2], p[3], ret);
     assert_true(ret >= MIN);
     assert_true(ret <= MAX);

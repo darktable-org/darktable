@@ -826,22 +826,25 @@ typedef struct _dt_delete_modal_dialog_t
   pthread_cond_t cond;
 } _dt_delete_modal_dialog_t;
 
-enum _dt_delete_status
+typedef enum _dt_delete_status_t
 {
   _DT_DELETE_STATUS_UNKNOWN = 0,
-  _DT_DELETE_STATUS_OK_TO_REMOVE = 1,
-  _DT_DELETE_STATUS_SKIP_FILE = 2,
-  _DT_DELETE_STATUS_STOP_PROCESSING = 3
-};
+  _DT_DELETE_STATUS_DELETED = 1,
+  _DT_DELETE_STATUS_REMOVE = 2,
+  _DT_DELETE_STATUS_SKIP_FILE = 3,
+  _DT_DELETE_STATUS_STOP_PROCESSING = 4
+} _dt_delete_status_t;
 
-enum _dt_delete_dialog_choice
+typedef enum _dt_delete_dialog_choice_t
 {
-  _DT_DELETE_DIALOG_CHOICE_DELETE = 1,
-  _DT_DELETE_DIALOG_CHOICE_DELETE_ALL = 2,
-  _DT_DELETE_DIALOG_CHOICE_REMOVE = 3,
-  _DT_DELETE_DIALOG_CHOICE_CONTINUE = 4,
-  _DT_DELETE_DIALOG_CHOICE_STOP = 5
-};
+  _DT_DELETE_DIALOG_CHOICE_NONE     = 0,
+  _DT_DELETE_DIALOG_CHOICE_DELETE   = 1 << 0,
+  _DT_DELETE_DIALOG_CHOICE_REMOVE   = 1 << 1,
+  _DT_DELETE_DIALOG_CHOICE_SKIP     = 1 << 2,
+  _DT_DELETE_DIALOG_CHOICE_STOP     = 1 << 3,
+  _DT_DELETE_DIALOG_CHOICE_PHYSICAL = 1 << 4,
+  _DT_DELETE_DIALOG_CHOICE_ALL      = 1 << 5,
+} _dt_delete_dialog_choice_t;
 
 static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
 {
@@ -854,8 +857,8 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_NONE,
       modal_dialog->send_to_trash
-        ? _("could not send %s to trash%s%s")
-        : _("could not physically delete %s%s%s"),
+        ? _("could not send %s to trash%s\n%s\n\n do you want to physically delete the file from disk without using trash?")
+        : _("could not physically delete from disk %s%s\n%s"),
       modal_dialog->filename,
       modal_dialog->error_message != NULL ? ": " : "",
       modal_dialog->error_message != NULL ? modal_dialog->error_message : "");
@@ -863,21 +866,39 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
   dt_osx_disallow_fullscreen(dialog);
 #endif
 
+  GtkWidget *check = gtk_check_button_new_with_mnemonic(_("_apply to all"));
+  GtkWidget *area = gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(dialog));
+  gtk_widget_set_halign(area, GTK_ALIGN_CENTER);
+  gtk_container_add(GTK_CONTAINER(area), check);
+  gtk_widget_show(check);
+
   if(modal_dialog->send_to_trash)
   {
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_yes, physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_no, only remove from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   }
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the image library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
+  else
+  {
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_remove from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
+  }
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("_skip"), _DT_DELETE_DIALOG_CHOICE_SKIP);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("abort"), _DT_DELETE_DIALOG_CHOICE_STOP);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), _DT_DELETE_DIALOG_CHOICE_STOP);
 
   gtk_window_set_title(
       GTK_WINDOW(dialog),
       modal_dialog->send_to_trash
         ? _("trashing error")
         : _("deletion error"));
+
   modal_dialog->dialog_result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  if(!modal_dialog->send_to_trash)
+    modal_dialog->dialog_result |= _DT_DELETE_DIALOG_CHOICE_PHYSICAL;
+
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)))
+    modal_dialog->dialog_result |= _DT_DELETE_DIALOG_CHOICE_ALL;
+
   gtk_widget_destroy(dialog);
 
   pthread_cond_signal(&modal_dialog->cond);
@@ -913,9 +934,9 @@ static gint _dt_delete_file_display_modal_dialog(int send_to_trash, const char *
   return modal_dialog.dialog_result;
 }
 
-static enum _dt_delete_status delete_file_from_disk(const char *filename, gboolean *delete_on_trash_error)
+static _dt_delete_status_t delete_file_from_disk(const char *filename, _dt_delete_dialog_choice_t *delete_on_error)
 {
-  enum _dt_delete_status delete_status = _DT_DELETE_STATUS_UNKNOWN;
+  _dt_delete_status_t delete_status = _DT_DELETE_STATUS_UNKNOWN;
 
   GFile *gfile = g_file_new_for_path(filename);
   int send_to_trash = dt_conf_get_bool("send_to_trash");
@@ -941,53 +962,50 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
 
     // Delete is a success or the file does not exists: OK to remove from darktable
     if(delete_success
-        || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
+       || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
     {
-      delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
-    }
-    else if(send_to_trash && *delete_on_trash_error)
-    {
-      // Loop again, this time delete instead of trashing
-      delete_status = _DT_DELETE_STATUS_UNKNOWN;
-      send_to_trash = FALSE;
+      delete_status = _DT_DELETE_STATUS_DELETED;
     }
     else
     {
-      const char *filename_display = NULL;
-      GFileInfo *gfileinfo = g_file_query_info(
-          gfile,
-          G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
-          G_FILE_QUERY_INFO_NONE,
-          NULL /*cancellable*/,
-          NULL /*error*/);
-      if(gfileinfo != NULL)
-        filename_display = g_file_info_get_attribute_string(
-            gfileinfo,
-            G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME);
+      _dt_delete_dialog_choice_t res = *delete_on_error;
+      if(res == _DT_DELETE_DIALOG_CHOICE_NONE
+         || !(send_to_trash || res & _DT_DELETE_DIALOG_CHOICE_PHYSICAL))
+      {
+        const char *filename_display = NULL;
+        GFileInfo *gfileinfo = g_file_query_info(
+            gfile,
+            G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+            G_FILE_QUERY_INFO_NONE,
+            NULL /*cancellable*/,
+            NULL /*error*/);
+        if(gfileinfo != NULL)
+          filename_display = g_file_info_get_attribute_string(
+              gfileinfo,
+              G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME);
 
-      gint res = _dt_delete_file_display_modal_dialog(
-          send_to_trash,
-          filename_display == NULL ? filename : filename_display,
-          gerror == NULL ? NULL : gerror->message);
-      g_object_unref(gfileinfo);
-      if(send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE)
+        res = _dt_delete_file_display_modal_dialog(
+            send_to_trash,
+            filename_display == NULL ? filename : filename_display,
+            gerror == NULL ? NULL : gerror->message);
+        g_object_unref(gfileinfo);
+
+        if(res & _DT_DELETE_DIALOG_CHOICE_ALL)
+          *delete_on_error = res;
+      }
+
+      if(send_to_trash
+         && (res & (_DT_DELETE_DIALOG_CHOICE_DELETE | _DT_DELETE_DIALOG_CHOICE_PHYSICAL)))
       {
         // Loop again, this time delete instead of trashing
-        delete_status = _DT_DELETE_STATUS_UNKNOWN;
         send_to_trash = FALSE;
       }
-      else if(send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE_ALL)
+      else if(res & _DT_DELETE_DIALOG_CHOICE_REMOVE)
       {
-        // Loop again, this time delete instead of trashing
-        delete_status = _DT_DELETE_STATUS_UNKNOWN;
-        send_to_trash = FALSE;
-        *delete_on_trash_error = TRUE;
+        // only remove the file from the database
+        delete_status = _DT_DELETE_STATUS_REMOVE;
       }
-      else if(res == _DT_DELETE_DIALOG_CHOICE_REMOVE)
-      {
-        delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
-      }
-      else if(res == _DT_DELETE_DIALOG_CHOICE_CONTINUE)
+      else if(res & _DT_DELETE_DIALOG_CHOICE_SKIP)
       {
         delete_status = _DT_DELETE_STATUS_SKIP_FILE;
       }
@@ -1016,7 +1034,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   double fraction = 0.0f;
   char message[512] = { 0 };
-  gboolean delete_on_trash_error = FALSE;
+  _dt_delete_dialog_choice_t delete_on_error = _DT_DELETE_DIALOG_CHOICE_NONE;
   if(dt_conf_get_bool("send_to_trash"))
     snprintf(message, sizeof(message), ngettext("trashing %d image", "trashing %d images", total), total);
   else
@@ -1036,9 +1054,10 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
                               "SELECT COUNT(*) FROM main.images WHERE filename IN (SELECT filename FROM "
                               "main.images WHERE id = ?1) AND film_id IN (SELECT film_id FROM main.images WHERE "
                               "id = ?1)", -1, &stmt, NULL);
+  // loop through all images to delete
   while(t)
   {
-    enum _dt_delete_status delete_status = _DT_DELETE_STATUS_UNKNOWN;
+    _dt_delete_status_t delete_status = _DT_DELETE_STATUS_UNKNOWN;
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     char filename[PATH_MAX] = { 0 };
     gboolean from_cache = FALSE;
@@ -1061,31 +1080,40 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       if(dt_image_local_copy_reset(imgid))
         goto delete_next_file;
 
-      snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
-      _set_remove_flag(imgidstr);
-      dt_image_remove(imgid);
-
       // there are no further duplicates so we can remove the source data file
-      delete_status = delete_file_from_disk(filename, &delete_on_trash_error);
-      if(delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
-        goto delete_next_file;
-
-      // all sidecar files - including left-overs - can be deleted;
-      // left-overs can result when previously duplicates have been REMOVED;
-      // no need to keep them as the source data file is gone.
-
-      GList *files = dt_image_find_duplicates(filename);
-
-      for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
+      delete_status = delete_file_from_disk(filename, &delete_on_error);
+      if(delete_status == _DT_DELETE_STATUS_REMOVE || delete_status == _DT_DELETE_STATUS_DELETED)
       {
-        delete_status = delete_file_from_disk(file_iter->data, &delete_on_trash_error);
-        if(delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
-          break;
-      }
+        // if the file has been deleted or should only be removed -> remove image from collection
+        snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
+        _set_remove_flag(imgidstr);
+        dt_image_remove(imgid);
 
-      g_list_free_full(files, g_free);
+        if(delete_status == _DT_DELETE_STATUS_DELETED)
+        {
+          // if image has been deleted,
+          // all sidecar files - including left-overs - can be deleted;
+          // left-overs can result when previously duplicates have been REMOVED;
+          // no need to keep them as the source data file is gone.
+
+          GList *files = dt_image_find_duplicates(filename);
+
+          for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
+          {
+            delete_status = delete_file_from_disk(file_iter->data, &delete_on_error);
+            if (delete_status != _DT_DELETE_STATUS_DELETED)
+              break;
+          }
+          g_list_free_full(files, g_free);
+        }
+      }
+      else
+      {
+        // no deletion nor removal from library
+        goto delete_next_file;
+      }
     }
-    else
+    else // duplicates exist
     {
       // don't remove the actual source data if there are further duplicates using it;
       // just delete the xmp file of the duplicate selected.
@@ -1099,7 +1127,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       dt_image_remove(imgid);
 
       // ... and delete afterwards because removing will re-write the XMP
-      delete_status = delete_file_from_disk(filename, &delete_on_trash_error);
+      delete_status = delete_file_from_disk(filename, &delete_on_error);
     }
 
 delete_next_file:

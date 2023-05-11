@@ -558,8 +558,11 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
            g->original_name, g->module_name);
   GtkWidget *dialog = gtk_dialog_new_with_buttons
     (title, g->parent, GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-     _("_cancel"), GTK_RESPONSE_CANCEL, _("_export..."), GTK_RESPONSE_YES,
-     _("delete"), GTK_RESPONSE_REJECT, _("_ok"), GTK_RESPONSE_OK, NULL);
+     _("_export..."), GTK_RESPONSE_YES,
+     _("delete"), GTK_RESPONSE_REJECT, 
+     _("_cancel"), GTK_RESPONSE_CANCEL, 
+     _("_ok"), GTK_RESPONSE_OK, NULL);
+  dt_gui_dialog_add_help(GTK_DIALOG(dialog), "preset_dialog");
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
 
   g->dialog = dialog;

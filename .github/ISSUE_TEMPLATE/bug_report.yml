@@ -77,7 +77,7 @@ body:
         - 'darktable.org'
         - 'distro packaging'
         - 'flatpak'
-        - 'OSB'
+        - 'OBS'
         - 'self compiled'
         - 'an online forum'
     validations:

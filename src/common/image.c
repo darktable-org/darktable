@@ -138,26 +138,26 @@ static void _image_local_copy_full_path(const dt_imgid_t imgid,
                                         char *pathname,
                                         const size_t pathname_len);
 
-int dt_image_is_ldr(const dt_image_t *img)
+gboolean dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
   if((img->flags & DT_IMAGE_LDR) || !strcasecmp(c, ".jpg") || !strcasecmp(c, ".png")
      || !strcasecmp(c, ".ppm"))
-    return 1;
+    return TRUE;
   else
-    return 0;
+    return FALSE;
 }
 
-int dt_image_is_hdr(const dt_image_t *img)
+gboolean dt_image_is_hdr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
   if((img->flags & DT_IMAGE_HDR) || !strcasecmp(c, ".exr") || !strcasecmp(c, ".hdr")
      || !strcasecmp(c, ".pfm"))
-    return 1;
+    return TRUE;
   else
-    return 0;
+    return FALSE;
 }
 
 // NULL terminated list of supported non-RAW extensions
@@ -165,9 +165,9 @@ int dt_image_is_hdr(const dt_image_t *img)
 //    = { ".jpeg", ".jpg",  ".pfm", ".hdr", ".exr", ".pxn", ".tif", ".tiff", ".png",
 //        ".j2c",  ".j2k",  ".jp2", ".jpc", ".gif", ".jpc", ".jp2", ".bmp",  ".dcm",
 //        ".jng",  ".miff", ".mng", ".pbm", ".pnm", ".ppm", ".pgm", NULL };
-int dt_image_is_raw(const dt_image_t *img)
+gboolean dt_image_is_raw(const dt_image_t *img)
 {
-  return (img->flags & DT_IMAGE_RAW);
+  return (img->flags & DT_IMAGE_RAW) == DT_IMAGE_RAW;
 }
 
 gboolean dt_image_is_monochrome(const dt_image_t *img)
@@ -179,10 +179,9 @@ static void _image_set_monochrome_flag(const dt_imgid_t imgid,
                                        const gboolean monochrome,
                                        const gboolean undo_on)
 {
-  dt_image_t *img = NULL;
   gboolean changed = FALSE;
 
-  img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(img)
   {
     const int mask_bw = dt_image_monochrome_flags(img);
@@ -813,22 +812,22 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
                                     darktable.develop->pipe->iwidth,
                                     darktable.develop->pipe->iheight,
                                     &ww, &hh);
-  }
 
-  dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  if(ww == imgtmp->final_width
-     && hh == imgtmp->final_height)
-  {
-    dt_cache_release(&darktable.image_cache->cache, imgtmp->cache_entry);
-  }
-  else
-  {
-    imgtmp->final_width = ww;
-    imgtmp->final_height = hh;
-    dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+    if(ww == imgtmp->final_width
+       && hh == imgtmp->final_height)
+    {
+      dt_cache_release(&darktable.image_cache->cache, imgtmp->cache_entry);
+    }
+    else
+    {
+      imgtmp->final_width = ww;
+      imgtmp->final_height = hh;
+      dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+    }
   }
 }
 

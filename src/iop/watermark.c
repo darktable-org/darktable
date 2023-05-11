@@ -1302,6 +1302,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
   g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
+  dt_action_define_iop(self, NULL, N_("pick color"), g->color_picker_button, &dt_action_def_toggle);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);

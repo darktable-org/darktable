@@ -321,6 +321,27 @@ int legacy_params(dt_iop_module_t *self,
 
 void init_presets(dt_iop_module_so_t *self)
 {
+  // auto-applied scene-referred default
+  self->pref_based_presets = TRUE;
+
+  const gboolean is_scene_referred = dt_is_scene_referred();
+
+  if(is_scene_referred)
+  {
+    dt_gui_presets_add_generic
+      (_("scene-referred default"), self->op, self->version(),
+       NULL, 0,
+       1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+    dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
+                              self->version(), FOR_MATRIX);
+
+    dt_gui_presets_update_autoapply(_("scene-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
+
+  // others
+
   dt_iop_channelmixer_rgb_params_t p;
   memset(&p, 0, sizeof(p));
 
@@ -706,8 +727,8 @@ static inline void _loop_switch(const float *const restrict in,
                                 const dt_adaptation_t kind,
                                 const dt_iop_channelmixer_rgb_version_t version)
 {
-  dt_colormatrix_t RGB_to_LMS;
-  dt_colormatrix_t MIX_to_XYZ;
+  dt_colormatrix_t RGB_to_LMS = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+  dt_colormatrix_t MIX_to_XYZ = { { 0.0f, 0.0f, 0.0f, 0.0f } };
   switch (kind)
   {
     case DT_ADAPTATION_FULL_BRADFORD:
@@ -725,6 +746,7 @@ static inline void _loop_switch(const float *const restrict in,
       break;
     case DT_ADAPTATION_RGB:
     case DT_ADAPTATION_LAST:
+    default:
       // RGB_to_LMS not applied, since we are not adapting WB
       dt_colormatrix_mul(MIX_to_XYZ, RGB_to_XYZ, MIX);
       break;
@@ -735,11 +757,20 @@ static inline void _loop_switch(const float *const restrict in,
     for_each_channel(c)
       min_value[c] = -FLT_MAX;
 
+  dt_colormatrix_t RGB_to_XYZ_trans;
+  dt_colormatrix_transpose(RGB_to_XYZ_trans, RGB_to_XYZ);
+  dt_colormatrix_t RGB_to_LMS_trans;
+  dt_colormatrix_transpose(RGB_to_LMS_trans, RGB_to_LMS);
+  dt_colormatrix_t MIX_to_XYZ_trans;
+  dt_colormatrix_transpose(MIX_to_XYZ_trans, MIX_to_XYZ);
+  dt_colormatrix_t XYZ_to_RGB_trans;
+  dt_colormatrix_transpose(XYZ_to_RGB_trans, XYZ_to_RGB);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, min_value, in, out, XYZ_to_RGB, RGB_to_XYZ, \
-                      RGB_to_LMS, MIX_to_XYZ, illuminant, \
-                      saturation, lightness, grey, p, gamut, clip, \
+  dt_omp_firstprivate(width, height, min_value, in, out, XYZ_to_RGB_trans, \
+                      RGB_to_XYZ_trans, RGB_to_LMS_trans, MIX_to_XYZ_trans, \
+                      illuminant, saturation, lightness, grey, p, gamut, clip, \
                       apply_grey, kind, version)                   \
   schedule(static)
 #endif
@@ -759,7 +790,7 @@ static inline void _loop_switch(const float *const restrict in,
       case DT_ADAPTATION_FULL_BRADFORD:
       {
         // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, RGB_to_XYZ_trans, temp_one);
         const float Y = temp_one[1];
 
         // Convert to LMS
@@ -774,7 +805,7 @@ static inline void _loop_switch(const float *const restrict in,
       case DT_ADAPTATION_LINEAR_BRADFORD:
       {
         // Convert from RGB to XYZ to LMS
-        dot_product(temp_two, RGB_to_LMS, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, RGB_to_LMS_trans, temp_one);
 
         // Do white balance
         bradford_adapt_D50(temp_one, illuminant, p, FALSE, temp_two);
@@ -783,7 +814,7 @@ static inline void _loop_switch(const float *const restrict in,
       case DT_ADAPTATION_CAT16:
       {
         // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_LMS, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, RGB_to_LMS_trans, temp_one);
 
         // Do white balance
         // force full-adaptation
@@ -793,7 +824,7 @@ static inline void _loop_switch(const float *const restrict in,
       case DT_ADAPTATION_XYZ:
       {
         // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, RGB_to_XYZ_trans, temp_one);
 
         // Do white balance in XYZ
         XYZ_adapt_D50(temp_one, illuminant, temp_two);
@@ -810,7 +841,7 @@ static inline void _loop_switch(const float *const restrict in,
     }
 
     // Compute the 3D mix - this is a rotation + homothety of the vector base
-    dot_product(temp_two, MIX_to_XYZ, temp_one);
+    dt_apply_transposed_color_matrix(temp_two, MIX_to_XYZ_trans, temp_one);
 
     /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
@@ -833,7 +864,7 @@ static inline void _loop_switch(const float *const restrict in,
       default:
       {
         // Convert from XYZ to RGB
-        dot_product(temp_two, XYZ_to_RGB, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, XYZ_to_RGB_trans, temp_one);
         break;
       }
     }
@@ -881,7 +912,7 @@ static inline void _loop_switch(const float *const restrict in,
         default:
         {
           // Convert from RBG to XYZ
-          dot_product(temp_two, RGB_to_XYZ, temp_one);
+          dt_apply_transposed_color_matrix(temp_two, RGB_to_XYZ_trans, temp_one);
           break;
         }
       }
@@ -894,7 +925,7 @@ static inline void _loop_switch(const float *const restrict in,
           temp_one[c] = fmaxf(temp_one[c], 0.0f);
 
       // Convert back to RGB
-      dot_product(temp_one, XYZ_to_RGB, temp_two);
+      dt_apply_transposed_color_matrix(temp_one, XYZ_to_RGB_trans, temp_two);
 
       if(clip)
         for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)

@@ -39,22 +39,12 @@ const char *name(dt_lib_module_t *self)
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  return DT_VIEW_ALL;
+  return DT_VIEW_NONE;
 }
 
 uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_TOP_CENTER;
-}
-
-int expandable(dt_lib_module_t *self)
-{
-  return 0;
-}
-
-int position(const dt_lib_module_t *self)
-{
-  return 1;
 }
 
 typedef struct dt_gamepad_device_t
@@ -329,11 +319,6 @@ static void _gamepad_close_devices(dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  if(!self->widget)
-  {
-    self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_no_show_all(self->widget, TRUE);
-  }
   self->data = NULL;
 
   _gamepad_open_devices(self);

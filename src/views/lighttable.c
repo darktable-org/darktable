@@ -859,13 +859,13 @@ static void _accel_culling_zoom_fit(dt_action_t *action)
 
 static void _accel_select_toggle(dt_action_t *action)
 {
-  const int32_t id = dt_control_get_mouse_over_id();
+  const dt_imgid_t id = dt_control_get_mouse_over_id();
   dt_selection_toggle(darktable.selection, id);
 }
 
 static void _accel_select_single(dt_action_t *action)
 {
-  const int32_t id = dt_control_get_mouse_over_id();
+  const dt_imgid_t id = dt_control_get_mouse_over_id();
   dt_selection_select_single(darktable.selection, id);
 }
 

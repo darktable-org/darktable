@@ -460,7 +460,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table,
     // if shift+ctrl, we only change the current image
     if(dt_modifiers_include(state, GDK_SHIFT_MASK))
     {
-      const int mouseid = dt_control_get_mouse_over_id();
+      const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
       for(GList *l = table->list; l; l = g_list_next(l))
       {
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -474,7 +474,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table,
     }
     else
     {
-      const int mouseid = dt_control_get_mouse_over_id();
+      const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
       int x_offset = 0;
       int y_offset = 0;
       gboolean to_pointer = FALSE;
@@ -655,6 +655,12 @@ static gboolean _event_button_press(GtkWidget *widget,
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
 
+  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  {
+    // make sure any edition field loses the focus
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+  }
+
   if(event->button == 2)
   {
     // if shift is pressed, we work only with image hovered
@@ -716,7 +722,7 @@ static gboolean _event_motion_notify(GtkWidget *widget,
 
     if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
     {
-      int mouseid = dt_control_get_mouse_over_id();
+      const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
       for(GList *l = table->list; l; l = g_list_next(l))
       {
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -912,7 +918,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
   dt_gui_add_class(table->widget, "dt_fullview");
-  // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
+  // TODO dt_gui_add_help_link(table->widget, "lighttable_filemanager");
 
   // overlays
   gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
@@ -1784,7 +1790,7 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
   _thumbs_prefetch(table);
 
   // ensure that no hidden image as the focus
-  const int selid = dt_control_get_mouse_over_id();
+  const dt_imgid_t selid = dt_control_get_mouse_over_id();
   if(selid >= 0)
   {
     gboolean in_list = FALSE;

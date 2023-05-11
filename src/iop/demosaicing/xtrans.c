@@ -60,7 +60,7 @@ static void xtrans_markesteijn_interpolate(
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  const int ndir = 4 << (passes > 1);
+  const unsigned ndir = 4 << (passes > 1);
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
   size_t padded_buffer_size;
@@ -383,7 +383,7 @@ static void xtrans_markesteijn_interpolate(
               {
                 float(*rfx)[3] = &rgb[0][row - top][col - left];
                 const short *const hex = _hexmap(row,col,allhex);
-                for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
+                for(unsigned d = 0; d < ndir; d += 2, rfx += TS * TS)
                   if(hex[d] + hex[d + 1])
                   {
                     const float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
@@ -415,7 +415,7 @@ static void xtrans_markesteijn_interpolate(
       // camera matrix into account. Now use YPbPr which requires much
       // less code and is nearly indistinguishable. It assumes the
       // camera RGB is roughly linear.
-      for(int d = 0; d < ndir; d++)
+      for(unsigned d = 0; d < ndir; ++d)
       {
         const int pad_yuv = (passes == 1) ? 8 : 13;
         for(int row = pad_yuv; row < mrow - pad_yuv; row++)
@@ -455,17 +455,17 @@ static void xtrans_markesteijn_interpolate(
         for(int col = pad_homo; col < mcol - pad_homo; col++)
         {
           float tr = FLT_MAX;
-          for(int d = 0; d < ndir; d++)
+          for(unsigned d = 0; d < ndir; ++d)
             if(tr > drv[d][row][col]) tr = drv[d][row][col];
           tr *= 8;
-          for(int d = 0; d < ndir; d++)
+          for(unsigned d = 0; d < ndir; ++d)
             for(int v = -1; v <= 1; v++)
               for(int h = -1; h <= 1; h++)
                 homo[d][row][col] += ((drv[d][row + v][col + h] <= tr) ? 1 : 0);
         }
 
       /* Build 5x5 sum of homogeneity maps for each pixel & direction */
-      for(int d = 0; d < ndir; d++)
+      for(unsigned d = 0; d < ndir; ++d)
         for(int row = pad_tile; row < mrow - pad_tile; row++)
         {
           // start before first column where homo[d][row][col+2] != 0,
@@ -489,13 +489,13 @@ static void xtrans_markesteijn_interpolate(
         {
           uint8_t hm[8] = { 0 };
           uint8_t maxval = 0;
-          for(int d = 0; d < ndir; d++)
+          for(unsigned d = 0; d < ndir; ++d)
           {
             hm[d] = homosum[d][row][col];
             maxval = (maxval < hm[d] ? hm[d] : maxval);
           }
           maxval -= maxval >> 3;
-          for(int d = 0; d < ndir - 4; d++)
+          for(unsigned d = 0; d < ndir - 4; ++d)
           {
             if(hm[d] < hm[d + 4])
               hm[d] = 0;
@@ -503,7 +503,7 @@ static void xtrans_markesteijn_interpolate(
               hm[d + 4] = 0;
           }
           dt_aligned_pixel_t avg = { 0.0f };
-          for(int d = 0; d < ndir; d++)
+          for(unsigned d = 0; d < ndir; ++d)
           {
             if(hm[d] >= maxval)
             {
@@ -2192,11 +2192,13 @@ static int process_markesteijn_cl(
       dt_opencl_release_mem_object(dev_edge_out);
       dev_edge_in = dev_edge_out = NULL;
     }
-    dt_dev_write_rawdetail_mask_cl(piece, dev_tmp, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
+
+    if(piece->pipe->want_detail_mask)
+      dt_dev_write_rawdetail_mask_cl(piece, dev_tmp, roi_in, TRUE);
 
     if(scaled)
     {
-      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self->so->op, roi_in, roi_out, "\n");
+      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");
       // scale temp buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_tmp, roi_out, roi_in);
       if(err != CL_SUCCESS) goto error;

@@ -1328,7 +1328,7 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     dt_gui_menu_popup(darktable.gui->presets_popup_menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
   }
   else
-    dt_control_log(_("no userdefined presets for favorite modules were found"));
+    dt_control_log(_("no user-defined presets for favorite modules were found"));
 }
 
 static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem, gchar *name)
@@ -2332,7 +2332,7 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
-  dt_gui_add_help_link(favorite_presets, dt_get_help_url("favorite_presets"));
+  dt_gui_add_help_link(favorite_presets, "favorite_presets");
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
@@ -2340,7 +2340,7 @@ void gui_init(dt_view_t *self)
   dt_action_define(sa, NULL, N_("quick access to styles"), styles, &dt_action_def_button);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
-  dt_gui_add_help_link(styles, dt_get_help_url("bottom_panel_styles"));
+  dt_gui_add_help_link(styles, "bottom_panel_styles");
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
   /* create second window display button */
@@ -2373,7 +2373,7 @@ void gui_init(dt_view_t *self)
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
                      G_CALLBACK(_rawoverexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->rawoverexposed.button, DT_VIEW_DARKROOM);
-    dt_gui_add_help_link(dev->rawoverexposed.button, dt_get_help_url("rawoverexposed"));
+    dt_gui_add_help_link(dev->rawoverexposed.button, "rawoverexposed");
 
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
@@ -2423,7 +2423,7 @@ void gui_init(dt_view_t *self)
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
                      G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button, DT_VIEW_DARKROOM);
-    dt_gui_add_help_link(dev->overexposed.button, dt_get_help_url("overexposed"));
+    dt_gui_add_help_link(dev->overexposed.button, "overexposed");
 
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
@@ -2489,7 +2489,7 @@ void gui_init(dt_view_t *self)
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
                      G_CALLBACK(_softproof_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.softproof_button, DT_VIEW_DARKROOM);
-    dt_gui_add_help_link(dev->profile.softproof_button, dt_get_help_url("softproof"));
+    dt_gui_add_help_link(dev->profile.softproof_button, "softproof");
 
     // the gamut check button
     dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, 0, NULL);
@@ -2500,7 +2500,7 @@ void gui_init(dt_view_t *self)
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
                      G_CALLBACK(_gamut_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.gamut_button, DT_VIEW_DARKROOM);
-    dt_gui_add_help_link(dev->profile.gamut_button, dt_get_help_url("gamut"));
+    dt_gui_add_help_link(dev->profile.gamut_button, "gamut");
 
     // and the popup window, which is shared between the two profile buttons
     dev->profile.floating_window = gtk_popover_new(NULL);
@@ -3417,7 +3417,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   const int32_t capht = self->height - 2*tb;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
   if(!dt_is_valid_imgid(mouse_over_id))
   {
     mouse_over_id = dev->image_storage.id;

@@ -422,9 +422,9 @@ void nlmeans_denoise(
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
               const float wt = gh(distortion * sharpness);
-#if defined(__SSE__) && defined(__GNUC__)
+#if defined(__SSE__) && defined(__GNUC__) && __GNUC__ < 12
               // GCC10 has really poor code generation here, so manually force vectorized evaluation
-              __m128 pixel = _mm_load_ps(in+4*col+offset);
+              __m128 pixel = _mm_loadu_ps(in+4*col+offset);
               pixel[3] = 1.0f;
               ((__m128*)out)[col] += (pixel * _mm_set1_ps(wt));
 #else
@@ -447,9 +447,9 @@ void nlmeans_denoise(
               const float dissimilarity = (distortion + pixel_difference(in+4*col,in+4*col+offset,center_norm))
                                            / (1.0f + params->center_weight);
               const float wt = gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f));
-#if defined(__SSE__) && defined(__GNUC__)
+#if defined(__SSE__) && defined(__GNUC__) && __GNUC__ < 12
               // GCC10 has really poor code generation here, so manually force vectorized evaluation
-              __m128 pixel = _mm_load_ps(in+4*col+offset);
+              __m128 pixel = _mm_loadu_ps(in+4*col+offset);
               pixel[3] = 1.0f;
               ((__m128*)out)[col] += (pixel * _mm_set1_ps(wt));
 #else

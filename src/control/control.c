@@ -234,7 +234,7 @@ void dt_control_init(dt_control_t *s)
 
   s->button_down = 0;
   s->button_down_which = 0;
-  s->mouse_over_id = -1;
+  s->mouse_over_id = NO_IMGID;
   s->dev_closeup = 0;
   s->dev_zoom_x = 0;
   s->dev_zoom_y = 0;

@@ -58,8 +58,9 @@ typedef enum dt_iop_orientation_t
 
 static const float _aspect_ratios[]
   = { DT_IOP_BORDERS_ASPECT_IMAGE_VALUE,
-      3.0f, 95.0f / 33.0f, 2.0f, 16.0f / 9.0f, PHI, 3.0f / 2.0f, 297.0f / 210.0f, M_SQRT2, 4.0f / 3.0f, 1.0f,
-      DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE };
+      3.0f, 95.0f / 33.0f, 2.39f, 2.0f, 16.0f / 9.0f, 5.0f / 3.0f, 14.0f / 8.5f, PHI, 16.0f / 10.0f,
+      3.0f / 2.0f, 297.0f / 210.0f, M_SQRT2, 7.0f / 5.0f, 4.0f / 3.0f, 11.0f / 8.5f, 14.0f / 11.0f,
+      5.0f / 4.0f, 1.0f, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE };
 static const float _pos_h_ratios[] = { 0.5f, 1.0f / 3.0f, 3.0f / 8.0f, 5.0f / 8.0f, 2.0f / 3.0f };
 static const float _pos_v_ratios[] = { 0.5f, 1.0f / 3.0f, 3.0f / 8.0f, 5.0f / 8.0f, 2.0f / 3.0f };
 
@@ -358,8 +359,9 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   }
 
   // sanity check.
-  roi_out->width = CLAMP(roi_out->width, 1, 3 * roi_in->width);
-  roi_out->height = CLAMP(roi_out->height, 1, 3 * roi_in->height);
+  const size_t max_dim = MAX(roi_in->width, roi_in->height);
+  roi_out->width = CLAMP(roi_out->width, 1, 3 * max_dim);
+  roi_out->height = CLAMP(roi_out->height, 1, 3 * max_dim);
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -935,26 +937,34 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->aspect, self, NULL, N_("aspect"),
-                               _("select the aspect ratio or right click and type your own (w:h)"),
+                               _("select the aspect ratio (right click on slider below to type your own w:h)"),
                                0, aspect_changed, self,
                                N_("image"),
                                N_("3:1"),
                                N_("95:33"),
+                               N_("CinemaScope 2.39:1"),
                                N_("2:1"),
                                N_("16:9"),
+                               N_("5:3"),
+                               N_("US Legal 8.5x14"),
                                N_("golden cut"),
-                               N_("3:2"),
+                               N_("16:10"),
+                               N_("3:2 (4x6, 10x15cm)"),
                                N_("A4"),
                                N_("DIN"),
+                               N_("7:5"),
                                N_("4:3"),
+                               N_("US Letter 8.5x11"),
+                               N_("14:11"),
+                               N_("5:4 (8x10)"),
                                N_("square"),
                                N_("constant border"),
                                N_("custom..."));
-  dt_bauhaus_combobox_set_editable(g->aspect, 1);
+  dt_bauhaus_combobox_set_editable(g->aspect, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
 
   g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
-  gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio"));
+  gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio (right click to enter number or w:h)"));
 
   g->aspect_orient = dt_bauhaus_combobox_from_params(self, "aspect_orient");
   gtk_widget_set_tooltip_text(g->aspect_orient, _("aspect ratio orientation of the image with border"));
@@ -1005,6 +1015,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
   g->border_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->border_picker), _("pick border color from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("border color"), g->border_picker, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -1017,6 +1028,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->frame_colorpick), FALSE, TRUE, 0);
   g->frame_picker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->frame_picker), _("pick frame line color from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("frame line color"), g->frame_picker, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 }
 

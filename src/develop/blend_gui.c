@@ -590,7 +590,7 @@ static void _add_wrapped_box(GtkWidget *container,
   gtk_container_add(GTK_CONTAINER(event_box), revealer);
   gtk_container_add(GTK_CONTAINER(container), event_box);
   // event box is needed so that one can click into the area to get help
-  dt_gui_add_help_link(event_box, dt_get_help_url(help_url));
+  dt_gui_add_help_link(event_box, help_url);
 }
 
 static void _box_set_visible(GtkBox *box, gboolean visible)
@@ -1600,9 +1600,10 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
 
   if(event->button == 1)
   {
+    dt_iop_request_focus(self);
+
     ++darktable.gui->reset;
 
-    dt_iop_request_focus(self);
     dt_iop_color_picker_reset(self, FALSE);
 
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,
@@ -2527,6 +2528,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
        _("pick GUI color from image\n"
          "ctrl+click or right-click to select an area"));
     gtk_widget_set_name(bd->colorpicker, "keep-active");
+    dt_action_define_iop(module, "blend`pickers", N_("show color"), bd->colorpicker, &dt_action_def_toggle);
 
     bd->colorpicker_set_values =
       dt_color_picker_new(module, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO, header);
@@ -2538,6 +2540,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
        _("set the range based on an area from the image\n"
          "drag to use the input image\n"
          "ctrl+drag to use the output image"));
+    dt_action_define_iop(module, "blend`pickers", N_("set range"), bd->colorpicker_set_values, &dt_action_def_toggle);
 
     GtkWidget *btn = dt_iop_togglebutton_new(module, "blend`tools",
                                              N_("invert all channel's polarities"), NULL,
@@ -2865,7 +2868,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
 
   if(entry->module)
   {
-    reprocess = dt_iop_is_raster_mask_used(entry->module, 0) == FALSE;
+    reprocess = dt_iop_is_raster_mask_used(entry->module, BLEND_RASTER_ID) == FALSE;
     g_hash_table_add(entry->module->raster_mask.source.users, module);
 
     // update blend_params!
@@ -2879,7 +2882,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
     memset(module->blend_params->raster_mask_source, 0,
            sizeof(module->blend_params->raster_mask_source));
     module->blend_params->raster_mask_instance = 0;
-    module->blend_params->raster_mask_id = NO_MASKID;
+    module->blend_params->raster_mask_id = INVALID_MASKID;
   }
 
   dt_dev_add_history_item(module->dev, module, TRUE);
@@ -3485,7 +3488,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_blend_mode_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo),
-                         dt_get_help_url("masks_blending_op"));
+                         "masks_blending_op");
     gtk_box_pack_start(GTK_BOX(blend_modes_hbox), bd->blend_modes_combo, TRUE, TRUE, 0);
 
     bd->blend_modes_blend_order = dt_iop_togglebutton_new
@@ -3533,7 +3536,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     g_signal_connect(G_OBJECT(bd->masks_combine_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_combine_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_combine_combo),
-                         dt_get_help_url("masks_combined"));
+                         "masks_combined");
 
     bd->details_slider = dt_bauhaus_slider_new_with_range(module, -1.0f, 1.0f, 0, 0.0f, 2);
     dt_bauhaus_widget_set_label(bd->details_slider, N_("blend"), N_("details threshold"));
@@ -3541,7 +3544,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     gtk_widget_set_tooltip_text
       (bd->details_slider,
        _("adjust the threshold for the details mask (using raw data),\n"
-         "positive values selects areas with strong details,\n"
+         "positive values select areas with strong details,\n"
          "negative values select flat areas"));
     g_signal_connect(G_OBJECT(bd->details_slider), "value-changed",
                      G_CALLBACK(_blendop_blendif_details_callback), bd);
@@ -3637,7 +3640,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                        GTK_WIDGET(presets_button), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_box), FALSE, FALSE, 0);
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_modes_box),
-                         dt_get_help_url("masks_blending"));
+                         "masks_blending");
     gtk_widget_set_name(GTK_WIDGET(bd->masks_modes_box), "blending-tabs");
 
     bd->top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));

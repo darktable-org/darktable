@@ -759,10 +759,9 @@ float dt_dev_get_zoom_scale(
   return zoom_scale;
 }
 
-void dt_dev_load_image_ext(
-        dt_develop_t *dev,
-        const dt_imgid_t imgid,
-        const int32_t snapshot_id)
+void dt_dev_load_image_ext(dt_develop_t *dev,
+                           const dt_imgid_t imgid,
+                           const int32_t snapshot_id)
 {
   dt_lock_image(imgid);
 
@@ -1037,6 +1036,8 @@ static void _dev_add_history_item_ext(
       dev->preview2_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
     }
   }
+  if((module->enabled) && (!no_image))
+    module->iopcache_hint = TRUE;
 }
 
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op)
@@ -1574,11 +1575,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   const gboolean is_raw = dt_image_is_raw(image);
   const gboolean is_modern_chroma = dt_is_scene_referred();
-  const gboolean is_mono = dt_image_is_monochrome(image);
 
   // flag was already set? only apply presets once in the lifetime of
   // a history stack.  (the flag will be cleared when removing it).
-  if(!run || image->id <= 0)
+  if(!run || !dt_is_valid_imgid(image->id))
   {
     // Next section is to recover old edits where all modules with
     // default parameters were not recorded in the db nor in the .XMP.
@@ -1641,66 +1641,51 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
+  //  get current workflow and image characteristics
+
   const gboolean is_scene_referred = dt_is_scene_referred();
   const gboolean is_display_referred = dt_is_display_referred();
   const gboolean is_workflow_none = !is_scene_referred && !is_display_referred;
-
-  //  Add scene-referred workflow
-  //  Note that we cannot use a preset for FilmicRGB as the default values are
-  //  dynamically computed depending on the actual exposure compensation
-  //  (see reload_default routine in filmicrgb.c)
-
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
 
-  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
+  //  set filters
 
-  const gboolean auto_apply_filmic =
-    (is_raw || is_mono) && (strcmp(workflow, "scene-referred (filmic)") == 0);
-  const gboolean auto_apply_sigmoid =
-    (is_raw || is_mono) && (strcmp(workflow, "scene-referred (sigmoid)") == 0);
-  const gboolean auto_apply_exposure =
-    auto_apply_filmic || auto_apply_sigmoid;
-  const gboolean auto_apply_basecurve =
-    (is_raw || is_mono) && (strcmp(workflow, "display-referred (legacy)") == 0);
-  const gboolean auto_apply_cat =
-    has_matrix && is_modern_chroma;
+  int iformat = 0;
+  if(dt_image_is_raw(image))
+    iformat |= FOR_RAW;
+  else
+    iformat |= FOR_LDR;
 
-  if(auto_apply_filmic || auto_apply_sigmoid || auto_apply_cat || auto_apply_basecurve)
-  {
-    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+  if(has_matrix)
+    iformat |= FOR_MATRIX;
 
-      if(((auto_apply_exposure && dt_iop_module_is(module->so, "exposure"))
-          || (auto_apply_filmic && dt_iop_module_is(module->so, "filmicrgb"))
-          || (auto_apply_sigmoid && dt_iop_module_is(module->so, "sigmoid"))
-          || (auto_apply_basecurve && dt_iop_module_is(module->so, "basecurve"))
-          || (auto_apply_cat && dt_iop_module_is(module->so, "channelmixerrgb")))
-         && !dt_history_check_module_exists(imgid, module->op, FALSE)
-         && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
-      {
-        _dev_insert_module(dev, module, imgid);
-      }
-    }
-  }
+  if(dt_image_is_hdr(image))
+    iformat |= FOR_HDR;
+
+  int excluded = 0;
+  if(dt_image_monochrome_flags(image))
+    excluded |= FOR_NOT_MONO;
+  else
+    excluded |= FOR_NOT_COLOR;
 
   // select all presets from one of the following table and add them
   // into memory.history. Note that this is appended to possibly
   // already present default modules.
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
-  char query[1024];
+  char query[2048];
   // clang-format off
 
   const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
 
   snprintf(query, sizeof(query),
            "INSERT OR REPLACE INTO memory.history"
-           " SELECT ?1, 0, op_version, operation, op_params,"
+           " SELECT ?1, 0, op_version, operation AS op, op_params,"
            "       enabled, blendop_params, blendop_version,"
            "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
            "       %s, multi_name_hand_edited"
            " FROM %s"
+           // only auto-applied presets matching the camera/lens/focal/format/exposure
            " WHERE ( (autoapply=1"
            "          AND ((?2 LIKE model AND ?3 LIKE maker)"
            "               OR (?4 LIKE model AND ?5 LIKE maker))"
@@ -1709,9 +1694,17 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "          AND ?9 BETWEEN aperture_min AND aperture_max"
            "          AND ?10 BETWEEN focal_length_min AND focal_length_max"
            "          AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
+           // skip non iop modules:
            "   AND operation NOT IN"
            "       ('ioporder', 'metadata', 'modulegroups', 'export',"
            "        'tagging', 'collect', '%s')"
+           // select all user's auto presets or the hard-coded presets (for the workflow)
+           // if non auto-presets for the same operation found.
+           "   AND (writeprotect = 0"
+           "        OR (SELECT NOT EXISTS"
+           "             (SELECT op"
+           "              FROM presets"
+           "              WHERE autoapply = 1 AND operation = op AND writeprotect = 0)))"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            // auto module:
            //  ON  : we take as the preset label either the multi-name
@@ -1726,24 +1719,11 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
                " END",
            preset_table[legacy],
-           is_display_referred?"":"basecurve");
+           is_display_referred ? "" : "basecurve");
   // clang-format on
+
   // query for all modules at once:
   sqlite3_stmt *stmt;
-
-  int iformat = 0;
-  if(dt_image_is_rawprepare_supported(image))
-    iformat |= FOR_RAW;
-  else
-    iformat |= FOR_LDR;
-  if(dt_image_is_hdr(image))
-    iformat |= FOR_HDR;
-
-  int excluded = 0;
-  if(dt_image_monochrome_flags(image))
-    excluded |= FOR_NOT_MONO;
-  else
-    excluded |= FOR_NOT_COLOR;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1989,7 +1969,7 @@ void _dev_write_history(dt_develop_t *dev, const dt_imgid_t imgid)
 }
 
 // helper function for debug strings
-char * _print_validity(gboolean state)
+char *_print_validity(gboolean state)
 {
   if(state)
     return "ok";
@@ -2847,7 +2827,8 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   return module;
 }
 
-void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
+void dt_dev_invalidate_history_module(GList *list,
+                                      dt_iop_module_t *module)
 {
   for(; list; list = g_list_next(list))
   {
@@ -3504,17 +3485,16 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 }
 
-void dt_dev_image_ext(
-  dt_imgid_t imgid,
-  size_t width,
-  size_t height,
-  int history_end,
-  uint8_t **buf,
-  size_t *processed_width,
-  size_t *processed_height,
-  int border_size,
-  gboolean iso_12646,
-  int32_t snapshot_id)
+void dt_dev_image_ext(const dt_imgid_t imgid,
+                      const size_t width,
+                      const size_t height,
+                      const int history_end,
+                      uint8_t **buf,
+                      size_t *processed_width,
+                      size_t *processed_height,
+                      const int border_size,
+                      const gboolean iso_12646,
+                      const int32_t snapshot_id)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
@@ -3555,14 +3535,13 @@ void dt_dev_image_ext(
   dt_dev_cleanup(&dev);
 }
 
-void dt_dev_image(
-  dt_imgid_t imgid,
-  size_t width,
-  size_t height,
-  int history_end,
-  uint8_t **buf,
-  size_t *processed_width,
-  size_t *processed_height)
+void dt_dev_image(const dt_imgid_t imgid,
+                  const size_t width,
+                  const size_t height,
+                  const int history_end,
+                  uint8_t **buf,
+                  size_t *processed_width,
+                  size_t *processed_height)
 {
   // create a dev
 

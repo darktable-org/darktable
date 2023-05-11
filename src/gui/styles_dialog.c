@@ -514,10 +514,12 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t i
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *dialog = GTK_DIALOG(
       gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  _("_cancel"), GTK_RESPONSE_REJECT,
-                                  _("select _all"),  GTK_RESPONSE_YES,
+                                   _("select _all"),  GTK_RESPONSE_YES,
                                   _("select _none"), GTK_RESPONSE_NONE,
-                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL));
+                                  _("_cancel"), GTK_RESPONSE_REJECT,
+                                 _("_save"), GTK_RESPONSE_ACCEPT, NULL));
+  dt_gui_dialog_add_help(dialog, "styles");
+
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
 #endif

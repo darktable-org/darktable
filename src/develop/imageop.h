@@ -132,9 +132,7 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
   IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
-  IOP_FLAGS_GUIDES_WIDGET = 1 << 15,       // require the guides widget
-  IOP_FLAGS_CACHE_IMPORTANT_NOW = 1 << 16, // hints for higher priority in iop cache
-  IOP_FLAGS_CACHE_IMPORTANT_NEXT = 1 << 17
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15       // require the guides widget
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -203,6 +201,8 @@ typedef struct dt_iop_module_so_t
 
   // introspection related data
   gboolean have_introspection;
+  // contains preset which are depending on preference (workflow)
+  gboolean pref_based_presets;
 } dt_iop_module_so_t;
 
 typedef struct dt_iop_module_t
@@ -314,6 +314,9 @@ typedef struct dt_iop_module_t
   GtkWidget *guides_toggle;
   GtkWidget *guides_combo;
 
+  /** Last user action changed any module parameter via history? */
+  gboolean iopcache_hint;
+
   /** flag in case the module has troubles (bad settings) - if TRUE,
    * show a warning sign next to module label */
   gboolean has_trouble;
@@ -335,8 +338,6 @@ typedef struct dt_iop_module_t
                         void *const o,
                         const struct dt_iop_roi_t *const roi_in,
                         const struct dt_iop_roi_t *const roi_out);
-  // hint for higher io cache priority
-  gboolean cache_next_important;
   // introspection related data
   gboolean have_introspection;
 } dt_iop_module_t;
@@ -413,7 +414,12 @@ void dt_iop_commit_params(dt_iop_module_t *module,
                           struct dt_develop_blend_params_t *blendop_params,
                           struct dt_dev_pixelpipe_t *pipe,
                           struct dt_dev_pixelpipe_iop_t *piece);
-void dt_iop_commit_blend_params(dt_iop_module_t *module,
+
+/** make sure that blend_params are in sync with the iop struct
+   Also watch out for a raster mask source module to get it's first `target`,
+   dt_iop_commit_blend_params() either returns NULL or the source module.
+*/
+dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const struct dt_develop_blend_params_t *blendop_params);
 /** make sure the raster mask is advertised if available */
 void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode);
@@ -444,7 +450,7 @@ extern const struct dt_action_def_t dt_action_def_iop;
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data);
 
 /** let plugins have breakpoints: */
-int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
+gboolean dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
 
 /** allow plugins to relinquish CPU and go to sleep for some time */
 void dt_iop_nap(int32_t usec);
@@ -553,11 +559,11 @@ const char **dt_iop_set_description(dt_iop_module_t *module,
 /** get a nice printable name. */
 const char *dt_iop_colorspace_to_name(const dt_iop_colorspace_type_t type);
 
-static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
+static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, const size_t size)
 {
   // Align so that DT_ALIGNED_ARRAY may be used within gui_data struct
   module->gui_data = (dt_iop_gui_data_t*)dt_calloc_align(64, size);
-  dt_pthread_mutex_init(&module->gui_lock,NULL);
+  dt_pthread_mutex_init(&module->gui_lock, NULL);
   return module->gui_data;
 }
 #define IOP_GUI_ALLOC(module) \

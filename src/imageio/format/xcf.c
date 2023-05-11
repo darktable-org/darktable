@@ -171,15 +171,11 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       g_hash_table_iter_init(&rm_iter, piece->raster_masks);
       while(g_hash_table_iter_next(&rm_iter, &key, &value))
       {
-        gboolean free_mask = TRUE;
-        float *raster_mask = dt_dev_get_raster_mask(pipe, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
+        gboolean free_mask;
+        float *raster_mask = dt_dev_get_raster_mask(piece, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
 
         if(!raster_mask)
-        {
-          // this should never happen
-          dt_print(DT_DEBUG_ALWAYS, "error: can't get raster mask from `%s'\n", piece->module->name());
-          goto exit;
-        }
+           goto exit;
 
         xcf_add_channel(xcf);
         xcf_set(xcf, XCF_PROP, XCF_PROP_VISIBLE, 0);
