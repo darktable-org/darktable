@@ -293,10 +293,10 @@ void process(
 
   if(run_fast) goto writeout;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-  const int h_width = (width + 1) / 2;
-  const int h_height = (height + 1) / 2;
+  const size_t width = roi_in->width;
+  const size_t height = roi_in->height;
+  const size_t h_width = (width + 1) / 2;
+  const size_t h_height = (height + 1) / 2;
 
   const float *const in = out;
 
@@ -316,7 +316,7 @@ void process(
 
   if(avoidshift)
   {
-    const size_t buffsize = (size_t)h_width * h_height;
+    const size_t buffsize = h_width * h_height;
     redfactor = dt_calloc_align_float(buffsize);
     bluefactor = dt_calloc_align_float(buffsize);
     oldraw = dt_calloc_align_float(buffsize * 2);
@@ -327,11 +327,13 @@ void process(
     }
     // copy raw values before ca correction
 #ifdef _OPENMP
-        #pragma omp parallel for
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width, filters, in, oldraw, h_width)       \
+  schedule(static)
 #endif
-    for(int row = 0; row < height; row++)
+    for(size_t row = 0; row < height; row++)
     {
-      for(int col = (FC(row, 0, filters) & 1); col < width; col += 2)
+      for(size_t col = (FC(row, 0, filters) & 1); col < width; col += 2)
       {
         oldraw[row * h_width + col / 2] = in[row * width + col];
       }
@@ -378,7 +380,11 @@ void process(
   {
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(in, out, height, width, filters, processpasstwo, hblsz, vblsz, \
+                      blockwt, blockshifts, blockvar)                   \
+  shared(Gtmp, RawDataTmp, numpar, polyord, fitparams, blockdenom, blockave, blocksqave)
+  // if any of the above shared are made firstprivate, we get the wrong answer
 #endif
    {
     // direction of the CA shift in a tile
@@ -443,24 +449,29 @@ void process(
           const int right = MIN(left + ts, width + border);
           const int rr1 = bottom - top;
           const int cc1 = right - left;
-          const int rrmin = top < 0 ? border : 0;
-          const int rrmax = bottom > height ? height - top : rr1;
-          const int ccmin = left < 0 ? border : 0;
-          const int ccmax = right > width ? width - left : cc1;
+          const size_t rrmin = top < 0 ? border : 0;
+          const size_t rrmax = bottom > height ? height - top : rr1;
+          const size_t ccmin = left < 0 ? border : 0;
+          const size_t ccmax = right > width ? width - left : cc1;
 
           // rgb from input CFA data
           // rgb values should be floating point numbers between 0 and 1
           // after white balance multipliers are applied
 
-          for(int rr = rrmin; rr < rrmax; rr++)
-            for(int row = rr + top, cc = ccmin; cc < ccmax; cc++)
+          for(size_t rr = rrmin; rr < rrmax; rr++)
+          {
+            size_t row = rr + top;
+            size_t c = FC(rr, ccmin, filters);
+            const size_t c_diff = c ^ FC(rr, ccmin+1, filters);
+            for(size_t cc = ccmin; cc < ccmax; cc++)
             {
-              const int col = cc + left;
-              const int c = FC(rr, cc, filters);
-              const int indx = row * width + col;
-              const int indx1 = rr * ts + cc;
+              const size_t col = cc + left;
+              const size_t indx = row * width + col;
+              const size_t indx1 = rr * ts + cc;
               rgb[c][indx1] = (in[indx]);
+              c ^= c_diff;
             }
+          }
 
           // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           // fill borders
@@ -889,17 +900,23 @@ void process(
           }
 
           if(processpasstwo)
-
+          {
             // fit parameters to blockshifts
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+            // collapse(2) doesn't help here, likely due to cacheline bouncing
+#endif
             for(int c = 0; c < 2; c++)
               for(int dir = 0; dir < 2; dir++)
               {
                 if(!_LinEqSolve(numpar, polymat[c][dir], shiftmat[c][dir], fitparams[c][dir]))
                 {
-                  dt_print(DT_DEBUG_PIPE, "[cacorrect] can't solve linear equations for colour %d direction %d", c, dir);
+                  dt_print(DT_DEBUG_PIPE,
+                           "[cacorrect] can't solve linear equations for colour %d direction %d", c, dir);
                   processpasstwo = FALSE;
                 }
               }
+          }
         }
 
         // fitparams[polyord*i+j] gives the coefficients of (vblock^i hblock^j) in a polynomial fit for i,j<=4
@@ -936,20 +953,25 @@ void process(
           // rgb values should be floating point number between 0 and 1
           // after white balance multipliers are applied
 
-          for(int rr = rrmin; rr < rrmax; rr++)
-            for(int row = rr + top, cc = ccmin; cc < ccmax; cc++)
+          for(size_t rr = rrmin; rr < rrmax; rr++)
+          {
+            size_t row = rr + top;
+            size_t c = FC(rr, ccmin, filters);
+            const size_t c_diff = c ^ FC(rr, ccmin+1, filters);
+            for(size_t cc = ccmin; cc < ccmax; cc++)
             {
-              const int col = cc + left;
-              const int c = FC(rr, cc, filters);
-              const int indx = row * width + col;
-              const int indx1 = rr * ts + cc;
+              const size_t col = cc + left;
+              const size_t indx = row * width + col;
+              const size_t indx1 = rr * ts + cc;
               rgb[c][indx1] = (in[indx]);
 
               if((c & 1) == 0)
               {
                 rgb[1][indx1] = Gtmp[indx];
               }
+              c ^= c_diff;
             }
+          }
 
           // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           // fill borders
@@ -1204,9 +1226,8 @@ void process(
 #endif
 // copy temporary image matrix back to image matrix
 #ifdef _OPENMP
-#pragma omp for
+#pragma omp for schedule(static)
 #endif
-
       for(int row = 0; row < height; row++)
         for(int col = 0 + (FC(row, 0, filters) & 1), indx = (row * width + col) >> 1; col < width;
             col += 2, indx++)
@@ -1226,17 +1247,21 @@ void process(
     // of red and blue channel and apply a gaussian blur to them.
     // Then we apply the resulting factors per pixel on the result of raw ca correction
 #ifdef _OPENMP
-  #pragma omp parallel for
+#pragma omp parallel for \
+  dt_omp_firstprivate(in, oldraw, height, width, filters, redfactor, bluefactor)   \
+  schedule(static)
 #endif
-    for(int row = 0; row < height; row++)
+    for(size_t row = 0; row < height; row++)
     {
-      const int firstCol = FC(row, 0, filters) & 1;
+      const size_t firstCol = FC(row, 0, filters) & 1;
       const int color    = FC(row, firstCol, filters);
       float *nongreen    = (color == 0) ? redfactor : bluefactor;
-      for(int col = firstCol; col < width; col += 2)
+      for(size_t col = firstCol; col < width; col += 2)
       {
-        nongreen[(row / 2) * h_width + col / 2] = (in[row * width + col] <= 1.0f || oldraw[row * h_width + col / 2] <= 1.0f)
-          ? 1.0f : CLAMPF(oldraw[row * h_width + col / 2] / in[row * width + col], 0.5f, 2.0f);
+        const size_t index = row * width + col;
+        const size_t oindex = row * h_width + col / 2;
+        nongreen[(row / 2) * h_width + col / 2] = (in[index] <= 1.0f || oldraw[oindex] <= 1.0f)
+          ? 1.0f : CLAMPF(oldraw[oindex] / in[index], 0.5f, 2.0f);
       }
     }
 
@@ -1274,14 +1299,16 @@ void process(
       dt_gaussian_blur(blue, bluefactor, bluefactor);
 
 #ifdef _OPENMP
-  #pragma omp for
+#pragma omp parallel for \
+  dt_omp_firstprivate(out, height, width, filters, redfactor, bluefactor)  \
+  schedule(static)
 #endif
-      for(int row = 2; row < height - 2; row++)
+      for(size_t row = 2; row < height - 2; row++)
       {
-        const int firstCol = FC(row, 0, filters) & 1;
+        const size_t firstCol = FC(row, 0, filters) & 1;
         const int color = FC(row, firstCol, filters);
         float *nongreen = (color == 0) ? redfactor : bluefactor;
-        for(int col = firstCol; col < width - 2; col += 2)
+        for(size_t col = firstCol; col < width - 2; col += 2)
         {
           const float correction = nongreen[row / 2 * h_width + col / 2];
           out[row * width + col] *= correction;
