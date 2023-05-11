@@ -147,6 +147,7 @@ The following is a summary of the main features added to darktable
   - Lens
   - Grain
   - Monochrome
+  - In-paint opposed highlights reconstruction
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) used by modules doing warp or scaling of pixels. The old
