@@ -1408,7 +1408,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
   int *vmeta = NULL;
 
   int r;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   cl_mem dev_hindex = NULL;
   cl_mem dev_hlength = NULL;
@@ -1503,9 +1503,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
     // the vertical workgroupsize; there is no point in continuing on
     // the GPU - that would be way too slow; let's delegate the stuff
     // to the CPU then.
-    dt_print(DT_DEBUG_OPENCL,
-             "[dt_interpolation_resample_cl] resampling plan cannot"
-             " efficiently be run on the GPU - fall back to CPU.\n");
+    err = DT_OPENCL_PROCESS_CL;
     goto error;
   }
 
@@ -1585,9 +1583,8 @@ error:
   dt_opencl_release_mem_object(dev_vmeta);
   dt_free_align(hlength);
   dt_free_align(vlength);
-  dt_print(DT_DEBUG_ALWAYS,
-           "[dt_interpolation_resample_cl] couldn't enqueue kernel! %s\n",
-           cl_errstr(err));
+  dt_print_pipe(DT_DEBUG_OPENCL, "interpolation_resample_cl", NULL, NULL, roi_in, roi_out,
+      "Error: %s\n", cl_errstr(err));
   return err;
 }
 

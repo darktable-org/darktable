@@ -830,27 +830,13 @@ int process_cl(
   dt_opencl_release_mem_object(low_image);
   low_image = NULL;
 
-  if(roi_in->width == roi_out->width && roi_in->height == roi_out->height)
-  {
-    dt_print_pipe(DT_DEBUG_PIPE, "copy_dual_cl", piece->pipe, self, roi_in, roi_out, "\n");
-    size_t origin[] = { 0, 0, 0 };
-    size_t region[] = { roi_in->width, roi_in->height, 1 };
-    const int err = dt_opencl_enqueue_copy_image(devid, high_image, dev_out, origin, origin, region);
-    if(err != CL_SUCCESS)
-      retval = FALSE;
-  }
-  else
-  {
-    dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_dual_cl", piece->pipe, self, roi_in, roi_out, "\n");
-    const int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, high_image, roi_out, roi_in);
-    if(err != CL_SUCCESS)
-      retval = FALSE;
-  }
+  if(dt_iop_clip_and_zoom_roi_cl(devid, dev_out, high_image, roi_out, roi_in) == CL_SUCCESS)
+    retval = TRUE;
+
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
 
-  if(!retval) dt_control_log(_("[dual demosaic_cl] internal problem"));
   return retval;
 }
 #endif
