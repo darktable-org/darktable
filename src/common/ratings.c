@@ -164,6 +164,16 @@ static void _ratings_apply(const GList *imgs, const int rating, GList **undo, co
 
     _ratings_apply_to_image(image_id, new_rating);
   }
+
+  if(!g_list_shorter_than(imgs, 2)) // pop up a toast if rating multiple images at once
+  {
+    const guint count = g_list_length((GList *) imgs);
+    if(rating == DT_VIEW_REJECT)
+      dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
+    else
+      dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
+                     rating, count);
+  }
 }
 
 void dt_ratings_apply_on_list(const GList *img, const int rating, const gboolean undo_on)
@@ -197,16 +207,6 @@ void dt_ratings_apply_on_image(const dt_imgid_t imgid, const int rating, const g
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
     if(group_on) dt_grouping_add_grouped_images(&imgs);
-
-    if(!g_list_shorter_than(imgs, 2)) // pop up a toast if rating multiple images at once
-    {
-      const guint count = g_list_length(imgs);
-      if(new_rating == DT_VIEW_REJECT)
-        dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
-      else
-        dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
-                       new_rating, count);
-    }
 
     _ratings_apply(imgs, new_rating, &undo, undo_on);
 
