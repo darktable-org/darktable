@@ -15,6 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+// fast-math changes results enough to fail the integration test, and isn't even any faster...
+#ifdef __GNUC__
+#pragma GCC optimize ("no-fast-math")
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -36,7 +42,7 @@
 // and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(2, dt_iop_cacorrect_params_t)
 
-#pragma GCC diagnostic ignored "-Wshadow"
+//#pragma GCC diagnostic ignored "-Wshadow"
 
 typedef enum dt_iop_cacorrect_multi_t
 {
@@ -382,8 +388,8 @@ void process(
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
   dt_omp_firstprivate(in, out, height, width, filters, processpasstwo, hblsz, vblsz, \
-                      blockwt, blockshifts, blockvar)                   \
-  shared(Gtmp, RawDataTmp, numpar, polyord, fitparams, blockdenom, blockave, blocksqave)
+                      blockwt, blockshifts, blockvar, Gtmp, RawDataTmp)                  \
+  shared(numpar, polyord, fitparams, blockdenom, blockave, blocksqave)
   // if any of the above shared are made firstprivate, we get the wrong answer
 #endif
    {
@@ -753,7 +759,6 @@ void process(
               break;
             }
           }
-
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         // now prepare for CA correction pass
@@ -867,33 +872,33 @@ void process(
 
                 numblox[c]++;
 
-                for(int dir = 0; dir < 2; dir++)
+                double powVblockInit = 1.0;
+                for(int i = 0; i < polyord; i++)
                 {
-                  double powVblockInit = 1.0;
-                  for(int i = 0; i < polyord; i++)
+                  double powHblockInit = 1.0;
+                  for(int j = 0; j < polyord; j++)
                   {
-                    double powHblockInit = 1.0;
-                    for(int j = 0; j < polyord; j++)
+                    double powVblock = powVblockInit;
+                    for(int m = 0; m < polyord; m++)
                     {
-                      double powVblock = powVblockInit;
-                      for(int m = 0; m < polyord; m++)
+                      double powHblock = powHblockInit;
+                      for(int n = 0; n < polyord; n++)
                       {
-                        double powHblock = powHblockInit;
-                        for(int n = 0; n < polyord; n++)
-                        {
-                          polymat[c][dir][numpar * (polyord * i + j) + (polyord * m + n)]
-                              += powVblock * powHblock * blockwt[vblock * hblsz + hblock];
-                          powHblock *= hblock;
-                        }
-                        powVblock *= vblock;
+                        double inc = powVblock * powHblock * blockwt[vblock * hblsz + hblock];
+                        size_t idx = numpar * (polyord * i + j) + (polyord * m + n);
+                        polymat[c][0][idx] += inc;
+                        polymat[c][1][idx] += inc;
+                        powHblock *= hblock;
                       }
-                      shiftmat[c][dir][(polyord * i + j)]
-                          += powVblockInit * powHblockInit * bstemp[dir] * blockwt[vblock * hblsz + hblock];
-                      powHblockInit *= hblock;
+                      powVblock *= vblock;
                     }
-                    powVblockInit *= vblock;
-                  } // monomials
-                }   // dir
+                    double blkinc = powVblockInit * powHblockInit * blockwt[vblock * hblsz + hblock];
+                    shiftmat[c][0][(polyord * i + j)] += blkinc * bstemp[0];
+                    shiftmat[c][1][(polyord * i + j)] += blkinc * bstemp[1];
+                    powHblockInit *= hblock;
+                  }
+                  powVblockInit *= vblock;
+                }   // monomials
               }     // c
             }       // blocks
 
@@ -1082,10 +1087,10 @@ void process(
             // CA auto correction; use CA diagnostic pass to set shift parameters
             lblockshifts[0][0] = lblockshifts[0][1] = 0;
             lblockshifts[1][0] = lblockshifts[1][1] = 0;
-            double powVblock = 1.0;
+            float powVblock = 1.0;
             for(int i = 0; i < polyord; i++)
             {
-              double powHblock = powVblock;
+              float powHblock = powVblock;
               for(int j = 0; j < polyord; j++)
               {
                 // printf("i= %d j= %d polycoeff= %f \n",i,j,fitparams[0][0][polyord*i+j]);
@@ -1109,26 +1114,25 @@ void process(
           {
 
             // some parameters for the bilinear interpolation
-            shiftvfloor[c] = floor((float)lblockshifts[c >> 1][0]);
-            shiftvceil[c] = ceil((float)lblockshifts[c >> 1][0]);
+            shiftvfloor[c] = floorf(lblockshifts[c >> 1][0]);
+            shiftvceil[c] = ceilf(lblockshifts[c >> 1][0]);
             if(lblockshifts[c>>1][0] < 0.f)
             {
-              const float tmp = shiftvfloor[c];
+              const int tmp = shiftvfloor[c];
               shiftvfloor[c] = shiftvceil[c];
               shiftvceil[c] = tmp;
             }
             shiftvfrac[c] = fabsf(lblockshifts[c>>1][0] - shiftvfloor[c]);
 
-            shifthfloor[c] = floor((float)lblockshifts[c >> 1][1]);
-            shifthceil[c] = ceil((float)lblockshifts[c >> 1][1]);
+            shifthfloor[c] = floorf(lblockshifts[c >> 1][1]);
+            shifthceil[c] = ceilf(lblockshifts[c >> 1][1]);
             if(lblockshifts[c>>1][1] < 0.f)
             {
-              const float tmp = shifthfloor[c];
+              const int tmp = shifthfloor[c];
               shifthfloor[c] = shifthceil[c];
               shifthceil[c] = tmp;
             }
             shifthfrac[c] = fabsf(lblockshifts[c>>1][1] - shifthfloor[c]);
-
 
             GRBdir[0][c] = lblockshifts[c >> 1][0] > 0 ? 2 : -2;
             GRBdir[1][c] = lblockshifts[c >> 1][1] > 0 ? 2 : -2;
