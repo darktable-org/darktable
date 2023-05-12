@@ -661,11 +661,13 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
+  dt_masks_clear_form_gui(darktable.develop);
+
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   dt_iop_module_t *module = NULL;
-  ++darktable.gui->reset;
+
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
 
   for(const GList *items_iter = items;
@@ -677,13 +679,20 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
       GtkTreeIter *prev_iter = gtk_tree_iter_copy(&iter);
+      GtkTreeIter *next_iter = gtk_tree_iter_copy(&iter);
       const gboolean has_previous = gtk_tree_model_iter_previous(model, prev_iter);
+      const gboolean has_next = gtk_tree_model_iter_next(model, next_iter);
       int prev_grid = -1;
       int prev_id = -1;
 
       dt_mask_id_t grid = INVALID_MASKID;
       dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, &module, &grid, &id);
+
+      if(has_previous)
+        gtk_tree_selection_select_iter(selection, prev_iter);
+      else if(has_next)
+        gtk_tree_selection_select_iter(selection, next_iter);
 
       if(has_previous)
       {
@@ -694,14 +703,16 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
         }
       }
       gtk_tree_iter_free(prev_iter);
+      gtk_tree_iter_free(next_iter);
       dt_masks_form_remove(module, dt_masks_get_from_id(darktable.develop, grid),
                            dt_masks_get_from_id(darktable.develop, id));
     }
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 
-  --darktable.gui->reset;
+  dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
   _lib_masks_recreate_list(self);
+  dt_masks_update_image(darktable.develop);
 }
 
 static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
