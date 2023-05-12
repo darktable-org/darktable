@@ -145,6 +145,8 @@ typedef struct dt_iop_lens_params_t
   // embedded metadata method parameters
   float cor_dist_ft;  // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "distortion fine-tune"
   float cor_vig_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "vignetting fine-tune"
+  float cor_ca_r_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "TCA red fine-tune"
+  float cor_ca_b_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "TCA blue fine-tune"
   // TODO should be possible to also add tca fine tune modifications
 
   // scale_md_v1 is used by embedded metadata algorithm v1. Kept for backward compatibility
@@ -173,7 +175,7 @@ typedef struct dt_iop_lens_gui_data_t
   GtkWidget *modflags, *target_geom, *reverse, *tca_override, *tca_r, *tca_b, *scale;
   GtkWidget *find_lens_button;
   GtkWidget *find_camera_button;
-  GtkWidget *cor_dist_ft, *cor_vig_ft, *scale_md;
+  GtkWidget *cor_dist_ft, *cor_vig_ft, *cor_ca_r_ft, *cor_ca_b_ft, *scale_md;
   GtkWidget *use_latest_md_algo;
   GtkLabel *message;
   int corrections_done;
@@ -399,6 +401,8 @@ int legacy_params(
     n->scale_md_v1 = 0.0f;
 
     // new in v8
+    n->cor_ca_r_ft = 1.f;
+    n->cor_ca_b_ft = 1.f;
     n->scale_md = 1.0f;
     // use new metadata version v2
     n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
@@ -453,6 +457,8 @@ int legacy_params(
     n->scale_md_v1 = 0.0f;
 
     // new in v8
+    n->cor_ca_r_ft = 1.f;
+    n->cor_ca_b_ft = 1.f;
     n->scale_md = 1.0f;
     // use new metadata version v2
     n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
@@ -508,6 +514,8 @@ int legacy_params(
     n->scale_md_v1 = 0.0f;
 
     // new in v8
+    n->cor_ca_r_ft = 1.f;
+    n->cor_ca_b_ft = 1.f;
     n->scale_md = 1.0f;
     // use new metadata version v2
     n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
@@ -564,6 +572,8 @@ int legacy_params(
     n->scale_md_v1 = 0.0f;
 
     // new in v8
+    n->cor_ca_r_ft = 1.f;
+    n->cor_ca_b_ft = 1.f;
     n->scale_md = 1.0f;
     // use new metadata version v2
     n->md_version = DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
@@ -622,6 +632,8 @@ int legacy_params(
     n->scale_md_v1 = 0.0f;
 
     // new in v8
+    n->cor_ca_r_ft = 1.f;
+    n->cor_ca_b_ft = 1.f;
     n->scale_md = 1.0f;
     // if current method is metadata then use old metadata version v1 for
     // backward compatibility
@@ -682,6 +694,8 @@ int legacy_params(
     n->scale_md_v1 = o->cor_scale;
 
     // new in v8
+    n->cor_ca_r_ft = 1.f;
+    n->cor_ca_b_ft = 1.f;
     n->scale_md = 1.0f;
     // if current method is metadata then use old metadata version v1 for
     // backward compatibility
@@ -1932,8 +1946,8 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
-        cor_rgb[0][i] *= cd->sony.ca_r[i] * powf(2, -21) + 1;
-        cor_rgb[2][i] *= cd->sony.ca_b[i] * powf(2, -21) + 1;
+        cor_rgb[0][i] *= p->cor_ca_r_ft * cd->sony.ca_r[i] * powf(2, -21) + 1;
+        cor_rgb[2][i] *= p->cor_ca_b_ft * cd->sony.ca_b[i] * powf(2, -21) + 1;
       }
 
       if(vig
@@ -1977,8 +1991,8 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
     {
       knots_in[j] = cd->fuji.cropf * cd->fuji.knots[i];
       cor_rgb_in[j] = p->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1;
-      cor_ca_r_in[j] = cd->fuji.ca_r[i];
-      cor_ca_b_in[j] = cd->fuji.ca_b[i];
+      cor_ca_r_in[j] = p->cor_ca_r_ft * cd->fuji.ca_r[i];
+      cor_ca_b_in[j] = p->cor_ca_b_ft * cd->fuji.ca_b[i];
 
       // vignetting correction is applied before distortion correction. So the
       // spline is related to the source image before distortion.
@@ -3707,11 +3721,18 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       ? cd->dng.has_vignette
       : TRUE;
 
+    // DNG cannot provide ca fine tuning since the ca correction is embedded in
+    // the warp correction.
+    const gboolean has_ca = img->exif_correction_type != CORRECTION_TYPE_DNG
+                            && p->md_version >= DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2;
+
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_latest_md_algo), FALSE);
     gtk_widget_set_visible(g->use_latest_md_algo, p->md_version != DT_IOP_LENS_EMBEDDED_METADATA_VERSION_2);
 
     gtk_widget_set_visible(g->cor_dist_ft, has_warp);
     gtk_widget_set_visible(g->cor_vig_ft, has_vign);
+    gtk_widget_set_visible(g->cor_ca_r_ft, has_ca);
+    gtk_widget_set_visible(g->cor_ca_b_ft, has_ca);
 
     gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
@@ -3863,6 +3884,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->cor_vig_ft = dt_bauhaus_slider_from_params(self, "cor_vig_ft");
   dt_bauhaus_slider_set_digits(g->cor_vig_ft, 3);
   gtk_widget_set_tooltip_text(g->cor_vig_ft, _("tune the vignette correction"));
+
+  g->cor_ca_r_ft = dt_bauhaus_slider_from_params(self, "cor_ca_r_ft");
+  dt_bauhaus_slider_set_digits(g->cor_ca_r_ft, 3);
+  gtk_widget_set_tooltip_text(g->cor_ca_r_ft, _("tune the TCA red correction"));
+
+  g->cor_ca_b_ft = dt_bauhaus_slider_from_params(self, "cor_ca_b_ft");
+  dt_bauhaus_slider_set_digits(g->cor_ca_b_ft, 3);
+  gtk_widget_set_tooltip_text(g->cor_ca_b_ft, _("tune the TCA blue correction"));
 
   g->scale_md = dt_bauhaus_slider_from_params(self, "scale_md");
   dt_bauhaus_slider_set_digits(g->scale_md, 4);
