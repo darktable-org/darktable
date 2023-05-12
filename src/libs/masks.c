@@ -254,7 +254,7 @@ static void _update_all_properties(dt_lib_masks_t *self)
 static void _lib_masks_get_values(GtkTreeModel *model,
                                   GtkTreeIter *iter,
                                   dt_iop_module_t **module,
-                                  int *groupid,
+                                  dt_mask_id_t *groupid,
                                   dt_mask_id_t *formid)
 {
   // returns module & groupid & formid if requested
@@ -682,8 +682,8 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
       GtkTreeIter *next_iter = gtk_tree_iter_copy(&iter);
       const gboolean has_previous = gtk_tree_model_iter_previous(model, prev_iter);
       const gboolean has_next = gtk_tree_model_iter_next(model, next_iter);
-      int prev_grid = -1;
-      int prev_id = -1;
+      dt_mask_id_t prev_grid = INVALID_MASKID;
+      dt_mask_id_t prev_id = INVALID_MASKID;
 
       dt_mask_id_t grid = INVALID_MASKID;
       dt_mask_id_t id = INVALID_MASKID;
@@ -902,7 +902,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
     gboolean is_first_row = FALSE;
     gboolean is_last_row = FALSE;
 
-    int grpid = 0;
+    int grpid = NO_MASKID;
     int depth = 0;
     dt_masks_form_t *grp = NULL;
 
@@ -1443,8 +1443,8 @@ GList *_lib_masks_get_selected(dt_lib_module_t *self)
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
-      int fid = -1;
-      int gid = -1;
+      dt_mask_id_t fid = INVALID_MASKID;
+      dt_mask_id_t gid = INVALID_MASKID;
       dt_iop_module_t *mod;
       _lib_masks_get_values(model, &iter, &mod, &gid, &fid);
       res = g_list_prepend(res, GINT_TO_POINTER(fid));
@@ -1574,8 +1574,8 @@ static gboolean _update_foreach(GtkTreeModel *model,
   if(!iter) return 0;
 
   // we retrieve the ids
-  int grid = -1;
-  int id = -1;
+  dt_mask_id_t grid = INVALID_MASKID;
+  dt_mask_id_t id = INVALID_MASKID;
   _lib_masks_get_values(model, iter, NULL, &grid, &id);
 
   // we retrieve the forms
@@ -1623,8 +1623,8 @@ static gboolean _remove_foreach(GtkTreeModel *model,
   const dt_mask_id_t refid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "formid"));
   const dt_mask_id_t refgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "groupid"));
 
-  int grid = -1;
-  int id = -1;
+  dt_mask_id_t grid = INVALID_MASKID;
+  dt_mask_id_t id = INVALID_MASKID;
   _lib_masks_get_values(model, iter, NULL, &grid, &id);
 
   if(grid == refgid && id == refid)
