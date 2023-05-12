@@ -1955,7 +1955,8 @@ void validate_color_checker(const float *const restrict in,
   dt_free_align(patches);
 }
 
-static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *self)
+static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *self,
+                                                        dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
   if(self->enabled
@@ -1963,10 +1964,16 @@ static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *
      && !dt_image_is_monochrome(&self->dev->image_storage))
   {
     // this module instance is doing chromatic adaptation
-    if(_is_another_module_cat_on_pipe(self))
+    const dt_develop_blend_params_t *d =
+       piece ? (const dt_develop_blend_params_t *)piece->blendop_data : NULL;
+    const dt_develop_mask_mode_t mask_mode = d ? d->mask_mode : DEVELOP_MASK_DISABLED;
+    const gboolean is_blending = (mask_mode & DEVELOP_MASK_ENABLED)
+                              && (mask_mode >= DEVELOP_MASK_MASK);
+    // Don't show the trouble message if some mask blending is used, that is very likely intended.
+    if(_is_another_module_cat_on_pipe(self) && !is_blending)
     {
       // our second biggest problem : another channelmixerrgb instance is doing CAT
-      // earlier in the pipe.
+      // earlier in the pipe and we don't use masking here.
       dt_iop_set_module_trouble_message
         (self, _("double CAT applied"),
          _("you have 2 instances or more of color calibration,\n"
@@ -2019,7 +2026,7 @@ void process(struct dt_iop_module_t *self,
 
   // dt_iop_have_required_input_format() has reset the trouble message.
   // we must set it again in case of any trouble.
-  _check_for_wb_issue_and_set_trouble_message(self);
+  _check_for_wb_issue_and_set_trouble_message(self, piece);
 
   dt_colormatrix_t RGB_to_XYZ;
   dt_colormatrix_t XYZ_to_RGB;
@@ -2194,7 +2201,7 @@ int process_cl(struct dt_iop_module_t *self,
 
   // dt_iop_have_required_input_format() has reset the trouble message.
   // we must set it again in case of any trouble.
-  _check_for_wb_issue_and_set_trouble_message(self);
+  _check_for_wb_issue_and_set_trouble_message(self, piece);
 
   if(d->illuminant_type == DT_ILLUMINANT_CAMERA)
   {
@@ -4077,7 +4084,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   _declare_cat_on_pipe(self, FALSE);
 
-  _check_for_wb_issue_and_set_trouble_message(self);
+  if(!self->dev->proxy.wb_is_D65 || !self->enabled)
+    _check_for_wb_issue_and_set_trouble_message(self, NULL);
 
   --darktable.gui->reset;
 }
