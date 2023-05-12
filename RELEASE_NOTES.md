@@ -106,9 +106,9 @@ The following is a summary of the main features added to darktable
   - Tetrad
   - Square
 
-  Those guides can be used to shift colors of the key areas of a picture 
-  to match one of the color harmonies. One can see the color harmony guides 
-  a bit like the composition guides but related to colors and not to 
+  Those guides can be used to shift colors of the key areas of a picture
+  to match one of the color harmonies. One can see the color harmony guides
+  a bit like the composition guides but related to colors and not to
   composition.
 
 - Various code cleanups and improved performances. All module's SSE2
@@ -432,6 +432,19 @@ The following is a summary of the main features added to darktable
   path mask was selected and so moved. The on canvas drawing of the
   masks has also been improved to be more consistent for all kind of
   forms.
+
+- Added a 5th mode for combining mask shapes: "sum". This allows
+  repeated brush strokes with low opacity layered on top of each other
+  to increase the strength of the mask. This is now the default for
+  brush shapes.
+
+- The mode for all selected shapes can be changed in one go from the
+  right-click menu in the mask manager.
+
+- When using a shortcut to add shapes in the blending section of a
+  module, the blending mode will switch to "drawn mask" or "drawn &
+  parametric mask", depending on what it was before, so that any newly
+  created shape will actually have an effect.
 
 - Show the full-frame equivalent focal length and crop factor in the
   image information module.
