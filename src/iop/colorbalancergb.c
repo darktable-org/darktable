@@ -1740,7 +1740,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(self->dev && self->dev->pipe)
     output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
 
-  if(!output_profile || isnan(output_profile->matrix_out[0][0]))
+  if(!output_profile || !dt_is_valid_colormatrix(output_profile->matrix_out[0][0]))
   {
     output_profile = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "",
                                                        DT_INTENT_RELATIVE_COLORIMETRIC);
