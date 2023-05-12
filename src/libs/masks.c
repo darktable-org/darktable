@@ -48,6 +48,7 @@ typedef struct dt_lib_masks_t
   GtkWidget *treeview;
   dt_gui_collapsible_section_t cs;
   GtkWidget *property[DT_MASKS_PROPERTY_LAST];
+  GtkWidget *pressure, *smoothing;
   float last_value[DT_MASKS_PROPERTY_LAST];
   GtkWidget *none_label;
 
@@ -108,6 +109,19 @@ const struct
       [ DT_MASKS_PROPERTY_CURVATURE] = { N_("curvature"), "%", -1, 1, FALSE },
       [ DT_MASKS_PROPERTY_COMPRESSION] = { N_("compression"), "%", 0.0001, 1, TRUE },
 };
+
+static const gchar *_pressure_sensitivity_names[] = { N_("off"),
+                                                      N_("hardness (relative)"),
+                                                      N_("hardness (absolute)"),
+                                                      N_("opacity (relative)"),
+                                                      N_("opacity (absolute)"),
+                                                      N_("brush size (relative)"),
+                                                      NULL };
+
+static const gchar *_brush_smoothing_names[] = { N_("low"),
+                                                 N_("medium"),
+                                                 N_("high"),
+                                                 NULL };
 
 gboolean _timeout_show_all_feathers(gpointer userdata)
 {
@@ -249,6 +263,24 @@ static void _update_all_properties(dt_lib_masks_t *self)
 
   for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
     _property_changed(self->property[i], i);
+
+  dt_masks_form_t *form = darktable.develop->form_visible;
+  gboolean drawing_brush = form && form->type & DT_MASKS_BRUSH;
+
+  gtk_widget_set_visible(self->pressure, drawing_brush && darktable.gui->have_pen_pressure);
+  gtk_widget_set_visible(self->smoothing, drawing_brush);
+}
+
+static void _pressure_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_string("pressure_sensitivity",
+                     _pressure_sensitivity_names[dt_bauhaus_combobox_get(widget)]);
+}
+
+static void _smoothing_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_string("brush_smoothing",
+                     _brush_smoothing_names[dt_bauhaus_combobox_get(widget)]);
 }
 
 static void _lib_masks_get_values(GtkTreeModel *model,
@@ -2079,6 +2111,36 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(slider), "value-changed",
                      G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
   }
+
+  const char *psens = dt_conf_get_string_const("pressure_sensitivity");
+  int pos = 0;
+  for(int i = 0; _pressure_sensitivity_names[i]; i++)
+    if(!g_strcmp0(_pressure_sensitivity_names[i], psens)) pos = i;
+
+  d->pressure =
+    dt_bauhaus_combobox_new_full(DT_ACTION(self),
+                                 N_("properties"),
+                                 N_("pressure"),
+                                 _("pen pressure control for brush masks\n"
+                                   "'off': pressure reading ignored,\n"
+                                   "'hardness'/'opacity'/'brush size': pressure reading controls specified attribute,\n"
+                                   "'absolute'/'relative': pressure reading is taken directly as attribute value or multiplied with pre-defined setting."),
+                                 pos, _pressure_changed, NULL, _pressure_sensitivity_names);
+  gtk_box_pack_start(GTK_BOX(d->cs.container), d->pressure, FALSE, FALSE, 0);
+
+  const char *bsmooth = dt_conf_get_string_const("brush_smoothing");
+  pos = 0;
+  for(int i = 0; _brush_smoothing_names[i]; i++)
+    if(!g_strcmp0(_brush_smoothing_names[i], bsmooth)) pos = i;
+
+  d->smoothing =
+    dt_bauhaus_combobox_new_full(DT_ACTION(self),
+                                 N_("properties"),
+                                 N_("smoothing"),
+                                 _("smoothing of brush strokes\n"
+                                   "stronger smoothing leads to fewer nodes and easier editing but with lower control of accuracy."),
+                                 pos, _smoothing_changed, NULL, _brush_smoothing_names);
+  gtk_box_pack_start(GTK_BOX(d->cs.container), d->smoothing, FALSE, FALSE, 0);
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;
