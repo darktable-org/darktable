@@ -2864,6 +2864,9 @@ static void _raster_value_changed_callback(GtkWidget *widget,
 {
   raster_combo_entry_t *entry = dt_bauhaus_combobox_get_data(widget);
 
+  if(!entry)
+    return;
+
   // nothing to do
   if(entry->module == module->raster_mask.sink.source
      && entry->id == module->raster_mask.sink.id)
