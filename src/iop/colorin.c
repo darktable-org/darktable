@@ -2033,7 +2033,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
     char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"),
+    char *tooltip = g_strdup_printf(_("darktable loads external ICC profiles from\n%s\nand\n%s"),
                                     user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(g->work_combobox, tooltip);
     g_free(system_profile_dir);
