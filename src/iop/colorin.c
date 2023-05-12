@@ -2026,16 +2026,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
-  {
-    char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
-    char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
-    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"),
-                                    user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
-    g_free(system_profile_dir);
-    g_free(user_profile_dir);
-    g_free(tooltip);
-  }
+  // We do not set the tooltip for the input profile widget because
+  // this tooltip will always be overwritten in reload_defaults().
 
   dt_bauhaus_combobox_set(g->work_combobox, 0);
   {
