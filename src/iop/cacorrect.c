@@ -155,7 +155,7 @@ int legacy_params(dt_iop_module_t *self,
 //
 ////////////////////////////////////////////////////////////////
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-static gboolean _LinEqSolve(int nDim, double *pfMatr, double *pfVect, double *pfSolution)
+static gboolean _LinEqSolve(ssize_t nDim, double *pfMatr, double *pfVect, double *pfSolution)
 {
   //==============================================================================
   // return 1 if system not solving, 0 if system solved
@@ -173,7 +173,7 @@ static gboolean _LinEqSolve(int nDim, double *pfMatr, double *pfVect, double *pf
   double fMaxElem;
   double fAcc;
 
-  int i, j, k, m;
+  ssize_t i, j, k, m;
 
   for(k = 0; k < (nDim - 1); k++)
   { // base row of matrix
@@ -831,6 +831,7 @@ void process(
                   _pixsort(&p[1], &p[2]);
                   _pixsort(&p[4], &p[5]);
                   _pixsort(&p[7], &p[8]);
+#if 0
                   _pixsort(&p[0], &p[3]);
                   _pixsort(&p[5], &p[8]);
                   _pixsort(&p[4], &p[7]);
@@ -842,6 +843,18 @@ void process(
                   _pixsort(&p[6], &p[4]);
                   _pixsort(&p[4], &p[2]);
                   bstemp[dir] = p[4];
+#else
+                  p[3] = MAX(p[0],p[3]);
+                  p[5] = MIN(p[5],p[8]);
+                  _pixsort(&p[4], &p[7]);
+                  p[6] = MAX(p[3],p[6]);
+                  p[4] = MAX(p[1],p[4]);
+                  p[2] = MIN(p[2],p[5]);
+                  p[4] = MIN(p[4],p[7]);
+                  _pixsort(&p[4], &p[2]);
+                  _pixsort(&p[6], &p[4]);
+                  bstemp[dir] = MIN(p[2],p[4]);
+#endif
                 }
 
                 // now prepare coefficient matrix; use only data points within caautostrength/2 std devs of
