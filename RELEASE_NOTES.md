@@ -532,6 +532,13 @@ The following is a summary of the main features added to darktable
 - Improve clarity and usability of dialog to confirm further action
   upon failure of physical file deletion or moving to trash.
 
+- An improved algorithm for embedded metadata lens correction has been
+  added to the lens module. It improves distortion and vignetting
+  corrections for the supported Fujifilm and Sony images.
+
+- New sliders for changing the image scaling and chromatic aberration
+  fine tuning has been added in the lens correction module.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
