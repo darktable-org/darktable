@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,9 +37,6 @@
 #include <math.h>
 #include <memory.h>
 #include <stdlib.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 //#define USE_NEW_CL  //uncomment to use the new, more memory-efficient OpenCL code (not yet finished)
 
@@ -252,8 +249,7 @@ static int get_scales(float (*thrs)[4], float (*boost)[4], float *sharp, const d
 /* just process the supplied image buffer, upstream default_process_tiling() does the rest */
 static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                              const void *const i, void *const o, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out, const eaw_decompose_t decompose,
-                             const eaw_synthesize_t synthesize)
+                             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
@@ -282,11 +278,10 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   }
 
   float *const restrict out = (float*)o;
-  float *restrict detail = NULL;
   float *restrict tmp = NULL;
   float *restrict tmp2 = NULL;
 
-  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 4, &detail, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 0))
   {
     dt_iop_copy_image_roi(out, i, piece->colors, roi_in, roi_out, TRUE);
     return;
@@ -296,14 +291,14 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float *buf2 = tmp;
 
   // clear the output buffer, which will be accumulating all of the detail scales
-  memset(out, 0, sizeof(float) * 4 * width * height);
+  dt_iop_image_fill(out, 0.0f, width, height, 4);
 
   // now do the wavelet decomposition, immediately synthesizing the detail scale into the final output so
   // that we don't need to store it past the current scale's iteration
   for(int scale = 0; scale < max_scale; scale++)
   {
-    decompose(buf2, buf1, detail, scale, sharp[scale], width, height);
-    synthesize(out, out, detail, thrs[scale], boost[scale], width, height);
+    eaw_decompose_and_synthesize(buf2, buf1, out, scale, sharp[scale], thrs[scale],
+                                 boost[scale], width, height);
     if(scale == 0) buf1 = (float *)tmp2; // now switch to second scratch for buffer ping-pong between buf1 and buf2
     float *buf3 = buf2;
     buf2 = buf1;
@@ -312,15 +307,13 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   // add in the final residue
 #ifdef _OPENMP
-#pragma omp simd aligned(buf1, out : 64)
+#pragma omp parallel for simd aligned(buf1, out : 64) \
+  dt_omp_firstprivate(width, height, buf1, out) \
+  schedule(simd:static) num_threads(MIN(dt_get_num_threads(),16))
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(i, o, width, height);
-
-  dt_free_align(detail);
   dt_free_align(tmp);
   dt_free_align(tmp2);
   return;
@@ -329,16 +322,8 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 void process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
              void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  process_wavelets(self, piece, i, o, roi_in, roi_out, eaw_decompose, eaw_synthesize);
+  process_wavelets(self, piece, i, o, roi_in, roi_out);
 }
-
-#if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  process_wavelets(self, piece, i, o, roi_in, roi_out, eaw_decompose_sse2, eaw_synthesize_sse2);
-}
-#endif
 
 #ifdef HAVE_OPENCL
 
@@ -601,7 +586,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = 2 * (1 << max_scale); // 2 * 2^max_scale
 
-  tiling->factor = 5.0f;                // in + out + 2*tmp + details
+  tiling->factor = 4.0f;                // in + out + 2*tmp
   tiling->factor_cl = 3.0f + max_scale; // in + out + tmp + scale buffers
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
@@ -1004,31 +989,21 @@ static void reset_mix(dt_iop_module_t *self)
 void gui_update(struct dt_iop_module_t *self)
 {
   reset_mix(self);
-  dt_iop_cancel_history_update(self);
   gtk_widget_queue_draw(self->widget);
 }
 
 
 // gui stuff:
 
-static gboolean area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = fabs(c->mouse_y);
-  c->in_curve = TRUE;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
-}
+  c->in_curve = event->type == GDK_ENTER_NOTIFY;
+  if(!c->dragging)
+    c->x_move = -1;
 
-static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = -fabs(c->mouse_y);
-  c->in_curve = FALSE;
   gtk_widget_queue_draw(widget);
-  return TRUE;
+  return FALSE;
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -1393,7 +1368,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
       get_params(p, c->channel2, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel);
   }
   else if(event->y > height)
   {
@@ -1453,7 +1428,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       p->y[c->channel2][k] = d->y[c->channel2][k];
     }
     gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel2);
   }
   else if(event->button == 1)
   {
@@ -1497,18 +1472,8 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
   int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-    {
-      //adjust aspect
-      const int aspect = dt_conf_get_int("plugins/darkroom/atrous/aspect_percent");
-      dt_conf_set_int("plugins/darkroom/atrous/aspect_percent", aspect + delta_y);
-      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
-    }
-    else
-    {
-      c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
-      gtk_widget_queue_draw(widget);
-    }
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
   }
   return TRUE;
 }
@@ -1529,7 +1494,7 @@ static void mix_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   p->mix = dt_bauhaus_slider_get(slider);
   gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, slider);
 }
 
 enum
@@ -1576,7 +1541,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
                 : ch1 == atrous_c ? atrous_ct
                 : ch1;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     gchar *toast = NULL;
 
@@ -1621,11 +1586,11 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
                                 _("x"), p->x[ch1][node]);
         break;
       default:
-        fprintf(stderr, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer node\n", effect);
+        dt_print(DT_DEBUG_ALWAYS, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer node\n", effect);
         break;
       }
 
-      dt_iop_queue_history_update(self, FALSE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, target + ch1);
     }
     else // radius
     {
@@ -1645,7 +1610,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
         c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * move_size), 0.25 / BANDS, 1.0);
         break;
       default:
-        fprintf(stderr, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer radius\n", effect);
+        dt_print(DT_DEBUG_ALWAYS, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer radius\n", effect);
         break;
       }
 
@@ -1689,7 +1654,6 @@ void gui_init(struct dt_iop_module_t *self)
     (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
-  self->timeout_handle = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
   c->in_curve = FALSE;
@@ -1708,23 +1672,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   // graph
-  const float aspect = dt_conf_get_int("plugins/darkroom/atrous/aspect_percent") / 100.0;
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/atrous/aspect_percent"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area),
-                        GDK_POINTER_MOTION_MASK
-                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                        | GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
-                        | darktable.gui->scroll_mask);
   g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), &_action_def_equalizer);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(area_button_release), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(area_leave_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
+  g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(area_enter_leave_notify), self);
+  g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(area_enter_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(area_scrolled), self);
 
   // mix slider
@@ -1738,7 +1696,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
   dt_draw_curve_destroy(c->minmax_curve);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }

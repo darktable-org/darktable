@@ -26,20 +26,21 @@
               "Fujifilm",
               "Hasselblad",
               "LGE",
+              "Leaf",
               "Leica",
               "Leica Camera AG",
               "Kodak",
               "Minolta",
               "Nikon",
               "Olympus",
+              "OM System",
               "Panasonic",
               "Pentax",
               "Raspberrypi",
               "Ricoh",
               "Samsung",
               "Sony",
-              "YI TECHNOLOGY",
-              "Leaf"
+              "YI TECHNOLOGY"
             ]
           },
           "models": {

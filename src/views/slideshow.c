@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2022 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "views/view.h"
 #include "views/view_api.h"
 
@@ -57,7 +57,7 @@ typedef struct _slideshow_buf_t
   size_t width;
   size_t height;
   int rank;
-  int imgid;
+  dt_imgid_t imgid;
   gboolean invalidated;
 } dt_slideshow_buf_t;
 
@@ -93,10 +93,10 @@ typedef struct dt_slideshow_format_t
 static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event);
 static dt_job_t *_process_job_create(dt_slideshow_t *d);
 
-static int _get_image_at_rank(const int rank)
+static dt_imgid_t _get_image_at_rank(const int rank)
 {
   // get random image id from sql
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
 
   if(rank >= 0)
   {
@@ -114,7 +114,7 @@ static int _get_image_at_rank(const int rank)
   return id;
 }
 
-static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d, const int imgid)
+static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d, const dt_imgid_t imgid)
 {
   dt_slideshow_slot_t slt = -1;
 
@@ -135,7 +135,7 @@ static void _init_slot(dt_slideshow_buf_t *s)
   s->width = 0;
   s->height = 0;
   s->rank = -1;
-  s->imgid = -1;
+  s->imgid = NO_IMGID;
   s->invalidated = TRUE;
 }
 
@@ -152,7 +152,7 @@ static void _shift_left(dt_slideshow_t *d)
   d->buf[S_RIGHT].rank  = d->buf[S_CURRENT].rank + 2;
   d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank <= d->col_count
     ? _get_image_at_rank(d->buf[S_RIGHT].rank)
-    : -1;
+    : NO_IMGID;
   d->id_displayed = -1;
   d->id_preview_displayed = -1;
   dt_free_align(tmp_buf);
@@ -171,7 +171,7 @@ static void _shift_right(dt_slideshow_t *d)
   d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 2;
   d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
     ? _get_image_at_rank(d->buf[S_LEFT].rank)
-    : -1;
+    : NO_IMGID;
   d->id_displayed = -1;
   d->id_preview_displayed = -1;
   dt_free_align(tmp_buf);
@@ -194,7 +194,7 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   d->exporting++;
   const size_t s_width = d->width;
   const size_t s_height = d->height;
-  const int imgid = d->buf[slot].imgid;
+  const dt_imgid_t imgid = d->buf[slot].imgid;
   size_t width = d->buf[slot].width;
   size_t height = d->buf[slot].height;
   uint8_t *buf;
@@ -202,7 +202,16 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   dt_pthread_mutex_unlock(&d->lock);
 
   dt_dev_image_ext
-    (imgid, d->width, d->height, -1, &buf, &width, &height, 0, FALSE);
+    (imgid,
+     d->width / darktable.gui->ppd,
+     d->height / darktable.gui->ppd,
+     -1,
+     &buf,
+     &width,
+     &height,
+     0,
+     FALSE,
+     -1);
 
   dt_pthread_mutex_lock(&d->lock);
 
@@ -244,7 +253,7 @@ static gboolean _is_slot_waiting(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 {
   return d->buf[slot].invalidated
          && d->buf[slot].buf == NULL
-         && d->buf[slot].imgid >= 0
+         && dt_is_valid_imgid(d->buf[slot].imgid)
          && d->buf[slot].rank >= 0;
 }
 
@@ -332,7 +341,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 2;
       d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank < d->col_count
         ? _get_image_at_rank(d->buf[S_RIGHT].rank)
-        : -1;
+        : NO_IMGID;
       d->buf[S_RIGHT].invalidated = TRUE;
       dt_free_align(d->buf[S_RIGHT].buf);
       d->buf[S_RIGHT].buf = NULL;
@@ -353,7 +362,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 2;
       d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
         ? _get_image_at_rank(d->buf[S_LEFT].rank)
-        : -1;
+        : NO_IMGID;
       d->buf[S_LEFT].invalidated = TRUE;
       dt_free_align(d->buf[S_LEFT].buf);
       d->buf[S_LEFT].buf = NULL;
@@ -400,17 +409,17 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-int try_enter(dt_view_t *self)
+gboolean try_enter(dt_view_t *self)
 {
   /* verify that there are images to display */
   if(dt_collection_get_count(darktable.collection) != 0)
   {
-    return 0;
+    return FALSE;
   }
   else
   {
     dt_control_log(_("there are no images in this collection"));
-    return 1;
+    return TRUE;
   }
 }
 
@@ -450,10 +459,10 @@ void enter(dt_view_t *self)
   }
 
   // if one selected start with it, otherwise start at the current lighttable offset
-  const int imgid = dt_act_on_get_main_image();
+  const dt_imgid_t imgid = dt_act_on_get_main_image();
   gint selrank = -1;
 
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     sqlite3_stmt *stmt;
     gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
@@ -527,7 +536,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   dt_pthread_mutex_lock(&d->lock);
   dt_slideshow_buf_t *slot = &(d->buf[S_CURRENT]);
-  const int32_t imgid = slot->imgid;
+  const dt_imgid_t imgid = slot->imgid;
 
   if(d->width < slot->width
      || d->height < slot->height)
@@ -539,7 +548,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // redraw even if the current displayed image is imgid as we want the
   // "working..." label to be cleared.
 
-  if(slot->buf && imgid >= 0 && !slot->invalidated)
+  if(slot->buf && dt_is_valid_imgid(imgid) && !slot->invalidated)
   {
     cairo_paint(cr);
 
@@ -553,7 +562,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     d->id_preview_displayed = imgid;
     cairo_restore(cr);
   }
-  else if(imgid >= 0 && imgid != d->id_preview_displayed)
+  else if(dt_is_valid_imgid(imgid) && imgid != d->id_preview_displayed)
   {
     // get a small preview
     dt_mipmap_buffer_t buf;

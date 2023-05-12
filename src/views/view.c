@@ -211,7 +211,7 @@ static void _remove_child(GtkWidget *child,GtkContainer *container)
     }
 }
 
-int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
+gboolean dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
 {
   gboolean switching_to_none = *view_name == '\0';
   dt_view_t *new_view = NULL;
@@ -221,19 +221,19 @@ int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
     for(GList *iter = vm->views; iter; iter = g_list_next(iter))
     {
       dt_view_t *v = (dt_view_t *)iter->data;
-      if(!strcmp(v->module_name, view_name))
+      if(!g_ascii_strcasecmp(v->module_name, view_name))
       {
         new_view = v;
         break;
       }
     }
-    if(!new_view) return 1; // the requested view doesn't exist
+    if(!new_view) return TRUE; // the requested view doesn't exist
   }
 
   return dt_view_manager_switch_by_view(vm, new_view);
 }
 
-int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
+gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 {
   dt_view_t *old_view = vm->current_view;
   dt_view_t *new_view = (dt_view_t *)nv; // views belong to us, we can de-const them :-)
@@ -280,7 +280,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
     /* remove sticky accels window */
     if(vm->accels_window.window) dt_view_accels_hide(vm);
-    return 0;
+    return FALSE;
   }
 
   // invariant: new_view != NULL after this point
@@ -288,7 +288,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   if(new_view->try_enter)
   {
-    const int error = new_view->try_enter(new_view);
+    const gboolean error = new_view->try_enter(new_view);
     if(error)
     {
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE, old_view, new_view);
@@ -338,16 +338,16 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       /* if we didn't get an expander let's add the widget */
       if(!w) w = plugin->widget;
 
-      dt_gui_add_help_link(w, dt_get_help_url(plugin->plugin_name));
+      dt_gui_add_help_link(w, plugin->plugin_name);
       // some plugins help links depend on the view
       if(!strcmp(plugin->plugin_name,"module_toolbox")
         || !strcmp(plugin->plugin_name,"view_toolbox"))
       {
         dt_view_type_flags_t view_type = new_view->view(new_view);
         if(view_type == DT_VIEW_LIGHTTABLE)
-          dt_gui_add_help_link(w, dt_get_help_url("lighttable_mode"));
+          dt_gui_add_help_link(w, "lighttable_mode");
         if(view_type == DT_VIEW_DARKROOM)
-          dt_gui_add_help_link(w, dt_get_help_url("darkroom_bottom_panel"));
+          dt_gui_add_help_link(w, "darkroom_bottom_panel");
       }
 
       /* set expanded if last mode was that */
@@ -399,7 +399,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   // update toast visibility
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
-  return 0;
+  return FALSE;
 }
 
 const char *dt_view_manager_name(dt_view_manager_t *vm)
@@ -623,7 +623,7 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsiz
     dt_ui_update_scrollbars(darktable.gui->ui);
 }
 
-dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
+dt_view_surface_value_t dt_view_image_get_surface(dt_imgid_t imgid, int width, int height, cairo_surface_t **surface,
                                                   const gboolean quality)
 {
   double tt = 0;
@@ -846,7 +846,7 @@ char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const g
  * \param[in] imgid The image id
  * \param[in] value The boolean value for the bit
  */
-void dt_view_set_selection(int imgid, int value)
+void dt_view_set_selection(dt_imgid_t imgid, int value)
 {
   /* clear and reset statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
@@ -888,7 +888,7 @@ void dt_view_set_selection(int imgid, int value)
  * \brief Toggle the selection bit in the database for the specified image
  * \param[in] imgid The image id
  */
-void dt_view_toggle_selection(int imgid)
+void dt_view_toggle_selection(dt_imgid_t imgid)
 {
   /* clear and reset statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
@@ -961,7 +961,7 @@ void dt_view_active_images_reset(gboolean raise)
 
   if(raise) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
-void dt_view_active_images_add(int imgid, gboolean raise)
+void dt_view_active_images_add(dt_imgid_t imgid, gboolean raise)
 {
   darktable.view_manager->active_images
       = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
@@ -1040,13 +1040,13 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
     return FALSE;
 }
 
-void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean focus)
+void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean sticky, gboolean focus)
 {
   if(vm->proxy.lighttable.module)
-    vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, focus);
+    vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, sticky, focus);
 }
 
-void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid)
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, dt_imgid_t imgid)
 {
   if(vm->proxy.lighttable.module)
     vm->proxy.lighttable.change_offset(vm->proxy.lighttable.view, reset, imgid);
@@ -1144,7 +1144,7 @@ void dt_view_map_location_action(const dt_view_manager_t *vm, const int action)
     vm->proxy.map.location_action(vm->proxy.map.view, action);
 }
 
-void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const int imgid, const int count)
+void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const dt_imgid_t imgid, const int count)
 {
   if(vm->proxy.map.view)
     vm->proxy.map.drag_set_icon(vm->proxy.map.view, context, imgid, count);
@@ -1403,7 +1403,7 @@ static void _audio_child_watch(GPid pid, gint status, gpointer data)
   g_spawn_close_pid(pid);
 }
 
-void dt_view_audio_start(dt_view_manager_t *vm, int imgid)
+void dt_view_audio_start(dt_view_manager_t *vm, dt_imgid_t imgid)
 {
   char *player = dt_conf_get_string("plugins/lighttable/audio_player");
   if(player && *player)
@@ -1504,9 +1504,10 @@ void dt_view_paint_surface(
   {
     // draw the white frame around picture
     const int bs = dev->border_size;
-    const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
+    const double ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio");
+    const double tbw = bs * ratio;
     cairo_rectangle(cr, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
-    cairo_set_source_rgb(cr, 1., 1., 1.);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_FG);
     cairo_fill(cr);
   }
 

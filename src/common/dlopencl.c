@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/dynload.h"
 #include "common/dlopencl.h"
 #include "common/darktable.h"
-#include "common/dynload.h"
 
 #include <assert.h>
 #include <signal.h>
@@ -41,7 +41,7 @@ static const char *ocllib[] = { "libOpenCL", "libOpenCL.so", "libOpenCL.so.1", N
 void dt_dlopencl_noop(void)
 {
   /* we should normally never get here */
-  fprintf(stderr, "dt_dlopencl internal error: unsupported function call\n");
+  dt_print(DT_DEBUG_ALWAYS, "dt_dlopencl internal error: unsupported function call\n");
   raise(SIGABRT);
 }
 
@@ -50,12 +50,11 @@ void dt_dlopencl_noop(void)
 dt_dlopencl_t *dt_dlopencl_init(const char *name)
 {
   dt_gmodule_t *module = NULL;
-  dt_dlopencl_t *ocl;
+  dt_dlopencl_t *ocl = NULL;
   const char *library = NULL;
-  int success;
 
   /* check if our platform supports gmodules */
-  success = dt_gmodule_supported();
+  gboolean success = dt_gmodule_supported();
   if(!success) return NULL;
 
   /* try to load library. if a name is given check only that library - else iterate over default names. */
@@ -64,9 +63,9 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
     library = name;
     module = dt_gmodule_open(library);
     if(module == NULL)
-      dt_vprint(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find opencl runtime library '%s'\n", library);
+      dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find specified opencl runtime library '%s'\n", library);
     else
-      dt_vprint(DT_DEBUG_OPENCL, "[dt_dlopencl_init] found opencl runtime library '%s'\n", library);
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found specified opencl runtime library '%s'\n", library);
   }
   else
   {
@@ -76,43 +75,48 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
       library = *iter;
       module = dt_gmodule_open(library);
       if(module == NULL)
-        dt_vprint(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find opencl runtime library '%s'\n", library);
+        dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find default opencl runtime library '%s'\n", library);
       else
-        dt_vprint(DT_DEBUG_OPENCL, "[dt_dlopencl_init] found opencl runtime library '%s'\n", library);
+        dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found default opencl runtime library '%s'\n", library);
       iter++;
     }
   }
 
   if(module == NULL)
     return NULL;
-  else
+
+  /* now bind symbols */
+  ocl = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
+
+  if(ocl == NULL)
   {
-    /* now bind symbols */
+    free(module);
+    return NULL;
+  }
+
+  ocl->symbols = (dt_dlopencl_symbols_t *)calloc(1, sizeof(dt_dlopencl_symbols_t));
+
+  if(ocl->symbols == NULL)
+  {
+    free(ocl);
+    free(module);
+    return NULL;
+  }
+
+  ocl->library = module->library;
+
+  /* assign noop function as a default to each function pointer */
+  void (**slist)(void) = (void (**)(void))ocl->symbols;
+
+  success = FALSE;
+
+  /* sanity check against padding */
+  if(sizeof(dt_dlopencl_symbols_t) % sizeof(void (*)(void)) == 0)
+  {
+    for(int k = 0; k < sizeof(dt_dlopencl_symbols_t) / sizeof(void (*)(void)); k++)
+      slist[k] = dt_dlopencl_noop;
+
     success = TRUE;
-    ocl = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
-
-    if(ocl == NULL)
-    {
-      free(module);
-      return NULL;
-    }
-
-    ocl->symbols = (dt_dlopencl_symbols_t *)calloc(1, sizeof(dt_dlopencl_symbols_t));
-
-    if(ocl->symbols == NULL)
-    {
-      free(ocl);
-      free(module);
-      return NULL;
-    }
-
-    ocl->library = module->library;
-
-    /* assign noop function as a default to each function pointer */
-    void (**slist)(void) = (void (**)(void))ocl->symbols;
-    /* sanity check against padding */
-    if(sizeof(dt_dlopencl_symbols_t) % sizeof(void (*)(void)) == 0)
-      for(int k = 0; k < sizeof(dt_dlopencl_symbols_t) / sizeof(void (*)(void)); k++) slist[k] = dt_dlopencl_noop;
 
     /* only bind needed symbols */
     success = success && dt_gmodule_symbol(module, "clGetPlatformIDs",
@@ -202,12 +206,12 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
                                            (void (**)(void)) & ocl->symbols->dt_clGetMemObjectInfo);
     success = success && dt_gmodule_symbol(module, "clGetImageInfo",
                                            ((void (**)(void)) & ocl->symbols->dt_clGetImageInfo));
-
-    ocl->have_opencl = success;
-
-    if(!success)
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
   }
+
+  ocl->have_opencl = success;
+
+  if(!success)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
 
   free(module);
 

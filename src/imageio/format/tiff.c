@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,16 +15,18 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/math.h"
 #include "control/conf.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 #include "develop/pixelpipe_hb.h"
+
 #include <inttypes.h>
 #include <memory.h>
 #include <stddef.h>
@@ -64,7 +66,7 @@ typedef struct dt_imageio_tiff_gui_t
 
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
@@ -384,7 +386,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
       while(g_hash_table_iter_next(&rm_iter, &key, &value))
       {
         if(free_mask) dt_free_align(raster_mask);
-        raster_mask = dt_dev_get_raster_mask(pipe, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
+        raster_mask = dt_dev_get_raster_mask(piece, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
 
 
         size_t w = d->global.width, h = d->global.height;
@@ -501,7 +503,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             for(int x = 0; x < w; x++, out += layers)
             {
               for(int c = 0; c < layers; c++)
-                out[c] = CLIP(in[x]) * 65535.0f + 0.5f;
+                out[c] = (uint16_t)roundf(CLIP(in[x]) * 65535.0f);
             }
 
             if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -521,7 +523,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             for(int x = 0; x < w; x++, out += layers)
             {
               for(int c = 0; c < layers; c++)
-                out[c] = CLIP(in[x]) * 255.0f + 0.5f;
+                out[c] = (uint8_t)roundf(CLIP(in[x]) * 255.0f);
             }
 
             if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -582,25 +584,6 @@ exit:
 
   return rc;
 }
-
-#if 0
-int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
-{
-  tiff->handle = TIFFOpen(filename, "rl");
-  if( tiff->handle )
-  {
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGEWIDTH, &tiff->width);
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGELENGTH, &tiff->height);
-  }
-  return 1;
-}
-
-int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
-{
-  TIFFClose(tiff->handle);
-  return 1;
-}
-#endif
 
 size_t params_size(dt_imageio_module_format_t *self)
 {
@@ -902,7 +885,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // shortfile option combo box
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("b&w image"), NULL, shortmode,
-                               shortfile_combobox_changed, self, N_("write rgb colors"), N_("write grayscale"));
+                               shortfile_combobox_changed, self, N_("write RGB colors"), N_("write grayscale"));
   dt_bauhaus_combobox_set_default(gui->shortfiles,
                                   dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->shortfiles, TRUE, TRUE, 0);

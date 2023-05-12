@@ -35,6 +35,25 @@ static int tag_name(lua_State *L)
   return 1;
 }
 
+static int tag_flags(lua_State *L)
+{
+  dt_lua_tag_t tagid1;
+  luaA_to(L, dt_lua_tag_t, &tagid1, -2);
+  gint flags = dt_tag_get_flags(tagid1);
+  lua_pushinteger(L, flags);
+  return 1;
+}
+
+static int tag_synonyms(lua_State *L)
+{
+  dt_lua_tag_t tagid1;
+  luaA_to(L, dt_lua_tag_t, &tagid1, -2);
+  gchar *synonyms = dt_tag_get_synonyms(tagid1);
+  lua_pushstring(L, synonyms);
+  free(synonyms);
+  return 1;
+}
+
 static int tag_tostring(lua_State *L)
 {
   dt_lua_tag_t tagid1;
@@ -83,7 +102,7 @@ static int tag_index(lua_State *L)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
   }
   else
@@ -176,7 +195,7 @@ static int tag_delete(lua_State *L)
 
 int dt_lua_tag_attach(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   dt_lua_tag_t tagid = 0;
   if(luaL_testudata(L, 1, "dt_lua_image_t"))
   {
@@ -270,7 +289,7 @@ int dt_lua_tag_get_tagged_images(lua_State *L)
   lua_newtable(L);
   while(rv == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
     lua_seti(L, -2, table_index);
     table_index++;
@@ -289,6 +308,10 @@ int dt_lua_init_tags(lua_State *L)
   dt_lua_type_register_number_const(L, dt_lua_tag_t);
   lua_pushcfunction(L, tag_name);
   dt_lua_type_register_const(L, dt_lua_tag_t, "name");
+  lua_pushcfunction(L, tag_flags);
+  dt_lua_type_register_const(L, dt_lua_tag_t, "flags");
+  lua_pushcfunction(L, tag_synonyms);
+  dt_lua_type_register_const(L, dt_lua_tag_t, "synonyms");
   lua_pushcfunction(L, tag_delete);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_tag_t, "delete");

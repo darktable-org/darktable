@@ -128,7 +128,8 @@ void dt_wb_presets_init(const char *alternative)
   JsonParser *parser = json_parser_new();
   if(!json_parser_load_from_file(parser, filename, &error))
   {
-    fprintf(stderr, "[wb_presets] error: parsing json from `%s' failed\n%s\n", filename, error->message);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[wb_presets] error: parsing json from `%s' failed\n%s\n", filename, error->message);
     g_error_free(error);
     g_object_unref(parser);
     return;
@@ -256,8 +257,16 @@ void dt_wb_presets_init(const char *alternative)
         {
           // increment for 2000 presets
           wb_presets_size +=2000;
-          wb_presets = realloc(wb_presets, sizeof(dt_wb_data) * wb_presets_size);
-          memset((void *)&wb_presets[wb_presets_count], 0, sizeof(dt_wb_data) * 2000);
+          dt_wb_data *tmp = realloc(wb_presets, sizeof(dt_wb_data) * wb_presets_size);
+          if(tmp)
+          {
+            wb_presets = tmp;
+            memset((void *)&wb_presets[wb_presets_count], 0, sizeof(dt_wb_data) * 2000);
+          }
+          else
+          {
+            _ERROR("fails to realloc memory at %d", wb_presets_count);
+          }
         }
 
         json_reader_end_element(reader);

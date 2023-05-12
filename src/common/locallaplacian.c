@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,16 +25,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#if defined(__SSE2__)
-#include <xmmintrin.h>
-#endif
 
 // the maximum number of levels for the gaussian pyramid
 #define max_levels 30
 // the number of segments for the piecewise linear interpolation
 #define num_gamma 6
-
-//#define DEBUG_DUMP
 
 // downsample width/height to given level
 static inline int dl(int size, const int level)
@@ -43,22 +38,6 @@ static inline int dl(int size, const int level)
     size = (size-1)/2+1;
   return size;
 }
-
-#ifdef DEBUG_DUMP
-static void dump_PFM(const char *filename, const float* out, const uint32_t w, const uint32_t h)
-{
-  FILE *f = g_fopen(filename, "wb");
-  fprintf(f, "PF\n%d %d\n-1.0\n", w, h);
-  for(int j=0;j<h;j++)
-    for(int i=0;i<w;i++)
-      for(int c=0;c<3;c++)
-        fwrite(out + w*j+i, 1, sizeof(float), f);
-  fclose(f);
-}
-#define debug_dump_PFM dump_PFM
-#else
-#define debug_dump_PFM(f,b,w,h)
-#endif
 
 // needs a boundary of 1 or 2px around i,j or else it will crash.
 // (translates to a 1px boundary around the corresponding pixel in the coarse buffer)
@@ -166,106 +145,82 @@ static inline void gauss_expand(
   ll_fill_boundary2(fine, wd, ht);
 }
 
-#if defined(__SSE2__)
-static inline __m128 convolve14641_vert(const float *in, const int wd)
+static inline void _convolve_14641_vert(dt_aligned_pixel_t conv, const float *in, const size_t wd)
 {
-  const dt_aligned_pixel_t four = { 4.f, 4.f, 4.f, 4.f };
-  __m128 r0 = _mm_loadu_ps(in);
-  __m128 r1 = _mm_loadu_ps(in + wd);
-  __m128 r2 = _mm_loadu_ps(in + 2*wd);
-  __m128 r3 = _mm_loadu_ps(in + 3*wd);
-  __m128 r4 = _mm_loadu_ps(in + 4*wd);
-  _mm_prefetch(in+4,_MM_HINT_NTA);		// prefetch next column, which won't be used again afterwards
-  r0 = _mm_add_ps(r0, r4);                      // r0 = r0+r4
-  _mm_prefetch(in+4+wd,_MM_HINT_NTA);		// prefetch next column, which won't be used again afterwards
-  r1 = _mm_add_ps(_mm_add_ps(r1,r3), r2);       // r1 = r1+r2+r3
-  _mm_prefetch(in+4+2*wd,_MM_HINT_T0);
-  r0 = _mm_add_ps(r0, _mm_add_ps(r2, r2));     // r0 = r0+2*r2+r4
-  _mm_prefetch(in+4+3*wd, _MM_HINT_T0);
-  __m128 t = _mm_mul_ps(r1, _mm_load_ps(four)); // t= 4*r1+4*r2+4*r3
-  _mm_prefetch(in+4+4*wd, _MM_HINT_T0);
-  return _mm_add_ps(r0, t);                   // r0+4*r1+6*r2+4*r3+r4
+  static const dt_aligned_pixel_t four = { 4.f, 4.f, 4.f, 4.f };
+  dt_aligned_pixel_t r0, r1, r2, r3, r4;
+  for_four_channels(c)
+  {
+    // 'in' is only 4-byte aligned, so we can't use copy_pixel here
+    r0[c] = in[c];
+    r1[c] = in[wd+c];
+    r2[c] = in[2*wd+c];
+    r3[c] = in[3*wd+c];
+    r4[c] = in[4*wd+c];
+  }
+  dt_aligned_pixel_t t;
+  for_four_channels(c)
+  {
+    r0[c] = r0[c] + r4[c];		// r0 = r0+r4
+    r1[c] = r1[c] + r2[c] + r3[c];	// r1 = r1+r2+r2
+    r0[c] = r0[c] + r2[c] + r2[c];	// r0 = r0 + 2*r2 * r4
+    t[c] = r1[c] * four[c];		// t = 4*r1 + 4*r2 + r*43
+    conv[c] = r0[c] + t[c];		// conv = r0 + 4*r1 + 6*r2 + 4*r3 + r4
+  }
 }
-#endif
 
-#if defined(__SSE2__)
-static inline void gauss_reduce_sse2(
+static inline void gauss_reduce(
     const float *const input, // fine input buffer
     float *const coarse,      // coarse scale, blurred input buf
-    const int wd,             // fine res
-    const int ht)
+    const size_t wd,             // fine res
+    const size_t ht)
 {
   // blur, store only coarse res
-  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-
+  const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 #ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
-#pragma omp parallel for default(none) if(ch*cw>1000)  \
-      dt_omp_firstprivate(cw, ch, input, wd, coarse) \
-      schedule(static)
+#pragma omp parallel for simd default(none) if(ch*cw>2000)  \
+  dt_omp_firstprivate(coarse, cw, ch, input, wd) \
+  schedule(simd:static)
 #endif
-  for(int j=1;j<ch-1;j++)
+  for(size_t j=1;j<ch-1;j++)
   {
     const float *base = input + 2*(j-1)*wd;
     float *const out = coarse + j*cw + 1;
     // prime the vertical axis
-    const __m128 kernel = _mm_setr_ps(1.f, 4.f, 6.f, 4.f);
-    __m128 left = convolve14641_vert(base,wd);
-    for(int col=0; col<cw-3; col+=2)
+    static const dt_aligned_pixel_t kernel = { 1.0f, 4.0f, 6.0f, 4.0f };
+    dt_aligned_pixel_t left;
+    _convolve_14641_vert(left,base,wd);
+    for(size_t col=0; col<cw-3; col += 2)
     {
       // convolve the next four pixel wide vertical slice
       base += 4;
-      __m128 right = convolve14641_vert(base,wd);
+      dt_aligned_pixel_t right;
+      _convolve_14641_vert(right,base,wd);
       // horizontal pass, generate two output values from convolving with 1 4 6 4 1
       // the first uses pixels 0-4, the second uses 2-6
-      __m128 conv = _mm_mul_ps(left,kernel);
-      out[col] = (conv[0] + conv[1] + conv[2] + conv[3] + right[0]) / 256.f;
-      out[col+1] = (left[2] + 4*(left[3]+right[1]) + 6*right[0] + right[2]) / 256.f;
+      dt_aligned_pixel_t conv;
+      for_four_channels(c)
+        conv[c] = left[c] * kernel[c];
+      out[col] = (conv[0] + conv[1] + conv[2] + conv[3] + right[0]) / 256.0f;
+      out[col+1] = (left[2] + 4*(left[3]+right[1]) + 6.0f*right[0] + right[2]) / 256.0f;
       // shift to next pair of output columns (four input columns)
-      left = right;
+      copy_pixel(left, right);
     }
     // handle the left-over pixel if the output size is odd
     if(cw % 2)
     {
       base += 4;
-      float right = base[0] + 4*(base[wd]+base[3*wd]) + 6*base[2*wd] + base[4*wd];
-      __m128 conv = _mm_mul_ps(left,kernel);
-      out[cw-3] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.f;
+      // convolve the right-most column
+      float right = base[0] + 4.0f*(base[wd]+base[3*wd]) + 6.0f*base[2*wd] + base[4*wd];
+      dt_aligned_pixel_t conv;
+      for_four_channels(c)
+        conv[c] = left[c] * kernel[c];
+      out[cw-3] = (conv[0] + conv[1] + conv[2] + conv[3] + right) / 256.0f;
     }
   }
-  ll_fill_boundary1(coarse, cw, ch);
-}
-#endif
-
-static inline void gauss_reduce(
-    const float *const input, // fine input buffer
-    float *const coarse,      // coarse scale, blurred input buf
-    const int wd,             // fine res
-    const int ht)
-{
-  // blur, store only coarse res
-  const int cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-
-  // this is the scalar (non-simd) code:
-  const float w[5] = { 1.f/16.f, 4.f/16.f, 6.f/16.f, 4.f/16.f, 1.f/16.f };
-  memset(coarse, 0, sizeof(float)*cw*ch);
-  // direct 5x5 stencil only on required pixels:
-#ifdef _OPENMP
-  // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
-  // is greater than the time needed to do it sequentially
-#pragma omp parallel for default(none) if(ch*cw>500)  \
-  dt_omp_firstprivate(coarse, cw, ch, input, w, wd) \
-  schedule(static) \
-  collapse(2)
-#endif
-  for(int j=1;j<ch-1;j++)
-    for(int i=1;i<cw-1;i++)
-    {
-      for(int jj=-2;jj<=2;jj++)
-        for(int ii=-2;ii<=2;ii++)
-          coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
-    }
+  dt_omploop_sfence();
   ll_fill_boundary1(coarse, cw, ch);
 }
 
@@ -373,12 +328,10 @@ static inline float *ll_pad_input(
     }
     pad_by_replication(out, *wd2, *ht2, max_supp);
   }
-#ifdef DEBUG_DUMP
-  if(b && b->mode == 2)
+  if((b && b->mode == 2) && (darktable.dump_pfm_module))
   {
-    dump_PFM("/tmp/padded.pfm",out,*wd2,*ht2);
+    dt_dump_pfm("padded", out, *wd2, *ht2, 4 * sizeof(float), "locallaplacian");
   }
-#endif
   return out;
 }
 
@@ -424,112 +377,10 @@ static inline float curve_scalar(
     val = g - sigma * 2.0f*mt*t + t2*(- sigma - sigma*highlights);
   }
   // midtone local contrast
-  val += clarity * c * expf(-c*c/(2.0*sigma*sigma/3.0f));
+  val += clarity * c * dt_fast_expf(-c*c/(2.0f*sigma*sigma/3.0f));
   return val;
 }
 
-#if defined(__SSE2__)
-static inline __m128 curve_vec4(
-    const __m128 x,
-    const __m128 g,
-    const __m128 sigma,
-    const __m128 shadows,
-    const __m128 highlights,
-    const __m128 clarity)
-{
-  // TODO: pull these non-data dependent constants out of the loop to see
-  // whether the compiler fail to do so
-  const __m128 const0 = _mm_set_ps1(0x3f800000u);
-  const __m128 const1 = _mm_set_ps1((float)0x402DF854u); // for e^x
-  const __m128 sign_mask = _mm_set1_ps(-0.f); // -0.f = 1 << 31
-  const __m128 one = _mm_set1_ps(1.0f);
-  const __m128 two = _mm_set1_ps(2.0f);
-  const __m128 twothirds = _mm_set1_ps(2.0f/3.0f);
-  const __m128 twosig = _mm_mul_ps(two, sigma);
-  const __m128 sigma2 = _mm_mul_ps(sigma, sigma);
-  const __m128 s22 = _mm_mul_ps(twothirds, sigma2);
-
-  const __m128 c = _mm_sub_ps(x, g);
-  const __m128 select = _mm_cmplt_ps(c, _mm_setzero_ps());
-  // select shadows or highlights as multiplier for linear part, based on c < 0
-  const __m128 shadhi = _mm_or_ps(_mm_andnot_ps(select, shadows), _mm_and_ps(select, highlights));
-  // flip sign bit of sigma based on c < 0 (c < 0 ? - sigma : sigma)
-  const __m128 ssigma = _mm_xor_ps(sigma, _mm_and_ps(select, sign_mask));
-  // this contains the linear parts valid for c > 2*sigma or c < - 2*sigma
-  const __m128 vlin = _mm_add_ps(g, _mm_add_ps(ssigma, _mm_mul_ps(shadhi, _mm_sub_ps(c, ssigma))));
-
-  const __m128 t = _mm_min_ps(one, _mm_max_ps(_mm_setzero_ps(),
-        _mm_div_ps(c, _mm_mul_ps(two, ssigma))));
-  const __m128 t2 = _mm_mul_ps(t, t);
-  const __m128 mt = _mm_sub_ps(one, t);
-
-  // midtone value fading over to linear part, without local contrast:
-  const __m128 vmid = _mm_add_ps(g,
-      _mm_add_ps(_mm_mul_ps(_mm_mul_ps(ssigma, two), _mm_mul_ps(mt, t)),
-        _mm_mul_ps(t2, _mm_add_ps(ssigma, _mm_mul_ps(ssigma, shadhi)))));
-
-  // c > 2*sigma?
-  const __m128 linselect = _mm_cmpgt_ps(_mm_andnot_ps(sign_mask, c), twosig);
-  const __m128 val = _mm_or_ps(_mm_and_ps(linselect, vlin), _mm_andnot_ps(linselect, vmid));
-
-  // midtone local contrast
-  // dt_fast_expf in sse:
-  const __m128 arg = _mm_xor_ps(sign_mask, _mm_div_ps(_mm_mul_ps(c, c), s22));
-  const __m128 k0 = _mm_add_ps(const0, _mm_mul_ps(arg, _mm_sub_ps(const1, const0)));
-  const __m128 k = _mm_max_ps(k0, _mm_setzero_ps());
-  const __m128i ki = _mm_cvtps_epi32(k);
-  const __m128 gauss = _mm_load_ps((float*)&ki);
-  const __m128 vcon = _mm_mul_ps(clarity, _mm_mul_ps(c, gauss));
-  return _mm_add_ps(val, vcon);
-}
-
-// sse (4-wide)
-void apply_curve_sse2(
-    float *const out,
-    const float *const in,
-    const uint32_t w,
-    const uint32_t h,
-    const uint32_t padding,
-    const float g,
-    const float sigma,
-    const float shadows,
-    const float highlights,
-    const float clarity)
-{
-  // TODO: do all this in avx2 8-wide (should be straight forward):
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clarity, g, h, highlights, in, out, padding, shadows, sigma, w) \
-  schedule(static)
-#endif
-  for(uint32_t j=padding;j<h-padding;j++)
-  {
-    const float *in2  = in  + j*w + padding;
-    float *out2 = out + j*w + padding;
-    // find 4-byte aligned block in the middle:
-    const float *const beg = (float *)((size_t)(out2+3)&(size_t)0x10ul);
-    const float *const end = (float *)((size_t)(out2+w-padding)&(size_t)0x10ul);
-    const float *const fin = out2+w-padding;
-    const __m128 g4 = _mm_set1_ps(g);
-    const __m128 sig4 = _mm_set1_ps(sigma);
-    const __m128 shd4 = _mm_set1_ps(shadows);
-    const __m128 hil4 = _mm_set1_ps(highlights);
-    const __m128 clr4 = _mm_set1_ps(clarity);
-    for(;out2<beg;out2++,in2++)
-      *out2 = curve_scalar(*in2, g, sigma, shadows, highlights, clarity);
-    for(;out2<end;out2+=4,in2+=4)
-      _mm_stream_ps(out2, curve_vec4(_mm_load_ps(in2), g4, sig4, shd4, hil4, clr4));
-    for(;out2<fin;out2++,in2++)
-      *out2 = curve_scalar(*in2, g, sigma, shadows, highlights, clarity);
-    out2 = out + j*w;
-    for(int i=0;i<padding;i++)   out2[i] = out2[padding];
-    for(int i=w-padding;i<w;i++) out2[i] = out2[w-padding-1];
-  }
-  pad_by_replication(out, w, h, padding);
-}
-#endif
-
-// scalar version
 void apply_curve(
     float *const out,
     const float *const in,
@@ -569,7 +420,6 @@ void local_laplacian_internal(
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
     const float clarity,        // user param: increase clarity/local contrast
-    const int use_sse2,         // flag whether to use SSE version
     local_laplacian_boundary_t *b)
 {
   if(wd <= 1 || ht <= 1) return;
@@ -588,29 +438,50 @@ void local_laplacian_internal(
     padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h, 0);
 
   // allocate pyramid pointers for padded input
+  gboolean success = padded[0] != NULL;
   for(int l=1;l<=last_level;l++)
+  {
     padded[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
+    if (!padded[l])
+    {
+      success = FALSE;
+      break;
+    }
+  }
 
   // allocate pyramid pointers for output
   float *output[max_levels] = {0};
   for(int l=0;l<=last_level;l++)
+  {
     output[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
+    if (!output[l])
+    {
+      success = FALSE;
+      break;
+    }
+  }
+
+  if(!success)
+  {
+    // we can't jump to cleanup from here because it would reference a
+    // variable which hasn't been initialized yet because it is
+    // declared below.  So just free whatever we've allocated and return.
+    for(int l = 0; l <= last_level; l++)
+    {
+      dt_free_align(padded[l]);
+      dt_free_align(output[l]);
+    }
+    // copy the input buffer to the output so that we at least get a
+    // valid result
+    for(size_t k = 0; k < (size_t)4 * wd * ht; k++)
+      out[k] = input[k];
+    return;
+  }
 
   // create gauss pyramid of padded input, write coarse directly to output
-#if defined(__SSE2__)
-  if(use_sse2)
-  {
-    for(int l=1;l<last_level;l++)
-      gauss_reduce_sse2(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-    gauss_reduce_sse2(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
-  }
-  else
-#endif
-  {
-    for(int l=1;l<last_level;l++)
-      gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
-    gauss_reduce(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
-  }
+  for(int l=1;l<last_level;l++)
+    gauss_reduce(padded[l-1], padded[l], dl(w,l-1), dl(h,l-1));
+  gauss_reduce(padded[last_level-1], output[last_level], dl(w,last_level-1), dl(h,last_level-1));
 
   // evenly sample brightness [0,1]:
   float gamma[num_gamma] = {0.0f};
@@ -619,29 +490,30 @@ void local_laplacian_internal(
 
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
-  for(int k=0;k<num_gamma;k++) for(int l=0;l<=last_level;l++)
-    buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
+  for(int k=0;k<num_gamma;k++)
+    for(int l=0;l<=last_level;l++)
+    {
+      buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
+      if(!buf[k][l])
+      {
+        // copy the input buffer to the output so that we at least get a
+        // valid result
+        for(size_t p = 0; p < (size_t)4 * wd * ht; p++)
+          out[p] = input[p];
+        goto cleanup;
+      }
+    }
 
   // the paper says remapping only level 3 not 0 does the trick, too
   // (but i really like the additional octave of sharpness we get,
   // willing to pay the cost).
   for(int k=0;k<num_gamma;k++)
   { // process images
-#if defined(__SSE2__)
-    if(use_sse2)
-      apply_curve_sse2(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
-    else // brackets in next line needed for silly gcc warning:
-#endif
-    {apply_curve(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);}
+    apply_curve(buf[k][0], padded[0], w, h, max_supp, gamma[k], sigma, shadows, highlights, clarity);
 
     // create gaussian pyramids
     for(int l=1;l<=last_level;l++)
-#if defined(__SSE2__)
-      if(use_sse2)
-        gauss_reduce_sse2(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
-      else
-#endif
-        gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
+      gauss_reduce(buf[k][l-1], buf[k][l], dl(w,l-1), dl(h,l-1));
   }
 
   // resample output[last_level] from preview
@@ -660,8 +532,11 @@ void local_laplacian_internal(
     const int pw = dl(w,last_level), ph = dl(h,last_level);
     const int pw0 = dl(b->pwd, pl0), ph0 = dl(b->pht, pl0);
     const int pw1 = dl(b->pwd, pl1), ph1 = dl(b->pht, pl1);
-    debug_dump_PFM("/tmp/coarse.pfm", b->output[pl0], pw0, ph0);
-    debug_dump_PFM("/tmp/oldcoarse.pfm", output[last_level], pw, ph);
+    if(darktable.dump_pfm_module)
+    {
+      dt_dump_pfm("coarse", b->output[pl0], pw0, ph0,  4 * sizeof(float), "locallaplacian");
+      dt_dump_pfm("oldcoarse", output[last_level], pw, ph,  4 * sizeof(float), "locallaplacian");
+    }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) collapse(2) default(shared)
 #endif
@@ -699,7 +574,8 @@ void local_laplacian_internal(
 #endif
       output[last_level][j*pw+i] = weight * c1 + (1.0f-weight) * c0;
     }
-    debug_dump_PFM("/tmp/newcoarse.pfm", output[last_level], pw, ph);
+    if(darktable.dump_pfm_module)
+      dt_dump_pfm("newcoarse", output[last_level], pw, ph,  4 * sizeof(float), "locallaplacian");
   }
 
   // assemble output pyramid coarse to fine
@@ -757,6 +633,7 @@ void local_laplacian_internal(
     for(int l=0;l<num_levels;l++) b->output[l] = output[l];
   }
   // free all buffers except the ones passed out for preview rendering
+cleanup:
   for(int l=0;l<max_levels;l++)
   {
     if(!b || b->mode != 1 || l)   dt_free_align(padded[l]);
@@ -797,4 +674,3 @@ size_t local_laplacian_singlebuffer_size(const int width,     // width of input 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

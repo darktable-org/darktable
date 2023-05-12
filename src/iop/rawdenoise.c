@@ -330,7 +330,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
       fimg[col] = 0.5f;
       fimg[(size_t)(height-1)*width + col] = 0.5f;
     }
-    const size_t nthreads = darktable.num_openmp_threads; // go direct, dt_get_num_threads() always returns numprocs
+    const size_t nthreads = dt_get_num_threads();
     const size_t chunksize = (height + nthreads - 1) / nthreads;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -519,7 +519,7 @@ void reload_defaults(dt_iop_module_t *module)
     gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->hide_enable_button ? "non_raw" : "raw");
   }
 
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -541,7 +541,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   }
 
   if(!(dt_image_is_raw(&pipe->image)))
-    piece->enabled = 0;
+    piece->enabled = FALSE;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -568,7 +568,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_cancel_history_update(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -791,7 +790,7 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
       dt_iop_rawdenoise_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + c->channel);
   }
   else
   {
@@ -816,7 +815,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
       p->x[ch][k] = d->x[ch][k];
       p->y[ch][k] = d->y[ch][k];
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     gtk_widget_queue_draw(self->widget);
   }
   else if(event->button == 1)
@@ -866,18 +865,8 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-    {
-      //adjust aspect
-      const int aspect = dt_conf_get_int("plugins/darkroom/rawdenoise/aspect_percent");
-      dt_conf_set_int("plugins/darkroom/rawdenoise/aspect_percent", aspect + delta_y);
-      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
-    }
-    else
-    {
-      c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_RAWDENOISE_BANDS, 1.0);
-      gtk_widget_queue_draw(widget);
-    }
+    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_RAWDENOISE_BANDS, 1.0);
+    gtk_widget_queue_draw(widget);
   }
 
   return TRUE;
@@ -921,22 +910,17 @@ void gui_init(dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
-  self->timeout_handle = 0;
   c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  const float aspect = dt_conf_get_int("plugins/darkroom/rawdenoise/aspect_percent") / 100.0;
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/rawdenoise/aspect_percent"));
   g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), NULL);
 
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
-                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(rawdenoise_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(rawdenoise_button_release), self);
@@ -963,7 +947,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", c->channel);
   dt_draw_curve_destroy(c->transition_curve);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }

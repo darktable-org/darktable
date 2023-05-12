@@ -156,8 +156,37 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #GRAPHICKSMAGICK
       ${MINGW_PATH}/libltdl*.dll
-      ${MINGW_PATH}/libGraphicsMagick++*.dll
-      ${MINGW_PATH}/libGraphicsMagickWand*.dll
+      ${MINGW_PATH}/libGraphicsMagick-*.dll
+      #CODERS
+      ${MINGW_PATH}/libbrotli*.dll
+      ${MINGW_PATH}/libbz2*.dll
+      ${MINGW_PATH}/libhwy.dll
+      ${MINGW_PATH}/libjasper.dll
+      ${MINGW_PATH}/libjxl*.dll
+      ${MINGW_PATH}/libsharpyuv*.dll
+      ${MINGW_PATH}/libwebp-*.dll
+      ${MINGW_PATH}/libwebpmux*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
+  if(ImageMagick_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #IMAGEMAGICK
+      ${MINGW_PATH}/libltdl*.dll
+      ${MINGW_PATH}/libMagickCore-*.dll
+      ${MINGW_PATH}/libMagickWand-*.dll
+      #CODERS
+      ${MINGW_PATH}/libbrotli*.dll
+      ${MINGW_PATH}/libbz2*.dll
+      ${MINGW_PATH}/libhwy.dll
+      ${MINGW_PATH}/libjxl*.dll
+      ${MINGW_PATH}/liblzma*.dll
+      ${MINGW_PATH}/libopenjp2*.dll
+      ${MINGW_PATH}/libsharpyuv*.dll
+      ${MINGW_PATH}/libwebp-*.dll
+      ${MINGW_PATH}/libwebpdemux*.dll
+      ${MINGW_PATH}/libwebpmux*.dll
     )
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
@@ -184,8 +213,9 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   if(WebP_FOUND)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #LIBWEBP
-      ${MINGW_PATH}/libwebpdecoder*.dll
-      ${MINGW_PATH}/libwebpdemux*.dll
+      ${MINGW_PATH}/libsharpyuv*.dll
+      #${MINGW_PATH}/libwebpdecoder*.dll
+      #${MINGW_PATH}/libwebpdemux*.dll
       #${MINGW_PATH}/libwebpextras*.dll
       ${MINGW_PATH}/libwebpmux*.dll
     )
@@ -273,6 +303,17 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
         PATTERN "*.la" EXCLUDE)
   endif()
 
+  # Add ImageMagick libraries
+  if(ImageMagick_FOUND)
+    install(DIRECTORY
+        "${MINGW_PATH}/../lib/ImageMagick-${ImageMagick_VERSION}/modules-Q16HDRI/coders"
+        DESTINATION lib/ImageMagick-${ImageMagick_VERSION}/modules-Q16HDRI/
+        COMPONENT DTApplication
+        FILES_MATCHING PATTERN "*"
+        # For some reason *.la files must be kept alongside DLLs (unlike GM)
+        PATTERN "*.a" EXCLUDE)
+  endif()
+
   # Add lensfun libraries
   if(LensFun_FOUND)
     set(LENSFUN_DB_GLOBAL "${MINGW_PATH}/../share/lensfun/version_1")
@@ -304,7 +345,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
   # Add ca-cert for curl
   install(FILES
-      "${MINGW_PATH}/../ssl/certs/ca-bundle.crt"
+      "${MINGW_PATH}/../etc/ssl/certs/ca-bundle.crt"
       DESTINATION share/curl/
       RENAME curl-ca-bundle.crt
       COMPONENT DTApplication)

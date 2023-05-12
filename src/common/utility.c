@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "common/file_location.h"
 #include "common/grealpath.h"
 #include "common/utility.h"
+#include "control/conf.h"
 #include "gui/gtk.h"
 
 /* getpwnam_r availability check */
@@ -446,7 +447,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
                                                        final_height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s'\n", dtlogo);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'\n", dtlogo);
       cairo_surface_destroy(surface);
       free(image_buffer);
       image_buffer = NULL;
@@ -464,7 +465,8 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   }
   else
   {
-    fprintf(stderr, "warning: can't load darktable logo from SVG file `%s'\n%s\n", dtlogo, error->message);
+    dt_print(DT_DEBUG_ALWAYS,
+             "warning: can't load darktable logo from SVG file `%s'\n%s\n", dtlogo, error->message);
     g_error_free(error);
   }
 
@@ -994,9 +996,42 @@ gchar *dt_str_replace(const char *string, const char *search, const char *replac
   return res;
 }
 
+gboolean dt_str_commasubstring(const char *list, const char *search)
+{
+  if(search == NULL)
+    return FALSE;
+
+  gchar *nlist = g_strdup(list);
+  char delimiter[] = ",";
+
+  char *ptr =strtok(nlist, delimiter);
+  while(ptr != NULL)
+  {
+    if(g_strcmp0(search, ptr) == 0)
+    {
+      g_free(nlist);
+      return TRUE;
+    }
+    ptr = strtok(NULL, delimiter);
+  }
+
+  g_free(nlist);
+  return FALSE;
+}
+
+gboolean dt_is_scene_referred(void)
+{
+  return dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)")
+    || dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (sigmoid)");
+}
+
+gboolean dt_is_display_referred(void)
+{
+  return dt_conf_is_equal("plugins/darkroom/workflow", "display-referred (legacy)");
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

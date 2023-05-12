@@ -43,7 +43,7 @@ struct dt_view_t;
 REQUIRED(const char *, name, struct dt_lib_module_t *self);
 
 /** get the views which the module should be loaded in. */
-REQUIRED(const char **, views, struct dt_lib_module_t *self);
+REQUIRED(enum dt_view_type_flags_t, views, struct dt_lib_module_t *self);
 /** get the container which the module should be placed in */
 REQUIRED(uint32_t, container, struct dt_lib_module_t *self);
 /** check if module should use a expander or not, default implementation
@@ -60,6 +60,10 @@ REQUIRED(void, gui_init, struct dt_lib_module_t *self);
 REQUIRED(void, gui_cleanup, struct dt_lib_module_t *self);
 /** reset to defaults. */
 OPTIONAL(void, gui_reset, struct dt_lib_module_t *self);
+/** update libs gui when visible
+    triggered by dt_lib_gui_queue_update.
+    don't use for widgets accessible via actions when hidden. */
+OPTIONAL(void, gui_update, struct dt_lib_module_t *self);
 
 /** entering a view, only called if lib is displayed on the new view */
 OPTIONAL(void, view_enter, struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view);

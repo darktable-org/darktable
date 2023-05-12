@@ -1,22 +1,22 @@
 /*
- * This file is part of darktable,
- * Copyright (C) 2019-2021 darktable developers.
- *
- *  Copyright (c) 2019      Andreas Schneider
- *
- *  darktable is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  darktable is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+    This file is part of darktable,
+    Copyright (C) 2019-2023 darktable developers.
+
+    Copyright (c) 2019      Andreas Schneider
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -30,9 +30,9 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 
 #include <avif/avif.h>
@@ -210,7 +210,7 @@ int write_image(struct dt_imageio_module_data_t *data,
                 const char *over_filename,
                 void *exif,
                 int exif_len,
-                int imgid,
+                dt_imgid_t imgid,
                 int num,
                 int total,
                 struct dt_dev_pixelpipe_t *pipe,
@@ -786,7 +786,7 @@ void gui_init(dt_imageio_module_format_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("color mode"),
                                _("saving as grayscale will reduce the size for black & white images"),
                                color_mode, color_mode_changed, self,
-                               N_("rgb colors"), N_("grayscale"));
+                               N_("RGB colors"), N_("grayscale"));
 
   gtk_box_pack_start(GTK_BOX(self->widget),
                      gui->color_mode,

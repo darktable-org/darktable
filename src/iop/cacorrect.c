@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,15 +38,6 @@ DT_MODULE_INTROSPECTION(2, dt_iop_cacorrect_params_t)
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
-typedef enum dt_iop_cacorrect_errror_t
-{
-  CACORRECT_ERROR_NO = 0,
-  CACORRECT_ERROR_CFA = 1,
-  CACORRECT_ERROR_MATH = 2,
-  CACORRECT_ERROR_LIN = 3,
-  CACORRECT_ERROR_SIZE = 4,
-} dt_iop_cacorrect_error_t;
-
 typedef enum dt_iop_cacorrect_multi_t
 {
   CACORRETC_MULTI_1 = 1,     // $DESCRIPTION: "once"
@@ -66,7 +57,6 @@ typedef struct dt_iop_cacorrect_gui_data_t
 {
   GtkWidget *avoidshift;
   GtkWidget *iterations;
-  gint error;
 } dt_iop_cacorrect_gui_data_t;
 
 typedef struct dt_iop_cacorrect_data_t
@@ -124,31 +114,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.
  *==================================================================================*/
 
-#ifdef __GNUC__
-#define INLINE __inline
-#else
-#define INLINE inline
-#endif
-
-
-static INLINE float SQR(float x)
-{
-  //      return std::pow(x,2); Slower than:
-  return (x * x);
-}
-static INLINE float LIM(const float a, const float b, const float c)
-{
-  return MAX(b, MIN(a, c));
-}
-static INLINE float intp(const float a, const float b, const float c)
-{
-  // calculate a * b + (1 - a) * c
-  // following is valid:
-  // intp(a, b+x, c+x) = intp(a, b, c) + x
-  // intp(a, b*x, c*x) = intp(a, b, c) * x
-  return a * (b - c) + c;
-}
-
 ////////////////////////////////////////////////////////////////
 //
 //  Chromatic Aberration correction on raw bayer cfa data
@@ -173,7 +138,7 @@ static INLINE float intp(const float a, const float b, const float c)
 //
 ////////////////////////////////////////////////////////////////
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-static gboolean LinEqSolve(int nDim, double *pfMatr, double *pfVect, double *pfSolution)
+static gboolean _LinEqSolve(int nDim, double *pfMatr, double *pfVect, double *pfSolution)
 {
   //==============================================================================
   // return 1 if system not solving, 0 if system solved
@@ -260,7 +225,7 @@ static gboolean LinEqSolve(int nDim, double *pfMatr, double *pfVect, double *pfS
 // end of linear equation solver
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-static inline void pixSort(float *a, float *b)
+static inline void _pixsort(float *a, float *b)
 {
   if(*a > *b)
   {
@@ -270,31 +235,22 @@ static inline void pixSort(float *a, float *b)
   }
 }
 
-/*
-  We want to avoid the module being processed in case the provided size of data is too small resulting in
-  really bad artifacts. This is often the case while zooming in with the current dt pipeline.
-  There is no "maths background" so i chose this after a lot of testing.
-*/
-#define CA_SIZE_MINIMUM (1600)
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        const void *const ivoid,
+        void *const ovoid,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
-  const float *const in2 = (float *)i;
-  float *out = (float *) o;
-
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-  const int h_width = (width + 1) / 2;
-  const int h_height = (height + 1) / 2;
+  const float *const input = (float *)ivoid;
+  float *output = (float *) ovoid;
 
   const uint32_t filters = piece->pipe->dsc.filters;
 
-  const gboolean full_pipe  = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean valid = MAX(width, height) >= CA_SIZE_MINIMUM;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  dt_iop_cacorrect_data_t     *d = (dt_iop_cacorrect_data_t *)piece->data;
-  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
+  dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *)piece->data;
 
   const gboolean avoidshift = d->avoidshift;
   const int iterations = d->iterations;
@@ -305,16 +261,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *redfactor = NULL;
   float *bluefactor = NULL;
   float *oldraw = NULL;
+  char *buffer1 = NULL;
+  float *RawDataTmp = NULL;
+  float *Gtmp = NULL;
 
-  dt_iop_image_copy_by_size(out, in2, width, height, 1);
-
-  if(full_pipe && g)
+  float *out = dt_alloc_align_float(roi_in->width * roi_in->height);
+  if(!out)
   {
-    if(valid) g->error = CACORRECT_ERROR_NO;
-    else      g->error = CACORRECT_ERROR_SIZE;
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+    return;
   }
+  dt_iop_image_copy(out, input, roi_in->width * roi_in->height);
 
-  if(!valid || run_fast) return;
+  if(run_fast) goto writeout;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int h_width = (width + 1) / 2;
+  const int h_height = (height + 1) / 2;
 
   const float *const in = out;
 
@@ -330,20 +295,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int i = 0; i < 2; i++)
     for(int j = 0; j < 2; j++)
       if(FC(i, j, filters) == 3)
-      {
-        if(g) g->error = CACORRECT_ERROR_CFA;
         return;
-      }
 
   if(avoidshift)
   {
     const size_t buffsize = (size_t)h_width * h_height;
-    redfactor = dt_alloc_align_float(buffsize);
-    memset(redfactor, 0, sizeof(float) * buffsize);
-    bluefactor = dt_alloc_align_float(buffsize);
-    memset(bluefactor, 0, sizeof(float) * buffsize);
-    oldraw = dt_alloc_align_float(buffsize * 2);
-    memset(oldraw, 0, sizeof(float) * buffsize * 2);
+    redfactor = dt_calloc_align_float(buffsize);
+    bluefactor = dt_calloc_align_float(buffsize);
+    oldraw = dt_calloc_align_float(buffsize * 2);
+    if(!redfactor || !bluefactor || !oldraw)
+    {
+      dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+      goto writeout;
+    }
     // copy raw values before ca correction
 #ifdef _OPENMP
         #pragma omp parallel for
@@ -360,12 +324,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   double fitparams[2][2][16];
 
   // temporary array to store simple interpolation of G
-  float *Gtmp = dt_alloc_align_float((size_t)height * width);
-  memset(Gtmp, 0, sizeof(float) * height * width);
+  Gtmp = dt_calloc_align_float((size_t)height * width);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  float *RawDataTmp = dt_alloc_align_float(height * width / 2 + 4);
+  RawDataTmp = dt_alloc_align_float(height * width / 2 + 4);
 
+  if(!Gtmp || !RawDataTmp)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+    goto writeout;
+  }
   const int border = 8;
   const int border2 = 16;
 
@@ -374,7 +342,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int vblsz = ceil((float)(height + border2) / (ts - border2) + 2 + vz1);
   const int hblsz = ceil((float)(width + border2) / (ts - border2) + 2 + hz1);
 
-  char *buffer1 = (char *)calloc((size_t)vblsz * hblsz * (2 * 2 + 1), sizeof(float));
+  buffer1 = (char *)calloc((size_t)vblsz * hblsz * (2 * 2 + 1), sizeof(float));
 
   // block CA shift values and weight assigned to block
   float *blockwt = (float *)buffer1;
@@ -395,7 +363,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-  {
+   {
     // direction of the CA shift in a tile
     int GRBdir[2][3];
 
@@ -470,10 +438,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           for(int rr = rrmin; rr < rrmax; rr++)
             for(int row = rr + top, cc = ccmin; cc < ccmax; cc++)
             {
-              int col = cc + left;
-              int c = FC(rr, cc, filters);
-              int indx = row * width + col;
-              int indx1 = rr * ts + cc;
+              const int col = cc + left;
+              const int c = FC(rr, cc, filters);
+              const int indx = row * width + col;
+              const int indx1 = rr * ts + cc;
               rgb[c][indx1] = (in[indx]);
             }
 
@@ -484,7 +452,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < border; rr++)
               for(int cc = ccmin; cc < ccmax; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + cc] = rgb[c][(border2 - rr) * ts + cc];
               }
           }
@@ -494,7 +462,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = ccmin; cc < ccmax; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + left + cc]);
               }
           }
@@ -504,7 +472,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = rrmin; rr < rrmax; rr++)
               for(int cc = 0; cc < border; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + cc] = rgb[c][rr * ts + border2 - cc];
               }
           }
@@ -514,7 +482,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = rrmin; rr < rrmax; rr++)
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + ccmax + cc] = (in[(top + rr) * width + (width - cc - 2)]);
               }
           }
@@ -525,7 +493,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < border; rr++)
               for(int cc = 0; cc < border; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rr)*ts + cc] = (in[(border2 - rr) * width + border2 - cc]);
               }
           }
@@ -535,7 +503,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + ccmax + cc] = (in[(height - rr - 2) * width + (width - cc - 2)]);
               }
           }
@@ -545,7 +513,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < border; rr++)
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rr)*ts + ccmax + cc] = (in[(border2 - rr) * width + (width - cc - 2)]);
               }
           }
@@ -555,7 +523,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = 0; cc < border; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + (border2 - cc)]);
               }
           }
@@ -570,16 +538,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int cc = 3 + (FC(rr, 3, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 3; cc += 2, indx += 2)
             {
               // compute directional weights using image gradients
-              float wtu = 1.f / SQR(eps + fabsf(rgb[1][indx + v1] - rgb[1][indx - v1])
+              const float wtu = 1.f / sqrf(eps + fabsf(rgb[1][indx + v1] - rgb[1][indx - v1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx - v2])
                                     + fabsf(rgb[1][indx - v1] - rgb[1][indx - v3]));
-              float wtd = 1.f / SQR(eps + fabsf(rgb[1][indx - v1] - rgb[1][indx + v1])
+              const float wtd = 1.f / sqrf(eps + fabsf(rgb[1][indx - v1] - rgb[1][indx + v1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx + v2])
                                     + fabsf(rgb[1][indx + v1] - rgb[1][indx + v3]));
-              float wtl = 1.f / SQR(eps + fabsf(rgb[1][indx + 1] - rgb[1][indx - 1])
+              const float wtl = 1.f / sqrf(eps + fabsf(rgb[1][indx + 1] - rgb[1][indx - 1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx - 2])
                                     + fabsf(rgb[1][indx - 1] - rgb[1][indx - 3]));
-              float wtr = 1.f / SQR(eps + fabsf(rgb[1][indx - 1] - rgb[1][indx + 1])
+              const float wtr = 1.f / sqrf(eps + fabsf(rgb[1][indx - 1] - rgb[1][indx + 1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx + 2])
                                     + fabsf(rgb[1][indx + 1] - rgb[1][indx + 3]));
 
@@ -614,14 +582,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                   - fabsf((rgb[1][indx - 4] - rgb[c][indx - 4]) - (rgb[1][indx + 4] - rgb[c][indx + 4])));
 
               // low and high pass 1D filters of G in vertical/horizontal directions
-              float glpfv = 0.25f * (2.f * rgb[1][indx] + rgb[1][indx + v2] + rgb[1][indx - v2]);
-              float glpfh = 0.25f * (2.f * rgb[1][indx] + rgb[1][indx + 2] + rgb[1][indx - 2]);
-              rblpfv[indx >> 1]
-                  = eps + fabsf(glpfv - 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + v2] + rgb[c][indx - v2]));
-              rblpfh[indx >> 1]
-                  = eps + fabsf(glpfh - 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + 2] + rgb[c][indx - 2]));
-              grblpfv[indx >> 1]
-                  = glpfv + 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + v2] + rgb[c][indx - v2]);
+              const float glpfv = 0.25f * (2.f * rgb[1][indx] + rgb[1][indx + v2] + rgb[1][indx - v2]);
+              const float glpfh = 0.25f * (2.f * rgb[1][indx] + rgb[1][indx + 2] + rgb[1][indx - 2]);
+              rblpfv[indx >> 1] = eps + fabsf(glpfv - 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + v2] + rgb[c][indx - v2]));
+              rblpfh[indx >> 1] = eps + fabsf(glpfh - 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + 2] + rgb[c][indx - 2]));
+              grblpfv[indx >> 1]= glpfv + 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + v2] + rgb[c][indx - v2]);
               grblpfh[indx >> 1] = glpfh + 0.25f * (2.f * rgb[c][indx] + rgb[c][indx + 2] + rgb[c][indx - 2]);
             }
           }
@@ -713,7 +678,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               if(fabsf(CAshift[dir][c]) < 2.0f)
               {
                 blockavethr[dir][c] += CAshift[dir][c];
-                blocksqavethr[dir][c] += SQR(CAshift[dir][c]);
+                blocksqavethr[dir][c] += sqrf(CAshift[dir][c]);
                 blockdenomthr[dir][c] += 1;
               }
               // evaluate the shifts to the location that minimizes CA within the tile
@@ -751,13 +716,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             if(blockdenom[dir][c])
             {
               blockvar[dir][c]
-                  = blocksqave[dir][c] / blockdenom[dir][c] - SQR(blockave[dir][c] / blockdenom[dir][c]);
+                  = blocksqave[dir][c] / blockdenom[dir][c] - sqrf(blockave[dir][c] / blockdenom[dir][c]);
             }
             else
             {
               processpasstwo = FALSE;
-              if(g) g->error = CACORRECT_ERROR_MATH;
-              fprintf(stderr, "blockdenom vanishes");
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] blockdenom vanishes\n");
               break;
             }
           }
@@ -830,32 +794,32 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                   p[6] = blockshifts[(vblock + 1) * hblsz + hblock - 1][c][dir];
                   p[7] = blockshifts[(vblock + 1) * hblsz + hblock][c][dir];
                   p[8] = blockshifts[(vblock + 1) * hblsz + hblock + 1][c][dir];
-                  pixSort(&p[1], &p[2]);
-                  pixSort(&p[4], &p[5]);
-                  pixSort(&p[7], &p[8]);
-                  pixSort(&p[0], &p[1]);
-                  pixSort(&p[3], &p[4]);
-                  pixSort(&p[6], &p[7]);
-                  pixSort(&p[1], &p[2]);
-                  pixSort(&p[4], &p[5]);
-                  pixSort(&p[7], &p[8]);
-                  pixSort(&p[0], &p[3]);
-                  pixSort(&p[5], &p[8]);
-                  pixSort(&p[4], &p[7]);
-                  pixSort(&p[3], &p[6]);
-                  pixSort(&p[1], &p[4]);
-                  pixSort(&p[2], &p[5]);
-                  pixSort(&p[4], &p[7]);
-                  pixSort(&p[4], &p[2]);
-                  pixSort(&p[6], &p[4]);
-                  pixSort(&p[4], &p[2]);
+                  _pixsort(&p[1], &p[2]);
+                  _pixsort(&p[4], &p[5]);
+                  _pixsort(&p[7], &p[8]);
+                  _pixsort(&p[0], &p[1]);
+                  _pixsort(&p[3], &p[4]);
+                  _pixsort(&p[6], &p[7]);
+                  _pixsort(&p[1], &p[2]);
+                  _pixsort(&p[4], &p[5]);
+                  _pixsort(&p[7], &p[8]);
+                  _pixsort(&p[0], &p[3]);
+                  _pixsort(&p[5], &p[8]);
+                  _pixsort(&p[4], &p[7]);
+                  _pixsort(&p[3], &p[6]);
+                  _pixsort(&p[1], &p[4]);
+                  _pixsort(&p[2], &p[5]);
+                  _pixsort(&p[4], &p[7]);
+                  _pixsort(&p[4], &p[2]);
+                  _pixsort(&p[6], &p[4]);
+                  _pixsort(&p[4], &p[2]);
                   bstemp[dir] = p[4];
                 }
 
                 // now prepare coefficient matrix; use only data points within caautostrength/2 std devs of
                 // zero
-                if(SQR(bstemp[0]) > caautostrength * blockvar[0][c]
-                   || SQR(bstemp[1]) > caautostrength * blockvar[1][c])
+                if(sqrf(bstemp[0]) > caautostrength * blockvar[0][c]
+                   || sqrf(bstemp[1]) > caautostrength * blockvar[1][c])
                 {
                   continue;
                 }
@@ -900,12 +864,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             polyord = 2;
             numpar = 4;
 
-            if(g) g->error = CACORRECT_ERROR_LIN;
-
             if(numblox[1] < 10)
             {
-              if(g) g->error = CACORRECT_ERROR_MATH;
-              fprintf(stderr, ", numblox = %d \n", numblox[1]);
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] restrict fit to linear, numblox = %d \n", numblox[1]);
               processpasstwo = FALSE;
             }
           }
@@ -916,10 +877,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int c = 0; c < 2; c++)
               for(int dir = 0; dir < 2; dir++)
               {
-                if(!LinEqSolve(numpar, polymat[c][dir], shiftmat[c][dir], fitparams[c][dir]))
+                if(!_LinEqSolve(numpar, polymat[c][dir], shiftmat[c][dir], fitparams[c][dir]))
                 {
-                  if(g) g->error = CACORRECT_ERROR_MATH;
-                  fprintf(stderr, ", correction pass failed -- can't solve linear equations for colour %d direction %d", c, dir);
+                  dt_print(DT_DEBUG_PIPE, "[cacorrect] can't solve linear equations for colour %d direction %d", c, dir);
                   processpasstwo = FALSE;
                 }
               }
@@ -962,10 +922,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           for(int rr = rrmin; rr < rrmax; rr++)
             for(int row = rr + top, cc = ccmin; cc < ccmax; cc++)
             {
-              int col = cc + left;
-              int c = FC(rr, cc, filters);
-              int indx = row * width + col;
-              int indx1 = rr * ts + cc;
+              const int col = cc + left;
+              const int c = FC(rr, cc, filters);
+              const int indx = row * width + col;
+              const int indx1 = rr * ts + cc;
               rgb[c][indx1] = (in[indx]);
 
               if((c & 1) == 0)
@@ -981,7 +941,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < border; rr++)
               for(int cc = ccmin; cc < ccmax; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + cc] = rgb[c][(border2 - rr) * ts + cc];
                 rgb[1][rr * ts + cc] = rgb[1][(border2 - rr) * ts + cc];
               }
@@ -992,7 +952,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = ccmin; cc < ccmax; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + left + cc]);
                 rgb[1][(rrmax + rr) * ts + cc] = Gtmp[(height - rr - 2) * width + left + cc];
               }
@@ -1003,7 +963,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = rrmin; rr < rrmax; rr++)
               for(int cc = 0; cc < border; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + cc] = rgb[c][rr * ts + border2 - cc];
                 rgb[1][rr * ts + cc] = rgb[1][rr * ts + border2 - cc];
               }
@@ -1014,7 +974,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = rrmin; rr < rrmax; rr++)
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + ccmax + cc] = (in[(top + rr) * width + (width - cc - 2)]);
                 rgb[1][rr * ts + ccmax + cc] = Gtmp[(top + rr) * width + (width - cc - 2)];
               }
@@ -1026,7 +986,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < border; rr++)
               for(int cc = 0; cc < border; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rr)*ts + cc] = (in[(border2 - rr) * width + border2 - cc]);
                 rgb[1][(rr)*ts + cc] = Gtmp[(border2 - rr) * width + border2 - cc];
               }
@@ -1037,7 +997,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + ccmax + cc] = (in[(height - rr - 2) * width + (width - cc - 2)]);
                 rgb[1][(rrmax + rr) * ts + ccmax + cc] = Gtmp[(height - rr - 2) * width + (width - cc - 2)];
               }
@@ -1048,7 +1008,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < border; rr++)
               for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rr)*ts + ccmax + cc] = (in[(border2 - rr) * width + (width - cc - 2)]);
                 rgb[1][(rr)*ts + ccmax + cc] = Gtmp[(border2 - rr) * width + (width - cc - 2)];
               }
@@ -1059,7 +1019,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = 0; cc < border; cc++)
               {
-                int c = FC(rr, cc, filters);
+                const int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + (border2 - cc)]);
                 rgb[1][(rrmax + rr) * ts + cc] = Gtmp[(height - rr - 2) * width + (border2 - cc)];
               }
@@ -1086,10 +1046,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               powVblock *= vblock;
             }
             const float bslim = 3.99; // max allowed CA shift
-            lblockshifts[0][0] = LIM(lblockshifts[0][0], -bslim, bslim);
-            lblockshifts[0][1] = LIM(lblockshifts[0][1], -bslim, bslim);
-            lblockshifts[1][0] = LIM(lblockshifts[1][0], -bslim, bslim);
-            lblockshifts[1][1] = LIM(lblockshifts[1][1], -bslim, bslim);
+            lblockshifts[0][0] = CLAMPF(lblockshifts[0][0], -bslim, bslim);
+            lblockshifts[0][1] = CLAMPF(lblockshifts[0][1], -bslim, bslim);
+            lblockshifts[1][0] = CLAMPF(lblockshifts[1][0], -bslim, bslim);
+            lblockshifts[1][1] = CLAMPF(lblockshifts[1][1], -bslim, bslim);
           } // end of setting CA shift parameters
 
 
@@ -1099,8 +1059,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             // some parameters for the bilinear interpolation
             shiftvfloor[c] = floor((float)lblockshifts[c >> 1][0]);
             shiftvceil[c] = ceil((float)lblockshifts[c >> 1][0]);
-            if(lblockshifts[c>>1][0] < 0.f) {
-              float tmp = shiftvfloor[c];
+            if(lblockshifts[c>>1][0] < 0.f)
+            {
+              const float tmp = shiftvfloor[c];
               shiftvfloor[c] = shiftvceil[c];
               shiftvceil[c] = tmp;
             }
@@ -1108,8 +1069,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
             shifthfloor[c] = floor((float)lblockshifts[c >> 1][1]);
             shifthceil[c] = ceil((float)lblockshifts[c >> 1][1]);
-            if(lblockshifts[c>>1][1] < 0.f) {
-              float tmp = shifthfloor[c];
+            if(lblockshifts[c>>1][1] < 0.f)
+            {
+              const float tmp = shifthfloor[c];
               shifthfloor[c] = shifthceil[c];
               shifthceil[c] = tmp;
             }
@@ -1126,12 +1088,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             for(int cc = 4 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2)
             {
               // perform CA correction using colour ratios or colour differences
-              float Ginthfloor = intp(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
+              const float Ginthfloor = interpolatef(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
                                       rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthfloor[c]]);
-              float Ginthceil = intp(shifthfrac[c], rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]],
+              const float Ginthceil = interpolatef(shifthfrac[c], rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]],
                                      rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthfloor[c]]);
               // Gint is bilinear interpolation of G at CA shift point
-              float Gint = intp(shiftvfrac[c], Ginthceil, Ginthfloor);
+              const float Gint = interpolatef(shiftvfrac[c], Ginthceil, Ginthfloor);
 
               // determine R/B at grid points using colour differences at shift point plus interpolated G
               // value at grid point
@@ -1153,20 +1115,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                 cc < cc1 - 8; cc += 2, indx += 2)
             {
 
-              float grbdiffold = rgb[1][indx] - rgb[c][indx];
+              const float grbdiffold = rgb[1][indx] - rgb[c][indx];
 
               // interpolate colour difference from optical R/B locations to grid locations
-              float grbdiffinthfloor
-                  = intp(shifthfrac[c], grbdiff[(indx - GRBdir[1][c]) >> 1], grbdiff[indx >> 1]);
-              float grbdiffinthceil
-                  = intp(shifthfrac[c], grbdiff[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1],
-                         grbdiff[((rr - GRBdir[0][c]) * ts + cc) >> 1]);
+              const float grbdiffinthfloor = interpolatef(shifthfrac[c],
+                           grbdiff[(indx - GRBdir[1][c]) >> 1],
+                           grbdiff[indx >> 1]);
+              const float grbdiffinthceil  = interpolatef(shifthfrac[c],
+                           grbdiff[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1],
+                           grbdiff[((rr - GRBdir[0][c]) * ts + cc) >> 1]);
               // grbdiffint is bilinear interpolation of G-R/G-B at grid point
-              float grbdiffint = intp(shiftvfrac[c], grbdiffinthceil, grbdiffinthfloor);
+              float grbdiffint = interpolatef(shiftvfrac[c], grbdiffinthceil, grbdiffinthfloor);
 
               // now determine R/B at grid points using interpolated colour differences and interpolated G
               // value at grid point
-              float RBint = rgb[1][indx] - grbdiffint;
+              const float RBint = rgb[1][indx] - grbdiffint;
 
               if(fabsf(RBint - rgb[c][indx]) < 0.25f * (RBint + rgb[c][indx]))
               {
@@ -1179,12 +1142,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               {
 
                 // gradient weights using difference from G at CA shift points and G at grid points
-                float p0 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[indx >> 1]));
-                float p1 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[(indx - GRBdir[1][c]) >> 1]));
-                float p2 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[((rr - GRBdir[0][c]) * ts + cc) >> 1]));
-                float p3
-                    = 1.0f / (eps + fabsf(rgb[1][indx]
-                                          - gshift[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1]));
+                const float p0 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[indx >> 1]));
+                const float p1 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[(indx - GRBdir[1][c]) >> 1]));
+                const float p2 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[((rr - GRBdir[0][c]) * ts + cc) >> 1]));
+                const float p3 = 1.0f / (eps + fabsf(rgb[1][indx] - gshift[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1]));
 
                 grbdiffint = (p0 * grbdiff[indx >> 1] + p1 * grbdiff[(indx - GRBdir[1][c]) >> 1]
                               + p2 * grbdiff[((rr - GRBdir[0][c]) * ts + cc) >> 1]
@@ -1209,7 +1170,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           // copy CA corrected results to temporary image matrix
           for(int rr = border; rr < rr1 - border; rr++)
           {
-            int c = FC(rr + top, left + border + (FC(rr + top, 2, filters) & 1), filters);
+            const int c = FC(rr + top, left + border + (FC(rr + top, 2, filters) & 1), filters);
 
             for(int row = rr + top, cc = border + (FC(rr, 2, filters) & 1),
                     indx = (row * width + cc + left) >> 1;
@@ -1239,7 +1200,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     // clean up
     free(buffer);
-  }
+   }
   }
 
   if(avoidshift && processpasstwo)
@@ -1258,7 +1219,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int col = firstCol; col < width; col += 2)
       {
         nongreen[(row / 2) * h_width + col / 2] = (in[row * width + col] <= 1.0f || oldraw[row * h_width + col / 2] <= 1.0f)
-          ? 1.0f : LIM(oldraw[row * h_width + col / 2] / in[row * width + col], 0.5f, 2.0f);
+          ? 1.0f : CLAMPF(oldraw[row * h_width + col / 2] / in[row * width + col], 0.5f, 2.0f);
       }
     }
 
@@ -1314,7 +1275,29 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(blue) dt_gaussian_free(blue);
   }
 
-  free(buffer1);
+  writeout:
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(output, out, roi_in, roi_out) \
+  schedule(static) collapse(2)
+#endif
+  for(size_t row = 0; row < roi_out->height; row++)
+  {
+    for(size_t col = 0; col < roi_out->width; col++) 
+    {
+      const size_t ox = row * roi_out->width + col;
+      const size_t irow = row + roi_out->y;
+      const size_t icol = col + roi_out->x;
+      const size_t ix = irow * roi_in->width + icol;
+      if((irow < roi_in->height) && (icol < roi_in->width))
+      {
+        output[ox] = out[ix];
+      }
+    }
+  }
+
+  if(buffer1) free(buffer1);
+  dt_free_align(out);
   dt_free_align(RawDataTmp);
   dt_free_align(Gtmp);
   dt_free_align(redfactor);
@@ -1325,41 +1308,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 /*==================================================================================
  * end raw therapee code
  *==================================================================================*/
-static void _display_ca_error(struct dt_iop_module_t *self)
+void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
 {
-  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
-
-  if(g == NULL) return;
-   ++darktable.gui->reset;
-
-  if(g->error == CACORRECT_ERROR_CFA)
-    dt_iop_set_module_trouble_message(self, _("error"),
-                                      _("raw CA correction supports only standard RGB Bayer filter arrays"), NULL);
-  else if(g->error == CACORRECT_ERROR_MATH)
-     dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
-                                      _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
-                                        "you can get more info by running darktable via the console."), NULL);
-  else if(g->error == CACORRECT_ERROR_LIN)
-     dt_iop_set_module_trouble_message(self, _("quality"),
-                                      _("internals maths found too few data points so restricted the order of the fit to linear.\n"
-                                        "you might view bad correction results."), NULL);
-  else if(g->error == CACORRECT_ERROR_SIZE)
-    dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
-                                      _("to calculate good parameters for raw CA correction we want full sensor data or at least a sensible part of that.\n"
-                                        "the image shown in darkroom would look vastly different from developed files so effect is bypassed now."), NULL);
-  else
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
-
-  --darktable.gui->reset;
+  *roi_out = *roi_in;
+  roi_out->x = MAX(0, roi_in->x);
+  roi_out->y = MAX(0, roi_in->y);
 }
-
-static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
+void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+                   dt_iop_roi_t *roi_in)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self == NULL) return;
-  _display_ca_error(self);
+  *roi_in = *roi_out;
+  roi_in->x = 0;
+  roi_in->y = 0;
+  roi_in->width = piece->buf_in.width;
+  roi_in->height = piece->buf_in.height;
+  roi_in->scale = 1.0f;
 }
-
 
 void reload_defaults(dt_iop_module_t *module)
 {
@@ -1379,7 +1344,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   dt_image_t *img = &pipe->image;
   const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
 
-  if(!active) piece->enabled = 0;
+  if(!active) piece->enabled = FALSE;
 
   d->iterations = p->iterations;
   d->avoidshift = p->avoidshift;
@@ -1412,8 +1377,6 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_visible(g->iterations, active);
   dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->avoidshift), p->avoidshift);
-
-  _display_ca_error(self);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -1430,24 +1393,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->avoidshift, active);
   dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
   gtk_widget_set_visible(g->iterations, active);
-
-  g->error = CACORRECT_ERROR_NO;
-  _display_ca_error(self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
-  IOP_GUI_FREE;
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_cacorrect_gui_data_t *g = IOP_GUI_ALLOC(cacorrect);
-  g->error = CACORRECT_ERROR_NO;
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                            G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1466,7 +1416,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
 }
 
-#undef CA_SIZE_MINIMUM
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

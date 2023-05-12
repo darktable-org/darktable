@@ -9,53 +9,56 @@ permissions:
   contents: read
 
 jobs:
-  Win64:
+  Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable.${{ github.sha }}.win64
+    name: Nightly darktable Windows
     runs-on: windows-latest
     strategy:
       fail-fast: true
       matrix:
-        btype: [Release]
-        compiler:
-          - { compiler: GNU,  CC: gcc,   CXX: g++ }
+        btype:
+          - Release
+        msystem:
+          - UCRT64
+        target:
+          - skiptest
+        generator:
+          - Ninja
         eco: [-DBINARY_PACKAGE_BUILD=ON]
-        target: [skiptest]
     defaults:
       run:
         shell: msys2 {0}
     env:
-      CC: ${{ matrix.compiler.CC }}
-      CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
+      GENERATOR: ${{ matrix.generator }}
     steps:
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: ucrt64
+          msystem: ${{ matrix.msystem }}
           install: >-
-            base-devel
             git
             intltool
+            po4a
           pacboy: >-
             cc:p
             cmake:p
-            gcc-libs:p
             ninja:p
             nsis:p
-            omp:p
+            python-jsonschema:p
             dbus-glib:p
             drmingw:p
             exiv2:p
+            gcc-libs:p
             gettext:p
             gmic:p
             graphicsmagick:p
             gtk3:p
+            icu:p
             iso-codes:p
             lcms2:p
             lensfun:p
@@ -66,23 +69,21 @@ jobs:
             libjpeg-turbo:p
             libjxl:p
             libsecret:p
-            libsoup:p
+            libtiff:p
             libwebp:p
             libxml2:p
             libxslt:p
             lua:p
+            omp:p
             openexr:p
             openjpeg2:p
             osm-gps-map:p
             portmidi:p
             pugixml:p
-            python3:p
-            python3-jsonschema:p
-            python3-setuptools:p
-            python3-six:p
+            SDL2:p
             sqlite3:p
             zlib:p
-          update: true
+          update: false
       - run: git config --global core.autocrlf input
         shell: bash
       - uses: actions/checkout@v3
@@ -103,6 +104,7 @@ jobs:
       - name: Check if it runs
         run: |
           $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
+          echo "Testing RUN!"
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
                  --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
@@ -118,10 +120,107 @@ jobs:
         run: |
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
+      - name: Get version info
+        run: |
+          cd ${SRC_DIR}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
+          ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: darktable.${{ github.sha }}.win64.zip
-          path: ${{ env.BUILD_DIR }}/darktable-*.exe
+          name: darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          retention-days: 2
+
+  macOS:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: Nightly darktable macOS
+    runs-on: ${{ matrix.build.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        build:
+          - { os: macos-11, xcode: 13.2.1, deployment: 11.3 }
+        compiler:
+          - { compiler: XCode,   CC: cc, CXX: c++ }
+        btype: [ Release ]
+        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON]
+        target:
+          - skiptest
+        generator:
+          - Ninja
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.build.deployment }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/src/build
+      INSTALL_PREFIX: ${{ github.workspace }}/src/build/macosx
+      ECO: ${{ matrix.eco }}
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      GENERATOR: ${{ matrix.generator }}
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+          path: src
+      - name: Install Base Dependencies
+        run: |
+          brew update > /dev/null || true
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
+          brew tap Homebrew/bundle
+          cd src/.ci
+          export HOMEBREW_NO_INSTALL_UPGRADE=1
+          brew bundle --verbose || true
+          # handle keg-only libs
+          brew link --force libomp
+          brew link --force libsoup@2
+      - name: Rebuild graphicsmagick without modules
+        run: |
+          export HOMEBREW_NO_INSTALL_FROM_API=1
+
+          gm_formula=`brew edit --print-path graphicsmagick`
+          cat $gm_formula | sed '/--with-modules/d' > gm_formula.tmp
+          mv gm_formula.tmp $gm_formula
+
+          brew reinstall --build-from-source graphicsmagick
+      - name: Build and Install
+          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
+        run: |
+          cmake -E make_directory "${BUILD_DIR}";
+          cmake -E make_directory "${INSTALL_PREFIX}";
+          ./src/.ci/ci-script.sh;
+      - name: Check if it runs
+        run: |
+          ${INSTALL_PREFIX}/bin/darktable --version || true
+          ${INSTALL_PREFIX}/bin/darktable-cli \
+                 --width 2048 --height 2048 \
+                 --hq true --apply-custom-presets false \
+                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
+                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 output.png \
+                 --core --disable-opencl --conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0
+      - name: Build macOS package
+        run: |
+          ./src/packaging/macosx/3_make_hb_darktable_package.sh
+      - name: Create DMG file
+        run: |
+          ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
+      - name: Get version info
+        run: |
+          cd ${{ env.SRC_DIR }}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
+      - name: Package upload
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: darktable-${{ env.VERSION }}.dmg
+          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
           retention-days: 2

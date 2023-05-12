@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,12 +34,12 @@
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_jpeg.h"
-#include "common/imageio_module.h"
 #include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_jpeg.h"
+#include "imageio/imageio_module.h"
 
 #include <inttypes.h>
 #include <libintl.h>
@@ -578,7 +578,7 @@ int main(int argc, char *arg[])
     {
       int id = GPOINTER_TO_INT(iter->data);
       dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
-      if(dt_exif_xmp_read(image, xmp_filename, 1) != 0)
+      if(dt_exif_xmp_read(image, xmp_filename, 1))
       {
         fprintf(stderr, _("error: can't open XMP file %s"), xmp_filename);
         fprintf(stderr, "\n");

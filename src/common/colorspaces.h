@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,10 +195,6 @@ typedef struct dt_colorspaces_cicp_t
     dt_colorspaces_cicp_matrix_coefficients_t matrix_coefficients;
 } dt_colorspaces_cicp_t;
 
-int mat3inv_float(float *const dst, const float *const src);
-int mat3inv_double(double *const dst, const double *const src);
-int mat3inv(float *const dst, const float *const src);
-
 /** populate the global color profile lists */
 dt_colorspaces_t *dt_colorspaces_init();
 
@@ -217,14 +213,11 @@ cmsHPROFILE dt_colorspaces_create_vendor_profile(const char *makermodel);
 /** create a ICC virtual profile from the shipped alternate matrices in darktable. */
 cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
 
-/** just get the associated transformation matrix, for manual application. */
-int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
-
 /** return the work profile as set in colorin */
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid);
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const dt_imgid_t imgid);
 
 /** return the output profile as set in colorout, taking export override into account if passed in. */
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const dt_imgid_t imgid,
                                                                         dt_colorspaces_color_profile_type_t over_type,
                                                                         const char *over_filename);
 
@@ -252,8 +245,71 @@ void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const 
 const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type, const char *filename);
 
 /** common functions to change between colorspaces, used in iop modules */
-void rgb2hsl(const dt_aligned_pixel_t rgb, float *h, float *s, float *l);
-void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l);
+//void rgb2hsl(const dt_aligned_pixel_t rgb, float *h, float *s, float *l);
+//void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l);
+static inline void rgb2hsl(const dt_aligned_pixel_t rgb, float *h, float *s, float *l)
+{
+  const float r = rgb[0], g = rgb[1], b = rgb[2];
+  const float pmax = fmaxf(r, fmax(g, b));
+  const float pmin = fminf(r, fmin(g, b));
+  const float delta = (pmax - pmin);
+
+  float hv = 0, sv = 0, lv = (pmin + pmax) / 2.0;
+
+  if(delta != 0.0f)
+  {
+    sv = lv < 0.5 ? delta / fmaxf(pmax + pmin, 1.52587890625e-05f)
+                  : delta / fmaxf(2.0 - pmax - pmin, 1.52587890625e-05f);
+
+    if(pmax == r)
+      hv = (g - b) / delta;
+    else if(pmax == g)
+      hv = 2.0 + (b - r) / delta;
+    else if(pmax == b)
+      hv = 4.0 + (r - g) / delta;
+    hv /= 6.0;
+    if(hv < 0.0)
+      hv += 1.0;
+    else if(hv > 1.0)
+      hv -= 1.0;
+  }
+  *h = hv;
+  *s = sv;
+  *l = lv;
+}
+
+// for efficiency, 'hue' must be pre-scaled to be in 0..6
+static inline float hue2rgb(float m1, float m2, float hue)
+{
+  // compute the value for one of the RGB channels from the hue angle.
+  // If 1 <= angle < 3, return m2; if 4 <= angle <= 6, return m1; otherwise, linearly interpolate between m1 and m2.
+  if(hue < 1.0f)
+    return (m1 + (m2 - m1) * hue);
+  else if(hue < 3.0f)
+    return m2;
+  else
+    return hue < 4.0f ? (m1 + (m2 - m1) * (4.0f - hue)) : m1;
+}
+
+static inline void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l)
+{
+  float m1, m2;
+  if(s == 0)
+  {
+    rgb[0] = rgb[1] = rgb[2] = l;
+    rgb[3] = 0.0f;
+    return;
+  }
+  m2 = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
+  m1 = (2.0 * l - m2);
+  h *= 6.0f;  // pre-scale hue angle
+  rgb[0] = hue2rgb(m1, m2, h < 4.0f ? h + 2.0f : h - 4.0f);
+  rgb[1] = hue2rgb(m1, m2, h);
+  rgb[2] = hue2rgb(m1, m2, h > 2.0f ? h - 2.0f : h + 4.0f);
+  rgb[3] = 0.0f;
+}
+
+
 
 /** trigger updating the display profile from the system settings (x atom, colord, ...) */
 void dt_colorspaces_set_display_profile(const dt_colorspaces_color_profile_type_t profile_type);

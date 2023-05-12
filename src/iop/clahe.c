@@ -306,7 +306,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
   *((dt_iop_rlce_params_t *)module->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };

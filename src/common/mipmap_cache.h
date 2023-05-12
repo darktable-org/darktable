@@ -22,6 +22,10 @@
 #include "common/colorspaces.h"
 #include "common/image.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 // sizes stored in the mipmap cache, set to fixed values in mipmap_cache.c
 typedef enum dt_mipmap_size_t {
   DT_MIPMAP_0 = 0,
@@ -63,7 +67,7 @@ typedef enum dt_mipmap_get_flags_t
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
-  uint32_t imgid;
+  dt_imgid_t imgid;
   int32_t width, height;
   float iscale;
   uint8_t *buf;
@@ -117,7 +121,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_get_with_caller(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
-    const uint32_t imgid,
+    const dt_imgid_t imgid,
     const dt_mipmap_size_t mip,
     const dt_mipmap_get_flags_t flags,
     const char mode,
@@ -129,7 +133,7 @@ void dt_mipmap_cache_get_with_caller(
 void dt_mipmap_cache_write_get_with_caller(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
-    const uint32_t imgid,
+    const dt_imgid_t imgid,
     const int mip,
     const char *file,
     int line);
@@ -140,12 +144,12 @@ void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buf
                                          int line);
 
 // remove thumbnails, so they will be regenerated:
-void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
-void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, const dt_mipmap_size_t mip);
+void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const dt_imgid_t imgid);
+void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const dt_imgid_t imgid, const dt_mipmap_size_t mip);
 
 // evict thumbnails from cache. They will be written to disc if not existing
-void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const uint32_t imgid);
-void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, const dt_mipmap_size_t mip);
+void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const dt_imgid_t imgid);
+void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const dt_imgid_t imgid, const dt_mipmap_size_t mip);
 
 // return the closest mipmap size
 // for the given window you wish to draw.
@@ -167,6 +171,11 @@ void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint3
 
 // return the mipmap corresponding to text value saved in prefs
 dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

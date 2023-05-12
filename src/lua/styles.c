@@ -78,7 +78,7 @@ static int style_getnumber(lua_State *L)
   }
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -2);
-  GList *items = dt_styles_get_item_list(style.name, TRUE, -1, TRUE);
+  GList *items = dt_styles_get_item_list(style.name, FALSE, -1, TRUE);
   dt_style_item_t *item = g_list_nth_data(items, index - 1);
   if(!item)
   {
@@ -97,7 +97,7 @@ static int style_length(lua_State *L)
 
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -1);
-  GList *items = dt_styles_get_item_list(style.name, TRUE, -1, TRUE);
+  GList *items = dt_styles_get_item_list(style.name, FALSE, -1, TRUE);
   lua_pushinteger(L, g_list_length(items));
   g_list_free_full(items, dt_style_item_free);
   return 1;
@@ -247,7 +247,7 @@ int dt_lua_style_create_from_image(lua_State *L)
 
 int dt_lua_style_apply(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   dt_style_t style;
   if(luaL_testudata(L, 1, "dt_lua_image_t"))
   {
@@ -259,8 +259,13 @@ int dt_lua_style_apply(lua_State *L)
     luaA_to(L, dt_style_t, &style, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_styles_apply_to_image(style.name, FALSE, FALSE, imgid);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(darktable.develop && darktable.develop->image_storage.id == imgid)
+    dt_styles_apply_to_dev(style.name, imgid);
+  else
+  {
+    dt_styles_apply_to_image(style.name, FALSE, FALSE, imgid);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  }
   return 1;
 }
 
@@ -345,6 +350,7 @@ int dt_lua_init_styles(lua_State *L)
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "create");
   lua_pushcfunction(L, dt_lua_style_apply);
+  dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "apply");
   lua_pushcfunction(L, dt_lua_style_import);

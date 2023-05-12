@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
-#include "common/imageio_module.h"
 #include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -32,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -154,15 +154,12 @@ const char *name(dt_lib_module_t *self)
   return _("export");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v1[] = {"lighttable", "darkroom", NULL};
-  static const char *v2[] = {"lighttable", NULL};
-
   if(dt_conf_get_bool("plugins/darkroom/export/visible"))
-    return v1;
+    return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM;
   else
-    return v2;
+    return DT_VIEW_LIGHTTABLE;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -174,9 +171,8 @@ uint32_t container(dt_lib_module_t *self)
     return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   const dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
@@ -191,19 +187,19 @@ static void _update(dt_lib_module_t *self)
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
                                          dt_collection_properties_t changed_property, gpointer imgs, int next,
                                          dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_queue_postponed_update(self, _update);
+  dt_lib_gui_queue_update(self);
 }
 
 gboolean _is_int(double value)
@@ -323,6 +319,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   uint32_t max_height = dt_conf_get_int(CONFIG_PREFIX "height");
 
   const gboolean upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale");
+  const gboolean scaledimension = dt_conf_get_int(CONFIG_PREFIX "dimensions_type") == DT_DIMENSIONS_SCALE;
   const gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
   const gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
   const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
@@ -355,7 +352,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   const dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, TRUE);
-  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
+  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, scaledimension, export_masks,
                     style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
 
   g_free(icc_filename);
@@ -494,8 +491,8 @@ static void _size_in_px_update(dt_lib_export_t *d)
 
 void _set_dimensions(dt_lib_export_t *d, uint32_t max_width, uint32_t max_height)
 {
-  gchar *max_width_char = g_strdup_printf("%d", max_width);
-  gchar *max_height_char = g_strdup_printf("%d", max_height);
+  gchar *max_width_char = g_strdup_printf("%u", max_width);
+  gchar *max_height_char = g_strdup_printf("%u", max_height);
 
   ++darktable.gui->reset;
   gtk_entry_set_text(GTK_ENTRY(d->width), max_width_char);
@@ -592,7 +589,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   if(mstorage) mstorage->gui_reset(mstorage);
 
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void set_format_by_name(dt_lib_export_t *d, const char *name)
@@ -865,8 +862,8 @@ static void _resync_pixel_dimensions(dt_lib_export_t *self)
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 
   ++darktable.gui->reset;
-  gchar *pwidth = g_strdup_printf("%d", width);
-  gchar *pheight = g_strdup_printf("%d", height);
+  gchar *pwidth = g_strdup_printf("%u", width);
+  gchar *pheight = g_strdup_printf("%u", height);
   gtk_entry_set_text(GTK_ENTRY(self->width), pwidth);
   gtk_entry_set_text(GTK_ENTRY(self->height), pheight);
   g_free(pwidth);
@@ -894,7 +891,7 @@ static void _print_width_changed(GtkEditable *entry, gpointer user_data)
   dt_conf_set_int(CONFIG_PREFIX "width", width);
 
   ++darktable.gui->reset;
-  gchar *pwidth = g_strdup_printf("%d", width);
+  gchar *pwidth = g_strdup_printf("%u", width);
   gtk_entry_set_text(GTK_ENTRY(d->width), pwidth);
   g_free(pwidth);
   _size_in_px_update(d);
@@ -921,7 +918,7 @@ static void _print_height_changed(GtkEditable *entry, gpointer user_data)
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 
   ++darktable.gui->reset;
-  gchar *pheight = g_strdup_printf("%d", height);
+  gchar *pheight = g_strdup_printf("%u", height);
   gtk_entry_set_text(GTK_ENTRY(d->height), pheight);
   g_free(pheight);
   _size_in_px_update(d);
@@ -1055,14 +1052,13 @@ void set_preferences(void *menu, dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
-  self->timeout_handle = 0;
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   dt_action_insert_sorted(DT_ACTION(self), &darktable.control->actions_format);
   dt_action_insert_sorted(DT_ACTION(self), &darktable.control->actions_storage);
 
-  GtkWidget *label = dt_ui_section_label_new(_("storage options"));
+  GtkWidget *label = dt_ui_section_label_new(C_("section", "storage options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   d->storage = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -1088,7 +1084,7 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_on_storage_list_changed), self);
   g_signal_connect(G_OBJECT(d->storage), "value-changed", G_CALLBACK(_storage_changed), (gpointer)d);
 
-  label = dt_ui_section_label_new(_("format options"));
+  label = dt_ui_section_label_new(C_("section", "format options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   d->format = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -1109,7 +1105,7 @@ void gui_init(dt_lib_module_t *self)
     }
   }
 
-  label = dt_ui_section_label_new(_("global options"));
+  label = dt_ui_section_label_new(C_("section", "global options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->dimensions_type, self, NULL, N_("set size"),
@@ -1237,34 +1233,30 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add intent combo
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->intent, self, NULL, N_("intent"),
-                               _("• perceptual: "
-                              "smoothly moves out-of-gamut colors into gamut,"
-                              " preserving gradations, but distorts in-gamut colors in the process."
-                              " note that perceptual is often a proprietary LUT that depends"
-                              " on the destination space."
-                              "\n\n"
+  DT_BAUHAUS_COMBOBOX_NEW_FULL
+    (d->intent, self, NULL, N_("intent"),
+      _("• perceptual: smoothly moves out-of-gamut colors into gamut, preserving gradations,\n"
+     "but distorts in-gamut colors in the process.\n"
+     "note that perceptual is often a proprietary LUT that depends on the destination space."
+     "\n\n"
 
-                              "• relative colorimetric: "
-                              "keeps luminance while reducing as little as possible saturation"
-                              " until colors fit in gamut."
-                              "\n\n"
+     "• relative colorimetric: keeps luminance while reducing as little as possible\n"
+     "saturation until colors fit in gamut."
+     "\n\n"
 
-                              "• saturation: "
-                              "designed to present eye-catching business graphics"
-                              " by preserving the saturation. (not suited for photography)."
-                              "\n\n"
+     "• saturation: designed to present eye-catching business graphics\n"
+     "by preserving the saturation. (not suited for photography)."
+     "\n\n"
 
-                              "• absolute colorimetric: "
-                              "adapt white point of the image to the white point of the"
-                              " destination medium and do nothing else. mainly used when"
-                              " proofing colors. (not suited for photography)."),
-                               0, _intent_changed, self,
-                               N_("image settings"),
-                               N_("perceptual"),
-                               N_("relative colorimetric"),
-                               NC_("rendering intent", "saturation"),
-                               N_("absolute colorimetric"));
+     "• absolute colorimetric: adapt white point of the image to the white point of the\n"
+     "destination medium and do nothing else. mainly used when proofing colors.\n"
+     "(not suited for photography)."),
+      0, _intent_changed, self,
+      N_("image settings"),
+      N_("perceptual"),
+      N_("relative colorimetric"),
+      NC_("rendering intent", "saturation"),
+      N_("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->intent, FALSE, TRUE, 0);
 
   //  Add style combo
@@ -1381,7 +1373,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_on_storage_list_changed), self);
@@ -1441,9 +1432,10 @@ void init_presets(dt_lib_module_t *self)
     if(op_version != version)
     {
       // shouldn't happen, we run legacy_params on the lib level before calling this
-      fprintf(stderr, "[export_init_presets] found export preset '%s' with version %d, version %d was "
-                      "expected. dropping preset.\n",
-              name, op_version, version);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[export_init_presets] found export preset '%s' with version %d, version %d was "
+               "expected. dropping preset.\n",
+               name, op_version, version);
       sqlite3_stmt *innerstmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "DELETE FROM data.presets WHERE rowid=?1", -1,
@@ -1538,9 +1530,9 @@ void init_presets(dt_lib_module_t *self)
           memcpy((uint8_t *)new_params + pos, sdata, ssize);
 
         // write the updated preset back to db
-        fprintf(stderr,
-                "[export_init_presets] updating export preset '%s' from versions %d/%d to versions %d/%d\n",
-                name, fversion, sversion, new_fversion, new_sversion);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[export_init_presets] updating export preset '%s' from versions %d/%d to versions %d/%d\n",
+                 name, fversion, sversion, new_fversion, new_sversion);
         sqlite3_stmt *innerstmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "UPDATE data.presets SET op_params=?1 WHERE rowid=?2",
@@ -1560,9 +1552,10 @@ void init_presets(dt_lib_module_t *self)
     delete_preset:
       free(new_fdata);
       free(new_sdata);
-      fprintf(stderr, "[export_init_presets] export preset '%s' can't be updated from versions %d/%d to "
-                      "versions %d/%d. dropping preset\n",
-              name, fversion, sversion, new_fversion, new_sversion);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[export_init_presets] export preset '%s' can't be updated from versions %d/%d to "
+               "versions %d/%d. dropping preset\n",
+               name, fversion, sversion, new_fversion, new_sversion);
       sqlite3_stmt *innerstmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "DELETE FROM data.presets WHERE rowid=?1", -1,
@@ -1814,7 +1807,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   gchar *style = dt_conf_get_string(CONFIG_PREFIX "style");
   const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
-  const char *metadata_export = d->metadata_export;
+  const char *metadata_export = d->metadata_export ? d->metadata_export : "";
 
   if(fdata)
   {
@@ -1829,7 +1822,6 @@ void *get_params(dt_lib_module_t *self, int *size)
   }
 
   if(!iccfilename) iccfilename = g_strdup("");
-  if(!metadata_export) metadata_export = g_strdup("");
 
   const char *fname = mformat->plugin_name;
   const char *sname = mstorage->plugin_name;

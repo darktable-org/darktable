@@ -1,32 +1,32 @@
 /*
- *    This file is part of darktable,
- *    Copyright (C) 2015-2021 darktable developers.
- *
- *    darktable is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    darktable is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+    This file is part of darktable,
+    Copyright (C) 2015-2023 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "common/pdf.h"
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/variables.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "gui/gtkentry.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 
 #include <strings.h>
@@ -196,14 +196,14 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 
   if(!dt_pdf_parse_paper_size(d->size, &width, &height))
   {
-    fprintf(stderr, "[imageio_format_pdf] invalid paper size: `%s'!\n", d->size);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_format_pdf] invalid paper size: `%s'!\n", d->size);
     dt_control_log(_("invalid paper size"));
     return 1;
   }
 
   if(!dt_pdf_parse_length(d->border, &border))
   {
-    fprintf(stderr, "[imageio_format_pdf] invalid border size: `%s'! using 0\n", d->border);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_format_pdf] invalid border size: `%s'! using 0\n", d->border);
     dt_control_log(_("invalid border size, using 0"));
 //     return 1;
     border = 0.0;
@@ -232,7 +232,7 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)data;
@@ -253,7 +253,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, page_dpi, compression);
     if(!pdf)
     {
-      fprintf(stderr, "[imageio_format_pdf] could not export to file: `%s'!\n", filename);
+      dt_print(DT_DEBUG_ALWAYS, "[imageio_format_pdf] could not export to file: `%s'!\n", filename);
       dt_control_log(_("could not export to file `%s'!"), filename);
       return 1;
     }
@@ -574,7 +574,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_attach(grid, dt_ui_label_new(_("title")), 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("title"), G_CALLBACK(title_changed_callback), self,
-                                           _("enter the title of the pdf"),
+                                           _("enter the title of the PDF"),
                                            dt_conf_get_string_const("plugins/imageio/format/pdf/title")));
   gtk_entry_set_placeholder_text(d->title, "untitled");
   gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
@@ -583,8 +583,8 @@ void gui_init(dt_imageio_module_format_t *self)
   // paper size
 
   d->size = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("paper size"),
-                                         _("paper size of the pdf\neither one from the list or "
-                                           "\"<width> [unit] x <height> <unit>\n"
+                                         _("paper size of the PDF\neither one from the list or "
+                                           "\"<width> [unit] x <height> <unit>\"\n"
                                            "example: 210 mm x 2.97 cm"),
                                          0, size_toggle_callback, self, NULL);
   dt_bauhaus_combobox_set_editable(d->size, 1);
@@ -598,7 +598,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // orientation
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->orientation, self, NULL, N_("page orientation"),
-                               _("paper orientation of the pdf"),
+                               _("paper orientation of the PDF"),
                                dt_conf_get_int("plugins/imageio/format/pdf/orientation"),
                                orientation_toggle_callback, self,
                                N_("portrait"), N_("landscape"));
@@ -609,7 +609,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_attach(grid, dt_ui_label_new(_("border")), 0, ++line, 1, 1);
 
   d->border = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("border"), G_CALLBACK(border_changed_callback), self,
-                                           _("empty space around the pdf\n"
+                                           _("empty space around the PDF\n"
                                              "format: size + unit\nexamples: 10 mm, 1 inch"),
                                            dt_conf_get_string_const("plugins/imageio/format/pdf/border")));
   gtk_entry_set_max_length(d->border, sizeof(((dt_imageio_pdf_params_t *)NULL)->border) - 1);
@@ -622,14 +622,14 @@ void gui_init(dt_imageio_module_format_t *self)
 
   d->dpi = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 5000, 1));
   gtk_grid_attach(grid, GTK_WIDGET(d->dpi), 1, line, 1, 1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->dpi), _("dpi of the images inside the pdf"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->dpi), _("dpi of the images inside the PDF"));
   gtk_spin_button_set_value(d->dpi, dt_conf_get_float("plugins/imageio/format/pdf/dpi"));
   g_signal_connect(G_OBJECT(d->dpi), "value-changed", G_CALLBACK(dpi_changed_callback), self);
 
   // rotate images yes|no
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->rotate, self, NULL, N_("rotate images"),
-                               _("images can be rotated to match the pdf orientation "
+                               _("images can be rotated to match the PDF orientation "
                                  "to waste less space when printing"),
                                dt_conf_get_bool("plugins/imageio/format/pdf/rotate"),
                                rotate_toggle_callback, self,
@@ -639,7 +639,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // pages all|single images|contact sheet
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->pages, self, NULL, N_("TODO: pages"),
-                               _("what pages should be added to the pdf"),
+                               _("what pages should be added to the PDF"),
                                dt_conf_get_int("plugins/imageio/format/pdf/pages"),
                                pages_toggle_callback, self,
                                N_("all"), N_("single images"), N_("contact sheet"));
@@ -648,8 +648,8 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // embedded icc profile yes|no
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->icc, self, NULL, N_("embed icc profiles"),
-                               _("images can be tagged with their icc profile"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->icc, self, NULL, N_("embed ICC profiles"),
+                               _("images can be tagged with their ICC profile"),
                                dt_conf_get_bool("plugins/imageio/format/pdf/icc"),
                                icc_toggle_callback, self,
                                N_("no"), N_("yes"));
@@ -685,7 +685,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // image mode normal|draft|debug
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->mode, self, NULL, N_("image mode"),
-                               _("normal -- just put the images into the pdf\n"
+                               _("normal -- just put the images into the PDF\n"
                                  "draft -- images are replaced with boxes\n"
                                  "debug -- only show the outlines and bounding boxes"),
                                dt_conf_get_int("plugins/imageio/format/pdf/mode"),

@@ -42,7 +42,7 @@ static int _selection_cb(lua_State *L)
     while(lua_next(L, -2) != 0)
     {
       /* uses 'key' (at index -2) and 'value' (at index -1) */
-      int imgid;
+      dt_imgid_t imgid = NO_IMGID;
       luaA_to(L, dt_lua_image_t, &imgid, -1);
       new_selection = g_list_prepend(new_selection, GINT_TO_POINTER(imgid));
       lua_pop(L, 1);
@@ -66,8 +66,8 @@ static int _selection_cb(lua_State *L)
 
 static int _hovered_cb(lua_State *L)
 {
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
-  if(mouse_over_id == -1)
+  dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
+  if(!dt_is_valid_imgid(mouse_over_id))
   {
     lua_pushnil(L);
   }
@@ -108,23 +108,68 @@ static int _current_view_cb(lua_State *L)
 
 static int _action_cb(lua_State *L)
 {
-  const gchar *action = luaL_checkstring(L, 1);
-  int instance = luaL_checkinteger(L, 2);
-  const gchar *element = lua_type(L, 3) == LUA_TSTRING ? luaL_checkstring(L, 3) : NULL;
-  const gchar *effect = lua_type(L, 4) == LUA_TSTRING ? luaL_checkstring(L, 4) : NULL;
+  int arg = 1;
 
-  float move_size = NAN;
+  const gchar *action = luaL_checkstring(L, arg++);
 
-  if(lua_type(L, 5) == LUA_TNUMBER ||
-     (lua_type(L, 5) == LUA_TSTRING && strlen(luaL_checkstring(L, 5)) > 0))
-  {
-    move_size = luaL_checknumber(L, 5);
-  }
+  int instance = 0;
+
+  // support legacy order: action, instance, element, effect, size
+  if(lua_type(L, arg) == LUA_TNUMBER && lua_type(L, arg+1) == LUA_TSTRING)
+    instance = luaL_checkinteger(L, arg++);
+
+  // new order: instance optionally at end; element, effect and size also optional
+  const gchar *element = lua_type(L, arg) == LUA_TSTRING ? luaL_checkstring(L, arg++) : NULL;
+  const gchar *effect = lua_type(L, arg) == LUA_TSTRING ? luaL_checkstring(L, arg++) : NULL;
+
+  float move_size = DT_READ_ACTION_ONLY;
+
+  if(lua_type(L, arg) == LUA_TSTRING && strlen(luaL_checkstring(L, arg)) == 0)
+    arg++; // "" -> DT_READ_ACTION_ONLY
+  else if(lua_type(L, arg) != LUA_TNONE)
+    move_size = luaL_checknumber(L, arg++);
+  if(dt_isnan(move_size))
+    move_size = DT_READ_ACTION_ONLY;
+
+  if(lua_type(L, arg) == LUA_TNUMBER)
+    instance = luaL_checkinteger(L, arg++);
 
   float ret_val = dt_action_process(action, instance, element, effect, move_size);
 
+  if(DT_ACTION_IS_INVALID(ret_val))
+    ret_val = NAN;
+
   lua_pushnumber(L, ret_val);
 
+  return 1;
+}
+
+static int _mimic_cb(lua_State *L)
+{
+  const gchar *ac_type  = luaL_checkstring(L, 1);
+  const gchar *ac_name = luaL_checkstring(L, 2);
+
+  luaL_checktype(L, 3, LUA_TFUNCTION);
+
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_mimic_list");
+  if(lua_isnil(L, -1)) goto mimic_end;
+
+  lua_pushvalue(L, 3);
+  lua_setfield(L, -2, ac_name);
+
+  // find the action type definition to be simulated (including fallbacks)
+  dt_action_def_t *def = NULL;
+  for(int i = 0; i < darktable.control->widget_definitions->len; i++)
+  {
+    def = darktable.control->widget_definitions->pdata[i];
+    if(!strcmp(def->name, ac_type)) break;
+  }
+
+  lua_getglobal(L, "script_manager_running_script");
+  dt_action_define(&darktable.control->actions_lua, lua_tolstring(L,-1,NULL), ac_name, NULL, def);
+
+mimic_end:
+  lua_pop(L, 1);
   return 1;
 }
 
@@ -339,8 +384,8 @@ static int _lua_job_valid(lua_State *L)
 
 static void _on_mouse_over_image_changed(gpointer instance, gpointer user_data)
 {
-  int imgid = dt_control_get_mouse_over_id();
-  if(imgid != -1)
+  const dt_imgid_t imgid = dt_control_get_mouse_over_id();
+  if(dt_is_valid_imgid(imgid))
   {
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
@@ -384,6 +429,10 @@ int dt_lua_init_gui(lua_State *L)
     dt_lua_gtk_wrap(L);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "action");
+    lua_pushcfunction(L, _mimic_cb);
+    dt_lua_gtk_wrap(L);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "mimic");
     lua_pushcfunction(L, _panel_visible_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_visible");
@@ -448,4 +497,3 @@ int dt_lua_init_gui(lua_State *L)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

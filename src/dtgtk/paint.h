@@ -21,6 +21,10 @@
 #include <cairo.h>
 #include <gtk/gtk.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define CPF_USER_DATA 0x1000
 
 typedef enum dtgtk_cairo_paint_flags_t
@@ -223,6 +227,8 @@ void dtgtk_cairo_paint_luv(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
 void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint RYB icon */
 void dtgtk_cairo_paint_ryb(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint color harmony icon */
+void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 /** paint active modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -287,6 +293,8 @@ void dtgtk_cairo_paint_masks_union(cairo_t *cr, gint x, gint y, gint w, gint h, 
 void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an op difference icon for masks */
 void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint an op sum icon for masks */
+void dtgtk_cairo_paint_masks_sum(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an op exclusion icon for masks */
 void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a used icon for masks */
@@ -336,6 +344,10 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a menu icon for filtering in topbar */
 void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

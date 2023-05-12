@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,10 +39,9 @@ const char *name(dt_lib_module_t *self)
   return _("select");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -52,11 +51,14 @@ uint32_t container(dt_lib_module_t *self)
 
 typedef struct dt_lib_select_t
 {
-  GtkWidget *select_all_button, *select_none_button, *select_invert_button, *select_film_roll_button,
-      *select_untouched_button;
+  GtkWidget *select_all_button;
+  GtkWidget *select_none_button;
+  GtkWidget *select_invert_button;
+  GtkWidget *select_film_roll_button;
+  GtkWidget *select_untouched_button;
 } dt_lib_select_t;
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
   dt_lib_select_t *d = (dt_lib_select_t *)self->data;
 
@@ -76,7 +78,7 @@ static void _update(dt_lib_module_t *self)
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 #ifdef USE_LUA
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
     0, NULL,NULL,
@@ -89,7 +91,7 @@ static void _collection_updated_callback(gpointer instance, dt_collection_change
                                          dt_collection_properties_t changed_property, gpointer imgs, int next,
                                          dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void button_clicked(GtkWidget *widget, gpointer user_data)
@@ -158,8 +160,6 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_image_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
-
-  _update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -206,7 +206,7 @@ static int lua_button_clicked_cb(lua_State* L)
   while(lua_next(L, -2) != 0)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
-    int imgid;
+    dt_imgid_t imgid;
     luaA_to(L, dt_lua_image_t, &imgid, -1);
     new_selection = g_list_prepend(new_selection, GINT_TO_POINTER(imgid));
     lua_pop(L, 1);

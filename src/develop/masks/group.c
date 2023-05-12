@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/debug.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -22,24 +23,40 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 
-static int _group_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
-                                        uint32_t state, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
-                                        int unused)
+static int _group_events_mouse_scrolled(struct dt_iop_module_t *module,
+                                        const float pzx,
+                                        const float pzy,
+                                        const int up,
+                                        const uint32_t state,
+                                        dt_masks_form_t *form,
+                                        const int unused1,
+                                        dt_masks_form_gui_t *gui,
+                                        const int unused)
 {
   if(gui->group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt =
+      (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(sel && sel->functions)
-      return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel, fpt->parentid, gui, gui->group_edited);
+      return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel,
+                                            fpt->parentid, gui, gui->group_edited);
   }
   return 0;
 }
 
-static int _group_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy,
-                                        double pressure, int which, int type, uint32_t state,
-                                        dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui, int unused2)
+static int _group_events_button_pressed(struct dt_iop_module_t *module,
+                                        const float pzx,
+                                        const float pzy,
+                                        const double pressure,
+                                        const int which,
+                                        const int type,
+                                        const uint32_t state,
+                                        dt_masks_form_t *form,
+                                        const int unused1,
+                                        dt_masks_form_gui_t *gui,
+                                        const int unused2)
 {
   if(gui->group_edited != gui->group_selected)
   {
@@ -47,10 +64,19 @@ static int _group_events_button_pressed(struct dt_iop_module_t *module, float pz
     gui->group_edited = gui->group_selected;
     // we initialise some variable
     gui->dx = gui->dy = 0.0f;
-    gui->form_selected = gui->border_selected = gui->form_dragging = gui->form_rotating = FALSE;
+    gui->form_selected = FALSE;
+    gui->border_selected = FALSE;
+    gui->form_dragging = FALSE;
+    gui->form_rotating = FALSE;
     gui->pivot_selected = FALSE;
-    gui->point_border_selected = gui->seg_selected = gui->point_selected = gui->feather_selected = -1;
-    gui->point_border_dragging = gui->seg_dragging = gui->feather_dragging = gui->point_dragging = -1;
+    gui->point_border_selected = -1;
+    gui->seg_selected = -1;
+    gui->point_selected = -1;
+    gui->feather_selected = -1;
+    gui->point_border_dragging = -1;
+    gui->seg_dragging = -1;
+    gui->feather_dragging = -1;
+    gui->point_dragging = -1;
 
     dt_control_queue_redraw_center();
     return 1;
@@ -58,7 +84,8 @@ static int _group_events_button_pressed(struct dt_iop_module_t *module, float pz
   if(gui->group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt =
+      (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
     if(sel->functions)
@@ -68,18 +95,25 @@ static int _group_events_button_pressed(struct dt_iop_module_t *module, float pz
   return 0;
 }
 
-static int _group_events_button_released(struct dt_iop_module_t *module, float pzx, float pzy, int which,
-                                         uint32_t state, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
-                                         int unused2)
+static int _group_events_button_released(struct dt_iop_module_t *module,
+                                         const float pzx,
+                                         const float pzy,
+                                         const int which,
+                                         const uint32_t state,
+                                         dt_masks_form_t *form,
+                                         const int unused1,
+                                         dt_masks_form_gui_t *gui,
+                                         const int unused2)
 {
   if(gui->group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt =
+      (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(sel && sel->functions)
-      return sel->functions->button_released(module, pzx, pzy, which, state, sel, fpt->parentid, gui,
-                                             gui->group_edited);
+      return sel->functions->button_released(module, pzx, pzy, which, state, sel, fpt->parentid,
+                                             gui, gui->group_edited);
   }
   return 0;
 }
@@ -97,15 +131,20 @@ static inline gboolean _is_handling_form(dt_masks_form_gui_t *gui)
     || (gui->seg_dragging != -1);
 }
 
-static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure,
-                                     int which, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
-                                     int unused2)
+static int _group_events_mouse_moved(struct dt_iop_module_t *module,
+                                     const float pzx,
+                                     const float pzy,
+                                     const double pressure,
+                                     const int which,
+                                     dt_masks_form_t *form,
+                                     const int unused1,
+                                     dt_masks_form_gui_t *gui,
+                                     const int unused2)
 {
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
   const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-  const float pr_d = darktable.develop->preview_downsampling;
-  const float as = DT_PIXEL_APPLY_DPI(5) / (pr_d * zoom_scale);  // transformed to backbuf dimensions
+  const float as = dt_masks_sensitive_dist(zoom_scale);
 
   // we first don't do anything if we are inside a scrolling session
 
@@ -118,19 +157,22 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
     gui->scrollx = gui->scrolly = 0.0f;
   }
 
-  // if a form is in edit mode and we are dragging, don't try to select another form
+  // if a form is in edit mode and we are dragging, don't try to
+  // select another form
   if(gui->group_edited >= 0 && _is_handling_form(gui))
   {
     // we get the form
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt =
+      (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
     int rep = 0;
     if(sel->functions)
-      rep = sel->functions->mouse_moved(module, pzx, pzy, pressure, which, sel, fpt->parentid, gui,
-                                       gui->group_edited);
+      rep = sel->functions->mouse_moved(module, pzx, pzy, pressure, which, sel, fpt->parentid,
+                                        gui, gui->group_edited);
     if(rep) return 1;
-    // if a point is in state editing, then we don't want that another form can be selected
+    // if a point is in state editing, then we don't want that another
+    // form can be selected
     if(gui->point_edited >= 0) return 0;
   }
 
@@ -180,14 +222,17 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   if(sel && sel->functions)
   {
     gui->group_edited = gui->group_selected = sel_pos;
-    return sel->functions->mouse_moved(module, pzx, pzy, pressure, which, sel, sel_fpt->parentid, gui, gui->group_edited);
+    return sel->functions->mouse_moved(module, pzx, pzy, pressure, which,
+                                       sel, sel_fpt->parentid, gui, gui->group_edited);
   }
 
   dt_control_queue_redraw_center();
   return 0;
 }
 
-void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t *form,
+void dt_group_events_post_expose(cairo_t *cr,
+                                 const float zoom_scale,
+                                 dt_masks_form_t *form,
                                  dt_masks_form_gui_t *gui)
 {
   int pos = 0;
@@ -202,9 +247,14 @@ void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t 
   }
 }
 
-static void _inverse_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+static void _inverse_mask(const dt_iop_module_t *const module,
+                          const dt_dev_pixelpipe_iop_t *const piece,
                           dt_masks_form_t *const form,
-                          float **buffer, int *width, int *height, int *posx, int *posy)
+                          float **buffer,
+                          int *width,
+                          int *height,
+                          int *posx,
+                          int *posy)
 {
   // we create a new buffer
   const int wt = piece->iwidth;
@@ -219,10 +269,12 @@ static void _inverse_mask(const dt_iop_module_t *const module, const dt_dev_pixe
 
   for(int yy = MAX(*posy, 0); yy < MIN(ht, (*posy) + (*height)); yy++)
   {
-    for(int xx = 0; xx < MIN((*posx), wt); xx++) buf[(size_t)yy * wt + xx] = 1.0f;
+    for(int xx = 0; xx < MIN((*posx), wt); xx++)
+      buf[(size_t)yy * wt + xx] = 1.0f;
     for(int xx = MAX((*posx), 0); xx < MIN(wt, (*posx) + (*width)); xx++)
       buf[(size_t)yy * wt + xx] = 1.0f - (*buffer)[((size_t)yy - (*posy)) * (*width) + xx - (*posx)];
-    for(int xx = MAX((*posx) + (*width), 0); xx < wt; xx++) buf[(size_t)yy * wt + xx] = 1.0f;
+    for(int xx = MAX((*posx) + (*width), 0); xx < wt; xx++)
+      buf[(size_t)yy * wt + xx] = 1.0f;
   }
 
   for(int yy = MAX((*posy) + (*height), 0); yy < ht; yy++)
@@ -240,13 +292,19 @@ static void _inverse_mask(const dt_iop_module_t *const module, const dt_dev_pixe
   *height = ht;
 }
 
-static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+static int _group_get_mask(const dt_iop_module_t *const module,
+                           const dt_dev_pixelpipe_iop_t *const piece,
                            dt_masks_form_t *const form,
-                           float **buffer, int *width, int *height, int *posx, int *posy)
+                           float **buffer,
+                           int *width,
+                           int *height,
+                           int *posx,
+                           int *posy)
 {
   // we allocate buffers and values
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
+
   float **bufs = calloc(nb, sizeof(float *));
   int *w = malloc(sizeof(int) * nb);
   int *h = malloc(sizeof(int) * nb);
@@ -265,13 +323,16 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
     dt_masks_form_t *sel = dt_masks_get_from_id(module->dev, fpt->formid);
     if(sel)
     {
-      ok[pos] = dt_masks_get_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
+      ok[pos] = dt_masks_get_mask(module, piece, sel, &bufs[pos],
+                                  &w[pos], &h[pos], &px[pos], &py[pos]);
       if(fpt->state & DT_MASKS_STATE_INVERSE)
       {
         const double start = dt_get_wtime();
         _inverse_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
         if(darktable.unmuted & DT_DEBUG_PERF)
-          dt_print(DT_DEBUG_MASKS, "[masks %s] inverse took %0.04f sec\n", sel->name, dt_get_wtime() - start);
+          dt_print(DT_DEBUG_MASKS,
+                   "[masks %s] inverse took %0.04f sec\n",
+                   sel->name, dt_get_wtime() - start);
       }
       op[pos] = fpt->opacity;
       states[pos] = fpt->state;
@@ -302,14 +363,15 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
   for(int i = 0; i < nb; i++)
   {
     const double start = dt_get_wtime();
-    if(states[i] & DT_MASKS_STATE_UNION)
+    if(states[i] & (DT_MASKS_STATE_UNION | DT_MASKS_STATE_SUM))
     {
       for(int y = 0; y < h[i]; y++)
       {
         for(int x = 0; x < w[i]; x++)
         {
           (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l]
-              = fmaxf((*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l], bufs[i][y * w[i] + x] * op[i]);
+              = fmaxf((*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l],
+                      bufs[i][y * w[i] + x] * op[i]);
         }
       }
     }
@@ -321,7 +383,10 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
         {
           const float b1 = (*buffer)[y * (r - l) + x];
           float b2 = 0.0f;
-          if(y + t - py[i] >= 0 && y + t - py[i] < h[i] && x + l - px[i] >= 0 && x + l - px[i] < w[i])
+          if(y + t - py[i] >= 0
+             && y + t - py[i] < h[i]
+             && x + l - px[i] >= 0
+             && x + l - px[i] < w[i])
             b2 = bufs[i][(y + t - py[i]) * w[i] + x + l - px[i]];
           if(b1 > 0.0f && b2 > 0.0f)
             (*buffer)[y * (r - l) + x] = fminf(b1, b2 * op[i]);
@@ -338,7 +403,8 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
         {
           const float b1 = (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l];
           const float b2 = bufs[i][y * w[i] + x] * op[i];
-          if(b1 > 0.0f && b2 > 0.0f) (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l] = b1 * (1.0f - b2);
+          if(b1 > 0.0f && b2 > 0.0f)
+            (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l] = b1 * (1.0f - b2);
         }
       }
     }
@@ -351,10 +417,12 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
           const float b1 = (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l];
           const float b2 = bufs[i][y * w[i] + x] * op[i];
           if(b1 > 0.0f && b2 > 0.0f)
-            (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l] = fmaxf((1.0f - b1) * b2, b1 * (1.0f - b2));
+            (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l] =
+              fmaxf((1.0f - b1) * b2, b1 * (1.0f - b2));
           else
             (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l]
-                = fmaxf((*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l], bufs[i][y * w[i] + x] * op[i]);
+                = fmaxf((*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l],
+                        bufs[i][y * w[i] + x] * op[i]);
         }
       }
     }
@@ -365,7 +433,10 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
         for(int x = 0; x < r - l; x++)
         {
           float b2 = 0.0f;
-          if(y + t - py[i] >= 0 && y + t - py[i] < h[i] && x + l - px[i] >= 0 && x + l - px[i] < w[i])
+          if(y + t - py[i] >= 0
+             && y + t - py[i] < h[i]
+             && x + l - px[i] >= 0
+             && x + l - px[i] < w[i])
             b2 = bufs[i][(y + t - py[i]) * w[i] + x + l - px[i]];
           (*buffer)[y * (r - l) + x] = b2 * op[i];
         }
@@ -373,7 +444,9 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
     }
 
     if(darktable.unmuted & DT_DEBUG_PERF)
-      dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", i, dt_get_wtime() - start);
+      dt_print(DT_DEBUG_MASKS,
+               "[masks %d] combine took %0.04f sec\n",
+               i, dt_get_wtime() - start);
   }
 
   free(op);
@@ -400,8 +473,11 @@ error:
   return 0;
 }
 
-static void _combine_masks_union(float *const restrict dest, float *const restrict newmask, const size_t npixels,
-                                 const float opacity, const int inverted)
+static void _combine_masks_union(float *const restrict dest,
+                                 float *const restrict newmask,
+                                 const size_t npixels,
+                                 const float opacity,
+                                 const int inverted)
 {
   if(inverted)
   {
@@ -441,8 +517,11 @@ static void _combine_masks_union(float *const restrict dest, float *const restri
   }
 }
 
-static void _combine_masks_intersect(float *const restrict dest, float *const restrict newmask, const size_t npixels,
-                                     const float opacity, const int inverted)
+static void _combine_masks_intersect(float *const restrict dest,
+                                     float *const restrict newmask,
+                                     const size_t npixels,
+                                     const float opacity,
+                                     const int inverted)
 {
   if(inverted)
   {
@@ -491,8 +570,11 @@ static inline int both_positive(const float val1, const float val2)
   return (val1 > 0.0f) && (val2 > 0.0f);
 }
 
-static void _combine_masks_difference(float *const restrict dest, float *const restrict newmask, const size_t npixels,
-                                      const float opacity, const int inverted)
+static void _combine_masks_difference(float *const restrict dest,
+                                      float *const restrict newmask,
+                                      const size_t npixels,
+                                      const float opacity,
+                                      const int inverted)
 {
   if(inverted)
   {
@@ -532,8 +614,55 @@ static void _combine_masks_difference(float *const restrict dest, float *const r
   }
 }
 
-static void _combine_masks_exclusion(float *const restrict dest, float *const restrict newmask, const size_t npixels,
-                                     const float opacity, const int inverted)
+static void _combine_masks_sum(float *const restrict dest,
+                               float *const restrict newmask,
+                               const size_t npixels,
+                               const float opacity,
+                               const int inverted)
+{
+  if(inverted)
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - newmask[index]);
+      dest[index] = MIN(1.0f, dest[index] + mask);
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * newmask[index];
+      dest[index] = MIN(1.0f, dest[index] + mask);
+    }
+  }
+}
+
+static void _combine_masks_exclusion(float *const restrict dest,
+                                     float *const restrict newmask,
+                                     const size_t npixels,
+                                     const float opacity,
+                                     const int inverted)
 {
   if(inverted)
   {
@@ -553,7 +682,8 @@ static void _combine_masks_exclusion(float *const restrict dest, float *const re
       const float pos = both_positive(dest[index], mask);
       const float neg = (1.0f - pos);
       const float b1 = dest[index];
-      dest[index] = pos * MAX((1.0f - b1) * mask, b1 * (1.0f - mask)) + neg * MAX(b1, mask);
+      dest[index] = pos * MAX((1.0f - b1) * mask,
+                              b1 * (1.0f - mask)) + neg * MAX(b1, mask);
     }
   }
   else
@@ -581,7 +711,8 @@ static void _combine_masks_exclusion(float *const restrict dest, float *const re
 
 static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
                                const dt_dev_pixelpipe_iop_t *const restrict piece,
-                               dt_masks_form_t *const form, const dt_iop_roi_t *const roi,
+                               dt_masks_form_t *const form,
+                               const dt_iop_roi_t *const roi,
                                float *const restrict buffer)
 {
   double start = dt_get_wtime();
@@ -592,7 +723,8 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   const int height = roi->height;
   const size_t npixels = (size_t)width * height;
 
-  // we need to allocate a zeroed temporary buffer for intermediate creation of individual shapes
+  // we need to allocate a zeroed temporary buffer for intermediate
+  // creation of individual shapes
   float *const restrict bufs = dt_alloc_align_float(npixels);
   if(bufs == NULL) return 0;
 
@@ -604,7 +736,8 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
 
     if(sel)
     {
-      // ensure that we start with a zeroed buffer regardless of what was previously written into 'bufs'
+      // ensure that we start with a zeroed buffer regardless of what
+      // was previously written into 'bufs'
       memset(bufs, 0, npixels*sizeof(float));
       const int ok = dt_masks_get_mask_roi(module, piece, sel, roi, bufs);
       const float op = fpt->opacity;
@@ -627,11 +760,16 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
         {
           _combine_masks_difference(buffer, bufs, npixels, op, inverted);
         }
+        else if(state & DT_MASKS_STATE_SUM)
+        {
+          _combine_masks_sum(buffer, bufs, npixels, op, inverted);
+        }
         else if(state & DT_MASKS_STATE_EXCLUSION)
         {
           _combine_masks_exclusion(buffer, bufs, npixels, op, inverted);
         }
-        else // if we are here, this mean that we just have to copy the shape and null other parts
+        else // if we are here, this mean that we just have to copy
+             // the shape and null other parts
         {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
@@ -649,7 +787,9 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
         }
 
         if(darktable.unmuted & DT_DEBUG_PERF)
-          dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", nb_ok, dt_get_wtime() - start);
+          dt_print(DT_DEBUG_MASKS,
+                   "[masks %d] combine took %0.04f sec\n",
+                   nb_ok, dt_get_wtime() - start);
         start = dt_get_wtime();
 
         nb_ok++;
@@ -662,8 +802,11 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   return nb_ok != 0;
 }
 
-int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                              const dt_iop_roi_t *roi, float *buffer)
+int dt_masks_group_render_roi(dt_iop_module_t *module,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              dt_masks_form_t *form,
+                              const dt_iop_roi_t *roi,
+                              float *buffer)
 {
   const double start = dt_get_wtime();
   if(!form) return 0;
@@ -671,16 +814,21 @@ int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   const int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks] render all masks took %0.04f sec\n", dt_get_wtime() - start);
+    dt_print(DT_DEBUG_MASKS,
+             "[masks] render all masks took %0.04f sec\n",
+             dt_get_wtime() - start);
   return ok;
 }
 
 static GSList *_group_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  // initialize the mask of seen shapes to the set of flags which aren't actually shapes
+  // initialize the mask of seen shapes to the set of flags which
+  // aren't actually shapes
   dt_masks_type_t seen_types = (DT_MASKS_GROUP | DT_MASKS_CLONE | DT_MASKS_NON_CLONE);
-  // iterate over the shapes in the group, adding the mouse_action for each distinct type of shape
+  // iterate over the shapes in the group, adding the mouse_action for
+  // each distinct type of shape
+
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
@@ -697,13 +845,15 @@ static GSList *_group_setup_mouse_actions(const struct dt_masks_form_t *const fo
   return lm;
 }
 
-static void _group_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base,
+static void _group_duplicate_points(dt_develop_t *const dev,
+                                    dt_masks_form_t *const base,
                                     dt_masks_form_t *const dest)
 {
   for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
-    dt_masks_point_group_t *npt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *npt =
+      (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
 
     npt->formid = dt_masks_form_duplicate(dev, pt->formid);
     npt->parentid = dest->formid;
@@ -742,4 +892,3 @@ const dt_masks_functions_t dt_masks_functions_group = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

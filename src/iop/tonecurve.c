@@ -53,8 +53,7 @@ DT_MODULE_INTROSPECTION(5, dt_iop_tonecurve_params_t)
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
-static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self);
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
 
@@ -599,12 +598,14 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
 
   // Gamma 2.0 - no contrast
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(linear_L[k], 2.0f);
+  for(int k = 1; k < 6; k++)
+    p.tonecurve[ch_L][k].y = linear_L[k] * linear_L[k];
   dt_gui_presets_add_generic(_("gamma 2.0"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma 0.5 - no contrast
-  for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(linear_L[k], 0.5f);
+  for(int k = 1; k < 6; k++)
+    p.tonecurve[ch_L][k].y = sqrtf(linear_L[k]);
   dt_gui_presets_add_generic(_("gamma 0.5"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -647,9 +648,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    piece->request_histogram |= (DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
   else
-    piece->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram &= ~DT_REQUEST_ON;
 
   for(int ch = 0; ch < ch_max; ch++)
   {
@@ -674,7 +675,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   for(int k = 0; k < 0x10000; k++) d->table[ch_a][k] = d->table[ch_a][k] * 256.0f - 128.0f;
   for(int k = 0; k < 0x10000; k++) d->table[ch_b][k] = d->table[ch_b][k] * 256.0f - 128.0f;
 
-  piece->process_cl_ready = 1;
+  piece->process_cl_ready = TRUE;
   if(p->tonecurve_autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
   {
     // derive curve for XYZ:
@@ -821,7 +822,7 @@ void init(dt_iop_module_t *module)
 {
   dt_iop_default_init(module);
 
-  module->request_histogram |= (DT_REQUEST_ON);
+  module->request_histogram |=  (DT_REQUEST_ON | DT_REQUEST_EXPANDED);
 
   dt_iop_tonecurve_params_t *d = module->default_params;
 
@@ -893,7 +894,7 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(combo == 0) p->tonecurve_type[ch_L] = p->tonecurve_type[ch_a] = p->tonecurve_type[ch_b] = CUBIC_SPLINE;
   if(combo == 1) p->tonecurve_type[ch_L] = p->tonecurve_type[ch_a] = p->tonecurve_type[ch_b] = CATMULL_ROM;
   if(combo == 2) p->tonecurve_type[ch_L] = p->tonecurve_type[ch_a] = p->tonecurve_type[ch_b] = MONOTONE_HERMITE;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -1024,7 +1025,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
   gtk_widget_queue_draw(widget);
 
-  dt_iop_queue_history_update(self, FALSE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
   return TRUE;
 }
 
@@ -1119,7 +1120,6 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
   c->loglogscale = 0;
   c->semilog = 0;
-  self->timeout_handle = 0;
 
   c->autoscale_ab = dt_bauhaus_combobox_from_params(self, "tonecurve_autoscale_ab");
   gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
@@ -1138,8 +1138,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
 
-  c->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
+  c->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO, hbox);
   gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click or right-click to select an area"));
+  dt_action_define_iop(self, NULL, N_("pick color"), c->colorpicker, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
@@ -1159,7 +1160,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_tonecurve_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_tonecurve_motion_notify), self);
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_tonecurve_leave_notify), self);
-  g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_tonecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);
 
@@ -1201,21 +1201,17 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_draw_curve_destroy(c->minmax_curve[ch_L]);
   dt_draw_curve_destroy(c->minmax_curve[ch_a]);
   dt_draw_curve_destroy(c->minmax_curve[ch_b]);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }
 
-static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  if(!(event->state & GDK_BUTTON1_MASK))
+    c->selected = -1;
   gtk_widget_queue_draw(widget);
-  return TRUE;
-}
-
-static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+  return FALSE;
 }
 
 static void picker_scale(const float *in, float *out)
@@ -1400,9 +1396,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         dt_colorpicker_sample_t *sample = samples->data;
 
-        picker_scale(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MEAN], picker_mean);
-        picker_scale(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MIN], picker_min);
-        picker_scale(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MAX], picker_max);
+        picker_scale(sample->lab[DT_PICK_MEAN], picker_mean);
+        picker_scale(sample->lab[DT_PICK_MIN], picker_min);
+        picker_scale(sample->lab[DT_PICK_MAX], picker_max);
 
         // Convert abcissa to log coordinates if needed
         picker_min[ch] = to_log(picker_min[ch], c->loglogscale, ch, c->semilog, 0);
@@ -1638,7 +1634,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     {
       // no vertex was close, create a new one!
       c->selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], linx, liny);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     }
   }
   else
@@ -1733,7 +1729,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
             if(dist < min) c->selected = selected;
           }
 
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
           gtk_widget_queue_draw(self->widget);
         }
       }
@@ -1754,7 +1750,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
         }
         c->selected = -2; // avoid motion notify re-inserting immediately.
         dt_bauhaus_combobox_set(c->interpolator, p->tonecurve_type[ch_L]);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
         gtk_widget_queue_draw(self->widget);
       }
       else
@@ -1764,7 +1760,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
           p->tonecurve_autoscale_ab = DT_S_SCALE_MANUAL;
           c->selected = -2; // avoid motion notify re-inserting immediately.
           dt_bauhaus_combobox_set(c->autoscale_ab, 1);
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
           gtk_widget_queue_draw(self->widget);
         }
       }
@@ -1778,7 +1774,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       float reset_value = c->selected == 0 ? 0 : 1;
       tonecurve[c->selected].y = tonecurve[c->selected].x = reset_value;
       gtk_widget_queue_draw(self->widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       return TRUE;
     }
 
@@ -1791,7 +1787,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->tonecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     return TRUE;
   }
   return FALSE;

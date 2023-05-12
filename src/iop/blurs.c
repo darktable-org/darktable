@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,10 +50,10 @@ typedef struct dt_iop_blurs_params_t
   int blades;              // $MIN: 3 $MAX: 11 $DEFAULT: 5 $DESCRIPTION: "diaphragm blades"
   float concavity;         // $MIN: 1. $MAX: 9.  $DEFAULT: 1. $DESCRIPTION: "concavity"
   float linearity;         // $MIN: 0. $MAX: 1.  $DEFAULT: 1. $DESCRIPTION: "linearity"
-  float rotation;          // $MIN: -1.57 $MAX: 1.57 $DEFAULT: 0. $DESCRIPTION: "rotation"
+  float rotation;          // $MIN: -M_PI_F/2. $MAX: M_PI_F/2. $DEFAULT: 0. $DESCRIPTION: "rotation"
 
   // motion blur params
-  float angle;             // $MIN: -3.14 $MAX: 3.14 $DEFAULT: 0. $DESCRIPTION: "direction"
+  float angle;             // $MIN: -M_PI_F $MAX: M_PI_F $DEFAULT: 0. $DESCRIPTION: "direction"
   float curvature;         // $MIN: -2.   $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "curvature"
   float offset;            // $MIN: -1.   $MAX: 1.   $DEFAULT: 0  $DESCRIPTION: "offset"
 
@@ -211,7 +211,7 @@ static inline void create_motion_kernel(float *const restrict buffer,
   const float A = curvature / 2.f;
   const float B = 1.f;
   const float C = -A * offset * offset + B * offset;
-  // Note : C ensures the polynomial arc always goes through the central pixel
+  // Note : C ensures the polynomial arc always goes through the central pixel
   // so we don't shift pixels. This is meant to allow seamless connection
   // with unmasked areas when using masked blur.
 
@@ -296,7 +296,11 @@ static inline void build_gui_kernel(unsigned char *const buffer, const size_t wi
 {
   float *const restrict kernel_1 = dt_alloc_align_float(width * height);
   float *const restrict kernel_2 = dt_alloc_align_float(width * height);
-
+  if(!kernel_1 || !kernel_2)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skipping build_gui_kernel\n");
+    goto cleanup;
+  }
 
   if(p->type == DT_BLUR_LENS)
   {
@@ -327,7 +331,7 @@ static inline void build_gui_kernel(unsigned char *const buffer, const size_t wi
   {
     buffer[k * 4] = buffer[k * 4 + 1] = buffer[k * 4 + 2] = buffer[k * 4 + 3] = roundf(255.f * kernel_2[k]);
   }
-
+cleanup:
   dt_free_align(kernel_1);
   dt_free_align(kernel_2);
 }
@@ -367,6 +371,11 @@ static inline void build_pixel_kernel(float *const buffer, const size_t width, c
                                       dt_iop_blurs_params_t *p)
 {
   float *const restrict kernel_1 = dt_alloc_align_float(width * height);
+  if(!kernel_1)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skippping build_pixel_kernel\n");
+    return;
+  }
 
   if(p->type == DT_BLUR_LENS)
   {
@@ -423,6 +432,11 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   float *const restrict padded_in = dt_alloc_align_float(padded_width * padded_height * 4);
   float *const restrict padded_out = dt_alloc_align_float(padded_width * padded_height * 4);
+  if(!padded_in || !padded_out)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skipping process_fft\n");
+    goto cleanup;
+  }
 
   // Write the image in the padded buffer
 #ifdef _OPENMP
@@ -539,6 +553,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   dt_free_align(kernel);
   dt_free_align(padded_kernel);
+cleanup:
   dt_free_align(padded_in);
   dt_free_align(padded_out);
 }

@@ -190,7 +190,7 @@ enum
 
 static float _action_process_ratings(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  if(!target) return NAN;
+  if(!target) return DT_ACTION_NOT_VALID;
 
   double new_value = element - 1.0;
   GtkDarktableRangeSelect *range = target;
@@ -198,7 +198,7 @@ static float _action_process_ratings(gpointer target, dt_action_element_t elemen
   double max = range->select_max_r;
   dt_range_bounds_t bounds = range->bounds;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     switch(effect)
     {

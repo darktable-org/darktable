@@ -173,10 +173,9 @@ const char *name(dt_lib_module_t *self)
 }
 
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -278,7 +277,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->camera = camera;
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
-        dt_gui_add_help_link(ib, dt_get_help_url("import_camera"));
+        dt_gui_add_help_link(ib, "import_camera");
       }
       if(camera->can_tether == TRUE)
       {
@@ -286,14 +285,14 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->tethered_shoot = GTK_BUTTON(tb);
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
-        dt_gui_add_help_link(tb, dt_get_help_url("import_camera"));
+        dt_gui_add_help_link(tb, "import_camera");
       }
 
       gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmount camera"))), FALSE, FALSE, 0);
       d->unmount_camera = GTK_BUTTON(um);
       g_signal_connect(G_OBJECT(um), "clicked", G_CALLBACK(_lib_import_unmount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(um)), GTK_ALIGN_CENTER);
-      dt_gui_add_help_link(um, dt_get_help_url("mount_camera"));
+      dt_gui_add_help_link(um, "mount_camera");
 
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
@@ -324,7 +323,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
       g_signal_connect(G_OBJECT(im), "clicked", G_CALLBACK(_lib_import_mount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(im)), GTK_ALIGN_CENTER);
-      dt_gui_add_help_link(im, dt_get_help_url("mount_camera"));
+      dt_gui_add_help_link(im, "mount_camera");
 
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
@@ -405,7 +404,7 @@ static void detach_lua_widgets(GtkWidget *extra_lua_widgets)
 }
 #endif
 
-// maybe this should be (partly) in common/imageio.[c|h]?
+// maybe this should be (partly) in imageio/imageio.[c|h]?
 static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
 {
   GdkPixbuf *pixbuf = NULL;
@@ -676,6 +675,13 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       const char *filename = g_file_info_get_name(info);
       if(!filename)
         continue;
+
+      /* g_file_info_get_is_hidden() always returns 0 on macOS,
+        so we check if the filename starts with a '.' */
+      const gboolean is_hidden = g_file_info_get_is_hidden(info) || filename[0] ==  '.';
+      if (is_hidden)
+        continue;
+
       const time_t datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
@@ -697,9 +703,9 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
           gboolean already_imported = FALSE;
           if(d->import_case == DT_IMPORT_INPLACE)
           {
-            /* check if image is already imported, using previously fetched filroll id */
+            /* check if image is already imported, using previously fetched filmroll id */
             if(filmroll_id != -1)
-              already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
+              already_imported = dt_image_get_id(filmroll_id, filename) == NO_IMGID ? FALSE : TRUE;
           }
           else
           {
@@ -842,13 +848,15 @@ static void _do_select_new_clicked(GtkWidget *widget, dt_lib_module_t* self)
 static void _expander_create(dt_gui_collapsible_section_t *cs,
                              GtkBox *parent,
                              const char *label,
-                             const char *pref_key)
+                             const char *pref_key,
+                             dt_lib_module_t *self)
 {
   dt_gui_new_collapsible_section
     (cs,
      pref_key,
      label,
-     parent);
+     parent,
+     DT_ACTION(self));
 }
 
 static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
@@ -905,7 +913,7 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
   GtkTreeIter parent2;
   if(!parent)
   {
-    char *basename = g_path_get_basename(folder);
+    gchar *basename = g_path_get_basename(folder);
     gtk_tree_store_append(store, &parent2, NULL);
     gtk_tree_store_set(store, &parent2, DT_FOLDER_NAME, basename,
                                      DT_FOLDER_PATH, folder,
@@ -913,6 +921,7 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
     // fake child
     gtk_tree_store_append(store, &iter, &parent2);
     gtk_tree_store_set(store, &iter, DT_FOLDER_EXPANDED, FALSE, -1);
+    g_free(basename);
   }
   else
   {
@@ -1637,7 +1646,7 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
 
   // collapsible section
   _expander_create(&d->from.cs, GTK_BOX(import_patterns),
-                   _("naming rules"), "ui_last/session_expander_import");
+                   _("naming rules"), "ui_last/session_expander_import", NULL);
 
   // import patterns
   grid = GTK_GRID(gtk_grid_new());
@@ -1693,6 +1702,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
       _("cancel"), GTK_RESPONSE_CANCEL,
       _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
       NULL);
+  dt_gui_dialog_add_help(GTK_DIALOG(d->from.dialog), "import_dialog");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
@@ -1914,8 +1924,8 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)))
           folder = dt_util_dstrcat(folder, "%%");
         _import_set_collection(folder);
-        const int imgid = dt_conf_get_int("ui_last/import_last_image");
-        if(unique && imgid != -1)
+        const dt_imgid_t imgid = dt_conf_get_int("ui_last/import_last_image");
+        if(unique && imgid > 0)
         {
           dt_control_set_mouse_over_id(imgid);
           dt_ctl_switch_mode_to("darkroom");
@@ -1951,9 +1961,21 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   d->import_case = (widget == GTK_WIDGET(d->import_inplace)) ? DT_IMPORT_INPLACE : DT_IMPORT_COPY;
+#ifdef HAVE_GPHOTO2
+  // on some systems, GPhoto2 is somewhat prone to crashing while
+  // scanning for new devices; this manifests as a crash during long
+  // import sessions.  So disable the scan while we're importing, even
+  // though we aren't using GPhoto2 to do the importing
+  struct dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
+  camctl->import_ui = TRUE;
+#endif
   _import_from_dialog_new(self);
   _import_from_dialog_run(self);
   _import_from_dialog_free(self);
+#ifdef HAVE_GPHOTO2
+  // OK to resume periodic scans for new GPhoto2 devices
+  camctl->import_ui = FALSE;
+#endif
 }
 
 #ifdef HAVE_GPHOTO2
@@ -2028,7 +2050,7 @@ void gui_init(dt_lib_module_t *self)
 
   // collapsible section
 
-  _expander_create(&d->cs, GTK_BOX(self->widget), _("parameters"), "ui_last/expander_import");
+  _expander_create(&d->cs, GTK_BOX(self->widget), _("parameters"), "ui_last/expander_import", self);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));

@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2021 darktable developers.
+ *    Copyright (C) 2021-2023 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -17,6 +17,13 @@
  */
 
 #pragma once
+
+// uncomment the next line to use something other than NAN to signal an invalid color matrix
+// leave commented out for backward compatibility in case some instances have been missed.
+//#define NO_COLORMATRIX_NAN
+
+#include <float.h>
+#include <math.h>
 
 // When included by a C++ file, restrict qualifiers are not allowed
 #ifdef __cplusplus
@@ -36,6 +43,23 @@ typedef DT_ALIGNED_PIXEL float dt_aligned_pixel_t[4];
 
 // a 3x3 matrix, padded to permit SSE instructions to be used for multiplication and addition
 typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
+
+// GCC 12.2 has a bug where it will erroneously generate a warning
+// about accessing 64 bytes in a 16-byte object when a dt_colormatrix_t
+// is passed to a function (this kills the compilation due to
+// -Werror).  The most elegant way to handle this is to suppress the
+// warning for the handfull of function calls the bug affects.
+#if __GNUC__ == 12
+#define GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING \
+  _Pragma("GCC push_options") \
+  _Pragma("GCC diagnostic ignored \"-Wstringop-overflow\"")
+
+#define GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING \
+  _Pragma("GCC pop_options")
+#else
+#define GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
+#define GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
+#endif
 
 // To be able to vectorize per-pixel loops, we need to operate on all four channels, but if the compiler does
 // not auto-vectorize, doing so increases computation by 1/3 for a channel which typically is ignored anyway.
@@ -66,12 +90,18 @@ typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 #define for_four_channels(_var, ...) \
   _DT_Pragma(omp simd __VA_ARGS__) \
   for (size_t _var = 0; _var < 4; _var++)
+#define for_three_channels(_var, ...) \
+  _DT_Pragma(omp simd __VA_ARGS__) \
+  for (size_t _var = 0; _var < 3; _var++)
 #else
 #define for_each_channel(_var, ...) \
   for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
 #define for_four_channels(_var, ...) \
   for (size_t _var = 0; _var < 4; _var++)
+#define for_three_channels(_var, ...) \
+  for (size_t _var = 0; _var < 3; _var++)
 #endif
+
 
 // transpose a padded 3x3 matrix
 static inline void transpose_3xSSE(const dt_colormatrix_t input, dt_colormatrix_t output)
@@ -153,6 +183,13 @@ static inline void pack_3xSSE_to_3x3(const dt_colormatrix_t input, float output[
   output[8] = input[2][2];
 }
 
+static inline void dt_colormatrix_copy(dt_colormatrix_t out, const dt_colormatrix_t in)
+{
+  for(size_t i = 0; i < 4; i++)
+    for_each_channel(c)
+      out[i][c] = in[i][c];
+}
+
 // vectorized multiplication of padded 3x3 matrices
 static inline void dt_colormatrix_mul(dt_colormatrix_t dst, const dt_colormatrix_t m1, const dt_colormatrix_t m2)
 {
@@ -167,6 +204,51 @@ static inline void dt_colormatrix_mul(dt_colormatrix_t dst, const dt_colormatrix
     }
   }
 }
+
+static inline void dt_colormatrix_transpose(dt_colormatrix_t dst,
+                                            const dt_colormatrix_t src)
+{
+  for_four_channels(c)
+  {
+    dst[0][c] = src[c][0];
+    dst[1][c] = src[c][1];
+    dst[2][c] = src[c][2];
+    dst[3][c] = src[c][3];
+  }
+}
+
+#ifdef NO_COLORMATRIX_NAN
+static inline void dt_mark_colormatrix_invalid(float *matrix)
+{
+  *matrix = -FLT_MAX;
+}
+
+static inline int dt_is_valid_colormatrix(float matrix)
+{
+  return matrix != -FLT_MAX;
+}
+#else
+
+#ifdef __GNUC__
+#pragma GCC push_options
+#pragma GCC optimize ("-fno-finite-math-only")
+#endif
+
+static inline void dt_mark_colormatrix_invalid(float *matrix)
+{
+  *matrix = NAN;
+}
+
+static inline int dt_is_valid_colormatrix(float matrix)
+{
+  return isfinite(matrix);
+}
+
+#ifdef __GNUC__
+#pragma GCC pop_options
+#endif
+
+#endif /* NO_COLORMATRIX_NAN */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

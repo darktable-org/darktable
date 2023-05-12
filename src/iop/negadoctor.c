@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2022 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -39,17 +40,6 @@
 #include <glib.h>
 #include <math.h>
 #include <stdlib.h>
-
-#if defined(__GNUC__)
-#pragma GCC optimize ("unroll-loops", "tree-loop-if-convert", \
-                      "tree-loop-distribution", "no-strict-aliasing", \
-                      "loop-interchange", "loop-nest-optimize", "tree-loop-im", \
-                      "unswitch-loops", "tree-loop-ivcanon", "ira-loop-pressure", \
-                      "split-ivs-in-unroller", "variable-expansion-in-unroller", \
-                      "split-loops", "ivopts", "predictive-commoning",\
-                      "tree-loop-linear", "loop-block", "loop-strip-mine", \
-                      "finite-math-only", "fp-contract=fast", "fast-math")
-#endif
 
 /** DOCUMENTATION
  *
@@ -259,6 +249,61 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->gamma = p->gamma;
 }
 
+static inline void _process_pixel(const dt_aligned_pixel_t pix_in,
+                                  dt_aligned_pixel_t pix_out,
+                                  const dt_aligned_pixel_t Dmin,
+                                  const dt_aligned_pixel_t wb_high,
+                                  const dt_aligned_pixel_t offset,
+                                  const dt_aligned_pixel_t black,
+                                  const dt_aligned_pixel_t exposure,
+                                  const dt_aligned_pixel_t gamma,
+                                  const dt_aligned_pixel_t soft_clip,
+                                  const dt_aligned_pixel_t soft_clip_comp)
+{
+    dt_aligned_pixel_t density;
+    // Convert transmission to density using Dmin as a fulcrum
+    dt_aligned_pixel_t clamped;
+    for_each_channel(c)
+    {
+      clamped[c] = MAX(pix_in[c],THRESHOLD);  // threshold to -32 EV
+      density[c] = Dmin[c] / clamped[c];
+    }
+    dt_aligned_pixel_t log_density;
+    dt_vector_log2(density, log_density);
+    #define LOG2_to_LOG10 0.3010299956f
+    for_each_channel(c)
+      log_density[c] *= -LOG2_to_LOG10;
+    // now log_density = -log10f( Dmin / MAX(pix_in, THRESHOLD) )
+    dt_aligned_pixel_t corrected_de;
+    for_each_channel(c)
+    {
+      // Correct density in log space
+      corrected_de[c] = wb_high[c] * log_density[c] + offset[c];
+    }
+    dt_aligned_pixel_t ten_to_x;
+    dt_vector_exp10(corrected_de, ten_to_x);
+    dt_aligned_pixel_t print_linear;
+    for_each_channel(c)
+    {
+      // Print density on paper : ((1 - 10^corrected_de + black) * exposure)^gamma rewritten for FMA
+      print_linear[c] = -(exposure[c] * ten_to_x[c] + black[c]);
+      print_linear[c] = MAX(print_linear[c], 0.0f);
+    }
+    dt_aligned_pixel_t print_gamma;
+    dt_vector_powf(print_linear, gamma, print_gamma); // note : this is always > 0
+    dt_aligned_pixel_t e_to_gamma;
+    dt_aligned_pixel_t clipped_gamma;
+    for_each_channel(c)
+      clipped_gamma[c] = -(print_gamma[c] - soft_clip[c]) / soft_clip_comp[c];
+    dt_vector_exp(clipped_gamma, e_to_gamma);
+    for_each_channel(c)
+    {
+      // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
+      pix_out[c] = (print_gamma[c] > soft_clip[c])
+        ? soft_clip[c] + (1.0f - e_to_gamma[c] * soft_clip_comp[c])
+        : print_gamma[c];
+    }
+}
 
 void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
              const void *const restrict ivoid, void *const restrict ovoid,
@@ -270,41 +315,36 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
   const float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
 
+  dt_aligned_pixel_t gamma;
+  dt_aligned_pixel_t black;
+  dt_aligned_pixel_t exposure;
+  dt_aligned_pixel_t soft_clip;
+  dt_aligned_pixel_t soft_clip_comp;
+  for_each_channel(c)
+  {
+    gamma[c] = d->gamma;
+    black[c] = d->black;
+    exposure[c] = d->exposure;
+    soft_clip[c] = d->soft_clip;
+    soft_clip_comp[c] = d->soft_clip_comp;
+  }
+  // Unpack vectors one by one with extra pragmas to be sure the compiler understands they can be vectorized
+  const float *const restrict Dmin = __builtin_assume_aligned(d->Dmin, 16);
+  const float *const restrict wb_high = __builtin_assume_aligned(d->wb_high, 16);
+  const float *const restrict offset = __builtin_assume_aligned(d->offset, 16);
 
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(d, in, out, roi_out) \
-    aligned(in, out:64) collapse(2)
+    dt_omp_firstprivate(d, in, out, roi_out, exposure, black, gamma, soft_clip, soft_clip_comp, \
+                        Dmin, wb_high, offset)                                              \
+    aligned(in, out:64)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * 4; k += 4)
   {
-    for(size_t c = 0; c < 4; c++)
-    {
-      // Unpack vectors one by one with extra pragmas to be sure the compiler understands they can be vectorized
-      const float *const restrict pix_in = in + k;
-      float *const restrict pix_out = out + k;
-      const float *const restrict Dmin = __builtin_assume_aligned(d->Dmin, 16);
-      const float *const restrict wb_high = __builtin_assume_aligned(d->wb_high, 16);
-      const float *const restrict offset = __builtin_assume_aligned(d->offset, 16);
-
-      // Convert transmission to density using Dmin as a fulcrum
-      const float density = - log10f(Dmin[c] / fmaxf(pix_in[c], THRESHOLD)); // threshold to -32 EV
-
-      // Correct density in log space
-      const float corrected_de = wb_high[c] * density + offset[c];
-
-      // Print density on paper : ((1 - 10^corrected_de + black) * exposure)^gamma rewritten for FMA
-      const float print_linear = -(d->exposure * fast_exp10f(corrected_de) + d->black);
-      const float print_gamma = powf(fmaxf(print_linear, 0.0f), d->gamma); // note : this is always > 0
-
-      // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
-      pix_out[c] =  (print_gamma > d->soft_clip) ? d->soft_clip + (1.0f - fast_expf(-(print_gamma - d->soft_clip) / d->soft_clip_comp)) * d->soft_clip_comp
-                                                 : print_gamma;
-    }
+    const float *const restrict pix_in = in + k;
+    float *const restrict pix_out = out + k;
+    _process_pixel(pix_in, pix_out, Dmin, wb_high, offset, black, exposure, gamma, soft_clip, soft_clip_comp);
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
@@ -408,7 +448,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 }
 
 
-/* Global GUI stuff */
+/* Global GUI stuff */
 
 static void setup_color_variables(dt_iop_negadoctor_gui_data_t *const g, const gint state)
 {
@@ -437,7 +477,7 @@ static void toggle_stock_controls(dt_iop_module_t *const self)
   else
   {
     // We shouldn't be there
-    fprintf(stderr, "negadoctor film stock: undefined behavior\n");
+    dt_print(DT_DEBUG_ALWAYS, "negadoctor film stock: undefined behavior\n");
   }
 }
 
@@ -664,7 +704,7 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
   for(int c = 0; c < 3; c++)
     RGB_min[c] = log10f(p->Dmin[c] / fmaxf(self->picked_color[c], THRESHOLD)) / p->D_max;
 
-  const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
+  const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
   for(int c = 0; c < 3; c++) p->wb_low[c] =  RGB_v_min / RGB_min[c];
 
   ++darktable.gui->reset;
@@ -777,7 +817,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   else if(picker == g->black)
     apply_auto_black(self);
   else
-    fprintf(stderr, "[negadoctor] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[negadoctor] unknown color picker\n");
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -793,7 +833,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Dmin
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("color of the film base")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "color of the film base")), FALSE, FALSE, 0);
 
   GtkWidget *row1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -805,6 +845,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row1);
   gtk_widget_set_tooltip_text(g->Dmin_sampler , _("pick color of film material from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("film material"), g->Dmin_sampler, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(page1), GTK_WIDGET(row1), FALSE, FALSE, 0);
 
@@ -840,7 +881,7 @@ void gui_init(dt_iop_module_t *self)
 
   // D max and scanner bias
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("dynamic range of the film")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "dynamic range of the film")), FALSE, FALSE, 0);
 
   g->D_max = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "D_max"));
   dt_bauhaus_slider_set_format(g->D_max, " dB");
@@ -848,7 +889,7 @@ void gui_init(dt_iop_module_t *self)
                                           "this value depends on the film specifications, the developing process,\n"
                                           "the dynamic range of the scene and the scanner exposure settings."));
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("scanner exposure settings")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "scanner exposure settings")), FALSE, FALSE, 0);
 
   g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"));
   dt_bauhaus_slider_set_format(g->offset, " dB");
@@ -859,7 +900,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page2 = self->widget = dt_ui_notebook_page(g->notebook, N_("corrections"), NULL);
 
   // WB shadows
-  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("shadows color cast")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(C_("section", "shadows color cast")), FALSE, FALSE, 0);
 
   GtkWidget *row3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -871,6 +912,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row3);
   gtk_widget_set_tooltip_text(g->WB_low_sampler, _("pick shadows color from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("shadows"), g->WB_low_sampler, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row3), FALSE, FALSE, 0);
 
@@ -896,7 +938,7 @@ void gui_init(dt_iop_module_t *self)
                                              "recovering the global white balance in difficult cases."));
 
   // WB highlights
-  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("highlights white balance")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(C_("section", "highlights white balance")), FALSE, FALSE, 0);
 
   GtkWidget *row2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -908,6 +950,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row2);
   gtk_widget_set_tooltip_text(g->WB_high_sampler , _("pick illuminant color from image"));
+  dt_action_define_iop(self, N_("pickers"), N_("illuminant"), g->WB_high_sampler, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row2), FALSE, FALSE, 0);
 
@@ -936,7 +979,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page3 = self->widget = dt_ui_notebook_page(g->notebook, N_("print properties"), NULL);
 
   // print corrections
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual paper properties")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(C_("section", "virtual paper properties")), FALSE, FALSE, 0);
 
   g->black = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "black"));
   dt_bauhaus_slider_set_digits(g->black, 4);
@@ -959,7 +1002,7 @@ void gui_init(dt_iop_module_t *self)
                                               "to avoid clipping while pushing the exposure for mid-tones.\n"
                                               "this somewhat reproduces the behavior of matte paper."));
 
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual print emulation")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(C_("section", "virtual print emulation")), FALSE, FALSE, 0);
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "exposure"));
   dt_bauhaus_slider_set_hard_min(g->exposure, -1.0);
@@ -1024,7 +1067,7 @@ void gui_update(dt_iop_module_t *const self)
   dt_iop_color_picker_reset(self, TRUE);
 
 
-  dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
+  dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
   dt_bauhaus_slider_set_default(g->exposure, log2f(p->exposure)); // otherwise always showes as "changed"
 
   // Update custom stuff

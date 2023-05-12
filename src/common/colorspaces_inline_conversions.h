@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2017-2021 darktable developers.
+ *    Copyright (C) 2017-2023 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -18,14 +18,7 @@
 
 #pragma once
 
-#include "common/math.h"
-
-#ifdef __SSE2__
-#include "common/sse.h" // also loads darkable.h
-#include <xmmintrin.h>
-#else
-#include "common/darktable.h"
-#endif
+#include "common/math.h" // also loads darkable.h, sse.h, <xmmintrin.h>
 
 
 #ifdef __SSE2__
@@ -92,47 +85,6 @@ static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 
 /** uses D50 white point. */
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-static inline __m128 dt_XYZ_to_sRGB_sse2(__m128 XYZ)
-{
-  // XYZ -> sRGB matrix, D65
-  const __m128 xyz_to_srgb_0 = _mm_setr_ps(3.1338561f, -0.9787684f, 0.0719453f, 0.0f);
-  const __m128 xyz_to_srgb_1 = _mm_setr_ps(-1.6168667f, 1.9161415f, -0.2289914f, 0.0f);
-  const __m128 xyz_to_srgb_2 = _mm_setr_ps(-0.4906146f, 0.0334540f, 1.4052427f, 0.0f);
-
-  __m128 rgb
-      = xyz_to_srgb_0 * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0)) +
-        xyz_to_srgb_1 * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1)) +
-        xyz_to_srgb_2 * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2));
-
-  // linear sRGB -> gamma corrected sRGB
-  __m128 mask = _mm_cmple_ps(rgb, _mm_set1_ps(0.0031308));
-  __m128 rgb0 = _mm_set1_ps(12.92) * rgb;
-  __m128 rgb1 = _mm_set1_ps(1.0 + 0.055) * _mm_pow_ps1(rgb, 1.0 / 2.4) - _mm_set1_ps(0.055);
-  return _mm_or_ps(_mm_and_ps(mask, rgb0), _mm_andnot_ps(mask, rgb1));
-}
-
-static inline __m128 dt_sRGB_to_XYZ_sse2(__m128 rgb)
-{
-  // sRGB -> XYZ matrix, D65
-  const __m128 srgb_to_xyz_0 = _mm_setr_ps(0.4360747f, 0.2225045f, 0.0139322f, 0.0f);
-  const __m128 srgb_to_xyz_1 = _mm_setr_ps(0.3850649f, 0.7168786f, 0.0971045f, 0.0f);
-  const __m128 srgb_to_xyz_2 = _mm_setr_ps(0.1430804f, 0.0606169f, 0.7141733f, 0.0f);
-
-  // gamma corrected sRGB -> linear sRGB
-  __m128 mask = _mm_cmple_ps(rgb, _mm_set1_ps(0.04045));
-  __m128 rgb0 = _mm_div_ps(rgb, _mm_set1_ps(12.92));
-  __m128 rgb1 = _mm_pow_ps1(_mm_div_ps(_mm_add_ps(rgb, _mm_set1_ps(0.055)), _mm_set1_ps(1 + 0.055)), 2.4);
-  rgb = _mm_or_ps(_mm_and_ps(mask, rgb0), _mm_andnot_ps(mask, rgb1));
-
-  __m128 XYZ
-      = srgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) +
-        srgb_to_xyz_1 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)) +
-        srgb_to_xyz_2 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2));
-  return XYZ;
-}
-
-/** uses D50 white point. */
-// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
 static inline __m128 dt_XYZ_to_prophotoRGB_sse2(__m128 XYZ)
 {
   // XYZ -> prophotoRGB matrix, D50
@@ -165,7 +117,7 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 #endif
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(in,out)
+#pragma omp declare simd aligned(in,out : 16) aligned(matrix : 64)
 #endif
 static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix,
                                                     dt_aligned_pixel_t out)
@@ -174,6 +126,21 @@ static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in,
   // and eliminate intermediate memory writes without going through major contortions
   for_each_channel(r)
     out[r] = matrix[0][r] * in[0] + matrix[1][r] * in[1] + matrix[2][r] * in[2];
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in,out,matrix_row0,matrix_row1,matrix_row2)
+#endif
+static inline void dt_apply_color_matrix_by_row(const dt_aligned_pixel_t in,
+                                                const dt_aligned_pixel_t matrix_row0,
+                                                const dt_aligned_pixel_t matrix_row1,
+                                                const dt_aligned_pixel_t matrix_row2,
+                                                dt_aligned_pixel_t out)
+{
+  // using dt_aligned_pixel_t instead of float* for the function parameters gives GCC enough info to vectorize
+  // and eliminate intermediate memory writes without going through major contortions
+  for_each_channel(r)
+    out[r] = matrix_row0[r] * in[0] + matrix_row1[r] * in[1] + matrix_row2[r] * in[2];
 }
 
 #ifdef _OPENMP
@@ -208,6 +175,7 @@ static inline float lab_f(const float x)
 
 /** uses D50 white point. */
 static const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
+static const dt_aligned_pixel_t d50_inv = { 1.0f/0.9642f, 1.0f, 1.0f/0.8249f };
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
@@ -216,10 +184,29 @@ static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_
 {
   dt_aligned_pixel_t f;
   for_each_channel(i)
-    f[i] = lab_f(XYZ[i] / d50[i]);
-  Lab[0] = 116.0f * f[1] - 16.0f;
-  Lab[1] = 500.0f * (f[0] - f[1]);
-  Lab[2] = 200.0f * (f[1] - f[2]);
+    f[i] = lab_f(XYZ[i] * d50_inv[i]);
+//  Lab[0] = 116.0f * f[1] - 16.0f;
+//  Lab[1] = 500.0f * (f[0] - f[1]);
+//  Lab[2] = -200.0f * (f[2] - f[1]);
+  static const dt_aligned_pixel_t coeff = { 116.0f, 500.0f, -200.0f, 0.0f };
+  static const dt_aligned_pixel_t offset = { 16.0f, 0.0f, 0.0f, 0.0f };
+  static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+  // compiler uses permute instruction if we copy ALL elements
+  // unused fourth element will be zeroed by the multiplication
+  const dt_aligned_pixel_t tmp1 = { f[1], f[0], f[2], f[3] };
+#if defined(__GNUC__) && !defined(__clang__)
+  // convince the compiler to use shuffle/permute instructions instead
+  // of building the result in RAM
+  typedef float v4sf __attribute__((vector_size(16)));
+  typedef int v4si __attribute__((vector_size(16)));
+  const v4si mask = { 5, 1, 1, 5 }; // zero[0], f[1], f[1], zero[0]
+  dt_aligned_pixel_t tmp2;
+  *((v4sf*)tmp2) =  __builtin_shuffle(*((v4sf*)f), *((v4sf*)zero), mask);
+#else
+  const dt_aligned_pixel_t tmp2 = { zero[0], f[1], f[1], zero[0] };
+#endif
+  for_each_channel(c)
+    Lab[c] = (coeff[c] * (tmp1[c] - tmp2[c])) - offset[c];
 }
 
 #ifdef _OPENMP
@@ -238,13 +225,50 @@ static inline float lab_f_inv(const float x)
 #endif
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, -Lab[2], 0.0f };
-  static const dt_aligned_pixel_t coeff = { 500.0f, 116.0f, 200.0f, 1.0f };
+  dt_aligned_pixel_t f = { Lab[1], Lab[0], Lab[2], Lab[3] };
+  static const dt_aligned_pixel_t offset = { 0.0f, 16.0f, 0.0f, 0.0f };
+  static const dt_aligned_pixel_t coeff = { 1.0f/500.0f, 1.0f/116.0f, -1.0f/200.0f, 0.0f };
   static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
+  dt_aligned_pixel_t scaled;
   for_each_channel(c,aligned(Lab,coeff,f))
-    f[c] /= coeff[c];
+    scaled[c] = (f[c] + offset[c]) * coeff[c];
+  dt_aligned_pixel_t inv;
+  for_each_channel(c)
+    inv[c] = lab_f_inv(scaled[c] + scaled[1] * add_coeff[c]);
   for_each_channel(c,aligned(d50,f,add_coeff,XYZ))
-    XYZ[c] = d50[c] * lab_f_inv(f[c] + f[1] * add_coeff[c]);
+    XYZ[c] = d50[c] * inv[c];
+}
+
+/** uses D50 white point. */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Lab, RGB:16) uniform(Lab, RGB)
+#endif
+static inline void dt_Lab_to_linearRGB(
+	const dt_aligned_pixel_t Lab,
+        const dt_aligned_pixel_t cmatrix_row0,
+        const dt_aligned_pixel_t cmatrix_row1,
+        const dt_aligned_pixel_t cmatrix_row2,
+        dt_aligned_pixel_t RGB)
+{
+  // we need to duplicate the code from dt_Lab_to_XYZ and
+  // dt_apply_transposed_color_matrix here in order to make the
+  // compiler optimize away memory accesses for intermediates
+  static const dt_aligned_pixel_t coeff = { 1.0f/500.0f, 1.0f/116.0f, -1.0f/200.0f, 1.0f };
+  static const dt_aligned_pixel_t add = { 0.0f, 16.0f, 0.0f, 0.0f };
+  static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
+  const dt_aligned_pixel_t f = { Lab[1], Lab[0], Lab[2], Lab[3] };
+  dt_aligned_pixel_t scaled;
+  for_each_channel(c,aligned(Lab,coeff,f))
+    scaled[c] = (f[c] + add[c]) * coeff[c];
+  dt_aligned_pixel_t inv;
+  for_each_channel(c)
+    inv[c] = lab_f_inv(scaled[c] + scaled[1] * add_coeff[c]);
+  dt_aligned_pixel_t XYZ;
+  for_each_channel(c,aligned(d50,f,add_coeff,XYZ))
+    XYZ[c] = d50[c] * inv[c];
+  // the following loop is dt_apply_transposed_color_matrix(XYZ, cmatrix, RGB);
+  for_each_channel(r)
+    RGB[r] = cmatrix_row0[r] * XYZ[0] + cmatrix_row1[r] * XYZ[1] + cmatrix_row2[r] * XYZ[2];
 }
 
 #ifdef _OPENMP
@@ -396,22 +420,6 @@ static inline void dt_Lch_to_xyY(const dt_aligned_pixel_t Lch, dt_aligned_pixel_
   dt_Luv_to_xyY(Luv, xyY);
 }
 
-/** Uses D50 **/
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline void dt_XYZ_to_Rec709_D50(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
-{
-  // transpose and pad the conversion matrix to enable vectorization
-  static const dt_colormatrix_t xyz_to_srgb_matrix_transposed =
-    { {  3.1338561f, -0.9787684f,  0.0719453f, 0.0f },
-      { -1.6168667f,  1.9161415f, -0.2289914f, 0.0f },
-      { -0.4906146f,  0.0334540f,  1.4052427f, 0.0f } };
-
-  // XYZ -> linear sRGB
-  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_matrix_transposed, sRGB);
-}
-
 
 /** Uses D65 **/
 #ifdef _OPENMP
@@ -430,6 +438,119 @@ static inline void dt_XYZ_to_Rec709_D65(const dt_aligned_pixel_t XYZ, dt_aligned
   dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_transposed, sRGB);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(sRGB, RGB)
+#endif
+static inline void dt_sRGB_to_linear_sRGB(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t RGB)
+{
+  // gamma corrected sRGB -> linear sRGB
+  dt_aligned_pixel_t toe;
+  dt_aligned_pixel_t offset_srgb;
+  dt_aligned_pixel_t scaled_srgb;
+  for_each_channel(c)
+  {
+    toe[c] = sRGB[c]/ 12.92f;
+    offset_srgb[c] = sRGB[c] + 0.055f;
+    scaled_srgb[c] = offset_srgb[c] / 1.055f;
+  }
+  static const dt_aligned_pixel_t two_point_four = { 2.4f, 2.4f, 2.4f, 2.4f };
+  dt_aligned_pixel_t linearized;
+  dt_vector_powf(scaled_srgb, two_point_four, linearized);
+  for_each_channel(c)
+  {
+    RGB[c] = (sRGB[c] <= 0.04045f) ? toe[c] : linearized[c];
+  }
+//  for(int c = 0; c < 3; c++)
+//    RGB[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ,rgb)
+#endif
+static inline void dt_XYZ_to_prophotorgb(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t rgb)
+{
+  // transpose and pad the conversion matrix to enable vectorization
+  static const dt_colormatrix_t xyz_to_prophotorgb_transpose = {
+    {  1.3459433f, -0.5445989f, 0.0000000f, 0.0f },
+    { -0.2556075f,  1.5081673f, 0.0000000f, 0.0f },
+    { -0.0511118f,  0.0205351f, 1.2118128f, 0.0f }
+  };
+  dt_apply_transposed_color_matrix(XYZ,xyz_to_prophotorgb_transpose,rgb);
+}
+
+// transpose and pad the conversion matrix to enable vectorization
+static const dt_colormatrix_t prophotorgb_to_xyz_transpose = {
+  // prophoto rgb
+  { 0.7976749f, 0.2880402f, 0.0000000f, 0.0f },
+  { 0.1351917f, 0.7118741f, 0.0000000f, 0.0f },
+  { 0.0313534f, 0.0000857f, 0.8252100f, 0.0f }
+};
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(rgb, XYZ)
+#endif
+static inline void dt_prophotorgb_to_XYZ(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t XYZ)
+{
+  dt_apply_transposed_color_matrix(rgb,prophotorgb_to_xyz_transpose,XYZ);
+}
+
+static inline float dt_prophotorgb_to_XYZ_luma(const dt_aligned_pixel_t rgb)
+{
+  return (prophotorgb_to_xyz_transpose[0][1] * rgb[0]
+          + prophotorgb_to_xyz_transpose[1][1] * rgb[1]
+          + prophotorgb_to_xyz_transpose[2][1] * rgb[2]);
+}
+
+// Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
+// (transpose and pad the conversion matrix to enable vectorization)
+static const dt_colormatrix_t sRGB_to_xyz_transposed =
+  { { 0.4360747f, 0.2225045f, 0.0139322f },
+    { 0.3850649f, 0.7168786f, 0.0971045f },
+    { 0.1430804f, 0.0606169f, 0.7141733f } };
+
+static const dt_colormatrix_t xyz_to_srgb_transposed =
+  { {  3.1338561f, -0.9787684f,  0.0719453f },
+    { -1.6168667f,  1.9161415f, -0.2289914f },
+    { -0.4906146f,  0.0334540f,  1.4052427f } };
+
+static inline void dt_linearRGB_to_XYZ(const dt_aligned_pixel_t linearRGB, dt_aligned_pixel_t XYZ)
+{
+  dt_apply_transposed_color_matrix(linearRGB, sRGB_to_xyz_transposed, XYZ);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(sRGB, XYZ_D50: 16)
+#endif
+static inline void dt_Rec709_to_XYZ_D50(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ_D50)
+{
+  dt_apply_transposed_color_matrix(sRGB, sRGB_to_xyz_transposed, XYZ_D50);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(sRGB, XYZ)
+#endif
+static inline void dt_sRGB_to_XYZ(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ)
+{
+  dt_aligned_pixel_t rgb = { 0 };
+  dt_sRGB_to_linear_sRGB(sRGB, rgb);
+  // linear sRGB -> XYZ
+  dt_Rec709_to_XYZ_D50(rgb, XYZ);
+}
+
+static inline void dt_XYZ_to_linearRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t linearRGB)
+{
+  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_transposed, linearRGB);
+}
+
+/** Uses D50 **/
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline void dt_XYZ_to_Rec709_D50(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
+{
+  // XYZ -> linear sRGB
+  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_transposed, sRGB);
+}
 
 /** uses D50 white point. */
 #ifdef _OPENMP
@@ -441,10 +562,21 @@ static inline void dt_XYZ_to_sRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel
   dt_aligned_pixel_t rgb;
   dt_XYZ_to_Rec709_D50(XYZ, rgb);
   // linear sRGB -> gamma corrected sRGB
-  for(size_t c = 0; c < 3; c++)
-    sRGB[c] = rgb[c] <= 0.0031308f ? 12.92f * rgb[c] : (1.0f + 0.055f) * powf(rgb[c], 1.0f / 2.4f) - 0.055f;
+  dt_aligned_pixel_t toe;
+  dt_aligned_pixel_t curved;
+  for_each_channel(c)
+  {
+    toe[c] = 12.92f * rgb[c];
+  }
+  static const dt_aligned_pixel_t srgb_power = { 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f };
+  dt_vector_powf(rgb, srgb_power, curved);
+  for_each_channel(c)
+  {
+    sRGB[c] = (rgb[c] <=  0.0031308f) ? toe[c] : (1.055f * curved[c] - 0.055f);
+  }
+//  for(size_t c = 0; c < 3; c++)
+//    sRGB[c] = rgb[c] <= 0.0031308f ? 12.92f * rgb[c] : (1.0f + 0.055f) * powf(rgb[c], 1.0f / 2.4f) - 0.055f;
 }
-
 
 /** uses D50 white point and clips the output to [0..1]. */
 #ifdef _OPENMP
@@ -459,149 +591,15 @@ static inline void dt_XYZ_to_sRGB_clipped(const dt_aligned_pixel_t XYZ, dt_align
     sRGB[c] = CLIP(result[c]);
 }
 
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(sRGB, XYZ_D50: 16)
-#endif
-static inline void dt_Rec709_to_XYZ_D50(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ_D50)
-{
-  // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
-  // (transpose and pad the conversion matrix to enable vectorization)
-  static const dt_colormatrix_t M = {
-    { 0.4360747f, 0.2225045f, 0.0139322f, 0.0f },
-    { 0.3850649f, 0.7168786f, 0.0971045f, 0.0f },
-    { 0.1430804f, 0.0606169f, 0.7141733f, 0.0f }
-  };
-  dt_apply_transposed_color_matrix(sRGB, M, XYZ_D50);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(sRGB, RGB)
-#endif
-static inline void dt_sRGB_to_linear_sRGB(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t RGB)
-{
-  // gamma corrected sRGB -> linear sRGB
-  for(int c = 0; c < 3; c++)
-    RGB[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(sRGB, XYZ)
-#endif
-static inline void dt_sRGB_to_XYZ(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ)
-{
-  dt_aligned_pixel_t rgb = { 0 };
-  dt_sRGB_to_linear_sRGB(sRGB, rgb);
-  // linear sRGB -> XYZ
-  dt_Rec709_to_XYZ_D50(rgb, XYZ);
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ,rgb)
-#endif
-static inline void dt_XYZ_to_prophotorgb(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t rgb)
-{
-  // transpose and pad the conversion matrix to enable vectorization
-  static const dt_colormatrix_t xyz_to_rgb_transpose = {
-    {  1.3459433f, -0.5445989f, 0.0000000f, 0.0f },
-    { -0.2556075f,  1.5081673f, 0.0000000f, 0.0f },
-    { -0.0511118f,  0.0205351f, 1.2118128f, 0.0f }
-  };
-  dt_apply_transposed_color_matrix(XYZ,xyz_to_rgb_transpose,rgb);
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(rgb, XYZ)
-#endif
-static inline void dt_prophotorgb_to_XYZ(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t XYZ)
-{
-  // transpose and pad the conversion matrix to enable vectorization
-  static const dt_colormatrix_t rgb_to_xyz_transpose = {
-    // prophoto rgb
-    { 0.7976749f, 0.2880402f, 0.0000000f, 0.0f },
-    { 0.1351917f, 0.7118741f, 0.0000000f, 0.0f },
-    { 0.0313534f, 0.0000857f, 0.8252100f, 0.0f }
-  };
-  dt_apply_transposed_color_matrix(rgb,rgb_to_xyz_transpose,XYZ);
-}
-
-#ifdef __SSE2__
-/** uses D50 white point. */
-// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-static inline __m128 dt_XYZ_to_RGB_sse2(__m128 XYZ)
-{
-  // XYZ -> sRGB matrix, D65
-  const __m128 xyz_to_srgb_0 = _mm_setr_ps(3.1338561f, -0.9787684f, 0.0719453f, 0.0f);
-  const __m128 xyz_to_srgb_1 = _mm_setr_ps(-1.6168667f, 1.9161415f, -0.2289914f, 0.0f);
-  const __m128 xyz_to_srgb_2 = _mm_setr_ps(-0.4906146f, 0.0334540f, 1.4052427f, 0.0f);
-
-  __m128 rgb
-      = _mm_add_ps(_mm_mul_ps(xyz_to_srgb_0, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0))),
-                   _mm_add_ps(_mm_mul_ps(xyz_to_srgb_1, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1))),
-                              _mm_mul_ps(xyz_to_srgb_2, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2)))));
-
-  return rgb;
-}
-
-static inline __m128 dt_RGB_to_XYZ_sse2(__m128 rgb)
-{
-  // sRGB -> XYZ matrix, D65
-  const __m128 srgb_to_xyz_0 = _mm_setr_ps(0.4360747f, 0.2225045f, 0.0139322f, 0.0f);
-  const __m128 srgb_to_xyz_1 = _mm_setr_ps(0.3850649f, 0.7168786f, 0.0971045f, 0.0f);
-  const __m128 srgb_to_xyz_2 = _mm_setr_ps(0.1430804f, 0.0606169f, 0.7141733f, 0.0f);
-
-  __m128 XYZ
-    = ((srgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)))
-       + (srgb_to_xyz_1 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)))
-       + (srgb_to_xyz_2 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2))));
-  return XYZ;
-}
-#endif
-
-#if 0
-static const dt_colormatrix_t linear_sRGB_to_xyz_matrix =
-  { { 0.4360747f, 0.3850649f, 0.1430804f },
-    { 0.2225045f, 0.7168786f, 0.0606169f },
-    { 0.0139322f, 0.0971045f, 0.7141733f } };
-#endif
-
-static const dt_colormatrix_t sRGB_to_xyz_transposed =
-  { { 0.4360747f, 0.2225045f, 0.0139322f },
-    { 0.3850649f, 0.7168786f, 0.0971045f },
-    { 0.1430804f, 0.0606169f, 0.7141733f } };
-
-static inline void dt_linearRGB_to_XYZ(const dt_aligned_pixel_t linearRGB, dt_aligned_pixel_t XYZ)
-{
-  dt_apply_transposed_color_matrix(linearRGB, sRGB_to_xyz_transposed, XYZ);
-}
-
-#if 0
-static const dt_colormatrix_t xyz_to_srgb_matrix =
-  { {  3.1338561f, -1.6168667f, -0.4906146f },
-    { -0.9787684f,  1.9161415f,  0.0334540f },
-    {  0.0719453f, -0.2289914f,  1.4052427f } };
-#endif
-
-static const dt_colormatrix_t xyz_to_srgb_transposed =
-  { {  3.1338561f, -0.9787684f,  0.0719453f },
-    { -1.6168667f,  1.9161415f, -0.2289914f },
-    { -0.4906146f,  0.0334540f,  1.4052427f } };
-
-static inline void dt_XYZ_to_linearRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t linearRGB)
-{
-  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_transposed, linearRGB);
-}
-
-
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, rgb)
 #endif
-static inline void dt_Lab_to_prophotorgb(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t rgb)
+static inline float dt_Lab_to_prophotorgb(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t rgb)
 {
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ(Lab, XYZ);
   dt_XYZ_to_prophotorgb(XYZ, rgb);
+  return XYZ[1];
 }
 
 #ifdef _OPENMP
@@ -614,9 +612,23 @@ static inline void dt_prophotorgb_to_Lab(const dt_aligned_pixel_t rgb, dt_aligne
   dt_XYZ_to_Lab(XYZ, Lab);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(rgb, Lab, cmatrix_row0, cmatrix_row1, cmatrix_row2)
+#endif
+static inline void dt_RGB_to_Lab(const dt_aligned_pixel_t rgb,
+                                 const dt_aligned_pixel_t cmatrix_row0,
+                                 const dt_aligned_pixel_t cmatrix_row1,
+                                 const dt_aligned_pixel_t cmatrix_row2,
+                                 dt_aligned_pixel_t Lab)
+{
+  dt_aligned_pixel_t XYZ;
+  dt_apply_color_matrix_by_row(rgb, cmatrix_row0, cmatrix_row1, cmatrix_row2, XYZ);
+  dt_XYZ_to_Lab(XYZ, Lab);
+}
+
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(RGB)
 #endif
 static inline float _dt_RGB_2_Hue(const dt_aligned_pixel_t RGB, const float max, const float delta)
 {
@@ -842,13 +854,6 @@ static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)
 static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_aligned_pixel_t XYZ_D65)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-#if 0
-  static const dt_colormatrix_t M = {
-      {  0.9555766f, -0.0230393f,  0.0631636f, 0.0f },
-      { -0.0282895f,  1.0099416f,  0.0210077f, 0.0f },
-      {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
-  };
-#endif
   static const dt_colormatrix_t M_transposed = {
       {  0.9555766f, -0.0282895f,  0.0122982f, 0.0f },
       { -0.0230393f,  1.0099416f, -0.0204830f, 0.0f },
@@ -865,13 +870,6 @@ static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_ali
 static inline void dt_XYZ_D65_2_XYZ_D50(const dt_aligned_pixel_t XYZ_D65, dt_aligned_pixel_t XYZ_D50)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-#if 0
-  static const dt_colormatrix_t M = {
-      {  1.0478112f,  0.0228866f, -0.0501270f, 0.0f },
-      {  0.0295424f,  0.9904844f, -0.0170491f, 0.0f },
-      { -0.0092345f,  0.0150436f,  0.7521316f, 0.0f },
-  };
-#endif
   static const dt_colormatrix_t M_transposed = {
       {  1.0478112f,  0.0295424f, -0.0092345f, 0.0f },
       {  0.0228866f,  0.9904844f,  0.0150436f, 0.0f },
@@ -904,18 +902,11 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   const float p = 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  static const dt_colormatrix_t M = {
-      { 0.41478972f, 0.579999f, 0.0146480f, 0.0f },
-      { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
-      { -0.0166008f, 0.264800f, 0.6684799f, 0.0f },
+  static const dt_colormatrix_t M_transposed = {
+      { 0.41478972f, -0.2015100f, -0.0166008f, 0.0f },
+      { 0.57999900f,  1.1206490f,  0.2648000f, 0.0f },
+      { 0.01464800f,  0.0531008f,  0.6684799f, 0.0f },
   };
-#if 0
-  static const dt_colormatrix_t A = {
-      { 0.5f,       0.5f,       0.0f,      0.0f },
-      { 3.524000f, -4.066708f,  0.542708f, 0.0f },
-      { 0.199076f,  1.096799f, -1.295875f, 0.0f },
-  };
-#endif
   static const dt_colormatrix_t A_transposed = {
       { 0.5f,       3.524000f,  0.199076f, 0.0f },
       { 0.5f,      -4.066708f,  1.096799f, 0.0f },
@@ -923,7 +914,6 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   };
 
   dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
 
   // XYZ -> X'Y'Z
   XYZ[0] = b * XYZ_D65[0] - (b - 1.0f) * XYZ_D65[2];
@@ -931,19 +921,19 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   XYZ[2] = XYZ_D65[2];
 
   // X'Y'Z -> L'M'S'
+  dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_apply_transposed_color_matrix(XYZ, M_transposed, LMS);
 #ifdef _OPENMP
-#pragma omp simd aligned(LMS, XYZ:16) aligned(M:64)
+#pragma omp simd aligned(LMS, XYZ:16)
 #endif
   for(int i = 0; i < 3; i++)
   {
-    LMS[i] = M[i][0] * XYZ[0] + M[i][1] * XYZ[1] + M[i][2] * XYZ[2];
     LMS[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);
     LMS[i] = powf((c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]), p);
   }
 
   // L'M'S' -> Izazbz
-  for_each_channel(c)
-    JzAzBz[c] = A_transposed[0][c] * LMS[0] + A_transposed[1][c] * LMS[1] + A_transposed[2][c] * LMS[2];
+  dt_apply_transposed_color_matrix(LMS, A_transposed, JzAzBz);
   // Iz -> Jz
   JzAzBz[0] = fmaxf(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
 }
@@ -983,42 +973,51 @@ static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_p
   const float p_inv = 1.0f / 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  const dt_colormatrix_t MI = {
-      {  1.9242264357876067f, -1.0047923125953657f,  0.0376514040306180f, 0.0f },
-      {  0.3503167620949991f,  0.7264811939316552f, -0.0653844229480850f, 0.0f },
-      { -0.0909828109828475f, -0.3127282905230739f,  1.5227665613052603f, 0.0f },
+  static const dt_colormatrix_t AI_trans = {
+      {  1.0f,                 1.0f,                 1.0f,                0.0f },
+      {  0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f, 0.0f },
+      {  0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f, 0.0f },
   };
-  const dt_colormatrix_t AI = {
-      {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-      {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-      {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f },
+  static const dt_colormatrix_t MI_trans = {
+      {  1.9242264357876067f,  0.3503167620949991f, -0.0909828109828475f, 0.0f },
+      { -1.0047923125953657f,  0.7264811939316552f, -0.3127282905230739f, 0.0f },
+      {  0.0376514040306180f, -0.0653844229480850f,  1.5227665613052603f, 0.0f },
   };
 
-  dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t IzAzBz = { 0.0f, 0.0f, 0.0f, 0.0f };
-
   IzAzBz[0] = JzAzBz[0] + d0;
   IzAzBz[0] = fmaxf(IzAzBz[0] / (1.0f + d - d * IzAzBz[0]), 0.f);
   IzAzBz[1] = JzAzBz[1];
   IzAzBz[2] = JzAzBz[2];
 
+  dt_aligned_pixel_t LMS;
+  dt_apply_transposed_color_matrix(IzAzBz, AI_trans, LMS);
+  dt_vector_clipneg(LMS);
   // IzAzBz -> LMS
-#ifdef _OPENMP
-#pragma omp simd aligned(LMS, IzAzBz:16) aligned(AI:64)
-#endif
+  for_each_channel(i, aligned(LMS))
+  {
+    // if we're lucky, the compiler substitutes a vectorized powf()
+    LMS[i] = powf(LMS[i], p_inv);
+  }
   for(int i = 0; i < 3; i++)
   {
-    LMS[i] = AI[i][0] * IzAzBz[0] + AI[i][1] * IzAzBz[1] + AI[i][2] * IzAzBz[2];
-    LMS[i] = powf(fmaxf(LMS[i], 0.0f), p_inv);
-    LMS[i] = 10000.f * powf(fmaxf((c1 - LMS[i]) / (c3 * LMS[i] - c2), 0.0f), n_inv);
+    // to avoid changing the results compared to previous code, we
+    // deliberately use a non-vectorizable loop here to force the
+    // compiler to use an actual division instruction instead of the
+    // packed approximate reciprocal instruction (which has 3E-4
+    // relative error)
+    LMS[i] = (c1 - LMS[i]) / (c3 * LMS[i] - c2);
+  }
+  dt_vector_clipneg(LMS);
+  for_each_channel(i, aligned(LMS))
+  {
+    // if we're lucky, the compiler substitutes a vectorized powf()
+    LMS[i] = 10000.f * powf(LMS[i], n_inv);
   }
 
   // LMS -> X'Y'Z
-#ifdef _OPENMP
-#pragma omp simd aligned(LMS, XYZ:16) aligned(MI:64)
-#endif
-  for(int i = 0; i < 3; i++) XYZ[i] = MI[i][0] * LMS[0] + MI[i][1] * LMS[1] + MI[i][2] * LMS[2];
+  dt_aligned_pixel_t XYZ;
+  dt_apply_transposed_color_matrix(LMS, MI_trans, XYZ);
 
   // X'Y'Z -> XYZ_D65
   XYZ_D65[0] = (XYZ[0] + (b - 1.0f) * XYZ[2]) / b;
@@ -1039,10 +1038,20 @@ static const dt_colormatrix_t XYZ_D65_to_LMS_2006_D65
         { -0.394427f, 1.175800f, 0.106423f, 0.f },
         { 0.064856f, -0.076250f, 0.559067f, 0.f } };
 
+static const dt_colormatrix_t XYZ_D65_to_LMS_2006_D65_trans
+    = { {  0.257085f, -0.394427f,  0.064856f, 0.f },
+        {  0.859943f,  1.175800f, -0.076250f, 0.f },
+        { -0.031061f,  0.106423f,  0.559067f, 0.f } };
+
 static const dt_colormatrix_t LMS_2006_D65_to_XYZ_D65
     = { { 1.80794659f, -1.29971660f, 0.34785879f, 0.f },
         { 0.61783960f, 0.39595453f, -0.04104687f, 0.f },
         { -0.12546960f, 0.20478038f, 1.74274183f, 0.f } };
+
+static const dt_colormatrix_t LMS_2006_D65_to_XYZ_D65_trans
+    = { {  1.80794659f,  0.61783960f, -0.12546960f, 0.f },
+        { -1.29971660f,  0.39595453f,  0.20478038f, 0.f },
+        {  0.34785879f, -0.04104687f,  1.74274183f, 0.f } };
 
 
 #ifdef _OPENMP
@@ -1050,7 +1059,7 @@ static const dt_colormatrix_t LMS_2006_D65_to_XYZ_D65
 #endif
 static inline void XYZ_to_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
-  dot_product(XYZ, XYZ_D65_to_LMS_2006_D65, LMS);
+  dt_apply_transposed_color_matrix(XYZ, XYZ_D65_to_LMS_2006_D65_trans, LMS);
 }
 
 #ifdef _OPENMP
@@ -1058,7 +1067,7 @@ static inline void XYZ_to_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t L
 #endif
 static inline void LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
-  dot_product(LMS, LMS_2006_D65_to_XYZ_D65, XYZ);
+  dt_apply_transposed_color_matrix(LMS, LMS_2006_D65_to_XYZ_D65_trans, XYZ);
 }
 
 /*
@@ -1068,22 +1077,22 @@ static inline void LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t X
 * https://doi.org/10.2352/issn.2169-2629.2019.27.38
 */
 
-static const dt_colormatrix_t filmlightRGB_D65_to_LMS_D65
-    = { { 0.95f, 0.38f, 0.00f, 0.f },
-        { 0.05f, 0.62f, 0.03f, 0.f },
-        { 0.00f, 0.00f, 0.97f, 0.f } };
+static const dt_colormatrix_t filmlightRGB_D65_to_LMS_D65_trans
+    = { { 0.95f, 0.05f, 0.00f, 0.f },
+        { 0.38f, 0.62f, 0.00f, 0.f },
+        { 0.00f, 0.03f, 0.97f, 0.f } };
 
-static const dt_colormatrix_t LMS_D65_to_filmlightRGB_D65
-    = { {  1.0877193f, -0.66666667f,  0.02061856f, 0.f },
-        { -0.0877193f,  1.66666667f, -0.05154639f, 0.f },
-        {         0.f,          0.f,  1.03092784f, 0.f } };
+static const dt_colormatrix_t LMS_D65_to_filmlightRGB_D65_trans
+    = { {  1.08771930f, -0.0877193f,          0.f, 0.f },
+        { -0.66666667f,  1.66666667f,         0.f, 0.f },
+        {  0.02061856f, -0.05154639f, 1.03092784f, 0.f } };
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(LMS, RGB: 16)
 #endif
 static inline void gradingRGB_to_LMS(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t LMS)
 {
-  dot_product(RGB, filmlightRGB_D65_to_LMS_D65, LMS);
+  dt_apply_transposed_color_matrix(RGB, filmlightRGB_D65_to_LMS_D65_trans, LMS);
 }
 
 #ifdef _OPENMP
@@ -1091,7 +1100,7 @@ static inline void gradingRGB_to_LMS(const dt_aligned_pixel_t RGB, dt_aligned_pi
 #endif
 static inline void LMS_to_gradingRGB(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t RGB)
 {
-  dot_product(LMS, LMS_D65_to_filmlightRGB_D65, RGB);
+  dt_apply_transposed_color_matrix(LMS, LMS_D65_to_filmlightRGB_D65_trans, RGB);
 }
 
 
@@ -1303,6 +1312,24 @@ static inline void gamut_check_Yrg(dt_aligned_pixel_t Ych)
   // Overwrite chroma with the sanitized value
   Ych[1] = max_c;
 }
+
+static inline void dt_RGB_to_YCbCr(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t yuv)
+{
+  static const dt_colormatrix_t rgb_to_YCbCr_transposed = {
+    { 0.299f, -0.147f,  0.615f, 0.0f },
+    { 0.587f, -0.289f, -0.515f, 0.0f },
+    { 0.114f,  0.437f, -0.100f, 0.0f }
+  };
+  dt_apply_transposed_color_matrix(rgb, rgb_to_YCbCr_transposed, yuv);
+}
+
+static inline void dt_YCbCr_to_RGB(const dt_aligned_pixel_t yuv, dt_aligned_pixel_t rgb)
+{
+  rgb[0] = yuv[0] + 1.140f * yuv[2];
+  rgb[1] = yuv[0] - 0.394f * yuv[1] - 0.581f * yuv[2];
+  rgb[2] = yuv[0] + 2.028f * yuv[1];
+}
+
 
 /** The following is darktable Uniform Color Space 2022
  * © Aurélien Pierre

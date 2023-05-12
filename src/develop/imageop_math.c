@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 #include <glib.h> // for MIN, MAX, CLAMP, inline
 #include <math.h> // for round, floorf, fmaxf
 #include "common/darktable.h"        // for darktable, darktable_t, dt_code...
-#include "common/imageio.h"          // for FILTERS_ARE_4BAYER
 #include "common/interpolation.h"    // for dt_interpolation_new, dt_interp...
 #include "develop/imageop.h"         // for dt_iop_roi_t
+#include "imageio/imageio_common.h"          // for FILTERS_ARE_4BAYER
 
 void dt_iop_flip_and_zoom_8(const uint8_t *in, int32_t iw, int32_t ih, uint8_t *out, int32_t ow, int32_t oh,
                             const dt_image_orientation_t orientation, uint32_t *width, uint32_t *height)
@@ -166,7 +166,31 @@ int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in, const 
                                 const dt_iop_roi_t *const roi_in)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  return dt_interpolation_resample_roi_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
+  cl_int err = dt_interpolation_resample_roi_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
+  if(err == DT_OPENCL_PROCESS_CL)
+  {
+    // We ran into a "vertical number of taps exceeds the vertical workgroupsize" problem
+    // Instead of redoing the whole thing later we do an internal fallback to cpu here 
+    float *in = dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4);
+    float *out = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
+    if(out && in)
+    {
+      err = dt_opencl_read_host_from_device
+            (devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
+      if(err == CL_SUCCESS)
+      {
+        dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in, 0, 0);
+        err = dt_opencl_write_host_to_device
+              (devid, out, dev_out, roi_out->width, roi_out->height, 4 * sizeof(float));
+        if(err == CL_SUCCESS)
+          dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
+            "did fast cpu fallback\n");
+      }
+    }
+    dt_free_align(in);
+    dt_free_align(out);
+  }
+  return err;
 }
 
 #endif
@@ -893,115 +917,6 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
       outc[2] = col[2] / (num * 2);
     }
   }
-}
-
-void dt_iop_RGB_to_YCbCr(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t yuv)
-{
-  yuv[0] = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
-  yuv[1] = -0.147 * rgb[0] - 0.289 * rgb[1] + 0.437 * rgb[2];
-  yuv[2] = 0.615 * rgb[0] - 0.515 * rgb[1] - 0.100 * rgb[2];
-}
-
-void dt_iop_YCbCr_to_RGB(const dt_aligned_pixel_t yuv, dt_aligned_pixel_t rgb)
-{
-  rgb[0] = yuv[0] + 1.140 * yuv[2];
-  rgb[1] = yuv[0] - 0.394 * yuv[1] - 0.581 * yuv[2];
-  rgb[2] = yuv[0] + 2.028 * yuv[1];
-}
-
-static inline void mat4inv(const float X[][4], float R[][4])
-{
-  const float det = X[0][3] * X[1][2] * X[2][1] * X[3][0] - X[0][2] * X[1][3] * X[2][1] * X[3][0]
-                    - X[0][3] * X[1][1] * X[2][2] * X[3][0] + X[0][1] * X[1][3] * X[2][2] * X[3][0]
-                    + X[0][2] * X[1][1] * X[2][3] * X[3][0] - X[0][1] * X[1][2] * X[2][3] * X[3][0]
-                    - X[0][3] * X[1][2] * X[2][0] * X[3][1] + X[0][2] * X[1][3] * X[2][0] * X[3][1]
-                    + X[0][3] * X[1][0] * X[2][2] * X[3][1] - X[0][0] * X[1][3] * X[2][2] * X[3][1]
-                    - X[0][2] * X[1][0] * X[2][3] * X[3][1] + X[0][0] * X[1][2] * X[2][3] * X[3][1]
-                    + X[0][3] * X[1][1] * X[2][0] * X[3][2] - X[0][1] * X[1][3] * X[2][0] * X[3][2]
-                    - X[0][3] * X[1][0] * X[2][1] * X[3][2] + X[0][0] * X[1][3] * X[2][1] * X[3][2]
-                    + X[0][1] * X[1][0] * X[2][3] * X[3][2] - X[0][0] * X[1][1] * X[2][3] * X[3][2]
-                    - X[0][2] * X[1][1] * X[2][0] * X[3][3] + X[0][1] * X[1][2] * X[2][0] * X[3][3]
-                    + X[0][2] * X[1][0] * X[2][1] * X[3][3] - X[0][0] * X[1][2] * X[2][1] * X[3][3]
-                    - X[0][1] * X[1][0] * X[2][2] * X[3][3] + X[0][0] * X[1][1] * X[2][2] * X[3][3];
-  R[0][0] = (X[1][2] * X[2][3] * X[3][1] - X[1][3] * X[2][2] * X[3][1] + X[1][3] * X[2][1] * X[3][2]
-             - X[1][1] * X[2][3] * X[3][2] - X[1][2] * X[2][1] * X[3][3] + X[1][1] * X[2][2] * X[3][3])
-            / det;
-  R[1][0] = (X[1][3] * X[2][2] * X[3][0] - X[1][2] * X[2][3] * X[3][0] - X[1][3] * X[2][0] * X[3][2]
-             + X[1][0] * X[2][3] * X[3][2] + X[1][2] * X[2][0] * X[3][3] - X[1][0] * X[2][2] * X[3][3])
-            / det;
-  R[2][0] = (X[1][1] * X[2][3] * X[3][0] - X[1][3] * X[2][1] * X[3][0] + X[1][3] * X[2][0] * X[3][1]
-             - X[1][0] * X[2][3] * X[3][1] - X[1][1] * X[2][0] * X[3][3] + X[1][0] * X[2][1] * X[3][3])
-            / det;
-  R[3][0] = (X[1][2] * X[2][1] * X[3][0] - X[1][1] * X[2][2] * X[3][0] - X[1][2] * X[2][0] * X[3][1]
-             + X[1][0] * X[2][2] * X[3][1] + X[1][1] * X[2][0] * X[3][2] - X[1][0] * X[2][1] * X[3][2])
-            / det;
-
-  R[0][1] = (X[0][3] * X[2][2] * X[3][1] - X[0][2] * X[2][3] * X[3][1] - X[0][3] * X[2][1] * X[3][2]
-             + X[0][1] * X[2][3] * X[3][2] + X[0][2] * X[2][1] * X[3][3] - X[0][1] * X[2][2] * X[3][3])
-            / det;
-  R[1][1] = (X[0][2] * X[2][3] * X[3][0] - X[0][3] * X[2][2] * X[3][0] + X[0][3] * X[2][0] * X[3][2]
-             - X[0][0] * X[2][3] * X[3][2] - X[0][2] * X[2][0] * X[3][3] + X[0][0] * X[2][2] * X[3][3])
-            / det;
-  R[2][1] = (X[0][3] * X[2][1] * X[3][0] - X[0][1] * X[2][3] * X[3][0] - X[0][3] * X[2][0] * X[3][1]
-             + X[0][0] * X[2][3] * X[3][1] + X[0][1] * X[2][0] * X[3][3] - X[0][0] * X[2][1] * X[3][3])
-            / det;
-  R[3][1] = (X[0][1] * X[2][2] * X[3][0] - X[0][2] * X[2][1] * X[3][0] + X[0][2] * X[2][0] * X[3][1]
-             - X[0][0] * X[2][2] * X[3][1] - X[0][1] * X[2][0] * X[3][2] + X[0][0] * X[2][1] * X[3][2])
-            / det;
-
-  R[0][2] = (X[0][2] * X[1][3] * X[3][1] - X[0][3] * X[1][2] * X[3][1] + X[0][3] * X[1][1] * X[3][2]
-             - X[0][1] * X[1][3] * X[3][2] - X[0][2] * X[1][1] * X[3][3] + X[0][1] * X[1][2] * X[3][3])
-            / det;
-  R[1][2] = (X[0][3] * X[1][2] * X[3][0] - X[0][2] * X[1][3] * X[3][0] - X[0][3] * X[1][0] * X[3][2]
-             + X[0][0] * X[1][3] * X[3][2] + X[0][2] * X[1][0] * X[3][3] - X[0][0] * X[1][2] * X[3][3])
-            / det;
-  R[2][2] = (X[0][1] * X[1][3] * X[3][0] - X[0][3] * X[1][1] * X[3][0] + X[0][3] * X[1][0] * X[3][1]
-             - X[0][0] * X[1][3] * X[3][1] - X[0][1] * X[1][0] * X[3][3] + X[0][0] * X[1][1] * X[3][3])
-            / det;
-  R[3][2] = (X[0][2] * X[1][1] * X[3][0] - X[0][1] * X[1][2] * X[3][0] - X[0][2] * X[1][0] * X[3][1]
-             + X[0][0] * X[1][2] * X[3][1] + X[0][1] * X[1][0] * X[3][2] - X[0][0] * X[1][1] * X[3][2])
-            / det;
-
-  R[0][3] = (X[0][3] * X[1][2] * X[2][1] - X[0][2] * X[1][3] * X[2][1] - X[0][3] * X[1][1] * X[2][2]
-             + X[0][1] * X[1][3] * X[2][2] + X[0][2] * X[1][1] * X[2][3] - X[0][1] * X[1][2] * X[2][3])
-            / det;
-  R[1][3] = (X[0][2] * X[1][3] * X[2][0] - X[0][3] * X[1][2] * X[2][0] + X[0][3] * X[1][0] * X[2][2]
-             - X[0][0] * X[1][3] * X[2][2] - X[0][2] * X[1][0] * X[2][3] + X[0][0] * X[1][2] * X[2][3])
-            / det;
-  R[2][3] = (X[0][3] * X[1][1] * X[2][0] - X[0][1] * X[1][3] * X[2][0] - X[0][3] * X[1][0] * X[2][1]
-             + X[0][0] * X[1][3] * X[2][1] + X[0][1] * X[1][0] * X[2][3] - X[0][0] * X[1][1] * X[2][3])
-            / det;
-  R[3][3] = (X[0][1] * X[1][2] * X[2][0] - X[0][2] * X[1][1] * X[2][0] + X[0][2] * X[1][0] * X[2][1]
-             - X[0][0] * X[1][2] * X[2][1] - X[0][1] * X[1][0] * X[2][2] + X[0][0] * X[1][1] * X[2][2])
-            / det;
-}
-
-static void mat4mulv(float dst[4], const float mat[4][4], const float v[4])
-{
-  for(int k = 0; k < 4; k++)
-  {
-    float x = 0.0f;
-    for(int i = 0; i < 4; i++) x += mat[k][i] * v[i];
-    dst[k] = x;
-  }
-}
-
-void dt_iop_estimate_cubic(const float x[4], const float y[4], float a[4])
-{
-  // we want to fit a spline
-  // [y]   [x^3 x^2 x^1 1] [a^3]
-  // |y| = |x^3 x^2 x^1 1| |a^2|
-  // |y|   |x^3 x^2 x^1 1| |a^1|
-  // [y]   [x^3 x^2 x^1 1] [ 1 ]
-  // and do that by inverting the matrix X:
-
-  const float X[4][4] = { { x[0] * x[0] * x[0], x[0] * x[0], x[0], 1.0f },
-                          { x[1] * x[1] * x[1], x[1] * x[1], x[1], 1.0f },
-                          { x[2] * x[2] * x[2], x[2] * x[2], x[2], 1.0f },
-                          { x[3] * x[3] * x[3], x[3] * x[3], x[3], 1.0f } };
-  float X_inv[4][4];
-  mat4inv(X, X_inv);
-  mat4mulv(a, X_inv, y);
 }
 
 // clang-format off

@@ -23,6 +23,8 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "common/darktable.h"
+
 #define MAX_STARS 5
 #define IMG_TO_FIT 0.0f
 
@@ -62,7 +64,7 @@ typedef enum dt_thumbnail_selection_mode_t
 
 typedef struct
 {
-  int imgid, rowid;
+  dt_imgid_t imgid, rowid;
   int width, height;         // current thumb size (with the background and the border)
   int x, y;                  // current position at screen
   int img_width, img_height; // current image size (can be greater than the image box in case of zoom)
@@ -124,7 +126,6 @@ typedef struct
   dt_thumbnail_overlay_t over;  // type of overlays
   int overlay_timeout_duration; // for hover_block overlay, we hide the it after a delay
   int overlay_timeout_id;       // id of the g_source timeout fct
-  gboolean display_overlay;     // FALSE if not displayed (based on mouse position)
   gboolean tooltip;             // should we show the tooltip ?
 
   int expose_again_timeout_id;  // source id of the expose_again timeout
@@ -145,7 +146,7 @@ typedef struct
   gboolean busy; // should we show the busy message ?
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int imgid, int rowid, dt_thumbnail_overlay_t over,
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, dt_imgid_t imgid, int rowid, dt_thumbnail_overlay_t over,
                                  dt_thumbnail_container_t container, gboolean tooltip);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio);

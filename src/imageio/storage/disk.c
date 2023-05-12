@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 #include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/utility.h"
 #include "common/variables.h"
 #include "control/conf.h"
@@ -32,6 +30,8 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -204,7 +204,7 @@ void gui_reset(dt_imageio_module_storage_t *self)
   dt_conf_set_int("plugins/imageio/storage/disk/overwrite", dt_bauhaus_combobox_get(d->onsave_action));
 }
 
-int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
+int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const dt_imgid_t imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
@@ -261,14 +261,14 @@ try_again:
 
     if(g_mkdir_with_parents(output_dir, 0755))
     {
-      fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", output_dir);
+      dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] could not create directory: `%s'!\n", output_dir);
       dt_control_log(_("could not create directory `%s'!"), output_dir);
       fail = TRUE;
       goto failed;
     }
     if(g_access(output_dir, W_OK | X_OK) != 0)
     {
-      fprintf(stderr, "[imageio_storage_disk] could not write to directory: `%s'!\n", output_dir);
+      dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] could not write to directory: `%s'!\n", output_dir);
       dt_control_log(_("could not write to directory `%s'!"), output_dir);
       fail = TRUE;
       goto failed;
@@ -298,7 +298,7 @@ try_again:
       if(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-        fprintf(stderr, "[export_job] skipping `%s'\n", filename);
+        dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'\n", filename);
         dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
                        num, total, filename);
         return 0;
@@ -312,12 +312,12 @@ try_again:
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
-    fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
   }
 
-  fprintf(stderr, "[export_job] exported to `%s'\n", filename);
+  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;

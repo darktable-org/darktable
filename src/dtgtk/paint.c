@@ -939,6 +939,34 @@ void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gin
   cairo_stroke(cr);
 }
 
+void dtgtk_cairo_paint_masks_sum(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  // note : as the icon is not square, we don't want PREAMBLE macro
+  // we want 2 round of radius R that intersect in the middle,
+  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // with a safety belt of *0.95 to be sure the stroke is draw inside the area
+  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
+  const float padding_left = (w - r * 3.6) / 2.0;
+
+  // we draw the outline of the 2 circles
+  cairo_save(cr);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, .3);
+  cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_restore(cr);
+
+  // we draw the intersection of the 2 circles we slightly different radius so they are more visible
+  cairo_push_group(cr);
+  cairo_arc(cr, padding_left + r * 1.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_IN);
+  cairo_arc(cr, padding_left + r * 2.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
+}
+
 void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
@@ -1336,6 +1364,39 @@ void dtgtk_cairo_paint_ryb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
   cairo_close_path(cr);
   cairo_fill(cr);
   cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0.5, 0.5)
+
+  const double degrees = M_PI / 180.0;
+  typedef struct
+  {
+    const char *name;
+    const int sectors;
+    const float angle[4];
+    const float length[4];
+  } ch_t;
+  ch_t *ch = (ch_t *)data;
+
+  cairo_arc(cr, 0.0, 0.0, 0.5, 0.0 * degrees, 360.0 * degrees);
+  cairo_stroke(cr);
+
+  for(int i = 0; i < ch->sectors; i++)
+  {
+    float angle = ch->angle[i] * 360.0 * degrees;
+    cairo_save(cr);
+    cairo_rotate(cr, angle);
+    cairo_move_to(cr, 0.0, 0.0);
+    cairo_line_to(cr, 0.0, -0.5);
+    cairo_stroke(cr);
+    cairo_arc(cr, 0.0, -0.5, 0.15, 0.0 * degrees, 360.0 * degrees);
+    cairo_fill(cr);
+    cairo_restore(cr);
+  }
 
   FINISH
 }

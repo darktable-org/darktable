@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -372,10 +372,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 }
 
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", "map", "print", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -703,6 +702,9 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
     if(range->path1)
     {
       range->path2 = gtk_tree_path_copy(path);
+      g_free(haystack);
+      g_free(needle);
+      g_free(str);
       return TRUE;
     }
     else
@@ -1187,7 +1189,7 @@ void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeM
   }
   else
   {
-    gchar *coltext = g_strdup_printf("%s (%d)", name, count);
+    gchar *coltext = g_strdup_printf("%s (%u)", name, count);
     g_object_set(renderer, "text", coltext, NULL);
     g_free(coltext);
   }
@@ -2208,9 +2210,16 @@ static void _lib_collect_update_history_visibility(dt_lib_module_t *self)
   gtk_widget_set_visible(d->history_box, !hide);
 }
 
-static void _lib_collect_gui_update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  update_view(d->rule + d->active_rule);
+  dt_gui_widget_reallocate_now(GTK_WIDGET(d->view));
+}
+
+static void _lib_collect_gui_update(dt_lib_module_t *self)
+{
+  dt_lib_collect_t *const d = (dt_lib_collect_t *)self->data;
 
   // we check if something has changed since last call
   if(d->view_rule != -1) return;
@@ -2271,9 +2280,9 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     _set_tooltip(d->rule + i);
   }
 
-  // update list of proposals
+  // update list of proposals if the module's contents are visible
   d->active_rule = active;
-  update_view(d->rule + d->active_rule);
+  dt_lib_gui_queue_update(self);
   --darktable.gui->reset;
 }
 
@@ -2500,27 +2509,12 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       }
       else if(active == 0 && g_strcmp0(text, _("not tagged")))
       {
-        // first filter is tag and the row is a leave
-        uint32_t sort = DT_COLLECTION_SORT_NONE;
-        gboolean descending = FALSE;
+        // // first filter is tag and the row is a leave
         const uint32_t tagid = dt_tag_get_tag_id_by_name(text);
         if(tagid)
-        {
-          if(dt_tag_get_tag_order_by_id(tagid, &sort, &descending))
-          {
-            order = g_strdup_printf("1:%d:%d$", sort, descending);
-          }
-          else
-          {
-            // the tag order is not set yet - default order (filename)
-            const int orderid = DT_COLLECTION_SORT_FILENAME;
-            order = g_strdup_printf("1:%d:0$", orderid);
-            dt_tag_set_tag_order_by_id(tagid, orderid & ~DT_COLLECTION_ORDER_FLAG,
-                                       orderid & DT_COLLECTION_ORDER_FLAG);
-          }
           dt_collection_set_tag_id((dt_collection_t *)darktable.collection, tagid);
-        }
-        else dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
+        else
+          dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
       }
     }
   }
@@ -3297,7 +3291,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(treemodel);
 
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
+                     dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
                      TRUE, 0);
 
   // the bottom buttons for the rules

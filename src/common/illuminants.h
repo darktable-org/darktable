@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -124,8 +124,15 @@ static inline float xy_to_CCT(const float x, const float y)
   // Valid for 3000 K to 50000 K
   // Reference : https://www.usna.edu/Users/oceano/raylee/papers/RLee_AO_CCTpaper.pdf
   // Warning : we throw a number ever if it's grossly off. You need to check the error later.
-  const float n = (x - 0.3366f)/(y - 0.1735f);
-  return -949.86315f + 6253.80338f * expf(-n / 0.92159f) + 28.70599f * expf(-n / 0.20039f) + 0.00004f * expf(-n / 0.07125f);
+  if(x < FLT_MAX)
+  {
+    const float n = (x - 0.3366f)/(y - 0.1735f);
+    return (-949.86315f + 6253.80338f * expf(-n / 0.92159f)
+            + 28.70599f * expf(-n / 0.20039f)
+            + 0.00004f * expf(-n / 0.07125f));
+  }
+  else // we were called with coordinates flagged as invalid
+    return 0.0f; // invalid chromaticity
 }
 
 
@@ -402,7 +409,7 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
 
   // Check coeffs
   for(int k = 0; has_valid_coeffs && k < num_coeffs; k++)
-    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) has_valid_coeffs = FALSE;
+    if(!dt_isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) has_valid_coeffs = FALSE;
 
   if(!has_valid_coeffs) return FALSE;
 
@@ -416,9 +423,9 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
 
   // Get the camera input profile (matrice of primaries)
   float XYZ_to_CAM[4][3];
-  XYZ_to_CAM[0][0] = NAN;
+  dt_mark_colormatrix_invalid(&XYZ_to_CAM[0][0]);
 
-  if(!isnan(img->d65_color_matrix[0]))
+  if(dt_is_valid_colormatrix(img->d65_color_matrix[0]))
   {
     // keep in sync with reload_defaults from colorin.c
     // embedded matrix is used with higher priority than standard one
@@ -441,14 +448,14 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
         XYZ_to_CAM[k][i] = img->adobe_XYZ_to_CAM[k][i];
   }
 
-  if(isnan(XYZ_to_CAM[0][0])) return FALSE;
+  if(!dt_is_valid_colormatrix(XYZ_to_CAM[0][0])) return FALSE;
 
   // Bloody input matrices define XYZ -> CAM transform, as if we often needed camera profiles to output
   // So we need to invert them. Here go your CPU cycles again.
   float CAM_to_XYZ[4][3];
-  CAM_to_XYZ[0][0] = NAN;
+  dt_mark_colormatrix_invalid(&CAM_to_XYZ[0][0]);
   matrice_pseudoinverse(XYZ_to_CAM, CAM_to_XYZ, 3);
-  if(isnan(CAM_to_XYZ[0][0])) return FALSE;
+  if(!dt_is_valid_colormatrix(CAM_to_XYZ[0][0])) return FALSE;
 
   float x, y;
   WB_coeffs_to_illuminant_xy(CAM_to_XYZ, WB, &x, &y);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,16 +49,32 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 
-DT_MODULE_INTROSPECTION(5, dt_iop_watermark_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
 typedef enum dt_iop_watermark_base_scale_t
 {
-  DT_SCALE_IMAGE = 0,         // $DESCRIPTION: "image"
-  DT_SCALE_LARGER_BORDER = 1, // $DESCRIPTION: "larger border"
-  DT_SCALE_SMALLER_BORDER = 2 // $DESCRIPTION: "smaller border"
-} dt_iop_watermark_base_scale_t;
+  DT_SCALE_MAINMENU_IMAGE            = 0,  // $DESCRIPTION: "image"
+  DT_SCALE_MAINMENU_LARGER_BORDER    = 1,  // $DESCRIPTION: "larger border"
+  DT_SCALE_MAINMENU_SMALLER_BORDER   = 2,  // $DESCRIPTION: "smaller border"
+  DT_SCALE_MAINMENU_MARKERHEIGHT     = 3,  // $DESCRIPTION: "height"
+  DT_SCALE_MAINMENU_ADVANCED         = 4   // $DESCRIPTION: "advanced options"
+} dt_iop_watermark_base_scale_t;           // this is the first drop-down menu, always visible
+
+typedef enum dt_iop_watermark_img_scale_t
+{
+  DT_SCALE_IMG_WIDTH                 = 1,  // $DESCRIPTION: "image width"
+  DT_SCALE_IMG_HEIGHT                = 2,  // $DESCRIPTION: "image height"
+  DT_SCALE_IMG_LARGER                = 3,  // $DESCRIPTION: "larger image border"
+  DT_SCALE_IMG_SMALLER               = 4,  // $DESCRIPTION: "smaller image border"
+} dt_iop_watermark_img_scale_t;            // advanced drop-down no. 1
+
+typedef enum dt_iop_watermark_svg_scale_t
+{
+  DT_SCALE_SVG_WIDTH                 = 0,  // $DESCRIPTION: "marker width"
+  DT_SCALE_SVG_HEIGHT                = 1,  // $DESCRIPTION: "marker height"
+} dt_iop_watermark_svg_scale_t;            // advanced drop-down no. 1
 
 typedef enum dt_iop_watermark_type_t
 {
@@ -80,7 +96,9 @@ typedef struct dt_iop_watermark_params_t
   int alignment; // $DEFAULT: 4
   /** Rotation **/
   float rotate;  // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 $DESCRIPTION: "rotation"
-  dt_iop_watermark_base_scale_t sizeto; // $DEFAULT: DT_SCALE_IMAGE $DESCRIPTION: "scale on"
+  dt_iop_watermark_base_scale_t scale_base; // $DEFAULT: DT_SCALE_MAINMENU_IMAGE $DESCRIPTION: "scale on"
+  dt_iop_watermark_img_scale_t scale_img; // $DEFAULT: DT_SCALE_IMG_LARGER $DESCRIPTION: "scale marker to"
+  dt_iop_watermark_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
   char filename[64];
   /* simple text */
   char text[512];
@@ -98,7 +116,9 @@ typedef struct dt_iop_watermark_data_t
   float yoffset;
   int alignment;
   float rotate;
-  dt_iop_watermark_base_scale_t sizeto;
+  dt_iop_watermark_base_scale_t scale_base;
+  dt_iop_watermark_svg_scale_t scale_svg;
+  dt_iop_watermark_img_scale_t scale_img;
   char filename[64];
   char text[512];
   float color[3];
@@ -112,7 +132,9 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkWidget *refresh;                                // refresh watermarks...
   GtkWidget *align[9];                               // Alignment buttons
   GtkWidget *opacity, *scale, *x_offset, *y_offset;  // opacity, scale, xoffs, yoffs
-  GtkWidget *sizeto;                                 // relative size to
+  GtkWidget *scale_base;                             // "scale on"
+  GtkWidget *scale_img;                              // scale reference of image
+  GtkWidget *scale_svg;                              // scale reference of marker
   GtkWidget *rotate;
   GtkWidget *text;
   GtkWidget *colorpick;
@@ -120,10 +142,18 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkWidget *color_picker_button;
 } dt_iop_watermark_gui_data_t;
 
+// option selection from module version 2 through 5
+typedef enum dt_iop_watermark_base_scale_v2_t
+{
+  DT_SCALE_IMAGE = 0,         // $DESCRIPTION: "image"
+  DT_SCALE_LARGER_BORDER = 1, // $DESCRIPTION: "larger border"
+  DT_SCALE_SMALLER_BORDER = 2 // $DESCRIPTION: "smaller border"
+} dt_iop_watermark_base_scale_v2_t;
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 5)
+  if(old_version == 1 && new_version == 6)
   {
     typedef struct dt_iop_watermark_params_v1_t
     {
@@ -152,14 +182,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->rotate = 0.0;
-    n->sizeto = DT_SCALE_IMAGE;
+    n->scale_base = DT_SCALE_MAINMENU_IMAGE;
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
     return 0;
   }
-  else if(old_version == 2 && new_version == 5)
+  else if(old_version == 2 && new_version == 6)
   {
     typedef struct dt_iop_watermark_params_v2_t
     {
@@ -173,7 +203,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float yoffset;
       /** Alignment value 0-8 3x3 */
       int alignment;
-      dt_iop_watermark_base_scale_t sizeto;
+      dt_iop_watermark_base_scale_v2_t sizeto;
       char filename[64];
     } dt_iop_watermark_params_v2_t;
 
@@ -189,14 +219,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->rotate = 0.0;
-    n->sizeto = DT_SCALE_IMAGE;
+    n->scale_base = DT_SCALE_MAINMENU_IMAGE;
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
     return 0;
   }
-  else if(old_version == 3 && new_version == 5)
+  else if(old_version == 3 && new_version == 6)
   {
     typedef struct dt_iop_watermark_params_v3_t
     {
@@ -212,7 +242,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int alignment;
       /** Rotation **/
       float rotate;
-      dt_iop_watermark_base_scale_t sizeto;
+      dt_iop_watermark_base_scale_v2_t sizeto;
       char filename[64];
     } dt_iop_watermark_params_v3_t;
 
@@ -228,14 +258,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->rotate = o->rotate;
-    n->sizeto = o->sizeto;
+    n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
+    // let scale_img and scale_svg at the default values
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
     return 0;
   }
-  else if(old_version == 4 && new_version == 5)
+  else if(old_version == 4 && new_version == 6)
   {
     typedef struct dt_iop_watermark_params_v4_t
     {
@@ -251,7 +282,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int alignment;
       /** Rotation **/
       float rotate;
-      dt_iop_watermark_base_scale_t sizeto;
+      dt_iop_watermark_base_scale_v2_t sizeto;
       char filename[64];
       /* simple text */
       char text[64];
@@ -273,7 +304,56 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->rotate = o->rotate;
-    n->sizeto = o->sizeto;
+    n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
+    // let scale_img and scale_svg at the default values
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->text, o->text, sizeof(n->text));
+    g_strlcpy(n->font, o->font, sizeof(n->font));
+    n->color[0] = o->color[0];
+    n->color[1] = o->color[1];
+    n->color[2] = o->color[2];
+    return 0;
+  }
+  else if(old_version == 5 && new_version == 6)
+  {
+    typedef struct dt_iop_watermark_params_v5_t
+    {
+      /** opacity value of rendering watermark */
+      float opacity;
+      /** scale value of rendering watermark */
+      float scale;
+      /** Pixel independent xoffset, 0 to 1 */
+      float xoffset;
+      /** Pixel independent yoffset, 0 to 1 */
+      float yoffset;
+      /** Alignment value 0-8 3x3 */
+      int alignment;
+      /** Rotation **/
+      float rotate;
+      dt_iop_watermark_base_scale_v2_t sizeto;
+      char filename[64];
+      /* simple text */
+      char text[512];
+      /* text color */
+      float color[3];
+      /* text font */
+      char font[64];
+    } dt_iop_watermark_params_v5_t;
+
+    dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
+    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
+    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->rotate = o->rotate;
+    n->scale_base = (dt_iop_watermark_base_scale_t)o->sizeto;
+    // let scale_img and scale_svg at the default values
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->text, o->text, sizeof(n->text));
     g_strlcpy(n->font, o->font, sizeof(n->font));
@@ -510,7 +590,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
   if(stride == -1)
   {
-    fprintf(stderr, "[watermark] cairo stride error\n");
+    dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo stride error\n");
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
@@ -521,8 +601,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                                  roi_out->height, stride);
   if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
-    fprintf(stderr, "[watermark] cairo surface error: %s\n",
-            cairo_status_to_string(cairo_surface_status(surface)));
+    dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface error: %s\n",
+             cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
@@ -544,7 +624,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       g_free(image);
       dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-      fprintf(stderr, "[watermark] error processing svg file: %s\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "[watermark] error processing svg file: %s\n", error->message);
       g_error_free(error);
       return;
     }
@@ -566,8 +646,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       surface_two = cairo_image_surface_create_from_png(filename);
       if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS))
       {
-        fprintf(stderr, "[watermark] cairo png surface 2 error: %s\n",
-                cairo_status_to_string(cairo_surface_status(surface_two)));
+        dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo png surface 2 error: %s\n",
+                 cairo_status_to_string(cairo_surface_status(surface_two)));
         cairo_surface_destroy(surface);
         g_free(image);
         dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
@@ -591,40 +671,71 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // wbase, hbase are the base width and height, this is the
   // multiplicator used for the offset computing scale is the scale of
   // the watermark itself and is used only to render it.
+  // sbase is used for scale calculation in the larger/smaller modes
+  float wbase, hbase, scale, sbase;
 
-  float wbase, hbase, scale;
+  // in larger/smaller (legacy) side mode, set wbase and hbase to the largest
+  // or smallest side of the image
+  const float larger = dimension.width > dimension.height
+    ? (float)dimension.width
+    : (float)dimension.height;
 
-  if(data->sizeto == DT_SCALE_IMAGE)
+  // set the base width and height to either large or smaller
+  // border of current image and calculate scale using either
+  // marker (SVG object) width or height
+  switch (data->scale_base)
   {
-    // in image mode, the wbase and hbase are just the image width and height
-    wbase = iw;
-    hbase = ih;
-    if(dimension.width > dimension.height)
-      scale = (iw * roi_out->scale) / dimension.width;
-    else
-      scale = (ih * roi_out->scale) / dimension.height;
-  }
-  else
-  {
-    // in larger/smaller side mode, set wbase and hbase to the largest
-    // or smallest side of the image
-    const float larger = dimension.width > dimension.height
-      ? (float)dimension.width
-      : (float)dimension.height;
+    case DT_SCALE_MAINMENU_LARGER_BORDER:
+      sbase = wbase = hbase = (iw > ih) ? iw : ih;
+      scale = sbase / larger;
+      break;
+    case DT_SCALE_MAINMENU_SMALLER_BORDER:
+      sbase = wbase = hbase = (iw < ih) ? iw : ih;
+      scale = sbase / larger;
+      break;
+    case DT_SCALE_MAINMENU_MARKERHEIGHT:
+      wbase = iw;
+      sbase = hbase = ih;
+      scale = sbase / dimension.height;
+      break;
+    case DT_SCALE_MAINMENU_ADVANCED:
+      wbase = iw;
+      hbase = ih;
+      if (data->scale_img == DT_SCALE_IMG_WIDTH)
+      {
+        sbase = iw;
+        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? sbase / dimension.width : sbase / dimension.height;
+      }
+      else if (data->scale_img == DT_SCALE_IMG_HEIGHT)
+      {
+        sbase = ih;
+        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? sbase / dimension.width : sbase / dimension.height;
+      }
+      else if (data->scale_img == DT_SCALE_IMG_LARGER)
+      {
+        sbase = (iw > ih) ? iw : ih;
+        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? sbase / dimension.width : sbase / dimension.height;
+      }
+      else // data->scale_img == DT_SCALE_IMG_SMALLER
+      {
+        sbase = (iw < ih) ? iw : ih;
+        scale = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? sbase / dimension.width : sbase / dimension.height;
+      }
+      break;
 
-    if(iw > ih)
-    {
-      wbase = hbase = (data->sizeto == DT_SCALE_LARGER_BORDER) ? iw : ih;
-      scale = (data->sizeto == DT_SCALE_LARGER_BORDER) ? (iw / larger) : (ih / larger);
-    }
-    else
-    {
-      wbase = hbase = (data->sizeto == DT_SCALE_SMALLER_BORDER) ? iw : ih;
-      scale = (data->sizeto == DT_SCALE_SMALLER_BORDER) ? (iw / larger) : (ih / larger);
-    }
-    scale *= roi_out->scale;
+    // default to "image" mode
+    case DT_SCALE_MAINMENU_IMAGE:
+    default:
+      // in image mode, the wbase and hbase are just the image width and height
+      wbase = iw;
+      hbase = ih;
+      if(dimension.width > dimension.height)
+        scale = iw / dimension.width;
+      else
+        scale = ih / dimension.height;
   }
 
+  scale *= roi_out->scale;
   scale *= uscale;
 
   // compute the width and height of the SVG object in image
@@ -633,36 +744,77 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   float svg_width, svg_height;
 
-  if(dimension.width > dimension.height)
+  // help to reduce the number of if clauses
+  gboolean svg_calc_heightfromwidth;   // calculate svg_height from svg_width if TRUE
+                                       // calculate svg_width from svg_height if FALSE
+  float svg_calc_base;                 // this value is used as svg_width or svg_height,
+                                       // depending on svg_calc_heightfromwidth
+
+  switch (data->scale_base)
   {
-    if(data->sizeto == DT_SCALE_IMAGE
-       || (iw > ih && data->sizeto == DT_SCALE_LARGER_BORDER)
-       || (iw < ih && data->sizeto == DT_SCALE_SMALLER_BORDER))
-    {
-      svg_width = iw * uscale;
-      svg_height = dimension.height * (svg_width / dimension.width);
-    }
-    else
-    {
-      svg_width = ih * uscale;
-      svg_height = dimension.height * (svg_width / dimension.width);
-    }
+    case DT_SCALE_MAINMENU_LARGER_BORDER:
+      svg_calc_base = ((iw > ih) ? iw : ih) * uscale;
+      svg_calc_heightfromwidth = (dimension.width > dimension.height) ? TRUE : FALSE;
+      break;
+    case DT_SCALE_MAINMENU_SMALLER_BORDER:
+      svg_calc_base = ((iw < ih) ? iw : ih) * uscale;
+      svg_calc_heightfromwidth = (dimension.width > dimension.height) ? TRUE : FALSE;
+      break;
+    case DT_SCALE_MAINMENU_MARKERHEIGHT:
+      svg_calc_base = ih * uscale;
+      svg_calc_heightfromwidth = FALSE;
+      break;
+    case DT_SCALE_MAINMENU_ADVANCED:
+      if (data->scale_img == DT_SCALE_IMG_WIDTH)
+      {
+        svg_calc_base = iw * uscale;
+        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
+      }
+      else if (data->scale_img == DT_SCALE_IMG_HEIGHT)
+      {
+        svg_calc_base = ih * uscale;
+        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
+      }
+      else if (data->scale_img == DT_SCALE_IMG_LARGER)
+      {
+        svg_calc_base = ((iw > ih) ? iw : ih) * uscale;
+        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
+      }
+      else // data->scale_img == DT_SCALE_IMG_SMALLER
+      {
+        svg_calc_base = ((iw < ih) ? iw : ih) * uscale;
+        svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
+      }
+      break;
+
+    // default to "image" mode
+    case DT_SCALE_MAINMENU_IMAGE:
+    default:
+      if(dimension.width > dimension.height)
+      {
+        svg_calc_base = iw * uscale;
+        svg_calc_heightfromwidth = TRUE;
+      }
+      else
+      {
+        svg_calc_base = ih * uscale;
+        svg_calc_heightfromwidth = FALSE;
+      }
+  }
+
+  if(svg_calc_heightfromwidth)
+  {
+    // calculate svg_height from svg_width
+    svg_width = svg_calc_base;
+    svg_height = dimension.height * (svg_width / dimension.width);
   }
   else
   {
-    if(data->sizeto == DT_SCALE_IMAGE
-       || (ih > iw && data->sizeto == DT_SCALE_LARGER_BORDER)
-       || (ih < iw && data->sizeto == DT_SCALE_SMALLER_BORDER))
-    {
-      svg_height = ih * uscale;
-      svg_width = dimension.width * (svg_height / dimension.height);
-    }
-    else
-    {
-      svg_height = iw * uscale;
-      svg_width = dimension.width * (svg_height / dimension.height);
-    }
+    // calculate svg_width from svg_height
+    svg_height = svg_calc_base;
+    svg_width = dimension.width * (svg_height / dimension.height);
   }
+
 
   /* For the rotation we need an extra cairo image as rotations are
      buggy via rsvg_handle_render_cairo.  distortions and blurred
@@ -686,8 +838,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                                    watermark_height, stride_two);
     if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
     {
-      fprintf(stderr, "[watermark] cairo surface 2 error: %s\n",
-              cairo_status_to_string(cairo_surface_status(surface_two)));
+      dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface 2 error: %s\n",
+               cairo_status_to_string(cairo_surface_status(surface_two)));
       cairo_surface_destroy(surface);
       g_object_unref(svg);
       g_free(image);
@@ -999,7 +1151,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->xoffset = p->xoffset;
   d->yoffset = p->yoffset;
   d->alignment = p->alignment;
-  d->sizeto = p->sizeto;
+  d->scale_base = p->scale_base;
+  d->scale_img = p->scale_img;
+  d->scale_svg = p->scale_svg;
   memset(d->filename, 0, sizeof(d->filename));
   g_strlcpy(d->filename, p->filename, sizeof(d->filename));
   memset(d->text, 0, sizeof(d->text));
@@ -1009,7 +1163,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   memset(d->font, 0, sizeof(d->font));
   g_strlcpy(d->font, p->font, sizeof(d->font));
 
-// fprintf(stderr, "Commit params: %s...\n",d->filename);
+// dt_print(DT_DEBUG_ALWAYS, "Commit params: %s...\n",d->filename);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1038,6 +1192,39 @@ void gui_update(struct dt_iop_module_t *self)
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
   gtk_font_chooser_set_font(GTK_FONT_CHOOSER(g->fontsel), p->font);
+
+  if(p->scale_base == DT_SCALE_MAINMENU_ADVANCED)
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->scale_img), TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(g->scale_svg), TRUE);
+  }
+  else
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->scale_img), FALSE);
+    gtk_widget_set_visible(GTK_WIDGET(g->scale_svg), FALSE);
+  }
+}
+
+void gui_changed(dt_iop_module_t *self,
+                 GtkWidget *w,
+                 void *previous)
+{
+  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+
+  if(w == g->scale_base)
+  {
+    if(p->scale_base == DT_SCALE_MAINMENU_ADVANCED)
+    {
+      gtk_widget_set_visible(GTK_WIDGET(g->scale_img), TRUE);
+      gtk_widget_set_visible(GTK_WIDGET(g->scale_svg), TRUE);
+    }
+    else
+    {
+      gtk_widget_set_visible(GTK_WIDGET(g->scale_img), FALSE);
+      gtk_widget_set_visible(GTK_WIDGET(g->scale_svg), FALSE);
+    }
+  }
 }
 
 void init(dt_iop_module_t *module)
@@ -1115,6 +1302,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
   g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
+  dt_action_define_iop(self, NULL, N_("pick color"), g->color_picker_button, &dt_action_def_toggle);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);
@@ -1126,7 +1314,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
   dt_bauhaus_slider_set_format(g->opacity, "%");
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("placement")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "placement")), TRUE, TRUE, 0);
 
   // rotate
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
@@ -1137,9 +1325,22 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
   dt_bauhaus_slider_set_format(g->scale, "%");
 
-  // scale-on
-  g->sizeto = dt_bauhaus_combobox_from_params(self, "sizeto");
-  gtk_widget_set_tooltip_text(g->sizeto, _("size is relative to"));
+  // legacy scale on drop-down
+  g->scale_base = dt_bauhaus_combobox_from_params(self, "scale_base");
+  gtk_widget_set_tooltip_text(g->scale_base, _("scaling is done relative to this object\n"
+                                               "• image: fits marker into whole image\n"
+                                               "• larger border: fits larger marker border to larger image border\n"
+                                               "• smaller border: fits larger marker border to smaller image border\n"
+                                               "• height: fits marker height to image height, e.g. suitable for texts\n"
+                                               "• advanced options: activates two additional drop-down menus"));
+
+  // scale image reference
+  g->scale_img = dt_bauhaus_combobox_from_params(self, "scale_img");
+  gtk_widget_set_tooltip_text(g->scale_img, _("reference to which the marker should be scaled to"));
+
+  // scale marker reference
+  g->scale_svg = dt_bauhaus_combobox_from_params(self, "scale_svg");
+  gtk_widget_set_tooltip_text(g->scale_svg, _("length of the marker which is used as scaling reference"));
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();

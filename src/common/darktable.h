@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -124,6 +124,19 @@ typedef unsigned int u_int;
 
 #endif /* _OPENMP */
 
+#ifndef _RELEASE
+#include "common/poison.h"
+#endif
+
+#include "common/usermanual_url.h"
+
+// for signal debugging symbols
+#include "control/signal.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
@@ -140,46 +153,55 @@ typedef unsigned int u_int;
 #define __DT_CLONE_TARGETS__
 #endif
 
+typedef int32_t dt_imgid_t;
+#define NO_IMGID (0)
+#define dt_is_valid_imgid(n) ((n) > NO_IMGID)
+
+/*
+  A dt_mask_id_t can be
+  0  -> a formless mask
+  >0 -> having a form
+  INVALID_MASKID is used while testing in mask manager
+*/
+
+typedef int32_t dt_mask_id_t;
+#define INVALID_MASKID (-1)
+#define NO_MASKID (0)
+#define BLEND_RASTER_ID (0)
+// testing for a valid form
+#define dt_is_valid_maskid(n) ((n) > NO_MASKID)
+
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
-#ifndef _RELEASE
-#include "common/poison.h"
-#endif
-
-#include "common/usermanual_url.h"
-
-// for signal debugging symbols
-#include "control/signal.h"
-
-#define DT_MODULE_VERSION 23 // version of dt's module interface
+#define DT_MODULE_VERSION 25 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 12
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 14
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
 #ifdef _DEBUG
-#define DT_MODULE(MODVER)                                                                                    \
-  int dt_module_dt_version()                                                                                 \
-  {                                                                                                          \
-    return -DT_MODULE_VERSION;                                                                               \
-  }                                                                                                          \
-  int dt_module_mod_version()                                                                                \
-  {                                                                                                          \
-    return MODVER;                                                                                           \
+#define DT_MODULE(MODVER)                  \
+  int dt_module_dt_version()               \
+  {                                        \
+    return -DT_MODULE_VERSION;             \
+  }                                        \
+  int dt_module_mod_version()              \
+  {                                        \
+    return MODVER;                         \
   }
 #else
-#define DT_MODULE(MODVER)                                                                                    \
-  int dt_module_dt_version()                                                                                 \
-  {                                                                                                          \
-    return DT_MODULE_VERSION;                                                                                \
-  }                                                                                                          \
-  int dt_module_mod_version()                                                                                \
-  {                                                                                                          \
-    return MODVER;                                                                                           \
+#define DT_MODULE(MODVER)                  \
+  int dt_module_dt_version()               \
+  {                                        \
+    return DT_MODULE_VERSION;              \
+  }                                        \
+  int dt_module_mod_version()              \
+  {                                        \
+    return MODVER;                         \
   }
 #endif
 
@@ -248,6 +270,7 @@ typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerrig
 typedef enum dt_debug_thread_t
 {
   // powers of two, masking
+  DT_DEBUG_ALWAYS         = 0,       // special case tested by dt_print() variants
   DT_DEBUG_CACHE          = 1 <<  0,
   DT_DEBUG_CONTROL        = 1 <<  1,
   DT_DEBUG_DEV            = 1 <<  2,
@@ -269,18 +292,18 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_UNDO           = 1 << 19,
   DT_DEBUG_SIGNAL         = 1 << 20,
   DT_DEBUG_PARAMS         = 1 << 21,
-  DT_DEBUG_DEMOSAIC       = 1 << 22,
-  DT_DEBUG_ACT_ON         = 1 << 23,
-  DT_DEBUG_TILING         = 1 << 24,
-  DT_DEBUG_VERBOSE        = 1 << 25,
-  DT_DEBUG_ROI            = 1 << 26
+  DT_DEBUG_ACT_ON         = 1 << 22,
+  DT_DEBUG_TILING         = 1 << 23,
+  DT_DEBUG_VERBOSE        = 1 << 24,
+  DT_DEBUG_PIPE           = 1 << 25,
+  DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
+  DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
 {
   unsigned int SSE2 : 1;
   unsigned int _no_intrinsics : 1;
-  unsigned int OPENMP_SIMD : 1; // always stays the last one
 } dt_codepath_t;
 
 typedef struct dt_sys_resources_t
@@ -341,12 +364,17 @@ typedef struct darktable_t
   char *tmpdir;
   char *configdir;
   char *cachedir;
+  char *dump_pfm_module;
+  char *dump_pfm_pipe;
+  char *tmp_directory;
+  char *bench_module;
   dt_lua_state_t lua_state;
   GList *guides;
   double start_wtime;
   GList *themes;
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
+  gboolean pipe_cache;
   GTimeZone *utc_tz;
   GDateTime *origin_gdt;
   struct dt_sys_resources_t dtresources;
@@ -360,42 +388,77 @@ typedef struct
 
 extern darktable_t darktable;
 
-int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L);
+int dt_init(int argc, char *argv[],
+            const gboolean init_gui,
+            const gboolean load_data,
+            lua_State *L);
+
 void dt_get_sysresource_level();
 void dt_cleanup();
-void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
+void dt_print(dt_debug_thread_t thread,
+              const char *msg, ...)
+  __attribute__((format(printf, 2, 3)));
+
 /* same as above but without time stamp : nts = no time stamp */
-void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
-/* same as above but requires additional DT_DEBUG_VERBOSE flag to be true */
-void dt_vprint(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
+void dt_print_nts(dt_debug_thread_t thread,
+                  const char *msg, ...)
+  __attribute__((format(printf, 2, 3)));
+
 int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
 
-void *dt_alloc_align(size_t alignment, size_t size);
-static inline void* dt_calloc_align(size_t alignment, size_t size)
+void dt_dump_pfm_file(const char *pipe,
+                      const void *data,
+                      const int width,
+                      const int height,
+                      const int bpp,
+                      const char *modname,
+                      const char *head,
+                      const gboolean input,
+                      const gboolean output,
+                      const gboolean cpu);
+
+void dt_dump_pfm(const char *filename,
+                 const void* data,
+                 const int width,
+                 const int height,
+                 const int bpp,
+                 const char *modname);
+
+void dt_dump_pipe_pfm(const char *mod,
+                      const void* data,
+                      const int width,
+                      const int height,
+                      const int bpp,
+                      const gboolean input,
+                      const char *pipe);
+
+void *dt_alloc_align(const size_t alignment, const size_t size);
+
+static inline void* dt_calloc_align(const size_t alignment, const size_t size)
 {
   void *buf = dt_alloc_align(alignment, size);
   if(buf) memset(buf, 0, size);
   return buf;
 }
-static inline float *dt_alloc_align_float(size_t pixels)
+static inline float *dt_alloc_align_float(const size_t pixels)
 {
   return (float*)__builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
 }
-static inline float *dt_calloc_align_float(size_t pixels)
+static inline float *dt_calloc_align_float(const size_t pixels)
 {
   float *const buf = (float*)dt_alloc_align(64, pixels * sizeof(float));
   if(buf) memset(buf, 0, pixels * sizeof(float));
   return (float*)__builtin_assume_aligned(buf, 64);
 }
 size_t dt_round_size(const size_t size, const size_t alignment);
-size_t dt_round_size_sse(const size_t size);
 
 #ifdef _WIN32
 void dt_free_align(void *mem);
 #define dt_free_align_ptr dt_free_align
-#elif _DEBUG // debug build makes sure that we get a crash on using plain free() on an aligned allocation
+#elif _DEBUG // debug build makes sure that we get a crash on using
+             // plain free() on an aligned allocation
 void dt_free_align(void *mem);
 #define dt_free_align_ptr dt_free_align
 #else
@@ -403,17 +466,22 @@ void dt_free_align(void *mem);
 #define dt_free_align_ptr free
 #endif
 
-static inline void dt_lock_image(int32_t imgid) ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_lock_image(const dt_imgid_t imgid)
+  ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_lock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
 }
 
-static inline void dt_unlock_image(int32_t imgid) RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_unlock_image(const dt_imgid_t imgid)
+  RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
 }
 
-static inline void dt_lock_image_pair(int32_t imgid1, int32_t imgid2) ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_lock_image_pair(const dt_imgid_t imgid1,
+                                      const dt_imgid_t imgid2)
+  ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)],
+          darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
 {
   if(imgid1 < imgid2)
   {
@@ -427,7 +495,10 @@ static inline void dt_lock_image_pair(int32_t imgid1, int32_t imgid2) ACQUIRE(da
   }
 }
 
-static inline void dt_unlock_image_pair(int32_t imgid1, int32_t imgid2) RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_unlock_image_pair(const dt_imgid_t imgid1,
+                                        const dt_imgid_t imgid2)
+  RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)],
+          darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)]));
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));
@@ -435,41 +506,35 @@ static inline void dt_unlock_image_pair(int32_t imgid1, int32_t imgid2) RELEASE(
 
 extern GdkModifierType dt_modifier_shortcuts;
 
-// check whether the specified mask of modifier keys exactly matches, among the set Shift+Control+(Alt/Meta).
-// ignores the state of any other shifting keys
-static inline gboolean dt_modifier_is(const GdkModifierType state, const GdkModifierType desired_modifier_mask)
+// check whether the specified mask of modifier keys exactly matches,
+// among the set Shift+Control+(Alt/Meta).  ignores the state of any
+// other shifting keys
+static inline gboolean dt_modifier_is(const GdkModifierType state,
+                                      const GdkModifierType desired_modifier_mask)
 {
   const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-//TODO: on Macs, remap the GDK_CONTROL_MASK bit in desired_modifier_mask to be the bit for the Cmd key
+//TODO: on Macs, remap the GDK_CONTROL_MASK bit in
+//desired_modifier_mask to be the bit for the Cmd key
   return ((state | dt_modifier_shortcuts) & modifiers) == desired_modifier_mask;
 }
 
-// check whether the given modifier state includes AT LEAST the specified mask of modifier keys
-static inline gboolean dt_modifiers_include(const GdkModifierType state, const GdkModifierType desired_modifier_mask)
+// check whether the given modifier state includes AT LEAST the
+// specified mask of modifier keys
+static inline gboolean dt_modifiers_include(const GdkModifierType state,
+                                            const GdkModifierType desired_modifier_mask)
 {
-//TODO: on Macs, remap the GDK_CONTROL_MASK bit in desired_modifier_mask to be the bit for the Cmd key
+//TODO: on Macs, remap the GDK_CONTROL_MASK bit in
+//desired_modifier_mask to be the bit for the Cmd key
   const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
   // check whether all modifier bits of interest are turned on
-  return ((state | dt_modifier_shortcuts) & (modifiers & desired_modifier_mask)) == desired_modifier_mask;
+  return ((state | dt_modifier_shortcuts)
+          & (modifiers & desired_modifier_mask)) == desired_modifier_mask;
 }
 
 
-static inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
+static inline gboolean dt_is_aligned(const void *pointer, const size_t byte_count)
 {
     return (uintptr_t)pointer % byte_count == 0;
-}
-
-static inline void * dt_alloc_sse_ps(size_t pixels)
-{
-  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
-}
-
-static inline void * dt_check_sse_aligned(void * pointer)
-{
-  if(dt_is_aligned(pointer, 64))
-    return __builtin_assume_aligned(pointer, 64);
-  else
-    return NULL;
 }
 
 int dt_capabilities_check(char *capability);
@@ -493,14 +558,38 @@ static inline void dt_get_times(dt_times_t *t)
   t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
 }
 
+static inline void dt_get_perf_times(dt_times_t *t)
+{
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    struct rusage ru;
+
+    getrusage(RUSAGE_SELF, &ru);
+    t->clock = dt_get_wtime();
+    t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
+  }
+}
+
 void dt_show_times(const dt_times_t *start, const char *prefix);
 
-void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *suffix, ...) __attribute__((format(printf, 3, 4)));
+void dt_show_times_f(const dt_times_t *start,
+                     const char *prefix,
+                     const char *suffix, ...)
+  __attribute__((format(printf, 3, 4)));
 
 /** \brief check if file is a supported image */
 gboolean dt_supported_image(const gchar *filename);
 
 static inline size_t dt_get_num_threads()
+{
+#ifdef _OPENMP
+  return (size_t)CLAMP(omp_get_num_procs(), 1, darktable.num_openmp_threads);
+#else
+  return 1;
+#endif
+}
+
+static inline size_t dt_get_num_procs()
 {
 #ifdef _OPENMP
   // we can safely assume omp_get_num_procs is > 0
@@ -519,31 +608,40 @@ static inline int dt_get_thread_num()
 #endif
 }
 
-// Allocate a buffer for 'n' objects each of size 'objsize' bytes for each of the program's threads.
-// Ensures that there is no false sharing among threads by aligning and rounding up the allocation to
-// a multiple of the cache line size.  Returns a pointer to the allocated pool and the adjusted number
-// of objects in each thread's buffer.  Use dt_get_perthread or dt_get_bythread (see below) to access
-// a specific thread's buffer.
-static inline void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
+// Allocate a buffer for 'n' objects each of size 'objsize' bytes for
+// each of the program's threads.  Ensures that there is no false
+// sharing among threads by aligning and rounding up the allocation to
+// a multiple of the cache line size.  Returns a pointer to the
+// allocated pool and the adjusted number of objects in each thread's
+// buffer.  Use dt_get_perthread or dt_get_bythread (see below) to
+// access a specific thread's buffer.
+static inline void *dt_alloc_perthread(const size_t n,
+                                       const size_t objsize,
+                                       size_t* padded_size)
 {
   const size_t alloc_size = n * objsize;
   const size_t cache_lines = (alloc_size+63)/64;
   *padded_size = 64 * cache_lines / objsize;
-  return __builtin_assume_aligned(dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads()), 64);
+  return __builtin_assume_aligned
+    (dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads()), 64);
 }
-static inline void *dt_calloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
+static inline void *dt_calloc_perthread(const size_t n,
+                                        const size_t objsize,
+                                        size_t* padded_size)
 {
   void *const buf = (float*)dt_alloc_perthread(n, objsize, padded_size);
   memset(buf, 0, *padded_size * dt_get_num_threads() * objsize);
   return buf;
 }
 // Same as dt_alloc_perthread, but the object is a float.
-static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_size)
+static inline float *dt_alloc_perthread_float(const size_t n,
+                                              size_t* padded_size)
 {
   return (float*)dt_alloc_perthread(n, sizeof(float), padded_size);
 }
 // Allocate floats, cleared to zero
-static inline float *dt_calloc_perthread_float(const size_t n, size_t* padded_size)
+static inline float *dt_calloc_perthread_float(const size_t n,
+                                               size_t* padded_size)
 {
   float *const buf = (float*)dt_alloc_perthread(n, sizeof(float), padded_size);
   if (buf)
@@ -554,49 +652,54 @@ static inline float *dt_calloc_perthread_float(const size_t n, size_t* padded_si
   return buf;
 }
 
-// Given the buffer and object count returned by dt_alloc_perthread, return the current thread's private buffer.
-#define dt_get_perthread(buf, padsize) DT_IS_ALIGNED((buf) + ((padsize) * dt_get_thread_num()))
+// Given the buffer and object count returned by dt_alloc_perthread,
+// return the current thread's private buffer.
+#define dt_get_perthread(buf, padsize) \
+  DT_IS_ALIGNED((buf) + ((padsize) * dt_get_thread_num()))
 // Given the buffer and object count returned by dt_alloc_perthread and a thread count in 0..dt_get_num_threads(),
 // return a pointer to the indicated thread's private buffer.
-#define dt_get_bythread(buf, padsize, tnum) DT_IS_ALIGNED((buf) + ((padsize) * (tnum)))
+#define dt_get_bythread(buf, padsize, tnum) \
+  DT_IS_ALIGNED((buf) + ((padsize) * (tnum)))
 
-// Most code in dt assumes that the compiler is capable of auto-vectorization.  In some cases, this will yield
-// suboptimal code if the compiler in fact does NOT auto-vectorize.  Uncomment the following line for such a
-// compiler.
+// Most code in dt assumes that the compiler is capable of
+// auto-vectorization.  In some cases, this will yield suboptimal code
+// if the compiler in fact does NOT auto-vectorize.  Uncomment the
+// following line for such a compiler.
+
 //#define DT_NO_VECTORIZATION
 
-// For some combinations of compiler and architecture, the compiler may actually emit inferior code if given
-// a hint to vectorize a loop.  Uncomment the following line if such a combination is the compilation target.
+// For some combinations of compiler and architecture, the compiler
+// may actually emit inferior code if given a hint to vectorize a
+// loop.  Uncomment the following line if such a combination is the
+// compilation target.
+
 //#define DT_NO_SIMD_HINTS
 
-// copy the RGB channels of a pixel using nontemporal stores if possible; includes the 'alpha' channel as well
-// if faster due to vectorization, but subsequent code should ignore the value of the alpha unless explicitly
-// set afterwards (since it might not have been copied).  NOTE: nontemporal stores will actually be *slower*
-// if we immediately access the pixel again.  This function should only be used when processing an entire
-// image before doing anything else with the destination buffer.
-static inline void copy_pixel_nontemporal(float *const __restrict__ out, const float *const __restrict__ in)
-{
-#if (__clang__+0 > 7) && (__clang__+0 < 10)
-  for_each_channel(k,aligned(in,out:16)) __builtin_nontemporal_store(in[k],out[k]);
-#else
-  for_each_channel(k,aligned(in,out:16) dt_omp_nontemporal(out)) out[k] = in[k];
-#endif
-}
+// copy the RGB channels of a pixel; includes the 'alpha' channel as
+// well if faster due to vectorization, but subsequent code should
+// ignore the value of the alpha unless explicitly set afterwards
+// (since it might not have been copied)
 
-// copy the RGB channels of a pixel; includes the 'alpha' channel as well if faster due to vectorization, but
-// subsequent code should ignore the value of the alpha unless explicitly set afterwards (since it might not have
-// been copied)
-static inline void copy_pixel(float *const __restrict__ out, const float *const __restrict__ in)
+// When writing sequentially to an output buffer, consider using
+// copy_pixel_nontemporal (defined in develop/imageop.h) to avoid the
+// overhead of loading the cache lines from RAM before then completely
+// overwriting them
+static inline void copy_pixel(float *const __restrict__ out,
+                              const float *const __restrict__ in)
 {
   for_each_channel(k,aligned(in,out:16)) out[k] = in[k];
 }
 
 // a few macros and helper functions to speed up certain frequently-used GLib operations
 #define g_list_is_singleton(list) ((list) && (!(list)->next))
-static inline gboolean g_list_shorter_than(const GList *list, unsigned len)
+
+static inline gboolean g_list_shorter_than(const GList *list,
+                                           unsigned len)
 {
-  // instead of scanning the full list to compute its length and then comparing against the limit,
-  // bail out as soon as the limit is reached.  Usage: g_list_shorter_than(l,4) instead of g_list_length(l)<4
+  // instead of scanning the full list to compute its length and then
+  // comparing against the limit, bail out as soon as the limit is
+  // reached.  Usage: g_list_shorter_than(l,4) instead of
+  // g_list_length(l)<4
   while (len-- > 0)
   {
     if (!list) return TRUE;
@@ -611,34 +714,43 @@ static inline GList *g_list_next_bounded(GList *list)
   return g_list_next(list) ? g_list_next(list) : list;
 }
 
-static inline const GList *g_list_next_wraparound(const GList *list, const GList *head)
+static inline const GList *g_list_next_wraparound(const GList *list,
+                                                  const GList *head)
 {
   return g_list_next(list) ? g_list_next(list) : head;
 }
 
 static inline const GList *g_list_prev_wraparound(const GList *list)
 {
-  // return the prior element of the list, unless already on the first element; in that case, return the last
-  // element of the list.
+  // return the prior element of the list, unless already on the first
+  // element; in that case, return the last element of the list.
   return g_list_previous(list) ? g_list_previous(list) : g_list_last((GList*)list);
 }
 
+// checks internally for DT_DEBUG_MEMORY
 void dt_print_mem_usage();
 
 void dt_configure_runtime_performance(const int version, char *config_info);
-// helper function which loads whatever image_to_load points to: single image files or whole directories
-// it tells you if it was a single image or a directory in single_image (when it's not NULL)
-int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr, gboolean *single_image);
+// helper function which loads whatever image_to_load points to:
+// single image files or whole directories it tells you if it was a
+// single image or a directory in single_image (when it's not NULL)
+int dt_load_from_string(const gchar *image_to_load,
+                        const gboolean open_image_in_dr,
+                        gboolean *single_image);
 
 #define dt_unreachable_codepath_with_desc(D)                                                                 \
   dt_unreachable_codepath_with_caller(D, __FILE__, __LINE__, __FUNCTION__)
-#define dt_unreachable_codepath() dt_unreachable_codepath_with_caller("unreachable", __FILE__, __LINE__, __FUNCTION__)
-static inline void dt_unreachable_codepath_with_caller(const char *description, const char *file,
-                                                       const int line, const char *function)
+#define dt_unreachable_codepath() \
+  dt_unreachable_codepath_with_caller("unreachable", __FILE__, __LINE__, __FUNCTION__)
+static inline void dt_unreachable_codepath_with_caller(const char *description,
+                                                       const char *file,
+                                                       const int line,
+                                                       const char *function)
 {
-  fprintf(stderr, "[dt_unreachable_codepath] {%s} %s:%d (%s) - we should not be here. please report this to "
-                  "the developers.",
-          description, file, line, function);
+  dt_print(DT_DEBUG_ALWAYS,
+           "[dt_unreachable_codepath] {%s} %s:%d (%s) - we should not be here."
+           " please report this to the developers.",
+           description, file, line, function);
   __builtin_unreachable();
 }
 
@@ -667,21 +779,28 @@ static inline void dt_unreachable_codepath_with_caller(const char *description, 
 /*
  * Helper functions for transition to gnome style xgettext translation context marking
  *
- * Many calls expect untranslated strings because they need to store them as ids in a language independent way.
- * They then internally before displaying call Q_ to translate, which allows an embedded translation context to be specified.
- * The qnome format "context|string" is used.
- * Intltool does not support this format when it scans N_, so NC_("context","string") has to be used.
- * But the standard NC_ does not propagate the context with the string. So here it is overridden to combine both parts.
+ * Many calls expect untranslated strings because they need to store
+ * them as ids in a language independent way.  They then internally
+ * before displaying call Q_ to translate, which allows an embedded
+ * translation context to be specified.  The qnome format
+ * "context|string" is used.  Intltool does not support this format
+ * when it scans N_, so NC_("context","string") has to be used.  But
+ * the standard NC_ does not propagate the context with the string. So
+ * here it is overridden to combine both parts.
  *
- * A better solution would be to switch to a modern xgettext https://wiki.gnome.org/MigratingFromIntltoolToGettext
+ * A better solution would be to switch to a modern xgettext
+ * https://wiki.gnome.org/MigratingFromIntltoolToGettext
  *
- *    xgettext --keyword=Q_:1g --keyword=N_:1g would allow using standard N_("context|string") to mark and pass on unchanged.
+ *    xgettext --keyword=Q_:1g --keyword=N_:1g would allow using
+ *    standard N_("context|string") to mark and pass on unchanged.
  *
- * This would also enable contextualised strings in introspection markups, like
+ * This would also enable contextualised strings in introspection
+ * markups, like
  *
  *    DT_INTENT_SATURATION = INTENT_SATURATION, // $DESCRIPTION: "rendering intent|saturation"
  *
- * Before storing in a language-indpendent format, like shortcutsrc, NQ_ should be used to strip any context from the string.
+ * Before storing in a language-indpendent format, like shortcutsrc,
+ * NQ_ should be used to strip any context from the string.
  */
 #undef NC_
 #define NC_(Context, String) (Context "|" String)
@@ -691,6 +810,10 @@ static inline const gchar *NQ_(const gchar *String)
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

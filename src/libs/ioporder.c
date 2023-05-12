@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@ typedef struct dt_lib_ioporder_t
 {
   int current_mode;
   GList *last_custom_iop_order;
-  GtkWidget *widget;
 } dt_lib_ioporder_t;
 
 const char *name(dt_lib_module_t *self)
@@ -40,10 +39,9 @@ const char *name(dt_lib_module_t *self)
   return _("module order");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"darkroom", NULL};
-  return v;
+  return DT_VIEW_DARKROOM;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -60,24 +58,13 @@ void update(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
 
-  if(!d->widget)
-  {
-    if(!self->expander) return;
-
-    d->widget = gtk_label_new("");
-    g_signal_connect(G_OBJECT(d->widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &d->widget);
-    gtk_widget_show(d->widget);
-    gtk_box_pack_start(GTK_BOX(dtgtk_expander_get_header(DTGTK_EXPANDER(self->expander))), d->widget, TRUE, TRUE, 0);
-
-    gtk_widget_destroy(self->arrow);
-    self->arrow = NULL;
-  }
-
-  const dt_iop_order_t kind = dt_ioppr_get_iop_order_list_kind(darktable.develop->iop_order_list);
+  const dt_iop_order_t kind =
+    dt_ioppr_get_iop_order_list_kind(darktable.develop->iop_order_list);
 
   if(kind == DT_IOP_ORDER_CUSTOM)
   {
-    gchar *iop_order_list = dt_ioppr_serialize_text_iop_order_list(darktable.develop->iop_order_list);
+    gchar *iop_order_list =
+      dt_ioppr_serialize_text_iop_order_list(darktable.develop->iop_order_list);
     gboolean found = FALSE;
     int index = 0;
 
@@ -103,7 +90,7 @@ void update(dt_lib_module_t *self)
 
       if(!strcmp(iop_order_list, iop_list_text))
       {
-        gtk_label_set_text(GTK_LABEL(d->widget), name);
+        dt_lib_gui_set_label(self, name);
         d->current_mode = index;
         found = TRUE;
         g_free(iop_list_text);
@@ -120,20 +107,26 @@ void update(dt_lib_module_t *self)
     if(!found)
     {
       d->current_mode = DT_IOP_ORDER_CUSTOM;
-      gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
+      dt_lib_gui_set_label(self, _(dt_iop_order_string(d->current_mode)));
     }
   }
   else
   {
     d->current_mode = kind;
-    gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
+    dt_lib_gui_set_label(self, _(dt_iop_order_string(d->current_mode)));
   }
 }
 
 static void _image_loaded_callback(gpointer instance, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  update(self);
+  // only in darkroom, so let's avoid any update when in lighttable
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
+  {
+    dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+    update(self);
+  }
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -142,8 +135,8 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  self->no_control_widgets = TRUE;
 
-  d->widget = NULL; // initialise in first update when header has been set up
   d->current_mode = -1;
   d->last_custom_iop_order = NULL;
 
@@ -157,14 +150,17 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
-
-  if(d->widget) gtk_widget_destroy(d->widget);
   free(self->data);
   self->data = NULL;
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_image_loaded_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_image_loaded_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_image_loaded_callback), self);
 }
 
-void gui_reset (dt_lib_module_t *self)
+void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
 
@@ -174,15 +170,14 @@ void gui_reset (dt_lib_module_t *self)
 
   if(iop_order_list)
   {
-    const int32_t imgid = darktable.develop->image_storage.id;
+    const dt_imgid_t imgid = darktable.develop->image_storage.id;
 
     dt_ioppr_change_iop_order(darktable.develop, imgid, iop_order_list);
 
     dt_dev_pixelpipe_rebuild(darktable.develop);
 
     d->current_mode = DT_IOP_ORDER_V30;
-    if(d->widget) gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
-
+    dt_lib_gui_set_label(self, _(dt_iop_order_string(d->current_mode)));
     g_list_free_full(iop_order_list, free);
   }
 }
@@ -193,20 +188,28 @@ void init_presets(dt_lib_module_t *self)
   char *params = NULL;
   GList *list;
 
+  self->pref_based_presets = TRUE;
+
+  const gboolean is_display_referred = dt_is_display_referred();
+
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, (int32_t)size, TRUE);
+  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE,
+                     is_display_referred ? FOR_RAW | FOR_LDR : 0);
   free(params);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 for RAW input (default)"), self->plugin_name, self->version(), (const char *)params, (int32_t)size,
-                     TRUE);
+  dt_lib_presets_add(_("v3.0 for RAW input (default)"), self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE,
+                     is_display_referred ? 0 : FOR_RAW);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30_JPG);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"), self->plugin_name, self->version(), (const char *)params, (int32_t)size,
-                     TRUE);
+  dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"), self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE,
+                     is_display_referred ? 0 : FOR_LDR);
   free(params);
 }
 
@@ -218,7 +221,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   if(iop_order_list)
   {
-    const int32_t imgid = darktable.develop->image_storage.id;
+    const dt_imgid_t imgid = darktable.develop->image_storage.id;
 
     dt_ioppr_change_iop_order(darktable.develop, imgid, iop_order_list);
 
@@ -238,7 +241,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 void *get_params(dt_lib_module_t *self, int *size)
 {
   size_t p_size = 0;
-  void *params = dt_ioppr_serialize_iop_order_list(darktable.develop->iop_order_list, &p_size);
+  void *params = dt_ioppr_serialize_iop_order_list(darktable.develop->iop_order_list,
+                                                   &p_size);
   *size = (int)p_size;
 
   return params;

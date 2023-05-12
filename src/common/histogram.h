@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,34 +33,23 @@
  */
 typedef struct dt_histogram_roi_t
 {
-  int width, height, crop_x, crop_y, crop_width, crop_height;
+  int width, height, crop_x, crop_y, crop_right, crop_bottom;
 } dt_histogram_roi_t;
 
-void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_params_t *histogram_params,
-                                       const void *pixel, uint32_t *histogram, int j,
-                                       const dt_iop_order_iccprofile_info_t *const profile_info);
-
-typedef void((*dt_worker)(const dt_dev_histogram_collection_params_t *const histogram_params,
-                          const void *pixel, uint32_t *histogram, int j,
-                          const dt_iop_order_iccprofile_info_t *const profile_info));
-
-void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_params,
-                         dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
-                         uint32_t **histogram, const dt_worker Worker,
-                         const dt_iop_order_iccprofile_info_t *const profile_info);
-
+// allocates an aligned histogram buffer if needed, callers
+// (pixelpipe, exposure, global histogram) must garbage collect this
+// buffer via dt_free_align()
 void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
-                         dt_dev_histogram_stats_t *histogram_stats, const dt_iop_colorspace_type_t cst,
-                         const dt_iop_colorspace_type_t cst_to, const void *pixel, uint32_t **histogram,
-                         const int compensate_middle_grey, const dt_iop_order_iccprofile_info_t *const profile_info);
-
-void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_stats,
-                             const dt_iop_colorspace_type_t cst, const dt_iop_colorspace_type_t cst_to,
-                             uint32_t **histogram, uint32_t *histogram_max);
+                         dt_dev_histogram_stats_t *histogram_stats,
+                         const dt_iop_colorspace_type_t cst,
+                         const dt_iop_colorspace_type_t cst_to,
+                         const void *pixel,
+                         uint32_t **histogram, uint32_t *histogram_max,
+                         const gboolean compensate_middle_grey,
+                         const dt_iop_order_iccprofile_info_t *const profile_info);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

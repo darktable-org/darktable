@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2015-2021 darktable developers.
+  Copyright (C) 2015-2023 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -200,11 +200,7 @@ static inline float hue_conversion(const float HSL_Hue)
   dt_aligned_pixel_t Lab = { 0 };
 
   hsl2rgb(rgb, HSL_Hue, 1.0f, 0.5f);
-
-  XYZ[0] = (rgb[0] * 0.4360747f) + (rgb[1] * 0.3850649f) + (rgb[2] * 0.1430804f);
-  XYZ[1] = (rgb[0] * 0.2225045f) + (rgb[1] * 0.7168786f) + (rgb[2] * 0.0606169f);
-  XYZ[2] = (rgb[0] * 0.0139322f) + (rgb[1] * 0.0971045f) + (rgb[2] * 0.7141733f);
-
+  dt_Rec709_to_XYZ_D50(rgb, XYZ);
   dt_XYZ_to_Lab(XYZ, Lab);
 
   // Hue from LCH color space in [-pi, +pi] interval
@@ -251,7 +247,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   dt_iop_colorreconstruct_bilateral_t *b = (dt_iop_colorreconstruct_bilateral_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
   if(!b)
   {
-    fprintf(stderr, "[color reconstruction] not able to allocate buffer (a)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (a)\n");
     return NULL;
   }
   float _x = roundf(roi->width / sigma_s);
@@ -270,14 +266,14 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   b->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(!b->buf)
   {
-    fprintf(stderr, "[color reconstruction] not able to allocate buffer (b)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (b)\n");
     dt_iop_colorreconstruct_bilateral_free(b);
     return NULL;
   }
 
   memset(b->buf, 0, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
 #if 0
-  fprintf(stderr, "[bilateral] created grid [%d %d %d]"
+  dt_print(DT_DEBUG_ALWAYS, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
           b->sigma_s, sigma_s, b->sigma_r, sigma_r);
 #endif
@@ -291,7 +287,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   dt_iop_colorreconstruct_bilateral_frozen_t *bf = (dt_iop_colorreconstruct_bilateral_frozen_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
   if(!bf)
   {
-    fprintf(stderr, "[color reconstruction] not able to allocate buffer (c)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (c)\n");
     return NULL;
   }
 
@@ -312,7 +308,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   }
   else
   {
-    fprintf(stderr, "[color reconstruction] not able to allocate buffer (d)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (d)\n");
     dt_iop_colorreconstruct_bilateral_dump(bf);
     return NULL;
   }
@@ -327,7 +323,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   dt_iop_colorreconstruct_bilateral_t *b = (dt_iop_colorreconstruct_bilateral_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
   if(!b)
   {
-    fprintf(stderr, "[color reconstruction] not able to allocate buffer (e)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (e)\n");
     return NULL;
   }
 
@@ -348,7 +344,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   }
   else
   {
-    fprintf(stderr, "[color reconstruction] not able to allocate buffer (f)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (f)\n");
     dt_iop_colorreconstruct_bilateral_free(b);
     return NULL;
   }
@@ -787,7 +783,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   }
 
 #if 0
-  fprintf(stderr, "[bilateral] created grid [%d %d %d]"
+  dt_print(DT_DEBUG_ALWAYS, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
           b->sigma_s, sigma_s, b->sigma_r, sigma_r);
 #endif

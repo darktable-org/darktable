@@ -34,6 +34,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define DT_BAUHAUS_WIDGET_TYPE dt_bh_get_type()
 #define DT_BAUHAUS_WIDGET(obj) G_TYPE_CHECK_INSTANCE_CAST((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidget)
 #define DT_BAUHAUS_WIDGET_CLASS(obj) G_TYPE_CHECK_CLASS_CAST((obj), DT_BAUHAUS_WIDGET, DtBauhausWidgetClass)
@@ -44,8 +48,6 @@
 
 extern GType DT_BAUHAUS_WIDGET_TYPE;
 
-#define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX 500
-#define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN 25
 #define DT_BAUHAUS_SLIDER_MAX_STOPS 20
 #define DT_BAUHAUS_COMBO_MAX_TEXT 180
 
@@ -195,6 +197,8 @@ enum
 typedef struct dt_bauhaus_t
 {
   struct dt_bauhaus_widget_t *current;
+  // the widget that has the mouse over it
+  GtkWidget *hovered;
   GtkWidget *popup_window;
   GtkWidget *popup_area;
   // are set by the motion notification, to be used during drawing.
@@ -217,6 +221,7 @@ typedef struct dt_bauhaus_t
 
   // initialise or connect accelerators in set_label
   int skip_accel;
+  GHashTable *combo_introspection, *combo_list;
 
   // appearance relevant stuff:
   // sizes and fonts:
@@ -327,6 +332,7 @@ void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 float dt_bauhaus_slider_get_default(GtkWidget *widget);
 void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, dt_bauhaus_curve_t dir));
+void dt_bauhaus_slider_set_log_curve(GtkWidget *widget);
 
 // combobox:
 void dt_bauhaus_combobox_from_widget(struct dt_bauhaus_widget_t* widget,dt_iop_module_t *self);
@@ -350,6 +356,7 @@ gboolean dt_bauhaus_combobox_set_entry_label(GtkWidget *widget, const int pos, c
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *w, const char *text);
 gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *w, int value);
+int dt_bauhaus_combobox_get_from_value(GtkWidget *widget, int value);
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos);
 void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
@@ -368,6 +375,11 @@ void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
 int dt_bauhaus_combobox_get_default(GtkWidget *widget);
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidget *w, struct dt_iop_module_t **module));
 void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const char **texts);
+gboolean dt_bauhaus_combobox_add_introspection(GtkWidget *widget,
+                                               dt_action_t *action,
+                                               const dt_introspection_type_enum_tuple_t *list,
+                                               const int start,
+                                               const int end);
 void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget, int pos, gboolean sensitive);
 void dt_bauhaus_combobox_set_entries_ellipsis(GtkWidget *widget, PangoEllipsizeMode ellipis);
 PangoEllipsizeMode dt_bauhaus_combobox_get_entries_ellipsis(GtkWidget *widget);
@@ -383,6 +395,10 @@ static inline void set_color(cairo_t *cr, GdkRGBA color)
 {
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

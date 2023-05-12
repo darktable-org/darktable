@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -14,9 +14,11 @@
 */
 #pragma once
 
-#include <xmmintrin.h>
-
 #include "common/darktable.h"
+
+#ifdef __SSE__
+
+#include <xmmintrin.h>
 
 
 /**
@@ -41,14 +43,15 @@ static inline __m128 _mm_exp2_ps(__m128 x)
   __m128i ipart;
   __m128 fpart, expipart, expfpart;
 
+  /* clamp the exponent to the suppported range */
   x = _mm_min_ps(x, _mm_set1_ps(129.00000f));
   x = _mm_max_ps(x, _mm_set1_ps(-126.99999f));
 
   /* ipart = int(x - 0.5) */
-  ipart = _mm_cvtps_epi32(_mm_sub_ps(x, _mm_set1_ps(0.5f)));
+  ipart = _mm_cvtps_epi32(x - _mm_set1_ps(0.5f));
 
   /* fpart = x - ipart */
-  fpart = _mm_sub_ps(x, _mm_cvtepi32_ps(ipart));
+  fpart = x - _mm_cvtepi32_ps(ipart);
 
   /* expipart = (float) (1 << ipart) */
   expipart = _mm_castsi128_ps(_mm_slli_epi32(_mm_add_epi32(ipart, _mm_set1_epi32(127)), 23));
@@ -110,9 +113,7 @@ static inline __m128 _mm_log2_ps(__m128 x)
 #endif
 
   /* This effectively increases the polynomial degree by one, but ensures that log2(1) == 0*/
-  logmant = _mm_mul_ps(logmant, _mm_sub_ps(mant, one));
-
-  return _mm_add_ps(logmant, exp);
+  return (logmant * (mant - one)) + exp;
 }
 
 static inline __m128 _mm_pow_ps(__m128 x, __m128 y)
@@ -120,26 +121,7 @@ static inline __m128 _mm_pow_ps(__m128 x, __m128 y)
   return _mm_exp2_ps(_mm_mul_ps(_mm_log2_ps(x), y));
 }
 
-static inline __m128 _mm_pow_ps1(__m128 x, float y)
-{
-  return _mm_exp2_ps(_mm_mul_ps(_mm_log2_ps(x), _mm_set1_ps(y)));
-}
-
-
-/**
- * Allow access of the content of a SSE vector
- **/
-
-static inline float _mm_vectorGetByIndex( __m128 V, unsigned int i)
-{
-  union {
-    __m128 v;
-    float a[4];
-  } converter;
-
-  converter.v = V;
-  return converter.a[i];
-}
+#endif /* __SSE__ */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

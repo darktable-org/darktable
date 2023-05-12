@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 #include <inttypes.h>
 #include <setjmp.h>
@@ -303,7 +303,7 @@ read_icc_profile (j_decompress_ptr cinfo,
 
 int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   dt_imageio_jpeg_t *jpg = (dt_imageio_jpeg_t *)jpg_tmp;

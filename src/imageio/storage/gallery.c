@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/variables.h"
@@ -33,6 +31,8 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -192,7 +192,7 @@ static gint sort_pos(pair_t *a, pair_t *b)
   return a->pos - b->pos;
 }
 
-int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
+int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const dt_imgid_t imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
@@ -249,7 +249,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(*c == '/') *c = '\0';
   if(g_mkdir_with_parents(dirname, 0755))
   {
-    fprintf(stderr, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
     dt_control_log(_("could not create directory `%s'!"), dirname);
     return 1;
   }
@@ -327,7 +327,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
-    fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     free(pair);
     g_free(esc_relfilename);
@@ -366,7 +366,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE, export_masks, icc_type, icc_filename,
                        icc_intent, self, sdata, num, total, NULL) != 0)
   {
-    fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
   }
@@ -374,7 +374,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   fdata->max_width = save_max_width;
   fdata->max_height = save_max_height;
 
-  printf("[export_job] exported to `%s'\n", filename);
+  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
@@ -573,16 +573,16 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   return 0;
 }
 
-int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
+gboolean supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
 {
   const char *mime = format->mime(NULL);
-  if(strcmp(mime, "image/jpeg") == 0) return 1;
-  if(strcmp(mime, "image/png") == 0) return 1;
-  if(strcmp(mime, "image/webp") == 0) return 1;
-  if(strcmp(mime, "image/avif") == 0) return 1;
-  if(strcmp(mime, "image/jxl") == 0) return 1;
+  if(strcmp(mime, "image/jpeg") == 0) return TRUE;
+  if(strcmp(mime, "image/png") == 0) return TRUE;
+  if(strcmp(mime, "image/webp") == 0) return TRUE;
+  if(strcmp(mime, "image/avif") == 0) return TRUE;
+  if(strcmp(mime, "image/jxl") == 0) return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
 // clang-format off

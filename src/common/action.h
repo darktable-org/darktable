@@ -20,6 +20,11 @@
 
 #include <glib.h>
 
+#define DT_READ_ACTION_ONLY (-FLT_MAX)
+#define DT_ACTION_NOT_VALID (-FLT_MAX)
+#define DT_PERFORM_ACTION(move_size) ((move_size) != DT_READ_ACTION_ONLY)
+#define DT_ACTION_IS_INVALID(value) ((value) == DT_ACTION_NOT_VALID)
+
 typedef enum dt_action_type_t
 {
   DT_ACTION_TYPE_CATEGORY,
@@ -95,6 +100,7 @@ enum
   DT_ACTION_EFFECT_ON_RIGHT = 6,
 
   DT_ACTION_EFFECT_HOLD = DT_ACTION_EFFECT_DEFAULT_KEY,
+  DT_ACTION_EFFECT_HOLD_TOGGLE = 3,
 
   // Buttons
   DT_ACTION_EFFECT_ACTIVATE = DT_ACTION_EFFECT_DEFAULT_KEY,

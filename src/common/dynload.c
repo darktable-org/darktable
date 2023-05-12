@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,19 +24,16 @@
 #include <string.h>
 #else //!__APPLE__
 #include <dlfcn.h>
-#include <glib.h>
 #endif //!__APPLE__
 
 #include "common/dynload.h"
-
+#include "common/darktable.h"
 
 #ifndef __APPLE__
 /* check if gmodules is supported on this platform */
-int dt_gmodule_supported(void)
+gboolean dt_gmodule_supported(void)
 {
-  int success = g_module_supported();
-
-  return success;
+  return g_module_supported();
 }
 
 
@@ -71,16 +68,20 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 }
 
 
-/* get pointer to symbol */
-int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
+/* get pointer to symbol and return flag in case off success */
+gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
 {
-  int success = g_module_symbol(module->gmodule, name, (gpointer)pointer);
-
-  return success;
+  // As in g_module_symbol() reference the returned pointer might be NULL
+  // so we also check for a non-NULL pointer for returned success 
+  const gboolean symbol = g_module_symbol(module->gmodule, name, (gpointer)pointer);
+  const gboolean valid = *pointer != NULL;
+  if(!(symbol && valid))
+    dt_print(DT_DEBUG_OPENCL, "[opencl init] missing symbol `%s` in library`\n", name);
+  return symbol && valid ? TRUE : FALSE;
 }
 #else //!__APPLE__
 /* check if gmodules is supported on this platform */
-int dt_gmodule_supported(void)
+gboolean dt_gmodule_supported(void)
 {
   return TRUE;
 }
@@ -103,11 +104,14 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 }
 
 /* get pointer to symbol */
-int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
+gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
 {
   *pointer = dlsym(module->gmodule, name);
+  const gboolean valid = *pointer != NULL;
+  if(!valid)
+    dt_print(DT_DEBUG_OPENCL, "[opencl init] missing symbol `%s` in library`\n", name);
 
-  return *pointer != NULL ? TRUE : FALSE;
+  return valid;
 }
 #endif //!__APPLE__
 #endif //HAVE_OPENCL

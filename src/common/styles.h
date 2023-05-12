@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ typedef struct dt_style_item_t
   int num, selimg_num, enabled, multi_priority;
   int iop_order;
   gchar *name, *operation, *multi_name;
+  int multi_name_hand_edited;
   int module_version, blendop_version;
   dt_iop_params_t *params;
   dt_develop_blend_params_t *blendop_params;
@@ -60,21 +61,34 @@ void dt_style_item_free(gpointer data);
 
 /** creates a new style from specified image, items are the history stack number of items to include in style
  */
-gboolean dt_styles_create_from_image(const char *name, const char *description,
-                                     const int32_t imgid, GList *items, gboolean copy_iop_order);
+gboolean dt_styles_create_from_image(const char *name,
+                                     const char *description,
+                                     const dt_imgid_t imgid,
+                                     GList *items,
+                                     const gboolean copy_iop_order);
 
 /** creates styles from selection */
 void dt_styles_create_from_list(const GList *list);
 
 /** creates a new style from specified style, items are the style number of items to include in style */
-void dt_styles_create_from_style(const char *name, const char *newname, const char *description,
-                                 GList *filter, const int32_t imgid, GList *update,
-                                 gboolean copy_iop_order, const gboolean update_iop_order);
+void dt_styles_create_from_style(const char *name,
+                                 const char *newname,
+                                 const char *description,
+                                 GList *filter,
+                                 const dt_imgid_t imgid,
+                                 GList *update,
+                                 const gboolean copy_iop_order,
+                                 const gboolean update_iop_order);
 
 /** update a style */
-void dt_styles_update(const char *name, const char *newname, const char *description, GList *filter,
-                      const int32_t imgid, GList *update,
-                      const gboolean copy_iop_order, const gboolean update_iop_order);
+void dt_styles_update(const char *name,
+                      const char *newname,
+                      const char *description,
+                      GList *filter,
+                      const dt_imgid_t imgid,
+                      GList *update,
+                      const gboolean copy_iop_order,
+                      const gboolean update_iop_order);
 
 /** applies the style to selection of images */
 void dt_styles_apply_to_list(const char *name, const GList *list, gboolean duplicate);
@@ -83,14 +97,20 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
 void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean duplicate);
 
 /** applies the item style to dev->history */
-void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, GList **modules_used, const gboolean append);
+void dt_styles_apply_style_item(dt_develop_t *dev,
+                                dt_style_item_t *style_item,
+                                GList **modules_used,
+                                const gboolean append);
 
 /** applies the style to image by imgid, takes care of overwrite and duplicate modes */
-void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const gboolean overwrite, const int32_t imgid);
+void dt_styles_apply_to_image(const char *name,
+                              const gboolean duplicate,
+                              const gboolean overwrite,
+                              const dt_imgid_t imgid);
 
 /** applies the style to the currently edited image in the darkroom.
     does nothing if not called with a proper dev struct initialized */
-void dt_styles_apply_to_dev(const char *name, const int32_t imgid);
+void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid);
 
 /** delete a style by name */
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise);
@@ -111,11 +131,14 @@ gboolean dt_styles_has_module_order(const char *name);
 GList *dt_styles_get_list(const char *filter);
 
 /** get a list of items for a named style
-    if imgid != -1, then styles from the corresponding image are also reported if they are
+    if dt_is_valid_imgid(imgid), then styles from the corresponding image are also reported if they are
     not already part of the style. If with_multi_name is TRUE the name field will contains
     the multi_name.
 */
-GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gboolean with_multi_name);
+GList *dt_styles_get_item_list(const char *name,
+                               const gboolean localized,
+                               const dt_imgid_t imgid,
+                               const gboolean with_multi_name);
 
 /** get list of items for a named style as a nice string */
 char *dt_styles_get_item_list_as_string(const char *name);
@@ -124,7 +147,9 @@ char *dt_styles_get_item_list_as_string(const char *name);
 gchar *dt_styles_get_description(const char *name);
 
 /** save style to file */
-void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolean overwrite);
+void dt_styles_save_to_file(const char *style_name,
+                            const char *filedir,
+                            const gboolean overwrite);
 
 /** load style from file */
 void dt_styles_import_from_file(const char *style_path);

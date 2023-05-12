@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -111,11 +111,15 @@ void init_presets(dt_iop_module_so_t *self)
 
 static float *const init_gaussian_kernel(const int rad, const size_t mat_size, const float sigma2)
 {
-  float weight = 0.0f;
-  float *const mat = dt_alloc_align_float(mat_size);
-  memset(mat, 0, sizeof(float) * mat_size);
-  for(int l = -rad; l <= rad; l++) weight += mat[l + rad] = expf(-l * l / (2.f * sigma2));
-  for(int l = -rad; l <= rad; l++) mat[l + rad] /= weight;
+  float *const mat = dt_calloc_align_float(mat_size);
+  if(mat)
+  {
+    float weight = 0.0f;
+    for(int l = -rad; l <= rad; l++)
+      weight += mat[l + rad] = expf(-l * l / (2.f * sigma2));
+    for(int l = -rad; l <= rad; l++)
+      mat[l + rad] /= weight;
+  }
   return mat;
 }
 
@@ -159,6 +163,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (d->radius * roi_in->scale / piece->iscale)
                        * (d->radius * roi_in->scale / piece->iscale);
   mat = init_gaussian_kernel(rad, wd, sigma2);
+  if(!mat)
+    goto error;
 
   int hblocksize;
   dt_opencl_local_buffer_t hlocopt
@@ -294,7 +300,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
                        * (data->radius * roi_in->scale / piece->iscale);
   float *const mat = init_gaussian_kernel(rad, mat_size, sigma2);
-
+  if(!mat)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[sharpen] out of memory\n");
+    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
+    return;
+  }
   const float *const restrict in = (float*)ivoid;
   const size_t width = roi_out->width;
 #ifdef _OPENMP
@@ -376,9 +387,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_free_align(mat);
   dt_free_align(tmp);
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "common/colorspaces.h"
 #include "common/image.h"
+#include "develop/pixelpipe.h"
 
 /** wrapper around exiv2, C++ */
 #ifdef __cplusplus
@@ -60,16 +61,20 @@ void dt_exif_set_exiv2_taglist();
 /** must not be freed */
 const GList* dt_exif_get_exiv2_taglist();
 
-/** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image
- * struct. returns 0 on success. */
-int dt_exif_read(dt_image_t *img, const char *path);
+/** ensure DateTime string is in canonical EXIF format */
+void dt_exif_sanitize_datetime(char *datetime);
 
-/** read exif data to image struct from given data blob, wherever you got it from. */
-int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
+/** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image
+ * struct. returns TRUE if no success. */
+gboolean dt_exif_read(dt_image_t *img, const char *path);
+
+/** read exif data to image struct from given data blob, wherever you got it from.
+    returns TRUE in case of an error */
+gboolean dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
 
 /** write exif to blob, return length in bytes. blob will be allocated by the function. sRGB should be true
  * if sRGB colorspace is used as output. */
-int dt_exif_read_blob(uint8_t **blob, const char *path, const int imgid, const int sRGB, const int out_width,
+int dt_exif_read_blob(uint8_t **blob, const char *path, const dt_imgid_t imgid, const int sRGB, const int out_width,
                       const int out_height, const int dng_mode);
 
 /** Reads exif tags that are not cached in the database */
@@ -79,22 +84,23 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename);
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
 /** write xmp sidecar file. */
-int dt_exif_xmp_write(const int imgid, const char *filename);
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename);
 
 /** write xmp packet inside an image. */
-int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata);
+gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename, void *metadata,
+    dt_develop_t *dev, dt_dev_pixelpipe_t *pipe);
 
 /** get the xmp blob for imgid. */
-char *dt_exif_xmp_read_string(const int imgid);
+char *dt_exif_xmp_read_string(const dt_imgid_t imgid);
 
-/** read xmp sidecar file. */
-int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);
+/** read xmp sidecar file. Returns TRUE in case of any error*/
+gboolean dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);
 
 /** apply default import metadata */
 void dt_exif_apply_default_metadata(dt_image_t *img);
 
-/** fetch largest exif thumbnail jpg bytestream into buffer*/
-int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char **mime_type);
+/** fetch largest exif thumbnail jpg bytestream into buffer. Returns TRUE in case of any error */
+gboolean dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char **mime_type);
 
 /** thread safe init and cleanup. */
 void dt_exif_init();

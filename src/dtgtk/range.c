@@ -196,7 +196,7 @@ static gchar *_default_print_func(const double value, const gboolean detailled)
 static gboolean _default_decode_func(const gchar *text, double *value)
 {
   // TODO : verify the value is numeric
-  gchar *locale = strdup(setlocale(LC_ALL, NULL));
+  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_NUMERIC, "C");
   *value = atof(text);
   setlocale(LC_NUMERIC, locale);
@@ -247,7 +247,7 @@ static void _date_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *rende
   }
   else
   {
-    gchar *coltext = g_strdup_printf("%s (%d)", name, count);
+    gchar *coltext = g_strdup_printf("%s (%u)", name, count);
     g_object_set(renderer, "text", coltext, NULL);
     g_free(coltext);
   }
@@ -900,12 +900,12 @@ static void _popup_date_changed(GtkWidget *w, GtkDarktableRangeSelect *range)
   gchar *txt = NULL;
   if(dt_bauhaus_combobox_get(pop->type) == 1
      && gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_min)
-    txt = g_strdup_printf("-%04d:%02d:%02d %02d:%02d:%02d", y, m, d, h, min, s);
+    txt = g_strdup_printf("-%04u:%02u:%02u %02d:%02d:%02d", y, m, d, h, min, s);
   else if(dt_bauhaus_combobox_get(pop->type) == 1
           && gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_max)
-    txt = g_strdup_printf("+%04d:%02d:%02d %02d:%02d:%02d", y, m, d, h, min, s);
+    txt = g_strdup_printf("+%04u:%02u:%02u %02d:%02d:%02d", y, m, d, h, min, s);
   else
-    txt = g_strdup_printf("%04d:%02d:%02d %02d:%02d:%02d", y, m, d, h, min, s);
+    txt = g_strdup_printf("%04u:%02u:%02u %02d:%02d:%02d", y, m, d, h, min, s);
 
   gtk_entry_set_text(GTK_ENTRY(pop->selection), txt);
   g_free(txt);

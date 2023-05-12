@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2021 darktable developers.
+   Copyright (C) 2013-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
 #include "lua/image.h"
 #include "common/colorlabels.h"
@@ -65,11 +65,12 @@ static void releasewriteimage(lua_State *L, dt_image_t *image)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_lua_image_push(lua_State *L, int imgid)
+void dt_lua_image_push(lua_State *L, const dt_imgid_t imgid)
 {
   // check that id is valid
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE id = ?1", -1, &stmt,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images WHERE id = ?1", -1, &stmt,
                               NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) != SQLITE_ROW)
@@ -85,7 +86,7 @@ void dt_lua_image_push(lua_State *L, int imgid)
 
 static int history_delete(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
   dt_history_delete_on_image(imgid);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
@@ -94,7 +95,7 @@ static int history_delete(lua_State *L)
 
 static int drop_cache(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   return 0;
@@ -119,7 +120,7 @@ static int generate_cache(lua_State *L)
       {
         if(g_mkdir_with_parents(dirname, 0750))
         {
-          fprintf(stderr, _("could not create directory '%s'!\n"), dirname);
+          dt_print(DT_DEBUG_ALWAYS, "[lua] could not create directory '%s'!\n", dirname);
           return 1;
         }
       }
@@ -129,7 +130,8 @@ static int generate_cache(lua_State *L)
   for(int k = max; k >= min && k >= 0; k--)
   {
     char filename[PATH_MAX] = { 0 };
-    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
+    snprintf(filename, sizeof(filename),
+             "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
 
     // if a valid thumbnail file is already on disc - do nothing
     if(dt_util_test_image_file(filename)) continue;
@@ -264,7 +266,8 @@ static int rating_member(lua_State *L)
     my_image->flags &= ~DT_VIEW_RATINGS_MASK;
     my_image->flags |= my_score;
     releasewriteimage(L, my_image);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
+    dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
                                g_list_prepend(NULL, GINT_TO_POINTER(my_image->id)));
     return 0;
   }
@@ -323,10 +326,13 @@ static int exif_datetime_taken_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
-    dt_datetime_img_to_exif(sdt, sizeof(sdt), my_image);
+    int datetime_size = dt_conf_get_bool("lighttable/ui/milliseconds") ? DT_DATETIME_LENGTH
+                                                                       : DT_DATETIME_EXIF_LENGTH;
+    char *sdt = calloc(datetime_size, sizeof(char));
+    dt_datetime_img_to_exif(sdt, datetime_size, my_image);
     lua_pushstring(L, sdt);
     releasereadimage(L, my_image);
+    free(sdt);
     return 1;
   }
   else
@@ -351,7 +357,7 @@ static int local_copy_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    int imgid = my_image->id;
+    const dt_imgid_t imgid = my_image->id;
     luaL_checktype(L, 3, LUA_TBOOLEAN);
     // we need to release write image for the other functions to use it
     releasewriteimage(L, my_image);
@@ -369,7 +375,7 @@ static int local_copy_member(lua_State *L)
 
 static int colorlabel_member(lua_State *L)
 {
-  int imgid;
+  dt_imgid_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, 1);
   int colorlabel_index = luaL_checkoption(L, 2, NULL, dt_colorlabels_name);
   if(lua_gettop(L) != 3)
@@ -387,7 +393,8 @@ static int colorlabel_member(lua_State *L)
     {
       dt_colorlabels_remove_label(imgid, colorlabel_index);
     }
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
+    dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
     return 0;
   }
@@ -427,7 +434,7 @@ int group_with(lua_State *L)
   luaA_to(L, dt_lua_image_t, &second_image, 2);
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, second_image, 'r');
-  int group_id = cimg->group_id;
+  const dt_imgid_t group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
   dt_grouping_add_to_group(group_id, first_image);
@@ -448,17 +455,18 @@ int get_group(lua_State *L)
   dt_lua_image_t first_image;
   luaA_to(L, dt_lua_image_t, &first_image, 1);
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, first_image, 'r');
-  int group_id = cimg->group_id;
+  const dt_imgid_t group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE group_id = ?1", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images WHERE group_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
   lua_newtable(L);
   int table_index = 1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
     lua_seti(L, -2, table_index);
     table_index++;
@@ -509,6 +517,12 @@ int dt_lua_init_image(lua_State *L)
   luaA_struct_member(L, dt_image_t, filename, const char_filename_length);
   luaA_struct_member(L, dt_image_t, width, const int32_t);
   luaA_struct_member(L, dt_image_t, height, const int32_t);
+  luaA_struct_member(L, dt_image_t, final_width, const int32_t);
+  luaA_struct_member(L, dt_image_t, final_height, const int32_t);
+  luaA_struct_member(L, dt_image_t, p_width, const int32_t);
+  luaA_struct_member(L, dt_image_t, p_height, const int32_t);
+  luaA_struct_member(L, dt_image_t, aspect_ratio, const float);
+
   luaA_struct_member_name(L, dt_image_t, geoloc.longitude, protected_double, longitude); // set to NAN if value is not set
   luaA_struct_member_name(L, dt_image_t, geoloc.latitude, protected_double, latitude); // set to NAN if value is not set
   luaA_struct_member_name(L, dt_image_t, geoloc.elevation, protected_double, elevation); // set to NAN if value is not set
@@ -520,7 +534,8 @@ int dt_lua_init_image(lua_State *L)
   {
     lua_pushcfunction(L, image_luaautoc_member);
     luaA_Type member_type = luaA_struct_typeof_member_name(L, dt_image_t, member_name);
-    if(luaA_conversion_to_registered_type(L, member_type) || luaA_struct_registered_type(L, member_type)
+    if(luaA_conversion_to_registered_type(L, member_type)
+       || luaA_struct_registered_type(L, member_type)
        || luaA_enum_registered_type(L, member_type))
     {
       dt_lua_type_register(L, dt_lua_image_t, member_name);
@@ -635,4 +650,3 @@ int dt_lua_init_image(lua_State *L)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

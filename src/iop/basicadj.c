@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -709,6 +709,10 @@ static inline double ldexpk(double x, int32_t q)
 
 static inline double xlog(double d)
 {
+  // since this is a local function and we know that xlog will only be
+  // called with values 1 <= d <= 65537, there is no need to check for
+  // d == INFINITY or d <= 0 and return +/-INFINITY or NAN.
+
   const int e = ilogbp1(d * 0.7071);
   const double m = ldexpk(d, -e);
 
@@ -725,11 +729,6 @@ static inline double xlog(double d)
   t = fma(t, x2, 2);
 
   x = x * t + 0.693147180559945286226764 * e;
-
-  if(isinf(d)) x = INFINITY;
-  if(d < 0)    x = NAN;
-  if(d == 0)   x = -INFINITY;
-
   return x;
 }
 
@@ -1145,35 +1144,35 @@ cleanup:
   bright /= 100.f;
   contr /= 100.f;
 
-  if(isnan(expcomp))
+  if(dt_isnan(expcomp))
   {
     expcomp = 0.f;
-    fprintf(stderr, "[_get_auto_exp] expcomp is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!!!\n");
   }
-  if(isnan(black))
+  if(dt_isnan(black))
   {
     black = 0.f;
-    fprintf(stderr, "[_get_auto_exp] black is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!!!\n");
   }
-  if(isnan(bright))
+  if(dt_isnan(bright))
   {
     bright = 0.f;
-    fprintf(stderr, "[_get_auto_exp] bright is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!!!\n");
   }
-  if(isnan(contr))
+  if(dt_isnan(contr))
   {
     contr = 0.f;
-    fprintf(stderr, "[_get_auto_exp] contr is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!!!\n");
   }
-  if(isnan(hlcompr))
+  if(dt_isnan(hlcompr))
   {
     hlcompr = 0.f;
-    fprintf(stderr, "[_get_auto_exp] hlcompr is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!!!\n");
   }
-  if(isnan(hlcomprthresh))
+  if(dt_isnan(hlcomprthresh))
   {
     hlcomprthresh = 0.f;
-    fprintf(stderr, "[_get_auto_exp] hlcomprthresh is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!!!\n");
   }
 
   *_expcomp = expcomp;
@@ -1298,7 +1297,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
-        fprintf(stderr, "[basicadj process_cl] error allocating memory for color transformation 1\n");
+        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 1\n");
         err = DT_OPENCL_SYSMEM_ALLOCATION;
         goto cleanup;
       }
@@ -1306,7 +1305,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_in, width, height, ch * sizeof(float));
       if(err != CL_SUCCESS)
       {
-        fprintf(stderr, "[basicadj process_cl] error allocating memory for color transformation 2\n");
+        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 2\n");
         goto cleanup;
       }
 
@@ -1363,7 +1362,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_gamma = dt_opencl_copy_host_to_device(devid, d->lut_gamma, 256, 256, sizeof(float));
   if(dev_gamma == NULL)
   {
-    fprintf(stderr, "[basicadj process_cl] error allocating memory 3\n");
+    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 3\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1371,7 +1370,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_contrast = dt_opencl_copy_host_to_device(devid, d->lut_contrast, 256, 256, sizeof(float));
   if(dev_contrast == NULL)
   {
-    fprintf(stderr, "[basicadj process_cl] error allocating memory 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 4\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1384,7 +1383,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "[basicadj process_cl] error %i enqueue kernel\n", err);
+    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error %i enqueue kernel\n", err);
     goto cleanup;
   }
 

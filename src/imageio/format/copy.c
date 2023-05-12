@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
-#include "common/imageio_module.h"
 #include "common/utility.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 #include "gui/gtk.h"
 #include <glib/gstdio.h>
@@ -32,7 +32,7 @@ DT_MODULE(1)
 // FIXME: we can't rely on darktable to avoid file overwriting -- it doesn't know the filename (extension).
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   int status = 1;

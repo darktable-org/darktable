@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2022 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -644,20 +645,6 @@ static gboolean _area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, 
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-  {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-    {
-      //adjust aspect
-      const int aspect = dt_conf_get_int("plugins/darkroom/rgblevels/aspect_percent");
-      dt_conf_set_int("plugins/darkroom/rgblevels/aspect_percent", aspect + delta_y);
-      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
-
-      return TRUE;
-    }
-  }
-
   _turn_selregion_picker_off(self);
 
   if(c->dragging)
@@ -667,7 +654,8 @@ static gboolean _area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, 
 
   if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
-  const float interval = 0.002; // Distance moved for each scroll event
+  const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, event->state); // Distance moved for each scroll event
+  int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
     const float new_position = p->levels[c->channel][c->handle_move] - interval * delta_y;
@@ -836,9 +824,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    piece->request_histogram |= (DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
   else
-    piece->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram &= ~DT_REQUEST_ON;
+
+  piece->request_histogram |= DT_REQUEST_EXPANDED;
 
   memcpy(&(d->params), p, sizeof(dt_iop_rgblevels_params_t));
 
@@ -901,7 +891,7 @@ void init(dt_iop_module_t *self)
 {
   dt_iop_default_init(self);
 
-  self->request_histogram |= (DT_REQUEST_ON);
+  self->request_histogram |= (DT_REQUEST_ON | DT_REQUEST_EXPANDED);
 
   dt_iop_rgblevels_params_t *d = self->default_params;
 
@@ -954,7 +944,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     float bottop = -1e6;
     switch(effect)
@@ -978,7 +968,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
       const float new_position = p->levels[c->channel][element] + interval * move_size;
       _rgblevels_move_handle(self, element, new_position, p->levels[c->channel], c->drag_start_percentage);
     default:
-      fprintf(stderr, "[_action_process_tabs] unknown shortcut effect (%d) for levels\n", effect);
+      dt_print(DT_DEBUG_ALWAYS, "[_action_process_tabs] unknown shortcut effect (%d) for levels\n", effect);
       break;
     }
 
@@ -1016,8 +1006,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(_tab_switch_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
-  const float aspect = dt_conf_get_int("plugins/darkroom/rgblevels/aspect_percent") / 100.0;
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/rgblevels/aspect_percent"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
@@ -1026,11 +1015,6 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
                                                     "operates on L channel."));
-
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
-                                             | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
-                                             | darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(_area_draw_callback), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(_area_button_press_callback), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(_area_button_release_callback), self);
@@ -1039,19 +1023,19 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_area_scroll_callback), self);
 
   c->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "black", c->blackpick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("black"), c->blackpick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
   g_signal_connect(G_OBJECT(c->blackpick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   c->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "gray", c->greypick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("gray"), c->greypick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
   g_signal_connect(G_OBJECT(c->greypick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   c->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "white", c->whitepick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("white"), c->whitepick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
   g_signal_connect(G_OBJECT(c->whitepick), "toggled", G_CALLBACK(_color_picker_callback), self);
@@ -1064,12 +1048,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), pick_hbox, TRUE, TRUE, 0);
 
   c->bt_auto_levels = gtk_button_new_with_label(_("auto"));
-  dt_action_define_iop(self, NULL, "auto levels", c->bt_auto_levels, &dt_action_def_button);
+  dt_action_define_iop(self, NULL, N_("auto levels"), c->bt_auto_levels, &dt_action_def_button);
   gtk_widget_set_tooltip_text(c->bt_auto_levels, _("apply auto levels"));
 
   c->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
   dt_gui_add_class(c->bt_select_region, "dt_transparent_background");
-  dt_action_define_iop(self, NULL, "auto region", c->bt_select_region, &dt_action_def_toggle);
+  dt_action_define_iop(self, NULL, N_("auto region"), c->bt_select_region, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->bt_select_region,
                               _("apply auto levels based on a region defined by the user\n"
                                 "click and drag to draw the area\n"
@@ -1176,8 +1160,8 @@ static void _auto_levels(const float *const img, const int width, const int heig
     x_to = width - 1;
   }
 
-  float max = -INFINITY;
-  float min = INFINITY;
+  float max = -FLT_MAX;
+  float min = FLT_MAX;
 
   for(int y = y_from; y <= y_to; y++)
   {
@@ -1225,8 +1209,12 @@ static void _auto_levels(const float *const img, const int width, const int heig
   p->levels[channel][1] = (p->levels[channel][2] + p->levels[channel][0]) / 2.f;
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
@@ -1251,7 +1239,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
       int box[4] = { 0 };
       _get_selected_area(self, piece, g, roi_in, box);
-      _auto_levels((const float *const)ivoid, roi_in->width, roi_in->height, box, &(g->params), g->channel, work_profile);
+      _auto_levels((const float *const)ivoid, roi_in->width, roi_in->height, box,
+                   &(g->params), g->channel, work_profile);
 
       dt_iop_gui_enter_critical_section(self);
       g->call_auto_levels = 2;
@@ -1270,11 +1259,16 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = (const float*)ivoid;
   float *const restrict out = (float*)ovoid;
-  if(d->params.autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS || d->params.preserve_colors == DT_RGB_NORM_NONE)
+  if(d->params.autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS
+     || d->params.preserve_colors == DT_RGB_NORM_NONE)
   {
+    const dt_aligned_pixel_t min_levels
+      = { d->params.levels[0][0], d->params.levels[1][0], d->params.levels[2][0], 0.0f };
+    const dt_aligned_pixel_t max_levels
+      = { d->params.levels[0][2], d->params.levels[1][2], d->params.levels[2][2], 1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, work_profile, d, mult) \
+  dt_omp_firstprivate(npixels, in, out, work_profile, d, mult, min_levels, max_levels) \
   schedule(static)
 #endif
     for(int k = 0; k < 4U*npixels; k += 4)
@@ -1283,24 +1277,24 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         const float L_in = in[k+c];
 
-        if(L_in <= d->params.levels[c][0])
+        if(L_in <= min_levels[c])
         {
           // Anything below the lower threshold just clips to zero
           out[k+c] = 0.0f;
         }
-        else if(L_in >= d->params.levels[c][2])
+        else if(L_in >= max_levels[c])
         {
-          const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
+          // above the upper limit we extrapolate using the gamma value
+          const float percentage = (L_in - min_levels[c]) * mult[c];
           out[k+c] = powf(percentage, d->inv_gamma[c]);
         }
         else
         {
           // Within the expected input range we can use the lookup table
-          const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
+          const float percentage = (L_in - min_levels[c]) * mult[c];
           out[k+c] = d->lut[c][CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
         }
       }
-      out[k+3] = in[k+3];
     }
   }
   else
@@ -1308,19 +1302,23 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     const int ch_levels = 0;
     const float mult_ch = mult[ch_levels];
     const float *const restrict levels = d->params.levels[ch_levels];
+    const float min_level = levels[0];
+    const float max_level = levels[2];
+    static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, work_profile, d, levels, mult_ch, ch_levels) \
+  dt_omp_firstprivate(npixels, in, out, work_profile, d, min_level, max_level, \
+                      mult_ch, ch_levels, zero)                         \
   schedule(static)
 #endif
     for(int k = 0; k < 4U*npixels; k += 4)
     {
       const float lum = dt_rgb_norm(in+k, d->params.preserve_colors, work_profile);
-      if(lum > levels[0])
+      if(lum > min_level)
       {
         float curve_lum;
-        const float percentage = (lum - levels[0]) * mult_ch;
-        if(lum >= levels[2])
+        const float percentage = (lum - min_level) * mult_ch;
+        if(lum >= max_level)
         {
           curve_lum = powf(percentage, d->inv_gamma[ch_levels]);
         }
@@ -1331,19 +1329,20 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         }
 
         const float ratio = curve_lum / lum;
+        dt_aligned_pixel_t res;
 
         for_each_channel(c,aligned(in,out:16))
         {
-          out[k+c] = (ratio * in[k+c]);
+          res[c] = (ratio * in[k+c]);
         }
+        copy_pixel_nontemporal(out + k, res);
       }
       else
       {
-        for_each_channel(c,aligned(out:16))
-          out[k+c] = 0.f;
+        copy_pixel_nontemporal(out + k, zero);
       }
-      out[k+3] = in[k+3];
-   }
+    }
+    dt_omploop_sfence(); // ensure nontemporal writes are flushed before continuing
   }
 }
 
@@ -1396,7 +1395,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
-        fprintf(stderr, "[rgblevels process_cl] error allocating memory for temp table 1\n");
+        dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory for temp table 1\n");
         err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
         goto cleanup;
       }
@@ -1404,7 +1403,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_in, width, height, ch * sizeof(float));
       if(err != CL_SUCCESS)
       {
-        fprintf(stderr, "[rgblevels process_cl] error allocating memory for temp table 2\n");
+        dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory for temp table 2\n");
         goto cleanup;
       }
 
@@ -1433,21 +1432,21 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_lutr = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
   if(dev_lutr == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 1\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 1\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
   dev_lutg = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
   if(dev_lutg == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 2\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 2\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
   dev_lutb = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if(dev_lutb == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 3\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 3\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1455,7 +1454,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_levels = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->params.levels);
   if(dev_levels == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 4\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1463,7 +1462,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_inv_gamma = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, (float *)d->inv_gamma);
   if(dev_inv_gamma == NULL)
   {
-    fprintf(stderr, "[rgblevels process_cl] error allocating memory 5\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 5\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1478,7 +1477,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
     CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "[rgblevels process_cl] error %i enqueue kernel\n", err);
+    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error %i enqueue kernel\n", err);
     goto cleanup;
   }
 

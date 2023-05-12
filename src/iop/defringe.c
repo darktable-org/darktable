@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -141,7 +142,7 @@ static inline void fib_latt(int *const x, int *const y, float radius, int step, 
   {
     *x = 0;
     *y = 0;
-    fprintf(stderr, "Fibonacci lattice index wrong/out of bounds in: defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Fibonacci lattice index wrong/out of bounds in defringe module\n");
     return;
   }
   float px = step / fib[idx], py = step * (fib[idx + 1] / fib[idx]);
@@ -197,7 +198,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   gauss = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, order);
   if(!gauss)
   {
-    fprintf(stderr, "Error allocating memory for gaussian blur in: defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for gaussian blur in defringe module\n");
     goto ERROR_EXIT;
   }
   dt_gaussian_blur_4c(gauss, in, out);
@@ -244,7 +245,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   xy_small = malloc(sizeof(int) * 2 * samples_small);
   if(!xy_avg || !xy_small)
   {
-    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for fibonacci lattice in defringe module\n");
     goto ERROR_EXIT;
   }
 
@@ -394,9 +395,6 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
       }
     }
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
   goto FINISH_PROCESS;
 

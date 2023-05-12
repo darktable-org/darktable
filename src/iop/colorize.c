@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -126,40 +126,39 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
-  float *in, *out;
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
+
+  const float *const in = (float*)ivoid;
+  float *const out = (float*)ovoid;
   dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
-  const int ch = piece->colors;
 
   const float L = d->L;
   const float a = d->a;
   const float b = d->b;
   const float mix = d->mix;
   const float Lmlmix = L - (mix * 100.0f) / 2.0f;
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
+  const dt_aligned_pixel_t color = { 0.0f, a, b, 0.0f };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(a, b, ch, ivoid, Lmlmix, mix, ovoid, roi_out) \
-  private(in, out) \
+  dt_omp_firstprivate(a, b, in, out, Lmlmix, mix, npixels, color)  \
   schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-
-    const int stride = ch * roi_out->width;
-
-    in = (float *)ivoid + (size_t)k * stride;
-    out = (float *)ovoid + (size_t)k * stride;
-
-    for(int l = 0; l < stride; l += ch)
-    {
-      out[l + 0] = Lmlmix + in[l + 0] * mix;
-      out[l + 1] = a;
-      out[l + 2] = b;
-      out[l + 3] = in[l + 3];
-    }
+    const float mixed_L = Lmlmix + in[4*k + 0] * mix;
+    copy_pixel(out + 4*k, color);
+    out[4*k] = mixed_L;
   }
 }
 
@@ -284,11 +283,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   else
   {
-    // this fits better. conversion matrix from sRGB to XYZ@D50 - which is what dt_XYZ_to_Lab() expects as
-    // input
-    XYZ[0] = (rgb[0] * 0.4360747f) + (rgb[1] * 0.3850649f) + (rgb[2] * 0.1430804f);
-    XYZ[1] = (rgb[0] * 0.2225045f) + (rgb[1] * 0.7168786f) + (rgb[2] * 0.0606169f);
-    XYZ[2] = (rgb[0] * 0.0139322f) + (rgb[1] * 0.0971045f) + (rgb[2] * 0.7141733f);
+    dt_Rec709_to_XYZ_D50(rgb, XYZ);
   }
 
   dt_XYZ_to_Lab(XYZ, Lab);

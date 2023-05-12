@@ -38,6 +38,10 @@
 #include <shobjidl.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct dt_lib_backgroundjob_element_t;
 
 typedef GdkCursorType dt_cursor_t;
@@ -132,7 +136,7 @@ typedef struct dt_control_t
                actions_iops, actions_blend, actions_focus,
                actions_lua, actions_fallbacks, *actions_modifiers;
 
-  GHashTable *widgets, *combo_introspection, *combo_list;
+  GHashTable *widgets;
   GSequence *shortcuts;
   gboolean enable_fallbacks;
   GtkWidget *mapping_widget;
@@ -151,7 +155,7 @@ typedef struct dt_control_t
   int button_down, button_down_which, button_type;
   double button_x, button_y;
   int history_start;
-  int32_t mouse_over_id;
+  dt_imgid_t mouse_over_id;
   gboolean lock_cursor_shape;
 
   // TODO: move these to some darkroom struct
@@ -250,8 +254,8 @@ int dt_control_running();
 
 // thread-safe interface between core and gui.
 // is the locking really needed?
-int32_t dt_control_get_mouse_over_id();
-void dt_control_set_mouse_over_id(int32_t value);
+dt_imgid_t dt_control_get_mouse_over_id();
+void dt_control_set_mouse_over_id(dt_imgid_t value);
 
 float dt_control_get_dev_zoom_x();
 void dt_control_set_dev_zoom_x(float value);
@@ -268,22 +272,12 @@ void dt_control_set_dev_closeup(int value);
 dt_dev_zoom_t dt_control_get_dev_zoom();
 void dt_control_set_dev_zoom(dt_dev_zoom_t value);
 
-static inline int32_t dt_ctl_get_num_procs()
-{
-#ifdef _OPENMP
-  return omp_get_num_procs();
-#else
-#ifdef _SC_NPROCESSORS_ONLN
-  return sysconf(_SC_NPROCESSORS_ONLN);
-#else
-  return 1;
-#endif
-#endif
-}
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

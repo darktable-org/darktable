@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/camera_control.h"
 #include "common/darktable.h"
@@ -68,7 +69,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_live_view_t
 {
-  int imgid;
+  dt_imgid_t imgid;
   int splitline_rotation;
   double overlay_x0, overlay_x1, overlay_y0, overlay_y1;
   double splitline_x, splitline_y; // 0..1
@@ -106,10 +107,9 @@ const char *name(dt_lib_module_t *self)
   return _("live view");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"tethering", NULL};
-  return v;
+  return DT_VIEW_TETHERING;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -287,11 +287,11 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(DT_ACTION(self), NULL, action, button, *(#type)?&dt_action_def_toggle:&dt_action_def_button);
 
   lib->live_view = NEW_BUTTON(toggle, dtgtk_cairo_paint_eye, 0, _toggle_live_view_clicked, lib, N_("toggle live view"));
-  dt_shortcut_register(dt_action_section(DT_ACTION(self), "toggle live view"), 0, 0, GDK_KEY_v, 0);
+  dt_shortcut_register(dt_action_section(DT_ACTION(self), N_("toggle live view")), 0, 0, GDK_KEY_v, 0);
   lib->live_view_zoom = NEW_BUTTON(, dtgtk_cairo_paint_zoom, 0, _zoom_live_view_clicked, lib, N_("zoom live view")); // TODO: see _zoom_live_view_clicked
-  dt_shortcut_register(dt_action_section(DT_ACTION(self), "zoom live view"), 0, 0, GDK_KEY_w, 0);
-  lib->rotate_ccw = NEW_BUTTON(, dtgtk_cairo_paint_refresh, 0, _rotate_ccw, lib, N_("rotate 90 degrees ccw"));
-  lib->rotate_cw = NEW_BUTTON(,dtgtk_cairo_paint_refresh, CPF_DIRECTION_UP, _rotate_cw, lib, N_("rotate 90 degrees cw"));
+  dt_shortcut_register(dt_action_section(DT_ACTION(self), N_("zoom live view")), 0, 0, GDK_KEY_w, 0);
+  lib->rotate_ccw = NEW_BUTTON(, dtgtk_cairo_paint_refresh, 0, _rotate_ccw, lib, N_("rotate 90 degrees CCW"));
+  lib->rotate_cw = NEW_BUTTON(,dtgtk_cairo_paint_refresh, CPF_DIRECTION_UP, _rotate_cw, lib, N_("rotate 90 degrees CW"));
   lib->flip = NEW_BUTTON(toggle, dtgtk_cairo_paint_flip, CPF_DIRECTION_UP, _toggle_flip_clicked, lib, N_("flip live view horizontally"));
 
   // focus buttons
@@ -445,7 +445,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   const gboolean use_splitline = (dt_bauhaus_combobox_get(lib->overlay_splitline) == 1);
 
   // OVERLAY
-  int imgid = 0;
+  dt_imgid_t imgid = NO_IMGID;
   switch(dt_bauhaus_combobox_get(lib->overlay))
   {
     case OVERLAY_SELECTED:
@@ -455,7 +455,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       imgid = lib->imgid;
       break;
   }
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     cairo_save(cr);
     const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
@@ -515,7 +515,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
             y1 = buf.height;
             break;
           default:
-            fprintf(stderr, "OMFG, the world will collapse, this shouldn't be reachable!\n");
+            dt_print(DT_DEBUG_ALWAYS, "OMFG, the world will collapse, this shouldn't be reachable!\n");
             dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
             return;
         }
@@ -638,7 +638,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
   dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
   int result = 0;
 
-  int imgid = 0;
+  dt_imgid_t imgid = NO_IMGID;
   switch(dt_bauhaus_combobox_get(lib->overlay))
   {
     case OVERLAY_SELECTED:
@@ -649,7 +649,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       break;
   }
 
-  if(imgid > 0 && dt_bauhaus_combobox_get(lib->overlay_splitline))
+  if(dt_is_valid_imgid(imgid) && dt_bauhaus_combobox_get(lib->overlay_splitline))
   {
     const double width = lib->overlay_x1 - lib->overlay_x0;
     const double height = lib->overlay_y1 - lib->overlay_y0;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ static int _find_custom(gconstpointer a, gconstpointer b)
 {
   return (GPOINTER_TO_INT(a) != GPOINTER_TO_INT(b));
 }
-static void _insert_in_list(GList **list, const int imgid, gboolean only_visible)
+static void _insert_in_list(GList **list, const dt_imgid_t imgid, gboolean only_visible)
 {
   if(only_visible)
   {
@@ -67,7 +67,7 @@ static void _insert_in_list(GList **list, const int imgid, gboolean only_visible
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        const int imgidg = sqlite3_column_int(stmt, 0);
+        const dt_imgid_t imgidg = sqlite3_column_int(stmt, 0);
         if(!g_list_find_custom(*list, GINT_TO_POINTER(imgidg), _find_custom))
           *list = g_list_append(*list, GINT_TO_POINTER(imgidg));
       }
@@ -80,9 +80,10 @@ static void _insert_in_list(GList **list, const int imgid, gboolean only_visible
 // test if the cache is still valid
 static gboolean _test_cache(dt_act_on_cache_t *cache)
 {
-  const int mouseover = dt_control_get_mouse_over_id();
+  const dt_imgid_t mouseover = dt_control_get_mouse_over_id();
 
-  if(cache->ok && cache->image_over == mouseover
+  if(cache->ok
+     && cache->image_over == mouseover
      && cache->inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
      && g_slist_length(cache->active_imgs) == g_slist_length(darktable.view_manager->active_images))
   {
@@ -128,7 +129,7 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
    *  if ordered is TRUE, we return the list in the gui order. Otherwise the order is undefined (but quicker)
    **/
 
-  const int mouseover = dt_control_get_mouse_over_id();
+  const dt_imgid_t mouseover = dt_control_get_mouse_over_id();
 
   dt_act_on_cache_t *cache;
   if(only_visible)
@@ -144,7 +145,7 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
 
   GList *l = NULL;
   gboolean inside_sel = FALSE;
-  if(mouseover > 0)
+  if(dt_is_valid_imgid(mouseover))
   {
     // column 1,2,3
     if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside ||
@@ -152,7 +153,9 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
     {
       // column 1,2
       sqlite3_stmt *stmt;
-      gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
+      gchar *query = g_strdup_printf("SELECT imgid"
+                                     " FROM main.selected_images"
+                                     " WHERE imgid=%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -255,7 +258,8 @@ GList *dt_act_on_get_images(const gboolean only_visible, const gboolean force, c
   return l;
 }
 
-// get the query to retrieve images to act on. this is useful to speedup actions if they already use sqlite queries
+// get the query to retrieve images to act on. this is useful to
+// speedup actions if they already use sqlite queries
 gchar *dt_act_on_get_query(const gboolean only_visible)
 {
   /** Here's how it works
@@ -273,18 +277,20 @@ gchar *dt_act_on_get_query(const gboolean only_visible)
    *  due to dt_selection_get_list_query limitation, order is always considered as undefined
    **/
 
-  const int mouseover = dt_control_get_mouse_over_id();
+  const dt_imgid_t mouseover = dt_control_get_mouse_over_id();
 
   GList *l = NULL;
   gboolean inside_sel = FALSE;
-  if(mouseover > 0)
+  if(dt_is_valid_imgid(mouseover))
   {
     // column 1,2,3
     if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
     {
       // column 1,2
       sqlite3_stmt *stmt;
-      gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
+      gchar *query = g_strdup_printf("SELECT imgid"
+                                     " FROM main.selected_images"
+                                     " WHERE imgid =%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -353,9 +359,10 @@ gchar *dt_act_on_get_query(const gboolean only_visible)
 }
 
 // get the main image to act on during global changes (libs, accels)
-int dt_act_on_get_main_image()
+dt_imgid_t dt_act_on_get_main_image()
 {
-  /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
+  /** Here's how it works -- same as for list, except we don't care
+   * about mouse inside selection or table
    *
    *             mouse over| x |   |   |
    *          active images| ? |   | x |
@@ -365,10 +372,11 @@ int dt_act_on_get_main_image()
    *  S = selection ; O = mouseover ; A = active images
    **/
 
-  int ret = -1;
-  const int mouseover = dt_control_get_mouse_over_id();
+  dt_imgid_t ret = NO_IMGID;
 
-  if(mouseover > 0)
+  const dt_imgid_t mouseover = dt_control_get_mouse_over_id();
+
+  if(dt_is_valid_imgid(mouseover))
   {
     ret = mouseover;
   }
@@ -382,12 +390,13 @@ int dt_act_on_get_main_image()
     {
       sqlite3_stmt *stmt;
       // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT s.imgid"
-                                  " FROM main.selected_images as s, memory.collected_images as c"
-                                  " WHERE s.imgid=c.imgid"
-                                  " ORDER BY c.rowid LIMIT 1",
-                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "SELECT s.imgid"
+         " FROM main.selected_images as s, memory.collected_images as c"
+         " WHERE s.imgid=c.imgid"
+         " ORDER BY c.rowid LIMIT 1",
+         -1, &stmt, NULL);
       // clang-format on
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -444,4 +453,3 @@ void dt_act_on_reset_cache(const gboolean only_visible)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #define DT_OPENCL_DEFAULT_ERROR -999
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
 #define DT_OPENCL_PROCESS_CL -997
+#define DT_OPENCL_NODEVICE -996
 #include "common/darktable.h"
 
 #ifdef HAVE_OPENCL
@@ -52,17 +53,26 @@
 #include <CL/cl.h>
 // #pragma GCC diagnostic
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
 
 // use per device roundups here
 #define ROUNDUPDWD(a, b) dt_opencl_dev_roundup_width(a, b)
 #define ROUNDUPDHT(a, b) dt_opencl_dev_roundup_height(a, b)
 
-#define DT_OPENCL_DEFAULT_COMPILE_INTEL ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE_INTEL ("")
 #define DT_OPENCL_DEFAULT_COMPILE_AMD ("-cl-fast-relaxed-math")
 #define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math")
-#define DT_OPENCL_DEFAULT_COMPILE ("-cl-fast-relaxed-math")
-#define DT_CLDEVICE_HEAD ("cldevice_v4_")
+#define DT_OPENCL_DEFAULT_COMPILE ("")
+#define DT_CLDEVICE_HEAD ("cldevice_v5_")
+
+// version for current darktable cl kernels
+// this is reflected in the kernel directory and allows to
+// enforce a new kernel compilation cycle
+#define DT_OPENCL_KERNELS 1
 
 typedef enum dt_opencl_memory_t
 {
@@ -132,7 +142,7 @@ typedef struct dt_opencl_device_t
   int maxeventslot;
   int nvidia_sm_20;
   const char *vendor;
-  const char *name;
+  const char *fullname;
   const char *cname;
   const char *options;
   cl_int summary;
@@ -142,9 +152,9 @@ typedef struct dt_opencl_device_t
   size_t peak_memory;
   size_t used_available;
   // flags what tuning modes should be used
-  int tuneactive; 
+  dt_opencl_tunemode_t tuneactive; 
   // flags detected errors
-  int runtime_error;
+  dt_opencl_tunemode_t runtime_error;
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
@@ -159,21 +169,18 @@ typedef struct dt_opencl_device_t
   // this can often be avoided by using indirect transfers via pinned memory,
   // other devices have more efficient direct memory transfer implementations.
   // We can't predict on solid grounds if a device belongs to the first or second group,
-  // also pinned mem transfer requires slightly more ram. 
+  // also pinned mem transfer requires slightly more video ram plus system memory. 
   // this holds a bitmask defined by dt_opencl_pinmode_t
   // the device specific conf key might hold
   // 0 -> disabled by default; might be switched on by tune for performance
   // 1 -> enabled by default
   // 2 -> disabled under all circumstances. This could/should be used if we give away / ship specific keys for buggy systems 
-  int pinned_memory;
+  dt_opencl_pinmode_t pinned_memory;
 
   // in OpenCL processing round width/height of global work groups to a multiple of these values.
   // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
   int clroundup_wd;
   int clroundup_ht;
-
-  // A bitfield that identifies the type of OpenCL device required to test for on-CPU and more.
-  unsigned int cltype;
 
   // This defines how often should dt_opencl_events_get_slot do a dt_opencl_events_flush.
   // It should definitely le lower than the number of events that can be handled by the device/driver.
@@ -181,17 +188,17 @@ typedef struct dt_opencl_device_t
   int event_handles;
 
   // opencl_events enabled for the device, set internally via event_handles
-  int use_events;
+  gboolean use_events;
 
   // async pixelpipe mode for device
   // if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency.
   // however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed
   // instead of only a single module. export pixelpipe will always be run synchronously.
-  int asyncmode;
+  gboolean asyncmode;
 
   // a device might be turned off by force by setting this value to 1
   // also used for blacklisted drivers
-  int disabled;
+  gboolean disabled;
 
   // Some devices are known to be unused by other apps so there is no need to test for available memory at all.
   int forced_headroom;
@@ -215,10 +222,10 @@ struct dt_guided_filter_cl_global_t;
 typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
-  int inited;
-  int print_statistics;
-  int enabled;
-  int stopped;
+  gboolean inited;
+  gboolean print_statistics;
+  gboolean enabled;
+  gboolean stopped;
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
@@ -294,13 +301,14 @@ const char *cl_errstr(cl_int error);
 /** both finish functions return TRUE in case of success */
 /** cleans up command queue. */
 int dt_opencl_finish(const int devid);
-/** cleans up command queue if in synchron mode or while exporting */
-int dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
+
+/** cleans up command queue if in synchron mode or while exporting, returns TRUE in case of success */
+gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
 
 /** enqueues a synchronization point. */
-int dt_opencl_enqueue_barrier(const int devid);
+gboolean dt_opencl_enqueue_barrier(const int devid);
 
-/** locks a device for your thread's exclusive use */
+/** locks a device for your thread's exclusive use and returns it's id */
 int dt_opencl_lock_device(const int pipetype);
 
 /** done with your command queue. */
@@ -308,14 +316,6 @@ void dt_opencl_unlock_device(const int dev);
 
 /** calculates md5sums for a list of CL include files. */
 void dt_opencl_md5sum(const char **files, char **md5sums);
-
-/** loads the given .cl file and returns a reference to an internal program. */
-int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char *binname,
-                           const char *cachedir, char *md5sum, char **includemd5, int *loaded_cached);
-
-/** builds the given program. */
-int dt_opencl_build_program(const int dev, const int prog, const char *binname, const char *cachedir,
-                            char *md5sum, int loaded_cached);
 
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(const int program, const char *name);
@@ -371,11 +371,12 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
 int dt_opencl_enqueue_kernel_2d_args_internal(const int dev, const int kernel,
                                               const size_t w, const size_t h, ...);
 
-/** check if opencl is inited */
-int dt_opencl_is_inited(void);
+/** launch kernel with specified dimension and defined local size! */
+int dt_opencl_enqueue_kernel_ndim_with_local(const int dev, const int kernel, const size_t *sizes,
+                                           const size_t *local, const int dimensions);
 
 /** check if opencl is enabled */
-int dt_opencl_is_enabled(void);
+gboolean dt_opencl_is_enabled(void);
 
 /** disable opencl */
 void dt_opencl_disable(void);
@@ -475,6 +476,8 @@ int dt_opencl_get_image_height(cl_mem mem);
 
 int dt_opencl_get_image_element_size(cl_mem mem);
 
+void dt_opencl_dump_pipe_pfm(const char* mod, const int devid, cl_mem img, const gboolean input, const char *pipe);
+
 int dt_opencl_get_mem_context_id(cl_mem mem);
 
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
@@ -507,7 +510,7 @@ void dt_opencl_events_wait_for(const int devid);
 
 /** Wait for events in eventlist to terminate, check for return status of events and
     report summary success info (CL_COMPLETE or last error code) */
-cl_int dt_opencl_events_flush(const int devid, const int reset);
+cl_int dt_opencl_events_flush(const int devid, const gboolean reset);
 
 /** display OpenCL profiling information. If summary is not 0, try to generate summarized info for kernels */
 void dt_opencl_events_profiling(const int devid, const int aggregated);
@@ -518,25 +521,35 @@ int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_loca
 /** utility functions handling device specific properties */
 void dt_opencl_write_device_config(const int devid);
 gboolean dt_opencl_read_device_config(const int devid);
-int dt_opencl_avoid_atomics(const int devid);
+gboolean dt_opencl_avoid_atomics(const int devid);
 int dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 #else
 #include "control/conf.h"
 #include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct dt_opencl_t
 {
-  int inited;
-  int enabled;
-  int stopped;
+  gboolean inited;
+  gboolean enabled;
+  gboolean stopped;
   int error_count;
 } dt_opencl_t;
+
 static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
-  cl->inited = 0;
-  cl->enabled = 0;
-  cl->stopped = 0;
+  cl->inited = FALSE;
+  cl->enabled = FALSE;
+  cl->stopped = FALSE;
   cl->error_count = 0;
   dt_conf_set_bool("opencl", FALSE);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] this version of darktable was built without opencl support\n");
@@ -550,9 +563,9 @@ static inline gboolean dt_opencl_finish(const int devid)
 }
 static inline gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
 {
-  return -1;
+  return FALSE;
 }
-static inline int dt_opencl_enqueue_barrier(const int devid)
+static inline gboolean dt_opencl_enqueue_barrier(const int devid)
 {
   return -1;
 }
@@ -562,14 +575,6 @@ static inline int dt_opencl_lock_device(const int dev)
 }
 static inline void dt_opencl_unlock_device(const int dev)
 {
-}
-static inline int dt_opencl_load_program(const int dev, const char *filename)
-{
-  return -1;
-}
-static inline int dt_opencl_build_program(const int dev, const int program)
-{
-  return -1;
 }
 static inline int dt_opencl_create_kernel(const int program, const char *name)
 {
@@ -592,10 +597,6 @@ static inline int dt_opencl_get_kernel_work_group_size(const int dev, const int 
 {
   return -1;
 }
-static inline int dt_opencl_set_kernel_arg(const int dev, const int kernel, const size_t size, const void *arg)
-{
-  return -1;
-}
 static inline int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes)
 {
   return -1;
@@ -605,13 +606,9 @@ static inline int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const in
 {
   return -1;
 }
-static inline int dt_opencl_is_inited(void)
+static inline gboolean dt_opencl_is_enabled(void)
 {
-  return 0;
-}
-static inline int dt_opencl_is_enabled(void)
-{
-  return 0;
+  return FALSE;
 }
 static inline void dt_opencl_disable(void)
 {
@@ -659,13 +656,18 @@ static inline void dt_opencl_events_reset(const int devid)
 static inline void dt_opencl_events_wait_for(const int devid)
 {
 }
-static inline int dt_opencl_events_flush(const int devid, const int reset)
+static inline int dt_opencl_events_flush(const int devid, const gboolean reset)
 {
   return 0;
 }
 static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
 {
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 #endif
 
 // clang-format off

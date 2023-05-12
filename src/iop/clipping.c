@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -901,7 +901,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   float p[2], o[2];
   dt_boundingbox_t aabb = { roi_out_x + d->cix * so, roi_out_y + d->ciy * so, roi_out_x + d->cix * so + roi_out->width,
                   roi_out_y + d->ciy * so + roi_out->height };
-  dt_boundingbox_t aabb_in = { INFINITY, INFINITY, -INFINITY, -INFINITY };
+  dt_boundingbox_t aabb_in = { FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX };
   for(int c = 0; c < 4; c++)
   {
     // get corner points of roi_out
@@ -1312,8 +1312,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // we show a error on stderr if we have clamped something
     if(d->cx != p->cx || d->cy != p->cy || d->cw != fabsf(p->cw) || d->ch != fabsf(p->ch))
     {
-      fprintf(stderr, "[crop&rotate] invalid crop data for %d : x=%0.04f y=%0.04f w=%0.04f h=%0.04f\n",
-              pipe->image.id, p->cx, p->cy, p->cw, p->ch);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[crop&rotate] invalid crop data for %d : x=%0.04f y=%0.04f w=%0.04f h=%0.04f\n",
+               pipe->image.id, p->cx, p->cy, p->cw, p->ch);
     }
   }
 }
@@ -1322,10 +1323,6 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   g->preview_ready = TRUE;
-  if(self->dev->gui_module != self)
-  {
-    dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
-  }
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
   // force max size to be recomputed
@@ -2169,7 +2166,7 @@ void gui_init(struct dt_iop_module_t *self)
       // some sanity check
       if(n == 0 || d == 0)
       {
-        fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
+        dt_print(DT_DEBUG_ALWAYS, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
         dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
         continue;
       }
@@ -2181,7 +2178,7 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else
     {
-      fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
+      dt_print(DT_DEBUG_ALWAYS, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
       dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
       continue;
     }
@@ -3071,12 +3068,12 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       }
       else if(g->k_selected_segment >= 0)
       {
-        dt_control_hinter_message(darktable.control, _("<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"));
+        dt_control_hinter_message(darktable.control, _("<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"));
         dt_control_change_cursor(GDK_CROSS);
       }
       else
       {
-        dt_control_hinter_message(darktable.control, _("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
+        dt_control_hinter_message(darktable.control, _("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
                                                        "<b>move line/control point</b>: drag"));
         dt_control_change_cursor(GDK_FLEUR);
       }
@@ -3122,7 +3119,7 @@ static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_
   }
   g->applied = 1;
   const gboolean changed = fabs(p->cx - old[0]) > eps || fabs(p->cy - old[1]) > eps || fabs(p->cw - old[2]) > eps || fabs(p->ch - old[3]) > eps;
-  // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+  // dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
   if(changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 

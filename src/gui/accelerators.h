@@ -24,6 +24,10 @@
 #include "libs/lib.h"
 #include "views/view.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget);
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
@@ -37,7 +41,8 @@ void dt_shortcuts_select_view(dt_view_type_flags_t view);
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data);
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
-                                      GtkTooltip *tooltip, gpointer user_data);
+                                      GtkTooltip *tooltip, GtkWidget *vbox);
+void dt_shortcut_copy_lua(dt_action_t *action, gchar *preset_name);
 
 float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float size);
 
@@ -84,7 +89,7 @@ dt_input_device_t dt_register_input_driver(dt_lib_module_t *module, const dt_inp
 void dt_shortcut_key_press(dt_input_device_t id, const guint time, const guint key);
 void dt_shortcut_key_release(dt_input_device_t id, const guint time, const guint key);
 gboolean dt_shortcut_key_active(dt_input_device_t id, const guint key);
-float dt_shortcut_move(dt_input_device_t id, const guint time, const guint move, const double size);
+float dt_shortcut_move(dt_input_device_t id, const guint time, const guint move, const float move_size);
 
 typedef enum dt_shortcut_flag_t
 {
@@ -209,6 +214,13 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpoin
 
 // create a shortcutable entry field
 GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, const gchar *text);
+
+// find the action a widget is linked to
+dt_action_t *dt_action_widget(GtkWidget *widget);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

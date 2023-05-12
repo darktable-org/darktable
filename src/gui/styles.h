@@ -21,14 +21,14 @@
 #include <cairo.h>
 
 /** shows a dialog for creating a new style */
-void dt_gui_styles_dialog_new(int imgid);
+void dt_gui_styles_dialog_new(dt_imgid_t imgid);
 
 /** shows a dialog for editing existing style */
 void dt_gui_styles_dialog_edit(const char *name);
 
-cairo_surface_t *dt_gui_get_style_preview(const uint32_t imgid, const char *name);
+cairo_surface_t *dt_gui_get_style_preview(const dt_imgid_t imgid, const char *name);
 
-GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid);
+GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

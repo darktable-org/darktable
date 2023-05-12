@@ -20,10 +20,6 @@
 
 #ifdef FULL_API_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "common/introspection.h"
 
 #include <cairo/cairo.h>
@@ -37,6 +33,10 @@ extern "C" {
 
 #ifdef HAVE_OPENCL
 #include <CL/cl.h>
+#endif
+
+#if defined(__cplusplus) && !defined(INCLUDE_API_FROM_MODULE_H)
+extern "C" {
 #endif
 
 struct dt_iop_module_so_t;
@@ -182,14 +182,6 @@ DEFAULT(void, process_tiling, struct dt_iop_module_t *self, struct dt_dev_pixelp
                                void *const o, const struct dt_iop_roi_t *const roi_in,
                                const struct dt_iop_roi_t *const roi_out, const int bpp);
 
-#if defined(__SSE__)
-/** a variant process(), that can contain SSE2 intrinsics. */
-/** can be provided by each IOP. */
-OPTIONAL(void, process_sse2, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                             void *const o, const struct dt_iop_roi_t *const roi_in,
-                             const struct dt_iop_roi_t *const roi_out);
-#endif
-
 #ifdef HAVE_OPENCL
 /** the opencl equivalent of process(). */
 OPTIONAL(int, process_cl, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
@@ -228,8 +220,8 @@ OPTIONAL(void, set_preferences, void *menu, struct dt_iop_module_t *self);
 
 #pragma GCC visibility pop
 
-#ifdef __cplusplus
-}
+#if defined(__cplusplus) && !defined(INCLUDE_API_FROM_MODULE_H)
+} // extern "C"
 #endif
 
 #endif // FULL_API_H

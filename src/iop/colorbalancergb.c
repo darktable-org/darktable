@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,11 +42,11 @@
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
-#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
+#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
 #define STEPS 92         // so we test 92×92×92 combinations of RGB in [0; 1] to build the gamut LUT
 
 // Filmlight Yrg puts red at 330°, while usual HSL wheels put it at 360/0°
-// so shift in GUI only it to not confuse people. User params are always degrees,
+// so shift in GUI only it to not confuse people. User params are always degrees,
 // pixel params are always radians.
 #define ANGLE_SHIFT -30.f
 #define DEG_TO_RAD(x) ((x + ANGLE_SHIFT) * M_PI / 180.f)
@@ -180,7 +180,8 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("affect color, brightness and contrast"),
+  return dt_iop_set_description(self, _("color grading tools using alpha masks to separate\n"
+                                        "shadows, mid-tones and highlights"),
                                       _("corrective or creative"),
                                       _("linear, RGB, scene-referred"),
                                       _("non-linear, RGB"),
@@ -542,9 +543,12 @@ static inline float lookup_gamut(const float *const gamut_lut, const float x)
   return out;
 }
 
-
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)piece->data;
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
@@ -552,7 +556,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
 
-  self->cache_next_important = TRUE; // The cpu code is pretty heavy stuff so an importance hint
 
   // work profile can't be fetched in commit_params since it is not yet initialised
   // work_profile->matrix_in === RGB_to_XYZ
@@ -573,12 +576,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   * so we pre-multiply the 3 conversion matrices and operate only one matrix product
   */
-  dt_colormatrix_t input_matrix;
-  dt_colormatrix_t output_matrix;
+  dt_colormatrix_t input_matrix = { { 0.0f } };
+  dt_colormatrix_t output_matrix = { { 0.0f } };
 
   dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in); // output_matrix used as temp buffer
   dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
-
+  dt_colormatrix_t input_matrix_trans;
+  dt_colormatrix_transpose(input_matrix_trans, input_matrix);
+  
   // Premultiply the output matrix
 
   /* What we do here is equivalent to :
@@ -587,6 +592,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   */
 
   dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
+  dt_colormatrix_t output_matrix_trans;
+  dt_colormatrix_transpose(output_matrix_trans, output_matrix);
 
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
@@ -616,31 +623,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     { sinf(d->hue_angle),  cosf(d->hue_angle) },
   };
 
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
+  const size_t out_width = roi_out->width;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, \
-    global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2, L_white, \
-    hue_rotation_matrix) \
-    schedule(static) collapse(2)
+  dt_omp_firstprivate(in, out, npixels, out_width, d, g, mask_display, \
+                      input_matrix_trans, output_matrix_trans, gamut_LUT,     \
+                      global, highlights, shadows, midtones, chroma, \
+                      saturation, brilliance, checker_1, checker_2, L_white, \
+                      hue_rotation_matrix)                              \
+  schedule(static)
 #endif
-  for(size_t i = 0; i < roi_out->height; i++)
-  for(size_t j = 0; j < roi_out->width; j++)
+  for(size_t k  = 0; k < 4 * npixels; k += 4)
   {
-    const size_t k = ((i * roi_out->width) + j) * 4;
-    const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
-    float *const restrict pix_out = __builtin_assume_aligned(out + k, 16);
-
-    dt_aligned_pixel_t XYZ_D65 = { 0.f };
-    dt_aligned_pixel_t LMS = { 0.f };
-    dt_aligned_pixel_t RGB = { 0.f };
-    dt_aligned_pixel_t Yrg = { 0.f };
-    dt_aligned_pixel_t Ych = { 0.f };
-
     // clip pipeline RGB
-    for_four_channels(c, aligned(pix_in:16)) RGB[c] = fmaxf(pix_in[c], 0.0f);
+    dt_aligned_pixel_t RGB;
+    copy_pixel(RGB, in + k);
+    dt_vector_clipneg(RGB);
 
     // go to CIE 2006 LMS D65
-    dot_product(RGB, input_matrix, LMS);
+    dt_aligned_pixel_t LMS;
+    dt_apply_transposed_color_matrix(RGB, input_matrix_trans, LMS);
 
     /* The previous line is equivalent to :
       // go to CIE 1931 XYZ 2° D50
@@ -654,19 +658,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     */
 
     // go to Filmlight Yrg
+    dt_aligned_pixel_t Yrg = { 0.f };
     LMS_to_Yrg(LMS, Yrg);
 
     // go to Ych
+    dt_aligned_pixel_t Ych = { 0.f };
     Yrg_to_Ych(Yrg, Ych);
 
     // Sanitize input : no negative luminance
-    Ych[0] = fmaxf(Ych[0], 0.f);
+    Ych[0] = MAX(Ych[0], 0.f);
 
     // Opacities for luma masks
     dt_aligned_pixel_t opacities;
     dt_aligned_pixel_t opacities_comp;
     opacity_masks(powf(Ych[0], 0.4101205819200422f), // center middle grey in 50 %
-                  d->shadows_weight, d->highlights_weight, d->midtones_weight, d->mask_grey_fulcrum, opacities, opacities_comp);
+                  d->shadows_weight, d->highlights_weight, d->midtones_weight,
+                  d->mask_grey_fulcrum, opacities, opacities_comp);
 
     // Hue shift - do it now because we need the gamut limit at output hue right after
     // The hue rotation is implemented as a matrix multiplication.
@@ -675,10 +682,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     Ych[2] = hue_rotation_matrix[0][0] * cos_h + hue_rotation_matrix[0][1] * sin_h;
     Ych[3] = hue_rotation_matrix[1][0] * cos_h + hue_rotation_matrix[1][1] * sin_h;
 
-    // Linear chroma : distance to achromatic at constant luminance in scene-referred
+    // Linear chroma : distance to achromatic at constant luminance in scene-referred
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
     const float vibrance = d->vibrance * (1.0f - powf(Ych[1], fabsf(d->vibrance)));
-    const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
+    const float chroma_factor = MAX(1.f + chroma_boost + vibrance, 0.f);
     Ych[1] *= chroma_factor;
 
     // clip chroma at constant hue and Y if needed
@@ -694,31 +701,42 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     LMS_to_gradingRGB(LMS, RGB);
 
     // Color balance
-    for_four_channels(c, aligned(RGB, opacities, opacities_comp, global, shadows, midtones, highlights:16))
+    for_four_channels(c, aligned(RGB, global))
     {
       // global : offset
       RGB[c] += global[c];
-
+    }
+    for_four_channels(c, aligned(RGB, opacities, opacities_comp, shadows, midtones, highlights:16))
+    {
       //  highlights, shadows : 2 slopes with masking
       RGB[c] *= opacities_comp[2] * (opacities_comp[0] + opacities[0] * shadows[c]) + opacities[2] * highlights[c];
       // factorization of : (RGB[c] * (1.f - alpha) + RGB[c] * d->shadows[c] * alpha) * (1.f - beta)  + RGB[c] * d->highlights[c] * beta;
-
-      // midtones : power with sign preservation
-      const float sign = (RGB[c] < 0.f) ? -1.f : 1.f;
-      RGB[c] = sign * powf(fabsf(RGB[c]) / d->white_fulcrum, midtones[c]) * d->white_fulcrum;
     }
+    dt_aligned_pixel_t sign;
+    for_each_channel(c)
+      sign[c] = (RGB[c] < 0.f) ? -1.f : 1.f;
+    dt_aligned_pixel_t abs_RGB;
+    for_each_channel(c)
+      abs_RGB[c] = fabsf(RGB[c]);
+    dt_aligned_pixel_t scaled_RGB;
+    for_each_channel(c)
+      scaled_RGB[c] = abs_RGB[c] /d->white_fulcrum;
+    dt_vector_powf(scaled_RGB, midtones, RGB);
+    for_each_channel(c)
+      RGB[c] = RGB[c] * sign[c] * d->white_fulcrum;
 
     // for the non-linear ops we need to go in Yrg again because RGB doesn't preserve color
     gradingRGB_to_LMS(RGB, LMS);
     LMS_to_Yrg(LMS, Yrg);
 
     // Y midtones power (gamma)
-    Yrg[0] = powf(fmaxf(Yrg[0] / d->white_fulcrum, 0.f), d->midtones_Y) * d->white_fulcrum;
+    Yrg[0] = powf(MAX(Yrg[0] / d->white_fulcrum, 0.f), d->midtones_Y) * d->white_fulcrum;
 
     // Y fulcrumed contrast
     Yrg[0] = d->grey_fulcrum * powf(Yrg[0] / d->grey_fulcrum, d->contrast);
 
     Yrg_to_LMS(Yrg, LMS);
+    dt_aligned_pixel_t XYZ_D65 = { 0.f };
     LMS_to_XYZ(LMS, XYZ_D65);
 
     // Perceptual color adjustments
@@ -729,10 +747,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       // Convert to JCh
       float JC[2] = { Jab[0], dt_fast_hypotf(Jab[1], Jab[2]) };   // brightness/chroma vector
-      const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
+      const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
 
       // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
-      // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
+      // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
       // so we add the chroma projected along the orthogonal axis to get some control value
       const float T = atan2f(JC[1], JC[0]); // angle of the eigenvector over the hue plane
       const float sin_T = sinf(T);
@@ -748,12 +766,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                 d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
       SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-      SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
-      SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
+      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
+      SO[0] = MAX(SO[0] * boosts[0], 0.f);
 
       // Project back to JCh, that is rotate back of -T angle
-      JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
-      JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
+      JC[0] = MAX(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
+      JC[1] = MAX(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
       // Gamut mapping
       const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
@@ -776,27 +794,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float dd = -0.56f;
       float Iz = JC[0] + d0;
       Iz /= (1.f + dd - dd * Iz);
-      Iz = fmaxf(Iz, 0.f);
+      Iz = MAX(Iz, 0.f);
 
-      const dt_colormatrix_t AI
-          = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-              {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-              {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+      static const dt_colormatrix_t AI_trans
+          = { {  1.0f,                 1.0f,                                1.0f, 0.0f },
+              {  0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f, 0.0f },
+              {  0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f, 0.0f } };
 
       // Do a test conversion to L'M'S'
       const dt_aligned_pixel_t IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
-      dot_product(IzAzBz, AI, LMS);
+      dt_apply_transposed_color_matrix(IzAzBz, AI_trans, LMS);
 
       // Clip chroma
       float max_C = JC[1];
       if(LMS[0] < 0.f)
-        max_C = fmin(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
+        max_C = MIN(-Iz / (AI_trans[1][0] * cos_H + AI_trans[2][0] * sin_H), max_C);
 
       if(LMS[1] < 0.f)
-        max_C = fmin(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
+        max_C = MIN(-Iz / (AI_trans[1][1] * cos_H + AI_trans[2][1] * sin_H), max_C);
 
       if(LMS[2] < 0.f)
-        max_C = fmin(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
+        max_C = MIN(-Iz / (AI_trans[1][2] * cos_H + AI_trans[2][2] * sin_H), max_C);
 
       // Project back to JzAzBz for real
       Jab[0] = JC[0];
@@ -812,7 +830,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       xyY_to_dt_UCS_JCH(xyY, L_white, JCH);
       dt_UCS_JCH_to_HCB(JCH, HCB);
 
-      const float radius = hypotf(HCB[1], HCB[2]);
+      const float radius = dt_fast_hypotf(HCB[1], HCB[2]);
       const float sin_T = (radius > 0.f) ? HCB[1] / radius : 0.f;
       const float cos_T = (radius > 0.f) ? HCB[2] / radius : 0.f;
       const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { { cos_T,  sin_T }, { -sin_T, cos_T } };
@@ -822,23 +840,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float P = HCB[1];
       float W = sin_T * HCB[1] + cos_T * HCB[2];
 
-      float a = fmaxf(1.f + d->saturation_global + scalar_product(opacities, saturation), 0.f);
-      const float b = fmaxf(1.f + d->brilliance_global + scalar_product(opacities, brilliance), 0.f);
+      float a = MAX(1.f + d->saturation_global + scalar_product(opacities, saturation), 0.f);
+      const float b = MAX(1.f + d->brilliance_global + scalar_product(opacities, brilliance), 0.f);
 
-      const float max_a = hypotf(P, W) / P;
+      const float max_a = dt_fast_hypotf(P, W) / P;
       a = soft_clip(a, 0.5f * max_a, max_a);
 
       const float P_prime = (a - 1.f) * P;
       const float W_prime = sqrtf(sqf(P) * (1.f - sqf(a)) + sqf(W)) * b;
 
-      HCB[1] = fmaxf(M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime, 0.f);
-      HCB[2] = fmaxf(M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime, 0.f);
+      HCB[1] = MAX(M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime, 0.f);
+      HCB[2] = MAX(M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime, 0.f);
 
       dt_UCS_HCB_to_JCH(HCB, JCH);
 
       // Gamut mapping
-      const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING : this is M²
-      const float max_chroma = 15.932993652962535f * powf(JCH[0] * L_white, 0.6523997524738018f) * powf(max_colorfulness, 0.6007557017508491f) / L_white;
+      const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING : this is M²
+      const float max_chroma = (15.932993652962535f * powf(JCH[0] * L_white, 0.6523997524738018f)
+                                * powf(max_colorfulness, 0.6007557017508491f) / L_white);
       const dt_aligned_pixel_t JCH_gamut_boundary = { JCH[0], max_chroma, JCH[2], 0.f };
       dt_aligned_pixel_t HSB_gamut_boundary;
       dt_UCS_JCH_to_HSB(JCH_gamut_boundary, HSB_gamut_boundary);
@@ -853,7 +872,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // Project back to D50 pipeline RGB
-    dot_product(XYZ_D65, output_matrix, pix_out);
+    dt_aligned_pixel_t pix_out;
+    dt_apply_transposed_color_matrix(XYZ_D65, output_matrix_trans, pix_out);
 
     /* The previous line is equivalent to :
       XYZ_D65_to_50(XYZ_D65, XYZ_D50);           // matrix product
@@ -864,35 +884,47 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       // draw checkerboard
       dt_aligned_pixel_t color;
+      const size_t i = (k / 4) / out_width;
+      const size_t j = (k / 4) % out_width;
       if(i % checker_1 < i % checker_2)
       {
-        if(j % checker_1 < j % checker_2) for_four_channels(c) color[c] = d->checker_color_2[c];
-        else for_four_channels(c) color[c] = d->checker_color_1[c];
+        if(j % checker_1 < j % checker_2)
+          copy_pixel(color, d->checker_color_2);
+        else
+          copy_pixel(color, d->checker_color_1);
       }
       else
       {
-        if(j % checker_1 < j % checker_2) for_four_channels(c) color[c] = d->checker_color_1[c];
-        else for_four_channels(c) color[c] = d->checker_color_2[c];
+        if(j % checker_1 < j % checker_2)
+          copy_pixel(color, d->checker_color_1);
+        else
+          copy_pixel(color, d->checker_color_2);
       }
 
       float opacity = opacities[g->mask_type];
       const float opacity_comp = 1.0f - opacity;
 
-      for_four_channels(c, aligned(pix_out, color:16)) pix_out[c] = opacity_comp * color[c] + opacity * fmaxf(pix_out[c], 0.f);
+      dt_vector_clipneg(pix_out);
+      for_four_channels(c, aligned(pix_out, color:16))
+        pix_out[c] = opacity_comp * color[c] + opacity * pix_out[c];
       pix_out[3] = 1.0f; // alpha is opaque, we need to preview it
     }
     else
     {
-      for_four_channels(c, aligned(pix_out:16)) pix_out[c] = fmaxf(pix_out[c], 0.f);
-      pix_out[3] = pix_in[3]; // alpha copy
+      dt_vector_clipneg(pix_out);
     }
+    copy_pixel_nontemporal(out + k, pix_out);
   }
+  dt_omploop_sfence();	// ensure all nontemporal writes complete before we use them
 }
 
 
 #if HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorbalancergb_data_t *const d = (dt_iop_colorbalancergb_data_t *)piece->data;
   dt_iop_colorbalancergb_global_data_t *const gd = (dt_iop_colorbalancergb_global_data_t *)self->global_data;
@@ -1191,7 +1223,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
             hue = Jch[2];
 
             const size_t index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
-            LUT_saturation[index] = fmaxf(saturation, LUT_saturation[index]);
+            LUT_saturation[index] = MAX(saturation, LUT_saturation[index]);
           }
 
       // anti-aliasing on the LUT (simple 5-taps 1D box average)
@@ -1283,7 +1315,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           int index = (int)(H_round + 180);
           index += (index < 0) ? 360 : 0;
           index -= (index > 359) ? 360 : 0;
-          // Warning: we store M², the square of the colorfulness
+          // Warning: we store M², the square of the colorfulness
           dt_UCS_LUT[index] = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
         }
       }
@@ -1380,7 +1412,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     dt_bauhaus_slider_set(g->grey_fulcrum, p->grey_fulcrum);
   }
   else
-    fprintf(stderr, "[colorbalancergb] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker\n");
   --darktable.gui->reset;
 
   gui_changed(self, picker, NULL);
@@ -1708,7 +1740,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(self->dev && self->dev->pipe)
     output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
 
-  if(!output_profile || isnan(output_profile->matrix_out[0][0]))
+  if(!output_profile || !dt_is_valid_colormatrix(output_profile->matrix_out[0][0]))
   {
     output_profile = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "",
                                                        DT_INTENT_RELATIVE_COLORIMETRIC);
@@ -1829,28 +1861,6 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
-{
-  if(dt_gui_ignore_scroll(event)) return FALSE;
-
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-  {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-    {
-      //adjust aspect
-      const int aspect = dt_conf_get_int("plugins/darkroom/colorbalancergb/aspect_percent");
-      dt_conf_set_int("plugins/darkroom/colorbalancergb/aspect_percent", aspect + delta_y);
-      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
-
-      return TRUE;
-    }
-  }
-
-  return FALSE;
-}
-
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorbalancergb_gui_data_t *g = IOP_GUI_ALLOC(colorbalancergb);
@@ -1881,7 +1891,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->contrast, "%");
   gtk_widget_set_tooltip_text(g->contrast, _("increase the contrast at constant chromaticity"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("linear chroma grading")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "linear chroma grading")), FALSE, FALSE, 0);
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("chroma"));
 
   g->chroma_global = dt_bauhaus_slider_from_params(self, "chroma_global");
@@ -1905,7 +1915,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->chroma_highlights, "%");
   gtk_widget_set_tooltip_text(g->chroma_highlights, _("increase colorfulness at same luminance mostly in highlights"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("perceptual saturation grading")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "perceptual saturation grading")), FALSE, FALSE, 0);
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("saturation"));
 
   g->saturation_global = dt_bauhaus_slider_from_params(self, "saturation_global");
@@ -1928,7 +1938,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->saturation_highlights, "%");
   gtk_widget_set_tooltip_text(g->saturation_highlights, _("increase or decrease saturation proportionally to the original pixel saturation"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("perceptual brilliance grading")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "perceptual brilliance grading")), FALSE, FALSE, 0);
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("brilliance"));
 
   g->brilliance_global = dt_bauhaus_slider_from_params(self, "brilliance_global");
@@ -1954,7 +1964,7 @@ void gui_init(dt_iop_module_t *self)
   // Page 4-ways
   self->widget = dt_ui_notebook_page(g->notebook, N_("4 ways"), _("selective color grading"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("global offset")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "global offset")), FALSE, FALSE, 0);
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("offset"));
 
   g->global_Y = dt_bauhaus_slider_from_params(sect, "global_Y");
@@ -1974,7 +1984,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->global_C, "%");
   gtk_widget_set_tooltip_text(g->global_C, _("chroma of the global color offset"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("shadows lift")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "shadows lift")), FALSE, FALSE, 0);
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("lift"));
 
   g->shadows_Y = dt_bauhaus_slider_from_params(sect, "shadows_Y");
@@ -1994,7 +2004,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->shadows_C, "%");
   gtk_widget_set_tooltip_text(g->shadows_C, _("chroma of the color gain in shadows"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("highlights gain")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "highlights gain")), FALSE, FALSE, 0);
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("gain"));
 
   g->highlights_Y = dt_bauhaus_slider_from_params(sect, "highlights_Y");
@@ -2014,7 +2024,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->highlights_C, "%");
   gtk_widget_set_tooltip_text(g->highlights_C, _("chroma of the color gain in highlights"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("power")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "power")), FALSE, FALSE, 0);
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("power"));
 
   g->midtones_Y = dt_bauhaus_slider_from_params(sect, "midtones_Y");
@@ -2041,16 +2051,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->saturation_formula,
                               _("choose in which uniform color space the saturation is computed"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("luminance ranges")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "luminance ranges")), FALSE, FALSE, 0);
 
-  const float aspect = dt_conf_get_int("plugins/darkroom/colorbalancergb/aspect_percent") / 100.0;
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/colorbalancergb/aspect_percent"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
-  gtk_widget_add_events(GTK_WIDGET(g->area), darktable.gui->scroll_mask | GDK_ENTER_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(area_scroll_callback), self);
 
   g->shadows_weight = dt_bauhaus_slider_from_params(self, "shadows_weight");
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
@@ -2076,7 +2083,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->highlights_weight, TRUE);
   g_signal_connect(G_OBJECT(g->highlights_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("threshold")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "threshold")), FALSE, FALSE, 0);
 
   g->white_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "white_fulcrum"));
   dt_bauhaus_slider_set_soft_range(g->white_fulcrum, -2., +2.);
@@ -2089,7 +2096,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak gray luminance value used to normalize the power function"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask preview settings")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "mask preview settings")), FALSE, FALSE, 0);
 
   GtkWidget *row1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(row1), dt_ui_label_new(_("checkerboard color 1")), TRUE, TRUE, 0);

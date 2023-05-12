@@ -24,6 +24,10 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 0
 
 #define DT_GUI_THUMBSIZE_REDUCE 0.7f
@@ -98,6 +102,8 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH,
   DT_GUI_COLOR_MAP_LOC_SHAPE_LOW,
   DT_GUI_COLOR_MAP_LOC_SHAPE_DEF,
+  DT_GUI_COLOR_ISO12646_BG,
+  DT_GUI_COLOR_ISO12646_FG,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
@@ -149,6 +155,7 @@ typedef struct _gui_collapsible_section_t
   GtkWidget *toggle;    // toggle button
   GtkWidget *expander;  // the expanded
   GtkBox *container;    // the container for all widgets into the section
+  struct dt_action_t *module; // the lib or iop module that contains this section
 } dt_gui_collapsible_section_t;
 
 static inline cairo_surface_t *dt_cairo_image_surface_create(cairo_format_t format, int width, int height) {
@@ -404,6 +411,9 @@ char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup
 gboolean dt_gui_show_yes_no_dialog(const char *title, const char *format, ...);
 
 void dt_gui_add_help_link(GtkWidget *widget, const char *link);
+char *dt_gui_get_help_url(GtkWidget *widget);
+void dt_gui_dialog_add_help(GtkDialog *dialog, const char *topic);
+void dt_gui_show_help(GtkWidget *widget);
 
 // load a CSS theme
 void dt_gui_load_theme(const char *theme);
@@ -418,7 +428,7 @@ guint dt_gui_translated_key_state(GdkEventKey *event);
 // return modifier keys currently pressed, independent of any key event
 GdkModifierType dt_key_modifier_state();
 
-GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str);
+GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str);
 
 // check whether the given container has any user-added children
 gboolean dt_gui_container_has_children(GtkContainer *container);
@@ -442,6 +452,8 @@ void dt_gui_menu_popup(GtkMenu *menu, GtkWidget *button, GdkGravity widget_ancho
 
 void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y);
 
+void dt_gui_widget_reallocate_now(GtkWidget *widget);
+
 // event handler for "key-press-event" of GtkTreeView to decide if focus switches to GtkSearchEntry
 gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEntry *entry);
 
@@ -450,13 +462,22 @@ void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget);
 
 // create a collapsible section, insert in parent, return the container
 void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
-                                    const char *confname, const char *label,
-                                    GtkBox *parent);
+                                    const char *confname,
+                                    const char *label,
+                                    GtkBox *parent,
+                                    struct dt_action_t *module);
 // routine to be called from gui_update
 void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 
 // routine to hide the collapsible section
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
+
+// is delay between first and second click/press longer than double-click time?
+gboolean dt_gui_long_click(const int second, const int first);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

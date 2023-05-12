@@ -45,6 +45,7 @@ typedef enum dt_iop_filmicrgb_colorscience_type_t
   DT_FILMIC_COLORSCIENCE_V2 = 1,
   DT_FILMIC_COLORSCIENCE_V3 = 2,
   DT_FILMIC_COLORSCIENCE_V4 = 3,
+  DT_FILMIC_COLORSCIENCE_V5 = 4,
 } dt_iop_filmicrgb_colorscience_type_t;
 
 typedef enum dt_iop_filmicrgb_reconstruction_type_t
@@ -391,7 +392,7 @@ static inline float clip_chroma_white_raw(constant const float *const coeffs, co
 
   // this channel won't limit the chroma
   if(denominator_Y_coeff == 0.f) return FLT_MAX;
-  
+
   // The equation for max chroma has an asymptote at this point (zero of denominator).
   // Any Y below that value won't give us sensible results for the upper bound
   // and we should consider the lower bound instead.
@@ -650,6 +651,76 @@ static inline float4 filmic_split_v4(const float4 i,
                        display_black, display_white, saturation, use_output_profile);
 }
 
+static inline float4 filmic_chroma_v5(const float4 i,
+                                      const float dynamic_range, const float black_exposure, const float grey_value,
+                                      constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                      read_only image2d_t lut, const int use_work_profile,
+                                      const float sigma_toe, const float sigma_shoulder, const float saturation,
+                                      const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                                      const float latitude_min, const float latitude_max, const float output_power,
+                                      const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
+                                      const dt_iop_filmicrgb_curve_type_t type[2],
+                                      constant const float *const matrix_in, constant const float *const matrix_out,
+                                      const float display_black, const float display_white,
+                                      const int use_output_profile,
+                                      constant const float *const export_matrix_in, constant const float *const export_matrix_out,
+                                      const float norm_min, const float norm_max)
+
+{
+  // Norm must be clamped early to the valid input range, otherwise it will be clamped
+  // later in log_tonemapping_v2 and the ratios will be then incorrect.
+  // This would result in colorful patches darker than their surrounding in places
+  // where the raw data is clipped.
+  float norm = clamp(get_pixel_norm(i, DT_FILMIC_METHOD_MAX_RGB, profile_info, lut, use_work_profile), norm_min, norm_max);
+
+  // Save the ratios
+  float4 ratios = i / (float4)norm;
+
+  // Log tonemapping
+  norm = log_tonemapping_v2(norm, grey_value, black_exposure, dynamic_range);
+
+  // Filmic S curve on the max RGB
+  // Apply the transfer function of the display
+  norm = native_powr(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
+                           display_black,
+                           display_white), output_power);
+
+  // Restore RGB
+  float4 max_rgb = norm * ratios;
+
+  // Log tonemapping
+  float4 naive_rgb;
+  naive_rgb.x = log_tonemapping_v2(i.x, grey_value, black_exposure, dynamic_range);
+  naive_rgb.y = log_tonemapping_v2(i.y, grey_value, black_exposure, dynamic_range);
+  naive_rgb.z = log_tonemapping_v2(i.z, grey_value, black_exposure, dynamic_range);
+  naive_rgb.w = 0.f;
+
+  // Filmic S curve on individual channels
+  naive_rgb.x = filmic_spline(naive_rgb.x, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
+  naive_rgb.y = filmic_spline(naive_rgb.y, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
+  naive_rgb.z = filmic_spline(naive_rgb.z, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
+
+  // Clamp to [0, display_white]: we don't want to clamp individual channels to display_black
+  // as that would limit the max available saturation. Luminance is clipped to display_black later.
+  // Apply output power function afterwards.
+  naive_rgb = native_powr(clamp(naive_rgb, (float4)0.f, (float4)display_white), output_power);
+
+  // Mix max RGB with naive RGB
+  float4 o = (0.5f - saturation) * naive_rgb + (0.5f + saturation) * max_rgb;
+
+  // Save Ych in Kirk/Filmlight Yrg
+  float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
+
+  // Get final Ych in Kirk/Filmlight Yrg
+  float4 Ych_final = pipe_RGB_to_Ych(o, matrix_in);
+
+  Ych_final.y = fmin(Ych_original.y, Ych_final.y);
+
+  return gamut_mapping(Ych_final, Ych_original, matrix_in, matrix_out,
+                       export_matrix_in, export_matrix_out,
+                       display_black, display_white, 0.f, use_output_profile);
+}
+
 static inline float4 filmic_split_v1(const float4 i,
                                      const float dynamic_range, const float black_exposure, const float grey_value,
                                      constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
@@ -777,6 +848,12 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                           M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power,
                           color_science, type, matrix_in, matrix_out, display_black, display_white,
                           use_output_profile, export_matrix_in, export_matrix_out);
+      break;
+    }
+    case DT_FILMIC_COLORSCIENCE_V5:
+    {
+      // v5 is handled as a chroma variant, it should not end up here
+      o = (float4){1.f, 0.f, 0.f, 1.f};
       break;
     }
   }
@@ -935,6 +1012,17 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                            profile_info, lut, use_work_profile,
                            sigma_toe, sigma_shoulder, saturation,
                            M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power, variant,
+                           color_science, type, matrix_in, matrix_out, display_black, display_white,
+                           use_output_profile, export_matrix_in, export_matrix_out,
+                           norm_min, norm_max);
+      break;
+    }
+    case DT_FILMIC_COLORSCIENCE_V5:
+    {
+      o = filmic_chroma_v5(i, dynamic_range, black_exposure, grey_value,
+                           profile_info, lut, use_work_profile,
+                           sigma_toe, sigma_shoulder, saturation,
+                           M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power,
                            color_science, type, matrix_in, matrix_out, display_black, display_white,
                            use_output_profile, export_matrix_in, export_matrix_out,
                            norm_min, norm_max);

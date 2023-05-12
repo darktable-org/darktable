@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,8 +55,8 @@ typedef void(dt_signal_handler_t)(int);
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 #endif
 
-// deer graphicsmagick, please stop messing with the stuff that you should not be touching at all.
-// based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
+// Dear GraphicsMagick, please stop messing with the stuff that you should not be touching at all.
+// Based on GM's InitializeMagickSignalHandlers() and MagickSignalHandlerMessage()
 #if !defined(_WIN32)
 static const int _signals_to_preserve[] = { SIGHUP,  SIGINT,  SIGQUIT, SIGILL,  SIGABRT, SIGBUS, SIGFPE,
                                             SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGXCPU, SIGXFSZ };
@@ -67,20 +67,6 @@ static LPTOP_LEVEL_EXCEPTION_FILTER _dt_exceptionfilter_old_handler = NULL;
 
 #define _NUM_SIGNALS_TO_PRESERVE (sizeof(_signals_to_preserve) / sizeof(_signals_to_preserve[0]))
 static dt_signal_handler_t *_orig_sig_handlers[_NUM_SIGNALS_TO_PRESERVE] = { NULL };
-
-#if(defined(__FreeBSD_version) && (__FreeBSD_version < 800071)) || (defined(OpenBSD) && (OpenBSD < 201305))       \
-    || defined(__SUNOS__)
-static int dprintf(int fd, const char *fmt, ...) __attribute__((format(printf, 2, 3)))
-{
-  va_list ap;
-  FILE *f = fdopen(fd, "a");
-  va_start(ap, fmt);
-  int rc = vfprintf(f, fmt, ap);
-  fclose(f);
-  va_end(ap);
-  return rc;
-}
-#endif
 
 #if !defined(__APPLE__) && !defined(_WIN32)
 static void _dt_sigsegv_handler(int param)
@@ -101,7 +87,8 @@ static void _dt_sigsegv_handler(int param)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   gchar *pid_arg = g_strdup_printf("%d", (int)getpid());
   gchar *comm_arg = g_strdup_printf("%s/gdb_commands", datadir);
-  gchar *log_arg = g_strdup_printf("set logging on %s", name_used);
+  gchar *logenable = g_strdup_printf("set logging enabled on");
+  gchar *setlogfile = g_strdup_printf("set logging file %s", name_used);
 
   if((pid = fork()) != -1)
   {
@@ -116,11 +103,12 @@ static void _dt_sigsegv_handler(int param)
     }
     else
     {
-      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch", "-ex", log_arg, "-x", comm_arg, NULL))
+      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch",
+                "-ex", setlogfile, "-ex", logenable, "-x", comm_arg, NULL))
       {
         delete_file = TRUE;
-        g_printerr("an error occurred while trying to execute gdb. please check if gdb is installed on your "
-                   "system.\n");
+        g_printerr("an error occurred while trying to execute gdb. "
+                   "please check if gdb is installed on your system.\n");
       }
     }
   }
@@ -133,7 +121,8 @@ static void _dt_sigsegv_handler(int param)
   if(delete_file) g_unlink(name_used);
   g_free(pid_arg);
   g_free(comm_arg);
-  g_free(log_arg);
+  g_free(logenable);
+  g_free(setlogfile);
   g_free(name_used);
 
   /* pass it further to the old handler*/
@@ -170,10 +159,11 @@ static LONG WINAPI dt_toplevel_exception_handler(PEXCEPTION_POINTERS pExceptionI
   }
   else
   {
-    gchar *exception_message = g_strdup_printf("An unhandled exception occurred.\nBacktrace will be written to: %s "
-                                               "after you click on the OK button.\nIf you report this issue, "
-                                               "please share this backtrace with the developers.\n",
-                                               name_used);
+    gchar *exception_message = g_strdup_printf
+      ("An unhandled exception occurred.\nBacktrace will be written to: %s "
+       "after you click on the OK button.\nIf you report this issue, "
+       "please share this backtrace with the developers.\n",
+       name_used);
     wchar_t *wexception_message = g_utf8_to_utf16(exception_message, -1, NULL, NULL, NULL);
     MessageBoxW(0, wexception_message, L"Error!", MB_OK);
     g_free(exception_message);
@@ -236,16 +226,18 @@ void dt_set_signal_handlers()
   else
   {
     const int errsv = errno;
-    fprintf(stderr, "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)\n", errsv,
-            strerror(errsv));
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)\n",
+             errsv,
+             strerror(errsv));
   }
 #elif !defined(__APPLE__)
   /*
   Set up exception handler for backtrace on Windows
   Works when there is NO SIGSEGV handler installed
 
-  SetUnhandledExceptionFilter handler must be saved on the first invocation
-  as GraphicsMagick is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
+  SetUnhandledExceptionFilter handler must be saved on the first invocation as GraphicsMagick
+  is overwriting SetUnhandledExceptionFilter and all other signals in InitializeMagick()
   Eventually InitializeMagick() should be fixed upstream not to ignore existing exception handlers
   */
 

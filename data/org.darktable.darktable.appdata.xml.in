@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2009-2021 darktable developers.
+-->
+<component type="desktop">
+  <id>org.darktable.darktable</id>
+  <name>darktable</name>
+  <launchable type="desktop-id">org.darktable.darktable.desktop</launchable>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  <_summary>Organize and develop images from digital cameras</_summary>
+  <translation type="gettext">darktable</translation>
+  <description>
+    <_p>
+      darktable manages your digital negatives in a database and lets you
+      view them through a lighttable. It also enables you to develop raw
+      images and enhance them in a darkroom.
+    </_p>
+    <_p>
+      Other modes besides lighttable and darkroom are a map for geotagging,
+      tethering, print and a slideshow.
+    </_p>
+    <_p>
+      darktable supports most modern cameras' raw formats, and does all
+      of its processing at very high precision.
+    </_p>
+  </description>
+  <screenshots>
+    <screenshot width="1920" height="1080">
+      <image>https://www.darktable.org/images/darktable-appdata-lighttable.jpg</image>
+      <_caption>Virtual light table, showing a collection</_caption>
+    </screenshot>
+    <screenshot width="1920" height="1080" type="default">
+      <image>https://www.darktable.org/images/darktable-appdata-darkroom1.jpg</image>
+      <_caption>Virtual dark room with an opened image</_caption>
+    </screenshot>
+    <screenshot width="1920" height="1080">
+      <image>https://www.darktable.org/images/darktable-appdata-darkroom2.jpg</image>
+      <_caption>Virtual dark room, sharpening an image</_caption>
+    </screenshot>
+    <screenshot width="1920" height="1080">
+      <image>https://www.darktable.org/images/darktable-appdata-map.jpg</image>
+      <_caption>Show images on a map</_caption>
+    </screenshot>
+    <screenshot width="1920" height="1080">
+      <image>https://www.darktable.org/images/darktable-appdata-print.jpg</image>
+      <_caption>Print your images</_caption>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release date="2023-02-15" version="4.2.1"/>
+    <release date="2022-12-21" version="4.2.0"/>
+    <release date="2022-09-17" version="4.0.1"/>
+    <release date="2022-07-02" version="4.0.0"/>
+    <release date="2022-02-11" version="3.8.1"/>
+    <release date="2021-12-24" version="3.8.0"/>
+    <release date="2021-09-15" version="3.6.1"/>
+    <release date="2021-07-03" version="3.6.0"/>
+    <release date="2021-02-06" version="3.4.1"/>
+    <release date="2020-12-24" version="3.4.0"/>
+    <release date="2020-08-10" version="3.2.1"/>
+    <release date="2020-04-18" version="3.0.2"/>
+    <release date="2020-03-09" version="3.0.1"/>
+    <release date="2019-12-24" version="3.0.0"/>
+    <release date="2019-10-20" version="2.6.3"/>
+    <release date="2019-03-21" version="2.6.2"/>
+    <release date="2019-03-07" version="2.6.1"/>
+    <release date="2018-12-24" version="2.6.0"/>
+  </releases>
+  <url type="homepage">https://www.darktable.org/</url>
+  <url type="bugtracker">https://github.com/darktable-org/darktable/issues</url>
+  <url type="help">https://www.darktable.org/resources/</url>
+  <update_contact>darktable-dev@lists.darktable.org</update_contact>
+</component>

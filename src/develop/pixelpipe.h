@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@
 #include "config.h"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* The pixelpipe types here are all defined as a bit mask to ensure easy testing via & operator */
 typedef enum dt_dev_pixelpipe_type_t
 {
@@ -43,8 +47,37 @@ typedef enum dt_dev_request_flags_t
 {
   DT_REQUEST_NONE = 0,
   DT_REQUEST_ON = 1 << 0,
-  DT_REQUEST_ONLY_IN_GUI = 1 << 1
+  DT_REQUEST_ONLY_IN_GUI = 1 << 1,
+  DT_REQUEST_EXPANDED = 1 << 2 // 
 } dt_dev_request_flags_t;
+
+typedef enum dt_dev_pixelpipe_display_mask_t
+{
+  DT_DEV_PIXELPIPE_DISPLAY_NONE = 0,
+  DT_DEV_PIXELPIPE_DISPLAY_MASK = 1 << 0,
+  DT_DEV_PIXELPIPE_DISPLAY_CHANNEL = 1 << 1,
+  DT_DEV_PIXELPIPE_DISPLAY_OUTPUT = 1 << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_L = 1 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_a = 2 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_b = 3 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_R = 4 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_G = 5 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_B = 6 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_GRAY = 7 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_C = 8 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_LCH_h = 9 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz = 13 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3, // show module's output
+                                               // without processing
+                                               // by later iops
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
+} dt_dev_pixelpipe_display_mask_t;
 
 // params to be used to collect histogram
 typedef struct dt_dev_histogram_collection_params_t
@@ -53,8 +86,6 @@ typedef struct dt_dev_histogram_collection_params_t
   const struct dt_histogram_roi_t *roi;
   /** count of histogram bins. */
   uint32_t bins_count;
-  /** in most cases, bins_count-1. */
-  float mul;
 } dt_dev_histogram_collection_params_t;
 
 // params used to collect histogram during last histogram capture
@@ -62,6 +93,8 @@ typedef struct dt_dev_histogram_stats_t
 {
   /** count of histogram bins. */
   uint32_t bins_count;
+  /** size of currently allocated buffer, or 0 if none */
+  size_t buf_size;
   /** count of pixels sampled during histogram capture. */
   uint32_t pixels;
   /** count of channels: 1 for RAW, 3 for rgb/Lab. */
@@ -75,6 +108,10 @@ typedef void dt_iop_params_t;
 
 const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 #include "develop/pixelpipe_hb.h"
 
 // clang-format off
@@ -82,4 +119,3 @@ const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

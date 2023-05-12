@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -170,10 +170,9 @@ const char *name(dt_lib_module_t *self)
   return _("image information");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"*", NULL};
-  return v;
+  return DT_VIEW_ALL;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -334,7 +333,6 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
                                 N_("HDR"),
                                 N_("marked for deletion"),
                                 N_("auto-applying presets applied"),
-                                N_("legacy flag. set for all new images"),
                                 N_("local copy"),
                                 N_("has .txt"),
                                 N_("has .wav"),
@@ -405,42 +403,36 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
     tooltip_parts[next_tooltip_part++] = _(flag_descriptions[6]);
   }
 
-  if(img->flags & DT_IMAGE_NO_LEGACY_PRESETS)
-  {
-    value[8] = 'p';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[7]);
-  }
-
   if(img->flags & DT_IMAGE_LOCAL_COPY)
   {
-    value[9] = 'c';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[8]);
+    value[8] = 'c';
+    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[7]);
   }
 
   if(img->flags & DT_IMAGE_HAS_TXT)
   {
-    value[10] = 't';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[9]);
+    value[9] = 't';
+    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[8]);
   }
 
   if(img->flags & DT_IMAGE_HAS_WAV)
   {
-    value[11] = 'w';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
+    value[10] = 'w';
+    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[9]);
   }
 
   if(dt_image_monochrome_flags(img))
   {
-    value[12] = 'm';
-    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[11]);
+    value[11] = 'm';
+    tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
   }
 
   const int loader = (unsigned int)img->loader < LOADER_COUNT ? img->loader : 0;
-  value[13] = loaders_info[loader].flag;
+  value[12] = loaders_info[loader].flag;
   char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders_info[loader].tooltip));
   tooltip_parts[next_tooltip_part++] = loader_tooltip;
 
-  value[14] = '\0';
+  value[13] = '\0';
 
   flags_tooltip = g_strjoinv("\n", tooltip_parts);
   g_free(loader_tooltip);
@@ -463,14 +455,14 @@ static int lua_update_metadata(lua_State*L);
 #endif
 
 /* update all values to reflect mouse over image id or no data at all */
-static void _metadata_view_update_values(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
   int32_t count = 0;
 
   gchar *images = NULL;
 
-  if(mouse_over_id == -1)
+  if(!dt_is_valid_imgid(mouse_over_id))
   {
      const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
     if(cv->view(cv) == DT_VIEW_DARKROOM)
@@ -603,7 +595,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   g_free(images);
 
-  int img_id = mouse_over_id;
+  dt_imgid_t img_id = mouse_over_id;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
 
   if(!img) goto fill_minuses;
@@ -731,7 +723,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_exif_exposure_bias:
         g_strlcpy(text, NODATA_STRING, sizeof(text));
-        if(!(isnan(img->exif_exposure_bias)))
+        if(img->exif_exposure_bias != DT_EXIF_TAG_UNINITIALIZED)
         {
           (void)g_snprintf(text, sizeof(text), _("%+.2f EV"), (double)img->exif_exposure_bias);
         }
@@ -739,7 +731,13 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         break;
 
       case md_exif_focal_length:
-        (void)g_snprintf(text, sizeof(text), "%.0f mm", (double)img->exif_focal_length);
+        if(img->exif_crop && (img->exif_crop != 1.0f))
+          (void)g_snprintf(text, sizeof(text), _("%.1f mm (%.1f mm FF equiv, crop %.1f)"),
+                           (double)img->exif_focal_length,
+                           (double)img->exif_crop * img->exif_focal_length,
+                           (double)img->exif_crop);
+        else
+          (void)g_snprintf(text, sizeof(text), _("%.1f mm"), (double)img->exif_focal_length);
         _metadata_update_value(md_exif_focal_length, text, self);
         break;
 
@@ -752,7 +750,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         {
           (void)g_snprintf(text, sizeof(text), _("infinity"));
         }
-        else if(!(isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
+        else if(!(dt_isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
         {
           (void)g_snprintf(text, sizeof(text), _("%.2f m"), (double)img->exif_focus_distance);
         }
@@ -969,7 +967,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(mouse_over_id >= 0)
+  if(dt_is_valid_imgid(mouse_over_id))
   {
 #ifdef USE_LUA
     dt_lua_async_call_alien(lua_update_metadata,
@@ -994,18 +992,21 @@ fill_minuses:
 
 static void _jump_to()
 {
-  int32_t imgid = dt_control_get_mouse_over_id();
-  if(imgid == -1)
+  dt_imgid_t imgid = dt_control_get_mouse_over_id();
+  if(!dt_is_valid_imgid(imgid))
   {
     sqlite3_stmt *stmt;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
 
-    if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      imgid = sqlite3_column_int(stmt, 0);
+
     sqlite3_finalize(stmt);
   }
-  if(imgid != -1)
+  if(dt_is_valid_imgid(imgid))
   {
     char path[512];
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -1033,7 +1034,7 @@ static void _jump_to_accel(dt_action_t *data)
 static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  if(dt_control_running()) _metadata_view_update_values(self);
+  if(dt_control_running()) dt_lib_gui_queue_update(self);
 }
 
 static char *_get_current_configuration(dt_lib_module_t *self)
@@ -1350,7 +1351,7 @@ void gui_init(dt_lib_module_t *self)
   d->grid = child_grid_window;
   gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
 
-  self->widget = dt_ui_scroll_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight");
+  self->widget = dt_ui_resize_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight");
 
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);
@@ -1438,7 +1439,7 @@ static int lua_update_values(lua_State *L)
 static int lua_update_metadata(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
-  int32_t imgid = lua_tointeger(L, 2);
+  const dt_imgid_t imgid = lua_tointeger(L, 2);
   gboolean have_updates = false;
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
   lua_getiuservalue(L, -1, 1);
@@ -1448,7 +1449,7 @@ static int lua_update_metadata(lua_State *L)
   while(lua_next(L, 5) != 0)
   {
     have_updates = true;
-    if(imgid > 0)
+    if(dt_is_valid_imgid(imgid))
     {
       lua_pushvalue(L, -1);
       luaA_push(L, dt_lua_image_t, &imgid);

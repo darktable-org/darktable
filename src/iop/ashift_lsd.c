@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2020 darktable developers.
+  Copyright (C) 2016-2023 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -191,7 +191,7 @@ struct point {int x,y;};
  */
 static void error(char * msg)
 {
-  fprintf(stderr,"LSD Error: %s\n",msg);
+  dt_print(DT_DEBUG_ALWAYS,"LSD Error: %s\n",msg);
   exit(EXIT_FAILURE);
 }
 
@@ -2260,53 +2260,7 @@ double * LineSegmentDetection( int * n_out,
 
   return return_value;
 }
-#if 0
-/*----------------------------------------------------------------------------*/
-/** LSD Simple Interface with Scale and Region output.
- */
-static
-double * lsd_scale_region( int * n_out,
-                           double * img, int X, int Y, double scale,
-                           int ** reg_img, int * reg_x, int * reg_y )
-{
-  /* LSD parameters */
-  double sigma_scale = 0.6; /* Sigma for Gaussian filter is computed as
-                                sigma = sigma_scale/scale.                    */
-  double quant = 2.0;       /* Bound to the quantization error on the
-                                gradient norm.                                */
-  double ang_th = 22.5;     /* Gradient angle tolerance in degrees.           */
-  double log_eps = 0.0;     /* Detection threshold: -log10(NFA) > log_eps     */
-  double density_th = 0.7;  /* Minimal density of region points in rectangle. */
-  int n_bins = 1024;        /* Number of bins in pseudo-ordering of gradient
-                               modulus.                                       */
 
-  return LineSegmentDetection( n_out, img, X, Y, scale, sigma_scale, quant,
-                               ang_th, log_eps, density_th, n_bins,
-                               reg_img, reg_x, reg_y );
-}
-
-/*----------------------------------------------------------------------------*/
-/** LSD Simple Interface with Scale.
- */
-static
-double * lsd_scale(int * n_out, double * img, int X, int Y, double scale)
-{
-  return lsd_scale_region(n_out,img,X,Y,scale,NULL,NULL,NULL);
-}
-
-/*----------------------------------------------------------------------------*/
-/** LSD Simple Interface.
- */
-static
-double * lsd(int * n_out, double * img, int X, int Y)
-{
-  /* LSD parameters */
-  double scale = 0.8;       /* Scale the image by Gaussian filter to 'scale'. */
-
-  return lsd_scale(n_out,img,X,Y,scale);
-}
-/*----------------------------------------------------------------------------*/
-#endif
 /*==================================================================================
  * end of LSD code
  *==================================================================================*/

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2022 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -40,7 +41,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 typedef enum dt_iop_sigmoid_methods_type_t
 {
   DT_SIGMOID_METHOD_PER_CHANNEL = 0,     // $DESCRIPTION: "per channel"
-  DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "rgb ratio"
+  DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "RGB ratio"
 } dt_iop_sigmoid_methods_type_t;
 
 
@@ -70,7 +71,17 @@ typedef struct dt_iop_sigmoid_gui_data_t
 {
   GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *hue_preservation_slider,
       *display_black_slider, *display_white_slider;
+
+  dt_gui_collapsible_section_t cs;
+
 } dt_iop_sigmoid_gui_data_t;
+
+typedef struct dt_iop_sigmoid_global_data_t
+{
+  int kernel_sigmoid_loglogistic_per_channel;
+  int kernel_sigmoid_loglogistic_per_channel_interpolated;
+  int kernel_sigmoid_loglogistic_rgb_ratio;
+} dt_iop_sigmoid_global_data_t;
 
 
 const char *name()
@@ -111,6 +122,28 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_presets(dt_iop_module_so_t *self)
 {
+  // auto-applied scene-referred default
+  self->pref_based_presets = TRUE;
+
+  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
+  const gboolean auto_apply_sigmoid = strcmp(workflow, "scene-referred (sigmoid)") == 0;
+
+  if(auto_apply_sigmoid)
+  {
+    dt_gui_presets_add_generic
+      (_("scene-referred default"), self->op, self->version(),
+       NULL, 0,
+       1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+    dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
+                              self->version(), FOR_RAW);
+
+    dt_gui_presets_update_autoapply(_("scene-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
+
+  // others
+
   dt_iop_sigmoid_params_t p;
   p.display_white_target = 100.0f;
   p.display_black_target = 0.0152f;
@@ -129,7 +162,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.middle_grey_contrast = 1.0f;
   p.contrast_skewness = 0.0f;
   p.color_processing = DT_SIGMOID_METHOD_RGB_RATIO;
-  dt_gui_presets_add_generic(_("reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("Reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Declared here as it is used in the commit params function
@@ -147,7 +180,7 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
   const float paper_response = magnitude * powf(film_response / (paper_exp + film_response), paper_power);
 
   // Safety check for very large floats that cause numerical errors
-  return isnan(paper_response) ? magnitude : paper_response;
+  return dt_isnan(paper_response) ? magnitude : paper_response;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -514,6 +547,100 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
+#ifdef HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_sigmoid_data_t *const d = (dt_iop_sigmoid_data_t *)piece->data;
+  dt_iop_sigmoid_global_data_t *const gd = (dt_iop_sigmoid_global_data_t *)self->global_data;
+
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const float white_target = d->white_target;
+  const float paper_exp = d->paper_exposure;
+  const float film_fog = d->film_fog;
+  const float contrast_power = d->film_power;
+  const float skew_power = d->paper_power;
+
+  if (d->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
+  {
+    const float hue_preservation = d->hue_preservation;
+
+    if (hue_preservation >= 0.001f)
+    {
+
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel_interpolated,
+                                             width, height,
+                                             CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                             CLARG(white_target), CLARG(paper_exp),
+                                             CLARG(film_fog), CLARG(contrast_power),
+                                             CLARG(skew_power), CLARG(hue_preservation));
+      if(err != CL_SUCCESS) goto error;
+      return TRUE;
+    }
+    else
+    {
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel,
+                                             width, height,
+                                             CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                             CLARG(white_target), CLARG(paper_exp),
+                                             CLARG(film_fog), CLARG(contrast_power),
+                                             CLARG(skew_power));
+      if(err != CL_SUCCESS) goto error;
+      return TRUE;
+
+    }
+  }
+  else
+  {
+    const float black_target = d->black_target;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_rgb_ratio,
+                                           width, height,
+                                           CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                           CLARG(white_target), CLARG(black_target), CLARG(paper_exp),
+                                           CLARG(film_fog), CLARG(contrast_power),
+                                           CLARG(skew_power));
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+
+  error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_sigmoid] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  return FALSE;
+}
+#endif //HAVE_OPENCL
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 36; // sigmoid.cl, from programs.conf
+  dt_iop_sigmoid_global_data_t *gd  =
+    (dt_iop_sigmoid_global_data_t *)malloc(sizeof(dt_iop_sigmoid_global_data_t));
+
+  module->data = gd;
+  gd->kernel_sigmoid_loglogistic_per_channel = dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");
+  gd->kernel_sigmoid_loglogistic_per_channel_interpolated =
+    dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel_interpolated");
+  gd->kernel_sigmoid_loglogistic_rgb_ratio = dt_opencl_create_kernel(program, "sigmoid_loglogistic_rgb_ratio");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
+  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel_interpolated);
+  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
+  free(module->data);
+  module->data = NULL;
+}
+
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_sigmoid_data_t));
@@ -539,6 +666,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->display_white_slider, p->display_white_target);
 
   dt_bauhaus_combobox_set_from_value(g->color_processing_list, p->color_processing);
+  dt_gui_update_collapsible_section(&g->cs);
 
   gui_changed(self, NULL, NULL);
 }
@@ -567,11 +695,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue_preservation_slider, _("optional correction of the hue twist introduced by\n"
                                                             "the per-channel processing method."));
 
-  // Target display
-  GtkWidget *label = dt_ui_section_label_new(_("display luminance"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
+  // collapsible section
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/sigmoid/expand_values",
+     _("display luminance"),
+     GTK_BOX(self->widget),
+     DT_ACTION(self));
+  gtk_widget_set_tooltip_text(g->cs.expander,
+                                _("set display black/white targets"));
+  GtkWidget *main_box = self->widget;
+  self->widget = GTK_WIDGET(g->cs.container);
 
   g->display_black_slider = dt_bauhaus_slider_from_params(self, "display_black_target");
   dt_bauhaus_slider_set_soft_range(g->display_black_slider, 0.0f, 1.0f);
@@ -584,6 +718,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->display_white_slider, "%");
   gtk_widget_set_tooltip_text(g->display_white_slider, _("the white luminance of the target display or print.\n"
                                                          "can be used creatively for a faded look or blowing out whites earlier."));
+  self->widget = main_box;
 }
 
 

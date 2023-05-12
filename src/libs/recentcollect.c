@@ -67,10 +67,9 @@ const char *name(dt_lib_module_t *self)
   return _("recently used collections");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = { "lighttable", "map", NULL };
-  return v;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -396,7 +395,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  self->widget = dt_ui_scroll_wrap(box, 50, "plugins/lighttable/recentcollect/windowheight");
+  self->widget = dt_ui_resize_wrap(box, 50, "plugins/lighttable/recentcollect/windowheight");
   d->box = box;
   d->inited = 0;
 

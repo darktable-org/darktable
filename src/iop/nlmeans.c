@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,10 +31,6 @@
 #include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
-
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 // which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
 #define USE_NEW_IMPL_CL 0
@@ -361,12 +357,13 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                        void *const ovoid, const dt_iop_roi_t *const roi_in,
-                        const dt_iop_roi_t *const roi_out,
-                        void (*denoiser)(const float *const inbuf, float *const outbuf,
-                                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                         const dt_nlmeans_param_t *const params))
+void process(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        const void *const ivoid,
+        void *const ovoid,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -399,27 +396,9 @@ static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                                       .search_radius = K,
                                       .decimate = decimate,
                                       .norm = norm2 };
-  denoiser(ivoid,ovoid,roi_in,roi_out,&params);
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-}
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  process_cpu(piece,ivoid,ovoid,roi_in,roi_out,nlmeans_denoise);
-  return;
+  nlmeans_denoise(ivoid, ovoid, roi_in, roi_out, &params);
 }
-
-#if defined(__SSE__)
-/** process, all real work is done here. */
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  process_cpu(piece,ivoid,ovoid,roi_in,roi_out,nlmeans_denoise_sse2);
-  return;
-}
-#endif
 
 void init_global(dt_iop_module_so_t *module)
 {

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2022 darktable developers.
+    Copyright (C) 2021-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
 #include "control/conf.h"
+#include "imageio/imageio_common.h"
 #include "imageio/format/imageio_format_api.h"
 
 #include <jxl/encode.h>
@@ -103,7 +103,7 @@ int bpp(dt_imageio_module_data_t *data)
 
 int write_image(struct dt_imageio_module_data_t *data, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename, void *exif, int exif_len,
-                int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
+                dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
 {
   // Return error code by default
   int ret = 1;

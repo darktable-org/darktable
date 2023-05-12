@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -496,7 +496,9 @@ static inline const dt_color_checker_patch* dt_color_checker_get_patch_by_name(c
       break;
     }
 
-  if(patch == NULL) fprintf(stderr, "No patch matching name `%s` was found in %s\n", name, target_checker->name);
+  if(patch == NULL)
+    dt_print(DT_DEBUG_ALWAYS, "No patch matching name `%s` was found in %s\n",
+             name, target_checker->name);
 
   if(index ) *index = idx;
   return patch;

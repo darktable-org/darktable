@@ -20,7 +20,7 @@
 #include "control/conf.h"
 #include "common/iop_group.h"
 
-static int _group_number(int group_id)
+static int _group_number(dt_imgid_t group_id)
 {
   if      (group_id == IOP_GROUP_EFFECT)  return 5;
   else if(group_id == IOP_GROUP_CORRECT) return 4;

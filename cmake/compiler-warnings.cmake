@@ -12,13 +12,7 @@ else()
   CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wformat-security)
 endif()
 
-# cleanup this once we no longer need to support gcc-4.9
-if(NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 5.0))
-  CHECK_C_COMPILER_FLAG_AND_ENABLE_IT(-Wshadow)
-endif()
-if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
-  CHECK_CXX_COMPILER_FLAG_AND_ENABLE_IT(-Wshadow)
-endif()
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wshadow)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wtype-limits)
 
@@ -27,6 +21,8 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wvla)
 CHECK_C_COMPILER_FLAG_AND_ENABLE_IT(-Wold-style-declaration)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wthread-safety)
+
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wmaybe-uninitialized)
 
 # since checking if defined(__GNUC__) is not enough to prevent Clang from using GCC-specific pragmas
 # (so Clang defines __GNUC__ ???) we need to disable the warnings about unknown pragmas
@@ -65,11 +61,6 @@ endif()
 #  Do not include individual headers
 #
 add_definitions(-DGTK_DISABLE_SINGLE_INCLUDES)
-
-#
-# Dirty hack to enforce GTK3 behaviour in GTK2: "Replace GDK_<keyname> with GDK_KEY_<keyname>"
-#
-add_definitions(-D__GDK_KEYSYMS_COMPAT_H__)
 
 #
 #  Do not use deprecated symbols

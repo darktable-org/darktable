@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2021 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
 #include "common/import_session.h"
 #include "common/iop_profile.h"
 #include "common/selection.h"
@@ -50,6 +49,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "imageio/imageio_common.h"
 #include "libs/lib.h"
 #include "views/view_api.h"
 
@@ -75,7 +75,7 @@ typedef struct dt_capture_t
   /** The current image activated in capture view, either latest tethered shoot
     or manually picked from filmstrip view...
   */
-  int32_t image_id;
+  dt_imgid_t image_id;
 
   dt_view_image_over_t image_over;
 
@@ -91,7 +91,7 @@ typedef struct dt_capture_t
 } dt_capture_t;
 
 /* signal handler for filmstrip image switching */
-static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
+static void _view_capture_filmstrip_activate_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data);
 
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
@@ -107,7 +107,7 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_TETHERING;
 }
 
-static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
+static void _view_capture_filmstrip_activate_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_capture_t *lib = (dt_capture_t *)self->data;
@@ -115,7 +115,7 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance, int img
   lib->image_id = imgid;
   dt_view_active_images_reset(FALSE);
   dt_view_active_images_add(lib->image_id, TRUE);
-  if(imgid >= 0)
+  if(dt_is_valid_imgid(imgid))
   {
     dt_collection_memory_update();
     dt_selection_select_single(darktable.selection, imgid);
@@ -192,7 +192,7 @@ static int _tethering_bpp(dt_imageio_module_data_t *data)
 
 static int _tethering_write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                                   dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                                  void *exif, int exif_len, int imgid, int num, int total,
+                                  void *exif, int exif_len, dt_imgid_t imgid, int num, int total,
                                   dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
 {
   _tethering_format_t *d = (_tethering_format_t *)data;
@@ -329,7 +329,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     }
     dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
   }
-  else if(lib->image_id >= 0) // First of all draw image if available
+  else if(dt_is_valid_imgid(lib->image_id)) // First of all draw image if available
   {
     // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
     cairo_surface_t *surf = NULL;
@@ -440,16 +440,16 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   }
 }
 
-int try_enter(dt_view_t *self)
+gboolean try_enter(dt_view_t *self)
 {
   /* verify that camera supports tethering and is available */
-  if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL)) return 0;
+  if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL)) return FALSE;
 
   dt_control_log(_("no camera with tethering support available for use..."));
-  return 1;
+  return TRUE;
 }
 
-static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)
+static void _capture_mipmaps_updated_signal_callback(gpointer instance, dt_imgid_t imgid, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   struct dt_capture_t *lib = (dt_capture_t *)self->data;
@@ -558,7 +558,7 @@ void leave(dt_view_t *self)
 
 void reset(dt_view_t *self)
 {
-  // dt_control_set_mouse_over_id(-1);
+  // dt_control_set_mouse_over_id(NO_IMGID);
 }
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
@@ -595,7 +595,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
     gchar str[20];
-    snprintf(str, sizeof(str), "%u,%u", cam->live_view_zoom_x, cam->live_view_zoom_y);
+    snprintf(str, sizeof(str), "%d,%d", cam->live_view_zoom_x, cam->live_view_zoom_y);
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();

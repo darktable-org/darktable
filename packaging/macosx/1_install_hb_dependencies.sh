@@ -22,6 +22,7 @@ brew upgrade
 # Define homebrew dependencies
 hbDependencies="adwaita-icon-theme \
     cmake \
+    pkg-config \
     cmocka \
     curl \
     desktop-file-utils \
@@ -40,13 +41,13 @@ hbDependencies="adwaita-icon-theme \
     jpeg \
     jpeg-xl \
     json-glib \
+    jsonschema \
     lensfun \
     libavif \
     libheif \
     libomp \
     librsvg \
     libsecret \
-    libsoup@2 \
     little-cms2 \
     llvm \
     lua \
@@ -61,7 +62,71 @@ hbDependencies="adwaita-icon-theme \
     sdl2 \
     webp"
 
-# Install homebrew dependencies
+# Dependencies that must be linked
+hbMustLink="libomp libsoup@2"
+
+# Categorize dependency list
+standalone=
+deps=
+notfound=
+hbInstalled=$( brew list --formula --quiet )
+hbLeaves=$( brew leaves --installed-on-request )
 for hbDependency in $hbDependencies; do
-    brew install "$hbDependency"
+    if [[ " ${hbInstalled[*]} " == *"${hbDependency}"* ]];
+    then
+      if [[ " ${hbLeaves[*]} " == *"${hbDependency}"* ]]; then
+        standalone="${hbDependency} ${standalone}"
+      else
+        deps="${hbDependency} ${deps}"
+      fi
+    else
+      notfound="${hbDependency} ${notfound}"
+    fi
 done
+
+# Show installed dependencies
+if [ "${standalone}" -o "${deps}" ]; then
+    echo
+    echo "Installed Dependencies:"
+    (
+        brew list --formula --quiet --versions ${standalone}
+        brew list --formula --quiet --versions ${deps} | sed -e 's/$/ (autoinstalled)/'
+    ) | sort
+fi
+
+# Install missing dependencies
+if [ "${notfound}" ]; then
+    echo
+    echo "Missing Dependencies:"
+    echo "${notfound}"
+
+    brew install ${notfound}
+fi
+
+# Fix for unlinked keg-only dependencies
+echo
+echo "Checking for unlinked keg-only dependencies..."
+# This is a lot easier with jq...
+#unlinked=$( brew info --json=v1 ${hbMustLink}| jq "map(select(.linked_keg == null) | .name)" | jq -r '.[]' )
+mustlink=$(
+    name=
+    brew info --json=v1 $hbMustLink \
+        | grep -Eo '"(full_name|linked_keg)":.*' \
+        | sed -e 's/"//g;s/://g;s/,//g' \
+        | while read key value;
+        do
+            if [ "${key}" == "full_name" ]; then
+              name="${value}"
+            fi
+            if [ "${name}" -a "${key}" == "linked_keg" -a "${value}" == "null" ]; then
+              echo "${name}"
+            fi
+        done
+)
+if [ "${mustlink}" ]; then
+    echo
+    echo "Unlinked dependencies found! Attempting to relink..."
+    brew link --force ${mustlink}
+else
+    echo "None."
+fi
