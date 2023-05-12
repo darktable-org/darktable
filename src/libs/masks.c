@@ -667,16 +667,33 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   dt_iop_module_t *module = NULL;
   ++darktable.gui->reset;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
-  for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
+
+  for(const GList *items_iter = items;
+      items_iter;
+      items_iter = g_list_next(items_iter))
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter(model, &iter, item))
     {
+      GtkTreeIter *prev_iter = gtk_tree_iter_copy(&iter);
+      const gboolean has_previous = gtk_tree_model_iter_previous(model, prev_iter);
+      int prev_grid = -1;
+      int prev_id = -1;
+
       dt_mask_id_t grid = INVALID_MASKID;
       dt_mask_id_t id = INVALID_MASKID;
       _lib_masks_get_values(model, &iter, &module, &grid, &id);
 
+      if(has_previous)
+      {
+        _lib_masks_get_values(model, prev_iter, &module, &prev_grid, &prev_id);
+        if(_is_last_tree_item(model, &iter))
+        {
+          _swap_last_secondlast_item_visibility(lm, &iter, id, prev_id);
+        }
+      }
+      gtk_tree_iter_free(prev_iter);
       dt_masks_form_remove(module, dt_masks_get_from_id(darktable.develop, grid),
                            dt_masks_get_from_id(darktable.develop, id));
     }
