@@ -533,8 +533,8 @@ static void _workicc_changed(GtkWidget *widget, gpointer user_data)
       dt_ioppr_add_profile_info_to_list(self->dev, p->type_work,
                                         p->filename_work, DT_INTENT_PERCEPTUAL);
     if(work_profile == NULL
-       || isnan(work_profile->matrix_in[0][0])
-       || isnan(work_profile->matrix_out[0][0]))
+       || !dt_is_valid_colormatrix(work_profile->matrix_in[0][0])
+       || !dt_is_valid_colormatrix(work_profile->matrix_out[0][0]))
     {
       dt_print(DT_DEBUG_ALWAYS, "[colorin] can't extract matrix from colorspace `%s',"
                " it will be replaced by Rec2020 RGB!\n", p->filename_work);
@@ -1204,7 +1204,7 @@ void process(struct dt_iop_module_t *self,
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
-  else if(!isnan(d->cmatrix[0][0]))
+  else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     process_cmatrix(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
@@ -1287,7 +1287,9 @@ void commit_params(struct dt_iop_module_t *self,
     d->xform_nrgb_Lab = NULL;
   }
 
-  d->cmatrix[0][0] = d->nmatrix[0][0] = d->lmatrix[0][0] = NAN;
+  dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
+  dt_mark_colormatrix_invalid(&d->nmatrix[0][0]);
+  dt_mark_colormatrix_invalid(&d->lmatrix[0][0]);
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
@@ -1339,7 +1341,7 @@ void commit_params(struct dt_iop_module_t *self,
   {
     // embedded matrix, hopefully D65
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, pipe->image.id, 'r');
-    if(isnan(cimg->d65_color_matrix[0]))
+    if(!dt_is_valid_colormatrix(cimg->d65_color_matrix[0]))
       type = DT_COLORSPACE_STANDARD_MATRIX;
     else
     {
@@ -1351,7 +1353,7 @@ void commit_params(struct dt_iop_module_t *self,
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
   {
-    if(isnan(pipe->image.adobe_XYZ_to_CAM[0][0]))
+    if(!dt_is_valid_colormatrix(pipe->image.adobe_XYZ_to_CAM[0][0]))
     {
       if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
@@ -1426,15 +1428,15 @@ void commit_params(struct dt_iop_module_t *self,
   }
 
   // prepare transformation matrix or lcms2 transforms as fallback
+  GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
   if(d->nrgb)
   {
     // user wants us to clip to a given RGB profile
-    if(dt_colorspaces_get_matrix_from_input_profile
-       (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-        LUT_SAMPLES))
+    if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix,
+                                                    d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       piece->process_cl_ready = FALSE;
-      d->cmatrix[0][0] = NAN;
+      dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
       d->xform_cam_nrgb = cmsCreateTransform(d->input, input_format, d->nrgb,
@@ -1460,15 +1462,16 @@ void commit_params(struct dt_iop_module_t *self,
                                                     LUT_SAMPLES))
     {
       piece->process_cl_ready = FALSE;
-      d->cmatrix[0][0] = NAN;
+      dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
     }
   }
+  GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
 
   // we might have failed generating the clipping transformations, check that:
-  if(d->nrgb && ((!d->xform_cam_nrgb && isnan(d->nmatrix[0][0]))
-                 || (!d->xform_nrgb_Lab && isnan(d->lmatrix[0][0]))))
+  if(d->nrgb && ((!d->xform_cam_nrgb && !dt_is_valid_colormatrix(d->nmatrix[0][0]))
+                 || (!d->xform_nrgb_Lab && !dt_is_valid_colormatrix(d->lmatrix[0][0]))))
   {
     if(d->xform_cam_nrgb)
     {
@@ -1484,7 +1487,7 @@ void commit_params(struct dt_iop_module_t *self,
   }
 
   // user selected a non-supported input profile, check that:
-  if(!d->xform_cam_Lab && isnan(d->cmatrix[0][0]))
+  if(!d->xform_cam_Lab && !dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     if(p->type == DT_COLORSPACE_FILE)
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile `%s' has"
@@ -1498,15 +1501,17 @@ void commit_params(struct dt_iop_module_t *self,
     d->input = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC709, "",
                                           DT_PROFILE_DIRECTION_IN)->profile;
     d->clear_input = FALSE;
+    GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
     if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix,
                                                     d->lut[0], d->lut[1], d->lut[2],
                                                     LUT_SAMPLES))
     {
       piece->process_cl_ready = FALSE;
-      d->cmatrix[0][0] = NAN;
+      dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
     }
+    GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
   }
 
   d->nonlinearlut = FALSE;
@@ -1772,7 +1777,7 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_ADOBERGB;
   else if(dt_image_is_ldr(img))
     d->type = DT_COLORSPACE_SRGB;
-  else if(!isnan(img->d65_color_matrix[0])) // image is DNG, EXR, or RGBE
+  else if(dt_is_valid_colormatrix(img->d65_color_matrix[0])) // image is DNG, EXR, or RGBE
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
   else if(dt_image_is_matrix_correction_supported(img)) // image is raw
     d->type = DT_COLORSPACE_STANDARD_MATRIX;
@@ -1815,7 +1820,7 @@ static void update_profile_list(dt_iop_module_t *self)
   }
   dt_image_cache_read_release(darktable.image_cache, cimg);
   // use the matrix embedded in some DNGs and EXRs
-  if(!isnan(self->dev->image_storage.d65_color_matrix[0]))
+  if(dt_is_valid_colormatrix(self->dev->image_storage.d65_color_matrix[0]))
   {
     dt_colorspaces_color_profile_t *prof
         = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
@@ -1826,7 +1831,7 @@ static void update_profile_list(dt_iop_module_t *self)
     prof->in_pos = ++pos;
   }
 
-  if(!isnan(self->dev->image_storage.adobe_XYZ_to_CAM[0][0])
+  if(dt_is_valid_colormatrix(self->dev->image_storage.adobe_XYZ_to_CAM[0][0])
      && !(self->dev->image_storage.flags & DT_IMAGE_4BAYER))
   {
     dt_colorspaces_color_profile_t *prof
