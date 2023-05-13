@@ -539,6 +539,12 @@ The following is a summary of the main features added to darktable
 - New sliders for changing the image scaling and chromatic aberration
   fine tuning has been added in the lens correction module.
 
+- The dropdowns to select the amount of brush smoothing and whether
+  pen pressure affects brush size, hardness or opacity have been moved
+  from the preferences dialog to the "properties" collapsible section
+  in the mask manager, so they can be changed while drawing or even
+  assigned shortcuts.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
