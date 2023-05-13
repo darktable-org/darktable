@@ -1671,6 +1671,11 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // select all presets from one of the following table and add them
   // into memory.history. Note that this is appended to possibly
   // already present default modules.
+  //
+  // Also it may be possible that multiple presets for a module not
+  // supporting multiple instances (e.g. demosaic) may be added. Those
+  // instances are properly merged in dt_dev_read_history_ext.
+
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[2048];
@@ -2151,7 +2156,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
       if(dt_iop_module_is(module->so, module_name))
       {
-        if(module->multi_priority == multi_priority)
+        // make sure that module not supporting multiple instances are
+        // selected here.
+        if(module->multi_priority == multi_priority
+           || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
         {
           hist->module = module;
           if(multi_name)
@@ -2234,7 +2242,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     hist->enabled = enabled;
     hist->num = num;
     hist->iop_order = iop_order;
-    hist->multi_priority = multi_priority;
+    hist->multi_priority = (hist->module->flags() & IOP_FLAGS_ONE_INSTANCE)
+      ? 0
+      : multi_priority;
+
     hist->multi_name_hand_edited = multi_name_hand_edited;
     g_strlcpy(hist->op_name, hist->module->op, sizeof(hist->op_name));
     g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
