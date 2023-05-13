@@ -745,6 +745,9 @@ The following is a summary of the main features added to darktable
 
 - Fix entering custom aspect ration in the border module.
 
+- Fix pin icon update in filtering module which could crash darktable
+  when using some specific filter combinations.
+
 ## Lua
 
 ### API Version
