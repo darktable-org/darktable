@@ -2161,8 +2161,26 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
 
       // ensure that the overall layout doesn't change
       // (i.e. we don't get empty spaces in the very first row)
-      const int offset_row = (table->offset-1) / table->thumbs_per_row;
-      offset = offset_row * table->thumbs_per_row + 1;
+      offset = (table->offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
+
+      // ensure that we don't go up too far (we only want a space <thumb_size at the bottom)
+      if(table->offset != offset && offset > 1 && table->thumbs_per_row > 1)
+      {
+        sqlite3_stmt *stmt2;
+        int nb = 0;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT count(*) FROM memory.collected_images",
+                                    -1, &stmt2, NULL);
+        if(stmt2 != NULL)
+        {
+          if(sqlite3_step(stmt2) == SQLITE_ROW) nb = sqlite3_column_int(stmt2, 0);
+          sqlite3_finalize(stmt2);
+        }
+        // get how many full blank line we have at the bottom
+
+        const int move
+            = (table->rows - 1) - ((nb - (offset - 1) + table->thumbs_per_row - 1) / table->thumbs_per_row);
+        if(move > 0) offset = MAX(1, offset - move * table->thumbs_per_row);
+      }
       table->offset = offset;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
