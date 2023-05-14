@@ -286,6 +286,15 @@ The following is a summary of the main features added to darktable
   - Add an auto-scale button.
   - Improve overall module performance of about 8%.
 
+  - An improved algorithm for embedded metadata lens correction has
+    been added to the lens module. It improves distortion and vignetting
+    corrections for the supported Fujifilm and Sony images.
+
+    Also add support for Fujifilm X-Trans I/II/III cameras raw files.
+
+  - New sliders for changing the image scaling and chromatic aberration
+    fine tuning has been added in the lens correction module.
+
 - Added section headers to the sort by drop-down (files, times, etc).
 
 - Shortcuts assigned to presets or styles will be shown when hovering
@@ -531,13 +540,6 @@ The following is a summary of the main features added to darktable
 
 - Improve clarity and usability of dialog to confirm further action
   upon failure of physical file deletion or moving to trash.
-
-- An improved algorithm for embedded metadata lens correction has been
-  added to the lens module. It improves distortion and vignetting
-  corrections for the supported Fujifilm and Sony images.
-
-- New sliders for changing the image scaling and chromatic aberration
-  fine tuning has been added in the lens correction module.
 
 - The dropdowns to select the amount of brush smoothing and whether
   pen pressure affects brush size, hardness or opacity have been moved
