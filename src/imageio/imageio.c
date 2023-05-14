@@ -106,6 +106,16 @@ static const gchar *_supported_ldr[]
 static const gchar *_supported_hdr[]
     = { "avif", "exr", "hdr", "heic", "heif", "hif", "jxl", "pfm", NULL };
 
+gboolean dt_imageio_is_raw_by_extension(const char *extension)
+{
+  const char *ext = g_str_has_prefix(extension, ".") ? extension + 1 : extension;
+  for(const char **i = _supported_raw; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i))) return TRUE;
+  }
+  return FALSE;
+}
+
 // get the type of image from its extension
 dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
 {
