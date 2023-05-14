@@ -750,7 +750,7 @@ The following is a summary of the main features added to darktable
 - Fix pin icon update in filtering module which could crash darktable
   when using some specific filter combinations.
 
-- Fix rating info popup window not shown when rating a collapsed group
+- Fix rating toast message not shown when rating a collapsed group
   of images using keyboard shortcut.
 
 ## Lua
