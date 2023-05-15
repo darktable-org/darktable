@@ -2833,6 +2833,9 @@ static void _raster_combo_populate(GtkWidget *w,
 
   int i = 1;
 
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  gtk_widget_set_sensitive(bd->raster_polarity, FALSE);
+
   for(GList* iter = darktable.develop->iop; iter; iter = g_list_next(iter))
   {
     dt_iop_module_t *iop = (dt_iop_module_t *)iter->data;
@@ -2853,7 +2856,10 @@ static void _raster_combo_populate(GtkWidget *w,
       dt_bauhaus_combobox_add_full(w, modulename,
                                    DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free, TRUE);
       if(iop == module->raster_mask.sink.source && module->raster_mask.sink.id == id)
+      {
         dt_bauhaus_combobox_set(w, i);
+        gtk_widget_set_sensitive(bd->raster_polarity, TRUE);
+      }
       i++;
     }
   }
@@ -2883,6 +2889,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
 
   gboolean reprocess = FALSE;
 
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(entry->module)
   {
     reprocess = dt_iop_is_raster_mask_used(entry->module, BLEND_RASTER_ID) == FALSE;
@@ -2893,6 +2900,8 @@ static void _raster_value_changed_callback(GtkWidget *widget,
            sizeof(module->blend_params->raster_mask_source));
     module->blend_params->raster_mask_instance = entry->module->multi_priority;
     module->blend_params->raster_mask_id = entry->id;
+
+    gtk_widget_set_sensitive(bd->raster_polarity, TRUE);
   }
   else
   {
@@ -2900,6 +2909,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
            sizeof(module->blend_params->raster_mask_source));
     module->blend_params->raster_mask_instance = 0;
     module->blend_params->raster_mask_id = INVALID_MASKID;
+    gtk_widget_set_sensitive(bd->raster_polarity, FALSE);
   }
 
   dt_dev_add_history_item(module->dev, module, TRUE);
