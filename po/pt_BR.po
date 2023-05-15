@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-13 14:51-0300\n"
-"PO-Revision-Date: 2023-05-13 14:53-0300\n"
+"POT-Creation-Date: 2023-05-16 08:33-0300\n"
+"PO-Revision-Date: 2023-05-16 08:43-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2657,7 +2657,7 @@ msgstr "guia"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
 #: ../src/iop/atrous.c:1522 ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:335
-#: ../src/iop/dither.c:759 ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:675
+#: ../src/iop/dither.c:760 ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:675
 #: ../src/iop/sharpen.c:440
 msgid "radius"
 msgstr "raio"
@@ -3672,32 +3672,32 @@ msgid "Floyd-Steinberg auto"
 msgstr "Floyd-Steinberg auto"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:200
-msgid "Posterize 2 levels per channel"
-msgstr "Posterizar 2 níveis por canal"
+msgid "posterize 2 levels per channel"
+msgstr "posterizar 2 níveis por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:201
-msgid "Posterize 3 levels per channel"
-msgstr "Posterizar 3 níveis por canal"
+msgid "posterize 3 levels per channel"
+msgstr "posterizar 3 níveis por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:202
-msgid "Posterize 4 levels per channel"
-msgstr "Posterizar 4 níveis por canal"
+msgid "posterize 4 levels per channel"
+msgstr "posterizar 4 níveis por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:203
-msgid "Posterize 5 levels per channel"
-msgstr "Posterizar 5 níveis por canal"
+msgid "posterize 5 levels per channel"
+msgstr "posterizar 5 níveis por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:204
-msgid "Posterize 6 levels per channel"
-msgstr "Posterizar 6 níveis por canal"
+msgid "posterize 6 levels per channel"
+msgstr "posterizar 6 níveis por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:205
-msgid "Posterize 7 levels per channel"
-msgstr "Posterizar 7 níveis por canal"
+msgid "posterize 7 levels per channel"
+msgstr "posterizar 7 níveis por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:206
-msgid "Posterize 8 levels per channel"
-msgstr "Posterizar 8 níveis por canal"
+msgid "posterize 8 levels per channel"
+msgstr "posterizar 8 níveis por canal"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:79
 #: ../build/lib/darktable/plugins/introspection_exposure.c:146
@@ -6561,7 +6561,7 @@ msgstr "nome de versão"
 msgid "image id"
 msgstr "id da imagem"
 
-#: ../src/common/mipmap_cache.c:1065 ../src/imageio/imageio.c:727
+#: ../src/common/mipmap_cache.c:1065 ../src/imageio/imageio.c:787
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "imagem `%s' não disponível!"
@@ -7123,17 +7123,17 @@ msgstr "_fechar"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2574
+#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2592
 #: ../src/libs/import.c:1722 ../src/libs/select.c:135
 msgid "select all"
 msgstr "selecionar tudo"
 
-#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2576
+#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2594
 #: ../src/libs/import.c:1726 ../src/libs/select.c:139
 msgid "select none"
 msgstr "selecionar nenhuma"
 
-#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2578
+#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2596
 #: ../src/libs/select.c:143
 msgid "invert selection"
 msgstr "inverter seleção"
@@ -8487,12 +8487,12 @@ msgstr ""
 "desliga temporariamente a máscara de mesclagem.\n"
 "apenas para módulo em uso"
 
-#: ../src/develop/develop.c:2292
+#: ../src/develop/develop.c:2303
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo `%s' versão incompatível: %d != %d"
 
-#: ../src/develop/develop.c:2823
+#: ../src/develop/develop.c:2834
 msgid "module duplicate, can't move new instance after the base one\n"
 msgstr ""
 "duplicação de módulos, não é possível mover a nova instância para depois da "
@@ -9331,39 +9331,39 @@ msgid "cached thumbnails invalidation"
 msgstr "invalidação do cache de miniaturas"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2557
+#: ../src/dtgtk/thumbtable.c:2575
 msgid "copy history"
 msgstr "copiar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2559
+#: ../src/dtgtk/thumbtable.c:2577
 msgid "copy history parts"
 msgstr "copiar partes do histórico"
 
-#: ../src/dtgtk/thumbtable.c:2561
+#: ../src/dtgtk/thumbtable.c:2579
 msgid "paste history"
 msgstr "colar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2563
+#: ../src/dtgtk/thumbtable.c:2581
 msgid "paste history parts"
 msgstr "colar partes do histórico"
 
-#: ../src/dtgtk/thumbtable.c:2565 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2583 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "descartar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2568
+#: ../src/dtgtk/thumbtable.c:2586
 msgid "duplicate image"
 msgstr "duplicar imagem"
 
-#: ../src/dtgtk/thumbtable.c:2570
+#: ../src/dtgtk/thumbtable.c:2588
 msgid "duplicate image virgin"
 msgstr "duplicar imagem sem desenvolvimento"
 
-#: ../src/dtgtk/thumbtable.c:2580 ../src/libs/select.c:147
+#: ../src/dtgtk/thumbtable.c:2598 ../src/libs/select.c:147
 msgid "select film roll"
 msgstr "selecionar rolo de filme"
 
-#: ../src/dtgtk/thumbtable.c:2582 ../src/libs/select.c:151
+#: ../src/dtgtk/thumbtable.c:2600 ../src/libs/select.c:151
 msgid "select untouched"
 msgstr "selecionar não modificadas"
 
@@ -11296,7 +11296,7 @@ msgstr "manter"
 msgid "can't create style out of unaltered image"
 msgstr "não é possível criar estilo de uma imagem inalterada"
 
-#: ../src/imageio/imageio.c:743
+#: ../src/imageio/imageio.c:804
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -11305,17 +11305,17 @@ msgstr ""
 "falha ao reservar memória para %s, favor reduza as threads usadas para "
 "exportação ou acrescente mais memória."
 
-#: ../src/imageio/imageio.c:744
+#: ../src/imageio/imageio.c:806
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "exporta miniatura"
 
-#: ../src/imageio/imageio.c:744
+#: ../src/imageio/imageio.c:806
 msgctxt "noun"
 msgid "export"
 msgstr "exporta"
 
-#: ../src/imageio/imageio.c:757
+#: ../src/imageio/imageio.c:819
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -12672,7 +12672,7 @@ msgstr "linear, RGB, relativo à exibição"
 
 #: ../src/iop/basecurve.c:354 ../src/iop/basicadj.c:149
 #: ../src/iop/colorbalance.c:163 ../src/iop/colorbalancergb.c:187
-#: ../src/iop/dither.c:120 ../src/iop/filmicrgb.c:354
+#: ../src/iop/dither.c:121 ../src/iop/filmicrgb.c:354
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:104
@@ -12680,7 +12680,7 @@ msgstr "linear, RGB, relativo à exibição"
 msgid "non-linear, RGB"
 msgstr "não-linear, RGB"
 
-#: ../src/iop/basecurve.c:355 ../src/iop/dither.c:119 ../src/iop/dither.c:121
+#: ../src/iop/basecurve.c:355 ../src/iop/dither.c:120 ../src/iop/dither.c:122
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
 #: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
@@ -15074,7 +15074,7 @@ msgstr "obrigatório"
 msgid "defined by profile"
 msgstr "definido pelo perfil"
 
-#: ../src/iop/colorin.c:541
+#: ../src/iop/colorin.c:543
 #, c-format
 msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
@@ -15083,34 +15083,66 @@ msgstr ""
 "não consegui extrair matriz do espaço de cores `%s', será substituída pelo "
 "RGB Rec2020!"
 
-#: ../src/iop/colorin.c:1362
+#: ../src/iop/colorin.c:1427
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "`%s' matriz de cor não encontrada!"
 
-#: ../src/iop/colorin.c:1401
+#: ../src/iop/colorin.c:1466
 msgid "input profile could not be generated!"
 msgstr "perfil de entrada não pode ser gerado!"
 
-#: ../src/iop/colorin.c:1498
+#: ../src/iop/colorin.c:1565
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "perfil de entrada não suportado foi substituído por RGB Rec709 linear!"
 
-#: ../src/iop/colorin.c:1938
+#: ../src/iop/colorin.c:1857 ../src/iop/colorin.c:2118
+#, c-format
+msgid ""
+"darktable loads external ICC profiles from\n"
+"%s\n"
+"and\n"
+"%s"
+msgstr ""
+"o darktable carrega perfis ICC externos de\n"
+"%s\n"
+"e\n"
+"%s"
+
+#: ../src/iop/colorin.c:1903
+#, c-format
+msgid ""
+"embedded ICC profile properties:\n"
+"\n"
+"name: <b>%s</b>\n"
+"version: <b>%g</b>\n"
+"type: <b>%s</b>\n"
+"manufacturer: <b>%s</b>\n"
+"model: <b>%s</b>\n"
+"copyright: <b>%s</b>\n"
+"\n"
+"%s"
+msgstr ""
+"propriedades dos perfis ICC embarcados:\n"
+"\n"
+"nome: <b>%s</b>\n"
+"versão: <b>%g</b>\n"
+"tipo: <b>%s</b>\n"
+"fabricante: <b>%s</b>\n"
+"modelo: <b>%s</b>\n"
+"copyright: <b>%s</b>\n"
+"\n"
+"%s"
+
+#: ../src/iop/colorin.c:2102
 msgid "input profile"
 msgstr "perfil de entrada"
 
-#: ../src/iop/colorin.c:1942
+#: ../src/iop/colorin.c:2106
 msgid "working profile"
 msgstr "perfil de trabalho"
 
-#: ../src/iop/colorin.c:1949 ../src/iop/colorin.c:1961
-#: ../src/iop/colorout.c:905
-#, c-format
-msgid "ICC profiles in %s or %s"
-msgstr "perfis ICC em %s ou %s"
-
-#: ../src/iop/colorin.c:1976
+#: ../src/iop/colorin.c:2133
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "delimita valores Lab para tonalidades do espaço de cores RGB"
 
@@ -15249,6 +15281,11 @@ msgstr "saturação"
 #: ../src/views/darkroom.c:2525 ../src/views/lighttable.c:1183
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
+
+#: ../src/iop/colorout.c:905
+#, c-format
+msgid "ICC profiles in %s or %s"
+msgstr "perfis ICC em %s ou %s"
 
 #: ../src/iop/colorreconstruction.c:129
 msgid "color reconstruction"
@@ -16142,15 +16179,15 @@ msgstr ""
 "limiar.\n"
 "isto pode ser usado para reconstruir realces."
 
-#: ../src/iop/dither.c:106
+#: ../src/iop/dither.c:107
 msgid "dither or posterize"
 msgstr "Matizar ou posterizar"
 
-#: ../src/iop/dither.c:111
+#: ../src/iop/dither.c:112
 msgid "dithering|posterization|reduce bit-depth"
 msgstr "matização|posterização|redução de profundidade de bit"
 
-#: ../src/iop/dither.c:116
+#: ../src/iop/dither.c:117
 msgid ""
 "reduce banding and posterization effects in output\n"
 "JPEGs by adding random noise, or reduce bit depth"
@@ -16158,28 +16195,28 @@ msgstr ""
 "reduzir bandas de cor e efeitos de posterização em JPEGs de saída\n"
 "adicionando ruído aleatório, ou reduzir a profundidade de bits"
 
-#: ../src/iop/dither.c:118
+#: ../src/iop/dither.c:119
 msgid "corrective, artistic"
 msgstr "corretivo, artístico"
 
 #. add the preset.
-#: ../src/iop/dither.c:146
+#: ../src/iop/dither.c:147
 msgid "dither"
 msgstr "matizar"
 
-#: ../src/iop/dither.c:758
+#: ../src/iop/dither.c:759
 msgid "radius for blurring step"
 msgstr "raio para etapa de desfoque"
 
-#: ../src/iop/dither.c:770
+#: ../src/iop/dither.c:771
 msgid "the gradient range where to apply random dither"
 msgstr "a faixa de gradiente onde aplicar o dither aleatório"
 
-#: ../src/iop/dither.c:771
+#: ../src/iop/dither.c:772
 msgid "gradient range"
 msgstr "faixa de gradiente"
 
-#: ../src/iop/dither.c:779
+#: ../src/iop/dither.c:780
 msgid "damping level of random dither"
 msgstr "nível de amortecimento do dither aleatório"
 
@@ -22506,8 +22543,10 @@ msgid ""
 msgstr ""
 "controle de pressão da caneta para máscaras de pincel\n"
 "- 'desligado': leitura de pressão ignorada,\n"
-" - 'dureza'/'opacidade'/'tamanho do pincel': atributos especificados nos controles de leitura de pressão,\n"
-" - 'absoluto'/'relativo': leitura de pressão é definida diretamente como valor atribuído ou multiplicado com valor predefinido."
+" - 'dureza'/'opacidade'/'tamanho do pincel': atributos especificados nos "
+"controles de leitura de pressão,\n"
+" - 'absoluto'/'relativo': leitura de pressão é definida diretamente como "
+"valor atribuído ou multiplicado com valor predefinido."
 
 #: ../src/libs/masks.c:1956
 msgid "smoothing"
@@ -22520,7 +22559,8 @@ msgid ""
 "control of accuracy."
 msgstr ""
 "suavização dos traços do pincel\n"
-"quanto maior a suavização menor a quantidade de nós e mais fácil a edição, no entanto há menor controle de precisão."
+"quanto maior a suavização menor a quantidade de nós e mais fácil a edição, "
+"no entanto há menor controle de precisão."
 
 #: ../src/libs/metadata.c:64
 msgid "metadata editor"
