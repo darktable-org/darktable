@@ -1764,6 +1764,89 @@ void reload_defaults(dt_iop_module_t *module)
     color_profile = DT_COLORSPACE_EMBEDDED_ICC;
   }
 
+  // We'll update the input profile hint with information on the embedded ICC profile if it exists.
+  // Since the tooltip info is now image dependent, we need to set the tooltip for each image change.
+
+  // We need gui_data to access widget in order to change tooltip.
+  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *) module->gui_data;
+
+  // reload_defaults() can be called with unavailable (i.e., NULL) gui_data.
+  // In this case, we have nothing to do with tooltips.
+  if(!g) goto skip_tooltip_changing;
+
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
+  char *tooltip_part_profile_dirs = g_strdup_printf(_("darktable loads external ICC profiles from\n%s\nand\n%s"),
+                                                    user_profile_dir, system_profile_dir);
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
+
+  // In case of embedded ICC profile we will modify tooltip with the profile info,
+  // otherwise reset tooltip to generic text.
+  if(color_profile == DT_COLORSPACE_EMBEDDED_ICC)
+  {
+    cmsHPROFILE cmsprofile = cmsOpenProfileFromMem(img->profile, img->profile_size);
+
+    char iccDesc[64]; iccDesc[0] = '\0';
+    cmsGetProfileInfoASCII(cmsprofile, cmsInfoDescription, "en", "US", iccDesc, 64);
+    char iccManuf[64]; iccManuf[0] = '\0';
+    cmsGetProfileInfoASCII(cmsprofile, cmsInfoManufacturer, "en", "US", iccManuf, 64);
+    char iccModel[64]; iccModel[0] = '\0';
+    cmsGetProfileInfoASCII(cmsprofile, cmsInfoModel, "en", "US", iccModel, 64);
+
+    // This is the only profile field in which, although it usually contains a short
+    // copyright text, in theory profile creators can put as long text as they want. So,
+    // we can't take a fast approach of statically allocating memory of some sufficient size
+    // and have to find out the size of the field at run-time and dynamically allocate memory.
+    char* iccCopyr;
+    guint32 bufsize = cmsGetProfileInfoASCII(cmsprofile, cmsInfoCopyright, "en", "US", NULL, 0);
+    if(bufsize)
+    {
+      iccCopyr = malloc(bufsize+1);
+      cmsGetProfileInfoASCII(cmsprofile, cmsInfoCopyright, "en", "US", iccCopyr, bufsize);
+    }
+    else
+    {
+      iccCopyr = "";
+    }
+
+    cmsFloat64Number iccVersion = cmsGetProfileVersion(cmsprofile);
+    char *iccType = "";
+    if(cmsIsMatrixShaper(cmsprofile)) iccType = "Matrix";
+    else if(cmsIsCLUT(cmsprofile, INTENT_PERCEPTUAL, LCMS_USED_AS_INPUT)) iccType = "LUT";
+
+    char *tooltip = g_markup_printf_escaped(_("embedded ICC profile properties:\n\n"
+                                            "name: <b>%s</b>\n"
+                                            "version: <b>%g</b>\n"
+                                            "type: <b>%s</b>\n"
+                                            "manufacturer: <b>%s</b>\n"
+                                            "model: <b>%s</b>\n"
+                                            "copyright: <b>%s</b>\n\n%s"),
+                                            iccDesc,
+                                            iccVersion,
+                                            iccType,
+                                            iccManuf,
+                                            iccModel,
+                                            iccCopyr,
+                                            tooltip_part_profile_dirs);
+    gtk_widget_set_tooltip_markup(g->profile_combobox, tooltip);
+    g_free(tooltip);
+    g_free(tooltip_part_profile_dirs);
+    if(bufsize) free(iccCopyr);
+  }
+  else
+  {
+    // If the current image does not have an embedded profile, let's display a generic tooltip
+    gtk_widget_set_tooltip_text(g->profile_combobox, tooltip_part_profile_dirs);
+    g_free(tooltip_part_profile_dirs);
+  }
+
+  // we jump over the tooltip change code if reload_defaults() is called without GUI data
+  skip_tooltip_changing:
 
   if(color_profile != DT_COLORSPACE_NONE)
     d->type = color_profile;
@@ -1943,22 +2026,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
-  {
-    char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
-    char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
-    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"),
-                                    user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
-    g_free(system_profile_dir);
-    g_free(user_profile_dir);
-    g_free(tooltip);
-  }
+  // We do not set the tooltip for the input profile widget because
+  // this tooltip will always be overwritten in reload_defaults().
 
   dt_bauhaus_combobox_set(g->work_combobox, 0);
   {
     char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
     char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"),
+    char *tooltip = g_strdup_printf(_("darktable loads external ICC profiles from\n%s\nand\n%s"),
                                     user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(g->work_combobox, tooltip);
     g_free(system_profile_dir);
