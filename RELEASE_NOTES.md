@@ -550,6 +550,10 @@ The following is a summary of the main features added to darktable
 - Add metadata display of the current image's embedded ICC profile to
   the input profile widget's tooltip.
 
+- Don't push a trouble message if multiple channel-mixer modules are
+  used with applied masks. This usage is expected to cover different
+  areas and so should be considered as correct.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
