@@ -82,10 +82,12 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
  * only if module is between colorin and colorout, otherwise returns NULL
  * work profile must not be cleanup()
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module,
-                                                                   GList *iop_list);
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_input_profile_info(struct dt_iop_module_t *module,
-                                                                    GList *iop_list);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module,
+                                   GList *iop_list);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_iop_input_profile_info(struct dt_iop_module_t *module,
+                                    GList *iop_list);
 
 /** set the work profile (type, filename) on the pipe, should be called on process*()
  * if matrix cannot be generated it default to linear rec 2020
@@ -115,16 +117,21 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
 /** returns a reference to the histogram profile info
  * histogram profile must not be cleanup()
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
 
 /** returns the active work/input/output profile on the pipe */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe);
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_pipe_output_profile_info(struct dt_dev_pixelpipe_t *pipe);
 
 /** Get the relevant RGB -> XYZ profile at the position of current module */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(struct dt_iop_module_t *module,
-                                                                       struct dt_dev_pixelpipe_t *pipe);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_pipe_current_profile_info(struct dt_iop_module_t *module,
+                                       struct dt_dev_pixelpipe_t *pipe);
 
 /** returns the current setting of the work profile on colorin iop */
 void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
@@ -143,15 +150,16 @@ void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *pr
                                          const char **profile_filename);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
-void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self,
-                                         const float *const image_in,
-                                         float *const image_out,
-                                         const int width,
-                                         const int height,
-                                         const int cst_from,
-                                         const int cst_to,
-                                         int *converted_cst,
-                                         const dt_iop_order_iccprofile_info_t *const profile_info);
+void dt_ioppr_transform_image_colorspace
+  (struct dt_iop_module_t *self,
+   const float *const image_in,
+   float *const image_out,
+   const int width,
+   const int height,
+   const int cst_from,
+   const int cst_to,
+   int *converted_cst,
+   const dt_iop_order_iccprofile_info_t *const profile_info);
 
 void dt_ioppr_transform_image_colorspace_rgb
   (const float *const image_in,
@@ -196,16 +204,18 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
 cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info);
 
 /** build the required parameters for a kernel that uses a profile info */
-cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
-                                           const int devid,
-                                           dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
-                                           cl_float **_profile_lut_cl,
-                                           cl_mem *_dev_profile_info,
-                                           cl_mem *_dev_profile_lut);
+cl_int dt_ioppr_build_iccprofile_params_cl
+  (const dt_iop_order_iccprofile_info_t *const profile_info,
+   const int devid,
+   dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+   cl_float **_profile_lut_cl,
+   cl_mem *_dev_profile_info,
+   cl_mem *_dev_profile_lut);
 /** free parameters build with the previous function */
-void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
-                                        cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
-                                        cl_mem *_dev_profile_lut);
+void dt_ioppr_free_iccprofile_params_cl
+  (dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+   cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+   cl_mem *_dev_profile_lut);
 
 /** same as the C version, both return TRUE in case everything went fine */
 gboolean dt_ioppr_transform_image_colorspace_cl
@@ -236,7 +246,9 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
 #ifdef _OPENMP
 #pragma omp declare simd aligned(lut:64)
 #endif
-static inline float extrapolate_lut(const float *const lut, const float v, const int lutsize)
+static inline float extrapolate_lut(const float *const lut,
+                                    const float v,
+                                    const int lutsize)
 {
   // TODO: check if optimization is worthwhile!
   const float ft = CLAMPS(v * (lutsize - 1), 0, lutsize - 1);
@@ -251,7 +263,8 @@ static inline float extrapolate_lut(const float *const lut, const float v, const
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline float eval_exp(const float coeff[3], const float x)
+static inline float eval_exp(const float coeff[3],
+                             const float x)
 {
   return coeff[1] * powf(x * coeff[0], coeff[2]);
 }
@@ -303,7 +316,9 @@ static inline float dt_ioppr_get_rgb_matrix_luminance(const dt_aligned_pixel_t r
               + matrix_in[1][2] * linear_rgb[2];
   }
   else
-    luminance = matrix_in[1][0] * rgb[0] + matrix_in[1][1] * rgb[1] + matrix_in[1][2] * rgb[2];
+    luminance = matrix_in[1][0] * rgb[0]
+              + matrix_in[1][1] * rgb[1]
+              + matrix_in[1][2] * rgb[2];
 
   return luminance;
 }
@@ -423,7 +438,10 @@ static inline float dt_ioppr_compensate_middle_grey
   // we transform the curve nodes from the image colorspace to lab
   dt_aligned_pixel_t lab = { 0.0f };
   const dt_aligned_pixel_t rgb = { x, x, x };
-  dt_ioppr_rgb_matrix_to_lab(rgb, lab, profile_info->matrix_in_transposed, profile_info->lut_in,
+  dt_ioppr_rgb_matrix_to_lab(rgb,
+                             lab,
+                             profile_info->matrix_in_transposed,
+                             profile_info->lut_in,
                              profile_info->unbounded_coeffs_in,
                              profile_info->lutsize,
                              profile_info->nonlinearlut);
@@ -441,7 +459,10 @@ static inline float dt_ioppr_uncompensate_middle_grey
   const dt_aligned_pixel_t lab = { x * 100.f, 0.0f, 0.0f };
   dt_aligned_pixel_t rgb = { 0.0f };
 
-  dt_ioppr_lab_to_rgb_matrix(lab, rgb, profile_info->matrix_out_transposed, profile_info->lut_out,
+  dt_ioppr_lab_to_rgb_matrix(lab,
+                             rgb,
+                             profile_info->matrix_out_transposed,
+                             profile_info->lut_out,
                              profile_info->unbounded_coeffs_out,
                              profile_info->lutsize, profile_info->nonlinearlut);
   return rgb[0];
