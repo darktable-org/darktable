@@ -547,6 +547,9 @@ The following is a summary of the main features added to darktable
   in the mask manager, so they can be changed while drawing or even
   assigned shortcuts.
 
+- Add metadata display of the current image's embedded ICC profile to
+  the input profile widget's tooltip.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
