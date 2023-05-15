@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -95,17 +96,16 @@
 static const gchar *_supported_raw[]
     = { "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dc2", "dcr", "erf", "fff",
         "ia",  "iiq", "k25", "kc2", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw",
-        "orf", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti", "x3f",
-        NULL };
+        "orf", "ori", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti",
+        "x3f", NULL };
 static const gchar *_supported_ldr[]
-    = { "bmp",  "bmq", "cap", "cine", "cs1", "dcm", "gif", "gpr", "j2c",
-        "j2k", "jng", "jp2", "jpc", "jpeg", "jpg",
-        "miff", "mng", "ori", "pbm",  "pfm", "pgm", "png", "pnm", "ppm",
-        "pxn", "qtk", "rdc", "tif", "tiff", "webp",
+    = { "bmp",  "bmq", "cap", "cine", "cs1",  "dcm", "gif", "gpr", "j2c",
+        "j2k",  "jng", "jp2", "jpc",  "jpeg", "jpg",
+        "miff", "mng", "pbm", "pfm",  "pgm",  "png", "pnm", "ppm",
+        "pxn",  "qtk", "rdc", "tif",  "tiff", "webp",
         NULL };
-static const gchar *_supported_hdr[] = { "avif", "exr", "hdr", "heic", "heif",
-                                         "hif", "pfm",
-                                         NULL };
+static const gchar *_supported_hdr[]
+    = { "avif", "exr", "hdr", "heic", "heif", "hif", "pfm", NULL };
 
 // get the type of image from its extension
 dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
