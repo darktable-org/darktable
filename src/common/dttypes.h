@@ -1,20 +1,20 @@
 /*
- *    This file is part of darktable,
- *    Copyright (C) 2021-2023 darktable developers.
- *
- *    darktable is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    darktable is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+    This file is part of darktable,
+    Copyright (C) 2021-2023 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #pragma once
 
@@ -49,7 +49,7 @@ typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 // is passed to a function (this kills the compilation due to
 // -Werror).  The most elegant way to handle this is to suppress the
 // warning for the handfull of function calls the bug affects.
-#if __GNUC__ == 12
+#if __GNUC__ >= 12
 #define GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING \
   _Pragma("GCC push_options") \
   _Pragma("GCC diagnostic ignored \"-Wstringop-overflow\"")
