@@ -102,7 +102,7 @@ void dt_image_cache_allocate(void *data,
     if(color_matrix)
       memcpy(img->d65_color_matrix, color_matrix, sizeof(img->d65_color_matrix));
     else
-      dt_mark_colormatrix_invalid(img->d65_color_matrix);
+      dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]);
     g_free(img->profile);
     img->profile = NULL;
     img->profile_size = 0;

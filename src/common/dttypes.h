@@ -200,11 +200,11 @@ static inline void dt_colormatrix_transpose(dt_colormatrix_t dst,
   }
 }
 
+// dt_mark_colormatrix_invalid could/should be a function,
+// but it was converted to macros due to this GCC compiler bug:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105689
 #ifdef NO_COLORMATRIX_NAN
-static inline void dt_mark_colormatrix_invalid(float *matrix)
-{
-  *matrix = -FLT_MAX;
-}
+#define dt_mark_colormatrix_invalid(matrix) do{*(matrix) = -FLT_MAX;}while(0)
 
 static inline int dt_is_valid_colormatrix(float matrix)
 {
@@ -217,10 +217,7 @@ static inline int dt_is_valid_colormatrix(float matrix)
 #pragma GCC optimize ("-fno-finite-math-only")
 #endif
 
-static inline void dt_mark_colormatrix_invalid(float *matrix)
-{
-  *matrix = NAN;
-}
+#define dt_mark_colormatrix_invalid(matrix) do{*(matrix) = NAN;}while(0)
 
 static inline int dt_is_valid_colormatrix(float matrix)
 {
