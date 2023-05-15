@@ -49,7 +49,8 @@ typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 // is passed to a function (this kills the compilation due to
 // -Werror).  The most elegant way to handle this is to suppress the
 // warning for the handfull of function calls the bug affects.
-#if __GNUC__ == 12
+// FIXME As this bug currently also affects gcc V13 we use this workaround too until properly fixed upstream 
+#if __GNUC__ >= 12
 #define GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING \
   _Pragma("GCC push_options") \
   _Pragma("GCC diagnostic ignored \"-Wstringop-overflow\"")
