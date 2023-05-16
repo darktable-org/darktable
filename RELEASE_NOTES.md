@@ -760,6 +760,9 @@ The following is a summary of the main features added to darktable
 - Fix rating toast message not shown when rating a collapsed group
   of images using keyboard shortcut.
 
+- Fix possible crash in astrophoto denoise when used on CPU (no
+  OpenCL).
+
 ## Lua
 
 ### API Version
