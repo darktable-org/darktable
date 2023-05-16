@@ -215,8 +215,9 @@ GList *dt_collection_get_all(const dt_collection_t *collection, const int limit)
 /** get selected image ids order as current selection. no more than
  * limit many images are returned, <0 == unlimited */
 GList *dt_collection_get_selected(const dt_collection_t *collection, const int limit);
+
 /** get the count of selected images */
-uint32_t dt_collection_get_selected_count(const dt_collection_t *collection);
+uint32_t dt_collection_get_selected_count(void);
 
 /** update query by conf vars */
 void dt_collection_update_query(const dt_collection_t *collection,
