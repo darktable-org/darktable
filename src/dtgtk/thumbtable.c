@@ -432,17 +432,12 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
   table->code_scrolling = TRUE;
 
   // get the total number of images
-  int nbid = 1;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM memory.collected_images", -1,
-                              &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  const uint32_t nbid = MAX(1, dt_collection_get_collected_count());
 
   // the number of line before
   float lbefore = (table->offset - 1) / table->thumbs_per_row;
-  if((table->offset - 1) % table->thumbs_per_row) lbefore++;
+  if((table->offset - 1) % table->thumbs_per_row)
+    lbefore++;
 
   // if scrollbars are used, we can have partial row shown
   if(table->thumbs_area.y != 0)
@@ -678,13 +673,7 @@ static gboolean _move(dt_thumbtable_t *table,
       {
         // special case for zoom == 1 as we don't want any space under
         // last image (the image would have disappear)
-        int nbid = 1;
-        sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "SELECT COUNT(*) FROM memory.collected_images",
-                                    -1, &stmt, NULL);
-        if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
-        sqlite3_finalize(stmt);
+        const uint32_t nbid = MAX(1, dt_collection_get_collected_count());
         if(nbid <= last->rowid)
           return FALSE;
       }
@@ -2166,15 +2155,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
       // ensure that we don't go up too far (we only want a space <thumb_size at the bottom)
       if(table->offset != offset && offset > 1 && table->thumbs_per_row > 1)
       {
-        sqlite3_stmt *stmt2;
-        int nb = 0;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT count(*) FROM memory.collected_images",
-                                    -1, &stmt2, NULL);
-        if(stmt2 != NULL)
-        {
-          if(sqlite3_step(stmt2) == SQLITE_ROW) nb = sqlite3_column_int(stmt2, 0);
-          sqlite3_finalize(stmt2);
-        }
+        const uint32_t nb = dt_collection_get_collected_count();
         // get how many full blank line we have at the bottom
 
         const int move
