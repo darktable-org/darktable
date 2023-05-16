@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 #define VERY_OLD_CACHE_WEIGHT 1000
-#define INVALID_CACHEHASH 0
+#define INVALID_CACHEHASH ULLONG_MAX
 
 static inline int _to_mb(size_t m)
 {
