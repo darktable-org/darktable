@@ -1044,7 +1044,7 @@ void dt_develop_blendif_rgb_jzczhz_blend(struct dt_dev_pixelpipe_iop_t *piece, c
   if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
     dt_iop_order_iccprofile_info_t blend_profile;
-    const int use_profile = dt_develop_blendif_init_masking_profile(piece, &blend_profile,
+    const gboolean use_profile = dt_develop_blendif_init_masking_profile(piece, &blend_profile,
                                                                     DEVELOP_BLEND_CS_RGB_SCENE);
     const dt_iop_order_iccprofile_info_t *profile = use_profile ? &blend_profile : NULL;
     const float *const restrict boost_factors = d->blendif_boost_factors;
