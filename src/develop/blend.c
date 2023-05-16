@@ -736,11 +736,15 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "write raster mask on CPU", piece->pipe, self, roi_in, roi_out, "\n");
   }
   else
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "clear raster mask on CPU", piece->pipe, self, roi_in, roi_out, "\n");
   }
 }
 
@@ -1362,8 +1366,15 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     {
       err = dt_opencl_copy_device_to_host(devid, mask, dev_mask_1,
                                           owidth, oheight, sizeof(float));
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS)
+      {
+        // As we have not written the mask we must remove an existing one.
+        g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
+        goto error;
+      }
     }
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "write raster mask CL", piece->pipe, self, roi_in, roi_out, "\n");
     g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
   }
@@ -1371,6 +1382,8 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "clear raster mask CL", piece->pipe, self, roi_in, roi_out, "\n");
   }
 
   dt_opencl_release_mem_object(dev_blendif_params);
