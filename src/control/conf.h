@@ -133,6 +133,12 @@ const char *dt_confgen_get_tooltip(const char *name);
 gboolean dt_conf_is_default(const char *name);
 gchar* dt_conf_expand_default_dir(const char *dir);
 
+/** read filename and call callback() for every key/valye pair. if callback() returns non
+    NULL, the value is returned by dt_conf_read_values. This may be used to look for a
+    a specific value in filename */
+gchar *dt_conf_read_values(const char *filename,
+                           gchar* (*callback)(const gchar *key, const gchar *value));
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */
@@ -142,4 +148,3 @@ gchar* dt_conf_expand_default_dir(const char *dir);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
