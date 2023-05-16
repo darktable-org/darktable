@@ -218,6 +218,8 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, const int l
 
 /** get the count of selected images */
 uint32_t dt_collection_get_selected_count(void);
+/** get the count of collected images */
+uint32_t dt_collection_get_collected_count(void);
 
 /** update query by conf vars */
 void dt_collection_update_query(const dt_collection_t *collection,
