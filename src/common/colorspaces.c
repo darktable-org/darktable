@@ -2098,7 +2098,7 @@ int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
                                            double XYZ_to_CAM[4][3],
                                            double CAM_to_XYZ[3][4])
 {
-  if(!dt_is_valid_colormatrix(in_XYZ_to_CAM[0]))
+  if(dt_is_valid_colormatrix(in_XYZ_to_CAM[0]))
   {
     for(int i = 0; i < 9; i++)
         XYZ_to_CAM[i/3][i%3] = (double) in_XYZ_to_CAM[i];
