@@ -983,7 +983,7 @@ uint32_t dt_collection_get_count_no_group(const dt_collection_t *collection)
   return collection->count_no_group;
 }
 
-uint32_t dt_collection_get_selected_count(const dt_collection_t *collection)
+uint32_t dt_collection_get_selected_count(void)
 {
   sqlite3_stmt *stmt = NULL;
   uint32_t count = 0;
@@ -2545,7 +2545,7 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   gchar *message;
 
   const int c = dt_collection_get_count_no_group(collection);
-  const int cs = dt_collection_get_selected_count(collection);
+  const int cs = dt_collection_get_selected_count();
 
   if(cs == 1)
   {

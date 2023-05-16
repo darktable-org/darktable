@@ -63,7 +63,7 @@ void gui_update(dt_lib_module_t *self)
   dt_lib_select_t *d = (dt_lib_select_t *)self->data;
 
   const uint32_t collection_cnt =  dt_collection_get_count_no_group(darktable.collection);
-  const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
+  const uint32_t selected_cnt = dt_collection_get_selected_count();
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->select_all_button), selected_cnt < collection_cnt);
   gtk_widget_set_sensitive(GTK_WIDGET(d->select_none_button), selected_cnt > 0);
