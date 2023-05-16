@@ -117,10 +117,6 @@ void dt_print_pipe(dt_debug_thread_t thread,
     if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
     if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
   }
-  if(pipe
-      && !(thread & DT_DEBUG_VERBOSE)
-      && (pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW)) )
-    return;
 
   char buf[3][128];
   char vbuf[1024] = { 0 };
@@ -522,7 +518,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
-      dt_print_pipe(DT_DEBUG_PIPE, "committed params",
+      dt_print_pipe(DT_DEBUG_PARAMS, "committed params",
           pipe, piece->module, NULL, NULL,
           "piece hash%22" PRIu64 ", \n", piece->hash); 
 
