@@ -433,7 +433,7 @@ void dt_develop_blendif_process_parameters(float *const parameters,
  *
  * The initialized profile may only be used to convert from RGB to XYZ.
  */
-int dt_develop_blendif_init_masking_profile
+gboolean dt_develop_blendif_init_masking_profile
   (struct dt_dev_pixelpipe_iop_t *piece,
    dt_iop_order_iccprofile_info_t *blending_profile,
    const dt_develop_blend_colorspace_t cst);
@@ -522,7 +522,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module,
 
 #ifdef HAVE_OPENCL
 /** apply blend for opencl modules*/
-int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
+gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                 struct dt_dev_pixelpipe_iop_t *piece,
                                 cl_mem dev_in, cl_mem dev_out,
                                 const struct dt_iop_roi_t *roi_in,

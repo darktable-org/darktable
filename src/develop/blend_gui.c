@@ -2879,7 +2879,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
   }
 
   module->raster_mask.sink.source = entry->module;
-  module->raster_mask.sink.id = entry->id;
+  module->raster_mask.sink.id = entry->module ? entry->id : INVALID_MASKID;
 
   gboolean reprocess = FALSE;
 

@@ -219,7 +219,7 @@ void dt_develop_blendif_process_parameters(float *const restrict parameters,
 }
 
 // See function definition in blend.h for important information
-int dt_develop_blendif_init_masking_profile
+gboolean dt_develop_blendif_init_masking_profile
   (struct dt_dev_pixelpipe_iop_t *piece,
    dt_iop_order_iccprofile_info_t *blending_profile,
    const dt_develop_blend_colorspace_t cst)
@@ -235,7 +235,7 @@ int dt_develop_blendif_init_masking_profile
   const dt_iop_order_iccprofile_info_t *const profile = (cst == DEVELOP_BLEND_CS_RGB_SCENE)
       ? dt_ioppr_get_pipe_current_profile_info(piece->module, piece->pipe)
       : dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
-  if(!profile) return 0;
+  if(!profile) return FALSE;
 
   memcpy(blending_profile, profile, sizeof(dt_iop_order_iccprofile_info_t));
   for(size_t y = 0; y < 3; y++)
@@ -250,7 +250,7 @@ int dt_develop_blendif_init_masking_profile
     }
   }
 
-  return 1;
+  return TRUE;
 }
 
 static inline float _detail_mask_threshold(const float level,
@@ -546,6 +546,9 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
                                                 self, &free_mask);
     if(raster_mask)
     {
+      dt_print_pipe(DT_DEBUG_PIPE,
+         "blend raster on CPU",
+         piece->pipe, self, roi_in, roi_out, "%s\n", d->raster_mask_invert ? "inverted" : "");
       // invert if required
       if(d->raster_mask_invert)
       {
@@ -566,17 +569,16 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     }
     else
     {
-      // fallback for when the raster mask couldn't be applied
-      const float value = d->raster_mask_invert ? 0.0 : 1.0;
-      dt_iop_image_fill(mask, value, owidth, oheight, 1);  // mask[k] = value;
+      // fallback if no raster mask is available
+      dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1);  // mask[k] = value;
     }
   }
   else
   {
+    const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
     dt_print_pipe(DT_DEBUG_PIPE,
        "blend with form on CPU",
-       piece->pipe, self, roi_in, roi_out,
-       "\n");
+       piece->pipe, self, roi_in, roi_out, "%s\n", inverted ? "inverted" : "");
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one
@@ -588,7 +590,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     {
       dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
-      if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+      if(inverted)
       {
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); // mask[k] = 1.0f - mask[k];
@@ -599,7 +601,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
+      const float fill = inverted ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
     else
@@ -734,11 +736,15 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "write raster mask on CPU", piece->pipe, self, roi_in, roi_out, "\n");
   }
   else
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "clear raster mask on CPU", piece->pipe, self, roi_in, roi_out, "\n");
   }
 }
 
@@ -865,7 +871,7 @@ static inline void _blend_process_cl_exchange(cl_mem *a, cl_mem *b)
   *b = tmp;
 }
 
-int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
+gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                 struct dt_dev_pixelpipe_iop_t *piece,
                                 cl_mem dev_in,
                                 cl_mem dev_out,
@@ -1023,7 +1029,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   if(dev_mask_1 == NULL) goto error;
 
   dt_iop_order_iccprofile_info_t profile;
-  const int use_profile =
+  const gboolean use_profile =
     dt_develop_blendif_init_masking_profile(piece, &profile, blend_csp);
 
   err = dt_ioppr_build_iccprofile_params_cl(use_profile ? &profile : NULL,
@@ -1054,6 +1060,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
   else if(mask_mode & DEVELOP_MASK_RASTER)
   {
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend raster CL",
+       piece->pipe, self, roi_in, roi_out, "%s\n", d->raster_mask_invert ? "inverted" : "");
     /* use a raster mask from another module earlier in the pipe
        dt_dev_get_raster_mask() sets a flag if the returned mask has been
        distorted and thus must be deallocated by the caller
@@ -1084,9 +1093,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     }
     else
     {
-      // fallback for when the raster mask couldn't be applied
-      const float value = d->raster_mask_invert ? 0.0 : 1.0;
-      dt_iop_image_fill(mask, value, owidth, oheight, 1); //mask[k] = value;
+      // fallback if no raster mask is applied
+      dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1); //mask[k] = value;
     }
 
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1,
@@ -1101,9 +1109,10 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
   else
   {
+    const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
     dt_print_pipe(DT_DEBUG_PIPE,
-       "blend with form on GPU",
-       piece->pipe, self, roi_in, roi_out, "\n");
+       "blend with form CL",
+       piece->pipe, self, roi_in, roi_out, "%s\n", inverted ? "inverted" : "");
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one
@@ -1115,7 +1124,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     {
       dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
-      if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+      if(inverted)
       {
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); //mask[k] = 1.0f - mask[k]
@@ -1126,7 +1135,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
+      const float fill = inverted ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
     else
@@ -1357,8 +1366,15 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     {
       err = dt_opencl_copy_device_to_host(devid, mask, dev_mask_1,
                                           owidth, oheight, sizeof(float));
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS)
+      {
+        // As we have not written the mask we must remove an existing one.
+        g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
+        goto error;
+      }
     }
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "write raster mask CL", piece->pipe, self, roi_in, roi_out, "\n");
     g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
   }
@@ -1366,6 +1382,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "clear raster mask CL", piece->pipe, self, roi_in, roi_out, "\n");
   }
 
   dt_opencl_release_mem_object(dev_blendif_params);
