@@ -93,10 +93,12 @@ int dt_conf_get_and_sanitize_int(const char *name, int min, int max);
 int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max);
 float dt_conf_get_and_sanitize_float(const char *name, float min, float max);
 int dt_conf_get_bool(const char *name);
-// get the configuration string without duplicating it; the returned string will be invalidated by any
-// subsequent dt_conf_set_string call
+// get the configuration string without duplicating it; the returned
+// string will be invalidated by any subsequent dt_conf_set_string
+// call
 const char *dt_conf_get_string_const(const char *name);
-// get a freshly-allocated duplicate of the configuration string; safe to use even if calling dt_conf_set_string
+// get a freshly-allocated duplicate of the configuration string; safe
+// to use even if calling dt_conf_set_string
 gchar *dt_conf_get_string(const char *name);
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser);
 gboolean dt_conf_is_equal(const char *name, const char *value);
