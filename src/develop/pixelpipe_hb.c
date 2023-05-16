@@ -117,10 +117,6 @@ void dt_print_pipe(dt_debug_thread_t thread,
     if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
     if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
   }
-  if(pipe
-      && !(thread & DT_DEBUG_VERBOSE)
-      && (pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW)) )
-    return;
 
   char buf[3][128];
   char vbuf[1024] = { 0 };
@@ -522,7 +518,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
-      dt_print_pipe(DT_DEBUG_PIPE, "committed params",
+      dt_print_pipe(DT_DEBUG_PARAMS, "committed params",
           pipe, piece->module, NULL, NULL,
           "piece hash%22" PRIu64 ", \n", piece->hash); 
 
@@ -792,7 +788,7 @@ static void _histogram_collect_cl(const int devid,
 
 // calculate box in current module's coordinates for the color picker
 // FIXME: move this to common color picker code?
-static int _pixelpipe_picker_box(dt_iop_module_t *module,
+static gboolean _pixelpipe_picker_box(dt_iop_module_t *module,
                                  const dt_iop_roi_t *roi,
                                  const dt_colorpicker_sample_t *const sample,
                                  dt_pixelpipe_picker_source_t picker_source,
@@ -800,14 +796,14 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module,
 {
   if(picker_source == PIXELPIPE_PICKER_OUTPUT
      && !sample->pick_output)
-    return 1;
+    return TRUE;
 
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
   const int width = roi->width;
   const int height = roi->height;
   const dt_image_t image = darktable.develop->image_storage;
-  const int op_after_demosaic =
+  const gboolean op_after_demosaic =
     dt_ioppr_is_iop_before(darktable.develop->preview_pipe->iop_order_list,
                            module->op, "demosaic", 0);
 
@@ -851,8 +847,8 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module,
   box[3] = fmaxf(fbox[1], fbox[3]);
 
   // make sure we sample at least one point
-  box[2] = fmaxf(box[2], box[0] + 1);
-  box[3] = fmaxf(box[3], box[1] + 1);
+  box[2] = MAX(box[2], box[0] + 1);
+  box[3] = MAX(box[3], box[1] + 1);
 
   // do not continue if box is completely outside of roi
   // FIXME: on invalid box, caller should set sample to something like
@@ -861,7 +857,7 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module,
      || box[1] >= height
      || box[2] < 0
      || box[3] < 0)
-    return 1;
+    return TRUE;
 
   // clamp bounding box to roi
   box[0] = CLAMP(box[0], 0, width - 1);
@@ -872,9 +868,9 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module,
   // safety check: area needs to have minimum 1 pixel width and height
   if(box[2] - box[0] < 1
      || box[3] - box[1] < 1)
-    return 1;
+    return TRUE;
 
-  return 0;
+  return FALSE;
 }
 
 // color picking for module
