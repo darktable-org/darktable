@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-13 19:04+0200\n"
-"PO-Revision-Date: 2023-05-13 22:19+0300\n"
+"PO-Revision-Date: 2023-05-16 22:03+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.3.1\n"
 
 #: ../build/bin/conf_gen.h:172 ../build/bin/preferences_gen.h:7632
 msgctxt "preferences"
@@ -15131,7 +15131,7 @@ msgstr "Встановити глобальну насиченість"
 
 #: ../src/iop/colorin.c:127
 msgid "input color profile"
-msgstr "Вхідний ICC профіль"
+msgstr "Вхідний колірний профіль"
 
 #: ../src/iop/colorin.c:132
 msgid ""
@@ -15268,7 +15268,7 @@ msgstr "Рівень вирівнювання гістограми"
 
 #: ../src/iop/colorout.c:82
 msgid "output color profile"
-msgstr "Вихідний ICC профіль"
+msgstr "Вихідний колірний профіль"
 
 #: ../src/iop/colorout.c:88
 msgid ""
