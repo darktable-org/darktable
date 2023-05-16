@@ -102,7 +102,7 @@ static struct patch_t* define_patches(
   const int search_radius = params->search_radius;
   const float scale = params->scale;
   const float scattering = params->scattering;
-  int decimate = params->decimate;
+  int decimate = params->decimate ? 1 : 0;  // must start at 1 when nonzero, to choose correct patches to skip below
   // determine how many patches we have
   int n_patches = (2 * search_radius + 1) * (2 * search_radius + 1);
   if(decimate)
