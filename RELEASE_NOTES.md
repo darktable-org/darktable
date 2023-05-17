@@ -775,7 +775,7 @@ The following is a summary of the main features added to darktable
   parameters optional, so you can read the focused status of a module
   doing just dt.gui.action("iop/filmicrgb", "focus").
 
-- tooltips show the compact lua commands in mapping mode (only
+- Tooltips show the compact lua commands in mapping mode (only
   adding the last parameter, instance, if the module supports
   multi-instance) and have been added to presets and styles menus as
   well.
