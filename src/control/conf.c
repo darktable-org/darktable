@@ -343,6 +343,9 @@ gboolean dt_conf_is_equal(const char *name, const char *value)
 
 static char *_sanitize_confgen(const char *name, const char *value)
 {
+  if(!darktable.conf->x_confgen)
+    return g_strdup(value);
+
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
 
   if(!item) return g_strdup(value);
@@ -415,15 +418,9 @@ static char *_sanitize_confgen(const char *name, const char *value)
   return result;
 }
 
-void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
+gchar *dt_conf_read_values(const char *filename,
+                           gchar* (*callback)(const gchar *key, const gchar *value))
 {
-  cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
-
-  // init conf filename
-  g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
-
 #define LINE_SIZE 1023
 
   char line[LINE_SIZE + 1];
@@ -452,19 +449,22 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
         {
           *c = '\0';
 
-          char *name = g_strdup(line);
+          const char *name = line;
           // ensure that numbers are properly clamped if min/max
           // defined and if not and garbage is read then the default
           // value is returned.
           char *value = _sanitize_confgen(name, (const char *)(c + 1));
 
-          g_hash_table_insert(darktable.conf->table, name, value);
+          gchar *v = callback(name, value);
+          g_free(value);
+          if(v)
+            return v;
         }
       }
     }
     fclose(f);
   }
-  else
+  else if(darktable.conf->x_confgen)
   {
     // we initialize the conf table with default values
     GHashTableIter iter;
@@ -475,9 +475,31 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
     {
       const char *name = (const char *)key;
       const dt_confgen_value_t *entry = (dt_confgen_value_t *)value;
-      g_hash_table_insert(darktable.conf->table, g_strdup(name), g_strdup(entry->def));
+      gchar *v = callback(name, entry->def);
+      if(v)
+        return v;
     }
   }
+
+  return NULL;
+}
+
+gchar *_conf_insert_value(const gchar *key, const gchar *value)
+{
+  g_hash_table_insert(darktable.conf->table, g_strdup(key), g_strdup(value));
+  return NULL;
+}
+
+void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
+{
+  cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
+
+  // init conf filename
+  g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
+
+  dt_conf_read_values(filename, _conf_insert_value);
 
   if(override_entries)
   {
