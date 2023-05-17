@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-13 19:04+0200\n"
-"PO-Revision-Date: 2023-05-13 21:22+0300\n"
+"POT-Creation-Date: 2023-05-17 10:30+0200\n"
+"PO-Revision-Date: 2023-05-17 12:00+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.3.1\n"
 
 #: ../build/bin/conf_gen.h:172 ../build/bin/preferences_gen.h:7632
 msgctxt "preferences"
@@ -2238,7 +2238,7 @@ msgstr "Shear"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:669 ../src/gui/preferences.c:844
+#: ../src/common/collection.c:714 ../src/gui/preferences.c:844
 #: ../src/gui/presets.c:718 ../src/libs/camera.c:550
 #: ../src/libs/metadata_view.c:143
 msgid "focal length"
@@ -2261,7 +2261,7 @@ msgstr "Aspect adjust"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:3806
+#: ../src/iop/lens.cc:3784
 msgid "lens model"
 msgstr "Lens model"
 
@@ -2495,7 +2495,7 @@ msgid "offset"
 msgstr "Offset"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:667 ../src/gui/preferences.c:828
+#: ../src/common/collection.c:712 ../src/gui/preferences.c:828
 #: ../src/gui/presets.c:660 ../src/libs/metadata_view.c:139
 msgid "lens"
 msgstr "Lens"
@@ -2514,7 +2514,7 @@ msgstr "Gaussian"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:112
 #: ../build/lib/darktable/plugins/introspection_borders.c:253
-#: ../src/common/collection.c:677 ../src/libs/filtering.c:59
+#: ../src/common/collection.c:722 ../src/libs/filtering.c:59
 msgid "aspect ratio"
 msgstr "Aspect ratio"
 
@@ -2616,7 +2616,7 @@ msgstr "Guide"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
 #: ../src/iop/atrous.c:1522 ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:335
-#: ../src/iop/dither.c:759 ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:675
+#: ../src/iop/dither.c:760 ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:675
 #: ../src/iop/sharpen.c:440
 msgid "radius"
 msgstr "Radius"
@@ -2642,7 +2642,7 @@ msgid "very large chromatic aberration"
 msgstr "Very large chromatic aberration"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1423 ../src/common/color_vocabulary.c:232
+#: ../src/common/collection.c:1507 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:334 ../src/develop/blend_gui.c:2330
 #: ../src/develop/blend_gui.c:2378 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:3137 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:354
@@ -2655,7 +2655,7 @@ msgid "red"
 msgstr "Red"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1427 ../src/common/color_vocabulary.c:277
+#: ../src/common/collection.c:1511 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:336 ../src/develop/blend_gui.c:2336
 #: ../src/develop/blend_gui.c:2384 ../src/develop/lightroom.c:838
 #: ../src/gui/gtk.c:3138 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:359
@@ -2668,7 +2668,7 @@ msgid "green"
 msgstr "Green"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1429 ../src/common/color_vocabulary.c:324
+#: ../src/common/collection.c:1513 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:337 ../src/develop/blend_gui.c:2342
 #: ../src/develop/blend_gui.c:2390 ../src/develop/lightroom.c:840
 #: ../src/gui/gtk.c:3139 ../src/iop/bilateral.cc:364
@@ -3407,7 +3407,7 @@ msgstr "Markesteijn 3-pass + VNG"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1442 ../src/libs/collect.c:1745
+#: ../src/common/collection.c:1526 ../src/libs/collect.c:1745
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "Basic"
@@ -3631,31 +3631,31 @@ msgid "Floyd-Steinberg auto"
 msgstr "Floyd-Steinberg auto"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:200
-msgid "Posterize 2 levels per channel"
+msgid "posterize 2 levels per channel"
 msgstr "Posterize 2 levels per channel"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:201
-msgid "Posterize 3 levels per channel"
+msgid "posterize 3 levels per channel"
 msgstr "Posterize 3 levels per channel"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:202
-msgid "Posterize 4 levels per channel"
+msgid "posterize 4 levels per channel"
 msgstr "Posterize 4 levels per channel"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:203
-msgid "Posterize 5 levels per channel"
+msgid "posterize 5 levels per channel"
 msgstr "Posterize 5 levels per channel"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:204
-msgid "Posterize 6 levels per channel"
+msgid "posterize 6 levels per channel"
 msgstr "Posterize 6 levels per channel"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:205
-msgid "Posterize 7 levels per channel"
+msgid "posterize 7 levels per channel"
 msgstr "Posterize 7 levels per channel"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:206
-msgid "Posterize 8 levels per channel"
+msgid "posterize 8 levels per channel"
 msgstr "Posterize 8 levels per channel"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:79
@@ -4115,7 +4115,7 @@ msgstr "Mode"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:210
 #: ../build/lib/darktable/plugins/introspection_lens.cc:369
-#: ../src/iop/lens.cc:3842
+#: ../src/iop/lens.cc:3820
 msgid "target geometry"
 msgstr "Target geometry"
 
@@ -4446,7 +4446,7 @@ msgstr "Embedded GainMap"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:675 ../src/gui/preferences.c:836
+#: ../src/common/collection.c:720 ../src/gui/preferences.c:836
 #: ../src/gui/presets.c:684 ../src/iop/basicadj.c:598 ../src/iop/exposure.c:122
 #: ../src/iop/exposure.c:1117 ../src/libs/metadata_view.c:141
 msgid "exposure"
@@ -5172,58 +5172,58 @@ msgstr ""
 "Camera `%s' on port `%s' needs to be remounted\n"
 "Make sure it allows access and is not mounted otherwise"
 
-#: ../src/common/collection.c:628
+#: ../src/common/collection.c:673
 msgid "too much time to update aspect ratio for the collection"
 msgstr "Too much time to update aspect ratio for the collection"
 
-#: ../src/common/collection.c:643
+#: ../src/common/collection.c:688
 msgid "film roll"
 msgstr "Film roll"
 
-#: ../src/common/collection.c:645
+#: ../src/common/collection.c:690
 msgid "folder"
 msgstr "Folder"
 
-#: ../src/common/collection.c:647
+#: ../src/common/collection.c:692
 msgid "camera"
 msgstr "Camera"
 
-#: ../src/common/collection.c:649 ../src/libs/export_metadata.c:189
+#: ../src/common/collection.c:694 ../src/libs/export_metadata.c:189
 #: ../src/libs/tagging.c:3281
 msgid "tag"
 msgstr "Tag"
 
-#: ../src/common/collection.c:651
+#: ../src/common/collection.c:696
 msgid "capture date"
 msgstr "Capture date"
 
-#: ../src/common/collection.c:653 ../src/libs/filtering.c:61
+#: ../src/common/collection.c:698 ../src/libs/filtering.c:61
 msgid "capture time"
 msgstr "Capture time"
 
-#: ../src/common/collection.c:655 ../src/libs/filtering.c:62
+#: ../src/common/collection.c:700 ../src/libs/filtering.c:62
 msgid "import time"
 msgstr "Import time"
 
-#: ../src/common/collection.c:657 ../src/libs/filtering.c:63
+#: ../src/common/collection.c:702 ../src/libs/filtering.c:63
 msgid "modification time"
 msgstr "Modification time"
 
-#: ../src/common/collection.c:659 ../src/libs/filtering.c:64
+#: ../src/common/collection.c:704 ../src/libs/filtering.c:64
 msgid "export time"
 msgstr "Export time"
 
-#: ../src/common/collection.c:661 ../src/libs/filtering.c:65
+#: ../src/common/collection.c:706 ../src/libs/filtering.c:65
 msgid "print time"
 msgstr "Print time"
 
-#: ../src/common/collection.c:663 ../src/libs/collect.c:3303
+#: ../src/common/collection.c:708 ../src/libs/collect.c:3303
 #: ../src/libs/filtering.c:2163 ../src/libs/filtering.c:2183
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:92
 msgid "history"
 msgstr "History"
 
-#: ../src/common/collection.c:665 ../src/common/colorlabels.c:342
+#: ../src/common/collection.c:710 ../src/common/colorlabels.c:342
 #: ../src/develop/lightroom.c:1550 ../src/dtgtk/thumbnail.c:1560
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:93
@@ -5231,134 +5231,134 @@ msgid "color label"
 msgstr "Color label"
 
 #. iso
-#: ../src/common/collection.c:671 ../src/gui/preferences.c:832
+#: ../src/common/collection.c:716 ../src/gui/preferences.c:832
 #: ../src/gui/presets.c:666 ../src/libs/camera.c:558
 #: ../src/libs/metadata_view.c:145
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:673 ../src/gui/preferences.c:840
+#: ../src/common/collection.c:718 ../src/gui/preferences.c:840
 #: ../src/gui/presets.c:701 ../src/libs/camera.c:545 ../src/libs/camera.c:547
 #: ../src/libs/metadata_view.c:140
 msgid "aperture"
 msgstr "Aperture"
 
-#: ../src/common/collection.c:679 ../src/libs/filtering.c:57
+#: ../src/common/collection.c:724 ../src/libs/filtering.c:57
 #: ../src/libs/filters/filename.c:364 ../src/libs/metadata_view.c:126
 msgid "filename"
 msgstr "Filename"
 
-#: ../src/common/collection.c:681 ../src/develop/lightroom.c:1541
+#: ../src/common/collection.c:726 ../src/develop/lightroom.c:1541
 #: ../src/libs/geotagging.c:141
 msgid "geotagging"
 msgstr "Geotagging"
 
-#: ../src/common/collection.c:683 ../src/libs/filters/grouping.c:167
+#: ../src/common/collection.c:728 ../src/libs/filters/grouping.c:167
 #: ../src/libs/tools/global_toolbox.c:394
 msgid "grouping"
 msgstr "Grouping"
 
-#: ../src/common/collection.c:685 ../src/dtgtk/thumbnail.c:1575
+#: ../src/common/collection.c:730 ../src/dtgtk/thumbnail.c:1575
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:129
 #: ../src/libs/metadata_view.c:336
 msgid "local copy"
 msgstr "Local copy"
 
-#: ../src/common/collection.c:687 ../src/gui/preferences.c:808
+#: ../src/common/collection.c:732 ../src/gui/preferences.c:808
 msgid "module"
 msgstr "Module"
 
-#: ../src/common/collection.c:689 ../src/gui/hist_dialog.c:346
+#: ../src/common/collection.c:734 ../src/gui/hist_dialog.c:346
 #: ../src/gui/styles_dialog.c:722 ../src/gui/styles_dialog.c:771
 #: ../src/libs/filters/module_order.c:161 ../src/libs/ioporder.c:39
 msgid "module order"
 msgstr "Module order"
 
-#: ../src/common/collection.c:691
+#: ../src/common/collection.c:736
 msgid "range rating"
 msgstr "Range rating"
 
-#: ../src/common/collection.c:693 ../src/common/ratings.c:322
+#: ../src/common/collection.c:738 ../src/common/ratings.c:322
 #: ../src/develop/lightroom.c:1525 ../src/libs/filtering.c:67
 #: ../src/libs/tools/ratings.c:110
 msgid "rating"
 msgstr "Rating"
 
-#: ../src/common/collection.c:695
+#: ../src/common/collection.c:740
 msgid "search"
 msgstr "Search"
 
-#: ../src/common/collection.c:1425 ../src/common/colorlabels.c:335
+#: ../src/common/collection.c:1509 ../src/common/colorlabels.c:335
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2265 ../src/iop/temperature.c:1925
 #: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "Yellow"
 
-#: ../src/common/collection.c:1431 ../src/common/color_vocabulary.c:339
+#: ../src/common/collection.c:1515 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:338 ../src/iop/colorzones.c:2269
 #: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "Purple"
 
-#: ../src/common/collection.c:1448 ../src/libs/collect.c:1745
+#: ../src/common/collection.c:1532 ../src/libs/collect.c:1745
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "Auto applied"
 
-#: ../src/common/collection.c:1452 ../src/libs/collect.c:1745
+#: ../src/common/collection.c:1536 ../src/libs/collect.c:1745
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "Altered"
 
-#: ../src/common/collection.c:1469 ../src/common/collection.c:1565
+#: ../src/common/collection.c:1553 ../src/common/collection.c:1649
 #: ../src/libs/collect.c:1166 ../src/libs/collect.c:1330
 #: ../src/libs/collect.c:1354 ../src/libs/collect.c:1473
 #: ../src/libs/collect.c:2510
 msgid "not tagged"
 msgstr "Not tagged"
 
-#: ../src/common/collection.c:1470 ../src/libs/collect.c:1354
+#: ../src/common/collection.c:1554 ../src/libs/collect.c:1354
 #: ../src/libs/map_locations.c:742
 msgid "tagged"
 msgstr "Tagged"
 
-#: ../src/common/collection.c:1471
+#: ../src/common/collection.c:1555
 msgid "tagged*"
 msgstr "Tagged*"
 
 #. local copy
-#: ../src/common/collection.c:1504 ../src/libs/collect.c:1759
+#: ../src/common/collection.c:1588 ../src/libs/collect.c:1759
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "Not copied locally"
 
-#: ../src/common/collection.c:1508 ../src/libs/collect.c:1759
+#: ../src/common/collection.c:1592 ../src/libs/collect.c:1759
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "Copied locally"
 
-#: ../src/common/collection.c:1883 ../src/libs/collect.c:1879
+#: ../src/common/collection.c:1974 ../src/libs/collect.c:1879
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr "Group leaders"
 
-#: ../src/common/collection.c:1887 ../src/libs/collect.c:1879
+#: ../src/common/collection.c:1978 ../src/libs/collect.c:1879
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr "Group followers"
 
-#: ../src/common/collection.c:2027 ../src/libs/collect.c:1959
+#: ../src/common/collection.c:2126 ../src/libs/collect.c:1959
 msgid "not defined"
 msgstr "Not defined"
 
-#: ../src/common/collection.c:2464
+#: ../src/common/collection.c:2575
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 msgstr "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 
-#: ../src/common/collection.c:2470
+#: ../src/common/collection.c:2582
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
@@ -6505,7 +6505,7 @@ msgstr "Version name"
 msgid "image id"
 msgstr "Image id"
 
-#: ../src/common/mipmap_cache.c:1065 ../src/imageio/imageio.c:727
+#: ../src/common/mipmap_cache.c:1065 ../src/imageio/imageio.c:787
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Image `%s' is not available!"
@@ -6550,7 +6550,7 @@ msgstr ""
 msgid "OpenCL scheduling profile set to default"
 msgstr "OpenCL scheduling profile set to default"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:3463
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:3441
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:82
 msgid "mm"
 msgstr "mm"
@@ -7068,17 +7068,17 @@ msgstr "_Close"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2574
+#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2573
 #: ../src/libs/import.c:1722 ../src/libs/select.c:135
 msgid "select all"
 msgstr "Select all"
 
-#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2576
+#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2575
 #: ../src/libs/import.c:1726 ../src/libs/select.c:139
 msgid "select none"
 msgstr "Select none"
 
-#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2578
+#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2577
 #: ../src/libs/select.c:143
 msgid "invert selection"
 msgstr "Invert selection"
@@ -7598,7 +7598,7 @@ msgstr "Import image"
 msgid "detail mask blending error"
 msgstr "Detail mask blending error"
 
-#: ../src/develop/blend.c:850
+#: ../src/develop/blend.c:856
 msgid "detail mask CL blending problem"
 msgstr "Detail mask CL blending problem"
 
@@ -8425,12 +8425,12 @@ msgstr ""
 "Temporarily switch off blend mask.\n"
 "Only for module in focus"
 
-#: ../src/develop/develop.c:2292
+#: ../src/develop/develop.c:2303
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' version mismatch: %d != %d"
 
-#: ../src/develop/develop.c:2823
+#: ../src/develop/develop.c:2834
 msgid "module duplicate, can't move new instance after the base one\n"
 msgstr "Module duplicate, can't move new instance after the base one\n"
 
@@ -8929,11 +8929,11 @@ msgstr ""
 "<b>Move segment</b>: drag\n"
 "<b>Add node</b>: Ctrl+click"
 
-#: ../src/develop/pixelpipe_hb.c:504
+#: ../src/develop/pixelpipe_hb.c:500
 msgid "enabled as required"
 msgstr "Enabled as required"
 
-#: ../src/develop/pixelpipe_hb.c:505
+#: ../src/develop/pixelpipe_hb.c:501
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -8941,11 +8941,11 @@ msgstr ""
 "History had module disabled but it is required for this type of image.\n"
 "Likely introduced by applying a preset, style or history copy&paste"
 
-#: ../src/develop/pixelpipe_hb.c:512
+#: ../src/develop/pixelpipe_hb.c:508
 msgid "disabled as not appropriate"
 msgstr "Disabled as not appropriate"
 
-#: ../src/develop/pixelpipe_hb.c:513
+#: ../src/develop/pixelpipe_hb.c:509
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -8953,7 +8953,7 @@ msgstr ""
 "History had module enabled but it is not allowed for this type of image.\n"
 "Likely introduced by applying a preset, style or history copy&paste"
 
-#: ../src/develop/pixelpipe_hb.c:2719
+#: ../src/develop/pixelpipe_hb.c:2715
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -8961,7 +8961,7 @@ msgstr ""
 "Darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 
-#: ../src/develop/pixelpipe_hb.c:2864
+#: ../src/develop/pixelpipe_hb.c:2860
 #, c-format
 msgid ""
 "module `%s' can't get raster mask from module `%s'\n"
@@ -9195,33 +9195,33 @@ msgstr "Grouped images"
 msgid "fit"
 msgstr "Fit"
 
-#: ../src/dtgtk/thumbtable.c:1052 ../src/views/slideshow.c:421
+#: ../src/dtgtk/thumbtable.c:1041 ../src/views/slideshow.c:421
 msgid "there are no images in this collection"
 msgstr "There are no images in this collection"
 
-#: ../src/dtgtk/thumbtable.c:1059
+#: ../src/dtgtk/thumbtable.c:1048
 msgid "if you have not imported any images yet"
 msgstr "If you have not imported any images yet"
 
-#: ../src/dtgtk/thumbtable.c:1063
+#: ../src/dtgtk/thumbtable.c:1052
 msgid "you can do so in the import module"
 msgstr "you can do so in the import module"
 
-#: ../src/dtgtk/thumbtable.c:1072
+#: ../src/dtgtk/thumbtable.c:1061
 msgid "try to relax the filter settings in the top panel"
 msgstr "Try to relax the filter settings in the top panel"
 
-#: ../src/dtgtk/thumbtable.c:1083
+#: ../src/dtgtk/thumbtable.c:1072
 msgid "or add images in the collections module in the left panel"
 msgstr "or add images in the collections module in the left panel"
 
-#: ../src/dtgtk/thumbtable.c:1349
+#: ../src/dtgtk/thumbtable.c:1338
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "You have changed the settings related to how thumbnails are generated.\n"
 
-#: ../src/dtgtk/thumbtable.c:1352
+#: ../src/dtgtk/thumbtable.c:1341
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -9229,7 +9229,7 @@ msgstr ""
 "All cached thumbnails need to be invalidated.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1356
+#: ../src/dtgtk/thumbtable.c:1345
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -9238,7 +9238,7 @@ msgstr ""
 "Cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1361
+#: ../src/dtgtk/thumbtable.c:1350
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -9247,7 +9247,7 @@ msgstr ""
 "Cached thumbnails below level %d need to be invalidated.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1366
+#: ../src/dtgtk/thumbtable.c:1355
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -9256,48 +9256,48 @@ msgstr ""
 "Cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1369
+#: ../src/dtgtk/thumbtable.c:1358
 msgid "do you want to do that now?"
 msgstr "Do you want to do that now?"
 
-#: ../src/dtgtk/thumbtable.c:1371
+#: ../src/dtgtk/thumbtable.c:1360
 msgid "cached thumbnails invalidation"
 msgstr "Cached thumbnails invalidation"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2557
+#: ../src/dtgtk/thumbtable.c:2556
 msgid "copy history"
 msgstr "Copy history"
 
-#: ../src/dtgtk/thumbtable.c:2559
+#: ../src/dtgtk/thumbtable.c:2558
 msgid "copy history parts"
 msgstr "Copy history parts"
 
-#: ../src/dtgtk/thumbtable.c:2561
+#: ../src/dtgtk/thumbtable.c:2560
 msgid "paste history"
 msgstr "Paste history"
 
-#: ../src/dtgtk/thumbtable.c:2563
+#: ../src/dtgtk/thumbtable.c:2562
 msgid "paste history parts"
 msgstr "Paste history parts"
 
-#: ../src/dtgtk/thumbtable.c:2565 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2564 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "Discard history"
 
-#: ../src/dtgtk/thumbtable.c:2568
+#: ../src/dtgtk/thumbtable.c:2567
 msgid "duplicate image"
 msgstr "Duplicate image"
 
-#: ../src/dtgtk/thumbtable.c:2570
+#: ../src/dtgtk/thumbtable.c:2569
 msgid "duplicate image virgin"
 msgstr "Duplicate image virgin"
 
-#: ../src/dtgtk/thumbtable.c:2580 ../src/libs/select.c:147
+#: ../src/dtgtk/thumbtable.c:2579 ../src/libs/select.c:147
 msgid "select film roll"
 msgstr "Select film roll"
 
-#: ../src/dtgtk/thumbtable.c:2582 ../src/libs/select.c:151
+#: ../src/dtgtk/thumbtable.c:2581 ../src/libs/select.c:151
 msgid "select untouched"
 msgstr "Select untouched"
 
@@ -11216,7 +11216,7 @@ msgstr "Keep"
 msgid "can't create style out of unaltered image"
 msgstr "Can't create style out of unaltered image"
 
-#: ../src/imageio/imageio.c:743
+#: ../src/imageio/imageio.c:804
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -11225,17 +11225,17 @@ msgstr ""
 "Failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 
-#: ../src/imageio/imageio.c:744
+#: ../src/imageio/imageio.c:806
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Thumbnail export"
 
-#: ../src/imageio/imageio.c:744
+#: ../src/imageio/imageio.c:806
 msgctxt "noun"
 msgid "export"
 msgstr "Export"
 
-#: ../src/imageio/imageio.c:757
+#: ../src/imageio/imageio.c:819
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Cannot find the style '%s' to apply during export."
@@ -12585,7 +12585,7 @@ msgstr "Linear, RGB, display-referred"
 
 #: ../src/iop/basecurve.c:354 ../src/iop/basicadj.c:149
 #: ../src/iop/colorbalance.c:163 ../src/iop/colorbalancergb.c:187
-#: ../src/iop/dither.c:120 ../src/iop/filmicrgb.c:354
+#: ../src/iop/dither.c:121 ../src/iop/filmicrgb.c:354
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:104
@@ -12593,7 +12593,7 @@ msgstr "Linear, RGB, display-referred"
 msgid "non-linear, RGB"
 msgstr "Non-linear, RGB"
 
-#: ../src/iop/basecurve.c:355 ../src/iop/dither.c:119 ../src/iop/dither.c:121
+#: ../src/iop/basecurve.c:355 ../src/iop/dither.c:120 ../src/iop/dither.c:122
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
 #: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
@@ -14967,7 +14967,7 @@ msgstr "Mandatory"
 msgid "defined by profile"
 msgstr "Defined by profile"
 
-#: ../src/iop/colorin.c:541
+#: ../src/iop/colorin.c:543
 #, c-format
 msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
@@ -14976,34 +14976,66 @@ msgstr ""
 "Can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 
-#: ../src/iop/colorin.c:1362
+#: ../src/iop/colorin.c:1427
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "`%s' color matrix not found!"
 
-#: ../src/iop/colorin.c:1401
+#: ../src/iop/colorin.c:1466
 msgid "input profile could not be generated!"
 msgstr "Input profile could not be generated!"
 
-#: ../src/iop/colorin.c:1498
+#: ../src/iop/colorin.c:1565
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "Unsupported input profile has been replaced by linear Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1938
+#: ../src/iop/colorin.c:1857 ../src/iop/colorin.c:2118
+#, c-format
+msgid ""
+"darktable loads external ICC profiles from\n"
+"%s\n"
+"and\n"
+"%s"
+msgstr ""
+"Darktable loads external ICC profiles from\n"
+"%s\n"
+"and\n"
+"%s"
+
+#: ../src/iop/colorin.c:1903
+#, c-format
+msgid ""
+"embedded ICC profile properties:\n"
+"\n"
+"name: <b>%s</b>\n"
+"version: <b>%g</b>\n"
+"type: <b>%s</b>\n"
+"manufacturer: <b>%s</b>\n"
+"model: <b>%s</b>\n"
+"copyright: <b>%s</b>\n"
+"\n"
+"%s"
+msgstr ""
+"Embedded ICC profile properties:\n"
+"\n"
+"Name: <b>%s</b>\n"
+"Version: <b>%g</b>\n"
+"Type: <b>%s</b>\n"
+"Manufacturer: <b>%s</b>\n"
+"Model: <b>%s</b>\n"
+"Copyright: <b>%s</b>\n"
+"\n"
+"%s"
+
+#: ../src/iop/colorin.c:2102
 msgid "input profile"
 msgstr "Input profile"
 
-#: ../src/iop/colorin.c:1942
+#: ../src/iop/colorin.c:2106
 msgid "working profile"
 msgstr "Working profile"
 
-#: ../src/iop/colorin.c:1949 ../src/iop/colorin.c:1961
-#: ../src/iop/colorout.c:905
-#, c-format
-msgid "ICC profiles in %s or %s"
-msgstr "ICC profiles in %s or %s"
-
-#: ../src/iop/colorin.c:1976
+#: ../src/iop/colorin.c:2133
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Confine Lab values to gamut of RGB color space"
 
@@ -15141,6 +15173,11 @@ msgstr "Saturation"
 #: ../src/views/darkroom.c:2525 ../src/views/lighttable.c:1183
 msgid "absolute colorimetric"
 msgstr "Absolute colorimetric"
+
+#: ../src/iop/colorout.c:905
+#, c-format
+msgid "ICC profiles in %s or %s"
+msgstr "ICC profiles in %s or %s"
 
 #: ../src/iop/colorreconstruction.c:129
 msgid "color reconstruction"
@@ -16023,15 +16060,15 @@ msgstr ""
 "Any higher value excludes pixels with luminance lower than the threshold.\n"
 "This can be used to inpaint highlights."
 
-#: ../src/iop/dither.c:106
+#: ../src/iop/dither.c:107
 msgid "dither or posterize"
 msgstr "Dither or posterize"
 
-#: ../src/iop/dither.c:111
+#: ../src/iop/dither.c:112
 msgid "dithering|posterization|reduce bit-depth"
 msgstr "dithering|posterization|reduce bit-depth"
 
-#: ../src/iop/dither.c:116
+#: ../src/iop/dither.c:117
 msgid ""
 "reduce banding and posterization effects in output\n"
 "JPEGs by adding random noise, or reduce bit depth"
@@ -16039,28 +16076,28 @@ msgstr ""
 "Reduce banding and posterization effects in output\n"
 "JPEGs by adding random noise, or reduce bit depth"
 
-#: ../src/iop/dither.c:118
+#: ../src/iop/dither.c:119
 msgid "corrective, artistic"
 msgstr "Corrective, artistic"
 
 #. add the preset.
-#: ../src/iop/dither.c:146
+#: ../src/iop/dither.c:147
 msgid "dither"
 msgstr "Dither"
 
-#: ../src/iop/dither.c:758
+#: ../src/iop/dither.c:759
 msgid "radius for blurring step"
 msgstr "Radius for blurring step"
 
-#: ../src/iop/dither.c:770
+#: ../src/iop/dither.c:771
 msgid "the gradient range where to apply random dither"
 msgstr "The gradient range where to apply random dither"
 
-#: ../src/iop/dither.c:771
+#: ../src/iop/dither.c:772
 msgid "gradient range"
 msgstr "Gradient range"
 
-#: ../src/iop/dither.c:779
+#: ../src/iop/dither.c:780
 msgid "damping level of random dither"
 msgstr "Damping level of random dither"
 
@@ -17343,7 +17380,7 @@ msgstr "Correct lenses optical flaws"
 msgid "geometric and reconstruction, RGB"
 msgstr "Geometric and reconstruction, RGB"
 
-#: ../src/iop/lens.cc:3170
+#: ../src/iop/lens.cc:3148
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -17356,7 +17393,7 @@ msgstr ""
 "Mount:\t\t%s\n"
 "Crop factor:\t%.1f"
 
-#: ../src/iop/lens.cc:3418
+#: ../src/iop/lens.cc:3396
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -17375,31 +17412,31 @@ msgstr ""
 "Type:\t\t%s\n"
 "Mounts:\t%s"
 
-#: ../src/iop/lens.cc:3464
+#: ../src/iop/lens.cc:3442
 msgid "focal length (mm)"
 msgstr "Focal length (mm)"
 
-#: ../src/iop/lens.cc:3490
+#: ../src/iop/lens.cc:3468
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:3491
+#: ../src/iop/lens.cc:3469
 msgid "f-number (aperture)"
 msgstr "f-number (aperture)"
 
-#: ../src/iop/lens.cc:3507
+#: ../src/iop/lens.cc:3485
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:3508
+#: ../src/iop/lens.cc:3486
 msgid "distance to subject"
 msgstr "Distance to subject"
 
-#: ../src/iop/lens.cc:3667
+#: ../src/iop/lens.cc:3645
 msgid "camera/lens not found"
 msgstr "Camera/lens not found"
 
-#: ../src/iop/lens.cc:3668
+#: ../src/iop/lens.cc:3646
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your Lensfun database is up-to-date\n"
@@ -17409,45 +17446,45 @@ msgstr ""
 "You might also want to check if your Lensfun database is up-to-date\n"
 "by running lensfun-update-data"
 
-#: ../src/iop/lens.cc:3791
+#: ../src/iop/lens.cc:3769
 msgid "camera model"
 msgstr "Camera model"
 
-#: ../src/iop/lens.cc:3796
+#: ../src/iop/lens.cc:3774
 msgid "find camera"
 msgstr "Find camera"
 
-#: ../src/iop/lens.cc:3811
+#: ../src/iop/lens.cc:3789
 msgid "find lens"
 msgstr "Find lens"
 
 #. scale
-#: ../src/iop/lens.cc:3845 ../src/iop/vignette.c:967
+#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:967
 #: ../src/iop/watermark.c:1324 ../src/libs/export.c:1166
 msgid "scale"
 msgstr "Scale"
 
-#: ../src/iop/lens.cc:3850
+#: ../src/iop/lens.cc:3828
 msgid "auto scale"
 msgstr "Auto scale"
 
-#: ../src/iop/lens.cc:3854
+#: ../src/iop/lens.cc:3832
 msgid "correct distortions or apply them"
 msgstr "Correct distortions or apply them"
 
-#: ../src/iop/lens.cc:3861
+#: ../src/iop/lens.cc:3839
 msgid "transversal chromatic aberration red"
 msgstr "Transversal Chromatic Aberration red"
 
-#: ../src/iop/lens.cc:3865
+#: ../src/iop/lens.cc:3843
 msgid "transversal chromatic aberration blue"
 msgstr "Transversal Chromatic Aberration blue"
 
-#: ../src/iop/lens.cc:3871
+#: ../src/iop/lens.cc:3849
 msgid "use latest algorithm"
 msgstr "Use latest algorithm"
 
-#: ../src/iop/lens.cc:3873
+#: ../src/iop/lens.cc:3851
 msgid ""
 "you're using an old version of the algorithm.\n"
 "once enabled, you won't be able to\n"
@@ -17457,35 +17494,35 @@ msgstr ""
 "Once enabled, you won't be able to\n"
 "return back to old algorithm."
 
-#: ../src/iop/lens.cc:3882
+#: ../src/iop/lens.cc:3860
 msgid "tune the warp and chromatic aberration correction"
 msgstr "Tune the warp and chromatic aberration correction"
 
-#: ../src/iop/lens.cc:3886
+#: ../src/iop/lens.cc:3864
 msgid "tune the vignette correction"
 msgstr "Tune the vignette correction"
 
-#: ../src/iop/lens.cc:3890
+#: ../src/iop/lens.cc:3868
 msgid "tune the TCA red correction"
 msgstr "Tune the TCA red correction"
 
-#: ../src/iop/lens.cc:3894
+#: ../src/iop/lens.cc:3872
 msgid "tune the TCA blue correction"
 msgstr "Tune the TCA blue correction"
 
-#: ../src/iop/lens.cc:3901
+#: ../src/iop/lens.cc:3879
 msgid "image scaling"
 msgstr "Image scaling"
 
-#: ../src/iop/lens.cc:3913
+#: ../src/iop/lens.cc:3891
 msgid "which corrections to apply"
 msgstr "Which corrections to apply"
 
-#: ../src/iop/lens.cc:3926
+#: ../src/iop/lens.cc:3904
 msgid "corrections done: "
 msgstr "Corrections done: "
 
-#: ../src/iop/lens.cc:3928
+#: ../src/iop/lens.cc:3906
 msgid "which corrections have actually been done"
 msgstr "Which corrections have actually been done"
 
@@ -20691,7 +20728,7 @@ msgstr "Export EXIF metadata"
 
 #: ../src/libs/export_metadata.c:313
 msgid "export darktable XMP metadata (from metadata editor module)"
-msgstr "Export darktable XMP metadata (from metadata editor module)"
+msgstr "Export Darktable XMP metadata (from metadata editor module)"
 
 #: ../src/libs/export_metadata.c:323
 msgid "only embedded"
@@ -20770,7 +20807,7 @@ msgid ""
 "export darktable development data (recovery purpose in case of loss of "
 "database or XMP file)"
 msgstr ""
-"Export darktable development data (recovery purpose in case of loss of "
+"Export Darktable development data (recovery purpose in case of loss of "
 "database or XMP file)"
 
 #: ../src/libs/export_metadata.c:363
@@ -21269,8 +21306,8 @@ msgstr "Images"
 msgid "open GPX file"
 msgstr "Open GPX file"
 
-#: ../src/libs/geotagging.c:927 ../src/libs/tools/lighttable.c:331
-#: ../src/libs/tools/lighttable.c:399 ../src/views/darkroom.c:2232
+#: ../src/libs/geotagging.c:927 ../src/libs/tools/lighttable.c:333
+#: ../src/libs/tools/lighttable.c:402 ../src/views/darkroom.c:2232
 msgid "preview"
 msgstr "Preview"
 
@@ -21753,7 +21790,7 @@ msgstr "Select geo tags metadata"
 
 #: ../src/libs/image.c:576
 msgid "select darktable metadata (from metadata editor module)"
-msgstr "Select darktable metadata (from metadata editor module)"
+msgstr "Select Darktable metadata (from metadata editor module)"
 
 #: ../src/libs/image.c:584
 msgid "set the selected image as source of metadata"
@@ -24139,35 +24176,35 @@ msgstr "Click to exit culling layout."
 msgid "click to enter culling layout in dynamic mode."
 msgstr "Click to enter culling layout in dynamic mode."
 
-#: ../src/libs/tools/lighttable.c:365
+#: ../src/libs/tools/lighttable.c:368
 msgid "toggle filemanager layout"
 msgstr "Toggle filemanager layout"
 
-#: ../src/libs/tools/lighttable.c:368
+#: ../src/libs/tools/lighttable.c:371
 msgid "click to enter filemanager layout."
 msgstr "Click to enter filemanager layout."
 
-#: ../src/libs/tools/lighttable.c:374
+#: ../src/libs/tools/lighttable.c:377
 msgid "toggle zoomable lighttable layout"
 msgstr "Toggle zoomable Lighttable layout"
 
-#: ../src/libs/tools/lighttable.c:377
+#: ../src/libs/tools/lighttable.c:380
 msgid "click to enter zoomable lighttable layout."
 msgstr "Click to enter zoomable Lighttable layout."
 
-#: ../src/libs/tools/lighttable.c:383
+#: ../src/libs/tools/lighttable.c:386
 msgid "toggle culling mode"
 msgstr "Toggle culling mode"
 
-#: ../src/libs/tools/lighttable.c:391
+#: ../src/libs/tools/lighttable.c:394
 msgid "toggle culling dynamic mode"
 msgstr "Toggle culling dynamic mode"
 
-#: ../src/libs/tools/lighttable.c:438
+#: ../src/libs/tools/lighttable.c:441
 msgid "toggle culling zoom mode"
 msgstr "Toggle culling zoom mode"
 
-#: ../src/libs/tools/lighttable.c:440
+#: ../src/libs/tools/lighttable.c:443
 msgid "exit current layout"
 msgstr "Exit current layout"
 
