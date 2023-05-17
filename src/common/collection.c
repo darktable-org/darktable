@@ -2887,6 +2887,69 @@ void dt_collection_move_before(const dt_imgid_t image_id,
   }
 }
 
+void dt_collection_history_save()
+{
+  // serialize, check for recently used
+  char confname[200] = { 0 };
+
+  char buf[4096];
+  if(dt_collection_serialize(buf, sizeof(buf), FALSE)) return;
+
+  // compare to last saved history
+  gchar *str = dt_conf_get_string("plugins/lighttable/collect/history0");
+  if(!g_strcmp0(str, buf))
+  {
+    g_free(str);
+    return;
+  }
+  g_free(str);
+
+  // remove all subsequent history that have the same values
+  // we ensure to take care of all the items needed for both history. Display limit will be handled by each module
+  const int nbmax = MAX(dt_conf_get_int("plugins/lighttable/collect/history_max"),
+                        dt_conf_get_int("plugins/lighttable/recentcollect/max_items"));
+  int move = 0;
+  for(int i = 1; i < nbmax; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i);
+    gchar *string = dt_conf_get_string(confname);
+
+    if(!g_strcmp0(string, buf))
+    {
+      move++;
+      dt_conf_set_string(confname, "");
+    }
+    else if(move > 0)
+    {
+      dt_conf_set_string(confname, "");
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i);
+      const int hpos = dt_conf_get_int(confname);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i - move);
+      dt_conf_set_string(confname, string);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i - move);
+      dt_conf_set_int(confname, hpos);
+    }
+    g_free(string);
+  }
+
+  // move all history entries +1 (and delete the last one)
+  for(int i = nbmax - 2; i >= 0; i--)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i);
+    gchar *string = dt_conf_get_string(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i);
+    const int hpos = dt_conf_get_int(confname);
+
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i + 1);
+    dt_conf_set_string(confname, string);
+    g_free(string);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i + 1);
+    dt_conf_set_int(confname, hpos);
+  }
+
+  // save current history
+  dt_conf_set_string("plugins/lighttable/collect/history0", buf);
+}
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

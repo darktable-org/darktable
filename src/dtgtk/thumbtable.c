@@ -765,7 +765,7 @@ static gboolean _move(dt_thumbtable_t *table,
   }
 
   // and we store it
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
     dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
@@ -868,7 +868,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
   dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
   dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
@@ -1701,8 +1701,7 @@ static void _dt_collection_changed_callback(gpointer instance,
     else
       table->offset_imgid = _thumb_get_imgid(1);
     table->offset = MAX(1, nrow);
-    if(offset_changed)
-      dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+    if(offset_changed) dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
     if(offset_changed && table->mode == DT_THUMBTABLE_MODE_ZOOM)
       dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
 
@@ -1753,7 +1752,7 @@ static void _dt_collection_changed_callback(gpointer instance,
     // otherwise we reset the offset to the beginning
     table->offset = 1;
     table->offset_imgid = _thumb_get_imgid(table->offset);
-    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
+    dt_conf_set_int("plugins/lighttable/collect/history_pos0", 1);
     dt_conf_set_int("lighttable/zoomable/last_offset", 1);
     dt_conf_set_int("lighttable/zoomable/last_pos_x", 0);
     dt_conf_set_int("lighttable/zoomable/last_pos_y", 0);
@@ -2006,7 +2005,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_gui_add_class(table->widget, cl);
   g_free(cl);
 
-  table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/recentcollect/pos0"));
+  table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/collect/history_pos0"));
 
   // set widget signals
   gtk_widget_set_events(table->widget,
@@ -2427,7 +2426,7 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table,
   if(offset < 1 || offset == table->offset)
     return FALSE;
   table->offset = offset;
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   if(redraw) dt_thumbtable_full_redraw(table, TRUE);
   return TRUE;
 }
@@ -2917,7 +2916,7 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
   dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
   dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
