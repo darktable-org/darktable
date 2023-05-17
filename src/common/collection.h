@@ -263,6 +263,9 @@ void dt_collection_move_before(const dt_imgid_t image_id, GList * selected_image
 /* initialize memory table */
 void dt_collection_memory_update();
 
+/** save the current collection for recentcollect module and collect history */
+void dt_collection_history_save();
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

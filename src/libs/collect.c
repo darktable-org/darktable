@@ -2347,12 +2347,6 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
 static void _history_save(dt_lib_collect_t *d)
 {
   dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
-  // serialize, check for recently used
-  char confname[200] = { 0 };
-
-  char buf[4096];
-  if(dt_collection_serialize(buf, sizeof(buf), FALSE)) return;
-
   // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
   uint32_t curr_pos = table->offset;
   uint32_t new_pos = -1;
@@ -2368,58 +2362,7 @@ static void _history_save(dt_lib_collect_t *d)
     dt_conf_set_int("plugins/lighttable/collect/history_pos0", curr_pos);
   }
 
-  // compare to last saved history
-  gchar *str = dt_conf_get_string("plugins/lighttable/collect/history0");
-  if(!g_strcmp0(str, buf))
-  {
-    g_free(str);
-    return;
-  }
-  g_free(str);
-
-  // remove all subsequent history that have the same values
-  const int nbmax = dt_conf_get_int("plugins/lighttable/collect/history_max");
-  int move = 0;
-  for(int i = 1; i < nbmax; i++)
-  {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i);
-    gchar *string = dt_conf_get_string(confname);
-
-    if(!g_strcmp0(string, buf))
-    {
-      move++;
-      dt_conf_set_string(confname, "");
-    }
-    else if(move > 0)
-    {
-      dt_conf_set_string(confname, "");
-      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i);
-      const int hpos = dt_conf_get_int(confname);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i - move);
-      dt_conf_set_string(confname, string);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i - move);
-      dt_conf_set_int(confname, hpos);
-    }
-    g_free(string);
-  }
-
-  // move all history entries +1 (and delete the last one)
-  for(int i = nbmax - 2; i >= 0; i--)
-  {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i);
-    gchar *string = dt_conf_get_string(confname);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i);
-    const int hpos = dt_conf_get_int(confname);
-
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i + 1);
-    dt_conf_set_string(confname, string);
-    g_free(string);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i + 1);
-    dt_conf_set_int(confname, hpos);
-  }
-
-  // save current history
-  dt_conf_set_string("plugins/lighttable/collect/history0", buf);
+  dt_collection_history_save();
 }
 
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col,
