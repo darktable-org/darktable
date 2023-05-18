@@ -1888,7 +1888,9 @@ void reload_defaults(dt_iop_module_t *module)
         iccCopyr = "";
       }
 
-      cmsFloat64Number iccVersion = cmsGetProfileVersion(cmsprofile);
+      const guint8 iccMajorVersion = cmsGetEncodedICCversion(cmsprofile) >> 24;
+      const guint8 iccMinorVersion = (cmsGetEncodedICCversion(cmsprofile) << 8) >> 28;
+
       char *iccType = "";
 
       if(cmsIsMatrixShaper(cmsprofile))
@@ -1898,13 +1900,13 @@ void reload_defaults(dt_iop_module_t *module)
 
       char *tooltip = g_markup_printf_escaped(_("embedded ICC profile properties:\n\n"
                                                 "name: <b>%s</b>\n"
-                                                "version: <b>%g</b>\n"
+                                                "version: <b>%d.%d</b>\n"
                                                 "type: <b>%s</b>\n"
                                                 "manufacturer: <b>%s</b>\n"
                                                 "model: <b>%s</b>\n"
                                                 "copyright: <b>%s</b>\n\n%s"),
                                               iccDesc,
-                                              iccVersion,
+                                              iccMajorVersion, iccMinorVersion,
                                               iccType,
                                               iccManuf,
                                               iccModel,
