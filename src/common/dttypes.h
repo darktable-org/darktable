@@ -44,23 +44,6 @@ typedef DT_ALIGNED_PIXEL float dt_aligned_pixel_t[4];
 // a 3x3 matrix, padded to permit SSE instructions to be used for multiplication and addition
 typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 
-// GCC 12.2 has a bug where it will erroneously generate a warning
-// about accessing 64 bytes in a 16-byte object when a dt_colormatrix_t
-// is passed to a function (this kills the compilation due to
-// -Werror).  The most elegant way to handle this is to suppress the
-// warning for the handfull of function calls the bug affects.
-#if __GNUC__ >= 12
-#define GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING \
-  _Pragma("GCC push_options") \
-  _Pragma("GCC diagnostic ignored \"-Wstringop-overflow\"")
-
-#define GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING \
-  _Pragma("GCC pop_options")
-#else
-#define GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
-#define GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
-#endif
-
 // To be able to vectorize per-pixel loops, we need to operate on all four channels, but if the compiler does
 // not auto-vectorize, doing so increases computation by 1/3 for a channel which typically is ignored anyway.
 // Select the appropriate number of channels over which to loop to produce the fastest code.
@@ -217,11 +200,11 @@ static inline void dt_colormatrix_transpose(dt_colormatrix_t dst,
   }
 }
 
+// dt_mark_colormatrix_invalid could/should be a function,
+// but it was converted to macros due to this GCC compiler bug:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105689
 #ifdef NO_COLORMATRIX_NAN
-static inline void dt_mark_colormatrix_invalid(float *matrix)
-{
-  *matrix = -FLT_MAX;
-}
+#define dt_mark_colormatrix_invalid(matrix) do{*(matrix) = -FLT_MAX;}while(0)
 
 static inline int dt_is_valid_colormatrix(float matrix)
 {
@@ -234,10 +217,7 @@ static inline int dt_is_valid_colormatrix(float matrix)
 #pragma GCC optimize ("-fno-finite-math-only")
 #endif
 
-static inline void dt_mark_colormatrix_invalid(float *matrix)
-{
-  *matrix = NAN;
-}
+#define dt_mark_colormatrix_invalid(matrix) do{*(matrix) = NAN;}while(0)
 
 static inline int dt_is_valid_colormatrix(float matrix)
 {
