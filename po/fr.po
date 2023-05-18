@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-17 10:30+0200\n"
-"PO-Revision-Date: 2023-05-17 10:34+0200\n"
+"POT-Creation-Date: 2023-05-18 08:18+0200\n"
+"PO-Revision-Date: 2023-05-18 08:18+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2405,7 +2405,7 @@ msgstr "Préserver les couleurs"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2193
-#: ../src/iop/channelmixerrgb.c:4666 ../src/iop/clipping.c:1900
+#: ../src/iop/channelmixerrgb.c:4667 ../src/iop/clipping.c:1900
 #: ../src/iop/clipping.c:2093 ../src/iop/clipping.c:2108
 #: ../src/iop/retouch.c:463 ../src/libs/collect.c:1907
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1024
@@ -3268,7 +3268,7 @@ msgid "range extent"
 msgstr "Étendue de luminance"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4668
+#: ../src/iop/channelmixerrgb.c:4669
 msgid "saturated colors"
 msgstr "Couleurs saturées"
 
@@ -14063,9 +14063,9 @@ msgstr "Calibrer avec une charte couleur"
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "Utiliser une charte couleur pour régler la CAT et les canaux"
 
-#: ../src/iop/channelmixerrgb.c:4647 ../src/iop/channelmixerrgb.c:4659
-#: ../src/iop/channelmixerrgb.c:4677 ../src/iop/channelmixerrgb.c:4695
-#: ../src/iop/channelmixerrgb.c:4704 ../src/iop/channelmixerrgb.c:4712
+#: ../src/iop/channelmixerrgb.c:4647 ../src/iop/channelmixerrgb.c:4660
+#: ../src/iop/channelmixerrgb.c:4678 ../src/iop/channelmixerrgb.c:4696
+#: ../src/iop/channelmixerrgb.c:4705 ../src/iop/channelmixerrgb.c:4713
 msgid "calibrate"
 msgstr "Calibrer"
 
@@ -14101,11 +14101,15 @@ msgstr "Datacolor SpyderCheckr 48 (avant 2018)"
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:4659
+#: ../src/iop/channelmixerrgb.c:4656
+msgid "Datacolor SpyderCheckr Photo"
+msgstr "Datacolor SpyderCheckr Photo"
+
+#: ../src/iop/channelmixerrgb.c:4660
 msgid "optimize for"
 msgstr "Optimisé pour"
 
-#: ../src/iop/channelmixerrgb.c:4660
+#: ../src/iop/channelmixerrgb.c:4661
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -14122,35 +14126,35 @@ msgstr ""
 " • « Sans » est un compromis entre les deux.\n"
 "Les autres choix visent à protéger certaines teintes."
 
-#: ../src/iop/channelmixerrgb.c:4667
+#: ../src/iop/channelmixerrgb.c:4668
 msgid "neutral colors"
 msgstr "Couleurs neutres"
 
-#: ../src/iop/channelmixerrgb.c:4669
+#: ../src/iop/channelmixerrgb.c:4670
 msgid "skin and soil colors"
 msgstr "Couleurs de peau et de terres"
 
-#: ../src/iop/channelmixerrgb.c:4670
+#: ../src/iop/channelmixerrgb.c:4671
 msgid "foliage colors"
 msgstr "Couleurs du feuillage"
 
-#: ../src/iop/channelmixerrgb.c:4671
+#: ../src/iop/channelmixerrgb.c:4672
 msgid "sky and water colors"
 msgstr "Couleurs du ciel et de l’eau"
 
-#: ../src/iop/channelmixerrgb.c:4672
+#: ../src/iop/channelmixerrgb.c:4673
 msgid "average delta E"
 msgstr "Delta E moyen"
 
-#: ../src/iop/channelmixerrgb.c:4673
+#: ../src/iop/channelmixerrgb.c:4674
 msgid "maximum delta E"
 msgstr "Delta E maximum"
 
-#: ../src/iop/channelmixerrgb.c:4677
+#: ../src/iop/channelmixerrgb.c:4678
 msgid "patch scale"
 msgstr "Échelle du patch"
 
-#: ../src/iop/channelmixerrgb.c:4680
+#: ../src/iop/channelmixerrgb.c:4681
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -14160,31 +14164,31 @@ msgstr ""
 "Utile lorsque la correction de la perspective est grossière\n"
 "ou que le cadre des patchs projette une ombre sur les bords du patch."
 
-#: ../src/iop/channelmixerrgb.c:4690
+#: ../src/iop/channelmixerrgb.c:4691
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "Le delta E utilise la formule CIE 2000"
 
-#: ../src/iop/channelmixerrgb.c:4695
+#: ../src/iop/channelmixerrgb.c:4696
 msgid "accept"
 msgstr "Accepter"
 
-#: ../src/iop/channelmixerrgb.c:4701
+#: ../src/iop/channelmixerrgb.c:4702
 msgid "accept the computed profile and set it in the module"
 msgstr "Accepter le profil calculé et le régler dans le module"
 
-#: ../src/iop/channelmixerrgb.c:4704
+#: ../src/iop/channelmixerrgb.c:4705
 msgid "recompute"
 msgstr "Recalculer"
 
-#: ../src/iop/channelmixerrgb.c:4708
+#: ../src/iop/channelmixerrgb.c:4709
 msgid "recompute the profile"
 msgstr "Recalculer le profil"
 
-#: ../src/iop/channelmixerrgb.c:4712
+#: ../src/iop/channelmixerrgb.c:4713
 msgid "validate"
 msgstr "Valider"
 
-#: ../src/iop/channelmixerrgb.c:4716
+#: ../src/iop/channelmixerrgb.c:4717
 msgid "check the output delta E"
 msgstr "Vérifier le delta E de sortie"
 
