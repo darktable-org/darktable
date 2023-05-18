@@ -2210,7 +2210,7 @@ static gboolean _dev_pixelpipe_process_rec(
         /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
         dt_print_pipe(DT_DEBUG_OPENCL,
            "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
-                "couldn't run module on GPG, falling back to CPU");
+                "couldn't run module on GPU, falling back to CPU");
 
         // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
 

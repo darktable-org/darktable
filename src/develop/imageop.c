@@ -1788,16 +1788,16 @@ void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
 }
 
 /* make sure that blend_params are in sync with the iop struct
-   Also watch out for a raster mask source module to get it's first `target`
-   entry, if so we invalidate all cachelines from modules with a higher iop order.
-   To support this, dt_iop_commit_blend_params() either returns NULL or the source module.
+   1. Handling of raster mask users must only be done if we don't use module's default
+      blending parameters.
+   2. Also watch out for a raster mask source module to get it's first `target`
+      entry, if so we should invalidate all cachelines from modules with a higher iop order
+      in dt_iop_commit_blend_params() callers.
+      To support this, dt_iop_commit_blend_params() either returns NULL or the source module.
 */
 dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const dt_develop_blend_params_t *blendop_params)
 {
-  if(module->raster_mask.sink.source)
-    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
-
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
   if(blendop_params->blend_cst == DEVELOP_BLEND_CS_NONE)
   {
@@ -1806,26 +1806,47 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   }
   dt_iop_set_mask_mode(module, blendop_params->mask_mode);
 
-  if(module->dev)
+  // If we use default blending parameters or don't have a dev
+  // we don't manage raster mask users
+  if(blendop_params == module->default_blendop_params
+     || module->dev == NULL)
+    return NULL;
+
+  for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
   {
-    for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+    dt_iop_module_t *candidate = (dt_iop_module_t *)iter->data;
+    if(dt_iop_module_is(candidate->so, blendop_params->raster_mask_source))
     {
-      dt_iop_module_t *m = (dt_iop_module_t *)iter->data;
-      if(dt_iop_module_is(m->so, blendop_params->raster_mask_source))
+      if(candidate->multi_priority == blendop_params->raster_mask_instance)
       {
-        if(m->multi_priority == blendop_params->raster_mask_instance)
-        {
-          const gboolean in_use = dt_iop_is_raster_mask_used(m, blendop_params->raster_mask_id);
-          g_hash_table_insert(m->raster_mask.source.users,
-                              module, GINT_TO_POINTER(blendop_params->raster_mask_id));
-          module->raster_mask.sink.source = m;
-          module->raster_mask.sink.id = blendop_params->raster_mask_id;
-          return in_use ? NULL : m;
-        }
+        /* we check for the candidate already being used as a raster mask source
+           - this means it will write it's blend output as the raster mask
+           to avoid invalidation of the pixelpipe cache if it's already in use
+        */
+        const gboolean in_use = dt_iop_is_raster_mask_used(candidate, blendop_params->raster_mask_id);
+        g_hash_table_insert(candidate->raster_mask.source.users,
+                            module,
+                            GINT_TO_POINTER(blendop_params->raster_mask_id));
+        module->raster_mask.sink.source = candidate;
+        module->raster_mask.sink.id = blendop_params->raster_mask_id;
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+           "commit_blend_params", NULL, module, NULL, NULL, "raster mask from '%s%s', %s\n",
+           candidate->name(), dt_iop_get_instance_name(candidate),
+           in_use ? "in_use" : "new");
+        return in_use ? NULL : candidate;
       }
     }
   }
 
+  /* We don't use a raster mask as source so we will remove this module as a user from the hash table
+     and set sink source and id to default == 'nothing'
+  */
+  if(module->raster_mask.sink.source)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+        "commit_blend_params", NULL, module, NULL, NULL, "clear raster mask sink\n");
+    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
+  }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
   return NULL;

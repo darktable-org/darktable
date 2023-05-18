@@ -743,7 +743,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
-    dt_print_pipe(DT_DEBUG_PIPE,
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
        "clear raster mask on CPU", piece->pipe, self, roi_in, roi_out, "\n");
   }
 }
@@ -1382,7 +1382,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
-    dt_print_pipe(DT_DEBUG_PIPE,
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
        "clear raster mask CL", piece->pipe, self, roi_in, roi_out, "\n");
   }
 
