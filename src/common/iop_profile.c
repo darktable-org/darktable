@@ -775,8 +775,6 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   // get the matrix
   if(rgb_profile)
   {
-    // work around false GCC12 warnings about accessing 64 bytes in a 16-byte parameter
-    GCC12_SUPPRESS_ERRONEOUS_STRINGOP_OVERFLOW_WARNING
     if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, profile_info->matrix_in,
                                                     profile_info->lut_in[0],
                                                     profile_info->lut_in[1],
@@ -798,7 +796,6 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
       _mark_as_nonmatrix_profile(profile_info);
       _clear_lut_curves(profile_info);
     }
-    GCC12_RESTORE_STRINGOP_OVERFLOW_WARNING
   }
 
   // now try to initialize unbounded mode:
