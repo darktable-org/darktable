@@ -1594,7 +1594,7 @@ static void _fix_masks_combine(dt_develop_blend_params_t *bp)
 }
 
 /** update blendop params from older versions */
-int dt_develop_blend_legacy_params(dt_iop_module_t *module,
+gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
                                    const void *const old_params,
                                    const int old_version,
                                    void *new_params,
@@ -1618,7 +1618,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
 
     *n = default_display_blend_params;
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 1 && new_version == 12)
@@ -1643,7 +1643,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->blend_mode = _blend_legacy_blend_mode(o->mode);
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 2 && new_version == 12)
@@ -1684,7 +1684,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
                                     // 2; also switch off old "active" bit
     for(int i = 0; i < (4 * 8); i++) n->blendif_parameters[i] = o->blendif_parameters[i];
 
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 3 && new_version == 12)
@@ -1725,7 +1725,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 4 && new_version == 12)
@@ -1768,7 +1768,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active);
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 5 && new_version == 12)
@@ -1820,7 +1820,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 6 && new_version == 12)
@@ -1865,7 +1865,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 7 && new_version == 12)
@@ -1910,7 +1910,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 8 && new_version == 12)
@@ -1967,7 +1967,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 9 && new_version == 12)
@@ -2008,7 +2008,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
       gboolean raster_mask_invert;
     } dt_develop_blend_params9_t;
 
-    if(length != sizeof(dt_develop_blend_params9_t)) return 1;
+    if(length != sizeof(dt_develop_blend_params9_t)) return TRUE;
 
     dt_develop_blend_params9_t *o = (dt_develop_blend_params9_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
@@ -2033,7 +2033,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->raster_mask_id = o->raster_mask_id;
     n->raster_mask_invert = o->raster_mask_invert;
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
   if(old_version == 10 && new_version == 12)
@@ -2079,7 +2079,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
       gboolean raster_mask_invert;
     } dt_develop_blend_params10_t;
 
-    if(length != sizeof(dt_develop_blend_params10_t)) return 1;
+    if(length != sizeof(dt_develop_blend_params10_t)) return TRUE;
 
     dt_develop_blend_params10_t *o = (dt_develop_blend_params10_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
@@ -2116,7 +2116,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
 
     _fix_masks_combine(n);
 
-    return 0;
+    return FALSE;
   }
   if(old_version == 11 && new_version == 12)
   {
@@ -2127,12 +2127,12 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
 
     *n = *o;
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
-  return 1;
+  return TRUE;
 }
 
-int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
+gboolean dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
                                            const void *const old_params,
                                            const int old_version,
                                            void *new_params,
@@ -2144,18 +2144,18 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
   if(dt_iop_load_module_by_so(module, module_so, NULL))
   {
     free(module);
-    return 1;
+    return TRUE;
   }
 
   if(module->params_size == 0)
   {
     dt_iop_cleanup_module(module);
     free(module);
-    return 1;
+    return TRUE;
   }
 
   // convert the old blend params to new
-  const int res = dt_develop_blend_legacy_params(module, old_params, old_version,
+  const gboolean res = dt_develop_blend_legacy_params(module, old_params, old_version,
                                                  new_params, dt_develop_blend_version(),
                                                  length);
   dt_iop_cleanup_module(module);
