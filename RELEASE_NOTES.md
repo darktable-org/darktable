@@ -554,6 +554,8 @@ The following is a summary of the main features added to darktable
   used with applied masks. This usage is expected to cover different
   areas and so should be considered as correct.
 
+- Add geometry of Spyder Checkr Photo in ColorChecker RGB module.
+
 ## Bug Fixes
 
 - Fix the reset of the sort order to 'filename' on every collection
@@ -762,6 +764,9 @@ The following is a summary of the main features added to darktable
 
 - Fix possible crash in astrophoto denoise when used on CPU (no
   OpenCL).
+
+- Some minor fix of Spyder Checkr 48 (v2 - after 2018) reference
+  values.
 
 ## Lua
 
