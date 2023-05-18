@@ -248,16 +248,6 @@ static gboolean _LinEqSolve(ssize_t nDim, double *pfMatr, double *pfVect, double
 // end of linear equation solver
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-static inline void _pixsort(float *a, float *b)
-{
-  if(*a > *b)
-  {
-    float temp = *a;
-    *a = *b;
-    *b = temp;
-  }
-}
-
 void process(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
@@ -827,39 +817,36 @@ void process(
                   p[6] = blockshifts[(vblock + 1) * hblsz + hblock - 1][c][dir];
                   p[7] = blockshifts[(vblock + 1) * hblsz + hblock][c][dir];
                   p[8] = blockshifts[(vblock + 1) * hblsz + hblock + 1][c][dir];
-                  _pixsort(&p[1], &p[2]);
-                  _pixsort(&p[4], &p[5]);
-                  _pixsort(&p[7], &p[8]);
-                  _pixsort(&p[0], &p[1]);
-                  _pixsort(&p[3], &p[4]);
-                  _pixsort(&p[6], &p[7]);
-                  _pixsort(&p[1], &p[2]);
-                  _pixsort(&p[4], &p[5]);
-                  _pixsort(&p[7], &p[8]);
-#if 0
-                  _pixsort(&p[0], &p[3]);
-                  _pixsort(&p[5], &p[8]);
-                  _pixsort(&p[4], &p[7]);
-                  _pixsort(&p[3], &p[6]);
-                  _pixsort(&p[1], &p[4]);
-                  _pixsort(&p[2], &p[5]);
-                  _pixsort(&p[4], &p[7]);
-                  _pixsort(&p[4], &p[2]);
-                  _pixsort(&p[6], &p[4]);
-                  _pixsort(&p[4], &p[2]);
-                  bstemp[dir] = p[4];
-#else
-                  p[3] = MAX(p[0],p[3]);
-                  p[5] = MIN(p[5],p[8]);
-                  _pixsort(&p[4], &p[7]);
-                  p[6] = MAX(p[3],p[6]);
-                  p[4] = MAX(p[1],p[4]);
-                  p[2] = MIN(p[2],p[5]);
-                  p[4] = MIN(p[4],p[7]);
-                  _pixsort(&p[4], &p[2]);
-                  _pixsort(&p[6], &p[4]);
-                  bstemp[dir] = MIN(p[2],p[4]);
-#endif
+                  float p1 = MIN(p[1], p[2]);
+                  float p2 = MAX(p[1], p[2]);
+                  float p4 = MIN(p[4], p[5]);
+                  float p5 = MAX(p[4], p[5]);
+                  float p7 = MIN(p[7], p[8]);
+                  float p8 = MAX(p[7], p[8]);
+                  float p0 = MIN(p[0], p1);
+                  float p1a = MAX(p[0], p1);
+                  float p3 = MIN(p[3], p4);
+                  float p4a = MAX(p[3], p4);
+                  float p6 = MIN(p[6], p7);
+                  float p7a = MAX(p[6], p7);
+                  p1 = MIN(p1a, p2);
+                  p2 = MAX(p1a, p2);
+                  p4 = MIN(p4a, p5);
+                  p5 = MAX(p4a, p5);
+                  p7 = MIN(p7a, p8);
+                  p8 = MAX(p7a, p8);
+                  p3 = MAX(p0,p3);
+                  p5 = MIN(p5, p8);
+                  p7a = MAX(p4, p7);
+                  p4 = MIN(p4, p7);
+                  p6 = MAX(p3, p6);
+                  p4 = MAX(p1, p4);
+                  p2 = MIN(p2, p5);
+                  p4a = MIN(p4, p7a);
+                  p4 = MIN(p4a, p2);
+                  p2 = MAX(p4a, p2);
+                  p4 = MAX(p6, p4);
+                  bstemp[dir] = MIN(p2,p4);
                 }
 
                 // now prepare coefficient matrix; use only data points within caautostrength/2 std devs of
