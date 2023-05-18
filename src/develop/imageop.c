@@ -373,7 +373,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
   return 0;
 }
 
-int dt_iop_load_module_by_so(dt_iop_module_t *module,
+gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
                              dt_iop_module_so_t *so,
                              dt_develop_t *dev)
 {
@@ -460,10 +460,10 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
-    return 1; // empty params hurt us in many places, just add a dummy value
+    return TRUE; // empty params hurt us in many places, just add a dummy value
   }
   module->enabled = module->default_enabled; // apply (possibly new) default.
-  return 0;
+  return FALSE;
 }
 
 void dt_iop_init_pipe(struct dt_iop_module_t *module,
@@ -1675,7 +1675,7 @@ void dt_iop_load_modules_so(void)
                                   (gpointer)(darktable.iop));
 }
 
-int dt_iop_load_module(dt_iop_module_t *module,
+gboolean dt_iop_load_module(dt_iop_module_t *module,
                        dt_iop_module_so_t *module_so,
                        dt_develop_t *dev)
 {
@@ -1683,9 +1683,9 @@ int dt_iop_load_module(dt_iop_module_t *module,
   if(dt_iop_load_module_by_so(module, module_so, dev))
   {
     free(module);
-    return 1;
+    return TRUE;
   }
-  return 0;
+  return FALSE;
 }
 
 GList *dt_iop_load_modules_ext(dt_develop_t *dev, const gboolean no_image)

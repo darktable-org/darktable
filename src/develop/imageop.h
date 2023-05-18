@@ -353,13 +353,13 @@ void dt_iop_load_modules_so(void);
 /** cleans up the dlopen refs. */
 void dt_iop_unload_modules_so(void);
 /** load a module for a given .so */
-int dt_iop_load_module_by_so(dt_iop_module_t *module,
+gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
                              dt_iop_module_so_t *so,
                              struct dt_develop_t *dev);
 /** returns a list of instances referencing stuff loaded in load_modules_so. */
 GList *dt_iop_load_modules_ext(struct dt_develop_t *dev, gboolean no_image);
 GList *dt_iop_load_modules(struct dt_develop_t *dev);
-int dt_iop_load_module(dt_iop_module_t *module,
+gboolean dt_iop_load_module(dt_iop_module_t *module,
                        dt_iop_module_so_t *module_so,
                        struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
