@@ -3837,7 +3837,7 @@ void gui_init(dt_iop_module_t *self)
                                 "should be disabled if an earlier instance\n"
                                 "has been used with a color blending mode."));
   gtk_widget_set_tooltip_text(g->fix_anscombe_and_nlmeans_norm,
-                              _("fix bugs in anscombe transform resulting\n"
+                              _("fix bugs in Anscombe transform resulting\n"
                                 "in undersmoothing of the green channel in\n"
                                 "wavelets mode, combined with a bad handling\n"
                                 "of white balance coefficients, and a bug in\n"
