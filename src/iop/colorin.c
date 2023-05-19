@@ -1850,7 +1850,8 @@ void reload_defaults(dt_iop_module_t *module)
     char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
     char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
     char *tooltip_part_profile_dirs =
-      g_strdup_printf(_("darktable loads external ICC profiles from\n%s\nand\n%s"),
+      g_strdup_printf(_("darktable loads external ICC profiles from\n%s\n"
+                        "or, if this directory does not exist, from\n%s"),
                       user_profile_dir, system_profile_dir);
     g_free(system_profile_dir);
     g_free(user_profile_dir);
