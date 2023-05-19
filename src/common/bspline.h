@@ -203,7 +203,7 @@ inline static void decompose_2D_Bspline(const float *const in,
   for(size_t row = 0; row < height; row++)
   {
     // get a thread-private one-row temporary buffer
-    float *restrict DT_ALIGNED_ARRAY const temp = dt_get_perthread(tempbuf, padded_size);
+    float *restrict const temp = dt_get_perthread(tempbuf, padded_size);
     // interleave the order in which we process the rows so that we minimize cache misses
     const size_t i = dwt_interleave_rows(row, height, mult);
     // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur

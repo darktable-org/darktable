@@ -589,7 +589,7 @@ static void reduce_artifacts(const float* const restrict in,
 {
   // in_out contains the 2 guided channels of in, and the 2 guided channels of out
   // it allows to blur all channels in one 4-channel gaussian blur instead of 2
-  float *const restrict DT_ALIGNED_PIXEL in_out = dt_alloc_align_float(width * height * 4);
+  float *const restrict in_out = dt_alloc_align_float(width * height * 4);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, in_out, width, height, guide)        \
