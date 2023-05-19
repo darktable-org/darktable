@@ -141,7 +141,7 @@ const char *name()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("selectively shift hues, saturation and brightness of pixels"),
+  return dt_iop_set_description(self, _("selectively shift hues, chroma and lightness of pixels"),
                                       _("creative"),
                                       _("linear or non-linear, Lab, display-referred"),
                                       _("non-linear, Lab"),
@@ -2399,7 +2399,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(c->channel_tabs), &notebook_def);
 
   dt_ui_notebook_page(c->channel_tabs, N_("lightness"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, N_("saturation"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("chroma"), NULL);
   dt_ui_notebook_page(c->channel_tabs, N_("hue"), NULL);
 
   gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
