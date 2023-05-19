@@ -472,7 +472,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq,
         }
 
         // Compute the laplacian in the direction parallel to the steepest gradient on the norm
-        float DT_ALIGNED_ARRAY anisotropic_kernel_isophote[9] = { 0.25f, 0.5f, 0.25f, 0.5f, -3.f, 0.5f, 0.25f, 0.5f, 0.25f };
+        static const float DT_ALIGNED_ARRAY anisotropic_kernel_isophote[9]
+          = { 0.25f, 0.5f, 0.25f, 0.5f, -3.f, 0.5f, 0.25f, 0.5f, 0.25f };
 
         // Convolve the filter to get the laplacian
         dt_aligned_pixel_t laplacian_HF = { 0.f, 0.f, 0.f, 0.f };
@@ -549,7 +550,7 @@ static inline gint wavelets_process(const float *const restrict in,
 
   // allocate a one-row temporary buffer for the decomposition
   size_t padded_size;
-  float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
+  float *const tempbuf = dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
   for(int s = 0; s < scales; ++s)
   {
     //dt_print(DT_DEBUG_ALWAYS, "CPU Wavelet decompose : scale %i\n", s);
