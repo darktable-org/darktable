@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-17 10:30+0200\n"
-"PO-Revision-Date: 2023-05-17 12:15+0300\n"
+"POT-Creation-Date: 2023-05-18 08:18+0200\n"
+"PO-Revision-Date: 2023-05-19 11:59+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2392,7 +2392,7 @@ msgstr "Метод збереження кольорів"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2193
-#: ../src/iop/channelmixerrgb.c:4666 ../src/iop/clipping.c:1900
+#: ../src/iop/channelmixerrgb.c:4667 ../src/iop/clipping.c:1900
 #: ../src/iop/clipping.c:2093 ../src/iop/clipping.c:2108
 #: ../src/iop/retouch.c:463 ../src/libs/collect.c:1907
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1024
@@ -3255,7 +3255,7 @@ msgid "range extent"
 msgstr "Вимір яскравості"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4668
+#: ../src/iop/channelmixerrgb.c:4669
 msgid "saturated colors"
 msgstr "Насичені кольори"
 
@@ -6398,7 +6398,7 @@ msgstr[2] "%d локальних копій синхронізовано"
 
 #: ../src/common/image.c:3022
 msgid "<b>WARNING</b>: camera is missing samples!"
-msgstr "<b>ПОПЕРЕДЖЕННЯ</b>: відсутні зразки зображень з цієї моделі камери!"
+msgstr "<b>ПОПЕРЕДЖЕННЯ</b>: відсутні зразки зображень із цієї моделі камери!"
 
 #: ../src/common/image.c:3023
 msgid ""
@@ -8774,12 +8774,12 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>розмір</b>: прокрутка, <b>жорсткість</b>: Shift+прокрутка\n"
-"<b>непрозорість</b>: Ctrl+прокрутка (%d%%)"
+"<b>Розмір</b>: прокрутка, <b>Жорсткість</b>: Shift+прокрутка\n"
+"<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/brush.c:3279
 msgid "<b>size</b>: scroll"
-msgstr "<b>розмір</b>: прокрутка"
+msgstr "<b>Розмір</b>: прокрутка"
 
 #: ../src/develop/masks/circle.c:137 ../src/develop/masks/circle.c:181
 #: ../src/develop/masks/ellipse.c:470 ../src/develop/masks/ellipse.c:531
@@ -8811,8 +8811,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: Shift+прокрутка\n"
-"<b>непрозорість</b>: Ctrl+прокрутка (%d%%)"
+"<b>Розмір</b>: прокрутка, <b>Розмір розтушовки</b>: Shift+прокрутка\n"
+"<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:456 ../src/develop/masks/ellipse.c:515
 #, c-format
@@ -8850,13 +8850,13 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: Shift+прокрутка\n"
-"<b>обертання</b>: Ctrl+Shift+прокрутка, <b>непрозорість</b>: Ctrl+прокрутка "
+"<b>Розмір</b>: прокрутка, <b>Розмір розтушовки</b>: Shift+прокрутка\n"
+"<b>Обертання</b>: Ctrl+Shift+прокрутка, <b>Непрозорість</b>: Ctrl+прокрутка "
 "(%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2132
 msgid "<b>rotate</b>: ctrl+drag"
-msgstr "<b>обертання</b>: Ctrl+перетягування"
+msgstr "<b>Обертання</b>: Ctrl+перетягування"
 
 #: ../src/develop/masks/ellipse.c:2135
 #, c-format
@@ -8865,9 +8865,9 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
 "ctrl+scroll (%d%%)"
 msgstr ""
-"<b>режим розтушовки</b>: Shift+клік, <b>rotate</b>: Ctrl+перетягування\n"
-"<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: Shift+прокрутка, "
-"<b>непрозорість</b>: Ctrl+прокрутка (%d%%)"
+"<b>Режим розтушовки</b>: Shift+клік, <b>Обертання</b>: Ctrl+перетягування\n"
+"<b>Розмір</b>: прокрутка, <b>Розмір розтушовки</b>: Shift+прокрутка, "
+"<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/gradient.c:131 ../src/develop/masks/gradient.c:175
 #, c-format
@@ -8910,8 +8910,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>вигин</b>: прокрутка, <b>стиснення</b>: Shift+прокрутка\n"
-"<b>обертання</b>: клік+перетягування, <b>непрозорість</b>: Ctrl+прокрутка "
+"<b>Вигин</b>: прокрутка, <b>Стиснення</b>: Shift+прокрутка\n"
+"<b>Обертання</b>: клік+перетягування, <b>Непрозорість</b>: Ctrl+прокрутка "
 "(%d%%)"
 
 #: ../src/develop/masks/gradient.c:1592
@@ -8920,12 +8920,12 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>вигин</b>: прокрутка, <b>стиснення</b>: Shift+прокрутка\n"
-"<b>непрозорість</b>: Ctrl+прокрутка (%d%%)"
+"<b>Вигин</b>: прокрутка, <b>Стиснення</b>: Shift+прокрутка\n"
+"<b>Непрозорість</b>: Ctrl+прокрутка (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1595
 msgid "<b>rotate</b>: drag"
-msgstr "<b>обертання</b>: перетягування"
+msgstr "<b>Обертання</b>: перетягування"
 
 #: ../src/develop/masks/masks.c:139
 msgid "[SHAPE] remove shape"
@@ -9013,40 +9013,40 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>додати вузол</b>: клік, <b>додати гострий вузол</b>:Ctrl+клік\n"
-"<b>скасування</b>: правий клік"
+"<b>Додати вузол</b>: клік, <b>Додати гострий вузол</b>:Ctrl+клік\n"
+"<b>Скасування</b>: правий клік"
 
 #: ../src/develop/masks/path.c:3476
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>додати вузол</b>: клік, <b>додати гострий вузол</b>: Ctrl+клік\n"
-"<b>закінчити контур</b>: правий клік"
+"<b>Додати вузол</b>: клік, <b>Додати гострий вузол</b>: Ctrl+клік\n"
+"<b>Закінчити контур</b>: правий клік"
 
 #: ../src/develop/masks/path.c:3479
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
-"<b>перемістити вузол</b>: перетягнути, <b>видалити вузол</b>: правий клік\n"
-"<b>перемкнути плавний/різкий режим</b>: Ctrl+клік"
+"<b>Перемістити вузол</b>: перетягнути, <b>Видалити вузол</b>: правий клік\n"
+"<b>Перемкнути плавний/різкий режим</b>: Ctrl+клік"
 
 #: ../src/develop/masks/path.c:3483
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
-"<b>вигин вузла</b>: перетягнути\n"
-"<b>скинути вигин</b>: правий клік"
+"<b>Вигин вузла</b>: перетягнути\n"
+"<b>Скинути вигин</b>: правий клік"
 
 #: ../src/develop/masks/path.c:3487
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
 msgstr ""
-"<b>перемістити сегмент</b>: перетягнути\n"
-"<b>додати вузол</b>: Ctrl+клік"
+"<b>Перемістити сегмент</b>: перетягнути\n"
+"<b>Додати вузол</b>: Ctrl+клік"
 
 #: ../src/develop/pixelpipe_hb.c:500
 msgid "enabled as required"
@@ -14014,9 +14014,9 @@ msgstr "Калібрувати за допомогою мішені"
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "Використати кольорову мішень для автовстановлення CAT і каналів"
 
-#: ../src/iop/channelmixerrgb.c:4647 ../src/iop/channelmixerrgb.c:4659
-#: ../src/iop/channelmixerrgb.c:4677 ../src/iop/channelmixerrgb.c:4695
-#: ../src/iop/channelmixerrgb.c:4704 ../src/iop/channelmixerrgb.c:4712
+#: ../src/iop/channelmixerrgb.c:4647 ../src/iop/channelmixerrgb.c:4660
+#: ../src/iop/channelmixerrgb.c:4678 ../src/iop/channelmixerrgb.c:4696
+#: ../src/iop/channelmixerrgb.c:4705 ../src/iop/channelmixerrgb.c:4713
 msgid "calibrate"
 msgstr "Калібрування"
 
@@ -14052,11 +14052,15 @@ msgstr "Datacolor SpyderCheckr 48 pre-2018"
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 post-2018"
 
-#: ../src/iop/channelmixerrgb.c:4659
-msgid "optimize for"
-msgstr "ціль оптимізації"
+#: ../src/iop/channelmixerrgb.c:4656
+msgid "Datacolor SpyderCheckr Photo"
+msgstr "Datacolor SpyderCheckr Photo"
 
 #: ../src/iop/channelmixerrgb.c:4660
+msgid "optimize for"
+msgstr "Ціль оптимізації"
+
+#: ../src/iop/channelmixerrgb.c:4661
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -14071,35 +14075,35 @@ msgstr ""
 "Немає - компроміс між ними\n"
 "Інші варіанти задають особливу поведінку для захисту деяких відтінків"
 
-#: ../src/iop/channelmixerrgb.c:4667
+#: ../src/iop/channelmixerrgb.c:4668
 msgid "neutral colors"
 msgstr "Нейтральні кольори"
 
-#: ../src/iop/channelmixerrgb.c:4669
+#: ../src/iop/channelmixerrgb.c:4670
 msgid "skin and soil colors"
 msgstr "Кольори шкіри та грунту"
 
-#: ../src/iop/channelmixerrgb.c:4670
+#: ../src/iop/channelmixerrgb.c:4671
 msgid "foliage colors"
 msgstr "Кольори листя"
 
-#: ../src/iop/channelmixerrgb.c:4671
+#: ../src/iop/channelmixerrgb.c:4672
 msgid "sky and water colors"
 msgstr "Кольори неба та води"
 
-#: ../src/iop/channelmixerrgb.c:4672
+#: ../src/iop/channelmixerrgb.c:4673
 msgid "average delta E"
 msgstr "Середня ΔE*"
 
-#: ../src/iop/channelmixerrgb.c:4673
+#: ../src/iop/channelmixerrgb.c:4674
 msgid "maximum delta E"
 msgstr "Максимальна ΔE*"
 
-#: ../src/iop/channelmixerrgb.c:4677
+#: ../src/iop/channelmixerrgb.c:4678
 msgid "patch scale"
 msgstr "Масштаб зразків"
 
-#: ../src/iop/channelmixerrgb.c:4680
+#: ../src/iop/channelmixerrgb.c:4681
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -14109,31 +14113,31 @@ msgstr ""
 "Корисно, коли корекція перспективи є неакуратною або\n"
 "рамка зразків відкидає тіні по краях зразків."
 
-#: ../src/iop/channelmixerrgb.c:4690
+#: ../src/iop/channelmixerrgb.c:4691
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "Для ΔE* використовується формула CIE 2000"
 
-#: ../src/iop/channelmixerrgb.c:4695
+#: ../src/iop/channelmixerrgb.c:4696
 msgid "accept"
 msgstr "Прийняти"
 
-#: ../src/iop/channelmixerrgb.c:4701
+#: ../src/iop/channelmixerrgb.c:4702
 msgid "accept the computed profile and set it in the module"
 msgstr "Прийняти обчислений профіль і встановити його в модулі"
 
-#: ../src/iop/channelmixerrgb.c:4704
+#: ../src/iop/channelmixerrgb.c:4705
 msgid "recompute"
 msgstr "Переобчислення"
 
-#: ../src/iop/channelmixerrgb.c:4708
+#: ../src/iop/channelmixerrgb.c:4709
 msgid "recompute the profile"
 msgstr "Перерахувати профіль"
 
-#: ../src/iop/channelmixerrgb.c:4712
+#: ../src/iop/channelmixerrgb.c:4713
 msgid "validate"
 msgstr "Валідація"
 
-#: ../src/iop/channelmixerrgb.c:4716
+#: ../src/iop/channelmixerrgb.c:4717
 msgid "check the output delta E"
 msgstr "Перевірити вихідну ΔE*"
 
@@ -14344,7 +14348,7 @@ msgstr "Нижнє поле не може накладатися на верхн
 #: ../src/iop/clipping.c:3019
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
 msgstr ""
-"<b>фіксація змін</b>: подвійний клік, <b>випрямлення</b>: перетягування "
+"<b>Фіксація змін</b>: подвійний клік, <b>Випрямлення</b>: перетягування "
 "правою кнопкою"
 
 #: ../src/iop/clipping.c:3023
@@ -14352,18 +14356,18 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>зміна розміру</b>: перетягування, <b>зберегти співвідношення сторін</b>: "
-"shift+перетягування\n"
-"<b>випрямлення</b>: перетягування правою кнопкою"
+"<b>Зміна розміру</b>: перетягування, <b>Зберегти співвідношення сторін</b>: "
+"Shift+перетягування\n"
+"<b>Випрямлення</b>: перетягування правою кнопкою"
 
 #: ../src/iop/clipping.c:3066
 msgid "<b>move control point</b>: drag"
-msgstr "<b>переміщення контрольної точки</b>: перетягування"
+msgstr "<b>Переміщення контрольної точки</b>: перетягування"
 
 #: ../src/iop/clipping.c:3071
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"
 msgstr ""
-"<b>переміщення лінії</b>: перетягування, <b>перемикання симетрії</b>: "
+"<b>Переміщення лінії</b>: перетягування, <b>Перемикання симетрії</b>: "
 "натисніть ꝏ"
 
 #: ../src/iop/clipping.c:3076
@@ -14371,9 +14375,9 @@ msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>застосування</b>: натисніть <tt>ok</tt>, <b>перемикання симетрії</b>: "
+"<b>Застосування</b>: натисніть <tt>ok</tt>, <b>Перемикання симетрії</b>: "
 "натисніть ꝏ\n"
-"<b>переміщення лінії/контрольної точки</b>: перетягування"
+"<b>Переміщення лінії/контрольної точки</b>: перетягування"
 
 #: ../src/iop/clipping.c:3083
 msgid ""
@@ -14381,9 +14385,9 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
-"<b>переміщення</b>: перетягування, <b>переміщення по вертикалі</b>: "
-"Shift+перетягування, <b>переміщення по горизонталі</b>: Ctrl+перетягування\n"
-"<b>випрямлення</b>: перетягування правою кнопкою, <b>фіксація змін</b>: "
+"<b>Переміщення</b>: перетягування, <b>Переміщення по вертикалі</b>: "
+"Shift+перетягування, <b>Переміщення по горизонталі</b>: Ctrl+перетягування\n"
+"<b>Випрямлення</b>: перетягування правою кнопкою, <b>Фіксація змін</b>: "
 "подвійний клік"
 
 #: ../src/iop/clipping.c:3340 ../src/iop/crop.c:1796
@@ -14433,43 +14437,43 @@ msgstr "нелінійний простір, Lab, на основі сцен"
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:275
 msgid "split-toning teal-orange (2nd instance)"
-msgstr "спліт-тонування бірюзово-оранжевий (2-й екземпляр)"
+msgstr "Спліт-тонування бірюзово-оранжевий (2-й екземпляр)"
 
 #: ../src/iop/colorbalance.c:278
 msgid "split-toning teal-orange (1st instance)"
-msgstr "спліт-тонування бірюзово-оранжевий (1-й екземпляр)"
+msgstr "Спліт-тонування бірюзово-оранжевий (1-й екземпляр)"
 
 #: ../src/iop/colorbalance.c:282
 msgid "generic film"
-msgstr "типова фотоплівка"
+msgstr "Типова фотоплівка"
 
 #: ../src/iop/colorbalance.c:286
 msgid "similar to Kodak Portra"
-msgstr "схожа на Kodak Portra"
+msgstr "Схожа на Kodak Portra"
 
 #: ../src/iop/colorbalance.c:290
 msgid "similar to Kodak Ektar"
-msgstr "схожа на Kodak Ektar"
+msgstr "Схожа на Kodak Ektar"
 
 #: ../src/iop/colorbalance.c:294
 msgid "similar to Kodachrome"
-msgstr "схожа на Kodachrome"
+msgstr "Схожа на Kodachrome"
 
 #: ../src/iop/colorbalance.c:990
 msgid "optimize luma from patches"
-msgstr "оптимізувати яскравість із зразків"
+msgstr "Оптимізувати яскравість із зразків"
 
 #: ../src/iop/colorbalance.c:992 ../src/iop/colorbalance.c:2110
 msgid "optimize luma"
-msgstr "оптимізувати яскравість"
+msgstr "Оптимізувати яскравість"
 
 #: ../src/iop/colorbalance.c:996
 msgid "neutralize colors from patches"
-msgstr "нейтралізувати кольори із зразків"
+msgstr "Нейтралізувати кольори із зразків"
 
 #: ../src/iop/colorbalance.c:998 ../src/iop/colorbalance.c:2116
 msgid "neutralize colors"
-msgstr "нейтралізувати кольори"
+msgstr "Нейтралізувати кольори"
 
 #: ../src/iop/colorbalance.c:1783
 msgctxt "color"
@@ -15569,16 +15573,16 @@ msgstr "Змінити кадрування"
 #: ../src/iop/crop.c:1667
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>зміна розміру</b>: перетягування, <b>зберегти співвідношення сторін</b>: "
-"shift+перетягування"
+"<b>Зміна розміру</b>: перетягування, <b>Зберегти співвідношення сторін</b>: "
+"Shift+перетягування"
 
 #: ../src/iop/crop.c:1676
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
 msgstr ""
-"<b>переміщення</b>: перетягування, <b>переміщення по вертикалі</b>: "
-"Shift+перетягування, <b>переміщення по горизонталі</b>: Ctrl+перетягування"
+"<b>Переміщення</b>: перетягування, <b>Переміщення по вертикалі</b>: "
+"Shift+перетягування, <b>Переміщення по горизонталі</b>: Ctrl+перетягування"
 
 #: ../src/iop/defringe.c:71
 msgid "defringe"
@@ -17831,8 +17835,8 @@ msgid ""
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
 "ctrl+scroll"
 msgstr ""
-"<b>додати точку</b>: клік з перетягуванням\n"
-"<b>розмір</b>: прокрутка - <b>сила</b>: Shift+прокрутка - <b>напрямок</b>: "
+"<b>Додати точку</b>: клік з перетягуванням\n"
+"<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
 #: ../src/iop/liquify.c:3639
@@ -17841,8 +17845,8 @@ msgid ""
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
 "ctrl+scroll"
 msgstr ""
-"<b>додати лінію</b>: клік\n"
-"<b>розмір</b>: прокрутка - <b>сила</b>: Shift+прокрутка - <b>напрямок</b>: "
+"<b>Додати лінію</b>: клік\n"
+"<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
 #: ../src/iop/liquify.c:3642
@@ -17851,8 +17855,8 @@ msgid ""
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
 "ctrl+scroll"
 msgstr ""
-"<b>додати криву</b>: клік\n"
-"<b>розмір</b>: прокрутка - <b>сила</b>: Shift+прокрутка - <b>напрямок</b>: "
+"<b>Додати криву</b>: клік\n"
+"<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
 #: ../src/iop/liquify.c:3693
@@ -17860,12 +17864,12 @@ msgid ""
 "use a tool to add warps\n"
 "<b>remove a warp</b>: right-click"
 msgstr ""
-"використовуйте інструмент для додавання деформацій\n"
-"<b>видалити деформацію</b>: права кнопка миші"
+"Використовуйте інструмент для додавання деформацій\n"
+"<b>Видалити деформацію</b>: права кнопка миші"
 
 #: ../src/iop/liquify.c:3696
 msgid "warps|nodes count:"
-msgstr "деформацій | вузлів: "
+msgstr "Деформацій | Вузлів: "
 
 #: ../src/iop/liquify.c:3705
 msgid "edit, add and delete nodes"
@@ -17909,8 +17913,8 @@ msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
-"<b>додати вузол</b>: Ctrl+клік - <b>видалити контур</b>: правий клік\n"
-"<b>перемкнути лінія/крива</b>: Ctrl+Alt+клік"
+"<b>Додати вузол</b>: Ctrl+клік - <b>Видалити контур</b>: правий клік\n"
+"<b>Перемкнути лінія/крива</b>: Ctrl+Alt+клік"
 
 #: ../src/iop/liquify.c:3732
 msgid ""
@@ -17918,34 +17922,34 @@ msgid ""
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
 "right click"
 msgstr ""
-"<b>переміщення</b>клікніть і перетягніть - <b>показати/приховати елементи "
+"<b>Переміщення</b>клікніть і перетягніть - <b>Показати/приховати елементи "
 "керування розтушовкою</b>: клік\n"
-"<b>автозгладжування, виступи, згладжування, симетричність</b>: Ctrl+клік - "
-"<b>прибрати</b>: клік правою кнопкою"
+"<b>Автозгладжування, виступи, згладжування, симетричність</b>: Ctrl+клік - "
+"<b>Прибрати</b>: клік правою кнопкою"
 
 #: ../src/iop/liquify.c:3736 ../src/iop/liquify.c:3738
 msgid "<b>shape of path</b>: drag"
-msgstr "<b>зміна форми контуру</b>: перетягування"
+msgstr "<b>Зміна форми контуру</b>: перетягування"
 
 #: ../src/iop/liquify.c:3740
 msgid "<b>radius</b>: drag"
-msgstr "<b>радіус</b>: перетягування"
+msgstr "<b>Радіус</b>: перетягування"
 
 #: ../src/iop/liquify.c:3742
 msgid "<b>hardness (center)</b>: drag"
-msgstr "<b>регулювання жорсткості (центр)</b>: перетягування"
+msgstr "<b>Регулювання жорсткості (центр)</b>: перетягування"
 
 #: ../src/iop/liquify.c:3744
 msgid "<b>hardness (feather)</b>: drag"
-msgstr "<b>регулювання жорсткості (розтушовка)</b>: перетягування"
+msgstr "<b>Регулювання жорсткості (розтушовка)</b>: перетягування"
 
 #: ../src/iop/liquify.c:3746
 msgid ""
 "<b>strength</b>: drag\n"
 "<b>linear, grow, and shrink</b>: ctrl+click"
 msgstr ""
-"<b>інтенсивність деформації</b>: перетягування\n"
-"<b>лінійний режим, режим зростання, режим зменшення</b>: Ctrl+клік"
+"<b>Інтенсивність деформації</b>: перетягування\n"
+"<b>Лінійний режим, режим зростання, режим зменшення</b>: Ctrl+клік"
 
 #: ../src/iop/lowlight.c:86
 msgid "lowlight vision"
