@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-17 10:30+0200\n"
-"PO-Revision-Date: 2023-05-17 22:49+0200\n"
+"POT-Creation-Date: 2023-05-18 08:18+0200\n"
+"PO-Revision-Date: 2023-05-20 08:02+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -2133,7 +2133,7 @@ msgstr "erhalte Farben"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270 ../src/gui/guides.c:712 ../src/iop/basecurve.c:2193
-#: ../src/iop/channelmixerrgb.c:4666 ../src/iop/clipping.c:1900 ../src/iop/clipping.c:2093 ../src/iop/clipping.c:2108
+#: ../src/iop/channelmixerrgb.c:4667 ../src/iop/clipping.c:1900 ../src/iop/clipping.c:2093 ../src/iop/clipping.c:2108
 #: ../src/iop/retouch.c:463 ../src/libs/collect.c:1907 ../src/libs/colorpicker.c:51 ../src/libs/export.c:1024
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:132 ../src/libs/live_view.c:311
 #: ../src/libs/print_settings.c:2826
@@ -2944,7 +2944,7 @@ msgstr "räumliche Ausdehnung"
 msgid "range extent"
 msgstr "Werte-Ausdehnung"
 
-#: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154 ../src/iop/channelmixerrgb.c:4668
+#: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154 ../src/iop/channelmixerrgb.c:4669
 msgid "saturated colors"
 msgstr "gesättigte Farben"
 
@@ -13126,8 +13126,8 @@ msgstr "Kalibrierung mit Color Checker"
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "setzt CAT und RGB Kanäle anhand des Color Checker Targets"
 
-#: ../src/iop/channelmixerrgb.c:4647 ../src/iop/channelmixerrgb.c:4659 ../src/iop/channelmixerrgb.c:4677
-#: ../src/iop/channelmixerrgb.c:4695 ../src/iop/channelmixerrgb.c:4704 ../src/iop/channelmixerrgb.c:4712
+#: ../src/iop/channelmixerrgb.c:4647 ../src/iop/channelmixerrgb.c:4660 ../src/iop/channelmixerrgb.c:4678
+#: ../src/iop/channelmixerrgb.c:4696 ../src/iop/channelmixerrgb.c:4705 ../src/iop/channelmixerrgb.c:4713
 msgid "calibrate"
 msgstr "Kalibrierung"
 
@@ -13163,11 +13163,16 @@ msgstr "Datacolor SpyderCheckr 48 pre-2018"
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 post-2018"
 
-#: ../src/iop/channelmixerrgb.c:4659
+#: ../src/iop/channelmixerrgb.c:4656
+#| msgid "Datacolor SpyderCheckr 24 post-2018"
+msgid "Datacolor SpyderCheckr Photo"
+msgstr "Datacolor SpyderCheckr Photo"
+
+#: ../src/iop/channelmixerrgb.c:4660
 msgid "optimize for"
 msgstr "optimiert für"
 
-#: ../src/iop/channelmixerrgb.c:4660
+#: ../src/iop/channelmixerrgb.c:4661
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -13181,35 +13186,35 @@ msgstr ""
 "„keine“ ist ein Kompromiss zwischen beiden\n"
 "die anderen sind spezielle Verhaltensweisen zum Schutz einiger Farbtöne"
 
-#: ../src/iop/channelmixerrgb.c:4667
+#: ../src/iop/channelmixerrgb.c:4668
 msgid "neutral colors"
 msgstr "neutrale Farben"
 
-#: ../src/iop/channelmixerrgb.c:4669
+#: ../src/iop/channelmixerrgb.c:4670
 msgid "skin and soil colors"
 msgstr "Haut- und Erdtöne"
 
-#: ../src/iop/channelmixerrgb.c:4670
+#: ../src/iop/channelmixerrgb.c:4671
 msgid "foliage colors"
 msgstr "Laub"
 
-#: ../src/iop/channelmixerrgb.c:4671
+#: ../src/iop/channelmixerrgb.c:4672
 msgid "sky and water colors"
 msgstr "Himmel und Wasser"
 
-#: ../src/iop/channelmixerrgb.c:4672
+#: ../src/iop/channelmixerrgb.c:4673
 msgid "average delta E"
 msgstr "mittleres ΔE"
 
-#: ../src/iop/channelmixerrgb.c:4673
+#: ../src/iop/channelmixerrgb.c:4674
 msgid "maximum delta E"
 msgstr "maximales ΔE"
 
-#: ../src/iop/channelmixerrgb.c:4677
+#: ../src/iop/channelmixerrgb.c:4678
 msgid "patch scale"
 msgstr "Messbereichsgröße"
 
-#: ../src/iop/channelmixerrgb.c:4680
+#: ../src/iop/channelmixerrgb.c:4681
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -13219,31 +13224,31 @@ msgstr ""
 "nützlich, wenn die Perspektivkorrektur ungenau ist oder\n"
 "der Rahmen der Farbfelder einen Schatten auf deren Kanten wirft."
 
-#: ../src/iop/channelmixerrgb.c:4690
+#: ../src/iop/channelmixerrgb.c:4691
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "Delta E wird nach CIE 2000 ermittelt"
 
-#: ../src/iop/channelmixerrgb.c:4695
+#: ../src/iop/channelmixerrgb.c:4696
 msgid "accept"
 msgstr "übernehmen"
 
-#: ../src/iop/channelmixerrgb.c:4701
+#: ../src/iop/channelmixerrgb.c:4702
 msgid "accept the computed profile and set it in the module"
 msgstr "ermitteltes Profil akzeptieren und übernehmen"
 
-#: ../src/iop/channelmixerrgb.c:4704
+#: ../src/iop/channelmixerrgb.c:4705
 msgid "recompute"
 msgstr "neu berechnen"
 
-#: ../src/iop/channelmixerrgb.c:4708
+#: ../src/iop/channelmixerrgb.c:4709
 msgid "recompute the profile"
 msgstr "Profil neu berechnen"
 
-#: ../src/iop/channelmixerrgb.c:4712
+#: ../src/iop/channelmixerrgb.c:4713
 msgid "validate"
 msgstr "prüfen"
 
-#: ../src/iop/channelmixerrgb.c:4716
+#: ../src/iop/channelmixerrgb.c:4717
 msgid "check the output delta E"
 msgstr "Ergebnis Delta E prüfen"
 
