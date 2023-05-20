@@ -1235,11 +1235,11 @@ void dt_ioppr_transform_image_colorspace
     {
       dt_get_times(&end_time);
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f CPU) [%s %s]\n",
+               "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f CPU) [%s%s]\n",
                dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
                end_time.clock - start_time.clock,
                end_time.user - start_time.user,
-               self->op, self->multi_name);
+               self->op, dt_iop_get_instance_id(self));
     }
   }
   else
@@ -1251,19 +1251,19 @@ void dt_ioppr_transform_image_colorspace
     {
       dt_get_times(&end_time);
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f lcms2) [%s %s]\n",
+               "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f lcms2) [%s%s]\n",
                dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
                end_time.clock - start_time.clock,
                end_time.user - start_time.user,
-               self->op, self->multi_name);
+               self->op, dt_iop_get_instance_id(self));
     }
   }
 
   if(*converted_cst == cst_from)
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_ioppr_transform_image_colorspace] in `%s', profile `%s',"
+             "[dt_ioppr_transform_image_colorspace] in `%s%s', profile `%s',"
              " invalid conversion from %s to %s\n",
-             self->so->op,
+             self->op, dt_iop_get_instance_id(self),
              dt_colorspaces_get_name(profile_info->type, profile_info->filename),
              dt_iop_colorspace_to_name(cst_from),
              dt_iop_colorspace_to_name(cst_to));
@@ -1545,9 +1545,10 @@ gboolean dt_ioppr_transform_image_colorspace_cl
       err = CL_INVALID_KERNEL;
       *converted_cst = cst_from;
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace_cl] in `%s', profile `%s',"
+               "[dt_ioppr_transform_image_colorspace_cl] in `%s%s', profile `%s',"
                " invalid conversion from %s to %s\n",
-               self->so->op, dt_colorspaces_get_name(profile_info->type, profile_info->filename),
+               self->op, dt_iop_get_instance_id(self),
+               dt_colorspaces_get_name(profile_info->type, profile_info->filename),
                dt_iop_colorspace_to_name(cst_from),
                dt_iop_colorspace_to_name(cst_to));
       goto cleanup;
@@ -1601,11 +1602,11 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     {
       dt_get_times(&end_time);
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s %s]\n",
+               "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s%s]\n",
                dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
                end_time.clock - start_time.clock,
                end_time.user - start_time.user,
-               self->op, self->multi_name);
+               self->op, dt_iop_get_instance_id(self));
     }
   }
   else
