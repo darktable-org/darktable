@@ -2449,7 +2449,8 @@ void gui_init(dt_lib_module_t *self)
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
-  char *tooltip = g_strdup_printf(_("printer ICC profiles in %s or %s"),
+  char *tooltip = g_strdup_printf(_("darktable loads printer ICC profiles from\n%s\n"
+                                    "or, if this directory does not exist, from\n%s"),
                                   user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(d->pprofile, tooltip);
   g_free(tooltip);
@@ -2798,7 +2799,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
-  tooltip = g_strdup_printf(_("output ICC profiles in %s or %s"),
+  tooltip = g_strdup_printf(_("darktable loads output ICC profiles from\n%s\n"
+                              "or, if this directory does not exist, from\n%s"),
                             user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(d->profile, tooltip);
   g_free(tooltip);
