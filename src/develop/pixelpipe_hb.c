@@ -129,8 +129,8 @@ void dt_print_pipe(dt_debug_thread_t thread,
   snprintf(buf[1], sizeof(buf[1]), "[%s]", title);
 
   snprintf(buf[2], sizeof(buf[2]), "%s%s",
-    module ? module->name() : "",
-    module ? dt_iop_get_instance_name(module) : "");
+    module ? module->op : "",
+    module ? dt_iop_get_instance_id(module) : "");
 
   if(roi_in)
     snprintf(roi, sizeof(roi),
@@ -2327,11 +2327,10 @@ static gboolean _dev_pixelpipe_process_rec(
                   : pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_CPU ? "CPU" : ""));
   }
 
-  gchar *module_label = dt_history_item_get_name(module);
   dt_show_times_f
     (&start,
-     "[dev_pixelpipe]", "[%s] processed `%s' on %s%s%s, blended on %s",
-     dt_dev_pixelpipe_type_to_str(pipe->type), module_label,
+     "[dev_pixelpipe]", "[%s] processed `%s%s' on %s%s%s, blended on %s",
+     dt_dev_pixelpipe_type_to_str(pipe->type), module->op, dt_iop_get_instance_id(module),
      pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU
           ? "GPU"
           : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "",
@@ -2343,8 +2342,6 @@ static gboolean _dev_pixelpipe_process_rec(
      pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU
           ? "GPU"
           : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "");
-  g_free(module_label);
-  module_label = NULL;
 
   // in case we get this buffer from the cache in the future, cache some stuff:
   **out_format = piece->dsc_out = pipe->dsc;
@@ -2415,22 +2412,20 @@ static gboolean _dev_pixelpipe_process_rec(
           }
         }
       }
-      module_label = dt_history_item_get_name(module);
       if(hasnan)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label,
+                 "[dev_pixelpipe] module `%s%s' outputs NaNs! [%s]\n", module->op, dt_iop_get_instance_id(module),
                  dt_dev_pixelpipe_type_to_str(pipe->type));
       if(hasinf)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n",
-                 module_label,
+                 "[dev_pixelpipe] module `%s%s' outputs non-finite floats! [%s]\n",
+                 module->op, dt_iop_get_instance_id(module),
                  dt_dev_pixelpipe_type_to_str(pipe->type));
       dt_print(DT_DEBUG_ALWAYS,
-               "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n",
-               module_label,
-               min[0], min[1], min[2], max[0], max[1], max[2],
-               dt_dev_pixelpipe_type_to_str(pipe->type));
-      g_free(module_label);
+               "[dev_pixelpipe] module `%s%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n",
+                module->op, dt_iop_get_instance_id(module),
+                min[0], min[1], min[2], max[0], max[1], max[2],
+                dt_dev_pixelpipe_type_to_str(pipe->type));
     }
     else if((*out_format)->datatype == TYPE_FLOAT && (*out_format)->channels == 1)
     {
@@ -2451,22 +2446,21 @@ static gboolean _dev_pixelpipe_process_rec(
           max = fmax(f, max);
         }
       }
-      module_label = dt_history_item_get_name(module);
 
       if(hasnan)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label,
+                 "[dev_pixelpipe] module `%s%s' outputs NaNs! [%s]\n",
+                 module->op, dt_iop_get_instance_id(module),
                  dt_dev_pixelpipe_type_to_str(pipe->type));
       if(hasinf)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n",
-                 module_label,
+                 "[dev_pixelpipe] module `%s%s' outputs non-finite floats! [%s]\n",
+                 module->op, dt_iop_get_instance_id(module),
                  dt_dev_pixelpipe_type_to_str(pipe->type));
       dt_print(DT_DEBUG_ALWAYS,
-               "[dev_pixelpipe] module `%s' min: (%f) max: (%f) [%s]\n",
-               module_label, min, max,
+               "[dev_pixelpipe] module `%s%s' min: (%f) max: (%f) [%s]\n",
+               module->op, dt_iop_get_instance_id(module), min, max,
                dt_dev_pixelpipe_type_to_str(pipe->type));
-      g_free(module_label);
     }
   }
 
@@ -2863,9 +2857,11 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
          target_module->name(), raster_mask_source->name());
 
       dt_print(DT_DEBUG_ALWAYS,
-               "module `%s' can't get raster mask id=%i from module `%s'"
+               "module `%s%s' can't get raster mask id=%i from module `%s%s'"
                " as that is processed later in the pixel pipe\n",
-               target_module->name(), raster_mask_id, raster_mask_source->name());
+               target_module->op, dt_iop_get_instance_id(target_module),
+               raster_mask_id,
+               raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
       return NULL;
     }
 
@@ -2888,7 +2884,7 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
       dt_print_pipe(DT_DEBUG_PIPE,
          "no raster found", piece->pipe, piece->module, NULL, NULL,
          "source module `%s%s' is disabled\n",
-         raster_mask_source->name(), dt_iop_get_instance_name(raster_mask_source));
+         raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
       return NULL;
     }
     else
@@ -2900,7 +2896,7 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
         dt_print_pipe(DT_DEBUG_PIPE,
           "no raster mask found", piece->pipe, piece->module, NULL, NULL,
           "raster mask seems to be lost in module `%s%s'\n",
-          raster_mask_source->name(), dt_iop_get_instance_name(raster_mask_source));
+          raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source));
         return NULL;
       }
       else
@@ -2976,7 +2972,7 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
   dt_print_pipe(DT_DEBUG_PIPE,
       "got raster mask", piece->pipe, target_module, NULL, NULL,
       "from module `%s%s' %s\n",
-      raster_mask_source->name(), dt_iop_get_instance_name(raster_mask_source),
+      raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source),
       *free_mask ? "distorted" : "");
 
   return raster_mask;

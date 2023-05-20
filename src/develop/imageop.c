@@ -1831,7 +1831,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
         dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
            "commit_blend_params", NULL, module, NULL, NULL, "raster mask from '%s%s', %s\n",
-           candidate->name(), dt_iop_get_instance_name(candidate),
+           candidate->op, dt_iop_get_instance_id(candidate),
            in_use ? "in_use" : "new");
         return in_use ? NULL : candidate;
       }
@@ -3484,6 +3484,11 @@ const char *dt_iop_get_instance_name(const dt_iop_module_t *module)
   return (module->multi_priority > 0 || module->multi_name_hand_edited)
     ? module->multi_name
     : "";
+}
+const char *dt_iop_get_instance_id(const dt_iop_module_t *module)
+{
+  const char *ids[] = { "", ".1", ".2", ".3", ".4", ".5", ".6", ".x" };
+  return ids[MIN(module->multi_priority, 7)];
 }
 
 void dt_iop_refresh_center(dt_iop_module_t *module)
