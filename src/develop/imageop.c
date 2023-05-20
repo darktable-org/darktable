@@ -1771,9 +1771,9 @@ void dt_iop_unload_modules_so()
   }
 }
 
-void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
+void dt_iop_advertise_rastermask(dt_iop_module_t *module, int mask_mode)
 {
-  static const int key = 0;
+  static const int key = BLEND_RASTER_ID;
   // showing raster masks doesn't make sense, one can use the original
   // source instead. or does it?
   if(mask_mode & DEVELOP_MASK_ENABLED && !(mask_mode & DEVELOP_MASK_RASTER))
@@ -1804,7 +1804,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
     module->blend_params->blend_cst =
       dt_develop_blend_default_module_blend_colorspace(module);
   }
-  dt_iop_set_mask_mode(module, blendop_params->mask_mode);
+  dt_iop_advertise_rastermask(module, blendop_params->mask_mode);
 
   // If we use default blending parameters or don't have a dev
   // we don't manage raster mask users
