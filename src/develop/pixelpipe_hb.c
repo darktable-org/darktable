@@ -2857,8 +2857,8 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
        || (candidate->module->iop_order >= target_module->iop_order))
     {
       dt_control_log
-        (_("module `%s' can't get raster mask from module `%s'\n"
-           "as that is processed later in the pixel pipe.\n"
+        (_("module '%s' can't get raster mask from module\n"
+           "'%s' as that is processed later in the pixel pipe.\n"
            "raster mask is ignored."),
          target_module->name(), raster_mask_source->name());
 
