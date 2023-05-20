@@ -608,7 +608,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode,
 
   _box_set_visible(data->top_box, mask_mode & DEVELOP_MASK_ENABLED);
 
-  dt_iop_set_mask_mode(data->module, mask_mode);
+  dt_iop_advertise_rastermask(data->module, mask_mode);
 
   if((mask_mode & DEVELOP_MASK_ENABLED)
      && ((data->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
