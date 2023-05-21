@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-21 20:19+0200\n"
+"POT-Creation-Date: 2023-05-21 20:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4554,7 +4554,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
 #: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:159
-#: ../src/iop/borders.c:942
+#: ../src/iop/borders.c:947
 msgid "image"
 msgstr ""
 
@@ -6234,7 +6234,7 @@ msgstr ""
 msgid "\""
 msgstr ""
 
-#: ../src/common/pdf.h:104 ../src/iop/borders.c:953
+#: ../src/common/pdf.h:104 ../src/iop/borders.c:958
 msgid "A4"
 msgstr ""
 
@@ -11450,7 +11450,7 @@ msgstr ""
 msgid "linear, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/ashift.c:133 ../src/iop/borders.c:195 ../src/iop/clipping.c:322
+#: ../src/iop/ashift.c:133 ../src/iop/borders.c:200 ../src/iop/clipping.c:322
 #: ../src/iop/crop.c:146 ../src/iop/flip.c:111 ../src/iop/liquify.c:299
 msgid "geometric, RGB"
 msgstr ""
@@ -11999,7 +11999,7 @@ msgid "apply usual image adjustments"
 msgstr ""
 
 #: ../src/iop/basicadj.c:147 ../src/iop/bilat.c:102 ../src/iop/bloom.c:81
-#: ../src/iop/blurs.c:93 ../src/iop/borders.c:193 ../src/iop/censorize.c:83
+#: ../src/iop/blurs.c:93 ../src/iop/borders.c:198 ../src/iop/censorize.c:83
 #: ../src/iop/colisa.c:90 ../src/iop/colorcontrast.c:97
 #: ../src/iop/colorize.c:105 ../src/iop/colormapping.c:153
 #: ../src/iop/colorzones.c:145 ../src/iop/grain.c:434 ../src/iop/highpass.c:78
@@ -12227,189 +12227,193 @@ msgid "framing"
 msgstr ""
 
 #: ../src/iop/borders.c:192
+msgid "borders|enlarge canvas|expand canvas"
+msgstr ""
+
+#: ../src/iop/borders.c:197
 msgid "add solid borders or margins around the picture"
 msgstr ""
 
-#: ../src/iop/borders.c:194 ../src/iop/borders.c:196 ../src/iop/lut3d.c:144
+#: ../src/iop/borders.c:199 ../src/iop/borders.c:201 ../src/iop/lut3d.c:144
 msgid "linear or non-linear, RGB, display-referred"
 msgstr ""
 
-#: ../src/iop/borders.c:722
+#: ../src/iop/borders.c:727
 msgid "15:10 postcard white"
 msgstr ""
 
-#: ../src/iop/borders.c:727
+#: ../src/iop/borders.c:732
 msgid "15:10 postcard black"
 msgstr ""
 
-#: ../src/iop/borders.c:937
+#: ../src/iop/borders.c:942
 msgid "size of the border in percent of the full image"
 msgstr ""
 
-#: ../src/iop/borders.c:939 ../src/iop/clipping.c:2218 ../src/iop/crop.c:1224
+#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2218 ../src/iop/crop.c:1224
 msgid "aspect"
 msgstr ""
 
-#: ../src/iop/borders.c:940
+#: ../src/iop/borders.c:945
 msgid ""
 "select the aspect ratio (right click on slider below to type your own w:h)"
 msgstr ""
 
-#: ../src/iop/borders.c:943
+#: ../src/iop/borders.c:948
 msgid "3:1"
 msgstr ""
 
-#: ../src/iop/borders.c:944
+#: ../src/iop/borders.c:949
 msgid "95:33"
 msgstr ""
 
-#: ../src/iop/borders.c:945
+#: ../src/iop/borders.c:950
 msgid "CinemaScope 2.39:1"
 msgstr ""
 
-#: ../src/iop/borders.c:946
+#: ../src/iop/borders.c:951
 msgid "2:1"
 msgstr ""
 
-#: ../src/iop/borders.c:947
+#: ../src/iop/borders.c:952
 msgid "16:9"
 msgstr ""
 
-#: ../src/iop/borders.c:948
+#: ../src/iop/borders.c:953
 msgid "5:3"
 msgstr ""
 
-#: ../src/iop/borders.c:949
+#: ../src/iop/borders.c:954
 msgid "US Legal 8.5x14"
 msgstr ""
 
-#: ../src/iop/borders.c:950 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1128
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1128
 msgid "golden cut"
 msgstr ""
 
-#: ../src/iop/borders.c:951
+#: ../src/iop/borders.c:956
 msgid "16:10"
 msgstr ""
 
-#: ../src/iop/borders.c:952
+#: ../src/iop/borders.c:957
 msgid "3:2 (4x6, 10x15cm)"
 msgstr ""
 
-#: ../src/iop/borders.c:954
+#: ../src/iop/borders.c:959
 msgid "DIN"
 msgstr ""
 
-#: ../src/iop/borders.c:955
+#: ../src/iop/borders.c:960
 msgid "7:5"
 msgstr ""
 
-#: ../src/iop/borders.c:956
+#: ../src/iop/borders.c:961
 msgid "4:3"
 msgstr ""
 
-#: ../src/iop/borders.c:957
+#: ../src/iop/borders.c:962
 msgid "US Letter 8.5x11"
 msgstr ""
 
-#: ../src/iop/borders.c:958
+#: ../src/iop/borders.c:963
 msgid "14:11"
 msgstr ""
 
-#: ../src/iop/borders.c:959
+#: ../src/iop/borders.c:964
 msgid "5:4 (8x10)"
 msgstr ""
 
-#: ../src/iop/borders.c:960 ../src/iop/clipping.c:2121 ../src/iop/crop.c:1118
+#: ../src/iop/borders.c:965 ../src/iop/clipping.c:2121 ../src/iop/crop.c:1118
 #: ../src/libs/filtering.c:301 ../src/libs/filters/ratio.c:126
 #: ../src/libs/histogram.c:141
 msgid "square"
 msgstr ""
 
-#: ../src/iop/borders.c:961
+#: ../src/iop/borders.c:966
 msgid "constant border"
 msgstr ""
 
-#: ../src/iop/borders.c:962 ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:967 ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "custom..."
 msgstr ""
 
-#: ../src/iop/borders.c:967
+#: ../src/iop/borders.c:972
 msgid "set the custom aspect ratio (right click to enter number or w:h)"
 msgstr ""
 
-#: ../src/iop/borders.c:970
+#: ../src/iop/borders.c:975
 msgid "aspect ratio orientation of the image with border"
 msgstr ""
 
-#: ../src/iop/borders.c:972
+#: ../src/iop/borders.c:977
 msgid "horizontal position"
 msgstr ""
 
-#: ../src/iop/borders.c:973
+#: ../src/iop/borders.c:978
 msgid ""
 "select the horizontal position ratio relative to top or right click and type "
 "your own (y:h)"
 msgstr ""
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "center"
 msgstr ""
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "1/3"
 msgstr ""
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "3/8"
 msgstr ""
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "5/8"
 msgstr ""
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "2/3"
 msgstr ""
 
-#: ../src/iop/borders.c:981
+#: ../src/iop/borders.c:986
 msgid "custom horizontal position"
 msgstr ""
 
-#: ../src/iop/borders.c:983
+#: ../src/iop/borders.c:988
 msgid "vertical position"
 msgstr ""
 
-#: ../src/iop/borders.c:984
+#: ../src/iop/borders.c:989
 msgid ""
 "select the vertical position ratio relative to left or right click and type "
 "your own (x:w)"
 msgstr ""
 
-#: ../src/iop/borders.c:992
+#: ../src/iop/borders.c:997
 msgid "custom vertical position"
 msgstr ""
 
-#: ../src/iop/borders.c:997
+#: ../src/iop/borders.c:1002
 msgid "size of the frame line in percent of min border width"
 msgstr ""
 
-#: ../src/iop/borders.c:1002
+#: ../src/iop/borders.c:1007
 msgid "offset of the frame line beginning on picture side"
 msgstr ""
 
-#: ../src/iop/borders.c:1009 ../src/iop/borders.c:1018
+#: ../src/iop/borders.c:1014 ../src/iop/borders.c:1023
 msgid "border color"
 msgstr ""
 
-#: ../src/iop/borders.c:1013
+#: ../src/iop/borders.c:1018
 msgid "select border color"
 msgstr ""
 
-#: ../src/iop/borders.c:1017
+#: ../src/iop/borders.c:1022
 msgid "pick border color from image"
 msgstr ""
 
-#: ../src/iop/borders.c:1018 ../src/iop/borders.c:1031
+#: ../src/iop/borders.c:1023 ../src/iop/borders.c:1036
 #: ../src/iop/colorzones.c:2415 ../src/iop/colorzones.c:2425
 #: ../src/iop/negadoctor.c:848 ../src/iop/negadoctor.c:915
 #: ../src/iop/negadoctor.c:953 ../src/iop/rgbcurve.c:1369
@@ -12418,15 +12422,15 @@ msgstr ""
 msgid "pickers"
 msgstr ""
 
-#: ../src/iop/borders.c:1022 ../src/iop/borders.c:1031
+#: ../src/iop/borders.c:1027 ../src/iop/borders.c:1036
 msgid "frame line color"
 msgstr ""
 
-#: ../src/iop/borders.c:1026
+#: ../src/iop/borders.c:1031
 msgid "select frame line color"
 msgstr ""
 
-#: ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1035
 msgid "pick frame line color from image"
 msgstr ""
 
