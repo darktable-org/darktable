@@ -1771,7 +1771,7 @@ void dt_iop_unload_modules_so()
   }
 }
 
-void dt_iop_advertise_rastermask(dt_iop_module_t *module, int mask_mode)
+void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
 {
   static const int key = BLEND_RASTER_ID;
   // showing raster masks doesn't make sense, one can use the original
