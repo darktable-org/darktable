@@ -1192,6 +1192,23 @@ void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *pr
   }
 }
 
+gchar *dt_ioppr_get_location_tooltip(const char *for_name)
+{
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+
+  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
+  char *tooltip = g_strdup_printf
+    (_("darktable loads %s from\n<b>%s</b>\n"
+       "or, if this directory does not exist, from\n<b>%s</b>"),
+     for_name, user_profile_dir, system_profile_dir);
+  g_free(system_profile_dir);
+  g_free(user_profile_dir);
+  return tooltip;
+}
 
 __DT_CLONE_TARGETS__
 void dt_ioppr_transform_image_colorspace

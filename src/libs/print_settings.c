@@ -22,7 +22,6 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/cups_print.h"
-#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/pdf.h"
@@ -2287,13 +2286,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   dt_gui_add_help_link(self->widget, "print_overview");
 
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-
   GtkWidget *label;
 
   d->paper_list = NULL;
@@ -2449,10 +2441,8 @@ void gui_init(dt_lib_module_t *self)
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
-  char *tooltip = g_strdup_printf(_("darktable loads printer ICC profiles from\n%s\n"
-                                    "or, if this directory does not exist, from\n%s"),
-                                  user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(d->pprofile, tooltip);
+  char *tooltip = dt_ioppr_get_location_tooltip(_("printer ICC profiles"));
+  gtk_widget_set_tooltip_markup(d->pprofile, tooltip);
   g_free(tooltip);
 
   g_signal_connect(G_OBJECT(d->pprofile), "value-changed",
@@ -2799,10 +2789,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
-  tooltip = g_strdup_printf(_("darktable loads output ICC profiles from\n%s\n"
-                              "or, if this directory does not exist, from\n%s"),
-                            user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(d->profile, tooltip);
+  tooltip = dt_ioppr_get_location_tooltip(_("output ICC profiles"));
+  gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
 
   g_signal_connect(G_OBJECT(d->profile), "value-changed",
@@ -2882,9 +2870,6 @@ void gui_init(dt_lib_module_t *self)
   d->print_button = GTK_BUTTON(button);
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   dt_gui_add_help_link(button, "print_settings_button");
-
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
 
   // Let's start the printer discovery now
 

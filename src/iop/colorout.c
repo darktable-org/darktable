@@ -23,7 +23,6 @@
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/dttypes.h"
-#include "common/file_location.h"
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
@@ -865,11 +864,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_iop_colorout_gui_data_t *g = IOP_GUI_ALLOC(colorout);
 
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->output_intent, self, NULL, N_("output intent"),
@@ -896,17 +890,12 @@ void gui_init(struct dt_iop_module_t *self)
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 
-  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-  char *tooltip = g_strdup_printf(_("darktable loads external ICC profiles from\n%s\n"
-                                    "or, if this directory does not exist, from\n%s"),
-                                  user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(g->output_profile, tooltip);
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
+  char *tooltip = dt_ioppr_get_location_tooltip(_("external ICC profiles"));
+  gtk_widget_set_tooltip_markup(g->output_profile, tooltip);
   g_free(tooltip);
 
-  g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->output_profile), "value-changed",
+                   G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,

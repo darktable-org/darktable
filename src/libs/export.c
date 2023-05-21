@@ -21,7 +21,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/file_location.h"
 #include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -1205,11 +1204,6 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add profile combo
 
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-
   d->profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->profile, NULL, N_("profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->profile, FALSE, TRUE, 0);
@@ -1223,14 +1217,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, 0);
 
-  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-  char *tooltip = g_strdup_printf(_("darktable loads output ICC profiles from\n%s\n"
-                                    "or, if this directory does not exist, from\n%s"),
-                                  user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(d->profile, tooltip);
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
+  char *tooltip = dt_ioppr_get_location_tooltip(_("output ICC profiles"));
+  gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
 
   //  Add intent combo

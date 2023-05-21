@@ -21,6 +21,7 @@
 
 #include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
+#include "common/file_location.h"
 #include "develop/imageop.h"
 
 #ifdef HAVE_CONFIG_H
@@ -148,6 +149,11 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
 /** returns the current setting of the histogram profile */
 void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
                                          const char **profile_filename);
+
+/* Returns the tooltip with the location of the profile for for_name
+   which can be softproof, input, output...
+*/
+gchar *dt_ioppr_get_location_tooltip(const char *for_name);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
 void dt_ioppr_transform_image_colorspace
