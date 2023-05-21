@@ -2608,16 +2608,24 @@ void gui_init(dt_view_t *self)
 
     char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
     char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-    char *tooltip = g_strdup_printf(_("display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    char *tooltip = g_strdup_printf(_("darktable loads display ICC profiles from\n%s\n"
+                                      "or, if this directory does not exist, from\n%s"),
+                                    user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(display_profile, tooltip);
     g_free(tooltip);
-    tooltip = g_strdup_printf(_("preview display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    tooltip = g_strdup_printf(_("darktable loads preview display ICC profiles from\n%s\n"
+                                "or, if this directory does not exist, from\n%s"),
+                              user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(display2_profile, tooltip);
     g_free(tooltip);
-    tooltip = g_strdup_printf(_("softproof ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    tooltip = g_strdup_printf(_("darktable loads softproof ICC profiles from\n%s\n"
+                                "or, if this directory does not exist, from\n%s"),
+                              user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(softproof_profile, tooltip);
     g_free(tooltip);
-    tooltip = g_strdup_printf(_("histogram and color picker ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    tooltip = g_strdup_printf(_("darktable loads histogram and color picker ICC profiles from\n%s\n"
+                                "or, if this directory does not exist, from\n%s"),
+                              user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(histogram_profile, tooltip);
     g_free(tooltip);
     g_free(system_profile_dir);
