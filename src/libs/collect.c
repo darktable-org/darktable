@@ -2344,27 +2344,6 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-static void _history_save(dt_lib_collect_t *d)
-{
-  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
-  // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
-  uint32_t curr_pos = table->offset;
-  uint32_t new_pos = -1;
-
-  if(!d->inited)
-  {
-    new_pos = dt_conf_get_int("plugins/lighttable/collect/history_pos0");
-    d->inited = TRUE;
-    dt_thumbtable_set_offset(table, new_pos, TRUE);
-  }
-  else if(curr_pos != -1)
-  {
-    dt_conf_set_int("plugins/lighttable/collect/history_pos0", curr_pos);
-  }
-
-  dt_collection_history_save();
-}
-
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col,
                                      GdkEventButton *event, dt_lib_collect_t *d)
 {
@@ -2483,7 +2462,6 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
                                   darktable.view_manager->proxy.module_collect.module);
   if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-  _history_save(d);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -2531,7 +2509,6 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-  _history_save(c);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
   d->typing = FALSE;
@@ -2628,9 +2605,6 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
   }
 
   if(refresh) _lib_collect_gui_update(self);
-
-  // in any case, we refresh the history
-  _history_save(d);
 }
 
 
@@ -2684,7 +2658,6 @@ static void tag_changed(gpointer instance, gpointer self)
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_TAG, NULL);
-    _history_save(d);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
   }
@@ -2702,7 +2675,6 @@ static void tag_changed(gpointer instance, gpointer self)
       dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_TAG, NULL);
-      _history_save(d);
       dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                         darktable.view_manager->proxy.module_collect.module);
     }
@@ -2728,7 +2700,6 @@ static void _geotag_changed(gpointer instance, GList *imgs, const int locid, gpo
                                       darktable.view_manager->proxy.module_collect.module);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GEOTAGGING,
                                  NULL);
-      _history_save(d);
       dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                         darktable.view_manager->proxy.module_collect.module);
     }
@@ -3007,14 +2978,19 @@ static void _history_apply(GtkWidget *widget, dt_lib_module_t *self)
   if(hid < 0 || hid >= dt_conf_get_int("plugins/lighttable/collect/history_max")) return;
 
   char confname[200];
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", hid);
+  const int pos = dt_conf_get_int(confname);
   snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", hid);
   const char *line = dt_conf_get_string_const(confname);
   if(line && line[0] != '\0')
   {
+    // we store the wanted offset which will be set by thumbtable on collection_change signal
+    dt_conf_set_int("plugins/lighttable/collect/history_next_pos", pos);
+
     const int prev_property = dt_conf_get_int("plugins/lighttable/collect/item0");
     dt_collection_deserialize(line, FALSE);
 
-    // for the tag propertyn we need to adjust the order accordingly
+    // for the tag property we need to adjust the order accordingly
     const int new_property = dt_conf_get_int("plugins/lighttable/collect/item0");
     gchar *order = NULL;
     if(prev_property != DT_COLLECTION_PROP_TAG && new_property == DT_COLLECTION_PROP_TAG)
