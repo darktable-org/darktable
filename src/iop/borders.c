@@ -189,7 +189,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("borders|uncrop|expand canvas");
+  return _("borders|enlarge canvas|expand canvas");
 }
 
 const char **description(struct dt_iop_module_t *self)
