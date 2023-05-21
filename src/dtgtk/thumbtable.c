@@ -1550,6 +1550,9 @@ static void _dt_collection_changed_callback(gpointer instance,
 {
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  dt_collection_history_save();
+
   if(query_change == DT_COLLECTION_CHANGE_RELOAD)
   {
     dt_imgid_t old_hover = dt_control_get_mouse_over_id();
@@ -1749,11 +1752,13 @@ static void _dt_collection_changed_callback(gpointer instance,
   }
   else
   {
-    // otherwise we reset the offset to the beginning
-    table->offset = 1;
+    // otherwise we reset the offset to the wanted position or the beginning
+    const int nextpos = MAX(dt_conf_get_int("plugins/lighttable/collect/history_next_pos"), 1);
+    table->offset = nextpos;
     table->offset_imgid = _thumb_get_imgid(table->offset);
-    dt_conf_set_int("plugins/lighttable/collect/history_pos0", 1);
-    dt_conf_set_int("lighttable/zoomable/last_offset", 1);
+    dt_conf_set_int("plugins/lighttable/collect/history_pos0", nextpos);
+    dt_conf_set_int("plugins/lighttable/collect/history_next_pos", 0);
+    dt_conf_set_int("lighttable/zoomable/last_offset", nextpos);
     dt_conf_set_int("lighttable/zoomable/last_pos_x", 0);
     dt_conf_set_int("lighttable/zoomable/last_pos_y", 0);
     dt_thumbtable_full_redraw(table, TRUE);

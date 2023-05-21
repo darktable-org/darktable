@@ -160,14 +160,16 @@ static void _button_pressed(GtkButton *button, gpointer user_data)
   if(!found) return;
 
   char confname[200];
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", linenumber);
+  const int pos = dt_conf_get_int(confname);
   snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", linenumber);
   const char *line = dt_conf_get_string_const(confname);
   if(line)
   {
+    // we store the wanted offset which will be set by thumbtable on collection_change signal
+    dt_conf_set_int("plugins/lighttable/collect/history_next_pos", pos);
+
     dt_collection_deserialize(line, FALSE);
-    // position will be updated when the list of recent collections is.
-    // that way it'll also catch cases when this is triggered by a signal,
-    // not only our button press here.
   }
 }
 
@@ -177,24 +179,6 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
-  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
-
-  // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
-  uint32_t curr_pos = table->offset;
-  uint32_t new_pos = -1;
-
-  if(!d->inited)
-  {
-    new_pos = dt_conf_get_int("plugins/lighttable/collect/history_pos0");
-    d->inited = 1;
-    dt_thumbtable_set_offset(table, new_pos, TRUE);
-  }
-  else if(curr_pos != -1)
-  {
-    dt_conf_set_int("plugins/lighttable/collect/history_pos0", curr_pos);
-  }
-
-  dt_collection_history_save();
 
   // update button descriptions:
   char confname[200] = { 0 };
@@ -233,8 +217,6 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
     }
     current = g_list_next(current);
   }
-
-  dt_thumbtable_set_offset(table, new_pos, TRUE);
 }
 
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
