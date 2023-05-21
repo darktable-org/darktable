@@ -1796,7 +1796,7 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
       To support this, dt_iop_commit_blend_params() either returns NULL or the source module.
 */
 dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
-                                const dt_develop_blend_params_t *blendop_params)
+                                            const dt_develop_blend_params_t *blendop_params)
 {
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
   if(blendop_params->blend_cst == DEVELOP_BLEND_CS_NONE)
@@ -1823,28 +1823,32 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
            - this means it will write it's blend output as the raster mask
            to avoid invalidation of the pixelpipe cache if it's already in use
         */
-        const gboolean in_use = dt_iop_is_raster_mask_used(candidate, blendop_params->raster_mask_id);
+        const gboolean in_use =
+          dt_iop_is_raster_mask_used(candidate, blendop_params->raster_mask_id);
         g_hash_table_insert(candidate->raster_mask.source.users,
                             module,
                             GINT_TO_POINTER(blendop_params->raster_mask_id));
         module->raster_mask.sink.source = candidate;
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
         dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-           "commit_blend_params", NULL, module, NULL, NULL, "raster mask from '%s%s', %s\n",
-           candidate->op, dt_iop_get_instance_id(candidate),
-           in_use ? "in_use" : "new");
+                      "commit_blend_params",
+                      NULL, module, NULL, NULL, "raster mask from '%s%s', %s\n",
+                      candidate->op, dt_iop_get_instance_id(candidate),
+                      in_use ? "in_use" : "new");
         return in_use ? NULL : candidate;
       }
     }
   }
 
-  /* We don't use a raster mask as source so we will remove this module as a user from the hash table
-     and set sink source and id to default == 'nothing'
+  /* We don't use a raster mask as source so we will remove this
+     module as a user from the hash table and set sink source and id
+     to default == 'nothing'
   */
   if(module->raster_mask.sink.source)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-        "commit_blend_params", NULL, module, NULL, NULL, "clear raster mask sink\n");
+                  "commit_blend_params",
+                  NULL, module, NULL, NULL, "clear raster mask sink\n");
     g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
   }
   module->raster_mask.sink.source = NULL;
