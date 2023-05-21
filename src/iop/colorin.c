@@ -25,7 +25,6 @@
 #include "common/colormatrices.c"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
-#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -1360,8 +1359,6 @@ void commit_params(struct dt_iop_module_t *self,
   d->lut[2][0] = -1.0f;
   d->nonlinearlut = FALSE;
   piece->process_cl_ready = TRUE;
-  char datadir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
 
   dt_colorspaces_color_profile_type_t type = p->type;
   if(type == DT_COLORSPACE_LAB)
@@ -1843,18 +1840,8 @@ void reload_defaults(dt_iop_module_t *module)
 
   if(g)
   {
-    char datadir[PATH_MAX] = { 0 };
-    char confdir[PATH_MAX] = { 0 };
-    dt_loc_get_datadir(datadir, sizeof(datadir));
-    dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-    char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
-    char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
     char *tooltip_part_profile_dirs =
-      g_strdup_printf(_("darktable loads external ICC profiles from\n%s\n"
-                        "or, if this directory does not exist, from\n%s"),
-                      user_profile_dir, system_profile_dir);
-    g_free(system_profile_dir);
-    g_free(user_profile_dir);
+      dt_ioppr_get_location_tooltip(_("external ICC profiles"));
 
     // In case of embedded ICC profile we will modify tooltip with the
     // profile info, otherwise reset tooltip to generic text.
@@ -1905,16 +1892,17 @@ void reload_defaults(dt_iop_module_t *module)
                                                 "type: <b>%s</b>\n"
                                                 "manufacturer: <b>%s</b>\n"
                                                 "model: <b>%s</b>\n"
-                                                "copyright: <b>%s</b>\n\n%s"),
+                                                "copyright: <b>%s</b>\n\n"),
                                               iccDesc,
                                               iccMajorVersion, iccMinorVersion,
                                               iccType,
                                               iccManuf,
                                               iccModel,
-                                              iccCopyr,
-                                              tooltip_part_profile_dirs);
-      gtk_widget_set_tooltip_markup(g->profile_combobox, tooltip);
+                                              iccCopyr);
+      char *tooltip2 = g_strconcat(tooltip, tooltip_part_profile_dirs, NULL);
+      gtk_widget_set_tooltip_markup(g->profile_combobox, tooltip2);
       g_free(tooltip);
+      g_free(tooltip2);
       g_free(tooltip_part_profile_dirs);
       if(bufsize)
         free(iccCopyr);
@@ -1923,7 +1911,7 @@ void reload_defaults(dt_iop_module_t *module)
     {
       // If the current image does not have an embedded profile, let's
       // display a generic tooltip
-      gtk_widget_set_tooltip_text(g->profile_combobox, tooltip_part_profile_dirs);
+      gtk_widget_set_tooltip_markup(g->profile_combobox, tooltip_part_profile_dirs);
       g_free(tooltip_part_profile_dirs);
     }
   }
@@ -2090,11 +2078,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->image_profiles = NULL;
 
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->profile_combobox = dt_bauhaus_combobox_new(self);
@@ -2111,14 +2094,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->work_combobox, 0);
   {
-    char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-    char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-    char *tooltip = g_strdup_printf
-      (_("darktable loads external ICC profiles from\n%s\nand\n%s"),
-       user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(g->work_combobox, tooltip);
-    g_free(system_profile_dir);
-    g_free(user_profile_dir);
+    char *tooltip = dt_ioppr_get_location_tooltip(_("external ICC profiles"));
+    gtk_widget_set_tooltip_markup(g->work_combobox, tooltip);
     g_free(tooltip);
   }
 

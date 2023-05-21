@@ -2512,10 +2512,6 @@ void gui_init(dt_view_t *self)
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
-    char datadir[PATH_MAX] = { 0 };
-    char confdir[PATH_MAX] = { 0 };
-    dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-    dt_loc_get_datadir(datadir, sizeof(datadir));
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
     static const gchar *intents_list[]
@@ -2606,30 +2602,21 @@ void gui_init(dt_view_t *self)
       }
     }
 
-    char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-    char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-    char *tooltip = g_strdup_printf(_("darktable loads display ICC profiles from\n%s\n"
-                                      "or, if this directory does not exist, from\n%s"),
-                                    user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(display_profile, tooltip);
+    char *tooltip = dt_ioppr_get_location_tooltip(_("display ICC profiles"));
+    gtk_widget_set_tooltip_markup(display_profile, tooltip);
     g_free(tooltip);
-    tooltip = g_strdup_printf(_("darktable loads preview display ICC profiles from\n%s\n"
-                                "or, if this directory does not exist, from\n%s"),
-                              user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(display2_profile, tooltip);
+
+    tooltip = dt_ioppr_get_location_tooltip(_("preview display ICC profiles"));
+    gtk_widget_set_tooltip_markup(display2_profile, tooltip);
     g_free(tooltip);
-    tooltip = g_strdup_printf(_("darktable loads softproof ICC profiles from\n%s\n"
-                                "or, if this directory does not exist, from\n%s"),
-                              user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(softproof_profile, tooltip);
+
+    tooltip = dt_ioppr_get_location_tooltip(_("softproof ICC profiles"));
+    gtk_widget_set_tooltip_markup(softproof_profile, tooltip);
     g_free(tooltip);
-    tooltip = g_strdup_printf(_("darktable loads histogram and color picker ICC profiles from\n%s\n"
-                                "or, if this directory does not exist, from\n%s"),
-                              user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(histogram_profile, tooltip);
+
+    tooltip = dt_ioppr_get_location_tooltip(_("histogram and color picker ICC profiles"));
+    gtk_widget_set_tooltip_markup(histogram_profile, tooltip);
     g_free(tooltip);
-    g_free(system_profile_dir);
-    g_free(user_profile_dir);
 
     g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
     g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(display2_profile_callback), dev);
