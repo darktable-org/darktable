@@ -768,6 +768,12 @@ The following is a summary of the main features added to darktable
 - Some minor fix of Spyder Checkr 48 (v2 - after 2018) reference
   values.
 
+- Fix possible crash in the Edge-Avoiding a-trous Wavelet when
+  handling very small image's regions.
+
+- Properly ignore empty GPX latitude/longitude which would otherwise
+  create bogus location coordinates.
+
 ## Lua
 
 ### API Version
