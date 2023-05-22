@@ -1807,10 +1807,14 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   dt_iop_advertise_rastermask(module, blendop_params->mask_mode);
 
   // If we use default blending parameters or don't have a dev
-  // we don't manage raster mask users
+  // we don't manage raster mask users and set all stuff to defaults
   if(blendop_params == module->default_blendop_params
      || module->dev == NULL)
+  {
+    module->raster_mask.sink.source = NULL;
+    module->raster_mask.sink.id = INVALID_MASKID;
     return NULL;
+  }
 
   for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
   {
@@ -1819,12 +1823,6 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
     {
       if(candidate->multi_priority == blendop_params->raster_mask_instance)
       {
-        /* we check for the candidate already being used as a raster mask source
-           - this means it will write it's blend output as the raster mask
-           to avoid invalidation of the pixelpipe cache if it's already in use
-        */
-        const gboolean in_use =
-          dt_iop_is_raster_mask_used(candidate, blendop_params->raster_mask_id);
         g_hash_table_insert(candidate->raster_mask.source.users,
                             module,
                             GINT_TO_POINTER(blendop_params->raster_mask_id));
@@ -1833,9 +1831,8 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
         dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                       "commit_blend_params",
                       NULL, module, NULL, NULL, "raster mask from '%s%s', %s\n",
-                      candidate->op, dt_iop_get_instance_id(candidate),
-                      in_use ? "in_use" : "new");
-        return in_use ? NULL : candidate;
+                      candidate->op, dt_iop_get_instance_id(candidate));
+        return candidate;
       }
     }
   }
@@ -1844,16 +1841,18 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
      module as a user from the hash table and set sink source and id
      to default == 'nothing'
   */
-  if(module->raster_mask.sink.source)
+  dt_iop_module_t *sink_source = module->raster_mask.sink.source;
+  if(sink_source)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                   "commit_blend_params",
-                  NULL, module, NULL, NULL, "clear raster mask sink\n");
+                  NULL, module, NULL, NULL, "clear raster mask source '%s%s'\n",
+                  sink_source->op, dt_iop_get_instance_id(sink_source));
     g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
   }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
-  return NULL;
+  return sink_source;
 }
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
