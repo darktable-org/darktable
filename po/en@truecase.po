@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-18 08:18+0200\n"
-"PO-Revision-Date: 2023-05-19 10:21+0300\n"
+"POT-Creation-Date: 2023-05-21 20:30+0200\n"
+"PO-Revision-Date: 2023-05-22 10:54+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -2342,9 +2342,9 @@ msgstr "Preserve colors"
 #: ../src/iop/channelmixerrgb.c:4667 ../src/iop/clipping.c:1900
 #: ../src/iop/clipping.c:2093 ../src/iop/clipping.c:2108
 #: ../src/iop/retouch.c:463 ../src/libs/collect.c:1907
-#: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1024
+#: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1023
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:132
-#: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2826
+#: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2816
 msgid "none"
 msgstr "None"
 
@@ -2521,7 +2521,7 @@ msgstr "Aspect ratio"
 #. // portrait / landscape
 #: ../build/lib/darktable/plugins/introspection_borders.c:130
 #: ../build/lib/darktable/plugins/introspection_borders.c:265
-#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2507
+#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2498
 msgid "orientation"
 msgstr "Orientation"
 
@@ -2559,13 +2559,13 @@ msgstr "Auto"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:328
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:309
-#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2509
+#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2500
 msgid "portrait"
 msgstr "Portrait"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:329
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:305
-#: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2509
+#: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2500
 msgid "landscape"
 msgstr "Landscape"
 
@@ -2985,7 +2985,7 @@ msgstr "Lift, gamma, gain (sRGB)"
 #: ../src/develop/blend_gui.c:2356 ../src/develop/blend_gui.c:2404
 #: ../src/iop/atrous.c:1667 ../src/iop/channelmixerrgb.c:4457
 #: ../src/iop/channelmixerrgb.c:4573 ../src/iop/colorbalancergb.c:1895
-#: ../src/iop/nlmeans.c:468
+#: ../src/iop/colorzones.c:2402 ../src/iop/nlmeans.c:468
 msgid "chroma"
 msgstr "Chroma"
 
@@ -3146,13 +3146,13 @@ msgstr "Gamut clipping"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:201
 #: ../src/common/colorspaces.c:1251 ../src/common/colorspaces.c:1484
-#: ../src/libs/print_settings.c:1340
+#: ../src/libs/print_settings.c:1339
 msgid "sRGB"
 msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:302
 #: ../src/common/colorspaces.c:1260 ../src/common/colorspaces.c:1486
-#: ../src/libs/print_settings.c:1347
+#: ../src/libs/print_settings.c:1346
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
@@ -3245,9 +3245,8 @@ msgstr "Lightness"
 #: ../src/iop/colorbalance.c:2059 ../src/iop/colorbalancergb.c:1919
 #: ../src/iop/colorchecker.c:1483 ../src/iop/colorcontrast.c:90
 #: ../src/iop/colorcorrection.c:275 ../src/iop/colorize.c:343
-#: ../src/iop/colorzones.c:2402 ../src/iop/lowpass.c:588
-#: ../src/iop/soften.c:373 ../src/iop/velvia.c:84 ../src/iop/vibrance.c:72
-#: ../src/iop/vignette.c:970
+#: ../src/iop/lowpass.c:588 ../src/iop/soften.c:373 ../src/iop/velvia.c:84
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:970
 msgid "saturation"
 msgstr "Saturation"
 
@@ -3829,8 +3828,8 @@ msgstr "Enable highlight reconstruction"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2785 ../src/common/variables.c:705
 #: ../src/develop/imageop_gui.c:209 ../src/imageio/format/pdf.c:636
-#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1189
-#: ../src/libs/export.c:1196 ../src/libs/export.c:1203
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1188
+#: ../src/libs/export.c:1195 ../src/libs/export.c:1202
 #: ../src/libs/metadata_view.c:670
 msgid "no"
 msgstr "No"
@@ -4107,8 +4106,8 @@ msgstr "Corrections"
 #: ../src/iop/bilat.c:428 ../src/iop/colorbalance.c:1909
 #: ../src/iop/denoiseprofile.c:3806 ../src/iop/exposure.c:1157
 #: ../src/iop/levels.c:684 ../src/iop/profile_gamma.c:668
-#: ../src/libs/copy_history.c:399 ../src/libs/export.c:1272
-#: ../src/libs/image.c:597 ../src/libs/print_settings.c:2866
+#: ../src/libs/copy_history.c:399 ../src/libs/export.c:1262
+#: ../src/libs/image.c:597 ../src/libs/print_settings.c:2856
 #: ../src/libs/styles.c:846 ../src/views/darkroom.c:2387
 msgid "mode"
 msgstr "Mode"
@@ -4255,11 +4254,11 @@ msgstr "Invalidated"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2282 ../src/views/darkroom.c:2681
-#: ../src/views/darkroom.c:2684 ../src/views/lighttable.c:765
-#: ../src/views/lighttable.c:774 ../src/views/lighttable.c:1253
-#: ../src/views/lighttable.c:1257 ../src/views/lighttable.c:1261
-#: ../src/views/lighttable.c:1265 ../src/views/lighttable.c:1269
+#: ../src/views/darkroom.c:2282 ../src/views/darkroom.c:2676
+#: ../src/views/darkroom.c:2679 ../src/views/lighttable.c:765
+#: ../src/views/lighttable.c:774 ../src/views/lighttable.c:1246
+#: ../src/views/lighttable.c:1250 ../src/views/lighttable.c:1254
+#: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1262
 msgid "move"
 msgstr "Move"
 
@@ -4776,7 +4775,7 @@ msgstr "Scale marker reference"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
 #: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:159
-#: ../src/iop/borders.c:942
+#: ../src/iop/borders.c:947
 msgid "image"
 msgstr "Image"
 
@@ -4789,8 +4788,8 @@ msgid "smaller border"
 msgstr "Smaller border"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:326
-#: ../src/libs/export.c:1136 ../src/libs/metadata_view.c:148
-#: ../src/libs/print_settings.c:2531
+#: ../src/libs/export.c:1135 ../src/libs/metadata_view.c:148
+#: ../src/libs/print_settings.c:2522
 msgid "height"
 msgstr "Height"
 
@@ -5680,12 +5679,12 @@ msgid "work profile"
 msgstr "Work profile"
 
 #: ../src/common/colorspaces.c:1232 ../src/common/colorspaces.c:1514
-#: ../src/iop/colorout.c:895
+#: ../src/iop/colorout.c:885
 msgid "export profile"
 msgstr "Export profile"
 
 #: ../src/common/colorspaces.c:1236 ../src/common/colorspaces.c:1516
-#: ../src/views/darkroom.c:2546
+#: ../src/views/darkroom.c:2542
 msgid "softproof profile"
 msgstr "Softproof profile"
 
@@ -6034,8 +6033,8 @@ msgstr ""
 
 #: ../src/common/database.c:2785 ../src/common/variables.c:703
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/pdf.c:636
-#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1189
-#: ../src/libs/export.c:1196 ../src/libs/export.c:1203
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1188
+#: ../src/libs/export.c:1195 ../src/libs/export.c:1202
 #: ../src/libs/metadata_view.c:670
 msgid "yes"
 msgstr "Yes"
@@ -6466,6 +6465,19 @@ msgstr "V3.0 RAW"
 msgid "v3.0 JPEG"
 msgstr "V3.0 JPEG"
 
+#: ../src/common/iop_profile.c:1205
+#, c-format
+msgid ""
+"darktable loads %s from\n"
+"<b>%s</b>\n"
+"or, if this directory does not exist, from\n"
+"<b>%s</b>"
+msgstr ""
+"Darktable loads %s from\n"
+"<b>%s</b>\n"
+"or, if this directory does not exist, from\n"
+"<b>%s</b>"
+
 #. clang-format off
 #: ../src/common/metadata.c:46
 msgid "creator"
@@ -6551,16 +6563,16 @@ msgid "OpenCL scheduling profile set to default"
 msgstr "OpenCL scheduling profile set to default"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:3441
-#: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:82
+#: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:81
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:521 ../src/libs/export.c:1146
-#: ../src/libs/print_settings.c:82
+#: ../src/common/pdf.h:89 ../src/libs/export.c:520 ../src/libs/export.c:1145
+#: ../src/libs/print_settings.c:81
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:82
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:81
 msgid "inch"
 msgstr "inch"
 
@@ -6568,7 +6580,7 @@ msgstr "inch"
 msgid "\""
 msgstr "\""
 
-#: ../src/common/pdf.h:104 ../src/iop/borders.c:953
+#: ../src/common/pdf.h:104 ../src/iop/borders.c:958
 msgid "A4"
 msgstr "A4"
 
@@ -7822,17 +7834,17 @@ msgid "uniformly"
 msgstr "Uniformly"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2740
-#: ../src/develop/blend_gui.c:3429 ../src/develop/imageop.c:2634
+#: ../src/develop/blend_gui.c:3429 ../src/develop/imageop.c:2659
 msgid "drawn mask"
 msgstr "Drawn mask"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2512
-#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2636
+#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2661
 msgid "parametric mask"
 msgstr "Parametric mask"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2951
-#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2638
+#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2663
 msgid "raster mask"
 msgstr "Raster mask"
 
@@ -7879,12 +7891,12 @@ msgid "on"
 msgstr "On"
 
 #: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2788
 msgid "input"
 msgstr "Input"
 
 #: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2788
 msgid "output"
 msgstr "Output"
 
@@ -8442,70 +8454,70 @@ msgstr "New instance"
 msgid "duplicate instance"
 msgstr "Duplicate instance"
 
-#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3708
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3738
 #: ../src/libs/masks.c:1152
 msgid "move up"
 msgstr "Move up"
 
-#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3709
+#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3739
 #: ../src/libs/masks.c:1157
 msgid "move down"
 msgstr "Move down"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3711
+#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3741
 #: ../src/gui/accelerators.c:155 ../src/gui/presets.c:562
 #: ../src/libs/image.c:285 ../src/libs/image.c:480 ../src/libs/tagging.c:1484
 #: ../src/libs/tagging.c:1572
 msgid "delete"
 msgstr "Delete"
 
-#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3712
+#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3742
 #: ../src/libs/modulegroups.c:3464 ../src/libs/modulegroups.c:3815
 msgid "rename"
 msgstr "Rename"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2924
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2949
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' is switched on"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2924
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2949
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' is switched off"
 
-#: ../src/develop/imageop.c:2628
+#: ../src/develop/imageop.c:2653
 msgid "unknown mask"
 msgstr "Unknown mask"
 
-#: ../src/develop/imageop.c:2632
+#: ../src/develop/imageop.c:2657
 msgid "drawn + parametric mask"
 msgstr "Drawn + parametric mask"
 
-#: ../src/develop/imageop.c:2641
+#: ../src/develop/imageop.c:2666
 #, c-format
 msgid "this module has a `%s'"
 msgstr "This module has a `%s'"
 
-#: ../src/develop/imageop.c:2646
+#: ../src/develop/imageop.c:2671
 #, c-format
 msgid "taken from module %s"
 msgstr "Taken from module %s"
 
-#: ../src/develop/imageop.c:2651
+#: ../src/develop/imageop.c:2676
 msgid "click to display (module must be activated first)"
 msgstr "Click to display (module must be activated first)"
 
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2788
 msgid "purpose"
 msgstr "Purpose"
 
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2788
 msgid "process"
 msgstr "Process"
 
-#: ../src/develop/imageop.c:2880
+#: ../src/develop/imageop.c:2905
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8513,7 +8525,7 @@ msgstr ""
 "Multiple instance actions\n"
 "Right-click creates new instance"
 
-#: ../src/develop/imageop.c:2895
+#: ../src/develop/imageop.c:2920
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8521,7 +8533,7 @@ msgstr ""
 "Reset parameters\n"
 "Ctrl+click to reapply any automatic presets"
 
-#: ../src/develop/imageop.c:2907
+#: ../src/develop/imageop.c:2932
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8529,15 +8541,15 @@ msgstr ""
 "Presets\n"
 "Right-click to apply on new instance"
 
-#: ../src/develop/imageop.c:3157 ../src/develop/imageop.c:3179
+#: ../src/develop/imageop.c:3182 ../src/develop/imageop.c:3204
 msgid "ERROR"
 msgstr "ERROR"
 
-#: ../src/develop/imageop.c:3589
+#: ../src/develop/imageop.c:3619
 msgid "unsupported input"
 msgstr "Unsupported input"
 
-#: ../src/develop/imageop.c:3590
+#: ../src/develop/imageop.c:3620
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8549,35 +8561,35 @@ msgstr ""
 "the data format does not match\n"
 "its requirements."
 
-#: ../src/develop/imageop.c:3707 ../src/develop/imageop.c:3717
+#: ../src/develop/imageop.c:3737 ../src/develop/imageop.c:3747
 #: ../src/gui/accelerators.c:151 ../src/libs/lib.c:1414
 msgid "show"
 msgstr "Show"
 
-#: ../src/develop/imageop.c:3710 ../src/libs/modulegroups.c:3310
+#: ../src/develop/imageop.c:3740 ../src/libs/modulegroups.c:3310
 #: ../src/libs/modulegroups.c:3436 ../src/libs/modulegroups.c:3817
 #: ../src/libs/tagging.c:3248
 msgid "new"
 msgstr "New"
 
-#: ../src/develop/imageop.c:3713 ../src/libs/duplicate.c:405
+#: ../src/develop/imageop.c:3743 ../src/libs/duplicate.c:405
 #: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3813
 msgid "duplicate"
 msgstr "Duplicate"
 
-#: ../src/develop/imageop.c:3718
+#: ../src/develop/imageop.c:3748
 msgid "enable"
 msgstr "Enable"
 
-#: ../src/develop/imageop.c:3719 ../src/gui/accelerators.c:167
+#: ../src/develop/imageop.c:3749 ../src/gui/accelerators.c:167
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:3720 ../src/gui/accelerators.c:2617
+#: ../src/develop/imageop.c:3750 ../src/gui/accelerators.c:2617
 msgid "instance"
 msgstr "Instance"
 
-#: ../src/develop/imageop.c:3721 ../src/gui/accelerators.c:112
+#: ../src/develop/imageop.c:3751 ../src/gui/accelerators.c:112
 #: ../src/gui/accelerators.c:122 ../src/gui/gtk.c:3009 ../src/gui/gtk.c:3056
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
 #: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1512
@@ -8586,12 +8598,12 @@ msgid "reset"
 msgstr "Reset"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3722 ../src/gui/preferences.c:798
+#: ../src/develop/imageop.c:3752 ../src/gui/preferences.c:798
 #: ../src/libs/lib.c:1416
 msgid "presets"
 msgstr "Presets"
 
-#: ../src/develop/imageop.c:3742
+#: ../src/develop/imageop.c:3772
 msgid "processing module"
 msgstr "Processing module"
 
@@ -8953,7 +8965,7 @@ msgstr ""
 "History had module enabled but it is not allowed for this type of image.\n"
 "Likely introduced by applying a preset, style or history copy&paste"
 
-#: ../src/develop/pixelpipe_hb.c:2715
+#: ../src/develop/pixelpipe_hb.c:2709
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -8961,18 +8973,18 @@ msgstr ""
 "Darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 
-#: ../src/develop/pixelpipe_hb.c:2860
+#: ../src/develop/pixelpipe_hb.c:2854
 #, c-format
 msgid ""
-"module `%s' can't get raster mask from module `%s'\n"
-"as that is processed later in the pixel pipe.\n"
+"module '%s' can't get raster mask from module\n"
+"'%s' as that is processed later in the pixel pipe.\n"
 "raster mask is ignored."
 msgstr ""
 "Module '%s' can't get raster mask from module\n"
 "'%s' as that is processed later in the pixel pipe.\n"
 "Raster mask is ignored."
 
-#: ../src/develop/tiling.c:818 ../src/develop/tiling.c:1169
+#: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1173
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "Tiling failed for module '%s'. Output might be garbled."
@@ -9393,7 +9405,7 @@ msgstr "Pan"
 #: ../src/iop/ashift.c:5854 ../src/iop/ashift.c:5959 ../src/iop/ashift.c:5961
 #: ../src/iop/ashift.c:6283 ../src/iop/clipping.c:1902
 #: ../src/iop/clipping.c:2094 ../src/iop/clipping.c:2110
-#: ../src/views/darkroom.c:2681 ../src/views/lighttable.c:1257
+#: ../src/views/darkroom.c:2676 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "Horizontal"
 
@@ -9401,7 +9413,7 @@ msgstr "Horizontal"
 #: ../src/iop/ashift.c:5854 ../src/iop/ashift.c:5959 ../src/iop/ashift.c:5961
 #: ../src/iop/ashift.c:6281 ../src/iop/clipping.c:1901
 #: ../src/iop/clipping.c:2095 ../src/iop/clipping.c:2109
-#: ../src/views/darkroom.c:2684 ../src/views/lighttable.c:1261
+#: ../src/views/darkroom.c:2679 ../src/views/lighttable.c:1254
 msgid "vertical"
 msgstr "Vertical"
 
@@ -9483,7 +9495,7 @@ msgstr "First"
 #: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:141
 #: ../src/gui/accelerators.c:314 ../src/libs/filters/rating_range.c:268
 #: ../src/libs/tagging.c:3119 ../src/views/darkroom.c:2369
-#: ../src/views/darkroom.c:2419 ../src/views/darkroom.c:2653
+#: ../src/views/darkroom.c:2419 ../src/views/darkroom.c:2648
 msgid "toggle"
 msgstr "Toggle"
 
@@ -10035,7 +10047,7 @@ msgstr "%s not assigned"
 msgid "%s assigned to %s"
 msgstr "%s assigned to %s"
 
-#: ../src/gui/gtk.c:173 ../src/views/darkroom.c:4655
+#: ../src/gui/gtk.c:173 ../src/views/darkroom.c:4650
 msgid "darktable - darkroom preview"
 msgstr "Darktable - Darkroom preview"
 
@@ -10096,7 +10108,7 @@ msgid "slideshow"
 msgstr "Slideshow"
 
 #. Print button
-#: ../src/gui/gtk.c:1192 ../src/libs/print_settings.c:2876
+#: ../src/gui/gtk.c:1192 ../src/libs/print_settings.c:2866
 msgid "print"
 msgstr "Print"
 
@@ -10581,7 +10593,7 @@ msgid "global guide overlay settings"
 msgstr "Global guide overlay settings"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2653
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2648
 msgid "guide lines"
 msgstr "Guide lines"
 
@@ -11560,7 +11572,7 @@ msgstr "Enter the title of the PDF"
 
 #. paper size
 #. // papers
-#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2500
+#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2491
 msgid "paper size"
 msgstr "Paper size"
 
@@ -11599,8 +11611,8 @@ msgstr ""
 "Examples: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:621 ../src/libs/export.c:1128
-#: ../src/libs/export.c:1151
+#: ../src/imageio/format/pdf.c:621 ../src/libs/export.c:1127
+#: ../src/libs/export.c:1150
 msgid "dpi"
 msgstr "dpi"
 
@@ -11788,7 +11800,7 @@ msgstr "Graphic"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/storage/disk.c:71 ../src/libs/export.c:1041
+#: ../src/imageio/storage/disk.c:71 ../src/libs/export.c:1040
 msgid "file on disk"
 msgstr "File on disk"
 
@@ -12059,7 +12071,7 @@ msgstr "Corrective or creative"
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:233
 #: ../src/iop/channelmixerrgb.c:235 ../src/iop/clipping.c:321
 #: ../src/iop/clipping.c:323 ../src/iop/colorbalancergb.c:186
-#: ../src/iop/colorin.c:137 ../src/iop/crop.c:145 ../src/iop/crop.c:147
+#: ../src/iop/colorin.c:136 ../src/iop/crop.c:145 ../src/iop/crop.c:147
 #: ../src/iop/demosaic.c:296 ../src/iop/denoiseprofile.c:728
 #: ../src/iop/denoiseprofile.c:730 ../src/iop/diffuse.c:146
 #: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:132 ../src/iop/exposure.c:134
@@ -12073,7 +12085,7 @@ msgstr "Corrective or creative"
 msgid "linear, RGB, scene-referred"
 msgstr "Linear, RGB, scene-referred"
 
-#: ../src/iop/ashift.c:133 ../src/iop/borders.c:195 ../src/iop/clipping.c:322
+#: ../src/iop/ashift.c:133 ../src/iop/borders.c:200 ../src/iop/clipping.c:322
 #: ../src/iop/crop.c:146 ../src/iop/flip.c:111 ../src/iop/liquify.c:299
 msgid "geometric, RGB"
 msgstr "Geometric, RGB"
@@ -12436,7 +12448,7 @@ msgstr "Finer"
 msgid "finest"
 msgstr "Finest"
 
-#: ../src/iop/atrous.c:1586 ../src/libs/export.c:1144 ../src/libs/export.c:1159
+#: ../src/iop/atrous.c:1586 ../src/libs/export.c:1143 ../src/libs/export.c:1158
 msgid "x"
 msgstr "x"
 
@@ -12657,7 +12669,7 @@ msgid "apply usual image adjustments"
 msgstr "Apply usual image adjustments"
 
 #: ../src/iop/basicadj.c:147 ../src/iop/bilat.c:102 ../src/iop/bloom.c:81
-#: ../src/iop/blurs.c:93 ../src/iop/borders.c:193 ../src/iop/censorize.c:83
+#: ../src/iop/blurs.c:93 ../src/iop/borders.c:198 ../src/iop/censorize.c:83
 #: ../src/iop/colisa.c:90 ../src/iop/colorcontrast.c:97
 #: ../src/iop/colorize.c:105 ../src/iop/colormapping.c:153
 #: ../src/iop/colorzones.c:145 ../src/iop/grain.c:434 ../src/iop/highpass.c:78
@@ -12900,126 +12912,130 @@ msgid "framing"
 msgstr "Framing"
 
 #: ../src/iop/borders.c:192
+msgid "borders|enlarge canvas|expand canvas"
+msgstr "borders|enlarge canvas|expand canvas"
+
+#: ../src/iop/borders.c:197
 msgid "add solid borders or margins around the picture"
 msgstr "Add solid borders or margins around the picture"
 
-#: ../src/iop/borders.c:194 ../src/iop/borders.c:196 ../src/iop/lut3d.c:144
+#: ../src/iop/borders.c:199 ../src/iop/borders.c:201 ../src/iop/lut3d.c:144
 msgid "linear or non-linear, RGB, display-referred"
 msgstr "Linear or non-linear, RGB, display-referred"
 
-#: ../src/iop/borders.c:722
+#: ../src/iop/borders.c:727
 msgid "15:10 postcard white"
 msgstr "15:10 postcard white"
 
-#: ../src/iop/borders.c:727
+#: ../src/iop/borders.c:732
 msgid "15:10 postcard black"
 msgstr "15:10 postcard black"
 
-#: ../src/iop/borders.c:937
+#: ../src/iop/borders.c:942
 msgid "size of the border in percent of the full image"
 msgstr "Size of the border in percent of the full image"
 
-#: ../src/iop/borders.c:939 ../src/iop/clipping.c:2218 ../src/iop/crop.c:1224
+#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2218 ../src/iop/crop.c:1224
 msgid "aspect"
 msgstr "Aspect"
 
-#: ../src/iop/borders.c:940
+#: ../src/iop/borders.c:945
 msgid ""
 "select the aspect ratio (right click on slider below to type your own w:h)"
 msgstr ""
 "Select the aspect ratio (right click on slider below to type your own w:h)"
 
-#: ../src/iop/borders.c:943
+#: ../src/iop/borders.c:948
 msgid "3:1"
 msgstr "3:1"
 
-#: ../src/iop/borders.c:944
+#: ../src/iop/borders.c:949
 msgid "95:33"
 msgstr "95:33"
 
-#: ../src/iop/borders.c:945
+#: ../src/iop/borders.c:950
 msgid "CinemaScope 2.39:1"
 msgstr "CinemaScope 2.39:1"
 
-#: ../src/iop/borders.c:946
+#: ../src/iop/borders.c:951
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:947
+#: ../src/iop/borders.c:952
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:948
+#: ../src/iop/borders.c:953
 msgid "5:3"
 msgstr "5:3"
 
-#: ../src/iop/borders.c:949
+#: ../src/iop/borders.c:954
 msgid "US Legal 8.5x14"
 msgstr "US Legal 8.5x14"
 
-#: ../src/iop/borders.c:950 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1128
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1128
 msgid "golden cut"
 msgstr "Golden cut"
 
-#: ../src/iop/borders.c:951
+#: ../src/iop/borders.c:956
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/borders.c:952
+#: ../src/iop/borders.c:957
 msgid "3:2 (4x6, 10x15cm)"
 msgstr "3:2 (4x6, 10x15cm)"
 
-#: ../src/iop/borders.c:954
+#: ../src/iop/borders.c:959
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:955
+#: ../src/iop/borders.c:960
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/borders.c:956
+#: ../src/iop/borders.c:961
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:957
+#: ../src/iop/borders.c:962
 msgid "US Letter 8.5x11"
 msgstr "US Letter 8.5x11"
 
-#: ../src/iop/borders.c:958
+#: ../src/iop/borders.c:963
 msgid "14:11"
 msgstr "14:11"
 
-#: ../src/iop/borders.c:959
+#: ../src/iop/borders.c:964
 msgid "5:4 (8x10)"
 msgstr "5:4 (8x10)"
 
-#: ../src/iop/borders.c:960 ../src/iop/clipping.c:2121 ../src/iop/crop.c:1118
+#: ../src/iop/borders.c:965 ../src/iop/clipping.c:2121 ../src/iop/crop.c:1118
 #: ../src/libs/filtering.c:301 ../src/libs/filters/ratio.c:126
 #: ../src/libs/histogram.c:141
 msgid "square"
 msgstr "Square"
 
-#: ../src/iop/borders.c:961
+#: ../src/iop/borders.c:966
 msgid "constant border"
 msgstr "Constant border"
 
-#: ../src/iop/borders.c:962 ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:967 ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "custom..."
 msgstr "Custom..."
 
-#: ../src/iop/borders.c:967
+#: ../src/iop/borders.c:972
 msgid "set the custom aspect ratio (right click to enter number or w:h)"
 msgstr "Set the custom aspect ratio (right click to enter number or w:h)"
 
-#: ../src/iop/borders.c:970
+#: ../src/iop/borders.c:975
 msgid "aspect ratio orientation of the image with border"
 msgstr "Aspect ratio orientation of the image with border"
 
-#: ../src/iop/borders.c:972
+#: ../src/iop/borders.c:977
 msgid "horizontal position"
 msgstr "Horizontal position"
 
-#: ../src/iop/borders.c:973
+#: ../src/iop/borders.c:978
 msgid ""
 "select the horizontal position ratio relative to top or right click and type "
 "your own (y:h)"
@@ -13027,35 +13043,35 @@ msgstr ""
 "Select the horizontal position ratio relative to top or right click and type "
 "your own (y:h)"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "center"
 msgstr "Center"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "1/3"
 msgstr "1/3"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "3/8"
 msgstr "3/8"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "5/8"
 msgstr "5/8"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "2/3"
 msgstr "2/3"
 
-#: ../src/iop/borders.c:981
+#: ../src/iop/borders.c:986
 msgid "custom horizontal position"
 msgstr "Custom horizontal position"
 
-#: ../src/iop/borders.c:983
+#: ../src/iop/borders.c:988
 msgid "vertical position"
 msgstr "Vertical position"
 
-#: ../src/iop/borders.c:984
+#: ../src/iop/borders.c:989
 msgid ""
 "select the vertical position ratio relative to left or right click and type "
 "your own (x:w)"
@@ -13063,31 +13079,31 @@ msgstr ""
 "Select the vertical position ratio relative to left or right click and type "
 "your own (x:w)"
 
-#: ../src/iop/borders.c:992
+#: ../src/iop/borders.c:997
 msgid "custom vertical position"
 msgstr "Custom vertical position"
 
-#: ../src/iop/borders.c:997
+#: ../src/iop/borders.c:1002
 msgid "size of the frame line in percent of min border width"
 msgstr "Size of the frame line in percent of min border width"
 
-#: ../src/iop/borders.c:1002
+#: ../src/iop/borders.c:1007
 msgid "offset of the frame line beginning on picture side"
 msgstr "Offset of the frame line beginning on picture side"
 
-#: ../src/iop/borders.c:1009 ../src/iop/borders.c:1018
+#: ../src/iop/borders.c:1014 ../src/iop/borders.c:1023
 msgid "border color"
 msgstr "Border color"
 
-#: ../src/iop/borders.c:1013
+#: ../src/iop/borders.c:1018
 msgid "select border color"
 msgstr "Select border color"
 
-#: ../src/iop/borders.c:1017
+#: ../src/iop/borders.c:1022
 msgid "pick border color from image"
 msgstr "Pick border color from image"
 
-#: ../src/iop/borders.c:1018 ../src/iop/borders.c:1031
+#: ../src/iop/borders.c:1023 ../src/iop/borders.c:1036
 #: ../src/iop/colorzones.c:2415 ../src/iop/colorzones.c:2425
 #: ../src/iop/negadoctor.c:848 ../src/iop/negadoctor.c:915
 #: ../src/iop/negadoctor.c:953 ../src/iop/rgbcurve.c:1369
@@ -13096,15 +13112,15 @@ msgstr "Pick border color from image"
 msgid "pickers"
 msgstr "Pickers"
 
-#: ../src/iop/borders.c:1022 ../src/iop/borders.c:1031
+#: ../src/iop/borders.c:1027 ../src/iop/borders.c:1036
 msgid "frame line color"
 msgstr "Frame line color"
 
-#: ../src/iop/borders.c:1026
+#: ../src/iop/borders.c:1031
 msgid "select frame line color"
 msgstr "Select frame line color"
 
-#: ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1035
 msgid "pick frame line color from image"
 msgstr "Pick frame line color from image"
 
@@ -13240,7 +13256,7 @@ msgstr "Censorize"
 msgid "censorize license plates and body parts for privacy"
 msgstr "Censorize license plates and body parts for privacy"
 
-#: ../src/iop/censorize.c:84 ../src/iop/colorin.c:135
+#: ../src/iop/censorize.c:84 ../src/iop/colorin.c:134
 #: ../src/iop/filmicrgb.c:353 ../src/iop/graduatednd.c:147
 msgid "linear or non-linear, RGB, scene-referred"
 msgstr "Linear or non-linear, RGB, scene-referred"
@@ -13652,7 +13668,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:4394 ../src/iop/clipping.c:2087
 #: ../src/iop/colorbalancergb.c:1873 ../src/iop/filmicrgb.c:4419
 #: ../src/iop/negadoctor.c:829 ../src/iop/toneequal.c:3319
-#: ../src/libs/image.c:460 ../src/views/lighttable.c:1265
+#: ../src/libs/image.c:460 ../src/views/lighttable.c:1258
 msgid "page"
 msgstr "Page"
 
@@ -14755,7 +14771,7 @@ msgstr "Perform color space corrections and apply looks"
 
 #: ../src/iop/colorchecker.c:131 ../src/iop/colorchecker.c:133
 #: ../src/iop/colorize.c:106 ../src/iop/colormapping.c:154
-#: ../src/iop/colorout.c:91 ../src/iop/colorreconstruction.c:136
+#: ../src/iop/colorout.c:90 ../src/iop/colorreconstruction.c:136
 #: ../src/iop/colorzones.c:146 ../src/iop/defringe.c:83 ../src/iop/levels.c:139
 #: ../src/iop/monochrome.c:99 ../src/iop/shadhi.c:198
 #: ../src/iop/tonecurve.c:212 ../src/iop/vibrance.c:96
@@ -14950,11 +14966,11 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "Set the global saturation"
 
-#: ../src/iop/colorin.c:127
+#: ../src/iop/colorin.c:126
 msgid "input color profile"
 msgstr "Input color profile"
 
-#: ../src/iop/colorin.c:132
+#: ../src/iop/colorin.c:131
 msgid ""
 "convert any RGB input to pipeline reference RGB\n"
 "using color profiles to remap RGB values"
@@ -14962,16 +14978,16 @@ msgstr ""
 "Convert any RGB input to pipeline reference RGB\n"
 "using color profiles to remap RGB values"
 
-#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:90 ../src/iop/demosaic.c:293
+#: ../src/iop/colorin.c:133 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:293
 #: ../src/iop/rawprepare.c:158
 msgid "mandatory"
 msgstr "Mandatory"
 
-#: ../src/iop/colorin.c:136 ../src/iop/colorout.c:92
+#: ../src/iop/colorin.c:135 ../src/iop/colorout.c:91
 msgid "defined by profile"
 msgstr "Defined by profile"
 
-#: ../src/iop/colorin.c:543
+#: ../src/iop/colorin.c:542
 #, c-format
 msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
@@ -14980,66 +14996,56 @@ msgstr ""
 "Can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 
-#: ../src/iop/colorin.c:1427
+#: ../src/iop/colorin.c:1424
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "`%s' color matrix not found!"
 
-#: ../src/iop/colorin.c:1466
+#: ../src/iop/colorin.c:1463
 msgid "input profile could not be generated!"
 msgstr "Input profile could not be generated!"
 
-#: ../src/iop/colorin.c:1565
+#: ../src/iop/colorin.c:1560
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "Unsupported input profile has been replaced by linear Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1857 ../src/iop/colorin.c:2118
-#, c-format
-msgid ""
-"darktable loads external ICC profiles from\n"
-"%s\n"
-"and\n"
-"%s"
-msgstr ""
-"Darktable loads external ICC profiles from\n"
-"%s\n"
-"and\n"
-"%s"
+#: ../src/iop/colorin.c:1844 ../src/iop/colorin.c:2097
+#: ../src/iop/colorout.c:893
+msgid "external ICC profiles"
+msgstr "external ICC profiles"
 
-#: ../src/iop/colorin.c:1903
+#: ../src/iop/colorin.c:1889
 #, c-format
 msgid ""
 "embedded ICC profile properties:\n"
 "\n"
 "name: <b>%s</b>\n"
-"version: <b>%g</b>\n"
+"version: <b>%d.%d</b>\n"
 "type: <b>%s</b>\n"
 "manufacturer: <b>%s</b>\n"
 "model: <b>%s</b>\n"
 "copyright: <b>%s</b>\n"
 "\n"
-"%s"
 msgstr ""
 "Embedded ICC profile properties:\n"
 "\n"
 "Name: <b>%s</b>\n"
-"Version: <b>%g</b>\n"
+"Version: <b>%d.%d</b>\n"
 "Type: <b>%s</b>\n"
 "Manufacturer: <b>%s</b>\n"
 "Model: <b>%s</b>\n"
 "Copyright: <b>%s</b>\n"
 "\n"
-"%s"
 
-#: ../src/iop/colorin.c:2102
+#: ../src/iop/colorin.c:2084
 msgid "input profile"
 msgstr "Input profile"
 
-#: ../src/iop/colorin.c:2106
+#: ../src/iop/colorin.c:2088
 msgid "working profile"
 msgstr "Working profile"
 
-#: ../src/iop/colorin.c:2133
+#: ../src/iop/colorin.c:2109
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Confine Lab values to gamut of RGB color space"
 
@@ -15117,11 +15123,11 @@ msgstr ""
 msgid "level of histogram equalization"
 msgstr "Level of histogram equalization"
 
-#: ../src/iop/colorout.c:82
+#: ../src/iop/colorout.c:81
 msgid "output color profile"
 msgstr "Output color profile"
 
-#: ../src/iop/colorout.c:88
+#: ../src/iop/colorout.c:87
 msgid ""
 "convert pipeline reference RGB to any display RGB\n"
 "using color profiles to remap RGB values"
@@ -15129,59 +15135,54 @@ msgstr ""
 "Convert pipeline reference RGB to any display RGB\n"
 "using color profiles to remap RGB values"
 
-#: ../src/iop/colorout.c:93
+#: ../src/iop/colorout.c:92
 msgid "non-linear, RGB or Lab, display-referred"
 msgstr "Non-linear, RGB or Lab, display-referred"
 
-#: ../src/iop/colorout.c:680
+#: ../src/iop/colorout.c:679
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "Missing output profile has been replaced by sRGB!"
 
-#: ../src/iop/colorout.c:702
+#: ../src/iop/colorout.c:701
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "Missing softproof profile has been replaced by sRGB!"
 
-#: ../src/iop/colorout.c:747
+#: ../src/iop/colorout.c:744
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "Unsupported output profile has been replaced by sRGB!"
 
-#: ../src/iop/colorout.c:879
+#: ../src/iop/colorout.c:869
 msgid "output intent"
 msgstr "Output intent"
 
-#: ../src/iop/colorout.c:880
+#: ../src/iop/colorout.c:870
 msgid "rendering intent"
 msgstr "Rendering intent"
 
-#: ../src/iop/colorout.c:882 ../src/libs/export.c:1256
-#: ../src/libs/print_settings.c:2465 ../src/libs/print_settings.c:2815
-#: ../src/views/darkroom.c:2522 ../src/views/lighttable.c:1180
+#: ../src/iop/colorout.c:872 ../src/libs/export.c:1246
+#: ../src/libs/print_settings.c:2456 ../src/libs/print_settings.c:2805
+#: ../src/views/darkroom.c:2518 ../src/views/lighttable.c:1176
 msgid "perceptual"
 msgstr "Perceptual"
 
-#: ../src/iop/colorout.c:883 ../src/libs/export.c:1257
-#: ../src/libs/print_settings.c:2466 ../src/libs/print_settings.c:2816
-#: ../src/views/darkroom.c:2523 ../src/views/lighttable.c:1181
+#: ../src/iop/colorout.c:873 ../src/libs/export.c:1247
+#: ../src/libs/print_settings.c:2457 ../src/libs/print_settings.c:2806
+#: ../src/views/darkroom.c:2519 ../src/views/lighttable.c:1177
 msgid "relative colorimetric"
 msgstr "Relative colorimetric"
 
-#: ../src/iop/colorout.c:884 ../src/libs/export.c:1258
-#: ../src/libs/print_settings.c:2467 ../src/libs/print_settings.c:2817
-#: ../src/views/darkroom.c:2524 ../src/views/lighttable.c:1182
+#: ../src/iop/colorout.c:874 ../src/libs/export.c:1248
+#: ../src/libs/print_settings.c:2458 ../src/libs/print_settings.c:2807
+#: ../src/views/darkroom.c:2520 ../src/views/lighttable.c:1178
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Saturation"
 
-#: ../src/iop/colorout.c:885 ../src/libs/export.c:1259
-#: ../src/libs/print_settings.c:2468 ../src/libs/print_settings.c:2818
-#: ../src/views/darkroom.c:2525 ../src/views/lighttable.c:1183
+#: ../src/iop/colorout.c:875 ../src/libs/export.c:1249
+#: ../src/libs/print_settings.c:2459 ../src/libs/print_settings.c:2808
+#: ../src/views/darkroom.c:2521 ../src/views/lighttable.c:1179
 msgid "absolute colorimetric"
 msgstr "Absolute colorimetric"
-
-#: ../src/iop/colorout.c:905
-#, c-format
-msgid "ICC profiles in %s or %s"
-msgstr "ICC profiles in %s or %s"
 
 #: ../src/iop/colorreconstruction.c:129
 msgid "color reconstruction"
@@ -15266,8 +15267,8 @@ msgid "color zones"
 msgstr "Color zones"
 
 #: ../src/iop/colorzones.c:144
-msgid "selectively shift hues, saturation and brightness of pixels"
-msgstr "Selectively shift hues, saturation and brightness of pixels"
+msgid "selectively shift hues, chroma and lightness of pixels"
+msgstr "Selectively shift hues, chroma and lightness of pixels"
 
 #: ../src/iop/colorzones.c:606
 msgid "B&W: with red"
@@ -15581,8 +15582,8 @@ msgstr "Variance blue: "
 msgid "variance computed on the blue channel"
 msgstr "Variance computed on the blue channel"
 
-#: ../src/iop/denoiseprofile.c:3799 ../src/libs/export.c:1214
-#: ../src/libs/print_settings.c:2407 ../src/libs/print_settings.c:2764
+#: ../src/iop/denoiseprofile.c:3799 ../src/libs/export.c:1208
+#: ../src/libs/print_settings.c:2399 ../src/libs/print_settings.c:2755
 msgid "profile"
 msgstr "Profile"
 
@@ -15604,7 +15605,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3840
 msgid ""
-"fix bugs in anscombe transform resulting\n"
+"fix bugs in Anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
 "wavelets mode, combined with a bad handling\n"
 "of white balance coefficients, and a bug in\n"
@@ -15614,11 +15615,11 @@ msgid ""
 "you get. once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
-"Fix bugs in anscombe transform resulting\n"
+"Fix bugs in Anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
 "wavelets mode, combined with a bad handling\n"
 "of white balance coefficients, and a bug in\n"
-"non local means normalization resulting in\n"
+"non-local means normalization resulting in\n"
 "undersmoothing when patch size was increased.\n"
 "Enabling this option will change the denoising\n"
 "you get. Once enabled, you won't be able to\n"
@@ -15826,19 +15827,19 @@ msgstr "Sharpness: strong"
 msgid "local contrast: fast"
 msgstr "Local contrast: fast"
 
-#: ../src/iop/diffuse.c:1392 ../src/iop/diffuse.c:1667
+#: ../src/iop/diffuse.c:1391 ../src/iop/diffuse.c:1666
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr "Diffuse/sharpen failed to allocate memory, check your RAM settings"
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/diffuse.c:1783 ../src/iop/splittoning.c:537
+#: ../src/iop/diffuse.c:1782 ../src/iop/splittoning.c:537
 #: ../src/libs/camera.c:486
 msgctxt "section"
 msgid "properties"
 msgstr "Properties"
 
-#: ../src/iop/diffuse.c:1789
+#: ../src/iop/diffuse.c:1788
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -15850,7 +15851,7 @@ msgstr ""
 "If you plan on sharpening or inpainting, \n"
 "more iterations help reconstruction."
 
-#: ../src/iop/diffuse.c:1798
+#: ../src/iop/diffuse.c:1797
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -15864,7 +15865,7 @@ msgstr ""
 "For deblurring and denoising, set to zero.\n"
 "Increase to act on local contrast instead."
 
-#: ../src/iop/diffuse.c:1808
+#: ../src/iop/diffuse.c:1807
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -15878,12 +15879,12 @@ msgstr ""
 "If you plan on deblurring, \n"
 "the radius should be around the width of your lens blur."
 
-#: ../src/iop/diffuse.c:1815
+#: ../src/iop/diffuse.c:1814
 msgctxt "section"
 msgid "speed (sharpen ↔ diffuse)"
 msgstr "Speed (sharpen ↔ diffuse)"
 
-#: ../src/iop/diffuse.c:1822
+#: ../src/iop/diffuse.c:1821
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -15899,7 +15900,7 @@ msgstr ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 
-#: ../src/iop/diffuse.c:1832
+#: ../src/iop/diffuse.c:1831
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -15915,7 +15916,7 @@ msgstr ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 
-#: ../src/iop/diffuse.c:1842
+#: ../src/iop/diffuse.c:1841
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -15931,7 +15932,7 @@ msgstr ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 
-#: ../src/iop/diffuse.c:1852
+#: ../src/iop/diffuse.c:1851
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -15947,12 +15948,12 @@ msgstr ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 
-#: ../src/iop/diffuse.c:1858
+#: ../src/iop/diffuse.c:1857
 msgctxt "section"
 msgid "direction"
 msgstr "Direction"
 
-#: ../src/iop/diffuse.c:1865
+#: ../src/iop/diffuse.c:1864
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -15966,7 +15967,7 @@ msgstr ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 
-#: ../src/iop/diffuse.c:1874
+#: ../src/iop/diffuse.c:1873
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -15980,7 +15981,7 @@ msgstr ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 
-#: ../src/iop/diffuse.c:1883
+#: ../src/iop/diffuse.c:1882
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -15994,7 +15995,7 @@ msgstr ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 
-#: ../src/iop/diffuse.c:1892
+#: ../src/iop/diffuse.c:1891
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -16008,12 +16009,12 @@ msgstr ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 
-#: ../src/iop/diffuse.c:1898
+#: ../src/iop/diffuse.c:1897
 msgctxt "section"
 msgid "edge management"
 msgstr "Edge management"
 
-#: ../src/iop/diffuse.c:1905
+#: ../src/iop/diffuse.c:1904
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
@@ -16023,7 +16024,7 @@ msgstr ""
 "Can be used to keep details after blooming,\n"
 "for standalone sharpening set speed to negative values."
 
-#: ../src/iop/diffuse.c:1912
+#: ../src/iop/diffuse.c:1911
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -16033,7 +16034,7 @@ msgstr ""
 "Increase to exclude more edges from diffusion,\n"
 "if fringes or halos appear."
 
-#: ../src/iop/diffuse.c:1919
+#: ../src/iop/diffuse.c:1918
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -16045,12 +16046,12 @@ msgstr ""
 "increase if you see noise appear on smooth surfaces or\n"
 "if dark areas seem oversharpened compared to bright areas."
 
-#: ../src/iop/diffuse.c:1925
+#: ../src/iop/diffuse.c:1924
 msgctxt "section"
 msgid "diffusion spatiality"
 msgstr "Diffusion spatiality"
 
-#: ../src/iop/diffuse.c:1932
+#: ../src/iop/diffuse.c:1931
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -16408,9 +16409,9 @@ msgstr ""
 "Decrease if shadows and/or highlights are over-saturated."
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1600 ../src/libs/export.c:1237
-#: ../src/libs/print_settings.c:2463 ../src/libs/print_settings.c:2811
-#: ../src/views/darkroom.c:2528 ../src/views/lighttable.c:1186
+#: ../src/iop/filmic.c:1600 ../src/libs/export.c:1227
+#: ../src/libs/print_settings.c:2454 ../src/libs/print_settings.c:2801
+#: ../src/views/darkroom.c:2524 ../src/views/lighttable.c:1182
 msgid "intent"
 msgstr "Intent"
 
@@ -17464,7 +17465,7 @@ msgstr "Find lens"
 
 #. scale
 #: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:967
-#: ../src/iop/watermark.c:1324 ../src/libs/export.c:1166
+#: ../src/iop/watermark.c:1324 ../src/libs/export.c:1165
 msgid "scale"
 msgstr "Scale"
 
@@ -18509,8 +18510,8 @@ msgstr ""
 msgid "toggle tool for picking median lightness in image"
 msgstr "Toggle tool for picking median lightness in image"
 
-#: ../src/iop/relight.c:279 ../src/libs/export.c:1132
-#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2527
+#: ../src/iop/relight.c:279 ../src/libs/export.c:1131
+#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2518
 msgid "width"
 msgstr "Width"
 
@@ -19921,7 +19922,7 @@ msgstr "Reference to which the marker should be scaled to"
 msgid "length of the marker which is used as scaling reference"
 msgstr "Length of the marker which is used as scaling reference"
 
-#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2665
+#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2656
 msgid "alignment"
 msgstr "Alignment"
 
@@ -20262,7 +20263,7 @@ msgstr "Collections settings"
 msgid "save"
 msgstr "Save"
 
-#: ../src/libs/collect.c:3022 ../src/libs/export.c:1047
+#: ../src/libs/collect.c:3022 ../src/libs/export.c:1046
 #: ../src/libs/metadata.c:779 ../src/libs/metadata_view.c:1306
 #: ../src/libs/recentcollect.c:362 ../src/libs/tagging.c:3494
 msgid "preferences..."
@@ -20489,76 +20490,76 @@ msgid "create a duplicate of the image with same history stack"
 msgstr "Create a duplicate of the image with same history stack"
 
 #. Export button
-#: ../src/libs/export.c:154 ../src/libs/export.c:1291
+#: ../src/libs/export.c:153 ../src/libs/export.c:1281
 msgid "export"
 msgstr "Export"
 
-#: ../src/libs/export.c:307
+#: ../src/libs/export.c:306
 msgid "export to disk"
 msgstr "Export to disk"
 
-#: ../src/libs/export.c:486
+#: ../src/libs/export.c:485
 #, c-format
 msgid "which is equal to %s × %s px"
 msgstr "Which is equal to %s × %s px"
 
-#: ../src/libs/export.c:521
+#: ../src/libs/export.c:520
 msgctxt "unit"
 msgid "in"
 msgstr "in"
 
-#: ../src/libs/export.c:1061
+#: ../src/libs/export.c:1060
 msgctxt "section"
 msgid "storage options"
 msgstr "Storage options"
 
-#: ../src/libs/export.c:1065
+#: ../src/libs/export.c:1064
 msgid "target storage"
 msgstr "Target storage"
 
-#: ../src/libs/export.c:1087
+#: ../src/libs/export.c:1086
 msgctxt "section"
 msgid "format options"
 msgstr "Format options"
 
-#: ../src/libs/export.c:1091
+#: ../src/libs/export.c:1090
 msgid "file format"
 msgstr "File format"
 
-#: ../src/libs/export.c:1108
+#: ../src/libs/export.c:1107
 msgctxt "section"
 msgid "global options"
 msgstr "Global options"
 
-#: ../src/libs/export.c:1111
+#: ../src/libs/export.c:1110
 msgid "set size"
 msgstr "Set size"
 
-#: ../src/libs/export.c:1112
+#: ../src/libs/export.c:1111
 msgid "choose a method for setting the output size"
 msgstr "Choose a method for setting the output size"
 
-#: ../src/libs/export.c:1115
+#: ../src/libs/export.c:1114
 msgid "in pixels (for file)"
 msgstr "In pixels (for file)"
 
-#: ../src/libs/export.c:1116
+#: ../src/libs/export.c:1115
 msgid "in cm (for print)"
 msgstr "In cm (for print)"
 
-#: ../src/libs/export.c:1117
+#: ../src/libs/export.c:1116
 msgid "in inch (for print)"
 msgstr "In inch (for print)"
 
-#: ../src/libs/export.c:1118
+#: ../src/libs/export.c:1117
 msgid "by scale (for file)"
 msgstr "By scale (for file)"
 
-#: ../src/libs/export.c:1120
+#: ../src/libs/export.c:1119
 msgid "print width"
 msgstr "Print width"
 
-#: ../src/libs/export.c:1121 ../src/libs/export.c:1133
+#: ../src/libs/export.c:1120 ../src/libs/export.c:1132
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -20566,11 +20567,11 @@ msgstr ""
 "Maximum output width limit.\n"
 "Click middle mouse button to reset to 0."
 
-#: ../src/libs/export.c:1124
+#: ../src/libs/export.c:1123
 msgid "print height"
 msgstr "Print height"
 
-#: ../src/libs/export.c:1125 ../src/libs/export.c:1137
+#: ../src/libs/export.c:1124 ../src/libs/export.c:1136
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -20578,19 +20579,19 @@ msgstr ""
 "Maximum output height limit.\n"
 "Click middle mouse button to reset to 0."
 
-#: ../src/libs/export.c:1129
+#: ../src/libs/export.c:1128
 msgid "resolution in dot per inch"
 msgstr "Resolution in dot per inch"
 
-#: ../src/libs/export.c:1149
+#: ../src/libs/export.c:1148
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1162 ../src/libs/tools/global_toolbox.c:217
+#: ../src/libs/export.c:1161 ../src/libs/tools/global_toolbox.c:217
 msgid "px"
 msgstr "px"
 
-#: ../src/libs/export.c:1167
+#: ../src/libs/export.c:1166
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -20600,37 +20601,36 @@ msgstr ""
 "Zero or empty values are equal to 1.\n"
 "Click middle mouse button to reset to 1."
 
-#: ../src/libs/export.c:1186
+#: ../src/libs/export.c:1185
 msgid "allow upscaling"
 msgstr "Allow upscaling"
 
-#: ../src/libs/export.c:1192
+#: ../src/libs/export.c:1191
 msgid "high quality resampling"
 msgstr "High quality resampling"
 
-#: ../src/libs/export.c:1193
+#: ../src/libs/export.c:1192
 msgid "do high quality resampling during export"
 msgstr "Do high quality resampling during export"
 
-#: ../src/libs/export.c:1199
+#: ../src/libs/export.c:1198
 msgid "store masks"
 msgstr "Store masks"
 
-#: ../src/libs/export.c:1200
+#: ../src/libs/export.c:1199
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr "Store masks as layers in exported images. Only works for some formats."
 
-#: ../src/libs/export.c:1216 ../src/libs/export.c:1255
-#: ../src/libs/print_settings.c:2767 ../src/libs/print_settings.c:2814
+#: ../src/libs/export.c:1210 ../src/libs/export.c:1245
+#: ../src/libs/print_settings.c:2758 ../src/libs/print_settings.c:2804
 msgid "image settings"
 msgstr "Image settings"
 
-#: ../src/libs/export.c:1228 ../src/libs/print_settings.c:2801
-#, c-format
-msgid "output ICC profiles in %s or %s"
-msgstr "Output ICC profiles in %s or %s"
+#: ../src/libs/export.c:1220 ../src/libs/print_settings.c:2792
+msgid "output ICC profiles"
+msgstr "output ICC profiles"
 
-#: ../src/libs/export.c:1238
+#: ../src/libs/export.c:1228
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations,\n"
@@ -20668,29 +20668,29 @@ msgstr ""
 "destination medium and do nothing else. Mainly used when proofing colors.\n"
 "(not suited for photography)."
 
-#: ../src/libs/export.c:1265 ../src/libs/print_settings.c:2824
+#: ../src/libs/export.c:1255 ../src/libs/print_settings.c:2814
 msgid "style"
 msgstr "Style"
 
-#: ../src/libs/export.c:1268
+#: ../src/libs/export.c:1258
 msgid "temporary style to use while exporting"
 msgstr "Temporary style to use while exporting"
 
-#: ../src/libs/export.c:1273 ../src/libs/print_settings.c:2867
+#: ../src/libs/export.c:1263 ../src/libs/print_settings.c:2857
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "Whether the style items are appended to the history or replacing the history"
 
-#: ../src/libs/export.c:1276 ../src/libs/print_settings.c:2869
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2859
 msgid "replace history"
 msgstr "Replace history"
 
-#: ../src/libs/export.c:1276 ../src/libs/print_settings.c:2869
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2859
 msgid "append history"
 msgstr "Append history"
 
-#: ../src/libs/export.c:1292
+#: ../src/libs/export.c:1282
 msgid "export with current settings"
 msgstr "Export with current settings"
 
@@ -23085,116 +23085,115 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/print_settings.c:46
+#: ../src/libs/print_settings.c:45
 msgid "print settings"
 msgstr "Print settings"
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
-#: ../src/libs/print_settings.c:358 ../src/libs/print_settings.c:755
+#: ../src/libs/print_settings.c:357 ../src/libs/print_settings.c:754
 #, c-format
 msgid "processing `%s' for `%s'"
 msgstr "Processing `%s' for `%s'"
 
-#: ../src/libs/print_settings.c:388
+#: ../src/libs/print_settings.c:387
 #, c-format
 msgid "cannot open printer profile `%s'"
 msgstr "Cannot open printer profile `%s'"
 
-#: ../src/libs/print_settings.c:399
+#: ../src/libs/print_settings.c:398
 #, c-format
 msgid "error getting output profile for image %d"
 msgstr "Error getting output profile for image %d"
 
-#: ../src/libs/print_settings.c:411
+#: ../src/libs/print_settings.c:410
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "Cannot apply printer profile `%s'"
 
-#: ../src/libs/print_settings.c:575
+#: ../src/libs/print_settings.c:574
 msgid "failed to create temporary PDF for printing"
 msgstr "Failed to create temporary PDF for printing"
 
-#: ../src/libs/print_settings.c:621
+#: ../src/libs/print_settings.c:620
 msgid "maximum image per page reached"
 msgstr "Maximum image per page reached"
 
-#: ../src/libs/print_settings.c:709
+#: ../src/libs/print_settings.c:708
 msgid "cannot print until a picture is selected"
 msgstr "Cannot print until a picture is selected"
 
-#: ../src/libs/print_settings.c:714
+#: ../src/libs/print_settings.c:713
 msgid "cannot print until a printer is selected"
 msgstr "Cannot print until a printer is selected"
 
-#: ../src/libs/print_settings.c:719
+#: ../src/libs/print_settings.c:718
 msgid "cannot print until a paper is selected"
 msgstr "Cannot print until a paper is selected"
 
 #. in this case no need to release from cache what we couldn't get
-#: ../src/libs/print_settings.c:747
+#: ../src/libs/print_settings.c:746
 #, c-format
 msgid "cannot get image %d for printing"
 msgstr "Cannot get image %d for printing"
 
-#: ../src/libs/print_settings.c:919
+#: ../src/libs/print_settings.c:918
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:2385
+#: ../src/libs/print_settings.c:2377
 msgctxt "section"
 msgid "printer"
 msgstr "Printer"
 
-#: ../src/libs/print_settings.c:2398 ../src/libs/print_settings.c:2407
-#: ../src/libs/print_settings.c:2463
+#: ../src/libs/print_settings.c:2390 ../src/libs/print_settings.c:2399
+#: ../src/libs/print_settings.c:2454
 msgid "printer"
 msgstr "Printer"
 
-#: ../src/libs/print_settings.c:2398
+#: ../src/libs/print_settings.c:2390
 msgid "media"
 msgstr "Media"
 
-#: ../src/libs/print_settings.c:2419
+#: ../src/libs/print_settings.c:2411
 msgid "color management in printer driver"
 msgstr "Color management in printer driver"
 
-#: ../src/libs/print_settings.c:2452
-#, c-format
-msgid "printer ICC profiles in %s or %s"
-msgstr "Printer ICC profiles in %s or %s"
+#: ../src/libs/print_settings.c:2444
+msgid "printer ICC profiles"
+msgstr "printer ICC profiles"
 
-#: ../src/libs/print_settings.c:2474
+#: ../src/libs/print_settings.c:2465
 msgid "black point compensation"
 msgstr "Black point compensation"
 
-#: ../src/libs/print_settings.c:2487
+#: ../src/libs/print_settings.c:2478
 msgid "activate black point compensation when applying the printer profile"
 msgstr "Activate black point compensation when applying the printer profile"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:2494
+#: ../src/libs/print_settings.c:2485
 msgctxt "section"
 msgid "page"
 msgstr "Page"
 
-#: ../src/libs/print_settings.c:2516
+#: ../src/libs/print_settings.c:2507
 msgid "measurement units"
 msgstr "Measurement units"
 
-#: ../src/libs/print_settings.c:2524
+#: ../src/libs/print_settings.c:2515
 msgid "image width/height"
 msgstr "Image width/height"
 
-#: ../src/libs/print_settings.c:2529
+#: ../src/libs/print_settings.c:2520
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:2537
+#: ../src/libs/print_settings.c:2528
 msgid "scale factor"
 msgstr "Scale factor"
 
-#: ../src/libs/print_settings.c:2543
+#: ../src/libs/print_settings.c:2534
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -23207,46 +23206,46 @@ msgstr ""
 " a too large value may result in poor print quality"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2557
+#: ../src/libs/print_settings.c:2548
 msgid "top margin"
 msgstr "Top margin"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2561
+#: ../src/libs/print_settings.c:2552
 msgid "left margin"
 msgstr "Left margin"
 
-#: ../src/libs/print_settings.c:2564
+#: ../src/libs/print_settings.c:2555
 msgid "lock"
 msgstr "Lock"
 
-#: ../src/libs/print_settings.c:2566
+#: ../src/libs/print_settings.c:2557
 msgid "change all margins uniformly"
 msgstr "Change all margins uniformly"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2570
+#: ../src/libs/print_settings.c:2561
 msgid "right margin"
 msgstr "Right margin"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2574
+#: ../src/libs/print_settings.c:2565
 msgid "bottom margin"
 msgstr "Bottom margin"
 
-#: ../src/libs/print_settings.c:2607
+#: ../src/libs/print_settings.c:2598
 msgid "display grid"
 msgstr "Display grid"
 
-#: ../src/libs/print_settings.c:2618
+#: ../src/libs/print_settings.c:2609
 msgid "snap to grid"
 msgstr "Snap to grid"
 
-#: ../src/libs/print_settings.c:2631
+#: ../src/libs/print_settings.c:2622
 msgid "borderless mode required"
 msgstr "Borderless mode required"
 
-#: ../src/libs/print_settings.c:2634
+#: ../src/libs/print_settings.c:2625
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
@@ -23257,16 +23256,16 @@ msgstr ""
 "below the printer hardware margins"
 
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2641
+#: ../src/libs/print_settings.c:2632
 msgctxt "section"
 msgid "image layout"
 msgstr "Image layout"
 
-#: ../src/libs/print_settings.c:2682
+#: ../src/libs/print_settings.c:2673
 msgid "new image area"
 msgstr "New image area"
 
-#: ../src/libs/print_settings.c:2684
+#: ../src/libs/print_settings.c:2675
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
@@ -23276,53 +23275,53 @@ msgstr ""
 "Click and drag on the page to place the area\n"
 "Drag and drop image from film strip on it"
 
-#: ../src/libs/print_settings.c:2688
+#: ../src/libs/print_settings.c:2679
 msgid "delete image area"
 msgstr "Delete image area"
 
-#: ../src/libs/print_settings.c:2690
+#: ../src/libs/print_settings.c:2681
 msgid "delete the currently selected image area"
 msgstr "Delete the currently selected image area"
 
-#: ../src/libs/print_settings.c:2693
+#: ../src/libs/print_settings.c:2684
 msgid "clear layout"
 msgstr "Clear layout"
 
-#: ../src/libs/print_settings.c:2695
+#: ../src/libs/print_settings.c:2686
 msgid "remove all image areas from the page"
 msgstr "Remove all image areas from the page"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2712
+#: ../src/libs/print_settings.c:2703
 msgid "image area x origin (in current unit)"
 msgstr "Image area x origin (in current unit)"
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2716
+#: ../src/libs/print_settings.c:2707
 msgid "image area y origin (in current unit)"
 msgstr "Image area y origin (in current unit)"
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2727
+#: ../src/libs/print_settings.c:2718
 msgid "image area width (in current unit)"
 msgstr "Image area width (in current unit)"
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2731
+#: ../src/libs/print_settings.c:2722
 msgid "image area height (in current unit)"
 msgstr "Image area height (in current unit)"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:2757
+#: ../src/libs/print_settings.c:2748
 msgctxt "section"
 msgid "print settings"
 msgstr "Print settings"
 
-#: ../src/libs/print_settings.c:2846
+#: ../src/libs/print_settings.c:2836
 msgid "temporary style to use while printing"
 msgstr "Temporary style to use while printing"
 
-#: ../src/libs/print_settings.c:2878
+#: ../src/libs/print_settings.c:2868
 msgid "print with current settings"
 msgstr "Print with current settings"
 
@@ -24538,50 +24537,46 @@ msgstr ""
 "Toggle gamut checking\n"
 "Right click for profile options"
 
-#: ../src/views/darkroom.c:2528 ../src/views/darkroom.c:2530
-#: ../src/views/darkroom.c:2544 ../src/views/darkroom.c:2545
-#: ../src/views/darkroom.c:2546 ../src/views/darkroom.c:2547
-#: ../src/views/lighttable.c:1186 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2524 ../src/views/darkroom.c:2526
+#: ../src/views/darkroom.c:2540 ../src/views/darkroom.c:2541
+#: ../src/views/darkroom.c:2542 ../src/views/darkroom.c:2543
+#: ../src/views/lighttable.c:1182 ../src/views/lighttable.c:1184
 msgid "profiles"
 msgstr "Profiles"
 
-#: ../src/views/darkroom.c:2530 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2526 ../src/views/lighttable.c:1184
 msgid "preview intent"
 msgstr "Preview intent"
 
-#: ../src/views/darkroom.c:2544 ../src/views/lighttable.c:1192
+#: ../src/views/darkroom.c:2540 ../src/views/lighttable.c:1188
 msgid "display profile"
 msgstr "Display profile"
 
-#: ../src/views/darkroom.c:2545 ../src/views/lighttable.c:1195
+#: ../src/views/darkroom.c:2541 ../src/views/lighttable.c:1191
 msgid "preview display profile"
 msgstr "Preview display profile"
 
-#: ../src/views/darkroom.c:2547
+#: ../src/views/darkroom.c:2543
 msgid "histogram profile"
 msgstr "Histogram profile"
 
-#: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1231
-#, c-format
-msgid "display ICC profiles in %s or %s"
-msgstr "Display ICC profiles in %s or %s"
+#: ../src/views/darkroom.c:2605 ../src/views/lighttable.c:1225
+msgid "display ICC profiles"
+msgstr "display ICC profiles"
 
-#: ../src/views/darkroom.c:2614 ../src/views/lighttable.c:1234
-#, c-format
-msgid "preview display ICC profiles in %s or %s"
-msgstr "Preview display ICC profiles in %s or %s"
+#: ../src/views/darkroom.c:2609 ../src/views/lighttable.c:1229
+msgid "preview display ICC profiles"
+msgstr "preview display ICC profiles"
+
+#: ../src/views/darkroom.c:2613
+msgid "softproof ICC profiles"
+msgstr "softproof ICC profiles"
 
 #: ../src/views/darkroom.c:2617
-#, c-format
-msgid "softproof ICC profiles in %s or %s"
-msgstr "Softproof ICC profiles in %s or %s"
+msgid "histogram and color picker ICC profiles"
+msgstr "histogram and color picker ICC profiles"
 
-#: ../src/views/darkroom.c:2620
-#, c-format
-msgid "histogram and color picker ICC profiles in %s or %s"
-msgstr "Histogram and color picker ICC profiles in %s or %s"
-
-#: ../src/views/darkroom.c:2656
+#: ../src/views/darkroom.c:2651
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -24590,137 +24585,137 @@ msgstr ""
 "Right click for guides options"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2673
+#: ../src/views/darkroom.c:2668
 msgid "full preview"
 msgstr "Full preview"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2677
+#: ../src/views/darkroom.c:2672
 msgid "force pan/zoom/rotate with mouse"
 msgstr "Force pan/zoom/rotate with mouse"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2689
+#: ../src/views/darkroom.c:2684
 msgid "zoom close-up"
 msgstr "Zoom close-up"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2692 ../src/views/lighttable.c:1290
+#: ../src/views/darkroom.c:2687 ../src/views/lighttable.c:1283
 msgid "zoom in"
 msgstr "Zoom in"
 
-#: ../src/views/darkroom.c:2693 ../src/views/lighttable.c:1292
+#: ../src/views/darkroom.c:2688 ../src/views/lighttable.c:1285
 msgid "zoom out"
 msgstr "Zoom out"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2696
+#: ../src/views/darkroom.c:2691
 msgid "image forward"
 msgstr "Image forward"
 
-#: ../src/views/darkroom.c:2697
+#: ../src/views/darkroom.c:2692
 msgid "image back"
 msgstr "Image back"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2700
+#: ../src/views/darkroom.c:2695
 msgid "cycle overlay colors"
 msgstr "Cycle overlay colors"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2703
+#: ../src/views/darkroom.c:2698
 msgid "show drawn masks"
 msgstr "Show drawn masks"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2706
+#: ../src/views/darkroom.c:2701
 msgid "increase brush size"
 msgstr "Increase brush size"
 
-#: ../src/views/darkroom.c:2707
+#: ../src/views/darkroom.c:2702
 msgid "decrease brush size"
 msgstr "Decrease brush size"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2710
+#: ../src/views/darkroom.c:2705
 msgid "increase brush hardness"
 msgstr "Increase brush hardness"
 
-#: ../src/views/darkroom.c:2711
+#: ../src/views/darkroom.c:2706
 msgid "decrease brush hardness"
 msgstr "Decrease brush hardness"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2714
+#: ../src/views/darkroom.c:2709
 msgid "increase brush opacity"
 msgstr "Increase brush opacity"
 
-#: ../src/views/darkroom.c:2715
+#: ../src/views/darkroom.c:2710
 msgid "decrease brush opacity"
 msgstr "Decrease brush opacity"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2718 ../src/views/lighttable.c:1282
+#: ../src/views/darkroom.c:2713 ../src/views/lighttable.c:1275
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "Undo"
 
-#: ../src/views/darkroom.c:2719 ../src/views/lighttable.c:1283
+#: ../src/views/darkroom.c:2714 ../src/views/lighttable.c:1276
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "Redo"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2722
+#: ../src/views/darkroom.c:2717
 msgid "change keyboard shortcut slider precision"
 msgstr "Change keyboard shortcut slider precision"
 
-#: ../src/views/darkroom.c:3994
+#: ../src/views/darkroom.c:3989
 msgid "keyboard shortcut slider precision: fine"
 msgstr "Keyboard shortcut slider precision: fine"
 
-#: ../src/views/darkroom.c:3996
+#: ../src/views/darkroom.c:3991
 msgid "keyboard shortcut slider precision: normal"
 msgstr "Keyboard shortcut slider precision: normal"
 
-#: ../src/views/darkroom.c:3998
+#: ../src/views/darkroom.c:3993
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "Keyboard shortcut slider precision: coarse"
 
-#: ../src/views/darkroom.c:4014
+#: ../src/views/darkroom.c:4009
 msgid "switch to lighttable"
 msgstr "Switch to Lighttable"
 
-#: ../src/views/darkroom.c:4015 ../src/views/lighttable.c:882
+#: ../src/views/darkroom.c:4010 ../src/views/lighttable.c:882
 msgid "zoom in the image"
 msgstr "Zoom in the image"
 
-#: ../src/views/darkroom.c:4016
+#: ../src/views/darkroom.c:4011
 msgid "unbounded zoom in the image"
 msgstr "Unbounded zoom in the image"
 
-#: ../src/views/darkroom.c:4017
+#: ../src/views/darkroom.c:4012
 msgid "zoom to 100% 200% and back"
 msgstr "Zoom to 100% 200% and back"
 
-#: ../src/views/darkroom.c:4018 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:4013 ../src/views/lighttable.c:885
 msgid "pan a zoomed image"
 msgstr "Pan a zoomed image"
 
-#: ../src/views/darkroom.c:4020 ../src/views/lighttable.c:927
+#: ../src/views/darkroom.c:4015 ../src/views/lighttable.c:927
 msgid "[modules] expand module without closing others"
 msgstr "[modules] expand module without closing others"
 
-#: ../src/views/darkroom.c:4021 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:4016 ../src/views/lighttable.c:928
 msgid "[modules] expand module and close others"
 msgstr "[modules] expand module and close others"
 
-#: ../src/views/darkroom.c:4023
+#: ../src/views/darkroom.c:4018
 msgid "[modules] rename module"
 msgstr "[modules] rename module"
 
-#: ../src/views/darkroom.c:4025
+#: ../src/views/darkroom.c:4020
 msgid "[modules] change module position in pipe"
 msgstr "[modules] change module position in pipe"
 
@@ -24729,7 +24724,7 @@ msgid "good knight"
 msgstr "Good knight"
 
 #. Show infos key
-#: ../src/views/lighttable.c:656 ../src/views/lighttable.c:1273
+#: ../src/views/lighttable.c:656 ../src/views/lighttable.c:1266
 msgid "show infos"
 msgstr "Show infos"
 
@@ -24807,44 +24802,44 @@ msgstr "Pan inside the main view"
 msgid "set display profile"
 msgstr "Set display profile"
 
-#: ../src/views/lighttable.c:1253
+#: ../src/views/lighttable.c:1246
 msgid "whole"
 msgstr "Whole"
 
-#: ../src/views/lighttable.c:1269
+#: ../src/views/lighttable.c:1262
 msgid "leave"
 msgstr "Leave"
 
-#: ../src/views/lighttable.c:1276
+#: ../src/views/lighttable.c:1269
 msgid "align images to grid"
 msgstr "Align images to grid"
 
-#: ../src/views/lighttable.c:1277
+#: ../src/views/lighttable.c:1270
 msgid "reset first image offset"
 msgstr "Reset first image offset"
 
-#: ../src/views/lighttable.c:1278
+#: ../src/views/lighttable.c:1271
 msgid "select toggle image"
 msgstr "Select toggle image"
 
-#: ../src/views/lighttable.c:1279
+#: ../src/views/lighttable.c:1272
 msgid "select single image"
 msgstr "Select single image"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:1286
+#: ../src/views/lighttable.c:1279
 msgid "preview zoom 100%"
 msgstr "Preview zoom 100%"
 
-#: ../src/views/lighttable.c:1287
+#: ../src/views/lighttable.c:1280
 msgid "preview zoom fit"
 msgstr "Preview zoom fit"
 
-#: ../src/views/lighttable.c:1291
+#: ../src/views/lighttable.c:1284
 msgid "zoom max"
 msgstr "Zoom max"
 
-#: ../src/views/lighttable.c:1293
+#: ../src/views/lighttable.c:1286
 msgid "zoom min"
 msgstr "Zoom min"
 
@@ -24974,6 +24969,38 @@ msgstr "Switch to a classic window which will stay open after key release"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "Mouse actions"
+
+#, c-format
+#~ msgid ""
+#~ "darktable loads external ICC profiles from\n"
+#~ "%s\n"
+#~ "and\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Darktable loads external ICC profiles from\n"
+#~ "%s\n"
+#~ "and\n"
+#~ "%s"
+
+#, c-format
+#~ msgid "ICC profiles in %s or %s"
+#~ msgstr "ICC profiles in %s or %s"
+
+#, c-format
+#~ msgid "output ICC profiles in %s or %s"
+#~ msgstr "Output ICC profiles in %s or %s"
+
+#, c-format
+#~ msgid "display ICC profiles in %s or %s"
+#~ msgstr "Display ICC profiles in %s or %s"
+
+#, c-format
+#~ msgid "preview display ICC profiles in %s or %s"
+#~ msgstr "Preview display ICC profiles in %s or %s"
+
+#, c-format
+#~ msgid "softproof ICC profiles in %s or %s"
+#~ msgstr "Softproof ICC profiles in %s or %s"
 
 #~ msgid "pen pressure control for brush masks"
 #~ msgstr "Pen pressure control for brush masks"
