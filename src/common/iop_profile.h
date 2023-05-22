@@ -153,7 +153,7 @@ void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *pr
 /* Returns the tooltip with the location of the profile for for_name
    which can be softproof, input, output...
 */
-gchar *dt_ioppr_get_location_tooltip(const char *for_name);
+gchar *dt_ioppr_get_location_tooltip(const char *subdir, const char *for_name);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
 void dt_ioppr_transform_image_colorspace
