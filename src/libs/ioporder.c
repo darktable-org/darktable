@@ -203,7 +203,7 @@ void init_presets(dt_lib_module_t *self)
   params = dt_ioppr_serialize_iop_order_list(list, &size);
   dt_lib_presets_add(_("v3.0 for RAW input (default)"), self->plugin_name, self->version(),
                      (const char *)params, (int32_t)size, TRUE,
-                     is_display_referred ? 0 : FOR_RAW);
+                     is_display_referred ? 0 : FOR_RAW | FOR_MATRIX);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30_JPG);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
