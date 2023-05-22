@@ -2602,19 +2602,19 @@ void gui_init(dt_view_t *self)
       }
     }
 
-    char *tooltip = dt_ioppr_get_location_tooltip(_("display ICC profiles"));
+    char *tooltip = dt_ioppr_get_location_tooltip("out", _("display ICC profiles"));
     gtk_widget_set_tooltip_markup(display_profile, tooltip);
     g_free(tooltip);
 
-    tooltip = dt_ioppr_get_location_tooltip(_("preview display ICC profiles"));
+    tooltip = dt_ioppr_get_location_tooltip("out", _("preview display ICC profiles"));
     gtk_widget_set_tooltip_markup(display2_profile, tooltip);
     g_free(tooltip);
 
-    tooltip = dt_ioppr_get_location_tooltip(_("softproof ICC profiles"));
+    tooltip = dt_ioppr_get_location_tooltip("out", _("softproof ICC profiles"));
     gtk_widget_set_tooltip_markup(softproof_profile, tooltip);
     g_free(tooltip);
 
-    tooltip = dt_ioppr_get_location_tooltip(_("histogram and color picker ICC profiles"));
+    tooltip = dt_ioppr_get_location_tooltip("out", _("histogram and color picker ICC profiles"));
     gtk_widget_set_tooltip_markup(histogram_profile, tooltip);
     g_free(tooltip);
 

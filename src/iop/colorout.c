@@ -890,7 +890,7 @@ void gui_init(struct dt_iop_module_t *self)
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 
-  char *tooltip = dt_ioppr_get_location_tooltip(_("external ICC profiles"));
+  char *tooltip = dt_ioppr_get_location_tooltip("out", _("external ICC profiles"));
   gtk_widget_set_tooltip_markup(g->output_profile, tooltip);
   g_free(tooltip);
 
