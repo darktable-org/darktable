@@ -19754,7 +19754,7 @@ msgstr "Compresser les ombres/hautes lumières (GF) : fort"
 
 #: ../src/iop/toneequal.c:510
 msgid "compress shadows/highlights (EIGF): medium"
-msgstr "Compresser ombres/hautes lumières (EIGF) : moyen"
+msgstr "Compresser les ombres/hautes lumières (EIGF) : moyen"
 
 #: ../src/iop/toneequal.c:515
 msgid "compress shadows/highlights (GF): medium"
