@@ -774,6 +774,10 @@ The following is a summary of the main features added to darktable
 - Properly ignore empty GPX latitude/longitude which would otherwise
   create bogus location coordinates.
 
+- Fix position saving in collect module history and recent-collection
+  module. This ensure that activating an history entry restore
+  thumbnail offset like it was when the entry has been saved.
+
 ## Lua
 
 ### API Version
