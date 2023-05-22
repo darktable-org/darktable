@@ -1704,7 +1704,8 @@ static void _dt_collection_changed_callback(gpointer instance,
     else
       table->offset_imgid = _thumb_get_imgid(1);
     table->offset = MAX(1, nrow);
-    if(offset_changed) dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
+    if(offset_changed)
+      dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
     if(offset_changed && table->mode == DT_THUMBTABLE_MODE_ZOOM)
       dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
 
