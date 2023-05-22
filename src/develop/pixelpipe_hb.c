@@ -1559,21 +1559,18 @@ static gboolean _dev_pixelpipe_process_rec(
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
-  gboolean important = FALSE;
-
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && module)
-    important = (dt_iop_module_is(module->so, "colorout"));
-
-  if((pipe->type & DT_DEV_PIXELPIPE_FULL)
-      && module
-      && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE))
-    important = (dt_iop_module_is(module->so, "gamma"));
+  const gboolean important_out = module
+      && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+      && (((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && dt_iop_module_is(module->so, "colorout"))
+       || ((pipe->type & DT_DEV_PIXELPIPE_FULL)    && dt_iop_module_is(module->so, "gamma")));
 
   dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
-                             output, out_format, module, important);
+                             output, out_format, module, important_out);
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
+
+  gboolean important_cl = FALSE;
 
   dt_times_t start;
   dt_get_perf_times(&start);
@@ -2153,13 +2150,18 @@ static gboolean _dev_pixelpipe_process_rec(
              a) for the currently focused iop, as that is the iop
                 which is most likely to change next
              b) if there is a hint for changed parameters in history via the flag
-             c) we got an important hint for some special cases
-       */
-
-        if(darktable.develop->gui_attached
+             c) colorout
+             d) in all a-c cases only in fullpipe mode and no mask_display
+        */
+        important_cl =
+           (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+           && (pipe->type == DT_DEV_PIXELPIPE_FULL) // ignored in fast mode
+           && darktable.develop->gui_attached
            && ((module == darktable.develop->gui_module)
-                || important
-                || module->iopcache_hint))
+                || module->iopcache_hint
+                || dt_iop_module_is(module->so, "colorout"));
+
+        if(important_cl)
         {
           /* write back input into cache for faster re-usal (full pipe or preview) */
           if(cl_mem_input != NULL
@@ -2172,6 +2174,7 @@ static gboolean _dev_pixelpipe_process_rec(
                                                              roi_in.height, in_bpp);
             if(err != CL_SUCCESS)
             {
+              important_cl = FALSE;
               dt_print_pipe(DT_DEBUG_OPENCL,
                 "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "%s\n",
                   "couldn't copy data back to host memory (B)");
@@ -2180,6 +2183,8 @@ static gboolean _dev_pixelpipe_process_rec(
             }
             else
             {
+              dt_print_pipe(DT_DEBUG_OPENCL,
+                "pixelpipe_process_CL", pipe, module, &roi_in, roi_out, "cl input data to host\n");
               /* success: cache line is valid now, so we will not need
                  to invalidate it later */
               valid_input_on_gpu_only = FALSE;
@@ -2353,16 +2358,20 @@ static gboolean _dev_pixelpipe_process_rec(
   {
     // Possibly give the input buffer of the current module more weight
     // as the user is likely to change that one soon (again), so keep it in cache.
+    // Also do this if the clbuffer has been actively written 
+    const gboolean has_focus = (module == darktable.develop->gui_module);
     if((pipe->type & DT_DEV_PIXELPIPE_FULL)
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-        && ((module == darktable.develop->gui_module) || module->iopcache_hint))
+        && (has_focus || module->iopcache_hint || important_cl))
     {
-      dt_print_pipe(DT_DEBUG_PIPE, "UI hints importance", pipe, module, &roi_in, roi_out,
-        "%s\n", module->iopcache_hint ? "last history change" : "module in focus");
-
+      dt_print_pipe(DT_DEBUG_PIPE, "importance hints", pipe, module, &roi_in, roi_out, "%s%s%s\n",
+        module->iopcache_hint ? "history " : "",
+        has_focus ? "focus " : "",
+        important_cl ? "cldata" : "");
       dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
-      module->iopcache_hint = FALSE;
     }
+
+    module->iopcache_hint = FALSE;
 
     if(module->expanded
        && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
