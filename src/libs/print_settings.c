@@ -2441,7 +2441,7 @@ void gui_init(dt_lib_module_t *self)
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
-  char *tooltip = dt_ioppr_get_location_tooltip(_("printer ICC profiles"));
+  char *tooltip = dt_ioppr_get_location_tooltip("out", _("printer ICC profiles"));
   gtk_widget_set_tooltip_markup(d->pprofile, tooltip);
   g_free(tooltip);
 
@@ -2789,7 +2789,7 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
-  tooltip = dt_ioppr_get_location_tooltip(_("output ICC profiles"));
+  tooltip = dt_ioppr_get_location_tooltip("out", _("output ICC profiles"));
   gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
 
