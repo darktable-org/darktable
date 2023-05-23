@@ -2094,7 +2094,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->work_combobox, 0);
   {
-    char *tooltip = dt_ioppr_get_location_tooltip("out", _("external ICC profiles"));
+    char *tooltip = dt_ioppr_get_location_tooltip("out", _("working ICC profiles"));
     gtk_widget_set_tooltip_markup(g->work_combobox, tooltip);
     g_free(tooltip);
   }
