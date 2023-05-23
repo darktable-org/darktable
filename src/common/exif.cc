@@ -77,6 +77,11 @@ using namespace std;
 
 #define DT_XMP_EXIF_VERSION 5
 
+#if EXIV2_TEST_VERSION(0,28,0)
+#define AnyError Error
+#define toLong toInt64
+#endif
+
 // persistent list of exiv2 tags. set up in dt_init()
 static GList *exiv2_taglist = NULL;
 
@@ -2961,47 +2966,47 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData,
       if(g_str_has_prefix(key_iter, "darktable:operation"))
       {
         current_entry->have_operation = TRUE;
-        std::string value_item = history->value().toString();
+        std::string value_item = history->toString();
         current_entry->operation = g_strdup(value_item.c_str());
       }
       else if(g_str_has_prefix(key_iter, "darktable:num"))
       {
-        current_entry->num = history->value().toLong();
+        current_entry->num = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:enabled"))
       {
-        current_entry->enabled = history->value().toLong() == 1;
+        current_entry->enabled = history->toLong() == 1;
       }
       else if(g_str_has_prefix(key_iter, "darktable:modversion"))
       {
         current_entry->have_modversion = TRUE;
-        current_entry->modversion = history->value().toLong();
+        current_entry->modversion = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:params"))
       {
         current_entry->have_params = TRUE;
-        std::string value_item = history->value().toString();
+        std::string value_item = history->toString();
         current_entry->params = dt_exif_xmp_decode(value_item.c_str(),
-                                                   history->value().size(),
+                                                   history->size(),
                                                    &current_entry->params_len);
       }
       else if(g_str_has_prefix(key_iter, "darktable:multi_name_hand_edited"))
       {
-        current_entry->multi_name_hand_edited = history->value().toLong() == 1;
+        current_entry->multi_name_hand_edited = history->toLong() == 1;
       }
       else if(g_str_has_prefix(key_iter, "darktable:multi_name"))
       {
-        std::string value_item = history->value().toString();
+        std::string value_item = history->toString();
         current_entry->multi_name = g_strdup(value_item.c_str());
       }
       else if(g_str_has_prefix(key_iter, "darktable:multi_priority"))
       {
-        current_entry->multi_priority = history->value().toLong();
+        current_entry->multi_priority = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:iop_order"))
       {
         // we ensure reading the iop_order as a high precision float
-        std::string value_item = history->value().toString();
+        std::string value_item = history->toString();
         string str = g_strdup(value_item.c_str());
         static const std::locale& c_locale = std::locale("C");
         std::istringstream istring(str);
@@ -3010,14 +3015,14 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData,
       }
       else if(g_str_has_prefix(key_iter, "darktable:blendop_version"))
       {
-        current_entry->blendop_version = history->value().toLong();
+        current_entry->blendop_version = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:blendop_params"))
       {
-        std::string value_item = history->value().toString();
+        std::string value_item = history->toString();
         current_entry->blendop_params =
           dt_exif_xmp_decode(value_item.c_str(),
-                             history->value().size(),
+                             history->size(),
                              &current_entry->blendop_params_len);
       }
     }
@@ -3197,41 +3202,41 @@ static GList *read_masks_v3(Exiv2::XmpData &xmpData,
       // go on reading things into current_entry
       if(g_str_has_prefix(key_iter, "darktable:mask_num"))
       {
-        current_entry->mask_num = history->value().toLong();
+        current_entry->mask_num = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_id"))
       {
-        current_entry->mask_id = history->value().toLong();
+        current_entry->mask_id = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_type"))
       {
-        current_entry->mask_type = history->value().toLong();
+        current_entry->mask_type = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_name"))
       {
-        std::string value_item = history->value().toString();
+        std::string value_item = history->toString();
         current_entry->mask_name = g_strdup(value_item.c_str());
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_version"))
       {
-        current_entry->mask_version = history->value().toLong();
+        current_entry->mask_version = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_points"))
       {
-        std::string value_item = history->value().toString();
+        std::string value_item = history->toString();
         current_entry->mask_points = dt_exif_xmp_decode(value_item.c_str(),
-                                                        history->value().size(),
+                                                        history->size(),
                                                         &current_entry->mask_points_len);
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_nb"))
       {
-        current_entry->mask_nb = history->value().toLong();
+        current_entry->mask_nb = history->toLong();
       }
       else if(g_str_has_prefix(key_iter, "darktable:mask_src"))
       {
-        std::string value_item = history->value().toString();
+        std::string value_item = history->toString();
         current_entry->mask_src = dt_exif_xmp_decode(value_item.c_str(),
-                                                     history->value().size(),
+                                                     history->size(),
                                                      &current_entry->mask_src_len);
       }
 
@@ -4548,7 +4553,11 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
       std::string xmpPacket;
 
       Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
+#if EXIV2_TEST_VERSION(0,28,0)
+      xmpPacket.assign(buf.c_str(), buf.size());
+#else
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+#endif
       Exiv2::XmpParser::decode(xmpData, xmpPacket);
       // because XmpSeq or XmpBag are added to the list, we first have
       // to remove these so that we don't end up with a string of duplicates
@@ -4565,7 +4574,11 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
       std::string xmpPacket;
 
       Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
+#if EXIV2_TEST_VERSION(0,28,0)
+      xmpPacket.assign(buf.c_str(), buf.size());
+#else
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+#endif
       Exiv2::XmpParser::decode(sidecarXmpData, xmpPacket);
 
       for(Exiv2::XmpData::const_iterator it = sidecarXmpData.begin();
@@ -4671,28 +4684,28 @@ const std::pair<std::array<float, 4>, bool> getRegionNormalized(
   {
     return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
   }
-  const float h = hIt->value().toFloat() * imgHeight;
+  const float h = hIt->toFloat() * imgHeight;
 
   XmpData::const_iterator wIt;
   if((wIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:w"))) == xmp.end())
   {
     return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
   }
-  const float w = wIt->value().toFloat() * imgWidth;
+  const float w = wIt->toFloat() * imgWidth;
 
   XmpData::const_iterator xIt;
   if((xIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:x"))) == xmp.end())
   {
     return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
   }
-  float x = xIt->value().toFloat() * imgWidth;
+  float x = xIt->toFloat() * imgWidth;
 
   XmpData::const_iterator yIt;
   if((yIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:y"))) == xmp.end())
   {
     return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
   }
-  float y = yIt->value().toFloat() * imgHeight;
+  float y = yIt->toFloat() * imgHeight;
 
   /* MWG regions use (x,y) as the center of the region */
   if (regionType == RegionType::MWG)
@@ -4745,7 +4758,7 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp,
     return;
   }
   /* We only know how to handle pixel units */
-  if(unit->value().toString() != "pixel")
+  if(unit->toString() != "pixel")
   {
     return;
   }
@@ -4757,7 +4770,7 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp,
     return;
   }
   /* TODO: assert that we actually fit an int */
-  const int imgHeight = imgHeightIt->value().toLong();
+  const int imgHeight = imgHeightIt->toLong();
 
   XmpData::const_iterator imgWidthIt;
   if((imgWidthIt = xmp.findKey
@@ -4766,7 +4779,7 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp,
     return;
   }
   /* TODO: assert that we actually fit an int */
-  const int imgWidth = imgWidthIt->value().toLong();
+  const int imgWidth = imgWidthIt->toLong();
 
   /* Gather the regions for transformation */
   std::vector<std::array<float, 4> > regions;
@@ -4788,7 +4801,7 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp,
     {
       return;
     }
-    std::string regionUnit = regionUnitIt->value().toString();
+    std::string regionUnit = regionUnitIt->toString();
     if(regionUnit == "normalized")
     {
       const std::pair<std::array<float, 4>, bool> result
@@ -4856,17 +4869,31 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp,
     std::string regionKey =
       "Xmp.mwg-rs.Regions/mwg-rs:RegionList[" + std::to_string(i + 1) + "]";
     /* for x and y, we have to retranslate them to be the center of the region. */
+#if EXIV2_TEST_VERSION(0,28,0)
+    // workaround for setValue() bug in 0.28.0
+    xmp[regionKey + "/mwg-rs:Area/stArea:x"] = std::to_string(x + w/2);
+    xmp[regionKey + "/mwg-rs:Area/stArea:y"] = std::to_string(y + h/2);
+    xmp[regionKey + "/mwg-rs:Area/stArea:h"] = std::to_string(h);
+    xmp[regionKey + "/mwg-rs:Area/stArea:w"] = std::to_string(w);
+#else
     xmp[regionKey + "/mwg-rs:Area/stArea:x"] = XmpTextValue(std::to_string(x + w/2));
     xmp[regionKey + "/mwg-rs:Area/stArea:y"] = XmpTextValue(std::to_string(y + h/2));
     xmp[regionKey + "/mwg-rs:Area/stArea:h"] = XmpTextValue(std::to_string(h));
     xmp[regionKey + "/mwg-rs:Area/stArea:w"] = XmpTextValue(std::to_string(w));
+#endif
   }
 
   /* Finally, overwrite the dimensions with the image dimensions */
+#if EXIV2_TEST_VERSION(0,28,0)
+  // workaround for setValue() bug in 0.28.0
+  xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:h"] = std::to_string(finalHeight);
+  xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:w"] = std::to_string(finalWidth);
+#else
   xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:h"] =
     XmpTextValue(std::to_string(finalHeight));
   xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:w"] =
     XmpTextValue(std::to_string(finalWidth));
+#endif
 }
 
 
@@ -4919,7 +4946,11 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
       std::string xmpPacket;
 
       Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(input_filename));
+#if EXIV2_TEST_VERSION(0,28,0)
+      xmpPacket.assign(buf.c_str(), buf.size());
+#else
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+#endif
       Exiv2::XmpParser::decode(sidecarXmpData, xmpPacket);
 
       for(Exiv2::XmpData::const_iterator it = sidecarXmpData.begin();
@@ -5097,7 +5128,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     catch(Exiv2::AnyError &e)
     {
 #if EXIV2_TEST_VERSION(0, 27, 0)
-      if(e.code() == Exiv2::kerTooLargeJpegSegment)
+      if(e.code() == Exiv2::ErrorCode::kerTooLargeJpegSegment)
 #else
       if(e.code() == 37)
 #endif
@@ -5168,7 +5199,11 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename)
       }
 
       Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
+#if EXIV2_TEST_VERSION(0,28,0)
+      xmpPacket.assign(buf.c_str(), buf.size());
+#else
       xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+#endif
       Exiv2::XmpParser::decode(xmpData, xmpPacket);
       // because XmpSeq or XmpBag are added to the list, we first have
       // to remove these so that we don't end up with a string of duplicates
