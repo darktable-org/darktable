@@ -3841,7 +3841,7 @@ void gui_init(dt_iop_module_t *self)
                                 "in undersmoothing of the green channel in\n"
                                 "wavelets mode, combined with a bad handling\n"
                                 "of white balance coefficients, and a bug in\n"
-                                "non local means normalization resulting in\n"
+                                "non-local means normalization resulting in\n"
                                 "undersmoothing when patch size was increased.\n"
                                 "enabling this option will change the denoising\n"
                                 "you get. once enabled, you won't be able to\n"
