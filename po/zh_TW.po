@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-21 20:30+0200\n"
-"PO-Revision-Date: 2023-05-23 10:49+0800\n"
+"PO-Revision-Date: 2023-05-23 11:12+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -6649,7 +6649,7 @@ msgstr "尚未選取影像"
 #: ../src/common/styles.c:693
 #, c-format
 msgid "style %s successfully applied!"
-msgstr "已套用風格檔「%s」"
+msgstr "已成功套用風格檔「%s」！"
 
 #: ../src/common/styles.c:709
 msgid "no images nor styles selected!"
@@ -9800,7 +9800,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1847
 msgid "removing shortcut"
-msgstr "正在移除快速鍵"
+msgstr "移除快速鍵"
 
 #: ../src/gui/accelerators.c:1848
 msgid "remove the selected shortcut?"
@@ -9816,7 +9816,7 @@ msgstr "預設集"
 
 #: ../src/gui/accelerators.c:2272
 msgid "restore shortcuts"
-msgstr "恢復快速鍵設定"
+msgstr "恢復快速鍵"
 
 #: ../src/gui/accelerators.c:2275
 msgid "_defaults"
@@ -9858,7 +9858,7 @@ msgstr "快速鍵"
 
 #: ../src/gui/accelerators.c:2353
 msgid "export shortcuts"
-msgstr "匯出快速鍵設定"
+msgstr "匯出快速鍵"
 
 #: ../src/gui/accelerators.c:2356 ../src/gui/accelerators.c:2436
 #: ../src/gui/hist_dialog.c:227 ../src/gui/presets.c:564
@@ -10768,7 +10768,7 @@ msgstr "保存 CSS 並套用"
 
 #: ../src/gui/preferences.c:420
 msgid "click to save and apply the CSS tweaks entered in this editor"
-msgstr "點擊以儲存並套用編輯器中調整的 CSS 代碼"
+msgstr "儲存並套用編輯器中調整的 CSS 代碼"
 
 #: ../src/gui/preferences.c:422
 msgid "open help page for CSS tweaks"
