@@ -1217,7 +1217,7 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, 0);
 
-  char *tooltip = dt_ioppr_get_location_tooltip(_("output ICC profiles"));
+  char *tooltip = dt_ioppr_get_location_tooltip("out", _("output ICC profiles"));
   gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
 

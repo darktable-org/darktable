@@ -1841,7 +1841,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(g)
   {
     char *tooltip_part_profile_dirs =
-      dt_ioppr_get_location_tooltip(_("external ICC profiles"));
+      dt_ioppr_get_location_tooltip("in", _("external ICC profiles"));
 
     // In case of embedded ICC profile we will modify tooltip with the
     // profile info, otherwise reset tooltip to generic text.
@@ -2094,7 +2094,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->work_combobox, 0);
   {
-    char *tooltip = dt_ioppr_get_location_tooltip(_("external ICC profiles"));
+    char *tooltip = dt_ioppr_get_location_tooltip("out", _("working ICC profiles"));
     gtk_widget_set_tooltip_markup(g->work_combobox, tooltip);
     g_free(tooltip);
   }
