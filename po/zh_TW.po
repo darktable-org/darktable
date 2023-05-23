@@ -6390,7 +6390,7 @@ msgid ""
 "the image.  some or all processing\n"
 "has been skipped."
 msgstr ""
-"此模組運算需要使用的記憶體不足\n"
+"記憶體無法滿足此模組運算所需\n"
 "部分或全部影像處理已略過"
 
 #: ../src/common/import_session.c:308
