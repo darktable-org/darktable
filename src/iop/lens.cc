@@ -97,13 +97,13 @@ typedef enum dt_iop_lens_lenstype_t
 {
   DT_IOP_LENS_LENSTYPE_UNKNOWN = 0,
   DT_IOP_LENS_LENSTYPE_RECTILINEAR = 1,           // $DESCRIPTION: "rectilinear"
-  DT_IOP_LENS_LENSTYPE_FISHEYE = 2,               // $DESCRIPTION: "fish-eye"
+  DT_IOP_LENS_LENSTYPE_FISHEYE = 2,               // $DESCRIPTION: "fisheye"
   DT_IOP_LENS_LENSTYPE_PANORAMIC = 3,             // $DESCRIPTION: "panoramic"
   DT_IOP_LENS_LENSTYPE_EQUIRECTANGULAR = 4,       // $DESCRIPTION: "equirectangular"
   DT_IOP_LENS_LENSTYPE_FISHEYE_ORTHOGRAPHIC = 5,  // $DESCRIPTION: "orthographic"
   DT_IOP_LENS_LENSTYPE_FISHEYE_STEREOGRAPHIC = 6, // $DESCRIPTION: "stereographic"
   DT_IOP_LENS_LENSTYPE_FISHEYE_EQUISOLID = 7,     // $DESCRIPTION: "equisolid angle"
-  DT_IOP_LENS_LENSTYPE_FISHEYE_THOBY = 8,         // $DESCRIPTION: "Thoby fish-eye"
+  DT_IOP_LENS_LENSTYPE_FISHEYE_THOBY = 8,         // $DESCRIPTION: "Thoby fisheye"
 } dt_iop_lens_lenstype_t;
 
 typedef enum dt_iop_lens_mode_t
