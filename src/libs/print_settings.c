@@ -1894,7 +1894,9 @@ void gui_post_expose(struct dt_lib_module_t *self,
   cairo_set_source_rgba(cr, 1, .2, .2, 0.6);
   cairo_set_dash(cr, NULL, 0, 0);
 
-  const float scaler = 1.0f / darktable.gui->ppd_thb;
+  // image is not drawn aligned to pixel, hence will look blurry
+  // unless request higher-res version then scale it down
+  const float scaler = 0.5f / darktable.gui->ppd_thb;
 
   for(int k=0; k<ps->imgs.count; k++)
   {
@@ -1912,7 +1914,7 @@ void gui_post_expose(struct dt_lib_module_t *self,
       dt_printing_get_screen_pos(&ps->imgs, img, &screen);
 
       const dt_view_surface_value_t res =
-        dt_view_image_get_surface(img->imgid, screen.width, screen.height, &surf, TRUE);
+        dt_view_image_get_surface(img->imgid, screen.width * 2.0f, screen.height * 2.0f, &surf, TRUE);
 
       if(res != DT_VIEW_SURFACE_OK)
       {
