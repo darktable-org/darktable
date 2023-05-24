@@ -1212,8 +1212,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int nominator = pos->toRational(0).first;
       img->exif_focus_distance = fmax(0.0, (0.001 * nominator));
     }
-    else if(Exiv2::testVersion(0,25,0)
-            && FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceUpper"))
+    else if(FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceUpper"))
     {
       const float FocusDistanceUpper = pos->toFloat();
       if(FocusDistanceUpper <= 0.0f
@@ -1329,7 +1328,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
-    else if(Exiv2::testVersion(0,25,0) && FIND_EXIF_TAG("Exif.PentaxDng.LensType"))
+    else if(FIND_EXIF_TAG("Exif.PentaxDng.LensType"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
