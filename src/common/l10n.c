@@ -323,7 +323,7 @@ gchar *_l10n_get_language(const gchar *filename)
   if(lang)
     return lang;
   else
-    return g_strdup("C");
+    return g_strdup("");
 }
 
 dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
