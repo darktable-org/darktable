@@ -157,7 +157,7 @@ void dt_print_pipe(dt_debug_thread_t thread,
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11s %-28s %-14s %-24s %s%s%s %s",
+  printf("%11s %-28s %-14s %-22s %s%s%s %s",
          buf[0], buf[1], pname, buf[2], roi, roo, masking, vbuf);
   fflush(stdout);
 }
@@ -1169,24 +1169,14 @@ static gboolean _pixelpipe_process_on_CPU(
 
   const int cst_from = input_format->cst;
   const int cst_to = module->input_colorspace(module, pipe, piece);
+  const int cst_out = module->output_colorspace(module, pipe, piece);
 
-  if(darktable.unmuted & DT_DEBUG_PIPE)
-  {
-    const gboolean no_conversion = (cst_from == cst_to) || (work_profile == NULL)
-                    || (work_profile->type == DT_COLORSPACE_NONE);
-    if(!no_conversion)
-    {
-      char profiles[128] = { 0 };
-      snprintf(profiles, sizeof(profiles), "%s -> %s\n",
-               dt_iop_colorspace_to_name(cst_from),
-               dt_iop_colorspace_to_name(cst_to));
-
-      dt_print_pipe(DT_DEBUG_PIPE,
-                    "transform colorspace CPU",
-                    piece->pipe, module, roi_in, roi_out, profiles);
-
-    }
-  }
+  if(cst_from != cst_to)
+    dt_print_pipe(DT_DEBUG_PIPE,
+           "transform colorspace CPU",
+           piece->pipe, module, roi_in, roi_out, "%s -> %s\n",
+           dt_iop_colorspace_to_name(cst_from),
+           dt_iop_colorspace_to_name(cst_to));
 
   // transform to module input colorspace
   dt_ioppr_transform_image_colorspace
@@ -1216,7 +1206,7 @@ static gboolean _pixelpipe_process_on_CPU(
     && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
 
   if(pfm_dump)
-    dt_dump_pipe_pfm(module->so->op, input,
+    dt_dump_pipe_pfm(module->op, input,
                      roi_in->width, roi_in->height, in_bpp,
                      TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
@@ -1234,16 +1224,19 @@ static gboolean _pixelpipe_process_on_CPU(
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "pixelpipe_process_on_CPU",
-       piece->pipe, module, roi_in, roi_out,
+       piece->pipe, module, roi_in, roi_out, "%s%s%s%s\n",
+       dt_iop_colorspace_to_name(cst_to),
+       cst_to != cst_out ? " -> " : "",
+       cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
        (fitting)
-       ? "\n"
-       : "Warning: processed without tiling even if memory requirements are not met\n");
+       ? ""
+       : " Warning: processed without tiling even if memory requirements are not met");
 
     // this code section is for simplistic benchmarking via --bench-module
     if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
        && darktable.bench_module)
     {
-      if(dt_str_commasubstring(darktable.bench_module, module->so->op))
+      if(dt_str_commasubstring(darktable.bench_module, module->op))
       {
         dt_times_t start;
         dt_times_t end;
@@ -1262,7 +1255,7 @@ static gboolean _pixelpipe_process_on_CPU(
           const float clock = (end.clock - start.clock) / (float) counter;
           dt_print(DT_DEBUG_ALWAYS,
                    "[bench module plain] [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
-                   full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
+                   full ? "full" : "export", module->op, clock, mpix, mpix/clock);
         }
         darktable.unmuted = old_muted;
       }
@@ -1276,10 +1269,10 @@ static gboolean _pixelpipe_process_on_CPU(
 
   if(pfm_dump)
   {
-    dt_dump_pipe_pfm(module->so->op, *output,
+    dt_dump_pipe_pfm(module->op, *output,
                      roi_out->width, roi_out->height, bpp,
                      FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
-    _dump_pipe_pfm_diff(module->so->op, input, roi_in, in_bpp, *output, roi_out, bpp,
+    _dump_pipe_pfm_diff(module->op, input, roi_in, in_bpp, *output, roi_out, bpp,
                         dt_dev_pixelpipe_type_to_str(piece->pipe->type));
   }
 
@@ -1780,26 +1773,16 @@ static gboolean _dev_pixelpipe_process_rec(
         dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
 
         // transform to input colorspace
+        const int cst_from = input_cst_cl;
+        const int cst_to = module->input_colorspace(module, pipe, piece);
+        const int cst_out = module->output_colorspace(module, pipe, piece);
         if(success_opencl)
         {
-          const int cst_from = input_cst_cl;
-          const int cst_to = module->input_colorspace(module, pipe, piece);
-
-          if(darktable.unmuted & DT_DEBUG_PIPE)
-          {
-            const gboolean no_conversion = (cst_from == cst_to) || (work_profile == NULL)
-                            || (work_profile->type == DT_COLORSPACE_NONE);
-            if(!no_conversion)
-            {
-              char profiles[128] = { 0 };
-              snprintf(profiles, sizeof(profiles), "%s -> %s\n",
-                dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to));
-
-              dt_print_pipe(DT_DEBUG_PIPE,
-                            "transform colorspace CL", piece->pipe, module, &roi_in, roi_out, profiles);
-            }
-          }
-
+          if(cst_from != cst_to)
+            dt_print_pipe(DT_DEBUG_PIPE,
+               "transform colorspace CL", piece->pipe, module, &roi_in, roi_out, "%s -> %s\n",
+               dt_iop_colorspace_to_name(cst_from),
+               dt_iop_colorspace_to_name(cst_to));
           success_opencl = dt_ioppr_transform_image_colorspace_cl
             (module, piece->pipe->devid,
              cl_mem_input, cl_mem_input,
@@ -1852,13 +1835,16 @@ static gboolean _dev_pixelpipe_process_rec(
         {
           dt_print_pipe(DT_DEBUG_PIPE,
                         "pixelpipe_process_CL",
-                        piece->pipe, module, &roi_in, roi_out, "\n");
+                        piece->pipe, module, &roi_in, roi_out, "%s%s%s\n",
+                        dt_iop_colorspace_to_name(cst_to),
+                        cst_to != cst_out ? " -> " : "",
+                        cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
 
           // this code section is for simplistic benchmarking via --bench-module
           if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
              && darktable.bench_module)
           {
-            if(dt_str_commasubstring(darktable.bench_module, module->so->op))
+            if(dt_str_commasubstring(darktable.bench_module, module->op))
             {
               dt_times_t bench;
               dt_times_t end;
@@ -1882,28 +1868,28 @@ static gboolean _dev_pixelpipe_process_rec(
                          "[bench module GPU]   [%s] `%15s'"
                          " takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
                          full ? "full" : "export",
-                         module->so->op,
+                         module->op,
                          clock, mpix, mpix/clock);
               }
               else
                 dt_print(DT_DEBUG_ALWAYS,
                          "[bench module GPU] [%s] `%s' finished without sucess\n",
-                         full ? "full" : "export", module->so->op);
+                         full ? "full" : "export", module->op);
               darktable.unmuted = old_muted;
             }
           }
           const gboolean pfm_dump = darktable.dump_pfm_pipe
             && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
-            && dt_str_commasubstring(darktable.dump_pfm_module, module->so->op);
+            && dt_str_commasubstring(darktable.dump_pfm_module, module->op);
 
           if(pfm_dump)
-            dt_opencl_dump_pipe_pfm(module->so->op, pipe->devid, cl_mem_input,
+            dt_opencl_dump_pipe_pfm(module->op, pipe->devid, cl_mem_input,
                                     TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
           success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
                                               &roi_in, roi_out);
           if(success_opencl && pfm_dump)
-            dt_opencl_dump_pipe_pfm(module->so->op, pipe->devid, *cl_mem_output,
+            dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
                                     FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);

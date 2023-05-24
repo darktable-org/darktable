@@ -412,9 +412,11 @@ gboolean dt_dev_pixelpipe_cache_get(
   // cache keeps history and we have a cache hit, so no new buffer
   if(cache->entries > DT_PIPECACHE_MIN && _get_by_hash(pipe, hash, basichash, size, data, dsc))
   {
+    const dt_iop_buffer_dsc_t *cdsc = *dsc;
     dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
           pipe, module, NULL, NULL,
-          "hash%22" PRIu64 ", basic%22" PRIu64 "\n", hash, basichash); 
+          "%s, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
+          dt_iop_colorspace_to_name(cdsc->cst), hash, basichash); 
     return FALSE;
   }
   // We need a fresh buffer as there was no hit.
@@ -460,9 +462,11 @@ gboolean dt_dev_pixelpipe_cache_get(
                                     : (important ? -cache->entries : 0);
   cache->ioporder[cline]  = module  ? module->iop_order : 0;
 
+  const dt_iop_buffer_dsc_t *cdsc = *dsc;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get",
     pipe, module, NULL, NULL,
-    "%s %s line%3i, age %4i at %p. hash%22" PRIu64 ", basic%22" PRIu64 "\n",
+    "%s %s %s line%3i, age %4i at %p. hash%22" PRIu64 ", basic%22" PRIu64 "\n",
+     dt_iop_colorspace_to_name(cdsc->cst),
      newdata ? "new" : "   ",
      important ? "important" : (masking ? "masking  " : "         "),
      cline, cache->used[cline],
