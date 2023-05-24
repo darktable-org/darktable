@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.18)
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0025 NEW)
 cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0067 NEW)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
