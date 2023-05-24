@@ -1,7 +1,5 @@
 add_subdirectory(external)
 
-include(CheckCCompilerFlag)
-include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
 include(CheckCXXSymbolExists)
 
@@ -221,36 +219,13 @@ include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external/OpenCL)
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
 
-CHECK_C_COMPILER_FLAG("-std=c99" COMPILER_SUPPORTS_C99)
-if(NOT COMPILER_SUPPORTS_C99)
-        message(FATAL_ERROR "The compiler ${CMAKE_C_COMPILER} has no C99 support. Please use a different C compiler.")
-endif()
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
-CHECK_C_COMPILER_FLAG("-std=c11" COMPILER_SUPPORTS_C11)
-if(NOT COMPILER_SUPPORTS_C11)
-  message(FATAL_ERROR "The compiler ${CMAKE_C_COMPILER} has no C11 support. Please use a different C compiler.")
-endif()
-
-# yes, need to keep both the CMAKE_CXX_FLAGS and CMAKE_CXX_STANDARD.
-# with just the CMAKE_CXX_STANDARD, try_compile() breaks:
-#   https://gitlab.kitware.com/cmake/cmake/issues/16456
-# with just the CMAKE_CXX_FLAGS, 'bundled' pugixml breaks tests
-#   https://github.com/darktable-org/rawspeed/issues/112#issuecomment-321517003
-
-message(STATUS "Checking for -std=c++14 support")
-CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
-if(NOT COMPILER_SUPPORTS_CXX14)
-  message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  message(STATUS "Checking for -std=c++14 support - works")
-endif()
-
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
 if(APPLE AND (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -449,11 +424,14 @@ foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 CURL PNG JP
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-# Require exiv2 >= 0.24 to make sure everything we need is available
-find_package(Exiv2 0.24 REQUIRED)
+# Require exiv2 >= 0.25 to make sure everything we need is available
+find_package(Exiv2 0.25 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND Exiv2_VERSION VERSION_LESS "0.28.0")
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
 # Optionally enable ISOBMFF support in Exiv2
 if (USE_ISOBMFF)
