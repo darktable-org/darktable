@@ -209,7 +209,7 @@ void init_presets(dt_lib_module_t *self)
   params = dt_ioppr_serialize_iop_order_list(list, &size);
   dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"), self->plugin_name, self->version(),
                      (const char *)params, (int32_t)size, TRUE,
-                     is_display_referred ? 0 : FOR_LDR);
+                     is_display_referred ? 0 : FOR_LDR | FOR_NOT_MONO);
   free(params);
 }
 
