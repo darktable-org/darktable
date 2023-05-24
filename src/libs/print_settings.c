@@ -1305,9 +1305,26 @@ static void _load_image_full_page(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
   dt_control_queue_redraw_center();
 }
 
-static void _print_settings_activate_or_update_callback(gpointer instance,
-                                                        const dt_imgid_t imgid,
-                                                        gpointer user_data)
+static void _print_settings_update_callback(gpointer instance,
+                                            const dt_imgid_t imgid,
+                                            gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  // if a mipmap has arrived for an image just activated in fullpage
+  // mode, reorient the page (landscape or portrait) based on the
+  // mipmap's orientation
+  if(ps->imgs.count == 1 && ps->imgs.box[0].imgid == imgid && !ps->has_changed)
+  {
+    dt_printing_clear_box(&ps->imgs.box[0]);
+    _load_image_full_page(ps, imgid);
+  }
+}
+
+static void _print_settings_activate_callback(gpointer instance,
+                                              const dt_imgid_t imgid,
+                                              gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1401,16 +1418,15 @@ void view_enter(struct dt_lib_module_t *self,
   // mode which activates an image: get image_id and orientation
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
                                   DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                                  G_CALLBACK(_print_settings_activate_or_update_callback),
+                                  G_CALLBACK(_print_settings_activate_callback),
                                   self);
 
   // when an updated mipmap, we may have new orientation information
-  // about the current image. This updates the image_id as well and
-  // zeros out dimensions, but there should be no harm in that
+  // about the current image.
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                            DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_print_settings_activate_or_update_callback),
-                            self);
+                                  DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                                  G_CALLBACK(_print_settings_update_callback),
+                                  self);
 
   // NOTE: it would be proper to set image_id here to -1, but this
   // seems to make no difference
@@ -1421,8 +1437,11 @@ void view_leave(struct dt_lib_module_t *self,
                 struct dt_view_t *new_view)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                               G_CALLBACK(_print_settings_activate_or_update_callback),
-                               self);
+                                     G_CALLBACK(_print_settings_activate_callback),
+                                     self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_print_settings_update_callback),
+                                     self);
 }
 
 static gboolean _expose_again(gpointer user_data)
