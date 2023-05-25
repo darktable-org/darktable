@@ -19,7 +19,7 @@
 #include "common.h"
 #include "colorspace.h"
 
-// must be in synch with dt_iop_colorspace_type_t in imageop.h
+// must be in synch with dt_iop_colorspace_type_t in colorspaces.h
 typedef enum dt_iop_colorspace_type_t
 {
   IOP_CS_NONE = -1,

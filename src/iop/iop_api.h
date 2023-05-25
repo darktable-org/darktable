@@ -17,7 +17,7 @@
 */
 
 #include "common/module_api.h"
-#include "develop/imageop.h"
+#include "common/colorspaces.h"
 
 #ifdef FULL_API_H
 

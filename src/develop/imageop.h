@@ -162,19 +162,6 @@ typedef enum dt_dev_request_colorpick_flags_t
   DT_REQUEST_COLORPICK_MODULE = 1 // requested by module (should take precedence)
 } dt_dev_request_colorpick_flags_t;
 
-/** colorspace enums, must be in synch with dt_iop_colorspace_type_t
- * in color_conversion.cl */
-typedef enum dt_iop_colorspace_type_t
-{
-  IOP_CS_NONE = -1,
-  IOP_CS_RAW = 0,
-  IOP_CS_LAB = 1,
-  IOP_CS_RGB = 2,
-  IOP_CS_LCH = 3,
-  IOP_CS_HSL = 4,
-  IOP_CS_JZCZHZ = 5,
-} dt_iop_colorspace_type_t;
-
 /** part of the module which only contains the cached dlopen stuff. */
 typedef struct dt_iop_module_so_t
 {

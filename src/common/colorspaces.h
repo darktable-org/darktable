@@ -27,6 +27,19 @@
   #define TYPE_XYZA_FLT (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
 #endif
 
+/** colorspace enums, must be in synch with dt_iop_colorspace_type_t
+ * in color_conversion.cl */
+typedef enum dt_iop_colorspace_type_t
+{
+  IOP_CS_NONE = -1,
+  IOP_CS_RAW = 0,
+  IOP_CS_LAB = 1,
+  IOP_CS_RGB = 2,
+  IOP_CS_LCH = 3,
+  IOP_CS_HSL = 4,
+  IOP_CS_JZCZHZ = 5,
+} dt_iop_colorspace_type_t;
+
 // max iccprofile file name length
 #define DT_IOP_COLOR_ICC_LEN 512
 
