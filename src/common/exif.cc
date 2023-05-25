@@ -772,12 +772,17 @@ static bool _exif_read_exif_tag(Exiv2::ExifData &exifData,
 #define FIND_EXIF_TAG(key) _exif_read_exif_tag(exifData, &pos, key)
 
 // Support DefaultUserCrop, what is the safe exif tag?
+// DefaultUserCrop is known by name only from 0.27.4
 // Magic-nr taken from dng specs, the specs also say it has 4 floats (top,left,bottom,right
 // We only take them if a) we find a value != the default *and* b) data are plausible
 static bool _check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
 {
   Exiv2::ExifData::const_iterator pos =
     exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.0xc7b5"));
+  // DNGs without an embedded preview have the raw image tags under
+  // Exif.Image instead of Exif.SubImage1
+  if(pos == exifData.end())
+    pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.0xc7b5"));
   if(pos != exifData.end() && pos->count() == 4 && pos->size())
   {
     dt_boundingbox_t crop;
@@ -1680,24 +1685,22 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
       if(FIND_EXIF_TAG("Exif.SubImage1.BitsPerSample"))
         bps = pos->toLong();
+      else if(FIND_EXIF_TAG("Exif.Image.BitsPerSample"))
+        bps = pos->toLong();
 
       if(FIND_EXIF_TAG("Exif.SubImage1.SamplesPerPixel"))
+        spp = pos->toLong();
+      else if(FIND_EXIF_TAG("Exif.Image.SamplesPerPixel"))
         spp = pos->toLong();
 
       if(FIND_EXIF_TAG("Exif.SubImage1.PhotometricInterpretation"))
         phi = pos->toLong();
+      else if(FIND_EXIF_TAG("Exif.Image.PhotometricInterpretation"))
+        phi = pos->toLong();
 
-      if((format == 3)
-         && (bps >= 16)
-         && (((spp == 1) && (phi == 32803))
-             || ((spp == 3) && (phi == 34892))))
-        is_hdr = TRUE;
+      if((format == 3) && (bps >= 16) && ((phi == 32803) || (phi == 34892))) is_hdr = TRUE;
 
-      if((format == 1)
-         && (bps == 16)
-         && (spp == 1)
-         && (phi == 34892))
-        is_monochrome = TRUE;
+      if((spp == 1) && (phi == 34892)) is_monochrome = TRUE;
     }
 
     if(is_hdr)
