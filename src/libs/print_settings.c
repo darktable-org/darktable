@@ -1896,7 +1896,8 @@ void gui_post_expose(struct dt_lib_module_t *self,
 
   // image is not drawn aligned to pixel, hence will look blurry
   // unless request higher-res version then scale it down
-  const float scaler = 0.5f / darktable.gui->ppd_thb;
+  const float over_sample = 2.0f;
+  const float scaler = darktable.gui->ppd_thb / over_sample;
 
   for(int k=0; k<ps->imgs.count; k++)
   {
@@ -1914,17 +1915,18 @@ void gui_post_expose(struct dt_lib_module_t *self,
       dt_printing_get_screen_pos(&ps->imgs, img, &screen);
 
       const dt_view_surface_value_t res =
-        dt_view_image_get_surface(img->imgid, screen.width * 2.0f, screen.height * 2.0f, &surf, TRUE);
+        dt_view_image_get_surface(img->imgid, screen.width * over_sample, screen.height * over_sample, &surf, TRUE);
 
       if(res != DT_VIEW_SURFACE_OK)
       {
-        // if the image is missing, we reload it again
-        g_timeout_add(250, _expose_again, ps);
+        // if the image is missing or too small, we reload it again
+        g_timeout_add(100, _expose_again, ps);
         if(!ps->busy) dt_control_log_busy_enter();
         ps->busy = TRUE;
       }
-      else
+      if(res != DT_VIEW_SURFACE_KO)
       {
+        // there is an image to show, even if it is lower resolution than we'd like
         cairo_save(cr);
         cairo_translate(cr, screen.x, screen.y);
         cairo_scale(cr, scaler, scaler);
@@ -1938,6 +1940,9 @@ void gui_post_expose(struct dt_lib_module_t *self,
         cairo_paint_with_alpha(cr, alpha);
         cairo_surface_destroy(surf);
         cairo_restore(cr);
+      }
+      if(res == DT_VIEW_SURFACE_OK)
+      {
         if(ps->busy) dt_control_log_busy_leave();
         ps->busy = FALSE;
       }
