@@ -17,6 +17,7 @@
 */
 
 #include "common/module_api.h"
+#include "develop/imageop.h"
 
 #ifdef FULL_API_H
 
@@ -91,13 +92,13 @@ DEFAULT(void, output_format, struct dt_iop_module_t *self, struct dt_dev_pixelpi
                               struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
 
 /** what default colorspace this iop use? */
-REQUIRED(int, default_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+REQUIRED(dt_iop_colorspace_type_t, default_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                                   struct dt_dev_pixelpipe_iop_t *piece);
 /** what input colorspace it expects? */
-DEFAULT(int, input_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+DEFAULT(dt_iop_colorspace_type_t, input_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                                 struct dt_dev_pixelpipe_iop_t *piece);
 /** what will it output? */
-DEFAULT(int, output_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+DEFAULT(dt_iop_colorspace_type_t, output_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                                  struct dt_dev_pixelpipe_iop_t *piece);
 /** what colorspace the blend module operates with? */
 DEFAULT(int, blend_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,

@@ -143,7 +143,7 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(
+dt_iop_colorspace_type_t default_colorspace(
     dt_iop_module_t *self,
     dt_dev_pixelpipe_t *pipe,
     dt_dev_pixelpipe_iop_t *piece)
