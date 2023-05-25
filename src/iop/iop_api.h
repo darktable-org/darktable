@@ -101,7 +101,7 @@ DEFAULT(dt_iop_colorspace_type_t, input_colorspace, struct dt_iop_module_t *self
 DEFAULT(dt_iop_colorspace_type_t, output_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                                  struct dt_dev_pixelpipe_iop_t *piece);
 /** what colorspace the blend module operates with? */
-DEFAULT(int, blend_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+DEFAULT(dt_iop_colorspace_type_t, blend_colorspace, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                                 struct dt_dev_pixelpipe_iop_t *piece);
 
 /** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
