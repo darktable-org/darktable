@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-21 20:30+0200\n"
-"PO-Revision-Date: 2023-05-22 21:48+0200\n"
+"POT-Creation-Date: 2023-05-25 19:46+0200\n"
+"PO-Revision-Date: 2023-05-25 22:11+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -2136,7 +2136,7 @@ msgstr "erhalte Farben"
 #: ../src/iop/channelmixerrgb.c:4667 ../src/iop/clipping.c:1900 ../src/iop/clipping.c:2093 ../src/iop/clipping.c:2108
 #: ../src/iop/retouch.c:463 ../src/libs/collect.c:1907 ../src/libs/colorpicker.c:51 ../src/libs/export.c:1023
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:132 ../src/libs/live_view.c:311
-#: ../src/libs/print_settings.c:2816
+#: ../src/libs/print_settings.c:2835
 msgid "none"
 msgstr "keine"
 
@@ -2299,7 +2299,7 @@ msgstr "Seitenverhältnis"
 
 #. // portrait / landscape
 #: ../build/lib/darktable/plugins/introspection_borders.c:130
-#: ../build/lib/darktable/plugins/introspection_borders.c:265 ../src/iop/flip.c:75 ../src/libs/print_settings.c:2498
+#: ../build/lib/darktable/plugins/introspection_borders.c:265 ../src/iop/flip.c:75 ../src/libs/print_settings.c:2517
 msgid "orientation"
 msgstr "Drehung"
 
@@ -2335,12 +2335,12 @@ msgid "auto"
 msgstr "auto"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:328 ../src/imageio/format/pdf.c:604
-#: ../src/libs/filtering.c:309 ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2500
+#: ../src/libs/filtering.c:309 ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2519
 msgid "portrait"
 msgstr "Hochformat"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:329 ../src/imageio/format/pdf.c:604
-#: ../src/libs/filtering.c:305 ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2500
+#: ../src/libs/filtering.c:305 ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2519
 msgid "landscape"
 msgstr "Querformat"
 
@@ -2890,12 +2890,12 @@ msgstr "Gamut beschneiden"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:201 ../src/common/colorspaces.c:1251
-#: ../src/common/colorspaces.c:1484 ../src/libs/print_settings.c:1339
+#: ../src/common/colorspaces.c:1484 ../src/libs/print_settings.c:1356
 msgid "sRGB"
 msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:302 ../src/common/colorspaces.c:1260
-#: ../src/common/colorspaces.c:1486 ../src/libs/print_settings.c:1346
+#: ../src/common/colorspaces.c:1486 ../src/libs/print_settings.c:1363
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
@@ -3825,7 +3825,7 @@ msgstr "Korrekturen"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118 ../src/iop/bilat.c:428 ../src/iop/colorbalance.c:1909
 #: ../src/iop/denoiseprofile.c:3806 ../src/iop/exposure.c:1157 ../src/iop/levels.c:684 ../src/iop/profile_gamma.c:668
-#: ../src/libs/copy_history.c:399 ../src/libs/export.c:1262 ../src/libs/image.c:597 ../src/libs/print_settings.c:2856
+#: ../src/libs/copy_history.c:399 ../src/libs/export.c:1262 ../src/libs/image.c:597 ../src/libs/print_settings.c:2875
 #: ../src/libs/styles.c:846 ../src/views/darkroom.c:2387
 msgid "mode"
 msgstr "Modus"
@@ -3883,7 +3883,7 @@ msgstr "Lensfun Datenbank"
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:445 ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2367
 #: ../src/gui/accelerators.c:2447 ../src/gui/gtk.c:1204 ../src/gui/gtk.c:3136 ../src/imageio/format/pdf.c:645
-#: ../src/iop/denoiseprofile.c:3709 ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3147
+#: ../src/iop/denoiseprofile.c:3709 ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3066
 #: ../src/libs/filtering.c:1459 ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating.c:211
 msgid "all"
@@ -3926,7 +3926,7 @@ msgid "rectilinear"
 msgstr "geradlinig"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:462
-msgid "fish-eye"
+msgid "fisheye"
 msgstr "Fischauge"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:463
@@ -3950,7 +3950,7 @@ msgid "equisolid angle"
 msgstr "flächentreu"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:468
-msgid "Thoby fish-eye"
+msgid "Thoby fisheye"
 msgstr "Thoby-Fischauge"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:428
@@ -4473,7 +4473,7 @@ msgid "smaller border"
 msgstr "kürzere Seite"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:326 ../src/libs/export.c:1135
-#: ../src/libs/metadata_view.c:148 ../src/libs/print_settings.c:2522
+#: ../src/libs/metadata_view.c:148 ../src/libs/print_settings.c:2541
 msgid "height"
 msgstr "Höhe"
 
@@ -4870,7 +4870,7 @@ msgstr "Letzter Export"
 msgid "print time"
 msgstr "letzter Druck"
 
-#: ../src/common/collection.c:708 ../src/libs/collect.c:3303 ../src/libs/filtering.c:2163
+#: ../src/common/collection.c:708 ../src/libs/collect.c:3222 ../src/libs/filtering.c:2163
 #: ../src/libs/filtering.c:2183 ../src/libs/filters/history.c:153 ../src/libs/history.c:92
 msgid "history"
 msgstr "Verlauf"
@@ -4953,7 +4953,7 @@ msgid "altered"
 msgstr "geändert"
 
 #: ../src/common/collection.c:1553 ../src/common/collection.c:1649 ../src/libs/collect.c:1166
-#: ../src/libs/collect.c:1330 ../src/libs/collect.c:1354 ../src/libs/collect.c:1473 ../src/libs/collect.c:2510
+#: ../src/libs/collect.c:1330 ../src/libs/collect.c:1354 ../src/libs/collect.c:1473 ../src/libs/collect.c:2432
 msgid "not tagged"
 msgstr "nicht getaggt"
 
@@ -5591,9 +5591,9 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "Fehler beim starten von darktable"
 
-#: ../src/common/database.c:2778 ../src/libs/collect.c:3001 ../src/libs/export_metadata.c:288
+#: ../src/common/database.c:2778 ../src/libs/collect.c:2915 ../src/libs/export_metadata.c:288
 #: ../src/libs/import.c:1702 ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1194
-#: ../src/libs/recentcollect.c:294 ../src/libs/modulegroups.c:3464 ../src/libs/styles.c:438 ../src/libs/styles.c:621
+#: ../src/libs/recentcollect.c:227 ../src/libs/modulegroups.c:3464 ../src/libs/styles.c:438 ../src/libs/styles.c:621
 #: ../src/libs/tagging.c:1484 ../src/libs/tagging.c:1572 ../src/libs/tagging.c:1653 ../src/libs/tagging.c:1783
 #: ../src/libs/tagging.c:2057 ../src/libs/tagging.c:3471
 msgid "cancel"
@@ -5773,12 +5773,12 @@ msgstr ""
 "schneller belichtungsunabhängiger geführter Filter konnte keinen Speicher allokieren, überprüfe die RAM-"
 "Einstellungen"
 
-#: ../src/common/exif.cc:5167
+#: ../src/common/exif.cc:5197
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "konnte xmp Datei „%s“ nicht lesen: „%s“"
 
-#: ../src/common/exif.cc:5221
+#: ../src/common/exif.cc:5255
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "konnte xmp Datei „%s“ nicht schreiben: „%s“"
@@ -6622,15 +6622,15 @@ msgstr "_Schließen"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2573 ../src/libs/import.c:1722 ../src/libs/select.c:135
+#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2578 ../src/libs/import.c:1722 ../src/libs/select.c:135
 msgid "select all"
 msgstr "alles auswählen"
 
-#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2575 ../src/libs/import.c:1726 ../src/libs/select.c:139
+#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2580 ../src/libs/import.c:1726 ../src/libs/select.c:139
 msgid "select none"
 msgstr "nichts auswählen"
 
-#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2577 ../src/libs/select.c:143
+#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2582 ../src/libs/select.c:143
 msgid "invert selection"
 msgstr "Auswahl invertieren"
 
@@ -6760,20 +6760,20 @@ msgid ""
 "could not send %s to trash%s\n"
 "%s\n"
 "\n"
-" do you want to physically delete the file from disk without using trash?"
+" do you want to delete the file from disk without using trash?"
 msgstr ""
 "Konnte „%s” nicht in den Papierkorb %s verschieben\n"
 "%s\n"
 "\n"
-"Soll die Datei physisch von der Festplatte gelöscht werden, ohne den Papierkorb zu verwenden?"
+"Soll die Datei von der Festplatte gelöscht werden, ohne den Papierkorb zu verwenden?"
 
 #: ../src/control/jobs/control_jobs.c:861
 #, c-format
 msgid ""
-"could not physically delete from disk %s%s\n"
+"could not delete from disk %s%s\n"
 "%s"
 msgstr ""
-"Konnte „%s” nicht physisch von der Festplatte löschen%s\n"
+"Konnte „%s” nicht von der Festplatte löschen%s\n"
 "%s"
 
 #: ../src/control/jobs/control_jobs.c:869
@@ -6781,14 +6781,10 @@ msgid "_apply to all"
 msgstr "für _alle setzen"
 
 #: ../src/control/jobs/control_jobs.c:877
-msgid "_yes, physically delete"
-msgstr "_ja, physisch löschen"
+msgid "_delete permanently"
+msgstr "_dauerhaft löschen"
 
-#: ../src/control/jobs/control_jobs.c:878
-msgid "_no, only remove from library"
-msgstr "_nein, nur aus Bibliothek entfernen"
-
-#: ../src/control/jobs/control_jobs.c:882
+#: ../src/control/jobs/control_jobs.c:878 ../src/control/jobs/control_jobs.c:882
 msgid "_remove from library"
 msgstr "aus Bibliothek entfe_rnen"
 
@@ -7131,7 +7127,7 @@ msgstr "Bild importieren"
 msgid "detail mask blending error"
 msgstr "Detailmasken Überblendproblem"
 
-#: ../src/develop/blend.c:856
+#: ../src/develop/blend.c:864
 msgid "detail mask CL blending problem"
 msgstr "Detailmasken CL Überblendproblem"
 
@@ -7355,17 +7351,17 @@ msgid "uniformly"
 msgstr "einheitlich"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2740 ../src/develop/blend_gui.c:3429
-#: ../src/develop/imageop.c:2659
+#: ../src/develop/imageop.c:2660
 msgid "drawn mask"
 msgstr "gezeichnete Maske"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2512 ../src/develop/blend_gui.c:3440
-#: ../src/develop/imageop.c:2661
+#: ../src/develop/imageop.c:2662
 msgid "parametric mask"
 msgstr "parametrische Maske"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2951 ../src/develop/blend_gui.c:3467
-#: ../src/develop/imageop.c:2663
+#: ../src/develop/imageop.c:2664
 msgid "raster mask"
 msgstr "Raster-Maske"
 
@@ -7410,11 +7406,11 @@ msgstr "Input nach Weichzeichnen"
 msgid "on"
 msgstr "ein"
 
-#: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590 ../src/develop/imageop.c:2788
+#: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590 ../src/develop/imageop.c:2789
 msgid "input"
 msgstr "Input"
 
-#: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590 ../src/develop/imageop.c:2788
+#: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590 ../src/develop/imageop.c:2789
 msgid "output"
 msgstr "Output"
 
@@ -7941,66 +7937,66 @@ msgstr "neue Instanz"
 msgid "duplicate instance"
 msgstr "Instanz duplizieren"
 
-#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3738 ../src/libs/masks.c:1152
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3739 ../src/libs/masks.c:1152
 msgid "move up"
 msgstr "aufwärtsschieben"
 
-#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3739 ../src/libs/masks.c:1157
+#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3740 ../src/libs/masks.c:1157
 msgid "move down"
 msgstr "abwärtsschieben"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3741 ../src/gui/accelerators.c:155 ../src/gui/presets.c:562
+#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3742 ../src/gui/accelerators.c:155 ../src/gui/presets.c:562
 #: ../src/libs/image.c:285 ../src/libs/image.c:480 ../src/libs/tagging.c:1484 ../src/libs/tagging.c:1572
 msgid "delete"
 msgstr "löschen"
 
-#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3742 ../src/libs/modulegroups.c:3464
+#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3743 ../src/libs/modulegroups.c:3464
 #: ../src/libs/modulegroups.c:3815
 msgid "rename"
 msgstr "umbenennen"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2949
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2950
 #, c-format
 msgid "'%s' is switched on"
 msgstr "„%s“ ist eingeschaltet"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2949
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2950
 #, c-format
 msgid "'%s' is switched off"
 msgstr "„%s“ ist ausgeschaltet"
 
-#: ../src/develop/imageop.c:2653
+#: ../src/develop/imageop.c:2654
 msgid "unknown mask"
 msgstr "unbekannte Maske"
 
-#: ../src/develop/imageop.c:2657
+#: ../src/develop/imageop.c:2658
 msgid "drawn + parametric mask"
 msgstr "gezeichnete & parametrische Maske"
 
-#: ../src/develop/imageop.c:2666
+#: ../src/develop/imageop.c:2667
 #, c-format
 msgid "this module has a `%s'"
 msgstr "Dieses Modul hat eine „%s“"
 
-#: ../src/develop/imageop.c:2671
+#: ../src/develop/imageop.c:2672
 #, c-format
 msgid "taken from module %s"
 msgstr "Übernommen vom Modul %s"
 
-#: ../src/develop/imageop.c:2676
+#: ../src/develop/imageop.c:2677
 msgid "click to display (module must be activated first)"
 msgstr "zum Anzeigen anklicken (Modul muss erst aktiviert werden)"
 
-#: ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:2789
 msgid "purpose"
 msgstr "Kategorie"
 
-#: ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:2789
 msgid "process"
 msgstr "Bearbeitung"
 
-#: ../src/develop/imageop.c:2905
+#: ../src/develop/imageop.c:2906
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8008,7 +8004,7 @@ msgstr ""
 "Multi-Instanz Aktionen\n"
 "Rechtsklick erzeugt neue Instanz"
 
-#: ../src/develop/imageop.c:2920
+#: ../src/develop/imageop.c:2921
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8016,7 +8012,7 @@ msgstr ""
 "Einstellungen zurücksetzen\n"
 "Strg+Klick wendet automatische Voreinstellungen erneut an."
 
-#: ../src/develop/imageop.c:2932
+#: ../src/develop/imageop.c:2933
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8024,15 +8020,15 @@ msgstr ""
 "Voreinstellungen\n"
 "Rechtsklick, um auf eine neue Instanz anzuwenden"
 
-#: ../src/develop/imageop.c:3182 ../src/develop/imageop.c:3204
+#: ../src/develop/imageop.c:3183 ../src/develop/imageop.c:3205
 msgid "ERROR"
 msgstr "Fehler"
 
-#: ../src/develop/imageop.c:3619
+#: ../src/develop/imageop.c:3620
 msgid "unsupported input"
 msgstr "nicht unterstütztes Eingabedatenformat"
 
-#: ../src/develop/imageop.c:3620
+#: ../src/develop/imageop.c:3621
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8042,45 +8038,45 @@ msgstr ""
 "das Modul wurde an eine Position verschoben, \n"
 "in dem das Datenformat nicht den Anforderungen genügt."
 
-#: ../src/develop/imageop.c:3737 ../src/develop/imageop.c:3747 ../src/gui/accelerators.c:151 ../src/libs/lib.c:1414
+#: ../src/develop/imageop.c:3738 ../src/develop/imageop.c:3748 ../src/gui/accelerators.c:151 ../src/libs/lib.c:1414
 msgid "show"
 msgstr "anzeigen"
 
-#: ../src/develop/imageop.c:3740 ../src/libs/modulegroups.c:3310 ../src/libs/modulegroups.c:3436
+#: ../src/develop/imageop.c:3741 ../src/libs/modulegroups.c:3310 ../src/libs/modulegroups.c:3436
 #: ../src/libs/modulegroups.c:3817 ../src/libs/tagging.c:3248
 msgid "new"
 msgstr "neu"
 
-#: ../src/develop/imageop.c:3743 ../src/libs/duplicate.c:405 ../src/libs/image.c:495 ../src/libs/modulegroups.c:3813
+#: ../src/develop/imageop.c:3744 ../src/libs/duplicate.c:405 ../src/libs/image.c:495 ../src/libs/modulegroups.c:3813
 msgid "duplicate"
 msgstr "duplizieren"
 
-#: ../src/develop/imageop.c:3748
+#: ../src/develop/imageop.c:3749
 msgid "enable"
 msgstr "aktivieren"
 
 # keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
-#: ../src/develop/imageop.c:3749 ../src/gui/accelerators.c:167
+#: ../src/develop/imageop.c:3750 ../src/gui/accelerators.c:167
 msgid "focus"
 msgstr "Fokus"
 
-#: ../src/develop/imageop.c:3750 ../src/gui/accelerators.c:2617
+#: ../src/develop/imageop.c:3751 ../src/gui/accelerators.c:2617
 msgid "instance"
 msgstr "Instanz"
 
-#: ../src/develop/imageop.c:3751 ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:122 ../src/gui/gtk.c:3009
+#: ../src/develop/imageop.c:3752 ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:122 ../src/gui/gtk.c:3009
 #: ../src/gui/gtk.c:3056 ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603 ../src/gui/styles_dialog.c:625
 #: ../src/iop/atrous.c:1512 ../src/libs/lib.c:1415 ../src/libs/modulegroups.c:3882
 msgid "reset"
 msgstr "zurücksetzen"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3752 ../src/gui/preferences.c:798 ../src/libs/lib.c:1416
+#: ../src/develop/imageop.c:3753 ../src/gui/preferences.c:798 ../src/libs/lib.c:1416
 msgid "presets"
 msgstr "Voreinstellungen"
 
 # keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
-#: ../src/develop/imageop.c:3772
+#: ../src/develop/imageop.c:3773
 msgid "processing module"
 msgstr "Bearbeitungsmodule"
 
@@ -8375,7 +8371,7 @@ msgstr "Pfad #%d"
 
 #: ../src/develop/masks/path.c:3473
 msgid ""
-"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
+"<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
 "<b>Knoten hinzufügen</b>: Klick, <b>Spitzen Knoten hinzufügen</b>: Strg+Klick\n"
@@ -8383,7 +8379,7 @@ msgstr ""
 
 #: ../src/develop/masks/path.c:3476
 msgid ""
-"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
+"<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
 "<b>Knoten hinzufügen</b>: Klick, <b>spitzen Knoten hinzufügen</b>: Strg+klick\n"
@@ -8437,11 +8433,11 @@ msgstr ""
 "Im Verlaufstapel war das Modul aktiviert, ist aber für diese Art von Bildern nicht zulässig.\n"
 "Vermutlich eine Folge einer Voreinstellung, eines Stils oder Kopieren und Einfügen eines Verlaufs"
 
-#: ../src/develop/pixelpipe_hb.c:2709
+#: ../src/develop/pixelpipe_hb.c:2704
 msgid "darktable discovered problems with your OpenCL setup; disabling OpenCL for this session!"
 msgstr "darktable hat Probleme mit OpenCL festgestellt; OpenCL wird für diese Sitzung deaktiviert!"
 
-#: ../src/develop/pixelpipe_hb.c:2854
+#: ../src/develop/pixelpipe_hb.c:2849
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -8737,40 +8733,40 @@ msgid "cached thumbnails invalidation"
 msgstr "Ungültigsetzen von gespeicherten Miniaturbildern"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2556
+#: ../src/dtgtk/thumbtable.c:2561
 msgid "copy history"
 msgstr "Verlauf kopieren"
 
-#: ../src/dtgtk/thumbtable.c:2558
+#: ../src/dtgtk/thumbtable.c:2563
 msgid "copy history parts"
 msgstr "Verlauf teilweise kopieren"
 
-#: ../src/dtgtk/thumbtable.c:2560
+#: ../src/dtgtk/thumbtable.c:2565
 msgid "paste history"
 msgstr "Verlauf einfügen"
 
-#: ../src/dtgtk/thumbtable.c:2562
+#: ../src/dtgtk/thumbtable.c:2567
 msgid "paste history parts"
 msgstr "Verlauf teilweise einfügen"
 
-#: ../src/dtgtk/thumbtable.c:2564 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2569 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "verwerfen"
 
-#: ../src/dtgtk/thumbtable.c:2567
+#: ../src/dtgtk/thumbtable.c:2572
 msgid "duplicate image"
 msgstr "Bild duplizieren"
 
-#: ../src/dtgtk/thumbtable.c:2569
+#: ../src/dtgtk/thumbtable.c:2574
 msgid "duplicate image virgin"
 msgstr "Bilder unbearbeitet duplizieren"
 
-#: ../src/dtgtk/thumbtable.c:2579 ../src/libs/select.c:147
+#: ../src/dtgtk/thumbtable.c:2584 ../src/libs/select.c:147
 msgid "select film roll"
 msgstr "Filmrolle auswählen"
 
 # eigentlich: "unbearbeitete auswählen", was aber zu lang für den Knopf ist.
-#: ../src/dtgtk/thumbtable.c:2581 ../src/libs/select.c:151
+#: ../src/dtgtk/thumbtable.c:2586 ../src/libs/select.c:151
 msgid "select untouched"
 msgstr "unbearbeitete auswählen"
 
@@ -9537,7 +9533,7 @@ msgid "slideshow"
 msgstr "Diashow"
 
 #. Print button
-#: ../src/gui/gtk.c:1192 ../src/libs/print_settings.c:2866
+#: ../src/gui/gtk.c:1192 ../src/libs/print_settings.c:2885
 msgid "print"
 msgstr "drucken"
 
@@ -10945,7 +10941,7 @@ msgstr "Titel des PDFs eingeben"
 
 #. paper size
 #. // papers
-#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2491
+#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2510
 msgid "paper size"
 msgstr "Papierformat"
 
@@ -14243,9 +14239,9 @@ msgstr "Eingabeprofile konnte nicht erzeugt werden!"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "Nicht unterstütztes Eingabeprofil wurde durch lineares Rec709-RGB ersetzt!"
 
-#: ../src/iop/colorin.c:1844 ../src/iop/colorin.c:2097 ../src/iop/colorout.c:893
+#: ../src/iop/colorin.c:1844
 msgid "external ICC profiles"
-msgstr "externe ICC-Profile"
+msgstr "externe ICC Profile"
 
 #: ../src/iop/colorin.c:1889
 #, c-format
@@ -14277,6 +14273,10 @@ msgstr "Eingabeprofil"
 #: ../src/iop/colorin.c:2088
 msgid "working profile"
 msgstr "Arbeitsprofil"
+
+#: ../src/iop/colorin.c:2097
+msgid "working ICC profiles"
+msgstr "Arbeits-ICC Profil"
 
 #: ../src/iop/colorin.c:2109
 msgid "confine Lab values to gamut of RGB color space"
@@ -14393,26 +14393,30 @@ msgstr "Ausgabevorsatz"
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
 
-#: ../src/iop/colorout.c:872 ../src/libs/export.c:1246 ../src/libs/print_settings.c:2456
-#: ../src/libs/print_settings.c:2805 ../src/views/darkroom.c:2518 ../src/views/lighttable.c:1176
+#: ../src/iop/colorout.c:872 ../src/libs/export.c:1246 ../src/libs/print_settings.c:2475
+#: ../src/libs/print_settings.c:2824 ../src/views/darkroom.c:2518 ../src/views/lighttable.c:1176
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:873 ../src/libs/export.c:1247 ../src/libs/print_settings.c:2457
-#: ../src/libs/print_settings.c:2806 ../src/views/darkroom.c:2519 ../src/views/lighttable.c:1177
+#: ../src/iop/colorout.c:873 ../src/libs/export.c:1247 ../src/libs/print_settings.c:2476
+#: ../src/libs/print_settings.c:2825 ../src/views/darkroom.c:2519 ../src/views/lighttable.c:1177
 msgid "relative colorimetric"
 msgstr "relativ Farbmetrisch"
 
-#: ../src/iop/colorout.c:874 ../src/libs/export.c:1248 ../src/libs/print_settings.c:2458
-#: ../src/libs/print_settings.c:2807 ../src/views/darkroom.c:2520 ../src/views/lighttable.c:1178
+#: ../src/iop/colorout.c:874 ../src/libs/export.c:1248 ../src/libs/print_settings.c:2477
+#: ../src/libs/print_settings.c:2826 ../src/views/darkroom.c:2520 ../src/views/lighttable.c:1178
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:875 ../src/libs/export.c:1249 ../src/libs/print_settings.c:2459
-#: ../src/libs/print_settings.c:2808 ../src/views/darkroom.c:2521 ../src/views/lighttable.c:1179
+#: ../src/iop/colorout.c:875 ../src/libs/export.c:1249 ../src/libs/print_settings.c:2478
+#: ../src/libs/print_settings.c:2827 ../src/views/darkroom.c:2521 ../src/views/lighttable.c:1179
 msgid "absolute colorimetric"
 msgstr "absolut Farbmetrisch"
+
+#: ../src/iop/colorout.c:893
+msgid "export ICC profiles"
+msgstr "Export ICC Profil"
 
 #: ../src/iop/colorreconstruction.c:129
 msgid "color reconstruction"
@@ -14792,8 +14796,8 @@ msgstr "Varianz blau: "
 msgid "variance computed on the blue channel"
 msgstr "berechnete Varianz des Blau-Kanal"
 
-#: ../src/iop/denoiseprofile.c:3799 ../src/libs/export.c:1208 ../src/libs/print_settings.c:2399
-#: ../src/libs/print_settings.c:2755
+#: ../src/iop/denoiseprofile.c:3799 ../src/libs/export.c:1208 ../src/libs/print_settings.c:2418
+#: ../src/libs/print_settings.c:2774
 msgid "profile"
 msgstr "Profil"
 
@@ -14819,7 +14823,7 @@ msgid ""
 "in undersmoothing of the green channel in\n"
 "wavelets mode, combined with a bad handling\n"
 "of white balance coefficients, and a bug in\n"
-"non local means normalization resulting in\n"
+"non-local means normalization resulting in\n"
 "undersmoothing when patch size was increased.\n"
 "enabling this option will change the denoising\n"
 "you get. once enabled, you won't be able to\n"
@@ -15601,8 +15605,8 @@ msgstr ""
 "Verringern wenn Schatten/Spitzlichter übersättigt sind."
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1600 ../src/libs/export.c:1227 ../src/libs/print_settings.c:2454
-#: ../src/libs/print_settings.c:2801 ../src/views/darkroom.c:2524 ../src/views/lighttable.c:1182
+#: ../src/iop/filmic.c:1600 ../src/libs/export.c:1227 ../src/libs/print_settings.c:2473
+#: ../src/libs/print_settings.c:2820 ../src/views/darkroom.c:2524 ../src/views/lighttable.c:1182
 msgid "intent"
 msgstr "Vorsatz"
 
@@ -17655,7 +17659,7 @@ msgid "toggle tool for picking median lightness in image"
 msgstr "mittlere Helligkeit im Bild wählen"
 
 #: ../src/iop/relight.c:279 ../src/libs/export.c:1131 ../src/libs/metadata_view.c:147
-#: ../src/libs/print_settings.c:2518
+#: ../src/libs/print_settings.c:2537
 msgid "width"
 msgstr "Breite"
 
@@ -19024,7 +19028,7 @@ msgstr "Referenz, auf die das Wasserzeichen skaliert werden soll"
 msgid "length of the marker which is used as scaling reference"
 msgstr "Größe, die als Referenz zur Skalierung verwendet wird"
 
-#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2656
+#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2675
 msgid "alignment"
 msgstr "Position"
 
@@ -19285,7 +19289,7 @@ msgstr ""
 msgid "use `%' as wildcard"
 msgstr "„%” als Platzhalter benutzen"
 
-#: ../src/libs/collect.c:2263 ../src/libs/collect.c:2277 ../src/libs/collect.c:2886
+#: ../src/libs/collect.c:2263 ../src/libs/collect.c:2277 ../src/libs/collect.c:2800
 msgid "clear this rule"
 msgstr "diese Regel löschen"
 
@@ -19293,88 +19297,88 @@ msgstr "diese Regel löschen"
 msgid "clear this rule or add new rules"
 msgstr "diese Regel löschen oder weitere Regeln hinzufügen"
 
-#: ../src/libs/collect.c:2892
+#: ../src/libs/collect.c:2806
 msgid "narrow down search"
 msgstr "Suche verfeinern"
 
-#: ../src/libs/collect.c:2897
+#: ../src/libs/collect.c:2811
 msgid "add more images"
 msgstr "mehr Bilder hinzufügen"
 
-#: ../src/libs/collect.c:2902
+#: ../src/libs/collect.c:2816
 msgid "exclude images"
 msgstr "Bilder ausschließen"
 
-#: ../src/libs/collect.c:2909
+#: ../src/libs/collect.c:2823
 msgid "change to: and"
 msgstr "ändere zu: UND"
 
-#: ../src/libs/collect.c:2914
+#: ../src/libs/collect.c:2828
 msgid "change to: or"
 msgstr "ändere zu: ODER"
 
-#: ../src/libs/collect.c:2919
+#: ../src/libs/collect.c:2833
 msgid "change to: except"
 msgstr "ändere zu: AUSSER"
 
 #. the different categories
-#: ../src/libs/collect.c:2945 ../src/libs/filtering.c:857 ../src/libs/filtering.c:924 ../src/libs/filtering.c:1558
+#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:857 ../src/libs/filtering.c:924 ../src/libs/filtering.c:1558
 #: ../src/libs/filtering.c:1890
 msgid "files"
 msgstr "Dateien"
 
-#: ../src/libs/collect.c:2950 ../src/libs/export_metadata.c:312 ../src/libs/filtering.c:862
+#: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:312 ../src/libs/filtering.c:862
 #: ../src/libs/filtering.c:929 ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1894 ../src/libs/image.c:464
 #: ../src/libs/image.c:574 ../src/libs/image.c:582 ../src/libs/metadata.c:676 ../src/libs/metadata_view.c:1226
 msgid "metadata"
 msgstr "Metadaten"
 
-#: ../src/libs/collect.c:2969 ../src/libs/filtering.c:883 ../src/libs/filtering.c:950 ../src/libs/filtering.c:1892
+#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:883 ../src/libs/filtering.c:950 ../src/libs/filtering.c:1892
 msgid "times"
 msgstr "Datum/Uhrzeit"
 
-#: ../src/libs/collect.c:2977 ../src/libs/filtering.c:891 ../src/libs/filtering.c:958 ../src/libs/filtering.c:1590
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:891 ../src/libs/filtering.c:958 ../src/libs/filtering.c:1590
 msgid "capture details"
 msgstr "Aufnahmeparameter"
 
-#: ../src/libs/collect.c:2986 ../src/libs/filtering.c:900 ../src/libs/filtering.c:967 ../src/libs/filtering.c:1602
+#: ../src/libs/collect.c:2900 ../src/libs/filtering.c:900 ../src/libs/filtering.c:967 ../src/libs/filtering.c:1602
 #: ../src/libs/filtering.c:1896 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2999
+#: ../src/libs/collect.c:2913
 msgid "collections settings"
 msgstr "Einstellungen „Sammlungen“"
 
-#: ../src/libs/collect.c:3002 ../src/libs/export_metadata.c:288 ../src/libs/metadata.c:632
-#: ../src/libs/metadata_view.c:1194 ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:1653
+#: ../src/libs/collect.c:2916 ../src/libs/export_metadata.c:288 ../src/libs/metadata.c:632
+#: ../src/libs/metadata_view.c:1194 ../src/libs/recentcollect.c:228 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057 ../src/libs/tagging.c:3472
 msgid "save"
 msgstr "Speichern"
 
-#: ../src/libs/collect.c:3022 ../src/libs/export.c:1046 ../src/libs/metadata.c:779 ../src/libs/metadata_view.c:1306
-#: ../src/libs/recentcollect.c:362 ../src/libs/tagging.c:3494
+#: ../src/libs/collect.c:2936 ../src/libs/export.c:1046 ../src/libs/metadata.c:779 ../src/libs/metadata_view.c:1306
+#: ../src/libs/recentcollect.c:293 ../src/libs/tagging.c:3494
 msgid "preferences..."
 msgstr "Einstellungen…"
 
-#: ../src/libs/collect.c:3122 ../src/libs/filtering.c:1432
+#: ../src/libs/collect.c:3041 ../src/libs/filtering.c:1432
 msgid "AND"
 msgstr "UND"
 
-#: ../src/libs/collect.c:3127 ../src/libs/filtering.c:1437
+#: ../src/libs/collect.c:3046 ../src/libs/filtering.c:1437
 msgid "OR"
 msgstr "ODER"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1442
+#: ../src/libs/collect.c:3051 ../src/libs/filtering.c:1442
 msgid "BUT NOT"
 msgstr "ABER NICHT"
 
-#: ../src/libs/collect.c:3304 ../src/libs/filtering.c:2164
+#: ../src/libs/collect.c:3223 ../src/libs/filtering.c:2164
 msgid "revert to a previous set of rules"
 msgstr "zu einem früheren Satz von Filterregeln zurückkehren"
 
-#: ../src/libs/collect.c:3361
+#: ../src/libs/collect.c:3280
 msgid "jump back to previous collection"
 msgstr "zurück zur letzten Sammlung"
 
@@ -19697,12 +19701,12 @@ msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "Speichere Masken als Ebenen in exportierten Bildern. Dies wird nur von bestimmten Ausgabeformaten unterstützt."
 
-#: ../src/libs/export.c:1210 ../src/libs/export.c:1245 ../src/libs/print_settings.c:2758
-#: ../src/libs/print_settings.c:2804
+#: ../src/libs/export.c:1210 ../src/libs/export.c:1245 ../src/libs/print_settings.c:2777
+#: ../src/libs/print_settings.c:2823
 msgid "image settings"
 msgstr "Bildeinstellungen"
 
-#: ../src/libs/export.c:1220 ../src/libs/print_settings.c:2792
+#: ../src/libs/export.c:1220 ../src/libs/print_settings.c:2811
 msgid "output ICC profiles"
 msgstr "Ausgabe ICC Profil"
 
@@ -19736,7 +19740,7 @@ msgstr ""
 "und tut nichts anderes. Wird hauptsächlich beim Proofing von Farben verwendet. \n"
 "(nicht für Fotografie geeignet)."
 
-#: ../src/libs/export.c:1255 ../src/libs/print_settings.c:2814
+#: ../src/libs/export.c:1255 ../src/libs/print_settings.c:2833
 msgid "style"
 msgstr "Stil"
 
@@ -19744,15 +19748,15 @@ msgstr "Stil"
 msgid "temporary style to use while exporting"
 msgstr "Stil, der beim Export vorübergehend angewandt werden soll"
 
-#: ../src/libs/export.c:1263 ../src/libs/print_settings.c:2857
+#: ../src/libs/export.c:1263 ../src/libs/print_settings.c:2876
 msgid "whether the style items are appended to the history or replacing the history"
 msgstr "sollen Stil-Module an den Verlauf angehängt werden, oder diesen ersetzen"
 
-#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2859
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2878
 msgid "replace history"
 msgstr "Verlauf ersetzen"
 
-#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2859
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2878
 msgid "append history"
 msgstr "Verlauf hinzufügen"
 
@@ -21675,24 +21679,24 @@ msgstr ""
 msgid "jump to film roll"
 msgstr "zu Filmrolle springen"
 
-#: ../src/libs/recentcollect.c:67
+#: ../src/libs/recentcollect.c:68
 msgid "recently used collections"
 msgstr "kürzlich benutzte Sammlungen"
 
-#: ../src/libs/recentcollect.c:108
+#: ../src/libs/recentcollect.c:109
 msgid " and "
 msgstr " UND "
 
-#: ../src/libs/recentcollect.c:113
+#: ../src/libs/recentcollect.c:114
 msgid " or "
 msgstr " ODER "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/recentcollect.c:118
+#: ../src/libs/recentcollect.c:119
 msgid " but not "
 msgstr " ABER NICHT "
 
-#: ../src/libs/recentcollect.c:293
+#: ../src/libs/recentcollect.c:226
 msgid "recent collections settings"
 msgstr "Einstellungen „kürzlich benutzte Sammlungen“"
 
@@ -22158,58 +22162,58 @@ msgstr "erhalte Bild %d nicht zum Drucken"
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (DPI:%d)"
 
-#: ../src/libs/print_settings.c:2377
+#: ../src/libs/print_settings.c:2396
 msgctxt "section"
 msgid "printer"
 msgstr "Drucker"
 
-#: ../src/libs/print_settings.c:2390 ../src/libs/print_settings.c:2399 ../src/libs/print_settings.c:2454
+#: ../src/libs/print_settings.c:2409 ../src/libs/print_settings.c:2418 ../src/libs/print_settings.c:2473
 msgid "printer"
 msgstr "Drucker"
 
-#: ../src/libs/print_settings.c:2390
+#: ../src/libs/print_settings.c:2409
 msgid "media"
 msgstr "Medium"
 
-#: ../src/libs/print_settings.c:2411
+#: ../src/libs/print_settings.c:2430
 msgid "color management in printer driver"
 msgstr "Farbverwaltung im Druckertreiber"
 
-#: ../src/libs/print_settings.c:2444
+#: ../src/libs/print_settings.c:2463
 msgid "printer ICC profiles"
 msgstr "Drucker ICC Profile"
 
-#: ../src/libs/print_settings.c:2465
+#: ../src/libs/print_settings.c:2484
 msgid "black point compensation"
 msgstr "Tiefenkompensation"
 
-#: ../src/libs/print_settings.c:2478
+#: ../src/libs/print_settings.c:2497
 msgid "activate black point compensation when applying the printer profile"
 msgstr "aktiviere Tiefenkompensation wenn das Druckerprofile angewandt wird"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:2485
+#: ../src/libs/print_settings.c:2504
 msgctxt "section"
 msgid "page"
 msgstr "Seite"
 
-#: ../src/libs/print_settings.c:2507
+#: ../src/libs/print_settings.c:2526
 msgid "measurement units"
 msgstr "Maßeinheiten"
 
-#: ../src/libs/print_settings.c:2515
+#: ../src/libs/print_settings.c:2534
 msgid "image width/height"
 msgstr "Bildbreite/-höhe"
 
-#: ../src/libs/print_settings.c:2520
+#: ../src/libs/print_settings.c:2539
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:2528
+#: ../src/libs/print_settings.c:2547
 msgid "scale factor"
 msgstr "Skalierungsfaktor"
 
-#: ../src/libs/print_settings.c:2534
+#: ../src/libs/print_settings.c:2553
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -22222,46 +22226,46 @@ msgstr ""
 "ein zu großer Wert kann zu schlechter Druckqualität führen"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2548
+#: ../src/libs/print_settings.c:2567
 msgid "top margin"
 msgstr "oberer Rand"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2552
+#: ../src/libs/print_settings.c:2571
 msgid "left margin"
 msgstr "linker Rand"
 
-#: ../src/libs/print_settings.c:2555
+#: ../src/libs/print_settings.c:2574
 msgid "lock"
 msgstr "sperren"
 
-#: ../src/libs/print_settings.c:2557
+#: ../src/libs/print_settings.c:2576
 msgid "change all margins uniformly"
 msgstr "alle Ränder einheitlich ändern"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2561
+#: ../src/libs/print_settings.c:2580
 msgid "right margin"
 msgstr "rechter Rand"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2565
+#: ../src/libs/print_settings.c:2584
 msgid "bottom margin"
 msgstr "unterer Rand"
 
-#: ../src/libs/print_settings.c:2598
+#: ../src/libs/print_settings.c:2617
 msgid "display grid"
 msgstr "Zeige Raster"
 
-#: ../src/libs/print_settings.c:2609
+#: ../src/libs/print_settings.c:2628
 msgid "snap to grid"
 msgstr "am Raster ausrichten"
 
-#: ../src/libs/print_settings.c:2622
+#: ../src/libs/print_settings.c:2641
 msgid "borderless mode required"
 msgstr "Randlosmodus erforderlich"
 
-#: ../src/libs/print_settings.c:2625
+#: ../src/libs/print_settings.c:2644
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
@@ -22272,16 +22276,16 @@ msgstr ""
 "geringer sind als die Hardware-Ränder des Druckers"
 
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2632
+#: ../src/libs/print_settings.c:2651
 msgctxt "section"
 msgid "image layout"
 msgstr "Bild Layout"
 
-#: ../src/libs/print_settings.c:2673
+#: ../src/libs/print_settings.c:2692
 msgid "new image area"
 msgstr "neuer Bildbereich"
 
-#: ../src/libs/print_settings.c:2675
+#: ../src/libs/print_settings.c:2694
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
@@ -22291,53 +22295,53 @@ msgstr ""
 "Auf die Seite klicken und ziehen, um den Bereich zu platzieren\n"
 "per drag&drop können Bilder aus dem Filmstreifen in den Bildbereich übernommen werden"
 
-#: ../src/libs/print_settings.c:2679
+#: ../src/libs/print_settings.c:2698
 msgid "delete image area"
 msgstr "Bildbereich löschen"
 
-#: ../src/libs/print_settings.c:2681
+#: ../src/libs/print_settings.c:2700
 msgid "delete the currently selected image area"
 msgstr "den aktuell ausgewählten Bildbereich löschen"
 
-#: ../src/libs/print_settings.c:2684
+#: ../src/libs/print_settings.c:2703
 msgid "clear layout"
 msgstr "Layout löschen"
 
-#: ../src/libs/print_settings.c:2686
+#: ../src/libs/print_settings.c:2705
 msgid "remove all image areas from the page"
 msgstr "alle Bildbereiche auf der Seite entfernen"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2703
+#: ../src/libs/print_settings.c:2722
 msgid "image area x origin (in current unit)"
 msgstr "Bildbereich x Ursprung (in aktueller Einheit)"
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2707
+#: ../src/libs/print_settings.c:2726
 msgid "image area y origin (in current unit)"
 msgstr "Bildbereich y Ursprung (in aktueller Einheit)"
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2718
+#: ../src/libs/print_settings.c:2737
 msgid "image area width (in current unit)"
 msgstr "Bildbereich Breite (in aktueller Einheit)"
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2722
+#: ../src/libs/print_settings.c:2741
 msgid "image area height (in current unit)"
 msgstr "Bildbereich Höhe (in aktueller Einheit)"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:2748
+#: ../src/libs/print_settings.c:2767
 msgctxt "section"
 msgid "print settings"
 msgstr "Druckeinstellungen"
 
-#: ../src/libs/print_settings.c:2836
+#: ../src/libs/print_settings.c:2855
 msgid "temporary style to use while printing"
 msgstr "Stil, der beim Drucken vorübergehend angewandt werden soll"
 
-#: ../src/libs/print_settings.c:2868
+#: ../src/libs/print_settings.c:2887
 msgid "print with current settings"
 msgstr "mit aktuellen Einstellungen drucken"
 
@@ -23957,6 +23961,12 @@ msgstr "Umschalten zum klassischen Fenster, das nach der Tastenbetätigung geöf
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "Mausaktionen"
+
+#~ msgid "_yes, physically delete"
+#~ msgstr "_ja, physisch löschen"
+
+#~ msgid "_no, only remove from library"
+#~ msgstr "_nein, nur aus Bibliothek entfernen"
 
 #, c-format
 #~ msgid ""
