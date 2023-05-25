@@ -5,7 +5,7 @@ darktable is an open source photography workflow application and non-destructive
 
 ![screenshot_lighttable](https://user-images.githubusercontent.com/45535283/148689197-e53dd75f-32f1-4297-9a0f-a9547fd4e7c7.jpg)
 
-darktable is **not** a free Adobe® Lightroom® replacement.
+darktable is **not** a free Adobe® Lightroom® replacement. Instead, it [...]
 
 [https://www.darktable.org/](https://www.darktable.org/ "darktable homepage")
 
