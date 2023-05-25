@@ -778,6 +778,9 @@ The following is a summary of the main features added to darktable
   module. This ensure that activating an history entry restore
   thumbnail offset like it was when the entry has been saved.
 
+- Avoid a possible (and rare) case of images flipping in the print
+  view due to some preview being updated.
+
 ## Lua
 
 ### API Version
