@@ -2,21 +2,21 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2023.
+# Luca Cignoni <cigno5@users.noreply.github.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-21 20:30+0200\n"
-"PO-Revision-Date: 2023-05-22 07:49+0200\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
+"PO-Revision-Date: 2023-05-25 22:28+0200\n"
+"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 22.12.3\n"
+"X-Generator: Lokalize 21.12.3\n"
 
 #: ../build/bin/conf_gen.h:172 ../build/bin/preferences_gen.h:7632
 msgctxt "preferences"
@@ -75,17 +75,15 @@ msgid "default"
 msgstr "Predefinito"
 
 #: ../build/bin/conf_gen.h:282 ../build/bin/conf_gen.h:2814
-#, fuzzy
 #: ../build/bin/preferences_gen.h:5758
 msgctxt "preferences"
 msgid "large"
-msgstr "grande"
+msgstr "Grande"
 
 #: ../build/bin/conf_gen.h:283 ../build/bin/preferences_gen.h:5763
-#, fuzzy
 msgctxt "preferences"
 msgid "unrestricted"
-msgstr "illimitato"
+msgstr "Illimitato"
 
 #: ../build/bin/conf_gen.h:347 ../build/bin/preferences_gen.h:6839
 msgctxt "preferences"
@@ -227,13 +225,13 @@ msgid "ignore JPEG images"
 msgstr "Ignora le immagini JPEG"
 
 #: ../build/bin/conf_gen.h:931
-#, fuzzy
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"Quando si hanno RAW+JPEG nella stessa cartella non ha senso importarli "
-"entrambi. con questo flag si possono ignorare tutti i JPEG trovati."
+"Quando si hanno RAW+JPEG assieme nella stessa cartella non ha senso"
+" importarli "
+"entrambi. Con questo flag si possono ignorare tutti i JPEG trovati."
 
 #: ../build/bin/conf_gen.h:936
 msgid "apply metadata"
@@ -472,12 +470,11 @@ msgid "group size factor"
 msgstr "Fattore dimensione gruppo"
 
 #: ../build/bin/conf_gen.h:1815
-#, fuzzy
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
 msgstr ""
-"Aumenta o diminuisci la dimensione spaziale delle immagini raggruppate sulla "
+"Aumenta o diminuisce la dimensione spaziale delle immagini raggruppate sulla "
 "mappa. Può influenzare il tempo di calcolo"
 
 #: ../build/bin/conf_gen.h:1822
@@ -485,7 +482,6 @@ msgid "min images per group"
 msgstr "Immagini min per gruppo"
 
 #: ../build/bin/conf_gen.h:1823
-#, fuzzy
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -508,13 +504,12 @@ msgid "thumbnail display"
 msgstr "Visualizza miniature"
 
 #: ../build/bin/conf_gen.h:1833
-#, fuzzy
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
-"Sono disponibili tre opzioni: miniature immagini, solo il conto delle "
-"immagini del gruppo o nulla"
+"Sono disponibili tre opzioni: miniature immagini, solo il conteggio delle "
+"immagini del gruppo, o nulla"
 
 #: ../build/bin/conf_gen.h:1844
 msgid "max polygon points"
@@ -600,7 +595,6 @@ msgid "waveform"
 msgstr "Forma d'onda"
 
 #: ../build/bin/conf_gen.h:2702
-#, fuzzy
 msgctxt "preferences"
 msgid "RGB parade"
 msgstr "Parata RGB"
@@ -821,10 +815,9 @@ msgid "active"
 msgstr "Attivo"
 
 #: ../build/bin/conf_gen.h:3216 ../build/bin/preferences_gen.h:5122
-#, fuzzy
 msgctxt "preferences"
 msgid "dim"
-msgstr "Debole"
+msgstr "Attenua"
 
 #: ../build/bin/conf_gen.h:3218 ../build/bin/preferences_gen.h:5132
 msgctxt "preferences"
@@ -906,7 +899,7 @@ msgstr "Questa impostazione è stata modificata"
 #: ../src/gui/gtk.c:2580 ../src/gui/preferences.c:421
 #: ../src/gui/preferences.c:876 ../src/libs/modulegroups.c:3886
 msgid "?"
-msgstr ""
+msgstr "?"
 
 #: ../build/bin/preferences_gen.h:3806 ../build/bin/preferences_gen.h:4420
 #: ../build/bin/preferences_gen.h:6123 ../src/gui/preferences.c:270
@@ -914,7 +907,6 @@ msgid "general"
 msgstr "Generale"
 
 #: ../build/bin/preferences_gen.h:3826
-#, fuzzy
 msgid "hide built-in presets for utility modules"
 msgstr "Nascondi i preset incorporati per i moduli di utilità"
 
@@ -985,16 +977,13 @@ msgid "FALSE"
 msgstr "FALSO"
 
 #: ../build/bin/preferences_gen.h:3840
-#, fuzzy
 msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
-"Nascondi i preset incorporate nei moduli di utilità nel menu dei "
-"preimpostazioni."
+"Nascondi i preset incorporati dei moduli di utilità nel menu dei preset."
 
 #: ../build/bin/preferences_gen.h:3862
-#, fuzzy
 msgid "use single-click in the collections module"
-msgstr "Nel modulo raccolte usa il singolo click"
+msgstr "Usa il singolo click nel modulo raccolte"
 
 #: ../build/bin/preferences_gen.h:3876
 msgid ""
@@ -1034,7 +1023,6 @@ msgstr ""
 "Valutare un'immagine con una stella per due volte non azzera la valutazione"
 
 #: ../build/bin/preferences_gen.h:3984
-#, fuzzy
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
@@ -1042,7 +1030,6 @@ msgstr ""
 "valutazione."
 
 #: ../build/bin/preferences_gen.h:4006 ../build/bin/preferences_gen.h:4675
-#, fuzzy
 msgid "show scrollbars for central view"
 msgstr "Mostra le barre di scorrimento per la vista centrale"
 
@@ -1066,12 +1053,10 @@ msgid "TRUE"
 msgstr "VERO"
 
 #: ../build/bin/preferences_gen.h:4020 ../build/bin/preferences_gen.h:4689
-#, fuzzy
 msgid "defines whether scrollbars should be displayed"
-msgstr "Definisce dove devono essere mostrate le barre di scorrimento"
+msgstr "Stabilisce se le barre di scorrimento debbano essere mostrate "
 
 #: ../build/bin/preferences_gen.h:4042
-#, fuzzy
 msgid "show image time with milliseconds"
 msgstr "Visualizza i millisecondi nell'orario dell'immagine"
 
@@ -1084,12 +1069,10 @@ msgid "thumbnails"
 msgstr "Miniature"
 
 #: ../build/bin/preferences_gen.h:4086
-#, fuzzy
 msgid "use raw file instead of embedded JPEG from size"
 msgstr "Usa il file RAW anziché il JPEG incorporato dalla dimensione"
 
 #: ../build/bin/preferences_gen.h:4159
-#, fuzzy
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
@@ -1099,11 +1082,9 @@ msgid ""
 msgstr ""
 "Se la dimensione dell'anteprima è maggiore di questo valore, verrà processato "
 "usando il file raw file al posto dell'anteprima memorizzata nel JPEG"
-" (migliore "
-"ma più lento).\n"
+" (migliore ma più lento).\n"
 "Se vuoi tutte tutte le anteprime e le immagini pre-elaborate nella miglior"
-" qualità "
-"dovresti scegliere l'opzione *sempre*.\n"
+" qualità dovresti scegliere l'opzione *sempre*.\n"
 "(altri commenti nel manuale)"
 
 #: ../build/bin/preferences_gen.h:4181
@@ -1111,7 +1092,6 @@ msgid "high quality processing from size"
 msgstr "Elaborazione in alta qualità a partire dalle dimensioni"
 
 #: ../build/bin/preferences_gen.h:4254
-#, fuzzy
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -1120,11 +1100,9 @@ msgid ""
 "(more comments in the manual)"
 msgstr ""
 "Se la dimensione dell'anteprima è maggiore di questo valore, verrà processato "
-"usando la via dell'elaborazione in massima qualità (migliore "
-"ma più lento).\n"
+"usando la via dell'elaborazione in massima qualità (migliore ma più lento).\n"
 "Se vuoi tutte tutte le anteprime e le immagini pre-elaborate nella miglior"
-" qualità "
-"dovresti scegliere l'opzione *sempre*.\n"
+" qualità dovresti scegliere l'opzione *sempre*.\n"
 "(altri commenti nel manuale)"
 
 #: ../build/bin/preferences_gen.h:4276
@@ -1157,7 +1135,6 @@ msgid "scroll down to increase mask parameters"
 msgstr "Scorri giù per aumentare i parametri della maschera"
 
 #: ../build/bin/preferences_gen.h:4454
-#, fuzzy
 msgid ""
 "when using the mouse scroll wheel to change mask parameters, scroll down to "
 "increase the mask size, feather size, opacity, brush hardness and gradient "
@@ -1168,7 +1145,7 @@ msgstr ""
 "maschera, scorri verso il basso per aumentare la dimensione della maschera, "
 "della sfumatura, dell'opacità, la durezza del pennello e la curvatura del "
 "gradiente\n"
-"In modo predefinito scorrere in alto aumenta questi parametri"
+"Di default, scorrere in alto incrementa questi parametri"
 
 #: ../build/bin/preferences_gen.h:4476
 msgid "middle mouse button zooms to 200%"
@@ -1184,7 +1161,6 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4513
-#, fuzzy
 msgid "pattern for the image information line"
 msgstr "Modello del testo informativo dell'immagine"
 
@@ -1210,7 +1186,6 @@ msgid "double click to reset to `%d'"
 msgstr "Doppio click per ripristinare a '%d'"
 
 #: ../build/bin/preferences_gen.h:4653
-#, fuzzy
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
@@ -1223,7 +1198,6 @@ msgid "reduce resolution of preview image"
 msgstr "Riduci la risoluzione dell'immagine in anteprima"
 
 #: ../build/bin/preferences_gen.h:4759
-#, fuzzy
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
 msgstr ""
 "Riduci per velocizzare la visualizzazione dell'immagine di anteprima "
@@ -1234,7 +1208,6 @@ msgid "show loading screen between images"
 msgstr "Mostra la schermata di caricamento tra le immagini"
 
 #: ../build/bin/preferences_gen.h:4795
-#, fuzzy
 msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
@@ -1252,7 +1225,6 @@ msgid "display of individual color channels"
 msgstr "Visualizza i canali colore individualmente"
 
 #: ../build/bin/preferences_gen.h:4863
-#, fuzzy
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
@@ -1261,18 +1233,16 @@ msgstr ""
 "funzione di maschera parametrica."
 
 #: ../build/bin/preferences_gen.h:4885
-#, fuzzy
 msgid "hide built-in presets for processing modules"
-msgstr "Nascondi le preimpostazioni incorporate per i moduli di processo"
+msgstr "Nascondi i preset incorporati per i moduli di elaborazione"
 
 #: ../build/bin/preferences_gen.h:4899
-#, fuzzy
 msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
-"Nascondi le preimpostazioni incorporate dei moduli di processo in entrambi i"
-" menu preimpostazioni e preferiti."
+"Nascondi i preset incorporati per i moduli di elaborazione in entrambi i"
+" menu preset e preferiti."
 
 #: ../build/bin/preferences_gen.h:4921 ../build/bin/preferences_gen.h:4935
 msgid "show the guides widget in modules UI"
