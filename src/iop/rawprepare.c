@@ -852,7 +852,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
 
   const gboolean is_monochrome =
-    (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
+    (self->dev->image_storage.flags & DT_IMAGE_MONOCHROME) != 0;
 
   if(is_monochrome)
   {
@@ -892,7 +892,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
 
   const gboolean is_monochrome =
-    (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
+    (self->dev->image_storage.flags & DT_IMAGE_MONOCHROME) != 0;
 
   if(is_monochrome)
   {
