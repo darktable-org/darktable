@@ -2842,8 +2842,9 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
   {
     const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
 
-    if((candidate->module == target_module)
-       || (candidate->module->iop_order >= target_module->iop_order))
+    if(target_module
+       && ((candidate->module == target_module)
+           || (candidate->module->iop_order >= target_module->iop_order)))
     {
       dt_control_log
         (_("module '%s' can't get raster mask from module\n"
@@ -2957,7 +2958,8 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
             }
           }
 
-          if(module->module == target_module)
+          if(target_module
+             && module->module == target_module)
             break;
         }
       }
