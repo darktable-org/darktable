@@ -514,13 +514,13 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
         dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe synch problem",
           pipe, piece->module, NULL, NULL,
           "piece enabling mismatch for image %i, piece hash%22" PRIu64 ", \n",
-          imgid, piece->hash); 
+          imgid, piece->hash);
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
       dt_print_pipe(DT_DEBUG_PARAMS, "committed params",
           pipe, piece->module, NULL, NULL,
-          "piece hash%22" PRIu64 ", \n", piece->hash); 
+          "piece hash%22" PRIu64 ", \n", piece->hash);
 
       if(piece->blendop_data)
       {
@@ -2344,7 +2344,7 @@ static gboolean _dev_pixelpipe_process_rec(
   {
     // Possibly give the input buffer of the current module more weight
     // as the user is likely to change that one soon (again), so keep it in cache.
-    // Also do this if the clbuffer has been actively written 
+    // Also do this if the clbuffer has been actively written
     const gboolean has_focus = (module == darktable.develop->gui_module);
     if((pipe->type & DT_DEV_PIXELPIPE_FULL)
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
@@ -2871,9 +2871,9 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
       (dt_dev_pixelpipe_iop_t *)source_iter->data;
 
     const gboolean source_enabled = source_piece && source_piece->enabled;
-/* there might be stale masks from disabled modules left over.
-   don't use those!
-*/
+    /* there might be stale masks from disabled modules left over.
+       don't use those!
+    */
     if(!source_enabled)
     {
       dt_print_pipe(DT_DEBUG_PIPE,
@@ -2965,10 +2965,10 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
   }
 
   dt_print_pipe(DT_DEBUG_PIPE,
-      "got raster mask", piece->pipe, target_module, NULL, NULL,
-      "from module `%s%s' %s\n",
-      raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source),
-      *free_mask ? "distorted" : "");
+                "got raster mask", piece->pipe, target_module, NULL, NULL,
+                "from module `%s%s' %s\n",
+                raster_mask_source->op, dt_iop_get_instance_id(raster_mask_source),
+                *free_mask ? "distorted" : "");
 
   return raster_mask;
 }
