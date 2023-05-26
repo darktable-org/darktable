@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-25 19:46+0200\n"
-"PO-Revision-Date: 2023-05-25 19:52+0200\n"
+"POT-Creation-Date: 2023-05-26 18:21+0200\n"
+"PO-Revision-Date: 2023-05-26 18:21+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6299,12 +6299,12 @@ msgstr ""
 "Le filtre guidé indépendant de l’exposition a échoué lors de l’allocation de "
 "mémoire, vérifier les préférences de la RAM"
 
-#: ../src/common/exif.cc:5197
+#: ../src/common/exif.cc:5200
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
 
-#: ../src/common/exif.cc:5255
+#: ../src/common/exif.cc:5258
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Impossible d’écrire le fichier XMP « %s » : « %s »"
@@ -18658,7 +18658,7 @@ msgstr "Ajuster pour faire correspondre à la luma moyenne du sujet"
 #: ../src/iop/profile_gamma.c:644
 msgid ""
 "number of stops between middle gray and pure black\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "Nombre d’ILs entre le gris moyen et le noir pur,\n"
 "ce qui est la valeur que donnerait un posemètre sur la scène."
@@ -18666,7 +18666,7 @@ msgstr ""
 #: ../src/iop/profile_gamma.c:650
 msgid ""
 "number of stops between pure black and pure white\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "Nombre d’ILs entre le noir pur et le blanc pur,\n"
 "ce qui est la valeur que donnerait un posemètre sur la scène."
