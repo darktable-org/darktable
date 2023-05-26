@@ -8,8 +8,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-21 20:30+0200\n"
-"PO-Revision-Date: 2023-05-25 22:28+0200\n"
-"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
+"PO-Revision-Date: 2023-05-26 23:43+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -658,12 +659,12 @@ msgstr "AzBz"
 #: ../build/bin/conf_gen.h:2749
 msgctxt "preferences"
 msgid "RYB"
-msgstr ""
+msgstr "RYB"
 
 #: ../build/bin/conf_gen.h:2791
 msgctxt "preferences"
 msgid "monochromatic"
-msgstr ""
+msgstr "monochromatic"
 
 #: ../build/bin/conf_gen.h:2792
 msgctxt "preferences"
@@ -688,17 +689,17 @@ msgstr ""
 #: ../build/bin/conf_gen.h:2796
 msgctxt "preferences"
 msgid "dyad"
-msgstr ""
+msgstr "dyad"
 
 #: ../build/bin/conf_gen.h:2797
 msgctxt "preferences"
 msgid "triad"
-msgstr ""
+msgstr "triad"
 
 #: ../build/bin/conf_gen.h:2798
 msgctxt "preferences"
 msgid "tetrad"
-msgstr ""
+msgstr "tetrad"
 
 #: ../build/bin/conf_gen.h:2799
 msgctxt "preferences"
@@ -760,12 +761,12 @@ msgstr ""
 #: ../build/bin/conf_gen.h:3042 ../build/bin/preferences_gen.h:5567
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
-msgstr ""
+msgstr "Riferito alla scena (sigmoid)"
 
 #: ../build/bin/conf_gen.h:3043 ../build/bin/preferences_gen.h:5572
 msgctxt "preferences"
 msgid "display-referred (legacy)"
-msgstr ""
+msgstr "Riferito allo schermo (legacy)"
 
 #: ../build/bin/conf_gen.h:3144
 msgid "camera time zone"
@@ -3658,31 +3659,31 @@ msgstr "Floyd-Steinberg auto"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:200
 msgid "posterize 2 levels per channel"
-msgstr ""
+msgstr "Posterizza 2 livelli per canale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:201
 msgid "posterize 3 levels per channel"
-msgstr ""
+msgstr "Posterizza 3 livelli per canale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:202
 msgid "posterize 4 levels per channel"
-msgstr ""
+msgstr "Posterizza 4 livelli per canale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:203
 msgid "posterize 5 levels per channel"
-msgstr ""
+msgstr "Posterizza 5 livelli per canale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:204
 msgid "posterize 6 levels per channel"
-msgstr ""
+msgstr "Posterizza 6 livelli per canale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:205
 msgid "posterize 7 levels per channel"
-msgstr ""
+msgstr "Posterizza 7 livelli per canale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:206
 msgid "posterize 8 levels per channel"
-msgstr ""
+msgstr "Posterizza 8 livelli per canale"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:79
 #: ../build/lib/darktable/plugins/introspection_exposure.c:146
@@ -4205,7 +4206,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_lens.cc:294
 #: ../build/lib/darktable/plugins/introspection_lens.cc:425
 msgid "image scale"
-msgstr ""
+msgstr "Scala dell'immagine"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:439
 msgid "embedded metadata"
@@ -4863,11 +4864,11 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:331
 msgid "image width"
-msgstr ""
+msgstr "Larghezza immagine"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:332
 msgid "image height"
-msgstr ""
+msgstr "Altezza immagine"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:333
 msgid "larger image border"
@@ -4879,7 +4880,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:338
 msgid "marker width"
-msgstr ""
+msgstr "Larghezza marcatore"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:339
 msgid "marker height"
@@ -6521,7 +6522,7 @@ msgstr "jpeg xl"
 
 #: ../src/common/image.h:226
 msgid "QOI"
-msgstr ""
+msgstr "QOI"
 
 #: ../src/common/imagebuf.c:132
 msgid "insufficient memory"
@@ -6676,7 +6677,7 @@ msgstr "pollici"
 
 #: ../src/common/pdf.h:91
 msgid "\""
-msgstr ""
+msgstr "\""
 
 #: ../src/common/pdf.h:104 ../src/iop/borders.c:958
 msgid "A4"
@@ -7050,7 +7051,7 @@ msgstr "Abbandonate"
 #: ../src/control/control.c:183
 msgctxt "accel"
 msgid "<focused>"
-msgstr ""
+msgstr "<focused>"
 
 #: ../src/control/control.c:202
 msgid "show accels window"
@@ -7359,11 +7360,11 @@ msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:884
 msgid "_skip"
-msgstr ""
+msgstr "_skip"
 
 #: ../src/control/jobs/control_jobs.c:885
 msgid "abort"
-msgstr ""
+msgstr "interrompi"
 
 #: ../src/control/jobs/control_jobs.c:891
 msgid "trashing error"
@@ -8219,7 +8220,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2545 ../src/iop/colorzones.c:2415
 #: ../src/iop/rgbcurve.c:1369
 msgid "show color"
-msgstr ""
+msgstr "Mostra i colori"
 
 #: ../src/develop/blend_gui.c:2554
 msgid ""
@@ -8951,7 +8952,7 @@ msgstr "[SHAPE] Rimuovi forma"
 #: ../src/develop/masks/masks.c:306
 #, c-format
 msgid "group `%s'"
-msgstr ""
+msgstr "Gruppo `%s'"
 
 #: ../src/develop/masks/masks.c:423
 #, fuzzy, c-format
@@ -8966,7 +8967,7 @@ msgstr "%s: mancata corrispondenza di versione della maschera: %d != %d"
 #: ../src/develop/masks/masks.c:1239 ../src/develop/masks/masks.c:1906
 #, c-format
 msgid "opacity: %.0f%%"
-msgstr ""
+msgstr "Opacità: %.0f%%"
 
 #: ../src/develop/masks/masks.c:1650 ../src/libs/masks.c:1068
 msgid "add existing shape"
@@ -9799,6 +9800,8 @@ msgid ""
 "\n"
 "double-click to add new shortcut"
 msgstr ""
+"\n"
+"Doppio click per aggiungere una nuova scorciatoia"
 
 #: ../src/gui/accelerators.c:979
 msgid "click to filter shortcuts list"
@@ -9858,7 +9861,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1112
 msgid "ctrl+v"
-msgstr ""
+msgstr "ctrl+v"
 
 #: ../src/gui/accelerators.c:1112
 msgid "right long click"
@@ -9866,7 +9869,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1112
 msgid "to copy Lua command"
-msgstr ""
+msgstr "Copia il comando Lua"
 
 #: ../src/gui/accelerators.c:1344
 msgid "shortcut for move exists with single effect"
@@ -9959,7 +9962,7 @@ msgstr "Rimuovo la scorciatoia selezionata?"
 
 #: ../src/gui/accelerators.c:1938
 msgid "command"
-msgstr ""
+msgstr "comando"
 
 #: ../src/gui/accelerators.c:1939
 #, fuzzy
@@ -10310,11 +10313,11 @@ msgstr "Schede"
 
 #: ../src/gui/gtk.c:2535
 msgid "_yes"
-msgstr ""
+msgstr "_yes"
 
 #: ../src/gui/gtk.c:2536
 msgid "_no"
-msgstr ""
+msgstr "_no"
 
 #. ask the user if darktable.org may be accessed
 #: ../src/gui/gtk.c:2647
@@ -10828,7 +10831,7 @@ msgstr "Oggetto"
 #: ../src/gui/hist_dialog.c:295 ../src/gui/styles_dialog.c:682
 #: ../src/gui/styles_dialog.c:691
 msgid "mask"
-msgstr ""
+msgstr "maschera"
 
 #: ../src/gui/hist_dialog.c:360
 msgid "can't copy history out of unaltered image"
@@ -11244,7 +11247,7 @@ msgstr "e"
 
 #: ../src/gui/presets.c:795 ../src/gui/presets.c:847
 msgid "∞"
-msgstr ""
+msgstr "∞"
 
 #: ../src/gui/presets.c:979
 #, c-format
@@ -11387,7 +11390,7 @@ msgstr "Inserisci la descrizione del nuovo stile, la descrizione è ricercabile"
 
 #: ../src/gui/styles_dialog.c:593
 msgid "keep"
-msgstr ""
+msgstr "tieni"
 
 #: ../src/gui/styles_dialog.c:820
 msgid "can't create style out of unaltered image"
@@ -12110,7 +12113,7 @@ msgstr "Crea un nuovo album"
 
 #: ../src/imageio/storage/piwigo.c:676
 msgid "---"
-msgstr ""
+msgstr "---"
 
 #: ../src/imageio/storage/piwigo.c:721
 msgid "cannot refresh albums"
@@ -13067,7 +13070,7 @@ msgstr "Lineare, RGB"
 
 #: ../src/iop/bilateral.cc:136
 msgid "image too large"
-msgstr ""
+msgstr "Immagine troppo grande"
 
 #: ../src/iop/bilateral.cc:137
 msgid ""
@@ -13166,11 +13169,11 @@ msgstr ""
 
 #: ../src/iop/borders.c:948
 msgid "3:1"
-msgstr ""
+msgstr "3:1"
 
 #: ../src/iop/borders.c:949
 msgid "95:33"
-msgstr ""
+msgstr "95:33"
 
 #: ../src/iop/borders.c:950
 #, fuzzy
@@ -13179,19 +13182,19 @@ msgstr "Cinemascope"
 
 #: ../src/iop/borders.c:951
 msgid "2:1"
-msgstr ""
+msgstr "2:1"
 
 #: ../src/iop/borders.c:952
 msgid "16:9"
-msgstr ""
+msgstr "16:9"
 
 #: ../src/iop/borders.c:953
 msgid "5:3"
-msgstr ""
+msgstr "5:3"
 
 #: ../src/iop/borders.c:954
 msgid "US Legal 8.5x14"
-msgstr ""
+msgstr "US Legal 8.5x14"
 
 #: ../src/iop/borders.c:955 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1128
 msgid "golden cut"
@@ -13199,11 +13202,11 @@ msgstr "Taglio aureo"
 
 #: ../src/iop/borders.c:956
 msgid "16:10"
-msgstr ""
+msgstr "16:10"
 
 #: ../src/iop/borders.c:957
 msgid "3:2 (4x6, 10x15cm)"
-msgstr ""
+msgstr "3:2 (4x6, 10x15cm)"
 
 #: ../src/iop/borders.c:959
 msgid "DIN"
@@ -13211,11 +13214,11 @@ msgstr "DIN"
 
 #: ../src/iop/borders.c:960
 msgid "7:5"
-msgstr ""
+msgstr "7:5"
 
 #: ../src/iop/borders.c:961
 msgid "4:3"
-msgstr ""
+msgstr "4:3"
 
 #: ../src/iop/borders.c:962
 msgid "US Letter 8.5x11"
@@ -13223,7 +13226,7 @@ msgstr ""
 
 #: ../src/iop/borders.c:963
 msgid "14:11"
-msgstr ""
+msgstr "14:11"
 
 #: ../src/iop/borders.c:964
 #, fuzzy
@@ -13270,19 +13273,19 @@ msgstr "Centro"
 
 #: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "1/3"
-msgstr ""
+msgstr "1/3"
 
 #: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "3/8"
-msgstr ""
+msgstr "3/8"
 
 #: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "5/8"
-msgstr ""
+msgstr "5/8"
 
 #: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "2/3"
-msgstr ""
+msgstr "2/3"
 
 #: ../src/iop/borders.c:986
 msgid "custom horizontal position"
@@ -14042,6 +14045,9 @@ msgid ""
 "h: \tN/A\n"
 "c: \tN/A"
 msgstr ""
+"L: \tN/A\n"
+"h: \tN/A\n"
+"c: \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4535 ../src/iop/exposure.c:1218
 #, fuzzy
@@ -14389,7 +14395,7 @@ msgstr "Cinemascope"
 
 #: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1133
 msgid "21:9"
-msgstr ""
+msgstr "21:9"
 
 #: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1134
 msgid "anamorphic"
@@ -15580,7 +15586,7 @@ msgstr ""
 
 #: ../src/iop/colorzones.c:629
 msgid "B&W: with skin tones"
-msgstr ""
+msgstr "B&W: con toni della pelle"
 
 #: ../src/iop/colorzones.c:652
 msgid "polarizing filter"
@@ -16145,7 +16151,7 @@ msgstr "Rimuovere le alteluci"
 #. fast presets for slow hardware
 #: ../src/iop/diffuse.c:603
 msgid "sharpness: fast"
-msgstr ""
+msgstr "Nitidezza: veloce"
 
 #: ../src/iop/diffuse.c:655
 msgid "sharpness: strong"
@@ -16153,7 +16159,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:680
 msgid "local contrast: fast"
-msgstr ""
+msgstr "Contrasto locale: veloce"
 
 #: ../src/iop/diffuse.c:1391 ../src/iop/diffuse.c:1666
 #, fuzzy
@@ -16932,7 +16938,7 @@ msgstr "Schermo"
 #. axis legend
 #: ../src/iop/filmicrgb.c:3934
 msgid "(%)"
-msgstr ""
+msgstr "(%)"
 
 #. Page SCENE
 #: ../src/iop/filmicrgb.c:3943 ../src/iop/filmicrgb.c:4422
@@ -18085,7 +18091,7 @@ msgstr ""
 
 #: ../src/iop/liquify.c:3740
 msgid "<b>radius</b>: drag"
-msgstr ""
+msgstr "<b>raggio</b>: drag"
 
 #: ../src/iop/liquify.c:3742
 msgid "<b>hardness (center)</b>: drag"
@@ -21096,7 +21102,7 @@ msgstr "Risoluzione punti/pollice"
 
 #: ../src/libs/export.c:1148
 msgid "@"
-msgstr ""
+msgstr "@"
 
 #: ../src/libs/export.c:1161 ../src/libs/tools/global_toolbox.c:217
 msgid "px"
@@ -21957,11 +21963,11 @@ msgstr ""
 
 #: ../src/libs/histogram.c:138
 msgid "dyad"
-msgstr ""
+msgstr "dyad"
 
 #: ../src/libs/histogram.c:139
 msgid "triad"
-msgstr ""
+msgstr "triad"
 
 #: ../src/libs/histogram.c:140
 msgid "tetrad"
@@ -22853,7 +22859,7 @@ msgstr "Modalità: differenza"
 
 #: ../src/libs/masks.c:1139
 msgid "mode: sum"
-msgstr ""
+msgstr "Modo: somma"
 
 #: ../src/libs/masks.c:1145
 msgid "mode: exclusion"
@@ -22878,7 +22884,7 @@ msgstr "Nessuna forma selezionata"
 
 #: ../src/libs/masks.c:1940
 msgid "pressure"
-msgstr ""
+msgstr "pressione"
 
 #: ../src/libs/masks.c:1941
 msgid ""
@@ -23118,7 +23124,7 @@ msgstr "Caricatore: %s"
 
 #: ../src/libs/metadata_view.c:623
 msgid "<various values>"
-msgstr ""
+msgstr "<various values>"
 
 #: ../src/libs/metadata_view.c:636
 #, c-format
@@ -23142,7 +23148,7 @@ msgstr ""
 #: ../src/libs/metadata_view.c:740
 #, c-format
 msgid "%.1f mm"
-msgstr ""
+msgstr "%.1f mm"
 
 #: ../src/libs/metadata_view.c:751
 #, c-format
@@ -23589,27 +23595,27 @@ msgstr ""
 
 #: ../src/libs/navigation.c:192
 msgid "50%"
-msgstr ""
+msgstr "50%"
 
 #: ../src/libs/navigation.c:193
 msgid "100%"
-msgstr ""
+msgstr "100%"
 
 #: ../src/libs/navigation.c:194
 msgid "200%"
-msgstr ""
+msgstr "200%"
 
 #: ../src/libs/navigation.c:195
 msgid "400%"
-msgstr ""
+msgstr "400%"
 
 #: ../src/libs/navigation.c:196
 msgid "800%"
-msgstr ""
+msgstr "800%"
 
 #: ../src/libs/navigation.c:197
 msgid "1600%"
-msgstr ""
+msgstr "1600%"
 
 #: ../src/libs/print_settings.c:45
 msgid "print settings"
@@ -25276,7 +25282,7 @@ msgstr "Good Knight"
 #. Show infos key
 #: ../src/views/lighttable.c:656 ../src/views/lighttable.c:1266
 msgid "show infos"
-msgstr ""
+msgstr "Mostra le informazioni"
 
 #: ../src/views/lighttable.c:759
 msgid "middle"
