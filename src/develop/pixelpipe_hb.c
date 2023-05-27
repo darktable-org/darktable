@@ -2838,7 +2838,9 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
   float *raster_mask = NULL;
 
   GList *source_iter;
-  for(source_iter = piece->pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
+  for(source_iter = piece->pipe->nodes;
+      source_iter;
+      source_iter = g_list_next(source_iter))
   {
     const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
 
