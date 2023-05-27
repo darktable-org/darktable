@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-25 19:46+0200\n"
-"PO-Revision-Date: 2023-05-25 22:49+0300\n"
+"POT-Creation-Date: 2023-05-26 18:21+0200\n"
+"PO-Revision-Date: 2023-05-27 11:29+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -6262,12 +6262,12 @@ msgstr ""
 "Швидкий незалежний від експозиції керований фільтр не зміг виділити пам'ять, "
 "перевірте налаштування оперативної пам'яті"
 
-#: ../src/common/exif.cc:5197
+#: ../src/common/exif.cc:5200
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Не вдається прочитати файл XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5255
+#: ../src/common/exif.cc:5258
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Не вдається записати в файл XMP '%s': '%s'"
@@ -18586,18 +18586,18 @@ msgstr "Відрегулювати відповідно до середньої 
 #: ../src/iop/profile_gamma.c:644
 msgid ""
 "number of stops between middle gray and pure black\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
-"Кількість стопів (EV) між середньо-сірим і чисто-чорним\n"
-"Це показання, яке експонометр дав би вам для цієї сцени"
+"Кількість стопів (EV) між середнім сірим і чистим чорним\n"
+"Це значення, яке експонометр показав би вам для цієї сцени"
 
 #: ../src/iop/profile_gamma.c:650
 msgid ""
 "number of stops between pure black and pure white\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
-"Кількість стопів (EV) між чисто чорним та чисто білим\n"
-"Це показник, який експонометр дав би вам для цієї сцени"
+"Кількість стопів (EV) між чистим чорним і чистим білим\n"
+"Це значення, яке експонометр показав би вам для цієї сцени"
 
 #: ../src/iop/profile_gamma.c:652
 msgctxt "section"
