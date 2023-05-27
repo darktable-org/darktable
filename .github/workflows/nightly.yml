@@ -9,6 +9,132 @@ permissions:
   contents: read
 
 jobs:
+  AppImage:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: Nightly darktable AppImage
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
+        branch:
+          - { code: master, label: gitmaster }
+    env:
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/AppDir/usr
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      GENERATOR: ${{ matrix.generator }}
+      TARGET: ${{ matrix.target }}
+      DARKTABLE_CLI: ${{ github.workspace }}/AppDir/usr/bin/darktable-cli
+      BRANCH: ${{ matrix.branch.code }}
+      BUILD_NAME: ${{ matrix.branch.label }}
+    steps:
+      - name: Install compiler ${{ matrix.compiler.compiler }}
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install \
+            ${{ matrix.compiler.packages }}
+      - name: Install Base Dependencies
+        run: |
+          sudo apt-get -y install \
+            build-essential \
+            appstream-util \
+            desktop-file-utils \
+            gettext \
+            git \
+            gdb \
+            intltool \
+            libatk1.0-dev \
+            libcairo2-dev \
+            libcolord-dev \
+            libcolord-gtk-dev \
+            libcmocka-dev \
+            libcups2-dev \
+            libcurl4-gnutls-dev \
+            libimage-exiftool-perl \
+            libgdk-pixbuf2.0-dev \
+            libglib2.0-dev \
+            libgraphicsmagick1-dev \
+            libgtk-3-dev \
+            libheif-dev \
+            libjpeg-dev \
+            libjson-glib-dev \
+            liblcms2-dev \
+            liblensfun-dev \
+            liblensfun-bin \
+            liblensfun-data-v1 \
+            liblensfun1 \
+            libopenexr-dev \
+            libopenjp2-7-dev \
+            libosmgpsmap-1.0-dev \
+            libpango1.0-dev \
+            libpng-dev \
+            libportmidi-dev \
+            libpugixml-dev \
+            librsvg2-dev \
+            libsaxon-java \
+            libsdl2-dev \
+            libsecret-1-dev \
+            libsqlite3-dev \
+            libtiff5-dev \
+            libwebp-dev \
+            libx11-dev \
+            libxml2-dev \
+            libxml2-utils \
+            ninja-build \
+            perl \
+            po4a \
+            python3-jsonschema \
+            xsltproc \
+            zlib1g-dev \
+            appstream;
+          sudo add-apt-repository -y ppa:savoury1/graphics
+          sudo add-apt-repository -y ppa:savoury1/ffmpeg4
+          sudo add-apt-repository -y ppa:savoury1/display
+          sudo apt-get update
+          sudo apt-get -y install \
+            libavif-dev \
+            libexiv2-dev \
+            libgmic-dev \
+            libgphoto2-dev \
+            libheif-dev \
+            libjxl-dev \
+            x11proto-dev \
+            libxfixes-dev;
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BRANCH }}
+          submodules: true
+          # We have to fetch the entire history to correctly generate the version for the AppImage filename
+          fetch-depth: 0
+      - name: Build and Install
+        run: |
+          bash tools/appimage-build-script.sh
+      - name: Check if it runs
+        run: |
+          ${INSTALL_PREFIX}/bin/darktable --version || true
+          ${INSTALL_PREFIX}/bin/darktable-cli \
+                 --width 2048 --height 2048 \
+                 --hq true --apply-custom-presets false \
+                 "${SRC_DIR}/tests/integration/images/mire1.cr2" \
+                 "${SRC_DIR}/tests/integration/0000-nop/nop.xmp" \
+                 output.png \
+                 --core --disable-opencl --conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0
+      - name: Package upload
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: Darktable.Nightly.AppImage
+          path: ${{ env.BUILD_DIR }}/Darktable-*.AppImage
+          retention-days: 1
+
   Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Nightly darktable Windows
@@ -126,7 +252,7 @@ jobs:
           echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
           name: darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
@@ -218,7 +344,7 @@ jobs:
           cd ${{ env.SRC_DIR }}
           echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
       - name: Package upload
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
           name: darktable-${{ env.VERSION }}.dmg
