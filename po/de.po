@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-25 19:46+0200\n"
-"PO-Revision-Date: 2023-05-25 22:11+0200\n"
+"POT-Creation-Date: 2023-05-26 18:21+0200\n"
+"PO-Revision-Date: 2023-05-27 17:39+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -5773,12 +5773,12 @@ msgstr ""
 "schneller belichtungsunabhängiger geführter Filter konnte keinen Speicher allokieren, überprüfe die RAM-"
 "Einstellungen"
 
-#: ../src/common/exif.cc:5197
+#: ../src/common/exif.cc:5200
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "konnte xmp Datei „%s“ nicht lesen: „%s“"
 
-#: ../src/common/exif.cc:5255
+#: ../src/common/exif.cc:5258
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "konnte xmp Datei „%s“ nicht schreiben: „%s“"
@@ -17492,7 +17492,7 @@ msgstr "Anpassung an die durchschnittliche Luma des Motivs"
 #: ../src/iop/profile_gamma.c:644
 msgid ""
 "number of stops between middle gray and pure black\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "Anzahl der Stufen zwischen mittlerem Grau und absolutem Schwarz.\n"
 "Dies entspricht dem, was eine Belichtungsmessung der aufgenommenen Szene bei Objektmessung liefern würde."
@@ -17500,7 +17500,7 @@ msgstr ""
 #: ../src/iop/profile_gamma.c:650
 msgid ""
 "number of stops between pure black and pure white\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "Anzahl der Stufen zwischen absolutem Schwarz und reinem Weiß.\n"
 "Dies entspricht dem, was eine Belichtungsmessung der aufgenommenen Szene bei Lichtmessung liefern würde."
