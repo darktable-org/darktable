@@ -523,10 +523,11 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module,
 #ifdef HAVE_OPENCL
 /** apply blend for opencl modules*/
 gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
-                                struct dt_dev_pixelpipe_iop_t *piece,
-                                cl_mem dev_in, cl_mem dev_out,
-                                const struct dt_iop_roi_t *roi_in,
-                                const struct dt_iop_roi_t *roi_out);
+                                     struct dt_dev_pixelpipe_iop_t *piece,
+                                     cl_mem dev_in,
+                                     cl_mem dev_out,
+                                     const struct dt_iop_roi_t *roi_in,
+                                     const struct dt_iop_roi_t *roi_out);
 #endif
 
 #ifdef __cplusplus
