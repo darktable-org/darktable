@@ -180,8 +180,8 @@ typedef enum dt_develop_blendif_channels_t
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t
 {
-  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
-   *  or raster mask */
+  /** what kind of masking to use: off, non-mask (uniformly),
+   *  hand-drawn mask and/or conditional mask or raster mask */
   uint32_t mask_mode;
   /** blending color space type */
   int32_t blend_cst;
