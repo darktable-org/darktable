@@ -2141,7 +2141,8 @@ static gboolean _dev_pixelpipe_process_rec(
         */
         important_cl =
            (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-           && (pipe->type == DT_DEV_PIXELPIPE_FULL) // ignored in fast mode
+           && ((pipe->type == DT_DEV_PIXELPIPE_FULL) // ignored in fast mode
+              || (pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
            && darktable.develop->gui_attached
            && ((module == darktable.develop->gui_module)
                 || module->iopcache_hint
