@@ -90,7 +90,7 @@ void dt_dev_pixelpipe_cache_invalidate_later(struct dt_dev_pixelpipe_t *pipe, st
 void dt_dev_pixelpipe_important_cacheline(struct dt_dev_pixelpipe_t *pipe, void *data, const size_t size);
 
 /** mark the given cache line as invalid or to be ignored */
-void dt_dev_pixelpipe_invalidate_cacheline(struct dt_dev_pixelpipe_t *pipe, void *data, const gboolean invalid);
+void dt_dev_pixelpipe_invalidate_cacheline(struct dt_dev_pixelpipe_t *pipe, void *data);
 
 /** print out cache lines/hashes and do a cache cleanup */
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);
