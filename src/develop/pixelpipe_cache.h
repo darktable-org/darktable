@@ -78,19 +78,19 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
 gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const uint64_t hash, const uint64_t basichash, const size_t size);
 
 /** invalidates all cachelines. */
-void dt_dev_pixelpipe_cache_flush(struct dt_dev_pixelpipe_t *pipe);
+void dt_dev_pixelpipe_cache_flush(const struct dt_dev_pixelpipe_t *pipe);
 
 /** invalidates all cachelines except those containing items for the given module/parameter combination */
-void dt_dev_pixelpipe_cache_flush_all_but(struct dt_dev_pixelpipe_t *pipe, const uint64_t basichash);
+void dt_dev_pixelpipe_cache_flush_all_but(const struct dt_dev_pixelpipe_t *pipe, const uint64_t basichash);
 
 /** invalidates all cachelines for modules with at least the same iop_order */
-void dt_dev_pixelpipe_cache_invalidate_later(struct dt_dev_pixelpipe_t *pipe, struct dt_iop_module_t *module);
+void dt_dev_pixelpipe_cache_invalidate_later(const struct dt_dev_pixelpipe_t *pipe, const struct dt_iop_module_t *module);
 
 /** makes this buffer very important after it has been pulled from the cache. */
-void dt_dev_pixelpipe_important_cacheline(struct dt_dev_pixelpipe_t *pipe, void *data, const size_t size);
+void dt_dev_pixelpipe_important_cacheline(const struct dt_dev_pixelpipe_t *pipe, const void *data, const size_t size);
 
 /** mark the given cache line as invalid or to be ignored */
-void dt_dev_pixelpipe_invalidate_cacheline(struct dt_dev_pixelpipe_t *pipe, void *data);
+void dt_dev_pixelpipe_invalidate_cacheline(const struct dt_dev_pixelpipe_t *pipe, const void *data);
 
 /** print out cache lines/hashes and do a cache cleanup */
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);
