@@ -22,7 +22,6 @@
 #include "common/imagebuf.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
-#include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/tiling.h"
@@ -283,17 +282,11 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
        piece->pipe, self, roi_in, roi_out, "no mask data available\n");
     return;
   }
-  const int iwidth  = p->details.roi.width;
-  const int iheight = p->details.roi.height;
-  const int owidth  = roi_out->width;
-  const int oheight = roi_out->height;
+
   dt_print_pipe(DT_DEBUG_PIPE,
-       "refine_detail_mask on CPU",
-       piece->pipe, self, roi_in, roi_out, "\n");
+       "refine_detail_mask on CPU", piece->pipe, self, roi_in, roi_out, "\n");
 
-  const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
-
-  lum = dt_alloc_align_float(bufsize);
+  lum = dt_alloc_align_float((size_t)p->details.roi.width * p->details.roi.height);
   if(!lum) goto error;
 
   if(dt_masks_calc_detail_mask(&p->details, lum, threshold, detail))
@@ -306,7 +299,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
 
   if(warp_mask == NULL) goto error;
 
-  const size_t msize = (size_t)owidth * oheight;
+  const size_t msize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
@@ -319,7 +312,9 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   return;
 
   error:
-  dt_control_log(_("detail mask blending error"));
+  dt_print_pipe(DT_DEBUG_PIPE,
+       "refine_with_detail_mask on CPU",
+        piece->pipe, self, roi_in, roi_out, "error / no warp mask\n");
   dt_free_align(warp_mask);
   dt_free_align(lum);
 }
@@ -779,14 +774,14 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(p->details.data == NULL)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
-       "refine_detail_mask on GPU",
+       "refine_detail_mask CL",
        piece->pipe, self, roi_in, roi_out, "no detail data available\n");
     return;
   }
   const int iwidth  = p->details.roi.width;
   const int iheight = p->details.roi.height;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
-       "refine_detail_mask on GPU",
+       "refine_detail_mask CL",
        piece->pipe, self, roi_in, roi_out, "\n");
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
@@ -861,9 +856,8 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   return;
 
   error:
-  dt_control_log(_("detail mask CL blending problem"));
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
-       "refine_with_detail_mask on GPU",
+       "refine_with_detail_mask CL",
         piece->pipe, self, roi_in, roi_out, "OpenCL error: %s\n", cl_errstr(err));
 
   dt_free_align(lum);
@@ -915,7 +909,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   if(!inside_roi)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "dt_develop_blend on GPU",
+                  "dt_develop_blend CL",
                   piece->pipe, self, roi_in, roi_out,
                   "skip OpenCL blending, work area mismatch\n");
     return TRUE;
@@ -958,7 +952,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   if(!_mask)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-       "dt_develop_blend on GPU",
+       "dt_develop_blend CL",
        piece->pipe, self, roi_in, roi_out,
        "could not allocate buffer for blending\n");
    return FALSE;
