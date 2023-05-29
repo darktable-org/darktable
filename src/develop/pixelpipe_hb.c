@@ -513,14 +513,14 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 
         dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe synch problem",
           pipe, piece->module, NULL, NULL,
-          "piece enabling mismatch for image %i, piece hash%22" PRIu64 ", \n",
+          "piece enabling mismatch for image %i, piece hash=%" PRIx64 ", \n",
           imgid, piece->hash);
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
       dt_print_pipe(DT_DEBUG_PARAMS, "committed params",
           pipe, piece->module, NULL, NULL,
-          "piece hash%22" PRIu64 ", \n", piece->hash);
+          "piece hash=%" PRIx64 ", \n", piece->hash);
 
       if(piece->blendop_data)
       {
@@ -627,7 +627,7 @@ void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe)
 {
   if(!pipe->want_detail_mask)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(pipe, NULL);
+    dt_dev_pixelpipe_cache_invalidate_from(pipe, NULL, TRUE);
   }
   pipe->want_detail_mask = TRUE;
 }
@@ -1398,8 +1398,7 @@ static gboolean _dev_pixelpipe_process_rec(
     return TRUE;
 
   gboolean cache_available = FALSE;
-  uint64_t basichash = 0;
-  uint64_t hash = 0;
+  uint64_t hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, pos);
 
   // we do not want data from the preview pixelpipe cache
   // for gamma so we can compute the final scope
@@ -1413,13 +1412,12 @@ static gboolean _dev_pixelpipe_process_rec(
       && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
       && !pipe->nocache)
   {
-    dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
     // dt_dev_pixelpipe_cache_available() tests for masking mode and returns FALSE in that case
-    cache_available = dt_dev_pixelpipe_cache_available(pipe, hash, basichash, bufsize);
+    cache_available = dt_dev_pixelpipe_cache_available(pipe, hash, bufsize);
   }
   if(cache_available)
   {
-    dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
+    dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                                output, out_format, module, FALSE);
 
     if(dt_atomic_get_int(&pipe->shutdown))
@@ -1461,7 +1459,7 @@ static gboolean _dev_pixelpipe_process_rec(
       dt_print_pipe(DT_DEBUG_PIPE,
                     "pixelpipe data: full", pipe, module, &roi_in, roi_out, "\n");
     }
-    else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
+    else if(dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                                        output, out_format, NULL, FALSE))
     {
       if(roi_in.scale == 1.0f)
@@ -1557,7 +1555,7 @@ static gboolean _dev_pixelpipe_process_rec(
       && (((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && dt_iop_module_is(module->so, "colorout"))
        || ((pipe->type & DT_DEV_PIXELPIPE_FULL)    && dt_iop_module_is(module->so, "gamma")));
 
-  dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize,
+  dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                              output, out_format, module, important_out);
 
   if(dt_atomic_get_int(&pipe->shutdown))

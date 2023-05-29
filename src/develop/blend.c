@@ -741,7 +741,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID))
   {
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
-    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+    dt_dev_pixelpipe_cache_invalidate_from(piece->pipe, self, TRUE);
     dt_print_pipe(DT_DEBUG_PIPE,
        "write raster mask on CPU", piece->pipe, self, roi_in, roi_out, "%s at %p\n",
        new ? "new" : "replaced",
@@ -1388,7 +1388,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       }
     }
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
-    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+    dt_dev_pixelpipe_cache_invalidate_from(piece->pipe, self, TRUE);
     dt_print_pipe(DT_DEBUG_PIPE,
        "write raster mask CL", piece->pipe, self, roi_in, roi_out, "%s at %p\n",
        new ? "new" : "replaced",
