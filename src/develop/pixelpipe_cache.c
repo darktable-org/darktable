@@ -349,18 +349,18 @@ static gboolean _get_by_hash(
     {
       /* We check for situation with a hash identity but buffer sizes don't match.
            This could happen because of "hash overlaps" or other situations where the hash
-           doesn't reflect the complete status. (or we have a bug in dt)
-         Also we don't use cached data while bypassing modules because of mask visualizing.
-           In both cases we don't want to simply realloc or alike as these data could possibly
-           still be used in the pipe.
-           Instead we make sure the cleanup after running the pixelpipe can free it but it
-           won't be taken in this pixelpipe process.
-           We do so by setting cache->used[k] to something very high.
+           doesn't reflect the complete status. (or we have another bug in dt)
+         Also we don't use cached data while bypassing modules because of mask visualizing
+           or we have pipe->nocache set to TRUE
+         In these cases we don't want to simply realloc or alike as these data could possibly
+         still be used in the pipe.
+         Instead we make sure the cleanup after running the pixelpipe can free it but it
+         won't be taken in this pixelpipe process.
       */
       if((cache->size[k] != size) || pipe->mask_display || pipe->nocache)
       {
         cache->hash[k] = cache->basichash[k] = INVALID_CACHEHASH;
-        cache->used[k] = +VERY_OLD_CACHE_WEIGHT;
+        cache->used[k] = VERY_OLD_CACHE_WEIGHT;
       }
       else
       {
