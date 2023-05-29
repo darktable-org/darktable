@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-21 20:30+0200\n"
-"PO-Revision-Date: 2023-05-23 11:12+0800\n"
+"POT-Creation-Date: 2023-05-26 18:21+0200\n"
+"PO-Revision-Date: 2023-05-29 10:44+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -2319,7 +2319,7 @@ msgstr "保留色彩"
 #: ../src/iop/retouch.c:463 ../src/libs/collect.c:1907
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1023
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:132
-#: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2816
+#: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2835
 msgid "none"
 msgstr "無"
 
@@ -2496,7 +2496,7 @@ msgstr "寬高比"
 #. // portrait / landscape
 #: ../build/lib/darktable/plugins/introspection_borders.c:130
 #: ../build/lib/darktable/plugins/introspection_borders.c:265
-#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2498
+#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2517
 msgid "orientation"
 msgstr "方向"
 
@@ -2534,13 +2534,13 @@ msgstr "自動"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:328
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:309
-#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2500
+#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2519
 msgid "portrait"
 msgstr "直式"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:329
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:305
-#: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2500
+#: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2519
 msgid "landscape"
 msgstr "橫式"
 
@@ -3121,13 +3121,13 @@ msgstr "色域剪裁"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:201
 #: ../src/common/colorspaces.c:1251 ../src/common/colorspaces.c:1484
-#: ../src/libs/print_settings.c:1339
+#: ../src/libs/print_settings.c:1356
 msgid "sRGB"
 msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:302
 #: ../src/common/colorspaces.c:1260 ../src/common/colorspaces.c:1486
-#: ../src/libs/print_settings.c:1346
+#: ../src/libs/print_settings.c:1363
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB（相容）"
 
@@ -4082,7 +4082,7 @@ msgstr "校正項目"
 #: ../src/iop/denoiseprofile.c:3806 ../src/iop/exposure.c:1157
 #: ../src/iop/levels.c:684 ../src/iop/profile_gamma.c:668
 #: ../src/libs/copy_history.c:399 ../src/libs/export.c:1262
-#: ../src/libs/image.c:597 ../src/libs/print_settings.c:2856
+#: ../src/libs/image.c:597 ../src/libs/print_settings.c:2875
 #: ../src/libs/styles.c:846 ../src/views/darkroom.c:2387
 msgid "mode"
 msgstr "模式"
@@ -4152,7 +4152,7 @@ msgstr "Lensfun 資料庫"
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2367
 #: ../src/gui/accelerators.c:2447 ../src/gui/gtk.c:1204 ../src/gui/gtk.c:3136
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3709
-#: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3147
+#: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3066
 #: ../src/libs/filtering.c:1459 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/rating.c:211
 msgid "all"
@@ -4196,7 +4196,7 @@ msgid "rectilinear"
 msgstr "拉直"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:462
-msgid "fish-eye"
+msgid "fisheye"
 msgstr "魚眼"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:463
@@ -4220,7 +4220,7 @@ msgid "equisolid angle"
 msgstr "等立體角投影"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:468
-msgid "Thoby fish-eye"
+msgid "Thoby fisheye"
 msgstr "Thoby 魚眼"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:428
@@ -4764,7 +4764,7 @@ msgstr "短邊"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:326
 #: ../src/libs/export.c:1135 ../src/libs/metadata_view.c:148
-#: ../src/libs/print_settings.c:2522
+#: ../src/libs/print_settings.c:2541
 msgid "height"
 msgstr "高度"
 
@@ -5208,7 +5208,7 @@ msgstr "匯出日期"
 msgid "print time"
 msgstr "列印日期"
 
-#: ../src/common/collection.c:708 ../src/libs/collect.c:3303
+#: ../src/common/collection.c:708 ../src/libs/collect.c:3222
 #: ../src/libs/filtering.c:2163 ../src/libs/filtering.c:2183
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:92
 msgid "history"
@@ -5306,7 +5306,7 @@ msgstr "已修改"
 #: ../src/common/collection.c:1553 ../src/common/collection.c:1649
 #: ../src/libs/collect.c:1166 ../src/libs/collect.c:1330
 #: ../src/libs/collect.c:1354 ../src/libs/collect.c:1473
-#: ../src/libs/collect.c:2510
+#: ../src/libs/collect.c:2432
 msgid "not tagged"
 msgstr "無標籤"
 
@@ -5973,10 +5973,10 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "啟動 darktable 時發生錯誤"
 
-#: ../src/common/database.c:2778 ../src/libs/collect.c:3001
+#: ../src/common/database.c:2778 ../src/libs/collect.c:2915
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1702
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1194
-#: ../src/libs/recentcollect.c:294 ../src/libs/modulegroups.c:3464
+#: ../src/libs/recentcollect.c:227 ../src/libs/modulegroups.c:3464
 #: ../src/libs/styles.c:438 ../src/libs/styles.c:621 ../src/libs/tagging.c:1484
 #: ../src/libs/tagging.c:1572 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057
@@ -6163,12 +6163,12 @@ msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "「快速無關曝光的導引濾波器」（fast EIGF）無法分配記憶體，請檢查記憶體設定"
 
-#: ../src/common/exif.cc:5167
+#: ../src/common/exif.cc:5200
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "無法讀取 XMP 檔案「%s」：「%s」"
 
-#: ../src/common/exif.cc:5221
+#: ../src/common/exif.cc:5258
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "無法寫入 XMP 檔案「%s」：「%s」"
@@ -7045,17 +7045,17 @@ msgstr "關閉（_C）"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2573
+#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2578
 #: ../src/libs/import.c:1722 ../src/libs/select.c:135
 msgid "select all"
 msgstr "全部選取"
 
-#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2575
+#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2580
 #: ../src/libs/import.c:1726 ../src/libs/select.c:139
 msgid "select none"
 msgstr "取消選取"
 
-#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2577
+#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2582
 #: ../src/libs/select.c:143
 msgid "invert selection"
 msgstr "反轉選取"
@@ -7177,7 +7177,7 @@ msgid ""
 "could not send %s to trash%s\n"
 "%s\n"
 "\n"
-" do you want to physically delete the file from disk without using trash?"
+" do you want to delete the file from disk without using trash?"
 msgstr ""
 "無法將 %s 丟至垃圾桶 %s\n"
 "%s\n"
@@ -7187,7 +7187,7 @@ msgstr ""
 #: ../src/control/jobs/control_jobs.c:861
 #, c-format
 msgid ""
-"could not physically delete from disk %s%s\n"
+"could not delete from disk %s%s\n"
 "%s"
 msgstr ""
 "無法從硬碟中刪除實體檔案 %s%s\n"
@@ -7198,13 +7198,10 @@ msgid "_apply to all"
 msgstr "套用至所有檔案"
 
 #: ../src/control/jobs/control_jobs.c:877
-msgid "_yes, physically delete"
-msgstr "是，刪除實體檔案"
+msgid "_delete permanently"
+msgstr "永久刪除（_D）"
 
 #: ../src/control/jobs/control_jobs.c:878
-msgid "_no, only remove from library"
-msgstr "否，僅從圖庫中移除"
-
 #: ../src/control/jobs/control_jobs.c:882
 msgid "_remove from library"
 msgstr "從圖庫中移除"
@@ -7541,7 +7538,7 @@ msgstr "匯入影像"
 msgid "detail mask blending error"
 msgstr "細節遮罩混合錯誤"
 
-#: ../src/develop/blend.c:856
+#: ../src/develop/blend.c:864
 msgid "detail mask CL blending problem"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
@@ -7767,17 +7764,17 @@ msgid "uniformly"
 msgstr "均勻混合"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2740
-#: ../src/develop/blend_gui.c:3429 ../src/develop/imageop.c:2659
+#: ../src/develop/blend_gui.c:3429 ../src/develop/imageop.c:2660
 msgid "drawn mask"
 msgstr "繪製範圍遮罩"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2512
-#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2661
+#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2662
 msgid "parametric mask"
 msgstr "設定色版遮罩"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2951
-#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2663
+#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2664
 msgid "raster mask"
 msgstr "點陣遮罩"
 
@@ -7824,12 +7821,12 @@ msgid "on"
 msgstr "開啟"
 
 #: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:2789
 msgid "input"
 msgstr "輸入"
 
 #: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:2789
 msgid "output"
 msgstr "輸出"
 
@@ -8438,70 +8435,70 @@ msgstr "新的模組實例"
 msgid "duplicate instance"
 msgstr "複製模組實例"
 
-#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3738
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3739
 #: ../src/libs/masks.c:1152
 msgid "move up"
 msgstr "向上移動"
 
-#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3739
+#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3740
 #: ../src/libs/masks.c:1157
 msgid "move down"
 msgstr "向下移動"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3741
+#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3742
 #: ../src/gui/accelerators.c:155 ../src/gui/presets.c:562
 #: ../src/libs/image.c:285 ../src/libs/image.c:480 ../src/libs/tagging.c:1484
 #: ../src/libs/tagging.c:1572
 msgid "delete"
 msgstr "刪除"
 
-#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3742
+#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3743
 #: ../src/libs/modulegroups.c:3464 ../src/libs/modulegroups.c:3815
 msgid "rename"
 msgstr "重新命名"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2949
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2950
 #, c-format
 msgid "'%s' is switched on"
 msgstr "「%s」模組正在使用中"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2949
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2950
 #, c-format
 msgid "'%s' is switched off"
 msgstr "「%s」模組效果已關閉"
 
-#: ../src/develop/imageop.c:2653
+#: ../src/develop/imageop.c:2654
 msgid "unknown mask"
 msgstr "未知遮罩"
 
-#: ../src/develop/imageop.c:2657
+#: ../src/develop/imageop.c:2658
 msgid "drawn + parametric mask"
 msgstr "繪製 + 色版遮罩"
 
-#: ../src/develop/imageop.c:2666
+#: ../src/develop/imageop.c:2667
 #, c-format
 msgid "this module has a `%s'"
 msgstr "此模組包含「%s」"
 
-#: ../src/develop/imageop.c:2671
+#: ../src/develop/imageop.c:2672
 #, c-format
 msgid "taken from module %s"
 msgstr "取自「%s」模組"
 
-#: ../src/develop/imageop.c:2676
+#: ../src/develop/imageop.c:2677
 msgid "click to display (module must be activated first)"
 msgstr "點擊顯示（須先啟用模組）"
 
-#: ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:2789
 msgid "purpose"
 msgstr "用途"
 
-#: ../src/develop/imageop.c:2788
+#: ../src/develop/imageop.c:2789
 msgid "process"
 msgstr "運算"
 
-#: ../src/develop/imageop.c:2905
+#: ../src/develop/imageop.c:2906
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8509,7 +8506,7 @@ msgstr ""
 "多個模組實例\n"
 "左鍵選擇操作方式，右鍵快速建立新的實例"
 
-#: ../src/develop/imageop.c:2920
+#: ../src/develop/imageop.c:2921
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8517,7 +8514,7 @@ msgstr ""
 "重設參數\n"
 "ctrl + 點擊 重新套用在任何自動預設集上"
 
-#: ../src/develop/imageop.c:2932
+#: ../src/develop/imageop.c:2933
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8525,17 +8522,17 @@ msgstr ""
 "預設集\n"
 "點擊以選擇預設集套用，或是儲存目前設定為預設集"
 
-#: ../src/develop/imageop.c:3182 ../src/develop/imageop.c:3204
+#: ../src/develop/imageop.c:3183 ../src/develop/imageop.c:3205
 msgid "ERROR"
 msgstr "⚠️ 錯誤 ⚠️"
 
-#: ../src/develop/imageop.c:3619
+#: ../src/develop/imageop.c:3620
 msgid "unsupported input"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "不支援的輸入資料"
 
-#: ../src/develop/imageop.c:3620
+#: ../src/develop/imageop.c:3621
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8545,35 +8542,35 @@ msgstr ""
 "⚠️ 警告 ⚠️\n"
 "此模組的運算順序（排列位置）不符合資料格式的要求"
 
-#: ../src/develop/imageop.c:3737 ../src/develop/imageop.c:3747
+#: ../src/develop/imageop.c:3738 ../src/develop/imageop.c:3748
 #: ../src/gui/accelerators.c:151 ../src/libs/lib.c:1414
 msgid "show"
 msgstr "顯示"
 
-#: ../src/develop/imageop.c:3740 ../src/libs/modulegroups.c:3310
+#: ../src/develop/imageop.c:3741 ../src/libs/modulegroups.c:3310
 #: ../src/libs/modulegroups.c:3436 ../src/libs/modulegroups.c:3817
 #: ../src/libs/tagging.c:3248
 msgid "new"
 msgstr "新增"
 
-#: ../src/develop/imageop.c:3743 ../src/libs/duplicate.c:405
+#: ../src/develop/imageop.c:3744 ../src/libs/duplicate.c:405
 #: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3813
 msgid "duplicate"
 msgstr "複製"
 
-#: ../src/develop/imageop.c:3748
+#: ../src/develop/imageop.c:3749
 msgid "enable"
 msgstr "啟用"
 
-#: ../src/develop/imageop.c:3749 ../src/gui/accelerators.c:167
+#: ../src/develop/imageop.c:3750 ../src/gui/accelerators.c:167
 msgid "focus"
 msgstr "使用中"
 
-#: ../src/develop/imageop.c:3750 ../src/gui/accelerators.c:2617
+#: ../src/develop/imageop.c:3751 ../src/gui/accelerators.c:2617
 msgid "instance"
 msgstr "多模組實例"
 
-#: ../src/develop/imageop.c:3751 ../src/gui/accelerators.c:112
+#: ../src/develop/imageop.c:3752 ../src/gui/accelerators.c:112
 #: ../src/gui/accelerators.c:122 ../src/gui/gtk.c:3009 ../src/gui/gtk.c:3056
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
 #: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1512
@@ -8582,12 +8579,12 @@ msgid "reset"
 msgstr "重設"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3752 ../src/gui/preferences.c:798
+#: ../src/develop/imageop.c:3753 ../src/gui/preferences.c:798
 #: ../src/libs/lib.c:1416
 msgid "presets"
 msgstr "預設集"
 
-#: ../src/develop/imageop.c:3772
+#: ../src/develop/imageop.c:3773
 msgid "processing module"
 msgstr "編輯模組"
 
@@ -8886,19 +8883,19 @@ msgstr "路徑 #%d"
 
 #: ../src/develop/masks/path.c:3473
 msgid ""
-"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
+"<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"點擊以增加平滑節點，ctrl + 點擊增加轉角節點\n"
-"右鍵完成路徑"
+"點擊：<b>增加平滑節點</b>，ctrl + 點擊：<b>增加轉角節點</b>\n"
+"右鍵：<b>取消</b>"
 
 #: ../src/develop/masks/path.c:3476
 msgid ""
-"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
+"<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"點擊以增加平滑節點，ctrl + 點擊增加轉角節點\n"
-"右鍵完成路徑"
+"點擊：<b>增加平滑節點</b>，ctrl + 點擊：<b>增加轉角節點</b>\n"
+"右鍵：<b>完成路徑</b>"
 
 #: ../src/develop/masks/path.c:3479
 msgid ""
@@ -8948,13 +8945,13 @@ msgstr ""
 "歷史記錄中啟用此模組，但模組不適用於此類型的影像\n"
 "錯誤有可能是透過套用預設集，或是貼上影像編輯歷史記錄而導致"
 
-#: ../src/develop/pixelpipe_hb.c:2709
+#: ../src/develop/pixelpipe_hb.c:2704
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 msgstr "darktable 發現 OpenCL 存在問題，正在為這個工作階段停用 OpenCL"
 
-#: ../src/develop/pixelpipe_hb.c:2854
+#: ../src/develop/pixelpipe_hb.c:2849
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9259,39 +9256,39 @@ msgid "cached thumbnails invalidation"
 msgstr "清除快取縮圖"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2556
+#: ../src/dtgtk/thumbtable.c:2561
 msgid "copy history"
 msgstr "複製編輯紀錄"
 
-#: ../src/dtgtk/thumbtable.c:2558
+#: ../src/dtgtk/thumbtable.c:2563
 msgid "copy history parts"
 msgstr "複製部分編輯記錄"
 
-#: ../src/dtgtk/thumbtable.c:2560
+#: ../src/dtgtk/thumbtable.c:2565
 msgid "paste history"
 msgstr "套用編輯紀錄"
 
-#: ../src/dtgtk/thumbtable.c:2562
+#: ../src/dtgtk/thumbtable.c:2567
 msgid "paste history parts"
 msgstr "套用部分編輯紀錄"
 
-#: ../src/dtgtk/thumbtable.c:2564 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2569 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "刪除編輯記錄"
 
-#: ../src/dtgtk/thumbtable.c:2567
+#: ../src/dtgtk/thumbtable.c:2572
 msgid "duplicate image"
 msgstr "複製影像"
 
-#: ../src/dtgtk/thumbtable.c:2569
+#: ../src/dtgtk/thumbtable.c:2574
 msgid "duplicate image virgin"
 msgstr "複製原始影像"
 
-#: ../src/dtgtk/thumbtable.c:2579 ../src/libs/select.c:147
+#: ../src/dtgtk/thumbtable.c:2584 ../src/libs/select.c:147
 msgid "select film roll"
 msgstr "選取底片卷"
 
-#: ../src/dtgtk/thumbtable.c:2581 ../src/libs/select.c:151
+#: ../src/dtgtk/thumbtable.c:2586 ../src/libs/select.c:151
 msgid "select untouched"
 msgstr "選取未編修過的影像"
 
@@ -10087,7 +10084,7 @@ msgid "slideshow"
 msgstr "影像輪播"
 
 #. Print button
-#: ../src/gui/gtk.c:1192 ../src/libs/print_settings.c:2866
+#: ../src/gui/gtk.c:1192 ../src/libs/print_settings.c:2885
 msgid "print"
 msgstr "列印"
 
@@ -11534,7 +11531,7 @@ msgstr "輸入 PDF 文件標題"
 
 #. paper size
 #. // papers
-#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2491
+#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2510
 msgid "paper size"
 msgstr "紙張尺寸"
 
@@ -15235,8 +15232,7 @@ msgstr "無法生成輸入描述檔！"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "不支援的輸入描述檔，已使用現性 Rec. 709 取代！"
 
-#: ../src/iop/colorin.c:1844 ../src/iop/colorin.c:2097
-#: ../src/iop/colorout.c:893
+#: ../src/iop/colorin.c:1844
 msgid "external ICC profiles"
 msgstr "外部 ICC 描述檔"
 
@@ -15270,6 +15266,10 @@ msgstr "影像輸入描述檔"
 #: ../src/iop/colorin.c:2088
 msgid "working profile"
 msgstr "工作空間描述檔"
+
+#: ../src/iop/colorin.c:2097
+msgid "working ICC profiles"
+msgstr "工作色彩空間描述檔"
 
 #: ../src/iop/colorin.c:2109
 msgid "confine Lab values to gamut of RGB color space"
@@ -15409,29 +15409,33 @@ msgid "rendering intent"
 msgstr "色彩轉換方式"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:1246
-#: ../src/libs/print_settings.c:2456 ../src/libs/print_settings.c:2805
+#: ../src/libs/print_settings.c:2475 ../src/libs/print_settings.c:2824
 #: ../src/views/darkroom.c:2518 ../src/views/lighttable.c:1176
 msgid "perceptual"
 msgstr "感應式"
 
 #: ../src/iop/colorout.c:873 ../src/libs/export.c:1247
-#: ../src/libs/print_settings.c:2457 ../src/libs/print_settings.c:2806
+#: ../src/libs/print_settings.c:2476 ../src/libs/print_settings.c:2825
 #: ../src/views/darkroom.c:2519 ../src/views/lighttable.c:1177
 msgid "relative colorimetric"
 msgstr "相對色度"
 
 #: ../src/iop/colorout.c:874 ../src/libs/export.c:1248
-#: ../src/libs/print_settings.c:2458 ../src/libs/print_settings.c:2807
+#: ../src/libs/print_settings.c:2477 ../src/libs/print_settings.c:2826
 #: ../src/views/darkroom.c:2520 ../src/views/lighttable.c:1178
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "飽和度"
 
 #: ../src/iop/colorout.c:875 ../src/libs/export.c:1249
-#: ../src/libs/print_settings.c:2459 ../src/libs/print_settings.c:2808
+#: ../src/libs/print_settings.c:2478 ../src/libs/print_settings.c:2827
 #: ../src/views/darkroom.c:2521 ../src/views/lighttable.c:1179
 msgid "absolute colorimetric"
 msgstr "絶對色度"
+
+#: ../src/iop/colorout.c:893
+msgid "export ICC profiles"
+msgstr "匯出用色彩描述檔"
 
 #: ../src/iop/colorreconstruction.c:129
 msgid "color reconstruction"
@@ -15904,7 +15908,7 @@ msgid "variance computed on the blue channel"
 msgstr "藍色色版計算的變異數"
 
 #: ../src/iop/denoiseprofile.c:3799 ../src/libs/export.c:1208
-#: ../src/libs/print_settings.c:2399 ../src/libs/print_settings.c:2755
+#: ../src/libs/print_settings.c:2418 ../src/libs/print_settings.c:2774
 msgid "profile"
 msgstr "描述檔"
 
@@ -15927,7 +15931,7 @@ msgid ""
 "in undersmoothing of the green channel in\n"
 "wavelets mode, combined with a bad handling\n"
 "of white balance coefficients, and a bug in\n"
-"non local means normalization resulting in\n"
+"non-local means normalization resulting in\n"
 "undersmoothing when patch size was increased.\n"
 "enabling this option will change the denoising\n"
 "you get. once enabled, you won't be able to\n"
@@ -16727,7 +16731,7 @@ msgstr ""
 
 #. Add export intent combo
 #: ../src/iop/filmic.c:1600 ../src/libs/export.c:1227
-#: ../src/libs/print_settings.c:2454 ../src/libs/print_settings.c:2801
+#: ../src/libs/print_settings.c:2473 ../src/libs/print_settings.c:2820
 #: ../src/views/darkroom.c:2524 ../src/views/lighttable.c:1182
 msgid "intent"
 msgstr "轉換方式"
@@ -18869,19 +18873,17 @@ msgstr ""
 #: ../src/iop/profile_gamma.c:644
 msgid ""
 "number of stops between middle gray and pure black\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
-"純黑點至中性灰之間的曝光級數\n"
-"在拍攝現場使用測光表確認數值\n"
+"純黑點至中性灰之間的曝光級數，在拍攝現場使用測光表確認數值\n"
 "也可手動調整或使用右側色彩選取工具從影像上拖曳選取代表純黑色的區域"
 
 #: ../src/iop/profile_gamma.c:650
 msgid ""
 "number of stops between pure black and pure white\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
-"純黑點至純白點之間的曝光級數\n"
-"在拍攝現場使用測光表確認數值\n"
+"純黑點至純白點之間的曝光級數，在拍攝現場使用測光表確認數值\n"
 "也可手動調整或使用右側色彩選取工具從影像上拖曳選取代表純白色的區域"
 
 #: ../src/iop/profile_gamma.c:652
@@ -19047,7 +19049,7 @@ msgid "toggle tool for picking median lightness in image"
 msgstr "切換在影像上選擇中間亮度的工具"
 
 #: ../src/iop/relight.c:279 ../src/libs/export.c:1131
-#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2518
+#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2537
 msgid "width"
 msgstr "寬度"
 
@@ -20599,7 +20601,7 @@ msgstr "將浮水印依比例縮放至影像的哪一邊"
 msgid "length of the marker which is used as scaling reference"
 msgstr "將浮水印的寬或高調整至以上縮放設定"
 
-#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2656
+#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2675
 msgid "alignment"
 msgstr "對齊"
 
@@ -20864,7 +20866,7 @@ msgid "use `%' as wildcard"
 msgstr "從所有已匯入的圖庫選擇，右側欄位可使用「%」作為萬用字元"
 
 #: ../src/libs/collect.c:2263 ../src/libs/collect.c:2277
-#: ../src/libs/collect.c:2886
+#: ../src/libs/collect.c:2800
 msgid "clear this rule"
 msgstr "刪除此條件"
 
@@ -20872,38 +20874,38 @@ msgstr "刪除此條件"
 msgid "clear this rule or add new rules"
 msgstr "刪除或增加條件"
 
-#: ../src/libs/collect.c:2892
+#: ../src/libs/collect.c:2806
 msgid "narrow down search"
 msgstr "增加「並且…」條件（交集）"
 
-#: ../src/libs/collect.c:2897
+#: ../src/libs/collect.c:2811
 msgid "add more images"
 msgstr "增加「或是…」條件（聯集）"
 
-#: ../src/libs/collect.c:2902
+#: ../src/libs/collect.c:2816
 msgid "exclude images"
 msgstr "增加「不含…」條件（差集）"
 
-#: ../src/libs/collect.c:2909
+#: ../src/libs/collect.c:2823
 msgid "change to: and"
 msgstr "改為「並且…」條件（交集）"
 
-#: ../src/libs/collect.c:2914
+#: ../src/libs/collect.c:2828
 msgid "change to: or"
 msgstr "改為「或是…」條件（聯集）"
 
-#: ../src/libs/collect.c:2919
+#: ../src/libs/collect.c:2833
 msgid "change to: except"
 msgstr "改為「不含…」條件（差集）"
 
 #. the different categories
-#: ../src/libs/collect.c:2945 ../src/libs/filtering.c:857
+#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:857
 #: ../src/libs/filtering.c:924 ../src/libs/filtering.c:1558
 #: ../src/libs/filtering.c:1890
 msgid "files"
 msgstr "檔案"
 
-#: ../src/libs/collect.c:2950 ../src/libs/export_metadata.c:312
+#: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:312
 #: ../src/libs/filtering.c:862 ../src/libs/filtering.c:929
 #: ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1894
 #: ../src/libs/image.c:464 ../src/libs/image.c:574 ../src/libs/image.c:582
@@ -20911,58 +20913,58 @@ msgstr "檔案"
 msgid "metadata"
 msgstr "詮釋資料"
 
-#: ../src/libs/collect.c:2969 ../src/libs/filtering.c:883
+#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:883
 #: ../src/libs/filtering.c:950 ../src/libs/filtering.c:1892
 msgid "times"
 msgstr "時間"
 
-#: ../src/libs/collect.c:2977 ../src/libs/filtering.c:891
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:891
 #: ../src/libs/filtering.c:958 ../src/libs/filtering.c:1590
 msgid "capture details"
 msgstr "拍攝詳細資訊"
 
-#: ../src/libs/collect.c:2986 ../src/libs/filtering.c:900
+#: ../src/libs/collect.c:2900 ../src/libs/filtering.c:900
 #: ../src/libs/filtering.c:967 ../src/libs/filtering.c:1602
 #: ../src/libs/filtering.c:1896 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2999
+#: ../src/libs/collect.c:2913
 msgid "collections settings"
 msgstr "相冊設定"
 
-#: ../src/libs/collect.c:3002 ../src/libs/export_metadata.c:288
+#: ../src/libs/collect.c:2916 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1194
-#: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:1653
+#: ../src/libs/recentcollect.c:228 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057
 #: ../src/libs/tagging.c:3472
 msgid "save"
 msgstr "儲存"
 
-#: ../src/libs/collect.c:3022 ../src/libs/export.c:1046
+#: ../src/libs/collect.c:2936 ../src/libs/export.c:1046
 #: ../src/libs/metadata.c:779 ../src/libs/metadata_view.c:1306
-#: ../src/libs/recentcollect.c:362 ../src/libs/tagging.c:3494
+#: ../src/libs/recentcollect.c:293 ../src/libs/tagging.c:3494
 msgid "preferences..."
 msgstr "模組設定…"
 
-#: ../src/libs/collect.c:3122 ../src/libs/filtering.c:1432
+#: ../src/libs/collect.c:3041 ../src/libs/filtering.c:1432
 msgid "AND"
 msgstr "並且"
 
-#: ../src/libs/collect.c:3127 ../src/libs/filtering.c:1437
+#: ../src/libs/collect.c:3046 ../src/libs/filtering.c:1437
 msgid "OR"
 msgstr "或是"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1442
+#: ../src/libs/collect.c:3051 ../src/libs/filtering.c:1442
 msgid "BUT NOT"
 msgstr "不包括"
 
-#: ../src/libs/collect.c:3304 ../src/libs/filtering.c:2164
+#: ../src/libs/collect.c:3223 ../src/libs/filtering.c:2164
 msgid "revert to a previous set of rules"
 msgstr "使用過去的篩選設定"
 
-#: ../src/libs/collect.c:3361
+#: ../src/libs/collect.c:3280
 msgid "jump back to previous collection"
 msgstr "回到上一個相冊"
 
@@ -21312,11 +21314,11 @@ msgid "store masks as layers in exported images. only works for some formats."
 msgstr "將遮罩儲存為圖層，目前僅 TIFF 和 XCF 格式支援此功能"
 
 #: ../src/libs/export.c:1210 ../src/libs/export.c:1245
-#: ../src/libs/print_settings.c:2758 ../src/libs/print_settings.c:2804
+#: ../src/libs/print_settings.c:2777 ../src/libs/print_settings.c:2823
 msgid "image settings"
 msgstr "遵循影像中模組的設定"
 
-#: ../src/libs/export.c:1220 ../src/libs/print_settings.c:2792
+#: ../src/libs/export.c:1220 ../src/libs/print_settings.c:2811
 msgid "output ICC profiles"
 msgstr "輸出色彩描述檔"
 
@@ -21354,7 +21356,7 @@ msgstr ""
 "絕對色度：\n"
 "不進行亮度和彩度對應，只適用於印刷打樣，不適合攝影用途"
 
-#: ../src/libs/export.c:1255 ../src/libs/print_settings.c:2814
+#: ../src/libs/export.c:1255 ../src/libs/print_settings.c:2833
 msgid "style"
 msgstr "風格檔"
 
@@ -21362,16 +21364,16 @@ msgstr "風格檔"
 msgid "temporary style to use while exporting"
 msgstr "僅在匯出時暫時套用的風格檔"
 
-#: ../src/libs/export.c:1263 ../src/libs/print_settings.c:2857
+#: ../src/libs/export.c:1263 ../src/libs/print_settings.c:2876
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "風格檔要附加編輯記錄還是替換編輯記錄"
 
-#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2859
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2878
 msgid "replace history"
 msgstr "替換原有的編輯記錄"
 
-#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2859
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2878
 msgid "append history"
 msgstr "新增在原有的編輯記錄之上"
 
@@ -23349,24 +23351,24 @@ msgstr ""
 msgid "jump to film roll"
 msgstr "跳到底片卷"
 
-#: ../src/libs/recentcollect.c:67
+#: ../src/libs/recentcollect.c:68
 msgid "recently used collections"
 msgstr "最近用過的相冊"
 
-#: ../src/libs/recentcollect.c:108
+#: ../src/libs/recentcollect.c:109
 msgid " and "
 msgstr " 以及 "
 
-#: ../src/libs/recentcollect.c:113
+#: ../src/libs/recentcollect.c:114
 msgid " or "
 msgstr " 或是 "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/recentcollect.c:118
+#: ../src/libs/recentcollect.c:119
 msgid " but not "
 msgstr " 但不是 "
 
-#: ../src/libs/recentcollect.c:293
+#: ../src/libs/recentcollect.c:226
 msgid "recent collections settings"
 msgstr "最近用過的相冊設定"
 
@@ -23833,59 +23835,59 @@ msgstr "無法取得要列印的影像「%d」"
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (DPI：%d)"
 
-#: ../src/libs/print_settings.c:2377
+#: ../src/libs/print_settings.c:2396
 msgctxt "section"
 msgid "printer"
 msgstr "印表機"
 
-#: ../src/libs/print_settings.c:2390 ../src/libs/print_settings.c:2399
-#: ../src/libs/print_settings.c:2454
+#: ../src/libs/print_settings.c:2409 ../src/libs/print_settings.c:2418
+#: ../src/libs/print_settings.c:2473
 msgid "printer"
 msgstr "印表機"
 
-#: ../src/libs/print_settings.c:2390
+#: ../src/libs/print_settings.c:2409
 msgid "media"
 msgstr "紙張類型"
 
-#: ../src/libs/print_settings.c:2411
+#: ../src/libs/print_settings.c:2430
 msgid "color management in printer driver"
 msgstr "印表機驅動程式的色彩管理"
 
-#: ../src/libs/print_settings.c:2444
+#: ../src/libs/print_settings.c:2463
 msgid "printer ICC profiles"
 msgstr "印表機色彩描述檔"
 
-#: ../src/libs/print_settings.c:2465
+#: ../src/libs/print_settings.c:2484
 msgid "black point compensation"
 msgstr "黑點補償"
 
-#: ../src/libs/print_settings.c:2478
+#: ../src/libs/print_settings.c:2497
 msgid "activate black point compensation when applying the printer profile"
 msgstr "套用印表機描述檔時啟用黑點補償"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:2485
+#: ../src/libs/print_settings.c:2504
 msgctxt "section"
 msgid "page"
 msgstr "頁面"
 
-#: ../src/libs/print_settings.c:2507
+#: ../src/libs/print_settings.c:2526
 msgid "measurement units"
 msgstr "測量單位"
 
-#: ../src/libs/print_settings.c:2515
+#: ../src/libs/print_settings.c:2534
 msgid "image width/height"
 msgstr "影像寬度與高度"
 
-#: ../src/libs/print_settings.c:2520
+#: ../src/libs/print_settings.c:2539
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:2528
+#: ../src/libs/print_settings.c:2547
 msgid "scale factor"
 msgstr "縮放係數"
 
-#: ../src/libs/print_settings.c:2534
+#: ../src/libs/print_settings.c:2553
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -23898,46 +23900,46 @@ msgstr ""
 "太大的值可能導致列印品質不佳"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2548
+#: ../src/libs/print_settings.c:2567
 msgid "top margin"
 msgstr "上邊界"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2552
+#: ../src/libs/print_settings.c:2571
 msgid "left margin"
 msgstr "左邊界"
 
-#: ../src/libs/print_settings.c:2555
+#: ../src/libs/print_settings.c:2574
 msgid "lock"
 msgstr "鎖定"
 
-#: ../src/libs/print_settings.c:2557
+#: ../src/libs/print_settings.c:2576
 msgid "change all margins uniformly"
 msgstr "同時更改全部邊界"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2561
+#: ../src/libs/print_settings.c:2580
 msgid "right margin"
 msgstr "右邊界"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2565
+#: ../src/libs/print_settings.c:2584
 msgid "bottom margin"
 msgstr "下邊界"
 
-#: ../src/libs/print_settings.c:2598
+#: ../src/libs/print_settings.c:2617
 msgid "display grid"
 msgstr "顯示格線"
 
-#: ../src/libs/print_settings.c:2609
+#: ../src/libs/print_settings.c:2628
 msgid "snap to grid"
 msgstr "對齊格線"
 
-#: ../src/libs/print_settings.c:2622
+#: ../src/libs/print_settings.c:2641
 msgid "borderless mode required"
 msgstr "需要滿版列印模式"
 
-#: ../src/libs/print_settings.c:2625
+#: ../src/libs/print_settings.c:2644
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
@@ -23947,16 +23949,16 @@ msgstr ""
 "必須啟動印表機驅動程式中的滿版列印或無邊界列印功能"
 
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2632
+#: ../src/libs/print_settings.c:2651
 msgctxt "section"
 msgid "image layout"
 msgstr "影像布局"
 
-#: ../src/libs/print_settings.c:2673
+#: ../src/libs/print_settings.c:2692
 msgid "new image area"
 msgstr "新建影像區域"
 
-#: ../src/libs/print_settings.c:2675
+#: ../src/libs/print_settings.c:2694
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
@@ -23966,53 +23968,53 @@ msgstr ""
 "點擊並拖曳移動區域位置\n"
 "拖曳影像至影像區域上"
 
-#: ../src/libs/print_settings.c:2679
+#: ../src/libs/print_settings.c:2698
 msgid "delete image area"
 msgstr "刪除影像區域"
 
-#: ../src/libs/print_settings.c:2681
+#: ../src/libs/print_settings.c:2700
 msgid "delete the currently selected image area"
 msgstr "刪除目前選取的影像區域"
 
-#: ../src/libs/print_settings.c:2684
+#: ../src/libs/print_settings.c:2703
 msgid "clear layout"
 msgstr "清除影像布局"
 
-#: ../src/libs/print_settings.c:2686
+#: ../src/libs/print_settings.c:2705
 msgid "remove all image areas from the page"
 msgstr "移除頁面上所有的影像區域"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2703
+#: ../src/libs/print_settings.c:2722
 msgid "image area x origin (in current unit)"
 msgstr "影像左側起點（以目前的單位表示）"
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2707
+#: ../src/libs/print_settings.c:2726
 msgid "image area y origin (in current unit)"
 msgstr "影像上方起點（以目前的單位表示）"
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2718
+#: ../src/libs/print_settings.c:2737
 msgid "image area width (in current unit)"
 msgstr "影像寬度（以目前的單位表示）"
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2722
+#: ../src/libs/print_settings.c:2741
 msgid "image area height (in current unit)"
 msgstr "影像高度（以目前的單位表示）"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:2748
+#: ../src/libs/print_settings.c:2767
 msgctxt "section"
 msgid "print settings"
 msgstr "列印設定"
 
-#: ../src/libs/print_settings.c:2836
+#: ../src/libs/print_settings.c:2855
 msgid "temporary style to use while printing"
 msgstr "列印時暫時套用的風格檔"
 
-#: ../src/libs/print_settings.c:2868
+#: ../src/libs/print_settings.c:2887
 msgid "print with current settings"
 msgstr "以目前的設定列印"
 
@@ -25640,6 +25642,12 @@ msgstr "切換回傳統視窗，在按鍵放開後仍保持開啟"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "滑鼠動作"
+
+#~ msgid "_yes, physically delete"
+#~ msgstr "是，刪除實體檔案"
+
+#~ msgid "_no, only remove from library"
+#~ msgstr "否，僅從圖庫中移除"
 
 #, c-format
 #~ msgid ""
