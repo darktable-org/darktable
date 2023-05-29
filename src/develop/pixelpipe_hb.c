@@ -2141,7 +2141,8 @@ static gboolean _dev_pixelpipe_process_rec(
         */
         important_cl =
            (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-           && (pipe->type == DT_DEV_PIXELPIPE_FULL) // ignored in fast mode
+           && ((pipe->type == DT_DEV_PIXELPIPE_FULL) // ignored in fast mode
+              || (pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
            && darktable.develop->gui_attached
            && ((module == darktable.develop->gui_module)
                 || module->iopcache_hint
@@ -2287,7 +2288,7 @@ static gboolean _dev_pixelpipe_process_rec(
 
     /* input is still only on GPU? Let's invalidate CPU input buffer then */
     if(valid_input_on_gpu_only)
-      dt_dev_pixelpipe_invalidate_cacheline(pipe, input, TRUE);
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
   }
   else
   {
@@ -2307,7 +2308,7 @@ static gboolean _dev_pixelpipe_process_rec(
 #endif // HAVE_OPENCL
 
   if(pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE)
-    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
+    dt_dev_pixelpipe_invalidate_cacheline(pipe, *output);
 
   char histogram_log[32] = "";
   if(!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE))
@@ -2346,7 +2347,7 @@ static gboolean _dev_pixelpipe_process_rec(
     // as the user is likely to change that one soon (again), so keep it in cache.
     // Also do this if the clbuffer has been actively written
     const gboolean has_focus = (module == darktable.develop->gui_module);
-    if((pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if((pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW))
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
         && (has_focus || module->iopcache_hint || important_cl))
     {
@@ -2365,7 +2366,7 @@ static gboolean _dev_pixelpipe_process_rec(
     {
       dt_print_pipe(DT_DEBUG_PIPE, "internal histogram", pipe, module, &roi_in, roi_out, "\n");
       pipe->nocache = TRUE;
-      dt_dev_pixelpipe_invalidate_cacheline(pipe, *output, FALSE);
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, *output);
     }
   }
 
