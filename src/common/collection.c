@@ -493,7 +493,7 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* update the cached count. collection isn't a real const anyway, we are writing to it in
    * _dt_collection_store, too. */
-  ((dt_collection_t *)collection)->count = -1;
+  ((dt_collection_t *)collection)->count = UINT32_MAX;
   ((dt_collection_t *)collection)->count_no_group = _dt_collection_compute_count(collection, TRUE);
   dt_collection_hint_message(collection);
 
@@ -938,7 +938,7 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection,
                                              const gboolean no_group)
 {
   sqlite3_stmt *stmt = NULL;
-  uint32_t count = 1;
+  uint32_t count = 0;
   const gchar *query = no_group
     ? dt_collection_get_query_no_group(collection)
     : dt_collection_get_query(collection);
@@ -973,7 +973,7 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection,
 
 uint32_t dt_collection_get_count(const dt_collection_t *collection)
 {
-  if(collection->count==-1)
+  if(collection->count == UINT32_MAX)
     ((dt_collection_t*)collection)->count = _dt_collection_compute_count(collection, FALSE);
   return collection->count;
 }
@@ -2649,10 +2649,10 @@ static void _collection_recount_callback(gpointer instance,
                                          enum dt_collection_properties_t prop)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
-  const int old_count = collection->count_no_group;
+  const uint32_t old_count = collection->count_no_group;
   if(_property_is_collection_criterion(collection, prop))
   {
-    collection->count = -1;
+    collection->count = UINT32_MAX;
     collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   }
   if(!collection->clone)
@@ -2686,8 +2686,8 @@ static void _dt_collection_filmroll_imported_callback(gpointer instance,
                                                       gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
-  const int old_count = collection->count_no_group;
-  collection->count = -1;
+  const uint32_t old_count = collection->count_no_group;
+  collection->count = UINT32_MAX;
   collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
   {

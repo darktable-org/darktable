@@ -143,8 +143,8 @@ typedef struct dt_collection_t
   int clone;
   gchar *query, *query_no_group;
   gchar **where_ext;
-  unsigned int count, count_no_group;
-  unsigned int tagid;
+  uint32_t count, count_no_group;
+  uint32_t tagid;
   dt_collection_params_t params;
   dt_collection_params_t store;
 } dt_collection_t;
