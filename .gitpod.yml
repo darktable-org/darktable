@@ -1,5 +1,5 @@
-image:
-  file: .gitpod.Dockerfile
+image: epamdmitrystoyanov/darktable-gitpod
+#   file: .gitpod.Dockerfile # build from this file
 tasks:
 - command: >
     ./build.sh --prefix /opt/darktable --build-type Release --install --sudo
