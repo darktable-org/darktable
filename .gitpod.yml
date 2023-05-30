@@ -1,0 +1,10 @@
+image:
+  file: .gitpod.Dockerfile
+tasks:
+- command: >
+    mkdir --parents build &&
+    cd build &&
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/darktable/ .. &&
+    cmake --build . &&
+    sudo cmake --install . &&
+    cd ..
