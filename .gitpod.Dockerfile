@@ -11,7 +11,7 @@ ENV CXX="clang++-15"
 # Install compiler packages
 RUN sudo apt-get update && \
     sudo eatmydata apt-get -y install \
-    clang-15 libomp-15-dev llvm-15-dev libc++-15-dev libc++abi1-15 lld-15 clang-tools-15 mlir-15-tools libmlir-15-dev && \
+    clang-15 libomp-15-dev llvm-15-dev libc++-15-dev libc++abi1-15 lld-15 clang-tools-15 mlir-15-tools libmlir-15-dev cmake && \
     sudo rm -rf /var/lib/apt/lists/*
 
 # Install Base Dependencies
