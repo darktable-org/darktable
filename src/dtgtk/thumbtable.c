@@ -1099,7 +1099,7 @@ static gboolean _event_draw(GtkWidget *widget,
   // but we don't really want to draw something, this is just to know
   // when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if(!darktable.collection || darktable.collection->count == 0)
+  if(!darktable.collection || (dt_collection_get_count(darktable.collection) == 0))
   {
     GtkAllocation allocation;
     gtk_widget_get_allocation(table->widget, &allocation);
