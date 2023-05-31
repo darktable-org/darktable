@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-26 18:21+0200\n"
-"PO-Revision-Date: 2023-05-27 17:39+0200\n"
+"POT-Creation-Date: 2023-05-29 21:47+0200\n"
+"PO-Revision-Date: 2023-05-31 11:05+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1013,12 +1013,11 @@ msgstr "Grenzwerte für größenabhängige Einstellungen"
 msgid ""
 "size categories are used to be able to set different overlays and CSS values depending of the size of the "
 "thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px"
+"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, >400px"
 msgstr ""
 "Größenkategorien werden benutzt, um verschiedene Bildinfos und CSS-Einstellungen in Abhängigkeit von der Größe der "
 "Vorschaubilder zu wählen. \n"
-"Die Größen werden durch | getrennt. Der Default „120|400“ definiert 3 Kategorien: 0px->120px, 120px->400px und "
-">400px"
+"Die Größen werden durch | getrennt. Der Default „120|400“ definiert 3 Kategorien: <120px, 120-400px und >400px"
 
 #: ../build/bin/preferences_gen.h:4316
 msgid "pattern for the thumbnail extended overlay text"
@@ -1053,13 +1052,12 @@ msgstr "mittlere Maustaste zoomt auf 200%"
 #: ../build/bin/preferences_gen.h:4491
 #, no-c-format
 msgid ""
-"when clicking the middle mouse button to zoom, the zoom level will cycle through 100%, 200% and then back to fit "
-"the screen. otherwise it switches between fit to screen and 100% and the 'ctrl' key can be used to control the "
-"zoom level."
+"if enabled, the zoom level will cycle between 100%, 200% and fit to viewport on middle mouse clicks. if disabled, "
+"it will toggle between viewport size and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
-"Beim Klicken auf die mittlere Maustaste zum Zoomen wechselt die Zoomstufe zwischen 100%, 200% und dann wieder "
-"zurück auf die Bildschirmgröße. Andernfalls wechselt die Zoomstufe zwischen „An den Bildschirm anpassen“ und „100 "
-"%“ und kann mit der Taste „Strg“ gesteuert werden."
+"wenn aktiviert wechselt die Zoomstufe bei mittlerem Mausklick zwischen 100%, 200% und einpassen auf die "
+"Bildschirmgröße anstatt zwischen „einpassen“ und „100 %“. Unabhängig davon können mit „Strg“-Scrollen Zoomstufen "
+"frei gewählt werden."
 
 #: ../build/bin/preferences_gen.h:4513
 msgid "pattern for the image information line"
@@ -8433,11 +8431,11 @@ msgstr ""
 "Im Verlaufstapel war das Modul aktiviert, ist aber für diese Art von Bildern nicht zulässig.\n"
 "Vermutlich eine Folge einer Voreinstellung, eines Stils oder Kopieren und Einfügen eines Verlaufs"
 
-#: ../src/develop/pixelpipe_hb.c:2704
+#: ../src/develop/pixelpipe_hb.c:2705
 msgid "darktable discovered problems with your OpenCL setup; disabling OpenCL for this session!"
 msgstr "darktable hat Probleme mit OpenCL festgestellt; OpenCL wird für diese Sitzung deaktiviert!"
 
-#: ../src/develop/pixelpipe_hb.c:2849
+#: ../src/develop/pixelpipe_hb.c:2853
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
