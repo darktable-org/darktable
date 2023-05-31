@@ -32,8 +32,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.2.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-26 18:21+0200\n"
-"PO-Revision-Date: 2023-05-31 06:16+0200\n"
+"POT-Creation-Date: 2023-05-31 13:24+0200\n"
+"PO-Revision-Date: 2023-05-31 22:20+0200\n"
 "Last-Translator: Kristian Nordin <kristian.po@proton.me>\n"
 "Language-Team: Swedish <tp-se@listor.tp-se.sv>\n"
 "Language: sv\n"
@@ -104,7 +104,6 @@ msgstr "standard"
 
 #: ../build/bin/conf_gen.h:282 ../build/bin/conf_gen.h:2814
 #: ../build/bin/preferences_gen.h:5758
-#| msgid "target"
 msgctxt "preferences"
 msgid "large"
 msgstr "stor"
@@ -163,13 +162,11 @@ msgstr "väldigt snabb GPU"
 
 #: ../build/bin/conf_gen.h:403 ../build/bin/preferences_gen.h:6040
 #: ../build/bin/preferences_gen.h:6074
-#| msgid "nothing to save"
 msgctxt "preferences"
 msgid "nothing"
 msgstr "inget"
 
 #: ../build/bin/conf_gen.h:404 ../build/bin/preferences_gen.h:6045
-#| msgid "paper size"
 msgctxt "preferences"
 msgid "memory size"
 msgstr "minnesstorlek"
@@ -196,7 +193,6 @@ msgid "folder"
 msgstr "mapp"
 
 #: ../build/bin/conf_gen.h:721
-#| msgid "RGB"
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
@@ -217,7 +213,6 @@ msgid "HSL"
 msgstr "HSL"
 
 #: ../build/bin/conf_gen.h:725
-#| msgid "exr"
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
@@ -246,7 +241,6 @@ msgid "max"
 msgstr "max"
 
 #: ../build/bin/conf_gen.h:924
-#| msgid "select tone color"
 msgid "select only new pictures"
 msgstr "välj endast nya bilder"
 
@@ -267,7 +261,6 @@ msgstr ""
 "importera båda. med denna option kan man ignorera funna jpeg-bilder."
 
 #: ../build/bin/conf_gen.h:936
-#| msgid "apply metadata on import"
 msgid "apply metadata"
 msgstr "applicera metadata"
 
@@ -300,12 +293,10 @@ msgid "comma separated tags to be applied when importing"
 msgstr "kommaseparerade taggar att applicera vid import"
 
 #: ../build/bin/conf_gen.h:972
-#| msgid "import images from camera"
 msgid "import tags from XMP"
 msgstr "importera taggar från XMP"
 
 #: ../build/bin/conf_gen.h:998
-#| msgid "initial import rating"
 msgid "initial rating"
 msgstr "ursprungligt betyg"
 
@@ -314,7 +305,6 @@ msgid "initial star rating for all images when importing a filmroll"
 msgstr "initial standard betyg som tilldelas importerade bilder"
 
 #: ../build/bin/conf_gen.h:1004
-#| msgid "ignore exif rating"
 msgid "ignore EXIF rating"
 msgstr "ignorera EXIF-betyg"
 
@@ -327,12 +317,10 @@ msgstr ""
 "'ursprungligt betyg'"
 
 #: ../build/bin/conf_gen.h:1010
-#| msgid "import"
 msgid "import job"
 msgstr "importjobb"
 
 #: ../build/bin/conf_gen.h:1011
-#| msgid "name of the preset"
 msgid "name of the import job"
 msgstr "namn på importjobb"
 
@@ -515,8 +503,6 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/conf_gen.h:1822
-#| msgctxt "accel"
-#| msgid "realign images to grid"
 msgid "min images per group"
 msgstr "minst antal bilder per grupp"
 
@@ -539,7 +525,6 @@ msgid "count"
 msgstr "antal"
 
 #: ../build/bin/conf_gen.h:1832 ../src/libs/map_settings.c:159
-#| msgid "thumbnail"
 msgid "thumbnail display"
 msgstr "miniatyrvisning"
 
@@ -552,7 +537,6 @@ msgstr ""
 "bilder i gruppen eller inget"
 
 #: ../build/bin/conf_gen.h:1844
-#| msgid "Sample points"
 msgid "max polygon points"
 msgstr "max polygonpunkter"
 
@@ -666,7 +650,6 @@ msgid "linear"
 msgstr "linjär"
 
 #: ../build/bin/conf_gen.h:2729
-#| msgid "horizontal"
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "horisontellt"
@@ -697,19 +680,16 @@ msgid "AzBz"
 msgstr "AzBz"
 
 #: ../build/bin/conf_gen.h:2749
-#| msgid "RGB"
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RYB"
 
 #: ../build/bin/conf_gen.h:2791
-#| msgid "monochrome"
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "monokromatisk"
 
 #: ../build/bin/conf_gen.h:2792
-#| msgid "logout"
 msgctxt "preferences"
 msgid "analogous"
 msgstr "analog"
@@ -760,7 +740,6 @@ msgid "narrow"
 msgstr "smal"
 
 #: ../build/bin/conf_gen.h:2816
-#| msgid "linear"
 msgctxt "preferences"
 msgid "line"
 msgstr "linje"
@@ -798,15 +777,11 @@ msgstr "colord"
 
 #: ../build/bin/conf_gen.h:3041 ../build/bin/preferences_gen.h:5562
 #: ../build/bin/preferences_gen.h:5596
-#| msgctxt "preferences"
-#| msgid "scene-referred"
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "scen-tillämpat (filmisk)"
 
 #: ../build/bin/conf_gen.h:3042 ../build/bin/preferences_gen.h:5567
-#| msgctxt "preferences"
-#| msgid "scene-referred"
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "scen-tillämpat (s-formad)"
@@ -840,13 +815,11 @@ msgid "illuminant color"
 msgstr "ljuskällans färg"
 
 #: ../build/bin/conf_gen.h:3158
-#| msgid "select the saturation"
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "effektemulering"
 
 #: ../build/bin/conf_gen.h:3204
-#| msgid "list"
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
@@ -867,7 +840,6 @@ msgid "active"
 msgstr "aktiv"
 
 #: ../build/bin/conf_gen.h:3216 ../build/bin/preferences_gen.h:5122
-#| msgid "dpi"
 msgctxt "preferences"
 msgid "dim"
 msgstr "dämpa"
@@ -1034,7 +1006,6 @@ msgid "hides built-in presets of utility modules in presets menu."
 msgstr "gömmer inbyggda stilar för verktygsmoduler i menyn förinställningar."
 
 #: ../build/bin/preferences_gen.h:3862
-#| msgid "use single-click in the collect panel"
 msgid "use single-click in the collections module"
 msgstr "använd enkelklick i bildsamlingsmodulen"
 
@@ -1057,7 +1028,6 @@ msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr "detta alternativ slår om beteendet för shift+klick i ljusbordsläge"
 
 #: ../build/bin/preferences_gen.h:3934
-#| msgid "scroll to lighttable modules when expanded/collapsed"
 msgid "scroll utility modules to the top when expanded"
 msgstr "rulla verktygsmoduler till toppen när de expanderas"
 
@@ -1076,7 +1046,6 @@ msgstr ""
 "betygsättningen till noll"
 
 #: ../build/bin/preferences_gen.h:3984
-#| msgid "rating an image one star twice will not zero out the rating"
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
@@ -1115,7 +1084,6 @@ msgid "show image time with milliseconds"
 msgstr "visa bildtid med millisekunder"
 
 #: ../build/bin/preferences_gen.h:4056
-#| msgid "defines whether scrollbars should be displayed"
 msgid "defines whether time should be displayed with milliseconds"
 msgstr "definierar om tiden ska visas med millisekunder"
 
@@ -1143,7 +1111,6 @@ msgstr ""
 "(mer information finns i manualen)"
 
 #: ../build/bin/preferences_gen.h:4181
-#| msgid "high quality thumb processing from size"
 msgid "high quality processing from size"
 msgstr "högkvalitetsbearbetning från storlek"
 
@@ -1166,11 +1133,17 @@ msgid "delimiters for size categories"
 msgstr "avgränsare för storlekskategorier"
 
 #: ../build/bin/preferences_gen.h:4294
+#, fuzzy
+#| msgid ""
+#| "size categories are used to be able to set different overlays and CSS "
+#| "values depending of the size of the thumbnail, separated by |.\n"
+#| "for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px-"
+#| ">400px and >400px"
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px-"
-">400px and >400px"
+"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
+">400px"
 msgstr ""
 "storlekskategorier används för att sätta olika lager och css-värden beroende "
 "på storleken på miniatyrer, separerade med |.\n"
@@ -1208,10 +1181,9 @@ msgstr "mittenmusknappen zoomar till 200%"
 #: ../build/bin/preferences_gen.h:4491
 #, no-c-format
 msgid ""
-"when clicking the middle mouse button to zoom, the zoom level will cycle "
-"through 100%, 200% and then back to fit the screen. otherwise it switches "
-"between fit to screen and 100% and the 'ctrl' key can be used to control the "
-"zoom level."
+"if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
+"on middle mouse clicks. if disabled, it will toggle between viewport size "
+"and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4513
@@ -1390,7 +1362,6 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5263
-#| msgid "automatically crop to avoid black edges"
 msgid "automatically update module name"
 msgstr "uppdatera modulnamn automatiskt"
 
@@ -2352,7 +2323,7 @@ msgstr "specifik"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:366
 #: ../build/lib/darktable/plugins/introspection_colorin.c:300
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
-#: ../build/lib/darktable/plugins/introspection_vignette.c:263
+#: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3410 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/accelerators.c:227
@@ -3392,7 +3363,7 @@ msgstr "ljushet"
 #: ../src/iop/colorchecker.c:1483 ../src/iop/colorcontrast.c:90
 #: ../src/iop/colorcorrection.c:275 ../src/iop/colorize.c:343
 #: ../src/iop/lowpass.c:588 ../src/iop/soften.c:373 ../src/iop/velvia.c:84
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:970
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:971
 msgid "saturation"
 msgstr "mättnad"
 
@@ -4787,7 +4758,7 @@ msgstr "fyllnadsläge"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4617
 #: ../src/iop/colisa.c:305 ../src/iop/lowpass.c:587 ../src/iop/soften.c:377
-#: ../src/iop/vignette.c:969 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:970 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "ljusstyrka"
 
@@ -5070,42 +5041,51 @@ msgstr "kontrast komprimering"
 msgid "vibrance"
 msgstr "lyster"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:97
-#: ../build/lib/darktable/plugins/introspection_vignette.c:204
-msgid "fall-off strength"
+#: ../build/lib/darktable/plugins/introspection_vignette.c:92
+#: ../build/lib/darktable/plugins/introspection_vignette.c:201
+#, fuzzy
+#| msgid "fall-off strength"
+msgid "fall-off start"
 msgstr "övergångstyrka"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:115
-#: ../build/lib/darktable/plugins/introspection_vignette.c:216
+#: ../build/lib/darktable/plugins/introspection_vignette.c:98
+#: ../build/lib/darktable/plugins/introspection_vignette.c:205
+#, fuzzy
+#| msgid "fall-off strength"
+msgid "fall-off radius"
+msgstr "övergångstyrka"
+
+#: ../build/lib/darktable/plugins/introspection_vignette.c:116
+#: ../build/lib/darktable/plugins/introspection_vignette.c:217
 msgid "horizontal center"
 msgstr "horisontellt centrum"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:121
-#: ../build/lib/darktable/plugins/introspection_vignette.c:220
+#: ../build/lib/darktable/plugins/introspection_vignette.c:122
+#: ../build/lib/darktable/plugins/introspection_vignette.c:221
 msgid "vertical center"
 msgstr "vertikalt centrerad"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:133
-#: ../build/lib/darktable/plugins/introspection_vignette.c:228
+#: ../build/lib/darktable/plugins/introspection_vignette.c:134
+#: ../build/lib/darktable/plugins/introspection_vignette.c:229
 msgid "automatic ratio"
 msgstr "automatiskt förhållande"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:139
-#: ../build/lib/darktable/plugins/introspection_vignette.c:232
+#: ../build/lib/darktable/plugins/introspection_vignette.c:140
+#: ../build/lib/darktable/plugins/introspection_vignette.c:233
 msgid "width/height ratio"
 msgstr "bredd/höjd förhållande"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:145
-#: ../build/lib/darktable/plugins/introspection_vignette.c:236
-#: ../src/iop/vignette.c:977
+#: ../build/lib/darktable/plugins/introspection_vignette.c:146
+#: ../build/lib/darktable/plugins/introspection_vignette.c:237
+#: ../src/iop/vignette.c:978
 msgid "shape"
 msgstr "form"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:264
+#: ../build/lib/darktable/plugins/introspection_vignette.c:265
 msgid "8-bit output"
 msgstr "resultat i 8-bit"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:265
+#: ../build/lib/darktable/plugins/introspection_vignette.c:266
 msgid "16-bit output"
 msgstr "resultat i 16-bit"
 
@@ -9695,7 +9675,7 @@ msgid ""
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:2704
+#: ../src/develop/pixelpipe_hb.c:2705
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -9703,7 +9683,7 @@ msgstr ""
 "darktable upptäckte problem med dina OpenCL-inställningar; stänger av OpenCL "
 "för denna session!"
 
-#: ../src/develop/pixelpipe_hb.c:2849
+#: ../src/develop/pixelpipe_hb.c:2853
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -13773,7 +13753,7 @@ msgstr "linjärt, RGB, skärm-tillämpat"
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:104
-#: ../src/iop/vignette.c:160 ../src/iop/watermark.c:379
+#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:379
 #, fuzzy
 #| msgid "linear Rec709 RGB"
 msgid "non-linear, RGB"
@@ -13782,8 +13762,8 @@ msgstr "icke-linjär, RGB"
 #: ../src/iop/basecurve.c:355 ../src/iop/dither.c:120 ../src/iop/dither.c:122
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
-#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
-#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:378
+#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:160
+#: ../src/iop/vignette.c:162 ../src/iop/watermark.c:378
 #: ../src/iop/watermark.c:380
 msgid "non-linear, RGB, display-referred"
 msgstr "icke-linjär, RGB, skärm-tillämpat"
@@ -13854,7 +13834,7 @@ msgstr "kontrastjustering"
 #: ../src/iop/levels.c:138 ../src/iop/liquify.c:297 ../src/iop/lowlight.c:92
 #: ../src/iop/lowpass.c:134 ../src/iop/monochrome.c:98 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:103 ../src/iop/velvia.c:105
-#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:158
+#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:159
 #: ../src/iop/watermark.c:377
 #, fuzzy
 #| msgid "relative"
@@ -18699,7 +18679,7 @@ msgid "find lens"
 msgstr "sök objektiv"
 
 #. scale
-#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:967
+#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:968
 #: ../src/iop/watermark.c:1324 ../src/libs/export.c:1165
 msgid "scale"
 msgstr "skala"
@@ -19888,3 +19868,7625 @@ msgstr ""
 "för att lägga till en form välj en algoritm och typ av form och klicka på "
 "bilden.\n"
 "former läggs till till den aktuella skalan"
+
+#. display & suppress masks
+#. copy/paste shapes
+#. display final image/current scale
+#. auto-levels button
+#: ../src/iop/retouch.c:2233 ../src/iop/retouch.c:2334
+#: ../src/iop/retouch.c:2339 ../src/iop/retouch.c:2347
+#: ../src/iop/retouch.c:2351 ../src/iop/retouch.c:2358
+#: ../src/iop/retouch.c:2392
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "edit"
+msgid "editing"
+msgstr "ändra"
+
+#: ../src/iop/retouch.c:2233
+#, fuzzy
+#| msgid "show and edit mask elements"
+msgid "show and edit shapes on the current scale"
+msgstr "visa och redigera markeringens element"
+
+#: ../src/iop/retouch.c:2234
+#, fuzzy
+#| msgid "show and edit mask elements"
+msgid "show and edit shapes in restricted mode"
+msgstr "visa och redigera markeringens element"
+
+#: ../src/iop/retouch.c:2257
+#, fuzzy
+#| msgid "logarithmic"
+msgid "algorithms:"
+msgstr "logaritmisk"
+
+#: ../src/iop/retouch.c:2260 ../src/iop/retouch.c:2264
+#: ../src/iop/retouch.c:2268 ../src/iop/retouch.c:2272
+#, fuzzy
+msgid "tools"
+msgstr "hjälpmedel på"
+
+#: ../src/iop/retouch.c:2260 ../src/iop/retouch.c:2278
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "active"
+msgid "activate blur tool"
+msgstr "aktiv"
+
+#: ../src/iop/retouch.c:2260 ../src/iop/retouch.c:2264
+#: ../src/iop/retouch.c:2268 ../src/iop/retouch.c:2272
+msgid "change algorithm for current form"
+msgstr ""
+
+#: ../src/iop/retouch.c:2264 ../src/iop/retouch.c:2281
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "active"
+msgid "activate fill tool"
+msgstr "aktiv"
+
+#: ../src/iop/retouch.c:2268 ../src/iop/retouch.c:2284
+msgid "activate cloning tool"
+msgstr ""
+
+#: ../src/iop/retouch.c:2272 ../src/iop/retouch.c:2287
+msgid "activate healing tool"
+msgstr ""
+
+#. overwrite tooltip ourself to handle shift+click
+#: ../src/iop/retouch.c:2276
+msgid "ctrl+click to change tool for current form"
+msgstr ""
+
+#: ../src/iop/retouch.c:2277
+msgid "shift+click to set the tool as default"
+msgstr ""
+
+#: ../src/iop/retouch.c:2296
+#, fuzzy
+#| msgid "scale"
+msgid "scales:"
+msgstr "skala"
+
+#: ../src/iop/retouch.c:2301
+#, fuzzy
+#| msgid "current:"
+msgid "current:"
+msgstr "nuvarande:"
+
+#: ../src/iop/retouch.c:2306
+msgid "merge from:"
+msgstr ""
+
+#: ../src/iop/retouch.c:2314
+msgid ""
+"top slider adjusts where the merge scales start\n"
+"bottom slider adjusts the number of scales\n"
+"dot indicates the current scale\n"
+"top line indicates that the scale is visible at current zoom level\n"
+"bottom line indicates that the scale has shapes on it"
+msgstr ""
+
+#: ../src/iop/retouch.c:2334
+#, fuzzy
+msgid "display masks"
+msgstr "visa mask"
+
+#: ../src/iop/retouch.c:2339
+#, fuzzy
+#| msgid "temporarily switch off shapes"
+msgid "temporarily switch off shapes"
+msgstr "slår tillfälligt av skalor"
+
+#: ../src/iop/retouch.c:2347
+msgid "paste cut shapes to current scale"
+msgstr ""
+
+#: ../src/iop/retouch.c:2351
+msgid "cut shapes from current scale"
+msgstr ""
+
+#: ../src/iop/retouch.c:2358
+#, fuzzy
+msgid "display wavelet scale"
+msgstr "rensa val"
+
+#: ../src/iop/retouch.c:2366
+#, fuzzy
+#| msgid "map settings"
+msgctxt "section"
+msgid "preview single scale"
+msgstr "kartinställningar"
+
+#: ../src/iop/retouch.c:2377
+#, fuzzy
+#| msgid "auto tune levels"
+msgid "adjust preview levels"
+msgstr "applicera automatisk nivåjustering"
+
+#: ../src/iop/retouch.c:2392 ../src/iop/rgblevels.c:1051
+#, fuzzy
+#| msgid "auto tune levels"
+msgid "auto levels"
+msgstr "applicera automatisk nivåjustering"
+
+#: ../src/iop/retouch.c:2400
+#, fuzzy
+#| msgid "select"
+msgid "shape selected:"
+msgstr "bildurval"
+
+#: ../src/iop/retouch.c:2405
+msgid ""
+"click on a shape to select it,\n"
+"to unselect click on an empty space"
+msgstr ""
+
+#: ../src/iop/retouch.c:2412
+msgid "erase the detail or fills with chosen color"
+msgstr ""
+
+#: ../src/iop/retouch.c:2419
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "false color"
+msgid "fill color: "
+msgstr "falska färger"
+
+#: ../src/iop/retouch.c:2424 ../src/iop/retouch.c:2425
+#, fuzzy
+#| msgid "select film roll"
+msgid "select fill color"
+msgstr "välj filmrulle"
+
+#: ../src/iop/retouch.c:2430
+#, fuzzy
+#| msgid "pick fill color from image"
+msgid "pick fill color from image"
+msgstr "välj fyllnadsfärg från bild"
+
+# tidigare fill color - fyllnadsfärg
+#: ../src/iop/retouch.c:2431
+#, fuzzy
+msgid "pick fill color"
+msgstr "ljuskällafärg"
+
+#: ../src/iop/retouch.c:2439
+msgid "adjusts color brightness to fine-tune it. works with erase as well"
+msgstr ""
+
+#: ../src/iop/retouch.c:2445
+msgid "type for the blur algorithm"
+msgstr ""
+
+#: ../src/iop/retouch.c:2449
+#, fuzzy
+#| msgid "radius of the patches to match"
+msgid "radius of the selected blur type"
+msgstr "radien på elementen att identifiera"
+
+#: ../src/iop/retouch.c:2455
+#, fuzzy
+#| msgid "set the opacity of the blending"
+msgid "set the opacity on the selected shape"
+msgstr "justera blandningens ogenomskinlighet"
+
+#: ../src/iop/retouch.c:2461
+#, fuzzy
+#| msgid "retouch"
+msgctxt "section"
+msgid "retouch tools"
+msgstr "retuschera"
+
+# TODO: NEEDS BETTER TRANSLATION
+#. wavelet decompose
+#: ../src/iop/retouch.c:2470
+#, fuzzy
+#| msgid "wavelets"
+msgctxt "section"
+msgid "wavelet decompose"
+msgstr "'wavelets'"
+
+#. shapes
+#: ../src/iop/retouch.c:2484
+#, fuzzy
+#| msgid "shapes"
+msgctxt "section"
+msgid "shapes"
+msgstr "form"
+
+#: ../src/iop/retouch.c:3589 ../src/iop/retouch.c:4427
+#, c-format
+msgid "max scale is %i for this image size"
+msgstr ""
+
+#: ../src/iop/rgbcurve.c:122
+#, fuzzy
+#| msgid "base curve"
+msgid "rgb curve"
+msgstr "baskurva"
+
+#: ../src/iop/rgbcurve.c:142
+msgid "alter an image’s tones using curves in RGB color space"
+msgstr ""
+
+#: ../src/iop/rgbcurve.c:193 ../src/iop/tonecurve.c:548
+msgid "gamma 1.0 (linear)"
+msgstr ""
+
+#: ../src/iop/rgbcurve.c:203 ../src/iop/tonecurve.c:558
+#, fuzzy
+msgid "contrast - med (linear)"
+msgstr "stödjepunkt kontrast"
+
+#: ../src/iop/rgbcurve.c:212 ../src/iop/tonecurve.c:567
+#, fuzzy
+#| msgid "contrast in highlights"
+msgid "contrast - high (linear)"
+msgstr "kontrast i högdagrar"
+
+#: ../src/iop/rgbcurve.c:226 ../src/iop/tonecurve.c:579
+msgid "contrast - med (gamma 2.2)"
+msgstr ""
+
+#: ../src/iop/rgbcurve.c:239 ../src/iop/tonecurve.c:590
+#, fuzzy
+#| msgid "contrast in highlights"
+msgid "contrast - high (gamma 2.2)"
+msgstr "kontrast i högdagrar"
+
+#: ../src/iop/rgbcurve.c:252 ../src/iop/tonecurve.c:603
+#, fuzzy
+#| msgid "gamma"
+msgid "gamma 2.0"
+msgstr "gamma"
+
+#: ../src/iop/rgbcurve.c:258 ../src/iop/tonecurve.c:609
+#, fuzzy
+#| msgid "gamma"
+msgid "gamma 0.5"
+msgstr "gamma"
+
+#: ../src/iop/rgbcurve.c:263 ../src/iop/tonecurve.c:614
+#, fuzzy
+#| msgid "logarithmic shaper"
+msgid "logarithm (base 2)"
+msgstr "logaritmisk form"
+
+#: ../src/iop/rgbcurve.c:268 ../src/iop/tonecurve.c:619
+msgid "exponential (base 2)"
+msgstr ""
+
+#: ../src/iop/rgbcurve.c:1352 ../src/iop/rgblevels.c:999
+#, fuzzy
+#| msgid "Lab, independent channels"
+msgid "choose between linked and independent channels."
+msgstr "Lab, oberoende kanaler"
+
+#: ../src/iop/rgbcurve.c:1358 ../src/iop/rgblevels.c:1003
+#, fuzzy
+#| msgid "sliders for red channel"
+msgid "curve nodes for r channel"
+msgstr "reglage för röd kanal"
+
+#: ../src/iop/rgbcurve.c:1359 ../src/iop/rgblevels.c:1004
+#, fuzzy
+#| msgid "sliders for L channel"
+msgid "curve nodes for g channel"
+msgstr "reglage för L-kanal"
+
+#: ../src/iop/rgbcurve.c:1360 ../src/iop/rgblevels.c:1005
+#, fuzzy
+#| msgid "sliders for b channel"
+msgid "curve nodes for b channel"
+msgstr "reglage för b-kanal"
+
+#: ../src/iop/rgblevels.c:102
+#, fuzzy
+#| msgid "levels"
+msgid "rgb levels"
+msgstr "nivåer"
+
+#: ../src/iop/rgblevels.c:122
+#, fuzzy
+#| msgid "adjust black, white and mid-gray points"
+msgid "adjust black, white and mid-gray points in RGB color space"
+msgstr "ändra svarta, vita och medelgråa punkter"
+
+#: ../src/iop/rgblevels.c:1056
+#, fuzzy
+#| msgid "automatic ratio"
+msgid "auto region"
+msgstr "automatiskt förhållande"
+
+#: ../src/iop/rgblevels.c:1058
+msgid ""
+"apply auto levels based on a region defined by the user\n"
+"click and drag to draw the area\n"
+"right click to cancel"
+msgstr ""
+
+#: ../src/iop/rotatepixels.c:70
+#, fuzzy
+#| msgid "hot pixels"
+msgctxt "modulename"
+msgid "rotate pixels"
+msgstr "heta pixlar"
+
+#: ../src/iop/rotatepixels.c:97 ../src/iop/scalepixels.c:82
+msgid ""
+"internal module to setup technical specificities of raw sensor.\n"
+"\n"
+"you should not touch values here!"
+msgstr ""
+
+#: ../src/iop/rotatepixels.c:366
+#, fuzzy
+#| msgid "automatic ratio"
+msgid "automatic pixel rotation"
+msgstr "automatiskt förhållande"
+
+#: ../src/iop/rotatepixels.c:367
+#, fuzzy
+#| msgid ""
+#| "raw black/white point correction\n"
+#| "only works for the sensors that need it."
+msgid ""
+"automatic pixel rotation\n"
+"only works for the sensors that need it."
+msgstr ""
+"rå svart/vit korrigering\n"
+"fungerar bara för sensorer som behöver det."
+
+#: ../src/iop/scalepixels.c:55
+#, fuzzy
+#| msgid "hot pixels"
+msgctxt "modulename"
+msgid "scale pixels"
+msgstr "heta pixlar"
+
+#: ../src/iop/scalepixels.c:271
+#, fuzzy
+#| msgid "automatic cropping"
+msgid "automatic pixel scaling"
+msgstr "automatiskt beskärning"
+
+#: ../src/iop/scalepixels.c:272
+#, fuzzy
+#| msgid ""
+#| "raw black/white point correction\n"
+#| "only works for the sensors that need it."
+msgid ""
+"automatic pixel scaling\n"
+"only works for the sensors that need it."
+msgstr ""
+"rå svart/vit korrigering\n"
+"fungerar bara för sensorer som behöver det."
+
+#: ../src/iop/shadhi.c:175
+#, fuzzy
+#| msgid "add noise in highlights"
+msgid "shadows and highlights"
+msgstr "lägg till brus i högdagrar"
+
+#: ../src/iop/shadhi.c:195
+msgid ""
+"modify the tonal range of the shadows and highlights\n"
+"of an image by enhancing local contrast."
+msgstr ""
+
+#: ../src/iop/shadhi.c:676 ../src/iop/splittoning.c:548
+#, fuzzy
+#| msgid "compression"
+msgid "compress"
+msgstr "komprimering"
+
+#: ../src/iop/shadhi.c:683
+#, fuzzy
+#| msgid "preserve shadows"
+msgid "correct shadows"
+msgstr "bevara skuggor"
+
+#: ../src/iop/shadhi.c:684
+#, fuzzy
+#| msgid "contrast in highlights"
+msgid "correct highlights"
+msgstr "kontrast i högdagrar"
+
+#: ../src/iop/shadhi.c:685
+#, fuzzy
+#| msgid "white point"
+msgid "shift white point"
+msgstr "vitpunkt"
+
+#: ../src/iop/shadhi.c:687
+msgid "filter to use for softening. bilateral avoids halos"
+msgstr ""
+
+#: ../src/iop/shadhi.c:688
+msgid ""
+"compress the effect on shadows/highlights and\n"
+"preserve mid-tones"
+msgstr ""
+
+#: ../src/iop/shadhi.c:689
+#, fuzzy
+#| msgid "select the saturation shadow tone"
+msgid "adjust saturation of shadows"
+msgstr "välj färgmättnad för färgton i mörka partier"
+
+#: ../src/iop/shadhi.c:690
+#, fuzzy
+#| msgid "changes the local contrast of highlights"
+msgid "adjust saturation of highlights"
+msgstr "ändrar lokal kontrast för högdagrar"
+
+#: ../src/iop/sharpen.c:73
+#, fuzzy
+#| msgctxt "atrous"
+#| msgid "sharpen"
+msgctxt "modulename"
+msgid "sharpen"
+msgstr "skärpa"
+
+#: ../src/iop/sharpen.c:93
+msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
+msgstr ""
+
+#: ../src/iop/sharpen.c:95
+#, fuzzy
+#| msgid "linear or non-linear, Lab, display-referred"
+msgid "linear or non-linear, Lab, display or scene-referred"
+msgstr "linjär eller icke-linjär, Lab, skärm-tillämpat"
+
+#: ../src/iop/sharpen.c:97
+#, fuzzy
+#| msgid "non-linear, Lab, display-referred"
+msgid "quasi-linear, Lab, display or scene-referred"
+msgstr "icke-linjär, Lab, skärm-tillämpat"
+
+#. add the preset.
+#. restrict to raw images
+#: ../src/iop/sharpen.c:104 ../src/iop/sharpen.c:108
+#, fuzzy
+#| msgctxt "atrous"
+#| msgid "sharpen"
+msgid "sharpen"
+msgstr "skärpa"
+
+#: ../src/iop/sharpen.c:443
+#, fuzzy
+#| msgid "spatial extent of the gaussian"
+msgid "spatial extent of the unblurring"
+msgstr "rumslig utsträckning för gaussisk oskärpa"
+
+#: ../src/iop/sharpen.c:447
+#, fuzzy
+#| msgid "strength of the effect"
+msgid "strength of the sharpen"
+msgstr "sluttningen påverkar effektens styrka"
+
+#: ../src/iop/sharpen.c:451
+msgid "threshold to activate sharpen"
+msgstr ""
+
+#: ../src/iop/sigmoid.c:89
+msgid "sigmoid"
+msgstr ""
+
+#: ../src/iop/sigmoid.c:94
+msgid "tone mapping|view transform|display transform"
+msgstr ""
+
+#: ../src/iop/sigmoid.c:99
+msgid ""
+"apply a view transform to make a image displayable\n"
+"on a screen or print. uses a robust and smooth\n"
+"tone curve with optional color preservation methods."
+msgstr ""
+
+#: ../src/iop/sigmoid.c:155
+#, fuzzy
+#| msgid "neutral"
+msgid "neutral gray"
+msgstr "neutral"
+
+#: ../src/iop/sigmoid.c:160
+msgid "ACES 100-nit like"
+msgstr ""
+
+#: ../src/iop/sigmoid.c:165
+#, fuzzy
+#| msgid "reinhard"
+msgid "Reinhard"
+msgstr "reinhard"
+
+#: ../src/iop/sigmoid.c:683
+msgid ""
+"compression of the applied curve\n"
+"implicitly defines the supported input dynamic range"
+msgstr ""
+
+#: ../src/iop/sigmoid.c:686
+msgid ""
+"shift the compression towards shadows or highlights.\n"
+"negative values increase contrast in shadows.\n"
+"positive values increase contrast in highlights.\n"
+"the opposite end will see a reduction in contrast."
+msgstr ""
+
+#: ../src/iop/sigmoid.c:695
+msgid ""
+"optional correction of the hue twist introduced by\n"
+"the per-channel processing method."
+msgstr ""
+
+#: ../src/iop/sigmoid.c:702
+#, fuzzy
+#| msgid "middle grey luminance"
+msgid "display luminance"
+msgstr "luminansen för mellangrått"
+
+#: ../src/iop/sigmoid.c:706
+msgid "set display black/white targets"
+msgstr ""
+
+#: ../src/iop/sigmoid.c:714
+msgid ""
+"the black luminance of the target display or print.\n"
+"can be used creatively for a faded look."
+msgstr ""
+
+#: ../src/iop/sigmoid.c:719
+msgid ""
+"the white luminance of the target display or print.\n"
+"can be used creatively for a faded look or blowing out whites earlier."
+msgstr ""
+
+#: ../src/iop/soften.c:80
+#, fuzzy
+#| msgid "soft"
+msgid "soften"
+msgstr "mjuk"
+
+#: ../src/iop/soften.c:100
+msgid "create a softened image using the Orton effect"
+msgstr ""
+
+#: ../src/iop/soften.c:371
+#, fuzzy
+#| msgid "the size of bloom"
+msgid "the size of blur"
+msgstr "överstrålningens storlek"
+
+#: ../src/iop/soften.c:375
+#, fuzzy
+#| msgid "select the saturation of filter"
+msgid "the saturation of blur"
+msgstr "välj filtrets färgmättnad"
+
+#: ../src/iop/soften.c:379
+#, fuzzy
+#| msgid "lightness of color"
+msgid "the brightness of blur"
+msgstr "färgens ljushet"
+
+#: ../src/iop/soften.c:383
+#, fuzzy
+#| msgid "strength of the effect"
+msgid "the mix of effect"
+msgstr "sluttningen påverkar effektens styrka"
+
+#: ../src/iop/splittoning.c:81
+#, fuzzy
+#| msgid "splittoning"
+msgid "split-toning"
+msgstr "delad färgtoning"
+
+#: ../src/iop/splittoning.c:101
+msgid ""
+"use two specific colors for shadows and highlights and\n"
+"create a linear toning effect between them up to a pivot."
+msgstr ""
+
+#: ../src/iop/splittoning.c:118
+#, fuzzy
+#| msgid "authenticated"
+msgid "authentic sepia"
+msgstr "autentiserad"
+
+#: ../src/iop/splittoning.c:127
+#, fuzzy
+#| msgid "authenticated"
+msgid "authentic cyanotype"
+msgstr "autentiserad"
+
+#: ../src/iop/splittoning.c:136
+#, fuzzy
+#| msgid "authenticated"
+msgid "authentic platinotype"
+msgstr "autentiserad"
+
+#: ../src/iop/splittoning.c:145
+#, fuzzy
+#| msgid "chocolate brown"
+msgid "chocolate brown"
+msgstr "chokladbrun"
+
+#: ../src/iop/splittoning.c:490
+#, fuzzy
+#| msgid "select the saturation"
+msgid "select the saturation tone"
+msgstr "välj färgmättnadston"
+
+#: ../src/iop/splittoning.c:494
+#, fuzzy
+#| msgid "select border color"
+msgid "select tone color"
+msgstr "välj kantens färg"
+
+#: ../src/iop/splittoning.c:524
+#, fuzzy
+#| msgid "shadows"
+msgctxt "section"
+msgid "shadows"
+msgstr "skuggor"
+
+#: ../src/iop/splittoning.c:530
+#, fuzzy
+#| msgid "highlights"
+msgctxt "section"
+msgid "highlights"
+msgstr "högdagrar"
+
+#: ../src/iop/splittoning.c:539
+#, fuzzy
+#| msgid "balance"
+msgid "balance"
+msgstr "balans"
+
+#: ../src/iop/splittoning.c:546
+msgid "the balance of center of split-toning"
+msgstr ""
+
+#: ../src/iop/splittoning.c:550
+msgid ""
+"compress the effect on highlights/shadows and\n"
+"preserve mid-tones"
+msgstr ""
+
+#: ../src/iop/spots.c:58
+#, fuzzy
+#| msgid "haze removal"
+msgid "spot removal"
+msgstr "disborttagning"
+
+#: ../src/iop/spots.c:63
+#, fuzzy
+#| msgid "this module is deprecated. please use the negadoctor module instead."
+msgid "this module is deprecated. please use the retouch module instead."
+msgstr "denna modul är föråldrad. använd modulen negadoctor i stället."
+
+#: ../src/iop/spots.c:68
+msgid "remove sensor dust spots"
+msgstr ""
+
+#: ../src/iop/spots.c:71
+#, fuzzy
+#| msgid "geometry"
+msgid "geometric, raw"
+msgstr "geometrisk"
+
+#: ../src/iop/spots.c:226
+msgid "spot module is limited to 64 shapes. please add a new instance!"
+msgstr ""
+
+#: ../src/iop/spots.c:872
+#, fuzzy
+#| msgid "number of clusters"
+msgid "number of strokes:"
+msgstr "antal kluster"
+
+#: ../src/iop/spots.c:876
+msgid ""
+"click on a shape and drag on canvas.\n"
+"use the mouse wheel to adjust size.\n"
+"right click to remove a shape."
+msgstr ""
+
+#: ../src/iop/spots.c:879
+#, fuzzy
+#| msgid "show and edit mask elements"
+msgid "show and edit shapes"
+msgstr "visa och redigera markeringens element"
+
+#: ../src/iop/temperature.c:204
+#, fuzzy
+#| msgid "shadows/highlights balance"
+msgctxt "modulename"
+msgid "white balance"
+msgstr "skuggor/högdagrar"
+
+#: ../src/iop/temperature.c:211
+msgid "scale raw RGB channels to balance white and help demosaicing"
+msgstr ""
+
+#: ../src/iop/temperature.c:1149
+#, fuzzy
+#| msgid "white balance disabled for camera"
+msgid "white balance applied twice"
+msgstr "vitbalans avstängd för kamera"
+
+#: ../src/iop/temperature.c:1150
+msgid ""
+"the color calibration module is enabled,\n"
+"and performing chromatic adaptation.\n"
+"set the white balance here to camera reference (D65)\n"
+"or disable chromatic adaptation in color calibration."
+msgstr ""
+
+#: ../src/iop/temperature.c:1430
+#, fuzzy, c-format
+#| msgid "`%s' color matrix not found for 4bayer image"
+msgid "`%s' color matrix not found for image"
+msgstr "färgmatrisen `%s' ej funnen för 4bayer-bild"
+
+#: ../src/iop/temperature.c:1459
+#, c-format
+msgid "failed to read camera white balance information from `%s'!"
+msgstr ""
+
+#: ../src/iop/temperature.c:1631
+msgctxt "white balance"
+msgid "as shot"
+msgstr ""
+
+#. old "spot", reason: describes exactly what'll happen
+#: ../src/iop/temperature.c:1634
+#, fuzzy
+#| msgid "image cache file"
+msgctxt "white balance"
+msgid "from image area"
+msgstr "bild cache fil"
+
+#: ../src/iop/temperature.c:1635
+#, fuzzy
+#| msgid "modified"
+msgctxt "white balance"
+msgid "user modified"
+msgstr "modifierad"
+
+#. old "camera neutral", reason: better matches intent
+#: ../src/iop/temperature.c:1637
+#, fuzzy
+#| msgid "camera reference"
+msgctxt "white balance"
+msgid "camera reference"
+msgstr "kamera referens"
+
+#: ../src/iop/temperature.c:1920 ../src/iop/temperature.c:1938
+#, fuzzy
+#| msgid "green channels matching method"
+msgid "green channel coefficient"
+msgstr "metod för matchning av grön färgkanal"
+
+#: ../src/iop/temperature.c:1922
+msgid "magenta channel coefficient"
+msgstr ""
+
+#: ../src/iop/temperature.c:1924
+msgid "cyan channel coefficient"
+msgstr ""
+
+#: ../src/iop/temperature.c:1926
+msgid "yellow channel coefficient"
+msgstr ""
+
+#: ../src/iop/temperature.c:1936
+msgid "red channel coefficient"
+msgstr ""
+
+#: ../src/iop/temperature.c:1940
+msgid "blue channel coefficient"
+msgstr ""
+
+#: ../src/iop/temperature.c:1942
+msgid "emerald channel coefficient"
+msgstr ""
+
+#. relabel to settings to remove confusion between module presets
+#. and white balance settings
+#: ../src/iop/temperature.c:2029 ../src/iop/temperature.c:2042
+#: ../src/iop/temperature.c:2049 ../src/iop/temperature.c:2055
+#: ../src/iop/temperature.c:2074
+msgid "settings"
+msgstr ""
+
+#: ../src/iop/temperature.c:2029
+msgid "as shot"
+msgstr ""
+
+#: ../src/iop/temperature.c:2032
+#, fuzzy
+#| msgid "choose white balance preset from camera"
+msgid "set white balance to as shot"
+msgstr "välj förinställd vitbalans från kamera"
+
+#: ../src/iop/temperature.c:2042
+#, fuzzy
+#| msgid "image cache file"
+msgid "from image area"
+msgstr "bild cache fil"
+
+#: ../src/iop/temperature.c:2049
+#, fuzzy
+#| msgid "modified"
+msgid "user modified"
+msgstr "modifierad"
+
+#: ../src/iop/temperature.c:2052
+#, fuzzy
+#| msgid "choose white balance preset from camera"
+msgid "set white balance to user modified"
+msgstr "välj förinställd vitbalans från kamera"
+
+#: ../src/iop/temperature.c:2055
+#, fuzzy
+#| msgid "camera reference"
+msgid "camera reference"
+msgstr "kamera referens"
+
+#: ../src/iop/temperature.c:2060
+msgid ""
+"set white balance to camera reference point\n"
+"in most cases it should be D65"
+msgstr ""
+
+#: ../src/iop/temperature.c:2075
+#, fuzzy
+#| msgid "shadows/highlights balance"
+msgid "choose white balance setting"
+msgstr "skuggor/högdagrar"
+
+#: ../src/iop/temperature.c:2080
+#, fuzzy
+#| msgid "fine"
+msgid "finetune"
+msgstr "fin"
+
+#: ../src/iop/temperature.c:2082
+msgid "fine tune camera's white balance setting"
+msgstr ""
+
+#: ../src/iop/temperature.c:2093
+#, fuzzy
+msgctxt "section"
+msgid "scene illuminant temp"
+msgstr "färgdominans"
+
+#: ../src/iop/temperature.c:2094
+msgid "click to cycle color mode on sliders"
+msgstr ""
+
+#: ../src/iop/temperature.c:2108
+msgid "color temperature (in Kelvin)"
+msgstr ""
+
+#: ../src/iop/temperature.c:2114
+msgid "tint"
+msgstr ""
+
+#: ../src/iop/temperature.c:2117
+msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
+msgstr ""
+
+#: ../src/iop/temperature.c:2123
+#, fuzzy
+#| msgid "channel mixer"
+msgid "channel coefficients"
+msgstr "kanalmixer"
+
+#: ../src/iop/temperature.c:2158
+#, fuzzy
+#| msgid "white balance disabled for camera"
+msgid "white balance disabled for camera"
+msgstr "vitbalans avstängd för kamera"
+
+#: ../src/iop/tonecurve.c:190
+#, fuzzy
+#| msgid "base curve"
+msgid "tone curve"
+msgstr "baskurva"
+
+#: ../src/iop/tonecurve.c:210
+msgid "alter an image’s tones using curves"
+msgstr ""
+
+#: ../src/iop/tonecurve.c:1125
+msgid ""
+"if set to auto, a and b curves have no effect and are not displayed. chroma "
+"values (a and b) of each pixel are then adjusted based on L curve data. auto "
+"XYZ is similar but applies the saturation changes in XYZ space."
+msgstr ""
+
+#: ../src/iop/tonecurve.c:1134
+#, fuzzy
+#| msgid "sliders for L channel"
+msgid "tonecurve for L channel"
+msgstr "reglage för L-kanal"
+
+#: ../src/iop/tonecurve.c:1135
+#, fuzzy
+#| msgid "sliders for a channel"
+msgid "tonecurve for a channel"
+msgstr "reglage för a-kanal"
+
+#: ../src/iop/tonecurve.c:1136
+#, fuzzy
+#| msgid "sliders for b channel"
+msgid "tonecurve for b channel"
+msgstr "reglage för b-kanal"
+
+#: ../src/iop/tonecurve.c:1143 ../src/iop/watermark.c:1305
+#: ../src/libs/colorpicker.c:597
+#, fuzzy
+#| msgid "color"
+msgid "pick color"
+msgstr "färg"
+
+#: ../src/iop/toneequal.c:311
+#, fuzzy
+msgid "tone equalizer"
+msgstr "stödjepunkt kontrast"
+
+#: ../src/iop/toneequal.c:316
+msgid "tone curve|tone mapping|relight|background light|shadows highlights"
+msgstr ""
+
+#: ../src/iop/toneequal.c:323
+msgid "relight the scene as if the lighting was done directly on the scene"
+msgstr ""
+
+#: ../src/iop/toneequal.c:326
+#, fuzzy
+#| msgid "linear Rec709 RGB"
+msgid "quasi-linear, RGB"
+msgstr "linjär Rec709 RGB"
+
+#: ../src/iop/toneequal.c:327
+#, fuzzy
+#| msgid "linear, RGB, scene-referred"
+msgid "quasi-linear, RGB, scene-referred"
+msgstr "linjärt, RGB, scen-tillämpat"
+
+#: ../src/iop/toneequal.c:458
+#, fuzzy
+#| msgid "base curve"
+msgid "simple tone curve"
+msgstr "baskurva"
+
+#: ../src/iop/toneequal.c:472
+#, fuzzy
+msgid "mask blending: all purposes"
+msgstr "välj blandningstyp"
+
+#: ../src/iop/toneequal.c:479
+msgid "mask blending: people with backlight"
+msgstr ""
+
+#: ../src/iop/toneequal.c:496
+msgid "compress shadows/highlights (EIGF): strong"
+msgstr ""
+
+#: ../src/iop/toneequal.c:501
+#, fuzzy
+#| msgid "shadows/highlights balance"
+msgid "compress shadows/highlights (GF): strong"
+msgstr "skuggor/högdagrar"
+
+#: ../src/iop/toneequal.c:510
+msgid "compress shadows/highlights (EIGF): medium"
+msgstr ""
+
+#: ../src/iop/toneequal.c:515
+#, fuzzy
+#| msgid "shadows/highlights balance"
+msgid "compress shadows/highlights (GF): medium"
+msgstr "skuggor/högdagrar"
+
+#: ../src/iop/toneequal.c:524
+msgid "compress shadows/highlights (EIGF): soft"
+msgstr ""
+
+#: ../src/iop/toneequal.c:529
+msgid "compress shadows/highlights (GF): soft"
+msgstr ""
+
+#: ../src/iop/toneequal.c:537
+#, fuzzy
+#| msgid "contrast compression"
+msgid "contrast tone curve: soft"
+msgstr "kontrast komprimering"
+
+#: ../src/iop/toneequal.c:542
+#, fuzzy
+#| msgid "The contrast curve."
+msgid "contrast tone curve: medium"
+msgstr "kontrast kurva"
+
+#: ../src/iop/toneequal.c:547
+#, fuzzy
+#| msgid "contrast compression"
+msgid "contrast tone curve: strong"
+msgstr "kontrast komprimering"
+
+#: ../src/iop/toneequal.c:570
+msgid "relight: fill-in"
+msgstr ""
+
+#: ../src/iop/toneequal.c:627
+msgid ""
+"tone equalizer needs to be after distortion modules in the pipeline – "
+"disabled"
+msgstr ""
+
+#: ../src/iop/toneequal.c:1091
+#, fuzzy
+#| msgid "tone equalizer failed to allocate memory, check your RAM settings"
+msgid "tone equalizer failed to allocate memory, check your RAM settings"
+msgstr ""
+"tonutjämnaren kunde inte allokera minne, kontrollera dina RAM-inställningar"
+
+#: ../src/iop/toneequal.c:1795 ../src/iop/toneequal.c:2180
+msgid "the interpolation is unstable, decrease the curve smoothing"
+msgstr ""
+
+#: ../src/iop/toneequal.c:1830 ../src/iop/toneequal.c:1897
+msgid "wait for the preview to finish recomputing"
+msgstr ""
+
+#: ../src/iop/toneequal.c:2037 ../src/iop/toneequal.c:2587
+msgid ""
+"scroll over image to change tone exposure\n"
+"shift+scroll for large steps; ctrl+scroll for small steps"
+msgstr ""
+
+#: ../src/iop/toneequal.c:2185
+msgid "some parameters are out-of-bounds"
+msgstr ""
+
+#: ../src/iop/toneequal.c:2524
+#, fuzzy, c-format
+#| msgid "%.2f EV"
+msgid "%+.1f EV"
+msgstr "%.2f EV"
+
+#: ../src/iop/toneequal.c:3236
+#, fuzzy, c-format
+#| msgid "[%s on line] change density"
+msgid "[%s over image] change tone exposure"
+msgstr "[%s på linje] ändra densitet"
+
+#: ../src/iop/toneequal.c:3239
+#, c-format
+msgid "[%s over image] change tone exposure in large steps"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3242
+#, c-format
+msgid "[%s over image] change tone exposure in small steps"
+msgstr ""
+
+#. Simple view
+#: ../src/iop/toneequal.c:3323 ../src/iop/toneequal.c:3352
+#: ../src/iop/toneequal.c:3353 ../src/iop/toneequal.c:3354
+#: ../src/iop/toneequal.c:3355 ../src/iop/toneequal.c:3356
+#: ../src/iop/toneequal.c:3357 ../src/iop/toneequal.c:3358
+#: ../src/iop/toneequal.c:3359 ../src/iop/toneequal.c:3360
+msgid "simple"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3352
+msgid "-8 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3353
+msgid "-7 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3354
+msgid "-6 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3355
+msgid "-5 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3356
+msgid "-4 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3357
+msgid "-3 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3358
+msgid "-2 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3359
+msgid "-1 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3360
+msgid "+0 EV"
+msgstr ""
+
+#. Advanced view
+#: ../src/iop/toneequal.c:3364
+#, fuzzy
+#| msgid "core options"
+msgid "advanced"
+msgstr "grund alternativ"
+
+#: ../src/iop/toneequal.c:3391
+#, fuzzy
+#| msgid "double-click to reset"
+msgid "double-click to reset the curve"
+msgstr "dubbelklicka för återställning"
+
+#: ../src/iop/toneequal.c:3395
+#, fuzzy
+#| msgid "color smoothing"
+msgid "curve smoothing"
+msgstr "färguppmjukning"
+
+#: ../src/iop/toneequal.c:3398
+msgid ""
+"positive values will produce more progressive tone transitions\n"
+"but the curve might become oscillatory in some settings.\n"
+"negative values will avoid oscillations and behave more robustly\n"
+"but may produce brutal tone transitions and damage local contrast."
+msgstr ""
+
+#. Masking options
+#: ../src/iop/toneequal.c:3408
+#, fuzzy
+msgid "masking"
+msgstr "markeringar"
+
+#: ../src/iop/toneequal.c:3413
+msgid ""
+"preview the mask and chose the estimator that gives you the\n"
+"higher contrast between areas to dodge and areas to burn"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3416
+#, fuzzy
+#| msgid "detail"
+msgid "details"
+msgstr "detalj"
+
+#: ../src/iop/toneequal.c:3417
+#, fuzzy
+#| msgid "preserve shadows"
+msgid "preserve details"
+msgstr "bevara skuggor"
+
+#: ../src/iop/toneequal.c:3420
+msgid ""
+"'no' affects global and local contrast (safe if you only add contrast)\n"
+"'guided filter' only affects global contrast and tries to preserve local "
+"contrast\n"
+"'averaged guided filter' is a geometric mean of 'no' and 'guided filter' "
+"methods\n"
+"'EIGF' (exposure-independent guided filter) is a guided filter that is "
+"exposure-independent, it smooths shadows and highlights the same way "
+"(contrary to guided filter which smooths less the highlights)\n"
+"'averaged EIGF' is a geometric mean of 'no' and 'exposure-independent guided "
+"filter' methods"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3433
+msgid ""
+"number of passes of guided filter to apply\n"
+"helps diffusing the edges of the filter at the expense of speed"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3441
+msgid ""
+"diameter of the blur in percent of the largest image size\n"
+"warning: big values of this parameter can make the darkroom\n"
+"preview much slower if denoise profiled is used."
+msgstr ""
+
+#: ../src/iop/toneequal.c:3449
+msgid ""
+"precision of the feathering:\n"
+"higher values force the mask to follow edges more closely\n"
+"but may void the effect of the smoothing\n"
+"lower values give smoother gradients and better smoothing\n"
+"but may lead to inaccurate edges taping and halos"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3456
+#, fuzzy
+#| msgid "image processing"
+msgctxt "section"
+msgid "mask post-processing"
+msgstr "bildbearbetning"
+
+#: ../src/iop/toneequal.c:3467
+msgid ""
+"mask histogram span between the first and last deciles.\n"
+"the central line shows the average. orange bars appear at extrema if "
+"clipping occurs."
+msgstr ""
+
+#: ../src/iop/toneequal.c:3475
+msgid ""
+"0 disables the quantization.\n"
+"higher values posterize the luminance mask to help the guiding\n"
+"produce piece-wise smooth areas when using high feathering values"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3484
+msgid ""
+"use this to slide the mask average exposure along channels\n"
+"for a better control of the exposure correction with the available nodes.\n"
+"the magic wand will auto-adjust the average exposure"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3497
+msgid ""
+"use this to counter the averaging effect of the guided filter\n"
+"and dilate the mask contrast around -4EV\n"
+"this allows to spread the exposure histogram over more channels\n"
+"for a better control of the exposure correction.\n"
+"the magic wand will auto-adjust the contrast"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3520 ../src/iop/toneequal.c:3523
+#, fuzzy
+#| msgid "exposure bias"
+msgid "display exposure mask"
+msgstr "exponering"
+
+#: ../src/iop/tonemap.cc:71
+#, fuzzy
+#| msgid "tone mapping method"
+msgid "tone mapping"
+msgstr "tonmappning"
+
+#: ../src/iop/tonemap.cc:87
+#, fuzzy
+#| msgid ""
+#| "this module is deprecated. please use the color calibration module "
+#| "instead."
+msgid ""
+"this module is deprecated. please use the local contrast or tone equalizer "
+"module instead."
+msgstr "denna modul är föråldrad. använd i stället färgkorrigeringsmodulen."
+
+#: ../src/iop/velvia.c:79
+msgid "velvia"
+msgstr ""
+
+#: ../src/iop/velvia.c:104
+msgid ""
+"resaturate giving more weight to blacks, whites and low-saturation pixels"
+msgstr ""
+
+#: ../src/iop/velvia.c:281
+#, fuzzy
+#| msgid "the strength of bloom"
+msgid "the strength of saturation boost"
+msgstr "överstrålningens styrka"
+
+#: ../src/iop/velvia.c:284
+#, fuzzy
+#| msgid "how much to keep highlights"
+msgid "how much to spare highlights and shadows"
+msgstr "hur mycket ska högdagrar behållas"
+
+#: ../src/iop/vibrance.c:62
+#, fuzzy
+#| msgid ""
+#| "this module is deprecated. please use the color calibration module "
+#| "instead."
+msgid ""
+"this module is deprecated. please use the vibrance slider in the color "
+"balance rgb module instead."
+msgstr "denna modul är föråldrad. använd i stället färgkorrigeringsmodulen."
+
+#: ../src/iop/vibrance.c:93
+msgid ""
+"saturate and reduce the lightness of the most saturated pixels\n"
+"to make the colors more vivid."
+msgstr ""
+
+#: ../src/iop/vibrance.c:217
+msgid "the amount of vibrance"
+msgstr ""
+
+#: ../src/iop/vignette.c:153
+#, fuzzy
+#| msgid "only vignetting"
+msgid "vignetting"
+msgstr "enbart vinjettering"
+
+#: ../src/iop/vignette.c:158
+msgid "simulate a lens fall-off close to edges"
+msgstr ""
+
+#: ../src/iop/vignette.c:940
+msgid "lomo"
+msgstr ""
+
+#: ../src/iop/vignette.c:974
+#, fuzzy
+#| msgid "saturation only"
+msgctxt "section"
+msgid "position / form"
+msgstr "endast mättnad"
+
+#: ../src/iop/vignette.c:981
+#, fuzzy
+#| msgid "dither"
+msgid "dithering"
+msgstr "rastrera"
+
+#: ../src/iop/vignette.c:992
+msgid "the radii scale of vignette for start of fall-off"
+msgstr ""
+
+#: ../src/iop/vignette.c:993
+msgid "the radii scale of vignette for end of fall-off"
+msgstr ""
+
+#: ../src/iop/vignette.c:994
+#, fuzzy
+#| msgid "strength of the effect"
+msgid "strength of effect on brightness"
+msgstr "sluttningen påverkar effektens styrka"
+
+#: ../src/iop/vignette.c:995
+#, fuzzy
+#| msgid "strength of the effect"
+msgid "strength of effect on saturation"
+msgstr "sluttningen påverkar effektens styrka"
+
+#: ../src/iop/vignette.c:996
+#, fuzzy
+#| msgid "strength of the effect"
+msgid "horizontal offset of center of the effect"
+msgstr "sluttningen påverkar effektens styrka"
+
+#: ../src/iop/vignette.c:997
+#, fuzzy
+#| msgid "strength of the effect"
+msgid "vertical offset of center of the effect"
+msgstr "sluttningen påverkar effektens styrka"
+
+#: ../src/iop/vignette.c:998
+msgid ""
+"shape factor\n"
+"0 produces a rectangle\n"
+"1 produces a circle or ellipse\n"
+"2 produces a diamond"
+msgstr ""
+
+#: ../src/iop/vignette.c:1000
+msgid "enable to have the ratio automatically follow the image size"
+msgstr ""
+
+#: ../src/iop/vignette.c:1001
+#, fuzzy
+#| msgid "width/height ratio"
+msgid "width-to-height ratio"
+msgstr "bredd/höjd förhållande"
+
+#: ../src/iop/vignette.c:1002
+msgid "add some level of random noise to prevent banding"
+msgstr ""
+
+#: ../src/iop/vignette.c:1009
+#, fuzzy, c-format
+#| msgid "[%s on nodes] change line rotation"
+msgid "[%s on node] change vignette/feather size"
+msgstr "[%s på punkter] ändra linjerotering"
+
+#: ../src/iop/vignette.c:1011
+#, fuzzy, c-format
+#| msgid "[%s on nodes] change line rotation"
+msgid "[%s on node] change vignette/feather size keeping ratio"
+msgstr "[%s på punkter] ändra linjerotering"
+
+#: ../src/iop/vignette.c:1013
+#, fuzzy, c-format
+#| msgid "[%s on line] move line"
+msgid "[%s on center] move vignette"
+msgstr "[%s på linje] flytta linje"
+
+#: ../src/iop/watermark.c:371
+msgid "watermark"
+msgstr ""
+
+#: ../src/iop/watermark.c:376
+msgid "overlay an SVG watermark like a signature on the picture"
+msgstr ""
+
+#: ../src/iop/watermark.c:1258
+#, fuzzy
+#| msgid "marker"
+msgid "marker"
+msgstr "markering"
+
+#: ../src/iop/watermark.c:1261
+#, c-format
+msgid "SVG watermarks in %s/watermarks or %s/watermarks"
+msgstr ""
+
+#. Simple text
+#: ../src/iop/watermark.c:1271 ../src/iop/watermark.c:1272
+msgid "text"
+msgstr ""
+
+#: ../src/iop/watermark.c:1273
+msgid ""
+"text string, tag:\n"
+"$(WATERMARK_TEXT)"
+msgstr ""
+
+#: ../src/iop/watermark.c:1275
+#, fuzzy
+#| msgid "intent"
+msgid "content"
+msgstr "avsikt"
+
+#. Text font
+#: ../src/iop/watermark.c:1280
+msgid "font"
+msgstr ""
+
+#: ../src/iop/watermark.c:1285
+msgid ""
+"text font, tags:\n"
+"$(WATERMARK_FONT_FAMILY)\n"
+"$(WATERMARK_FONT_STYLE)\n"
+"$(WATERMARK_FONT_WEIGHT)"
+msgstr ""
+
+#: ../src/iop/watermark.c:1300
+msgid ""
+"watermark color, tag:\n"
+"$(WATERMARK_COLOR)"
+msgstr ""
+
+#: ../src/iop/watermark.c:1302
+#, fuzzy
+#| msgid "select border color"
+msgid "select watermark color"
+msgstr "välj kantens färg"
+
+#: ../src/iop/watermark.c:1304
+#, fuzzy
+#| msgid "pick border color from image"
+msgid "pick color from image"
+msgstr "välj kantens färg från bild"
+
+#: ../src/iop/watermark.c:1317
+#, fuzzy
+#| msgid "alignment"
+msgctxt "section"
+msgid "placement"
+msgstr "orientering"
+
+#: ../src/iop/watermark.c:1330
+msgid ""
+"scaling is done relative to this object\n"
+"• image: fits marker into whole image\n"
+"• larger border: fits larger marker border to larger image border\n"
+"• smaller border: fits larger marker border to smaller image border\n"
+"• height: fits marker height to image height, e.g. suitable for texts\n"
+"• advanced options: activates two additional drop-down menus"
+msgstr ""
+
+#: ../src/iop/watermark.c:1339
+msgid "reference to which the marker should be scaled to"
+msgstr ""
+
+#: ../src/iop/watermark.c:1343
+msgid "length of the marker which is used as scaling reference"
+msgstr ""
+
+#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2675
+#, fuzzy
+#| msgid "alignment"
+msgid "alignment"
+msgstr "orientering"
+
+#. Let's add some tooltips and hook up some signals...
+#: ../src/iop/watermark.c:1368
+#, fuzzy
+#| msgid "set the opacity of the blending"
+msgid "the opacity of the watermark"
+msgstr "justera blandningens ogenomskinlighet"
+
+#: ../src/iop/watermark.c:1369
+#, fuzzy
+#| msgid "enter the title of the website"
+msgid "the scale of the watermark"
+msgstr "ange en titel på webbsite"
+
+#: ../src/iop/watermark.c:1370
+#, fuzzy
+#| msgid "the rotation of the watermark"
+msgid "the rotation of the watermark"
+msgstr "vattenstämpelns rotation"
+
+#: ../src/iop/zonesystem.c:111
+#, fuzzy
+#| msgid "old system"
+msgid "zone system"
+msgstr "gammalt system"
+
+#: ../src/iop/zonesystem.c:490
+msgid ""
+"lightness zones\n"
+"use mouse scrollwheel to change the number of zones\n"
+"left-click on a border to create a marker\n"
+"right-click on a marker to delete it"
+msgstr ""
+
+#: ../src/libs/backgroundjobs.c:52
+msgid "background jobs"
+msgstr ""
+
+#: ../src/libs/camera.c:78
+#, fuzzy
+#| msgid "camera settings"
+msgid "camera settings"
+msgstr "kamerainställningar"
+
+#: ../src/libs/camera.c:131
+msgid "toggle view property in center view"
+msgstr ""
+
+#: ../src/libs/camera.c:201
+msgid "connection with camera lost, exiting tethering mode"
+msgstr ""
+
+#: ../src/libs/camera.c:342
+#, fuzzy
+#| msgid "letter"
+msgid "battery"
+msgstr "letter (usa)"
+
+#: ../src/libs/camera.c:342
+msgid "n/a"
+msgstr ""
+
+#. Camera control
+#: ../src/libs/camera.c:417
+#, fuzzy
+#| msgid "camera model"
+msgctxt "section"
+msgid "camera control"
+msgstr "kameramodell"
+
+#: ../src/libs/camera.c:421 ../src/libs/histogram.c:2360
+#, fuzzy
+#| msgid "mode"
+msgid "modes"
+msgstr "läge"
+
+#: ../src/libs/camera.c:422
+#, fuzzy
+#| msgid "time"
+msgid "timer (s)"
+msgstr "tid"
+
+#: ../src/libs/camera.c:423
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "count"
+msgid "count"
+msgstr "antal"
+
+#: ../src/libs/camera.c:424
+msgid "brackets"
+msgstr ""
+
+#: ../src/libs/camera.c:425
+msgid "bkt. steps"
+msgstr ""
+
+#: ../src/libs/camera.c:458
+#, fuzzy
+#| msgid "capture images"
+msgid "capture image(s)"
+msgstr "fånga bilder"
+
+#: ../src/libs/camera.c:461
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "toggle side borders"
+msgid "toggle delayed capture mode"
+msgstr "växla visning av paneler"
+
+#: ../src/libs/camera.c:462
+msgid "toggle sequenced capture mode"
+msgstr ""
+
+#: ../src/libs/camera.c:463
+msgid "toggle bracketed capture mode"
+msgstr ""
+
+#: ../src/libs/camera.c:464
+msgid "the count of seconds before actually doing a capture"
+msgstr ""
+
+#: ../src/libs/camera.c:466
+msgid ""
+"the amount of images to capture in a sequence,\n"
+"you can use this in conjunction with delayed mode to create stop-motion "
+"sequences"
+msgstr ""
+
+#: ../src/libs/camera.c:469
+msgid ""
+"the amount of brackets on each side of centered shoot, amount of images = "
+"(brackets*2) + 1"
+msgstr ""
+
+#: ../src/libs/camera.c:471
+msgid ""
+"the amount of steps per bracket, steps is camera configurable and usually 3 "
+"steps per stop\n"
+"with other words, 3 steps is 1EV exposure step between brackets"
+msgstr ""
+
+#. user specified properties
+#: ../src/libs/camera.c:494
+#, fuzzy
+#| msgid "properties"
+msgctxt "section"
+msgid "additional properties"
+msgstr "inställningar"
+
+#: ../src/libs/camera.c:497
+#, fuzzy
+#| msgid "color label"
+msgid "label"
+msgstr "färgmarkering"
+
+#: ../src/libs/camera.c:505
+#, fuzzy
+#| msgid "properties"
+msgid "property"
+msgstr "inställningar"
+
+#: ../src/libs/camera.c:517
+msgid "add user property"
+msgstr ""
+
+#: ../src/libs/camera.c:537
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "histogram"
+msgid "program"
+msgstr "histogram"
+
+#: ../src/libs/camera.c:540 ../src/libs/camera.c:542
+#, fuzzy
+msgid "focus mode"
+msgstr "fokusläge"
+
+#: ../src/libs/camera.c:553
+#, fuzzy
+#| msgid "1st order"
+msgid "shutterspeed2"
+msgstr "1:a ordningen"
+
+#: ../src/libs/camera.c:555
+#, fuzzy
+#| msgid "1st order"
+msgid "shutterspeed"
+msgstr "1:a ordningen"
+
+#: ../src/libs/camera.c:561
+#, fuzzy
+#| msgid "B"
+msgid "WB"
+msgstr "B"
+
+#: ../src/libs/collect.c:151
+#, fuzzy
+#| msgid "corrections"
+msgid "collections"
+msgstr "korrigeringar"
+
+#: ../src/libs/collect.c:407
+#, fuzzy
+#| msgid "select film roll"
+msgid "search filmroll"
+msgstr "välj filmrulle"
+
+#: ../src/libs/collect.c:490
+#, c-format
+msgid "problem selecting new path for the filmroll in %s"
+msgstr ""
+
+#: ../src/libs/collect.c:553
+#, fuzzy
+#| msgid "select film roll"
+msgid "search filmroll..."
+msgstr "välj filmrulle"
+
+#: ../src/libs/collect.c:557
+#, fuzzy
+#| msgid "remove..."
+msgid "remove..."
+msgstr "ta bort..."
+
+#: ../src/libs/collect.c:1225
+#, fuzzy
+#| msgid "censorize"
+msgid "uncategorized"
+msgstr "censurera"
+
+#: ../src/libs/collect.c:2138
+msgid "use <, <=, >, >=, <>, =, [;] as operators"
+msgstr ""
+
+#: ../src/libs/collect.c:2142
+msgid ""
+"use <, <=, >, >=, <>, =, [;] as operators\n"
+"star rating: 0-5\n"
+"rejected images: -1"
+msgstr ""
+
+#: ../src/libs/collect.c:2149
+msgid ""
+"use <, <=, >, >=, <>, =, [;] as operators\n"
+"type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
+msgstr ""
+
+#: ../src/libs/collect.c:2156
+#, no-c-format
+msgid "use `%' as wildcard and `,' to separate values"
+msgstr ""
+
+#: ../src/libs/collect.c:2162
+#, no-c-format
+msgid ""
+"use `%' as wildcard\n"
+"click to include hierarchy + sub-hierarchies (suffix `*')\n"
+"shift+click to include only the current hierarchy (no suffix)\n"
+"ctrl+click to include only sub-hierarchies (suffix `|%')"
+msgstr ""
+
+#: ../src/libs/collect.c:2174
+#, no-c-format
+msgid ""
+"use `%' as wildcard\n"
+"click to include location + sub-locations (suffix `*')\n"
+"shift+click to include only the current location (no suffix)\n"
+"ctrl+click to include only sub-locations (suffix `|%')"
+msgstr ""
+
+#: ../src/libs/collect.c:2186
+#, no-c-format
+msgid ""
+"use `%' as wildcard\n"
+"click to include current + sub-folders (suffix `*')\n"
+"shift+click to include only the current folder (no suffix)\n"
+"ctrl+click to include only sub-folders (suffix `|%')"
+msgstr ""
+
+#: ../src/libs/collect.c:2197
+#, no-c-format
+msgid "use `%' as wildcard"
+msgstr ""
+
+#: ../src/libs/collect.c:2263 ../src/libs/collect.c:2277
+#: ../src/libs/collect.c:2800
+#, fuzzy
+#| msgid "delete this preset"
+msgid "clear this rule"
+msgstr "ta bort denna förinställning"
+
+#: ../src/libs/collect.c:2267
+msgid "clear this rule or add new rules"
+msgstr ""
+
+#: ../src/libs/collect.c:2806
+msgid "narrow down search"
+msgstr ""
+
+#: ../src/libs/collect.c:2811
+#, fuzzy
+#| msgid "move images"
+msgid "add more images"
+msgstr "flyttar bild"
+
+#: ../src/libs/collect.c:2816
+#, fuzzy
+#| msgid "delete images"
+msgid "exclude images"
+msgstr "raderar bilder"
+
+#: ../src/libs/collect.c:2823
+#, fuzzy
+#| msgid "change the framing"
+msgid "change to: and"
+msgstr "ändra inramning"
+
+#: ../src/libs/collect.c:2828
+#, fuzzy
+#| msgid "change the framing"
+msgid "change to: or"
+msgstr "ändra inramning"
+
+#: ../src/libs/collect.c:2833
+#, fuzzy
+#| msgid "no images to export, aborting\n"
+msgid "change to: except"
+msgstr "inga bilder att exportera, ger upp\n"
+
+#. the different categories
+#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:857
+#: ../src/libs/filtering.c:924 ../src/libs/filtering.c:1558
+#: ../src/libs/filtering.c:1890
+#, fuzzy
+#| msgid "all files"
+msgid "files"
+msgstr "alla filer"
+
+#: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:312
+#: ../src/libs/filtering.c:862 ../src/libs/filtering.c:929
+#: ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1894
+#: ../src/libs/image.c:464 ../src/libs/image.c:574 ../src/libs/image.c:582
+#: ../src/libs/metadata.c:676 ../src/libs/metadata_view.c:1226
+#, fuzzy
+#| msgid "apply metadata"
+msgid "metadata"
+msgstr "applicera metadata"
+
+#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:883
+#: ../src/libs/filtering.c:950 ../src/libs/filtering.c:1892
+#, fuzzy
+#| msgid "time"
+msgid "times"
+msgstr "tid"
+
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:891
+#: ../src/libs/filtering.c:958 ../src/libs/filtering.c:1590
+#, fuzzy
+#| msgid "capture images"
+msgid "capture details"
+msgstr "fånga bilder"
+
+#: ../src/libs/collect.c:2900 ../src/libs/filtering.c:900
+#: ../src/libs/filtering.c:967 ../src/libs/filtering.c:1602
+#: ../src/libs/filtering.c:1896 ../src/libs/tools/darktable.c:65
+#, fuzzy
+#| msgid "darktable"
+msgid "darktable"
+msgstr "darktable"
+
+#: ../src/libs/collect.c:2913
+#, fuzzy
+#| msgid "sort collection descending"
+msgid "collections settings"
+msgstr "sortera samlingen i fallande ordning"
+
+#: ../src/libs/collect.c:2916 ../src/libs/export_metadata.c:288
+#: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1194
+#: ../src/libs/recentcollect.c:228 ../src/libs/tagging.c:1653
+#: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057
+#: ../src/libs/tagging.c:3472
+#, fuzzy
+#| msgid "_save"
+msgid "save"
+msgstr "_spara"
+
+#: ../src/libs/collect.c:2936 ../src/libs/export.c:1046
+#: ../src/libs/metadata.c:779 ../src/libs/metadata_view.c:1306
+#: ../src/libs/recentcollect.c:293 ../src/libs/tagging.c:3494
+#, fuzzy
+#| msgid "preferences"
+msgid "preferences..."
+msgstr "inställningar"
+
+#: ../src/libs/collect.c:3041 ../src/libs/filtering.c:1432
+msgid "AND"
+msgstr ""
+
+#: ../src/libs/collect.c:3046 ../src/libs/filtering.c:1437
+#, fuzzy
+#| msgid "R"
+msgid "OR"
+msgstr "R"
+
+#. case DT_LIB_COLLECT_MODE_AND_NOT:
+#: ../src/libs/collect.c:3051 ../src/libs/filtering.c:1442
+msgid "BUT NOT"
+msgstr ""
+
+#: ../src/libs/collect.c:3223 ../src/libs/filtering.c:2164
+msgid "revert to a previous set of rules"
+msgstr ""
+
+#: ../src/libs/collect.c:3280
+msgid "jump back to previous collection"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:51
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "LCh"
+msgid "LCh"
+msgstr "LCh"
+
+#: ../src/libs/colorpicker.c:51
+#, fuzzy
+#| msgid "HSL"
+msgid "HSV"
+msgstr "HSL"
+
+#: ../src/libs/colorpicker.c:51
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "Hex"
+msgid "Hex"
+msgstr "Hex"
+
+#: ../src/libs/colorpicker.c:53
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "mean"
+msgid "mean"
+msgstr "medel"
+
+#: ../src/libs/colorpicker.c:71
+#, fuzzy
+#| msgid "color space"
+msgid "color picker"
+msgstr "färgschema"
+
+#: ../src/libs/colorpicker.c:463
+msgid ""
+"hover to highlight sample on canvas,\n"
+"click to lock sample,\n"
+"right-click to load sample area into active color picker"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:561 ../src/libs/colorpicker.c:612
+msgid "click to (un)hide large color patch"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:575
+msgid "statistic"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:576
+#, fuzzy
+#| msgid "select the saturation shadow tone"
+msgid "select which statistic to show"
+msgstr "välj färgmättnad för färgton i mörka partier"
+
+#: ../src/libs/colorpicker.c:585
+msgid "select which color mode to use"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:594
+#, fuzzy
+msgid ""
+"turn on color picker\n"
+"ctrl+click or right-click to select an area"
+msgstr "välj gränsnittsfärg från bild"
+
+#: ../src/libs/colorpicker.c:636
+#, fuzzy
+#| msgid "add circle"
+msgid "add sample"
+msgstr "lägg till cirkel"
+
+#. Adding the live samples section
+#: ../src/libs/colorpicker.c:640
+#, fuzzy
+#| msgid "five times"
+msgctxt "section"
+msgid "live samples"
+msgstr "fem gånger"
+
+#: ../src/libs/colorpicker.c:648
+msgid "display samples on image/vectorscope"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:657
+#, fuzzy
+#| msgid "invert selection"
+msgid "restrict scope to selection"
+msgstr "invertera val"
+
+#: ../src/libs/copy_history.c:61
+#, fuzzy
+#| msgid "empty history stack"
+msgid "history stack"
+msgstr "töm historiken"
+
+#: ../src/libs/copy_history.c:114
+#, fuzzy
+#| msgid "write sidecar files"
+msgid "open sidecar file"
+msgstr "skapa sidofiler"
+
+#: ../src/libs/copy_history.c:149
+#, fuzzy
+#| msgid "write sidecar files"
+msgid "XMP sidecar files"
+msgstr "skapa sidofiler"
+
+#: ../src/libs/copy_history.c:166
+#, fuzzy, c-format
+#| msgid "error loading file `%s'"
+msgid "error loading file '%s'"
+msgstr "fel uppstod vid läsning av fil '%s'"
+
+#: ../src/libs/copy_history.c:206
+#, fuzzy, c-format
+#| msgid "compression of thumbnail images"
+msgid "no history compression of %d image"
+msgid_plural "no history compression of %d images"
+msgstr[0] "komprimering av miniatyrbilder"
+msgstr[1] "komprimering av miniatyrbilder"
+
+#: ../src/libs/copy_history.c:247
+#, fuzzy
+#| msgid "delete images?"
+msgid "delete images' history?"
+msgstr "radera bilder?"
+
+#: ../src/libs/copy_history.c:248
+#, fuzzy, c-format
+#| msgid "do you really want to physically delete %d selected image from disk?"
+#| msgid_plural ""
+#| "do you really want to physically delete %d selected images from disk?"
+msgid "do you really want to clear history of %d selected image?"
+msgid_plural "do you really want to clear history of %d selected images?"
+msgstr[0] "vill du verkligen radera %d vald bilder fysiskt från disk?"
+msgstr[1] "vill du verkligen radera %d vald bilder fysiskt från disk?"
+
+#: ../src/libs/copy_history.c:364
+#, fuzzy
+#| msgid "select directory"
+msgid "selective copy..."
+msgstr "välj katalog"
+
+#: ../src/libs/copy_history.c:365
+msgid "choose which modules to copy from the source image"
+msgstr ""
+
+#: ../src/libs/copy_history.c:371
+#, fuzzy
+#| msgid "can't copy history out of unaltered image"
+msgid ""
+"copy history stack of\n"
+"first selected image"
+msgstr "kan inte kopiera historik från en orörd bild"
+
+#: ../src/libs/copy_history.c:376
+#, fuzzy
+#| msgid "select parts"
+msgid "selective paste..."
+msgstr "välj delar"
+
+#: ../src/libs/copy_history.c:377
+msgid "choose which modules to paste to the target image(s)"
+msgstr ""
+
+#: ../src/libs/copy_history.c:382 ../src/libs/image.c:588
+#, fuzzy
+#| msgid "master"
+msgid "paste"
+msgstr "övergripande"
+
+#: ../src/libs/copy_history.c:383
+#, fuzzy
+#| msgid "can't copy history out of unaltered image"
+msgid ""
+"paste history stack to\n"
+"all selected images"
+msgstr "kan inte kopiera historik från en orörd bild"
+
+#: ../src/libs/copy_history.c:389
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "copy history"
+msgid "compress history"
+msgstr "kopiera historik"
+
+#: ../src/libs/copy_history.c:390
+#, fuzzy
+#| msgid "can't copy history out of unaltered image"
+msgid ""
+"compress history stack of\n"
+"all selected images"
+msgstr "kan inte kopiera historik från en orörd bild"
+
+#: ../src/libs/copy_history.c:395
+#, fuzzy
+#| msgid "can't copy history out of unaltered image"
+msgid ""
+"discard history stack of\n"
+"all selected images"
+msgstr "kan inte kopiera historik från en orörd bild"
+
+#: ../src/libs/copy_history.c:400 ../src/libs/styles.c:847
+msgid "how to handle existing history"
+msgstr ""
+
+#: ../src/libs/copy_history.c:403 ../src/libs/styles.c:850
+msgid "append"
+msgstr ""
+
+#: ../src/libs/copy_history.c:409
+#, fuzzy
+#| msgid "write sidecar files"
+msgid "load sidecar file..."
+msgstr "skapa sidofiler"
+
+#: ../src/libs/copy_history.c:410
+msgid ""
+"open an XMP sidecar file\n"
+"and apply it to selected images"
+msgstr ""
+
+#: ../src/libs/copy_history.c:415
+msgid "write history stack and tags to XMP sidecar files"
+msgstr ""
+
+#: ../src/libs/duplicate.c:56
+#, fuzzy
+#| msgid "duplicate images"
+msgid "duplicate manager"
+msgstr "duplicerar bilder"
+
+#: ../src/libs/duplicate.c:401
+msgid "create a 'virgin' duplicate of the image without any development"
+msgstr ""
+
+#: ../src/libs/duplicate.c:406
+#, fuzzy
+#| msgid "creates a duplicate of the style before applying changes"
+msgid "create a duplicate of the image with same history stack"
+msgstr "skapa en kopia på stilen innan förändringar appliceras"
+
+#. Export button
+#: ../src/libs/export.c:153 ../src/libs/export.c:1281
+#, fuzzy
+#| msgctxt "noun"
+#| msgid "export"
+msgid "export"
+msgstr "export"
+
+#: ../src/libs/export.c:306
+#, fuzzy
+#| msgid "export images"
+msgid "export to disk"
+msgstr "exporterar bilder"
+
+#: ../src/libs/export.c:485
+#, c-format
+msgid "which is equal to %s × %s px"
+msgstr ""
+
+#: ../src/libs/export.c:520
+#, fuzzy
+#| msgid "min"
+msgctxt "unit"
+msgid "in"
+msgstr "min"
+
+#: ../src/libs/export.c:1060
+#, fuzzy
+#| msgid "session options"
+msgctxt "section"
+msgid "storage options"
+msgstr "sessions alternativval"
+
+#: ../src/libs/export.c:1064
+#, fuzzy
+#| msgid "target white luminance"
+msgid "target storage"
+msgstr "justerar vit luminans"
+
+#: ../src/libs/export.c:1086
+#, fuzzy
+#| msgid "GUI options"
+msgctxt "section"
+msgid "format options"
+msgstr "Gränssnittsinställningar"
+
+#: ../src/libs/export.c:1090
+#, fuzzy
+#| msgid "format"
+msgid "file format"
+msgstr "format"
+
+#: ../src/libs/export.c:1107
+#, fuzzy
+#| msgid "global tonemap"
+msgctxt "section"
+msgid "global options"
+msgstr "global tonemapping"
+
+#: ../src/libs/export.c:1110
+#, fuzzy
+#| msgid "patch size"
+msgid "set size"
+msgstr "storlek"
+
+#: ../src/libs/export.c:1111
+msgid "choose a method for setting the output size"
+msgstr ""
+
+#: ../src/libs/export.c:1114
+msgid "in pixels (for file)"
+msgstr ""
+
+#: ../src/libs/export.c:1115
+msgid "in cm (for print)"
+msgstr ""
+
+#: ../src/libs/export.c:1116
+msgid "in inch (for print)"
+msgstr ""
+
+#: ../src/libs/export.c:1117
+msgid "by scale (for file)"
+msgstr ""
+
+#: ../src/libs/export.c:1119
+#, fuzzy
+#| msgid "print timestamp"
+msgid "print width"
+msgstr "skriv ut tidsstämpel"
+
+#: ../src/libs/export.c:1120 ../src/libs/export.c:1132
+msgid ""
+"maximum output width limit.\n"
+"click middle mouse button to reset to 0."
+msgstr ""
+
+#: ../src/libs/export.c:1123
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "pinlight"
+msgid "print height"
+msgstr "snävt ljus"
+
+#: ../src/libs/export.c:1124 ../src/libs/export.c:1136
+msgid ""
+"maximum output height limit.\n"
+"click middle mouse button to reset to 0."
+msgstr ""
+
+#: ../src/libs/export.c:1128
+msgid "resolution in dot per inch"
+msgstr ""
+
+#: ../src/libs/export.c:1148
+msgid "@"
+msgstr ""
+
+#: ../src/libs/export.c:1161 ../src/libs/tools/global_toolbox.c:217
+#, fuzzy
+#| msgid "x"
+msgid "px"
+msgstr "×"
+
+#: ../src/libs/export.c:1166
+msgid ""
+"it can be an integer, decimal number or simple fraction.\n"
+"zero or empty values are equal to 1.\n"
+"click middle mouse button to reset to 1."
+msgstr ""
+
+#: ../src/libs/export.c:1185
+#, fuzzy
+#| msgid "image settings"
+msgid "allow upscaling"
+msgstr "bildinställningar"
+
+#: ../src/libs/export.c:1191
+#, fuzzy
+#| msgid "high quality processing from size"
+msgid "high quality resampling"
+msgstr "högkvalitetsbearbetning från storlek"
+
+#: ../src/libs/export.c:1192
+#, fuzzy
+#| msgid "high quality processing from size"
+msgid "do high quality resampling during export"
+msgstr "högkvalitetsbearbetning från storlek"
+
+#: ../src/libs/export.c:1198
+#, fuzzy
+msgid "store masks"
+msgstr "parametermarkering"
+
+#: ../src/libs/export.c:1199
+msgid "store masks as layers in exported images. only works for some formats."
+msgstr ""
+
+#: ../src/libs/export.c:1210 ../src/libs/export.c:1245
+#: ../src/libs/print_settings.c:2777 ../src/libs/print_settings.c:2823
+#, fuzzy
+#| msgid "image settings"
+msgid "image settings"
+msgstr "bildinställningar"
+
+#: ../src/libs/export.c:1220 ../src/libs/print_settings.c:2811
+#, fuzzy
+msgid "output ICC profiles"
+msgstr "utgående profil"
+
+#: ../src/libs/export.c:1228
+msgid ""
+"• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
+"gradations,\n"
+"but distorts in-gamut colors in the process.\n"
+"note that perceptual is often a proprietary LUT that depends on the "
+"destination space.\n"
+"\n"
+"• relative colorimetric: keeps luminance while reducing as little as "
+"possible\n"
+"saturation until colors fit in gamut.\n"
+"\n"
+"• saturation: designed to present eye-catching business graphics\n"
+"by preserving the saturation. (not suited for photography).\n"
+"\n"
+"• absolute colorimetric: adapt white point of the image to the white point "
+"of the\n"
+"destination medium and do nothing else. mainly used when proofing colors.\n"
+"(not suited for photography)."
+msgstr ""
+
+#: ../src/libs/export.c:1255 ../src/libs/print_settings.c:2833
+#, fuzzy
+#| msgid "styles"
+msgid "style"
+msgstr "stilar"
+
+#: ../src/libs/export.c:1258
+msgid "temporary style to use while exporting"
+msgstr ""
+
+#: ../src/libs/export.c:1263 ../src/libs/print_settings.c:2876
+msgid ""
+"whether the style items are appended to the history or replacing the history"
+msgstr ""
+
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2878
+#, fuzzy
+#| msgid "replace history"
+msgid "replace history"
+msgstr "ersätt historiken"
+
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2878
+#, fuzzy
+#| msgid "replace history"
+msgid "append history"
+msgstr "ersätt historiken"
+
+#: ../src/libs/export.c:1282
+#, fuzzy
+#| msgid "print with current settings"
+msgid "export with current settings"
+msgstr "skriv ut med nuvarande inställningar"
+
+#: ../src/libs/export_metadata.c:163
+#, fuzzy
+#| msgid "select all"
+msgid "select tag"
+msgstr "välj alla"
+
+#: ../src/libs/export_metadata.c:164
+#, fuzzy
+#| msgid "faded"
+msgid "add"
+msgstr "tonad"
+
+#: ../src/libs/export_metadata.c:175
+#, fuzzy
+#| msgid "cooling filter"
+msgid "list filter"
+msgstr "kylande filter"
+
+#: ../src/libs/export_metadata.c:186
+msgid ""
+"list of available tags. click 'add' button or double-click on tag to add the "
+"selected one"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:287
+msgid "edit metadata exportation"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:304
+#, fuzzy
+#| msgid "golden spiral sections"
+msgid "general settings"
+msgstr "gyllene spiralsektioner"
+
+#: ../src/libs/export_metadata.c:309
+msgid "EXIF data"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:310
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "paste metadata"
+msgid "export EXIF metadata"
+msgstr "redigerare för metadata"
+
+#: ../src/libs/export_metadata.c:313
+msgid "export darktable XMP metadata (from metadata editor module)"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:323
+msgid "only embedded"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:324
+msgid ""
+"per default the interface sends some (limited) metadata beside the image to "
+"remote storage.\n"
+"to avoid this and let only image embedded darktable XMP metadata, check this "
+"flag.\n"
+"if remote storage doesn't understand darktable XMP metadata, you can use "
+"calculated metadata instead"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:330 ../src/libs/image.c:566
+#, fuzzy
+#| msgid "tags"
+msgid "geo tags"
+msgstr "taggar"
+
+#: ../src/libs/export_metadata.c:331
+#, fuzzy
+#| msgid "export images"
+msgid "export geo tags"
+msgstr "exporterar bilder"
+
+#: ../src/libs/export_metadata.c:334
+msgid "export tags (to Xmp.dc.Subject)"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:342
+#, fuzzy
+#| msgid "duplicate images"
+msgid "private tags"
+msgstr "duplicerar bilder"
+
+#: ../src/libs/export_metadata.c:343
+#, fuzzy
+#| msgid "export images"
+msgid "export private tags"
+msgstr "exporterar bilder"
+
+#: ../src/libs/export_metadata.c:345
+msgid "synonyms"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:346
+#, fuzzy
+#| msgid "export images"
+msgid "export tags synonyms"
+msgstr "exporterar bilder"
+
+#: ../src/libs/export_metadata.c:348
+msgid "omit hierarchy"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:349
+msgid ""
+"only the last part of the hierarchical tags is included. can be useful if "
+"categories are not used"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:352
+msgid "hierarchical tags"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:353
+msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:355
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "copy history"
+msgid "develop history"
+msgstr "kopiera historik"
+
+#: ../src/libs/export_metadata.c:356
+msgid ""
+"export darktable development data (recovery purpose in case of loss of "
+"database or XMP file)"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:363
+#, fuzzy
+#| msgid "metadata editor"
+msgid "per metadata settings"
+msgstr "redigerare för metadata"
+
+#: ../src/libs/export_metadata.c:376
+msgid "redefined tag"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:382
+#, fuzzy
+#| msgid "format"
+msgid "formula"
+msgstr "format"
+
+#: ../src/libs/export_metadata.c:385
+msgid ""
+"list of calculated metadata\n"
+"click on '+' button to select and add new metadata\n"
+"if formula is empty, the corresponding metadata is removed from exported "
+"file,\n"
+"if formula is '=', the EXIF metadata is exported even if EXIF data are "
+"disabled\n"
+"otherwise the corresponding metadata is calculated and added to exported "
+"file\n"
+"click on formula cell to edit\n"
+"type '$(' to activate the completion and see the list of variables"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:442
+msgid "add an output metadata tag"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:447
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "paste metadata"
+msgid "delete metadata tag"
+msgstr "redigerare för metadata"
+
+#: ../src/libs/filtering.c:58 ../src/libs/metadata_view.c:128
+#, fuzzy
+#| msgid "path"
+msgid "full path"
+msgstr "slinga"
+
+#: ../src/libs/filtering.c:72
+#, fuzzy
+#| msgid "grouping"
+msgid "group"
+msgstr "grupperar"
+
+#: ../src/libs/filtering.c:73 ../src/libs/live_view.c:313
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "id"
+msgid "id"
+msgstr "id"
+
+#: ../src/libs/filtering.c:74
+#, fuzzy
+#| msgid "custom"
+msgid "custom sort"
+msgstr "anpassad"
+
+#: ../src/libs/filtering.c:75
+msgid "shuffle"
+msgstr ""
+
+#: ../src/libs/filtering.c:263
+#, fuzzy
+#| msgid "cooling filter"
+msgid "collection filters"
+msgstr "kylande filter"
+
+#: ../src/libs/filtering.c:296
+#, fuzzy
+#| msgid "initial rating"
+msgid "initial setting"
+msgstr "ursprungligt betyg"
+
+#: ../src/libs/filtering.c:315
+msgid "imported: last 24h"
+msgstr ""
+
+#: ../src/libs/filtering.c:320
+msgid "imported: last 30 days"
+msgstr ""
+
+#: ../src/libs/filtering.c:326
+msgid "taken: last 24h"
+msgstr ""
+
+#: ../src/libs/filtering.c:330
+msgid "taken: last 30 days"
+msgstr ""
+
+#: ../src/libs/filtering.c:702
+msgid "click or click&#38;drag to select one or multiple values"
+msgstr ""
+
+#: ../src/libs/filtering.c:703
+msgid "right-click opens a menu to select the available values"
+msgstr ""
+
+#: ../src/libs/filtering.c:800
+#, c-format
+msgid "you can't have more than %d rules"
+msgstr ""
+
+#: ../src/libs/filtering.c:922 ../src/libs/filtering.c:1556
+#, fuzzy
+#| msgid "additional properties"
+msgid "rule property"
+msgstr "ytterligare inställningar"
+
+#: ../src/libs/filtering.c:987
+msgid ""
+"rule property\n"
+"this can't be changed as the rule is pinned to the toolbar"
+msgstr ""
+
+#: ../src/libs/filtering.c:1035
+#, fuzzy
+#| msgid "red filter"
+msgctxt "quickfilter"
+msgid "filter"
+msgstr "rött filter"
+
+#: ../src/libs/filtering.c:1062
+msgid ""
+"this rule is pinned to the top toolbar\n"
+"click to un-pin"
+msgstr ""
+
+#: ../src/libs/filtering.c:1063
+msgid "you can't disable the rule as it is pinned to the toolbar"
+msgstr ""
+
+#: ../src/libs/filtering.c:1064
+msgid "you can't remove the rule as it is pinned to the toolbar"
+msgstr ""
+
+#: ../src/libs/filtering.c:1069
+msgid "click to pin this rule to the top toolbar"
+msgstr ""
+
+#: ../src/libs/filtering.c:1070
+#, fuzzy
+#| msgid "removes the selected styles in list above"
+msgid "remove this collect rule"
+msgstr "tar bort den valda stilarna i listan ovan"
+
+#: ../src/libs/filtering.c:1072
+msgid "this rule is enabled"
+msgstr ""
+
+#: ../src/libs/filtering.c:1074
+msgid "this rule is disabled"
+msgstr ""
+
+#: ../src/libs/filtering.c:1202
+msgid "or"
+msgstr ""
+
+#: ../src/libs/filtering.c:1203
+msgid "and not"
+msgstr ""
+
+#: ../src/libs/filtering.c:1205
+msgid "define how this rule should interact with the previous one"
+msgstr ""
+
+#: ../src/libs/filtering.c:1466
+msgid " (off)"
+msgstr ""
+
+#: ../src/libs/filtering.c:1663
+msgid "you can't add more rules."
+msgstr ""
+
+#. fill the popover with all pinned rules
+#: ../src/libs/filtering.c:1696
+#, fuzzy
+#| msgid "warming filter"
+msgid "shown filters"
+msgstr "värmande filter"
+
+#: ../src/libs/filtering.c:1711
+#, fuzzy
+#| msgid "red filter"
+msgid "new filter"
+msgstr "rött filter"
+
+#: ../src/libs/filtering.c:1884
+#, fuzzy
+#| msgid "smaller border"
+msgid "sort order"
+msgstr "kortsidan"
+
+#: ../src/libs/filtering.c:1886
+msgid "determine the sort order of shown images"
+msgstr ""
+
+#: ../src/libs/filtering.c:1906
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "addition"
+msgid "sort direction"
+msgstr "addition"
+
+#: ../src/libs/filtering.c:1911
+#, fuzzy
+#| msgid "remove the preset"
+msgid "remove this sort order"
+msgstr "ta bort stil"
+
+#: ../src/libs/filtering.c:1995
+#, c-format
+msgid "you can't have more than %d sort orders"
+msgstr ""
+
+#: ../src/libs/filtering.c:2049
+msgid "DESC"
+msgstr ""
+
+#: ../src/libs/filtering.c:2049
+msgid "ASC"
+msgstr ""
+
+#: ../src/libs/filtering.c:2160
+#, fuzzy
+#| msgid "new preset"
+msgid "new rule"
+msgstr "ny förinställning"
+
+#: ../src/libs/filtering.c:2161
+msgid "append new rule to collect images"
+msgstr ""
+
+#: ../src/libs/filtering.c:2172 ../src/libs/tools/filter.c:116
+#, fuzzy
+#| msgid "select by"
+msgid "sort by"
+msgstr "urval av"
+
+#: ../src/libs/filtering.c:2180
+#, fuzzy
+#| msgid "new preset"
+msgid "new sort"
+msgstr "ny förinställning"
+
+#: ../src/libs/filtering.c:2181
+#, fuzzy
+#| msgid "added time offset to %d image"
+#| msgid_plural "added time offset to %d images"
+msgid "append new sort to order images"
+msgstr "la till tidsförskjutning på %d bild"
+
+#: ../src/libs/filtering.c:2184
+msgid "revert to a previous set of sort orders"
+msgstr ""
+
+#. we change the tooltip of the reset button here, as we are sure the header is defined now
+#: ../src/libs/filtering.c:2234
+msgid ""
+"reset\n"
+"ctrl+click to remove pinned rules too"
+msgstr ""
+
+#: ../src/libs/filters/colors.c:140
+#, fuzzy
+#| msgid "Y0"
+msgid "Y"
+msgstr "Y0"
+
+#: ../src/libs/filters/colors.c:149
+msgid "P"
+msgstr ""
+
+#: ../src/libs/filters/colors.c:269
+#, fuzzy
+#| msgid "color film"
+msgid "color filter"
+msgstr "färgfilm"
+
+#: ../src/libs/filters/colors.c:294
+msgid ""
+"filter by images color label\n"
+"click to toggle the color label selection\n"
+"ctrl+click to exclude the color label\n"
+"the gray button affects all color labels"
+msgstr ""
+
+#. create the filter combobox
+#: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
+#: ../src/libs/filters/grouping.c:167 ../src/libs/filters/history.c:153
+#: ../src/libs/filters/local_copy.c:142 ../src/libs/filters/module_order.c:161
+#: ../src/libs/filters/rating.c:199 ../src/libs/filters/rating.c:210
+#: ../src/libs/filters/rating_range.c:325
+#, fuzzy
+#| msgid "modules"
+msgid "rules"
+msgstr "moduler"
+
+#: ../src/libs/filters/colors.c:306
+msgid ""
+"filter by images color label\n"
+"and (∩): images having all selected color labels\n"
+"or (∪): images with at least one of the selected color labels"
+msgstr ""
+
+#: ../src/libs/filters/filename.c:365
+msgid ""
+"enter filename to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing filenames"
+msgstr ""
+
+#: ../src/libs/filters/filename.c:376
+msgid "extension"
+msgstr ""
+
+#: ../src/libs/filters/filename.c:377
+msgid ""
+"enter extension to search with starting dot\n"
+"multiple values can be separated by ','\n"
+"handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
+"\n"
+"right-click to get existing extensions"
+msgstr ""
+
+#: ../src/libs/filters/filename.c:405
+msgid ""
+"click to select filename\n"
+"ctrl+click to select multiple values"
+msgstr ""
+
+#: ../src/libs/filters/filename.c:432
+msgid ""
+"click to select extension\n"
+"ctrl+click to select multiple values"
+msgstr ""
+
+#: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
+#, fuzzy
+#| msgid "expand grouped images"
+msgid "ungrouped images"
+msgstr "veckla ut grupperade bilder"
+
+#: ../src/libs/filters/grouping.c:168
+#, fuzzy
+#| msgid "select the hue tone of filter"
+msgid "select the type of grouped image to filter"
+msgstr "välj filtrets nyans"
+
+#. predefined selections
+#: ../src/libs/filters/grouping.c:169 ../src/libs/filters/history.c:38
+#: ../src/libs/filters/local_copy.c:38 ../src/libs/filters/module_order.c:155
+#: ../src/libs/filters/rating_range.c:56 ../src/libs/filters/rating_range.c:72
+#: ../src/libs/filters/rating_range.c:109 ../src/libs/filters/ratio.c:68
+#: ../src/libs/filters/ratio.c:81
+#, fuzzy
+#| msgid "max images"
+msgid "all images"
+msgstr "max bilder"
+
+#: ../src/libs/filters/history.c:153
+#, fuzzy
+#| msgid "empty history stack"
+msgid "filter on history state"
+msgstr "töm historiken"
+
+#: ../src/libs/filters/local_copy.c:142
+#, fuzzy
+#| msgid "local laplacian filter"
+msgid "local copied state filter"
+msgstr "lokalt laplacefilter"
+
+#: ../src/libs/filters/module_order.c:161
+msgid "filter images based on their module order"
+msgstr ""
+
+#: ../src/libs/filters/rating.c:199
+#, fuzzy
+#| msgid "operator"
+msgid "comparator"
+msgstr "operator"
+
+#: ../src/libs/filters/rating.c:200 ../src/libs/filters/rating.c:210
+#, fuzzy
+#| msgid "filtered images"
+msgid "filter by images rating"
+msgstr "filtrerade bilder"
+
+#: ../src/libs/filters/rating.c:210 ../src/libs/image.c:542
+#: ../src/libs/tools/ratings.c:56
+#, fuzzy
+#| msgid "rating"
+msgid "ratings"
+msgstr "betyg"
+
+#: ../src/libs/filters/rating.c:211
+#, fuzzy
+#| msgid "darken only"
+msgid "unstarred only"
+msgstr "gör endast mörkare"
+
+#: ../src/libs/filters/rating.c:212 ../src/libs/filters/rating_range.c:60
+#: ../src/libs/filters/rating_range.c:75
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "rate reject"
+msgid "rejected only"
+msgstr "avvisad"
+
+#: ../src/libs/filters/rating.c:212 ../src/libs/filters/rating_range.c:58
+#: ../src/libs/filters/rating_range.c:73 ../src/libs/filters/rating_range.c:138
+#, fuzzy
+#| msgid "image rejected"
+msgid "all except rejected"
+msgstr "förkastad bild"
+
+#: ../src/libs/filters/rating_range.c:61 ../src/libs/filters/rating_range.c:76
+#, fuzzy
+#| msgid "not copied locally"
+msgid "not rated only"
+msgstr "ej lokalt kopierad"
+
+#: ../src/libs/filters/rating_range.c:99 ../src/libs/filters/rating_range.c:126
+#: ../src/libs/filters/rating_range.c:131
+#: ../src/libs/filters/rating_range.c:275
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "rate reject"
+msgid "rejected"
+msgstr "avvisad"
+
+#: ../src/libs/filters/rating_range.c:101
+#: ../src/libs/filters/rating_range.c:126
+#: ../src/libs/filters/rating_range.c:276
+#, fuzzy
+#| msgid "not tagged"
+msgid "not rated"
+msgstr "otaggad"
+
+#: ../src/libs/filters/rating_range.c:117
+#, fuzzy
+#| msgid "only TCA"
+msgid "only"
+msgstr "enbart TCA"
+
+#: ../src/libs/filters/rating_range.c:269
+#, fuzzy
+#| msgid "letter"
+msgid "better"
+msgstr "letter (usa)"
+
+#: ../src/libs/filters/rating_range.c:270
+msgid "worse"
+msgstr ""
+
+#: ../src/libs/filters/rating_range.c:271
+#, fuzzy
+#| msgid "map"
+msgid "cap"
+msgstr "karta"
+
+#: ../src/libs/filters/rating_range.c:286
+#, fuzzy
+#| msgid "warming filter"
+msgid "rating filter"
+msgstr "värmande filter"
+
+#: ../src/libs/filters/ratio.c:70 ../src/libs/filters/ratio.c:82
+#, fuzzy
+#| msgid "export images"
+msgid "portrait images"
+msgstr "exporterar bilder"
+
+#: ../src/libs/filters/ratio.c:71 ../src/libs/filters/ratio.c:83
+#, fuzzy
+#| msgid "capture images"
+msgid "square images"
+msgstr "fånga bilder"
+
+#: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
+#, fuzzy
+#| msgid "capture images"
+msgid "landscape images"
+msgstr "fånga bilder"
+
+#: ../src/libs/filters/search.c:179
+#, no-c-format
+msgid ""
+"filter by text from images metadata, camera brand/model, tags, file path and "
+"name\n"
+"`%' is the wildcard character\n"
+"by default start and end wildcards are auto-applied\n"
+"starting or ending with a double quote disables the corresponding wildcard\n"
+"is dimmed during the search execution"
+msgstr ""
+
+#: ../src/libs/geotagging.c:368
+msgid "apply offset and geo-location"
+msgstr ""
+
+#: ../src/libs/geotagging.c:369 ../src/libs/geotagging.c:1910
+#, fuzzy
+#| msgid "map / geolocalization"
+msgid "apply geo-location"
+msgstr "karta"
+
+#: ../src/libs/geotagging.c:371
+msgid ""
+"apply offset and geo-location to matching images\n"
+"double operation: two ctrl-z to undo"
+msgstr ""
+
+#: ../src/libs/geotagging.c:373 ../src/libs/geotagging.c:1911
+#, fuzzy
+#| msgid "auto apply this preset to matching images"
+msgid "apply geo-location to matching images"
+msgstr "automatisk applicering av denna förinställning på matchande bilder"
+
+#: ../src/libs/geotagging.c:810
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "only large entries"
+msgid "GPX file track segments"
+msgstr "enbart de med stort innehåll"
+
+#: ../src/libs/geotagging.c:830 ../src/libs/geotagging.c:1869
+#, fuzzy
+#| msgid "print timestamp"
+msgid "start time"
+msgstr "skriv ut tidsstämpel"
+
+#: ../src/libs/geotagging.c:831
+#, fuzzy
+#| msgid "five times"
+msgid "end time"
+msgstr "fem gånger"
+
+#: ../src/libs/geotagging.c:832 ../src/libs/geotagging.c:1871
+#, fuzzy
+#| msgid "Sample points"
+msgid "points"
+msgstr "samplingspunkter"
+
+#: ../src/libs/geotagging.c:833 ../src/libs/geotagging.c:1873
+#: ../src/libs/image.c:463
+#, fuzzy
+#| msgid "image"
+msgid "images"
+msgstr "bild"
+
+#: ../src/libs/geotagging.c:926
+#, fuzzy
+#| msgid "failed to parse GPX file"
+msgid "open GPX file"
+msgstr "lyckades inte tolka GPX-filen"
+
+#: ../src/libs/geotagging.c:927 ../src/libs/tools/lighttable.c:333
+#: ../src/libs/tools/lighttable.c:402 ../src/views/darkroom.c:2232
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "previous"
+msgid "preview"
+msgstr "föregående"
+
+#: ../src/libs/geotagging.c:940
+msgid "GPS data exchange format"
+msgstr ""
+
+#: ../src/libs/geotagging.c:1739
+#, fuzzy
+#| msgid "capture images"
+msgid "date/time"
+msgstr "fånga bilder"
+
+#: ../src/libs/geotagging.c:1740
+msgid ""
+"enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
+"key in the new numbers or scroll over the cell"
+msgstr ""
+
+#: ../src/libs/geotagging.c:1744
+#, fuzzy
+#| msgid "original image"
+msgid "original date/time"
+msgstr "originalbild"
+
+#: ../src/libs/geotagging.c:1748
+msgid "lock date/time offset value to apply it onto another selection"
+msgstr ""
+
+#: ../src/libs/geotagging.c:1752
+#, fuzzy
+#| msgid "time offset"
+msgid "date/time offset"
+msgstr "tidsförskjutning"
+
+#: ../src/libs/geotagging.c:1753
+msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
+msgstr ""
+
+#. apply
+#: ../src/libs/geotagging.c:1757
+#, fuzzy
+#| msgid "y offset"
+msgid "apply offset"
+msgstr "förskjutning y-led"
+
+#: ../src/libs/geotagging.c:1758
+#, fuzzy
+#| msgid "added time offset to %d image"
+#| msgid_plural "added time offset to %d images"
+msgid "apply offset to selected images"
+msgstr "la till tidsförskjutning på %d bild"
+
+#: ../src/libs/geotagging.c:1761
+#, fuzzy
+#| msgid "apply auto levels"
+msgid "apply date/time"
+msgstr "applicera automatisk nivåjustering"
+
+#: ../src/libs/geotagging.c:1762
+#, fuzzy
+#| msgid "added time offset to %d image"
+#| msgid_plural "added time offset to %d images"
+msgid "apply the same date/time to selected images"
+msgstr "la till tidsförskjutning på %d bild"
+
+#: ../src/libs/geotagging.c:1772
+msgid ""
+"start typing to show a list of permitted values and select your timezone.\n"
+"press enter to confirm, so that the asterisk * disappears"
+msgstr ""
+
+#. gpx
+#: ../src/libs/geotagging.c:1815
+msgid "apply GPX track file..."
+msgstr ""
+
+#: ../src/libs/geotagging.c:1816
+msgid "parses a GPX file and updates location of selected images"
+msgstr ""
+
+#: ../src/libs/geotagging.c:1827
+msgctxt "section"
+msgid "GPX file"
+msgstr ""
+
+#: ../src/libs/geotagging.c:1834
+msgid "select a GPX track file..."
+msgstr ""
+
+#: ../src/libs/geotagging.c:1851
+msgid ""
+"list of track segments in the GPX file, for each segment:\n"
+"- the start date/time in local time (LT)\n"
+"- the number of track points\n"
+"- the number of matching images based on images date/time, offset and time "
+"zone\n"
+"- more detailed time information hovering the row"
+msgstr ""
+
+#: ../src/libs/geotagging.c:1890
+#, fuzzy
+#| msgid "remove images"
+msgid "preview images"
+msgstr "tar bort bilder"
+
+#: ../src/libs/geotagging.c:1895
+#, fuzzy
+#| msgid "only show this preset for matching images"
+msgid "show on map matching images"
+msgstr "visa endast denna förinställning för matchande bilder"
+
+#: ../src/libs/geotagging.c:1898
+#, fuzzy
+#| msgid "delete images"
+msgid "select images"
+msgstr "raderar bilder"
+
+#: ../src/libs/geotagging.c:1899
+#, fuzzy
+#| msgid "deleting %d image"
+#| msgid_plural "deleting %d images"
+msgid "select matching images"
+msgstr "raderar %d bild"
+
+#: ../src/libs/geotagging.c:1907
+msgid "number of matching images versus selected images"
+msgstr ""
+
+#: ../src/libs/histogram.c:133
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "monochromatic"
+msgid "monochromatic"
+msgstr "monokromatisk"
+
+#: ../src/libs/histogram.c:134
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "analogous"
+msgid "analogous"
+msgstr "analog"
+
+#: ../src/libs/histogram.c:135
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "analogous complementary"
+msgid "analogous complementary"
+msgstr "analogt kompletterande"
+
+#: ../src/libs/histogram.c:136
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "complementary"
+msgid "complementary"
+msgstr "kompletterande"
+
+#: ../src/libs/histogram.c:137
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "split complementary"
+msgid "split complementary"
+msgstr "delat kompletterande"
+
+#: ../src/libs/histogram.c:138
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "dyad"
+msgid "dyad"
+msgstr "tvåfaldig"
+
+#: ../src/libs/histogram.c:139
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "triad"
+msgid "triad"
+msgstr "trefaldig"
+
+#: ../src/libs/histogram.c:140
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "tetrad"
+msgid "tetrad"
+msgstr "fyrfaldig"
+
+#: ../src/libs/histogram.c:146
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "vectorscope"
+msgid "vectorscope"
+msgstr "vektorskop"
+
+#: ../src/libs/histogram.c:147
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "waveform"
+msgid "waveform"
+msgstr "vågform"
+
+#: ../src/libs/histogram.c:148
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "RGB parade"
+msgid "RGB parade"
+msgstr "RGB-parad"
+
+#: ../src/libs/histogram.c:149 ../src/libs/histogram.c:2309
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "histogram"
+msgid "histogram"
+msgstr "histogram"
+
+#: ../src/libs/histogram.c:243
+msgid "scopes"
+msgstr ""
+
+#: ../src/libs/histogram.c:1542
+#, fuzzy
+#| msgid "ctrl+scroll to set shape opacity (%d%%)"
+msgid "scroll to coarse-rotate"
+msgstr "ctrl+rulla för att ställa in formens ogenomskinlighet (%d%%)"
+
+#: ../src/libs/histogram.c:1543
+msgid "ctrl+scroll to fine rotate"
+msgstr ""
+
+#: ../src/libs/histogram.c:1544
+#, fuzzy
+#| msgid "ctrl+scroll to set shape opacity (%d%%)"
+msgid "shift+scroll to change width"
+msgstr "ctrl+rulla för att ställa in formens ogenomskinlighet (%d%%)"
+
+#: ../src/libs/histogram.c:1545
+#, fuzzy
+#| msgid "ctrl+scroll to set shape opacity (%d%%)"
+msgid "alt+scroll to cycle"
+msgstr "ctrl+rulla för att ställa in formens ogenomskinlighet (%d%%)"
+
+#: ../src/libs/histogram.c:1556
+msgid "drag to change black point"
+msgstr ""
+
+#: ../src/libs/histogram.c:1557 ../src/libs/histogram.c:1564
+#, fuzzy
+#| msgid "double-click to reset"
+msgid "double-click resets"
+msgstr "dubbelklicka för återställning"
+
+#: ../src/libs/histogram.c:1563
+#, fuzzy
+#| msgid "three exposures"
+msgid "drag to change exposure"
+msgstr "tre exponeringar"
+
+#: ../src/libs/histogram.c:1725 ../src/libs/histogram.c:1765
+#, fuzzy
+msgid "set scale to linear"
+msgstr "vertikalt centrerad"
+
+#: ../src/libs/histogram.c:1730 ../src/libs/histogram.c:1770
+#, fuzzy
+#| msgid "saturation offset"
+msgid "set scale to logarithmic"
+msgstr "kompensation mättnad"
+
+#: ../src/libs/histogram.c:1746
+#, fuzzy
+#| msgid "lens shift (vertical)"
+msgid "set scope to vertical"
+msgstr "objektivshift (vertikal)"
+
+#: ../src/libs/histogram.c:1751
+#, fuzzy
+#| msgid "lens shift (horizontal)"
+msgid "set scope to horizontal"
+msgstr "objektivshift (horisontell)"
+
+#: ../src/libs/histogram.c:1780
+msgid "set view to AzBz"
+msgstr ""
+
+#: ../src/libs/histogram.c:1786
+msgid "set view to RYB"
+msgstr ""
+
+#: ../src/libs/histogram.c:1792
+msgid "set view to u*v*"
+msgstr ""
+
+#: ../src/libs/histogram.c:2312 ../src/libs/histogram.c:2370
+msgid "cycle histogram modes"
+msgstr ""
+
+#: ../src/libs/histogram.c:2316 ../src/libs/histogram.c:2371
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "histogram"
+msgid "hide histogram"
+msgstr "histogram"
+
+#: ../src/libs/histogram.c:2372 ../src/libs/histogram.c:2401
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "switch view"
+msgid "switch histogram view"
+msgstr "byt vy"
+
+#: ../src/libs/histogram.c:2379
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "RGB blue channel"
+msgid "toggle blue channel"
+msgstr "RGB blå kanal"
+
+#: ../src/libs/histogram.c:2381 ../src/libs/histogram.c:2389
+#: ../src/libs/histogram.c:2397
+#, fuzzy
+msgid "toggle colors"
+msgstr "falska (bladverk) färger"
+
+#: ../src/libs/histogram.c:2387
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "RGB green channel"
+msgid "toggle green channel"
+msgstr "RGB grön kanal"
+
+#: ../src/libs/histogram.c:2395
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "RGB red channel"
+msgid "toggle red channel"
+msgstr "RGB röd kanal"
+
+#: ../src/libs/histogram.c:2405
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "vectorscope"
+msgid "cycle vectorscope types"
+msgstr "vektorskop"
+
+#: ../src/libs/histogram.c:2413
+#, fuzzy
+#| msgid "color zones"
+msgid "color harmonies"
+msgstr "färgzoner"
+
+#: ../src/libs/histogram.c:2425
+#, fuzzy
+#| msgid "color zones"
+msgid "cycle color harmonies"
+msgstr "färgzoner"
+
+#: ../src/libs/history.c:127
+#, fuzzy
+#| msgid "empty history stack"
+msgid "compress history stack"
+msgstr "töm historiken"
+
+#: ../src/libs/history.c:128
+msgid ""
+"create a minimal history stack which produces the same image\n"
+"ctrl+click to truncate history to the selected item"
+msgstr ""
+
+#: ../src/libs/history.c:139
+#, fuzzy
+#| msgid "ask before discarding history stack"
+msgid "create a style from the current history stack"
+msgstr "fråga innan bildhistoriken rensas"
+
+#: ../src/libs/history.c:141
+#, fuzzy
+#| msgid "replace history"
+msgid "create style from history"
+msgstr "ersätt historiken"
+
+#: ../src/libs/history.c:212
+msgid "always-on module"
+msgstr ""
+
+#: ../src/libs/history.c:218
+msgid "default enabled module"
+msgstr ""
+
+#: ../src/libs/history.c:225
+#, fuzzy
+#| msgctxt "modulegroup"
+#| msgid "deprecated"
+msgid "deprecated module"
+msgstr "ej använd/utgående"
+
+#: ../src/libs/history.c:945
+#, fuzzy
+#| msgid "color space"
+msgid "colorspace"
+msgstr "färgschema"
+
+#: ../src/libs/history.c:947
+#, fuzzy
+#| msgid "image mode"
+msgid "mask mode"
+msgstr "bildmetod"
+
+#: ../src/libs/history.c:951
+#, fuzzy
+#| msgid "blend options"
+msgid "blend operation"
+msgstr "inställningar för blandning"
+
+#: ../src/libs/history.c:961
+#, fuzzy
+#| msgid "darktable"
+msgid "mask blur"
+msgstr "darktable"
+
+#: ../src/libs/history.c:964
+#, fuzzy
+#| msgid "prefer unmasked instances"
+msgid "raster mask instance"
+msgstr "föredra omaskade instanser"
+
+#: ../src/libs/history.c:965
+#, fuzzy
+msgid "raster mask id"
+msgstr "parametermarkering"
+
+#: ../src/libs/history.c:966
+#, fuzzy
+#| msgid "invert"
+msgid "invert mask"
+msgstr "invertera"
+
+#: ../src/libs/history.c:971
+#, fuzzy
+#| msgid "drawn mask"
+msgid "drawn mask polarity"
+msgstr "ritad markering"
+
+#: ../src/libs/history.c:975
+#, fuzzy, c-format
+#| msgid "drawn mask"
+msgid "a drawn mask was added"
+msgstr "ritad markering"
+
+#: ../src/libs/history.c:977
+#, c-format
+msgid "the drawn mask was removed"
+msgstr ""
+
+#: ../src/libs/history.c:978
+#, c-format
+msgid "the drawn mask was changed"
+msgstr ""
+
+#: ../src/libs/history.c:1010
+#, fuzzy
+#| msgid "parametric mask"
+msgid "parametric output mask:"
+msgstr "parametermarkering"
+
+#: ../src/libs/history.c:1011
+#, fuzzy
+#| msgid "parametric mask"
+msgid "parametric input mask:"
+msgstr "parametermarkering"
+
+#: ../src/libs/history.c:1323
+#, fuzzy
+#| msgid "delete images?"
+msgid "delete image's history?"
+msgstr "radera bilder?"
+
+#: ../src/libs/history.c:1324
+#, fuzzy
+#| msgid "do you really want to delete the preset `%s'?"
+msgid "do you really want to clear history of current image?"
+msgstr "vill du verkligen ta bort förinställning `%s'?"
+
+#: ../src/libs/image.c:72
+#, fuzzy
+#| msgid "delete images"
+msgid "selected image[s]"
+msgstr "raderar bilder"
+
+#: ../src/libs/image.c:284
+#, fuzzy
+#| msgid "delete database"
+msgid "delete (trash)"
+msgstr "ta bort databas"
+
+#: ../src/libs/image.c:287
+#, fuzzy
+#| msgid "do you really want to physically delete %d selected image from disk?"
+#| msgid_plural ""
+#| "do you really want to physically delete %d selected images from disk?"
+msgid "physically delete from disk (using trash if possible)"
+msgstr "vill du verkligen radera %d vald bilder fysiskt från disk?"
+
+#: ../src/libs/image.c:288
+msgid "physically delete from disk immediately"
+msgstr ""
+
+#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3811
+#: ../src/libs/styles.c:876
+#, fuzzy
+#| msgid "move"
+msgid "remove"
+msgstr "flytta"
+
+#: ../src/libs/image.c:475
+msgid "remove images from the image library, without deleting"
+msgstr ""
+
+#: ../src/libs/image.c:483
+#, fuzzy
+#| msgid "move"
+msgid "move..."
+msgstr "flytta"
+
+#: ../src/libs/image.c:484
+msgid "move to other folder"
+msgstr ""
+
+#: ../src/libs/image.c:487
+#, fuzzy
+#| msgid "copy"
+msgid "copy..."
+msgstr "kopiera"
+
+#: ../src/libs/image.c:488
+msgid "copy to other folder"
+msgstr ""
+
+#: ../src/libs/image.c:491
+#, fuzzy
+#| msgid "relative"
+msgid "create HDR"
+msgstr "relativ"
+
+#: ../src/libs/image.c:492
+msgid "create a high dynamic range image from selected shots"
+msgstr ""
+
+#: ../src/libs/image.c:496
+msgid "add a duplicate to the image library, including its history stack"
+msgstr ""
+
+#: ../src/libs/image.c:502 ../src/libs/image.c:505
+#, fuzzy
+#| msgid "rotate 90 degrees CCW"
+msgid "rotate selected images 90 degrees CCW"
+msgstr "rotera 90 grader moturs"
+
+#: ../src/libs/image.c:509 ../src/libs/image.c:512
+#, fuzzy
+#| msgid "rotate 90 degrees CW"
+msgid "rotate selected images 90 degrees CW"
+msgstr "rotera 90 grader medurs"
+
+#: ../src/libs/image.c:514
+#, fuzzy
+#| msgid "rotation"
+msgid "reset rotation"
+msgstr "rotation"
+
+#: ../src/libs/image.c:515
+msgid "reset rotation to EXIF data"
+msgstr ""
+
+#: ../src/libs/image.c:518
+#, fuzzy
+#| msgid "copied locally"
+msgid "copy locally"
+msgstr "kopierad lokalt"
+
+#: ../src/libs/image.c:519
+#, fuzzy
+#| msgid "copied locally"
+msgid "copy the image locally"
+msgstr "kopierad lokalt"
+
+#: ../src/libs/image.c:522
+#, fuzzy
+#| msgid "local copy"
+msgid "resync local copy"
+msgstr "lokal kopia"
+
+#: ../src/libs/image.c:523
+msgid "synchronize the image's XMP and remove the local copy"
+msgstr ""
+
+#: ../src/libs/image.c:526
+#, fuzzy
+#| msgid "grouping"
+msgctxt "selected images action"
+msgid "group"
+msgstr "grupperar"
+
+#: ../src/libs/image.c:527
+msgid "add selected images to expanded group or create a new one"
+msgstr ""
+
+#: ../src/libs/image.c:531
+#, fuzzy
+#| msgid "grouping"
+msgid "ungroup"
+msgstr "grupperar"
+
+#: ../src/libs/image.c:532
+#, fuzzy
+#| msgid "removes the selected styles in list above"
+msgid "remove selected images from the group"
+msgstr "tar bort den valda stilarna i listan ovan"
+
+#: ../src/libs/image.c:544
+#, fuzzy
+#| msgid "select parts"
+msgid "select ratings metadata"
+msgstr "välj delar"
+
+#: ../src/libs/image.c:550
+#, fuzzy
+#| msgid "color"
+msgid "colors"
+msgstr "färg"
+
+#: ../src/libs/image.c:552
+#, fuzzy
+#| msgid "select color of film material"
+msgid "select colors metadata"
+msgstr "välj färg på filmmaterial"
+
+#: ../src/libs/image.c:560
+#, fuzzy
+#| msgid "_select as destination"
+msgid "select tags metadata"
+msgstr "_välj som mål"
+
+#: ../src/libs/image.c:568
+#, fuzzy
+#| msgid "_select as destination"
+msgid "select geo tags metadata"
+msgstr "_välj som mål"
+
+#: ../src/libs/image.c:576
+msgid "select darktable metadata (from metadata editor module)"
+msgstr ""
+
+#: ../src/libs/image.c:584
+#, fuzzy
+#| msgid "analyze this image as a source image"
+msgid "set the selected image as source of metadata"
+msgstr "analysera denna bild som källa"
+
+#: ../src/libs/image.c:589
+#, fuzzy
+#| msgid "apply some metadata to all newly imported images."
+msgid "paste selected metadata on selected images"
+msgstr "applicera viss metadata på alla nyimporterade bilder."
+
+#: ../src/libs/image.c:593
+#, fuzzy
+#| msgid "apply some metadata to all newly imported images."
+msgid "clear selected metadata on selected images"
+msgstr "applicera viss metadata på alla nyimporterade bilder."
+
+#: ../src/libs/image.c:598
+msgid "how to handle existing metadata"
+msgstr ""
+
+#: ../src/libs/image.c:601
+msgid "merge"
+msgstr ""
+
+#: ../src/libs/image.c:605
+msgid "update image information to match changes to file"
+msgstr ""
+
+#: ../src/libs/image.c:609
+msgid "set selection as monochrome images and activate monochrome workflow"
+msgstr ""
+
+# kommentaren som fanns innan försvann,
+#: ../src/libs/image.c:613
+#, fuzzy
+#| msgid "set %d color image"
+#| msgid_plural "setting %d color images"
+msgid "set selection as color images"
+msgstr "sätt %d färgbild"
+
+#: ../src/libs/image.c:625
+#, fuzzy
+#| msgid "duplicate images"
+msgid "duplicate virgin"
+msgstr "duplicerar bilder"
+
+#: ../src/libs/import.c:263
+#, c-format
+msgid "device \"%s\" connected on port \"%s\"."
+msgstr ""
+
+#: ../src/libs/import.c:273 ../src/libs/import.c:334 ../src/libs/import.c:1692
+#, fuzzy
+#| msgid "import images from camera"
+msgid "copy & import from camera"
+msgstr "importera bilder från kamera"
+
+#: ../src/libs/import.c:284 ../src/libs/import.c:336
+msgid "tethered shoot"
+msgstr ""
+
+#: ../src/libs/import.c:291 ../src/libs/import.c:337
+#, fuzzy
+#| msgid "find camera"
+msgid "unmount camera"
+msgstr "sök kamera"
+
+#: ../src/libs/import.c:312
+msgid ""
+"camera is locked by another application\n"
+"make sure it is no longer mounted\n"
+"or quit the locking application"
+msgstr ""
+
+#: ../src/libs/import.c:315
+#, fuzzy
+#| msgid "starting to import images from camera"
+msgid "tethering and importing is disabled for this camera"
+msgstr "börjar importera bilder från kamera"
+
+#: ../src/libs/import.c:317 ../src/libs/import.c:335
+#, fuzzy
+#| msgid "camera"
+msgid "mount camera"
+msgstr "kamera"
+
+#: ../src/libs/import.c:747
+#, fuzzy, c-format
+#| msgid "no image selected!"
+msgid "%d image out of %d selected"
+msgid_plural "%d images out of %d selected"
+msgstr[0] "inga bilder valda!"
+msgstr[1] "inga bilder valda!"
+
+#: ../src/libs/import.c:1039
+msgid "you can't delete the selected place"
+msgstr ""
+
+#: ../src/libs/import.c:1153
+msgid "choose the root of the folder tree below"
+msgstr ""
+
+#: ../src/libs/import.c:1156
+msgid "places"
+msgstr ""
+
+#: ../src/libs/import.c:1162
+msgid "restore all default places you have removed by right-click"
+msgstr ""
+
+#: ../src/libs/import.c:1167
+msgid ""
+"add a custom place\n"
+"\n"
+"right-click on a place to remove it"
+msgstr ""
+
+#: ../src/libs/import.c:1174
+msgid "you can add custom places using the plus icon"
+msgstr ""
+
+#: ../src/libs/import.c:1199
+#, fuzzy
+#| msgid "select file to export"
+msgid "select a folder to see the content"
+msgstr "välj fil att exportera"
+
+#: ../src/libs/import.c:1202
+#, fuzzy
+#| msgid "folders"
+msgid "folders"
+msgstr "kataloger"
+
+#: ../src/libs/import.c:1272
+msgid "home"
+msgstr ""
+
+#: ../src/libs/import.c:1284
+#, fuzzy
+#| msgid "picture"
+msgid "pictures"
+msgstr "bild"
+
+#: ../src/libs/import.c:1548
+msgid "mark already imported pictures"
+msgstr ""
+
+#: ../src/libs/import.c:1562
+#, fuzzy
+#| msgid "modified"
+msgid "modified"
+msgstr "modifierad"
+
+#: ../src/libs/import.c:1567
+msgid "file 'modified date/time', may be different from 'Exif date/time'"
+msgstr ""
+
+#: ../src/libs/import.c:1579
+#, fuzzy
+#| msgid "thumbnails"
+msgid "show/hide thumbnails"
+msgstr "miniatyrbilder"
+
+#: ../src/libs/import.c:1649
+#, fuzzy
+#| msgid "warming filter"
+msgid "naming rules"
+msgstr "värmande filter"
+
+#: ../src/libs/import.c:1690
+msgid "add to library"
+msgstr ""
+
+#: ../src/libs/import.c:1691
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "on import"
+msgid "copy & import"
+msgstr "vid import"
+
+#: ../src/libs/import.c:1730
+#, fuzzy
+#| msgid "select none"
+msgid "select new"
+msgstr "välj inga"
+
+#: ../src/libs/import.c:1773
+#, fuzzy
+#| msgid "starting to import images from camera"
+msgid "please wait while prefetching the list of images from camera..."
+msgstr "börjar importera bilder från kamera"
+
+#: ../src/libs/import.c:1907
+msgid "invalid override date/time format"
+msgstr ""
+
+#: ../src/libs/import.c:2022
+msgid "add to library..."
+msgstr ""
+
+#: ../src/libs/import.c:2023
+#, fuzzy
+#| msgid "ask before removing images from the library"
+msgid "add existing images to the library"
+msgstr "fråga innan en bild tas bort från databasen"
+
+#: ../src/libs/import.c:2029
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "import..."
+msgid "copy & import..."
+msgstr "importera..."
+
+#: ../src/libs/import.c:2030
+msgid ""
+"copy and optionally rename images before adding them to the library\n"
+"patterns can be defined to rename the images and specify the destination "
+"folders"
+msgstr ""
+
+#. collapsible section
+#: ../src/libs/import.c:2053
+#, fuzzy
+#| msgid "parametric mask"
+msgid "parameters"
+msgstr "parametermarkering"
+
+#: ../src/libs/ioporder.c:204
+msgid "v3.0 for RAW input (default)"
+msgstr ""
+
+#: ../src/libs/ioporder.c:210
+msgid "v3.0 for JPEG/non-RAW input"
+msgstr ""
+
+#: ../src/libs/lib.c:376
+#, fuzzy
+#| msgid "hide built-in presets for utility modules"
+msgid "deleting preset for obsolete module"
+msgstr "ta bort förinställning för verktygsmoduler"
+
+#: ../src/libs/lib.c:542
+#, fuzzy
+#| msgid "new preset"
+msgid "manage presets..."
+msgstr "ny förinställning"
+
+#: ../src/libs/lib.c:567
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "nothing"
+msgid "nothing to save"
+msgstr "inget"
+
+#: ../src/libs/lib.c:1105
+#, fuzzy
+#| msgid "module"
+msgid "show module"
+msgstr "modul"
+
+#: ../src/libs/lib.c:1430
+#, fuzzy
+msgid "utility module"
+msgstr "tillbehörsmoduler"
+
+#: ../src/libs/live_view.c:107
+#, fuzzy
+#| msgid "live view"
+msgid "live view"
+msgstr "live view"
+
+#: ../src/libs/live_view.c:289 ../src/libs/live_view.c:290
+#, fuzzy
+#| msgid "live view"
+msgid "toggle live view"
+msgstr "live view"
+
+#. TODO: see _zoom_live_view_clicked
+#: ../src/libs/live_view.c:291 ../src/libs/live_view.c:292
+#, fuzzy
+#| msgid "live view"
+msgid "zoom live view"
+msgstr "live view"
+
+#: ../src/libs/live_view.c:295
+#, fuzzy
+#| msgid "flip horizontally"
+msgid "flip live view horizontally"
+msgstr "vänd horisontalt"
+
+#: ../src/libs/live_view.c:301
+msgid "move focus point in (big steps)"
+msgstr ""
+
+#: ../src/libs/live_view.c:302
+msgid "move focus point in (small steps)"
+msgstr ""
+
+#. TODO icon not centered
+#: ../src/libs/live_view.c:303
+msgid "run autofocus"
+msgstr ""
+
+#: ../src/libs/live_view.c:304
+msgid "move focus point out (small steps)"
+msgstr ""
+
+#. TODO same here
+#: ../src/libs/live_view.c:305
+msgid "move focus point out (big steps)"
+msgstr ""
+
+#: ../src/libs/live_view.c:310
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "overlay"
+msgid "overlay"
+msgstr "överlagring"
+
+#: ../src/libs/live_view.c:312
+#, fuzzy
+#| msgid "delete images"
+msgid "selected image"
+msgstr "raderar bilder"
+
+#: ../src/libs/live_view.c:314
+msgid "overlay another image over the live view"
+msgstr ""
+
+#: ../src/libs/live_view.c:323
+msgid "enter image id of the overlay manually"
+msgstr ""
+
+#: ../src/libs/live_view.c:334
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "overlay"
+msgid "overlay mode"
+msgstr "överlagring"
+
+#: ../src/libs/live_view.c:336
+#, fuzzy
+#| msgid "exr"
+msgctxt "blendmode"
+msgid "xor"
+msgstr "exr"
+
+#: ../src/libs/live_view.c:337
+#, fuzzy
+#| msgid "faded"
+msgctxt "blendmode"
+msgid "add"
+msgstr "tonad"
+
+#: ../src/libs/live_view.c:338
+#, fuzzy
+#| msgid "saturation"
+msgctxt "blendmode"
+msgid "saturate"
+msgstr "mättnad"
+
+#: ../src/libs/live_view.c:344
+#, fuzzy
+#| msgid "color mode"
+msgctxt "blendmode"
+msgid "color dodge"
+msgstr "färginställning"
+
+#: ../src/libs/live_view.c:345
+#, fuzzy
+#| msgid "color balance"
+msgctxt "blendmode"
+msgid "color burn"
+msgstr "färgbalans"
+
+#: ../src/libs/live_view.c:346
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "hardlight"
+msgctxt "blendmode"
+msgid "hard light"
+msgstr "hårt ljus"
+
+#: ../src/libs/live_view.c:347
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "softlight"
+msgctxt "blendmode"
+msgid "soft light"
+msgstr "mjukt ljus"
+
+#: ../src/libs/live_view.c:349
+#, fuzzy
+#| msgid "exclusive"
+msgctxt "blendmode"
+msgid "exclusion"
+msgstr "uteslutnande"
+
+#: ../src/libs/live_view.c:350
+#, fuzzy
+msgctxt "blendmode"
+msgid "HSL hue"
+msgstr "ljushet i HSV"
+
+#: ../src/libs/live_view.c:351
+#, fuzzy
+#| msgid "saturation"
+msgctxt "blendmode"
+msgid "HSL saturation"
+msgstr "mättnad"
+
+#: ../src/libs/live_view.c:352
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "HSV color"
+msgctxt "blendmode"
+msgid "HSL color"
+msgstr "färg i HSV"
+
+#: ../src/libs/live_view.c:353
+msgctxt "blendmode"
+msgid "HSL luminosity"
+msgstr ""
+
+#: ../src/libs/live_view.c:354
+msgid "mode of the overlay"
+msgstr ""
+
+#: ../src/libs/live_view.c:360
+#, fuzzy
+#| msgid "split toning"
+msgid "split line"
+msgstr "delad färgtoning"
+
+#: ../src/libs/live_view.c:363
+msgid "only draw part of the overlay"
+msgstr ""
+
+#: ../src/libs/location.c:100
+#, fuzzy
+#| msgid "no rotation"
+msgid "find location"
+msgstr "ingen rotation"
+
+#: ../src/libs/map_locations.c:36
+#, fuzzy
+#| msgid "GUI options"
+msgid "locations"
+msgstr "Gränssnittsinställningar"
+
+#: ../src/libs/map_locations.c:234
+#, fuzzy
+#| msgid "invert selection"
+msgid "new sub-location"
+msgstr "invertera val"
+
+#: ../src/libs/map_locations.c:238 ../src/libs/map_locations.c:286
+#: ../src/libs/map_locations.c:960
+#, fuzzy
+#| msgid "no rotation"
+msgid "new location"
+msgstr "ingen rotation"
+
+#: ../src/libs/map_locations.c:587
+#, fuzzy, c-format
+#| msgid "style with name '%s' already exists"
+msgid "location name '%s' already exists"
+msgstr "stil med namn '%s' existerar redan"
+
+#: ../src/libs/map_locations.c:778
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "addition"
+msgid "edit location"
+msgstr "addition"
+
+#: ../src/libs/map_locations.c:781
+#, fuzzy
+#| msgid "select"
+msgid "delete location"
+msgstr "bildurval"
+
+#: ../src/libs/map_locations.c:791
+#, fuzzy
+#| msgid "update preset"
+msgid "update filmstrip"
+msgstr "uppdatera förinställning"
+
+#: ../src/libs/map_locations.c:798
+msgid "go to collection (lighttable)"
+msgstr ""
+
+#: ../src/libs/map_locations.c:844
+msgid ""
+"terminate edit (press enter or escape) before selecting another location"
+msgstr ""
+
+#: ../src/libs/map_locations.c:931
+msgid ""
+"list of user locations,\n"
+"click to show or hide a location on the map:\n"
+" - wheel scroll inside the shape to resize it\n"
+" - <shift> or <ctrl> scroll to modify the width or the height\n"
+" - click inside the shape and drag it to change its position\n"
+" - ctrl+click to move an image from inside the location\n"
+"ctrl+click to edit a location name\n"
+" - a pipe '|' symbol breaks the name into several levels\n"
+" - to remove a group of locations clear its name\n"
+" - press enter to validate the new name, escape to cancel the edit\n"
+"right-click for other actions: delete location and go to collection"
+msgstr ""
+
+#: ../src/libs/map_locations.c:957
+msgid ""
+"select the shape of the location's limits on the map, circle or rectangle\n"
+"or even polygon if available (select first a polygon place in 'find "
+"location' module)"
+msgstr ""
+
+#: ../src/libs/map_locations.c:961
+msgid "add a new location on the center of the visible map"
+msgstr ""
+
+#: ../src/libs/map_locations.c:965
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "no color"
+msgid "show all"
+msgstr "ingen färg"
+
+#: ../src/libs/map_locations.c:968
+msgid "show all locations which are on the visible map"
+msgstr ""
+
+#: ../src/libs/map_settings.c:39
+#, fuzzy
+#| msgid "map settings"
+msgid "map settings"
+msgstr "kartinställningar"
+
+#: ../src/libs/map_settings.c:107
+#, fuzzy
+#| msgid "map source"
+msgid "map source"
+msgstr "F källa"
+
+#: ../src/libs/map_settings.c:112
+msgid "select the source of the map. some entries might not work"
+msgstr ""
+
+#: ../src/libs/masks.c:107
+#, fuzzy
+#| msgid "other"
+msgid "feather"
+msgstr "annat"
+
+#: ../src/libs/masks.c:114
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "hardness (relative)"
+msgid "hardness (relative)"
+msgstr "hårdhet (relativt)"
+
+#: ../src/libs/masks.c:115
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "hardness (absolute)"
+msgid "hardness (absolute)"
+msgstr "hårdhet (absolut)"
+
+#: ../src/libs/masks.c:116
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "opacity (relative)"
+msgid "opacity (relative)"
+msgstr "ogenomskinlighet (relativt)"
+
+#: ../src/libs/masks.c:117
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "opacity (absolute)"
+msgid "opacity (absolute)"
+msgstr "ogenomskinlighet (absolut)"
+
+#: ../src/libs/masks.c:118
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "brush size (relative)"
+msgid "brush size (relative)"
+msgstr "penselsorlek (relativt)"
+
+#: ../src/libs/masks.c:121
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "low"
+msgid "low"
+msgstr "låg"
+
+#: ../src/libs/masks.c:122
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "medium"
+msgid "medium"
+msgstr "medel"
+
+#: ../src/libs/masks.c:123
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "high"
+msgid "high"
+msgstr "hög"
+
+#: ../src/libs/masks.c:381
+#, fuzzy, c-format
+#| msgid "group #%d"
+msgid "group #%d"
+msgstr "grupp #%d"
+
+#: ../src/libs/masks.c:1081
+#, fuzzy
+#| msgid "duplicate images"
+msgid "duplicate this shape"
+msgstr "duplicerar bilder"
+
+#: ../src/libs/masks.c:1085
+#, fuzzy
+#| msgid "delete this preset"
+msgid "delete this shape"
+msgstr "ta bort denna förinställning"
+
+#: ../src/libs/masks.c:1091
+#, fuzzy
+#| msgid "delete"
+msgid "delete group"
+msgstr "radera"
+
+#: ../src/libs/masks.c:1098
+#, fuzzy
+#| msgid "only remove from the collection"
+msgid "remove from group"
+msgstr "ta enbart bort från samling"
+
+#: ../src/libs/masks.c:1106
+#, fuzzy
+#| msgid "group size factor"
+msgid "group the forms"
+msgstr "gruppens storleksfaktor"
+
+#: ../src/libs/masks.c:1114
+#, fuzzy
+#| msgid "exclusive & inverted"
+msgid "use inverted shape"
+msgstr "uteslutande & inverterad"
+
+#: ../src/libs/masks.c:1121
+msgid "mode: union"
+msgstr ""
+
+#: ../src/libs/masks.c:1127
+#, fuzzy
+#| msgid "golden sections"
+msgid "mode: intersection"
+msgstr "gyllene sektioner"
+
+#: ../src/libs/masks.c:1133
+#, fuzzy
+#| msgid "mode : difference"
+msgid "mode: difference"
+msgstr "läge : skillnad"
+
+#: ../src/libs/masks.c:1139
+#, fuzzy
+#| msgid "mode"
+msgid "mode: sum"
+msgstr "läge"
+
+#: ../src/libs/masks.c:1145
+msgid "mode: exclusion"
+msgstr ""
+
+#: ../src/libs/masks.c:1164
+msgid "cleanup unused shapes"
+msgstr ""
+
+#: ../src/libs/masks.c:1811
+#, fuzzy
+#| msgid "create database snapshot"
+msgid "created shapes"
+msgstr "skapa databasavbild"
+
+#: ../src/libs/masks.c:1904 ../src/libs/masks.c:1919 ../src/libs/masks.c:1939
+#: ../src/libs/masks.c:1955
+#, fuzzy
+#| msgid "properties"
+msgid "properties"
+msgstr "inställningar"
+
+#: ../src/libs/masks.c:1907
+#, fuzzy
+#| msgid "no image selected!"
+msgid "no shapes selected"
+msgstr "inga bilder valda!"
+
+#: ../src/libs/masks.c:1940
+#, fuzzy
+#| msgid "presets"
+msgid "pressure"
+msgstr "fördefinierade"
+
+#: ../src/libs/masks.c:1941
+msgid ""
+"pen pressure control for brush masks\n"
+"'off': pressure reading ignored,\n"
+"'hardness'/'opacity'/'brush size': pressure reading controls specified "
+"attribute,\n"
+"'absolute'/'relative': pressure reading is taken directly as attribute value "
+"or multiplied with pre-defined setting."
+msgstr ""
+
+#: ../src/libs/masks.c:1956
+#, fuzzy
+#| msgid "smooth"
+msgid "smoothing"
+msgstr "mjuk"
+
+#: ../src/libs/masks.c:1957
+msgid ""
+"smoothing of brush strokes\n"
+"stronger smoothing leads to fewer nodes and easier editing but with lower "
+"control of accuracy."
+msgstr ""
+
+#: ../src/libs/metadata.c:64
+#, fuzzy
+#| msgid "metadata editor"
+msgid "metadata editor"
+msgstr "redigerare för metadata"
+
+#: ../src/libs/metadata.c:206 ../src/libs/metadata.c:496
+#, fuzzy
+#| msgid "<leave unchanged>"
+msgid "<leave unchanged>"
+msgstr "<lämna oförändrad>"
+
+#: ../src/libs/metadata.c:630 ../src/libs/metadata_view.c:1192
+#, fuzzy
+#| msgid "metadata editor"
+msgid "metadata settings"
+msgstr "redigerare för metadata"
+
+#: ../src/libs/metadata.c:683 ../src/libs/metadata_view.c:1237
+#, fuzzy
+#| msgid "visible to"
+msgid "visible"
+msgstr "visas för"
+
+#: ../src/libs/metadata.c:688
+msgid ""
+"tick if the corresponding metadata is of interest for you\n"
+"it will be visible from metadata editor, collection and import module\n"
+"it will be also exported"
+msgstr ""
+
+#: ../src/libs/metadata.c:693 ../src/libs/tagging.c:1683
+#: ../src/libs/tagging.c:1827
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "active"
+msgid "private"
+msgstr "aktiv"
+
+#: ../src/libs/metadata.c:698
+msgid ""
+"tick if you want to keep this information private (not exported with images)"
+msgstr ""
+
+#: ../src/libs/metadata.c:857
+msgid ""
+"metadata text\n"
+"ctrl+enter inserts a new line (caution, may not be compatible with standard "
+"metadata)\n"
+"if <leave unchanged> selected images have different metadata\n"
+"in that case, right-click gives the possibility to choose one of them\n"
+"escape to exit the popup window"
+msgstr ""
+
+#: ../src/libs/metadata.c:902
+#, fuzzy
+#| msgid "write sidecar file for each image"
+msgid "write metadata for selected images"
+msgstr "skapa sidofil för varje bild"
+
+#. <title>\0<description>\0<rights>\0<creator>\0<publisher>
+#: ../src/libs/metadata.c:958
+msgid "CC BY"
+msgstr ""
+
+#: ../src/libs/metadata.c:959
+msgid "Creative Commons Attribution (CC BY)"
+msgstr ""
+
+#: ../src/libs/metadata.c:960
+msgid "CC BY-SA"
+msgstr ""
+
+#: ../src/libs/metadata.c:961
+msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
+msgstr ""
+
+#: ../src/libs/metadata.c:962
+msgid "CC BY-ND"
+msgstr ""
+
+#: ../src/libs/metadata.c:963
+msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
+msgstr ""
+
+#: ../src/libs/metadata.c:964
+msgid "CC BY-NC"
+msgstr ""
+
+#: ../src/libs/metadata.c:965
+msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
+msgstr ""
+
+#: ../src/libs/metadata.c:966
+msgid "CC BY-NC-SA"
+msgstr ""
+
+#: ../src/libs/metadata.c:967
+msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
+msgstr ""
+
+#: ../src/libs/metadata.c:968
+msgid "CC BY-NC-ND"
+msgstr ""
+
+#: ../src/libs/metadata.c:969
+msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
+msgstr ""
+
+#: ../src/libs/metadata.c:970 ../src/libs/metadata.c:971
+msgid "all rights reserved"
+msgstr ""
+
+#. internal
+#: ../src/libs/metadata_view.c:123
+#, fuzzy
+#| msgid "film roll"
+msgid "filmroll"
+msgstr "filmrulle"
+
+#: ../src/libs/metadata_view.c:125
+#, fuzzy
+#| msgid "grouping"
+msgid "group id"
+msgstr "grupperar"
+
+#: ../src/libs/metadata_view.c:127
+#, fuzzy
+#| msgid "version"
+msgid "version"
+msgstr "version"
+
+#: ../src/libs/metadata_view.c:130
+#, fuzzy
+#| msgid "import image"
+msgid "import timestamp"
+msgstr "importera bild"
+
+#: ../src/libs/metadata_view.c:131
+#, fuzzy
+#| msgid "database timestamp"
+msgid "change timestamp"
+msgstr "databastidsstämpel"
+
+#: ../src/libs/metadata_view.c:132
+#, fuzzy
+#| msgid "export images"
+msgid "export timestamp"
+msgstr "exporterar bilder"
+
+#: ../src/libs/metadata_view.c:133
+#, fuzzy
+#| msgid "print timestamp"
+msgid "print timestamp"
+msgstr "skriv ut tidsstämpel"
+
+#: ../src/libs/metadata_view.c:134
+msgid "flags"
+msgstr ""
+
+#: ../src/libs/metadata_view.c:144
+#, fuzzy
+#| msgid "distance"
+msgid "focus distance"
+msgstr "avstånd"
+
+#: ../src/libs/metadata_view.c:146
+#, fuzzy
+#| msgid "date taken"
+msgid "datetime"
+msgstr "datum taget"
+
+#: ../src/libs/metadata_view.c:149
+#, fuzzy
+#| msgid "export images"
+msgid "export width"
+msgstr "exporterar bilder"
+
+#: ../src/libs/metadata_view.c:150
+#, fuzzy
+#| msgid "export height"
+msgid "export height"
+msgstr "exportens höjd"
+
+#: ../src/libs/metadata_view.c:158
+#, fuzzy
+#| msgid "latitude"
+msgid "longitude"
+msgstr "latitud"
+
+#: ../src/libs/metadata_view.c:159
+#, fuzzy
+#| msgid "select"
+msgid "elevation"
+msgstr "bildurval"
+
+#: ../src/libs/metadata_view.c:163
+msgid "categories"
+msgstr ""
+
+#: ../src/libs/metadata_view.c:170
+#, fuzzy
+#| msgid "image information"
+msgid "image information"
+msgstr "bildinformation"
+
+#: ../src/libs/metadata_view.c:330
+#, fuzzy
+#| msgctxt "modulegroup"
+#| msgid "deprecated"
+msgid "unused/deprecated"
+msgstr "ej använd/utgående"
+
+#: ../src/libs/metadata_view.c:331
+#, fuzzy
+#| msgid "HDR"
+msgid "LDR"
+msgstr "HDR"
+
+#: ../src/libs/metadata_view.c:334
+#, fuzzy
+#| msgid "ask before deleting a tag"
+msgid "marked for deletion"
+msgstr "fråga innan en tagg raderas"
+
+#: ../src/libs/metadata_view.c:335
+#, fuzzy
+#| msgid "auto apply this preset to matching images"
+msgid "auto-applying presets applied"
+msgstr "automatisk applicering av denna förinställning på matchande bilder"
+
+#: ../src/libs/metadata_view.c:337
+msgid "has .txt"
+msgstr ""
+
+#: ../src/libs/metadata_view.c:338
+msgid "has .wav"
+msgstr ""
+
+#: ../src/libs/metadata_view.c:356
+#, fuzzy, c-format
+#| msgid "image has %d star"
+#| msgid_plural "image has %d stars"
+msgid "image has %d star"
+msgid_plural "image has %d stars"
+msgstr[0] "bilden har %d stjärna"
+msgstr[1] "bilden har %d stjärna"
+
+#: ../src/libs/metadata_view.c:432
+#, fuzzy, c-format
+#| msgid "group leaders"
+msgid "loader: %s"
+msgstr "gruppidentitet"
+
+#: ../src/libs/metadata_view.c:623
+#, fuzzy
+#| msgid "harmonious triangles"
+msgid "<various values>"
+msgstr "harmoniska trianglar"
+
+#: ../src/libs/metadata_view.c:636
+#, fuzzy, c-format
+#| msgid "double click to reset to `%s'"
+msgid ""
+"double-click to jump to film roll\n"
+"%s"
+msgstr "dubbelklicka för att återställa till `%s'"
+
+#: ../src/libs/metadata_view.c:728
+#, fuzzy, c-format
+#| msgid "%.2f EV"
+msgid "%+.2f EV"
+msgstr "%.2f EV"
+
+#: ../src/libs/metadata_view.c:735
+#, c-format
+msgid "%.1f mm (%.1f mm FF equiv, crop %.1f)"
+msgstr ""
+
+#: ../src/libs/metadata_view.c:740
+#, fuzzy, c-format
+#| msgid "%.1f"
+msgid "%.1f mm"
+msgstr "%.1f"
+
+#: ../src/libs/metadata_view.c:751
+#, c-format
+msgid "infinity"
+msgstr ""
+
+#: ../src/libs/metadata_view.c:755
+#, fuzzy, c-format
+#| msgid "%.2f EV"
+msgid "%.2f m"
+msgstr "%.2f EV"
+
+#: ../src/libs/metadata_view.c:1232
+msgid ""
+"drag and drop one row at a time until you get the desired order\n"
+"untick to hide metadata which are not of interest for you\n"
+"if different settings are needed, use presets"
+msgstr ""
+
+#: ../src/libs/metadata_view.c:1388
+#, fuzzy
+#| msgid "film roll"
+msgid "jump to film roll"
+msgstr "filmrulle"
+
+#: ../src/libs/recentcollect.c:68
+#, fuzzy
+#| msgid "lens correction"
+msgid "recently used collections"
+msgstr "objektivkorrigering"
+
+#: ../src/libs/recentcollect.c:109
+msgid " and "
+msgstr ""
+
+#: ../src/libs/recentcollect.c:114
+msgid " or "
+msgstr ""
+
+#. case DT_LIB_COLLECT_MODE_AND_NOT:
+#: ../src/libs/recentcollect.c:119
+msgid " but not "
+msgstr ""
+
+#: ../src/libs/recentcollect.c:226
+#, fuzzy
+#| msgid "sort collection descending"
+msgid "recent collections settings"
+msgstr "sortera samlingen i fallande ordning"
+
+#: ../src/libs/modulegroups.c:42 ../src/libs/modulegroups.c:1769
+#, fuzzy
+#| msgid "linear, raw, scene-referred"
+msgid "workflow: scene-referred"
+msgstr "linjärt, raw, scen-tillämpat"
+
+#: ../src/libs/modulegroups.c:45
+#, fuzzy
+#| msgctxt "modulegroup"
+#| msgid "deprecated"
+msgid "modules: deprecated"
+msgstr "ej använd/utgående"
+
+#: ../src/libs/modulegroups.c:48
+#, fuzzy
+#| msgid "more modules"
+msgid "last modified layout"
+msgstr "fler moduler"
+
+#: ../src/libs/modulegroups.c:192
+#, fuzzy
+#| msgid "modules"
+msgid "modulegroups"
+msgstr "moduler"
+
+#. FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
+#. respond later to image changed signal
+#: ../src/libs/modulegroups.c:306 ../src/libs/modulegroups.c:318
+#: ../src/libs/modulegroups.c:2427 ../src/libs/modulegroups.c:2429
+msgid "on-off"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:498 ../src/libs/modulegroups.c:501
+msgid ""
+"this quick access widget is disabled as there are multiple instances of this "
+"module present. Please use the full module to access this widget..."
+msgstr ""
+
+#: ../src/libs/modulegroups.c:591
+msgid "(some features may only be available in the full module interface)"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:635
+#, fuzzy, c-format
+#| msgid "position of the image information line"
+msgid "go to the full version of the %s module"
+msgstr "position för bildens informationslinje"
+
+#: ../src/libs/modulegroups.c:1556 ../src/libs/modulegroups.c:1641
+#: ../src/libs/modulegroups.c:1677 ../src/libs/modulegroups.c:1727
+#: ../src/libs/modulegroups.c:1817
+#, fuzzy
+#| msgid "database"
+msgctxt "modulegroup"
+msgid "base"
+msgstr "databas"
+
+#: ../src/libs/modulegroups.c:1575
+#, fuzzy
+#| msgid "keystone"
+msgctxt "modulegroup"
+msgid "tone"
+msgstr "perspektivkorr"
+
+#: ../src/libs/modulegroups.c:1584 ../src/libs/modulegroups.c:1691
+#: ../src/libs/modulegroups.c:1741
+#, fuzzy
+#| msgid "color"
+msgctxt "modulegroup"
+msgid "color"
+msgstr "färg"
+
+#: ../src/libs/modulegroups.c:1599 ../src/libs/modulegroups.c:1699
+#: ../src/libs/modulegroups.c:1746
+#, fuzzy
+#| msgid "correct"
+msgctxt "modulegroup"
+msgid "correct"
+msgstr "korrigering"
+
+#: ../src/libs/modulegroups.c:1617 ../src/libs/modulegroups.c:1711
+#: ../src/libs/modulegroups.c:1758 ../src/libs/modulegroups.c:2321
+#, fuzzy
+#| msgctxt "modulegroup"
+#| msgid "effect"
+msgctxt "modulegroup"
+msgid "effect"
+msgstr "effekt"
+
+#: ../src/libs/modulegroups.c:1635
+#, fuzzy
+#| msgid "modules"
+msgid "modules: all"
+msgstr "moduler"
+
+#: ../src/libs/modulegroups.c:1656
+#, fuzzy
+#| msgid "global saturation"
+msgctxt "modulegroup"
+msgid "grading"
+msgstr "färgmättnad, globalt"
+
+#: ../src/libs/modulegroups.c:1664 ../src/libs/modulegroups.c:2325
+#, fuzzy
+#| msgctxt "modulegroup"
+#| msgid "effect"
+msgctxt "modulegroup"
+msgid "effects"
+msgstr "effekt"
+
+#: ../src/libs/modulegroups.c:1672
+msgid "workflow: beginner"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:1721
+#, fuzzy
+#| msgid "linear, raw, display-referred"
+msgid "workflow: display-referred"
+msgstr "linjärt, rå, skärm-tillämpat"
+
+#: ../src/libs/modulegroups.c:1773
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "search"
+msgid "search only"
+msgstr "sök"
+
+#: ../src/libs/modulegroups.c:1779 ../src/libs/modulegroups.c:2090
+#: ../src/libs/modulegroups.c:2599
+#, fuzzy
+#| msgctxt "modulegroup"
+#| msgid "deprecated"
+msgctxt "modulegroup"
+msgid "deprecated"
+msgstr "ej använd/utgående"
+
+#: ../src/libs/modulegroups.c:1792
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "previous"
+msgid "previous config"
+msgstr "föregående"
+
+#: ../src/libs/modulegroups.c:1793
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "previous"
+msgid "previous layout"
+msgstr "föregående"
+
+#: ../src/libs/modulegroups.c:1797
+msgid "previous config with new layout"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:1957 ../src/libs/modulegroups.c:2472
+#: ../src/libs/modulegroups.c:2484
+#, fuzzy
+#| msgid "remove images"
+msgid "remove this widget"
+msgstr "tar bort bilder"
+
+#: ../src/libs/modulegroups.c:2107 ../src/libs/modulegroups.c:2347
+#, fuzzy
+#| msgid "remove images"
+msgid "remove this module"
+msgstr "tar bort bilder"
+
+#. does it belong to recommended modules ?
+#: ../src/libs/modulegroups.c:2316
+#, fuzzy
+#| msgid "database"
+msgid "base"
+msgstr "databas"
+
+#: ../src/libs/modulegroups.c:2319
+#, fuzzy
+#| msgid "keystone"
+msgid "tone"
+msgstr "perspektivkorr"
+
+#: ../src/libs/modulegroups.c:2322
+msgid "technical"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2323
+#, fuzzy
+#| msgid "global saturation"
+msgid "grading"
+msgstr "färgmättnad, globalt"
+
+#: ../src/libs/modulegroups.c:2329 ../src/libs/modulegroups.c:2337
+msgid "add this module"
+msgstr ""
+
+#. show the submenu with all the modules
+#: ../src/libs/modulegroups.c:2359 ../src/libs/modulegroups.c:2559
+msgid "all available modules"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2367
+#, fuzzy
+#| msgid "module"
+msgid "add module"
+msgstr "modul"
+
+#: ../src/libs/modulegroups.c:2372
+#, fuzzy
+#| msgid "remove images"
+msgid "remove module"
+msgstr "tar bort bilder"
+
+#: ../src/libs/modulegroups.c:2478
+msgid "header needed for other widgets"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2494 ../src/libs/modulegroups.c:2501
+msgid "add this widget"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2514
+msgid "currently invisible"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2543
+#, fuzzy
+#| msgid "add gradient"
+msgid "add widget"
+msgstr "lägg till gradient"
+
+#: ../src/libs/modulegroups.c:2548
+#, fuzzy
+#| msgid "remove images"
+msgid "remove widget"
+msgstr "tar bort bilder"
+
+#: ../src/libs/modulegroups.c:2653
+#, fuzzy
+#| msgid "show mask indicator in module headers"
+msgid "show all history modules"
+msgstr "visa maskindikator i modulrubrikerna"
+
+#: ../src/libs/modulegroups.c:2656 ../src/libs/modulegroups.c:3834
+msgid ""
+"show modules that are present in the history stack, regardless of whether or "
+"not they are currently enabled"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2747 ../src/libs/modulegroups.c:2816
+msgid ""
+"the following modules are deprecated because they have internal design "
+"mistakes that can't be corrected and alternative modules that correct them.\n"
+"they will be removed for new edits in the next release."
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2775 ../src/libs/modulegroups.c:2776
+#, fuzzy
+#| msgid "ctrl+click to add a node"
+msgid "quick access panel"
+msgstr "ctrl+klick för att lägga till en nod"
+
+#: ../src/libs/modulegroups.c:2786
+msgid "show only active modules"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2787
+#, fuzzy
+msgid "active modules"
+msgstr "tillbehörsmoduler"
+
+#: ../src/libs/modulegroups.c:2792
+#, fuzzy
+#| msgid "ctrl+click to rotate"
+msgid ""
+"presets\n"
+"ctrl+click to manage"
+msgstr "ctrl+klick för att rotera"
+
+#: ../src/libs/modulegroups.c:2798
+#, fuzzy
+#| msgid "search radius"
+msgid "search modules"
+msgstr "välj radie"
+
+#: ../src/libs/modulegroups.c:2799
+msgid "search modules by name or tag"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:2809
+#, fuzzy
+#| msgid "clear"
+msgid "clear text"
+msgstr "rensa"
+
+#: ../src/libs/modulegroups.c:3051
+#, fuzzy
+msgid "basic icon"
+msgstr "moduler för grundkorrigering"
+
+#: ../src/libs/modulegroups.c:3061
+#, fuzzy
+#| msgid "live view"
+msgid "active icon"
+msgstr "live view"
+
+#: ../src/libs/modulegroups.c:3071
+#, fuzzy
+#| msgid "color zones"
+msgid "color icon"
+msgstr "färgzoner"
+
+#: ../src/libs/modulegroups.c:3081
+#, fuzzy
+#| msgid "corrections"
+msgid "correct icon"
+msgstr "korrigeringar"
+
+#: ../src/libs/modulegroups.c:3091
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "effect emulation"
+msgid "effect icon"
+msgstr "effektemulering"
+
+#: ../src/libs/modulegroups.c:3101
+msgid "favorites icon"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3111
+msgid "tone icon"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3121
+#, fuzzy
+#| msgid "gradient range"
+msgid "grading icon"
+msgstr "områdesgradient"
+
+#: ../src/libs/modulegroups.c:3131
+msgid "technical icon"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3164
+msgid "quick access panel widgets"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3166
+msgid "quick access"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3186
+#, fuzzy
+#| msgid "ctrl+click to add a node"
+msgid "add widget to the quick access panel"
+msgstr "ctrl+klick för att lägga till en nod"
+
+#: ../src/libs/modulegroups.c:3218
+#, fuzzy
+#| msgid "grouping"
+msgid "group icon"
+msgstr "grupperar"
+
+#: ../src/libs/modulegroups.c:3227
+#, fuzzy
+#| msgid "group leaders"
+msgid "group name"
+msgstr "gruppidentitet"
+
+#: ../src/libs/modulegroups.c:3238
+#, fuzzy
+#| msgid "move up"
+msgid "remove group"
+msgstr "flytta upp"
+
+#: ../src/libs/modulegroups.c:3264
+msgid "move group to the left"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3272
+msgid "add module to the group"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3283
+msgid "move group to the right"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3463
+#, fuzzy
+#| msgid "unnamed preset"
+msgid "rename preset"
+msgstr "förinställning utan namn"
+
+#: ../src/libs/modulegroups.c:3470
+#, fuzzy
+#| msgid "new preset"
+msgid "new preset name:"
+msgstr "ny förinställning"
+
+#: ../src/libs/modulegroups.c:3471
+#, fuzzy
+#| msgid "style with name '%s' already exists"
+msgid "a preset with this name already exists!"
+msgstr "stil med namn '%s' existerar redan"
+
+#: ../src/libs/modulegroups.c:3804
+#, fuzzy
+#| msgid "preset"
+msgid "preset: "
+msgstr "förinställning"
+
+#: ../src/libs/modulegroups.c:3811
+#, fuzzy
+#| msgid "name of the preset"
+msgid "remove the preset"
+msgstr "namn på förinställning"
+
+#: ../src/libs/modulegroups.c:3813
+#, fuzzy
+#| msgid "delete this preset"
+msgid "duplicate the preset"
+msgstr "ta bort denna förinställning"
+
+#: ../src/libs/modulegroups.c:3815
+#, fuzzy
+#| msgid "name of the preset"
+msgid "rename the preset"
+msgstr "namn på förinställning"
+
+#: ../src/libs/modulegroups.c:3817
+#, fuzzy
+#| msgid "create new style"
+msgid "create a new empty preset"
+msgstr "skapa ny stil"
+
+#: ../src/libs/modulegroups.c:3825
+msgid "show search line"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3828
+#, fuzzy
+#| msgid "ctrl+click to add a node"
+msgid "show quick access panel"
+msgstr "ctrl+klick för att lägga till en nod"
+
+#: ../src/libs/modulegroups.c:3831
+#, fuzzy
+#| msgid "only collapse modules in current group"
+msgid "show all history modules in active group"
+msgstr "fäll endast ihop moduler i aktuell grupp"
+
+#: ../src/libs/modulegroups.c:3843
+#, fuzzy
+#| msgid "auto apply this preset to matching images"
+msgid "auto-apply this preset"
+msgstr "automatisk applicering av denna förinställning på matchande bilder"
+
+#: ../src/libs/modulegroups.c:3858
+#, fuzzy
+#| msgid "modules"
+msgid "module groups"
+msgstr "moduler"
+
+#: ../src/libs/modulegroups.c:3875
+msgid ""
+"this is a built-in read-only preset. duplicate it if you want to make changes"
+msgstr ""
+
+#: ../src/libs/navigation.c:74
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "addition"
+msgid "navigation"
+msgstr "addition"
+
+#: ../src/libs/navigation.c:111 ../src/libs/navigation.c:191
+#, fuzzy
+#| msgid "fill mode"
+msgctxt "navigationbox"
+msgid "fill"
+msgstr "fyllnadsläge"
+
+#: ../src/libs/navigation.c:114 ../src/libs/navigation.c:189
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "small"
+msgid "small"
+msgstr "liten"
+
+#: ../src/libs/navigation.c:151
+msgid ""
+"navigation\n"
+"click or drag to position zoomed area in center view"
+msgstr ""
+
+#: ../src/libs/navigation.c:173
+msgid "hide navigation thumbnail"
+msgstr ""
+
+#: ../src/libs/navigation.c:187
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "image forward"
+msgid "image zoom level"
+msgstr "nästa bild"
+
+#: ../src/libs/navigation.c:192
+msgid "50%"
+msgstr ""
+
+#: ../src/libs/navigation.c:193
+msgid "100%"
+msgstr ""
+
+#: ../src/libs/navigation.c:194
+msgid "200%"
+msgstr ""
+
+#: ../src/libs/navigation.c:195
+msgid "400%"
+msgstr ""
+
+#: ../src/libs/navigation.c:196
+msgid "800%"
+msgstr ""
+
+#: ../src/libs/navigation.c:197
+msgid "1600%"
+msgstr ""
+
+#: ../src/libs/print_settings.c:45
+#, fuzzy
+#| msgid "map settings"
+msgid "print settings"
+msgstr "kartinställningar"
+
+#. FIXME: ellipsize title/printer as the export completed message is ellipsized
+#: ../src/libs/print_settings.c:357 ../src/libs/print_settings.c:754
+#, fuzzy, c-format
+#| msgid "printing `%s' on `%s'"
+msgid "processing `%s' for `%s'"
+msgstr "skriver ut `%s' på `%s'"
+
+#: ../src/libs/print_settings.c:387
+#, fuzzy, c-format
+#| msgid "could not export to file `%s'!"
+msgid "cannot open printer profile `%s'"
+msgstr "kunde inte exportera till fil `%s'!"
+
+#: ../src/libs/print_settings.c:398
+#, fuzzy, c-format
+#| msgid "error opening the database lock file for reading: %s"
+msgid "error getting output profile for image %d"
+msgstr "fel vid öppning av databasens lås-fil för läsning: %s"
+
+#: ../src/libs/print_settings.c:410
+#, fuzzy, c-format
+msgid "cannot apply printer profile `%s'"
+msgstr "kan inte skapa lokal kopia."
+
+#: ../src/libs/print_settings.c:574
+#, fuzzy
+#| msgid "failed to create temporary file for printing options"
+msgid "failed to create temporary PDF for printing"
+msgstr "misslyckades med att skapa temporär fil för utskriftsinställningar"
+
+#: ../src/libs/print_settings.c:620
+#, fuzzy
+#| msgid "maximum aperture value"
+msgid "maximum image per page reached"
+msgstr "högsta bländarsteg"
+
+#: ../src/libs/print_settings.c:708
+msgid "cannot print until a picture is selected"
+msgstr ""
+
+#: ../src/libs/print_settings.c:713
+msgid "cannot print until a printer is selected"
+msgstr ""
+
+#: ../src/libs/print_settings.c:718
+msgid "cannot print until a paper is selected"
+msgstr ""
+
+#. in this case no need to release from cache what we couldn't get
+#: ../src/libs/print_settings.c:746
+#, c-format
+msgid "cannot get image %d for printing"
+msgstr ""
+
+#: ../src/libs/print_settings.c:918
+#, c-format
+msgid "%3.2f (dpi:%d)"
+msgstr ""
+
+#: ../src/libs/print_settings.c:2396
+#, fuzzy
+#| msgid "print"
+msgctxt "section"
+msgid "printer"
+msgstr "skriv ut"
+
+#: ../src/libs/print_settings.c:2409 ../src/libs/print_settings.c:2418
+#: ../src/libs/print_settings.c:2473
+#, fuzzy
+#| msgid "print"
+msgid "printer"
+msgstr "skriv ut"
+
+#: ../src/libs/print_settings.c:2409
+#, fuzzy
+#| msgid "media"
+msgid "media"
+msgstr "media"
+
+#: ../src/libs/print_settings.c:2430
+msgid "color management in printer driver"
+msgstr ""
+
+#: ../src/libs/print_settings.c:2463
+#, fuzzy
+msgid "printer ICC profiles"
+msgstr "utgående profil"
+
+#: ../src/libs/print_settings.c:2484
+#, fuzzy
+msgid "black point compensation"
+msgstr "kontrast komprimering"
+
+#: ../src/libs/print_settings.c:2497
+msgid "activate black point compensation when applying the printer profile"
+msgstr ""
+
+#. //////////////////////// PAGE SETTINGS
+#: ../src/libs/print_settings.c:2504
+#, fuzzy
+#| msgid "page"
+msgctxt "section"
+msgid "page"
+msgstr "sida"
+
+#: ../src/libs/print_settings.c:2526
+msgid "measurement units"
+msgstr ""
+
+# THESE WEBP STRINGS NEED REWRITING!  They are really not comprehensible in any sane way, and they get even worse when trying to traduce them to swedish.  /Richard Levitte
+#: ../src/libs/print_settings.c:2534
+#, fuzzy
+#| msgid "image hint"
+msgid "image width/height"
+msgstr "bild-karaktär"
+
+#: ../src/libs/print_settings.c:2539
+msgid " x "
+msgstr ""
+
+#: ../src/libs/print_settings.c:2547
+#, fuzzy
+#| msgid "safety factor"
+msgid "scale factor"
+msgstr "skalningsfaktor"
+
+#: ../src/libs/print_settings.c:2553
+msgid ""
+"image scale factor from native printer DPI:\n"
+" < 1 means that it is downscaled (best quality)\n"
+" > 1 means that the image is upscaled\n"
+" a too large value may result in poor print quality"
+msgstr ""
+
+#. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
+#: ../src/libs/print_settings.c:2567
+#, fuzzy
+#| msgid "margins"
+msgid "top margin"
+msgstr "marginaler"
+
+#. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
+#: ../src/libs/print_settings.c:2571
+#, fuzzy
+#| msgid "margins"
+msgid "left margin"
+msgstr "marginaler"
+
+#: ../src/libs/print_settings.c:2574
+msgid "lock"
+msgstr ""
+
+#: ../src/libs/print_settings.c:2576
+msgid "change all margins uniformly"
+msgstr ""
+
+#. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
+#: ../src/libs/print_settings.c:2580
+#, fuzzy
+#| msgid "margins"
+msgid "right margin"
+msgstr "marginaler"
+
+#. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
+#: ../src/libs/print_settings.c:2584
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "toggle bottom toolbar"
+msgid "bottom margin"
+msgstr "växla nedre verktygsmeny"
+
+#: ../src/libs/print_settings.c:2617
+#, fuzzy
+msgid "display grid"
+msgstr "visa mask"
+
+#: ../src/libs/print_settings.c:2628
+msgid "snap to grid"
+msgstr ""
+
+#: ../src/libs/print_settings.c:2641
+#, fuzzy
+msgid "borderless mode required"
+msgstr "aktiverad som krävs"
+
+#: ../src/libs/print_settings.c:2644
+msgid ""
+"indicates that the borderless mode should be activated\n"
+"in the printer driver because the selected margins are\n"
+"below the printer hardware margins"
+msgstr ""
+
+#. pack image dimension hbox here
+#: ../src/libs/print_settings.c:2651
+#, fuzzy
+#| msgid "more modules"
+msgctxt "section"
+msgid "image layout"
+msgstr "fler moduler"
+
+#: ../src/libs/print_settings.c:2692
+#, fuzzy
+#| msgid "image cache file"
+msgid "new image area"
+msgstr "bild cache fil"
+
+#: ../src/libs/print_settings.c:2694
+msgid ""
+"add a new image area on the page\n"
+"click and drag on the page to place the area\n"
+"drag and drop image from film strip on it"
+msgstr ""
+
+#: ../src/libs/print_settings.c:2698
+#, fuzzy
+#| msgid "delete images"
+msgid "delete image area"
+msgstr "raderar bilder"
+
+#: ../src/libs/print_settings.c:2700
+msgid "delete the currently selected image area"
+msgstr ""
+
+#: ../src/libs/print_settings.c:2703
+#, fuzzy
+#| msgid "linear part"
+msgid "clear layout"
+msgstr "linjär del"
+
+#: ../src/libs/print_settings.c:2705
+msgid "remove all image areas from the page"
+msgstr ""
+
+#. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
+#: ../src/libs/print_settings.c:2722
+msgid "image area x origin (in current unit)"
+msgstr ""
+
+#. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
+#: ../src/libs/print_settings.c:2726
+msgid "image area y origin (in current unit)"
+msgstr ""
+
+#. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
+#: ../src/libs/print_settings.c:2737
+msgid "image area width (in current unit)"
+msgstr ""
+
+#. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
+#: ../src/libs/print_settings.c:2741
+msgid "image area height (in current unit)"
+msgstr ""
+
+#. //////////////////////// PRINT SETTINGS
+#: ../src/libs/print_settings.c:2767
+#, fuzzy
+#| msgid "map settings"
+msgctxt "section"
+msgid "print settings"
+msgstr "kartinställningar"
+
+#: ../src/libs/print_settings.c:2855
+msgid "temporary style to use while printing"
+msgstr ""
+
+#: ../src/libs/print_settings.c:2887
+#, fuzzy
+#| msgid "print with current settings"
+msgid "print with current settings"
+msgstr "skriv ut med nuvarande inställningar"
+
+#: ../src/libs/select.c:136
+#, fuzzy
+#| msgid "there are no images in this collection"
+msgid "select all images in current collection"
+msgstr "det finns inga bilder i den här samlingen"
+
+#: ../src/libs/select.c:140
+#, fuzzy
+#| msgid "invert selection"
+msgid "clear selection"
+msgstr "invertera val"
+
+#: ../src/libs/select.c:144
+#, fuzzy
+#| msgid "there are no images in this collection"
+msgid ""
+"select unselected images\n"
+"in current collection"
+msgstr "det finns inga bilder i den här samlingen"
+
+#: ../src/libs/select.c:148
+msgid ""
+"select all images which are in the same\n"
+"film roll as the selected images"
+msgstr ""
+
+#: ../src/libs/select.c:152
+#, fuzzy
+#| msgid "there are no images in this collection"
+msgid ""
+"select untouched images in\n"
+"current collection"
+msgstr "det finns inga bilder i den här samlingen"
+
+#: ../src/libs/session.c:47
+#, fuzzy
+#| msgid "compression"
+msgid "session"
+msgstr "komprimering"
+
+#: ../src/libs/session.c:98
+msgid "jobcode"
+msgstr ""
+
+#: ../src/libs/session.c:106
+#, fuzzy
+#| msgid "relative"
+msgid "create"
+msgstr "relativ"
+
+#: ../src/libs/snapshots.c:92
+msgid "snapshots"
+msgstr ""
+
+#: ../src/libs/snapshots.c:141
+#, fuzzy
+#| msgid "S"
+msgctxt "snapshot sign"
+msgid "S"
+msgstr "S"
+
+#: ../src/libs/snapshots.c:574
+#, c-format
+msgid "↗ %s '%s'"
+msgstr ""
+
+#: ../src/libs/snapshots.c:574
+msgid "this snapshot was taken from"
+msgstr ""
+
+#: ../src/libs/snapshots.c:663
+#, fuzzy
+#| msgid "create database snapshot"
+msgid "take snapshot"
+msgstr "skapa databasavbild"
+
+#: ../src/libs/snapshots.c:665
+msgid ""
+"take snapshot to compare with another image or the same image at another "
+"stage of development"
+msgstr ""
+
+#: ../src/libs/snapshots.c:734
+#, fuzzy
+#| msgid "create database snapshot"
+msgid "toggle last snapshot"
+msgstr "skapa databasavbild"
+
+#: ../src/libs/styles.c:326
+#, fuzzy
+#| msgid "remove images?"
+msgid "remove style?"
+msgid_plural "remove styles?"
+msgstr[0] "ta bort bilder?"
+msgstr[1] "ta bort bilder?"
+
+#: ../src/libs/styles.c:327
+#, fuzzy, c-format
+#| msgid "do you really want to delete the preset `%s'?"
+msgid "do you really want to remove %d style?"
+msgid_plural "do you really want to remove %d styles?"
+msgstr[0] "vill du verkligen ta bort förinställning `%s'?"
+msgstr[1] "vill du verkligen ta bort förinställning `%s'?"
+
+#: ../src/libs/styles.c:444 ../src/libs/styles.c:627
+#, fuzzy, c-format
+#| msgid ""
+#| "preset `%s' already exists.\n"
+#| "do you want to overwrite?"
+msgid ""
+"style `%s' already exists.\n"
+"do you want to overwrite existing style?\n"
+msgstr ""
+"förinställningen `%s' existerar redan.\n"
+"Vill du skriva över den?"
+
+#: ../src/libs/styles.c:446 ../src/libs/styles.c:629
+#, fuzzy
+#| msgid "auto apply this preset to matching images"
+msgid "apply this option to all existing styles"
+msgstr "automatisk applicering av denna förinställning på matchande bilder"
+
+#: ../src/libs/styles.c:509
+#, fuzzy, c-format
+#| msgid "style %s was successfully imported"
+msgid "style %s was successfully exported"
+msgstr "stilen '%s' importerades"
+
+#: ../src/libs/styles.c:526
+#, fuzzy
+#| msgid "select by"
+msgid "select style"
+msgstr "urval av"
+
+#: ../src/libs/styles.c:536
+#, fuzzy
+#| msgid "darktable style files"
+msgid "darktable style files"
+msgstr "darktable stil filer"
+
+#: ../src/libs/styles.c:815
+msgid ""
+"available styles,\n"
+"double-click to apply"
+msgstr ""
+
+#: ../src/libs/styles.c:824 ../src/libs/styles.c:825
+#, fuzzy
+#| msgid "filtered images"
+msgid "filter style names"
+msgstr "filtrerade bilder"
+
+#: ../src/libs/styles.c:837
+#, fuzzy
+#| msgid "duplicate"
+msgid "create duplicate"
+msgstr "duplicera"
+
+#: ../src/libs/styles.c:844
+#, fuzzy
+#| msgid "creates a duplicate of the style before applying changes"
+msgid "creates a duplicate of the image before applying style"
+msgstr "skapa en kopia på stilen innan förändringar appliceras"
+
+#: ../src/libs/styles.c:862
+#, fuzzy
+#| msgid "remove..."
+msgid "create..."
+msgstr "ta bort..."
+
+#: ../src/libs/styles.c:864
+#, fuzzy
+#| msgid "can't create style out of unaltered image"
+msgid "create styles from history stack of selected images"
+msgstr "kan inte skapa en stil utifrån en orörd bild"
+
+#: ../src/libs/styles.c:869 ../src/libs/tagging.c:2252
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "edit"
+msgid "edit..."
+msgstr "ändra"
+
+#: ../src/libs/styles.c:871
+msgid "edit the selected styles in list above"
+msgstr ""
+
+#: ../src/libs/styles.c:878
+#, fuzzy
+#| msgid "removes the selected styles in list above"
+msgid "removes the selected styles in list above"
+msgstr "tar bort den valda stilarna i listan ovan"
+
+#: ../src/libs/styles.c:885
+msgid "import styles from a style files"
+msgstr ""
+
+#: ../src/libs/styles.c:892
+msgid "export the selected styles into a style files"
+msgstr ""
+
+#: ../src/libs/styles.c:899
+msgid "apply the selected styles in list above to selected images"
+msgstr ""
+
+#: ../src/libs/tagging.c:105
+#, fuzzy
+#| msgid "geotagging"
+msgid "tagging"
+msgstr "geotaggning"
+
+#: ../src/libs/tagging.c:1255
+msgid "attach tag to all"
+msgstr ""
+
+#: ../src/libs/tagging.c:1263 ../src/libs/tagging.c:2225
+msgid "detach tag"
+msgstr ""
+
+#: ../src/libs/tagging.c:1483
+#, fuzzy
+#| msgid "delete images?"
+msgid "delete tag?"
+msgstr "radera bilder?"
+
+#: ../src/libs/tagging.c:1490 ../src/libs/tagging.c:1578
+#: ../src/libs/tagging.c:1789 ../src/libs/tagging.c:2063
+#, fuzzy, c-format
+#| msgid "select"
+msgid "selected: %s"
+msgstr "bildurval"
+
+#: ../src/libs/tagging.c:1497
+#, fuzzy, c-format
+#| msgid "do you really want to delete the preset `%s'?"
+msgid ""
+"do you really want to delete the tag `%s'?\n"
+"%d image is assigned this tag!"
+msgid_plural ""
+"do you really want to delete the tag `%s'?\n"
+"%d images are assigned this tag!"
+msgstr[0] "vill du verkligen ta bort förinställning `%s'?"
+msgstr[1] "vill du verkligen ta bort förinställning `%s'?"
+
+#: ../src/libs/tagging.c:1531
+#, c-format
+msgid "tag %s removed"
+msgstr ""
+
+#: ../src/libs/tagging.c:1571
+#, fuzzy
+#| msgid "delete images?"
+msgid "delete node?"
+msgstr "radera bilder?"
+
+#: ../src/libs/tagging.c:1585
+#, c-format
+msgid "<u>%d</u> tag will be deleted"
+msgid_plural "<u>%d</u> tags will be deleted"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/libs/tagging.c:1590 ../src/libs/tagging.c:1801
+#: ../src/libs/tagging.c:2075
+#, c-format
+msgid "<u>%d</u> image will be updated"
+msgid_plural "<u>%d</u> images will be updated"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/libs/tagging.c:1616
+#, c-format
+msgid "%d tags removed"
+msgstr ""
+
+#: ../src/libs/tagging.c:1652
+#, fuzzy
+#| msgid "relative"
+msgid "create tag"
+msgstr "relativ"
+
+#: ../src/libs/tagging.c:1662 ../src/libs/tagging.c:1809
+#, fuzzy
+#| msgid "name"
+msgid "name: "
+msgstr "namn"
+
+#: ../src/libs/tagging.c:1674
+#, c-format
+msgid "add to: \"%s\" "
+msgstr ""
+
+#: ../src/libs/tagging.c:1680 ../src/libs/tagging.c:1824
+msgid "category"
+msgstr ""
+
+#: ../src/libs/tagging.c:1689 ../src/libs/tagging.c:1833
+msgid "synonyms: "
+msgstr ""
+
+#: ../src/libs/tagging.c:1706 ../src/libs/tagging.c:1855
+#: ../src/libs/tagging.c:2097
+msgid "empty tag is not allowed, aborting"
+msgstr ""
+
+#: ../src/libs/tagging.c:1717
+#, fuzzy
+#| msgid "style with name '%s' already exists"
+msgid "tag name already exists. aborting."
+msgstr "stil med namn '%s' existerar redan"
+
+#: ../src/libs/tagging.c:1796 ../src/libs/tagging.c:2070
+#, c-format
+msgid "<u>%d</u> tag will be updated"
+msgid_plural "<u>%d</u> tags will be updated"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/libs/tagging.c:1857
+msgid ""
+"'|' character is not allowed for renaming tag.\n"
+"to modify the hierarchy use rename path instead. Aborting."
+msgstr ""
+
+#: ../src/libs/tagging.c:1896 ../src/libs/tagging.c:2004
+#, fuzzy, c-format
+#| msgid "style with name '%s' already exists"
+msgid "at least one new tag name (%s) already exists, aborting"
+msgstr "stil med namn '%s' existerar redan"
+
+#: ../src/libs/tagging.c:2056
+#, fuzzy
+#| msgid "add path"
+msgid "change path"
+msgstr "lägg till slinga"
+
+#: ../src/libs/tagging.c:2099
+msgid "'|' misplaced, empty tag is not allowed, aborting"
+msgstr ""
+
+#: ../src/libs/tagging.c:2195
+#, c-format
+msgid "tag %s created"
+msgstr ""
+
+#: ../src/libs/tagging.c:2221
+msgid "attach tag"
+msgstr ""
+
+#: ../src/libs/tagging.c:2234
+msgid "create tag..."
+msgstr ""
+
+#: ../src/libs/tagging.c:2240
+#, fuzzy
+#| msgid "delete images"
+msgid "delete tag"
+msgstr "raderar bilder"
+
+#: ../src/libs/tagging.c:2247
+#, fuzzy
+#| msgid "delete"
+msgid "delete node"
+msgstr "radera"
+
+#: ../src/libs/tagging.c:2260
+msgid "change path..."
+msgstr ""
+
+#: ../src/libs/tagging.c:2270
+msgid "set as a tag"
+msgstr ""
+
+#: ../src/libs/tagging.c:2281
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "copy history"
+msgid "copy to entry"
+msgstr "kopiera historik"
+
+#: ../src/libs/tagging.c:2298
+#, fuzzy
+#| msgid "color correction"
+msgid "go to tag collection"
+msgstr "färgkorrigering"
+
+#: ../src/libs/tagging.c:2304
+msgid "go back to work"
+msgstr ""
+
+#: ../src/libs/tagging.c:2461
+#, c-format
+msgid "%s"
+msgstr ""
+
+#: ../src/libs/tagging.c:2462
+msgid "(private)"
+msgstr ""
+
+#: ../src/libs/tagging.c:2488
+#, fuzzy
+#| msgid "select file"
+msgid "select a keyword file"
+msgstr "välj fil"
+
+#: ../src/libs/tagging.c:2501
+#, fuzzy
+#| msgid "importing image %s"
+msgid "error importing tags"
+msgstr "importerar bild %s"
+
+#: ../src/libs/tagging.c:2503
+#, fuzzy, c-format
+#| msgid "%s has been imported"
+#| msgid_plural "%s have been imported"
+msgid "%zd tags imported"
+msgstr "%s har importerats"
+
+#: ../src/libs/tagging.c:2524
+#, fuzzy
+#| msgid "select file to export"
+msgid "select file to export to"
+msgstr "välj fil att exportera"
+
+#: ../src/libs/tagging.c:2538
+#, fuzzy
+#| msgid "error starting darktable"
+msgid "error exporting tags"
+msgstr "fel vid start av darktable"
+
+#: ../src/libs/tagging.c:2540
+#, fuzzy, c-format
+#| msgid "%s has been imported"
+#| msgid_plural "%s have been imported"
+msgid "%zd tags exported"
+msgstr "%s har importerats"
+
+#: ../src/libs/tagging.c:2964
+#, fuzzy
+#| msgid "crop factor"
+msgid "drop to root"
+msgstr "beskärningsfaktor"
+
+#: ../src/libs/tagging.c:3100
+msgid ""
+"attached tags\n"
+"press Delete or double-click to detach\n"
+"right-click for other actions on attached tag,\n"
+"Tab to give the focus to entry"
+msgstr ""
+
+#: ../src/libs/tagging.c:3111
+msgid "attach"
+msgstr ""
+
+#: ../src/libs/tagging.c:3112
+#, fuzzy
+#| msgid "apply some metadata to all newly imported images."
+msgid "attach tag to all selected images"
+msgstr "applicera viss metadata på alla nyimporterade bilder."
+
+#: ../src/libs/tagging.c:3115
+#, fuzzy
+#| msgid "detail"
+msgid "detach"
+msgstr "detalj"
+
+#: ../src/libs/tagging.c:3116
+msgid "detach tag from all selected images"
+msgstr ""
+
+#: ../src/libs/tagging.c:3129
+msgid "toggle list with / without hierarchy"
+msgstr ""
+
+#: ../src/libs/tagging.c:3129
+msgid "hide"
+msgstr ""
+
+#: ../src/libs/tagging.c:3131
+msgid "toggle sort by name or by count"
+msgstr ""
+
+#: ../src/libs/tagging.c:3131
+msgid "sort"
+msgstr ""
+
+#: ../src/libs/tagging.c:3133
+msgid "toggle show or not darktable tags"
+msgstr ""
+
+#: ../src/libs/tagging.c:3133
+#, fuzzy
+#| msgid "tags"
+msgid "dttags"
+msgstr "taggar"
+
+#: ../src/libs/tagging.c:3149
+msgid ""
+"enter tag name\n"
+"press Enter to create a new tag and attach it on selected images\n"
+"press Tab or Down key to go to the first matching tag\n"
+"press shift+Tab to select the first attached user tag"
+msgstr ""
+
+#: ../src/libs/tagging.c:3160 ../src/libs/tagging.c:3166
+#, fuzzy
+#| msgid "clear"
+msgid "clear entry"
+msgstr "rensa"
+
+#: ../src/libs/tagging.c:3213
+msgid ""
+"tag dictionary,\n"
+"Enter or double-click to attach selected tag on selected images\n"
+"shift+Enter idem plus gives the focus to entry\n"
+"shift+click to fully expand the selected tag\n"
+"right-click for other actions on selected tag\n"
+"shift+Tab to give the focus to entry"
+msgstr ""
+
+#: ../src/libs/tagging.c:3248
+msgid ""
+"create a new tag with the\n"
+"name you entered"
+msgstr ""
+
+#: ../src/libs/tagging.c:3251
+#, fuzzy
+#| msgid "import images from camera"
+msgid "import tags from a Lightroom keyword file"
+msgstr "importera bilder från kamera"
+
+#: ../src/libs/tagging.c:3254
+msgid "export all tags to a Lightroom keyword file"
+msgstr ""
+
+#: ../src/libs/tagging.c:3258
+msgid "toggle list / tree view"
+msgstr ""
+
+#: ../src/libs/tagging.c:3258
+msgid "tree"
+msgstr ""
+
+#: ../src/libs/tagging.c:3260
+msgid "toggle list with / without suggestion"
+msgstr ""
+
+#: ../src/libs/tagging.c:3260
+#, fuzzy
+#| msgid "select"
+msgid "suggestion"
+msgstr "bildurval"
+
+#: ../src/libs/tagging.c:3282
+msgid "redo last tag"
+msgstr ""
+
+#: ../src/libs/tagging.c:3365
+msgid ""
+"tag shortcut is not active with tag tree view. please switch to list view"
+msgstr ""
+
+#: ../src/libs/tagging.c:3469
+msgid "tagging settings"
+msgstr ""
+
+#: ../src/libs/tools/battery_indicator.c:38
+#: ../src/libs/tools/battery_indicator.c:70
+msgid "battery indicator"
+msgstr ""
+
+#: ../src/libs/tools/colorlabels.c:42
+#, fuzzy
+#| msgid "color label"
+msgid "colorlabels"
+msgstr "färgmarkering"
+
+#: ../src/libs/tools/colorlabels.c:87
+#, fuzzy
+msgid "toggle color label of selected images"
+msgstr "växla den ritade markeringens polaritet"
+
+#: ../src/libs/tools/darktable.c:284
+#, c-format
+msgid "copyright (c) the authors 2009-%s"
+msgstr ""
+
+#: ../src/libs/tools/darktable.c:288
+#, fuzzy
+#| msgid "Organize and develop images from digital cameras"
+msgid "organize and develop images from digital cameras"
+msgstr "Organisera och utveckla bilder från digitalkameror"
+
+#: ../src/libs/tools/darktable.c:300
+msgid "all those of you that made previous releases possible"
+msgstr ""
+
+#: ../src/libs/tools/darktable.c:305
+msgid "and..."
+msgstr ""
+
+#: ../src/libs/tools/darktable.c:307
+#, fuzzy
+#| msgid "translators"
+msgid "translator-credits"
+msgstr "översättare"
+
+#: ../src/libs/tools/filmstrip.c:45
+#, fuzzy
+#| msgid "filmic"
+msgid "filmstrip"
+msgstr "filmisk"
+
+#: ../src/libs/tools/filter.c:42
+#, fuzzy
+#| msgid "red filter"
+msgid "filter"
+msgstr "rött filter"
+
+#: ../src/libs/tools/filter.c:104
+#, fuzzy
+#| msgid "preferences"
+msgid "filter preferences"
+msgstr "inställningar"
+
+#: ../src/libs/tools/gamepad.c:37
+msgid "gamepad"
+msgstr ""
+
+#: ../src/libs/tools/gamepad.c:60
+#, fuzzy
+#| msgid "button"
+msgid "button a"
+msgstr "knapp"
+
+#: ../src/libs/tools/gamepad.c:60
+#, fuzzy
+#| msgid "button"
+msgid "button b"
+msgstr "knapp"
+
+#: ../src/libs/tools/gamepad.c:60
+#, fuzzy
+#| msgid "button"
+msgid "button x"
+msgstr "knapp"
+
+#: ../src/libs/tools/gamepad.c:60
+#, fuzzy
+#| msgid "button"
+msgid "button y"
+msgstr "knapp"
+
+#: ../src/libs/tools/gamepad.c:61
+#, fuzzy
+#| msgid "button"
+msgid "button back"
+msgstr "knapp"
+
+#: ../src/libs/tools/gamepad.c:61
+#, fuzzy
+#| msgid "button"
+msgid "button guide"
+msgstr "knapp"
+
+#: ../src/libs/tools/gamepad.c:61
+#, fuzzy
+#| msgid "button"
+msgid "button start"
+msgstr "knapp"
+
+#: ../src/libs/tools/gamepad.c:62
+msgid "left stick"
+msgstr ""
+
+#: ../src/libs/tools/gamepad.c:62
+#, fuzzy
+#| msgid "rights"
+msgid "right stick"
+msgstr "rättigheter"
+
+#: ../src/libs/tools/gamepad.c:62
+#, fuzzy
+#| msgid "folders"
+msgid "left shoulder"
+msgstr "kataloger"
+
+#: ../src/libs/tools/gamepad.c:62
+#, fuzzy
+#| msgid "crop from right border"
+msgid "right shoulder"
+msgstr "beskär från högerkanten"
+
+#: ../src/libs/tools/gamepad.c:63
+msgid "dpad up"
+msgstr ""
+
+#: ../src/libs/tools/gamepad.c:63
+#, fuzzy
+#| msgid "down"
+msgid "dpad down"
+msgstr "ner"
+
+#: ../src/libs/tools/gamepad.c:63
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "top left"
+msgid "dpad left"
+msgstr "övre vänstra"
+
+# ändrat från "rättigheter"
+#: ../src/libs/tools/gamepad.c:63
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "top right"
+msgid "dpad right"
+msgstr "övre högra"
+
+#: ../src/libs/tools/gamepad.c:64
+#, fuzzy
+#| msgid "button"
+msgid "button misc1"
+msgstr "knapp"
+
+#: ../src/libs/tools/gamepad.c:64
+#, fuzzy
+msgid "paddle1"
+msgstr "luma för mellantonerna"
+
+#: ../src/libs/tools/gamepad.c:64
+#, fuzzy
+msgid "paddle2"
+msgstr "luma för mellantonerna"
+
+#: ../src/libs/tools/gamepad.c:64
+#, fuzzy
+msgid "paddle3"
+msgstr "luma för mellantonerna"
+
+#: ../src/libs/tools/gamepad.c:64
+#, fuzzy
+msgid "paddle4"
+msgstr "luma för mellantonerna"
+
+#: ../src/libs/tools/gamepad.c:64
+#, fuzzy
+#| msgid "retouch"
+msgid "touchpad"
+msgstr "retuschera"
+
+#: ../src/libs/tools/gamepad.c:65
+#, fuzzy
+#| msgid "right"
+msgid "left trigger"
+msgstr "höger"
+
+#: ../src/libs/tools/gamepad.c:65
+#, fuzzy
+#| msgid "lighttable"
+msgid "right trigger"
+msgstr "ljusbord"
+
+#: ../src/libs/tools/gamepad.c:71
+#, fuzzy
+#| msgid "invalid paper size"
+msgid "invalid gamepad button"
+msgstr "ogilltig pappersstorlek"
+
+#: ../src/libs/tools/gamepad.c:89
+#, fuzzy
+#| msgid "left"
+msgid "left x"
+msgstr "vänster"
+
+#: ../src/libs/tools/gamepad.c:89
+#, fuzzy
+#| msgid "left"
+msgid "left y"
+msgstr "vänster"
+
+#: ../src/libs/tools/gamepad.c:89
+#, fuzzy
+#| msgid "right"
+msgid "right x"
+msgstr "höger"
+
+#: ../src/libs/tools/gamepad.c:89
+#, fuzzy
+#| msgid "right"
+msgid "right y"
+msgstr "höger"
+
+#: ../src/libs/tools/gamepad.c:90
+#, fuzzy
+#| msgid "diagonal method"
+msgid "left diagonal"
+msgstr "diagonal metod"
+
+#: ../src/libs/tools/gamepad.c:90
+#, fuzzy
+#| msgid "left"
+msgid "left skew"
+msgstr "vänster"
+
+#: ../src/libs/tools/gamepad.c:90
+#, fuzzy
+#| msgid "diagonal method"
+msgid "right diagonal"
+msgstr "diagonal metod"
+
+#: ../src/libs/tools/gamepad.c:90
+#, fuzzy
+#| msgid "rights"
+msgid "right skew"
+msgstr "rättigheter"
+
+#. diagonals
+#: ../src/libs/tools/gamepad.c:96
+#, fuzzy
+#| msgid "invalid paper size"
+msgid "invalid gamepad axis"
+msgstr "ogilltig pappersstorlek"
+
+#. we write the label with the size category
+#: ../src/libs/tools/global_toolbox.c:215
+msgid "thumbnails overlays for size"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:249
+#: ../src/libs/tools/global_toolbox.c:312
+msgid ""
+"duration before the block overlay is hidden after each mouse movement on the "
+"image\n"
+"set -1 to never hide the overlay"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:254
+#: ../src/libs/tools/global_toolbox.c:317
+msgid "timeout only available for block overlay"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:277
+#: ../src/libs/tools/global_toolbox.c:463
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "toggle panels collapsing controls"
+msgid "culling overlays"
+msgstr "växla panelernas kollaps kontroll"
+
+#: ../src/libs/tools/global_toolbox.c:279
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "overlay"
+msgid "preview overlays"
+msgstr "överlagring"
+
+#: ../src/libs/tools/global_toolbox.c:353
+#, fuzzy
+#| msgid "not available"
+msgid "overlays not available here..."
+msgstr "ej tillgängligt"
+
+#: ../src/libs/tools/global_toolbox.c:397
+#: ../src/libs/tools/global_toolbox.c:533
+#, fuzzy
+#| msgid "expand grouped images"
+msgid "expand grouped images"
+msgstr "veckla ut grupperade bilder"
+
+#: ../src/libs/tools/global_toolbox.c:399
+#: ../src/libs/tools/global_toolbox.c:535
+#, fuzzy
+#| msgid "expand grouped images"
+msgid "collapse grouped images"
+msgstr "veckla ut grupperade bilder"
+
+#: ../src/libs/tools/global_toolbox.c:406
+#, fuzzy
+#| msgctxt "noun"
+#| msgid "thumbnail export"
+msgid "thumbnail overlays options"
+msgstr "export av miniatyrbild"
+
+#: ../src/libs/tools/global_toolbox.c:407
+msgid "click to change the type of overlays shown on thumbnails"
+msgstr ""
+
+# överlagring ändrad till täckningsfärg
+#: ../src/libs/tools/global_toolbox.c:430
+#: ../src/libs/tools/global_toolbox.c:459
+#, fuzzy
+#| msgid "overlay color"
+msgid "overlay mode for size"
+msgstr "täckningsfärg"
+
+#: ../src/libs/tools/global_toolbox.c:434
+#, fuzzy
+#| msgid "thumbnail display"
+msgid "thumbnail overlays"
+msgstr "miniatyrvisning"
+
+#: ../src/libs/tools/global_toolbox.c:436
+#: ../src/libs/tools/global_toolbox.c:465
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "overlay"
+msgid "no overlays"
+msgstr "överlagring"
+
+# överlagring ändrad till täckningsfärg
+#: ../src/libs/tools/global_toolbox.c:437
+#, fuzzy
+#| msgid "overlay color"
+msgid "overlays on mouse hover"
+msgstr "täckningsfärg"
+
+#: ../src/libs/tools/global_toolbox.c:438
+msgid "extended overlays on mouse hover"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:439
+#: ../src/libs/tools/global_toolbox.c:466
+msgid "permanent overlays"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:440
+#: ../src/libs/tools/global_toolbox.c:467
+#, fuzzy
+#| msgid "pattern for the thumbnail extended overlay text"
+msgid "permanent extended overlays"
+msgstr "mönster för miniatyrers utökade lagertext"
+
+#: ../src/libs/tools/global_toolbox.c:441
+msgid "permanent overlays extended on mouse hover"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:443
+#: ../src/libs/tools/global_toolbox.c:469
+msgid "overlays block on mouse hover"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:444
+#: ../src/libs/tools/global_toolbox.c:470
+msgid "during (s)"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:449
+#: ../src/libs/tools/global_toolbox.c:475
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "no color"
+msgid "show tooltip"
+msgstr "ingen färg"
+
+#: ../src/libs/tools/global_toolbox.c:487
+msgid "help"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:489
+msgid "enable this, then click on a control element to see its online help"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:496
+msgid ""
+"define shortcuts\n"
+"ctrl+click to switch off overwrite confirmations\n"
+"\n"
+"hover over a widget and press keys with mouse click and scroll or move "
+"combinations\n"
+"repeat same combination again to delete mapping\n"
+"click on a widget, module or screen area to open the dialog for further "
+"configuration"
+msgstr ""
+
+#: ../src/libs/tools/global_toolbox.c:512
+#, fuzzy
+#| msgid "preferences"
+msgid "show global preferences"
+msgstr "inställningar"
+
+#: ../src/libs/tools/hinter.c:42
+#, fuzzy
+#| msgid "hinter"
+msgid "hinter"
+msgstr "tipsare"
+
+#: ../src/libs/tools/hinter.c:98
+#, fuzzy, c-format
+#| msgid "invert selection"
+msgid "%s in current collection"
+msgstr "invertera val"
+
+# THESE WEBP STRINGS NEED REWRITING!  They are really not comprehensible in any sane way, and they get even worse when trying to traduce them to swedish.  /Richard Levitte
+#: ../src/libs/tools/image_infos.c:40
+#, fuzzy
+#| msgid "image hint"
+msgid "image infos"
+msgstr "bild-karaktär"
+
+#: ../src/libs/tools/lighttable.c:116
+#, fuzzy
+#| msgid "click to edit nodes"
+msgid "click to exit from full preview layout."
+msgstr "klicka för att redigera noder"
+
+#: ../src/libs/tools/lighttable.c:118
+#, fuzzy
+#| msgid "click to edit nodes"
+msgid "click to enter full preview layout."
+msgstr "klicka för att redigera noder"
+
+#: ../src/libs/tools/lighttable.c:121
+msgid "click to enter culling layout in fixed mode."
+msgstr ""
+
+#: ../src/libs/tools/lighttable.c:123 ../src/libs/tools/lighttable.c:128
+#, fuzzy
+#| msgid "click to edit nodes"
+msgid "click to exit culling layout."
+msgstr "klicka för att redigera noder"
+
+#: ../src/libs/tools/lighttable.c:126
+msgid "click to enter culling layout in dynamic mode."
+msgstr ""
+
+#: ../src/libs/tools/lighttable.c:368
+msgid "toggle filemanager layout"
+msgstr ""
+
+#: ../src/libs/tools/lighttable.c:371
+#, fuzzy
+#| msgid "click to edit nodes"
+msgid "click to enter filemanager layout."
+msgstr "klicka för att redigera noder"
+
+#: ../src/libs/tools/lighttable.c:377
+msgid "toggle zoomable lighttable layout"
+msgstr ""
+
+#: ../src/libs/tools/lighttable.c:380
+msgid "click to enter zoomable lighttable layout."
+msgstr ""
+
+#: ../src/libs/tools/lighttable.c:386
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "toggle focus peaking"
+msgid "toggle culling mode"
+msgstr "växla fokus peaking"
+
+#: ../src/libs/tools/lighttable.c:394
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "toggle focus peaking"
+msgid "toggle culling dynamic mode"
+msgstr "växla fokus peaking"
+
+#: ../src/libs/tools/lighttable.c:441
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "toggle focus peaking"
+msgid "toggle culling zoom mode"
+msgstr "växla fokus peaking"
+
+#: ../src/libs/tools/lighttable.c:443
+#, fuzzy
+#| msgid "current order"
+msgid "exit current layout"
+msgstr "nuvarande ordning"
+
+#: ../src/libs/tools/midi.c:41
+msgid "midi"
+msgstr ""
+
+#: ../src/libs/tools/midi.c:221
+msgid "using absolute encoding; reinitialise to switch to relative"
+msgstr ""
+
+#: ../src/libs/tools/midi.c:225
+#, c-format
+msgid "%d more identical (down) moves before switching to relative encoding"
+msgstr ""
+
+#: ../src/libs/tools/midi.c:228
+#, c-format
+msgid "switching encoding to relative (down = %d)"
+msgstr ""
+
+#: ../src/libs/tools/midi.c:558
+#, fuzzy, c-format
+#| msgid "send as email"
+msgid "%s opened as midi%d"
+msgstr "skicka som epost"
+
+#: ../src/libs/tools/module_toolbox.c:46
+#, fuzzy
+#| msgid "smaller border"
+msgid "module toolbox"
+msgstr "kortsidan"
+
+#. connect callbacks
+#: ../src/libs/tools/ratings.c:97
+msgid "set star rating for selected images"
+msgstr ""
+
+#: ../src/libs/tools/timeline.c:102
+#, fuzzy
+#| msgid "linear"
+msgid "timeline"
+msgstr "linjär"
+
+#: ../src/libs/tools/timeline.c:1433
+#, fuzzy
+#| msgid "invert selection"
+msgid "start selection"
+msgstr "invertera val"
+
+#: ../src/libs/tools/timeline.c:1434
+#, fuzzy
+#| msgid "select"
+msgid "stop selection"
+msgstr "bildurval"
+
+#: ../src/libs/tools/view_toolbox.c:46
+msgid "view toolbox"
+msgstr ""
+
+#: ../src/libs/tools/viewswitcher.c:60
+msgid "viewswitcher"
+msgstr ""
+
+#: ../src/lua/preferences.c:656 ../src/lua/preferences.c:671
+#: ../src/lua/preferences.c:683 ../src/lua/preferences.c:695
+#: ../src/lua/preferences.c:711 ../src/lua/preferences.c:775
+#, fuzzy, c-format
+#| msgid "double click to reset to `%s'"
+msgid "double-click to reset to `%s'"
+msgstr "dubbelklicka för att återställa till `%s'"
+
+#: ../src/lua/preferences.c:681
+#, fuzzy
+#| msgid "select file"
+msgid "select file"
+msgstr "välj fil"
+
+#: ../src/lua/preferences.c:734
+#, fuzzy, c-format
+#| msgid "double click to reset to `%d'"
+msgid "double-click to reset to `%d'"
+msgstr "dubbelklicka för att återställa till `%d'"
+
+#: ../src/lua/preferences.c:761
+#, fuzzy, c-format
+#| msgid "double click to reset to `%s'"
+msgid "double-click to reset to `%f'"
+msgstr "dubbelklicka för att återställa till `%s'"
+
+#: ../src/lua/preferences.c:837
+#, fuzzy
+#| msgid "GUI options"
+msgid "Lua options"
+msgstr "Gränssnittsinställningar"
+
+#: ../src/views/darkroom.c:607
+#, c-format
+msgid ""
+"darktable could not load `%s', switching to lighttable now.\n"
+"\n"
+"please check that the camera model that produced the image is supported in "
+"darktable\n"
+"(list of supported cameras is at https://www.darktable.org/resources/camera-"
+"support/).\n"
+"if you are sure that the camera model is supported, please consider opening "
+"an issue\n"
+"at https://github.com/darktable-org/darktable"
+msgstr ""
+
+#: ../src/views/darkroom.c:625
+#, fuzzy, c-format
+#| msgid "error loading file `%s'"
+msgctxt "darkroom"
+msgid "loading `%s' ..."
+msgstr "fel uppstod vid läsning av fil '%s'"
+
+#: ../src/views/darkroom.c:749 ../src/views/darkroom.c:2496
+#, fuzzy
+#| msgid "gamut check"
+msgid "gamut check"
+msgstr "kontroll av tonomfång"
+
+#: ../src/views/darkroom.c:749
+#, fuzzy
+#| msgid "softproof profile"
+msgid "soft proof"
+msgstr "profil för skärmkorrektur"
+
+#. fail :(
+#: ../src/views/darkroom.c:787 ../src/views/print.c:356
+#, fuzzy
+#| msgid "no images to export, aborting\n"
+msgid "no image to open!"
+msgstr "inga bilder att exportera, ger upp\n"
+
+#: ../src/views/darkroom.c:1331
+msgid "no user-defined presets for favorite modules were found"
+msgstr ""
+
+#: ../src/views/darkroom.c:1476
+#, fuzzy
+#| msgid "no image selected!"
+msgid "no styles have been created yet"
+msgstr "inga bilder valda!"
+
+#: ../src/views/darkroom.c:2331 ../src/views/darkroom.c:2332
+#, fuzzy
+#| msgid "new preset"
+msgid "quick access to presets"
+msgstr "ny förinställning"
+
+#: ../src/views/darkroom.c:2340
+msgid "quick access to styles"
+msgstr ""
+
+#: ../src/views/darkroom.c:2342
+msgid "quick access for applying any of your styles"
+msgstr ""
+
+#: ../src/views/darkroom.c:2348
+msgid "second window"
+msgstr ""
+
+#: ../src/views/darkroom.c:2351
+msgid "display a second darkroom image window"
+msgstr ""
+
+#: ../src/views/darkroom.c:2356
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "coloradjustment"
+msgid "color assessment"
+msgstr "färgjustering"
+
+#: ../src/views/darkroom.c:2359
+msgid "toggle ISO 12646 color assessment conditions"
+msgstr ""
+
+#: ../src/views/darkroom.c:2372
+msgid ""
+"toggle raw over exposed indication\n"
+"right click for options"
+msgstr ""
+
+#: ../src/views/darkroom.c:2388
+msgid "select how to mark the clipped pixels"
+msgstr ""
+
+#: ../src/views/darkroom.c:2390
+msgid "mark with CFA color"
+msgstr ""
+
+#: ../src/views/darkroom.c:2390
+msgid "mark with solid color"
+msgstr ""
+
+#: ../src/views/darkroom.c:2390
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "false color"
+msgid "false color"
+msgstr "falska färger"
+
+#: ../src/views/darkroom.c:2393 ../src/views/darkroom.c:2444
+#, fuzzy
+#| msgid "color scheme"
+msgid "color scheme"
+msgstr "färgschema"
+
+#: ../src/views/darkroom.c:2394
+msgid ""
+"select the solid color to indicate over exposure.\n"
+"will only be used if mode = mark with solid color"
+msgstr ""
+
+#: ../src/views/darkroom.c:2397
+#, fuzzy
+#| msgid "red"
+msgctxt "solidcolor"
+msgid "red"
+msgstr "röd"
+
+#: ../src/views/darkroom.c:2398
+#, fuzzy
+#| msgid "green"
+msgctxt "solidcolor"
+msgid "green"
+msgstr "grön"
+
+#: ../src/views/darkroom.c:2399
+#, fuzzy
+#| msgid "blue"
+msgctxt "solidcolor"
+msgid "blue"
+msgstr "blå"
+
+#: ../src/views/darkroom.c:2400
+#, fuzzy
+#| msgid "black"
+msgctxt "solidcolor"
+msgid "black"
+msgstr "svärta"
+
+#: ../src/views/darkroom.c:2408
+msgid ""
+"threshold of what shall be considered overexposed\n"
+"1.0 - white level\n"
+"0.0 - black level"
+msgstr ""
+
+#: ../src/views/darkroom.c:2422
+msgid ""
+"toggle clipping indication\n"
+"right click for options"
+msgstr ""
+
+#: ../src/views/darkroom.c:2437
+#, fuzzy
+#| msgid "clipping threshold"
+msgid "clipping preview mode"
+msgstr "kapningströskel"
+
+#: ../src/views/darkroom.c:2438
+msgid ""
+"select the metric you want to preview\n"
+"full gamut is the combination of all other modes"
+msgstr ""
+
+#: ../src/views/darkroom.c:2440
+msgid "full gamut"
+msgstr ""
+
+#: ../src/views/darkroom.c:2440
+#, fuzzy
+#| msgctxt "blendmode"
+#| msgid "RGB red channel"
+msgid "any RGB channel"
+msgstr "RGB röd kanal"
+
+#: ../src/views/darkroom.c:2440
+#, fuzzy
+msgid "luminance only"
+msgstr "färgdominans"
+
+#: ../src/views/darkroom.c:2440
+#, fuzzy
+#| msgid "saturation"
+msgid "saturation only"
+msgstr "mättnad"
+
+#: ../src/views/darkroom.c:2445
+#, fuzzy
+#| msgid "select color of film material"
+msgid "select colors to indicate clipping"
+msgstr "välj färg på filmmaterial"
+
+#: ../src/views/darkroom.c:2447
+#, fuzzy
+#| msgid "red & blue"
+msgid "red & blue"
+msgstr "rött & blått"
+
+#: ../src/views/darkroom.c:2447
+#, fuzzy
+#| msgid "purple & green"
+msgid "purple & green"
+msgstr "lila & grönt"
+
+#: ../src/views/darkroom.c:2454
+#, fuzzy
+#| msgid "noise threshold"
+msgid "lower threshold"
+msgstr "tröskelvärde för brus"
+
+#: ../src/views/darkroom.c:2455
+msgid ""
+"clipping threshold for the black point,\n"
+"in EV, relatively to white (0 EV).\n"
+"8 bits sRGB clips blacks at -12.69 EV,\n"
+"8 bits Adobe RGB clips blacks at -19.79 EV,\n"
+"16 bits sRGB clips blacks at -20.69 EV,\n"
+"typical fine-art mat prints produce black at -5.30 EV,\n"
+"typical color glossy prints produce black at -8.00 EV,\n"
+"typical B&W glossy prints produce black at -9.00 EV."
+msgstr ""
+
+#: ../src/views/darkroom.c:2471
+#, fuzzy
+#| msgid "edge threshold"
+msgid "upper threshold"
+msgstr "kant tröskel"
+
+#: ../src/views/darkroom.c:2473
+#, no-c-format
+msgid ""
+"clipping threshold for the white point.\n"
+"100% is peak medium luminance."
+msgstr ""
+
+#: ../src/views/darkroom.c:2485
+#, fuzzy
+#| msgid "softproof profile"
+msgid "softproof"
+msgstr "profil för skärmkorrektur"
+
+#: ../src/views/darkroom.c:2488
+msgid ""
+"toggle softproofing\n"
+"right click for profile options"
+msgstr ""
+
+#: ../src/views/darkroom.c:2499
+msgid ""
+"toggle gamut checking\n"
+"right click for profile options"
+msgstr ""
+
+#: ../src/views/darkroom.c:2524 ../src/views/darkroom.c:2526
+#: ../src/views/darkroom.c:2540 ../src/views/darkroom.c:2541
+#: ../src/views/darkroom.c:2542 ../src/views/darkroom.c:2543
+#: ../src/views/lighttable.c:1182 ../src/views/lighttable.c:1184
+#, fuzzy
+#| msgid "profile"
+msgid "profiles"
+msgstr "profil"
+
+#: ../src/views/darkroom.c:2526 ../src/views/lighttable.c:1184
+#, fuzzy
+#| msgid "rendering intent"
+msgid "preview intent"
+msgstr "återgivningsavsikt"
+
+#: ../src/views/darkroom.c:2540 ../src/views/lighttable.c:1188
+#, fuzzy
+#| msgid "system display profile"
+msgid "display profile"
+msgstr "systemets skärmprofil"
+
+#: ../src/views/darkroom.c:2541 ../src/views/lighttable.c:1191
+#, fuzzy
+#| msgid "system display profile"
+msgid "preview display profile"
+msgstr "systemets skärmprofil"
+
+#: ../src/views/darkroom.c:2543
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "histogram"
+msgid "histogram profile"
+msgstr "histogram"
+
+#: ../src/views/darkroom.c:2605 ../src/views/lighttable.c:1225
+#, fuzzy
+#| msgid "embedded ICC profile"
+msgid "display ICC profiles"
+msgstr "inbyggd ICC-profil"
+
+#: ../src/views/darkroom.c:2609 ../src/views/lighttable.c:1229
+#, fuzzy
+#| msgid "embedded ICC profile"
+msgid "preview display ICC profiles"
+msgstr "inbyggd ICC-profil"
+
+#: ../src/views/darkroom.c:2613
+#, fuzzy
+#| msgid "softproof profile"
+msgid "softproof ICC profiles"
+msgstr "profil för skärmkorrektur"
+
+#: ../src/views/darkroom.c:2617
+msgid "histogram and color picker ICC profiles"
+msgstr ""
+
+#: ../src/views/darkroom.c:2651
+msgid ""
+"toggle guide lines\n"
+"right click for guides options"
+msgstr ""
+
+#. Fullscreen preview key
+#: ../src/views/darkroom.c:2668
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "leave fullscreen"
+msgid "full preview"
+msgstr "lämna fullskärm"
+
+#. add an option to allow skip mouse events while other overlays are consuming mouse actions
+#: ../src/views/darkroom.c:2672
+msgid "force pan/zoom/rotate with mouse"
+msgstr ""
+
+# förut "stäng"
+#. Zoom shortcuts
+#: ../src/views/darkroom.c:2684
+#, fuzzy
+#| msgctxt "preferences"
+#| msgid "on close"
+msgid "zoom close-up"
+msgstr "vid stängning"
+
+#. zoom in/out
+#. zoom in/out/min/max
+#: ../src/views/darkroom.c:2687 ../src/views/lighttable.c:1283
+#, fuzzy
+#| msgid " (zoom)"
+msgid "zoom in"
+msgstr " (zoom)"
+
+#: ../src/views/darkroom.c:2688 ../src/views/lighttable.c:1285
+#, fuzzy
+#| msgid " (zoom)"
+msgid "zoom out"
+msgstr " (zoom)"
+
+#. Shortcut to skip images
+#: ../src/views/darkroom.c:2691
+#, fuzzy
+#| msgid "image mode"
+msgid "image forward"
+msgstr "bildmetod"
+
+#: ../src/views/darkroom.c:2692
+#, fuzzy
+#| msgid "image cache file"
+msgid "image back"
+msgstr "bild cache fil"
+
+#. cycle overlay colors
+#: ../src/views/darkroom.c:2695
+#, fuzzy
+#| msgid "select border color"
+msgid "cycle overlay colors"
+msgstr "välj kantens färg"
+
+#. toggle visibility of drawn masks for current gui module
+#: ../src/views/darkroom.c:2698
+#, fuzzy
+#| msgid "drawn mask"
+msgid "show drawn masks"
+msgstr "ritad markering"
+
+#. brush size +/-
+#: ../src/views/darkroom.c:2701
+msgid "increase brush size"
+msgstr ""
+
+#: ../src/views/darkroom.c:2702
+msgid "decrease brush size"
+msgstr ""
+
+#. brush hardness +/-
+#: ../src/views/darkroom.c:2705
+#, fuzzy
+#| msgid "auto adjust hardness"
+msgid "increase brush hardness"
+msgstr "autojustera hårdhet"
+
+#: ../src/views/darkroom.c:2706
+#, fuzzy
+#| msgid "auto adjust hardness"
+msgid "decrease brush hardness"
+msgstr "autojustera hårdhet"
+
+#. brush opacity +/-
+#: ../src/views/darkroom.c:2709
+msgid "increase brush opacity"
+msgstr ""
+
+#: ../src/views/darkroom.c:2710
+msgid "decrease brush opacity"
+msgstr ""
+
+#. undo/redo
+#: ../src/views/darkroom.c:2713 ../src/views/lighttable.c:1275
+#: ../src/views/map.c:2115
+msgid "undo"
+msgstr ""
+
+#: ../src/views/darkroom.c:2714 ../src/views/lighttable.c:1276
+#: ../src/views/map.c:2116
+msgid "redo"
+msgstr ""
+
+#. change the precision for adjusting sliders with keyboard shortcuts
+#: ../src/views/darkroom.c:2717
+msgid "change keyboard shortcut slider precision"
+msgstr ""
+
+#: ../src/views/darkroom.c:3989
+msgid "keyboard shortcut slider precision: fine"
+msgstr ""
+
+#: ../src/views/darkroom.c:3991
+msgid "keyboard shortcut slider precision: normal"
+msgstr ""
+
+#: ../src/views/darkroom.c:3993
+msgid "keyboard shortcut slider precision: coarse"
+msgstr ""
+
+#: ../src/views/darkroom.c:4009
+#, fuzzy
+#| msgid "lighttable"
+msgid "switch to lighttable"
+msgstr "ljusbord"
+
+#: ../src/views/darkroom.c:4010 ../src/views/lighttable.c:882
+#, fuzzy
+msgid "zoom in the image"
+msgstr "applicerar betyg %d på %d bild"
+
+#: ../src/views/darkroom.c:4011
+msgid "unbounded zoom in the image"
+msgstr ""
+
+#: ../src/views/darkroom.c:4012
+msgid "zoom to 100% 200% and back"
+msgstr ""
+
+#: ../src/views/darkroom.c:4013 ../src/views/lighttable.c:885
+#, fuzzy
+#| msgid "orphaned image"
+msgid "pan a zoomed image"
+msgstr "anonyma bilder"
+
+#: ../src/views/darkroom.c:4015 ../src/views/lighttable.c:927
+msgid "[modules] expand module without closing others"
+msgstr ""
+
+#: ../src/views/darkroom.c:4016 ../src/views/lighttable.c:928
+msgid "[modules] expand module and close others"
+msgstr ""
+
+#: ../src/views/darkroom.c:4018
+msgid "[modules] rename module"
+msgstr ""
+
+#: ../src/views/darkroom.c:4020
+msgid "[modules] change module position in pipe"
+msgstr ""
+
+#: ../src/views/knight.c:334
+#, fuzzy
+#| msgid "night"
+msgid "good knight"
+msgstr "natt"
+
+#. Show infos key
+#: ../src/views/lighttable.c:656 ../src/views/lighttable.c:1266
+#, fuzzy
+msgid "show infos"
+msgstr "visa osd"
+
+#: ../src/views/lighttable.c:759
+#, fuzzy
+msgid "middle"
+msgstr "luma för mellantonerna"
+
+#: ../src/views/lighttable.c:877
+#, fuzzy
+#| msgid "border around image in darkroom mode"
+msgid "open image in darkroom"
+msgstr "kant runt bilden i mörkrumsläge"
+
+#: ../src/views/lighttable.c:881
+msgid "switch to next/previous image"
+msgstr ""
+
+#: ../src/views/lighttable.c:884 ../src/views/lighttable.c:915
+#, no-c-format
+msgid "zoom to 100% and back"
+msgstr ""
+
+#: ../src/views/lighttable.c:889 ../src/views/lighttable.c:908
+#, fuzzy
+#| msgid "invert selection"
+msgid "scroll the collection"
+msgstr "invertera val"
+
+#: ../src/views/lighttable.c:891
+msgid "change number of images per row"
+msgstr ""
+
+#: ../src/views/lighttable.c:894
+#, fuzzy
+#| msgid "delete images"
+msgid "select an image"
+msgstr "raderar bilder"
+
+#: ../src/views/lighttable.c:896
+#, fuzzy
+#| msgid "select parts"
+msgid "select range from last image"
+msgstr "välj delar"
+
+#: ../src/views/lighttable.c:898
+msgid "add image to or remove it from a selection"
+msgstr ""
+
+#: ../src/views/lighttable.c:902
+#, fuzzy
+#| msgid "larger border"
+msgid "change image order"
+msgstr "långsidan"
+
+#: ../src/views/lighttable.c:909
+#, fuzzy
+#| msgid "rotate images"
+msgid "zoom all the images"
+msgstr "rotera bilder"
+
+#: ../src/views/lighttable.c:910
+#, fuzzy
+#| msgid "delete images"
+msgid "pan inside all the images"
+msgstr "raderar bilder"
+
+#: ../src/views/lighttable.c:912
+#, fuzzy
+#| msgid "current order"
+msgid "zoom current image"
+msgstr "nuvarande ordning"
+
+#: ../src/views/lighttable.c:913
+#, fuzzy
+#| msgid "applied style `%s' on current image"
+msgid "pan inside current image"
+msgstr "applicerar stil `%s' på aktiv bild"
+
+#: ../src/views/lighttable.c:918
+#, no-c-format
+msgid "zoom current image to 100% and back"
+msgstr ""
+
+#: ../src/views/lighttable.c:922
+#, fuzzy
+#| msgctxt "accel"
+#| msgid "tethering view"
+msgid "zoom the main view"
+msgstr "kamerastyrningsvy"
+
+#: ../src/views/lighttable.c:923
+msgid "pan inside the main view"
+msgstr ""
+
+#: ../src/views/lighttable.c:1160
+#, fuzzy
+#| msgid "system display profile"
+msgid "set display profile"
+msgstr "systemets skärmprofil"
+
+#: ../src/views/lighttable.c:1246
+msgid "whole"
+msgstr ""
+
+#: ../src/views/lighttable.c:1262
+msgid "leave"
+msgstr ""
+
+#: ../src/views/lighttable.c:1269
+#, fuzzy
+#| msgid "min images per group"
+msgid "align images to grid"
+msgstr "minst antal bilder per grupp"
+
+#: ../src/views/lighttable.c:1270
+#, fuzzy
+#| msgid "green-magenta contrast"
+msgid "reset first image offset"
+msgstr "grön-mangenta kontrast"
+
+#: ../src/views/lighttable.c:1271
+#, fuzzy
+#| msgid "delete images"
+msgid "select toggle image"
+msgstr "raderar bilder"
+
+#: ../src/views/lighttable.c:1272
+#, fuzzy
+#| msgid "single images"
+msgid "select single image"
+msgstr "enstaka bilder"
+
+#. zoom for full culling & preview
+#: ../src/views/lighttable.c:1279
+msgid "preview zoom 100%"
+msgstr ""
+
+#: ../src/views/lighttable.c:1280
+msgid "preview zoom fit"
+msgstr ""
+
+#: ../src/views/lighttable.c:1284
+#, fuzzy
+#| msgid " (zoom)"
+msgid "zoom max"
+msgstr " (zoom)"
+
+#: ../src/views/lighttable.c:1286
+#, fuzzy
+#| msgid " (zoom)"
+msgid "zoom min"
+msgstr " (zoom)"
+
+#: ../src/views/map.c:2809
+#, fuzzy
+#| msgid "border around image in darkroom mode"
+msgid "[on image] open in darkroom"
+msgstr "kant runt bilden i mörkrumsläge"
+
+#: ../src/views/map.c:2810
+msgid "[on map] zoom map"
+msgstr ""
+
+#: ../src/views/map.c:2811
+#, fuzzy
+#| msgid "move images"
+msgid "move image location"
+msgstr "flyttar bild"
+
+#: ../src/views/print.c:55
+#, fuzzy
+#| msgid "print"
+msgctxt "view"
+msgid "print"
+msgstr "skriv ut"
+
+#: ../src/views/slideshow.c:353
+#, fuzzy
+#| msgid "remove images"
+msgid "end of images"
+msgstr "tar bort bilder"
+
+#: ../src/views/slideshow.c:374
+msgid "end of images. press any key to return to lighttable mode"
+msgstr ""
+
+#: ../src/views/slideshow.c:504
+#, fuzzy
+#| msgid "waiting time between each picture in slideshow"
+msgid "waiting to start slideshow"
+msgstr "väntetid mellan varje bild i bildspel"
+
+#: ../src/views/slideshow.c:640 ../src/views/slideshow.c:661
+#: ../src/views/slideshow.c:669
+#, fuzzy
+#| msgid "slideshow view"
+msgid "slideshow paused"
+msgstr "bildspelsvy"
+
+#: ../src/views/slideshow.c:648 ../src/views/slideshow.c:655
+#, c-format
+msgid "slideshow delay set to %d second"
+msgid_plural "slideshow delay set to %d seconds"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/views/slideshow.c:684
+msgid "start and stop"
+msgstr ""
+
+#: ../src/views/slideshow.c:685
+#, fuzzy
+#| msgid "slideshow"
+msgid "exit slideshow"
+msgstr "bildspel"
+
+#: ../src/views/slideshow.c:688
+#, fuzzy
+#| msgid "move down"
+msgid "slow down"
+msgstr "flytta ner"
+
+#: ../src/views/slideshow.c:691
+#, fuzzy
+#| msgid "rawspeed"
+msgid "speed up"
+msgstr "rawspeed"
+
+#: ../src/views/slideshow.c:695
+msgid "step forward"
+msgstr ""
+
+#: ../src/views/slideshow.c:696
+msgid "step back"
+msgstr ""
+
+#: ../src/views/slideshow.c:702
+#, fuzzy
+#| msgid "export images"
+msgid "go to next image"
+msgstr "exporterar bilder"
+
+#: ../src/views/slideshow.c:703
+msgid "go to previous image"
+msgstr ""
+
+#: ../src/views/tethering.c:157
+#, c-format
+msgid "new session initiated '%s'"
+msgstr ""
+
+#: ../src/views/tethering.c:448
+msgid "no camera with tethering support available for use..."
+msgstr ""
+
+#: ../src/views/view.c:1193
+#, fuzzy
+#| msgid "Left click"
+msgid "left click"
+msgstr "Vänsterklicka"
+
+#: ../src/views/view.c:1196
+#, fuzzy
+#| msgid "Right click"
+msgid "right click"
+msgstr "Högerklicka"
+
+#: ../src/views/view.c:1199
+#, fuzzy
+msgid "middle click"
+msgstr "luma för mellantonerna"
+
+#: ../src/views/view.c:1205
+#, fuzzy
+#| msgid "Left double-click"
+msgid "left double-click"
+msgstr "Vänster dubbelklick"
+
+#: ../src/views/view.c:1208
+#, fuzzy
+#| msgid "Left double-click"
+msgid "right double-click"
+msgstr "Vänster dubbelklick"
+
+#: ../src/views/view.c:1211
+msgid "drag and drop"
+msgstr ""
+
+#: ../src/views/view.c:1214
+msgid "left click+drag"
+msgstr ""
+
+#: ../src/views/view.c:1217
+#, fuzzy
+#| msgid "Right click"
+msgid "right click+drag"
+msgstr "Högerklicka"
+
+#: ../src/views/view.c:1237
+#, fuzzy
+msgid "darktable - accels window"
+msgstr "visa accels fönster"
+
+#: ../src/views/view.c:1285
+msgid "switch to a classic window which will stay open after key release"
+msgstr ""
+
+#. we add the mouse actions too
+#: ../src/views/view.c:1344
+#, fuzzy
+#| msgid "corrections"
+msgid "mouse actions"
+msgstr "korrigeringar"
