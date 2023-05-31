@@ -1,10 +1,12 @@
 image:
   file: .gitpod.Dockerfile
 tasks:
-- command: >
+- name: Build darktable application
+  command: >
     ./build.sh --prefix /opt/darktable --build-type Release --install --sudo
 vscode:
   extensions:
+    - twxs.cmake
     - ms-vscode.cmake-tools
 ports:
   - name: VNC
