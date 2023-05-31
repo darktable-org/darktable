@@ -1354,6 +1354,38 @@ static gboolean _blendop_blendif_showmask_clicked(GtkToggleButton *button,
   return TRUE;
 }
 
+static gboolean _blendop_blendif_showraster_clicked(GtkToggleButton *button,
+                                                  GdkEventButton *event,
+                                                  dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return TRUE;
+
+  if(event->button == 1)
+  {
+    const gboolean active = !gtk_toggle_button_get_active(button);
+    gtk_toggle_button_set_active(button, active);
+
+    module->request_mask_display = active ? DT_DEV_PIXELPIPE_DISPLAY_MASK
+                                          : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
+    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
+
+    ++darktable.gui->reset;
+
+    // (re)set the header mask indicator too
+    if(module->mask_indicator)
+      gtk_toggle_button_set_active
+        (GTK_TOGGLE_BUTTON(module->mask_indicator),
+         module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
+
+    --darktable.gui->reset;
+
+    dt_iop_request_focus(module);
+    dt_iop_refresh_center(module);
+  }
+
+  return TRUE;
+}
 static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
                                                   GdkEventButton *event,
                                                   dt_iop_module_t *module)
@@ -2917,6 +2949,7 @@ void dt_iop_gui_update_raster(dt_iop_module_t *module)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_polarity),
                                bp->raster_mask_invert);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_show), FALSE);
 
   _raster_combo_populate(bd->raster_combo, &module);
 }
@@ -2963,6 +2996,13 @@ void dt_iop_gui_init_raster(GtkWidget *blendw, dt_iop_module_t *module)
                      G_CALLBACK(_raster_polarity_callback), module);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_polarity), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), bd->raster_polarity, FALSE, FALSE, 0);
+
+    bd->raster_show = dt_iop_togglebutton_new(module, "blend`tools",
+                                           N_("display raster mask"), NULL,
+                                           G_CALLBACK(_blendop_blendif_showraster_clicked),
+                                           FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
+    gtk_widget_set_tooltip_text(bd->raster_show, _("display selected raster mask.\n"));
+    dt_gui_add_class(bd->raster_show, "dt_transparent_background");
 
     gtk_box_pack_start(GTK_BOX(bd->raster_box), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 

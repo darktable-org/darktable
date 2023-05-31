@@ -351,6 +351,7 @@ typedef struct dt_iop_gui_blend_data_t
 
   GtkWidget *raster_combo;
   GtkWidget *raster_polarity;
+  GtkWidget *raster_show;
 
   int control_button_pressed;
   dt_pthread_mutex_t lock;
