@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-29 21:47+0200\n"
-"PO-Revision-Date: 2023-05-30 18:19+0300\n"
+"POT-Creation-Date: 2023-05-31 13:24+0200\n"
+"PO-Revision-Date: 2023-05-31 19:11+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2337,7 +2337,7 @@ msgstr "Уточнена"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:366
 #: ../build/lib/darktable/plugins/introspection_colorin.c:300
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
-#: ../build/lib/darktable/plugins/introspection_vignette.c:263
+#: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3410 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/accelerators.c:227
@@ -3298,7 +3298,7 @@ msgstr "Світлість"
 #: ../src/iop/colorchecker.c:1483 ../src/iop/colorcontrast.c:90
 #: ../src/iop/colorcorrection.c:275 ../src/iop/colorize.c:343
 #: ../src/iop/lowpass.c:588 ../src/iop/soften.c:373 ../src/iop/velvia.c:84
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:970
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:971
 msgid "saturation"
 msgstr "Насиченість"
 
@@ -4512,7 +4512,7 @@ msgstr "Режим заливки"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4617
 #: ../src/iop/colisa.c:305 ../src/iop/lowpass.c:587 ../src/iop/soften.c:377
-#: ../src/iop/vignette.c:969 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:970 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "Яскравість"
 
@@ -4761,42 +4761,47 @@ msgstr "Стиснення контрасту"
 msgid "vibrance"
 msgstr "Резонанс"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:97
-#: ../build/lib/darktable/plugins/introspection_vignette.c:204
-msgid "fall-off strength"
-msgstr "Довжина зони затемнення"
+#: ../build/lib/darktable/plugins/introspection_vignette.c:92
+#: ../build/lib/darktable/plugins/introspection_vignette.c:201
+msgid "fall-off start"
+msgstr "Початок зони затемнення"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:115
-#: ../build/lib/darktable/plugins/introspection_vignette.c:216
+#: ../build/lib/darktable/plugins/introspection_vignette.c:98
+#: ../build/lib/darktable/plugins/introspection_vignette.c:205
+msgid "fall-off radius"
+msgstr "Ширина зони затемнення"
+
+#: ../build/lib/darktable/plugins/introspection_vignette.c:116
+#: ../build/lib/darktable/plugins/introspection_vignette.c:217
 msgid "horizontal center"
 msgstr "Центр по горизонталі"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:121
-#: ../build/lib/darktable/plugins/introspection_vignette.c:220
+#: ../build/lib/darktable/plugins/introspection_vignette.c:122
+#: ../build/lib/darktable/plugins/introspection_vignette.c:221
 msgid "vertical center"
 msgstr "Центр по вертикалі"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:133
-#: ../build/lib/darktable/plugins/introspection_vignette.c:228
+#: ../build/lib/darktable/plugins/introspection_vignette.c:134
+#: ../build/lib/darktable/plugins/introspection_vignette.c:229
 msgid "automatic ratio"
 msgstr "Автоматичне співвідношення"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:139
-#: ../build/lib/darktable/plugins/introspection_vignette.c:232
+#: ../build/lib/darktable/plugins/introspection_vignette.c:140
+#: ../build/lib/darktable/plugins/introspection_vignette.c:233
 msgid "width/height ratio"
 msgstr "Співвідношення ширина/висота"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:145
-#: ../build/lib/darktable/plugins/introspection_vignette.c:236
-#: ../src/iop/vignette.c:977
+#: ../build/lib/darktable/plugins/introspection_vignette.c:146
+#: ../build/lib/darktable/plugins/introspection_vignette.c:237
+#: ../src/iop/vignette.c:978
 msgid "shape"
 msgstr "Фігура"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:264
+#: ../build/lib/darktable/plugins/introspection_vignette.c:265
 msgid "8-bit output"
 msgstr "8-бітний вихід"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:265
+#: ../build/lib/darktable/plugins/introspection_vignette.c:266
 msgid "16-bit output"
 msgstr "16-бітний вихід"
 
@@ -12741,15 +12746,15 @@ msgstr "лінійний простір, RGB, на основі відображ
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:104
-#: ../src/iop/vignette.c:160 ../src/iop/watermark.c:379
+#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:379
 msgid "non-linear, RGB"
 msgstr "нелінійна, RGB"
 
 #: ../src/iop/basecurve.c:355 ../src/iop/dither.c:120 ../src/iop/dither.c:122
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
-#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
-#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:378
+#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:160
+#: ../src/iop/vignette.c:162 ../src/iop/watermark.c:378
 #: ../src/iop/watermark.c:380
 msgid "non-linear, RGB, display-referred"
 msgstr "нелінійний простір, RGB, на основі відображення"
@@ -12819,7 +12824,7 @@ msgstr "Застосування звичайних коригувань зоб�
 #: ../src/iop/levels.c:138 ../src/iop/liquify.c:297 ../src/iop/lowlight.c:92
 #: ../src/iop/lowpass.c:134 ../src/iop/monochrome.c:98 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:103 ../src/iop/velvia.c:105
-#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:158
+#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:159
 #: ../src/iop/watermark.c:377
 msgid "creative"
 msgstr "креативне"
@@ -17694,7 +17699,7 @@ msgid "find lens"
 msgstr "Знайти об'єктив"
 
 #. scale
-#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:967
+#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:968
 #: ../src/iop/watermark.c:1324 ../src/libs/export.c:1165
 msgid "scale"
 msgstr "Масштаб"
@@ -20013,52 +20018,52 @@ msgstr ""
 msgid "the amount of vibrance"
 msgstr "Кількість резонансу"
 
-#: ../src/iop/vignette.c:152
+#: ../src/iop/vignette.c:153
 msgid "vignetting"
 msgstr "Віньєтування"
 
-#: ../src/iop/vignette.c:157
+#: ../src/iop/vignette.c:158
 msgid "simulate a lens fall-off close to edges"
 msgstr "Імітувати затемнення об'єктива ближче до країв"
 
-#: ../src/iop/vignette.c:939
+#: ../src/iop/vignette.c:940
 msgid "lomo"
 msgstr "Ломо"
 
-#: ../src/iop/vignette.c:973
+#: ../src/iop/vignette.c:974
 msgctxt "section"
 msgid "position / form"
 msgstr "Позиція / форма"
 
-#: ../src/iop/vignette.c:980
+#: ../src/iop/vignette.c:981
 msgid "dithering"
 msgstr "Дизеринг"
 
-#: ../src/iop/vignette.c:991
+#: ../src/iop/vignette.c:992
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "Радіальний масштаб початку затемнення віньєтки"
 
-#: ../src/iop/vignette.c:992
+#: ../src/iop/vignette.c:993
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "Радіальний масштаб кінця затемнення віньєтки"
 
-#: ../src/iop/vignette.c:993
+#: ../src/iop/vignette.c:994
 msgid "strength of effect on brightness"
 msgstr "Сила впливу на яскравість"
 
-#: ../src/iop/vignette.c:994
+#: ../src/iop/vignette.c:995
 msgid "strength of effect on saturation"
 msgstr "Сила впливу на насиченість"
 
-#: ../src/iop/vignette.c:995
+#: ../src/iop/vignette.c:996
 msgid "horizontal offset of center of the effect"
 msgstr "Горизонтальне зміщення центра ефекту"
 
-#: ../src/iop/vignette.c:996
+#: ../src/iop/vignette.c:997
 msgid "vertical offset of center of the effect"
 msgstr "Вертикальне зміщення центра ефекту"
 
-#: ../src/iop/vignette.c:997
+#: ../src/iop/vignette.c:998
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -20070,33 +20075,33 @@ msgstr ""
 "1 створює коло або еліпс\n"
 "2 створює ромб"
 
-#: ../src/iop/vignette.c:999
+#: ../src/iop/vignette.c:1000
 msgid "enable to have the ratio automatically follow the image size"
 msgstr ""
 "Увімкніть, щоб співвідношення сторін автоматично відповідало розміру "
 "зображення"
 
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1001
 msgid "width-to-height ratio"
 msgstr "Співвідношення ширина-висота"
 
-#: ../src/iop/vignette.c:1001
+#: ../src/iop/vignette.c:1002
 msgid "add some level of random noise to prevent banding"
 msgstr "Додати деякий рівень випадкового шуму, щоб запобігти бандингу"
 
-#: ../src/iop/vignette.c:1008
+#: ../src/iop/vignette.c:1009
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s на вузлі] змінити розмір віньєтки/розтушовки"
 
-#: ../src/iop/vignette.c:1010
+#: ../src/iop/vignette.c:1011
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
 "[%s на вузлі] змінити розмір віньєтки/розтушовки зі збереженням "
 "співвідношення сторін"
 
-#: ../src/iop/vignette.c:1012
+#: ../src/iop/vignette.c:1013
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s на центрі] перемістити віньєтку"
@@ -26906,9 +26911,6 @@ msgstr "Дії за допомогою миші"
 
 #~ msgid "<b>commit</b>: double click"
 #~ msgstr "<b>фіксація змін</b>: подвійний клік"
-
-#~ msgid "max radius"
-#~ msgstr "максимальний радіус"
 
 #~ msgid "version of the spline generator"
 #~ msgstr "версія генератора сплайнів"
