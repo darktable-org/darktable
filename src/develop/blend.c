@@ -495,6 +495,14 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
+  const dt_dev_pixelpipe_display_mask_t request_raster_display =
+    (self->dev->gui_attached
+      && (self == self->dev->gui_module)
+      && (piece->pipe == self->dev->pipe)
+      && (mask_mode & DEVELOP_MASK_RASTER))
+        ? self->request_mask_display
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
   // get channel max values depending on colorspace
   const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
   const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
@@ -739,6 +747,11 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     piece->pipe->mask_display = request_mask_display;
   }
+  else if(request_raster_display
+          & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
+  {
+    piece->pipe->mask_display = request_raster_display;
+  }
 
   // check if we should store the mask for export or use in subsequent modules
   // TODO: should we skip raster masks?
@@ -935,6 +948,14 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
          && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
             ? self->request_mask_display
             : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
+  const dt_dev_pixelpipe_display_mask_t request_raster_display =
+    (self->dev->gui_attached
+      && (self == self->dev->gui_module)
+      && (piece->pipe == self->dev->pipe)
+      && (mask_mode & DEVELOP_MASK_RASTER))
+        ? self->request_mask_display
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // get channel max values depending on colorspace
   const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
@@ -1375,6 +1396,11 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
      & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
   {
     piece->pipe->mask_display = request_mask_display;
+  }
+  else if(request_raster_display
+          & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
+  {
+    piece->pipe->mask_display = request_raster_display;
   }
 
 
