@@ -207,6 +207,9 @@ The following is a summary of the main features added to darktable
   robust). No longer warn when working on monochrome images. Various
   other cleanup, de-duplication, optimization, and generally tidying.
 
+- Overhaul of pixelpipe code and it's caching strategy with
+  significant performance gains while developing in darkroom.
+
 - Modernize the histogram calculation code. Remove SSE code (which
   provides no speed-ups), but use it as a model for the optimized code
   using recent OpenMP features. Remove various unused bits of code,
