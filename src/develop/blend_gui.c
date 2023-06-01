@@ -1365,7 +1365,7 @@ static gboolean _blendop_blendif_showraster_clicked(GtkToggleButton *button,
     const gboolean active = !gtk_toggle_button_get_active(button);
     gtk_toggle_button_set_active(button, active);
 
-    module->request_mask_display = active ? DT_DEV_PIXELPIPE_DISPLAY_MASK
+    module->request_mask_display = active ? DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL
                                           : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
@@ -3369,6 +3369,7 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_show), FALSE);
     module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
     module->suppress_mask = FALSE;
 
