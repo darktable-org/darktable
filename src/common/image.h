@@ -496,6 +496,32 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
   }
 }
 
+/** return the raw orientation from heif transforms */
+static inline dt_image_orientation_t dt_image_transformation_to_flip_bits(const int angle, const int flip)
+{
+  if(angle == 1)
+  {
+    if(flip == 1) return ORIENTATION_TRANSVERSE;
+    if(flip == 0) return ORIENTATION_TRANSPOSE;
+    return ORIENTATION_ROTATE_CCW_90_DEG;
+  }
+  if(angle == 2)
+  {
+    if(flip == 1) return ORIENTATION_FLIP_VERTICALLY;
+    if(flip == 0) return ORIENTATION_FLIP_HORIZONTALLY;
+    return ORIENTATION_ROTATE_180_DEG;
+  }
+  if(angle == 3)
+  {
+    if(flip == 1) return ORIENTATION_TRANSPOSE;
+    if(flip == 0) return ORIENTATION_TRANSVERSE;
+    return ORIENTATION_ROTATE_CW_90_DEG;
+  }
+  if(flip == 1) return ORIENTATION_FLIP_HORIZONTALLY;
+  if(flip == 0) return ORIENTATION_FLIP_VERTICALLY;
+  return ORIENTATION_NONE;
+}
+
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid. returns -1 on error, 0 on success. */
 int32_t dt_image_move(const dt_imgid_t imgid, const int32_t filmid);
