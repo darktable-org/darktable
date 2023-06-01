@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-25 19:46+0200\n"
-"PO-Revision-Date: 2023-05-25 19:50+0200\n"
+"POT-Creation-Date: 2023-05-31 13:24+0200\n"
+"PO-Revision-Date: 2023-06-01 15:36+0200\n"
 "Last-Translator: Besmir Godole <bgodole@gmail.com>\n"
 "Language-Team: Albanian\n"
 "Language: sq_AL\n"
@@ -224,8 +224,8 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"kur imazhet bruto+JPEG janë bashkë në një direktori, është më praktike t'i "
-"importoni të dyja. ky opsion i shpërfill JPEG-të e gjetura."
+"kur keni imazhe bruto+JPEG në një direktori është më praktike t'i importoni "
+"të dyja. ky opsion i shpërfill JPEG-të e gjetura."
 
 #: ../build/bin/conf_gen.h:936
 msgid "apply metadata"
@@ -1097,13 +1097,13 @@ msgstr "ndarjet për kategoritë e përmasave"
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px-"
-">400px and >400px"
+"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
+">400px"
 msgstr ""
 "kategoritë përdoren për të shtresuar ose për të caktuar vlerat CSS në varësi "
 "të përmasave të miniaturave, të ndara me |.\n"
-"për shembull, 120|400 nënkupton 3 kategori miniaturash: 0px->120px, 120px-"
-">400px dhe >400px"
+"për shembull, 120|400 nënkupton 3 kategori miniaturash: <120px, 120px-400px "
+"dhe >400px"
 
 #: ../build/bin/preferences_gen.h:4316
 msgid "pattern for the thumbnail extended overlay text"
@@ -1140,15 +1140,13 @@ msgstr "butoni në mes të mausit zmadhon 200%"
 #: ../build/bin/preferences_gen.h:4491
 #, no-c-format
 msgid ""
-"when clicking the middle mouse button to zoom, the zoom level will cycle "
-"through 100%, 200% and then back to fit the screen. otherwise it switches "
-"between fit to screen and 100% and the 'ctrl' key can be used to control the "
-"zoom level."
+"if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
+"on middle mouse clicks. if disabled, it will toggle between viewport size "
+"and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
-"kur klikoni butonin në mes të mausit, niveli i zmadhimit kalon në 100%, 200% "
-"dhe pastaj përshtatet me ekranin. përndryshe kalimi bëhet në përshtatje me "
-"ekranin dhe 100%, ndërsa tasti 'ctrl' përdoret për të kontrolluar nivelin e "
-"zmadhimit."
+"kur aktivizohet, klikimi i butonit në mes të mausit zmadhon me 100%, 200% "
+"dhe përshtat nivelin me ekranin. përndryshe kalimi bëhet sipas madhësisë së "
+"ekranit dhe 100%, ndërsa me tastin 'ctrl' kontrollohet niveli i zmadhimit."
 
 #: ../build/bin/preferences_gen.h:4513
 msgid "pattern for the image information line"
@@ -1615,7 +1613,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6143
 msgid "ask before removing images from the library"
-msgstr "pyes para se të heq imazhet nga libraria"
+msgstr "pyes para heqjes së imazheve nga libraria"
 
 #: ../build/bin/preferences_gen.h:6157
 msgid "always ask the user before removing image information from the library"
@@ -1625,7 +1623,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6179
 msgid "ask before deleting images from disk"
-msgstr "pyes para se të fshij imazhet nga disku"
+msgstr "pyes para fshirjes së imazheve nga disku"
 
 #: ../build/bin/preferences_gen.h:6193
 msgid "always ask the user before any image file is deleted"
@@ -1633,7 +1631,7 @@ msgstr "përdoruesi gjithmonë pyetet para fshirjes së një imazhi"
 
 #: ../build/bin/preferences_gen.h:6215
 msgid "ask before discarding history stack"
-msgstr "pyes para se të eliminoj historikun e zhvillimit"
+msgstr "pyes para eliminimit të historikut të zhvillimit"
 
 #: ../build/bin/preferences_gen.h:6229
 msgid "always ask the user before history stack is discarded on any image"
@@ -1653,7 +1651,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6287
 msgid "ask before moving images from film roll folder"
-msgstr "pyes para se të lëviz imazhet nga dosja"
+msgstr "pyes para lëvizjes së imazheve nga dosja"
 
 #: ../build/bin/preferences_gen.h:6301
 msgid "always ask the user before any image file is moved."
@@ -1661,7 +1659,7 @@ msgstr "përdoruesi gjithmonë pyetet para lëvizjes së një imazhi."
 
 #: ../build/bin/preferences_gen.h:6323
 msgid "ask before copying images to new film roll folder"
-msgstr "pyes para se të kopjoj imazhet në dosjen e filmit të ri"
+msgstr "pyes para kopjimit të imazheve në dosjen e filmit të ri"
 
 #: ../build/bin/preferences_gen.h:6337
 msgid "always ask the user before any image file is copied."
@@ -1669,7 +1667,7 @@ msgstr "përdoruesi gjithmonë pyetet para kopjimit të një imazhi."
 
 #: ../build/bin/preferences_gen.h:6359
 msgid "ask before removing empty folders"
-msgstr "pyes para se të heq dosjet boshe"
+msgstr "pyes para heqjes së dosjeve boshe"
 
 #: ../build/bin/preferences_gen.h:6373
 msgid ""
@@ -1681,15 +1679,15 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6395
 msgid "ask before deleting a tag"
-msgstr "pyes para se të fshij një etiketë"
+msgstr "pyes para fshirjes së etiketës"
 
 #: ../build/bin/preferences_gen.h:6430
 msgid "ask before deleting a style"
-msgstr "pyes para se të fshij një stil"
+msgstr "pyes para fshirjes së stilit"
 
 #: ../build/bin/preferences_gen.h:6465
 msgid "ask before deleting a preset"
-msgstr "pyes para se të fshij një vlerë të paracaktuar"
+msgstr "pyes para fshirjes së vlerës së paracaktuar"
 
 #: ../build/bin/preferences_gen.h:6479
 msgid "will ask for confirmation before deleting or overwriting a preset"
@@ -1699,7 +1697,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6501
 msgid "ask before exporting in overwrite mode"
-msgstr "pyes para se të eksportoj me metodën e mbishkrimit"
+msgstr "pyes para eksportimit me metodën e mbishkrimit"
 
 #: ../build/bin/preferences_gen.h:6515
 msgid "will ask for confirmation before exporting files in overwrite mode"
@@ -2285,7 +2283,7 @@ msgstr "specifik"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:366
 #: ../build/lib/darktable/plugins/introspection_colorin.c:300
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
-#: ../build/lib/darktable/plugins/introspection_vignette.c:263
+#: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3410 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/accelerators.c:227
@@ -3246,7 +3244,7 @@ msgstr "ndriçimi"
 #: ../src/iop/colorchecker.c:1483 ../src/iop/colorcontrast.c:90
 #: ../src/iop/colorcorrection.c:275 ../src/iop/colorize.c:343
 #: ../src/iop/lowpass.c:588 ../src/iop/soften.c:373 ../src/iop/velvia.c:84
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:970
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:971
 msgid "saturation"
 msgstr "saturimi"
 
@@ -4460,7 +4458,7 @@ msgstr "mënyra e mbushjes"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4617
 #: ../src/iop/colisa.c:305 ../src/iop/lowpass.c:587 ../src/iop/soften.c:377
-#: ../src/iop/vignette.c:969 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:970 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "shkëlqimi"
 
@@ -4709,42 +4707,47 @@ msgstr "komprimimi i kontrastit"
 msgid "vibrance"
 msgstr "dinamika"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:97
-#: ../build/lib/darktable/plugins/introspection_vignette.c:204
-msgid "fall-off strength"
-msgstr "forca e shuarjes"
+#: ../build/lib/darktable/plugins/introspection_vignette.c:92
+#: ../build/lib/darktable/plugins/introspection_vignette.c:201
+msgid "fall-off start"
+msgstr "fillimi i shuarjes"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:115
-#: ../build/lib/darktable/plugins/introspection_vignette.c:216
+#: ../build/lib/darktable/plugins/introspection_vignette.c:98
+#: ../build/lib/darktable/plugins/introspection_vignette.c:205
+msgid "fall-off radius"
+msgstr "rrezja e shuarjes"
+
+#: ../build/lib/darktable/plugins/introspection_vignette.c:116
+#: ../build/lib/darktable/plugins/introspection_vignette.c:217
 msgid "horizontal center"
 msgstr "qendra horizontale"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:121
-#: ../build/lib/darktable/plugins/introspection_vignette.c:220
+#: ../build/lib/darktable/plugins/introspection_vignette.c:122
+#: ../build/lib/darktable/plugins/introspection_vignette.c:221
 msgid "vertical center"
 msgstr "qendra vertikale"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:133
-#: ../build/lib/darktable/plugins/introspection_vignette.c:228
+#: ../build/lib/darktable/plugins/introspection_vignette.c:134
+#: ../build/lib/darktable/plugins/introspection_vignette.c:229
 msgid "automatic ratio"
 msgstr "raporti automatik"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:139
-#: ../build/lib/darktable/plugins/introspection_vignette.c:232
+#: ../build/lib/darktable/plugins/introspection_vignette.c:140
+#: ../build/lib/darktable/plugins/introspection_vignette.c:233
 msgid "width/height ratio"
 msgstr "raporti gjerësi-gjatësi"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:145
-#: ../build/lib/darktable/plugins/introspection_vignette.c:236
-#: ../src/iop/vignette.c:977
+#: ../build/lib/darktable/plugins/introspection_vignette.c:146
+#: ../build/lib/darktable/plugins/introspection_vignette.c:237
+#: ../src/iop/vignette.c:978
 msgid "shape"
 msgstr "forma"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:264
+#: ../build/lib/darktable/plugins/introspection_vignette.c:265
 msgid "8-bit output"
 msgstr "output 8-bit"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:265
+#: ../build/lib/darktable/plugins/introspection_vignette.c:266
 msgid "16-bit output"
 msgstr "output 16-bit"
 
@@ -6210,12 +6213,12 @@ msgstr ""
 "problem me racionimin e memories nga filtri drejtues me ekspozim të shpejtë, "
 "kontrolloni parametrat e RAM-it"
 
-#: ../src/common/exif.cc:5197
+#: ../src/common/exif.cc:5200
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "nuk lexohet skedari XMP `%s': `%s'"
 
-#: ../src/common/exif.cc:5255
+#: ../src/common/exif.cc:5258
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "nuk shkruhet në skedarin XMP `%s': `%s'"
@@ -6251,7 +6254,7 @@ msgstr "nuk mund të heqë filmin me kopje lokale por pa origjinalet"
 
 #: ../src/common/history.c:840
 msgid "you need to copy history from an image before you paste it onto another"
-msgstr "duhet kopjuar historiku i një imazhi para se ta ngjitni te një tjetër"
+msgstr "historiku i imazhit duhet kopjuar para se ta ngjitni te një tjetër"
 
 #: ../src/common/image.c:325
 msgid "orphaned image"
@@ -8985,7 +8988,7 @@ msgstr ""
 "me gjasë ka ndodhur prej aplikimit të një vlere, stili ose kopje-ngjitjes së "
 "historikut"
 
-#: ../src/develop/pixelpipe_hb.c:2704
+#: ../src/develop/pixelpipe_hb.c:2705
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -8993,7 +8996,7 @@ msgstr ""
 "darktable dalloi probleme në instalimin e OpenCL; OpenCL do të çaktivizohet "
 "për këtë sesion!"
 
-#: ../src/develop/pixelpipe_hb.c:2849
+#: ../src/develop/pixelpipe_hb.c:2853
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -12635,15 +12638,15 @@ msgstr "linear, RGB, sipas ekranit"
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:104
-#: ../src/iop/vignette.c:160 ../src/iop/watermark.c:379
+#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:379
 msgid "non-linear, RGB"
 msgstr "jolinear, RGB"
 
 #: ../src/iop/basecurve.c:355 ../src/iop/dither.c:120 ../src/iop/dither.c:122
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
-#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
-#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:378
+#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:160
+#: ../src/iop/vignette.c:162 ../src/iop/watermark.c:378
 #: ../src/iop/watermark.c:380
 msgid "non-linear, RGB, display-referred"
 msgstr "jolinear, RGB, sipas skenës"
@@ -12672,8 +12675,8 @@ msgid ""
 "high dynamic range. expose for the highlights before use."
 msgstr ""
 "shkrijeni imazhin në vetvete për të komprimuar diapazonin e lartë dinamik, "
-"pasi të jetë ekspozuar lart e poshtë disa herë. ekspozoni reflekset para se "
-"ta përdorni."
+"pasi të jetë ekspozuar lart e poshtë disa herë. ekspozoni reflekset para "
+"përdorimit."
 
 #: ../src/iop/basecurve.c:2201
 msgid "how many stops to shift the individual exposures apart"
@@ -12711,7 +12714,7 @@ msgstr "aplikoni ndërhyrjet e zakonshme për imazhet"
 #: ../src/iop/levels.c:138 ../src/iop/liquify.c:297 ../src/iop/lowlight.c:92
 #: ../src/iop/lowpass.c:134 ../src/iop/monochrome.c:98 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:103 ../src/iop/velvia.c:105
-#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:158
+#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:159
 #: ../src/iop/watermark.c:377
 msgid "creative"
 msgstr "kreativ"
@@ -13260,13 +13263,12 @@ msgid ""
 "efficient to correct blue\n"
 "chromatic aberration."
 msgstr ""
-"modeli i duhur i korrigjimit.\n"
-"mund të ndihmojë kur keni\n"
-"disa instanca me imazhe\n"
+"modeli i korrigjimit.\n"
+"mund të duhet kur keni\n"
+"instanca me imazhe\n"
 "shumë të dëmtuara.\n"
-"errësimi është më efektiv\n"
-"kur korrigjohet aberracioni\n"
-"kromatik blu."
+"errësimi e korrigjon mirë\n"
+"aberracionin kromatik blu."
 
 #: ../src/iop/cacorrectrgb.c:767
 msgid ""
@@ -16717,7 +16719,7 @@ msgstr ""
 "funksionon më mirë për panoramat dhe fotot me ndriçim uniform,\n"
 "por nuk funksionon aq mirë për fotot me pak apo shumë kontrast.\n"
 "këtu nuk përdoret inteligjencë artificiale, por hamendje e thjeshtë.\n"
-"para se ta përdorni, sigurohuni që i kuptoni supozimet e bëra."
+"para përdorimit, sigurohuni që i kuptoni supozimet e bëra."
 
 #. Page RECONSTRUCT
 #: ../src/iop/filmicrgb.c:4477
@@ -17542,7 +17544,7 @@ msgid "find lens"
 msgstr "gjeni objektivin"
 
 #. scale
-#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:967
+#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:968
 #: ../src/iop/watermark.c:1324 ../src/libs/export.c:1165
 msgid "scale"
 msgstr "shëmbëllimi"
@@ -18051,8 +18053,8 @@ msgid ""
 "the LUT file"
 msgstr ""
 "përzgjidhni një skedar PNG (haldclut), kub, 3dl ose gmz (LUT të komprimuar). "
-"KUJDES: dosja LUT 3D duhet caktuar te preferencat/procesimi para se të "
-"zgjidhni skedarin LUT"
+"KUJDES: dosja LUT 3D duhet caktuar te preferencat/procesimi para zgjedhjes "
+"së skedarit LUT"
 
 #: ../src/iop/lut3d.c:1667
 msgid ""
@@ -18060,7 +18062,7 @@ msgid ""
 "set in preferences/processing before choosing the LUT file"
 msgstr ""
 "përzgjidhni një skedar PNG (haldclut), kub ose 3dl. KUJDES: dosja LUT 3D "
-"duhet caktuar te preferencat/procesimi para se të zgjidhni skedarin LUT"
+"duhet caktuar te preferencat/procesimi para zgjidhjes së skedarit LUT"
 
 #: ../src/iop/lut3d.c:1679
 msgid ""
@@ -18428,18 +18430,18 @@ msgstr "përshtateni sipas lumës mesatare të subjektit"
 #: ../src/iop/profile_gamma.c:644
 msgid ""
 "number of stops between middle gray and pure black\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "numri i stopeve midis grisë së mesme dhe të zezës puro\n"
-"kjo është vlera që do të tregonte pozëmetri në skenë"
+"këtë vlerë do të tregonte dritëmatësi në skenë"
 
 #: ../src/iop/profile_gamma.c:650
 msgid ""
 "number of stops between pure black and pure white\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "numri i stopeve midis të zezës puro dhe të bardhës puro\n"
-"kjo është vlera që do të tregonte pozëmetri në skenë"
+"këtë vlerë do të tregonte dritëmatësi në skenë"
 
 #: ../src/iop/profile_gamma.c:652
 msgctxt "section"
@@ -19851,52 +19853,52 @@ msgstr ""
 msgid "the amount of vibrance"
 msgstr "sasia e dinamikës"
 
-#: ../src/iop/vignette.c:152
+#: ../src/iop/vignette.c:153
 msgid "vignetting"
 msgstr "vineta"
 
-#: ../src/iop/vignette.c:157
+#: ../src/iop/vignette.c:158
 msgid "simulate a lens fall-off close to edges"
 msgstr "simuloni shuarjen e objektivit afër cepave"
 
-#: ../src/iop/vignette.c:939
+#: ../src/iop/vignette.c:940
 msgid "lomo"
 msgstr "lomo"
 
-#: ../src/iop/vignette.c:973
+#: ../src/iop/vignette.c:974
 msgctxt "section"
 msgid "position / form"
 msgstr "pozicioni / forma"
 
-#: ../src/iop/vignette.c:980
+#: ../src/iop/vignette.c:981
 msgid "dithering"
 msgstr "retinatura"
 
-#: ../src/iop/vignette.c:991
+#: ../src/iop/vignette.c:992
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "shkalla e rrezes së vinetës për fillimin e shuarjes"
 
-#: ../src/iop/vignette.c:992
+#: ../src/iop/vignette.c:993
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "shkalla e rrezes së vinetës për fundin e shuarjes"
 
-#: ../src/iop/vignette.c:993
+#: ../src/iop/vignette.c:994
 msgid "strength of effect on brightness"
 msgstr "forca e efektit te shkëlqimi"
 
-#: ../src/iop/vignette.c:994
+#: ../src/iop/vignette.c:995
 msgid "strength of effect on saturation"
 msgstr "forca e efektit te saturimi"
 
-#: ../src/iop/vignette.c:995
+#: ../src/iop/vignette.c:996
 msgid "horizontal offset of center of the effect"
 msgstr "ofseti horizontal i qendrës së efektit"
 
-#: ../src/iop/vignette.c:996
+#: ../src/iop/vignette.c:997
 msgid "vertical offset of center of the effect"
 msgstr "ofseti vertikal i qendrës së efektit"
 
-#: ../src/iop/vignette.c:997
+#: ../src/iop/vignette.c:998
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -19908,30 +19910,30 @@ msgstr ""
 "1 prodhon një rreth ose elips\n"
 "2 prodhon një diamant"
 
-#: ../src/iop/vignette.c:999
+#: ../src/iop/vignette.c:1000
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "raporti ndjek automatikisht përmasat e imazhit"
 
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1001
 msgid "width-to-height ratio"
 msgstr "raporti gjerësi-gjatësi"
 
-#: ../src/iop/vignette.c:1001
+#: ../src/iop/vignette.c:1002
 msgid "add some level of random noise to prevent banding"
 msgstr "parandaloni striaturën duke shtuar një sasi zhurme"
 
-#: ../src/iop/vignette.c:1008
+#: ../src/iop/vignette.c:1009
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s në nyjë] ndryshoj përmasën e vinetës/sfumaturës"
 
-#: ../src/iop/vignette.c:1010
+#: ../src/iop/vignette.c:1011
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
 "[%s në nyjë] ndryshoj përmasën e vinetës/sfumaturës duke ruajtur raportin"
 
-#: ../src/iop/vignette.c:1012
+#: ../src/iop/vignette.c:1013
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s në qendër] lëviz vinetën"
@@ -20599,7 +20601,7 @@ msgstr "administruesi i dublikatave"
 
 #: ../src/libs/duplicate.c:401
 msgid "create a 'virgin' duplicate of the image without any development"
-msgstr "krijoni një dublikatë 'të virgjër' të imazhit pa u zhvilluar"
+msgstr "krijoni një dublikatë 'të virgjër' të imazhit pa e  zhvilluar"
 
 #: ../src/libs/duplicate.c:406
 msgid "create a duplicate of the image with same history stack"
@@ -22103,8 +22105,8 @@ msgid ""
 "patterns can be defined to rename the images and specify the destination "
 "folders"
 msgstr ""
-"kopjoni dhe riemërtoni imazhet para se të shtohen në librari\n"
-"riemërtimi dhe dosjet përcaktohen sipas disa modeleve"
+"kopjoni dhe riemërtoni imazhet para se t'i shtoni në librari\n"
+"riemërtimi dhe dosjet mund të përcaktohen sipas disa modeleve"
 
 #. collapsible section
 #: ../src/libs/import.c:2053
@@ -24153,8 +24155,8 @@ msgid ""
 "image\n"
 "set -1 to never hide the overlay"
 msgstr ""
-"koha para se të fshihen shtresat mbi imazh pas lëvizjes së mausit\n"
-"vendoset -1 për të mos i fshehur asnjëherë mbishtresat"
+"koha para fshehjes së shtresave mbi imazh pas lëvizjes së mausit\n"
+"vendoset -1 që mbishtresat të mos fshihen asnjëherë"
 
 #: ../src/libs/tools/global_toolbox.c:254
 #: ../src/libs/tools/global_toolbox.c:317
