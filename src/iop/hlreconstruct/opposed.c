@@ -270,6 +270,11 @@ static float *_process_opposed(
   {
     for_three_channels(c)
       chrominance[c] = img_oppchroma[c];
+    if(!img_oppclipped && !keep)
+    {
+      dt_iop_copy_image_roi(output, input, 1, roi_in, roi_out, 0);
+      return NULL;
+    }
   }
   else
   {
@@ -367,8 +372,14 @@ static float *_process_opposed(
         for_three_channels(c)
           img_oppchroma[c] = chrominance[c];
         img_opphash = opphash;
-        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache CPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for hash%22" PRIu64 "\n",
-          chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2], _opposed_parhash(piece));
+
+        dt_print_pipe(DT_DEBUG_PIPE,
+          "opposed chroma cache CPU", piece->pipe, self, roi_in, roi_out,
+          " red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for hash=%" PRIx64 " %s\n",
+          chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2],
+          _opposed_parhash(piece), anyclipped ? "" : "copymode");
+
+        img_oppclipped = anyclipped;
       }
     }
     dt_free_align(mask);
@@ -475,13 +486,18 @@ static cl_int process_opposed_cl(
   const int mheight = roi_in->height / 3;
   const int msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 16);
 
-  dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
-  if(dev_xtrans == NULL) goto error;
-
-  dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
-  if(dev_clips == NULL) goto error;
-
   const uint64_t opphash = _opposed_hash(piece);
+  const int fastcopymode = (opphash == img_opphash) && !img_oppclipped;
+
+  if(!fastcopymode)
+  {
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    if(dev_xtrans == NULL) goto error;
+
+    dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
+    if(dev_clips == NULL) goto error;
+  }
+
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
   if(opphash == img_opphash)
@@ -554,8 +570,14 @@ static cl_int process_opposed_cl(
       for_three_channels(c)
         img_oppchroma[c] = chrominance[c];
       img_opphash = opphash;
-      dt_print(DT_DEBUG_PIPE, "[opposed chroma cache GPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for hash%22" PRIu64 "\n",
-        chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2], _opposed_parhash(piece));
+
+      img_oppclipped = cnts[0] > 0.0f || cnts[1] > 0.0f || cnts[2] > 0.0f;
+
+      dt_print_pipe(DT_DEBUG_PIPE,
+          "opposed chroma cache CL", piece->pipe, self, roi_in, roi_out,
+          " red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for hash=%" PRIx64 " %s\n",
+          chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2],
+          _opposed_parhash(piece), img_oppclipped ? "" : "copymode");
     }
   }
 
@@ -569,7 +591,8 @@ static cl_int process_opposed_cl(
           CLARG(roi_out->x), CLARG(roi_out->y),
           CLARG(filters), CLARG(dev_xtrans),
           CLARG(dev_clips),
-          CLARG(dev_chrominance));
+          CLARG(dev_chrominance),
+          CLARG(fastcopymode));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_clips);

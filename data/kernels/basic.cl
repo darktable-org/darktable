@@ -517,7 +517,8 @@ kernel void highlights_opposed(
         const unsigned int filters,
         global const unsigned char (*const xtrans)[6],
         global const float *clips,
-        global const float *chroma)
+        global const float *chroma,
+        const int fastcopymode)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -531,11 +532,14 @@ kernel void highlights_opposed(
   {
     val = fmax(0.0f, read_imagef(in, samplerA, (int2)(icol, irow)).x);
 
-    const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
-    if(val >= clips[color])
+    if(!fastcopymode)
     {
-      const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth);
-      val = fmax(val, ref + chroma[color]);
+      const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+      if(val >= clips[color])
+      {
+        const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iheight, iwidth);
+        val = fmax(val, ref + chroma[color]);
+      }
     }
   }
   write_imagef (out, (int2)(x, y), val);
