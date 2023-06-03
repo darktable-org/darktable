@@ -265,7 +265,8 @@ int legacy_params(dt_iop_module_t *self,
 }
 
 static dt_aligned_pixel_t img_oppchroma;
-static uint64_t img_opphash = 0;
+static gboolean img_oppclipped = TRUE;
+static uint64_t img_opphash = ULLONG_MAX;
 
 #include "hlreconstruct/segmentation.c"
 #include "hlreconstruct/segbased.c"
@@ -553,7 +554,9 @@ int process_cl(struct dt_iop_module_t *self,
   error:
   dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] [%s] had error %s\n", dt_dev_pixelpipe_type_to_str(piece->pipe->type), cl_errstr(err));
+  dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_PIPE,
+    "opencl_highlights error", piece->pipe, self, roi_in, roi_out,
+    "error: %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -760,12 +763,15 @@ void process(struct dt_iop_module_t *self,
       }
       break;
     }
+
     case DT_IOP_HIGHLIGHTS_LCH:
+    {
       if(filters == 9u)
         process_lch_xtrans(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       else
         process_lch_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
+    }
 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
@@ -794,10 +800,8 @@ void process(struct dt_iop_module_t *self,
     }
 
     default:
-    case DT_IOP_HIGHLIGHTS_OPPOSED:
     {
-      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, FALSE, high_quality);
-      dt_free_align(tmp);
+      _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, FALSE, high_quality);
       break;
     }
   }
