@@ -178,14 +178,10 @@ typedef union dt_image_correction_data_t
     gboolean has_vignette;
   } dng;
   struct {
-    gboolean has_ft_dist;
-    float ft_dist[9];
-    gboolean has_mft_dist;
-    float mft_dist[4];
-    gboolean has_mft_ca;
-    float mft_ca[6];
-    gboolean has_vignetting;
-    short vignetting[16];
+    gboolean has_dist;
+    float dist[4];
+    gboolean has_ca;
+    float ca[6];
   } olympus;
 } dt_image_correction_data_t;
 

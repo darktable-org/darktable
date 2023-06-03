@@ -2402,34 +2402,23 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
   {
     // Get the coefficients for the distortion polynomial
     float dk0 = 1, dk2 = 0, dk4 = 0, dk6 = 0;
-    if(cd->olympus.has_ft_dist)
+    if(cd->olympus.has_dist)
     {
-      // For Four Thirds lenses, the 9 element distortion tag contains 3 roughly
-      // similar sets of coefficients. The first always applies more correction,
-      // the second always applies less, and the third is always somewhere in
-      // between the other two. Here we use the third set.
-      dk0 = 1;
-      dk2 = cd->olympus.ft_dist[6];
-      dk4 = cd->olympus.ft_dist[7];
-      dk6 = cd->olympus.ft_dist[8];
-    }
-    else if (cd->olympus.has_mft_dist)
-    {
-      dk0 = cd->olympus.mft_dist[3];
-      dk2 = cd->olympus.mft_dist[0];
-      dk4 = cd->olympus.mft_dist[1];
-      dk6 = cd->olympus.mft_dist[2];
+      dk0 = cd->olympus.dist[3];
+      dk2 = cd->olympus.dist[0];
+      dk4 = cd->olympus.dist[1];
+      dk6 = cd->olympus.dist[2];
     }
     // Get the coefficients for the CA polynomial
     float car0 = 0, car2 = 0, car4 = 0, cab0 = 0, cab2 = 0, cab4 = 0;
-    if (cd->olympus.has_mft_ca)
+    if (cd->olympus.has_ca)
     {
-      car0 = cd->olympus.mft_ca[0];
-      car2 = cd->olympus.mft_ca[1];
-      car4 = cd->olympus.mft_ca[2];
-      cab0 = cd->olympus.mft_ca[3];
-      cab2 = cd->olympus.mft_ca[4];
-      cab4 = cd->olympus.mft_ca[5];
+      car0 = cd->olympus.ca[0];
+      car2 = cd->olympus.ca[1];
+      car4 = cd->olympus.ca[2];
+      cab0 = cd->olympus.ca[3];
+      cab2 = cd->olympus.ca[4];
+      cab4 = cd->olympus.ca[5];
     }
 
     nc = MAXKNOTS;
