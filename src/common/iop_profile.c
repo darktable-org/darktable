@@ -1201,7 +1201,7 @@ gchar *dt_ioppr_get_location_tooltip(const char *subdir, const char *for_name)
 
   char *system_profile_dir = g_build_filename(datadir, "color", subdir, NULL);
   char *user_profile_dir = g_build_filename(confdir, "color", subdir, NULL);
-  char *tooltip = g_strdup_printf
+  char *tooltip = g_markup_printf_escaped
     (_("darktable loads %s from\n<b>%s</b>\n"
        "or, if this directory does not exist, from\n<b>%s</b>"),
      for_name, user_profile_dir, system_profile_dir);
