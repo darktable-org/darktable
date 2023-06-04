@@ -33,7 +33,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.2.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-05-31 22:20+0200\n"
+"PO-Revision-Date: 2023-06-02 23:07+0200\n"
 "Last-Translator: Kristian Nordin <kristian.po@proton.me>\n"
 "Language-Team: Swedish <tp-se@listor.tp-se.sv>\n"
 "Language: sv\n"
@@ -501,6 +501,8 @@ msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
 msgstr ""
+"öka eller minska den rumsliga storleken för bildgrupper på kartan. kan "
+"påverka beräkningstiden"
 
 #: ../build/bin/conf_gen.h:1822
 msgid "min images per group"
@@ -544,6 +546,7 @@ msgstr "max polygonpunkter"
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
+"begränsa antalet punkter som importeras med polygon i modulen hitta plats"
 
 #: ../build/bin/conf_gen.h:2135 ../build/bin/preferences_gen.h:4722
 #: ../build/bin/preferences_gen.h:4756
@@ -1133,12 +1136,6 @@ msgid "delimiters for size categories"
 msgstr "avgränsare för storlekskategorier"
 
 #: ../build/bin/preferences_gen.h:4294
-#, fuzzy
-#| msgid ""
-#| "size categories are used to be able to set different overlays and CSS "
-#| "values depending of the size of the thumbnail, separated by |.\n"
-#| "for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px-"
-#| ">400px and >400px"
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
@@ -1146,9 +1143,9 @@ msgid ""
 ">400px"
 msgstr ""
 "storlekskategorier används för att sätta olika lager och css-värden beroende "
-"på storleken på miniatyrer, separerade med |.\n"
-"t.ex. 120|400 menas 3 kategorier av miniatyrer: 0px->120px, 120px->400px och "
-">400px"
+"på storleken på miniatyren, separerade med |.\n"
+"t.ex. 120|400 betyder 3 kategorier av miniatyrer: 0px->120px, 120px->400px "
+"och >400px"
 
 #: ../build/bin/preferences_gen.h:4316
 msgid "pattern for the thumbnail extended overlay text"
@@ -1173,6 +1170,10 @@ msgid ""
 "curvature\n"
 "by default scrolling up increases these parameters"
 msgstr ""
+"när du använder musens rullningshjul för att ändra maskparametrar, rulla "
+"nedåt för att öka maskens storlek, luddstorlek, ogenomskinlighet, "
+"penselhårdhet och övertoningskurvaturen\n"
+"som standard ökar rullning uppåt dessa parametrar"
 
 #: ../build/bin/preferences_gen.h:4476
 msgid "middle mouse button zooms to 200%"
@@ -1185,6 +1186,10 @@ msgid ""
 "on middle mouse clicks. if disabled, it will toggle between viewport size "
 "and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
+"om den är inställd kommer zoomnivån växla mellan 100%, 200% och anpassa till "
+"visningsområdet vid mittenmusklick. om den är inaktiverad kommer den växla "
+"mellan visningsområdets storlek och 100% och \"ctrl\"-tangenten kan användas "
+"för att kontrollera zoomnivån."
 
 #: ../build/bin/preferences_gen.h:4513
 msgid "pattern for the image information line"
@@ -1384,10 +1389,8 @@ msgid "this is slower than the default."
 msgstr "detta är långsammare än standardvalet."
 
 #: ../build/bin/preferences_gen.h:5373
-#, fuzzy
-#| msgid "pixel interpolator"
 msgid "pixel interpolator (warp)"
-msgstr "pixel-interpolator"
+msgstr "pixelinterpolator (tänjing)"
 
 #: ../build/bin/preferences_gen.h:5416
 #, fuzzy
