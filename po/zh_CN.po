@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-18 08:18+0200\n"
-"PO-Revision-Date: 2023-05-18 10:27-0400\n"
+"POT-Creation-Date: 2023-05-31 13:24+0200\n"
+"PO-Revision-Date: 2023-06-04 01:27-0400\n"
 "Last-Translator: Tianhao Chai <cth451@gmail.com>\n"
 "Language-Team: Chinese - China <>\n"
 "Language: zh_CN\n"
@@ -1100,8 +1100,8 @@ msgstr "大小类别的分隔符"
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px-"
-">400px and >400px"
+"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
+">400px"
 msgstr ""
 "您可以按缩略图的大小尺寸分类设置不同的叠加层和 css 值。输入时以 | 作为分隔"
 "符。\n"
@@ -1141,12 +1141,11 @@ msgstr "按下滚轮切换缩放时启用 200% 缩放"
 #: ../build/bin/preferences_gen.h:4491
 #, no-c-format
 msgid ""
-"when clicking the middle mouse button to zoom, the zoom level will cycle "
-"through 100%, 200% and then back to fit the screen. otherwise it switches "
-"between fit to screen and 100% and the 'ctrl' key can be used to control the "
-"zoom level."
+"if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
+"on middle mouse clicks. if disabled, it will toggle between viewport size "
+"and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
-"按下鼠标滚轮时，可以切换缩放比例：100%、200% 和缩放至适合屏幕大小。此选项关闭"
+"按下鼠标滚轮时，可以切换缩放比例：100%、200% 和适合屏幕大小的比例。此选项关闭"
 "时，按下滚轮将在 100% 和适合屏幕大小的比例之间切换，使用 ctrl 键来调整缩放比"
 "例。"
 
@@ -2194,7 +2193,7 @@ msgstr "指定"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:366
 #: ../build/lib/darktable/plugins/introspection_colorin.c:300
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
-#: ../build/lib/darktable/plugins/introspection_vignette.c:263
+#: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3410 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/accelerators.c:227
@@ -2251,9 +2250,9 @@ msgstr "保留颜色"
 #: ../src/iop/channelmixerrgb.c:4667 ../src/iop/clipping.c:1900
 #: ../src/iop/clipping.c:2093 ../src/iop/clipping.c:2108
 #: ../src/iop/retouch.c:463 ../src/libs/collect.c:1907
-#: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1024
+#: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1023
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:132
-#: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2826
+#: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2835
 msgid "none"
 msgstr "无"
 
@@ -2430,7 +2429,7 @@ msgstr "宽高比"
 #. // portrait / landscape
 #: ../build/lib/darktable/plugins/introspection_borders.c:130
 #: ../build/lib/darktable/plugins/introspection_borders.c:265
-#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2507
+#: ../src/iop/flip.c:75 ../src/libs/print_settings.c:2517
 msgid "orientation"
 msgstr "方向"
 
@@ -2468,13 +2467,13 @@ msgstr "自动"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:328
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:309
-#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2509
+#: ../src/libs/filters/ratio.c:122 ../src/libs/print_settings.c:2519
 msgid "portrait"
 msgstr "纵向"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:329
 #: ../src/imageio/format/pdf.c:604 ../src/libs/filtering.c:305
-#: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2509
+#: ../src/libs/filters/ratio.c:124 ../src/libs/print_settings.c:2519
 msgid "landscape"
 msgstr "横向"
 
@@ -2894,7 +2893,7 @@ msgstr "提升、伽马、增益（sRGB）"
 #: ../src/develop/blend_gui.c:2356 ../src/develop/blend_gui.c:2404
 #: ../src/iop/atrous.c:1667 ../src/iop/channelmixerrgb.c:4457
 #: ../src/iop/channelmixerrgb.c:4573 ../src/iop/colorbalancergb.c:1895
-#: ../src/iop/nlmeans.c:468
+#: ../src/iop/colorzones.c:2402 ../src/iop/nlmeans.c:468
 msgid "chroma"
 msgstr "色度"
 
@@ -3055,13 +3054,13 @@ msgstr "色域裁剪"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:201
 #: ../src/common/colorspaces.c:1251 ../src/common/colorspaces.c:1484
-#: ../src/libs/print_settings.c:1340
+#: ../src/libs/print_settings.c:1356
 msgid "sRGB"
 msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:302
 #: ../src/common/colorspaces.c:1260 ../src/common/colorspaces.c:1486
-#: ../src/libs/print_settings.c:1347
+#: ../src/libs/print_settings.c:1363
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB（兼容）"
 
@@ -3154,9 +3153,8 @@ msgstr "明度"
 #: ../src/iop/colorbalance.c:2059 ../src/iop/colorbalancergb.c:1919
 #: ../src/iop/colorchecker.c:1483 ../src/iop/colorcontrast.c:90
 #: ../src/iop/colorcorrection.c:275 ../src/iop/colorize.c:343
-#: ../src/iop/colorzones.c:2402 ../src/iop/lowpass.c:588
-#: ../src/iop/soften.c:373 ../src/iop/velvia.c:84 ../src/iop/vibrance.c:72
-#: ../src/iop/vignette.c:970
+#: ../src/iop/lowpass.c:588 ../src/iop/soften.c:373 ../src/iop/velvia.c:84
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:971
 msgid "saturation"
 msgstr "饱和度"
 
@@ -3738,8 +3736,8 @@ msgstr "启用高亮修复"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2785 ../src/common/variables.c:705
 #: ../src/develop/imageop_gui.c:209 ../src/imageio/format/pdf.c:636
-#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1189
-#: ../src/libs/export.c:1196 ../src/libs/export.c:1203
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1188
+#: ../src/libs/export.c:1195 ../src/libs/export.c:1202
 #: ../src/libs/metadata_view.c:670
 msgid "no"
 msgstr "否"
@@ -4016,8 +4014,8 @@ msgstr "应用修正"
 #: ../src/iop/bilat.c:428 ../src/iop/colorbalance.c:1909
 #: ../src/iop/denoiseprofile.c:3806 ../src/iop/exposure.c:1157
 #: ../src/iop/levels.c:684 ../src/iop/profile_gamma.c:668
-#: ../src/libs/copy_history.c:399 ../src/libs/export.c:1272
-#: ../src/libs/image.c:597 ../src/libs/print_settings.c:2866
+#: ../src/libs/copy_history.c:399 ../src/libs/export.c:1262
+#: ../src/libs/image.c:597 ../src/libs/print_settings.c:2875
 #: ../src/libs/styles.c:846 ../src/views/darkroom.c:2387
 msgid "mode"
 msgstr "模式"
@@ -4087,7 +4085,7 @@ msgstr "Lensfun 数据库"
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2367
 #: ../src/gui/accelerators.c:2447 ../src/gui/gtk.c:1204 ../src/gui/gtk.c:3136
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3709
-#: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3147
+#: ../src/iop/rawdenoise.c:893 ../src/libs/collect.c:3066
 #: ../src/libs/filtering.c:1459 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/rating.c:211
 msgid "all"
@@ -4131,7 +4129,7 @@ msgid "rectilinear"
 msgstr "直线"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:462
-msgid "fish-eye"
+msgid "fisheye"
 msgstr "鱼眼"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:463
@@ -4155,7 +4153,7 @@ msgid "equisolid angle"
 msgstr "等立体角"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:468
-msgid "Thoby fish-eye"
+msgid "Thoby fisheye"
 msgstr "Thoby 鱼眼"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:428
@@ -4164,11 +4162,11 @@ msgstr "无效化"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2282 ../src/views/darkroom.c:2681
-#: ../src/views/darkroom.c:2684 ../src/views/lighttable.c:765
-#: ../src/views/lighttable.c:774 ../src/views/lighttable.c:1253
-#: ../src/views/lighttable.c:1257 ../src/views/lighttable.c:1261
-#: ../src/views/lighttable.c:1265 ../src/views/lighttable.c:1269
+#: ../src/views/darkroom.c:2282 ../src/views/darkroom.c:2676
+#: ../src/views/darkroom.c:2679 ../src/views/lighttable.c:765
+#: ../src/views/lighttable.c:774 ../src/views/lighttable.c:1246
+#: ../src/views/lighttable.c:1250 ../src/views/lighttable.c:1254
+#: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1262
 msgid "move"
 msgstr "移动"
 
@@ -4370,7 +4368,7 @@ msgstr "填充模式"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4617
 #: ../src/iop/colisa.c:305 ../src/iop/lowpass.c:587 ../src/iop/soften.c:377
-#: ../src/iop/vignette.c:969 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:970 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "亮度"
 
@@ -4589,23 +4587,23 @@ msgstr "EIGF"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:379
 msgid "RGB average"
-msgstr "RGB平均"
+msgstr "RGB 平均"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:380
 msgid "HSL lightness"
-msgstr "HSL亮度"
+msgstr "HSL 亮度"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
-msgstr "HSV明度/RGB最大"
+msgstr "HSV 明度 / RGB 最大"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:382
 msgid "RGB sum"
-msgstr "RGB总和"
+msgstr "RGB 总和"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:385
 msgid "RGB geometric mean"
-msgstr "RGB几何平均"
+msgstr "RGB 几何平均"
 
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:39
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:88
@@ -4617,45 +4615,49 @@ msgstr "对比度压缩"
 #: ../build/lib/darktable/plugins/introspection_vibrance.c:76
 #: ../src/iop/basicadj.c:627 ../src/iop/vibrance.c:67
 msgid "vibrance"
-msgstr "自然饱和度"
+msgstr "鲜艳度"
 
-# 根据日语版本猜测
-#: ../build/lib/darktable/plugins/introspection_vignette.c:97
-#: ../build/lib/darktable/plugins/introspection_vignette.c:204
-msgid "fall-off strength"
-msgstr "光衰减力度"
+#: ../build/lib/darktable/plugins/introspection_vignette.c:92
+#: ../build/lib/darktable/plugins/introspection_vignette.c:201
+msgid "fall-off start"
+msgstr "衰减开始位置"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:115
-#: ../build/lib/darktable/plugins/introspection_vignette.c:216
+#: ../build/lib/darktable/plugins/introspection_vignette.c:98
+#: ../build/lib/darktable/plugins/introspection_vignette.c:205
+msgid "fall-off radius"
+msgstr "衰减区域宽度"
+
+#: ../build/lib/darktable/plugins/introspection_vignette.c:116
+#: ../build/lib/darktable/plugins/introspection_vignette.c:217
 msgid "horizontal center"
 msgstr "水平中心"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:121
-#: ../build/lib/darktable/plugins/introspection_vignette.c:220
+#: ../build/lib/darktable/plugins/introspection_vignette.c:122
+#: ../build/lib/darktable/plugins/introspection_vignette.c:221
 msgid "vertical center"
 msgstr "垂直中心"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:133
-#: ../build/lib/darktable/plugins/introspection_vignette.c:228
+#: ../build/lib/darktable/plugins/introspection_vignette.c:134
+#: ../build/lib/darktable/plugins/introspection_vignette.c:229
 msgid "automatic ratio"
 msgstr "自动比例"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:139
-#: ../build/lib/darktable/plugins/introspection_vignette.c:232
+#: ../build/lib/darktable/plugins/introspection_vignette.c:140
+#: ../build/lib/darktable/plugins/introspection_vignette.c:233
 msgid "width/height ratio"
 msgstr "宽高比"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:145
-#: ../build/lib/darktable/plugins/introspection_vignette.c:236
-#: ../src/iop/vignette.c:977
+#: ../build/lib/darktable/plugins/introspection_vignette.c:146
+#: ../build/lib/darktable/plugins/introspection_vignette.c:237
+#: ../src/iop/vignette.c:978
 msgid "shape"
 msgstr "形状"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:264
+#: ../build/lib/darktable/plugins/introspection_vignette.c:265
 msgid "8-bit output"
 msgstr "8-bit 输出"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:265
+#: ../build/lib/darktable/plugins/introspection_vignette.c:266
 msgid "16-bit output"
 msgstr "16-bit 输出"
 
@@ -4686,7 +4688,7 @@ msgstr "水印缩放参照"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:323
 #: ../src/imageio/format/tiff.c:125 ../src/imageio/format/xcf.c:159
-#: ../src/iop/borders.c:942
+#: ../src/iop/borders.c:947
 msgid "image"
 msgstr "照片"
 
@@ -4699,8 +4701,8 @@ msgid "smaller border"
 msgstr "短边"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:326
-#: ../src/libs/export.c:1136 ../src/libs/metadata_view.c:148
-#: ../src/libs/print_settings.c:2531
+#: ../src/libs/export.c:1135 ../src/libs/metadata_view.c:148
+#: ../src/libs/print_settings.c:2541
 msgid "height"
 msgstr "高度"
 
@@ -5117,7 +5119,7 @@ msgstr "导出时间"
 msgid "print time"
 msgstr "打印时间"
 
-#: ../src/common/collection.c:708 ../src/libs/collect.c:3303
+#: ../src/common/collection.c:708 ../src/libs/collect.c:3222
 #: ../src/libs/filtering.c:2163 ../src/libs/filtering.c:2183
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:92
 msgid "history"
@@ -5215,7 +5217,7 @@ msgstr "已改变"
 #: ../src/common/collection.c:1553 ../src/common/collection.c:1649
 #: ../src/libs/collect.c:1166 ../src/libs/collect.c:1330
 #: ../src/libs/collect.c:1354 ../src/libs/collect.c:1473
-#: ../src/libs/collect.c:2510
+#: ../src/libs/collect.c:2432
 msgid "not tagged"
 msgstr "无标签"
 
@@ -5579,12 +5581,12 @@ msgid "work profile"
 msgstr "工作档案"
 
 #: ../src/common/colorspaces.c:1232 ../src/common/colorspaces.c:1514
-#: ../src/iop/colorout.c:895
+#: ../src/iop/colorout.c:885
 msgid "export profile"
 msgstr "输出配置"
 
 #: ../src/common/colorspaces.c:1236 ../src/common/colorspaces.c:1516
-#: ../src/views/darkroom.c:2546
+#: ../src/views/darkroom.c:2542
 msgid "softproof profile"
 msgstr "软打样配置"
 
@@ -5888,10 +5890,10 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "darktable 启动失败"
 
-#: ../src/common/database.c:2778 ../src/libs/collect.c:3001
+#: ../src/common/database.c:2778 ../src/libs/collect.c:2915
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1702
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1194
-#: ../src/libs/recentcollect.c:294 ../src/libs/modulegroups.c:3464
+#: ../src/libs/recentcollect.c:227 ../src/libs/modulegroups.c:3464
 #: ../src/libs/styles.c:438 ../src/libs/styles.c:621 ../src/libs/tagging.c:1484
 #: ../src/libs/tagging.c:1572 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057
@@ -5917,8 +5919,8 @@ msgstr ""
 
 #: ../src/common/database.c:2785 ../src/common/variables.c:703
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/pdf.c:636
-#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1189
-#: ../src/libs/export.c:1196 ../src/libs/export.c:1203
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1188
+#: ../src/libs/export.c:1195 ../src/libs/export.c:1202
 #: ../src/libs/metadata_view.c:670
 msgid "yes"
 msgstr "是"
@@ -6076,12 +6078,12 @@ msgid ""
 "your RAM settings"
 msgstr "快速曝光独立导向滤波器无法分配内存，请检查 RAM 设置"
 
-#: ../src/common/exif.cc:5167
+#: ../src/common/exif.cc:5200
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "无法读取 xmp 文件“%s”：“%s”"
 
-#: ../src/common/exif.cc:5221
+#: ../src/common/exif.cc:5258
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "无法写入 xmp 文件“%s”：“%s”"
@@ -6327,6 +6329,17 @@ msgstr "v3.0 RAW"
 msgid "v3.0 JPEG"
 msgstr "v3.0 JPEG"
 
+#: ../src/common/iop_profile.c:1205
+#, c-format
+msgid ""
+"darktable loads %s from\n"
+"<b>%s</b>\n"
+"or, if this directory does not exist, from\n"
+"<b>%s</b>"
+msgstr ""
+"darktable 需要从 %2$s 加载 %1$s\n"
+"若此文件夹不存在，将从 %3$s 加载"
+
 #. clang-format off
 #: ../src/common/metadata.c:46
 msgid "creator"
@@ -6409,16 +6422,16 @@ msgid "OpenCL scheduling profile set to default"
 msgstr "OpenCL 调度配置已设定为默认值"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:3441
-#: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:82
+#: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:81
 msgid "mm"
 msgstr "毫米"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:521 ../src/libs/export.c:1146
-#: ../src/libs/print_settings.c:82
+#: ../src/common/pdf.h:89 ../src/libs/export.c:520 ../src/libs/export.c:1145
+#: ../src/libs/print_settings.c:81
 msgid "cm"
 msgstr "厘米"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:82
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:81
 msgid "inch"
 msgstr "英寸"
 
@@ -6426,7 +6439,7 @@ msgstr "英寸"
 msgid "\""
 msgstr "\""
 
-#: ../src/common/pdf.h:104 ../src/iop/borders.c:953
+#: ../src/common/pdf.h:104 ../src/iop/borders.c:958
 msgid "A4"
 msgstr "A4"
 
@@ -6920,17 +6933,17 @@ msgstr "关闭"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2573
+#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2578
 #: ../src/libs/import.c:1722 ../src/libs/select.c:135
 msgid "select all"
 msgstr "全选"
 
-#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2575
+#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2580
 #: ../src/libs/import.c:1726 ../src/libs/select.c:139
 msgid "select none"
 msgstr "全不选"
 
-#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2577
+#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2582
 #: ../src/libs/select.c:143
 msgid "invert selection"
 msgstr "反转选择"
@@ -7052,7 +7065,7 @@ msgid ""
 "could not send %s to trash%s\n"
 "%s\n"
 "\n"
-" do you want to physically delete the file from disk without using trash?"
+" do you want to delete the file from disk without using trash?"
 msgstr ""
 "无法将 %s 移动到回收站 %s\n"
 "%s\n"
@@ -7062,7 +7075,7 @@ msgstr ""
 #: ../src/control/jobs/control_jobs.c:861
 #, c-format
 msgid ""
-"could not physically delete from disk %s%s\n"
+"could not delete from disk %s%s\n"
 "%s"
 msgstr ""
 "无法物理删除 %s%s\n"
@@ -7073,13 +7086,10 @@ msgid "_apply to all"
 msgstr "应用到全部照片 (_a)"
 
 #: ../src/control/jobs/control_jobs.c:877
-msgid "_yes, physically delete"
-msgstr "是，从磁盘上物理删除 (_y)"
+msgid "_delete permanently"
+msgstr "永久删除 (_d)"
 
 #: ../src/control/jobs/control_jobs.c:878
-msgid "_no, only remove from library"
-msgstr "不，仅从照片库移除 (_n)"
-
 #: ../src/control/jobs/control_jobs.c:882
 msgid "_remove from library"
 msgstr "从照片库中移除 (_r)"
@@ -7412,7 +7422,7 @@ msgstr "导入图像"
 msgid "detail mask blending error"
 msgstr "细节蒙版混合出现错误"
 
-#: ../src/develop/blend.c:856
+#: ../src/develop/blend.c:864
 msgid "detail mask CL blending problem"
 msgstr "细节蒙版 CL 混合出现错误"
 
@@ -7636,17 +7646,17 @@ msgid "uniformly"
 msgstr "均匀"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2740
-#: ../src/develop/blend_gui.c:3429 ../src/develop/imageop.c:2634
+#: ../src/develop/blend_gui.c:3429 ../src/develop/imageop.c:2660
 msgid "drawn mask"
 msgstr "绘制蒙板"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2512
-#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2636
+#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2662
 msgid "parametric mask"
 msgstr "参数蒙版"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2951
-#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2638
+#: ../src/develop/blend_gui.c:3467 ../src/develop/imageop.c:2664
 msgid "raster mask"
 msgstr "光栅蒙版"
 
@@ -7693,12 +7703,12 @@ msgid "on"
 msgstr "开"
 
 #: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2789
 msgid "input"
 msgstr "输入"
 
 #: ../src/develop/blend_gui.c:981 ../src/develop/blend_gui.c:2590
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2789
 msgid "output"
 msgstr "输出"
 
@@ -8248,70 +8258,70 @@ msgstr "新的副本"
 msgid "duplicate instance"
 msgstr "复制副本"
 
-#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3708
+#: ../src/develop/imageop.c:1043 ../src/develop/imageop.c:3739
 #: ../src/libs/masks.c:1152
 msgid "move up"
 msgstr "向上移动"
 
-#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3709
+#: ../src/develop/imageop.c:1049 ../src/develop/imageop.c:3740
 #: ../src/libs/masks.c:1157
 msgid "move down"
 msgstr "向下移动"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3711
+#: ../src/develop/imageop.c:1055 ../src/develop/imageop.c:3742
 #: ../src/gui/accelerators.c:155 ../src/gui/presets.c:562
 #: ../src/libs/image.c:285 ../src/libs/image.c:480 ../src/libs/tagging.c:1484
 #: ../src/libs/tagging.c:1572
 msgid "delete"
 msgstr "删除"
 
-#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3712
+#: ../src/develop/imageop.c:1062 ../src/develop/imageop.c:3743
 #: ../src/libs/modulegroups.c:3464 ../src/libs/modulegroups.c:3815
 msgid "rename"
 msgstr "重命名"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2924
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2950
 #, c-format
 msgid "'%s' is switched on"
 msgstr "‘%s’已打开"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2924
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2950
 #, c-format
 msgid "'%s' is switched off"
 msgstr "‘%s’已关闭"
 
-#: ../src/develop/imageop.c:2628
+#: ../src/develop/imageop.c:2654
 msgid "unknown mask"
 msgstr "未知蒙版"
 
-#: ../src/develop/imageop.c:2632
+#: ../src/develop/imageop.c:2658
 msgid "drawn + parametric mask"
 msgstr "绘制 + 参数蒙版"
 
-#: ../src/develop/imageop.c:2641
+#: ../src/develop/imageop.c:2667
 #, c-format
 msgid "this module has a `%s'"
 msgstr "此模块有“%s”"
 
-#: ../src/develop/imageop.c:2646
+#: ../src/develop/imageop.c:2672
 #, c-format
 msgid "taken from module %s"
 msgstr "来自模块 %s"
 
-#: ../src/develop/imageop.c:2651
+#: ../src/develop/imageop.c:2677
 msgid "click to display (module must be activated first)"
 msgstr "点击显示（模块必须先激活）"
 
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2789
 msgid "purpose"
 msgstr "用途"
 
-#: ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2789
 msgid "process"
 msgstr "流程"
 
-#: ../src/develop/imageop.c:2880
+#: ../src/develop/imageop.c:2906
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8319,7 +8329,7 @@ msgstr ""
 "多个实例行为\n"
 "右键点击创建新的实例"
 
-#: ../src/develop/imageop.c:2895
+#: ../src/develop/imageop.c:2921
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8327,7 +8337,7 @@ msgstr ""
 "重置参数\n"
 "按住 ctrl 并单击可重新应用任何自动预设"
 
-#: ../src/develop/imageop.c:2907
+#: ../src/develop/imageop.c:2933
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8335,15 +8345,15 @@ msgstr ""
 "预设\n"
 "单击鼠标右键可应用于新实例"
 
-#: ../src/develop/imageop.c:3157 ../src/develop/imageop.c:3179
+#: ../src/develop/imageop.c:3183 ../src/develop/imageop.c:3205
 msgid "ERROR"
 msgstr "错误"
 
-#: ../src/develop/imageop.c:3589
+#: ../src/develop/imageop.c:3620
 msgid "unsupported input"
 msgstr "不支持的输入"
 
-#: ../src/develop/imageop.c:3590
+#: ../src/develop/imageop.c:3621
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8351,35 +8361,35 @@ msgid ""
 "its requirements."
 msgstr "此模块在管线中的位置与此模块的数据格式要求不匹配。"
 
-#: ../src/develop/imageop.c:3707 ../src/develop/imageop.c:3717
+#: ../src/develop/imageop.c:3738 ../src/develop/imageop.c:3748
 #: ../src/gui/accelerators.c:151 ../src/libs/lib.c:1414
 msgid "show"
 msgstr "显示"
 
-#: ../src/develop/imageop.c:3710 ../src/libs/modulegroups.c:3310
+#: ../src/develop/imageop.c:3741 ../src/libs/modulegroups.c:3310
 #: ../src/libs/modulegroups.c:3436 ../src/libs/modulegroups.c:3817
 #: ../src/libs/tagging.c:3248
 msgid "new"
 msgstr "新建"
 
-#: ../src/develop/imageop.c:3713 ../src/libs/duplicate.c:405
+#: ../src/develop/imageop.c:3744 ../src/libs/duplicate.c:405
 #: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3813
 msgid "duplicate"
 msgstr "复制"
 
-#: ../src/develop/imageop.c:3718
+#: ../src/develop/imageop.c:3749
 msgid "enable"
 msgstr "启用"
 
-#: ../src/develop/imageop.c:3719 ../src/gui/accelerators.c:167
+#: ../src/develop/imageop.c:3750 ../src/gui/accelerators.c:167
 msgid "focus"
 msgstr "聚焦"
 
-#: ../src/develop/imageop.c:3720 ../src/gui/accelerators.c:2617
+#: ../src/develop/imageop.c:3751 ../src/gui/accelerators.c:2617
 msgid "instance"
 msgstr "实例"
 
-#: ../src/develop/imageop.c:3721 ../src/gui/accelerators.c:112
+#: ../src/develop/imageop.c:3752 ../src/gui/accelerators.c:112
 #: ../src/gui/accelerators.c:122 ../src/gui/gtk.c:3009 ../src/gui/gtk.c:3056
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
 #: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1512
@@ -8388,12 +8398,12 @@ msgid "reset"
 msgstr "重置"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3722 ../src/gui/preferences.c:798
+#: ../src/develop/imageop.c:3753 ../src/gui/preferences.c:798
 #: ../src/libs/lib.c:1416
 msgid "presets"
 msgstr "预置"
 
-#: ../src/develop/imageop.c:3742
+#: ../src/develop/imageop.c:3773
 msgid "processing module"
 msgstr "处理模块"
 
@@ -8692,7 +8702,7 @@ msgstr "路径 #%d"
 
 #: ../src/develop/masks/path.c:3473
 msgid ""
-"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
+"<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
 "<b>添加节点</b>：单击，<b>添加尖锐节点</b>：ctrl + 单击\n"
@@ -8700,7 +8710,7 @@ msgstr ""
 
 #: ../src/develop/masks/path.c:3476
 msgid ""
-"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
+"<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
 "<b>添加节点</b>：单击，<b>添加尖锐节点</b>：ctrl + 单击\n"
@@ -8754,24 +8764,23 @@ msgstr ""
 "根据历史信息此模块已启用，但对此图像而言此模块不可用。\n"
 "此问题可能由预置，样式或者粘贴历史记录导致"
 
-#: ../src/develop/pixelpipe_hb.c:2715
+#: ../src/develop/pixelpipe_hb.c:2705
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 msgstr "darktable 检测到 OpenCL 设置出现问题；OpenCL 已在此次会话中禁用！"
 
-#: ../src/develop/pixelpipe_hb.c:2860
+#: ../src/develop/pixelpipe_hb.c:2853
 #, c-format
 msgid ""
-"module `%s' can't get raster mask from module `%s'\n"
-"as that is processed later in the pixel pipe.\n"
+"module '%s' can't get raster mask from module\n"
+"'%s' as that is processed later in the pixel pipe.\n"
 "raster mask is ignored."
 msgstr ""
-"由于光栅遮罩必须在像素管线后期进行处理，目前模块\n"
-"“%s”无法从模块“%s”获取光栅遮罩。\n"
-"光栅遮罩已被忽略。"
+"模块“%s”无法从模块“%s”获取光栅遮罩。\n"
+"由于光栅遮罩必须在像素管线后期进行处理，光栅遮罩已被忽略。"
 
-#: ../src/develop/tiling.c:818 ../src/develop/tiling.c:1169
+#: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1173
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "模块“%s”分块失败。输出可能会出现混乱。"
@@ -9063,39 +9072,39 @@ msgid "cached thumbnails invalidation"
 msgstr "缩略图缓存失效"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2556
+#: ../src/dtgtk/thumbtable.c:2561
 msgid "copy history"
 msgstr "复制历史"
 
-#: ../src/dtgtk/thumbtable.c:2558
+#: ../src/dtgtk/thumbtable.c:2563
 msgid "copy history parts"
 msgstr "复制历史的多个部分"
 
-#: ../src/dtgtk/thumbtable.c:2560
+#: ../src/dtgtk/thumbtable.c:2565
 msgid "paste history"
 msgstr "粘贴历史"
 
-#: ../src/dtgtk/thumbtable.c:2562
+#: ../src/dtgtk/thumbtable.c:2567
 msgid "paste history parts"
 msgstr "粘贴历史的多个部分"
 
-#: ../src/dtgtk/thumbtable.c:2564 ../src/libs/copy_history.c:394
+#: ../src/dtgtk/thumbtable.c:2569 ../src/libs/copy_history.c:394
 msgid "discard history"
 msgstr "丢弃历史记录"
 
-#: ../src/dtgtk/thumbtable.c:2567
+#: ../src/dtgtk/thumbtable.c:2572
 msgid "duplicate image"
 msgstr "复制图像"
 
-#: ../src/dtgtk/thumbtable.c:2569
+#: ../src/dtgtk/thumbtable.c:2574
 msgid "duplicate image virgin"
 msgstr "复制原始图像"
 
-#: ../src/dtgtk/thumbtable.c:2579 ../src/libs/select.c:147
+#: ../src/dtgtk/thumbtable.c:2584 ../src/libs/select.c:147
 msgid "select film roll"
 msgstr "选择胶卷"
 
-#: ../src/dtgtk/thumbtable.c:2581 ../src/libs/select.c:151
+#: ../src/dtgtk/thumbtable.c:2586 ../src/libs/select.c:151
 msgid "select untouched"
 msgstr "选择未改动的"
 
@@ -9189,7 +9198,7 @@ msgstr "平移"
 #: ../src/iop/ashift.c:5854 ../src/iop/ashift.c:5959 ../src/iop/ashift.c:5961
 #: ../src/iop/ashift.c:6283 ../src/iop/clipping.c:1902
 #: ../src/iop/clipping.c:2094 ../src/iop/clipping.c:2110
-#: ../src/views/darkroom.c:2681 ../src/views/lighttable.c:1257
+#: ../src/views/darkroom.c:2676 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "水平"
 
@@ -9197,7 +9206,7 @@ msgstr "水平"
 #: ../src/iop/ashift.c:5854 ../src/iop/ashift.c:5959 ../src/iop/ashift.c:5961
 #: ../src/iop/ashift.c:6281 ../src/iop/clipping.c:1901
 #: ../src/iop/clipping.c:2095 ../src/iop/clipping.c:2109
-#: ../src/views/darkroom.c:2684 ../src/views/lighttable.c:1261
+#: ../src/views/darkroom.c:2679 ../src/views/lighttable.c:1254
 msgid "vertical"
 msgstr "垂直"
 
@@ -9279,7 +9288,7 @@ msgstr "第一个"
 #: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:141
 #: ../src/gui/accelerators.c:314 ../src/libs/filters/rating_range.c:268
 #: ../src/libs/tagging.c:3119 ../src/views/darkroom.c:2369
-#: ../src/views/darkroom.c:2419 ../src/views/darkroom.c:2653
+#: ../src/views/darkroom.c:2419 ../src/views/darkroom.c:2648
 msgid "toggle"
 msgstr "切换"
 
@@ -9822,7 +9831,7 @@ msgstr "%s 未分配"
 msgid "%s assigned to %s"
 msgstr "%s 已分配至 %s"
 
-#: ../src/gui/gtk.c:173 ../src/views/darkroom.c:4655
+#: ../src/gui/gtk.c:173 ../src/views/darkroom.c:4650
 msgid "darktable - darkroom preview"
 msgstr "darktable - 暗房预览"
 
@@ -9881,7 +9890,7 @@ msgid "slideshow"
 msgstr "幻灯片放映"
 
 #. Print button
-#: ../src/gui/gtk.c:1192 ../src/libs/print_settings.c:2876
+#: ../src/gui/gtk.c:1192 ../src/libs/print_settings.c:2885
 msgid "print"
 msgstr "打印"
 
@@ -10361,7 +10370,7 @@ msgid "global guide overlay settings"
 msgstr "全局参考线叠加层设置"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2653
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2648
 msgid "guide lines"
 msgstr "参考线"
 
@@ -11319,7 +11328,7 @@ msgstr "输入 pdf 的标题"
 
 #. paper size
 #. // papers
-#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2500
+#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2510
 msgid "paper size"
 msgstr "纸张大小"
 
@@ -11358,8 +11367,8 @@ msgstr ""
 "例如：“10 mm”或“1 inch”"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:621 ../src/libs/export.c:1128
-#: ../src/libs/export.c:1151
+#: ../src/imageio/format/pdf.c:621 ../src/libs/export.c:1127
+#: ../src/libs/export.c:1150
 msgid "dpi"
 msgstr "dpi"
 
@@ -11544,7 +11553,7 @@ msgstr "图形"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/storage/disk.c:71 ../src/libs/export.c:1041
+#: ../src/imageio/storage/disk.c:71 ../src/libs/export.c:1040
 msgid "file on disk"
 msgstr "磁盘上的文件"
 
@@ -11811,7 +11820,7 @@ msgstr "纠正或创作"
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:233
 #: ../src/iop/channelmixerrgb.c:235 ../src/iop/clipping.c:321
 #: ../src/iop/clipping.c:323 ../src/iop/colorbalancergb.c:186
-#: ../src/iop/colorin.c:137 ../src/iop/crop.c:145 ../src/iop/crop.c:147
+#: ../src/iop/colorin.c:136 ../src/iop/crop.c:145 ../src/iop/crop.c:147
 #: ../src/iop/demosaic.c:296 ../src/iop/denoiseprofile.c:728
 #: ../src/iop/denoiseprofile.c:730 ../src/iop/diffuse.c:146
 #: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:132 ../src/iop/exposure.c:134
@@ -11825,7 +11834,7 @@ msgstr "纠正或创作"
 msgid "linear, RGB, scene-referred"
 msgstr "线性、RGB、基于场景"
 
-#: ../src/iop/ashift.c:133 ../src/iop/borders.c:195 ../src/iop/clipping.c:322
+#: ../src/iop/ashift.c:133 ../src/iop/borders.c:200 ../src/iop/clipping.c:322
 #: ../src/iop/crop.c:146 ../src/iop/flip.c:111 ../src/iop/liquify.c:299
 msgid "geometric, RGB"
 msgstr "几何、RGB"
@@ -12182,7 +12191,7 @@ msgstr "精细"
 msgid "finest"
 msgstr "最精细"
 
-#: ../src/iop/atrous.c:1586 ../src/libs/export.c:1144 ../src/libs/export.c:1159
+#: ../src/iop/atrous.c:1586 ../src/libs/export.c:1143 ../src/libs/export.c:1158
 msgid "x"
 msgstr "x"
 
@@ -12333,15 +12342,15 @@ msgstr "线性、RGB、基于显示"
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:104
-#: ../src/iop/vignette.c:160 ../src/iop/watermark.c:379
+#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:379
 msgid "non-linear, RGB"
 msgstr "非线性、RGB"
 
 #: ../src/iop/basecurve.c:355 ../src/iop/dither.c:120 ../src/iop/dither.c:122
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
-#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
-#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:378
+#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:160
+#: ../src/iop/vignette.c:162 ../src/iop/watermark.c:378
 #: ../src/iop/watermark.c:380
 msgid "non-linear, RGB, display-referred"
 msgstr "非线性、RGB、基于显示"
@@ -12399,14 +12408,14 @@ msgid "apply usual image adjustments"
 msgstr "应用常规图像调整"
 
 #: ../src/iop/basicadj.c:147 ../src/iop/bilat.c:102 ../src/iop/bloom.c:81
-#: ../src/iop/blurs.c:93 ../src/iop/borders.c:193 ../src/iop/censorize.c:83
+#: ../src/iop/blurs.c:93 ../src/iop/borders.c:198 ../src/iop/censorize.c:83
 #: ../src/iop/colisa.c:90 ../src/iop/colorcontrast.c:97
 #: ../src/iop/colorize.c:105 ../src/iop/colormapping.c:153
 #: ../src/iop/colorzones.c:145 ../src/iop/grain.c:434 ../src/iop/highpass.c:78
 #: ../src/iop/levels.c:138 ../src/iop/liquify.c:297 ../src/iop/lowlight.c:92
 #: ../src/iop/lowpass.c:134 ../src/iop/monochrome.c:98 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:103 ../src/iop/velvia.c:105
-#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:158
+#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:159
 #: ../src/iop/watermark.c:377
 msgid "creative"
 msgstr "创作"
@@ -12639,189 +12648,193 @@ msgid "framing"
 msgstr "加相框"
 
 #: ../src/iop/borders.c:192
-msgid "add solid borders or margins around the picture"
-msgstr "在图片周围添加实心边框或边距"
+msgid "borders|enlarge canvas|expand canvas"
+msgstr "加边框|放大画面|扩展画面"
 
-#: ../src/iop/borders.c:194 ../src/iop/borders.c:196 ../src/iop/lut3d.c:144
+#: ../src/iop/borders.c:197
+msgid "add solid borders or margins around the picture"
+msgstr "在图片周围添加实心边框或"
+
+#: ../src/iop/borders.c:199 ../src/iop/borders.c:201 ../src/iop/lut3d.c:144
 msgid "linear or non-linear, RGB, display-referred"
 msgstr "线性或非线性、RGB、基于显示"
 
-#: ../src/iop/borders.c:722
+#: ../src/iop/borders.c:727
 msgid "15:10 postcard white"
 msgstr "15:10 明信片 白色"
 
-#: ../src/iop/borders.c:727
+#: ../src/iop/borders.c:732
 msgid "15:10 postcard black"
 msgstr "15:10 明信片 黑色"
 
-#: ../src/iop/borders.c:937
+#: ../src/iop/borders.c:942
 msgid "size of the border in percent of the full image"
 msgstr "边框的尺寸(以全图尺寸百分比表示)"
 
-#: ../src/iop/borders.c:939 ../src/iop/clipping.c:2218 ../src/iop/crop.c:1224
+#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2218 ../src/iop/crop.c:1224
 msgid "aspect"
 msgstr "宽高比"
 
-#: ../src/iop/borders.c:940
+#: ../src/iop/borders.c:945
 msgid ""
 "select the aspect ratio (right click on slider below to type your own w:h)"
 msgstr "选择纵横比（在下方滑块单击可以直接输入“<宽度>:<高度>”形式的比例）"
 
-#: ../src/iop/borders.c:943
+#: ../src/iop/borders.c:948
 msgid "3:1"
 msgstr "3:1"
 
-#: ../src/iop/borders.c:944
+#: ../src/iop/borders.c:949
 msgid "95:33"
 msgstr "95:33"
 
-#: ../src/iop/borders.c:945
+#: ../src/iop/borders.c:950
 msgid "CinemaScope 2.39:1"
 msgstr "CinemaScope 2.39:1"
 
-#: ../src/iop/borders.c:946
+#: ../src/iop/borders.c:951
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:947
+#: ../src/iop/borders.c:952
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:948
+#: ../src/iop/borders.c:953
 msgid "5:3"
 msgstr "5:3"
 
-#: ../src/iop/borders.c:949
+#: ../src/iop/borders.c:954
 msgid "US Legal 8.5x14"
 msgstr "美国法律用纸 8.5x14"
 
-#: ../src/iop/borders.c:950 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1128
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1128
 msgid "golden cut"
 msgstr "黄金分割"
 
-#: ../src/iop/borders.c:951
+#: ../src/iop/borders.c:956
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/borders.c:952
+#: ../src/iop/borders.c:957
 msgid "3:2 (4x6, 10x15cm)"
 msgstr "3:2 （4x6 英寸、10x15 厘米）"
 
-#: ../src/iop/borders.c:954
+#: ../src/iop/borders.c:959
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:955
+#: ../src/iop/borders.c:960
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/borders.c:956
+#: ../src/iop/borders.c:961
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:957
+#: ../src/iop/borders.c:962
 msgid "US Letter 8.5x11"
 msgstr "美国信纸 8.5x11"
 
-#: ../src/iop/borders.c:958
+#: ../src/iop/borders.c:963
 msgid "14:11"
 msgstr "14:11"
 
-#: ../src/iop/borders.c:959
+#: ../src/iop/borders.c:964
 msgid "5:4 (8x10)"
 msgstr "5:4（8x10 英寸）"
 
-#: ../src/iop/borders.c:960 ../src/iop/clipping.c:2121 ../src/iop/crop.c:1118
+#: ../src/iop/borders.c:965 ../src/iop/clipping.c:2121 ../src/iop/crop.c:1118
 #: ../src/libs/filtering.c:301 ../src/libs/filters/ratio.c:126
 #: ../src/libs/histogram.c:141
 msgid "square"
 msgstr "正方形"
 
-#: ../src/iop/borders.c:961
+#: ../src/iop/borders.c:966
 msgid "constant border"
 msgstr "定长边框"
 
-#: ../src/iop/borders.c:962 ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:967 ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "custom..."
 msgstr "自定义..."
 
-#: ../src/iop/borders.c:967
+#: ../src/iop/borders.c:972
 msgid "set the custom aspect ratio (right click to enter number or w:h)"
 msgstr "选择自定义纵横比，右键单击可以输入数值或“<宽度>:<高度>”形式的比例"
 
-#: ../src/iop/borders.c:970
+#: ../src/iop/borders.c:975
 msgid "aspect ratio orientation of the image with border"
 msgstr "包含边框的图像的纵横比取向"
 
-#: ../src/iop/borders.c:972
+#: ../src/iop/borders.c:977
 msgid "horizontal position"
 msgstr "水平位置"
 
-#: ../src/iop/borders.c:973
+#: ../src/iop/borders.c:978
 msgid ""
 "select the horizontal position ratio relative to top or right click and type "
 "your own (y:h)"
 msgstr "选择相对于顶部的水平位置比或右键单击并自定义（y:h）"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "center"
 msgstr "中心"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "1/3"
 msgstr "1/3"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "3/8"
 msgstr "3/8"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "5/8"
 msgstr "5/8"
 
-#: ../src/iop/borders.c:976 ../src/iop/borders.c:987
+#: ../src/iop/borders.c:981 ../src/iop/borders.c:992
 msgid "2/3"
 msgstr "2/3"
 
-#: ../src/iop/borders.c:981
+#: ../src/iop/borders.c:986
 msgid "custom horizontal position"
 msgstr "自定义水平位置"
 
-#: ../src/iop/borders.c:983
+#: ../src/iop/borders.c:988
 msgid "vertical position"
 msgstr "垂直位置"
 
-#: ../src/iop/borders.c:984
+#: ../src/iop/borders.c:989
 msgid ""
 "select the vertical position ratio relative to left or right click and type "
 "your own (x:w)"
 msgstr "选择相对于顶部的垂直位置比或右键单击并自定义（x:w）"
 
-#: ../src/iop/borders.c:992
+#: ../src/iop/borders.c:997
 msgid "custom vertical position"
 msgstr "自定义垂直位置"
 
-#: ../src/iop/borders.c:997
+#: ../src/iop/borders.c:1002
 msgid "size of the frame line in percent of min border width"
 msgstr "分帧线的尺寸（以全图尺寸百分比表示）"
 
-#: ../src/iop/borders.c:1002
+#: ../src/iop/borders.c:1007
 msgid "offset of the frame line beginning on picture side"
 msgstr "分帧线偏移（从图片一侧开始计算）"
 
-#: ../src/iop/borders.c:1009 ../src/iop/borders.c:1018
+#: ../src/iop/borders.c:1014 ../src/iop/borders.c:1023
 msgid "border color"
 msgstr "边框颜色"
 
-#: ../src/iop/borders.c:1013
+#: ../src/iop/borders.c:1018
 msgid "select border color"
 msgstr "选择边框颜色"
 
-#: ../src/iop/borders.c:1017
+#: ../src/iop/borders.c:1022
 msgid "pick border color from image"
 msgstr "从图片选取边框颜色"
 
-#: ../src/iop/borders.c:1018 ../src/iop/borders.c:1031
+#: ../src/iop/borders.c:1023 ../src/iop/borders.c:1036
 #: ../src/iop/colorzones.c:2415 ../src/iop/colorzones.c:2425
 #: ../src/iop/negadoctor.c:848 ../src/iop/negadoctor.c:915
 #: ../src/iop/negadoctor.c:953 ../src/iop/rgbcurve.c:1369
@@ -12830,15 +12843,15 @@ msgstr "从图片选取边框颜色"
 msgid "pickers"
 msgstr "取色器"
 
-#: ../src/iop/borders.c:1022 ../src/iop/borders.c:1031
+#: ../src/iop/borders.c:1027 ../src/iop/borders.c:1036
 msgid "frame line color"
 msgstr "分帧线颜色"
 
-#: ../src/iop/borders.c:1026
+#: ../src/iop/borders.c:1031
 msgid "select frame line color"
 msgstr "选择分帧线颜色"
 
-#: ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1035
 msgid "pick frame line color from image"
 msgstr "从图片选取分帧线颜色"
 
@@ -12960,7 +12973,7 @@ msgstr "打码"
 msgid "censorize license plates and body parts for privacy"
 msgstr "对车牌或人体部分打码以保护隐私"
 
-#: ../src/iop/censorize.c:84 ../src/iop/colorin.c:135
+#: ../src/iop/censorize.c:84 ../src/iop/colorin.c:134
 #: ../src/iop/filmicrgb.c:353 ../src/iop/graduatednd.c:147
 msgid "linear or non-linear, RGB, scene-referred"
 msgstr "线性或非线性、RGB、基于场景"
@@ -13361,7 +13374,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:4394 ../src/iop/clipping.c:2087
 #: ../src/iop/colorbalancergb.c:1873 ../src/iop/filmicrgb.c:4419
 #: ../src/iop/negadoctor.c:829 ../src/iop/toneequal.c:3319
-#: ../src/libs/image.c:460 ../src/views/lighttable.c:1265
+#: ../src/libs/image.c:460 ../src/views/lighttable.c:1258
 msgid "page"
 msgstr "页面"
 
@@ -14448,7 +14461,7 @@ msgstr "执行颜色空间校正并应用相应的设置"
 
 #: ../src/iop/colorchecker.c:131 ../src/iop/colorchecker.c:133
 #: ../src/iop/colorize.c:106 ../src/iop/colormapping.c:154
-#: ../src/iop/colorout.c:91 ../src/iop/colorreconstruction.c:136
+#: ../src/iop/colorout.c:90 ../src/iop/colorreconstruction.c:136
 #: ../src/iop/colorzones.c:146 ../src/iop/defringe.c:83 ../src/iop/levels.c:139
 #: ../src/iop/monochrome.c:99 ../src/iop/shadhi.c:198
 #: ../src/iop/tonecurve.c:212 ../src/iop/vibrance.c:96
@@ -14639,11 +14652,11 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "设定全局饱和度"
 
-#: ../src/iop/colorin.c:127
+#: ../src/iop/colorin.c:126
 msgid "input color profile"
 msgstr "导入色彩档案文件"
 
-#: ../src/iop/colorin.c:132
+#: ../src/iop/colorin.c:131
 msgid ""
 "convert any RGB input to pipeline reference RGB\n"
 "using color profiles to remap RGB values"
@@ -14651,81 +14664,75 @@ msgstr ""
 "将任何 RGB 输入转换为管线标准 RGB 色域，\n"
 "使用色彩配置文件重新映射 RGB 值"
 
-#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:90 ../src/iop/demosaic.c:293
+#: ../src/iop/colorin.c:133 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:293
 #: ../src/iop/rawprepare.c:158
 msgid "mandatory"
 msgstr "必要的"
 
-#: ../src/iop/colorin.c:136 ../src/iop/colorout.c:92
+#: ../src/iop/colorin.c:135 ../src/iop/colorout.c:91
 msgid "defined by profile"
 msgstr "由配置文件定义"
 
-#: ../src/iop/colorin.c:543
+#: ../src/iop/colorin.c:542
 #, c-format
 msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr "无法从色彩空间“%s”提取色彩矩阵，已使用 Rec2020 RGB 替换！"
 
-#: ../src/iop/colorin.c:1427
+#: ../src/iop/colorin.c:1424
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "未找到“%s”色彩矩阵！"
 
-#: ../src/iop/colorin.c:1466
+#: ../src/iop/colorin.c:1463
 msgid "input profile could not be generated!"
 msgstr "无法生成用于导入的色彩配置！"
 
-#: ../src/iop/colorin.c:1565
+#: ../src/iop/colorin.c:1560
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "不支持的输入色彩配置已用线性 Rec709 RGB 取代！"
 
-#: ../src/iop/colorin.c:1857 ../src/iop/colorin.c:2118
-#, c-format
-msgid ""
-"darktable loads external ICC profiles from\n"
-"%s\n"
-"and\n"
-"%s"
-msgstr ""
-"darktable 从以下目录加载外部 ICC 配置文件：\n"
-"%s\n"
-"%s"
+#: ../src/iop/colorin.c:1844
+msgid "external ICC profiles"
+msgstr "外部 ICC 色彩配置"
 
-#: ../src/iop/colorin.c:1903
+#: ../src/iop/colorin.c:1889
 #, c-format
 msgid ""
 "embedded ICC profile properties:\n"
 "\n"
 "name: <b>%s</b>\n"
-"version: <b>%g</b>\n"
+"version: <b>%d.%d</b>\n"
 "type: <b>%s</b>\n"
 "manufacturer: <b>%s</b>\n"
 "model: <b>%s</b>\n"
 "copyright: <b>%s</b>\n"
 "\n"
-"%s"
 msgstr ""
 "内嵌 ICC 配置属性：\n"
 "\n"
 "名称：<b>%s</b>\n"
-"版本：<b>%g</b>\n"
+"版本：<b>%d.%d<</b>\n"
 "类型：<b>%s</b>\n"
 "制造商：<b>%s</b>\n"
 "型号：<b>%s</b>\n"
 "版权：<b>%s</b>\n"
 "\n"
-"%s"
 
-#: ../src/iop/colorin.c:2102
+#: ../src/iop/colorin.c:2084
 msgid "input profile"
 msgstr "输入配置文件"
 
-#: ../src/iop/colorin.c:2106
+#: ../src/iop/colorin.c:2088
 msgid "working profile"
 msgstr "工作中的配置文件"
 
-#: ../src/iop/colorin.c:2133
+#: ../src/iop/colorin.c:2097
+msgid "working ICC profiles"
+msgstr "工作中的 ICC 配置文件"
+
+#: ../src/iop/colorin.c:2109
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "将 Lab 值限制为 RGB 颜色空间的色域"
 
@@ -14802,11 +14809,11 @@ msgstr ""
 msgid "level of histogram equalization"
 msgstr "直方图均衡级别"
 
-#: ../src/iop/colorout.c:82
+#: ../src/iop/colorout.c:81
 msgid "output color profile"
 msgstr "导出色彩档案"
 
-#: ../src/iop/colorout.c:88
+#: ../src/iop/colorout.c:87
 msgid ""
 "convert pipeline reference RGB to any display RGB\n"
 "using color profiles to remap RGB values"
@@ -14814,59 +14821,58 @@ msgstr ""
 "导出时将管线标准 RGB 转换至任意显示用 RGB 色域，\n"
 "使用颜色配置文件重新映射 RGB 值"
 
-#: ../src/iop/colorout.c:93
+#: ../src/iop/colorout.c:92
 msgid "non-linear, RGB or Lab, display-referred"
 msgstr "非线性、RGB 或 Lab、基于显示"
 
-#: ../src/iop/colorout.c:680
+#: ../src/iop/colorout.c:679
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "未找到的导出色彩档案用 sRGB 替代了！"
 
-#: ../src/iop/colorout.c:702
+#: ../src/iop/colorout.c:701
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "未找到的软打样色彩档案用 sRGB 替代了！"
 
-#: ../src/iop/colorout.c:747
+#: ../src/iop/colorout.c:744
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "不支持的导出色彩档案用 sRGB 替代了！"
 
-#: ../src/iop/colorout.c:879
+#: ../src/iop/colorout.c:869
 msgid "output intent"
 msgstr "输出目的"
 
-#: ../src/iop/colorout.c:880
+#: ../src/iop/colorout.c:870
 msgid "rendering intent"
 msgstr "渲染目的"
 
-#: ../src/iop/colorout.c:882 ../src/libs/export.c:1256
-#: ../src/libs/print_settings.c:2465 ../src/libs/print_settings.c:2815
-#: ../src/views/darkroom.c:2522 ../src/views/lighttable.c:1180
+#: ../src/iop/colorout.c:872 ../src/libs/export.c:1246
+#: ../src/libs/print_settings.c:2475 ../src/libs/print_settings.c:2824
+#: ../src/views/darkroom.c:2518 ../src/views/lighttable.c:1176
 msgid "perceptual"
 msgstr "可感知度"
 
-#: ../src/iop/colorout.c:883 ../src/libs/export.c:1257
-#: ../src/libs/print_settings.c:2466 ../src/libs/print_settings.c:2816
-#: ../src/views/darkroom.c:2523 ../src/views/lighttable.c:1181
+#: ../src/iop/colorout.c:873 ../src/libs/export.c:1247
+#: ../src/libs/print_settings.c:2476 ../src/libs/print_settings.c:2825
+#: ../src/views/darkroom.c:2519 ../src/views/lighttable.c:1177
 msgid "relative colorimetric"
 msgstr "相对色度"
 
-#: ../src/iop/colorout.c:884 ../src/libs/export.c:1258
-#: ../src/libs/print_settings.c:2467 ../src/libs/print_settings.c:2817
-#: ../src/views/darkroom.c:2524 ../src/views/lighttable.c:1182
+#: ../src/iop/colorout.c:874 ../src/libs/export.c:1248
+#: ../src/libs/print_settings.c:2477 ../src/libs/print_settings.c:2826
+#: ../src/views/darkroom.c:2520 ../src/views/lighttable.c:1178
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "饱和度"
 
-#: ../src/iop/colorout.c:885 ../src/libs/export.c:1259
-#: ../src/libs/print_settings.c:2468 ../src/libs/print_settings.c:2818
-#: ../src/views/darkroom.c:2525 ../src/views/lighttable.c:1183
+#: ../src/iop/colorout.c:875 ../src/libs/export.c:1249
+#: ../src/libs/print_settings.c:2478 ../src/libs/print_settings.c:2827
+#: ../src/views/darkroom.c:2521 ../src/views/lighttable.c:1179
 msgid "absolute colorimetric"
 msgstr "绝对色度"
 
-#: ../src/iop/colorout.c:905
-#, c-format
-msgid "ICC profiles in %s or %s"
-msgstr "ICC 档案在 %s 或 %s"
+#: ../src/iop/colorout.c:893
+msgid "export ICC profiles"
+msgstr "输出 ICC 配置"
 
 #: ../src/iop/colorreconstruction.c:129
 msgid "color reconstruction"
@@ -14951,8 +14957,8 @@ msgid "color zones"
 msgstr "色彩空间"
 
 #: ../src/iop/colorzones.c:144
-msgid "selectively shift hues, saturation and brightness of pixels"
-msgstr "有选择地改变像素的色相、饱和度和亮度"
+msgid "selectively shift hues, chroma and lightness of pixels"
+msgstr "有选择地移动色相、饱和度和亮度"
 
 #: ../src/iop/colorzones.c:606
 msgid "B&W: with red"
@@ -15257,8 +15263,8 @@ msgstr "蓝色方差： "
 msgid "variance computed on the blue channel"
 msgstr "基于蓝色通道计算的方差"
 
-#: ../src/iop/denoiseprofile.c:3799 ../src/libs/export.c:1214
-#: ../src/libs/print_settings.c:2407 ../src/libs/print_settings.c:2764
+#: ../src/iop/denoiseprofile.c:3799 ../src/libs/export.c:1208
+#: ../src/libs/print_settings.c:2418 ../src/libs/print_settings.c:2774
 msgid "profile"
 msgstr "配置文件"
 
@@ -15277,11 +15283,11 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3840
 msgid ""
-"fix bugs in anscombe transform resulting\n"
+"fix bugs in Anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
 "wavelets mode, combined with a bad handling\n"
 "of white balance coefficients, and a bug in\n"
-"non local means normalization resulting in\n"
+"non-local means normalization resulting in\n"
 "undersmoothing when patch size was increased.\n"
 "enabling this option will change the denoising\n"
 "you get. once enabled, you won't be able to\n"
@@ -15290,7 +15296,8 @@ msgstr ""
 "修正了安斯康伯变换中的错误，此错误可能导致小波\n"
 "模式下绿色通道平滑不足，加上白平衡系数处理不当，\n"
 "以及非局部手段归一化中的错误，导致补丁尺寸增加时\n"
-"平滑不足。"
+"平滑不足。\n"
+"启用后您将无法再使用旧版算法。"
 
 # variance-stabilization 为学术词汇
 #: ../src/iop/denoiseprofile.c:3850
@@ -15483,19 +15490,19 @@ msgstr "锐度：强烈"
 msgid "local contrast: fast"
 msgstr "局部对比度：快速"
 
-#: ../src/iop/diffuse.c:1392 ../src/iop/diffuse.c:1667
+#: ../src/iop/diffuse.c:1391 ../src/iop/diffuse.c:1666
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr "扩散与锐化模块未能分配内存，请检查 RAM 设置"
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/diffuse.c:1783 ../src/iop/splittoning.c:537
+#: ../src/iop/diffuse.c:1782 ../src/iop/splittoning.c:537
 #: ../src/libs/camera.c:486
 msgctxt "section"
 msgid "properties"
 msgstr "属性"
 
-#: ../src/iop/diffuse.c:1789
+#: ../src/iop/diffuse.c:1788
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -15507,7 +15514,7 @@ msgstr ""
 "若您需要锐化或修复图像，\n"
 "增加迭代次数可以帮助重建。"
 
-#: ../src/iop/diffuse.c:1798
+#: ../src/iop/diffuse.c:1797
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -15521,7 +15528,7 @@ msgstr ""
 "减少模糊或降噪时请设置为 0。\n"
 "处理局部对比度时请增加值。"
 
-#: ../src/iop/diffuse.c:1808
+#: ../src/iop/diffuse.c:1807
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -15535,12 +15542,12 @@ msgstr ""
 "若您需要去模糊，\n"
 "半径应与镜头模糊的宽度保持大致相同。"
 
-#: ../src/iop/diffuse.c:1815
+#: ../src/iop/diffuse.c:1814
 msgctxt "section"
 msgid "speed (sharpen ↔ diffuse)"
 msgstr "速度 (锐化 ↔ 漫反射)"
 
-#: ../src/iop/diffuse.c:1822
+#: ../src/iop/diffuse.c:1821
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -15556,7 +15563,7 @@ msgstr ""
 "正值表示漫反射或是模糊处理，\n"
 "零表示跳过此操作。"
 
-#: ../src/iop/diffuse.c:1832
+#: ../src/iop/diffuse.c:1831
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -15572,7 +15579,7 @@ msgstr ""
 "正值表示漫反射或是模糊处理，\n"
 "零表示跳过此操作。"
 
-#: ../src/iop/diffuse.c:1842
+#: ../src/iop/diffuse.c:1841
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -15588,7 +15595,7 @@ msgstr ""
 "正值表示漫反射或是模糊处理，\n"
 "零表示跳过此操作。"
 
-#: ../src/iop/diffuse.c:1852
+#: ../src/iop/diffuse.c:1851
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -15604,12 +15611,12 @@ msgstr ""
 "正值表示漫反射或是模糊处理，\n"
 "零表示跳过此操作。"
 
-#: ../src/iop/diffuse.c:1858
+#: ../src/iop/diffuse.c:1857
 msgctxt "section"
 msgid "direction"
 msgstr "方向"
 
-#: ../src/iop/diffuse.c:1865
+#: ../src/iop/diffuse.c:1864
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -15623,7 +15630,7 @@ msgstr ""
 "正值表示则会避开边缘 （等照度线），\n"
 "零会等效影响以上两种情况（各向同性）。"
 
-#: ../src/iop/diffuse.c:1874
+#: ../src/iop/diffuse.c:1873
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -15637,7 +15644,7 @@ msgstr ""
 "正值表示则会避开边缘 （等照度线），\n"
 "零会等效影响以上两种情况（各向同性）。"
 
-#: ../src/iop/diffuse.c:1883
+#: ../src/iop/diffuse.c:1882
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -15651,7 +15658,7 @@ msgstr ""
 "正值表示则会避开边缘 （等照度线），\n"
 "零会等效影响以上两种情况（各向同性）。"
 
-#: ../src/iop/diffuse.c:1892
+#: ../src/iop/diffuse.c:1891
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -15665,12 +15672,12 @@ msgstr ""
 "正值表示则会避开边缘 （等照度线），\n"
 "零会等效影响以上两种情况（各向同性）。"
 
-#: ../src/iop/diffuse.c:1898
+#: ../src/iop/diffuse.c:1897
 msgctxt "section"
 msgid "edge management"
 msgstr "边缘管理"
 
-#: ../src/iop/diffuse.c:1905
+#: ../src/iop/diffuse.c:1904
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
@@ -15680,7 +15687,7 @@ msgstr ""
 "可用于在晕光(blooming)后保留细节。\n"
 "若希望单独使用，将速度设置为负值。"
 
-#: ../src/iop/diffuse.c:1912
+#: ../src/iop/diffuse.c:1911
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -15689,7 +15696,7 @@ msgstr ""
 "设置边缘放大/削减的方差敏感度。\n"
 "需要减少边缘扩散、出现流苏或光环时请增加该值。"
 
-#: ../src/iop/diffuse.c:1919
+#: ../src/iop/diffuse.c:1918
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -15700,12 +15707,12 @@ msgstr ""
 "减少该值以增强平整表面上的像素，\n"
 "若平坦表面上出现噪点和暗色区域相比亮色区域被过度锐化，请减少该值。"
 
-#: ../src/iop/diffuse.c:1925
+#: ../src/iop/diffuse.c:1924
 msgctxt "section"
 msgid "diffusion spatiality"
 msgstr "扩散空间性"
 
-#: ../src/iop/diffuse.c:1932
+#: ../src/iop/diffuse.c:1931
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -16053,9 +16060,9 @@ msgstr ""
 "如果阴影和/或高光部分过度饱和，请降低该值。"
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1600 ../src/libs/export.c:1237
-#: ../src/libs/print_settings.c:2463 ../src/libs/print_settings.c:2811
-#: ../src/views/darkroom.c:2528 ../src/views/lighttable.c:1186
+#: ../src/iop/filmic.c:1600 ../src/libs/export.c:1227
+#: ../src/libs/print_settings.c:2473 ../src/libs/print_settings.c:2820
+#: ../src/views/darkroom.c:2524 ../src/views/lighttable.c:1182
 msgid "intent"
 msgstr "意图"
 
@@ -17079,8 +17086,8 @@ msgid "find lens"
 msgstr "寻找镜头"
 
 #. scale
-#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:967
-#: ../src/iop/watermark.c:1324 ../src/libs/export.c:1166
+#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:968
+#: ../src/iop/watermark.c:1324 ../src/libs/export.c:1165
 msgid "scale"
 msgstr "缩放"
 
@@ -17942,7 +17949,7 @@ msgstr "调整以匹配题材的正常亮度"
 #: ../src/iop/profile_gamma.c:644
 msgid ""
 "number of stops between middle gray and pure black\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "中间灰和纯黑色之间的步数。\n"
 "可以在拍摄现场使用光度计测量"
@@ -17950,7 +17957,7 @@ msgstr ""
 #: ../src/iop/profile_gamma.c:650
 msgid ""
 "number of stops between pure black and pure white\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "纯黑色和纯白色之间的步数。\n"
 "可以在拍摄现场使用光度计测量"
@@ -18108,8 +18115,8 @@ msgstr ""
 msgid "toggle tool for picking median lightness in image"
 msgstr "用于选取图像明度中值的切换工具"
 
-#: ../src/iop/relight.c:279 ../src/libs/export.c:1132
-#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2527
+#: ../src/iop/relight.c:279 ../src/libs/export.c:1131
+#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2537
 msgid "width"
 msgstr "宽度"
 
@@ -19311,52 +19318,52 @@ msgstr "改变饱和度的同时，控制最饱和像素的亮度，使颜色生
 msgid "the amount of vibrance"
 msgstr "自然饱和的量"
 
-#: ../src/iop/vignette.c:152
+#: ../src/iop/vignette.c:153
 msgid "vignetting"
 msgstr "渐晕"
 
-#: ../src/iop/vignette.c:157
+#: ../src/iop/vignette.c:158
 msgid "simulate a lens fall-off close to edges"
 msgstr "模拟镜头边缘的光衰减"
 
-#: ../src/iop/vignette.c:939
+#: ../src/iop/vignette.c:940
 msgid "lomo"
 msgstr "lomo"
 
-#: ../src/iop/vignette.c:973
+#: ../src/iop/vignette.c:974
 msgctxt "section"
 msgid "position / form"
 msgstr "位置/形式"
 
-#: ../src/iop/vignette.c:980
+#: ../src/iop/vignette.c:981
 msgid "dithering"
 msgstr "抖动"
 
-#: ../src/iop/vignette.c:991
+#: ../src/iop/vignette.c:992
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "渐晕起始光衰减的比例半径"
 
-#: ../src/iop/vignette.c:992
+#: ../src/iop/vignette.c:993
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "渐晕结束光衰减的比例半径"
 
-#: ../src/iop/vignette.c:993
+#: ../src/iop/vignette.c:994
 msgid "strength of effect on brightness"
 msgstr "亮度效果的力度"
 
-#: ../src/iop/vignette.c:994
+#: ../src/iop/vignette.c:995
 msgid "strength of effect on saturation"
 msgstr "饱和度效果的力度"
 
-#: ../src/iop/vignette.c:995
+#: ../src/iop/vignette.c:996
 msgid "horizontal offset of center of the effect"
 msgstr "效果中心的横向偏移量"
 
-#: ../src/iop/vignette.c:996
+#: ../src/iop/vignette.c:997
 msgid "vertical offset of center of the effect"
 msgstr "效果中心的纵向偏移量"
 
-#: ../src/iop/vignette.c:997
+#: ../src/iop/vignette.c:998
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -19368,29 +19375,29 @@ msgstr ""
 "1 产生环或椭圆\n"
 "2 产生菱形"
 
-#: ../src/iop/vignette.c:999
+#: ../src/iop/vignette.c:1000
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "启用以随图片尺寸自动调整比例"
 
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1001
 msgid "width-to-height ratio"
 msgstr "宽高比例"
 
-#: ../src/iop/vignette.c:1001
+#: ../src/iop/vignette.c:1002
 msgid "add some level of random noise to prevent banding"
 msgstr "添加一些随机程度的噪声以防止断层"
 
-#: ../src/iop/vignette.c:1008
+#: ../src/iop/vignette.c:1009
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[节点 %s] 更改渐晕/羽化尺寸"
 
-#: ../src/iop/vignette.c:1010
+#: ../src/iop/vignette.c:1011
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr "[节点 %s] 更改渐晕/羽化尺寸 - 保持纵横比"
 
-#: ../src/iop/vignette.c:1012
+#: ../src/iop/vignette.c:1013
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[中央 %s] 移动渐晕暗角"
@@ -19491,7 +19498,7 @@ msgstr "相对于选中对象的尺寸按制定比例缩放水印"
 msgid "length of the marker which is used as scaling reference"
 msgstr "将水印边长用作缩放参考"
 
-#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2665
+#: ../src/iop/watermark.c:1347 ../src/libs/print_settings.c:2675
 msgid "alignment"
 msgstr "对齐"
 
@@ -19753,7 +19760,7 @@ msgid "use `%' as wildcard"
 msgstr "使用“%”作为通配符"
 
 #: ../src/libs/collect.c:2263 ../src/libs/collect.c:2277
-#: ../src/libs/collect.c:2886
+#: ../src/libs/collect.c:2800
 msgid "clear this rule"
 msgstr "清除规则"
 
@@ -19761,38 +19768,38 @@ msgstr "清除规则"
 msgid "clear this rule or add new rules"
 msgstr "清除此规则或添加新规则"
 
-#: ../src/libs/collect.c:2892
+#: ../src/libs/collect.c:2806
 msgid "narrow down search"
 msgstr "缩小搜索范围"
 
-#: ../src/libs/collect.c:2897
+#: ../src/libs/collect.c:2811
 msgid "add more images"
 msgstr "添加更多图片"
 
-#: ../src/libs/collect.c:2902
+#: ../src/libs/collect.c:2816
 msgid "exclude images"
 msgstr "排除图片"
 
-#: ../src/libs/collect.c:2909
+#: ../src/libs/collect.c:2823
 msgid "change to: and"
 msgstr "改为：添加"
 
-#: ../src/libs/collect.c:2914
+#: ../src/libs/collect.c:2828
 msgid "change to: or"
 msgstr "改为：分别"
 
-#: ../src/libs/collect.c:2919
+#: ../src/libs/collect.c:2833
 msgid "change to: except"
 msgstr "改为：排除"
 
 #. the different categories
-#: ../src/libs/collect.c:2945 ../src/libs/filtering.c:857
+#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:857
 #: ../src/libs/filtering.c:924 ../src/libs/filtering.c:1558
 #: ../src/libs/filtering.c:1890
 msgid "files"
 msgstr "文件"
 
-#: ../src/libs/collect.c:2950 ../src/libs/export_metadata.c:312
+#: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:312
 #: ../src/libs/filtering.c:862 ../src/libs/filtering.c:929
 #: ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1894
 #: ../src/libs/image.c:464 ../src/libs/image.c:574 ../src/libs/image.c:582
@@ -19800,58 +19807,58 @@ msgstr "文件"
 msgid "metadata"
 msgstr "元数据"
 
-#: ../src/libs/collect.c:2969 ../src/libs/filtering.c:883
+#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:883
 #: ../src/libs/filtering.c:950 ../src/libs/filtering.c:1892
 msgid "times"
 msgstr "时间"
 
-#: ../src/libs/collect.c:2977 ../src/libs/filtering.c:891
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:891
 #: ../src/libs/filtering.c:958 ../src/libs/filtering.c:1590
 msgid "capture details"
 msgstr "拍摄细节"
 
-#: ../src/libs/collect.c:2986 ../src/libs/filtering.c:900
+#: ../src/libs/collect.c:2900 ../src/libs/filtering.c:900
 #: ../src/libs/filtering.c:967 ../src/libs/filtering.c:1602
 #: ../src/libs/filtering.c:1896 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2999
+#: ../src/libs/collect.c:2913
 msgid "collections settings"
 msgstr "图片采集选项"
 
-#: ../src/libs/collect.c:3002 ../src/libs/export_metadata.c:288
+#: ../src/libs/collect.c:2916 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1194
-#: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:1653
+#: ../src/libs/recentcollect.c:228 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057
 #: ../src/libs/tagging.c:3472
 msgid "save"
 msgstr "保存"
 
-#: ../src/libs/collect.c:3022 ../src/libs/export.c:1047
+#: ../src/libs/collect.c:2936 ../src/libs/export.c:1046
 #: ../src/libs/metadata.c:779 ../src/libs/metadata_view.c:1306
-#: ../src/libs/recentcollect.c:362 ../src/libs/tagging.c:3494
+#: ../src/libs/recentcollect.c:293 ../src/libs/tagging.c:3494
 msgid "preferences..."
 msgstr "首选项……"
 
-#: ../src/libs/collect.c:3122 ../src/libs/filtering.c:1432
+#: ../src/libs/collect.c:3041 ../src/libs/filtering.c:1432
 msgid "AND"
 msgstr "与"
 
-#: ../src/libs/collect.c:3127 ../src/libs/filtering.c:1437
+#: ../src/libs/collect.c:3046 ../src/libs/filtering.c:1437
 msgid "OR"
 msgstr "或"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1442
+#: ../src/libs/collect.c:3051 ../src/libs/filtering.c:1442
 msgid "BUT NOT"
 msgstr "而不是"
 
-#: ../src/libs/collect.c:3304 ../src/libs/filtering.c:2164
+#: ../src/libs/collect.c:3223 ../src/libs/filtering.c:2164
 msgid "revert to a previous set of rules"
 msgstr "撤回到前一组规则"
 
-#: ../src/libs/collect.c:3361
+#: ../src/libs/collect.c:3280
 msgid "jump back to previous collection"
 msgstr "回到上一个集合"
 
@@ -20043,76 +20050,76 @@ msgid "create a duplicate of the image with same history stack"
 msgstr "创建一个具有相同历史记录的图像副本"
 
 #. Export button
-#: ../src/libs/export.c:154 ../src/libs/export.c:1291
+#: ../src/libs/export.c:153 ../src/libs/export.c:1281
 msgid "export"
 msgstr "导出"
 
-#: ../src/libs/export.c:307
+#: ../src/libs/export.c:306
 msgid "export to disk"
 msgstr "导出至磁盘"
 
-#: ../src/libs/export.c:486
+#: ../src/libs/export.c:485
 #, c-format
 msgid "which is equal to %s × %s px"
 msgstr "相当于 %s × %s 像素"
 
-#: ../src/libs/export.c:521
+#: ../src/libs/export.c:520
 msgctxt "unit"
 msgid "in"
 msgstr "使用单位"
 
-#: ../src/libs/export.c:1061
+#: ../src/libs/export.c:1060
 msgctxt "section"
 msgid "storage options"
 msgstr "存储选项"
 
-#: ../src/libs/export.c:1065
+#: ../src/libs/export.c:1064
 msgid "target storage"
 msgstr "导出目的地"
 
-#: ../src/libs/export.c:1087
+#: ../src/libs/export.c:1086
 msgctxt "section"
 msgid "format options"
 msgstr "格式选项"
 
-#: ../src/libs/export.c:1091
+#: ../src/libs/export.c:1090
 msgid "file format"
 msgstr "文件格式"
 
-#: ../src/libs/export.c:1108
+#: ../src/libs/export.c:1107
 msgctxt "section"
 msgid "global options"
 msgstr "全局选项"
 
-#: ../src/libs/export.c:1111
+#: ../src/libs/export.c:1110
 msgid "set size"
 msgstr "设置大小"
 
-#: ../src/libs/export.c:1112
+#: ../src/libs/export.c:1111
 msgid "choose a method for setting the output size"
 msgstr "选择设置输出大小的方法"
 
-#: ../src/libs/export.c:1115
+#: ../src/libs/export.c:1114
 msgid "in pixels (for file)"
 msgstr "像素（文件）"
 
-#: ../src/libs/export.c:1116
+#: ../src/libs/export.c:1115
 msgid "in cm (for print)"
 msgstr "厘米（打印）"
 
-#: ../src/libs/export.c:1117
+#: ../src/libs/export.c:1116
 msgid "in inch (for print)"
 msgstr "英寸（打印）"
 
-#: ../src/libs/export.c:1118
+#: ../src/libs/export.c:1117
 msgid "by scale (for file)"
 msgstr "缩放比例（文件）"
 
-#: ../src/libs/export.c:1120
+#: ../src/libs/export.c:1119
 msgid "print width"
 msgstr "印刷宽度"
 
-#: ../src/libs/export.c:1121 ../src/libs/export.c:1133
+#: ../src/libs/export.c:1120 ../src/libs/export.c:1132
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -20120,11 +20127,11 @@ msgstr ""
 "最大输出宽度限制。\n"
 "单击鼠标中键重置为 0。"
 
-#: ../src/libs/export.c:1124
+#: ../src/libs/export.c:1123
 msgid "print height"
 msgstr "印刷高度"
 
-#: ../src/libs/export.c:1125 ../src/libs/export.c:1137
+#: ../src/libs/export.c:1124 ../src/libs/export.c:1136
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -20132,19 +20139,19 @@ msgstr ""
 "最大输出高度限制。\n"
 "单击鼠标中键重置为 0。"
 
-#: ../src/libs/export.c:1129
+#: ../src/libs/export.c:1128
 msgid "resolution in dot per inch"
 msgstr "分辨率，以 DPI 为单位"
 
-#: ../src/libs/export.c:1149
+#: ../src/libs/export.c:1148
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1162 ../src/libs/tools/global_toolbox.c:217
+#: ../src/libs/export.c:1161 ../src/libs/tools/global_toolbox.c:217
 msgid "px"
 msgstr "像素"
 
-#: ../src/libs/export.c:1167
+#: ../src/libs/export.c:1166
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -20154,37 +20161,36 @@ msgstr ""
 "0 或空值将被视为 1。\n"
 "中键点击以将值重置为 1。"
 
-#: ../src/libs/export.c:1186
+#: ../src/libs/export.c:1185
 msgid "allow upscaling"
 msgstr "允许放大图像"
 
-#: ../src/libs/export.c:1192
+#: ../src/libs/export.c:1191
 msgid "high quality resampling"
 msgstr "在导出时进行高质量重新采样"
 
-#: ../src/libs/export.c:1193
+#: ../src/libs/export.c:1192
 msgid "do high quality resampling during export"
 msgstr "在导出时进行高质量重新采样"
 
-#: ../src/libs/export.c:1199
+#: ../src/libs/export.c:1198
 msgid "store masks"
 msgstr "保存蒙版"
 
-#: ../src/libs/export.c:1200
+#: ../src/libs/export.c:1199
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr "将蒙版作为图层存储在导出的图像中。仅适用于某些格式。"
 
-#: ../src/libs/export.c:1216 ../src/libs/export.c:1255
-#: ../src/libs/print_settings.c:2767 ../src/libs/print_settings.c:2814
+#: ../src/libs/export.c:1210 ../src/libs/export.c:1245
+#: ../src/libs/print_settings.c:2777 ../src/libs/print_settings.c:2823
 msgid "image settings"
 msgstr "图像设定"
 
-#: ../src/libs/export.c:1228 ../src/libs/print_settings.c:2801
-#, c-format
-msgid "output ICC profiles in %s or %s"
-msgstr "导出 icc 档案到 %s/color/out 或 %s/color/out"
+#: ../src/libs/export.c:1220 ../src/libs/print_settings.c:2811
+msgid "output ICC profiles"
+msgstr "导出 ICC 色彩档案"
 
-#: ../src/libs/export.c:1238
+#: ../src/libs/export.c:1228
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations,\n"
@@ -20211,28 +20217,28 @@ msgstr ""
 "\n"
 "• 饱和度：通过保持饱和度来呈现引人注目的商业图形。（不适合于摄影）"
 
-#: ../src/libs/export.c:1265 ../src/libs/print_settings.c:2824
+#: ../src/libs/export.c:1255 ../src/libs/print_settings.c:2833
 msgid "style"
 msgstr "样式"
 
-#: ../src/libs/export.c:1268
+#: ../src/libs/export.c:1258
 msgid "temporary style to use while exporting"
 msgstr "导出时要使用的临时样式"
 
-#: ../src/libs/export.c:1273 ../src/libs/print_settings.c:2867
+#: ../src/libs/export.c:1263 ../src/libs/print_settings.c:2876
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "样式项是附加到历史记录还是替换历史记录"
 
-#: ../src/libs/export.c:1276 ../src/libs/print_settings.c:2869
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2878
 msgid "replace history"
 msgstr "替换历史记录"
 
-#: ../src/libs/export.c:1276 ../src/libs/print_settings.c:2869
+#: ../src/libs/export.c:1266 ../src/libs/print_settings.c:2878
 msgid "append history"
 msgstr "附加历史记录"
 
-#: ../src/libs/export.c:1292
+#: ../src/libs/export.c:1282
 msgid "export with current settings"
 msgstr "当前设定下导出"
 
@@ -22163,24 +22169,24 @@ msgstr ""
 msgid "jump to film roll"
 msgstr "跳到胶卷"
 
-#: ../src/libs/recentcollect.c:67
+#: ../src/libs/recentcollect.c:68
 msgid "recently used collections"
 msgstr "最近用过的集合"
 
-#: ../src/libs/recentcollect.c:108
+#: ../src/libs/recentcollect.c:109
 msgid " and "
 msgstr " 以及 "
 
-#: ../src/libs/recentcollect.c:113
+#: ../src/libs/recentcollect.c:114
 msgid " or "
 msgstr " 或者 "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/recentcollect.c:118
+#: ../src/libs/recentcollect.c:119
 msgid " but not "
 msgstr " 但非 "
 
-#: ../src/libs/recentcollect.c:293
+#: ../src/libs/recentcollect.c:226
 msgid "recent collections settings"
 msgstr "最近集合选项"
 
@@ -22593,116 +22599,115 @@ msgstr "800%"
 msgid "1600%"
 msgstr "1600%"
 
-#: ../src/libs/print_settings.c:46
+#: ../src/libs/print_settings.c:45
 msgid "print settings"
 msgstr "打印设定"
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
-#: ../src/libs/print_settings.c:358 ../src/libs/print_settings.c:755
+#: ../src/libs/print_settings.c:357 ../src/libs/print_settings.c:754
 #, c-format
 msgid "processing `%s' for `%s'"
 msgstr "正在处理“%s”用于“%s”"
 
-#: ../src/libs/print_settings.c:388
+#: ../src/libs/print_settings.c:387
 #, c-format
 msgid "cannot open printer profile `%s'"
 msgstr "无法打开打印机色彩配置“%s”"
 
-#: ../src/libs/print_settings.c:399
+#: ../src/libs/print_settings.c:398
 #, c-format
 msgid "error getting output profile for image %d"
 msgstr "无法获取图像 %d 的输出色彩配置"
 
-#: ../src/libs/print_settings.c:411
+#: ../src/libs/print_settings.c:410
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "无法应用打印机色彩配置“%s”！"
 
-#: ../src/libs/print_settings.c:575
+#: ../src/libs/print_settings.c:574
 msgid "failed to create temporary PDF for printing"
 msgstr "无法创建打印用的临时 pdf"
 
-#: ../src/libs/print_settings.c:621
+#: ../src/libs/print_settings.c:620
 msgid "maximum image per page reached"
 msgstr "已达到每页最大图像数"
 
-#: ../src/libs/print_settings.c:709
+#: ../src/libs/print_settings.c:708
 msgid "cannot print until a picture is selected"
 msgstr "打印前请选择要打印的图像"
 
-#: ../src/libs/print_settings.c:714
+#: ../src/libs/print_settings.c:713
 msgid "cannot print until a printer is selected"
 msgstr "打印前请选择要使用的打印机"
 
-#: ../src/libs/print_settings.c:719
+#: ../src/libs/print_settings.c:718
 msgid "cannot print until a paper is selected"
 msgstr "打印前请选择纸张类型"
 
 #. in this case no need to release from cache what we couldn't get
-#: ../src/libs/print_settings.c:747
+#: ../src/libs/print_settings.c:746
 #, c-format
 msgid "cannot get image %d for printing"
 msgstr "无法获取用于打印的图像 %d"
 
-#: ../src/libs/print_settings.c:919
+#: ../src/libs/print_settings.c:918
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f （DPI：%d）"
 
-#: ../src/libs/print_settings.c:2385
+#: ../src/libs/print_settings.c:2396
 msgctxt "section"
 msgid "printer"
 msgstr "打印机"
 
-#: ../src/libs/print_settings.c:2398 ../src/libs/print_settings.c:2407
-#: ../src/libs/print_settings.c:2463
+#: ../src/libs/print_settings.c:2409 ../src/libs/print_settings.c:2418
+#: ../src/libs/print_settings.c:2473
 msgid "printer"
 msgstr "打印机"
 
-#: ../src/libs/print_settings.c:2398
+#: ../src/libs/print_settings.c:2409
 msgid "media"
 msgstr "纸张类型"
 
-#: ../src/libs/print_settings.c:2419
+#: ../src/libs/print_settings.c:2430
 msgid "color management in printer driver"
 msgstr "打印机驱动的色彩管理"
 
-#: ../src/libs/print_settings.c:2452
-#, c-format
-msgid "printer ICC profiles in %s or %s"
-msgstr "将打印机的 ICC 配置设定为 %s 或 %s"
+#: ../src/libs/print_settings.c:2463
+msgid "printer ICC profiles"
+msgstr "打印机 ICC 配置"
 
-#: ../src/libs/print_settings.c:2474
+#: ../src/libs/print_settings.c:2484
 msgid "black point compensation"
 msgstr "黑点补偿"
 
-#: ../src/libs/print_settings.c:2487
+#: ../src/libs/print_settings.c:2497
 msgid "activate black point compensation when applying the printer profile"
 msgstr "应用打印机色彩配置时启用黑点补偿"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:2494
+#: ../src/libs/print_settings.c:2504
 msgctxt "section"
 msgid "page"
 msgstr "页面"
 
-#: ../src/libs/print_settings.c:2516
+#: ../src/libs/print_settings.c:2526
 msgid "measurement units"
 msgstr "测量单位"
 
-#: ../src/libs/print_settings.c:2524
+#: ../src/libs/print_settings.c:2534
 msgid "image width/height"
 msgstr "图像宽度和高度"
 
-#: ../src/libs/print_settings.c:2529
+#: ../src/libs/print_settings.c:2539
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:2537
+#: ../src/libs/print_settings.c:2547
 msgid "scale factor"
 msgstr "缩放比例"
 
-#: ../src/libs/print_settings.c:2543
+#: ../src/libs/print_settings.c:2553
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -22715,46 +22720,46 @@ msgstr ""
 "将该值设的太大可能导致较差的打印质量"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2557
+#: ../src/libs/print_settings.c:2567
 msgid "top margin"
 msgstr "上边距"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2561
+#: ../src/libs/print_settings.c:2571
 msgid "left margin"
 msgstr "左边距"
 
-#: ../src/libs/print_settings.c:2564
+#: ../src/libs/print_settings.c:2574
 msgid "lock"
 msgstr "锁"
 
-#: ../src/libs/print_settings.c:2566
+#: ../src/libs/print_settings.c:2576
 msgid "change all margins uniformly"
 msgstr "同时设定所有页边距"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2570
+#: ../src/libs/print_settings.c:2580
 msgid "right margin"
 msgstr "右边距"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2574
+#: ../src/libs/print_settings.c:2584
 msgid "bottom margin"
 msgstr "下边距"
 
-#: ../src/libs/print_settings.c:2607
+#: ../src/libs/print_settings.c:2617
 msgid "display grid"
 msgstr "显示网格"
 
-#: ../src/libs/print_settings.c:2618
+#: ../src/libs/print_settings.c:2628
 msgid "snap to grid"
 msgstr "对齐到网格"
 
-#: ../src/libs/print_settings.c:2631
+#: ../src/libs/print_settings.c:2641
 msgid "borderless mode required"
 msgstr "需要无边框模式"
 
-#: ../src/libs/print_settings.c:2634
+#: ../src/libs/print_settings.c:2644
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
@@ -22764,16 +22769,16 @@ msgstr ""
 "因为您选择的边距小于打印机的硬件边距"
 
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2641
+#: ../src/libs/print_settings.c:2651
 msgctxt "section"
 msgid "image layout"
 msgstr "图像布局"
 
-#: ../src/libs/print_settings.c:2682
+#: ../src/libs/print_settings.c:2692
 msgid "new image area"
 msgstr "新建图像区域"
 
-#: ../src/libs/print_settings.c:2684
+#: ../src/libs/print_settings.c:2694
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
@@ -22783,53 +22788,53 @@ msgstr ""
 "在页面上点击并拖动以放置该区域\n"
 "从胶片条上拖放图像到该区域"
 
-#: ../src/libs/print_settings.c:2688
+#: ../src/libs/print_settings.c:2698
 msgid "delete image area"
 msgstr "删除图像区域"
 
-#: ../src/libs/print_settings.c:2690
+#: ../src/libs/print_settings.c:2700
 msgid "delete the currently selected image area"
 msgstr "删除当前选中的图像区域"
 
-#: ../src/libs/print_settings.c:2693
+#: ../src/libs/print_settings.c:2703
 msgid "clear layout"
 msgstr "清除布局设置"
 
-#: ../src/libs/print_settings.c:2695
+#: ../src/libs/print_settings.c:2705
 msgid "remove all image areas from the page"
 msgstr "删除页面上的所有图像区域"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2712
+#: ../src/libs/print_settings.c:2722
 msgid "image area x origin (in current unit)"
 msgstr "图像区域 x 原点（以当前单位）"
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2716
+#: ../src/libs/print_settings.c:2726
 msgid "image area y origin (in current unit)"
 msgstr "图像区域 y 原点（以当前单位）"
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2727
+#: ../src/libs/print_settings.c:2737
 msgid "image area width (in current unit)"
 msgstr "图像区域宽度（以当前单位）"
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2731
+#: ../src/libs/print_settings.c:2741
 msgid "image area height (in current unit)"
 msgstr "图像区域高度（以当前单位）"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:2757
+#: ../src/libs/print_settings.c:2767
 msgctxt "section"
 msgid "print settings"
 msgstr "打印设定"
 
-#: ../src/libs/print_settings.c:2846
+#: ../src/libs/print_settings.c:2855
 msgid "temporary style to use while printing"
 msgstr "打印时的临时样式"
 
-#: ../src/libs/print_settings.c:2878
+#: ../src/libs/print_settings.c:2887
 msgid "print with current settings"
 msgstr "以当前设定打印"
 
@@ -24014,50 +24019,46 @@ msgstr ""
 "切换色域检查\n"
 "右键查看配置文件选项"
 
-#: ../src/views/darkroom.c:2528 ../src/views/darkroom.c:2530
-#: ../src/views/darkroom.c:2544 ../src/views/darkroom.c:2545
-#: ../src/views/darkroom.c:2546 ../src/views/darkroom.c:2547
-#: ../src/views/lighttable.c:1186 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2524 ../src/views/darkroom.c:2526
+#: ../src/views/darkroom.c:2540 ../src/views/darkroom.c:2541
+#: ../src/views/darkroom.c:2542 ../src/views/darkroom.c:2543
+#: ../src/views/lighttable.c:1182 ../src/views/lighttable.c:1184
 msgid "profiles"
 msgstr "色彩配置文件"
 
-#: ../src/views/darkroom.c:2530 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2526 ../src/views/lighttable.c:1184
 msgid "preview intent"
 msgstr "预览目的"
 
-#: ../src/views/darkroom.c:2544 ../src/views/lighttable.c:1192
+#: ../src/views/darkroom.c:2540 ../src/views/lighttable.c:1188
 msgid "display profile"
 msgstr "显示配置文件"
 
-#: ../src/views/darkroom.c:2545 ../src/views/lighttable.c:1195
+#: ../src/views/darkroom.c:2541 ../src/views/lighttable.c:1191
 msgid "preview display profile"
 msgstr "预览显示配置文件"
 
-#: ../src/views/darkroom.c:2547
+#: ../src/views/darkroom.c:2543
 msgid "histogram profile"
 msgstr "直方图配置"
 
-#: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1231
-#, c-format
-msgid "display ICC profiles in %s or %s"
-msgstr "显示的ICC配置文件在%s 或者 %s里"
+#: ../src/views/darkroom.c:2605 ../src/views/lighttable.c:1225
+msgid "display ICC profiles"
+msgstr "用于显示的 ICC 配置文件"
 
-#: ../src/views/darkroom.c:2614 ../src/views/lighttable.c:1234
-#, c-format
-msgid "preview display ICC profiles in %s or %s"
-msgstr "预览显示的ICC配置文件在%s 或者 %s里"
+#: ../src/views/darkroom.c:2609 ../src/views/lighttable.c:1229
+msgid "preview display ICC profiles"
+msgstr "用于预览显示的 ICC 配置文件"
+
+#: ../src/views/darkroom.c:2613
+msgid "softproof ICC profiles"
+msgstr "软打样 ICC 配置"
 
 #: ../src/views/darkroom.c:2617
-#, c-format
-msgid "softproof ICC profiles in %s or %s"
-msgstr "软打样的ICC配置文件在%s 或者 %s里"
+msgid "histogram and color picker ICC profiles"
+msgstr "直方图和颜色选择器的 ICC 配置文件"
 
-#: ../src/views/darkroom.c:2620
-#, c-format
-msgid "histogram and color picker ICC profiles in %s or %s"
-msgstr "直方图和颜色选择器的ICC配置文件在%s 或者 %s里"
-
-#: ../src/views/darkroom.c:2656
+#: ../src/views/darkroom.c:2651
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -24066,137 +24067,137 @@ msgstr ""
 "右键查看参考线选项"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2673
+#: ../src/views/darkroom.c:2668
 msgid "full preview"
 msgstr "全屏预览"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2677
+#: ../src/views/darkroom.c:2672
 msgid "force pan/zoom/rotate with mouse"
 msgstr "使用鼠标强制平移/缩放/旋转"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2689
+#: ../src/views/darkroom.c:2684
 msgid "zoom close-up"
 msgstr "拉近缩放"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2692 ../src/views/lighttable.c:1290
+#: ../src/views/darkroom.c:2687 ../src/views/lighttable.c:1283
 msgid "zoom in"
 msgstr "放大"
 
-#: ../src/views/darkroom.c:2693 ../src/views/lighttable.c:1292
+#: ../src/views/darkroom.c:2688 ../src/views/lighttable.c:1285
 msgid "zoom out"
 msgstr "缩小"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2696
+#: ../src/views/darkroom.c:2691
 msgid "image forward"
 msgstr "前进一张图"
 
-#: ../src/views/darkroom.c:2697
+#: ../src/views/darkroom.c:2692
 msgid "image back"
 msgstr "后退一张图"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2700
+#: ../src/views/darkroom.c:2695
 msgid "cycle overlay colors"
 msgstr "循环覆盖颜色"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2703
+#: ../src/views/darkroom.c:2698
 msgid "show drawn masks"
 msgstr "显示绘制的遮罩"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2706
+#: ../src/views/darkroom.c:2701
 msgid "increase brush size"
 msgstr "加大画笔尺寸"
 
-#: ../src/views/darkroom.c:2707
+#: ../src/views/darkroom.c:2702
 msgid "decrease brush size"
 msgstr "减小画笔尺寸"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2710
+#: ../src/views/darkroom.c:2705
 msgid "increase brush hardness"
 msgstr "增加笔刷硬度"
 
-#: ../src/views/darkroom.c:2711
+#: ../src/views/darkroom.c:2706
 msgid "decrease brush hardness"
 msgstr "降低笔刷硬度"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2714
+#: ../src/views/darkroom.c:2709
 msgid "increase brush opacity"
 msgstr "增加笔刷不透明度"
 
-#: ../src/views/darkroom.c:2715
+#: ../src/views/darkroom.c:2710
 msgid "decrease brush opacity"
 msgstr "降低笔刷不透明度"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2718 ../src/views/lighttable.c:1282
+#: ../src/views/darkroom.c:2713 ../src/views/lighttable.c:1275
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "撤销"
 
-#: ../src/views/darkroom.c:2719 ../src/views/lighttable.c:1283
+#: ../src/views/darkroom.c:2714 ../src/views/lighttable.c:1276
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "重做"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2722
+#: ../src/views/darkroom.c:2717
 msgid "change keyboard shortcut slider precision"
 msgstr "更改键盘快捷键滑块精度"
 
-#: ../src/views/darkroom.c:3994
+#: ../src/views/darkroom.c:3989
 msgid "keyboard shortcut slider precision: fine"
 msgstr "键盘快捷键滑块的精度：高"
 
-#: ../src/views/darkroom.c:3996
+#: ../src/views/darkroom.c:3991
 msgid "keyboard shortcut slider precision: normal"
 msgstr "键盘快捷键滑块的精度：中"
 
-#: ../src/views/darkroom.c:3998
+#: ../src/views/darkroom.c:3993
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "键盘快捷键滑块的精度：低"
 
-#: ../src/views/darkroom.c:4014
+#: ../src/views/darkroom.c:4009
 msgid "switch to lighttable"
 msgstr "转到光台"
 
-#: ../src/views/darkroom.c:4015 ../src/views/lighttable.c:882
+#: ../src/views/darkroom.c:4010 ../src/views/lighttable.c:882
 msgid "zoom in the image"
 msgstr "放大图像"
 
-#: ../src/views/darkroom.c:4016
+#: ../src/views/darkroom.c:4011
 msgid "unbounded zoom in the image"
 msgstr "无限放大图像"
 
-#: ../src/views/darkroom.c:4017
+#: ../src/views/darkroom.c:4012
 msgid "zoom to 100% 200% and back"
 msgstr "缩放到 100% 200% 然后返回"
 
-#: ../src/views/darkroom.c:4018 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:4013 ../src/views/lighttable.c:885
 msgid "pan a zoomed image"
 msgstr "在放大的图像上平移"
 
-#: ../src/views/darkroom.c:4020 ../src/views/lighttable.c:927
+#: ../src/views/darkroom.c:4015 ../src/views/lighttable.c:927
 msgid "[modules] expand module without closing others"
 msgstr "展开模块时不折叠其他模块"
 
-#: ../src/views/darkroom.c:4021 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:4016 ../src/views/lighttable.c:928
 msgid "[modules] expand module and close others"
 msgstr "展开模块时折叠其他模块"
 
-#: ../src/views/darkroom.c:4023
+#: ../src/views/darkroom.c:4018
 msgid "[modules] rename module"
 msgstr "重命名模块"
 
-#: ../src/views/darkroom.c:4025
+#: ../src/views/darkroom.c:4020
 msgid "[modules] change module position in pipe"
 msgstr "更改模块在处理管线中的位置"
 
@@ -24205,7 +24206,7 @@ msgid "good knight"
 msgstr "暗夜骑士"
 
 #. Show infos key
-#: ../src/views/lighttable.c:656 ../src/views/lighttable.c:1273
+#: ../src/views/lighttable.c:656 ../src/views/lighttable.c:1266
 msgid "show infos"
 msgstr "显示信息"
 
@@ -24283,44 +24284,44 @@ msgstr "在主视图内平移"
 msgid "set display profile"
 msgstr "设置显示用色彩配置"
 
-#: ../src/views/lighttable.c:1253
+#: ../src/views/lighttable.c:1246
 msgid "whole"
 msgstr "全部"
 
-#: ../src/views/lighttable.c:1269
+#: ../src/views/lighttable.c:1262
 msgid "leave"
 msgstr "退出"
 
-#: ../src/views/lighttable.c:1276
+#: ../src/views/lighttable.c:1269
 msgid "align images to grid"
 msgstr "将图像与网格对齐"
 
-#: ../src/views/lighttable.c:1277
+#: ../src/views/lighttable.c:1270
 msgid "reset first image offset"
 msgstr "重置第一个图像偏移"
 
-#: ../src/views/lighttable.c:1278
+#: ../src/views/lighttable.c:1271
 msgid "select toggle image"
 msgstr "选择切换图像"
 
-#: ../src/views/lighttable.c:1279
+#: ../src/views/lighttable.c:1272
 msgid "select single image"
 msgstr "选择单个图像"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:1286
+#: ../src/views/lighttable.c:1279
 msgid "preview zoom 100%"
 msgstr "预览缩放至100%"
 
-#: ../src/views/lighttable.c:1287
+#: ../src/views/lighttable.c:1280
 msgid "preview zoom fit"
 msgstr "预览缩放自适应"
 
-#: ../src/views/lighttable.c:1291
+#: ../src/views/lighttable.c:1284
 msgid "zoom max"
 msgstr "最大缩放"
 
-#: ../src/views/lighttable.c:1293
+#: ../src/views/lighttable.c:1286
 msgid "zoom min"
 msgstr "最小缩放"
 
@@ -24449,6 +24450,43 @@ msgstr "切换至经典窗口，此窗口在放开按键后也保持显示"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "鼠标行为"
+
+#~ msgid "_yes, physically delete"
+#~ msgstr "是，从磁盘上物理删除 (_y)"
+
+#~ msgid "_no, only remove from library"
+#~ msgstr "不，仅从照片库移除 (_n)"
+
+#, c-format
+#~ msgid ""
+#~ "darktable loads external ICC profiles from\n"
+#~ "%s\n"
+#~ "and\n"
+#~ "%s"
+#~ msgstr ""
+#~ "darktable 从以下目录加载外部 ICC 配置文件：\n"
+#~ "%s\n"
+#~ "%s"
+
+#, c-format
+#~ msgid "ICC profiles in %s or %s"
+#~ msgstr "ICC 档案在 %s 或 %s"
+
+#, c-format
+#~ msgid "output ICC profiles in %s or %s"
+#~ msgstr "导出 icc 档案到 %s/color/out 或 %s/color/out"
+
+#, c-format
+#~ msgid "display ICC profiles in %s or %s"
+#~ msgstr "显示的ICC配置文件在%s 或者 %s里"
+
+#, c-format
+#~ msgid "preview display ICC profiles in %s or %s"
+#~ msgstr "预览显示的ICC配置文件在%s 或者 %s里"
+
+#, c-format
+#~ msgid "softproof ICC profiles in %s or %s"
+#~ msgstr "软打样的ICC配置文件在%s 或者 %s里"
 
 #~ msgid "pen pressure control for brush masks"
 #~ msgstr "画笔蒙版的笔压控制"
