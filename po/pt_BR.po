@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-27 22:31-0300\n"
-"PO-Revision-Date: 2023-05-27 22:31-0300\n"
+"POT-Creation-Date: 2023-06-04 14:41-0300\n"
+"PO-Revision-Date: 2023-06-04 14:44-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1110,13 +1110,13 @@ msgstr "delimitadores para categorias de tamanho"
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px-"
-">400px and >400px"
+"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
+">400px"
 msgstr ""
 "categorias de tamanho são usadas para poder determinar as informações e "
 "valores de CSS diferentes dependendo do tamanho da miniatura, separados por "
 "|.\n"
-"por exemplo, 120|400 significa 3 categorias de miniaturas: 0px->120px, 120px-"
+"por exemplo, 120|400 significa 3 categorias de miniaturas: <120px, 120px-"
 ">400px e >400px"
 
 #: ../build/bin/preferences_gen.h:4316
@@ -1154,15 +1154,14 @@ msgstr "botão do meio do mouse fa zoom em 200%"
 #: ../build/bin/preferences_gen.h:4491
 #, no-c-format
 msgid ""
-"when clicking the middle mouse button to zoom, the zoom level will cycle "
-"through 100%, 200% and then back to fit the screen. otherwise it switches "
-"between fit to screen and 100% and the 'ctrl' key can be used to control the "
-"zoom level."
+"if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
+"on middle mouse clicks. if disabled, it will toggle between viewport size "
+"and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
-"ao clicar com o botão do meio para realizar zoom, o nível de zoom alternará "
-"ciclicamente em 100%, 200% e então de volta para encaixar no tamanho da "
-"tela.  senão ele muda entre encaixar na tela e 100%, e a tecla 'ctrl' pode "
-"ser usada para controlar o nível de zoom."
+"se habilitado, o nível de zoom alternará ciclicamente em 100%, 200% e então "
+"de volta para encaixar no tamanho da tela.  se desabilitado ele alterna "
+"entre encaixar na tela e 100%, e a tecla 'ctrl' pode ser usada para "
+"controlar o nível de zoom."
 
 #: ../build/bin/preferences_gen.h:4513
 msgid "pattern for the image information line"
@@ -2326,7 +2325,7 @@ msgstr "específico"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:366
 #: ../build/lib/darktable/plugins/introspection_colorin.c:300
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
-#: ../build/lib/darktable/plugins/introspection_vignette.c:263
+#: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3410 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/accelerators.c:227
@@ -3287,7 +3286,7 @@ msgstr "luminosidade"
 #: ../src/iop/colorchecker.c:1483 ../src/iop/colorcontrast.c:90
 #: ../src/iop/colorcorrection.c:275 ../src/iop/colorize.c:343
 #: ../src/iop/lowpass.c:588 ../src/iop/soften.c:373 ../src/iop/velvia.c:84
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:970
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:971
 msgid "saturation"
 msgstr "saturação"
 
@@ -4501,7 +4500,7 @@ msgstr "modo de preenchimento"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4617
 #: ../src/iop/colisa.c:305 ../src/iop/lowpass.c:587 ../src/iop/soften.c:377
-#: ../src/iop/vignette.c:969 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:970 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "brilho"
 
@@ -4750,42 +4749,47 @@ msgstr "compressão de contraste"
 msgid "vibrance"
 msgstr "vivacidade"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:97
-#: ../build/lib/darktable/plugins/introspection_vignette.c:204
-msgid "fall-off strength"
-msgstr "força de decaimento"
+#: ../build/lib/darktable/plugins/introspection_vignette.c:92
+#: ../build/lib/darktable/plugins/introspection_vignette.c:201
+msgid "fall-off start"
+msgstr "início do decaimento"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:115
-#: ../build/lib/darktable/plugins/introspection_vignette.c:216
+#: ../build/lib/darktable/plugins/introspection_vignette.c:98
+#: ../build/lib/darktable/plugins/introspection_vignette.c:205
+msgid "fall-off radius"
+msgstr "raio do decaimento"
+
+#: ../build/lib/darktable/plugins/introspection_vignette.c:116
+#: ../build/lib/darktable/plugins/introspection_vignette.c:217
 msgid "horizontal center"
 msgstr "centro horizontal"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:121
-#: ../build/lib/darktable/plugins/introspection_vignette.c:220
+#: ../build/lib/darktable/plugins/introspection_vignette.c:122
+#: ../build/lib/darktable/plugins/introspection_vignette.c:221
 msgid "vertical center"
 msgstr "centro vertical"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:133
-#: ../build/lib/darktable/plugins/introspection_vignette.c:228
+#: ../build/lib/darktable/plugins/introspection_vignette.c:134
+#: ../build/lib/darktable/plugins/introspection_vignette.c:229
 msgid "automatic ratio"
 msgstr "proporção automática"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:139
-#: ../build/lib/darktable/plugins/introspection_vignette.c:232
+#: ../build/lib/darktable/plugins/introspection_vignette.c:140
+#: ../build/lib/darktable/plugins/introspection_vignette.c:233
 msgid "width/height ratio"
 msgstr "relação largura/altura"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:145
-#: ../build/lib/darktable/plugins/introspection_vignette.c:236
-#: ../src/iop/vignette.c:977
+#: ../build/lib/darktable/plugins/introspection_vignette.c:146
+#: ../build/lib/darktable/plugins/introspection_vignette.c:237
+#: ../src/iop/vignette.c:978
 msgid "shape"
 msgstr "forma"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:264
+#: ../build/lib/darktable/plugins/introspection_vignette.c:265
 msgid "8-bit output"
 msgstr "saída de 8-bits"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:265
+#: ../build/lib/darktable/plugins/introspection_vignette.c:266
 msgid "16-bit output"
 msgstr "saída de 16-bits"
 
@@ -6055,7 +6059,7 @@ msgstr "erro ao iniciar o darktable"
 
 #: ../src/common/database.c:2778 ../src/libs/collect.c:2915
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1702
-#: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1194
+#: ../src/libs/metadata.c:634 ../src/libs/metadata_view.c:1194
 #: ../src/libs/recentcollect.c:227 ../src/libs/modulegroups.c:3464
 #: ../src/libs/styles.c:438 ../src/libs/styles.c:621 ../src/libs/tagging.c:1484
 #: ../src/libs/tagging.c:1572 ../src/libs/tagging.c:1653
@@ -7867,7 +7871,7 @@ msgid "reverse"
 msgstr "reverter"
 
 #: ../src/develop/blend_gui.c:140 ../src/imageio/format/webp.c:413
-#: ../src/libs/metadata.c:631 ../src/libs/metadata_view.c:1193
+#: ../src/libs/metadata.c:633 ../src/libs/metadata_view.c:1193
 msgid "default"
 msgstr "padrão"
 
@@ -8623,7 +8627,7 @@ msgstr ""
 "com os requisitos."
 
 #: ../src/develop/imageop.c:3738 ../src/develop/imageop.c:3748
-#: ../src/gui/accelerators.c:151 ../src/libs/lib.c:1414
+#: ../src/gui/accelerators.c:151 ../src/libs/lib.c:1415
 msgid "show"
 msgstr "mostrar"
 
@@ -8654,13 +8658,13 @@ msgstr "instância"
 #: ../src/gui/accelerators.c:122 ../src/gui/gtk.c:3009 ../src/gui/gtk.c:3056
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
 #: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1512
-#: ../src/libs/lib.c:1415 ../src/libs/modulegroups.c:3882
+#: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3882
 msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:3753 ../src/gui/preferences.c:798
-#: ../src/libs/lib.c:1416
+#: ../src/libs/lib.c:1417
 msgid "presets"
 msgstr "predefinições"
 
@@ -9030,7 +9034,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:2704
+#: ../src/develop/pixelpipe_hb.c:2705
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -9038,7 +9042,7 @@ msgstr ""
 "darktable encontrou problemas com o sua configuração de OpenCL; "
 "desabilitando OpenCL para esta sessão!"
 
-#: ../src/develop/pixelpipe_hb.c:2852
+#: ../src/develop/pixelpipe_hb.c:2853
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9229,7 +9233,7 @@ msgstr "determinar o valor para sempre casar com a data-hora corrente"
 
 #. apply button
 #: ../src/dtgtk/range.c:1058 ../src/gui/accelerators.c:162
-#: ../src/libs/metadata.c:901 ../src/libs/styles.c:897
+#: ../src/libs/metadata.c:904 ../src/libs/styles.c:897
 msgid "apply"
 msgstr "aplicar"
 
@@ -11410,7 +11414,7 @@ msgstr "a compressão para a imagem"
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:842 ../src/imageio/format/j2k.c:661
-#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:579
+#: ../src/imageio/format/jpeg.c:443 ../src/imageio/format/jxl.c:579
 #: ../src/imageio/format/webp.c:394 ../src/libs/camera.c:564
 msgid "quality"
 msgstr "qualidade"
@@ -11540,7 +11544,7 @@ msgstr "Cinema2K, 48FPS"
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24FPS"
 
-#: ../src/imageio/format/jpeg.c:564
+#: ../src/imageio/format/jpeg.c:420
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
@@ -12685,15 +12689,15 @@ msgstr "linear, RGB, relativo à exibição"
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:104
-#: ../src/iop/vignette.c:160 ../src/iop/watermark.c:379
+#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:379
 msgid "non-linear, RGB"
 msgstr "não-linear, RGB"
 
 #: ../src/iop/basecurve.c:355 ../src/iop/dither.c:120 ../src/iop/dither.c:122
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
-#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
-#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:378
+#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:160
+#: ../src/iop/vignette.c:162 ../src/iop/watermark.c:378
 #: ../src/iop/watermark.c:380
 msgid "non-linear, RGB, display-referred"
 msgstr "não-linear, RGB, relativo à exibição"
@@ -12761,7 +12765,7 @@ msgstr "aplicar ajustes usuais à imagem"
 #: ../src/iop/levels.c:138 ../src/iop/liquify.c:297 ../src/iop/lowlight.c:92
 #: ../src/iop/lowpass.c:134 ../src/iop/monochrome.c:98 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:103 ../src/iop/velvia.c:105
-#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:158
+#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:159
 #: ../src/iop/watermark.c:377
 msgid "creative"
 msgstr "criativo"
@@ -17596,7 +17600,7 @@ msgid "find lens"
 msgstr "encontrar lentes"
 
 #. scale
-#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:967
+#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:968
 #: ../src/iop/watermark.c:1324 ../src/libs/export.c:1165
 msgid "scale"
 msgstr "escala"
@@ -19904,52 +19908,52 @@ msgstr ""
 msgid "the amount of vibrance"
 msgstr "quantidade de vivacidade"
 
-#: ../src/iop/vignette.c:152
+#: ../src/iop/vignette.c:153
 msgid "vignetting"
 msgstr "vinheta"
 
-#: ../src/iop/vignette.c:157
+#: ../src/iop/vignette.c:158
 msgid "simulate a lens fall-off close to edges"
 msgstr "simula um suave escurecimento perto das bordas da lente"
 
-#: ../src/iop/vignette.c:939
+#: ../src/iop/vignette.c:940
 msgid "lomo"
 msgstr "lomo"
 
-#: ../src/iop/vignette.c:973
+#: ../src/iop/vignette.c:974
 msgctxt "section"
 msgid "position / form"
 msgstr "posição / forma"
 
-#: ../src/iop/vignette.c:980
+#: ../src/iop/vignette.c:981
 msgid "dithering"
 msgstr "matização"
 
-#: ../src/iop/vignette.c:991
+#: ../src/iop/vignette.c:992
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "a escala dos raios de vinheta para começar a decair"
 
-#: ../src/iop/vignette.c:992
+#: ../src/iop/vignette.c:993
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "a escala dos raios de vinheta para terminar de decair"
 
-#: ../src/iop/vignette.c:993
+#: ../src/iop/vignette.c:994
 msgid "strength of effect on brightness"
 msgstr "força do efeito no brilho"
 
-#: ../src/iop/vignette.c:994
+#: ../src/iop/vignette.c:995
 msgid "strength of effect on saturation"
 msgstr "força do efeito na saturação"
 
-#: ../src/iop/vignette.c:995
+#: ../src/iop/vignette.c:996
 msgid "horizontal offset of center of the effect"
 msgstr "deslocamento horizontal do centro do efeito"
 
-#: ../src/iop/vignette.c:996
+#: ../src/iop/vignette.c:997
 msgid "vertical offset of center of the effect"
 msgstr "deslocamento vertical do centro do efeito"
 
-#: ../src/iop/vignette.c:997
+#: ../src/iop/vignette.c:998
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -19961,29 +19965,29 @@ msgstr ""
 "1 produz um círculo ou elipse\n"
 "2 produz um losango"
 
-#: ../src/iop/vignette.c:999
+#: ../src/iop/vignette.c:1000
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "habilite para proporção seguir automaticamente o tamanho da imagem"
 
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1001
 msgid "width-to-height ratio"
 msgstr "relação de largura-altura"
 
-#: ../src/iop/vignette.c:1001
+#: ../src/iop/vignette.c:1002
 msgid "add some level of random noise to prevent banding"
 msgstr "adiciona um certo nível de ruído aleatório para prevenir bandas de cor"
 
-#: ../src/iop/vignette.c:1008
+#: ../src/iop/vignette.c:1009
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s no nó] muda vinheta/enevoamento"
 
-#: ../src/iop/vignette.c:1010
+#: ../src/iop/vignette.c:1011
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr "[%s no nó] muda vinheta/enevoamento, mantendo aspecto"
 
-#: ../src/iop/vignette.c:1012
+#: ../src/iop/vignette.c:1013
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s no centro] mover vinheta"
@@ -20394,7 +20398,7 @@ msgstr "arquivos"
 #: ../src/libs/filtering.c:862 ../src/libs/filtering.c:929
 #: ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1894
 #: ../src/libs/image.c:464 ../src/libs/image.c:574 ../src/libs/image.c:582
-#: ../src/libs/metadata.c:676 ../src/libs/metadata_view.c:1226
+#: ../src/libs/metadata.c:678 ../src/libs/metadata_view.c:1226
 msgid "metadata"
 msgstr "metadados"
 
@@ -20419,7 +20423,7 @@ msgid "collections settings"
 msgstr "preferências de coleções"
 
 #: ../src/libs/collect.c:2916 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1194
+#: ../src/libs/metadata.c:634 ../src/libs/metadata_view.c:1194
 #: ../src/libs/recentcollect.c:228 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1783 ../src/libs/tagging.c:2057
 #: ../src/libs/tagging.c:3472
@@ -20427,7 +20431,7 @@ msgid "save"
 msgstr "salvar"
 
 #: ../src/libs/collect.c:2936 ../src/libs/export.c:1046
-#: ../src/libs/metadata.c:779 ../src/libs/metadata_view.c:1306
+#: ../src/libs/metadata.c:781 ../src/libs/metadata_view.c:1306
 #: ../src/libs/recentcollect.c:293 ../src/libs/tagging.c:3494
 msgid "preferences..."
 msgstr "preferências..."
@@ -22189,11 +22193,11 @@ msgstr "gerenciar predefinições..."
 msgid "nothing to save"
 msgstr "nada a gravar"
 
-#: ../src/libs/lib.c:1105
+#: ../src/libs/lib.c:1106
 msgid "show module"
 msgstr "mostrar módulo"
 
-#: ../src/libs/lib.c:1430
+#: ../src/libs/lib.c:1431
 msgid "utility module"
 msgstr "módulos utilitários"
 
@@ -22577,15 +22581,15 @@ msgstr "editor de metadados"
 msgid "<leave unchanged>"
 msgstr "<deixar sem modificações>"
 
-#: ../src/libs/metadata.c:630 ../src/libs/metadata_view.c:1192
+#: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1192
 msgid "metadata settings"
 msgstr "configurações de metadados"
 
-#: ../src/libs/metadata.c:683 ../src/libs/metadata_view.c:1237
+#: ../src/libs/metadata.c:685 ../src/libs/metadata_view.c:1237
 msgid "visible"
 msgstr "visível"
 
-#: ../src/libs/metadata.c:688
+#: ../src/libs/metadata.c:690
 msgid ""
 "tick if the corresponding metadata is of interest for you\n"
 "it will be visible from metadata editor, collection and import module\n"
@@ -22595,18 +22599,18 @@ msgstr ""
 "ele será visível no editor de metadados, coleção, e módulo de importação\n"
 "também será exportado"
 
-#: ../src/libs/metadata.c:693 ../src/libs/tagging.c:1683
+#: ../src/libs/metadata.c:695 ../src/libs/tagging.c:1683
 #: ../src/libs/tagging.c:1827
 msgid "private"
 msgstr "privado"
 
-#: ../src/libs/metadata.c:698
+#: ../src/libs/metadata.c:700
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "escolha se quiser manter esta informação privada (não exportada com a imagem)"
 
-#: ../src/libs/metadata.c:857
+#: ../src/libs/metadata.c:860
 msgid ""
 "metadata text\n"
 "ctrl+enter inserts a new line (caution, may not be compatible with standard "
@@ -22624,60 +22628,60 @@ msgstr ""
 "disponíveis.\n"
 "pressione esc para sair da janela pop-up"
 
-#: ../src/libs/metadata.c:902
+#: ../src/libs/metadata.c:905
 msgid "write metadata for selected images"
 msgstr "salva os metadados nas imagens selecionadas"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:958
+#: ../src/libs/metadata.c:964
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:959
+#: ../src/libs/metadata.c:965
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC-BY)"
 
-#: ../src/libs/metadata.c:960
+#: ../src/libs/metadata.c:966
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:961
+#: ../src/libs/metadata.c:967
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:962
+#: ../src/libs/metadata.c:968
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:963
+#: ../src/libs/metadata.c:969
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:964
+#: ../src/libs/metadata.c:970
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:965
+#: ../src/libs/metadata.c:971
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:966
+#: ../src/libs/metadata.c:972
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:967
+#: ../src/libs/metadata.c:973
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:968
+#: ../src/libs/metadata.c:974
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:969
+#: ../src/libs/metadata.c:975
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:970 ../src/libs/metadata.c:971
+#: ../src/libs/metadata.c:976 ../src/libs/metadata.c:977
 msgid "all rights reserved"
 msgstr "todos os direitos reservados"
 
