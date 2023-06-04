@@ -534,8 +534,7 @@ static void _update_layout(dt_lib_module_t *self)
                             dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
     g_free(setting);
 
-    GtkWidget *label = gtk_grid_get_child_at(GTK_GRID(gtk_bin_get_child(GTK_BIN(self->widget))), 0, i);
-    gtk_widget_set_visible(label, !hidden);
+    gtk_widget_set_visible(d->label[i], !hidden);
     GtkWidget *current = GTK_WIDGET(d->textview[i]);
     gtk_widget_set_visible(gtk_widget_get_parent(current), !hidden);
 
@@ -839,8 +838,10 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
-  self->widget = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(self->widget), GTK_WIDGET(grid));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *evbox = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(self->widget), evbox);
+  gtk_container_add(GTK_CONTAINER(evbox), GTK_WIDGET(grid));
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
@@ -917,7 +918,7 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
-  g_signal_connect(G_OBJECT(self->widget), "leave-notify-event",
+  g_signal_connect(G_OBJECT(evbox), "leave-notify-event",
                    G_CALLBACK(_lib_mouse_leave_callback), self);
 
   gtk_widget_show_all(self->widget);
