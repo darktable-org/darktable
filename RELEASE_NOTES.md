@@ -86,7 +86,7 @@ The following is a summary of the main features added to darktable
 
   The chromatic adaptation preference has been removed and is implied
   by the workflow. The Color calibration module is used when in
-  Scene-referred and While balance otherwise.
+  Scene-referred and White balance otherwise.
 
   Finally, using None workflow and the two new features above
   (multiple presets support and reset to default parameters metadata
@@ -207,7 +207,7 @@ The following is a summary of the main features added to darktable
   robust). No longer warn when working on monochrome images. Various
   other cleanup, de-duplication, optimization, and generally tidying.
 
-- Overhaul of pixelpipe code and it's caching strategy with
+- Overhaul of pixelpipe code and its caching strategy with
   significant performance gains while developing in darkroom.
 
 - Modernize the histogram calculation code. Remove SSE code (which
@@ -402,8 +402,8 @@ The following is a summary of the main features added to darktable
   respectively. The setting of the mask operator is disabled for the
   first element in a group. Basically those are small UI improvements.
 
-- Two new sharpness' presets on the diffuse or sharpen module have
-  been added. One standard sharpness and one with a stronger effect.
+- Two new sharpness presets on the diffuse or sharpen module have
+  been added: standard sharpness and one with a stronger effect.
 
 - The snapshots buttons have been redesigned to have a better look. The
   display is now closer to the history module. At the same time the
@@ -475,7 +475,7 @@ The following is a summary of the main features added to darktable
 
 - In the drawn mask blending mode there was in addition to the "toggle
   polarity" - found in all blending modes - the combo box "invert
-  mask". Both where doing the very same thing so the later has been
+  mask". Both were doing the very same thing so the latter has been
   removed.
 
 - Support the encoder ring and button lights of the Behringer X-Touch
@@ -569,7 +569,7 @@ The following is a summary of the main features added to darktable
 
 - Fix the reset of modules with specific default parameters to ensure
   that the modules will be set back in the same state as it was when
-  first importing the image. This fix is related with the rework of
+  first importing the image. This fix is related to the rework of
   auto apply module default parameters in the section above.
 
 - Properly transform XMP regions from metadata to ensure they match
@@ -587,7 +587,7 @@ The following is a summary of the main features added to darktable
   better hit when looking in the cache and so allows for better
   performance.
 
-- Fix some pixel-pipe cache issues related to mask visualization and
+- Fix some pixelpipe cache issues related to mask visualization and
   module's internal histogram (like RGB Curve for example). This
   ensures better hit in the cache leading to better performance and
   also avoids some refresh issues in some cases.
@@ -611,7 +611,7 @@ The following is a summary of the main features added to darktable
 
 - Fix the color picker sample area calculation to ensure at least one
   pixel is selected. At large zoom level and with a very small area
-  some rounding were sometimes returning an empty area. This leads to
+  some rounding could return an empty area. This could lead to
   returning a wrong color sample.
 
 - Fix the ignore EXIF rating on initial import for images containing
@@ -671,7 +671,7 @@ The following is a summary of the main features added to darktable
 - Fix border issue in inpaint opposed highlights reconstruction. Some
   pixels on the border of the image where not handled by the
   algorithm. This may lead to a small difference on the border of the
-  image and will avoids some possible redish borders.
+  image and will avoid some possible reddish borders.
 
 - Fix issue in highlights reconstruction segmentation algorithm where
   the mask display could be broken due to accessing some non
@@ -705,7 +705,7 @@ The following is a summary of the main features added to darktable
 - Fix tiny circle mask display. Ensure that the mask is always
   visible.
 
-- Fixing OpenCL library loading in case of not fully implemented
+- Fix OpenCL library loading in the case of not fully implemented
   required symbols.
 
 - Rework the masks drawing to ensure all masks are drawn the same
@@ -725,12 +725,12 @@ The following is a summary of the main features added to darktable
 - Do not truncate focal length on thumbnails to avoid loss of
   precision of displaying values.
 
-- Let exposure module to set neutral settings for non-RAW images.
+- Let exposure module set neutral settings for non-RAW images.
 
-- Fixing details masks while switching to darkroom which could lead to
+- Fix details masks while switching to darkroom, which could lead to
   a crash.
 
-- Fixing feathering masks in certain modules (Lens, Retouch, Liquify,
+- Fix feathering masks in certain modules (Lens, Retouch, Liquify,
   Spot removal).
 
 - Fix some rare cases where masks are not displayed when trying to
@@ -781,8 +781,8 @@ The following is a summary of the main features added to darktable
   module. This ensure that activating an history entry restore
   thumbnail offset like it was when the entry has been saved.
 
-- Avoid a possible (and rare) case of images flipping in the print
-  view due to some preview being updated.
+- Avoid possible unwanted flipping of the selected image when
+  entering the print view due to filmstrip thumbnails being updated.
 
 ## Lua
 
@@ -817,10 +817,10 @@ The following is a summary of the main features added to darktable
   shift/ctrl to speed up/down) or pressing it to reset work regardless
   of which widget receives it. Basically this is a much more flexible
   alternative to the fake widgets under processing
-  modules/<focused>. This allows owners of for example an x-touch mini
-  to use their scarce rotors in different, fully configurable, ways
-  while working in different modules (which can also be focused using
-  midi buttons which will then light up). Such configurations could be
+  modules. This allows owners of, for example, an x-touch mini to use
+  their scarce rotors in different, fully configurable, ways while
+  working in different modules (which can also be focused using midi
+  buttons which will then light up). Such configurations could be
   shared using https://github.com/darktable-org/lua-scripts.
 
 - Support shortcuts to sliders/combos created in lua, either via
