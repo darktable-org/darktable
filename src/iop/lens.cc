@@ -2440,8 +2440,8 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
         const float rd = cor_rgb[1][i];
-        cor_rgb[0][i] += car0 + car2 * powf(rd, 2) + car4 * powf(rd, 4);
-        cor_rgb[2][i] += cab0 + cab2 * powf(rd, 2) + cab4 * powf(rd, 4);
+        cor_rgb[0][i] += p->cor_ca_r_ft * (car0 + car2 * powf(rd, 2) + car4 * powf(rd, 4));
+        cor_rgb[2][i] += p->cor_ca_b_ft * (cab0 + cab2 * powf(rd, 2) + cab4 * powf(rd, 4));
       }
 
       if(vig)
