@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-25 19:46+0200\n"
-"PO-Revision-Date: 2023-05-26 12:06+0200\n"
+"POT-Creation-Date: 2023-05-31 13:24+0200\n"
+"PO-Revision-Date: 2023-06-05 17:39+0200\n"
 "Last-Translator: Báthory Péter <bathory86p@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -1107,13 +1107,13 @@ msgstr "méretkategóriák határolói"
 msgid ""
 "size categories are used to be able to set different overlays and CSS values "
 "depending of the size of the thumbnail, separated by |.\n"
-"for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px-"
-">400px and >400px"
+"for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
+">400px"
 msgstr ""
 "méretkategóriák segítségével különböző átfedéseket és css értékeket lehet "
 "beállítani a bélyegkép méretétől függően, | jellel elválasztva.\n"
-"például a 120|400 ezt a három bélyegkép-kategóriát jelenti: 0px->120px, "
-"120px->400px és >400px"
+"például a 120|400 ezt a három bélyegkép kategóriát jelenti: <120px, 120px–"
+"400px, >400px"
 
 #: ../build/bin/preferences_gen.h:4316
 msgid "pattern for the thumbnail extended overlay text"
@@ -1150,15 +1150,14 @@ msgstr "a középső egérgomb 200%-ra nagyít"
 #: ../build/bin/preferences_gen.h:4491
 #, no-c-format
 msgid ""
-"when clicking the middle mouse button to zoom, the zoom level will cycle "
-"through 100%, 200% and then back to fit the screen. otherwise it switches "
-"between fit to screen and 100% and the 'ctrl' key can be used to control the "
-"zoom level."
+"if enabled, the zoom level will cycle between 100%, 200% and fit to viewport "
+"on middle mouse clicks. if disabled, it will toggle between viewport size "
+"and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
-"ha az egér középső gombjával kattintva nagyít, a nagyítási szint 100%, 200% "
-"között vált, majd visszaáll a képernyőre való illeszkedésre. egyébként a "
-"képernyőre való illeszkedés és a 100% között váltogat, és a „ctrl” "
-"billentyűvel állíthatja a nagyítási szintet."
+"ha engedélyezve van, középső egérgombbal kattintva a nagyítási szint 100%, "
+"200% és a nézethez illesztés között váltakozik. letiltva a nézethez "
+"illesztés és 100% között vált, és a „ctrl” billentyűt nyomva tartva "
+"állítható a nagyítási szint."
 
 #: ../build/bin/preferences_gen.h:4513
 msgid "pattern for the image information line"
@@ -2316,7 +2315,7 @@ msgstr "specifikus"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:366
 #: ../build/lib/darktable/plugins/introspection_colorin.c:300
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
-#: ../build/lib/darktable/plugins/introspection_vignette.c:263
+#: ../build/lib/darktable/plugins/introspection_vignette.c:264
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3410 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/accelerators.c:227
@@ -3277,7 +3276,7 @@ msgstr "fényesség"
 #: ../src/iop/colorchecker.c:1483 ../src/iop/colorcontrast.c:90
 #: ../src/iop/colorcorrection.c:275 ../src/iop/colorize.c:343
 #: ../src/iop/lowpass.c:588 ../src/iop/soften.c:373 ../src/iop/velvia.c:84
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:970
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:971
 msgid "saturation"
 msgstr "telítettség"
 
@@ -4491,7 +4490,7 @@ msgstr "kitöltési mód"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4617
 #: ../src/iop/colisa.c:305 ../src/iop/lowpass.c:587 ../src/iop/soften.c:377
-#: ../src/iop/vignette.c:969 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:970 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "fényerő"
 
@@ -4740,42 +4739,47 @@ msgstr "kontrasztkompresszió"
 msgid "vibrance"
 msgstr "vibrancia"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:97
-#: ../build/lib/darktable/plugins/introspection_vignette.c:204
-msgid "fall-off strength"
-msgstr "esési erősség"
+#: ../build/lib/darktable/plugins/introspection_vignette.c:92
+#: ../build/lib/darktable/plugins/introspection_vignette.c:201
+msgid "fall-off start"
+msgstr "esés kezdete"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:115
-#: ../build/lib/darktable/plugins/introspection_vignette.c:216
+#: ../build/lib/darktable/plugins/introspection_vignette.c:98
+#: ../build/lib/darktable/plugins/introspection_vignette.c:205
+msgid "fall-off radius"
+msgstr "esés sugara"
+
+#: ../build/lib/darktable/plugins/introspection_vignette.c:116
+#: ../build/lib/darktable/plugins/introspection_vignette.c:217
 msgid "horizontal center"
 msgstr "vízszintes középpont"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:121
-#: ../build/lib/darktable/plugins/introspection_vignette.c:220
+#: ../build/lib/darktable/plugins/introspection_vignette.c:122
+#: ../build/lib/darktable/plugins/introspection_vignette.c:221
 msgid "vertical center"
 msgstr "függőleges középpont"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:133
-#: ../build/lib/darktable/plugins/introspection_vignette.c:228
+#: ../build/lib/darktable/plugins/introspection_vignette.c:134
+#: ../build/lib/darktable/plugins/introspection_vignette.c:229
 msgid "automatic ratio"
 msgstr "automata arány"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:139
-#: ../build/lib/darktable/plugins/introspection_vignette.c:232
+#: ../build/lib/darktable/plugins/introspection_vignette.c:140
+#: ../build/lib/darktable/plugins/introspection_vignette.c:233
 msgid "width/height ratio"
 msgstr "szélesség/magasság arány"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:145
-#: ../build/lib/darktable/plugins/introspection_vignette.c:236
-#: ../src/iop/vignette.c:977
+#: ../build/lib/darktable/plugins/introspection_vignette.c:146
+#: ../build/lib/darktable/plugins/introspection_vignette.c:237
+#: ../src/iop/vignette.c:978
 msgid "shape"
 msgstr "forma"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:264
+#: ../build/lib/darktable/plugins/introspection_vignette.c:265
 msgid "8-bit output"
 msgstr "8-bites kimenet"
 
-#: ../build/lib/darktable/plugins/introspection_vignette.c:265
+#: ../build/lib/darktable/plugins/introspection_vignette.c:266
 msgid "16-bit output"
 msgstr "16-bites kimenet"
 
@@ -6248,12 +6252,12 @@ msgstr ""
 "a gyors, expozíciófüggetlen, irányított szűrő nem tudott memóriát "
 "lefoglalni, ellenőrizze a RAM beállításokat"
 
-#: ../src/common/exif.cc:5197
+#: ../src/common/exif.cc:5200
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "„%s” XMP-fájl nem olvasható: „%s”"
 
-#: ../src/common/exif.cc:5255
+#: ../src/common/exif.cc:5258
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "„%s” XMP-fájl nem írható: „%s”"
@@ -9030,7 +9034,7 @@ msgstr ""
 "feltehetőleg egy tárolt beállítás alkalmazásával, vagy stílus, vagy előzmény "
 "másolásával került bele"
 
-#: ../src/develop/pixelpipe_hb.c:2704
+#: ../src/develop/pixelpipe_hb.c:2705
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -9038,7 +9042,7 @@ msgstr ""
 "a darktable problémát észlelt a rendszer OpenCL konfigurációjában. OpenCL "
 "letiltva erre a munkamenetre!"
 
-#: ../src/develop/pixelpipe_hb.c:2849
+#: ../src/develop/pixelpipe_hb.c:2853
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -12692,15 +12696,15 @@ msgstr "lineáris, RGB, képernyővonatkozású"
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:125 ../src/iop/sigmoid.c:104
-#: ../src/iop/vignette.c:160 ../src/iop/watermark.c:379
+#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:379
 msgid "non-linear, RGB"
 msgstr "nemlineáris, RGB"
 
 #: ../src/iop/basecurve.c:355 ../src/iop/dither.c:120 ../src/iop/dither.c:122
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:149
 #: ../src/iop/negadoctor.c:149 ../src/iop/profile_gamma.c:105
-#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:159
-#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:378
+#: ../src/iop/rgblevels.c:126 ../src/iop/vignette.c:160
+#: ../src/iop/vignette.c:162 ../src/iop/watermark.c:378
 #: ../src/iop/watermark.c:380
 msgid "non-linear, RGB, display-referred"
 msgstr "nemlináris, RGB, képernyővonatkozású"
@@ -12769,7 +12773,7 @@ msgstr "alkalmazza a szokásos képigazításokat"
 #: ../src/iop/levels.c:138 ../src/iop/liquify.c:297 ../src/iop/lowlight.c:92
 #: ../src/iop/lowpass.c:134 ../src/iop/monochrome.c:98 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:103 ../src/iop/velvia.c:105
-#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:158
+#: ../src/iop/vibrance.c:95 ../src/iop/vignette.c:159
 #: ../src/iop/watermark.c:377
 msgid "creative"
 msgstr "kreatív"
@@ -17620,7 +17624,7 @@ msgid "find lens"
 msgstr "objektív keresés"
 
 #. scale
-#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:967
+#: ../src/iop/lens.cc:3823 ../src/iop/vignette.c:968
 #: ../src/iop/watermark.c:1324 ../src/libs/export.c:1165
 msgid "scale"
 msgstr "skála"
@@ -18507,18 +18511,18 @@ msgstr "állítsa úgy, hogy illeszkedjen a tárgy átlagos fénysűrűségéhez
 #: ../src/iop/profile_gamma.c:644
 msgid ""
 "number of stops between middle gray and pure black\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "a középszürke és tiszta fekete közti blendék száma\n"
-"ez megfelel egy fénymérő által mutatott értéknek a helyszínen"
+"ez megfelel a helyszínen egy fénymérő által mutatott értéknek"
 
 #: ../src/iop/profile_gamma.c:650
 msgid ""
 "number of stops between pure black and pure white\n"
-"this is a reading a posemeter would give you on the scene"
+"this is a reading a light meter would give you on the scene"
 msgstr ""
 "a tiszta fekete és tiszta fehér közti blendék száma\n"
-"ez megfelel egy fénymérő által mutatott értéknek a helyszínen"
+"ez megfelel a helyszínen egy fénymérő által mutatott értéknek"
 
 #: ../src/iop/profile_gamma.c:652
 msgctxt "section"
@@ -19934,52 +19938,52 @@ msgstr ""
 msgid "the amount of vibrance"
 msgstr "a vibrancia mértéke"
 
-#: ../src/iop/vignette.c:152
+#: ../src/iop/vignette.c:153
 msgid "vignetting"
 msgstr "peremsötétedés"
 
-#: ../src/iop/vignette.c:157
+#: ../src/iop/vignette.c:158
 msgid "simulate a lens fall-off close to edges"
 msgstr "szimulálja a lencsék fényerő csökkenését a szélek közelében"
 
-#: ../src/iop/vignette.c:939
+#: ../src/iop/vignette.c:940
 msgid "lomo"
 msgstr "lomo"
 
-#: ../src/iop/vignette.c:973
+#: ../src/iop/vignette.c:974
 msgctxt "section"
 msgid "position / form"
 msgstr "pozíció / forma"
 
-#: ../src/iop/vignette.c:980
+#: ../src/iop/vignette.c:981
 msgid "dithering"
 msgstr "zajmoduláció"
 
-#: ../src/iop/vignette.c:991
-msgid "the radii scale of vignette for start of fall-off"
-msgstr "a peremsötétedés sugár esésének kezdete"
-
 #: ../src/iop/vignette.c:992
-msgid "the radii scale of vignette for end of fall-off"
-msgstr "a peremsötétedés sugár esésének vége"
+msgid "the radii scale of vignette for start of fall-off"
+msgstr "a peremsötétedési sugár esésének kezdete"
 
 #: ../src/iop/vignette.c:993
+msgid "the radii scale of vignette for end of fall-off"
+msgstr "a peremsötétedési sugár esésének vége"
+
+#: ../src/iop/vignette.c:994
 msgid "strength of effect on brightness"
 msgstr "fényerő effekt erőssége"
 
-#: ../src/iop/vignette.c:994
+#: ../src/iop/vignette.c:995
 msgid "strength of effect on saturation"
 msgstr "telítettség effekt erőssége"
 
-#: ../src/iop/vignette.c:995
+#: ../src/iop/vignette.c:996
 msgid "horizontal offset of center of the effect"
 msgstr "az effekt középpontjának vízszintes eltolása"
 
-#: ../src/iop/vignette.c:996
+#: ../src/iop/vignette.c:997
 msgid "vertical offset of center of the effect"
 msgstr "az effekt középpontjának függőleges eltolása"
 
-#: ../src/iop/vignette.c:997
+#: ../src/iop/vignette.c:998
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -19991,29 +19995,29 @@ msgstr ""
 "1: kör vagy ellipszis\n"
 "2: gyémánt"
 
-#: ../src/iop/vignette.c:999
+#: ../src/iop/vignette.c:1000
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "engedélyezve az arányt automatikusan számolja a kép méretéből"
 
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1001
 msgid "width-to-height ratio"
 msgstr "szélesség/magasság arány"
 
-#: ../src/iop/vignette.c:1001
+#: ../src/iop/vignette.c:1002
 msgid "add some level of random noise to prevent banding"
 msgstr "véletlen mértékű zajt ad hozzá, elkerülendő a sávosodást"
 
-#: ../src/iop/vignette.c:1008
+#: ../src/iop/vignette.c:1009
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s ponton] peremsötétedés / lágy perem módosítása"
 
-#: ../src/iop/vignette.c:1010
+#: ../src/iop/vignette.c:1011
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr "[%s ponton] peremsötétedés / lágy perem módosítása megőrizve az arányt"
 
-#: ../src/iop/vignette.c:1012
+#: ../src/iop/vignette.c:1013
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s középen] peremsötétedés mozgatása"
@@ -25196,6 +25200,46 @@ msgstr ""
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "egérműveletek"
+
+#~ msgid ""
+#~ "size categories are used to be able to set different overlays and CSS "
+#~ "values depending of the size of the thumbnail, separated by |.\n"
+#~ "for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px-"
+#~ ">400px and >400px"
+#~ msgstr ""
+#~ "méretkategóriák segítségével különböző átfedéseket és css értékeket lehet "
+#~ "beállítani a bélyegkép méretétől függően, | jellel elválasztva.\n"
+#~ "például a 120|400 ezt a három bélyegkép-kategóriát jelenti: 0px->120px, "
+#~ "120px->400px és >400px"
+
+#, no-c-format
+#~ msgid ""
+#~ "when clicking the middle mouse button to zoom, the zoom level will cycle "
+#~ "through 100%, 200% and then back to fit the screen. otherwise it switches "
+#~ "between fit to screen and 100% and the 'ctrl' key can be used to control "
+#~ "the zoom level."
+#~ msgstr ""
+#~ "ha az egér középső gombjával kattintva nagyít, a nagyítási szint 100%, "
+#~ "200% között vált, majd visszaáll a képernyőre való illeszkedésre. "
+#~ "egyébként a képernyőre való illeszkedés és a 100% között váltogat, és a "
+#~ "„ctrl” billentyűvel állíthatja a nagyítási szintet."
+
+#~ msgid "fall-off strength"
+#~ msgstr "esési erősség"
+
+#~ msgid ""
+#~ "number of stops between middle gray and pure black\n"
+#~ "this is a reading a posemeter would give you on the scene"
+#~ msgstr ""
+#~ "a középszürke és tiszta fekete közti blendék száma\n"
+#~ "ez megfelel egy fénymérő által mutatott értéknek a helyszínen"
+
+#~ msgid ""
+#~ "number of stops between pure black and pure white\n"
+#~ "this is a reading a posemeter would give you on the scene"
+#~ msgstr ""
+#~ "a tiszta fekete és tiszta fehér közti blendék száma\n"
+#~ "ez megfelel egy fénymérő által mutatott értéknek a helyszínen"
 
 #~ msgid "fish-eye"
 #~ msgstr "halszem"
