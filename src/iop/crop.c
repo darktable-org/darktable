@@ -1539,16 +1539,18 @@ int mouse_moved(struct dt_iop_module_t *self,
       if(g->shift_hold)
       {
         /* the center is locked, scale crop radial with locked ratio */
-        float xx = 0.0f;
-        float yy = 0.0f;
-
+        float ratio = 0.0f;
         if(g->cropping & GRAB_LEFT || g->cropping & GRAB_RIGHT)
-          xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+        {
+          float xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+          ratio = (g->prev_clip_w - 2.0f * xx) / g->prev_clip_w;
+        }
         if(g->cropping & GRAB_TOP || g->cropping & GRAB_BOTTOM)
-          yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
-
-        float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
-                            (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+        {
+          float yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
+          ratio = fmaxf(ratio,
+                        (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+        }
 
         // ensure we don't get too small crop size
         if(g->prev_clip_w * ratio < 0.1f)
