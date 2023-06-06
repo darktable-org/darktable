@@ -1327,20 +1327,20 @@ void gui_init(struct dt_iop_module_t *self)
 
   // legacy scale on drop-down
   g->scale_base = dt_bauhaus_combobox_from_params(self, "scale_base");
-  gtk_widget_set_tooltip_text(g->scale_base, _("scaling is done relative to this object\n"
-                                               "• image: fits marker into whole image\n"
-                                               "• larger border: fits larger marker border to larger image border\n"
-                                               "• smaller border: fits larger marker border to smaller image border\n"
-                                               "• height: fits marker height to image height, e.g. suitable for texts\n"
-                                               "• advanced options: activates two additional drop-down menus"));
+  gtk_widget_set_tooltip_text(g->scale_base, _("choose how to scale the watermark\n"
+                                               "• image: scale watermark relative to whole image\n"
+                                               "• larger border: scale larger watermark border relative to larger image border\n"
+                                               "• smaller border: scale smaller watermark border relative to smaller image border\n"
+                                               "• height: scale watermark height to image height\n"
+                                               "• advanced options: choose watermark and image dimensions independently"));
 
   // scale image reference
   g->scale_img = dt_bauhaus_combobox_from_params(self, "scale_img");
-  gtk_widget_set_tooltip_text(g->scale_img, _("reference to which the marker should be scaled to"));
+  gtk_widget_set_tooltip_text(g->scale_img, _("reference image dimension against which to scale the watermark"));
 
   // scale marker reference
   g->scale_svg = dt_bauhaus_combobox_from_params(self, "scale_svg");
-  gtk_widget_set_tooltip_text(g->scale_svg, _("length of the marker which is used as scaling reference"));
+  gtk_widget_set_tooltip_text(g->scale_svg, _("watermark dimension to scale"));
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();
