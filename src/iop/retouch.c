@@ -933,12 +933,12 @@ static gboolean rt_shape_is_being_added(dt_iop_module_t *self, const dt_masks_ty
         if(grpt)
         {
           const dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, grpt->formid);
-          if(form) being_added = (form->type == shape_type);
+          if(form) being_added = (form->type & shape_type);
         }
       }
     }
     else
-      being_added = (self->dev->form_visible->type == shape_type);
+      being_added = (self->dev->form_visible->type & shape_type);
   }
   return being_added;
 }
