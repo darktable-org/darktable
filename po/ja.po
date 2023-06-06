@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-06 04:30+0900\n"
+"PO-Revision-Date: 2023-06-06 18:02+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1821,19 +1821,14 @@ msgid "store XMP tags in compressed format"
 msgstr "圧縮形式でXMPタグを保存する"
 
 #: ../build/bin/preferences_gen.h:6931
-#, fuzzy
-#| msgid ""
-#| "entries in XMP tags can get rather large and may exceed the available "
-#| "space to store the history stack in output files. this option allows XMP "
-#| "tags to be compressed and save space."
 msgid ""
 "entries in XMP tags can get rather large and may exceed the available space "
 "to store the history stack in output files.\n"
 "this option allows XMP tags to be compressed and save space."
 msgstr ""
-"XMPタグの項目が膨れ上がり、出力ファイルの履歴スタックのためのスペースを超える"
-"ことがあります。 このオプションによって、XMPタグを圧縮し、スペースを節約しま"
-"す"
+"XMPタグ中の項目が膨れ上がり、出力ファイルの履歴スタックのためのスペースを超え"
+"ることがあります\n"
+"このオプションによって、XMPタグを圧縮し、スペースを節約します"
 
 #: ../build/bin/preferences_gen.h:6953
 msgid "look for updated XMP files on startup"
@@ -1911,16 +1906,10 @@ msgstr ""
 "動）"
 
 #: ../build/bin/preferences_gen.h:7207
-#, fuzzy
-#| msgid "duration of the ui transitions in ms"
 msgid "duration of the UI transitions in ms"
 msgstr "UIのトランジッションの長さ（単位はミリ秒）"
 
 #: ../build/bin/preferences_gen.h:7231
-#, fuzzy
-#| msgid ""
-#| "how long the transitions take (in ms) for expanding or collapsing modules "
-#| "and other ui elements"
 msgid ""
 "how long the transitions take (in ms) for expanding or collapsing modules "
 "and other UI elements"
@@ -1941,17 +1930,13 @@ msgid "method to use for getting the display profile"
 msgstr "ディスプレイプロファイルを取得する方法"
 
 #: ../build/bin/preferences_gen.h:7356
-#, fuzzy
-#| msgid ""
-#| "this option allows to force a specific means of getting the current "
-#| "display profile. this is useful when one alternative gives wrong results"
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile.\n"
 "this is useful when one alternative gives wrong results"
 msgstr ""
-"このオプションによって、ディスプレイプロファイルを取得する際に特定の方法を用"
-"いるよう強制します\n"
+"このオプションによって、現在のディスプレイプロファイルを取得する際に特定の方"
+"法を用いるよう強制します\n"
 "それ以外の方法で不適切な結果が出る場合に有用です"
 
 #: ../build/bin/preferences_gen.h:7378
@@ -1959,12 +1944,6 @@ msgid "order or exclude MIDI devices"
 msgstr "midiデバイスを指定・除外する"
 
 #: ../build/bin/preferences_gen.h:7396
-#, fuzzy
-#| msgid ""
-#| "comma-separated list of device name fragments that if matched load MIDI "
-#| "device at id given by location in list or if preceded by - prevent "
-#| "matching devices from loading. add encoding and number of knobs like "
-#| "'BeatStep:63:16'"
 msgid ""
 "comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list\n"
@@ -1972,7 +1951,7 @@ msgid ""
 "and number of knobs like 'BeatStep:63:16'"
 msgstr ""
 "デバイス名のリスト。コンマで区切って記入してください\n"
-"合致したmidiデバイスをリスト内の位置によって定められたidで読み込みます\n"
+"合致したMIDIデバイスをリスト内の位置によって定められたidで読み込みます\n"
 "-が名前の前にあるデバイスは読み込みません\n"
 "エンコードとノブの数を付け加えてください。例）BeatStep:63:16"
 
@@ -1990,12 +1969,6 @@ msgstr "簡易タグリストにおいて階層を省略する"
 # XMPファイルを作成するとき、階層タグが非階層タグのリストとしても追加され、他のプログラムでも見られるようになります
 # このオプションがチェックされると、darktable は最後の部分のみを加え、残りを無視します。 したがって 'foo|bar|baz' は 'baz'のみを追加します.
 #: ../build/bin/preferences_gen.h:7446
-#, fuzzy
-#| msgid ""
-#| "when creating XMP file the hierarchical tags are also added as a simple "
-#| "list of non-hierarchical ones to make them visible to some other "
-#| "programs. when this option is checked darktable will only include their "
-#| "last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple "
 "list\n"
@@ -4189,17 +4162,13 @@ msgstr "ビネット調整"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:270
 #: ../build/lib/darktable/plugins/introspection_lens.cc:409
-#, fuzzy
-#| msgid "scale fine-tune"
 msgid "TCA red fine-tune"
-msgstr "スケール微調整"
+msgstr "横色収差 赤微調整"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:276
 #: ../build/lib/darktable/plugins/introspection_lens.cc:413
-#, fuzzy
-#| msgid "scale fine-tune"
 msgid "TCA blue fine-tune"
-msgstr "スケール微調整"
+msgstr "横色収差 青微調整"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:282
 #: ../build/lib/darktable/plugins/introspection_lens.cc:417
@@ -4718,10 +4687,8 @@ msgid "guided filter"
 msgstr "ガイデットフィルタ"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:374
-#, fuzzy
-#| msgid "average RGB"
 msgid "averaged EIGF"
-msgstr "RGB 平均"
+msgstr "平均EIGF"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:375
 msgid "EIGF"
@@ -4761,17 +4728,13 @@ msgstr "自然な彩度"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:92
 #: ../build/lib/darktable/plugins/introspection_vignette.c:201
-#, fuzzy
-#| msgid "fall-off strength"
 msgid "fall-off start"
-msgstr "フォールオフの強さ"
+msgstr "減光のはじまり"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:98
 #: ../build/lib/darktable/plugins/introspection_vignette.c:205
-#, fuzzy
-#| msgid "radius"
 msgid "fall-off radius"
-msgstr "半径"
+msgstr "減光の半径"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:116
 #: ../build/lib/darktable/plugins/introspection_vignette.c:217
@@ -4987,10 +4950,8 @@ msgid "button off"
 msgstr "ボタン オフ"
 
 #: ../src/bauhaus/bauhaus.c:3406
-#, fuzzy
-#| msgid "uncompressed"
 msgid "button pressed"
-msgstr "非圧縮"
+msgstr "ボタン押下済み"
 
 #: ../src/bauhaus/bauhaus.c:3623
 msgid "not that many sliders"
@@ -6003,15 +5964,11 @@ msgstr ""
 "て作成されました"
 
 #: ../src/common/darktable.c:2010
-#, fuzzy
-#| msgid ""
-#| "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
-#| "content is:"
 msgid ""
 "you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
 msgstr ""
-"その代わりに、'cl_device_v4_canonical-name'に「デバイスごとの」データがありま"
-"す。その内容は以下の通りです"
+"「デバイスごとの」データが'cl_device_v5_canonical-name'にあります。その内容は"
+"以下の通りです"
 
 #: ../src/common/darktable.c:2016
 msgid ""
@@ -6333,37 +6290,33 @@ msgstr "存在しない画像"
 
 # %d 画像の位置情報が取り消されました
 #: ../src/common/image.c:620
-#, fuzzy, c-format
-#| msgid "geo-location undone for %d images"
+#, c-format
 msgid "geo-location undone for %d image"
 msgid_plural "geo-location undone for %d images"
-msgstr[0] "画像%dの位置情報を元に戻しました"
-msgstr[1] "画像%dの位置情報を元に戻しました"
+msgstr[0] "%d個の画像の位置情報を元に戻しました"
+msgstr[1] "%d個の画像の位置情報を元に戻しました"
 
 # %d 画像へ位置情報が再適用されました
 #: ../src/common/image.c:622
-#, fuzzy, c-format
-#| msgid "geo-location re-applied to %d images"
+#, c-format
 msgid "geo-location re-applied to %d image"
 msgid_plural "geo-location re-applied to %d images"
-msgstr[0] "画像%d に位置情報を再適用しました"
-msgstr[1] "画像%d に位置情報を再適用しました"
+msgstr[0] "%d個の画像に位置情報を再適用しました"
+msgstr[1] "%d個の画像に位置情報を再適用しました"
 
 #: ../src/common/image.c:645
-#, fuzzy, c-format
-#| msgid "date/time undone for %d images"
+#, c-format
 msgid "date/time undone for %d image"
 msgid_plural "date/time undone for %d images"
-msgstr[0] "画像%dの日時を元に戻しました"
-msgstr[1] "画像%dの日時を元に戻しました"
+msgstr[0] "%d個の画像の日時を元に戻しました"
+msgstr[1] "%d個の画像の日時を元に戻しました"
 
 #: ../src/common/image.c:647
-#, fuzzy, c-format
-#| msgid "date/time re-applied to %d images"
+#, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
-msgstr[0] "画像%dに日時を再適用しました"
-msgstr[1] "画像%dに日時を再適用しました"
+msgstr[0] "%d個の画像に日時を再適用しました"
+msgstr[1] "%d個の画像に日時を再適用しました"
 
 #: ../src/common/image.c:2188
 #, c-format
@@ -6624,12 +6577,13 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "ノイズプロファイル`%s'は有効ではありません"
 
 #: ../src/common/opencl.c:1376
-#, fuzzy, c-format
-#| msgid "OpenCL scheduling profile"
+#, c-format
 msgid ""
 "OpenCL initializing problem:\n"
 "%s"
-msgstr "OpenCLスケジューリングプロファイル"
+msgstr ""
+"OpenCL初期化の問題：\n"
+"%s"
 
 #: ../src/common/opencl.c:1439
 msgid ""
@@ -7325,37 +7279,30 @@ msgstr ""
 "ゴミ箱を使わずにディスクから削除しますか？"
 
 #: ../src/control/jobs/control_jobs.c:861
-#, fuzzy, c-format
-#| msgid "could not physically delete %s%s%s"
+#, c-format
 msgid ""
 "could not delete from disk %s%s\n"
 "%s"
-msgstr "%s%s%sを物理的に削除することが出来ませんでした"
+msgstr ""
+"ディスク%s%sから削除することが出来ませんでした\n"
+"%s"
 
 #: ../src/control/jobs/control_jobs.c:869
-#, fuzzy
-#| msgid "apply auto levels"
 msgid "_apply to all"
-msgstr "レベルの自動設定を適用"
+msgstr "_全てに適用"
 
 #: ../src/control/jobs/control_jobs.c:877
-#, fuzzy
-#| msgid "delete preset?"
 msgid "_delete permanently"
-msgstr "プリセットを削除しますか？"
+msgstr "_恒久的に削除"
 
 #: ../src/control/jobs/control_jobs.c:878
 #: ../src/control/jobs/control_jobs.c:882
-#, fuzzy
-#| msgid "only remove from the image library"
 msgid "_remove from library"
-msgstr "画像ライブラリのみから除去します"
+msgstr "_ライブラリから除去"
 
 #: ../src/control/jobs/control_jobs.c:884
-#, fuzzy
-#| msgid "skip"
 msgid "_skip"
-msgstr "スキップ"
+msgstr "_スキップ"
 
 #: ../src/control/jobs/control_jobs.c:885
 msgid "abort"
@@ -7900,12 +7847,9 @@ msgid "divide inverse (deprecated)"
 msgstr "除算逆転（非推奨）"
 
 #: ../src/develop/blend_gui.c:130
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "Lab L-channel"
 msgctxt "blendmode"
 msgid "Lab L-channel (deprecated)"
-msgstr "Lab L-チャンネル"
+msgstr "Lab L-チャンネル（非推奨）"
 
 #: ../src/develop/blend_gui.c:135
 msgctxt "blendoperation"
@@ -8206,11 +8150,8 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2545 ../src/iop/colorzones.c:2415
 #: ../src/iop/rgbcurve.c:1369
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "no color"
 msgid "show color"
-msgstr "無色"
+msgstr "色を表示"
 
 #: ../src/develop/blend_gui.c:2554
 msgid ""
@@ -8223,10 +8164,8 @@ msgstr ""
 "出力画像を使用するには Ctrl+ドラッグ"
 
 #: ../src/develop/blend_gui.c:2557
-#, fuzzy
-#| msgid "range"
 msgid "set range"
-msgstr "範囲"
+msgstr "範囲を設定"
 
 #: ../src/develop/blend_gui.c:2560
 msgid "invert all channel's polarities"
@@ -8457,19 +8396,14 @@ msgid "details threshold"
 msgstr "ディテールのしきい値"
 
 #: ../src/develop/blend_gui.c:3563
-#, fuzzy
-#| msgid ""
-#| "adjust the threshold for the details mask (using raw data), \n"
-#| "positive values selects areas with strong details, \n"
-#| "negative values select flat areas"
 msgid ""
 "adjust the threshold for the details mask (using raw data),\n"
 "positive values select areas with strong details,\n"
 "negative values select flat areas"
 msgstr ""
 "ディテールマスクのしきい値を調整します（RAWデータを使用）\n"
-"正の値は、ディテールの強い領域を選択します\n"
-"負の値は、フラットな領域を選択します"
+"正の値はディテールの強い領域を選択します\n"
+"負の値はフラットな領域を選択します"
 
 #: ../src/develop/blend_gui.c:3571 ../src/libs/history.c:959
 msgid "feathering guide"
@@ -8507,15 +8441,11 @@ msgid "mask opacity"
 msgstr "マスクの不透明度"
 
 #: ../src/develop/blend_gui.c:3606
-#, fuzzy
-#| msgid ""
-#| "shifts and tilts the tone curve of the blend mask to adjust its "
-#| "brightness without affecting fully transparent/fully opaque regions"
 msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness\n"
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
-"ブレンドマスクのトーンカーブをシフトおよびチルトし\n"
+"ブレンドマスクのトーンカーブをシフトおよびチルトし、\n"
 "完全に透明な／不透明な領域に影響を与えることなく明るさ（ブライトネス）を調節"
 "します"
 
