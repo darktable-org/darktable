@@ -271,6 +271,12 @@ done
 cp defaults.list "$dtResourcesDir"/share/applications/
 cp open.desktop "$dtResourcesDir"/share/applications/
 
+# Add gtk Mac theme (to enable default macos keyboard shortcuts)
+if [[ ! -d "$dtResourcesDir"/share/themes/Mac/gtk-3.0 ]]; then
+    mkdir -p "$dtResourcesDir"/share/themes/Mac/gtk-3.0
+fi
+cp -L "$homebrewHome"/share/themes/Mac/gtk-3.0/gtk-keys.css "$dtResourcesDir"/share/themes/Mac/gtk-3.0/
+
 # Sign app bundle
 if [ -n "$CODECERT" ]; then
     # Use certificate if one has been provided
