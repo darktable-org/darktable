@@ -1573,8 +1573,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
-    dt_gui_gtk_load_config();
-
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
 
