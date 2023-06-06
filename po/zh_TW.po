@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-02 10:09+0800\n"
+"PO-Revision-Date: 2023-06-06 11:03+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -740,7 +740,7 @@ msgstr "colord"
 #: ../build/bin/preferences_gen.h:5596
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
-msgstr "場景參照（電影式階調映射）"
+msgstr "場景參照（底片式階調映射）"
 
 #: ../build/bin/conf_gen.h:3042 ../build/bin/preferences_gen.h:5567
 msgctxt "preferences"
@@ -1397,7 +1397,7 @@ msgstr ""
 "\n"
 "場景參照（scene-referred）工作流程\n"
 "從相機訊號轉換為顯示色彩空間之前對其進行操作，基於線性 RGB 空間\n"
-"可選擇使用「電影式階調映射」或「S 形曲線階調映射」模組進行階調壓縮處理\n"
+"可選擇使用「底片式階調映射」或「S 形曲線階調映射」模組進行階調壓縮處理\n"
 "除此之外會自動啟用「色彩校正」與「曝光」模組，以便符合大多數相機的亮度\n"
 "\n"
 "顯示參照（display-referred）工作流程\n"
@@ -3895,7 +3895,7 @@ msgstr "萊茵哈德"
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:152
 #: ../src/iop/filmic.c:162
 msgid "filmic"
-msgstr "電影式階調"
+msgstr "底片式階調"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:153
 msgid "drago"
@@ -16568,7 +16568,7 @@ msgstr "選取範圍要對應的曝光目標"
 
 #: ../src/iop/filmic.c:177
 msgid "this module is deprecated. better use filmic rgb module instead."
-msgstr "此模組已被汰除，建議使用「電影式階調映射」模組替代"
+msgstr "此模組已被汰除，建議使用「底片式階調映射」模組替代"
 
 #: ../src/iop/filmic.c:304
 msgid "09 EV (low-key)"
@@ -16676,7 +16676,7 @@ msgstr ""
 #: ../src/iop/filmic.c:1543
 msgctxt "section"
 msgid "filmic S curve"
-msgstr "電影 S 曲線"
+msgstr "底片 S 曲線"
 
 #: ../src/iop/filmic.c:1550 ../src/iop/filmicrgb.c:4554
 msgid ""
@@ -16823,7 +16823,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:339
 msgid "filmic rgb"
-msgstr "電影式階調映射"
+msgstr "底片式階調映射"
 
 #: ../src/iop/filmicrgb.c:344
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
@@ -16835,9 +16835,9 @@ msgid ""
 "for display on SDR screens and paper prints\n"
 "while preventing clipping in non-destructive ways"
 msgstr ""
-"電影式階調映射 | filmic rgb\n"
+"底片式階調映射 | filmic rgb\n"
 "\n"
-"以電影調色的邏輯重新映射拍攝場景的整體亮度範圍\n"
+"模擬底片對光線的對數反應重新映射拍攝場景的整體亮度範圍\n"
 "在完整的場景高動態範圍中運作，將其壓縮至螢幕或列印的標準動態範圍內\n"
 "建議由左至右調整「場景」→「外觀」→「顯示」三個主要選項\n"
 "雖然模組介面看似複雜，但建議直接以肉眼觀看調整效果評估參數是最好的方法"
@@ -16848,17 +16848,17 @@ msgid ""
 "settings"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
-"「電影式階調映射」無法分配記憶體，請檢查記憶體設定"
+"「底片式階調映射」無法分配記憶體，請檢查記憶體設定"
 
 #: ../src/iop/filmicrgb.c:2301
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
-"「電影式階調映射」無法分配顯示卡記憶體"
+"「底片式階調映射」無法分配顯示卡記憶體"
 
 #: ../src/iop/filmicrgb.c:2419
 msgid "filmic works only on RGB input"
-msgstr "「電影式階調映射」只適用於 RGB 影像"
+msgstr "「底片式階調映射」只適用於 RGB 影像"
 
 #: ../src/iop/filmicrgb.c:3484
 msgid "look only"
@@ -16926,7 +16926,7 @@ msgstr ""
 "白線表示場景的動態範圍如何映射成輸出的數值\n"
 "橘色點代表中灰色位置，兩側的白點標示中間調對比度不變區域\n"
 "若底部或頂部曲線顯示為橘色，代表有階調反轉問題\n"
-"灰色線顯示飽和度在極端亮暗部中降低的趨勢，此線條在新版 V6 中不顯示\n"
+"灰色線顯示飽和度在極端亮暗部中降低的趨勢，此線條在新版中不顯示\n"
 "\n"
 "在映射圖表中，由於可以處理來自相機的原始曝光資料和高動態範圍\n"
 "橫座標實際上是無界的，為了易於和標準動態範圍的圖表比較所以僅顯示至 100%\n"
@@ -17326,7 +17326,7 @@ msgstr "整體階調映射"
 
 #: ../src/iop/globaltonemap.c:105
 msgid "this module is deprecated. please use the filmic rgb module instead."
-msgstr "此模組已被汰除，建議使用「電影式階調映射」模組替代"
+msgstr "此模組已被汰除，建議使用「底片式階調映射」模組替代"
 
 #: ../src/iop/globaltonemap.c:625 ../src/libs/filters/colors.c:259
 msgid "operator"
@@ -17544,7 +17544,7 @@ msgstr ""
 "亮部重建 | highlight reconstruction\n"
 "\n"
 "嘗試修復亮點顏色避免過曝區域顯示洋紅色\n"
-"可與「電影式階調映射」的重建功能搭配使用"
+"可與「底片式階調映射」的重建功能搭配使用"
 
 #: ../src/iop/highlights.c:181 ../src/iop/hotpixels.c:75
 msgid "reconstruction, raw"
