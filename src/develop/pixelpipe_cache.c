@@ -23,12 +23,17 @@
 #include "libs/colorpicker.h"
 #include <stdlib.h>
 
-#define VERY_OLD_CACHE_WEIGHT 1000
 #define INVALID_CACHEHASH ULLONG_MAX
-#define UNUSED_CACHEHASH (INVALID_CACHEHASH -1)
+#define UNUSED_CACHEHASH 0
+
 static inline int _to_mb(size_t m)
 {
   return (int)((m + 0x80000lu) / 0x400lu / 0x400lu);
+}
+
+static inline gboolean _valid_hash(const uint64_t hash)
+{
+  return (hash != INVALID_CACHEHASH) && (hash != UNUSED_CACHEHASH);
 }
 
 gboolean dt_dev_pixelpipe_cache_init(
@@ -45,9 +50,6 @@ gboolean dt_dev_pixelpipe_cache_init(
   cache->data = (void **)calloc(entries, sizeof(void *));
   cache->size = (size_t *)calloc(entries, sizeof(size_t));
   cache->dsc = (dt_iop_buffer_dsc_t *)calloc(entries, sizeof(dt_iop_buffer_dsc_t));
-#ifdef _DEBUG
-  memset(cache->dsc, 0x2c, sizeof(dt_iop_buffer_dsc_t) * entries);
-#endif
   cache->hash = (uint64_t *)calloc(entries, sizeof(uint64_t));
   cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
   cache->ioporder = (int32_t *)calloc(entries, sizeof(int32_t));
@@ -57,7 +59,7 @@ gboolean dt_dev_pixelpipe_cache_init(
     cache->size[k] = 0;
     cache->data[k] = NULL;
     cache->hash[k] = UNUSED_CACHEHASH;
-    cache->used[k] = 1;
+    cache->used[k] = 1 + k;
     cache->ioporder[k] = 0;
   }
   if(!size) return TRUE;
@@ -69,10 +71,7 @@ gboolean dt_dev_pixelpipe_cache_init(
     cache->data[k] = (void *)dt_alloc_align(64, size);
     if(!cache->data[k])
       goto alloc_memory_fail;
-#ifdef _DEBUG
-    memset(cache->data[k], 0x5d, size);
-#endif
-    ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
+
     cache->allmem += size;
   }
   return TRUE;
@@ -201,7 +200,9 @@ gboolean dt_dev_pixelpipe_cache_available(
            const uint64_t hash,
            const size_t size)
 {
-  if(pipe->mask_display || pipe->nocache)
+  if(pipe->mask_display
+     || pipe->nocache
+     || !_valid_hash(hash))
     return FALSE;
 
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
@@ -209,9 +210,7 @@ gboolean dt_dev_pixelpipe_cache_available(
   // search for hash in cache and make the sizes are identical
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if((cache->size[k] == size)
-        && (cache->hash[k] == hash)
-        && (cache->hash[k] != INVALID_CACHEHASH))
+    if((cache->size[k] == size) && (cache->hash[k] == hash))
     {
       cache->hits++;
       return TRUE;
@@ -255,7 +254,6 @@ static int _get_oldest_used_cacheline(dt_dev_pixelpipe_cache_t *cache)
 
 static int _get_oldest_free_cacheline(dt_dev_pixelpipe_cache_t *cache)
 {
-  // we never want the latest used cacheline!
   int age = 1;
   int id = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
@@ -290,6 +288,7 @@ static int _get_cacheline(struct dt_dev_pixelpipe_t *pipe)
 // return TRUE in case of a hit
 static gboolean _get_by_hash(
           struct dt_dev_pixelpipe_t *pipe,
+          struct dt_iop_module_t *module,
           const uint64_t hash,
           const size_t size,
           void **data,
@@ -298,38 +297,34 @@ static gboolean _get_by_hash(
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if((cache->hash[k] == hash) && (cache->hash[k] != INVALID_CACHEHASH))
+    if(cache->hash[k] == hash)
     {
-      /* We check for situation with a hash identity but buffer sizes don't match.
-           This could happen because of "hash overlaps" or other situations where the hash
-           doesn't reflect the complete status. (or we have another bug in dt)
-         Also we don't use cached data while bypassing modules because of mask visualizing
-           or we have pipe->nocache set to TRUE
-         In these cases we don't want to simply realloc or alike as these data could possibly
-         still be used in the pipe.
-         Instead we make sure the cleanup after running the pixelpipe can free it but it
-         won't be taken in this pixelpipe process.
-      */
-      if((cache->size[k] != size) || pipe->mask_display || pipe->nocache)
+      if(cache->size[k] != size)
       {
+        /* We check for situation with a hash identity but buffer sizes don't match.
+           This could happen because of "hash overlaps" or other situations where the hash
+           doesn't reflect the complete status.
+           Anyway this has to be accepted as a dt bug so we always report
+        */
         cache->hash[k] = INVALID_CACHEHASH;
-        cache->used[k] = VERY_OLD_CACHE_WEIGHT;
+        dt_print_pipe(DT_DEBUG_ALWAYS, "CACHELINE_SIZE ERROR", pipe, module, NULL, NULL, "\n");
+      }
+      else if(pipe->mask_display || pipe->nocache)
+      {
+        // this should not happen but we make sure
+        cache->hash[k] = INVALID_CACHEHASH;
       }
       else
       {
         // we have a proper hit
         *data = cache->data[k];
         *dsc = &cache->dsc[k];
-        ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
-        ASAN_UNPOISON_MEMORY_REGION(*data, size);
-
         // in case of a hit it's always good to further keep the cacheline as important
         cache->used[k] = -cache->entries;
         return TRUE;
       }
     }
   }
-
   return FALSE;
 }
 
@@ -348,7 +343,9 @@ gboolean dt_dev_pixelpipe_cache_get(
     cache->used[k]++; // age all entries
 
   // cache keeps history and we have a cache hit, so no new buffer
-  if(cache->entries > DT_PIPECACHE_MIN && _get_by_hash(pipe, hash, size, data, dsc))
+  if(cache->entries > DT_PIPECACHE_MIN
+     && _valid_hash(hash)
+     && _get_by_hash(pipe, module, hash, size, data, dsc))
   {
     const dt_iop_buffer_dsc_t *cdsc = *dsc;
     dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
@@ -367,11 +364,11 @@ gboolean dt_dev_pixelpipe_cache_get(
 
   // Can the module having used this cacheline before might still use the data with other dsc?
   const int cline = _get_cacheline(pipe);
-  gboolean newdata = FALSE;
+
   if(((cache->entries == DT_PIPECACHE_MIN) && (cache->size[cline] < size))
      || ((cache->entries > DT_PIPECACHE_MIN) && (cache->size[cline] != size)))
   {
-    newdata = TRUE;
+
     dt_free_align(cache->data[cline]);
     cache->allmem -= cache->size[cline];
     cache->data[cline] = (void *)dt_alloc_align(64, size);
@@ -387,26 +384,25 @@ gboolean dt_dev_pixelpipe_cache_get(
   }
 
   *data = cache->data[cline];
-  ASAN_UNPOISON_MEMORY_REGION(*data, size);
 
   // first, update our copy, then update the pointer to point at our copy
   cache->dsc[cline] = **dsc;
   *dsc = &cache->dsc[cline];
-  const gboolean masking = pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
+  const gboolean masking = pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
   cache->hash[cline]      = masking ? UNUSED_CACHEHASH : hash;
-  cache->used[cline]      = masking ? VERY_OLD_CACHE_WEIGHT
-                                    : (important ? -cache->entries : 0);
-  cache->ioporder[cline]  = module  ? module->iop_order : 0;
 
   const dt_iop_buffer_dsc_t *cdsc = *dsc;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get",
     pipe, module, NULL, NULL,
-    "%s %s %s line%3i at %p. hash=%" PRIx64 "\n",
+    "%s %sline%3i(%2i) at %p. hash=%" PRIx64 "%s\n",
      dt_iop_colorspace_to_name(cdsc->cst),
-     newdata ? "new" : "   ",
-     important ? "important" : (masking ? "masking  " : "         "),
-     cline, cache->data[cline], cache->hash[cline]); 
+     important ? "important " : "",
+     cline, cache->used[cline], cache->data[cline], cache->hash[cline],
+     masking ? ". masking." : "");
+
+  cache->used[cline]      = important ? -cache->entries : 0;
+  cache->ioporder[cline]  = module ? module->iop_order : 0;
 
   return TRUE;
 }
@@ -419,7 +415,6 @@ static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache,
                                     const gboolean invalid)
 {
   cache->hash[k] = invalid ? INVALID_CACHEHASH : UNUSED_CACHEHASH;
-  cache->used[k] += VERY_OLD_CACHE_WEIGHT;
   cache->ioporder[k] = 0;
 }
 
@@ -431,7 +426,7 @@ void dt_dev_pixelpipe_cache_flush(const struct dt_dev_pixelpipe_t *pipe)
 }
 
 void dt_dev_pixelpipe_cache_invalidate_from(
-        const struct dt_dev_pixelpipe_t *pipe,
+        struct dt_dev_pixelpipe_t *pipe,
         const struct dt_iop_module_t *module,
         const gboolean invalid)
 {
@@ -442,6 +437,9 @@ void dt_dev_pixelpipe_cache_invalidate_from(
     if(cache->ioporder[k] >= order)
       _mark_invalid_cacheline(cache, k, invalid);
   }
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+    "cache_invalidate_from", pipe, module, NULL, NULL, "invalid=%s. order=%i\n",
+    invalid ? "TRUE" : "FALSE", order);
 }
 
 void dt_dev_pixelpipe_important_cacheline(
@@ -454,8 +452,7 @@ void dt_dev_pixelpipe_important_cacheline(
   {
     if((cache->data[k] == data)
         && (size == cache->size[k])
-        && (cache->used[k] < VERY_OLD_CACHE_WEIGHT)
-        && (cache->hash[k] != INVALID_CACHEHASH))
+        && _valid_hash(cache->hash[k]))
       cache->used[k] = -cache->entries;
   }
 }
@@ -503,7 +500,7 @@ static int _invalid_lines(const dt_dev_pixelpipe_cache_t *cache)
 {
   int invalid = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
-    if(cache->data[k] && (cache->hash[k] == INVALID_CACHEHASH))
+    if(cache->data[k] && !_valid_hash(cache->hash[k]))
       invalid++;
   return invalid;
 }
@@ -516,37 +513,27 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   // alternating buffers so no cleanup
   if(cache->entries == DT_PIPECACHE_MIN) return;
 
-  size_t freed = 0;
-
-  int invalid = 0;
-  // We should always free cachelines maked as not valid
+  // We always free cachelines maked as not valid
+  size_t invalid = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if((cache->data[k] != NULL) && (cache->hash[k] == UNUSED_CACHEHASH))
-      freed += _free_cacheline(cache, k);
-    if((cache->data[k] != NULL) && (cache->hash[k] == INVALID_CACHEHASH))
-    {
-      freed += _free_cacheline(cache, k);
-      invalid++;
-    }
+    if(!_valid_hash(cache->hash[k]))
+      invalid += _free_cacheline(cache, k);
   }
 
-  int oldlines = 0;
+  size_t old = 0;
   while(cache->memlimit && (cache->memlimit < cache->allmem))
   {
     const int k = _get_oldest_used_cacheline(cache);
     if(k == 0) break;
-    freed += _free_cacheline(cache, k);
-    oldlines++;
+    old += _free_cacheline(cache, k);
   }
 
   dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_checkmem", pipe, NULL, NULL, NULL,
-    "%i lines (removed invalid=%i, oldlines=%i). Now important=%i, used=%i."
-    " Cache: freed=%iMB. Now using %iMB, limit=%iMB\n",
-    cache->entries,
-    invalid, oldlines,
-    _important_lines(cache), _used_lines(cache),
-    _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
+    "%i lines, important=%i, used=%i."
+    " Freed invalid %iMB, old %iMB. Now using %iMB, limit=%iMB\n",
+    cache->entries, _important_lines(cache), _used_lines(cache),
+    _to_mb(invalid), _to_mb(old), _to_mb(cache->allmem), _to_mb(cache->memlimit));
 }
 
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe)
@@ -560,7 +547,6 @@ void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe)
     (double)(cache->hits) / fmax(1.0, cache->tests));
 }
 
-#undef VERY_OLD_CACHE_WEIGHT
 #undef INVALID_CACHEHASH
 #undef UNUSED_CACHEHASH
 // clang-format off

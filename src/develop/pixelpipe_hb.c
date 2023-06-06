@@ -139,7 +139,7 @@ void dt_print_pipe(dt_debug_thread_t thread,
   if(roi_out)
   {
     snprintf(roo, sizeof(roo),
-             " --> (%4i/%4i) %4ix%4i scale=%.4f",
+             " --> (%4i/%4i) %4ix%4i scale=%.4f ",
              roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
   }
 
@@ -157,7 +157,7 @@ void dt_print_pipe(dt_debug_thread_t thread,
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11s %-28s %-14s %-22s %s%s%s %s",
+  printf("%11s %-28s %-14s %-22s %s%s%s%s",
          buf[0], buf[1], pname, buf[2], roi, roo, masking, vbuf);
   fflush(stdout);
 }
