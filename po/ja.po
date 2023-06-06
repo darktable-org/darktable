@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-06 18:02+0900\n"
+"PO-Revision-Date: 2023-06-06 23:32+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1688,7 +1688,7 @@ msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"空のフォルダを削除する前に必ずユーザに確認します\n"
+"空のフォルダを削除する前に必ずユーザーに確認します\n"
 "これは画像を移動あるいは削除した後に発生します"
 
 #: ../build/bin/preferences_gen.h:6395
@@ -4163,12 +4163,12 @@ msgstr "ビネット調整"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:270
 #: ../build/lib/darktable/plugins/introspection_lens.cc:409
 msgid "TCA red fine-tune"
-msgstr "横色収差 赤微調整"
+msgstr "倍率色収差 赤微調整"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:276
 #: ../build/lib/darktable/plugins/introspection_lens.cc:413
 msgid "TCA blue fine-tune"
-msgstr "横色収差 青微調整"
+msgstr "倍率色収差 青微調整"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:282
 #: ../build/lib/darktable/plugins/introspection_lens.cc:417
@@ -8468,11 +8468,6 @@ msgid "display mask and/or color channel"
 msgstr "マスクおよび／またはカラーチャンネルの表示"
 
 #: ../src/develop/blend_gui.c:3630
-#, fuzzy
-#| msgid ""
-#| "display mask and/or color channel. ctrl+click to display mask, "
-#| "shift+click to display channel. hover over parametric mask slider to "
-#| "select channel for display"
 msgid ""
 "display mask and/or color channel.\n"
 "ctrl+click to display mask,\n"
@@ -8490,14 +8485,12 @@ msgid "temporarily switch off blend mask"
 msgstr "ブレンドマスクを一時的にオフ"
 
 #: ../src/develop/blend_gui.c:3642
-#, fuzzy
-#| msgid "temporarily switch off blend mask. only for module in focus"
 msgid ""
 "temporarily switch off blend mask.\n"
 "only for module in focus"
 msgstr ""
 "ブレンドマスクを一時的にオフ\n"
-"アクティブなモジュールにのみ有効です"
+"フォーカスしているモジュールにのみ有効です"
 
 #: ../src/develop/develop.c:2303
 #, c-format
@@ -8965,29 +8958,20 @@ msgid "path #%d"
 msgstr "パス#%d"
 
 #: ../src/develop/masks/path.c:3473
-#, fuzzy
-#| msgid ""
-#| "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
-#| "<b>cancel</b>: right-click"
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>ノードを追加する</b>： クリック　　<b>シャープノードを追加する</b>："
-"Ctrl+クリック\n"
+"<b>ノードを追加</b>： クリック　　<b>シャープノードを追加</b>：Ctrl+クリッ"
+"ク\n"
 "<b>キャンセル</b>：右クリック"
 
 #: ../src/develop/masks/path.c:3476
-#, fuzzy
-#| msgid ""
-#| "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
-#| "<b>finish path</b>: right-click"
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>ノードを追加する</b>：クリック　　<b>シャープノードを追加する</b>：Ctrl+ク"
-"リック\n"
+"<b>ノードを追加</b>：クリック　　<b>シャープノードを追加</b>：Ctrl+クリック\n"
 "<b>パスを閉じる</b>：右クリック"
 
 #: ../src/develop/masks/path.c:3479
@@ -9727,52 +9711,44 @@ msgstr ""
 "<tt>%s</tt>"
 
 #: ../src/gui/accelerators.c:965 ../src/gui/accelerators.c:978
-#, fuzzy
-#| msgid ""
-#| "double-click to define new shortcut\n"
-#| "start typing for incremental search"
 msgid "start typing for incremental search"
-msgstr ""
-"ダブルクリックすると、新しいショートカットを定義します\n"
-"文字を入力すると、インクリメンタルサーチを行います"
+msgstr "文字を入力すると、インクリメンタルサーチを行います"
 
 #: ../src/gui/accelerators.c:966
-#, fuzzy
-#| msgid "remove the selected shortcut?"
 msgid ""
 "\n"
 "press Delete to delete selected shortcut"
-msgstr "選択したショートカットを削除しますか？"
+msgstr ""
+"\n"
+"Deleteキーを押すと、選択したショートカットを削除します"
 
 #: ../src/gui/accelerators.c:968
-#, fuzzy
-#| msgid "double-click to reset"
 msgid ""
 "\n"
 "double-click to add new shortcut"
-msgstr "ダブルクリックすると、リセットします"
+msgstr ""
+"\n"
+"ダブルクリックすると、新しいショートカットを追加します"
 
 #: ../src/gui/accelerators.c:979
-#, fuzzy
-#| msgid "click to filter shortcut list\n"
 msgid "click to filter shortcuts list"
-msgstr "クリックすると、ショートカットのリストを絞り込みます\n"
+msgstr "クリックすると、ショートカットのリストを絞り込みます"
 
 #: ../src/gui/accelerators.c:981
-#, fuzzy
-#| msgid "right click to show action of selected shortcut\n"
 msgid ""
 "\n"
 "right click to show action of selected shortcut"
-msgstr "右クリックすると、選択したショートカットのアクションを表示します\n"
+msgstr ""
+"\n"
+"右クリックすると、選択したショートカットのアクションを表示します"
 
 #: ../src/gui/accelerators.c:984
-#, fuzzy
-#| msgid "double-click to reset the curve"
 msgid ""
 "\n"
 "double-click to define new shortcut"
-msgstr "ダブルクリックすると、カーブをリセットします"
+msgstr ""
+"\n"
+"ダブルクリックすると、新しいショートカットを定義します"
 
 #: ../src/gui/accelerators.c:1015
 msgid "shift+alt+scroll to change height"
@@ -10094,10 +10070,8 @@ msgstr ""
 "組み合わせて使用された時、デフォルト設定の意味を有効にします"
 
 #: ../src/gui/accelerators.c:2725
-#, fuzzy
-#| msgid "export shortcuts"
 msgid "open help page for shortcuts"
-msgstr "ショートカットをエクスポートします"
+msgstr "ショートカットについてのヘルプページを開きます"
 
 #: ../src/gui/accelerators.c:2730
 msgid "restore..."
@@ -10126,8 +10100,6 @@ msgid "fully or partially export shortcuts to file"
 msgstr "ショートカットの全てまたは一部をファイルにエクスポートします"
 
 #: ../src/gui/accelerators.c:3139
-#, fuzzy
-#| msgid "reinitialise input devices"
 msgid "reinitialising input devices"
 msgstr "インプットデバイスを再初期化"
 
@@ -10281,8 +10253,6 @@ msgstr "_いいえ"
 
 #. ask the user if darktable.org may be accessed
 #: ../src/gui/gtk.c:2647
-#, fuzzy
-#| msgid "access the online usermanual?"
 msgid "access the online user manual?"
 msgstr "オンラインのユーザーマニュアルにアクセスしますか？"
 
@@ -10806,12 +10776,6 @@ msgid "from XMP"
 msgstr "XMPファイルから"
 
 #: ../src/gui/import_metadata.c:433
-#, fuzzy
-#| msgid ""
-#| "selected metadata are imported from image and override the default value\n"
-#| " this drives also the 'look for updated XMP files' and 'load sidecar "
-#| "file' actions\n"
-#| " CAUTION: not selected metadata are cleaned up when XMP file is updated"
 msgid ""
 "selected metadata are imported from image and override the default value.\n"
 "this drives also the 'look for updated XMP files' and 'load sidecar file' "
@@ -11100,8 +11064,8 @@ msgid ""
 "the parameters will be reset to their default values, which may be "
 "automatically set based on image metadata"
 msgstr ""
-"パラメータはデフォルト値にリセットされます。これは画像のメタデータに基づいて"
-"自動的に設定されることがあります"
+"パラメータはデフォルト値にリセットされます。これは画像のメタデータにもとづい"
+"て自動的に設定されることがあります"
 
 # 適合する画像にこのプリセットを自動的に適用します
 #: ../src/gui/presets.c:607
@@ -11795,11 +11759,6 @@ msgid "image mode"
 msgstr "画像モード"
 
 #: ../src/imageio/format/pdf.c:688
-#, fuzzy
-#| msgid ""
-#| "normal -- just put the images into the pdf\n"
-#| "draft -- images are replaced with boxes\n"
-#| "debug -- only show the outlines and bounding boxes"
 msgid ""
 "normal -- just put the images into the PDF\n"
 "draft -- images are replaced with boxes\n"
@@ -12977,26 +12936,17 @@ msgid "linear, RGB"
 msgstr "リニア、RGB"
 
 #: ../src/iop/bilateral.cc:136
-#, fuzzy
-#| msgid "image zoom level"
 msgid "image too large"
-msgstr "画像のズームレベル"
+msgstr "画像が大きすぎます"
 
 #: ../src/iop/bilateral.cc:137
-#, fuzzy
-#| msgid ""
-#| "this module was unable to allocate\n"
-#| "all of the memory required to process\n"
-#| "the image.  some or all processing\n"
-#| "has been skipped."
 msgid ""
 "this module is unable to process\n"
 "images with more than 2 gigapixels.\n"
 "processing has been skipped."
 msgstr ""
-"このモジュールは、この画像を処理するために必要なメモリの全てを割り当てること"
-"が出来ませんでした\n"
-"一部または全ての処理がスキップされています"
+"このモジュールは2ギガピクセル以上の画像を処理することが出来ません\n"
+"処理がスキップされました"
 
 #: ../src/iop/bilateral.cc:351
 msgid "spatial extent of the gaussian"
@@ -13080,12 +13030,12 @@ msgid "aspect"
 msgstr "アスペクト比"
 
 #: ../src/iop/borders.c:945
-#, fuzzy
-#| msgid "select the aspect ratio or right click and type your own (w:h)"
 msgid ""
 "select the aspect ratio (right click on slider below to type your own w:h)"
 msgstr ""
-"アスペクト比を選択するか、右クリックしてカスタム設定を入力してください (w:h)"
+"アスペクト比を選択します\n"
+"（下のスライダー上で右クリックすると、カスタム設定（幅：高さ）を入力すること"
+"が出来ます）"
 
 #: ../src/iop/borders.c:948
 msgid "3:1"
@@ -13166,11 +13116,11 @@ msgid "custom..."
 msgstr "カスタム..."
 
 #: ../src/iop/borders.c:972
-#, fuzzy
-#| msgid "select the aspect ratio or right click and type your own (w:h)"
 msgid "set the custom aspect ratio (right click to enter number or w:h)"
 msgstr ""
-"アスペクト比を選択するか、右クリックしてカスタム設定を入力してください (w:h)"
+"アスペクト比をカスタム設定します\n"
+"（下のスライダー上で右クリックしてカスタム設定（幅：高さ）を入力することが出"
+"来ます）"
 
 #: ../src/iop/borders.c:975
 msgid "aspect ratio orientation of the image with border"
@@ -13949,8 +13899,6 @@ msgstr ""
 "c: \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4535 ../src/iop/exposure.c:1218
-#, fuzzy
-#| msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "このLCh座標はCIE Lab 1976座標をもとに算出されたものです"
 
@@ -14051,10 +13999,8 @@ msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48（2018年以後）"
 
 #: ../src/iop/channelmixerrgb.c:4656
-#, fuzzy
-#| msgid "Datacolor SpyderCheckr 24 post-2018"
 msgid "Datacolor SpyderCheckr Photo"
-msgstr "Datacolor SpyderCheckr 24（2018年以後）"
+msgstr "Datacolor SpyderCheckr Photo"
 
 #: ../src/iop/channelmixerrgb.c:4660
 msgid "optimize for"
@@ -14944,8 +14890,6 @@ msgid "it8 skin tones"
 msgstr "IT8 スキントーン"
 
 #: ../src/iop/colorchecker.c:310
-#, fuzzy
-#| msgid "helmholtz/kohlrausch monochrome"
 msgid "Helmholtz/Kohlrausch monochrome"
 msgstr "ヘルムホルツ−コールラウシュ モノクローム"
 
@@ -15450,10 +15394,8 @@ msgid "color zones"
 msgstr "カラーゾーン"
 
 #: ../src/iop/colorzones.c:144
-#, fuzzy
-#| msgid "selectively shift hues, saturation and brightness of pixels"
 msgid "selectively shift hues, chroma and lightness of pixels"
-msgstr "ピクセルの色相、彩度、明るさ（ブライトネス）を変えます"
+msgstr "ピクセルの色相、彩度、明るさ（ブライトネス）を部分的に変更します"
 
 #: ../src/iop/colorzones.c:606
 msgid "B&W: with red"
@@ -15496,10 +15438,8 @@ msgstr ""
 "Shift+ドラッグで負の曲線を作成します"
 
 #: ../src/iop/colorzones.c:2425 ../src/iop/rgbcurve.c:1379
-#, fuzzy
-#| msgid "base curve"
 msgid "create curve"
-msgstr "ベースカーブ"
+msgstr "カーブを作成"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2442
@@ -15792,17 +15732,6 @@ msgstr ""
 "効にする必要があります"
 
 #: ../src/iop/denoiseprofile.c:3840
-#, fuzzy
-#| msgid ""
-#| "fix bugs in anscombe transform resulting\n"
-#| "in undersmoothing of the green channel in\n"
-#| "wavelets mode, combined with a bad handling\n"
-#| "of white balance coefficients, and a bug in\n"
-#| "non local means normalization resulting in\n"
-#| "undersmoothing when patch size was increased.\n"
-#| "enabling this option will change the denoising\n"
-#| "you get. once enabled, you won't be able to\n"
-#| "return back to old algorithm."
 msgid ""
 "fix bugs in Anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -15818,9 +15747,8 @@ msgstr ""
 "バグはホワイトバランス係数の不適切な取り扱いと組み合わさって、ウェーブレット"
 "モードにおいて緑チャンネルの平滑化を不十分なものにし、後者のバグはパッチが大"
 "きくなった時に平滑化を不十分なものにします\n"
-"このオプションを有効にすると、ノイズ除去の効果が変更されます\n"
-"このオプションを有効にすると、得られるノイズ除去の効果が変わります。一度有効"
-"にすると、古いアルゴリズムに戻ることが出来なくなります"
+"このオプションを有効にすると、得られるノイズ除去が変わります。一度有効にする"
+"と、古いアルゴリズムに戻ることが出来なくなります"
 
 #: ../src/iop/denoiseprofile.c:3850
 msgid "profile used for variance stabilization"
@@ -15996,16 +15924,12 @@ msgid "denoise: coarse"
 msgstr "ノイズ除去：粗い"
 
 #: ../src/iop/diffuse.c:446
-#, fuzzy
-#| msgid "sharpen demosaicing (no AA filter)"
 msgid "sharpen demosaicing: no AA filter"
-msgstr "シャープ化デモザイク（ローパスフィルターレス）"
+msgstr "シャープ化 デモザイク：ローパスフィルターレス"
 
 #: ../src/iop/diffuse.c:472
-#, fuzzy
-#| msgid "sharpen demosaicing (AA filter)"
 msgid "sharpen demosaicing: AA filter"
-msgstr "シャープ化デモザイク（ローパスフィルター）"
+msgstr "シャープ化 デモザイク：ローパスフィルター"
 
 #: ../src/iop/diffuse.c:499
 msgid "simulate watercolor"
@@ -16021,22 +15945,16 @@ msgstr "ハイライト修復"
 
 #. fast presets for slow hardware
 #: ../src/iop/diffuse.c:603
-#, fuzzy
-#| msgid "sharpness"
 msgid "sharpness: fast"
-msgstr "シャープネス"
+msgstr "シャープ化：高速"
 
 #: ../src/iop/diffuse.c:655
-#, fuzzy
-#| msgid "sharpen (strong)"
 msgid "sharpness: strong"
-msgstr "シャープ化（強）"
+msgstr "シャープ化：強"
 
 #: ../src/iop/diffuse.c:680
-#, fuzzy
-#| msgid "local contrast mask"
 msgid "local contrast: fast"
-msgstr "ローカルコントラストマスク"
+msgstr "ローカルコントラスト：高速"
 
 #: ../src/iop/diffuse.c:1391 ../src/iop/diffuse.c:1666
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
@@ -16284,22 +16202,17 @@ msgid "dithering|posterization|reduce bit-depth"
 msgstr "ディザリング|ポスタリゼーション|ビット深度低減"
 
 #: ../src/iop/dither.c:117
-#, fuzzy
-#| msgid ""
-#| "reduce banding and posterization effects in output JPEGs by adding random "
-#| "noise"
 msgid ""
 "reduce banding and posterization effects in output\n"
 "JPEGs by adding random noise, or reduce bit depth"
 msgstr ""
-"不規則なノイズを加えることで、出力JPEGのバンディングやポスタリゼーションを低"
-"減します"
+"ランダムなノイズを加えることで出力JPEGにおけるバンディングやポスタリゼーショ"
+"ンを低減します\n"
+"または、ビット深度を低減します"
 
 #: ../src/iop/dither.c:119
-#, fuzzy
-#| msgid "corrective and creative"
 msgid "corrective, artistic"
-msgstr "補正およびクリエイティブ"
+msgstr "補正、アーティスティック"
 
 #. add the preset.
 #: ../src/iop/dither.c:147
@@ -16431,13 +16344,6 @@ msgid "spot exposure mapping"
 msgstr "スポット露出マッピング"
 
 #: ../src/iop/exposure.c:1180
-#, fuzzy
-#| msgid ""
-#| "define a target brightness, in terms of exposure, for a selected region "
-#| "of the image (the control sample), which you then match against the same "
-#| "target brightness in other images. the control sample can either be a "
-#| "critical part of your subject or a non-moving and consistently-lit "
-#| "surface over your series of images."
 msgid ""
 "define a target brightness, in terms of exposure,\n"
 "for a selected region of the image (the control sample),\n"
@@ -16447,18 +16353,12 @@ msgid ""
 "consistently-lit surface over your series of images."
 msgstr ""
 "露出に関して、この画像内の特定の領域（コントロールサンプル）を選択してター"
-"ゲットにする明るさを定義し、その後、他の画像内にある同じターゲットの明るさと"
-"一致させてください。コントロールサンプルは、一連の画像に共通する、被写体の重"
-"要な部分でも、同じ光に照らされた動いていない面でも可能です"
+"ゲットとする明るさを定め、\n"
+"その後、他の画像内にある同じターゲットの明るさと一致させてください\n"
+"コントロールサンプルは、一連の画像に共通する、被写体の重要な部分でも、\n"
+"同じ光に照らされた動いていない面でも可能です"
 
 #: ../src/iop/exposure.c:1189
-#, fuzzy
-#| msgid ""
-#| "\"correction\" automatically adjust exposure\n"
-#| "such that the input lightness is mapped to the target.\n"
-#| "\"measure\" simply shows how an input color is mapped by the exposure "
-#| "compensation\n"
-#| "and can be used to define a target."
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -16466,9 +16366,9 @@ msgid ""
 "the exposure compensation and can be used to define a target."
 msgstr ""
 "補正：入力の明度がターゲットへとマッピングされるように\n"
-"　　　自動的に露出を調整します\n"
+"　　   自動的に露出を調整します\n"
 "計測：入力の色が露出補正によってどのようにマッピングされるかを表示します\n"
-"　　　ターゲットを定義するために使用することが出来ます"
+"　　   ターゲットを定義するために使用することが出来ます"
 
 #: ../src/iop/exposure.c:1215
 msgid "L : \tN/A"
@@ -17720,18 +17620,13 @@ msgid "camera/lens not found"
 msgstr "カメラとレンズの組み合わせが見つかりません"
 
 #: ../src/iop/lens.cc:3646
-#, fuzzy
-#| msgid ""
-#| "please select your lens manually\n"
-#| "you might also want to check if your lensfun database is up-to-date\n"
-#| "by running lensfun_update_data"
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your Lensfun database is up-to-date\n"
 "by running lensfun-update-data"
 msgstr ""
 "レンズを手動で選択してください\n"
-"lensfun_update_dataを実行して、lensfunのデータベースが最新のものであるか"
+"lensfun-update-dataを実行して、lensfunのデータベースが最新のものであるか"
 "チェックするとよいかもしれません"
 
 #: ../src/iop/lens.cc:3769
@@ -17761,22 +17656,16 @@ msgid "correct distortions or apply them"
 msgstr "歪曲を補正または適用します"
 
 #: ../src/iop/lens.cc:3839
-#, fuzzy
-#| msgid "Transversal Chromatic Aberration red"
 msgid "transversal chromatic aberration red"
 msgstr "倍率色収差 赤"
 
 #: ../src/iop/lens.cc:3843
-#, fuzzy
-#| msgid "Transversal Chromatic Aberration blue"
 msgid "transversal chromatic aberration blue"
 msgstr "倍率色収差 青"
 
 #: ../src/iop/lens.cc:3849
-#, fuzzy
-#| msgid "saturation algorithm"
 msgid "use latest algorithm"
-msgstr "彩度（サチュレーション）アルゴリズム"
+msgstr "最新のアルゴリズムを使用"
 
 #: ../src/iop/lens.cc:3851
 msgid ""
@@ -17784,7 +17673,7 @@ msgid ""
 "once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
-"このアルゴリズムの古いバージョンを使用しています\n"
+"古いバージョンのアルゴリズムを使用しています\n"
 "有効にすると、古いアルゴリズムに戻ることは出来なくなります"
 
 #: ../src/iop/lens.cc:3860
@@ -17796,16 +17685,12 @@ msgid "tune the vignette correction"
 msgstr "露出補正を調整します"
 
 #: ../src/iop/lens.cc:3868
-#, fuzzy
-#| msgid "tune the vignette correction"
 msgid "tune the TCA red correction"
-msgstr "露出補正を調整します"
+msgstr "赤色の倍率色収差の補正を微調整します"
 
 #: ../src/iop/lens.cc:3872
-#, fuzzy
-#| msgid "tune the vignette correction"
 msgid "tune the TCA blue correction"
-msgstr "露出補正を調整します"
+msgstr "青色の倍率色収差の補正を微調整します"
 
 #: ../src/iop/lens.cc:3879
 msgid "image scaling"
@@ -18645,28 +18530,20 @@ msgid "adjust to match the average luma of the subject"
 msgstr "被写体の平均輝度（ルーマ）に一致するように調整してください"
 
 #: ../src/iop/profile_gamma.c:644
-#, fuzzy
-#| msgid ""
-#| "number of stops between middle gray and pure black\n"
-#| "this is a reading a posemeter would give you on the scene"
 msgid ""
 "number of stops between middle gray and pure black\n"
 "this is a reading a light meter would give you on the scene"
 msgstr ""
 "ミドルグレーと純粋な黒の間の段数\n"
-"撮影現場で露出計が示すと思われる数値です"
+"撮影現場で露出計が示すであろう数値と同じものです"
 
 #: ../src/iop/profile_gamma.c:650
-#, fuzzy
-#| msgid ""
-#| "number of stops between pure black and pure white\n"
-#| "this is a reading a posemeter would give you on the scene"
 msgid ""
 "number of stops between pure black and pure white\n"
 "this is a reading a light meter would give you on the scene"
 msgstr ""
 "純粋な黒と純粋な白の間の段数\n"
-"撮影現場で露出計が示すと思われる数値です"
+"撮影現場で露出計が示すであろう数値と同じものです"
 
 #: ../src/iop/profile_gamma.c:652
 msgctxt "section"
@@ -19031,13 +18908,11 @@ msgstr "塗りつぶしの色を選択してください"
 
 #: ../src/iop/retouch.c:2430
 msgid "pick fill color from image"
-msgstr "画像から塗りつぶしの色を抽出します"
+msgstr "画像から塗りつぶしの色を抽出してください"
 
 #: ../src/iop/retouch.c:2431
-#, fuzzy
-#| msgid "pick color"
 msgid "pick fill color"
-msgstr "色を抽出"
+msgstr "塗りつぶしの色を抽出"
 
 #: ../src/iop/retouch.c:2439
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
@@ -19152,10 +19027,8 @@ msgstr ""
 "整します"
 
 #: ../src/iop/rgblevels.c:1056
-#, fuzzy
-#| msgid "automatic ratio"
 msgid "auto region"
-msgstr "幅／高さの比の自動設定"
+msgstr "領域の自動設定"
 
 #: ../src/iop/rgblevels.c:1058
 msgid ""
@@ -19554,7 +19427,7 @@ msgstr "画像の領域から設定"
 #: ../src/iop/temperature.c:1635
 msgctxt "white balance"
 msgid "user modified"
-msgstr "ユーザによる修正"
+msgstr "ユーザーによる修正"
 
 #. old "camera neutral", reason: better matches intent
 #: ../src/iop/temperature.c:1637
@@ -19612,11 +19485,11 @@ msgstr "画像内の領域から検出"
 
 #: ../src/iop/temperature.c:2049
 msgid "user modified"
-msgstr "ユーザによる修正"
+msgstr "ユーザーによる修正"
 
 #: ../src/iop/temperature.c:2052
 msgid "set white balance to user modified"
-msgstr "ユーザが修正したホワイトバランス"
+msgstr "ユーザーが修正したホワイトバランス"
 
 #: ../src/iop/temperature.c:2055
 msgid "camera reference"
@@ -19928,18 +19801,6 @@ msgid "preserve details"
 msgstr "ディテール保持"
 
 #: ../src/iop/toneequal.c:3420
-#, fuzzy
-#| msgid ""
-#| "'no' affects global and local contrast (safe if you only add contrast)\n"
-#| "'guided filter' only affects global contrast and tries to preserve local "
-#| "contrast\n"
-#| "'averaged guided filter' is a geometric mean of 'no' and 'guided filter' "
-#| "methods\n"
-#| "'eigf' (exposure-independent guided filter) is a guided filter that is "
-#| "exposure-independent, it smooths shadows and highlights the same way "
-#| "(contrary to guided filter which smooths less the highlights)\n"
-#| "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent "
-#| "guided filter' methods"
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -19956,11 +19817,11 @@ msgstr ""
 "加えるだけの場合安全です）\n"
 "'ガイデットフィルタ'は全体のコントラストにのみ影響し、局所的なコントラストを"
 "保持するよう試みます\n"
-"'平均ガイデットフィルタ'は'なし'と'ガイデットフィルタ'の幾何学的平均です\n"
-"'eigf（露光非依存ガイデットフィルタ）は露出に依存しないガイデットフィルタで"
+"'平均ガイデットフィルタ'は'なし'と'ガイデットフィルタ'の幾何平均です\n"
+"'EIGF（露光非依存ガイデットフィルタ）は露出に依存しないガイデットフィルタで"
 "す。シャドウとハイライトを同じように平滑化します（ハイライトの平滑化が少ない"
 "ガイデットフィルタと対照的です）\n"
-"'平均eigf'は'なし'と'eigf'の幾何学的平均です"
+"'平均EIGF'は'なし'と'EIGF'の幾何平均です"
 
 #: ../src/iop/toneequal.c:3433
 msgid ""
@@ -20995,22 +20856,6 @@ msgid "output ICC profiles"
 msgstr "出力ICCプロファイル"
 
 #: ../src/libs/export.c:1228
-#, fuzzy
-#| msgid ""
-#| "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
-#| "gradations, but distorts in-gamut colors in the process. note that "
-#| "perceptual is often a proprietary LUT that depends on the destination "
-#| "space.\n"
-#| "\n"
-#| "• relative colorimetric: keeps luminance while reducing as little as "
-#| "possible saturation until colors fit in gamut.\n"
-#| "\n"
-#| "• saturation: designed to present eye-catching business graphics by "
-#| "preserving the saturation. (not suited for photography).\n"
-#| "\n"
-#| "• absolute colorimetric: adapt white point of the image to the white "
-#| "point of the destination medium and do nothing else. mainly used when "
-#| "proofing colors. (not suited for photography)."
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations,\n"
@@ -21030,12 +20875,12 @@ msgid ""
 "destination medium and do nothing else. mainly used when proofing colors.\n"
 "(not suited for photography)."
 msgstr ""
-"・知覚的：色域外の色を色域内に滑らかに移し、グラデーションを保持しますが、処"
-"理中に色域内の色を歪めます。このオプションは出力画像の色空間に依存するプロプ"
-"ライエタリなLUTであることがしばしばあります\n"
+"・知覚的：色域外の色を色域内へと滑らかに移し、グラデーションを保持します。し"
+"かし、処理において色域内の色を歪めます。このオプションは出力画像の色空間に依"
+"存するプロプライエタリなLUTである場合がしばしばあります\n"
 "\n"
-"・相対的な色彩測定：色が色域内に合うまで可能な限り控えめに彩度を下げつつ、輝"
-"度を保持します\n"
+"・相対的な色彩測定：輝度を保持しつつ、色が色域内に合うまで可能な限り控えめに"
+"彩度を下げます\n"
 "\n"
 "・彩度：ビジネス用の人目を引くグラフィックのためにデザインされたもので、彩度"
 "を保持します（写真には適していません）\n"
@@ -21626,14 +21471,7 @@ msgid "landscape images"
 msgstr "横長画像"
 
 #: ../src/libs/filters/search.c:179
-#, fuzzy, no-c-format
-#| msgid ""
-#| "filter by text from images metadata, tags, file path and name\n"
-#| "`%' is the wildcard character\n"
-#| "by default start and end wildcards are auto-applied\n"
-#| "starting or ending with a double quote disables the corresponding "
-#| "wildcard\n"
-#| "is dimmed during the search execution"
+#, no-c-format
 msgid ""
 "filter by text from images metadata, camera brand/model, tags, file path and "
 "name\n"
@@ -21642,9 +21480,9 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
-"画像のメタデータ、タグ、ファイルパス、名前のテクストにもとづいて絞り込みま"
-"す\n"
-"`%' はワイルドカード文字です\n"
+"画像のメタデータ、カメラのブランド／機種、タグ、ファイルパス、名前にもとづい"
+"て絞り込みます\n"
+"%はワイルドカード文字です\n"
 "デフォルトでは、検索する語の最初と最後にワイルドカードが自動的に適用されま"
 "す\n"
 "検索する語の最初または最後に二重引用符を付けると、対応するワイルドカードを無"
@@ -21660,16 +21498,12 @@ msgid "apply geo-location"
 msgstr "位置情報を適用"
 
 #: ../src/libs/geotagging.c:371
-#, fuzzy
-#| msgid ""
-#| "apply offset and geo-location to matching images\n"
-#| "double operation: two ctrl-Z to undo"
 msgid ""
 "apply offset and geo-location to matching images\n"
 "double operation: two ctrl-z to undo"
 msgstr ""
-"マッチする画像にオフセットと位置情報を適用します\n"
-"二重操作：2回Ctrl+zで取り消します"
+"合致する画像にオフセットと位置情報を適用します\n"
+"二重操作：Ctrl+zを2回で取り消します"
 
 #: ../src/libs/geotagging.c:373 ../src/libs/geotagging.c:1911
 msgid "apply geo-location to matching images"
@@ -22728,10 +22562,8 @@ msgid "mode: difference"
 msgstr "モード：差"
 
 #: ../src/libs/masks.c:1139
-#, fuzzy
-#| msgid "modes"
 msgid "mode: sum"
-msgstr "モード"
+msgstr "モード：合計"
 
 #: ../src/libs/masks.c:1145
 msgid "mode: exclusion"
@@ -22755,18 +22587,10 @@ msgid "no shapes selected"
 msgstr "シェイプが選択されていません"
 
 #: ../src/libs/masks.c:1940
-#, fuzzy
-#| msgid "press"
 msgid "pressure"
-msgstr "押す"
+msgstr "筆圧"
 
 #: ../src/libs/masks.c:1941
-#, fuzzy
-#| msgid ""
-#| "off - pressure reading ignored, hardness/opacity/brush size - pressure "
-#| "reading controls specified attribute, absolute/relative - pressure "
-#| "reading is taken directly as attribute value or multiplied with pre-"
-#| "defined setting."
 msgid ""
 "pen pressure control for brush masks\n"
 "'off': pressure reading ignored,\n"
@@ -22775,6 +22599,7 @@ msgid ""
 "'absolute'/'relative': pressure reading is taken directly as attribute value "
 "or multiplied with pre-defined setting."
 msgstr ""
+"筆圧によるブラシマスクのコントロール\n"
 "オフ：筆圧の読み取り値を無視します\n"
 "硬さ／不透明度／ブラシサイズ：筆圧の読み取り値によって指定された属性をコント"
 "ロールします\n"
@@ -22782,24 +22607,17 @@ msgstr ""
 "められた設定値で乗算します"
 
 #: ../src/libs/masks.c:1956
-#, fuzzy
-#| msgid "smooth"
 msgid "smoothing"
-msgstr "滑らか"
+msgstr "平滑化"
 
 #: ../src/libs/masks.c:1957
-#, fuzzy
-#| msgid ""
-#| "sets level for smoothing of brush strokes. stronger smoothing leads to "
-#| "less nodes and easier editing but with lower control of accuracy."
 msgid ""
 "smoothing of brush strokes\n"
 "stronger smoothing leads to fewer nodes and easier editing but with lower "
 "control of accuracy."
 msgstr ""
-"ブラシストロークの平滑化レベルを設定します\n"
-"平滑化を強めると、ノードを少なくして簡単に編集出来ますが、精度のコントロール"
-"が低下します"
+"ブラシストロークの平滑化\n"
+"平滑化を強めると、ノードを少なくして簡単に編集出来ますが、正確なコントロール"
 
 #: ../src/libs/metadata.c:64
 msgid "metadata editor"
@@ -23453,11 +23271,9 @@ msgid "navigation"
 msgstr "ナビゲーション"
 
 #: ../src/libs/navigation.c:111 ../src/libs/navigation.c:191
-#, fuzzy
-#| msgid "fill"
 msgctxt "navigationbox"
 msgid "fill"
-msgstr "塗りつぶし"
+msgstr "画面を満たす"
 
 #: ../src/libs/navigation.c:114 ../src/libs/navigation.c:189
 msgid "small"
@@ -23529,10 +23345,8 @@ msgid "cannot apply printer profile `%s'"
 msgstr "プリンタープロファイル`%s'を適用することが出来ませんでした"
 
 #: ../src/libs/print_settings.c:574
-#, fuzzy
-#| msgid "failed to create temporary pdf for printing"
 msgid "failed to create temporary PDF for printing"
-msgstr "印刷用に一時的に使用するpdfファイルの作成に失敗しました"
+msgstr "印刷用に一時的に使用するPDFファイルの作成に失敗しました"
 
 #: ../src/libs/print_settings.c:620
 msgid "maximum image per page reached"
@@ -24116,12 +23930,6 @@ msgid "drop to root"
 msgstr "ルートにドロップ"
 
 #: ../src/libs/tagging.c:3100
-#, fuzzy
-#| msgid ""
-#| "attached tags\n"
-#| "Delete or double-click to detach\n"
-#| "right-click for other actions on attached tag,\n"
-#| "Tab to give the focus to entry"
 msgid ""
 "attached tags\n"
 "press Delete or double-click to detach\n"
@@ -24654,10 +24462,9 @@ msgid "switching encoding to relative (down = %d)"
 msgstr "相対エンコーディングに切り替えています (ダウン= %d)"
 
 #: ../src/libs/tools/midi.c:558
-#, fuzzy, c-format
-#| msgid "send as email"
+#, c-format
 msgid "%s opened as midi%d"
-msgstr "Eメールで送信"
+msgstr "%sをmidi%dとして開きました"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -24756,10 +24563,8 @@ msgid "no image to open!"
 msgstr "開く画像がありません！"
 
 #: ../src/views/darkroom.c:1331
-#, fuzzy
-#| msgid "no userdefined presets for favorite modules were found"
 msgid "no user-defined presets for favorite modules were found"
-msgstr "お気に入りのモジュールのユーザ定義プリセットが見つかりませんでした"
+msgstr "お気に入りのモジュールのユーザー定義プリセットが見つかりませんでした"
 
 #: ../src/views/darkroom.c:1476
 msgid "no styles have been created yet"
