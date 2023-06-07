@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="$(git describe --tags --dirty)"
+VERSION="$(git describe --tags --dirty --match release-*)"
 
 if [ $? -eq 0 ] ;
 then
