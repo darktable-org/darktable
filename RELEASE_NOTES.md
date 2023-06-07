@@ -886,9 +886,11 @@ The following is a summary of the main features added to darktable
 
 ### Missing Compression Mode Support
 
-- Fujifilm lossy
-- Nikon high efficiency
-- Sony lossless
+- Apple ProRAW DNGs
+- Blackmagic lossless CinemaDNGs
+- Fujifilm lossy RAFs
+- Nikon high efficiency NEFs
+- Sony lossless ARWs
 
 ### White Balance Presets
 
