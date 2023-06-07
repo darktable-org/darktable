@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-07 14:00+0900\n"
+"PO-Revision-Date: 2023-06-08 00:08+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1336,7 +1336,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5263
 msgid "automatically update module name"
-msgstr "モジュール名を自動的に更新"
+msgstr "モジュール名を自動的に更新する"
 
 #: ../build/bin/preferences_gen.h:5277
 msgid ""
@@ -6521,7 +6521,7 @@ msgid ""
 "<b>%s</b>"
 msgstr ""
 "darktableは%sを<b>%s</b>から読み込みます\n"
-"このディレクトリが存在しない場合は、<b>%s</b>から読み込みます"
+"このディレクトリが存在しない場合は<b>%s</b>から読み込みます"
 
 #. clang-format off
 #: ../src/common/metadata.c:46
@@ -6589,8 +6589,8 @@ msgstr ""
 msgid ""
 "due to a slow GPU hardware acceleration using OpenCL has been deactivated"
 msgstr ""
-"GPUの速度が遅いため、OpenCLを使用したハードウェアアクセラレーションは無効に"
-"なっています"
+"GPUの速度が遅いため、OpenCLを用いたハードウェアアクセラレーションは無効になっ"
+"ています"
 
 #: ../src/common/opencl.c:1449
 msgid ""
@@ -18669,7 +18669,7 @@ msgid ""
 "only works for the sensors that need it."
 msgstr ""
 "RAWのブラック／ホワイトポイントの補正\n"
-"処理が必要なセンサーに対してのみ動作"
+"処理が必要なセンサーに対してのみ動作します"
 
 #: ../src/iop/relight.c:53
 msgid "fill-light 0.25EV with 4 zones"
@@ -19065,7 +19065,7 @@ msgid ""
 "only works for the sensors that need it."
 msgstr ""
 "ピクセルの自動回転\n"
-"処理が必要なセンサーに対してのみ動作"
+"処理が必要なセンサーに対してのみ動作します"
 
 #: ../src/iop/scalepixels.c:55
 msgctxt "modulename"
@@ -19082,7 +19082,7 @@ msgid ""
 "only works for the sensors that need it."
 msgstr ""
 "ピクセルのスケールの自動調整\n"
-"処理が必要なセンサーに対してのみ動作"
+"処理が必要なセンサーに対してのみ動作します"
 
 #: ../src/iop/shadhi.c:175
 msgid "shadows and highlights"
