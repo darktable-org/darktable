@@ -23,9 +23,8 @@
 #include "libs/colorpicker.h"
 #include <stdlib.h>
 
-#define VERY_OLD_CACHE_WEIGHT 1000
 #define INVALID_CACHEHASH ULLONG_MAX
-#define UNUSED_CACHEHASH (INVALID_CACHEHASH -1)
+#define UNUSED_CACHEHASH 0
 static inline int _to_mb(size_t m)
 {
   return (int)((m + 0x80000lu) / 0x400lu / 0x400lu);
@@ -58,7 +57,7 @@ gboolean dt_dev_pixelpipe_cache_init(
     cache->size[k] = 0;
     cache->data[k] = NULL;
     cache->basichash[k] = cache->hash[k] = UNUSED_CACHEHASH;
-    cache->used[k] = 1;
+    cache->used[k] = 1 + k;
     cache->ioporder[k] = 0;
   }
   if(!size) return TRUE;
@@ -360,7 +359,6 @@ static gboolean _get_by_hash(
       if((cache->size[k] != size) || pipe->mask_display || pipe->nocache)
       {
         cache->hash[k] = cache->basichash[k] = INVALID_CACHEHASH;
-        cache->used[k] = VERY_OLD_CACHE_WEIGHT;
       }
       else
       {
@@ -444,8 +442,7 @@ gboolean dt_dev_pixelpipe_cache_get(
 
   cache->basichash[cline] = masking ? UNUSED_CACHEHASH : basichash;
   cache->hash[cline]      = masking ? UNUSED_CACHEHASH : hash;
-  cache->used[cline]      = masking ? VERY_OLD_CACHE_WEIGHT
-                                    : (important ? -cache->entries : 0);
+  cache->used[cline]      = !masking && important ? -cache->entries : 0;
   cache->ioporder[cline]  = module  ? module->iop_order : 0;
 
   const dt_iop_buffer_dsc_t *cdsc = *dsc;
@@ -470,7 +467,6 @@ static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache,
   cache->basichash[k] = cache->hash[k] = invalid
                                          ? INVALID_CACHEHASH
                                          : UNUSED_CACHEHASH;
-  cache->used[k] += VERY_OLD_CACHE_WEIGHT;
   cache->ioporder[k] = 0;
 }
 
@@ -516,8 +512,8 @@ void dt_dev_pixelpipe_important_cacheline(
   {
     if((cache->data[k] == data)
         && (size == cache->size[k])
-        && (cache->used[k] < VERY_OLD_CACHE_WEIGHT)
-        && (cache->hash[k] != INVALID_CACHEHASH))
+        && (cache->hash[k] != INVALID_CACHEHASH)
+        && (cache->hash[k] != UNUSED_CACHEHASH))
       cache->used[k] = -cache->entries;
   }
 }
@@ -622,7 +618,6 @@ void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe)
     (double)(cache->hits) / fmax(1.0, cache->tests));
 }
 
-#undef VERY_OLD_CACHE_WEIGHT
 #undef INVALID_CACHEHASH
 #undef UNUSED_CACHEHASH
 // clang-format off
