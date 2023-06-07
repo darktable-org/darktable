@@ -1319,16 +1319,21 @@ static _grab_region_t _gui_get_grab(float pzx,
     // we are inside the crop box
     grab = GRAB_CENTER;
 
-    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border)
+    float h_border = border / wd;
+    float v_border = border / ht;
+    if(!(g->clip_x || g->clip_y || g->clip_w != 1.0f || g->clip_h != 1.0f))
+      h_border = v_border = 0.45;
+
+    if(pzx >= g->clip_x && pzx < g->clip_x + h_border)
       grab |= GRAB_LEFT; // left border
 
-    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border)
+    if(pzy >= g->clip_y && pzy < g->clip_y + v_border)
       grab |= GRAB_TOP;  // top border
 
-    if(pzx <= g->clip_x + g->clip_w && pzx * wd > (g->clip_w + g->clip_x) * wd - border)
+    if(pzx <= g->clip_x + g->clip_w && pzx > (g->clip_w + g->clip_x) - h_border)
       grab |= GRAB_RIGHT; // right border
 
-    if(pzy <= g->clip_y + g->clip_h && pzy * ht > (g->clip_h + g->clip_y) * ht - border)
+    if(pzy <= g->clip_y + g->clip_h && pzy > (g->clip_h + g->clip_y) - v_border)
       grab |= GRAB_BOTTOM; // bottom border
   }
   return grab;
@@ -1539,16 +1544,18 @@ int mouse_moved(struct dt_iop_module_t *self,
       if(g->shift_hold)
       {
         /* the center is locked, scale crop radial with locked ratio */
-        float xx = 0.0f;
-        float yy = 0.0f;
-
+        float ratio = 0.0f;
         if(g->cropping & GRAB_LEFT || g->cropping & GRAB_RIGHT)
-          xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+        {
+          float xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+          ratio = (g->prev_clip_w - 2.0f * xx) / g->prev_clip_w;
+        }
         if(g->cropping & GRAB_TOP || g->cropping & GRAB_BOTTOM)
-          yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
-
-        float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
-                            (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+        {
+          float yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
+          ratio = fmaxf(ratio,
+                        (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+        }
 
         // ensure we don't get too small crop size
         if(g->prev_clip_w * ratio < 0.1f)
