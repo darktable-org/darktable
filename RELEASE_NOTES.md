@@ -890,6 +890,7 @@ The following is a summary of the main features added to darktable
 - Blackmagic lossless CinemaDNGs
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
+- Samsung Expert RAW DNGs
 - Sony lossless ARWs
 
 ### White Balance Presets
