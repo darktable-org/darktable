@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-06 23:32+0900\n"
+"PO-Revision-Date: 2023-06-07 14:00+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -3579,22 +3579,22 @@ msgstr "輝度マスクのしきい値"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
 msgid "1st order speed"
-msgstr "1次の速度"
+msgstr "1次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:183
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:288
 msgid "2nd order speed"
-msgstr "2次の速度"
+msgstr "2次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:189
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:292
 msgid "3rd order speed"
-msgstr "3次の速度"
+msgstr "3次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:195
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:296
 msgid "4th order speed"
-msgstr "4次の速度"
+msgstr "4次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
@@ -16012,7 +16012,7 @@ msgstr ""
 #: ../src/iop/diffuse.c:1814
 msgctxt "section"
 msgid "speed (sharpen ↔ diffuse)"
-msgstr "速度（シャープ化 ↔ 拡散）"
+msgstr "速さ（シャープ化 ↔ 拡散）"
 
 #: ../src/iop/diffuse.c:1821
 msgid ""
@@ -16149,7 +16149,7 @@ msgid ""
 msgstr ""
 "最高周波のシャープさを増減します\n"
 "これを用いて、ブルームを加えた後にディテールを保つことが出来ます\n"
-"スタンドアローンのシャープ化として用いるためには、速度を負の値に設定してくだ"
+"スタンドアローンのシャープ化として用いるためには、速さを負の値に設定してくだ"
 "さい"
 
 #: ../src/iop/diffuse.c:1911
