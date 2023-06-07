@@ -62,7 +62,7 @@ typedef enum dt_iop_colorzones_splines_version_t
 typedef enum dt_iop_colorzones_channel_t
 {
   DT_IOP_COLORZONES_L = 0, // $DESCRIPTION: "lightness"
-  DT_IOP_COLORZONES_C = 1, // $DESCRIPTION: "saturation"
+  DT_IOP_COLORZONES_C = 1, // $DESCRIPTION: "chroma"
   DT_IOP_COLORZONES_h = 2, // $DESCRIPTION: "hue"
   DT_IOP_COLORZONES_MAX_CHANNELS = 3
 } dt_iop_colorzones_channel_t;
