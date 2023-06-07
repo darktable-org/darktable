@@ -79,10 +79,8 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   gboolean got_it_done = FALSE;
   try {
     dt_rawspeed_load_meta();
-    const Camera *cam = meta->getCamera(maker, model, "");
-    // Also look for dng cameras
-    if(!cam)
-      cam = meta->getCamera(maker, model, "dng");
+    // Look for camera in any mode available
+    const Camera *cam = meta->getCamera(maker, model);
     if(cam)
     {
       g_strlcpy(mk, cam->canonical_make.c_str(), mk_len);
@@ -156,19 +154,16 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   snprintf(filen, sizeof(filen), "%s", filename);
   FileReader f(filen);
 
-  std::unique_ptr<RawDecoder> d;
-  std::unique_ptr<const Buffer> m;
-
   try
   {
     dt_rawspeed_load_meta();
 
     dt_pthread_mutex_lock(&darktable.readFile_mutex);
-    m = f.readFile();
+    auto [storage, storageBuf] = f.readFile();
     dt_pthread_mutex_unlock(&darktable.readFile_mutex);
 
-    RawParser t(*m.get());
-    d = t.getDecoder(meta);
+    RawParser t(storageBuf);
+    std::unique_ptr<RawDecoder> d = t.getDecoder(meta);
 
     if(!d.get()) return DT_IMAGEIO_LOAD_FAILED;
 
@@ -253,7 +248,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       }
       black /= 4.0f;
 
-      img->raw_black_level = CLAMP(black, 0, UINT16_MAX);
+      img->raw_black_level = CLAMP(roundf(black), 0, UINT16_MAX);
     }
 
     /*
@@ -264,7 +259,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     /* free auto pointers on spot */
     d.reset();
-    m.reset();
+    storage.reset();
 
     // Grab the WB
     for(int i = 0; i < 4; i++)
@@ -489,10 +484,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
         for(int i = 0; i < img->width; i++, out += 4)
         {
-          for(int k = 0; k < 3; k++)
-          {
-            out[k] = (float)in(j, cpp * i + k) / (float)UINT16_MAX;
-          }
+          out[0] = out[1] = out[2] = (float)in(j, cpp * i) / (float)UINT16_MAX;
+          out[3] = 0.0f;
         }
       }
     }
@@ -508,10 +501,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
         for(int i = 0; i < img->width; i++, out += 4)
         {
-          for(int k = 0; k < 3; k++)
-          {
-            out[k] = in(j, cpp * i + k);
-          }
+          out[0] = out[1] = out[2] = in(j, cpp * i);
+          out[3] = 0.0f;
         }
       }
     }

@@ -37,10 +37,11 @@
 // 3.6.0 was 7.0.0 (added naming to events, selections, and actions)
 // 3.8.0 was 8.0.0 (moved to lua 5.4 and added some events)
 // 4.2.0 was 9.0.0 (view toolbox functions and snapshot filename removed)
+// 4.4.0 was 9.1.0 (added mimic and dt_lua_image_t changes)
 /* incompatible API change */
 #define LUA_API_VERSION_MAJOR 9
 /* backward compatible API change */
-#define LUA_API_VERSION_MINOR 0
+#define LUA_API_VERSION_MINOR 1
 /* bugfixes that should not change anything to the API */
 #define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */

@@ -25,7 +25,7 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
 
 * Install required libraries and dependencies for darktable:
     ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libavif,libheif,libjxl,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,icu,iso-codes,python-jsonschema}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{libxslt,python-jsonschema,curl,drmingw,exiv2,gettext,gmic,graphicsmagick,gtk3,icu,imath,iso-codes,lcms2,lensfun,libavif,libgphoto2,libheif,libjpeg-turbo,libjxl,libpng,libraw,librsvg,libsecret,libtiff,libwebp,libxml2,lua,openexr,openjpeg2,osm-gps-map,pugixml,sqlite3,zlib}
     ```
 
 * Install optional libraries and dependencies:
@@ -83,13 +83,11 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
     ```bash
     ./build.sh --prefix /opt/darktable --build-type Release --build-generator Ninja --install
     ```
-    or performing the steps manually:
+    or by performing the steps manually:
     ```bash
-    mkdir build
-    cd build
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ..
-    cmake --build .
-    cmake --install .
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -S . -B build
+    cmake --build build
+    cmake --install build
     ```
     After this darktable will be installed in `/opt/darktable `directory and can be started by typing `/opt/darktable/bin/darktable.exe` from the UCRT64 terminal.
 
@@ -99,12 +97,12 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
 
 * For building the installer image, which will create darktable-<VERSION>.exe installer in the current build directory, use:
     ```bash
-    cmake --build . --target package
+    cmake --build build --target package
     ```
 
     *NOTE: The package created will be optimized for the machine on which it has been built, but it could not run on other PCs with different hardware or different Windows version. If you want to create a "generic" package, change the first cmake command line as follows:*
     ```bash
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ..
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON -S . -B build
     ```
 
 While Ninja offers advantages of default parallel builds and reduced build times for incremental builds (builds on Windows are significantly slower than with Linux based systems), you can also fall back to more traditional Makefiles should the need arise. You'll need to install Autotools from an MSYS terminal with:
@@ -116,10 +114,8 @@ pacman -S --needed mingw-w64-ucrt-x86_64-autotools
 Now return to the UCRT64 terminal and use this sequence instead:
 
 ```bash
-mkdir build
-cd build
-cmake -G 'MSYS Makefiles' --parallel 6 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ..
-cmake --build .
+cmake -G 'MSYS Makefiles' --parallel 6 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -S . -B build
+cmake --build build
 ```
 
 Feel free to adjust the number of parallel jobs according to your needs: Ninja will use all available CPU cores by default, while Makefiles will assume no parallel jobs if not explicitly specified.

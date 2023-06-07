@@ -89,7 +89,7 @@ dt_input_device_t dt_register_input_driver(dt_lib_module_t *module, const dt_inp
 void dt_shortcut_key_press(dt_input_device_t id, const guint time, const guint key);
 void dt_shortcut_key_release(dt_input_device_t id, const guint time, const guint key);
 gboolean dt_shortcut_key_active(dt_input_device_t id, const guint key);
-float dt_shortcut_move(dt_input_device_t id, const guint time, const guint move, const double size);
+float dt_shortcut_move(dt_input_device_t id, const guint time, const guint move, const float move_size);
 
 typedef enum dt_shortcut_flag_t
 {

@@ -42,7 +42,7 @@ static int _selection_cb(lua_State *L)
     while(lua_next(L, -2) != 0)
     {
       /* uses 'key' (at index -2) and 'value' (at index -1) */
-      int imgid;
+      dt_imgid_t imgid = NO_IMGID;
       luaA_to(L, dt_lua_image_t, &imgid, -1);
       new_selection = g_list_prepend(new_selection, GINT_TO_POINTER(imgid));
       lua_pop(L, 1);
@@ -66,8 +66,8 @@ static int _selection_cb(lua_State *L)
 
 static int _hovered_cb(lua_State *L)
 {
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
-  if(mouse_over_id == -1)
+  dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
+  if(!dt_is_valid_imgid(mouse_over_id))
   {
     lua_pushnil(L);
   }
@@ -122,17 +122,22 @@ static int _action_cb(lua_State *L)
   const gchar *element = lua_type(L, arg) == LUA_TSTRING ? luaL_checkstring(L, arg++) : NULL;
   const gchar *effect = lua_type(L, arg) == LUA_TSTRING ? luaL_checkstring(L, arg++) : NULL;
 
-  float move_size = NAN;
+  float move_size = DT_READ_ACTION_ONLY;
 
   if(lua_type(L, arg) == LUA_TSTRING && strlen(luaL_checkstring(L, arg)) == 0)
-    arg++; // "" -> NAN
+    arg++; // "" -> DT_READ_ACTION_ONLY
   else if(lua_type(L, arg) != LUA_TNONE)
     move_size = luaL_checknumber(L, arg++);
+  if(dt_isnan(move_size))
+    move_size = DT_READ_ACTION_ONLY;
 
   if(lua_type(L, arg) == LUA_TNUMBER)
     instance = luaL_checkinteger(L, arg++);
 
   float ret_val = dt_action_process(action, instance, element, effect, move_size);
+
+  if(DT_ACTION_IS_INVALID(ret_val))
+    ret_val = NAN;
 
   lua_pushnumber(L, ret_val);
 
@@ -379,8 +384,8 @@ static int _lua_job_valid(lua_State *L)
 
 static void _on_mouse_over_image_changed(gpointer instance, gpointer user_data)
 {
-  int imgid = dt_control_get_mouse_over_id();
-  if(imgid != -1)
+  const dt_imgid_t imgid = dt_control_get_mouse_over_id();
+  if(dt_is_valid_imgid(imgid))
   {
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
@@ -492,4 +497,3 @@ int dt_lua_init_gui(lua_State *L)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

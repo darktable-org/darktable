@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -293,41 +293,41 @@ void init_presets(dt_lib_module_t *self)
   params.rule[2].mode = 0;
   params.rule[2].off = 0;
   params.rule[2].topbar = 1;
-  dt_lib_presets_add(_("initial setting"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("initial setting"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   // based on aspect-ratio
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[1;1]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("square"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("square"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, ">=1.01", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("landscape"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("landscape"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "<=0.99", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   // presets based on import
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
                DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, "[-0000:00:01 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("imported: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("imported: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
                DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, "[-0000:00:30 00:00:00;now]", PARAM_STRING_SIZE);
   dt_lib_presets_add(_("imported: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params),
-                     TRUE);
+                     TRUE, 0);
 
   // presets based on image metadata (image taken)
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_TIME, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[-0000:00:01 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("taken: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_TIME, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[-0000:00:30 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params), TRUE, 0);
 
 #undef CLEAR_PARAMS
 }
@@ -615,10 +615,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 }
 
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = { "lighttable", "map", "print", NULL };
-  return v;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -1059,14 +1058,15 @@ static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 
   if(rule->topbar)
   {
-    if(rule->w_pin)
+    if(gtk_widget_get_visible(rule->w_pin))
       gtk_widget_set_tooltip_text(rule->w_pin, _("this rule is pinned to the top toolbar\nclick to un-pin"));
     gtk_widget_set_tooltip_text(rule->w_off, _("you can't disable the rule as it is pinned to the toolbar"));
     gtk_widget_set_tooltip_text(rule->w_close, _("you can't remove the rule as it is pinned to the toolbar"));
   }
   else
   {
-    if(rule->w_pin) gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule to the top toolbar"));
+    if(gtk_widget_get_visible(rule->w_pin))
+      gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule to the top toolbar"));
     gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
       gtk_widget_set_tooltip_text(rule->w_off, _("this rule is enabled"));
@@ -1082,7 +1082,7 @@ static void _rule_topbar_toggle(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return;
 
-  if(rule->w_pin)
+  if(gtk_widget_get_visible(rule->w_pin))
     rule->topbar = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_pin));
   else
     rule->topbar = FALSE;
@@ -1241,15 +1241,13 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
     // pin button
-    if(top || _rule_available_for_topbar(prop))
-    {
-      rule->w_pin = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
-      dt_gui_add_class(rule->w_pin, "dt_transparent_background");
-      g_object_set_data(G_OBJECT(rule->w_pin), "rule", rule);
-      g_signal_connect(G_OBJECT(rule->w_pin), "toggled", G_CALLBACK(_rule_topbar_toggle), self);
-      dt_gui_add_class(rule->w_pin, "dt_dimmed");
-      gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_pin, FALSE, FALSE, 0);
-    }
+    rule->w_pin = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
+    dt_gui_add_class(rule->w_pin, "dt_transparent_background");
+    g_object_set_data(G_OBJECT(rule->w_pin), "rule", rule);
+    g_signal_connect(G_OBJECT(rule->w_pin), "toggled", G_CALLBACK(_rule_topbar_toggle), self);
+    dt_gui_add_class(rule->w_pin, "dt_dimmed");
+    gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_pin, FALSE, FALSE, 0);
+    gtk_widget_set_no_show_all(rule->w_pin, TRUE);
 
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
@@ -1258,8 +1256,9 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_close, FALSE, FALSE, 0);
   }
 
+  gtk_widget_set_visible(rule->w_pin, (top || _rule_available_for_topbar(prop)));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), top || !off);
-  if(rule->w_pin) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_pin), top);
+  if(gtk_widget_get_visible(rule->w_pin)) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_pin), top);
   _widget_header_update(rule);
 
   if(newmain)
@@ -2046,7 +2045,7 @@ static void _sort_history_pretty_print(const char *buf, char *out, size_t outsiz
       const dt_introspection_type_enum_tuple_t *list = _collection_sort_names;
       while(list->name && list->value != sortid) list++;
 
-      c = snprintf(out, outsize, "%s%s (%s)", (k > 0) ? " - " : "", list->name,
+      c = snprintf(out, outsize, "%s%s (%s)", (k > 0) ? " - " : "", _(list->name),
                    (sortorder) ? _("DESC") : _("ASC"));
       out += c;
       outsize -= c;
@@ -2125,7 +2124,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(self->widget, "module-filtering");
   dt_gui_add_class(self->widget, "dt_big_btn_canvas");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+  dt_gui_add_help_link(self->widget, self->plugin_name);
 
   d->nb_rules = 0;
   d->params = (dt_lib_filtering_params_t *)g_malloc0(sizeof(dt_lib_filtering_params_t));

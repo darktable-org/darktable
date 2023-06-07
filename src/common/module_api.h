@@ -42,7 +42,7 @@
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer) & (version))) goto api_h_error;
   if(version() != dt_version())
   {
-    fprintf(stderr,
+    dt_print(DT_DEBUG_ALWAYS,
             "[" INCLUDE_API_FROM_MODULE_LOAD "] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n",
             libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()),
             dt_version() < 0 ? "debug" : "opt");
@@ -52,7 +52,7 @@
 
   goto skip_error;
 api_h_error:
-  fprintf(stderr, "[" INCLUDE_API_FROM_MODULE_LOAD "] failed to open `%s': %s\n", module_name, g_module_error());
+  dt_print(DT_DEBUG_ALWAYS, "[" INCLUDE_API_FROM_MODULE_LOAD "] failed to open `%s': %s\n", module_name, g_module_error());
   if(module->module) g_module_close(module->module);
   module->module = NULL;
   return 1;

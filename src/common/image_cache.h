@@ -53,11 +53,11 @@ void dt_image_cache_print(dt_image_cache_t *cache);
 // cachelines to free up space if necessary.
 // if an entry is swapped out like this in the background, this is the latest
 // point where sql and xmp can be synched (unsafe setting).
-dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const int32_t imgid, char mode);
+dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const dt_imgid_t imgid, char mode);
 
 // same as read_get, but doesn't block and returns NULL if the image
 // is currently unavailable.
-dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const int32_t imgid, char mode);
+dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const dt_imgid_t imgid, char mode);
 
 // drops the read lock on an image struct
 void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img);
@@ -68,14 +68,14 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
 void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_image_cache_write_mode_t mode);
 
 // remove the image from the cache
-void dt_image_cache_remove(dt_image_cache_t *cache, const int32_t imgid);
+void dt_image_cache_remove(dt_image_cache_t *cache, const dt_imgid_t imgid);
 
 // register timestamps in cache
-void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t imgid);
-void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, const int32_t imgid, const int32_t sourceid);
-void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_t imgid);
-void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const int32_t imgid);
-void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const int32_t imgid);
+void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid);
+void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, const dt_imgid_t imgid, const dt_imgid_t sourceid);
+void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid);
+void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid);
+void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const dt_imgid_t imgid);
 
 #ifdef __cplusplus
 } // extern "C"

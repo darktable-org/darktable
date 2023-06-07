@@ -430,14 +430,18 @@ int dt_masks_blur_fast(float *const restrict src,
   return 6;
 }
 
-void dt_masks_calc_rawdetail_mask(float *const restrict src,
-                                  float *const restrict mask,
-                                  float *const restrict tmp,
-                                  const int width,
-                                  const int height,
+gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
+                                  float *const restrict src,
                                   const dt_aligned_pixel_t wb)
 {
-  const size_t msize = width * height;
+  const int width = details->roi.width;
+  const int height = details->roi.height;
+  float *mask = details->data;
+
+  const size_t msize = (size_t)width * height;
+  float *tmp = dt_alloc_align_float(msize);
+  if(!tmp) return TRUE;
+
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(tmp, src, msize, wb) \
@@ -445,17 +449,16 @@ void dt_masks_calc_rawdetail_mask(float *const restrict src,
 #endif
   for(size_t idx =0; idx < msize; idx++)
   {
-    const float val = 0.333333333f
-      * (fmaxf(src[4 * idx], 0.0f) / wb[0] + fmaxf(src[4 * idx + 1], 0.0f)
-         / wb[1] + fmaxf(src[4 * idx + 2], 0.0f) / wb[2]);
-    tmp[idx] = sqrtf(val); // add a gamma. sqrtf should make noise
-                           // variance the same for all image
+    const float val = CLIP(src[4 * idx] / wb[0])
+                    + CLIP(src[4 * idx + 1] / wb[1])
+                    + CLIP(src[4 * idx + 2] / wb[2]);
+    // add a gamma. sqrtf should make noise variance the same for all image
+    tmp[idx] = sqrtf(val / 3.0f);
   }
 
-  const float scale = 1.0f / 16.0f;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, tmp, width, height, scale) \
+  dt_omp_firstprivate(mask, tmp, width, height) \
   schedule(simd:static) aligned(mask, tmp : 64)
  #endif
   for(size_t row = 1; row < height - 1; row++)
@@ -471,10 +474,12 @@ void dt_masks_calc_rawdetail_mask(float *const restrict src,
                     + 162.0f * (tmp[idx-width]   - tmp[idx+width])
                      + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
       const float gradient_magnitude = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-      mask[idx] = scale * gradient_magnitude;
+      mask[idx] = gradient_magnitude / 16.0f;
     }
   }
   dt_masks_extend_border(mask, width, height, 1);
+  dt_free_align(tmp);
+  return FALSE;
 }
 
 static inline float _calcBlendFactor(float val, float threshold)
@@ -485,15 +490,26 @@ static inline float _calcBlendFactor(float val, float threshold)
     return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
 }
 
-void dt_masks_calc_detail_mask(float *const restrict src,
+gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
                                float *const restrict out,
-                               float *const restrict tmp,
-                               const int width,
-                               const int height,
                                const float threshold,
                                const gboolean detail)
 {
-  const size_t msize = width * height;
+  if((details->roi.width <= 0)
+     || (details->roi.height <= 0)
+     || !details->data
+     || (details->hash == 0))
+    return TRUE;
+
+  const size_t msize = (size_t) details->roi.width * details->roi.height;
+  float *tmp = dt_alloc_align_float(msize);
+  if(!tmp)
+  {
+    dt_iop_image_fill(out, 0.0f, details->roi.width, details->roi.height, 1);
+    return TRUE;
+  }
+
+  float *src = details->data;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(src, tmp, msize, threshold, detail, out) \
@@ -501,10 +517,14 @@ void dt_masks_calc_detail_mask(float *const restrict src,
 #endif
   for(size_t idx = 0; idx < msize; idx++)
   {
-    const float blend = _calcBlendFactor(src[idx], threshold);
+    const float blend = CLIP(_calcBlendFactor(src[idx], threshold));
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
-  dt_masks_blur_9x9(tmp, out, width, height, 2.0f);
+  // for very small images the blurring should be slightly less to have an effect at all
+  const float blurring = (MIN(details->roi.width, details->roi.height) < 500) ? 1.5f : 2.0f;
+  dt_masks_blur_9x9(tmp, out, details->roi.width, details->roi.height, blurring);
+  dt_free_align(tmp);
+  return FALSE;
 }
 #undef FAST_BLUR_5
 #undef FAST_BLUR_9

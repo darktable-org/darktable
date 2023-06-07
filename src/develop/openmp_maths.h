@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2020 - darktable developers.
+   Copyright (C) 2020-2023 - darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -60,7 +60,6 @@ extern float logf(const float x);
 
 #endif
 
-
 /* Bring our own optimized maths functions because Clang makes dumb shit */
 
 #ifdef _OPENMP
@@ -119,8 +118,7 @@ static inline float v_sumf(const float vector[3])
 static inline float fmaxabsf(const float a, const float b)
 {
   // Find the max in absolute value and return it with its sign
-  return (fabsf(a) > fabsf(b) && !isnan(a)) ? a :
-                                            (isnan(b)) ? 0.f : b;
+  return (fabsf(a) > fabsf(b)) ? a : (dt_isnan(b)) ? 0.f : b;
 }
 
 
@@ -130,8 +128,7 @@ static inline float fmaxabsf(const float a, const float b)
 static inline float fminabsf(const float a, const float b)
 {
   // Find the min in absolute value and return it with its sign
-  return (fabsf(a) < fabsf(b) && !isnan(a)) ? a :
-                                            (isnan(b)) ? 0.f : b;
+  return (fabsf(a) < fabsf(b)) ? a : (dt_isnan(b)) ? 0.f : b;
 }
 
 

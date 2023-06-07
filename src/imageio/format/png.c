@@ -123,7 +123,7 @@ static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *prof
 
 int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   dt_imageio_png_t *p = (dt_imageio_png_t *)p_tmp;
@@ -320,24 +320,6 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
 
 #undef NUM_BYTES_CHECK
 }
-
-#if 0
-int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
-{
-  if(setjmp(png_jmpbuf(png->png_ptr)))
-  {
-    fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
-    return 1;
-  }
-  uint32_t bit_depth = png_get_bit_depth(png->png_ptr, png->info_ptr);
-  // strip down to 8 bit channels
-  if(bit_depth == 16)
-    png_set_strip_16(png->png_ptr);
-
-  return 0;
-}
-#endif
 
 int read_image(dt_imageio_module_data_t *p_tmp, uint8_t *out)
 {

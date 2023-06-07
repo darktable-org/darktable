@@ -66,7 +66,7 @@ typedef struct dt_imageio_tiff_gui_t
 
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
@@ -386,7 +386,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
       while(g_hash_table_iter_next(&rm_iter, &key, &value))
       {
         if(free_mask) dt_free_align(raster_mask);
-        raster_mask = dt_dev_get_raster_mask(pipe, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
+        raster_mask = dt_dev_get_raster_mask(piece, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
 
 
         size_t w = d->global.width, h = d->global.height;
@@ -584,25 +584,6 @@ exit:
 
   return rc;
 }
-
-#if 0
-int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
-{
-  tiff->handle = TIFFOpen(filename, "rl");
-  if( tiff->handle )
-  {
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGEWIDTH, &tiff->width);
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGELENGTH, &tiff->height);
-  }
-  return 1;
-}
-
-int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
-{
-  TIFFClose(tiff->handle);
-  return 1;
-}
-#endif
 
 size_t params_size(dt_imageio_module_format_t *self)
 {
@@ -904,7 +885,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // shortfile option combo box
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("b&w image"), NULL, shortmode,
-                               shortfile_combobox_changed, self, N_("write rgb colors"), N_("write grayscale"));
+                               shortfile_combobox_changed, self, N_("write RGB colors"), N_("write grayscale"));
   dt_bauhaus_combobox_set_default(gui->shortfiles,
                                   dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->shortfiles, TRUE, TRUE, 0);

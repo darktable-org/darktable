@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2022 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -40,7 +41,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 typedef enum dt_iop_sigmoid_methods_type_t
 {
   DT_SIGMOID_METHOD_PER_CHANNEL = 0,     // $DESCRIPTION: "per channel"
-  DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "rgb ratio"
+  DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "RGB ratio"
 } dt_iop_sigmoid_methods_type_t;
 
 
@@ -121,6 +122,28 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_presets(dt_iop_module_so_t *self)
 {
+  // auto-applied scene-referred default
+  self->pref_based_presets = TRUE;
+
+  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
+  const gboolean auto_apply_sigmoid = strcmp(workflow, "scene-referred (sigmoid)") == 0;
+
+  if(auto_apply_sigmoid)
+  {
+    dt_gui_presets_add_generic
+      (_("scene-referred default"), self->op, self->version(),
+       NULL, 0,
+       1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+    dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
+                              self->version(), FOR_RAW | FOR_MATRIX);
+
+    dt_gui_presets_update_autoapply(_("scene-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
+
+  // others
+
   dt_iop_sigmoid_params_t p;
   p.display_white_target = 100.0f;
   p.display_black_target = 0.0152f;
@@ -139,7 +162,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.middle_grey_contrast = 1.0f;
   p.contrast_skewness = 0.0f;
   p.color_processing = DT_SIGMOID_METHOD_RGB_RATIO;
-  dt_gui_presets_add_generic(_("reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("Reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Declared here as it is used in the commit params function
@@ -157,7 +180,7 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
   const float paper_response = magnitude * powf(film_response / (paper_exp + film_response), paper_power);
 
   // Safety check for very large floats that cause numerical errors
-  return isnan(paper_response) ? magnitude : paper_response;
+  return dt_isnan(paper_response) ? magnitude : paper_response;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -677,7 +700,8 @@ void gui_init(dt_iop_module_t *self)
     (&g->cs,
      "plugins/darkroom/sigmoid/expand_values",
      _("display luminance"),
-     GTK_BOX(self->widget));
+     GTK_BOX(self->widget),
+     DT_ACTION(self));
   gtk_widget_set_tooltip_text(g->cs.expander,
                                 _("set display black/white targets"));
   GtkWidget *main_box = self->widget;

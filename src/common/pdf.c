@@ -81,7 +81,7 @@ int dt_pdf_parse_length(const char *str, float *length)
   }
 
   // we don't want NAN, INF or parse errors (== 0.0)
-  if(!isnormal(*length))
+  if(!dt_isnormal(*length))
     goto end;
 
   SKIP_SPACES(endptr);
@@ -131,7 +131,7 @@ int dt_pdf_parse_paper_size(const char *str, float *width, float *height)
 
   *width =  g_ascii_strtod(nptr, &endptr);
 
-  if(endptr == NULL || *endptr == '\0' || errno == ERANGE || !isnormal(*width))
+  if(endptr == NULL || *endptr == '\0' || errno == ERANGE || !dt_isnormal(*width))
     goto end;
 
   nptr = endptr;
@@ -163,7 +163,7 @@ int dt_pdf_parse_paper_size(const char *str, float *width, float *height)
 
   *height =  g_ascii_strtod(nptr, &endptr);
 
-  if(endptr == NULL || *endptr == '\0' || errno == ERANGE || !isnormal(*height))
+  if(endptr == NULL || *endptr == '\0' || errno == ERANGE || !dt_isnormal(*height))
     goto end;
 
   nptr = endptr;

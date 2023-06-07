@@ -130,7 +130,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->version = 0;
   params->data->stars = 0;
   params->data->exif_exposure = 0.0f;
-  params->data->exif_exposure_bias = NAN;
+  params->data->exif_exposure_bias = DT_EXIF_TAG_UNINITIALIZED;
   params->data->exif_aperture = 0.0f;
   params->data->exif_focal_length = 0.0f;
   params->data->exif_focus_distance = 0.0f;
@@ -138,7 +138,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->latitude = NAN;
   params->data->elevation = NAN;
   params->data->show_msec = dt_conf_get_bool("lighttable/ui/milliseconds");
-  if(params->imgid)
+  if(dt_is_valid_imgid(params->imgid))
   {
     params->data->camera_maker = NULL;
     params->data->camera_alias = NULL;
@@ -162,7 +162,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_exposure_bias = img->exif_exposure_bias;
     params->data->exif_aperture = img->exif_aperture;
     params->data->exif_focal_length = img->exif_focal_length;
-    if(!isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
+    if(!dt_isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
       params->data->exif_focus_distance = img->exif_focus_distance;
     params->data->longitude = img->geoloc.longitude;
     params->data->latitude = img->geoloc.latitude;
@@ -210,7 +210,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
 
 static void _cleanup_expansion(dt_variables_params_t *params)
 {
-  if(params->imgid)
+  if(dt_is_valid_imgid(params->imgid))
   {
     if(params->data->datetime)
     {
@@ -384,7 +384,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "EXIF.EXPOSURE.BIAS")
           || _has_prefix(variable, "EXIF_EXPOSURE_BIAS"))
   {
-    if(!isnan(params->data->exif_exposure_bias))
+    if(params->data->exif_exposure_bias != DT_EXIF_TAG_UNINITIALIZED)
       result = g_strdup_printf("%+.2f", params->data->exif_exposure_bias);
   }
   else if(_has_prefix(variable, "EXIF.EXPOSURE")
@@ -405,7 +405,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
 
   else if(_has_prefix(variable, "EXIF.FOCAL.LENGTH")
           || _has_prefix(variable, "EXIF_FOCAL_LENGTH"))
-    result = g_strdup_printf("%d", (int)params->data->exif_focal_length);
+    result = g_strdup_printf("%.1f", params->data->exif_focal_length);
 
   else if(_has_prefix(variable, "EXIF.FOCUS.DISTANCE")
           || _has_prefix(variable, "EXIF_FOCUS_DISTANCE"))

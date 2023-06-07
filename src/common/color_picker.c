@@ -282,7 +282,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
                             const dt_iop_order_iccprofile_info_t *const profile)
 {
   dt_times_t start_time = { 0 }, end_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+  dt_get_perf_times(&start_time);
 
   if(dsc->channels == 4u)
   {
@@ -341,7 +341,9 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
     else
     {
       // fallback, but this shouldn't happen
-      fprintf(stderr, "[colorpicker] unknown colorspace conversion from %d to %d\n", image_cst, picker_cst);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[colorpicker] unknown colorspace conversion from %d to %d\n",
+               image_cst, picker_cst);
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
 
@@ -363,9 +365,11 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_get_times(&end_time);
-    fprintf(stderr, "colorpicker stats reading %u channels (filters %u) cst %d -> %d size %zu denoised %d took %.3f secs (%.3f CPU)\n",
-            dsc->channels, dsc->filters, image_cst, picker_cst, _box_size(box), denoise,
-            end_time.clock - start_time.clock, end_time.user - start_time.user);
+    dt_print(DT_DEBUG_ALWAYS,
+             "colorpicker stats reading %u channels (filters %u) cst %d -> %d "
+             "size %zu denoised %d took %.3f secs (%.3f CPU)\n",
+             dsc->channels, dsc->filters, image_cst, picker_cst, _box_size(box), denoise,
+             end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 }
 

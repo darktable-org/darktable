@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -268,7 +268,7 @@ static inline int solve_hermitian(const float *const restrict A,
   // x and y are n vectors. Output the result in y
 
   // A and y need to be 64-bits aligned, which is darktable's default memory alignment
-  // if you used DT_ALIGNED_ARRAY and dt_alloc_sse_ps(...) to declare arrays and pointers
+  // if you used DT_ALIGNED_ARRAY and dt_alloc_align_float(...) to declare arrays and pointers
 
   // If you are sure about the properties of the matrix A (symmetrical square definite positive)
   // because you built it yourself, set checks == FALSE to branch to the fast track that
@@ -280,38 +280,40 @@ static inline int solve_hermitian(const float *const restrict A,
   // clock_t start = clock();
 
   int valid = 0;
-  float *const restrict x = dt_alloc_sse_ps(n);
-  float *const restrict L = dt_alloc_sse_ps(n * n);
+  float *const restrict x = dt_alloc_align_float(n);
+  float *const restrict L = dt_alloc_align_float(n * n);
 
   if(!x || !L)
   {
+    if(x) dt_free_align(x);
+    if(L) dt_free_align(L);
     dt_control_log(_("Choleski decomposition failed to allocate memory, check your RAM settings"));
-    fprintf(stdout, "Choleski decomposition failed to allocate memory, check your RAM settings\n");
+    dt_print(DT_DEBUG_ALWAYS, "Choleski decomposition failed to allocate memory, check your RAM settings\n");
     return 0;
   }
 
   // LU decomposition
   valid = (checks) ? choleski_decompose_safe(A, L, n) :
                      choleski_decompose_fast(A, L, n) ;
-  if(!valid) fprintf(stdout, "Cholesky decomposition returned NaNs\n");
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky decomposition returned NaNs\n");
 
   // Triangular descent
   if(valid)
     valid = (checks) ? triangular_descent_safe(L, y, x, n) :
                        triangular_descent_fast(L, y, x, n) ;
-  if(!valid) fprintf(stdout, "Cholesky LU triangular descent returned NaNs\n");
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular descent returned NaNs\n");
 
   // Triangular ascent
   if(valid)
     valid = (checks) ? triangular_ascent_safe(L, x, y, n) :
                        triangular_ascent_fast(L, x, y, n);
-  if(!valid) fprintf(stdout, "Cholesky LU triangular ascent returned NaNs\n");
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular ascent returned NaNs\n");
 
   dt_free_align(x);
   dt_free_align(L);
 
   //clock_t end = clock();
-  //fprintf(stdout, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
+  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
 
   return valid;
 }
@@ -374,15 +376,17 @@ static inline int pseudo_solve(float *const restrict A,
   if(m < n)
   {
     valid = 0;
-    fprintf(stdout, "Pseudo solve: cannot cast %zu × %zu matrice\n", m, n);
+    dt_print(DT_DEBUG_ALWAYS, "Pseudo solve: cannot cast %zu × %zu matrice\n", m, n);
     return valid;
   }
 
-  float *const restrict A_square = dt_alloc_sse_ps(n * n);
-  float *const restrict y_square = dt_alloc_sse_ps(n);
+  float *const restrict A_square = dt_alloc_align_float(n * n);
+  float *const restrict y_square = dt_alloc_align_float(n);
 
   if(!A_square || !y_square)
   {
+    if(A_square) dt_free_align(A_square);
+    if(y_square) dt_free_align(y_square);
     dt_control_log(_("Choleski decomposition failed to allocate memory, check your RAM settings"));
     return 0;
   }
@@ -417,7 +421,7 @@ static inline int pseudo_solve(float *const restrict A,
   dt_free_align(A_square);
 
   //clock_t end = clock();
-  //fprintf(stdout, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
+  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
 
   return valid;
 }

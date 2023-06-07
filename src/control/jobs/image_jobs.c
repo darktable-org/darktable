@@ -22,7 +22,7 @@
 
 typedef struct dt_image_load_t
 {
-  int32_t imgid;
+  dt_imgid_t imgid;
   dt_mipmap_size_t mip;
 } dt_image_load_t;
 

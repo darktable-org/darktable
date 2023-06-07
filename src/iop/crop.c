@@ -231,7 +231,7 @@ static void _commit_box(dt_iop_module_t *self,
     || fabs(p->cw - old[2]) > eps
     || fabs(p->ch - old[3]) > eps;
 
-  // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+  // dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
 
   if(changed)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1164,9 +1164,9 @@ void gui_init(struct dt_iop_module_t *self)
       // some sanity check
       if(n == 0 || d == 0)
       {
-        fprintf(stderr,
-                "invalid ratio format for `%s'. it should be \"number:number\"\n",
-                nv->key);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "invalid ratio format for `%s'. it should be \"number:number\"\n",
+                 nv->key);
         dt_control_log
           (_("invalid ratio format for `%s'. it should be \"number:number\""),
            nv->key);
@@ -1180,9 +1180,9 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else
     {
-      fprintf(stderr,
-              "invalid ratio format for `%s'. it should be \"number:number\"\n",
-              nv->key);
+      dt_print(DT_DEBUG_ALWAYS,
+               "invalid ratio format for `%s'. it should be \"number:number\"\n",
+               nv->key);
       dt_control_log
         (_("invalid ratio format for `%s'. it should be \"number:number\""),
          nv->key);
@@ -1250,7 +1250,8 @@ void gui_init(struct dt_iop_module_t *self)
     (&g->cs,
      "plugins/darkroom/crop/expand_margins",
      _("margins"),
-     GTK_BOX(box_enabled));
+     GTK_BOX(box_enabled),
+     DT_ACTION(self));
 
   self->widget = GTK_WIDGET(g->cs.container);
 
@@ -1318,16 +1319,21 @@ static _grab_region_t _gui_get_grab(float pzx,
     // we are inside the crop box
     grab = GRAB_CENTER;
 
-    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border)
+    float h_border = border / wd;
+    float v_border = border / ht;
+    if(!(g->clip_x || g->clip_y || g->clip_w != 1.0f || g->clip_h != 1.0f))
+      h_border = v_border = 0.45;
+
+    if(pzx >= g->clip_x && pzx < g->clip_x + h_border)
       grab |= GRAB_LEFT; // left border
 
-    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border)
+    if(pzy >= g->clip_y && pzy < g->clip_y + v_border)
       grab |= GRAB_TOP;  // top border
 
-    if(pzx <= g->clip_x + g->clip_w && pzx * wd > (g->clip_w + g->clip_x) * wd - border)
+    if(pzx <= g->clip_x + g->clip_w && pzx > (g->clip_w + g->clip_x) - h_border)
       grab |= GRAB_RIGHT; // right border
 
-    if(pzy <= g->clip_y + g->clip_h && pzy * ht > (g->clip_h + g->clip_y) * ht - border)
+    if(pzy <= g->clip_y + g->clip_h && pzy > (g->clip_h + g->clip_y) - v_border)
       grab |= GRAB_BOTTOM; // bottom border
   }
   return grab;
@@ -1538,16 +1544,18 @@ int mouse_moved(struct dt_iop_module_t *self,
       if(g->shift_hold)
       {
         /* the center is locked, scale crop radial with locked ratio */
-        float xx = 0.0f;
-        float yy = 0.0f;
-
+        float ratio = 0.0f;
         if(g->cropping & GRAB_LEFT || g->cropping & GRAB_RIGHT)
-          xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+        {
+          float xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+          ratio = (g->prev_clip_w - 2.0f * xx) / g->prev_clip_w;
+        }
         if(g->cropping & GRAB_TOP || g->cropping & GRAB_BOTTOM)
-          yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
-
-        float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
-                            (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+        {
+          float yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
+          ratio = fmaxf(ratio,
+                        (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+        }
 
         // ensure we don't get too small crop size
         if(g->prev_clip_w * ratio < 0.1f)

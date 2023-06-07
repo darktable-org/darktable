@@ -220,7 +220,7 @@ static gboolean _colors_enter_notify(GtkWidget *widget, GdkEventCrossing *event,
 
 static float _action_process_colors(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  if(!target) return NAN;
+  if(!target) return DT_ACTION_NOT_VALID;
 
   _widgets_colors_t *colors = g_object_get_data(G_OBJECT(target), "colors_self");
   GtkWidget *w = element ? colors->colors[element - 1] : colors->operator;
@@ -228,7 +228,7 @@ static float _action_process_colors(gpointer target, dt_action_element_t element
   const int mask_k = (1 << (element - 1)) | (1 << (element - 1 + 12));
   int mask = _get_mask(rule->raw_text) & (element ? mask_k : CL_AND_MASK);
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     GdkEventButton e = { .state = effect == DT_ACTION_EFFECT_TOGGLE_CTRL ? GDK_CONTROL_MASK : 0 };
 

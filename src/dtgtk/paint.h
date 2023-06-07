@@ -293,6 +293,8 @@ void dtgtk_cairo_paint_masks_union(cairo_t *cr, gint x, gint y, gint w, gint h, 
 void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an op difference icon for masks */
 void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint an op sum icon for masks */
+void dtgtk_cairo_paint_masks_sum(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an op exclusion icon for masks */
 void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a used icon for masks */

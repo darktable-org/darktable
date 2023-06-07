@@ -45,7 +45,7 @@
 #include "win/main_wrapper.h"
 #endif
 
-static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mipmap_size_t max_mip, const int32_t min_imgid, const int32_t max_imgid)
+static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mipmap_size_t max_mip, const dt_imgid_t min_imgid, const int32_t max_imgid)
 {
   fprintf(stderr, _("creating cache directories\n"));
   for(dt_mipmap_size_t k = min_mip; k <= max_mip; k++)
@@ -94,7 +94,7 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int32_t imgid = sqlite3_column_int(stmt, 0);
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     const char *imgfilename = (const char*)sqlite3_column_text(stmt, 1);
 
     counter++;
@@ -162,7 +162,7 @@ int main(int argc, char *arg[])
   // parse command line arguments
   dt_mipmap_size_t min_mip = DT_MIPMAP_0;
   dt_mipmap_size_t max_mip = DT_MIPMAP_2;
-  int32_t min_imgid = 0;
+  dt_imgid_t min_imgid = NO_IMGID;
   int32_t max_imgid = INT32_MAX;
 
   int k;

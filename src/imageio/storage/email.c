@@ -35,7 +35,7 @@ DT_MODULE(2)
 
 typedef struct _email_attachment_t
 {
-  uint32_t imgid; // The image id of exported image
+  dt_imgid_t imgid; // The image id of exported image
   gchar *file;    // Full filename of exported image
 } _email_attachment_t;
 
@@ -96,7 +96,7 @@ void gui_reset(dt_imageio_module_storage_t *self)
 {
 }
 
-int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
+int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const dt_imgid_t imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
@@ -252,13 +252,14 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   }
 }
 
-int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format)
+gboolean supported(struct dt_imageio_module_storage_t *storage,
+                   struct dt_imageio_module_format_t *format)
 {
   const char *mime = format->mime(NULL);
   if(mime[0] == '\0') // this seems to be the copy format
-    return 0;
+    return FALSE;
 
-  return 1;
+  return TRUE;
 }
 
 // clang-format off
@@ -266,4 +267,3 @@ int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_mod
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

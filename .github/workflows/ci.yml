@@ -1,6 +1,6 @@
 name: CI
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -19,6 +19,7 @@ on:
         - "data/style/**"
         - "data/themes/**"
         - "data/watermarks/**"
+        - "tools/*"
         - "**.md"
   pull_request:
     branches:
@@ -33,6 +34,7 @@ on:
         - "data/style/**"
         - "data/themes/**"
         - "data/watermarks/**"
+        - "tools/*"
         - "**.md"
 
 permissions:
@@ -49,10 +51,8 @@ jobs:
         os:
           - { label: ubuntu-latest, code: latest }
         compiler:
-          - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
-          - { compiler: GNU11,  CC: gcc-11,   CXX: g++-11,     packages: gcc-11 g++-11 }
           - { compiler: GNU12,  CC: gcc-12,   CXX: g++-12,     packages: gcc-12 g++-12 }
-          - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
+          - { compiler: LLVM15, CC: clang-15, CXX: clang++-15, packages: clang-15 libomp-15-dev llvm-15-dev libc++-15-dev libc++abi1-15 lld-15 clang-tools-15 mlir-15-tools libmlir-15-dev}
         btype:
           - Release
         target:
@@ -80,11 +80,11 @@ jobs:
           sudo add-apt-repository -y universe
           sudo add-apt-repository -y multiverse
           sudo apt-get update
-          sudo apt-get -y install \
+          sudo eatmydata apt-get -y install \
             ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
-          sudo apt-get -y install \
+          sudo eatmydata apt-get -y install \
             build-essential \
             appstream-util \
             desktop-file-utils \
@@ -165,16 +165,17 @@ jobs:
           cd "${SRC_DIR}/src/tests/integration/"
           ./run.sh --no-opencl --no-deltae --fast-fail
 
-  Win64:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+  Windows:
+    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
       matrix:
         btype:
           - Debug
-        compiler:
-          - { compiler: GNU,  CC: gcc,   CXX: g++ }
+        msystem:
+          #- CLANG64
+          - UCRT64
         target:
           - skiptest
         generator:
@@ -185,8 +186,6 @@ jobs:
       run:
         shell: msys2 {0}
     env:
-      CC: ${{ matrix.compiler.CC }}
-      CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
@@ -198,9 +197,8 @@ jobs:
     steps:
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: ucrt64
+          msystem: ${{ matrix.msystem }}
           install: >-
-            base-devel
             git
             intltool
             po4a
@@ -208,10 +206,11 @@ jobs:
             cc:p
             cmake:p
             cmocka:p
+            libxslt:p
             ninja:p
             nsis:p
             python-jsonschema:p
-            dbus-glib:p
+            curl:p
             drmingw:p
             exiv2:p
             gcc-libs:p
@@ -220,21 +219,22 @@ jobs:
             graphicsmagick:p
             gtk3:p
             icu:p
+            imath:p
             iso-codes:p
             lcms2:p
             lensfun:p
             libavif:p
-            libexif:p
             libgphoto2:p
             libheif:p
             libjpeg-turbo:p
             libjxl:p
+            libpng:p
             libraw:p
+            librsvg:p
             libsecret:p
             libtiff:p
             libwebp:p
             libxml2:p
-            libxslt:p
             lua:p
             omp:p
             openexr:p
@@ -245,7 +245,7 @@ jobs:
             SDL2:p
             sqlite3:p
             zlib:p
-          update: true
+          update: false
       - run: git config --global core.autocrlf input
         shell: bash
       - uses: actions/checkout@v3
@@ -258,7 +258,6 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Check if it runs
-        if: ${{success() && matrix.compiler.compiler == 'GNU' }} # LLVM build on windws for some reason breaks in imageio_rawspeed...
         run: |
           $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe --version || true
@@ -276,15 +275,15 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.generator }}
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-11,    xcode: 12.5.1, deployment: 11.3 }
-          - { os: macos-11,    xcode: 13.2.1, deployment: 12.1 }
-          - { os: macos-12,    xcode: 13.4,   deployment: 12.3 }
+          - { os: macos-12,    xcode: 14.2,   deployment: 12.5 } # LLVM14
+          - { os: macos-12,    xcode: 13.4,   deployment: 12.0 } # LLVM13
+          - { os: macos-11,    xcode: 13.2.1, deployment: 11.3 } # LLVM12
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Debug ]
@@ -292,6 +291,7 @@ jobs:
           - skiptest
         generator:
           - Ninja
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
@@ -300,6 +300,7 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
@@ -316,7 +317,9 @@ jobs:
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
-          brew link --force libomp # fix for keg-only libomp
+          # handle keg-only libs
+          brew link --force libomp
+          brew link --force libsoup@2
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
@@ -335,4 +338,4 @@ jobs:
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0 || true # OpenMP builds crash for most configs
+                 --conf plugins/lighttable/export/iccintent=0

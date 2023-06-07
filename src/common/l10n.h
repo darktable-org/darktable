@@ -34,7 +34,7 @@ typedef struct dt_l10n_t
   int sys_default;
 } dt_l10n_t;
 
-dt_l10n_t *dt_l10n_init(gboolean init_list);
+dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list);
 
 const char *dt_l10n_get_name(const dt_l10n_language_t *language);
 // clang-format off
@@ -42,4 +42,3 @@ const char *dt_l10n_get_name(const dt_l10n_language_t *language);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

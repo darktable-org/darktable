@@ -5,7 +5,7 @@
   <xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz'" />
   <xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'" />
   <!-- The start of the gui generating functions -->
-  <xsl:variable name="tab_start"> (GtkWidget *dialog, GtkWidget *stack)
+  <xsl:variable name="tab_start"> (GtkWidget *dialog, GtkWidget *stack, const char *title)
 {
   GtkWidget *widget, *label, *labelev, *viewport, *box;
   GtkWidget *grid = gtk_grid_new();
@@ -14,12 +14,22 @@
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   int line = 0;
   char tooltip[1024];
+  GtkWidget *tab_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   viewport = gtk_viewport_new(NULL, NULL);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
+  GtkWidget *help = gtk_button_new_with_label(_("?"));
+  gtk_widget_set_halign(help, GTK_ALIGN_END);
+  g_object_set_data_full(G_OBJECT(help), "dt-help-url",
+                         g_strdup_printf("preferences-settings/%s/", title), g_free);
+  g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
+  gtk_box_pack_start(GTK_BOX(tab_box), scroll, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(scroll), viewport);
   gtk_container_add(GTK_CONTAINER(viewport), grid);
+  gtk_box_pack_end(GTK_BOX(tab_box), help, FALSE, FALSE, 0);
+  gtk_stack_add_titled(GTK_STACK(stack), tab_box, _(title), _(title));
+
 </xsl:variable>
 
   <xsl:variable name="tab_end">
@@ -189,7 +199,7 @@ gboolean restart_required = FALSE;
 
   <!-- lighttable -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_lighttable</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("lighttable"), _("lighttable"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_lighttable</xsl:text><xsl:value-of select="$tab_start"/>
 
   <!-- general section -->
   <xsl:text>
@@ -226,7 +236,7 @@ gboolean restart_required = FALSE;
 
   <!-- darkroom -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_darkroom</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("darkroom"), _("darkroom"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_darkroom</xsl:text><xsl:value-of select="$tab_start"/>
 
   <!-- general section -->
   <xsl:text>
@@ -263,7 +273,7 @@ gboolean restart_required = FALSE;
 
   <!-- processing -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_processing</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("processing"), _("processing"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_processing</xsl:text><xsl:value-of select="$tab_start"/>
 
   <xsl:text>
     {
@@ -283,7 +293,7 @@ gboolean restart_required = FALSE;
 
   <xsl:text>
     {
-      GtkWidget *seclabel = gtk_label_new(_("cpu / gpu / memory"));
+      GtkWidget *seclabel = gtk_label_new(_("CPU / GPU / memory"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -300,7 +310,7 @@ gboolean restart_required = FALSE;
 
   <!-- security -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_security</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("security"), _("security"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_security</xsl:text><xsl:value-of select="$tab_start"/>
 
   <!-- general (confirmations) section -->
   <xsl:text>
@@ -335,7 +345,7 @@ gboolean restart_required = FALSE;
 
   <!-- storage -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_storage</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("storage"), _("storage"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_storage</xsl:text><xsl:value-of select="$tab_start"/>
 
 <xsl:text>
    {
@@ -367,7 +377,7 @@ gboolean restart_required = FALSE;
 
   <!-- miscellaneous -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_misc</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("miscellaneous"), _("miscellaneous"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_misc</xsl:text><xsl:value-of select="$tab_start"/>
 <xsl:text>
    {
       GtkWidget *seclabel = gtk_label_new(_("interface"));
@@ -444,7 +454,7 @@ gboolean restart_required = FALSE;
 
   <!-- import -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_import</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("import"), _("import"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_import</xsl:text><xsl:value-of select="$tab_start"/>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='import' and @section='import']">
           <xsl:apply-templates select="." mode="tab_block"/>

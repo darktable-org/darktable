@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2023x darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -211,7 +211,7 @@ void dt_check_opendir(const char* context, const char* directory)
 {
   if(!directory)
   {
-    fprintf(stderr, "directory for %s has not been set.\n", context);
+    dt_print(DT_DEBUG_ALWAYS, "directory for %s has not been set.\n", context);
     exit(EXIT_FAILURE);
   }
 
@@ -226,7 +226,7 @@ void dt_check_opendir(const char* context, const char* directory)
   }
   else
   {
-    fprintf(stderr, "%s: directory '%s' fails to open.'\n", context, directory);
+    dt_print(DT_DEBUG_ALWAYS, "%s: directory '%s' fails to open.'\n", context, directory);
     exit(EXIT_FAILURE);
   }
 #else
@@ -238,7 +238,7 @@ void dt_check_opendir(const char* context, const char* directory)
   }
   else
   {
-    fprintf(stderr, "opendir '%s' fails with: '%s'\n", directory, strerror(errno));
+    dt_print(DT_DEBUG_ALWAYS, "opendir '%s' fails with: '%s'\n", directory, strerror(errno));
     exit(EXIT_FAILURE);
   }
 #endif

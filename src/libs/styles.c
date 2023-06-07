@@ -54,10 +54,9 @@ const char *name(dt_lib_module_t *self)
   return _("styles");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -134,7 +133,7 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   GtkTreeModel* model;
   GtkTreePath* path;
   GtkTreeIter iter;
-  int imgid = -1;
+  dt_imgid_t imgid = NO_IMGID;
 
   if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(self), &x, &y, FALSE, &model, &path, &iter))
   {
@@ -442,7 +441,7 @@ static void _export_clicked(GtkWidget *w, gpointer user_data)
 
             // contents for dialog
             GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
-            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), (char*)style->data);
+            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), stylename);
             GtkWidget *label = gtk_label_new(overwrite_str);
             GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
 
@@ -625,7 +624,7 @@ static void _import_clicked(GtkWidget *w, gpointer user_data)
 
             // contents for dialog
             GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_import));
-            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), (char*)filename->data);
+            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), bname);
             GtkWidget *label = gtk_label_new(overwrite_str);
             GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
 
@@ -737,9 +736,8 @@ static void _applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/style/applymode", mode);
 }
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
@@ -762,12 +760,12 @@ static void _styles_changed_callback(gpointer instance, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
   _gui_styles_update_view(d);
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _collection_updated_callback(gpointer instance,
@@ -777,24 +775,23 @@ static void _collection_updated_callback(gpointer instance,
                                          const int next,
                                          dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_queue_postponed_update(self, _update);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer data)
 {
-  _update((dt_lib_module_t *)data);
+  dt_lib_gui_queue_update((dt_lib_module_t *)data);
 }
 
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)malloc(sizeof(dt_lib_styles_t));
   self->data = (void *)d;
-  self->timeout_handle = 0;
   d->edit_button = NULL;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *w;
@@ -922,14 +919,10 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
-
-  _update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
-
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_styles_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
@@ -969,7 +962,7 @@ void gui_reset(dt_lib_module_t *self)
   }
   g_list_free_full(all_styles, dt_style_free);
   dt_database_release_transaction(darktable.db);
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 

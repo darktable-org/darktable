@@ -38,7 +38,7 @@ struct dt_iop_module_t;
 typedef struct dt_dev_history_item_t
 {
   struct dt_iop_module_t *module; // pointer to image operation module
-  int32_t enabled;                // switched respective module on/off
+  gboolean enabled;               // switched respective module on/off
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   char op_name[20];
@@ -48,7 +48,7 @@ typedef struct dt_dev_history_item_t
   gboolean multi_name_hand_edited;
   GList *forms;        // snapshot of dt_develop_t->forms
   int num;             // num of history on database
-  int32_t focus_hash;  // used to determine whether or not to start a
+  gboolean focus_hash;  // used to determine whether or not to start a
                        // new item or to merge down
 } dt_dev_history_item_t;
 
@@ -99,42 +99,6 @@ typedef enum dt_dev_pixelpipe_status_t
   DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
 } dt_dev_pixelpipe_status_t;
 
-typedef enum dt_dev_pixelpipe_display_mask_t
-{
-  DT_DEV_PIXELPIPE_DISPLAY_NONE = 0,
-  DT_DEV_PIXELPIPE_DISPLAY_MASK = 1 << 0,
-  DT_DEV_PIXELPIPE_DISPLAY_CHANNEL = 1 << 1,
-  DT_DEV_PIXELPIPE_DISPLAY_OUTPUT = 1 << 2,
-  DT_DEV_PIXELPIPE_DISPLAY_L = 1 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_a = 2 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_b = 3 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_R = 4 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_G = 5 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_B = 6 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_GRAY = 7 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_LCH_C = 8 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_LCH_h = 9 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz = 13 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3, // show module's output
-                                               // without processing
-                                               // by later iops
-  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
-  DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
-} dt_dev_pixelpipe_display_mask_t;
-
-typedef enum dt_develop_detail_mmask_t
-{
-  DT_DEV_DETAIL_MASK_NONE = 0,
-  DT_DEV_DETAIL_MASK_REQUIRED = 1,
-  DT_DEV_DETAIL_MASK_DEMOSAIC = 2,
-  DT_DEV_DETAIL_MASK_RAWPREPARE = 4
-} dt_develop_detail_mask_t;
-
 typedef enum dt_clipping_preview_mode_t
 {
   DT_CLIPPING_PREVIEW_GAMUT = 0,
@@ -156,10 +120,15 @@ struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
   gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
-                        // gui_init'ed.
-  int32_t gui_leaving;  // set if everything is scheduled to shut down.
-  int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
-  int32_t focus_hash;   // determines whether to start a new history item or to merge down.
+                         // gui_init'ed.
+  gboolean gui_leaving;  // set if everything is scheduled to shut down.
+  gboolean gui_synch;    // set to TRUE by the render threads if gui_update should be called in the modules.
+
+  gpointer gui_previous_target; // widget that was changed last time. If same again, don't save undo.
+  double   gui_previous_time;   // last time that widget was changed. If too recent, don't save undo.
+  double   gui_previous_pipe_time; // time pipe finished after last widget was changed.
+
+  gboolean focus_hash;   // determines whether to start a new history item or to merge down.
   gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
   gboolean preview_input_changed, preview2_input_changed;
 
@@ -187,6 +156,7 @@ typedef struct dt_develop_t
   // calling into the cache explicitly. this should never be accessed directly, but
   // by the iop through the copy their respective pixelpipe holds, for thread-safety.
   dt_image_t image_storage;
+  dt_imgid_t requested_id;
 
   // history stack
   dt_pthread_mutex_t history_mutex;
@@ -219,7 +189,7 @@ typedef struct dt_develop_t
   GList *allforms;
 
   //full preview stuff
-  int full_preview;
+  gboolean full_preview;
   int full_preview_last_zoom, full_preview_last_closeup;
   float full_preview_last_zoom_x, full_preview_last_zoom_y;
   struct dt_iop_module_t *full_preview_last_module;
@@ -272,12 +242,12 @@ typedef struct dt_develop_t
       struct dt_lib_module_t *module;
       /* treview list refresh */
       void (*list_change)(struct dt_lib_module_t *self);
-      void (*list_remove)(struct dt_lib_module_t *self, int formid, int parentid);
+      void (*list_remove)(struct dt_lib_module_t *self, dt_mask_id_t formid, dt_mask_id_t parentid);
       void (*list_update)(struct dt_lib_module_t *self);
       /* selected forms change */
       void (*selection_change)(struct dt_lib_module_t *self,
                                struct dt_iop_module_t *module,
-                               const int selectid);
+                               const dt_mask_id_t selectid);
     } masks;
 
     // what is the ID of the module currently doing pipeline chromatic
@@ -367,10 +337,10 @@ void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
 void dt_dev_process_preview2(dt_develop_t *dev);
 
-void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
-void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
+void dt_dev_load_image(dt_develop_t *dev, const dt_imgid_t imgid);
+void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid);
 /** checks if provided imgid is the image currently in develop */
-int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
+gboolean dt_dev_is_current_image(dt_develop_t *dev, const dt_imgid_t imgid);
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op);
 void dt_dev_add_history_item_ext(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
@@ -379,6 +349,10 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev,
 void dt_dev_add_history_item(dt_develop_t *dev,
                              struct dt_iop_module_t *module,
                              const gboolean enable);
+void dt_dev_add_history_item_target(dt_develop_t *dev,
+                                    struct dt_iop_module_t *module,
+                                    const gboolean enable,
+                                    const gpointer target);
 void dt_dev_add_new_history_item(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
                                  const gboolean enable);
@@ -392,10 +366,10 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
-void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid);
+void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,
-                             const int imgid,
+                             const dt_imgid_t imgid,
                              const gboolean no_image,
                              const gboolean snapshot);
 void dt_dev_read_history(dt_develop_t *dev);
@@ -484,10 +458,10 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
  */
 void dt_dev_masks_list_change(dt_develop_t *dev);
 void dt_dev_masks_list_update(dt_develop_t *dev);
-void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid);
+void dt_dev_masks_list_remove(dt_develop_t *dev, dt_mask_id_t formid, dt_mask_id_t parentid);
 void dt_dev_masks_selection_change(dt_develop_t *dev,
                                    struct dt_iop_module_t *module,
-                                   const int selectid);
+                                   const dt_mask_id_t selectid);
 
 /*
  * multi instances
@@ -497,10 +471,6 @@ struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev,
                                                 struct dt_iop_module_t *base);
 /** remove an existent module */
 void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
-/** update "show" values of the multi instance part (show_move, show_delete, ...) */
-void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module);
-/** same, but for all modules */
-void dt_dev_modules_update_multishow(dt_develop_t *dev);
 /** generates item multi-instance name */
 gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
 
@@ -632,7 +602,7 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
  *
  */
 void dt_dev_image(
-  uint32_t imgid,
+  dt_imgid_t imgid,
   size_t width,
   size_t height,
   int history_end,
@@ -641,7 +611,7 @@ void dt_dev_image(
   size_t *processed_height);
 
 void dt_dev_image_ext(
-  uint32_t imgid,
+  dt_imgid_t imgid,
   size_t width,
   size_t height,
   int history_end,

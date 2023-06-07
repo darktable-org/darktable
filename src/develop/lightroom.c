@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2022 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -214,21 +214,21 @@ typedef struct dt_iop_colorin_params_v1_t
 #define LRDT_BLEND_VERSION 4
 #define DEVELOP_BLENDIF_SIZE 16
 
-typedef struct dt_develop_blend_params_t
+typedef struct dt_lr_develop_blend_params_t
 {
   /** blending mode */
   uint32_t mode;
   /** mixing opacity */
   float opacity;
   /** id of mask in current pipeline */
-  uint32_t mask_id;
+  dt_mask_id_t mask_id;
   /** blendif mask */
   uint32_t blendif;
   /** blur radius */
   float radius;
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params_t;
+} dt_lr_develop_blend_params_t;
 
 //
 // end of blend_params
@@ -239,7 +239,7 @@ typedef struct lr2dt
   float lr, dt;
 } lr2dt_t;
 
-char *dt_get_lightroom_xmp(int imgid)
+char *dt_get_lightroom_xmp(dt_imgid_t imgid)
 {
   char pathname[DT_MAX_FILENAME_LEN];
   gboolean from_cache = TRUE;
@@ -326,11 +326,11 @@ static float lr2dt_clarity(float value)
   return get_interpolate(lr2dt_clarity_table, value);
 }
 
-static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int params_size, char *imported,
+static void dt_add_hist(dt_imgid_t imgid, char *operation, dt_iop_params_t *params, int params_size, char *imported,
                         size_t imported_len, int version, int *import_count)
 {
   int32_t num = 0;
-  dt_develop_blend_params_t blend_params = { 0 };
+  dt_lr_develop_blend_params_t blend_params = { 0 };
 
   //  get current num if any
   sqlite3_stmt *stmt;
@@ -357,7 +357,7 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_size, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_lr_develop_blend_params_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, LRDT_BLEND_VERSION);
 
   sqlite3_step(stmt);
@@ -482,7 +482,7 @@ static gboolean _skip_comma(const char **startptr)
 }
 
 /* lrop handle the Lr operation and convert it as a dt iop */
-static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
+static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t imgid,
                   const xmlChar *name, const xmlChar *value, const xmlNodePtr node, lr_data_t *data)
 {
   const float hfactor = 3.0 / 9.0; // hue factor adjustment (use 3 out of 9 boxes in colorzones)
@@ -1000,7 +1000,7 @@ static int _has_list(char *name)
 };
 
 /* handle a specific xpath */
-static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, int imgid, xmlXPathContext *ctx, const xmlChar *xpath, lr_data_t *data)
+static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, dt_imgid_t imgid, xmlXPathContext *ctx, const xmlChar *xpath, lr_data_t *data)
 {
   xmlXPathObject *xpathObj = xmlXPathEvalExpression(xpath, ctx);
 
@@ -1069,7 +1069,7 @@ static inline float round5(double x)
   return round(x * 100000.f) / 100000.f;
 }
 
-gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
+gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto)
 {
   gboolean refresh_needed = FALSE;
   char imported[256] = { 0 };
@@ -1080,7 +1080,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(!pathname)
   {
-    if(!iauto) dt_control_log(_("cannot find lightroom XMP!"));
+    if(!iauto) dt_control_log(_("cannot find Lightroom XMP!"));
     return FALSE;
   }
 
@@ -1572,4 +1572,3 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

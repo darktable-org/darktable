@@ -101,7 +101,7 @@ static void _apply_style_shortcut_callback(dt_action_t *action)
 
   if(v->view(v) == DT_VIEW_DARKROOM)
   {
-    const int32_t imgid = GPOINTER_TO_INT(imgs->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     dt_styles_apply_to_dev(action->label, imgid);
   }
   else
@@ -133,13 +133,15 @@ static void _dt_style_cleanup_multi_instance(int id)
   char last_operation[128] = { 0 };
   int last_mi = 0;
 
-  /* let's clean-up the style multi-instance. What we want to do is have a unique multi_priority value for
-     each iop.
-     Furthermore this value must start to 0 and increment one by one for each multi-instance of the same
-     module. On
-     SQLite there is no notion of ROW_NUMBER, so we use rather resource consuming SQL statement, but as a
-     style has
-     never a huge number of items that's not a real issue. */
+  /* let's clean-up the style multi-instance. What we want to do is
+     have a unique multi_priority value for each iop.
+
+     Furthermore this value must start to 0 and increment one by one
+     for each multi-instance of the same module.
+
+     On SQLite there is no notion of ROW_NUMBER, so we use rather
+     resource consuming SQL statement, but as a style has never a huge
+     number of items that's not a real issue. */
 
   /* 1. read all data for the style and record multi_instance value. */
 
@@ -268,16 +270,18 @@ static gboolean dt_styles_create_style_header(const char *name,
   dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
   dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
 
+  dt_gui_style_content_dialog("", -1);
+
   g_free(iop_list_txt);
   return TRUE;
 }
 
 static void _dt_style_update_from_image(const int id,
-                                        const int imgid,
+                                        const dt_imgid_t imgid,
                                         GList *filter,
                                         GList *update)
 {
-  if(update && imgid != -1)
+  if(update && dt_is_valid_imgid(imgid))
   {
     GList *list = filter;
     GList *upd = update;
@@ -348,7 +352,7 @@ static void _dt_style_update_from_image(const int id,
 
 static void  _dt_style_update_iop_order(const gchar *name,
                                         const int id,
-                                        const int32_t imgid,
+                                        const dt_imgid_t imgid,
                                         const gboolean copy_iop_order,
                                         const gboolean update_iop_order)
 {
@@ -392,7 +396,7 @@ void dt_styles_update(const char *name,
                       const char *newname,
                       const char *newdescription,
                       GList *filter,
-                      const int32_t imgid,
+                      const dt_imgid_t imgid,
                       GList *update,
                       const gboolean copy_iop_order,
                       const gboolean update_iop_order)
@@ -454,6 +458,8 @@ void dt_styles_update(const char *name,
     dt_action_rename(old, newname);
   }
 
+  dt_gui_style_content_dialog("", -1);
+
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
 
   g_free(desc);
@@ -463,7 +469,7 @@ void dt_styles_create_from_style(const char *name,
                                  const char *newname,
                                  const char *description,
                                  GList *filter,
-                                 const int32_t imgid,
+                                 const dt_imgid_t imgid,
                                  GList *update,
                                  const gboolean copy_iop_order,
                                  const gboolean update_iop_order)
@@ -546,7 +552,7 @@ void dt_styles_create_from_style(const char *name,
 
 gboolean dt_styles_create_from_image(const char *name,
                                      const char *description,
-                                     const int32_t imgid,
+                                     const dt_imgid_t imgid,
                                      GList *filter,
                                      const gboolean copy_iop_order)
 {
@@ -651,7 +657,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
 
   for(const GList *l = list; l; l = g_list_next(l))
   {
-    const int32_t imgid = GPOINTER_TO_INT(l->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
     if(is_overwrite)
     {
       hist = dt_history_snapshot_item_init();
@@ -721,7 +727,7 @@ void dt_multiple_styles_apply_to_list(GList *styles,
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   for(const GList *l = list; l; l = g_list_next(l))
   {
-    const int32_t imgid = GPOINTER_TO_INT(l->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
     if(is_overwrite && !duplicate)
       dt_history_delete_on_image_ext(imgid, FALSE);
 
@@ -735,7 +741,8 @@ void dt_multiple_styles_apply_to_list(GList *styles,
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   const guint styles_cnt = g_list_length(styles);
-  dt_control_log(ngettext("style successfully applied!", "styles successfully applied!", styles_cnt));
+  dt_control_log(ngettext("style successfully applied!",
+                          "styles successfully applied!", styles_cnt));
 }
 
 void dt_styles_create_from_list(const GList *list)
@@ -744,7 +751,7 @@ void dt_styles_create_from_list(const GList *list)
   /* for each image create style */
   for(const GList *l = list; l; l = g_list_next(l))
   {
-    const int imgid = GPOINTER_TO_INT(l->data);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
     dt_gui_styles_dialog_new(imgid);
     selected = TRUE;
   }
@@ -769,10 +776,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
     if(dt_iop_load_module(module, mod_src->so, dev))
     {
       module = NULL;
-      fprintf(stderr,
-              "[dt_styles_apply_style_item] can't load module %s %s\n",
-              style_item->operation,
-              style_item->multi_name);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_styles_apply_style_item] can't load module %s %s\n",
+               style_item->operation,
+               style_item->multi_name);
     }
     else
     {
@@ -794,14 +801,17 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
         memcpy(module->blend_params, style_item->blendop_params, sizeof(dt_develop_blend_params_t));
       }
       else if(style_item->blendop_params
-              && dt_develop_blend_legacy_params(module, style_item->blendop_params, style_item->blendop_version,
-                  module->blend_params, dt_develop_blend_version(), style_item->blendop_params_size) == 0)
+              && dt_develop_blend_legacy_params(module, style_item->blendop_params,
+                                                style_item->blendop_version,
+                                                module->blend_params, dt_develop_blend_version(),
+                                                style_item->blendop_params_size) == 0)
       {
         // do nothing
       }
       else
       {
-        memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+        memcpy(module->blend_params, module->default_blendop_params,
+               sizeof(dt_develop_blend_params_t));
       }
 
       gboolean autoinit = FALSE;
@@ -823,8 +833,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
 
         if(legacy_ret == 1)
         {
-          fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, darktable is %d.\n",
-                  module->op, style_item->module_version, module->version());
+          dt_print(DT_DEBUG_ALWAYS,
+                   "[dt_styles_apply_style_item] module `%s' version mismatch:"
+                   " history is %d, darktable is %d.\n",
+                   module->op, style_item->module_version, module->version());
           dt_control_log(_("module `%s' version mismatch: %d != %d"), module->op,
                          module->version(), style_item->module_version);
 
@@ -854,11 +866,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
          * default_params. if user want to, he can disable it.
          */
         if(dt_iop_module_is(module->so, "flip")
-           && module->enabled == 0
+           && !module->enabled
            && labs(style_item->module_version) == 1)
         {
           memcpy(module->params, module->default_params, module->params_size);
-          module->enabled = 1;
+          module->enabled = TRUE;
         }
       }
       else
@@ -890,20 +902,22 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
 void _styles_apply_to_image_ext(const char *name,
                                 const gboolean duplicate,
                                 const gboolean overwrite,
-                                const int32_t imgid,
+                                const dt_imgid_t imgid,
                                 const gboolean undo)
 {
-  int id = 0;
   sqlite3_stmt *stmt;
 
-  if((id = dt_styles_get_id_by_name(name)) != 0)
+  const int style_id = dt_styles_get_id_by_name(name);
+
+  if(style_id != 0)
   {
-    int32_t newimgid;
+    dt_imgid_t newimgid = NO_IMGID;
+
     /* check if we should make a duplicate before applying style */
     if(duplicate)
     {
       newimgid = dt_image_duplicate(imgid);
-      if(newimgid != -1)
+      if(dt_is_valid_imgid(newimgid))
       {
         if(overwrite)
           dt_history_delete_on_image_ext(newimgid, FALSE);
@@ -946,14 +960,17 @@ void _styles_apply_to_image_ext(const char *name,
 
     dt_dev_read_history_ext(dev_dest, newimgid, TRUE, -1);
 
-    dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image ");
+    if(darktable.unmuted & DT_DEBUG_IOPORDER)
+      dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image ");
 
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
-    dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
+    if(darktable.unmuted & DT_DEBUG_IOPORDER)
+      dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
-    dt_print(DT_DEBUG_IOPORDER, "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
-      dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
+    dt_print(DT_DEBUG_IOPORDER,
+             "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
+             dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
 
     // go through all entries in style
     // clang-format off
@@ -966,7 +983,8 @@ void _styles_apply_to_image_ext(const char *name,
        " ORDER BY operation, multi_priority",
        -1, &stmt, NULL);
     // clang-format on
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, style_id);
+
     GList *si_list = NULL;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -991,7 +1009,8 @@ void _styles_apply_to_image_ext(const char *name,
       memcpy(style_item->params, (void *)sqlite3_column_blob(stmt, 3), style_item->params_size);
       style_item->blendop_params_size = sqlite3_column_bytes(stmt, 5);
       style_item->blendop_params = (void *)malloc(style_item->blendop_params_size);
-      memcpy(style_item->blendop_params, (void *)sqlite3_column_blob(stmt, 5), style_item->blendop_params_size);
+      memcpy(style_item->blendop_params, (void *)sqlite3_column_blob(stmt, 5),
+             style_item->blendop_params_size);
       style_item->iop_order = 0;
 
       si_list = g_list_prepend(si_list, style_item);
@@ -1009,7 +1028,8 @@ void _styles_apply_to_image_ext(const char *name,
 
     g_list_free_full(si_list, dt_style_item_free);
 
-    dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
+    if(darktable.unmuted & DT_DEBUG_IOPORDER)
+      dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
     dt_undo_lt_history_t *hist = NULL;
     if(undo)
@@ -1051,7 +1071,6 @@ void _styles_apply_to_image_ext(const char *name,
     {
       dt_dev_reload_history_items(darktable.develop);
       dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
-      dt_dev_modules_update_multishow(darktable.develop);
     }
 
     /* update xmp file */
@@ -1075,14 +1094,15 @@ void _styles_apply_to_image_ext(const char *name,
 void dt_styles_apply_to_image(const char *name,
                               const gboolean duplicate,
                               const gboolean overwrite,
-                              const int32_t imgid)
+                              const dt_imgid_t imgid)
 {
   _styles_apply_to_image_ext(name, duplicate, overwrite, imgid, TRUE);
 }
 
-void dt_styles_apply_to_dev(const char *name, const int32_t imgid)
+void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 {
-  if(!darktable.develop || darktable.develop->image_storage.id == -1) return;
+  if(!darktable.develop || !dt_is_valid_imgid(darktable.develop->image_storage.id))
+    return;
 
   /* write current history changes so nothing gets lost */
   dt_dev_write_history(darktable.develop);
@@ -1111,7 +1131,8 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
   {
     /* delete the style */
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.styles WHERE id = ?1", -1, &stmt,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM data.styles WHERE id = ?1", -1, &stmt,
                                 NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
@@ -1140,8 +1161,8 @@ void dt_styles_delete_by_name(const char *name)
 }
 
 GList *dt_styles_get_item_list(const char *name,
-                               const gboolean params,
-                               const int imgid,
+                               const gboolean localized,
+                               const dt_imgid_t imgid,
                                const gboolean with_multi_name)
 {
   GList *result = NULL;
@@ -1149,21 +1170,13 @@ GList *dt_styles_get_item_list(const char *name,
   int id = 0;
   if((id = dt_styles_get_id_by_name(name)) != 0)
   {
-    if(params)
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "SELECT num, multi_priority, module, operation, enabled, op_params,"
-         "       blendop_params, multi_name, blendop_version"
-         " FROM data.style_items"
-         " WHERE styleid=?1 ORDER BY num DESC",
-         -1, &stmt, NULL);
-      // clang-format on
-    else if(imgid != -1)
+    if(dt_is_valid_imgid(imgid))
     {
       // get all items from the style
       //    UNION
-      // get all items from history, not in the style : select only the last operation, that is max(num)
+      // get all items from history, not in the style : select only
+      // the last operation, that is max(num)
+
       // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
@@ -1173,16 +1186,19 @@ GList *dt_styles_get_item_list(const char *name,
           "        WHERE imgid=?2 "
           "          AND operation=data.style_items.operation"
           "          AND multi_priority=data.style_items.multi_priority),"
-          "       0, multi_name, multi_name_hand_edited, blendop_version"
+          "       op_params, blendop_params,"
+          "       multi_name, multi_name_hand_edited, blendop_version"
           " FROM data.style_items"
           " WHERE styleid=?1"
           " UNION"
           " SELECT -1, main.history.multi_priority, main.history.module,"
           "        main.history.operation, main.history.enabled, "
-          "        main.history.num,0, multi_name, FALSE, blendop_version"
+          "        main.history.num, main.history.op_params, main.history.blendop_params,"
+          "        multi_name, FALSE, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
-          "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
+          "   AND (main.history.operation"
+          "        NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
           " GROUP BY operation HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
         // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -1191,8 +1207,8 @@ GList *dt_styles_get_item_list(const char *name,
       // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
-         "SELECT num, multi_priority, module, operation, enabled, 0, 0,"
-         "       multi_name, multi_name_hand_edited"
+         "SELECT num, multi_priority, module, operation, enabled, 0, op_params,"
+         "       blendop_params, multi_name, multi_name_hand_edited, blendop_version"
          " FROM data.style_items"
          " WHERE styleid=?1 ORDER BY num DESC",
                                   -1, &stmt, NULL);
@@ -1219,52 +1235,47 @@ GList *dt_styles_get_item_list(const char *name,
 
       item->enabled = sqlite3_column_int(stmt, 4);
 
-      const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
-      const gboolean multi_name_hand_edited = sqlite3_column_int(stmt, 8);
+      const char *multi_name = (const char *)sqlite3_column_text(stmt, 8);
+      const gboolean multi_name_hand_edited = sqlite3_column_int(stmt, 9);
       const gboolean has_multi_name =
         multi_name_hand_edited
         || (multi_name && *multi_name && (strcmp(multi_name, "0") != 0));
 
-      if(params)
+      const unsigned char *op_blob = sqlite3_column_blob(stmt, 6);
+      const int32_t op_len = sqlite3_column_bytes(stmt, 6);
+      const unsigned char *bop_blob = sqlite3_column_blob(stmt, 7);
+      const int32_t bop_len = sqlite3_column_bytes(stmt, 7);
+      const int32_t bop_ver = sqlite3_column_int(stmt, 10);
+
+      item->params = malloc(op_len);
+      item->params_size = op_len;
+      memcpy(item->params, op_blob, op_len);
+
+      item->blendop_params = malloc(bop_len);
+      item->blendop_params_size = bop_len;
+      item->blendop_version = bop_ver;
+      memcpy(item->blendop_params, bop_blob, bop_len);
+
+      if(!localized)
       {
-        // when we get the parameters we do not want to get the operation localized as this
-        // is used to compare against the internal module name.
+        // when we get the parameters we do not want to get the
+        // operation localized as this is used to compare against the
+        // internal module name.
 
         if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", sqlite3_column_text(stmt, 3), multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", sqlite3_column_text(stmt, 3));
-
-        const unsigned char *op_blob = sqlite3_column_blob(stmt, 5);
-        const int32_t op_len = sqlite3_column_bytes(stmt, 5);
-        const unsigned char *bop_blob = sqlite3_column_blob(stmt, 6);
-        const int32_t bop_len = sqlite3_column_bytes(stmt, 6);
-        const int32_t bop_ver = sqlite3_column_int(stmt, 9);
-
-        item->params = malloc(op_len);
-        item->params_size = op_len;
-        memcpy(item->params, op_blob, op_len);
-
-        item->blendop_params = malloc(bop_len);
-        item->blendop_params_size = bop_len;
-        item->blendop_version = bop_ver;
-        memcpy(item->blendop_params, bop_blob, bop_len);
       }
       else
       {
         const gchar *itname = dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 3));
-
         if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", itname, multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", itname);
 
-        item->params = NULL;
-        item->blendop_params = NULL;
-        item->params_size = 0;
-        item->blendop_params_size = 0;
-        item->blendop_version = 0;
-        if(imgid != -1 && sqlite3_column_type(stmt, 5) != SQLITE_NULL)
+        if(dt_is_valid_imgid(imgid) && sqlite3_column_type(stmt, 5) != SQLITE_NULL)
           item->selimg_num = sqlite3_column_int(stmt, 5);
       }
       item->name = g_strdup(iname);
@@ -1353,7 +1364,8 @@ void dt_styles_save_to_file(const char *style_name,
   // generate filename based on name of style
   // convert all characters to underscore which are not allowed in filenames
   char *filename = g_strdup(style_name);
-  snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, g_strdelimit(filename, "/<>:\"\\|*?[]", '_'));
+  snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle",
+           filedir, g_strdelimit(filename, "/<>:\"\\|*?[]", '_'));
   g_free(filename);
 
   // check if file exists
@@ -1379,13 +1391,14 @@ void dt_styles_save_to_file(const char *style_name,
   xmlTextWriterPtr writer = xmlNewTextWriterFilename(stylename, 0);
   if(writer == NULL)
   {
-    fprintf(stderr, "[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
     return;
   }
   rc = xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
   if(rc < 0)
   {
-    fprintf(stderr, "[dt_styles_save_to_file]: Error on encoding setting");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_styles_save_to_file]: Error on encoding setting");
     return;
   }
   xmlTextWriterStartElement(writer, BAD_CAST "darktable_style");
@@ -1393,7 +1406,8 @@ void dt_styles_save_to_file(const char *style_name,
 
   xmlTextWriterStartElement(writer, BAD_CAST "info");
   xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
-  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", dt_styles_get_description(style_name));
+  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s",
+                                  dt_styles_get_description(style_name));
   GList *iop_list = dt_styles_module_order_list(style_name);
   if(iop_list)
   {
@@ -1418,16 +1432,26 @@ void dt_styles_save_to_file(const char *style_name,
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     xmlTextWriterStartElement(writer, BAD_CAST "plugin");
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d", sqlite3_column_int(stmt, 0));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d", sqlite3_column_int(stmt, 1));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", sqlite3_column_text(stmt, 2));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_style_encode(stmt, 3));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt, 4));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s", dt_style_encode(stmt, 5));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d", sqlite3_column_int(stmt, 6));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d", sqlite3_column_int(stmt, 7));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name", "%s", sqlite3_column_text(stmt, 8));
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name_hand_edited", "%s", sqlite3_column_text(stmt, 9));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d",
+                                    sqlite3_column_int(stmt, 0));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d",
+                                    sqlite3_column_int(stmt, 1));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s",
+                                    sqlite3_column_text(stmt, 2));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s",
+                                    dt_style_encode(stmt, 3));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d",
+                                    sqlite3_column_int(stmt, 4));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s",
+                                    dt_style_encode(stmt, 5));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d",
+                                    sqlite3_column_int(stmt, 6));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d",
+                                    sqlite3_column_int(stmt, 7));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name", "%s",
+                                    sqlite3_column_text(stmt, 8));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name_hand_edited", "%s",
+                                    sqlite3_column_text(stmt, 9));
     xmlTextWriterEndElement(writer);
   }
   sqlite3_finalize(stmt);
@@ -1618,7 +1642,8 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version);
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, plugin->multi_priority);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, plugin->multi_name->str, plugin->multi_name->len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, plugin->multi_name->str,
+                             plugin->multi_name->len, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, plugin->multi_name_hand_edited);
 
   sqlite3_step(stmt);
@@ -1632,7 +1657,9 @@ static void dt_style_save(StyleData *style)
   if(style == NULL) return;
 
   /* first create the style header */
-  if(!dt_styles_create_style_header(style->info->name->str, style->info->description->str, style->info->iop_list)) return;
+  if(!dt_styles_create_style_header(style->info->name->str,
+                                    style->info->description->str, style->info->iop_list))
+    return;
 
   if((id = dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {

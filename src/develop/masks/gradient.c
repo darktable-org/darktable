@@ -26,22 +26,28 @@
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
 
+static inline int _nb_ctrl_point(void)
+{
+  return 3;
+}
+
+
 static void _gradient_get_distance(const float x,
                                    const float y,
                                    const float as,
                                    dt_masks_form_gui_t *gui,
                                    const int index,
                                    const int num_points,
-                                   int *inside,
-                                   int *inside_border,
+                                   gboolean *inside,
+                                   gboolean *inside_border,
                                    int *near,
-                                   int *inside_source,
+                                   gboolean *inside_source,
                                    float *dist)
 {
   (void)num_points; // unused arg, keep compiler from complaining
   if(!gui) return;
 
-  *inside = *inside_border = *inside_source = 0;
+  *inside = *inside_border = *inside_source = FALSE;
   *near = -1;
   *dist = FLT_MAX;
 
@@ -49,12 +55,12 @@ static void _gradient_get_distance(const float x,
     (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
-  const float as2 = as * as;
+  const float as2 = sqf(as);
 
   float close_to_controls = FALSE;
 
   // compute distances with the three control points
-  for(int k = 0; k<3; k++)
+  for(int k = 0; k < _nb_ctrl_point(); k++)
   {
     const float dx = x - gpt->points[k * 2];
     const float dy = y - gpt->points[k * 2 + 1];
@@ -67,28 +73,34 @@ static void _gradient_get_distance(const float x,
   // check if we are close to pivot or anchor
   if(close_to_controls)
   {
-    *inside = 1;
+    *inside = TRUE;
     return;
   }
 
   // check if we are close to borders
   for(int i = 0; i < gpt->border_count; i++)
   {
-    if((x - gpt->border[i * 2]) * (x - gpt->border[i * 2])
-       + (y - gpt->border[i * 2 + 1]) * (y - gpt->border[i * 2 + 1]) < as2)
+    const float dx = x - gpt->border[i * 2];
+    const float dy = y - gpt->border[i * 2 + 1];
+    const float dd = sqf(dx) + sqf(dy);
+
+    if(dd < as2)
     {
-      *inside_border = 1;
+      *inside_border = TRUE;
       return;
     }
   }
 
   // check if we are close to main line
-  for(int i = 3; i < gpt->points_count; i++)
+  for(int i = _nb_ctrl_point(); i < gpt->points_count; i++)
   {
-    if((x - gpt->points[i * 2]) * (x - gpt->points[i * 2])
-       + (y - gpt->points[i * 2 + 1]) * (y - gpt->points[i * 2 + 1]) < as2)
+    const float dx = x - gpt->points[i * 2];
+    const float dy = y - gpt->points[i * 2 + 1];
+    const float dd = sqf(dx) + sqf(dy);
+
+    if(dd < as2)
     {
-      *inside = 1;
+      *inside = TRUE;
       return;
     }
   }
@@ -101,7 +113,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module,
                                            const int up,
                                            const uint32_t state,
                                            dt_masks_form_t *form,
-                                           const int parentid,
+                                           const dt_mask_id_t parentid,
                                            dt_masks_form_gui_t *gui,
                                            const int index)
 {
@@ -189,7 +201,7 @@ static int _gradient_events_button_pressed(struct dt_iop_module_t *module,
                                            const int type,
                                            const uint32_t state,
                                            dt_masks_form_t *form,
-                                           const int parentid,
+                                           const dt_mask_id_t parentid,
                                            dt_masks_form_gui_t *gui,
                                            const int index)
 {
@@ -329,12 +341,12 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module,
                                             const int which,
                                             const uint32_t state,
                                             dt_masks_form_t *form,
-                                            const int parentid,
+                                            const dt_mask_id_t parentid,
                                             dt_masks_form_gui_t *gui,
                                             const int index)
 {
   if(which == 3
-     && parentid > 0
+     && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we hide the form
@@ -551,7 +563,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
                                         const double pressure,
                                         const int which,
                                         dt_masks_form_t *form,
-                                        const int parentid,
+                                        const dt_mask_id_t parentid,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
@@ -630,30 +642,23 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-    const float pr_d = darktable.develop->preview_downsampling;
-    // transformed to backbuf dimensions
-    const float as = DT_PIXEL_APPLY_DPI(20) / (pr_d * zoom_scale);
+    const float as = dt_masks_sensitive_dist(zoom_scale);
+    const float as2 = sqf(as);
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
-    int in, inb, near, ins;
+    gboolean in, inb, ins;
+    int near;
     float dist;
     _gradient_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins, &dist);
 
     const dt_masks_form_gui_points_t *gpt =
       (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
-    if(gpt
-       && (x - gpt->points[2]) * (x - gpt->points[2])
-       + (y - gpt->points[3]) * (y - gpt->points[3]) < as)
-    {
-      gui->pivot_selected = TRUE;
-      gui->form_selected = TRUE;
-      gui->border_selected = FALSE;
-    }
-    else if(gpt
-            && (x - gpt->points[4]) * (x - gpt->points[4])
-            + (y - gpt->points[5]) * (y - gpt->points[5])
-               < as)
+    // compute distance from pivot end/start
+    const float dist_ps = gpt ? sqf(x - gpt->points[2]) + sqf(y - gpt->points[3]) : FLT_MAX;
+    const float dist_pe = gpt ? sqf(x - gpt->points[4]) + sqf(y - gpt->points[5]) : FLT_MAX;
+
+    if(dist_ps < as2 || dist_pe < as2)
     {
       gui->pivot_selected = TRUE;
       gui->form_selected = TRUE;
@@ -699,8 +704,8 @@ static inline gboolean _gradient_is_canonical(const float x,
                                               const float wd,
                                               const float ht)
 {
-  return (isnormal(x)
-          && isnormal(y)
+  return (dt_isnormal(x)
+          && dt_isnormal(y)
           && x >= -wd
           && x <= 2 * wd
           && y >= -ht
@@ -756,13 +761,12 @@ static int _gradient_get_points(dt_develop_t *dev,
   const float xstart = fabsf(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
   const float xdelta = -2.0f * xstart / (count - 3);
 
-//  gboolean in_frame = FALSE;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(nthreads)            \
     dt_omp_firstprivate(nthreads, pts, pts_count, count, cosv, sinv, xstart, xdelta, curvature, scale, x, y, wd,  \
                         ht, c_padded_size, points) schedule(static) if(count > 100)
 #endif
-  for(int i = 3; i < count; i++)
+  for(int i = _nb_ctrl_point(); i < count; i++)
   {
     const float xi = xstart + (i - 3) * xdelta;
     const float yi = curvature * xi * xi;
@@ -853,7 +857,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
                                                 + (points_count2 - 3) + 1));
     if(*points == NULL) goto end;
     *points_count = (points_count1 - 3) + (points_count2 - 3) + 1;
-    for(int i = 3; i < points_count1; i++)
+    for(int i = _nb_ctrl_point(); i < points_count1; i++)
     {
       (*points)[k * 2] = points1[i * 2];
       (*points)[k * 2 + 1] = points1[i * 2 + 1];
@@ -861,7 +865,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
     }
     (*points)[k * 2] = (*points)[k * 2 + 1] = INFINITY;
     k++;
-    for(int i = 3; i < points_count2; i++)
+    for(int i = _nb_ctrl_point(); i < points_count2; i++)
     {
       (*points)[k * 2] = points2[i * 2];
       (*points)[k * 2 + 1] = points2[i * 2 + 1];
@@ -876,7 +880,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
     *points = dt_alloc_align_float((size_t)2 * ((points_count1 - 3)));
     if(*points == NULL) goto end;
     *points_count = points_count1 - 3;
-    for(int i = 3; i < points_count1; i++)
+    for(int i = _nb_ctrl_point(); i < points_count1; i++)
     {
       (*points)[k * 2] = points1[i * 2];
       (*points)[k * 2 + 1] = points1[i * 2 + 1];
@@ -892,7 +896,7 @@ static int _gradient_get_pts_border(dt_develop_t *dev,
     if(*points == NULL) goto end;
     *points_count = points_count2 - 3;
 
-    for(int i = 3; i < points_count2; i++)
+    for(int i = _nb_ctrl_point(); i < points_count2; i++)
     {
       (*points)[k * 2] = points2[i * 2];
       (*points)[k * 2 + 1] = points2[i * 2 + 1];
@@ -909,9 +913,8 @@ end:
   return res;
 }
 
-static void _gradient_draw_lines(gboolean borders, cairo_t *cr,
-                                 double *dashed,
-                                 const float len,
+static void _gradient_draw_lines(const gboolean borders,
+                                 cairo_t *cr,
                                  const gboolean selected,
                                  const float zoom_scale,
                                  float *pts_line,
@@ -933,7 +936,7 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr,
 
   while(count < points_count)
   {
-    if(!isnormal(points[count * 2]))
+    if(!dt_isnormal(points[count * 2]))
     {
       count++;
       continue;
@@ -948,48 +951,22 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr,
       continue;
     }
 
-    if(borders)
-      cairo_set_dash(cr, dashed, len, 0);
-    else
-      cairo_set_dash(cr, dashed, 0, 0);
-    if(selected)
-    {
-      if(borders)
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 5.0 / zoom_scale);
-    }
-    else
-    {
-      if(borders)
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 3.0 / zoom_scale);
-    }
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-
     cairo_move_to(cr, x, y);
 
     count++;
-    for(; count < points_count && isnormal(points[count * 2]); count++)
+    for(; count < points_count && dt_isnormal(points[count * 2]); count++)
     {
       if(!_gradient_is_canonical(points[count * 2], points[count * 2 + 1], wd, ht))
         break;
 
       cairo_line_to(cr, points[count * 2], points[count * 2 + 1]);
     }
-    cairo_stroke_preserve(cr);
-    if(selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
+
+    dt_masks_line_stroke(cr, borders, FALSE, selected, zoom_scale);
   }
 }
 
-static void _gradient_draw_arrow(cairo_t *cr, double *dashed,
-                                 const float len,
+static void _gradient_draw_arrow(cairo_t *cr,
                                  const gboolean selected,
                                  const gboolean border_selected,
                                  const float zoom_scale,
@@ -1005,60 +982,25 @@ static void _gradient_draw_arrow(cairo_t *cr, double *dashed,
   const float pivot_start_x = pts[4];
   const float pivot_start_y = pts[5];
 
+  // draw pivot points
+
+  dt_masks_draw_arrow(cr,
+                      pivot_start_x, pivot_start_y,
+                      pivot_end_x,   pivot_end_y,
+                      zoom_scale, TRUE);
+
+  dt_masks_line_stroke(cr, FALSE, FALSE, selected, zoom_scale);
+
   // draw anchor point
+
   dt_masks_draw_anchor(cr, selected, zoom_scale, anchor_x, anchor_y);
 
-  // draw pivot points
-  {
-    cairo_set_dash(cr, dashed, 0, 0);
-    if(border_selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  // start side of the gradient (this is the control point for
+  // rotating the gradient).
+  cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
+  cairo_fill_preserve(cr);
 
-    // from start to end
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_move_to(cr, pivot_start_x, pivot_start_y);
-    cairo_line_to(cr, pivot_end_x, pivot_end_y);
-    cairo_stroke(cr);
-
-    // start side of the gradient
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
-    cairo_fill_preserve(cr);
-    cairo_stroke(cr);
-
-    // end side of the gradient
-    cairo_arc(cr, pivot_end_x, pivot_end_y, 1.0f / zoom_scale, 0, 2.0f * M_PI);
-    cairo_fill_preserve(cr);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_stroke(cr);
-
-    // draw arrow on the end of the gradient to clearly display the direction
-
-    // size & width of the arrow
-    const float arrow_angle = 0.25f;
-    const float arrow_length = 15.0f / zoom_scale;
-
-    const float a_dx = anchor_x - pivot_end_x;
-    const float a_dy = pivot_end_y - anchor_y;
-    const float angle = atan2f(a_dx, a_dy) - M_PI / 2.0f;
-
-    const float arrow_x1 = pivot_end_x + (arrow_length * cosf(angle + arrow_angle));
-    const float arrow_x2 = pivot_end_x + (arrow_length * cosf(angle - arrow_angle));
-    const float arrow_y1 = pivot_end_y + (arrow_length * sinf(angle + arrow_angle));
-    const float arrow_y2 = pivot_end_y + (arrow_length * sinf(angle - arrow_angle));
-
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_move_to(cr, pivot_end_x, pivot_end_y);
-    cairo_line_to(cr, arrow_x1, arrow_y1);
-    cairo_line_to(cr, arrow_x2, arrow_y2);
-    cairo_line_to(cr, pivot_end_x, pivot_end_y);
-    cairo_close_path(cr);
-    cairo_fill_preserve(cr);
-    cairo_stroke(cr);
-  }
+  dt_masks_line_stroke(cr, FALSE, FALSE, selected, zoom_scale);
 }
 
 static void _gradient_events_post_expose(cairo_t *cr,
@@ -1068,10 +1010,6 @@ static void _gradient_events_post_expose(cairo_t *cr,
                                          const int nb)
 {
   (void)nb; // unused arg, keep compiler from complaining
-  double dashed[] = { 4.0, 4.0 };
-  dashed[0] /= zoom_scale;
-  dashed[1] /= zoom_scale;
-  const int len = sizeof(dashed) / sizeof(dashed[0]);
 
   // preview gradient creation
   if(gui->creation)
@@ -1110,13 +1048,13 @@ static void _gradient_events_post_expose(cairo_t *cr,
 
     cairo_save(cr);
     // draw main line
-    _gradient_draw_lines(FALSE, cr, dashed, len, FALSE, zoom_scale,
+    _gradient_draw_lines(FALSE, cr, FALSE, zoom_scale,
                          points, points_count, points[0], points[1]);
     // draw borders
-    _gradient_draw_lines(TRUE, cr, dashed, len, FALSE, zoom_scale,
+    _gradient_draw_lines(TRUE, cr, FALSE, zoom_scale,
                          border, border_count, points[0], points[1]);
     // draw arrow
-    _gradient_draw_arrow(cr, dashed, len, FALSE, FALSE, zoom_scale,
+    _gradient_draw_arrow(cr, FALSE, FALSE, zoom_scale,
                          points, points_count);
     cairo_restore(cr);
 
@@ -1132,16 +1070,17 @@ static void _gradient_events_post_expose(cairo_t *cr,
 
   const gboolean selected = (gui->group_selected == index)
     && (gui->form_selected || gui->form_dragging);
+
   // draw main line
-  _gradient_draw_lines(FALSE, cr, dashed, len, selected, zoom_scale,
+  _gradient_draw_lines(FALSE, cr, selected, zoom_scale,
                        gpt->points, gpt->points_count, xref, yref);
   // draw borders
   if(gui->show_all_feathers || gui->group_selected == index)
-    _gradient_draw_lines(TRUE, cr, dashed, len, gui->border_selected, zoom_scale,
+    _gradient_draw_lines(TRUE, cr, gui->border_selected, zoom_scale,
                          gpt->border, gpt->border_count,
                          xref, yref);
 
-  _gradient_draw_arrow(cr, dashed, len, selected,
+  _gradient_draw_arrow(cr, selected,
                        ((gui->group_selected == index) && (gui->border_selected)),
                        zoom_scale, gpt->points, gpt->points_count);
 }
@@ -1193,7 +1132,7 @@ static int _gradient_get_area(const dt_iop_module_t *const module,
   float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  for(int i = 0; i < 4; i++)
+  for(int i = 0; i < _nb_ctrl_point(); i++)
   {
     xmin = fminf(points[i * 2], xmin);
     xmax = fmaxf(points[i * 2], xmax);

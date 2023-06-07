@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2022 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -185,7 +185,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 {
   // TODO
   memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
-  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
+  dt_print(DT_DEBUG_ALWAYS, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -242,7 +242,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
   dt_boundingbox_t aabb = { roi_out->x, roi_out->y, roi_out->x + roi_out->width, roi_out->y + roi_out->height };
 
-  dt_boundingbox_t aabb_in = { INFINITY, INFINITY, -INFINITY, -INFINITY };
+  dt_boundingbox_t aabb_in = { FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX };
 
   for(int c = 0; c < 4; c++)
   {
@@ -334,7 +334,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // this should not be used for normal images
   // (i.e. for those, when this iop is off by default)
-  if((d->rx == 0u) && (d->ry == 0u)) piece->enabled = 0;
+  if((d->rx == 0u) && (d->ry == 0u)) piece->enabled = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

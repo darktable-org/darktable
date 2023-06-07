@@ -59,11 +59,11 @@ read_pfm(const char *filename, int *wd, int*ht)
 {
   FILE *f = fopen(filename, "rb");
   if(!f) return 0;
-  fscanf(f, "PF\n%d %d\n%*[^\n]", wd, ht);
+  (void) fscanf(f, "PF\n%d %d\n%*[^\n]", wd, ht);
   fgetc(f); // eat only one newline
 
   float *p = (float *)malloc(sizeof(float)*3*(*wd)*(*ht));
-  fread(p, sizeof(float)*3, (*wd)*(*ht), f);
+  (void) fread(p, sizeof(float)*3, (*wd)*(*ht), f);
   for(int k=0;k<3*(*wd)*(*ht);k++) p[k] = fmaxf(0.0f, p[k]);
   fclose(f);
   return p;
@@ -78,7 +78,7 @@ read_histogram(const char *filename, int *bins)
 
   while(!feof(f))
   {
-    fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f\n");
+    (void) fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f\n");
     (*bins) ++;
   }
   fseek(f, 0, SEEK_SET);
@@ -87,7 +87,7 @@ read_histogram(const char *filename, int *bins)
   int k=0;
   while(!feof(f))
   {
-    fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %f %f %f\n", hist + 3*k, hist+3*k+1, hist+3*k+2);
+    (void) fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %f %f %f\n", hist + 3*k, hist+3*k+1, hist+3*k+2);
     k++;
   }
 

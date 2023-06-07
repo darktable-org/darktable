@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -823,9 +824,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)p1;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    piece->request_histogram |= (DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
   else
-    piece->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram &= ~DT_REQUEST_ON;
+
+  piece->request_histogram |= DT_REQUEST_EXPANDED;
 
   memcpy(&(d->params), p, sizeof(dt_iop_rgblevels_params_t));
 
@@ -888,7 +891,7 @@ void init(dt_iop_module_t *self)
 {
   dt_iop_default_init(self);
 
-  self->request_histogram |= (DT_REQUEST_ON);
+  self->request_histogram |= (DT_REQUEST_ON | DT_REQUEST_EXPANDED);
 
   dt_iop_rgblevels_params_t *d = self->default_params;
 
@@ -941,7 +944,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     float bottop = -1e6;
     switch(effect)
@@ -1020,19 +1023,19 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_area_scroll_callback), self);
 
   c->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "black", c->blackpick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("black"), c->blackpick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
   g_signal_connect(G_OBJECT(c->blackpick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   c->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "gray", c->greypick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("gray"), c->greypick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
   g_signal_connect(G_OBJECT(c->greypick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   c->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  dt_action_define_iop(self, "pickers", "white", c->whitepick, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("pickers"), N_("white"), c->whitepick, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
   g_signal_connect(G_OBJECT(c->whitepick), "toggled", G_CALLBACK(_color_picker_callback), self);
@@ -1045,12 +1048,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), pick_hbox, TRUE, TRUE, 0);
 
   c->bt_auto_levels = gtk_button_new_with_label(_("auto"));
-  dt_action_define_iop(self, NULL, "auto levels", c->bt_auto_levels, &dt_action_def_button);
+  dt_action_define_iop(self, NULL, N_("auto levels"), c->bt_auto_levels, &dt_action_def_button);
   gtk_widget_set_tooltip_text(c->bt_auto_levels, _("apply auto levels"));
 
   c->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
   dt_gui_add_class(c->bt_select_region, "dt_transparent_background");
-  dt_action_define_iop(self, NULL, "auto region", c->bt_select_region, &dt_action_def_toggle);
+  dt_action_define_iop(self, NULL, N_("auto region"), c->bt_select_region, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->bt_select_region,
                               _("apply auto levels based on a region defined by the user\n"
                                 "click and drag to draw the area\n"
@@ -1157,8 +1160,8 @@ static void _auto_levels(const float *const img, const int width, const int heig
     x_to = width - 1;
   }
 
-  float max = -INFINITY;
-  float min = INFINITY;
+  float max = -FLT_MAX;
+  float min = FLT_MAX;
 
   for(int y = y_from; y <= y_to; y++)
   {
@@ -1206,8 +1209,12 @@ static void _auto_levels(const float *const img, const int width, const int heig
   p->levels[channel][1] = (p->levels[channel][2] + p->levels[channel][0]) / 2.f;
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
@@ -1232,7 +1239,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
       int box[4] = { 0 };
       _get_selected_area(self, piece, g, roi_in, box);
-      _auto_levels((const float *const)ivoid, roi_in->width, roi_in->height, box, &(g->params), g->channel, work_profile);
+      _auto_levels((const float *const)ivoid, roi_in->width, roi_in->height, box,
+                   &(g->params), g->channel, work_profile);
 
       dt_iop_gui_enter_critical_section(self);
       g->call_auto_levels = 2;
@@ -1251,11 +1259,16 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = (const float*)ivoid;
   float *const restrict out = (float*)ovoid;
-  if(d->params.autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS || d->params.preserve_colors == DT_RGB_NORM_NONE)
+  if(d->params.autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS
+     || d->params.preserve_colors == DT_RGB_NORM_NONE)
   {
+    const dt_aligned_pixel_t min_levels
+      = { d->params.levels[0][0], d->params.levels[1][0], d->params.levels[2][0], 0.0f };
+    const dt_aligned_pixel_t max_levels
+      = { d->params.levels[0][2], d->params.levels[1][2], d->params.levels[2][2], 1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, work_profile, d, mult) \
+  dt_omp_firstprivate(npixels, in, out, work_profile, d, mult, min_levels, max_levels) \
   schedule(static)
 #endif
     for(int k = 0; k < 4U*npixels; k += 4)
@@ -1264,24 +1277,24 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         const float L_in = in[k+c];
 
-        if(L_in <= d->params.levels[c][0])
+        if(L_in <= min_levels[c])
         {
           // Anything below the lower threshold just clips to zero
           out[k+c] = 0.0f;
         }
-        else if(L_in >= d->params.levels[c][2])
+        else if(L_in >= max_levels[c])
         {
-          const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
+          // above the upper limit we extrapolate using the gamma value
+          const float percentage = (L_in - min_levels[c]) * mult[c];
           out[k+c] = powf(percentage, d->inv_gamma[c]);
         }
         else
         {
           // Within the expected input range we can use the lookup table
-          const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
+          const float percentage = (L_in - min_levels[c]) * mult[c];
           out[k+c] = d->lut[c][CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
         }
       }
-      out[k+3] = in[k+3];
     }
   }
   else
@@ -1289,19 +1302,23 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     const int ch_levels = 0;
     const float mult_ch = mult[ch_levels];
     const float *const restrict levels = d->params.levels[ch_levels];
+    const float min_level = levels[0];
+    const float max_level = levels[2];
+    static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, in, out, work_profile, d, levels, mult_ch, ch_levels) \
+  dt_omp_firstprivate(npixels, in, out, work_profile, d, min_level, max_level, \
+                      mult_ch, ch_levels, zero)                         \
   schedule(static)
 #endif
     for(int k = 0; k < 4U*npixels; k += 4)
     {
       const float lum = dt_rgb_norm(in+k, d->params.preserve_colors, work_profile);
-      if(lum > levels[0])
+      if(lum > min_level)
       {
         float curve_lum;
-        const float percentage = (lum - levels[0]) * mult_ch;
-        if(lum >= levels[2])
+        const float percentage = (lum - min_level) * mult_ch;
+        if(lum >= max_level)
         {
           curve_lum = powf(percentage, d->inv_gamma[ch_levels]);
         }
@@ -1312,19 +1329,20 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         }
 
         const float ratio = curve_lum / lum;
+        dt_aligned_pixel_t res;
 
         for_each_channel(c,aligned(in,out:16))
         {
-          out[k+c] = (ratio * in[k+c]);
+          res[c] = (ratio * in[k+c]);
         }
+        copy_pixel_nontemporal(out + k, res);
       }
       else
       {
-        for_each_channel(c,aligned(out:16))
-          out[k+c] = 0.f;
+        copy_pixel_nontemporal(out + k, zero);
       }
-      out[k+3] = in[k+3];
-   }
+    }
+    dt_omploop_sfence(); // ensure nontemporal writes are flushed before continuing
   }
 }
 

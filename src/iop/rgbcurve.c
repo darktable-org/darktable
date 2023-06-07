@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -246,12 +247,14 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = linear_L[k];
 
   // Gamma 2.0 - no contrast
-  for(int k = 1; k < 6; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(linear_L[k], 2.0f);
+  for(int k = 1; k < 6; k++)
+    p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = (linear_L[k] * linear_L[k]);
   dt_gui_presets_add_generic(_("gamma 2.0"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma 0.5 - no contrast
-  for(int k = 1; k < 6; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(linear_L[k], 0.5f);
+  for(int k = 1; k < 6; k++)
+    p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = sqrtf(linear_L[k]);
   dt_gui_presets_add_generic(_("gamma 0.5"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -406,7 +409,7 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
     p->curve_type[DT_IOP_RGBCURVE_R] = p->curve_type[DT_IOP_RGBCURVE_G] = p->curve_type[DT_IOP_RGBCURVE_B]
         = MONOTONE_HERMITE;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -572,7 +575,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
     curve[g->selected].x = new_x;
     curve[g->selected].y = new_y;
 
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
   }
 
   return TRUE;
@@ -1137,7 +1140,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
       dt_iop_color_picker_reset(self, TRUE);
       // no vertex was close, create a new one!
       g->selected = _add_node(curve_nodes, &p->curve_num_nodes[ch], linx, liny);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     }
   }
   else
@@ -1231,7 +1234,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
           }
 
           dt_iop_color_picker_reset(self, TRUE);
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
           gtk_widget_queue_draw(self->widget);
         }
 
@@ -1253,7 +1256,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
         g->selected = -2; // avoid motion notify re-inserting immediately.
         dt_bauhaus_combobox_set(g->interpolator, p->curve_type[DT_IOP_RGBCURVE_R]);
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
         gtk_widget_queue_draw(self->widget);
       }
       else
@@ -1264,7 +1267,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
           g->selected = -2; // avoid motion notify re-inserting immediately.
           dt_bauhaus_combobox_set(g->autoscale, 1);
           dt_iop_color_picker_reset(self, TRUE);
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
           gtk_widget_queue_draw(self->widget);
         }
       }
@@ -1278,7 +1281,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       const float reset_value = g->selected == 0 ? 0.f : 1.f;
       curve_nodes[g->selected].y = curve_nodes[g->selected].x = reset_value;
       dt_iop_color_picker_reset(self, TRUE);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       gtk_widget_queue_draw(self->widget);
       return TRUE;
     }
@@ -1292,7 +1295,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
     g->selected = -2; // avoid re-insertion of that point immediately after this
     p->curve_num_nodes[ch]--;
     dt_iop_color_picker_reset(self, TRUE);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
     gtk_widget_queue_draw(self->widget);
     return TRUE;
   }
@@ -1343,7 +1346,6 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->channel = DT_IOP_RGBCURVE_R;
-  self->timeout_handle = 0;
   change_image(self);
 
   g->autoscale = dt_bauhaus_combobox_from_params(self, "curve_autoscale");
@@ -1364,6 +1366,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO, hbox);
   gtk_widget_set_tooltip_text(g->colorpicker, _("pick GUI color from image\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(g->colorpicker, "keep-active");
+  dt_action_define_iop(self, N_("pickers"), N_("show color"), g->colorpicker, &dt_action_def_toggle);
   g->colorpicker_set_values = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
@@ -1373,6 +1376,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                            "drag to create a flat curve\n"
                                                            "ctrl+drag to create a positive curve\n"
                                                            "shift+drag to create a negative curve"));
+  dt_action_define_iop(self, N_("pickers"), N_("create curve"), g->colorpicker_set_values, &dt_action_def_toggle);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
@@ -1432,8 +1436,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_compensate_middle_grey), p->compensate_middle_grey);
   dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
 
-  dt_iop_cancel_history_update(self);
-
   _rgbcurve_show_hide_controls(p, g);
 
   // that's all, gui curve is read directly from params during expose event.
@@ -1445,8 +1447,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
 
   for(int k = 0; k < DT_IOP_RGBCURVE_MAX_CHANNELS; k++) dt_draw_curve_destroy(g->minmax_curve[k]);
-
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }
@@ -1487,7 +1487,7 @@ void init(dt_iop_module_t *module)
 {
   dt_iop_default_init(module);
 
-  module->request_histogram |= (DT_REQUEST_ON);
+  module->request_histogram |= (DT_REQUEST_ON | DT_REQUEST_EXPANDED);
 
   dt_iop_rgbcurve_params_t *d = module->default_params;
 
@@ -1591,12 +1591,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
   {
-    piece->request_histogram |= (DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
     self->histogram_middle_grey = p->compensate_middle_grey;
   }
   else
   {
-    piece->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram &= ~DT_REQUEST_ON;
   }
 
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
@@ -1650,7 +1650,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_r = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_R], 256, 256, sizeof(float));
   if(dev_r == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 1\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 1\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1658,7 +1658,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_g = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_G], 256, 256, sizeof(float));
   if(dev_g == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 2\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 2\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1666,7 +1666,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_b = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_B], 256, 256, sizeof(float));
   if(dev_b == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 3\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 3\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1674,7 +1674,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_coeffs_r = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs[0]);
   if(dev_coeffs_r == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 4\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1682,7 +1682,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_coeffs_g = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs[1]);
   if(dev_coeffs_g == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 5\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 5\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1690,7 +1690,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_coeffs_b = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 12, d->unbounded_coeffs[2]);
   if(dev_coeffs_b == NULL)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 6\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error allocating memory 6\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1701,7 +1701,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
-    fprintf(stderr, "[rgbcurve process_cl] error %i enqueue kernel\n", err);
+    dt_print(DT_DEBUG_ALWAYS, "[rgbcurve process_cl] error %i enqueue kernel\n", err);
     goto cleanup;
   }
 

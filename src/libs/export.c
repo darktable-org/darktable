@@ -21,7 +21,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/file_location.h"
 #include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -154,15 +153,12 @@ const char *name(dt_lib_module_t *self)
   return _("export");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v1[] = {"lighttable", "darkroom", NULL};
-  static const char *v2[] = {"lighttable", NULL};
-
   if(dt_conf_get_bool("plugins/darkroom/export/visible"))
-    return v1;
+    return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM;
   else
-    return v2;
+    return DT_VIEW_LIGHTTABLE;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -174,9 +170,8 @@ uint32_t container(dt_lib_module_t *self)
     return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void _update(dt_lib_module_t *self)
+void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   const dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
@@ -191,19 +186,19 @@ static void _update(dt_lib_module_t *self)
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
                                          dt_collection_properties_t changed_property, gpointer imgs, int next,
                                          dt_lib_module_t *self)
 {
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_queue_postponed_update(self, _update);
+  dt_lib_gui_queue_update(self);
 }
 
 gboolean _is_int(double value)
@@ -593,7 +588,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   if(mstorage) mstorage->gui_reset(mstorage);
 
-  _update(self);
+  dt_lib_gui_queue_update(self);
 }
 
 static void set_format_by_name(dt_lib_export_t *d, const char *name)
@@ -1056,7 +1051,6 @@ void set_preferences(void *menu, dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
-  self->timeout_handle = 0;
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -1210,11 +1204,6 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add profile combo
 
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-
   d->profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->profile, NULL, N_("profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->profile, FALSE, TRUE, 0);
@@ -1228,12 +1217,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, 0);
 
-  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-  char *tooltip = g_strdup_printf(_("output ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(d->profile, tooltip);
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
+  char *tooltip = dt_ioppr_get_location_tooltip("out", _("output ICC profiles"));
+  gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
 
   //  Add intent combo
@@ -1378,7 +1363,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_cancel_postponed_update(self);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_on_storage_list_changed), self);
@@ -1438,9 +1422,10 @@ void init_presets(dt_lib_module_t *self)
     if(op_version != version)
     {
       // shouldn't happen, we run legacy_params on the lib level before calling this
-      fprintf(stderr, "[export_init_presets] found export preset '%s' with version %d, version %d was "
-                      "expected. dropping preset.\n",
-              name, op_version, version);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[export_init_presets] found export preset '%s' with version %d, version %d was "
+               "expected. dropping preset.\n",
+               name, op_version, version);
       sqlite3_stmt *innerstmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "DELETE FROM data.presets WHERE rowid=?1", -1,
@@ -1535,9 +1520,9 @@ void init_presets(dt_lib_module_t *self)
           memcpy((uint8_t *)new_params + pos, sdata, ssize);
 
         // write the updated preset back to db
-        fprintf(stderr,
-                "[export_init_presets] updating export preset '%s' from versions %d/%d to versions %d/%d\n",
-                name, fversion, sversion, new_fversion, new_sversion);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[export_init_presets] updating export preset '%s' from versions %d/%d to versions %d/%d\n",
+                 name, fversion, sversion, new_fversion, new_sversion);
         sqlite3_stmt *innerstmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "UPDATE data.presets SET op_params=?1 WHERE rowid=?2",
@@ -1557,9 +1542,10 @@ void init_presets(dt_lib_module_t *self)
     delete_preset:
       free(new_fdata);
       free(new_sdata);
-      fprintf(stderr, "[export_init_presets] export preset '%s' can't be updated from versions %d/%d to "
-                      "versions %d/%d. dropping preset\n",
-              name, fversion, sversion, new_fversion, new_sversion);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[export_init_presets] export preset '%s' can't be updated from versions %d/%d to "
+               "versions %d/%d. dropping preset\n",
+               name, fversion, sversion, new_fversion, new_sversion);
       sqlite3_stmt *innerstmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "DELETE FROM data.presets WHERE rowid=?1", -1,

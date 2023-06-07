@@ -111,7 +111,8 @@ static inline char _mask_dilated(const char *in, const size_t w1)
 static void _process_linear_opposed(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
-        const float *const input, float *const output,
+        const float *const input,
+        float *const output,
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out,
         const gboolean quality)
@@ -142,8 +143,7 @@ static void _process_linear_opposed(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, mask) \
-  dt_omp_sharedconst(msize, mwidth) \
+  dt_omp_firstprivate(clips, input, roi_in, mask, msize, mwidth) \
   schedule(static)
 #endif
     for(size_t row = 1; row < roi_in->height -1; row++)
@@ -174,8 +174,7 @@ static void _process_linear_opposed(
     {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask) \
-  dt_omp_sharedconst(mwidth, mheight, msize) \
+  dt_omp_firstprivate(mask, mwidth, mheight, msize) \
   schedule(static) collapse(2)
 #endif
       for(size_t row = 3; row < mheight - 3; row++)
@@ -191,9 +190,8 @@ static void _process_linear_opposed(
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, clips, mask) \
+  dt_omp_firstprivate(input, roi_in, clips, mask, msize, mwidth) \
   reduction(+ : sums, cnts) \
-  dt_omp_sharedconst(msize, mwidth) \
   schedule(static)
 #endif
       for(size_t row = 3; row < roi_in->height - 3; row++)
@@ -282,8 +280,7 @@ static float *_process_opposed(
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, xtrans, mask) \
-  dt_omp_sharedconst(filters, msize, mwidth, mheight) \
+  dt_omp_firstprivate(clips, input, roi_in, xtrans, mask, filters, msize, mwidth, mheight) \
   schedule(static) collapse(2)
 #endif
       for(int mrow = 1; mrow < mheight-1; mrow++)
@@ -298,13 +295,15 @@ static float *_process_opposed(
             {
               const size_t idx = grp + y * roi_in->width + x;
               const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+x, roi_in, xtrans) : FC(mrow+y, mcol+x, filters);
-              const gboolean clipped = fmaxf(0.0f, input[idx]) >= clips[color];
+              const gboolean clipped = input[idx] >= clips[color];
               mbuff[color] += (clipped) ? 1 : 0;
-              anyclipped |= clipped;
             }
           }
           for_three_channels(c)
+          {
             mask[c * msize + mrow * mwidth + mcol] = (mbuff[c]) ? 1 : 0;
+            anyclipped |= (mbuff[c]) ? 1 : 0;
+          }
         }
       }
 
@@ -320,8 +319,7 @@ static float *_process_opposed(
         */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask) \
-  dt_omp_sharedconst(mwidth, mheight, msize) \
+  dt_omp_firstprivate(mask, mwidth, mheight, msize) \
   schedule(static) collapse(2)
 #endif
         for(size_t row = 3; row < mheight - 3; row++)
@@ -335,12 +333,12 @@ static float *_process_opposed(
           }
         }
 
+        const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */ 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, xtrans, clips, mask) \
+  dt_omp_firstprivate(input, roi_in, xtrans, clips, lo_clips, mask, filters, msize, mwidth) \
   reduction(+ : sums, cnts) \
-  dt_omp_sharedconst(filters, msize, mwidth) \
   schedule(static) collapse(2)
 #endif
         for(size_t row = 3; row < roi_in->height - 3; row++)
@@ -349,10 +347,11 @@ static float *_process_opposed(
           {
             const size_t idx = row * roi_in->width + col;
             const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-            const float inval = fmaxf(0.0f, input[idx]); 
+            const float inval = input[idx]; 
 
             /* we only use the unclipped photosites very close the true clipped data to calculate the chrominance offset */
-            if((inval < clips[color]) && (inval > (0.2f * clips[color])) && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
+            if((inval < clips[color]) && (inval > lo_clips[color])
+               && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
             {
               sums[color] += inval - _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
               cnts[color] += 1.0f;
@@ -380,8 +379,7 @@ static float *_process_opposed(
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, chrominance) \
-  dt_omp_sharedconst(filters) \
+  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, chrominance, filters) \
   schedule(static) collapse(2)
 #endif
     for(size_t row = 0; row < roi_in->height; row++)
@@ -390,11 +388,11 @@ static float *_process_opposed(
       {
         const size_t idx = row * roi_in->width + col;
         const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-        const float inval = fmaxf(0.0f, input[idx]);
-        if((inval >= clips[color]) && (col > 0) && (col < roi_in->width - 1) && (row > 0) && (row < roi_in->height - 1))
+        const float inval = MAX(0.0f, input[idx]);
+        if(inval >= clips[color])
         {
           const float ref = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
-          tmpout[idx] = fmaxf(inval, ref + chrominance[color]);
+          tmpout[idx] = MAX(inval, ref + chrominance[color]);
         }
         else
           tmpout[idx] = inval;
@@ -404,8 +402,7 @@ static float *_process_opposed(
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out) \
-  dt_omp_sharedconst(filters) \
+  dt_omp_firstprivate(output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out, filters) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
@@ -424,12 +421,11 @@ static float *_process_opposed(
         else
         { 
           const int color = (filters == 9u) ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
-          const gboolean inrefs = (irow > 0) && (icol > 0) && (irow < roi_in->height-1) && (icol < roi_in->width-1);
-          oval = fmaxf(0.0f, input[ix]);
-          if(inrefs && (oval >= clips[color]))
+          oval = MAX(0.0f, input[ix]);
+          if(oval >= clips[color])
           {
             const float ref = _calc_refavg(&input[ix], xtrans, filters, irow, icol, roi_in, TRUE);
-            oval = fmaxf(oval, ref + chrominance[color]);
+            oval = MAX(oval, ref + chrominance[color]);
           }
         }
       }
@@ -600,3 +596,8 @@ static cl_int process_opposed_cl(
 }
 #endif
 
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

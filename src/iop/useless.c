@@ -187,7 +187,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-static const int mask_id = 1; // key "0" is reserved for the pipe
+static const dt_mask_id_t mask_id = NO_MASKID + 1; // key "0" is reserved for the pipe
 static const char *mask_name = "useless checkerboard";
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -374,7 +374,7 @@ void init(dt_iop_module_t *module)
   dt_iop_default_init(module);
 
   // Any non-default settings; for example disabling the on/off switch:
-  module->hide_enable_button = 1;
+  module->hide_enable_button = TRUE;
   // To make this work correctly, you also need to hide the widgets, otherwise moving one
   // would enable the module anyway. The standard way is to set up a gtk_stack and show
   // the page that only has a label with an explanatory text when the module can't be used.
@@ -510,11 +510,11 @@ void reload_defaults(dt_iop_module_t *module)
   // As an example, switch off for non-raw images. The enable button was already hidden in init().
   if(!dt_image_is_raw(&module->dev->image_storage))
   {
-    module->default_enabled = 0;
+    module->default_enabled = FALSE;
   }
   else
   {
-    module->default_enabled = 1;
+    module->default_enabled = TRUE;
     d->checker_scale = 3; // something dependent on exif, for example.
   }
 

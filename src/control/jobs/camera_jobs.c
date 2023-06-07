@@ -226,11 +226,11 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_p
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  const int32_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
+  const dt_imgid_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
 
   const time_t timestamp = (!in_path || !in_filename) ? 0 :
                dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
-  if(timestamp && imgid >= 0)
+  if(timestamp && dt_is_valid_imgid(imgid))
   {
     char dt_txt[DT_DATETIME_EXIF_LENGTH];
     dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &timestamp);

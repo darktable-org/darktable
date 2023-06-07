@@ -75,7 +75,7 @@ typedef enum dt_iop_retouch_algo_type_t {
 
 typedef struct dt_iop_retouch_form_data_t
 {
-  int formid; // from masks, form->formid
+  dt_mask_id_t formid; // from masks, form->formid
   int scale;  // 0==original image; 1..RETOUCH_MAX_SCALES==scale; RETOUCH_MAX_SCALES+1==residual
   dt_iop_retouch_algo_type_t algorithm;  // clone, heal, blur, fill
 
@@ -94,8 +94,8 @@ typedef struct retouch_user_data_t
   dt_dev_pixelpipe_iop_t *piece;
   dt_iop_roi_t roi;
   int display_scale;
-  int mask_display;
-  int suppress_mask;
+  gboolean mask_display;
+  gboolean suppress_mask;
 } retouch_user_data_t;
 
 typedef struct dt_iop_retouch_params_t
@@ -122,9 +122,9 @@ typedef struct dt_iop_retouch_params_t
 typedef struct dt_iop_retouch_gui_data_t
 {
   int copied_scale; // scale to be copied to another scale
-  int mask_display; // should we expose masks?
-  int suppress_mask;         // do not process masks
-  int display_wavelet_scale; // display current wavelet scale
+  gboolean mask_display; // should we expose masks?
+  gboolean suppress_mask;    // do not process masks
+  gboolean display_wavelet_scale; // display current wavelet scale
   int displayed_wavelet_scale; // was display wavelet scale already used?
   int preview_auto_levels;   // should we calculate levels automatically?
   float preview_levels[3];   // values for the levels
@@ -227,14 +227,17 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void *new_params,
                   const int new_version)
 {
   if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_iop_retouch_form_data_v1_t
     {
-      int formid; // from masks, form->formid
+      dt_mask_id_t formid; // from masks, form->formid
       int scale;  // 0==original image; 1..RETOUCH_MAX_SCALES==scale; RETOUCH_MAX_SCALES+1==residual
       dt_iop_retouch_algo_type_t algorithm; // clone, heal, blur, fill
 
@@ -344,10 +347,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const int formid)
+static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const dt_mask_id_t formid)
 {
   int index = -1;
-  if(formid > 0)
+  if(dt_is_valid_maskid(formid))
   {
     int i = 0;
 
@@ -360,12 +363,12 @@ static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const int formid
   return index;
 }
 
-static int rt_get_selected_shape_id()
+static dt_mask_id_t rt_get_selected_shape_id()
 {
   return darktable.develop->mask_form_selected_id;
 }
 
-static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self, int formid)
+static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self, dt_mask_id_t formid)
 {
   dt_masks_point_group_t *form_point_group = NULL;
 
@@ -389,7 +392,7 @@ static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self, in
   return form_point_group;
 }
 
-static float rt_get_shape_opacity(dt_iop_module_t *self, const int formid)
+static float rt_get_shape_opacity(dt_iop_module_t *self, const dt_mask_id_t formid)
 {
   float opacity = 0.f;
 
@@ -472,12 +475,14 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 
   ++darktable.gui->reset;
 
-  int selection_changed = 0;
+  gboolean selection_changed = FALSE;
 
   const int index = rt_get_selected_shape_index(p);
   if(index >= 0)
   {
-    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_get_shape_opacity(self, p->rt_forms[index].formid));
+    const float opacity = rt_get_shape_opacity(self, p->rt_forms[index].formid);
+    if(opacity >= 0.0f)
+      dt_bauhaus_slider_set(g->sl_mask_opacity, opacity);
 
     if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
     {
@@ -487,7 +492,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->cmb_blur_type, p->blur_type);
       dt_bauhaus_slider_set(g->sl_blur_radius, p->blur_radius);
 
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
     else if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
     {
@@ -501,7 +506,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->cmb_fill_mode, p->fill_mode);
       rt_display_selected_fill_color(g, p);
 
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
 
     if(p->algorithm != p->rt_forms[index].algorithm)
@@ -513,7 +518,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), (p->algorithm == DT_IOP_RETOUCH_BLUR));
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), (p->algorithm == DT_IOP_RETOUCH_FILL));
 
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
 
     if(selection_changed) rt_show_hide_controls(self);
@@ -521,7 +526,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 
   rt_display_selected_shapes_lbl(g);
 
-  const int creation_continuous = (darktable.develop->form_gui && darktable.develop->form_gui->creation_continuous
+  const gboolean creation_continuous = (darktable.develop->form_gui && darktable.develop->form_gui->creation_continuous
                                    && darktable.develop->form_gui->creation_continuous_module == self);
 
   if(index >= 0 && !creation_continuous)
@@ -538,28 +543,27 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 // helpers
 //---------------------------------------------------------------------------------
 
-static void rt_masks_form_change_opacity(dt_iop_module_t *self, int formid, float opacity)
+static gboolean rt_masks_form_change_opacity(dt_iop_module_t *self, dt_mask_id_t formid, float opacity)
 {
+  gboolean changed = FALSE;
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
   if(grpt)
   {
-    grpt->opacity = CLAMP(opacity, 0.05f, 1.0f);
-    dt_conf_set_float("plugins/darkroom/masks/opacity", grpt->opacity);
-
-    dt_dev_add_masks_history_item(darktable.develop, self, TRUE);
+    const float new_opacity = CLAMP(opacity, 0.05f, 1.0f);
+    if(!feqf(grpt->opacity, new_opacity, 1e-6))
+    {
+      grpt->opacity = new_opacity;
+      dt_conf_set_float("plugins/darkroom/masks/opacity", grpt->opacity);
+      dt_dev_add_masks_history_item(darktable.develop, self, TRUE);
+      changed = TRUE;
+    }
   }
+  return changed;
 }
 
-static float rt_masks_form_get_opacity(dt_iop_module_t *self, int formid)
-{
-  dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
-  if(grpt)
-    return grpt->opacity;
-  else
-    return 1.0f;
-}
-
-static void rt_paste_forms_from_scale(dt_iop_retouch_params_t *p, const int source_scale, const int dest_scale)
+static void rt_paste_forms_from_scale(dt_iop_retouch_params_t *p,
+                                      const int source_scale,
+                                      const int dest_scale)
 {
   if(source_scale != dest_scale && source_scale >= 0 && dest_scale >= 0)
   {
@@ -577,7 +581,7 @@ static int rt_allow_create_form(dt_iop_module_t *self)
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   if(p)
   {
-    allow = (p->rt_forms[RETOUCH_NO_FORMS - 1].formid == 0);
+    allow = (p->rt_forms[RETOUCH_NO_FORMS - 1].formid == NO_MASKID);
   }
   return allow;
 }
@@ -625,7 +629,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
   // check if there is a shape on this scale
   for(int i = 0; i < RETOUCH_NO_FORMS && count == 0; i++)
   {
-    if(p->rt_forms[i].formid != 0 && p->rt_forms[i].scale == scale) count++;
+    if(dt_is_valid_maskid(p->rt_forms[i].formid) && p->rt_forms[i].scale == scale) count++;
   }
 
   // if there are shapes on this scale, make the cut shapes button sensitive
@@ -651,8 +655,8 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
   {
     if(p->rt_forms[i].scale == scale)
     {
-      const int grid = self->blend_params->mask_id;
-      const int formid = p->rt_forms[i].formid;
+      const dt_mask_id_t grid = self->blend_params->mask_id;
+      const dt_mask_id_t formid = p->rt_forms[i].formid;
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
       if(form)
       {
@@ -667,7 +671,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
   }
 
   dt_masks_form_t *grp2 = dt_masks_create_ext(DT_MASKS_GROUP);
-  grp2->formid = 0;
+  grp2->formid = NO_MASKID;
   dt_masks_group_ungroup(grp2, grp);
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = bd->masks_shown;
@@ -698,7 +702,7 @@ static void rt_resynch_params(struct dt_iop_module_t *self)
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       if(grpt)
       {
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
 
         // search for the form on the shapes array
         const int form_index = rt_get_index_from_formid(p, formid);
@@ -752,8 +756,10 @@ static void rt_resynch_params(struct dt_iop_module_t *self)
   }
 }
 
-static gboolean rt_masks_form_is_in_roi(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                        dt_masks_form_t *form, const dt_iop_roi_t *roi_in,
+static gboolean rt_masks_form_is_in_roi(dt_iop_module_t *self,
+                                        dt_dev_pixelpipe_iop_t *piece,
+                                        dt_masks_form_t *form,
+                                        const dt_iop_roi_t *roi_in,
                                         const dt_iop_roi_t *roi_out)
 {
   // we get the area for the form
@@ -770,8 +776,11 @@ static gboolean rt_masks_form_is_in_roi(dt_iop_module_t *self, dt_dev_pixelpipe_
   return TRUE;
 }
 
-static void rt_masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi, const float *points,
-                                       size_t points_count, float *new)
+static void rt_masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece,
+                                       const dt_iop_roi_t *roi,
+                                       const float *points,
+                                       size_t points_count,
+                                       float *new)
 {
   const float scalex = piece->pipe->iwidth * roi->scale, scaley = piece->pipe->iheight * roi->scale;
 
@@ -782,8 +791,13 @@ static void rt_masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_i
   }
 }
 
-static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
-                                     const float *target, const float *source, float *dx, float *dy,
+static int rt_masks_point_calc_delta(dt_iop_module_t *self,
+                                     dt_dev_pixelpipe_iop_t *piece,
+                                     const dt_iop_roi_t *roi,
+                                     const float *target,
+                                     const float *source,
+                                     float *dx,
+                                     float *dy,
                                      const int distort_mode)
 {
   // if distort_mode==1 we don't scale at the right place, hence false positions if there's distortion before this
@@ -820,8 +834,12 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop
 }
 
 /* returns (dx dy) to get from the source to the destination */
-static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                             const dt_iop_roi_t *roi, dt_masks_form_t *form, float *dx, float *dy,
+static int rt_masks_get_delta_to_destination(dt_iop_module_t *self,
+                                             dt_dev_pixelpipe_iop_t *piece,
+                                             const dt_iop_roi_t *roi,
+                                             dt_masks_form_t *form,
+                                             float *dx,
+                                             float *dy,
                                              const int distort_mode)
 {
   int res = 0;
@@ -898,9 +916,9 @@ static void rt_clamp_minmax(float levels_old[3], float levels_new[3])
   }
 }
 
-static int rt_shape_is_being_added(dt_iop_module_t *self, const int shape_type)
+static gboolean rt_shape_is_being_added(dt_iop_module_t *self, const dt_masks_type_t shape_type)
 {
-  int being_added = 0;
+  gboolean being_added = FALSE;
 
   if(self->dev->form_gui && self->dev->form_visible
      && ((self->dev->form_gui->creation && self->dev->form_gui->creation_module == self)
@@ -1159,7 +1177,9 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget, GdkEventButton *event, 
   return TRUE;
 }
 
-static gboolean rt_wdbar_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean rt_wdbar_button_release(GtkWidget *widget,
+                                        GdkEventButton *event,
+                                        dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
@@ -1169,7 +1189,9 @@ static gboolean rt_wdbar_button_release(GtkWidget *widget, GdkEventButton *event
   return TRUE;
 }
 
-static gboolean rt_wdbar_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
+static gboolean rt_wdbar_scrolled(GtkWidget *widget,
+                                  GdkEventScroll *event,
+                                  dt_iop_module_t *self)
 {
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -1244,7 +1266,7 @@ static int rt_scale_has_shapes(dt_iop_retouch_params_t *p, const int scale)
   int has_shapes = 0;
 
   for(int i = 0; i < RETOUCH_NO_FORMS && has_shapes == 0; i++)
-    has_shapes = (p->rt_forms[i].formid != 0 && p->rt_forms[i].scale == scale);
+    has_shapes = (dt_is_valid_maskid(p->rt_forms[i].formid) && p->rt_forms[i].scale == scale);
 
   return has_shapes;
 }
@@ -1464,7 +1486,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton,
+                                            GdkEventButton *event,
+                                            dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
 
@@ -1499,7 +1523,9 @@ static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton, GdkEv
   return TRUE;
 }
 
-static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
+                                                  GdkEventButton *event,
+                                                  dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
 
@@ -1507,7 +1533,7 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
   // if blend module is displaying mask do not display wavelet scales
-  if(self->request_mask_display && !g->mask_display)
+  if((self->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE) && !g->mask_display)
   {
     dt_control_log(_("cannot display scales when the blending mask is displayed"));
 
@@ -1580,7 +1606,9 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
 }
 
-static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton,
+                                        GdkEventButton *event,
+                                        dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -1605,15 +1633,14 @@ static void rt_mask_opacity_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  const int shape_id = rt_get_selected_shape_id();
+  const dt_mask_id_t shape_id = rt_get_selected_shape_id();
 
-  if(shape_id > 0)
+  if(dt_is_valid_maskid(shape_id))
   {
     const float opacity = dt_bauhaus_slider_get(slider);
-    rt_masks_form_change_opacity(self, shape_id, opacity);
+    if(rt_masks_form_change_opacity(self, shape_id, opacity))
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_post_expose (struct dt_iop_module_t *self,
@@ -1625,17 +1652,21 @@ void gui_post_expose (struct dt_iop_module_t *self,
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  const int shape_id = rt_get_selected_shape_id();
+  const dt_mask_id_t shape_id = rt_get_selected_shape_id();
 
-  if(shape_id > 0)
+  if(dt_is_valid_maskid(shape_id))
   {
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, shape_id));
+    dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, shape_id);
+    if(grpt)
+      dt_bauhaus_slider_set(g->sl_mask_opacity, grpt->opacity);
     --darktable.gui->reset;
   }
 }
 
-static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean rt_edit_masks_callback(GtkWidget *widget,
+                                       GdkEventButton *event,
+                                       dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -1707,7 +1738,9 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event,
   return TRUE;
 }
 
-static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+static gboolean rt_add_shape_callback(GtkWidget *widget,
+                                      GdkEventButton *e,
+                                      dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
@@ -1715,7 +1748,7 @@ static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_i
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  const int creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
+  const gboolean creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
 
   rt_add_shape(widget, creation_continuous, self);
 
@@ -1727,7 +1760,8 @@ static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_i
   return TRUE;
 }
 
-static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkEventButton *e,
+static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
+                                             GdkEventButton *e,
                                              dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
@@ -1836,14 +1870,16 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
   return TRUE;
 }
 
-static gboolean rt_showmask_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *module)
+static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
+                                     GdkEventButton *event,
+                                     dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return TRUE;
 
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
 
   // if blend module is displaying mask do not display it here
-  if(module->request_mask_display && !g->mask_display)
+  if((module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE) && !g->mask_display)
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
 
@@ -1862,7 +1898,9 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton, GdkEventButt
   return TRUE;
 }
 
-static gboolean rt_suppress_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *module)
+static gboolean rt_suppress_callback(GtkToggleButton *togglebutton,
+                                     GdkEventButton *event,
+                                     dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return TRUE;
 
@@ -2156,9 +2194,9 @@ void change_image(struct dt_iop_module_t *self)
   if(g)
   {
     g->copied_scale = -1;
-    g->mask_display = 0;
-    g->suppress_mask = 0;
-    g->display_wavelet_scale = 0;
+    g->mask_display = FALSE;
+    g->suppress_mask = FALSE;
+    g->display_wavelet_scale = FALSE;
     g->displayed_wavelet_scale = 0;
     g->first_scale_visible = RETOUCH_MAX_SCALES + 1;
 
@@ -2390,6 +2428,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT | DT_COLOR_PICKER_IO, g->hbox_color_pick);
   gtk_widget_set_tooltip_text(g->colorpicker, _("pick fill color from image"));
+  dt_action_define_iop(self, NULL, N_("pick fill color"), g->colorpicker, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->hbox_color_pick, TRUE, TRUE, 0);
 
@@ -2482,8 +2521,13 @@ void gui_cleanup(dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                              dt_iop_roi_t *roi_in, int *_roir, int *_roib, int *_roix, int *_roiy)
+static void rt_compute_roi_in(struct dt_iop_module_t *self,
+                              struct dt_dev_pixelpipe_iop_t *piece,
+                              dt_iop_roi_t *roi_in,
+                              int *_roir,
+                              int *_roib,
+                              int *_roix,
+                              int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
@@ -2502,7 +2546,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
       const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       if(grpt)
       {
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
         const int index = rt_get_index_from_formid(p, formid);
         if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
         {
@@ -2577,10 +2621,18 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
 // for a given form, if a previous clone/heal destination intersects the source area,
 // include that area in roi_in too
-static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                                dt_iop_roi_t *roi_in, const int formid_src, const int fl_src,
-                                                const int ft_src, const int fw_src, const int fh_src, int *_roir,
-                                                int *_roib, int *_roix, int *_roiy)
+static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self,
+                                                struct dt_dev_pixelpipe_iop_t *piece,
+                                                dt_iop_roi_t *roi_in,
+                                                const dt_mask_id_t formid_src,
+                                                const int fl_src,
+                                                const int ft_src,
+                                                const int fw_src,
+                                                const int fh_src,
+                                                int *_roir,
+                                                int *_roib,
+                                                int *_roix,
+                                                int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
@@ -2599,7 +2651,7 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, st
       const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       if(grpt)
       {
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
 
         // just need the previous forms
         if(formid == formid_src) break;
@@ -2667,8 +2719,13 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, st
 
 // for clone and heal, if the source area is the destination from another clone/heal,
 // we also need the area from that previous clone/heal
-static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                       dt_iop_roi_t *roi_in, int *_roir, int *_roib, int *_roix, int *_roiy)
+static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self,
+                                       struct dt_dev_pixelpipe_iop_t *piece,
+                                       dt_iop_roi_t *roi_in,
+                                       int *_roir,
+                                       int *_roib,
+                                       int *_roix,
+                                       int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
@@ -2687,7 +2744,7 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self, struct dt_d
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       if(grpt)
       {
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
         const int index = rt_get_index_from_formid(p, formid);
 
         if(p->rt_forms[index].algorithm != DT_IOP_RETOUCH_HEAL
@@ -2729,7 +2786,9 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self, struct dt_d
 }
 
 // needed if mask dest is in roi and mask src is not
-void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out,
+void modify_roi_in(struct dt_iop_module_t *self,
+                   struct dt_dev_pixelpipe_iop_t *piece,
+                   const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
@@ -2765,94 +2824,51 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 // process
 //--------------------------------------------------------------------------------------------------
 
-static void image_rgb2lab(float *img_src, const int width, const int height, const int ch, const int use_sse)
+static void image_rgb2lab(float *img_src, const int width, const int height)
 {
-  const int stride = width * height * ch;
-
-#if defined(__SSE__)
-  if(ch == 4 && use_sse)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, stride) \
-    shared(img_src) \
-    schedule(static)
-#endif
-    for(int i = 0; i < stride; i += ch)
-    {
-      // RGB -> XYZ
-      __m128 rgb = _mm_load_ps(img_src + i);
-      __m128 XYZ = dt_RGB_to_XYZ_sse2(rgb);
-      // XYZ -> Lab
-      _mm_store_ps(img_src + i, dt_XYZ_to_Lab_sse2(XYZ));
-    }
-
-    return;
-  }
-#endif
+  const size_t npixels = (size_t)width * height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, stride) \
-  shared(img_src) \
+  dt_omp_firstprivate(npixels,img_src)         \
   schedule(static)
 #endif
-  for(int i = 0; i < stride; i += ch)
+  for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t XYZ;
-
-    dt_linearRGB_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_Lab(XYZ, img_src + i);
+    dt_linearRGB_to_XYZ(img_src + 4*i, XYZ);
+    dt_XYZ_to_Lab(XYZ, img_src + 4*i);
   }
 }
 
-static void image_lab2rgb(float *img_src, const int width, const int height, const int ch, const int use_sse)
+static void image_lab2rgb(float *img_src, const int width, const int height)
 {
-  const int stride = width * height * ch;
-
-#if defined(__SSE__)
-  if(ch == 4 && use_sse)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, stride) \
-  shared(img_src) \
-  schedule(static)
-#endif
-    for(int i = 0; i < stride; i += ch)
-    {
-      // Lab -> XYZ
-      __m128 Lab = _mm_load_ps(img_src + i);
-      __m128 XYZ = dt_Lab_to_XYZ_sse2(Lab);
-      // XYZ -> RGB
-      _mm_store_ps(img_src + i, dt_XYZ_to_RGB_sse2(XYZ));
-    }
-
-    return;
-  }
-#endif
+  const size_t npixels = (size_t)width * height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, stride) \
-  shared(img_src) \
+  dt_omp_firstprivate(npixels, img_src) \
   schedule(static)
 #endif
-  for(int i = 0; i < stride; i += ch)
+  for(size_t i = 0; i < npixels; i++)
   {
     dt_aligned_pixel_t XYZ;
-
-    dt_Lab_to_XYZ(img_src + i, XYZ);
-    dt_XYZ_to_linearRGB(XYZ, img_src + i);
+    dt_Lab_to_XYZ(img_src + 4*i, XYZ);
+    dt_XYZ_to_linearRGB(XYZ, img_src + 4*i);
   }
 }
 
-static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const img_src,
-                             const int width, const int height, const int ch, float levels[3])
+static void rt_process_stats(struct dt_iop_module_t *self,
+                             dt_dev_pixelpipe_iop_t *piece,
+                             float *const img_src,
+                             const int width,
+                             const int height,
+                             const int ch,
+                             float levels[3])
 {
   const int size = width * height * ch;
-  float l_max = -INFINITY;
-  float l_min = INFINITY;
+  float l_max = -FLT_MAX;
+  float l_min = FLT_MAX;
   float l_sum = 0.f;
   int count = 0;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
@@ -2893,8 +2909,13 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   levels[1] = (l_sum / (float)count) / 100.f;
 }
 
-static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *img_src, const int width,
-                             const int height, const int ch, const float levels[3])
+static void rt_adjust_levels(dt_iop_module_t *self,
+                             dt_dev_pixelpipe_iop_t *piece,
+                             float *img_src,
+                             const int width,
+                             const int height,
+                             const int ch,
+                             const float levels[3])
 {
   const int size = width * height * ch;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
@@ -2972,8 +2993,12 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 #undef RETOUCH_PREVIEW_LVL_MIN
 #undef RETOUCH_PREVIEW_LVL_MAX
 
-static void rt_intersect_2_rois(dt_iop_roi_t *const roi_1, dt_iop_roi_t *const roi_2, const int dx, const int dy,
-                                const int padding, dt_iop_roi_t *roi_dest)
+static void rt_intersect_2_rois(dt_iop_roi_t *const roi_1,
+                                dt_iop_roi_t *const roi_2,
+                                const int dx,
+                                const int dy,
+                                const int padding,
+                                dt_iop_roi_t *roi_dest)
 {
   const int x_from = MAX(MAX((roi_1->x + 1 - padding), roi_2->x), (roi_2->x + dx));
   const int x_to
@@ -2989,8 +3014,13 @@ static void rt_intersect_2_rois(dt_iop_roi_t *const roi_1, dt_iop_roi_t *const r
   roi_dest->height = y_to - y_from;
 }
 
-static void rt_copy_in_to_out(const float *const in, const struct dt_iop_roi_t *const roi_in, float *const out,
-                              const struct dt_iop_roi_t *const roi_out, const int ch, const int dx, const int dy)
+static void rt_copy_in_to_out(const float *const in,
+                              const struct dt_iop_roi_t *const roi_in,
+                              float *const out,
+                              const struct dt_iop_roi_t *const roi_out,
+                              const int ch,
+                              const int dx,
+                              const int dy)
 {
   const size_t rowsize = sizeof(float) * ch * MIN(roi_out->width, roi_in->width);
   const int xoffs = roi_out->x - roi_in->x - dx;
@@ -3014,9 +3044,14 @@ static void rt_copy_in_to_out(const float *const in, const struct dt_iop_roi_t *
   }
 }
 
-static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask, float **mask_scaled,
-                                 dt_iop_roi_t *roi_mask_scaled, dt_iop_roi_t *const roi_in, const int dx,
-                                 const int dy, const int algo)
+static void rt_build_scaled_mask(float *const mask,
+                                 dt_iop_roi_t *const roi_mask,
+                                 float **mask_scaled,
+                                 dt_iop_roi_t *roi_mask_scaled,
+                                 dt_iop_roi_t *const roi_in,
+                                 const int dx,
+                                 const int dy,
+                                 const int algo)
 {
   float *mask_tmp = NULL;
 
@@ -3074,8 +3109,11 @@ cleanup:
 }
 
 // img_src and mask_scaled must have the same roi
-static void rt_copy_image_masked(float *const img_src, float *img_dest, dt_iop_roi_t *const roi_dest,
-                                 float *const mask_scaled, dt_iop_roi_t *const roi_mask_scaled,
+static void rt_copy_image_masked(float *const img_src,
+                                 float *img_dest,
+                                 dt_iop_roi_t *const roi_dest,
+                                 float *const mask_scaled,
+                                 dt_iop_roi_t *const roi_mask_scaled,
                                  const float opacity)
 {
 #ifdef _OPENMP
@@ -3108,8 +3146,11 @@ static void rt_copy_image_masked(float *const img_src, float *img_dest, dt_iop_r
   }
 }
 
-static void rt_copy_mask_to_alpha(float *const img, dt_iop_roi_t *const roi_img, const int ch,
-                                  float *const mask_scaled, dt_iop_roi_t *const roi_mask_scaled,
+static void rt_copy_mask_to_alpha(float *const img,
+                                  dt_iop_roi_t *const roi_img,
+                                  const int ch,
+                                  float *const mask_scaled,
+                                  dt_iop_roi_t *const roi_mask_scaled,
                                   const float opacity)
 {
 #ifdef _OPENMP
@@ -3134,8 +3175,12 @@ static void rt_copy_mask_to_alpha(float *const img, dt_iop_roi_t *const roi_img,
   }
 }
 
-static void _retouch_fill(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const float *const fill_color)
+static void _retouch_fill(float *const in,
+                          dt_iop_roi_t *const roi_in,
+                          float *const mask_scaled,
+                          dt_iop_roi_t *const roi_mask_scaled,
+                          const float opacity,
+                          const float *const fill_color)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -3161,8 +3206,13 @@ static void _retouch_fill(float *const in, dt_iop_roi_t *const roi_in, float *co
   }
 }
 
-static void _retouch_clone(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                           dt_iop_roi_t *const roi_mask_scaled, const int dx, const int dy, const float opacity)
+static void _retouch_clone(float *const in,
+                           dt_iop_roi_t *const roi_in,
+                           float *const mask_scaled,
+                           dt_iop_roi_t *const roi_mask_scaled,
+                           const int dx,
+                           const int dy,
+                           const float opacity)
 {
   // alloc temp image to avoid issues when areas self-intersects
   float *img_src = dt_alloc_align_float((size_t)4 * roi_mask_scaled->width * roi_mask_scaled->height);
@@ -3182,9 +3232,15 @@ cleanup:
   if(img_src) dt_free_align(img_src);
 }
 
-static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
-                          const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
+static void _retouch_blur(dt_iop_module_t *self,
+                          float *const in,
+                          dt_iop_roi_t *const roi_in,
+                          float *const mask_scaled,
+                          dt_iop_roi_t *const roi_mask_scaled,
+                          const float opacity,
+                          const int blur_type,
+                          const float blur_radius,
+                          dt_dev_pixelpipe_iop_t *piece)
 {
   if(fabsf(blur_radius) <= 0.1f) return;
 
@@ -3205,8 +3261,8 @@ static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *
 
   if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
-    float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
-    float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+    static const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+    static const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
     dt_gaussian_t *g = dt_gaussian_init(roi_mask_scaled->width, roi_mask_scaled->height, 4, Labmax, Labmin, sigma,
                                         DT_IOP_GAUSSIAN_ZERO);
@@ -3233,7 +3289,7 @@ static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *
                                             roi_mask_scaled->height, IOP_CS_RGB, IOP_CS_LAB, &converted_cst,
                                             work_profile);
       else
-        image_rgb2lab(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, 4, use_sse);
+        image_rgb2lab(img_dest, roi_mask_scaled->width, roi_mask_scaled->height);
 
       dt_bilateral_splat(b, img_dest);
       dt_bilateral_blur(b);
@@ -3245,7 +3301,7 @@ static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *
                                             roi_mask_scaled->height, IOP_CS_LAB, IOP_CS_RGB, &converted_cst,
                                             work_profile);
       else
-        image_lab2rgb(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, 4, use_sse);
+        image_lab2rgb(img_dest, roi_mask_scaled->width, roi_mask_scaled->height);
     }
   }
 
@@ -3256,8 +3312,14 @@ cleanup:
   if(img_dest) dt_free_align(img_dest);
 }
 
-static void _retouch_heal(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                          dt_iop_roi_t *const roi_mask_scaled, const int dx, const int dy, const float opacity, const int max_iter)
+static void _retouch_heal(float *const in,
+                          dt_iop_roi_t *const roi_in,
+                          float *const mask_scaled,
+                          dt_iop_roi_t *const roi_mask_scaled,
+                          const int dx,
+                          const int dy,
+                          const float opacity,
+                          const int max_iter)
 {
   float *img_src = NULL;
   float *img_dest = NULL;
@@ -3302,7 +3364,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
   dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)piece->blendop_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
   dt_iop_roi_t *roi_layer = &usr_d->roi;
-  const int mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
+  const gboolean mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
 
   // when the requested scales is grather than max scales the residual image index will be different from the one
   // defined by the user,
@@ -3326,9 +3388,9 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: invalid form\n");
           continue;
         }
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
         const float form_opacity = grpt->opacity;
-        if(formid == 0)
+        if(!dt_is_valid_maskid(formid))
         {
           dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: form is null\n");
           continue;
@@ -3418,7 +3480,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
             _retouch_blur(self, layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity,
-                          p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece, wt_p->use_sse);
+                          p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece);
           }
           else if(algo == DT_IOP_RETOUCH_FILL)
           {
@@ -3453,9 +3515,12 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
   }
 }
 
-static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                             void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out, const int use_sse)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
@@ -3473,7 +3538,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dwt_params_t *dwt_p = NULL;
 
   const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
-  const int display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : 0;
+  const gboolean display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : FALSE;
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -3489,7 +3554,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   usr_data.self = self;
   usr_data.piece = piece;
   usr_data.roi = *roi_rt;
-  usr_data.mask_display = 0;
+  usr_data.mask_display = FALSE;
   usr_data.suppress_mask = (g && g->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
                             && (piece->pipe == self->dev->pipe));
   usr_data.display_scale = p->curr_scale;
@@ -3498,7 +3563,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, 4, p->num_scales,
                       (!display_wavelet_scale || !(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)) ? 0 : p->curr_scale,
                       p->merge_from_scale, &usr_data,
-                      roi_in->scale / piece->iscale, use_sse);
+                      roi_in->scale / piece->iscale);
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
@@ -3509,8 +3574,8 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     for(size_t j = 0; j < (size_t)roi_rt->width * roi_rt->height * 4; j += 4) in_retouch[j + 3] = 0.f;
 
     piece->pipe->mask_display = g->mask_display ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-    piece->pipe->bypass_blendif = 1;
-    usr_data.mask_display = 1;
+    piece->pipe->bypass_blendif = TRUE;
+    usr_data.mask_display = TRUE;
   }
 
   if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
@@ -3575,30 +3640,25 @@ cleanup:
   if(dwt_p) dt_dwt_free(dwt_p);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  process_internal(self, piece, ivoid, ovoid, roi_in, roi_out, 0);
-}
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  process_internal(self, piece, ivoid, ovoid, roi_in, roi_out, 1);
-}
-#endif
-
-void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void distort_mask(struct dt_iop_module_t *self,
+                  struct dt_dev_pixelpipe_iop_t *piece,
+                  const float *const in,
+                  float *const out,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
   rt_copy_in_to_out(in, roi_in, out, roi_out, 1, 0, 0);
 }
 
 #ifdef HAVE_OPENCL
 
-cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img,
-                           const int width, const int height, float levels[3])
+cl_int rt_process_stats_cl(struct dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           const int devid,
+                           cl_mem dev_img,
+                           const int width,
+                           const int height,
+                           float levels[3])
 {
   cl_int err = CL_SUCCESS;
 
@@ -3636,8 +3696,13 @@ cleanup:
   return err;
 }
 
-cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img,
-                           const int width, const int height, const float levels[3])
+cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self,
+                           dt_dev_pixelpipe_iop_t *piece,
+                           const int devid,
+                           cl_mem dev_img,
+                           const int width,
+                           const int height,
+                           const float levels[3])
 {
   cl_int err = CL_SUCCESS;
 
@@ -3675,9 +3740,14 @@ cleanup:
   return err;
 }
 
-static cl_int rt_copy_in_to_out_cl(const int devid, cl_mem dev_in, const struct dt_iop_roi_t *const roi_in,
-                                   cl_mem dev_out, const struct dt_iop_roi_t *const roi_out, const int dx,
-                                   const int dy, const int kernel)
+static cl_int rt_copy_in_to_out_cl(const int devid,
+                                   cl_mem dev_in,
+                                   const struct dt_iop_roi_t *const roi_in,
+                                   cl_mem dev_out,
+                                   const struct dt_iop_roi_t *const roi_out,
+                                   const int dx,
+                                   const int dy,
+                                   const int kernel)
 {
   cl_int err = CL_SUCCESS;
 
@@ -3712,10 +3782,16 @@ cleanup:
   return err;
 }
 
-static cl_int rt_build_scaled_mask_cl(const int devid, float *const mask, dt_iop_roi_t *const roi_mask,
-                                      float **mask_scaled, cl_mem *p_dev_mask_scaled,
-                                      dt_iop_roi_t *roi_mask_scaled, dt_iop_roi_t *const roi_in, const int dx,
-                                      const int dy, const int algo)
+static cl_int rt_build_scaled_mask_cl(const int devid,
+                                      float *const mask,
+                                      dt_iop_roi_t *const roi_mask,
+                                      float **mask_scaled,
+                                      cl_mem *p_dev_mask_scaled,
+                                      dt_iop_roi_t *roi_mask_scaled,
+                                      dt_iop_roi_t *const roi_in,
+                                      const int dx,
+                                      const int dy,
+                                      const int algo)
 {
   cl_int err = CL_SUCCESS;
 
@@ -3750,9 +3826,13 @@ cleanup:
   return err;
 }
 
-static cl_int rt_copy_image_masked_cl(const int devid, cl_mem dev_src, cl_mem dev_dest,
-                                      dt_iop_roi_t *const roi_dest, cl_mem dev_mask_scaled,
-                                      dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int kernel)
+static cl_int rt_copy_image_masked_cl(const int devid,
+                                      cl_mem dev_src,
+                                      cl_mem dev_dest,
+                                      dt_iop_roi_t *const roi_dest,
+                                      cl_mem dev_mask_scaled,
+                                      dt_iop_roi_t *const roi_mask_scaled,
+                                      const float opacity, const int kernel)
 {
   cl_int err = CL_SUCCESS;
 
@@ -3781,9 +3861,13 @@ cleanup:
   return err;
 }
 
-static cl_int rt_copy_mask_to_alpha_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
-                                       cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled,
-                                       const float opacity, dt_iop_retouch_global_data_t *gd)
+static cl_int rt_copy_mask_to_alpha_cl(const int devid,
+                                       cl_mem dev_layer,
+                                       dt_iop_roi_t *const roi_layer,
+                                       cl_mem dev_mask_scaled,
+                                       dt_iop_roi_t *const roi_mask_scaled,
+                                       const float opacity,
+                                       dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_SUCCESS;
 
@@ -3811,9 +3895,15 @@ cleanup:
   return err;
 }
 
-static cl_int _retouch_clone_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
-                                cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const int dx,
-                                const int dy, const float opacity, dt_iop_retouch_global_data_t *gd)
+static cl_int _retouch_clone_cl(const int devid,
+                                cl_mem dev_layer,
+                                dt_iop_roi_t *const roi_layer,
+                                cl_mem dev_mask_scaled,
+                                dt_iop_roi_t *const roi_mask_scaled,
+                                const int dx,
+                                const int dy,
+                                const float opacity,
+                                dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_SUCCESS;
 
@@ -3853,9 +3943,14 @@ cleanup:
   return err;
 }
 
-static cl_int _retouch_fill_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
-                               cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const float opacity,
-                               float *color, dt_iop_retouch_global_data_t *gd)
+static cl_int _retouch_fill_cl(const int devid,
+                               cl_mem dev_layer,
+                               dt_iop_roi_t *const roi_layer,
+                               cl_mem dev_mask_scaled,
+                               dt_iop_roi_t *const roi_mask_scaled,
+                               const float opacity,
+                               float *color,
+                               dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_SUCCESS;
 
@@ -3884,9 +3979,15 @@ cleanup:
   return err;
 }
 
-static cl_int _retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
-                               cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const float opacity,
-                               const int blur_type, const float blur_radius, dt_dev_pixelpipe_iop_t *piece,
+static cl_int _retouch_blur_cl(const int devid,
+                               cl_mem dev_layer,
+                               dt_iop_roi_t *const roi_layer,
+                               cl_mem dev_mask_scaled,
+                               dt_iop_roi_t *const roi_mask_scaled,
+                               const float opacity,
+                               const int blur_type,
+                               const float blur_radius,
+                               dt_dev_pixelpipe_iop_t *piece,
                                dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_SUCCESS;
@@ -3923,8 +4024,8 @@ static cl_int _retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
 
   if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
-    float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
-    float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+    static const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+    static const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
     dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, roi_mask_scaled->width, roi_mask_scaled->height, ch, Labmax,
                                               Labmin, sigma, DT_IOP_GAUSSIAN_ZERO);
@@ -4069,7 +4170,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
   dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)self->global_data;
   const int devid = piece->pipe->devid;
   dt_iop_roi_t *roi_layer = &usr_d->roi;
-  const int mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
+  const gboolean mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
 
   // when the requested scales is grather than max scales the residual image index will be different from the one
   // defined by the user,
@@ -4093,9 +4194,9 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: invalid form\n");
           continue;
         }
-        const int formid = grpt->formid;
+        const dt_mask_id_t formid = grpt->formid;
         const float form_opacity = grpt->opacity;
-        if(formid == 0)
+        if(!dt_is_valid_maskid(formid))
         {
           dt_print(DT_DEBUG_ALWAYS, "rt_process_forms: form is null\n");
           continue;
@@ -4238,8 +4339,12 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
   dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)self->global_data;
@@ -4256,7 +4361,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dwt_params_cl_t *dwt_p = NULL;
 
   const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
-  const int display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : 0;
+  const gboolean display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : FALSE;
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -4280,7 +4385,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   usr_data.self = self;
   usr_data.piece = piece;
   usr_data.roi = *roi_rt;
-  usr_data.mask_display = 0;
+  usr_data.mask_display = FALSE;
   usr_data.suppress_mask = (g && g->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
                             && (piece->pipe == self->dev->pipe));
   usr_data.display_scale = p->curr_scale;
@@ -4307,8 +4412,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto cleanup;
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
-    piece->pipe->bypass_blendif = 1;
-    usr_data.mask_display = 1;
+    piece->pipe->bypass_blendif = TRUE;
+    usr_data.mask_display = TRUE;
   }
 
   if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
