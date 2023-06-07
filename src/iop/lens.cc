@@ -2401,10 +2401,10 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
   else if(img->exif_correction_type == CORRECTION_TYPE_OLYMPUS)
   {
     // Get the coefficients for the distortion polynomial
-    float dk0 = 1, dk2 = 0, dk4 = 0, dk6 = 0;
+    float drs = 1, dk2 = 0, dk4 = 0, dk6 = 0;
     if(cd->olympus.has_dist)
     {
-      dk0 = cd->olympus.dist[3];
+      drs = cd->olympus.dist[3]; // Defines radius of corner of output image
       dk2 = cd->olympus.dist[0];
       dk4 = cd->olympus.dist[1];
       dk6 = cd->olympus.dist[2];
@@ -2433,14 +2433,14 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
         // Convert the polynomial to a spline by evaluating it at each knot
         //
         // The distortion polynomial maps a radius Rout in the output
-        // (undistorted) image, where the corner is defined as Rout=dk0, to a
+        // (undistorted) image, where the corner is defined as Rout=drs, to a
         // radius in the input (distorted) image, where the corner is defined as
         // Rin=1.
         // Rin = Rout * (1 + dk2 * Rout^2 + dk4 * Rout^4 + dk6 * Rout^6)
-        // Here we scale Rout by dk0 so that we can evaluate the spline with the
-        // corner of the output image defined as Rout=1 instead of Rout=dk0.
-        const float rs = r * dk0;
-        const float r_cor = dk0 * (1 + dk2 * powf(rs, 2) + dk4 * powf(rs, 4) + dk6 * powf(rs, 6));
+        // Here we scale Rout by drs so that we can evaluate the spline with the
+        // corner of the output image defined as Rout=1 instead of Rout=drs.
+        const float rs = r * drs;
+        const float r_cor = drs * (1 + dk2 * powf(rs, 2) + dk4 * powf(rs, 4) + dk6 * powf(rs, 6));
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (p->cor_dist_ft * (r_cor - 1) + 1);
       }
       else if(cor_rgb)
