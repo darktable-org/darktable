@@ -4871,31 +4871,17 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp,
     std::string regionKey =
       "Xmp.mwg-rs.Regions/mwg-rs:RegionList[" + std::to_string(i + 1) + "]";
     /* for x and y, we have to retranslate them to be the center of the region. */
-#if EXIV2_TEST_VERSION(0,28,0)
-    // workaround for setValue() bug in 0.28.0
-    xmp[regionKey + "/mwg-rs:Area/stArea:x"] = std::to_string(x + w/2);
-    xmp[regionKey + "/mwg-rs:Area/stArea:y"] = std::to_string(y + h/2);
-    xmp[regionKey + "/mwg-rs:Area/stArea:h"] = std::to_string(h);
-    xmp[regionKey + "/mwg-rs:Area/stArea:w"] = std::to_string(w);
-#else
     xmp[regionKey + "/mwg-rs:Area/stArea:x"] = XmpTextValue(std::to_string(x + w/2));
     xmp[regionKey + "/mwg-rs:Area/stArea:y"] = XmpTextValue(std::to_string(y + h/2));
     xmp[regionKey + "/mwg-rs:Area/stArea:h"] = XmpTextValue(std::to_string(h));
     xmp[regionKey + "/mwg-rs:Area/stArea:w"] = XmpTextValue(std::to_string(w));
-#endif
   }
 
   /* Finally, overwrite the dimensions with the image dimensions */
-#if EXIV2_TEST_VERSION(0,28,0)
-  // workaround for setValue() bug in 0.28.0
-  xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:h"] = std::to_string(finalHeight);
-  xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:w"] = std::to_string(finalWidth);
-#else
   xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:h"] =
     XmpTextValue(std::to_string(finalHeight));
   xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:w"] =
     XmpTextValue(std::to_string(finalWidth));
-#endif
 }
 
 
