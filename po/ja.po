@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-08 10:55+0900\n"
+"PO-Revision-Date: 2023-06-09 00:03+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1655,7 +1655,7 @@ msgstr "履歴スタックを破棄する前に必ずユーザーに確認しま
 
 #: ../build/bin/preferences_gen.h:6251
 msgid "try to use trash when deleting images"
-msgstr "画像を削除する際、ゴミ箱を使用するよう試みる"
+msgstr "画像を削除する時、ゴミ箱を使用するよう試みる"
 
 #: ../build/bin/preferences_gen.h:6265
 msgid ""
