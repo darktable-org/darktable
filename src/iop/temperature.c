@@ -1617,6 +1617,9 @@ void reload_defaults(dt_iop_module_t *module)
     g->as_shot_wb[3] /= g->as_shot_wb[1];
     g->as_shot_wb[1] = 1.0;
 
+    for(int k = 0; k < 4; k++)
+      g->mod_coeff[k] = g->daylight_wb[k];
+
     float TempK, tint;
     mul2temp(module, d, &TempK, &tint);
 
