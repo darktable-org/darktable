@@ -165,7 +165,7 @@ static inline void _temp_array_from_params(double a[4],
   a[3] = p->g2;
 }
 
-static int ignore_missing_wb(dt_image_t *img)
+static gboolean _ignore_missing_wb(dt_image_t *img)
 {
   // Ignore files that end with "-hdr.dng" since these are broken files we
   // generated without any proper WB tagged
@@ -1368,7 +1368,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
+static gboolean calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
 {
   if(!dt_image_is_matrix_correction_supported(&module->dev->image_storage))
   {
@@ -1377,7 +1377,7 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
     bwb[1] = 1.0;
     bwb[3] = 1.0;
 
-    return 0;
+    return FALSE;
   }
 
   double mul[4];
@@ -1392,10 +1392,10 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
     bwb[1] = 1.0;
     bwb[3] = mul[3] / mul[1];
 
-    return 0;
+    return FALSE;
   }
 
-  return 1;
+  return TRUE;
 }
 
 static void prepare_matrices(dt_iop_module_t *module)
@@ -1450,7 +1450,7 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
     return;
   }
 
-  if(!ignore_missing_wb(&(module->dev->image_storage)))
+  if(!_ignore_missing_wb(&(module->dev->image_storage)))
   {
     //  only display this if we have a sample, otherwise it is better to keep
     //  on screen the more important message about missing sample and the way
@@ -2086,7 +2086,8 @@ void gui_init(struct dt_iop_module_t *self)
   for(int k = 0; k < 4; k++)
   {
     g->daylight_wb[k] = 1.0;
-    g->as_shot_wb[k] = 1.f;
+    g->as_shot_wb[k] = 1.0;
+    g->mod_coeff[k] = 1.0;
   }
 
   GtkWidget *temp_label_box = gtk_event_box_new();
