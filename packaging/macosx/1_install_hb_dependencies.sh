@@ -62,9 +62,6 @@ hbDependencies="adwaita-icon-theme \
     sdl2 \
     webp"
 
-# Dependencies that must be linked
-hbMustLink="libomp libsoup@2"
-
 # Categorize dependency list
 standalone=
 deps=
@@ -103,30 +100,6 @@ if [ "${notfound}" ]; then
     brew install ${notfound}
 fi
 
-# Fix for unlinked keg-only dependencies
-echo
-echo "Checking for unlinked keg-only dependencies..."
-# This is a lot easier with jq...
-#unlinked=$( brew info --json=v1 ${hbMustLink}| jq "map(select(.linked_keg == null) | .name)" | jq -r '.[]' )
-mustlink=$(
-    name=
-    brew info --json=v1 $hbMustLink \
-        | grep -Eo '"(full_name|linked_keg)":.*' \
-        | sed -e 's/"//g;s/://g;s/,//g' \
-        | while read key value;
-        do
-            if [ "${key}" == "full_name" ]; then
-              name="${value}"
-            fi
-            if [ "${name}" -a "${key}" == "linked_keg" -a "${value}" == "null" ]; then
-              echo "${name}"
-            fi
-        done
-)
-if [ "${mustlink}" ]; then
-    echo
-    echo "Unlinked dependencies found! Attempting to relink..."
-    brew link --force ${mustlink}
-else
-    echo "None."
-fi
+# link keg-only packages
+brew link --force libomp
+brew link --force libsoup@2
