@@ -229,7 +229,7 @@ static inline void illuminant_CCT_to_RGB(const float t, dt_aligned_pixel_t RGB)
 
 
 // Fetch image from pipeline and read EXIF for camera RAW WB coeffs
-static inline int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
+static inline gboolean find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
                                                    float *chroma_x, float *chroma_y);
 
 
@@ -398,13 +398,13 @@ static inline void matrice_pseudoinverse(float (*in)[3], float (*out)[3], int si
 }
 
 
-static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
+static gboolean find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
                                             float *chroma_x, float *chroma_y)
 {
   if(img == NULL) return FALSE;
   if(!dt_image_is_matrix_correction_supported(img)) return FALSE;
 
-  int has_valid_coeffs = TRUE;
+  gboolean has_valid_coeffs = TRUE;
   const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
 
   // Check coeffs
