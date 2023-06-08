@@ -397,13 +397,3 @@ jobs:
             Darktable-*.AppImage
             darktable-*.dmg
             darktable-*.exe
-
-      # We want our development builds to report the version relative to the latest unstable tag.
-      # The 'nightly' tag will interfere with this, so we'll have to remove it.
-      # Released artifacts will be available on the main Releases page, just not under the Tags section.
-      - name: Delete nightly tag
-        uses: nbelingheri/delete-tag@v0.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: nightly
