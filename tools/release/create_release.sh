@@ -14,7 +14,7 @@ read -r answer
 # prefix rc with ~, so debian thinks its less than
 echo "* archiving git tree"
 
-dt_decoration=$(git describe --tags | sed -e 's,^release-,,;s,-,+,;s,-,~,;' -e 's/rc/~rc/')
+dt_decoration=$(git describe --tags --match release-* | sed -e 's,^release-,,;s,-,+,;s,-,~,;' -e 's/rc/~rc/')
 
 echo "* * creating root archive"
 git archive --format tar HEAD --prefix=darktable-"$dt_decoration"/ -o darktable-"$dt_decoration".tar
