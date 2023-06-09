@@ -1587,7 +1587,23 @@ static void _iop_preferences_changed(gpointer instance, gpointer self)
     dt_iop_module_so_t *mod = (dt_iop_module_so_t *)iop->data;
 
     if(mod->pref_based_presets)
+    {
+      sqlite3_stmt *stmt;
+      // first delete auto built-in presets for this module
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "DELETE FROM data.presets"
+         " WHERE writeprotect = 1"
+         "   AND operation = ?1",
+         -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, mod->op, -1, SQLITE_TRANSIENT);
+
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      // and reload whatever new presets are needed for the new workflow
       _init_presets(mod);
+    }
 
     iop = g_list_next(iop);
   }
