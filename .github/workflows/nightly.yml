@@ -60,7 +60,6 @@ jobs:
             libglib2.0-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
-            libheif-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
@@ -68,7 +67,6 @@ jobs:
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
-            libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
@@ -102,7 +100,9 @@ jobs:
             libgmic-dev \
             libgphoto2-dev \
             libheif-dev \
+            libimath-dev \
             libjxl-dev \
+            libopenexr-dev \
             x11proto-dev \
             libxfixes-dev;
       - uses: actions/checkout@v3
