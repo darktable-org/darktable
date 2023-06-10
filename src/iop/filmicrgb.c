@@ -4456,6 +4456,16 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   }
 }
 
+static void _tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, GtkWidget *area)
+{
+  if(page_num == 1 || page_num == 4) return;
+
+  g_object_ref(area);
+  gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(area)), area);
+  gtk_box_pack_end(GTK_BOX(page), area, TRUE, TRUE, 0);
+  g_object_unref(area);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = IOP_GUI_ALLOC(filmicrgb);
@@ -4481,9 +4491,16 @@ void gui_init(dt_iop_module_t *self)
   static struct dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
+  GtkSizeGroup *group = gtk_size_group_new(GTK_SIZE_GROUP_VERTICAL);
 
   // Page SCENE
-  self->widget = dt_ui_notebook_page(g->notebook, N_("scene"), NULL);
+  GtkWidget *page = dt_ui_notebook_page(g->notebook, N_("scene"), NULL);
+
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_size_group_add_widget(group, self->widget);
+  gtk_box_pack_start(GTK_BOX(page), GTK_WIDGET(self->widget), FALSE, FALSE, 0);
+
+  gtk_box_pack_end(GTK_BOX(page), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   g->grey_point_source
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
@@ -4610,7 +4627,11 @@ void gui_init(dt_iop_module_t *self)
                                 "decrease if you see magenta or out-of-gamut highlights."));
 
   // Page LOOK
-  self->widget = dt_ui_notebook_page(g->notebook, N_("look"), NULL);
+  page = dt_ui_notebook_page(g->notebook, N_("look"), NULL);
+
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_size_group_add_widget(group, self->widget);
+  gtk_box_pack_start(GTK_BOX(page), GTK_WIDGET(self->widget), FALSE, FALSE, 0);
 
   g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
   dt_bauhaus_slider_set_soft_range(g->contrast, 0.5, 3.0);
@@ -4648,7 +4669,11 @@ void gui_init(dt_iop_module_t *self)
                                                "increase if shadows and/or highlights are under-saturated."));
 
   // Page DISPLAY
-  self->widget = dt_ui_notebook_page(g->notebook, N_("display"), NULL);
+  page = dt_ui_notebook_page(g->notebook, N_("display"), NULL);
+
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_size_group_add_widget(group, self->widget);
+  gtk_box_pack_start(GTK_BOX(page), GTK_WIDGET(self->widget), FALSE, FALSE, 0);
 
   // Black slider
   g->black_point_target = dt_bauhaus_slider_from_params(self, "black_point_target");
@@ -4671,6 +4696,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
                                                        "this should be 100%\nexcept if you want a faded look"));
 
+  // Curve type
+  g->highlights = dt_bauhaus_combobox_from_params(self, "highlights");
+  gtk_widget_set_tooltip_text(g->highlights, _("choose the desired curvature of the filmic spline in highlights.\n"
+                                               "hard uses a high curvature resulting in more tonal compression.\n"
+                                               "soft uses a low curvature resulting in less tonal compression."));
+
+  g->shadows = dt_bauhaus_combobox_from_params(self, "shadows");
+  gtk_widget_set_tooltip_text(g->shadows, _("choose the desired curvature of the filmic spline in shadows.\n"
+                                            "hard uses a high curvature resulting in more tonal compression.\n"
+                                            "soft uses a low curvature resulting in less tonal compression."));
+
   // Page OPTIONS
   self->widget = dt_ui_notebook_page(g->notebook, N_("options"), NULL);
 
@@ -4687,17 +4723,6 @@ void gui_init(dt_iop_module_t *self)
   // hide legacy Euclidean norm by default
   const int pos = dt_bauhaus_combobox_get_from_value(g->preserve_color, DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1);
   dt_bauhaus_combobox_remove_at(g->preserve_color, pos);
-
-  // Curve type
-  g->highlights = dt_bauhaus_combobox_from_params(self, "highlights");
-  gtk_widget_set_tooltip_text(g->highlights, _("choose the desired curvature of the filmic spline in highlights.\n"
-                                               "hard uses a high curvature resulting in more tonal compression.\n"
-                                               "soft uses a low curvature resulting in less tonal compression."));
-
-  g->shadows = dt_bauhaus_combobox_from_params(self, "shadows");
-  gtk_widget_set_tooltip_text(g->shadows, _("choose the desired curvature of the filmic spline in shadows.\n"
-                                            "hard uses a high curvature resulting in more tonal compression.\n"
-                                            "soft uses a low curvature resulting in less tonal compression."));
 
   g->custom_grey = dt_bauhaus_toggle_from_params(self, "custom_grey");
   gtk_widget_set_tooltip_text(g->custom_grey,
@@ -4733,10 +4758,9 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is useful to match natural sensor noise pattern."));
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = GTK_WIDGET(g->notebook);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->notebook), "switch_page", G_CALLBACK(_tab_switch), g->area);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
