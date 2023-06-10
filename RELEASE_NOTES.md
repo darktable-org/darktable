@@ -310,8 +310,8 @@ The following is a summary of the main features added to darktable
   view of the image, the crop handles around the edges of the image now
   briefly light up to indicate that they can be clicked-and-dragged.
 
-  As long as the crop covers the full image, and moving it by dragging
-  is impossible anyway, the sensitive zone for dragging corners and
+  As long as the crop covers the full image (and moving it by dragging
+  is therefore impossible) the sensitive zone for dragging corners and
   edges is enlarged.
 
 - The crop module, which shows the full image to facilitate making
@@ -756,9 +756,10 @@ The following is a summary of the main features added to darktable
 - Fixed to avoid possible unwanted flipping of the selected image when
   entering the print view due to filmstrip thumbnails being updated.
 
-- In crop mode, shift+dragging an edge allows making a crop smaller,
-  instead of just larger, while maintaining aspect ratio. Previously
-  this feature only worked correctly when dragging a corner.
+- Fixed an issue in the crop module, where Shift+dragging on an edge only
+  allowed the crop area to be made larger (while maintaining the aspect ratio)
+  and could not make it smaller. Previously this feature only worked correctly
+  when dragging a corner.
 
 ## Lua
 
