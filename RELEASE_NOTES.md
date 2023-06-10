@@ -160,7 +160,7 @@ The following is a summary of the main features added to darktable
   Improvements to a numbef of core routines have also led to further speed improvements:
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
-    Lanczos3) -- used by "rotate and perspective" and 
+    Lanczos3) -- used by "rotate and perspective" and
     "crop and rotate (deprecated)".
 
   - The gaussian generator -- used by censorize, denoise (profiled),
@@ -310,6 +310,10 @@ The following is a summary of the main features added to darktable
   view of the image, the crop handles around the edges of the image now
   briefly light up to indicate that they can be clicked-and-dragged.
 
+  As long as the crop covers the full image, and moving it by dragging
+  is impossible anyway, the sensitive zone for dragging corners and
+  edges is enlarged.
+
 - The crop module, which shows the full image to facilitate making
   adjustments, will no longer trigger a pipe recalculation until the
   module loses focus (for example by switching to another module or by
@@ -357,7 +361,7 @@ The following is a summary of the main features added to darktable
   shortcuts are shown in the tooltip of the preview layout button.
 
 - The guided Laplacian highlight reconstruction mode is now less memory hungry (with a saving of
-  around 40%) and its performance is significantly improved, allowing for 
+  around 40%) and its performance is significantly improved, allowing for
   more iterations of recovery to be applied by default.
 
 - Support has been added for the MaxApertureValue metadata, to complement the
@@ -751,6 +755,10 @@ The following is a summary of the main features added to darktable
 
 - Fixed to avoid possible unwanted flipping of the selected image when
   entering the print view due to filmstrip thumbnails being updated.
+
+- In crop mode, shift+dragging an edge allows making a crop smaller,
+  instead of just larger, while maintaining aspect ratio. Previously
+  this feature only worked correctly when dragging a corner.
 
 ## Lua
 
