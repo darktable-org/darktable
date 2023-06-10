@@ -669,6 +669,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  gPhoto2 support disabled\n"
 #endif
 
+#ifdef HAVE_GMIC
+               "  G'MIC support enabled (compressed LUTs will be supported)\n"
+#else
+               "  G'MIC support disabled (compressed LUTs will not be supported)\n"
+#endif
+
 #ifdef HAVE_GRAPHICSMAGICK
                "  GraphicsMagick support enabled\n"
 #else
