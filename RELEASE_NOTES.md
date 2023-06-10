@@ -172,8 +172,8 @@ include the new sigmoid module.  Options are now as follows:
   speed improvements:
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
-    Lanczos3) -- used by "rotate and perspective" and
-    "crop and rotate (deprecated)".
+    Lanczos3) -- used by "rotate and perspective", "crop and rotate
+    (deprecated)" and for resizing the output.
 
   - The gaussian generator -- used by censorize, denoise (profiled),
     lowpass, diffuse or sharpen, defringe, RAW chromatic
@@ -402,7 +402,7 @@ include the new sigmoid module.  Options are now as follows:
   the standard mask icon.
 
 - The tooltips in the liquify module's shape tools are now consistent
-  the blending drawn mask tools.
+  with the blending drawn mask tools.
 
 - The "demosaicing for zoomed out darkroom mode" preference has been
   removed.  This option is no longer necessary due to improvements in
