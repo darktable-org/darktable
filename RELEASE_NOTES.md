@@ -37,30 +37,35 @@ for more information on how to contribute._
 ## The Big Ones
 
 The following is a summary of the main features added to darktable
-4.4. Please see the user manual for more details of the individual changes (where available).
+4.4. Please see the user manual for more details of the individual
+changes (where available).
 
-- It is now possible to define multiple automatically-applied presets against
-  a single processing module. Each preset after the first will be added to a
-  new module instance immediately after the first instance in the pipeline.
+- It is now possible to define multiple automatically-applied presets
+  against a single processing module. Each preset after the first will
+  be added to a new module instance immediately after the first
+  instance in the pipeline.
 
-  To better visualise which module instance corresponds to which preset, the
-  module label will be automatically set to the name of any preset that
-  matches the current module's parameters. If you subsequently alter those
-  parameters, the label will be cleared, unless its parameters match to
-  another preset, in which case it will be changed to the name of the matched
-  preset. If the module label has been hand edited it will never be updated
-  automatically.
+  To better visualise which module instance corresponds to which
+  preset, the module label will be automatically set to the name of
+  any preset that matches the current module's parameters. If you
+  subsequently alter those parameters, the label will be cleared,
+  unless its parameters match to another preset, in which case it will
+  be changed to the name of the matched preset. If the module label
+  has been hand edited it will never be updated automatically.
 
-  A new option (preferences > darkroom > automatically update module name) has
-  been introduced to allow this functionality to be disabled.
+  A new option (preferences > darkroom > automatically update module
+  name) has been introduced to allow this functionality to be
+  disabled.
 
-- The default parameters of some processing modules have been reworked to allow
-  them to be more easily used in copy/paste, presets and styles.
+- The default parameters of some processing modules have been reworked
+  to allow them to be more easily used in copy/paste, presets and
+  styles.
 
 - Many modules have default parameters based on image metadata or
   current workflow, for example:
 
-  - exposure: in a scene-referred workflow, the exposure is adjusted using the Exif exposure compensation value,
+  - exposure: in a scene-referred workflow, the exposure is adjusted
+    using the Exif exposure compensation value,
   - denoise (profiled): set based on camera and ISO,
   - lens correction: set based on camera, lens, focal length, focus distance,
   - base curve: set based on the camera maker,
@@ -69,38 +74,42 @@ The following is a summary of the main features added to darktable
   - color calibration: set based on Exif metadata
 
   For all of these modules it is now possible to paste settings while
-  ensuring that the proper image metadata is used to set the module parameters.
-  This is achieved by selecting the "Reset" column in the preset and style
-  dialogs, which makes the module behave as if its reset button has been clicked.
+  ensuring that the proper image metadata is used to set the module
+  parameters.  This is achieved by selecting the "Reset" column in the
+  preset and style dialogs, which makes the module behave as if its
+  reset button has been clicked.
 
   When creating or editing presets, a new option, "reset all module
-  parameters to their default values", has been added. Choose this option
-  to auto-add modules to matching images while retaining their default parameters
-  (including any set based on image metadata).
+  parameters to their default values", has been added. Choose this
+  option to auto-add modules to matching images while retaining their
+  default parameters (including any set based on image metadata).
 
-  This functionality has allowed us to clean up a number of module-specific hacks
-  that previously achieved similar functionality (albeit in a more limited way).
+  This functionality has allowed us to clean up a number of
+  module-specific hacks that previously achieved similar functionality
+  (albeit in a more limited way).
 
-- The default workflow configuration option (preferences > processing > auto-apply pixel
-  workflow defaults) has now been adjusted to incorporate the previous
-  chromatic adaptation workflow setting and to include the new sigmoid module.
-  Options are now as follows:
+- The default workflow configuration option (preferences > processing
+> auto-apply pixel workflow defaults) has now been adjusted to
+incorporate the previous chromatic adaptation workflow setting and to
+include the new sigmoid module.  Options are now as follows:
 
   - scene-refrerred (filmic) -- default
   - scene-referred (sigmoid)
   - display-referred (legacy)
   - None
 
-  With these new options, the color calibration module and scene-referred
-  module order will be automatically applied for all workflows except
-  "display-referred (legacy)", which will continue to use only the white
-  balance module for chromatic adaptation. The value in brackets represents
-  the default module used for tone mapping (filmic/sigmoid). In the legacy
-  mode, base curve will be used for tone mapping and in "none" mode, no
-  tone mapping module will be applied.
+  With these new options, the color calibration module and
+  scene-referred module order will be automatically applied for all
+  workflows except "display-referred (legacy)", which will continue to
+  use only the white balance module for chromatic adaptation. The
+  value in brackets represents the default module used for tone
+  mapping (filmic/sigmoid). In the legacy mode, base curve will be
+  used for tone mapping and in "none" mode, no tone mapping module
+  will be applied.
 
-- The scopes module now has a new color harmony overlay option in RYB vectorscope
-  mode. You can choose from 9 different color harmonies:
+- The scopes module now has a new color harmony overlay option in RYB
+  vectorscope mode. You can choose from 9 different color harmonies:
+
   - Monochromatic
   - Analogous
   - Analogous complementary
@@ -111,12 +120,14 @@ The following is a summary of the main features added to darktable
   - Tetrad
   - Square
 
-  These will show as overlays on top of the vectorscope to tell you where the
-  "harmonic" colors are. You can rotate the overlays by scrolling with your mouse.
+  These will show as overlays on top of the vectorscope to tell you
+  where the "harmonic" colors are. You can rotate the overlays by
+  scrolling with your mouse.
 
-  Color harmony guides can be used along with the global color picker module
-  to guide you in shifting your image's colors to fit a given color harmony
-  -- think of them like crop composition guides, but for colors.
+  Color harmony guides can be used along with the global color picker
+  module to guide you in shifting your image's colors to fit a given
+  color harmony -- think of them like crop composition guides, but for
+  colors.
 
 - Many modules have had code cleanup and performance improvements.
   All SSE2 code paths have been removed (the optimized parallel code
@@ -157,7 +168,8 @@ The following is a summary of the main features added to darktable
   - monochrome
   - highlight reconstruction (inpaint opposed mode)
 
-  Improvements to a numbef of core routines have also led to further speed improvements:
+  Improvements to a numbef of core routines have also led to further
+  speed improvements:
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
     Lanczos3) -- used by "rotate and perspective" and
@@ -194,8 +206,8 @@ The following is a summary of the main features added to darktable
     perceptually instantaneous on clicking the button.
 
 - A global <kbd>right-click-and-drag</kbd> operation has been added to
-  allow image rotation to be corrected without first opening the rotate
-  and perspective module. This operation can be used as long as
+  allow image rotation to be corrected without first opening the
+  rotate and perspective module. This operation can be used as long as
   the currently-focused module does not already use that shortcut for
   another purpose.
 
@@ -213,13 +225,13 @@ The following is a summary of the main features added to darktable
 - Pixelpipe code and caching strategies have been rewritten with
   significant performance gains when developing in the darkroom.
 
-- Histogram calculation code has been modernized, removing SSE code paths.
-  While this doesn't itself provide any speed improvements, it is used
-  as a model for optimized code using recent OpenMP features.
-  Various pieces of unused code have been removed to provide a consistent
-  internal API. In certain cases this code will produce marginally
-  more accurate results, and in some cases will use substantially
-  less memory.
+- Histogram calculation code has been modernized, removing SSE code
+  paths.  While this doesn't itself provide any speed improvements, it
+  is used as a model for optimized code using recent OpenMP features.
+  Various pieces of unused code have been removed to provide a
+  consistent internal API. In certain cases this code will produce
+  marginally more accurate results, and in some cases will use
+  substantially less memory.
 
 - OpenCL support has been added to the sigmoid module for improved
   performance.
@@ -239,22 +251,22 @@ The following is a summary of the main features added to darktable
 - The zoom widget in the navigation window has been converted to
   a standard drop-down, better fitting the darktable style.
 
-- The ISO 12646 border size was too small in the previous version and this has
-  been fixed.
+- The ISO 12646 border size was too small in the previous version and
+  this has been fixed.
 
-- The filter section of the preset dialog has been reworked to better show the
-  relationship between raw/non-raw and HDR/monochrome/color.
+- The filter section of the preset dialog has been reworked to better
+  show the relationship between raw/non-raw and HDR/monochrome/color.
   This should avoid the accidental creation of presets that can never
   apply to any image.
 
-- The "default" module group has now been removed and you are now advised
-  to use one of the scene-referred module groups instead.
+- The "default" module group has now been removed and you are now
+  advised to use one of the scene-referred module groups instead.
 
-- Support has been added for loading QOI and FITS images, and for writing
-  metadata to XCF format (see notes below).
+- Support has been added for loading QOI and FITS images, and for
+  writing metadata to XCF format (see notes below).
 
-- The ability to read Exif metadata from AVIF, HEIC and JPEG XL
-  images using native libraries (if not supported by Exiv2) has been added.
+- The ability to read Exif metadata from AVIF, HEIC and JPEG XL images
+  using native libraries (if not supported by Exiv2) has been added.
 
 - Exif data is now written to the Exif PNG chunk when using an Exiv2
   version newer than 0.27.x -- this is the new standard way to store Exif
@@ -268,21 +280,21 @@ The following is a summary of the main features added to darktable
 - Export and thumbnail generation has been redesigned to remove some
   hacks that had accumulated and should result in a better export size.
 
-- The performance of the highlight reconstruction inpaint opposed algorithm has
-  been improved by providing an OpenCL implementation and using internal
-  caching in the darkroom.
+- The performance of the highlight reconstruction inpaint opposed
+  algorithm has been improved by providing an OpenCL implementation
+  and using internal caching in the darkroom.
 
-- Various improvements have been made to the debug interface when running darktable
-  from the command-line:
+- Various improvements have been made to the debug interface when
+  running darktable from the command-line:
 
-  - `-d common` outputs most valuable information and should now be used for
-     bug reports instead of `-d all`.
+  - `-d common` outputs most valuable information and should now be
+     used for bug reports instead of `-d all`.
 
-  - `--bench-module <modulea,moduleb>` performs runtime benchmarking of the
-      specified modules.
+  - `--bench-module <modulea,moduleb>` performs runtime benchmarking
+      of the specified modules.
 
-  - `--dump-pipe <modulea,moduleb>` writes input and output data of the
-    specified modules as pfm files for inspection.
+  - `--dump-pipe <modulea,moduleb>` writes input and output data of
+    the specified modules as pfm files for inspection.
 
 - Support for lens correction using embedded metadata has been improved:
 
@@ -295,20 +307,21 @@ The following is a summary of the main features added to darktable
     corrections for supported FujiFilm and Sony images.
   - Added support for Fujifilm X-Trans I/II/III raw files.
 
-- Section headers have been added to the "sort by" drop-down in the top panel
-  (files, times, etc).
+- Section headers have been added to the "sort by" drop-down in the
+  top panel (files, times, etc).
 
-- Shortcuts assigned to presets or styles will now be shown when hovering
-  over them in the relevant menu.
+- Shortcuts assigned to presets or styles will now be shown when
+  hovering over them in the relevant menu.
 
-- Long-left-clicking a preset will now keep the preset menu open so you can
-  quickly switch between several presets to visualise the effect. You can also
-  scroll over the preset button to switch to previous/next presets
-  (like you already could using shortcuts).
+- Long-left-clicking a preset will now keep the preset menu open so
+  you can quickly switch between several presets to visualise the
+  effect. You can also scroll over the preset button to switch to
+  previous/next presets (like you already could using shortcuts).
 
 - When the crop module receives focus and switches to an uncropped
-  view of the image, the crop handles around the edges of the image now
-  briefly light up to indicate that they can be clicked-and-dragged.
+  view of the image, the crop handles around the edges of the image
+  now briefly light up to indicate that they can be
+  clicked-and-dragged.
 
   As long as the crop covers the full image (and moving it by dragging
   is therefore impossible) the sensitive zone for dragging corners and
@@ -317,187 +330,203 @@ The following is a summary of the main features added to darktable
 - The crop module, which shows the full image to facilitate making
   adjustments, will no longer trigger a pipe recalculation until the
   module loses focus (for example by switching to another module or by
-  collapsing the crop module) at which point the new crop will
-  be used to resize the image. If shortcuts are used to make changes to
-  the crop without focusing the module, these will still be implemented
+  collapsing the crop module) at which point the new crop will be used
+  to resize the image. If shortcuts are used to make changes to the
+  crop without focusing the module, these will still be implemented
   immediately.
 
-- The height of resizeable module areas can now be changed by
-  clicking and dragging the bottom of the resizeable area.
-  The previous method to achieve this, by scrolling while holding
-  the control key, has been changed to <kbd>Shift+Alt+scroll</kbd> (and a note
-  added to all tooltips). This frees up <kbd>Ctrl+scroll</kbd> for
-  fine-tuning changes in RGB Levels or the histogram (to change exposure or black
-  level). In the navigator preview <kbd>Ctrl+scroll</kbd> now adjusts zoom level without
-  bounds, as it already does over the central image area.
+- The height of resizeable module areas can now be changed by clicking
+  and dragging the bottom of the resizeable area.  The previous method
+  to achieve this, by scrolling while holding the control key, has
+  been changed to <kbd>Shift+Alt+scroll</kbd> (and a note added to all
+  tooltips). This frees up <kbd>Ctrl+scroll</kbd> for fine-tuning
+  changes in RGB Levels or the histogram (to change exposure or black
+  level). In the navigator preview <kbd>Ctrl+scroll</kbd> now adjusts
+  zoom level without bounds, as it already does over the central image
+  area.
 
-- The histogram gui has been reworked. Control buttons have been
-  split into two groups: On the left side, a series of buttons to
-  switch between histogram modes (histogram, waveform, rbg parade,
-  vectorscope); On the right side, the buttons that control the parameters
-  of each mode (RGB Channels, orientation, vectorscope). For the
-  RYB vectorscope, a series of buttons have also been added to visualize
-  guide lines for the most common color harmonies.
+- The histogram gui has been reworked. Control buttons have been split
+  into two groups: On the left side, a series of buttons to switch
+  between histogram modes (histogram, waveform, rbg parade,
+  vectorscope); On the right side, the buttons that control the
+  parameters of each mode (RGB Channels, orientation,
+  vectorscope). For the RYB vectorscope, a series of buttons have also
+  been added to visualize guide lines for the most common color
+  harmonies.
 
 - The scroll zoom logic in the darkroom has been reworked in order
   to make the zoom steps more perceptually-uniform for all image sizes.
 
 - The module instance name in the darkroom has been altered so it is
-  more clearly separated from the module name (using a "bullet" separator).
-  The label name in the history module has also been updated accordingly.
+  more clearly separated from the module name (using a "bullet"
+  separator).  The label name in the history module has also been
+  updated accordingly.
 
-- The display of the range rating widget in the collection filters module and
-  top panel has been improved to give it better contrast/icons, which
-  should make it more easily readable.
+- The display of the range rating widget in the collection filters
+  module and top panel has been improved to give it better
+  contrast/icons, which should make it more easily readable.
 
 - The search filter in the collection filters module and top panel
   has been improved to also allow searching for camera brand
   and model.
 
-- In the lighttable view, the "hold" and "sticky" preview shortcuts are now linked to the
-  same action -- previously there were two "toggle sticky preview mode"
-  actions, one with and one without focus detection. Focus detection
-  can now be selected (in shortcuts) via an element, and hold/toggle via an effect. All mapped
-  shortcuts are shown in the tooltip of the preview layout button.
+- In the lighttable view, the "hold" and "sticky" preview shortcuts
+  are now linked to the same action -- previously there were two
+  "toggle sticky preview mode" actions, one with and one without focus
+  detection. Focus detection can now be selected (in shortcuts) via an
+  element, and hold/toggle via an effect. All mapped shortcuts are
+  shown in the tooltip of the preview layout button.
 
-- The guided Laplacian highlight reconstruction mode is now less memory hungry (with a saving of
-  around 40%) and its performance is significantly improved, allowing for
-  more iterations of recovery to be applied by default.
+- The guided Laplacian highlight reconstruction mode is now less
+  memory hungry (with a saving of around 40%) and its performance is
+  significantly improved, allowing for more iterations of recovery to
+  be applied by default.
 
-- Support has been added for the MaxApertureValue metadata, to complement the
-  already- supported ApertureValue. This is the only metadata tag available in
-  Leica M Monochrom, M8, M9 & M10 DNGs.
+- Support has been added for the MaxApertureValue metadata, to
+  complement the already- supported ApertureValue. This is the only
+  metadata tag available in Leica M Monochrom, M8, M9 & M10 DNGs.
 
-- A full copy-and-paste is now always performed in overwrite mode (replacing
-  the history of the target image), since append mode is often the less appropriate
-  choice -- for example, for some modules it often makes no sense to add extra instances.
+- A full copy-and-paste is now always performed in overwrite mode
+  (replacing the history of the target image), since append mode is
+  often the less appropriate choice -- for example, for some modules
+  it often makes no sense to add extra instances.
 
-- The brush path is now slightly more transparent in order to better see the
-  underlying image.
+- The brush path is now slightly more transparent in order to better
+  see the underlying image.
 
-- The style tooltip now immediately shows module details while waiting for
-  the preview image to be calculated.
+- The style tooltip now immediately shows module details while waiting
+  for the preview image to be calculated.
 
-- In the style and copy/paste dialogs a new column has been added to show
-  whether a module uses a mask (drawn/parametric/raster) using the standard
-  mask icon.
+- In the style and copy/paste dialogs a new column has been added to
+  show whether a module uses a mask (drawn/parametric/raster) using
+  the standard mask icon.
 
 - The tooltips in the liquify module's shape tools are now consistent
   the blending drawn mask tools.
 
-- The "demosaicing for zoomed out darkroom mode" preference has been removed.
-  This option is no longer necessary due to improvements in the pixelpipe cache
-  and previously could have led to slight differences in darkroom processing.
+- The "demosaicing for zoomed out darkroom mode" preference has been
+  removed.  This option is no longer necessary due to improvements in
+  the pixelpipe cache and previously could have led to slight
+  differences in darkroom processing.
 
-- In the mask manager some actions in the menu previously could be activated even
-  though they would have no impact on the image in some contexts. The move up/down
-  actions are therefore now disabled for the first and last element in a group
-  respectively, and it is no longer possible to choose a set operator (mode) for the
-  first element in a group.
+- In the mask manager some actions in the menu previously could be
+  activated even though they would have no impact on the image in some
+  contexts. The move up/down actions are therefore now disabled for
+  the first and last element in a group respectively, and it is no
+  longer possible to choose a set operator (mode) for the first
+  element in a group.
 
-- Two new sharpness presets have been added to the diffuse or sharpen module
-  -- standard sharpness and one with a stronger effect.
+- Two new sharpness presets have been added to the diffuse or sharpen
+  module -- standard sharpness and one with a stronger effect.
 
-- The snapshot list view been redesigned, bringing its display in line with
-  that of the history module. At the same time the module's label is now shown in
-  the list and is editable with <kbd>Ctrl+click</kbd>.
+- The snapshot list view been redesigned, bringing its display in line
+  with that of the history module. At the same time the module's label
+  is now shown in the list and is editable with <kbd>Ctrl+click</kbd>.
 
-- The Exif focus distance field is now read for images taken with Nikon Z bodies.
+- The Exif focus distance field is now read for images taken with
+  Nikon Z bodies.
 
 - When reading creator metadata from IPTC Information Interchange
-  Model, darktable now prefers By-line over Writer/Editor. Date/time and
-  description metadata are read from commonly-used properties.
+  Model, darktable now prefers By-line over Writer/Editor. Date/time
+  and description metadata are read from commonly-used properties.
 
 - The rendering of the arrow that joins source and target shapes in
-  the retouch module has been reworked to be more consistent between shapes.
-  All source/target shapes are now linked with an arrow rather than a simple
-  line and are rendered in such a way as to avoid crossing over the shapes
-  themselves (by connecting the closest source/target borders).
+  the retouch module has been reworked to be more consistent between
+  shapes.  All source/target shapes are now linked with an arrow
+  rather than a simple line and are rendered in such a way as to avoid
+  crossing over the shapes themselves (by connecting the closest
+  source/target borders).
 
-- A new option (preferences > darkroom > middle mouse button zooms to 200%)
-  has been added to control how the middle-mouse-click zoom toggle
-  behaves in the darkroom. Select this option to toggle between fit, 100%,
-  and 200%; disable the option to only toggle between fit and 100%.
-  In the latter case, you can access 200% zoom with <kbd>Ctrl+middle-click</kbd>.
+- A new option (preferences > darkroom > middle mouse button zooms to
+  200%) has been added to control how the middle-mouse-click zoom
+  toggle behaves in the darkroom. Select this option to toggle between
+  fit, 100%, and 200%; disable the option to only toggle between fit
+  and 100%.  In the latter case, you can access 200% zoom with
+  <kbd>Ctrl+middle-click</kbd>.
 
 - It is now possible to edit drawn mask shape size/feather/hardness
-  using sliders in the masks manager. These sliders use a logarithmic scale
-  and scrolling over them makes relative adjustments, just like
-  <kbd>Shift+scroll</kbd> over the shape itself. As with other sliders,
-  <kdb>Ctrl</kbd> or <kdb>Shift</kbd> can be
-  used to  make fine or coarse adjustments (similarly with shortcut
-  fallbacks enabled). Shortcuts assigned to the sliders can be used to adjust
+  using sliders in the masks manager. These sliders use a logarithmic
+  scale and scrolling over them makes relative adjustments, just like
+  <kbd>Shift+scroll</kbd> over the shape itself. As with other
+  sliders, <kdb>Ctrl</kbd> or <kdb>Shift</kbd> can be used to make
+  fine or coarse adjustments (similarly with shortcut fallbacks
+  enabled). Shortcuts assigned to the sliders can be used to adjust
   brush size/hardness while drawing.
 
-- Editing of drawn masks has been improved -- it is now easier to select masks'
-  control points and path segments (in some cases it was easy to accidentally
-  select the whole path mask rather than a single segment). On-canvas mask rendering
-  has also been improved for better consistency between shape types.
+- Editing of drawn masks has been improved -- it is now easier to
+  select masks' control points and path segments (in some cases it was
+  easy to accidentally select the whole path mask rather than a single
+  segment). On-canvas mask rendering has also been improved for better
+  consistency between shape types.
 
-- A fifth set operator has been added to the mask manager to allow drawn shapes
-  to be combined in "sum" mode. This allows repeated brush strokes with
-  low opacity to be layered on top of each other to increase the strength of the
-  mask. This mode is now the default for brush shapes.
+- A fifth set operator has been added to the mask manager to allow
+  drawn shapes to be combined in "sum" mode. This allows repeated
+  brush strokes with low opacity to be layered on top of each other to
+  increase the strength of the mask. This mode is now the default for
+  brush shapes.
 
-- It is now possible to change the set operator (mode) for all shapes in a group
-  from the right-click menu in the mask manager.
+- It is now possible to change the set operator (mode) for all shapes
+  in a group from the right-click menu in the mask manager.
 
-- When using a shortcut to add shapes to a drawn (blending) mask
-  the blending mode will automatically switch to "drawn mask" or "drawn &
+- When using a shortcut to add shapes to a drawn (blending) mask the
+  blending mode will automatically switch to "drawn mask" or "drawn &
   parametric mask", depending on what it was before, so that any newly
   created shape will actually affect the image.
 
-- The full-frame-equivalent focal length and crop factor is now shown alongside
-  the actual focal length in the image information module.
+- The full-frame-equivalent focal length and crop factor is now shown
+  alongside the actual focal length in the image information module.
 
-- New options have been added to the watermark module for more fine-grained control
-  over scaling. In conjunction with the new 'fixed-size-text'
-  template it is now possible to insert text with constant font size.
+- New options have been added to the watermark module for more
+  fine-grained control over scaling. In conjunction with the new
+  'fixed-size-text' template it is now possible to insert text with
+  constant font size.
 
 - In the drawn mask blending mode there used to be an "invert mask"
   option that had the same functionality as the "toggle polarity" option.
   Since both were doing the same thing, "invert mask" is now removed.
 
-- Successive changes to sliders and other widgets (for example by dragging,
-  scrolling or using shortcuts) have been made more responsive by
-  creating fewer undo records. This also makes using undo/redo more
-  effective because you are no longer forced to step through every micro-change.
+- Successive changes to sliders and other widgets (for example by
+  dragging, scrolling or using shortcuts) have been made more
+  responsive by creating fewer undo records. This also makes using
+  undo/redo more effective because you are no longer forced to step
+  through every micro-change.
 
-- ISO range selection has now been improved within the auto-apply presets
-  dialog.
+- ISO range selection has now been improved within the auto-apply
+  presets dialog.
 
 - Encoder ring and button lights of the Behringer X-Touch Compact are
-  now supported via midi. Unmapped encoder presses fall back to reset the
-  encoder.
+  now supported via midi. Unmapped encoder presses fall back to reset
+  the encoder.
 
 - Midi buttons mapped to the reset effect of a slider or combo (either
   directly or via fallback, like the row below the faders of the
   X-Touch Compact) now light up if the current value is not the default.
 
-- Resetting a combobox that has sub-headers (by double clicking or via a shortcut)
-  will now choose the first selectable item.
+- Resetting a combobox that has sub-headers (by double clicking or via
+  a shortcut) will now choose the first selectable item.
 
-- Requests to switch images in the darkroom (via space/backspace/filmstrip)
-  used to be quietly ignored if a recalculation was currently ongoing.
-  Now, they will be processed as soon as the pipe is ready.
-  Any changes that were made to the previous image while waiting will be discarded.
+- Requests to switch images in the darkroom (via
+  space/backspace/filmstrip) used to be quietly ignored if a
+  recalculation was currently ongoing.  Now, they will be processed as
+  soon as the pipe is ready.  Any changes that were made to the
+  previous image while waiting will be discarded.
 
 - Manual per-color black point adjustment is now possible for non-CFA
   (a.k.a. linear) raw images. Note that file-embedded levels might
   still not be set automatically on import.
 
-- The dithering module now also includes posterization modes and masking, and
-  is therefore renamed to "dither or posterize" to make the new functionality more
-  discoverable.
+- The dithering module now also includes posterization modes and
+  masking, and is therefore renamed to "dither or posterize" to make
+  the new functionality more discoverable.
 
-- Help buttons have been added to several dialogs and preference tabs to
-  allow direct access to the relevant online manual entries.
+- Help buttons have been added to several dialogs and preference tabs
+  to allow direct access to the relevant online manual entries.
 
-- A new version of fimic color science -- v7 (2023) -- has been added and
-  is now the default. This version replaces the color preservation drop-down
-  with a slider to control the saturation of the highlights.
-  This slider is used to control a mixture between the previous "max RGB"
-  and "no preservation" modes.
+- A new version of fimic color science -- v7 (2023) -- has been added
+  and is now the default. This version replaces the color preservation
+  drop-down with a slider to control the saturation of the highlights.
+  This slider is used to control a mixture between the previous "max
+  RGB" and "no preservation" modes.
 
 - It is now possible to import the following additional metadata keys:
   - Iptc.Application2.Byline
@@ -505,8 +534,9 @@ The following is a summary of the main features added to darktable
   - Iptc.Application2.TimeCreated
   - Exif.Image.ImageDescription
 
-- The shadows and highlights module now uses the bilateral filter
-  by default as this avoids the halos common to the previous (Gaussian) default.
+- The shadows and highlights module now uses the bilateral filter by
+  default as this avoids the halos common to the previous (Gaussian)
+  default.
 
 - Some new aspect ratios have been added to the framing module:
   - CinemaScope
@@ -514,53 +544,58 @@ The following is a summary of the main features added to darktable
   - US Legal
   - Standard print sizes (5x7, 8x10, 11x14)
 
-- All remaining color-picker buttons are now accessible via shortcuts and
-  Lua scripts.
+- All remaining color-picker buttons are now accessible via shortcuts
+  and Lua scripts.
 
-- A new tooltip has been added to the edges of sliders with soft limits
-  describing how to set values outside those boundaries.
+- A new tooltip has been added to the edges of sliders with soft
+  limits describing how to set values outside those boundaries.
 
-- The sort order of the shapes in mask manager groups has been reversed so that
-  the lowest ranking shape is at the bottom of the group. The
-  sort order of shapes outside of a group has also been changed for consistency.
+- The sort order of the shapes in mask manager groups has been
+  reversed so that the lowest ranking shape is at the bottom of the
+  group. The sort order of shapes outside of a group has also been
+  changed for consistency.
 
-- When deletion of a physical file (or movement of that file to trash) fails,
-  the clarity and usability of the "further action" confirmation dialog is now improved.
+- When deletion of a physical file (or movement of that file to trash)
+  fails, the clarity and usability of the "further action"
+  confirmation dialog is now improved.
 
 - The "brush smoothing" and "pen pressure" options have been moved
-  from the global preferences dialog to a new collapsible "properties" section
-  in the mask manager, so that they can be changed while drawing and can be
-  assigned shortcuts.
+  from the global preferences dialog to a new collapsible "properties"
+  section in the mask manager, so that they can be changed while
+  drawing and can be assigned shortcuts.
 
 - It is now possible to see the current image's embedded ICC profile as a
   tooltip in the input profile module.
 
-- A warning message is no longer shown when multiple color calibration module
-  instances are used with masks. This approach is commonly used to handle multiple
-  light sources and is considered to be correct usage of the module.
+- A warning message is no longer shown when multiple color calibration
+  module instances are used with masks. This approach is commonly used
+  to handle multiple light sources and is considered to be correct
+  usage of the module.
 
-- It is now possible to calibrate colors using the Spyder Checkr Photo color checker
-  in the color calibration module.
+- It is now possible to calibrate colors using the Spyder Checkr Photo
+  color checker in the color calibration module.
 
 ## Bug Fixes
 
-- Fixed an issue where the sort order in the top panel was reset to 'filename' on
-  every collection change.
+- Fixed an issue where the sort order in the top panel was reset to
+  'filename' on every collection change.
 
 - Removed the commit button from the crop module as it was no longer used.
 
-- Fixed an issue whereby modules were not always reset to their initial
-  state when pressing the reset button. This fix is related to the rework of
-  the auto-application of default parameters described above.
+- Fixed an issue whereby modules were not always reset to their
+  initial state when pressing the reset button. This fix is related to
+  the rework of the auto-application of default parameters described
+  above.
 
-- XMP regions (e.g. from camera face recognition) are now properly transformed
-  from metadata to ensure they match the image.
+- XMP regions (e.g. from camera face recognition) are now properly
+  transformed from metadata to ensure they match the image.
 
 - Fixed some rounding issues in the calculation of the borders in the
-  framing module. Borders on opposite sides are now created with the same size.
+  framing module. Borders on opposite sides are now created with the
+  same size.
 
-- Code maintenance and bugfixes have been made for writing dng files in the
-  "Create HDR" functionality
+- Code maintenance and bugfixes have been made for writing dng files
+  in the "Create HDR" functionality
 
 - Pixelpipe cache safety and performance improvements.
 
@@ -575,24 +610,26 @@ The following is a summary of the main features added to darktable
 - The raw chromatic aberrations module has been amended to always use the
   entire image, and so now works correctly at all darkroom zoom levels.
 
-- An issue with setting the active item in a combox having varying content
-  using a shortcut (or lua's `dt.gui.action`) has been fixed. It is also now
-  possible to directly set the values of the comboboxes for the focused
-  module's blending mode etc. by setting the shortcut's effect.
+- An issue with setting the active item in a combox having varying
+  content using a shortcut (or lua's `dt.gui.action`) has been
+  fixed. It is also now possible to directly set the values of the
+  comboboxes for the focused module's blending mode etc. by setting
+  the shortcut's effect.
 
-- The module presets menu has been fixed to allow the currently-used preset to be updated
-  in more situations. For example after entering the darkroom and modifying
-  some module parameters the "update preset" entry was not previously selectable and the
-  user had to first select the preset and then update the parameters again.
+- The module presets menu has been fixed to allow the currently-used
+  preset to be updated in more situations. For example after entering
+  the darkroom and modifying some module parameters the "update
+  preset" entry was not previously selectable and the user had to
+  first select the preset and then update the parameters again.
 
-- The color picker sample area calculation has been fixed to ensure that at least one
-  pixel is always selected. At large zoom levels and with a very small area
-  some rounding errors previously could result in an empty area selection and
-  therefore an incorrect color sample.
+- The color picker sample area calculation has been fixed to ensure
+  that at least one pixel is always selected. At large zoom levels and
+  with a very small area some rounding errors previously could result
+  in an empty area selection and therefore an incorrect color sample.
 
-- The "ignore EXIF rating" import option has been fixed for images containing
-  the XMP.xmp.Rating tag. This does not change the rating if an XMP file
-  is found with some specific rating already entered.
+- The "ignore EXIF rating" import option has been fixed for images
+  containing the XMP.xmp.Rating tag. This does not change the rating
+  if an XMP file is found with some specific rating already entered.
 
 - Minor memory leaks have been fixed in some modules.
 
@@ -602,34 +639,35 @@ The following is a summary of the main features added to darktable
 - Fixed a possible crash in gradient mask creation due to an issue in
   the implemented parallelism.
 
-- Fixed an issue with the "look for updated XMP files on startup" option that
-  caused mismatches to be incorrectly reported every time darktable was
-  started up. The fix ensures that the XMP and database timestamps are
-  correctly aligned.
+- Fixed an issue with the "look for updated XMP files on startup"
+  option that caused mismatches to be incorrectly reported every time
+  darktable was started up. The fix ensures that the XMP and database
+  timestamps are correctly aligned.
 
-- Multiple issues have been resolved in the mask manager module. It is now possible for all
-  mask types to be added continuously. In addition, the brush was not properly
-  displayed after being created from the mask manager, and a crash when
-  creating gradients from the mask manager has also been fixed. For all
-  shapes the editable state is now properly set after creation making
-  it possible to move and resize the different parts of the shapes.
+- Multiple issues have been resolved in the mask manager module. It is
+  now possible for all mask types to be added continuously. In
+  addition, the brush was not properly displayed after being created
+  from the mask manager, and a crash when creating gradients from the
+  mask manager has also been fixed. For all shapes the editable state
+  is now properly set after creation making it possible to move and
+  resize the different parts of the shapes.
 
-- The placement of the brush correction tool has been fixed in the retouch
-  module. This issue was more visible on images that had been distorted
-  by other modules earlier in the pipe.
+- The placement of the brush correction tool has been fixed in the
+  retouch module. This issue was more visible on images that had been
+  distorted by other modules earlier in the pipe.
 
-- Some differences between CPU and OpenCL output have been fixed in the
-  PPG and VNG/VNG4 demosaicers, as well as the match greens and color
-  smoothing options.
+- Some differences between CPU and OpenCL output have been fixed in
+  the PPG and VNG/VNG4 demosaicers, as well as the match greens and
+  color smoothing options.
 
 - The (hidden) final scale module now properly uses the same user-defined
   scaling mode for image and masks.
 
 - Fixed a display issue when editing a shape name in the mask manager.
 
-- Fixed import of Nikon camera make and model Exif so that opening the image
-  in the darkroom is no longer required, and import now also works for non-raw
-  files.
+- Fixed import of Nikon camera make and model Exif so that opening the
+  image in the darkroom is no longer required, and import now also
+  works for non-raw files.
 
 - Fixed an issue where Canon CR3 metadata crop was not being ignored.
   The full visible sensor area (as determined by LibRaw) is now always
@@ -641,67 +679,74 @@ The following is a summary of the main features added to darktable
 - When using the spot exposure mapping mode, properly reset the mode to
   "correction" when changing image.
 
-- Fixed a bug where the highlight reconstruction module could be enabled
-  on images for which it cannot be used, such as JPEG files.
+- Fixed a bug where the highlight reconstruction module could be
+  enabled on images for which it cannot be used, such as JPEG files.
 
-- Fixed a border issue in the inpaint opposed highlight reconstruction algorithm,
-  whereby some pixels on the border of the image were not correctly handled by the
-  algorithm. This may lead to a small difference on the border of the
-  image and will avoid some possible reddish borders.
+- Fixed a border issue in the inpaint opposed highlight reconstruction
+  algorithm, whereby some pixels on the border of the image were not
+  correctly handled by the algorithm. This may lead to a small
+  difference on the border of the image and will avoid some possible
+  reddish borders.
 
-- Fixed an issue in the segmentation highlight reconstruction algorithm, whereby
-  the mask display could be broken due to the module accessing some
-  uninitialized data.
+- Fixed an issue in the segmentation highlight reconstruction
+  algorithm, whereby the mask display could be broken due to the
+  module accessing some uninitialized data.
 
-- Fixed to avoid writing to an XMP file if it was not requested and the image was
-  not altered. This rule is now also properly applied when importing RAW + JPEG.
+- Fixed to avoid writing to an XMP file if it was not requested and
+  the image was not altered. This rule is now also properly applied
+  when importing RAW + JPEG.
 
-- Fixed to make sure the database timestamp is always set when an XMP sidecar file
-  might be written.
+- Fixed to make sure the database timestamp is always set when an XMP
+  sidecar file might be written.
 
 - A workaround was implemented for the mouse hover effect over sliders
-  and dropdowns, which used to cause the whole side panel (including the
-  histogram) to be redrawn on each mouse movement between widgets. This has been fixed
-  and should result in lower CPU consumption.
+  and dropdowns, which used to cause the whole side panel (including
+  the histogram) to be redrawn on each mouse movement between
+  widgets. This has been fixed and should result in lower CPU
+  consumption.
 
 - Fixed the state of the set operators in the mask manager -- when
   moving a mask up/down we now ensure that the first mask has no
   operator and that the second one always has an operator assigned.
-  If no operator has been set yet the default (union) operator is used.
+  If no operator has been set yet the default (union) operator is
+  used.
 
-- In the rotate and perspective module, if the current rotation is close to ±180
-  degrees, adjusting it by drawing a horizon line with
+- In the rotate and perspective module, if the current rotation is
+  close to ±180 degrees, adjusting it by drawing a horizon line with
   <kbd>right-click+drag</kbd> could lead to it being clipped at the
   end of the slider. This has been fixed so that the rotation angle
-  correctly wraps around when it reaches ±180. A manually-entered value outside the range
-  (like 182) will be similarly wrapped (to -178).
+  correctly wraps around when it reaches ±180. A manually-entered
+  value outside the range (like 182) will be similarly wrapped (to
+  -178).
 
 - Fixed loading of monochrome images.
 
-- Fixed the display of tiny circular masks to ensure that the mask is always
-  visible.
+- Fixed the display of tiny circular masks to ensure that the mask is
+  always visible.
 
-- Fixed the loading of the OpenCL library when the required symbols are
-  not fully implemented.
+- Fixed the loading of the OpenCL library when the required symbols
+  are not fully implemented.
 
-- The drawing of masks has been reworked to ensure that all types of masks
-  are drawn in the same way -- the central area, border, and highlighted segments
-  are now displayed consistently. The highlighted segment is now more visible,
-  especially for the brush mask, where the highlighted segment was barely
-  distinguishable due to a bug.
+- The drawing of masks has been reworked to ensure that all types of
+  masks are drawn in the same way -- the central area, border, and
+  highlighted segments are now displayed consistently. The highlighted
+  segment is now more visible, especially for the brush mask, where
+  the highlighted segment was barely distinguishable due to a bug.
 
-- The imported EXR image size is now set to the extent of the valid data window only.
+- The imported EXR image size is now set to the extent of the valid
+  data window only.
 
-- Collection sort names are now properly translated in the recent collection
-  sort history pop-up.
+- Collection sort names are now properly translated in the recent
+  collection sort history pop-up.
 
 - Fixed dual demosaicing options for 4-color Bayer sensor cameras where
   only VNG4 and PassThrough are supported.
 
-- Fixed to no longer truncate focal length on thumbnails to avoid loss of
-  display precision.
+- Fixed to no longer truncate focal length on thumbnails to avoid loss
+  of display precision.
 
-- Fixed a possible crash caused by use of detail masks when switching to the darkroom.
+- Fixed a possible crash caused by use of detail masks when switching
+  to the darkroom.
 
 - Fixed feathering masks in lens correction, retouch, liquify,
   and spot removal modules.
@@ -720,9 +765,9 @@ The following is a summary of the main features added to darktable
 - Feathering input fixed when using distorting modules like retouch
   or lens correction.
 
-- Fixed a long-standing potential memory bug in the interpolation code,
-  though one which never has occurred due to how that code is used in
-  darktable.
+- Fixed a long-standing potential memory bug in the interpolation
+  code, though one which never has occurred due to how that code is
+  used in darktable.
 
 - Reworked the metadata editor to prevent possible data loss.
 
@@ -731,17 +776,17 @@ The following is a summary of the main features added to darktable
 
 - Fixed entering a custom aspect ratio in the framing module.
 
-- Fixed the pin icon update in the collection filters module, which could
-  crash darktable when using some specific filter combinations.
+- Fixed the pin icon update in the collection filters module, which
+  could crash darktable when using some specific filter combinations.
 
-- Fixed the rating toast message not being shown when rating a collapsed group
-  of images using a keyboard shortcut.
+- Fixed the rating toast message not being shown when rating a
+  collapsed group of images using a keyboard shortcut.
 
-- Fixed a possible crash in the astrophoto denoise module when used on CPU (not
-  an issue for OpenCL).
+- Fixed a possible crash in the astrophoto denoise module when used on
+  CPU (not an issue for OpenCL).
 
-- Fixed some minor issues with the Spyder Checkr 48 (v2 - after 2018) reference
-  values.
+- Fixed some minor issues with the Spyder Checkr 48 (v2 - after 2018)
+  reference values.
 
 - Fixed a possible crash in the Edge-Avoiding a-trous Wavelet when
   handling very small image regions.
@@ -749,17 +794,18 @@ The following is a summary of the main features added to darktable
 - Properly ignore empty GPX latitude/longitude which would otherwise
   create bogus location coordinates.
 
-- Fixed saving of position in the collections module's history and recent collections
-  module. This fix ensures that activating a history entry correctly restores
-  the thumbnail offset to the point at which the entry was saved.
+- Fixed saving of position in the collections module's history and
+  recent collections module. This fix ensures that activating a
+  history entry correctly restores the thumbnail offset to the point
+  at which the entry was saved.
 
 - Fixed to avoid possible unwanted flipping of the selected image when
   entering the print view due to filmstrip thumbnails being updated.
 
-- Fixed an issue in the crop module, where Shift+dragging on an edge only
-  allowed the crop area to be made larger (while maintaining the aspect ratio)
-  and could not make it smaller. Previously this feature only worked correctly
-  when dragging a corner.
+- Fixed an issue in the crop module, where Shift+dragging on an edge
+  only allowed the crop area to be made larger (while maintaining the
+  aspect ratio) and could not make it smaller. Previously this feature
+  only worked correctly when dragging a corner.
 
 ## Lua
 
@@ -770,17 +816,18 @@ The following is a summary of the main features added to darktable
 ### Add action support for Lua
 
 - The lua call to `dt.gui.action` is now more flexible, with most
-  parameters now being optional. For example you can read the focused status of a module
-  with just `dt.gui.action("iop/filmicrgb", "focus")`.
+  parameters now being optional. For example you can read the focused
+  status of a module with just `dt.gui.action("iop/filmicrgb",
+  "focus")`.
 
 - Tooltips now show the compact lua commands in mapping mode (only
   adding the last parameter -- instance -- if the module supports
   multi-instance) and have been added to presets and styles menus as
   well.
 
-- Lua commands can be copied to the clipboard, using <kbd>Ctrl+v</kbd> in the
-  shortcuts dialog, both from a selected action/shortcut, or long
-  right click when in mapping mode (over a widget) or in the
+- Lua commands can be copied to the clipboard, using <kbd>Ctrl+v</kbd>
+  in the shortcuts dialog, both from a selected action/shortcut, or
+  long right click when in mapping mode (over a widget) or in the
   presets/styles menus.
 
 - The shown/copied lua command for a slider or combobox will set the
@@ -791,17 +838,17 @@ The following is a summary of the main features added to darktable
   real widget(s) that receive it based on, for example, which module
   is focused or enabled. The advantage is that all fallbacks work as
   normal, so you can assign a midi knob to it and turning it (holding
-  shift/ctrl to speed up/down) or pressing it to reset works regardless
-  of which widget receives it. Basically this is a much more flexible
-  alternative to the fake widgets under processing modules.
-  This allows owners of, for example, an x-touch mini to use
+  shift/ctrl to speed up/down) or pressing it to reset works
+  regardless of which widget receives it. Basically this is a much
+  more flexible alternative to the fake widgets under processing
+  modules.  This allows owners of, for example, an x-touch mini to use
   their scarce rotors in different, fully configurable, ways while
   working in different modules (which can also be focused using midi
   buttons which will then light up). Such configurations could be
   shared using https://github.com/darktable-org/lua-scripts.
 
-- Added support for shortcuts to sliders/combos created in lua, either via
-  visual mapping mode or in the shortcuts dialog under the lua
+- Added support for shortcuts to sliders/combos created in lua, either
+  via visual mapping mode or in the shortcuts dialog under the lua
   category. Elements and effects are not supported.
 
 ### Other Lua changes
@@ -821,8 +868,8 @@ The following is a summary of the main features added to darktable
 
 - Moved the `pixelpipe-processing-complete` event from the end of the
   image pixelpipe to the end of the preview pixelpipe to catch
-  completion of events that only update the preview, such as
-  spot exposure measurement in the exposure module.
+  completion of events that only update the preview, such as spot
+  exposure measurement in the exposure module.
 
 ## Notes
 
@@ -835,12 +882,15 @@ The following is a summary of the main features added to darktable
 - In order to support the correct display of numbers in darktable, the
   minimum supported Gtk version has had to be increased to
   3.24.15. For people who need to build darktable with an older
-  version, this can be achieved by removing line 241 of the `darktable.css`
-  file on your system. See https://github.com/darktable-org/darktable/issues/13166.
+  version, this can be achieved by removing line 241 of the
+  `darktable.css` file on your system. See
+  https://github.com/darktable-org/darktable/issues/13166.
 
-- Starting with this release a new support policy regarding macOS versions will be in place --
-  darktable releases will now only support those macOS versions that are also supported by Apple.
-  Release 4.4 therefore drops support for macOS versions older than 11.3.
+- Starting with this release a new support policy regarding macOS
+  versions will be in place -- darktable releases will now only
+  support those macOS versions that are also supported by Apple.
+  Release 4.4 therefore drops support for macOS versions older than
+  11.3.
 
 ## Changed Dependencies
 
