@@ -89,9 +89,9 @@ changes (where available).
   (albeit in a more limited way).
 
 - The default workflow configuration option (preferences > processing
-> auto-apply pixel workflow defaults) has now been adjusted to
-incorporate the previous chromatic adaptation workflow setting and to
-include the new sigmoid module.  Options are now as follows:
+  > auto-apply pixel workflow defaults) has now been adjusted to
+  incorporate the previous chromatic adaptation workflow setting and to
+  include the new sigmoid module.  Options are now as follows:
 
   - scene-refrerred (filmic) -- default
   - scene-referred (sigmoid)
@@ -129,7 +129,103 @@ include the new sigmoid module.  Options are now as follows:
   color harmony -- think of them like crop composition guides, but for
   colors.
 
-- Many modules have had code cleanup and performance improvements.
+- A global <kbd>right-click-and-drag</kbd> operation has been added to
+  allow image rotation to be corrected without first opening the
+  rotate and perspective module. This operation can be used as long as
+  the currently-focused module does not already use that shortcut for
+  another purpose.
+
+- Drawn mask functionality has been completely overhauled with a large number
+  of changes and fixes:
+
+  - The "brush smoothing" and "pen pressure" options have been moved
+    from the global preferences dialog to a new collapsible "properties"
+    section in the mask manager, so that they can be changed while
+    drawing and can be assigned shortcuts.
+  
+  - It is now possible to edit drawn mask shape size/feather/hardness
+    using sliders in the masks manager. These sliders use a logarithmic
+    scale and scrolling over them makes relative adjustments, just like
+    <kbd>Shift+scroll</kbd> over the shape itself. As with other
+    sliders, <kdb>Ctrl</kbd> or <kdb>Shift</kbd> can be used to make
+    fine or coarse adjustments (similarly with shortcut fallbacks
+    enabled). Shortcuts assigned to the sliders can be used to adjust
+    brush size/hardness while drawing.
+  
+  - A fifth set operator has been added to the mask manager to allow
+    drawn shapes to be combined in "sum" mode. This allows repeated
+    brush strokes with low opacity to be layered on top of each other to
+    increase the strength of the mask. This mode is now the default for
+    brush shapes.
+  
+  - It is now possible to change the set operator (mode) for all shapes
+    in a group from the right-click menu in the mask manager.
+  
+  - Some actions in the mask manager menu previously could be
+    activated even though they would have no impact on the image in some
+    contexts. The move up/down actions are therefore now disabled for
+    the first and last element in a group respectively, and it is no
+    longer possible to choose a set operator (mode) for the first
+    element in a group.
+  
+  - The sort order of the shapes in mask manager groups has been
+    reversed so that the lowest ranking shape is at the bottom of the
+    group. The sort order of shapes outside of a group has also been
+    changed for consistency.
+  
+  - It is now possible for all mask types to be added continuously in
+    the mask manager.
+
+  - Fixed an issue where the brush was not properly displayed after being
+    created from the mask manager, and a crash when creating gradients from the
+    mask manager has also been fixed.
+
+  - For all shapes the editable state is now properly set after creation
+     making it possible to move and resize the different parts of the shapes.
+  
+  - Fixed a display issue when editing a shape name in the mask manager.
+  
+  - Fixed the state of the set operators in the mask manager -- when
+    moving a mask up/down we now ensure that the first mask has no
+    operator and that the second one always has an operator assigned.
+    If no operator has been set yet the default (union) operator is
+    used.
+  
+  - When using a shortcut to add shapes to a drawn (blending) mask the
+    blending mode will automatically switch to "drawn mask" or "drawn &
+    parametric mask", depending on what it was before, so that any newly
+    created shape will actually affect the image.
+  
+  - In the drawn mask blending mode there used to be an "invert mask"
+    option that had the same functionality as the "toggle polarity" option.
+    Since both were doing the same thing, "invert mask" is now removed.
+  
+  - The drawing of masks has been reworked to ensure that all types of
+    masks are drawn in the same way -- the central area, border, and
+    highlighted segments are now displayed consistently. The highlighted
+    segment is now more visible, especially for the brush mask, where
+    the highlighted segment was barely distinguishable due to a bug.
+
+  - In the style and copy/paste dialogs a new column has been added to
+    show whether a module uses a mask (drawn/parametric/raster) using
+    the standard mask icon.
+  
+  - Editing of drawn masks has been improved -- it is now easier to
+    select masks' control points and path segments (in some cases it was
+    easy to accidentally select the whole path mask rather than a single
+    segment). On-canvas mask rendering has also been improved for better
+    consistency between shape types.
+
+  - The brush path is now slightly more transparent in order to better
+    see the underlying image.
+  
+
+## Performance Improvements
+
+One of the major highlights of this release is the number of performance
+improvements and enhancements:
+
+- The following processing modules have had code cleanup and performance improvements.
   All SSE2 code paths have been removed (the optimized parallel code
   generated by the compiler is faster) or code optimized in the
   following modules. This has led to speed gains of 5-25%:
@@ -168,7 +264,7 @@ include the new sigmoid module.  Options are now as follows:
   - monochrome
   - highlight reconstruction (inpaint opposed mode)
 
-  Improvements to a numbef of core routines have also led to further
+- Improvements to a number of core routines have also led to further
   speed improvements:
 
   - The interpolation algorithms (Bicubic, Bilinear, Lanczos2,
@@ -205,13 +301,42 @@ include the new sigmoid module.  Options are now as follows:
     been sped up by a factor of 30 to 200, making the results
     perceptually instantaneous on clicking the button.
 
-- A global <kbd>right-click-and-drag</kbd> operation has been added to
-  allow image rotation to be corrected without first opening the
-  rotate and perspective module. This operation can be used as long as
-  the currently-focused module does not already use that shortcut for
-  another purpose.
+- Pixelpipe code and caching strategies have been rewritten with
+  significant performance gains when developing in the darkroom.
+
+- OpenCL support has been added to the sigmoid module.
+
+- OpenMP support has been added to the XCF export and RGBE loader.
+
+- The performance of the highlight reconstruction inpaint opposed
+  algorithm has been improved by providing an OpenCL implementation
+  and using internal caching in the darkroom.
+
+- The guided Laplacian highlight reconstruction mode is now less
+  memory hungry (with a saving of around 40%) and its performance is
+  significantly improved, allowing for more iterations of recovery to
+  be applied by default.
 
 ## Other Changes
+
+- The filter section of the preset dialog has been reworked to better
+  show the relationship between raw/non-raw and HDR/monochrome/color.
+  This should avoid the accidental creation of presets that can never
+  apply to any image.
+
+- ISO range selection has now been improved within the auto-apply
+  presets dialog.
+
+- Shortcuts assigned to presets or styles will now be shown when
+  hovering over them in the relevant menu.
+
+- Long-left-clicking a preset will now keep the preset menu open so
+  you can quickly switch between several presets to visualise the
+  effect. You can also scroll over the preset button to switch to
+  previous/next presets (like you already could using shortcuts).
+
+- Two new sharpness presets have been added to the diffuse or sharpen
+  module -- standard sharpness and one with a stronger effect.
 
 - The color picker code has been completely overhauled resulting in
   speed improvements due to code paths not being run unnecessarily.
@@ -222,8 +347,8 @@ include the new sigmoid module.  Options are now as follows:
   warning has been removed, along with additional code cleanup,
   de-duplication and optimization.
 
-- Pixelpipe code and caching strategies have been rewritten with
-  significant performance gains when developing in the darkroom.
+- All remaining color-picker buttons are now accessible via shortcuts
+  and Lua scripts.
 
 - Histogram calculation code has been modernized, removing SSE code
   paths.  While this doesn't itself provide any speed improvements, it
@@ -233,31 +358,44 @@ include the new sigmoid module.  Options are now as follows:
   marginally more accurate results, and in some cases will use
   substantially less memory.
 
-- OpenCL support has been added to the sigmoid module for improved
-  performance.
+- The histogram gui has been reworked. Control buttons have been split
+  into two groups: On the left side, a series of buttons to switch
+  between histogram modes (histogram, waveform, rbg parade,
+  vectorscope); On the right side, the buttons that control the
+  parameters of each mode (RGB Channels, orientation,
+  vectorscope). For the RYB vectorscope, a series of buttons have also
+  been added to visualize guide lines for the most common color
+  harmonies.
 
-- OpenMP support has been added to the XCF export and RGBE loader
-  for improved performance.
+- The zoom widget in the navigation window has been converted to
+  a standard drop-down, better fitting the darktable style.
+
+- The scroll zoom logic in the darkroom has been reworked in order
+  to make the zoom steps more perceptually-uniform for all image sizes.
+
+- A new option (preferences > darkroom > middle mouse button zooms to
+  200%) has been added to control how the middle-mouse-click zoom
+  toggle behaves in the darkroom. Select this option to toggle between
+  fit, 100%, and 200%; disable the option to only toggle between fit
+  and 100%.  In the latter case, you can access 200% zoom with
+  <kbd>Ctrl+middle-click</kbd>.
 
 - Snapshots are no longer invalidated when the history is compressed
   or reset. All snapshot are now stored with their full history and
   can always be correctly reconstructed.
 
-- The levels module has been deprecated -- use rgb levels instead
+- The snapshot list view been redesigned, bringing its display in line
+  with that of the history module. At the same time the module's label
+  is now shown in the list and is editable with <kbd>Ctrl+click</kbd>.
 
-- The contrast brightness saturation modue has been deprecated --
-  use color balance RGB instead.
+- The following modules have been deprecated and will be removed in
+  a future version:
 
-- The zoom widget in the navigation window has been converted to
-  a standard drop-down, better fitting the darktable style.
+  - levels (use rgb levels instead)
+  - contrast brightness saturation (use color balance RGB instead)
 
 - The ISO 12646 border size was too small in the previous version and
   this has been fixed.
-
-- The filter section of the preset dialog has been reworked to better
-  show the relationship between raw/non-raw and HDR/monochrome/color.
-  This should avoid the accidental creation of presets that can never
-  apply to any image.
 
 - The "default" module group has now been removed and you are now
   advised to use one of the scene-referred module groups instead.
@@ -279,10 +417,6 @@ include the new sigmoid module.  Options are now as follows:
 
 - Export and thumbnail generation has been redesigned to remove some
   hacks that had accumulated and should result in a better export size.
-
-- The performance of the highlight reconstruction inpaint opposed
-  algorithm has been improved by providing an OpenCL implementation
-  and using internal caching in the darkroom.
 
 - Various improvements have been made to the debug interface when
   running darktable from the command-line:
@@ -310,14 +444,6 @@ include the new sigmoid module.  Options are now as follows:
 - Section headers have been added to the "sort by" drop-down in the
   top panel (files, times, etc).
 
-- Shortcuts assigned to presets or styles will now be shown when
-  hovering over them in the relevant menu.
-
-- Long-left-clicking a preset will now keep the preset menu open so
-  you can quickly switch between several presets to visualise the
-  effect. You can also scroll over the preset button to switch to
-  previous/next presets (like you already could using shortcuts).
-
 - When the crop module receives focus and switches to an uncropped
   view of the image, the crop handles around the edges of the image
   now briefly light up to indicate that they can be
@@ -335,6 +461,8 @@ include the new sigmoid module.  Options are now as follows:
   crop without focusing the module, these will still be implemented
   immediately.
 
+- Removed the commit button from the crop module as it was no longer used.
+
 - The height of resizeable module areas can now be changed by clicking
   and dragging the bottom of the resizeable area.  The previous method
   to achieve this, by scrolling while holding the control key, has
@@ -344,18 +472,6 @@ include the new sigmoid module.  Options are now as follows:
   level). In the navigator preview <kbd>Ctrl+scroll</kbd> now adjusts
   zoom level without bounds, as it already does over the central image
   area.
-
-- The histogram gui has been reworked. Control buttons have been split
-  into two groups: On the left side, a series of buttons to switch
-  between histogram modes (histogram, waveform, rbg parade,
-  vectorscope); On the right side, the buttons that control the
-  parameters of each mode (RGB Channels, orientation,
-  vectorscope). For the RYB vectorscope, a series of buttons have also
-  been added to visualize guide lines for the most common color
-  harmonies.
-
-- The scroll zoom logic in the darkroom has been reworked in order
-  to make the zoom steps more perceptually-uniform for all image sizes.
 
 - The module instance name in the darkroom has been altered so it is
   more clearly separated from the module name (using a "bullet"
@@ -377,11 +493,6 @@ include the new sigmoid module.  Options are now as follows:
   element, and hold/toggle via an effect. All mapped shortcuts are
   shown in the tooltip of the preview layout button.
 
-- The guided Laplacian highlight reconstruction mode is now less
-  memory hungry (with a saving of around 40%) and its performance is
-  significantly improved, allowing for more iterations of recovery to
-  be applied by default.
-
 - Support has been added for the MaxApertureValue metadata, to
   complement the already- supported ApertureValue. This is the only
   metadata tag available in Leica M Monochrom, M8, M9 & M10 DNGs.
@@ -391,15 +502,8 @@ include the new sigmoid module.  Options are now as follows:
   often the less appropriate choice -- for example, for some modules
   it often makes no sense to add extra instances.
 
-- The brush path is now slightly more transparent in order to better
-  see the underlying image.
-
 - The style tooltip now immediately shows module details while waiting
   for the preview image to be calculated.
-
-- In the style and copy/paste dialogs a new column has been added to
-  show whether a module uses a mask (drawn/parametric/raster) using
-  the standard mask icon.
 
 - The tooltips in the liquify module's shape tools are now consistent
   with the blending drawn mask tools.
@@ -408,20 +512,6 @@ include the new sigmoid module.  Options are now as follows:
   removed.  This option is no longer necessary due to improvements in
   the pixelpipe cache and previously could have led to slight
   differences in darkroom processing.
-
-- In the mask manager some actions in the menu previously could be
-  activated even though they would have no impact on the image in some
-  contexts. The move up/down actions are therefore now disabled for
-  the first and last element in a group respectively, and it is no
-  longer possible to choose a set operator (mode) for the first
-  element in a group.
-
-- Two new sharpness presets have been added to the diffuse or sharpen
-  module -- standard sharpness and one with a stronger effect.
-
-- The snapshot list view been redesigned, bringing its display in line
-  with that of the history module. At the same time the module's label
-  is now shown in the list and is editable with <kbd>Ctrl+click</kbd>.
 
 - The Exif focus distance field is now read for images taken with
   Nikon Z bodies.
@@ -437,42 +527,6 @@ include the new sigmoid module.  Options are now as follows:
   crossing over the shapes themselves (by connecting the closest
   source/target borders).
 
-- A new option (preferences > darkroom > middle mouse button zooms to
-  200%) has been added to control how the middle-mouse-click zoom
-  toggle behaves in the darkroom. Select this option to toggle between
-  fit, 100%, and 200%; disable the option to only toggle between fit
-  and 100%.  In the latter case, you can access 200% zoom with
-  <kbd>Ctrl+middle-click</kbd>.
-
-- It is now possible to edit drawn mask shape size/feather/hardness
-  using sliders in the masks manager. These sliders use a logarithmic
-  scale and scrolling over them makes relative adjustments, just like
-  <kbd>Shift+scroll</kbd> over the shape itself. As with other
-  sliders, <kdb>Ctrl</kbd> or <kdb>Shift</kbd> can be used to make
-  fine or coarse adjustments (similarly with shortcut fallbacks
-  enabled). Shortcuts assigned to the sliders can be used to adjust
-  brush size/hardness while drawing.
-
-- Editing of drawn masks has been improved -- it is now easier to
-  select masks' control points and path segments (in some cases it was
-  easy to accidentally select the whole path mask rather than a single
-  segment). On-canvas mask rendering has also been improved for better
-  consistency between shape types.
-
-- A fifth set operator has been added to the mask manager to allow
-  drawn shapes to be combined in "sum" mode. This allows repeated
-  brush strokes with low opacity to be layered on top of each other to
-  increase the strength of the mask. This mode is now the default for
-  brush shapes.
-
-- It is now possible to change the set operator (mode) for all shapes
-  in a group from the right-click menu in the mask manager.
-
-- When using a shortcut to add shapes to a drawn (blending) mask the
-  blending mode will automatically switch to "drawn mask" or "drawn &
-  parametric mask", depending on what it was before, so that any newly
-  created shape will actually affect the image.
-
 - The full-frame-equivalent focal length and crop factor is now shown
   alongside the actual focal length in the image information module.
 
@@ -481,18 +535,11 @@ include the new sigmoid module.  Options are now as follows:
   'fixed-size-text' template it is now possible to insert text with
   constant font size.
 
-- In the drawn mask blending mode there used to be an "invert mask"
-  option that had the same functionality as the "toggle polarity" option.
-  Since both were doing the same thing, "invert mask" is now removed.
-
 - Successive changes to sliders and other widgets (for example by
   dragging, scrolling or using shortcuts) have been made more
   responsive by creating fewer undo records. This also makes using
   undo/redo more effective because you are no longer forced to step
   through every micro-change.
-
-- ISO range selection has now been improved within the auto-apply
-  presets dialog.
 
 - Encoder ring and button lights of the Behringer X-Touch Compact are
   now supported via midi. Unmapped encoder presses fall back to reset
@@ -544,25 +591,12 @@ include the new sigmoid module.  Options are now as follows:
   - US Legal
   - Standard print sizes (5x7, 8x10, 11x14)
 
-- All remaining color-picker buttons are now accessible via shortcuts
-  and Lua scripts.
-
 - A new tooltip has been added to the edges of sliders with soft
   limits describing how to set values outside those boundaries.
-
-- The sort order of the shapes in mask manager groups has been
-  reversed so that the lowest ranking shape is at the bottom of the
-  group. The sort order of shapes outside of a group has also been
-  changed for consistency.
 
 - When deletion of a physical file (or movement of that file to trash)
   fails, the clarity and usability of the "further action"
   confirmation dialog is now improved.
-
-- The "brush smoothing" and "pen pressure" options have been moved
-  from the global preferences dialog to a new collapsible "properties"
-  section in the mask manager, so that they can be changed while
-  drawing and can be assigned shortcuts.
 
 - It is now possible to see the current image's embedded ICC profile as a
   tooltip in the input profile module.
@@ -580,8 +614,6 @@ include the new sigmoid module.  Options are now as follows:
 - Fixed an issue where the sort order in the top panel was reset to
   'filename' on every collection change.
 
-- Removed the commit button from the crop module as it was no longer used.
-
 - Fixed an issue whereby modules were not always reset to their
   initial state when pressing the reset button. This fix is related to
   the rework of the auto-application of default parameters described
@@ -594,10 +626,10 @@ include the new sigmoid module.  Options are now as follows:
   framing module. Borders on opposite sides are now created with the
   same size.
 
+- Fixed entering a custom aspect ratio in the framing module.
+
 - Code maintenance and bugfixes have been made for writing dng files
   in the "Create HDR" functionality
-
-- Pixelpipe cache safety and performance improvements.
 
 - Fixed some pixelpipe cache issues related to mask visualization and
   internal module histograms (e.g. within RGB curve). This
@@ -644,14 +676,6 @@ include the new sigmoid module.  Options are now as follows:
   darktable was started up. The fix ensures that the XMP and database
   timestamps are correctly aligned.
 
-- Multiple issues have been resolved in the mask manager module. It is
-  now possible for all mask types to be added continuously. In
-  addition, the brush was not properly displayed after being created
-  from the mask manager, and a crash when creating gradients from the
-  mask manager has also been fixed. For all shapes the editable state
-  is now properly set after creation making it possible to move and
-  resize the different parts of the shapes.
-
 - The placement of the brush correction tool has been fixed in the
   retouch module. This issue was more visible on images that had been
   distorted by other modules earlier in the pipe.
@@ -662,8 +686,6 @@ include the new sigmoid module.  Options are now as follows:
 
 - The (hidden) final scale module now properly uses the same user-defined
   scaling mode for image and masks.
-
-- Fixed a display issue when editing a shape name in the mask manager.
 
 - Fixed import of Nikon camera make and model Exif so that opening the
   image in the darkroom is no longer required, and import now also
@@ -705,12 +727,6 @@ include the new sigmoid module.  Options are now as follows:
   widgets. This has been fixed and should result in lower CPU
   consumption.
 
-- Fixed the state of the set operators in the mask manager -- when
-  moving a mask up/down we now ensure that the first mask has no
-  operator and that the second one always has an operator assigned.
-  If no operator has been set yet the default (union) operator is
-  used.
-
 - In the rotate and perspective module, if the current rotation is
   close to ±180 degrees, adjusting it by drawing a horizon line with
   <kbd>right-click+drag</kbd> could lead to it being clipped at the
@@ -726,12 +742,6 @@ include the new sigmoid module.  Options are now as follows:
 
 - Fixed the loading of the OpenCL library when the required symbols
   are not fully implemented.
-
-- The drawing of masks has been reworked to ensure that all types of
-  masks are drawn in the same way -- the central area, border, and
-  highlighted segments are now displayed consistently. The highlighted
-  segment is now more visible, especially for the brush mask, where
-  the highlighted segment was barely distinguishable due to a bug.
 
 - The imported EXR image size is now set to the extent of the valid
   data window only.
@@ -773,8 +783,6 @@ include the new sigmoid module.  Options are now as follows:
 
 - Fixed import of auto-applied presets where the upper bound of ISO,
   aperture and exposure could be incorrectly set as the lower bound.
-
-- Fixed entering a custom aspect ratio in the framing module.
 
 - Fixed the pin icon update in the collection filters module, which
   could crash darktable when using some specific filter combinations.
