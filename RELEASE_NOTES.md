@@ -93,7 +93,7 @@ changes (where available).
   incorporate the previous chromatic adaptation workflow setting and to
   include the new sigmoid module.  Options are now as follows:
 
-  - scene-refrerred (filmic) -- default
+  - scene-referred (filmic) -- default
   - scene-referred (sigmoid)
   - display-referred (legacy)
   - None
