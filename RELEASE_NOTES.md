@@ -143,8 +143,7 @@ changes (where available).
     section in the mask manager, so that they can be changed while
     drawing and can be assigned shortcuts.
   
-  - It is now possible to edit drawn mask shape size/feather/hardness
-    using sliders in the masks manager. These sliders use a logarithmic
+  - The drawn mask shape size/feather/hardness sliders in the masks manager now use a logarithmic
     scale and scrolling over them makes relative adjustments, just like
     <kbd>Shift+scroll</kbd> over the shape itself. As with other
     sliders, <kdb>Ctrl</kbd> or <kdb>Shift</kbd> can be used to make
@@ -317,6 +316,12 @@ improvements and enhancements:
   significantly improved, allowing for more iterations of recovery to
   be applied by default.
 
+- Successive changes to sliders and other widgets (for example by
+  dragging, scrolling or using shortcuts) have been made more
+  responsive by creating fewer undo records. This also makes using
+  undo/redo more effective because you are no longer forced to step
+  through every micro-change.
+
 ## Other Changes
 
 - The filter section of the preset dialog has been reworked to better
@@ -454,8 +459,8 @@ improvements and enhancements:
   is therefore impossible) the sensitive zone for dragging corners and
   edges is enlarged.
 
-- The crop module, which shows the full image to facilitate making
-  adjustments, will no longer trigger a pipe recalculation until the
+- While the crop module shows the whole image to facilitate making
+  adjustments, it will no longer trigger a pipe recalculation until the
   module loses focus (for example by switching to another module or by
   collapsing the crop module) at which point the new crop will be used
   to resize the image. If shortcuts are used to make changes to the
@@ -535,12 +540,6 @@ improvements and enhancements:
   fine-grained control over scaling. In conjunction with the new
   'fixed-size-text' template it is now possible to insert text with
   constant font size.
-
-- Successive changes to sliders and other widgets (for example by
-  dragging, scrolling or using shortcuts) have been made more
-  responsive by creating fewer undo records. This also makes using
-  undo/redo more effective because you are no longer forced to step
-  through every micro-change.
 
 - Encoder ring and button lights of the Behringer X-Touch Compact are
   now supported via midi. Unmapped encoder presses fall back to reset
