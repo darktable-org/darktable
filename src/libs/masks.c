@@ -544,6 +544,21 @@ static void _tree_operation(GtkButton *button, gpointer user_data)
   }
 }
 
+static void _add_tree_operation(GtkMenuShell *menu,
+                                gchar *label,
+                                dt_masks_state_t state,
+                                dt_masks_state_t selected_states,
+                                gboolean sensitive)
+{
+  GtkWidget *item = gtk_check_menu_item_new_with_label(label);
+  gtk_widget_set_sensitive(item, sensitive);
+  if(selected_states & state)
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+  g_signal_connect(item, "activate", (GCallback)_tree_operation,
+                    GINT_TO_POINTER(state));
+  gtk_menu_shell_append(menu, item);
+}
+
 static void _swap_last_secondlast_item_visibility(dt_lib_masks_t *lm,
                                                    GtkTreeIter *iter,
                                                    const dt_mask_id_t secondlast_id,
@@ -933,6 +948,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
 
     gboolean is_first_row = FALSE;
     gboolean is_last_row = FALSE;
+    dt_masks_state_t selected_states = DT_MASKS_STATE_NONE;
 
     int grpid = NO_MASKID;
     int depth = 0;
@@ -964,6 +980,30 @@ static int _tree_button_pressed(GtkWidget *treeview,
         if(!is_last_row && !gtk_tree_path_prev(it0))
         {
           is_first_row = TRUE;
+        }
+      }
+
+      for(const GList *items_iter = selected;
+          items_iter;
+          items_iter = g_list_next(items_iter))
+      {
+        GtkTreePath *item = (GtkTreePath *)items_iter->data;
+
+        if(gtk_tree_model_get_iter(model, &iter, item))
+        {
+          dt_mask_id_t grid = INVALID_MASKID;
+          dt_mask_id_t id = INVALID_MASKID;
+          _lib_masks_get_values(model, &iter, NULL, &grid, &id);
+
+          dt_masks_form_t *grp2 = dt_masks_get_from_id(darktable.develop, grid);
+          if(grp2 && (grp2->type & DT_MASKS_GROUP))
+          {
+            for(const GList *pts = grp2->points; pts; pts = g_list_next(pts))
+            {
+              dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+              if(pt->formid == id) selected_states |= pt->state;
+            }
+          }
         }
       }
 
@@ -1111,42 +1151,20 @@ static int _tree_button_pressed(GtkWidget *treeview,
     if(from_group && depth < 3)
     {
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-      item = gtk_menu_item_new_with_label(_("use inverted shape"));
-        g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                         GINT_TO_POINTER(DT_MASKS_STATE_INVERSE));
-      gtk_menu_shell_append(menu, item);
+      _add_tree_operation(menu, _("use inverted shape"),
+                          DT_MASKS_STATE_INVERSE, selected_states, TRUE);
 
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-
-      item = gtk_menu_item_new_with_label(_("mode: union"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_UNION));
-      gtk_menu_shell_append(menu, item);
-
-      item = gtk_menu_item_new_with_label(_("mode: intersection"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_INTERSECTION));
-      gtk_menu_shell_append(menu, item);
-
-      item = gtk_menu_item_new_with_label(_("mode: difference"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_DIFFERENCE));
-      gtk_menu_shell_append(menu, item);
-
-      item = gtk_menu_item_new_with_label(_("mode: sum"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_SUM));
-      gtk_menu_shell_append(menu, item);
-
-      item = gtk_menu_item_new_with_label(_("mode: exclusion"));
-      gtk_widget_set_sensitive(item, !is_last_row);
-      g_signal_connect(item, "activate", (GCallback)_tree_operation,
-                        GINT_TO_POINTER(DT_MASKS_STATE_EXCLUSION));
-      gtk_menu_shell_append(menu, item);
+      _add_tree_operation(menu, _("mode: union"),
+                          DT_MASKS_STATE_UNION, selected_states, !is_last_row);
+      _add_tree_operation(menu, _("mode: intersection"),
+                          DT_MASKS_STATE_INTERSECTION, selected_states, !is_last_row);
+      _add_tree_operation(menu, _("mode: difference"),
+                          DT_MASKS_STATE_DIFFERENCE, selected_states, !is_last_row);
+      _add_tree_operation(menu, _("mode: sum"),
+                          DT_MASKS_STATE_SUM, selected_states, !is_last_row);
+      _add_tree_operation(menu, _("mode: exclusion"),
+                          DT_MASKS_STATE_EXCLUSION, selected_states, !is_last_row);
 
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
       item = gtk_menu_item_new_with_label(_("move up"));
