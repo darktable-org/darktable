@@ -845,7 +845,8 @@ include the new sigmoid module.  Options are now as follows:
   their scarce rotors in different, fully configurable, ways while
   working in different modules (which can also be focused using midi
   buttons which will then light up). Such configurations could be
-  shared using https://github.com/darktable-org/lua-scripts.
+  shared using https://github.com/darktable-org/lua-scripts. 
+  examples/x-touch.lua is a working demonstration that can be easily amended.
 
 - Added support for shortcuts to sliders/combos created in lua, either
   via visual mapping mode or in the shortcuts dialog under the lua
