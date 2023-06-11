@@ -143,7 +143,7 @@ changes (where available).
     section in the mask manager, so that they can be changed while
     drawing and can be assigned shortcuts.
   
-  - The drawn mask shape size/feather/hardness sliders in the masks manager now use a logarithmic
+  - The drawn mask shape size/feather/hardness sliders in the mask manager now use a logarithmic
     scale and scrolling over them makes relative adjustments, just like
     <kbd>Shift+scroll</kbd> over the shape itself. As with other
     sliders, <kdb>Ctrl</kbd> or <kdb>Shift</kbd> can be used to make
