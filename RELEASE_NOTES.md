@@ -135,70 +135,72 @@ changes (where available).
   the currently-focused module does not already use that shortcut for
   another purpose.
 
-- Drawn mask functionality has been completely overhauled with a large number
-  of changes and fixes:
+- Drawn mask functionality has been completely overhauled with a large
+  number of changes and fixes:
 
   - The "brush smoothing" and "pen pressure" options have been moved
-    from the global preferences dialog to a new collapsible "properties"
-    section in the mask manager, so that they can be changed while
-    drawing and can be assigned shortcuts.
-  
-  - The drawn mask shape size/feather/hardness sliders in the mask manager now use a logarithmic
-    scale and scrolling over them makes relative adjustments, just like
-    <kbd>Shift+scroll</kbd> over the shape itself. As with other
-    sliders, <kdb>Ctrl</kbd> or <kdb>Shift</kbd> can be used to make
-    fine or coarse adjustments (similarly with shortcut fallbacks
-    enabled). Shortcuts assigned to the sliders can be used to adjust
-    brush size/hardness while drawing.
-  
+    from the global preferences dialog to a new collapsible
+    "properties" section in the mask manager, so that they can be
+    changed while drawing and can be assigned shortcuts.
+
+  - The drawn mask shape size/feather/hardness sliders in the mask
+    manager now use a logarithmic scale and scrolling over them makes
+    relative adjustments, just like <kbd>Shift+scroll</kbd> over the
+    shape itself. As with other sliders, <kdb>Ctrl</kbd> or
+    <kdb>Shift</kbd> can be used to make fine or coarse adjustments
+    (similarly with shortcut fallbacks enabled). Shortcuts assigned to
+    the sliders can be used to adjust brush size/hardness while
+    drawing.
+
   - A fifth set operator has been added to the mask manager to allow
     drawn shapes to be combined in "sum" mode. This allows repeated
-    brush strokes with low opacity to be layered on top of each other to
-    increase the strength of the mask. This mode is now the default for
-    brush shapes.
-  
-  - It is now possible to change the set operator (mode) for all shapes
-    in a group from the right-click menu in the mask manager.
-  
+    brush strokes with low opacity to be layered on top of each other
+    to increase the strength of the mask. This mode is now the default
+    for brush shapes.
+
+  - It is now possible to change the set operator (mode) for all
+    shapes in a group from the right-click menu in the mask manager.
+
   - Some actions in the mask manager menu previously could be
-    activated even though they would have no impact on the image in some
-    contexts. The move up/down actions are therefore now disabled for
-    the first and last element in a group respectively, and it is no
-    longer possible to choose a set operator (mode) for the first
+    activated even though they would have no impact on the image in
+    some contexts. The move up/down actions are therefore now disabled
+    for the first and last element in a group respectively, and it is
+    no longer possible to choose a set operator (mode) for the first
     element in a group.
-  
+
   - The sort order of the shapes in mask manager groups has been
     reversed so that the lowest ranking shape is at the bottom of the
     group. The sort order of shapes outside of a group has also been
     changed for consistency.
-  
+
   - It is now possible for all mask types to be added continuously in
     the mask manager.
 
-  - Fixed an issue where the brush was not properly displayed after being
-    created from the mask manager, and a crash when creating gradients from the
-    mask manager has also been fixed.
+  - Fixed an issue where the brush was not properly displayed after
+    being created from the mask manager, and a crash when creating
+    gradients from the mask manager has also been fixed.
 
-  - For all shapes the editable state is now properly set after creation
-     making it possible to move and resize the different parts of the shapes.
-  
+  - For all shapes the editable state is now properly set after
+    creation making it possible to move and resize the different parts
+    of the shapes.
+
   - Fixed a display issue when editing a shape name in the mask manager.
-  
+
   - Fixed the state of the set operators in the mask manager -- when
     moving a mask up/down we now ensure that the first mask has no
     operator and that the second one always has an operator assigned.
     If no operator has been set yet the default (union) operator is
     used.
-  
+
   - When using a shortcut to add shapes to a drawn (blending) mask the
     blending mode will automatically switch to "drawn mask" or "drawn &
     parametric mask", depending on what it was before, so that any newly
     created shape will actually affect the image.
-  
+
   - In the drawn mask blending mode there used to be an "invert mask"
     option that had the same functionality as the "toggle polarity" option.
     Since both were doing the same thing, "invert mask" is now removed.
-  
+
   - The drawing of masks has been reworked to ensure that all types of
     masks are drawn in the same way -- the central area, border, and
     highlighted segments are now displayed consistently. The highlighted
@@ -208,7 +210,7 @@ changes (where available).
   - In the style and copy/paste dialogs a new column has been added to
     show whether a module uses a mask (drawn/parametric/raster) using
     the standard mask icon.
-  
+
   - Editing of drawn masks has been improved -- it is now easier to
     select masks' control points and path segments (in some cases it was
     easy to accidentally select the whole path mask rather than a single
@@ -217,7 +219,7 @@ changes (where available).
 
   - The brush path is now slightly more transparent in order to better
     see the underlying image.
-  
+
 
 ## Performance Improvements
 
@@ -413,8 +415,8 @@ improvements and enhancements:
   using native libraries (if not supported by Exiv2) has been added.
 
 - Exif data is now written to the Exif PNG chunk when using an Exiv2
-  version newer than 0.27.x -- this is the new standard way to store Exif
-  data in PNG files.
+  version newer than 0.27.x -- this is the new standard way to store
+  Exif data in PNG files.
 
 - Masks are now exported as extra channels in EXR files.
 
@@ -467,7 +469,8 @@ improvements and enhancements:
   crop without focusing the module, these will still be implemented
   immediately.
 
-- Removed the commit button from the crop module as it was no longer used.
+- Removed the commit button from the crop module as it was no longer
+  used.
 
 - The height of resizeable module areas can now be changed by clicking
   and dragging the bottom of the resizeable area.  The previous method
@@ -598,8 +601,8 @@ improvements and enhancements:
   fails, the clarity and usability of the "further action"
   confirmation dialog is now improved.
 
-- It is now possible to see the current image's embedded ICC profile as a
-  tooltip in the input profile module.
+- It is now possible to see the current image's embedded ICC profile
+  as a tooltip in the input profile module.
 
 - A warning message is no longer shown when multiple color calibration
   module instances are used with masks. This approach is commonly used
@@ -639,8 +642,9 @@ improvements and enhancements:
 - Fixed calling darktable with `--threads n` so that it does
   not permit using more OMP threads than are available on the host.
 
-- The raw chromatic aberrations module has been amended to always use the
-  entire image, and so now works correctly at all darkroom zoom levels.
+- The raw chromatic aberrations module has been amended to always use
+  the entire image, and so now works correctly at all darkroom zoom
+  levels.
 
 - An issue with setting the active item in a combox having varying
   content using a shortcut (or lua's `dt.gui.action`) has been
@@ -684,8 +688,8 @@ improvements and enhancements:
   the PPG and VNG/VNG4 demosaicers, as well as the match greens and
   color smoothing options.
 
-- The (hidden) final scale module now properly uses the same user-defined
-  scaling mode for image and masks.
+- The (hidden) final scale module now properly uses the same
+  user-defined scaling mode for image and masks.
 
 - Fixed import of Nikon camera make and model Exif so that opening the
   image in the darkroom is no longer required, and import now also
@@ -698,8 +702,8 @@ improvements and enhancements:
 - Fixed to give priority to XWayland when using Wayland, since use of
   native Wayland is the cause of many issues in darktable.
 
-- When using the spot exposure mapping mode, properly reset the mode to
-  "correction" when changing image.
+- When using the spot exposure mapping mode, properly reset the mode
+  to "correction" when changing image.
 
 - Fixed a bug where the highlight reconstruction module could be
   enabled on images for which it cannot be used, such as JPEG files.
@@ -749,8 +753,8 @@ improvements and enhancements:
 - Collection sort names are now properly translated in the recent
   collection sort history pop-up.
 
-- Fixed dual demosaicing options for 4-color Bayer sensor cameras where
-  only VNG4 and PassThrough are supported.
+- Fixed dual demosaicing options for 4-color Bayer sensor cameras
+  where only VNG4 and PassThrough are supported.
 
 - Fixed to no longer truncate focal length on thumbnails to avoid loss
   of display precision.
@@ -847,14 +851,16 @@ improvements and enhancements:
   is focused or enabled. The advantage is that all fallbacks work as
   normal, so you can assign a midi knob to it and turning it (holding
   shift/ctrl to speed up/down) or pressing it to reset works
-  regardless of which widget receives it. Basically this is a much
-  more flexible alternative to the fake widgets under processing
-  modules.  This allows owners of, for example, an x-touch mini to use
-  their scarce rotors in different, fully configurable, ways while
-  working in different modules (which can also be focused using midi
-  buttons which will then light up). Such configurations could be
-  shared using https://github.com/darktable-org/lua-scripts. 
-  examples/x-touch.lua is a working demonstration that can be easily amended.
+  regardless of which widget receives it.
+
+  Basically this is a much more flexible alternative to the fake
+  widgets under processing modules.  This allows owners of, for
+  example, an x-touch mini to use their scarce rotors in different,
+  fully configurable, ways while working in different modules (which
+  can also be focused using midi buttons which will then light
+  up). Such configurations could be shared using
+  https://github.com/darktable-org/lua-scripts.  examples/x-touch.lua
+  is a working demonstration that can be easily amended.
 
 - Added support for shortcuts to sliders/combos created in lua, either
   via visual mapping mode or in the shortcuts dialog under the lua
@@ -862,15 +868,15 @@ improvements and enhancements:
 
 ### Other Lua changes
 
-- Added an `aspect_ratio` field to `dt_lua_image_t` for image orientation
-  retrieval support.
+- Added an `aspect_ratio` field to `dt_lua_image_t` for image
+  orientation retrieval support.
 
 - `dt_lua_image_t` now repects the "show time in milliseconds" setting
   in lighttable preferences and will return `exif_datetime_taken` with
   milliseconds when enabled.
 
-- Added `final_height`, `final_width`, `p_height`, and `p_width` fields to
-  `dt_lua_image_t`.
+- Added `final_height`, `final_width`, `p_height`, and `p_width`
+  fields to `dt_lua_image_t`.
 
 - Two new properties have been added to get the flags (category,
   private) and the synonyms from a tag.
