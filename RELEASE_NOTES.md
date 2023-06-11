@@ -388,8 +388,9 @@ improvements and enhancements:
   with that of the history module. At the same time the module's label
   is now shown in the list and is editable with <kbd>Ctrl+click</kbd>.
 
-- The following modules have been deprecated and will be removed in
-  a future version:
+- The following modules have been deprecated and will be removed for
+  selection in a future version (though they will continue to be
+  available for old edits):
 
   - levels (use rgb levels instead)
   - contrast brightness saturation (use color balance RGB instead)
