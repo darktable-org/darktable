@@ -854,11 +854,13 @@ improvements and enhancements:
   regardless of which widget receives it.
 
   Basically this is a much more flexible alternative to the fake
-  widgets under processing modules.  This allows owners of, for
-  example, an x-touch mini to use their scarce rotors in different,
-  fully configurable, ways while working in different modules (which
-  can also be focused using midi buttons which will then light
-  up). Such configurations could be shared using
+  widgets under `processing modules/<focused>`.  This allows owners
+  of, for example, an x-touch mini to use their scarce rotors in
+  different, fully configurable, ways while working in different
+  modules (which can also be focused using midi buttons which will
+  then light up).
+
+  Such configurations could be shared using
   https://github.com/darktable-org/lua-scripts.  examples/x-touch.lua
   is a working demonstration that can be easily amended.
 
