@@ -1103,9 +1103,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->exif_aperture = pos->toFloat();
     }
     else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue")
-            || FIND_EXIF_TAG("Exif.Image.ApertureValue")
-            || FIND_EXIF_TAG("Exif.Photo.MaxApertureValue")
-            || FIND_EXIF_TAG("Exif.Image.MaxApertureValue"))
+            || FIND_EXIF_TAG("Exif.Image.ApertureValue"))
     {
       img->exif_aperture = exp2f(pos->toFloat() / 2.0f); // convert from APEX value
     }
