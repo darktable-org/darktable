@@ -2428,19 +2428,21 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
       const float r = (float) i / (float) (nc - 1);
       knots_dist[i] = knots_vig[i] = r;
 
+      // Convert the polynomial to a spline by evaluating it at each knot
+      //
+      // The distortion polynomial maps a radius Rout in the output
+      // (undistorted) image, where the corner is defined as Rout=1, to a
+      // radius in the input (distorted) image, where the corner is defined as
+      // Rin=1.
+      // Rin = Rout*dk0 * (1 + dk2 * (Rout*dk0)^2 + dk4 * (Rout*dk0)^4 + dk6 * (Rout*dk0)^6)
+      //
+      // r_cor is Rin / Rout. Calculate it even if distortion correction is
+      // off, because it is also used for CA correction.
+      const float rs2 = powf(r * drs, 2);
+      const float r_cor = drs * (1 + rs2 * (dk2 + rs2 * (dk4 + rs2 * dk6)));
+
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
       {
-        // Convert the polynomial to a spline by evaluating it at each knot
-        //
-        // The distortion polynomial maps a radius Rout in the output
-        // (undistorted) image, where the corner is defined as Rout=drs, to a
-        // radius in the input (distorted) image, where the corner is defined as
-        // Rin=1.
-        // Rin = Rout * (1 + dk2 * Rout^2 + dk4 * Rout^4 + dk6 * Rout^6)
-        // Here we scale Rout by drs so that we can evaluate the spline with the
-        // corner of the output image defined as Rout=1 instead of Rout=drs.
-        const float rs = r * drs;
-        const float r_cor = drs * (1 + dk2 * powf(rs, 2) + dk4 * powf(rs, 4) + dk6 * powf(rs, 6));
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (p->cor_dist_ft * (r_cor - 1) + 1);
       }
       else if(cor_rgb)
@@ -2448,9 +2450,16 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
-        const float rd = cor_rgb[1][i];
-        cor_rgb[0][i] += p->cor_ca_r_ft * (car0 + car2 * powf(rd, 2) + car4 * powf(rd, 4));
-        cor_rgb[2][i] += p->cor_ca_b_ft * (cab0 + cab2 * powf(rd, 2) + cab4 * powf(rd, 4));
+        // Radius in the undistorted image of the current knot
+        const float rd = r_cor * r;
+        const float rd2 = powf(rd, 2);
+        // CA correction is applied as:
+        // Rin_with_CA = Rin * ((1 + car0) + car2 * Rin^2 + car4 * Rin^4)
+        if(r > 0) // Avoid divide by zero
+        {
+          cor_rgb[0][i] += p->cor_ca_r_ft * rd * (car0 + rd2 * (car2 + rd2 * car4)) / r;
+          cor_rgb[2][i] += p->cor_ca_b_ft * rd * (cab0 + rd2 * (cab2 + rd2 * cab4)) / r;
+        }
       }
 
       if(vig)
