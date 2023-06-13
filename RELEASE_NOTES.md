@@ -415,13 +415,13 @@ improvements and enhancements:
   using native libraries (if not supported by Exiv2) has been added.
 
 - Exif data is now written to the Exif PNG chunk when using an Exiv2
-  version newer than 0.27.x -- this is the new standard way to store
+  version 0.28.0 and newer -- this is the new standard way to store
   Exif data in PNG files.
 
 - Masks are now exported as extra channels in EXR files.
 
 - Loading of BigTIFF images is now re-enabled, and attempts to use
-  the native libtiff-based reader first.
+  the native LibTIFF-based reader first.
 
 - Export and thumbnail generation has been redesigned to remove some
   hacks that had accumulated and should result in a better export size.
@@ -926,11 +926,10 @@ improvements and enhancements:
 ### Missing Compression Mode Support
 
 - Apple ProRAW DNGs
-- Blackmagic lossless CinemaDNGs
+- CinemaDNG lossless (Blackmagic, DJI, etc.)
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - Samsung Expert RAW DNGs
-- Sony lossless ARWs
 
 ### New White Balance Presets
 
