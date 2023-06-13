@@ -106,6 +106,7 @@ typedef struct dt_lib_print_settings_t
   char *v_iccprofile, *v_piccprofile, *v_style;
   gboolean v_style_append, v_black_point_compensation;
   gboolean busy;
+  gboolean discovery_running;
 
   // for adding new area
   gboolean creation;
@@ -1382,6 +1383,19 @@ static GList* _get_profiles()
   }
 
   return g_list_reverse(list);  // list was built in reverse order, so un-reverse it
+}
+
+static gboolean _print_discovery_running(struct dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
+  return d->discovery_running;
+}
+
+static void _discovery_state_callback(gboolean running, void *user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)self->data;
+  d->discovery_running = running;
 }
 
 static void _new_printer_callback(dt_printer_info_t *printer,
@@ -2891,8 +2905,11 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(button, "print_settings_button");
 
   // Let's start the printer discovery now
-
-  dt_printers_discovery(_new_printer_callback, self);
+  d->discovery_running = TRUE;
+  darktable.lib->proxy.print_settings.module = self;
+  darktable.lib->proxy.print_settings.printer_discovery_running =
+    _print_discovery_running;
+  dt_printers_discovery(_new_printer_callback, _discovery_state_callback, self);
 }
 
 void *legacy_params(dt_lib_module_t *self,
