@@ -1037,7 +1037,7 @@ static void _dev_add_history_item_ext(
     }
   }
   if((module->enabled) && (!no_image))
-    module->iopcache_hint = TRUE;
+    module->write_input_hint = TRUE;
 }
 
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op)

@@ -411,7 +411,7 @@ gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
     g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
-  module->iopcache_hint = FALSE;
+  module->write_input_hint = FALSE;
 
   // only reference cached results of dlopen:
   module->module = so->module;
@@ -3530,10 +3530,7 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    // invalidate the pixelpipe cache except for the output of the prior module
-    const uint64_t hash =
-      dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
-    dt_dev_pixelpipe_cache_flush_all_but(dev->pipe, hash);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->pipe, module);
     //ensure that commit_params gets called to pick up any GUI changes
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate(dev);
@@ -3547,11 +3544,7 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    // invalidate the pixelpipe cache except for the output of the prior module
-    const uint64_t hash =
-      dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id,
-                                             dev->preview_pipe, module);
-    dt_dev_pixelpipe_cache_flush_all_but(dev->preview_pipe, hash);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->preview_pipe, module);
     //ensure that commit_params gets called to pick up any GUI changes
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
@@ -3565,11 +3558,7 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    // invalidate the pixelpipe cache except for the output of the prior module
-    const uint64_t hash =
-      dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id,
-                                             dev->preview2_pipe, module);
-    dt_dev_pixelpipe_cache_flush_all_but(dev->preview2_pipe, hash);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->preview2_pipe, module);
     //ensure that commit_params gets called to pick up any GUI changes
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
