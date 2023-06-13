@@ -502,10 +502,6 @@ improvements and enhancements:
   element, and hold/toggle via an effect. All mapped shortcuts are
   shown in the tooltip of the preview layout button.
 
-- Support has been added for the MaxApertureValue metadata, to
-  complement the already- supported ApertureValue. This is the only
-  metadata tag available in Leica M Monochrom, M8, M9 & M10 DNGs.
-
 - A full copy-and-paste is now always performed in overwrite mode
   (replacing the history of the target image), since append mode is
   often the less appropriate choice -- for example, for some modules
