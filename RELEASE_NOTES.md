@@ -24,9 +24,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 4.2:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
-- ?? issues closed
+- 2700 commits to darktable+rawspeed
+- 813 pull requests handled
+- 97 issues closed
 
 
 _Please note that the darktable documentation is not currently complete for release 4.4
@@ -922,6 +922,56 @@ improvements and enhancements:
 
 ### Base Support
 
+- Canon PowerShot SX10 IS (dng)
+- Canon PowerShot SX160 IS (dng)
+- Canon PowerShot SX20 IS (dng)
+- Canon PowerShot SX220 HS (dng)
+- Canon PowerShot SX230 HS (dng)
+- Canon PowerShot SX240 HS (dng)
+- Canon PowerShot SX30 IS (dng)
+- Canon PowerShot SX530 HS (dng)
+- Canon PowerShot SX710 HS (dng)
+- Fujifilm FinePix F550EXR
+- Fujifilm X-A7
+- Hasselblad X1D
+- Hasselblad X2D 100C
+- Leica M10 Monochrom (dng)
+- Leica M11 (dng)
+- Leica M11 Monochrom (dng)
+- Leica Q3 (dng)
+- Nikon Z 8 (14bit-compressed)
+- Panasonic DC-GH5M2 (4:3)
+- Panasonic DMC-FZ100 (1:1, 3:2, 16:9)
+- Panasonic DMC-GF8 (4:3, 1:1, 3:2, 16:9)
+- Phase One IQ180
+- Phase One P45
+- Sony ILME-FX30
+
+### White Balance Presets
+
+- Canon PowerShot SX160 IS
+- Fujifilm X-H1
+- Fujifilm X-H2S
+- Fujifilm X-T200
+- Nikon Z 6_2
+- OM System OM-1
+- Pentax K-1 Mark II
+- Ricoh GR IIIx
+- Sony DSC-RX100M7
+- Sony ILCE-7C
+- Sony ILME-FX30
+- Canon EOS R7
+- Canon EOS R10
+
+### Noise Profiles
+
+- Canon PowerShot SX160 IS
+- Nikon Z 6_2
+- Ricoh GR IIIx
+- Sony ILCE-6100
+- Sony ILCE-7M4
+- Sony ILCE-7RM5
+- Sony ZV-E10
 
 ### Missing Compression Mode Support
 
@@ -930,15 +980,6 @@ improvements and enhancements:
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - Samsung Expert RAW DNGs
-
-### New White Balance Presets
-
-- Canon EOS R7
-- Canon EOS R10
-
-### Noise Profiles
-
-   No data for this release.
 
 ### Suspended Support
 
