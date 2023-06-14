@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-14 03:20-0600\n"
+"PO-Revision-Date: 2023-06-14 03:56-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -13185,12 +13185,10 @@ msgid "aspect"
 msgstr "relación de aspecto"
 
 #: ../src/iop/borders.c:945
-#, fuzzy
-#| msgid "select the aspect ratio or right click and type your own (w:h)"
 msgid ""
 "select the aspect ratio (right click on slider below to type your own w:h)"
 msgstr ""
-"Elegir la proporción (a:l) o ingresarla manualmente con clic secundario."
+"Elegir la proporción o ingresarla manualmente con clic secundario (a:l)."
 
 #: ../src/iop/borders.c:948
 msgid "3:1"
@@ -15943,17 +15941,6 @@ msgstr ""
 "se ha utilizado con el modo de fusión de color."
 
 #: ../src/iop/denoiseprofile.c:3840
-#, fuzzy
-#| msgid ""
-#| "fix bugs in anscombe transform resulting\n"
-#| "in undersmoothing of the green channel in\n"
-#| "wavelets mode, combined with a bad handling\n"
-#| "of white balance coefficients, and a bug in\n"
-#| "non local means normalization resulting in\n"
-#| "undersmoothing when patch size was increased.\n"
-#| "enabling this option will change the denoising\n"
-#| "you get. once enabled, you won't be able to\n"
-#| "return back to old algorithm."
 msgid ""
 "fix bugs in Anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -16440,16 +16427,13 @@ msgid "dithering|posterization|reduce bit-depth"
 msgstr "tramado|posterización|reducir profundidad de bit"
 
 #: ../src/iop/dither.c:117
-#, fuzzy
-#| msgid ""
-#| "reduce banding and posterization effects in output JPEGs by adding random "
-#| "noise"
 msgid ""
 "reduce banding and posterization effects in output\n"
 "JPEGs by adding random noise, or reduce bit depth"
 msgstr ""
-"Añade cierto nivel de ruido aleatorio para prevenir bandas y efectos de "
-"posterización indeseados al exportar en formato JPEG"
+"Añade cierto nivel de ruido aleatorio para prevenir bandas y\n"
+"efectos de posterización indeseados al exportar en formato JPEG o reducir la "
+"profundidad de bits."
 
 #: ../src/iop/dither.c:119
 msgid "corrective, artistic"
@@ -16578,13 +16562,6 @@ msgid "spot exposure mapping"
 msgstr "mapeo de la exposición puntual"
 
 #: ../src/iop/exposure.c:1180
-#, fuzzy
-#| msgid ""
-#| "define a target brightness, in terms of exposure, for a selected region "
-#| "of the image (the control sample), which you then match against the same "
-#| "target brightness in other images. the control sample can either be a "
-#| "critical part of your subject or a non-moving and consistently-lit "
-#| "surface over your series of images."
 msgid ""
 "define a target brightness, in terms of exposure,\n"
 "for a selected region of the image (the control sample),\n"
@@ -16593,20 +16570,16 @@ msgid ""
 "be a critical part of your subject or a non-moving and\n"
 "consistently-lit surface over your series of images."
 msgstr ""
-"Determina el brillo de destino, en términos de exposición, para una región "
-"seleccionada de la imagen (muestra de control), que posteriormente comparará "
-"con el mismo brillo de destino en otras imágenes. La muestra de control "
-"puede ser una parte esencial del motivo principal o bien, de una superficie "
-"fija con iluminación constante a lo largo de la serie de imágenes."
+"Determina el brillo de destino, en términos de exposición,\n"
+"para una región seleccionada de la imagen (muestra de control),\n"
+"que posteriormente comparará con el mismo brillo de destino en otras "
+"imágenes.\n"
+"La muestra de control puede ser una parte esencial del motivo principal o "
+"bien,\n"
+"de una superficie fija con iluminación constante a lo largo de la serie de "
+"imágenes."
 
 #: ../src/iop/exposure.c:1189
-#, fuzzy
-#| msgid ""
-#| "\"correction\" automatically adjust exposure\n"
-#| "such that the input lightness is mapped to the target.\n"
-#| "\"measure\" simply shows how an input color is mapped by the exposure "
-#| "compensation\n"
-#| "and can be used to define a target."
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -17871,11 +17844,6 @@ msgid "camera/lens not found"
 msgstr "Cámara u objetivo no encontrado."
 
 #: ../src/iop/lens.cc:3646
-#, fuzzy
-#| msgid ""
-#| "please select your lens manually\n"
-#| "you might also want to check if your lensfun database is up-to-date\n"
-#| "by running lensfun_update_data"
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your Lensfun database is up-to-date\n"
@@ -18042,45 +18010,34 @@ msgid "click to edit nodes"
 msgstr "Pulsar para editar nodos"
 
 #: ../src/iop/liquify.c:3636
-#, fuzzy
-#| msgid ""
-#| "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-#| "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
-#| "ctrl+scroll (%d%%)"
 msgid ""
 "<b>add point</b>: click and drag\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: ctrl"
 "+scroll"
 msgstr ""
-"<b>Modo de difuminado</b>: Mayús+Clic, <b>Rotación</b>: Ctrl+Arrastre\n"
+"<b>Añadir nodo</b>: Ctrl+Arrastre\n"
 "<b>Tamaño</b>: Desplazamiento, <b>Difuminado</b>: Mayús+Desplazamiento, "
-"<b>Opacidad</b>: Ctrl+Desplazamiento (%d%%)"
+"<b>Dirección</b>: Ctrl+Desplazamiento"
 
 #: ../src/iop/liquify.c:3639
-#, fuzzy
-#| msgid ""
-#| "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgid ""
 "<b>add line</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: ctrl"
 "+scroll"
 msgstr ""
-"<b>Dureza</b>: Rueda del Ratón <b>Tamaño</b>: Mayús+Rueda del Ratón\n"
-"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+"<b>Añadir línea</b>: Pulsado\n"
+"<b>Tamaño</b>: Rueda del Ratón, <b>Opacidad</b>: Mayús+Rueda del Ratón, "
+"<b>Dirección</b>: Ctrl+Rueda del Ratón"
 
 #: ../src/iop/liquify.c:3642
-#, fuzzy
-#| msgid ""
-#| "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
-#| "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgid ""
 "<b>add curve</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: ctrl"
 "+scroll"
 msgstr ""
-"<b>Tamaño</b>: Rueda del Ratón, <b>Dureza</b>: Mayús+Rueda del Ratón\n"
-"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+"<b>Añadir curva</b>: Pulsado\n"
+"<b>Tamaño</b>: Rueda del Ratón, <b>Opacidad</b>: Mayús+Rueda del Ratón, "
+"<b>Dirección</b>: Ctrl+Rueda del Ratón"
 
 #: ../src/iop/liquify.c:3693
 msgid ""
@@ -18132,30 +18089,23 @@ msgid "draw multiple points"
 msgstr "Marcar varios puntos"
 
 #: ../src/iop/liquify.c:3729
-#, fuzzy
-#| msgid ""
-#| "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
-#| "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
-"<b>Mover nodo</b>: Arrastrar, <b>Eliminar nodo</b>: Clic secundario\n"
-"<b>Alternar modo (romo/angulado) </b>: Ctrl+Clic"
+"<b>Añadir nodo</b>: Ctrl+Clic, <b>Eliminar ruta</b>: Clic secundario\n"
+"<b>Alternar modo (línea/curva) </b>: Ctrl+Alt+Clic"
 
 #: ../src/iop/liquify.c:3732
-#, fuzzy
-#| msgid ""
-#| "click and drag to move - click: show/hide feathering controls\n"
-#| "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgid ""
 "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
 "right click"
 msgstr ""
-"Clic+Arrastre para mover. Pulsado: mostrar u ocultar control de difuminado\n"
-"Ctrl+Clic: suavizado automático, cúspide, suavizado, simétrico. Clic "
-"secundario para eliminar"
+"<b>Mover</b>: Clic+Arrastre, <b>Mostrar u ocultar control de difuminado</b>: "
+"Pulsado\n"
+"<b>Suavizado automático, cúspide, suavizado, simétrico</b>: Ctrl+Clic, "
+"<b>Eliminar</b>: Clic secundario"
 
 #: ../src/iop/liquify.c:3736 ../src/iop/liquify.c:3738
 msgid "<b>shape of path</b>: drag"
@@ -22059,46 +22009,32 @@ msgid "scopes"
 msgstr "monitor de gráficos"
 
 #: ../src/libs/histogram.c:1542
-#, fuzzy
-#| msgid "ctrl+click to rotate"
 msgid "scroll to coarse-rotate"
-msgstr "Ctrl+Clic para rotar"
+msgstr "Desplazamiento para rotación rápida"
 
 #: ../src/libs/histogram.c:1543
-#, fuzzy
-#| msgid "ctrl+click to rotate"
 msgid "ctrl+scroll to fine rotate"
-msgstr "Ctrl+Clic para rotar"
+msgstr "Ctrl+Desplazamiento para rotar con precisión"
 
 #: ../src/libs/histogram.c:1544
-#, fuzzy
-#| msgid "ctrl+scroll to change display height"
 msgid "shift+scroll to change width"
-msgstr "Para cambiar la altura del visor: Ctrl+Desplazamiento"
+msgstr "Para cambiar la anchura del visor: Mayús+Desplazamiento"
 
 #: ../src/libs/histogram.c:1545
-#, fuzzy
-#| msgid "scroll the collection"
 msgid "alt+scroll to cycle"
-msgstr "navegar por la colección"
+msgstr "Cambiar cíclicamente: Alt+Desplazamiento"
 
 #: ../src/libs/histogram.c:1556
-#, fuzzy
-#| msgid "drag to change shape of path"
 msgid "drag to change black point"
-msgstr "Arrastrar para cambiar la figura de la ruta"
+msgstr "Arrastrar para cambiar el punto negro"
 
 #: ../src/libs/histogram.c:1557 ../src/libs/histogram.c:1564
-#, fuzzy
-#| msgid "double-click to reset"
 msgid "double-click resets"
 msgstr "Pulsación doble para reiniciar"
 
 #: ../src/libs/histogram.c:1563
-#, fuzzy
-#| msgid "drag to change shape of path"
 msgid "drag to change exposure"
-msgstr "Arrastrar para cambiar la figura de la ruta"
+msgstr "Arrastrar para cambiar la exposición"
 
 #: ../src/libs/histogram.c:1725 ../src/libs/histogram.c:1765
 msgid "set scale to linear"
@@ -22137,56 +22073,37 @@ msgid "hide histogram"
 msgstr "ocultar histograma"
 
 #: ../src/libs/histogram.c:2372 ../src/libs/histogram.c:2401
-#, fuzzy
-#| msgid "switch histogram mode"
 msgid "switch histogram view"
 msgstr "cambiar modo de histograma"
 
 #: ../src/libs/histogram.c:2379
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle left panel"
 msgid "toggle blue channel"
-msgstr "activar panel izquierdo"
+msgstr "alternar canal azul"
 
 #: ../src/libs/histogram.c:2381 ../src/libs/histogram.c:2389
 #: ../src/libs/histogram.c:2397
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle sort"
 msgid "toggle colors"
-msgstr "cambiar orden de elementos"
+msgstr "alternar colores"
 
 #: ../src/libs/histogram.c:2387
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "RGB green channel"
 msgid "toggle green channel"
-msgstr "canal verde RGB"
+msgstr "alternar canal verde"
 
 #: ../src/libs/histogram.c:2395
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle left panel"
 msgid "toggle red channel"
-msgstr "activar panel izquierdo"
+msgstr "alternar canal rojo"
 
 #: ../src/libs/histogram.c:2405
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "vectorscope"
 msgid "cycle vectorscope types"
-msgstr "vectorscopio"
+msgstr "cambiar vistas del vectorscopio"
 
 #: ../src/libs/histogram.c:2413
 msgid "color harmonies"
 msgstr "armonías de color"
 
 #: ../src/libs/histogram.c:2425
-#, fuzzy
-#| msgid "click to cycle color mode on sliders"
 msgid "cycle color harmonies"
-msgstr "Pulse para alternar los modos de color de los controles deslizantes"
+msgstr "alternar armonías de color"
 
 #: ../src/libs/history.c:127
 msgid "compress history stack"
@@ -22971,10 +22888,8 @@ msgid "mode: difference"
 msgstr "modo: diferencia"
 
 #: ../src/libs/masks.c:1139
-#, fuzzy
-#| msgid "modes"
 msgid "mode: sum"
-msgstr "modos"
+msgstr "modo: suma"
 
 #: ../src/libs/masks.c:1145
 msgid "mode: exclusion"
@@ -22998,10 +22913,8 @@ msgid "no shapes selected"
 msgstr "No hay figuras seleccionadas"
 
 #: ../src/libs/masks.c:1940
-#, fuzzy
-#| msgid "press"
 msgid "pressure"
-msgstr "Pulsación"
+msgstr "presión"
 
 #: ../src/libs/masks.c:1941
 #, fuzzy
@@ -23729,10 +23642,8 @@ msgid "hide navigation thumbnail"
 msgstr "ocultar navegación de miniaturas"
 
 #: ../src/libs/navigation.c:187
-#, fuzzy
-#| msgid "target level"
 msgid "image zoom level"
-msgstr "nivel de objetivo"
+msgstr "nivel de zoom de la imagen"
 
 #: ../src/libs/navigation.c:192
 msgid "50%"
@@ -23784,10 +23695,8 @@ msgid "cannot apply printer profile `%s'"
 msgstr "No se puede establecer el perfil de la impresora «%s»"
 
 #: ../src/libs/print_settings.c:574
-#, fuzzy
-#| msgid "failed to create temporary pdf for printing"
 msgid "failed to create temporary PDF for printing"
-msgstr "Hubo un fallo al crear el archivo temporal pdf para imprimir"
+msgstr "Hubo un fallo al crear el archivo temporal PDF para imprimir"
 
 #: ../src/libs/print_settings.c:620
 msgid "maximum image per page reached"
@@ -23835,10 +23744,8 @@ msgid "color management in printer driver"
 msgstr "gestión de color en el controlador de la impresora"
 
 #: ../src/libs/print_settings.c:2463
-#, fuzzy
-#| msgid "printer ICC profiles in %s or %s"
 msgid "printer ICC profiles"
-msgstr "Perfiles ICC de la impresora en %s o %s"
+msgstr "Perfiles ICC de la impresora"
 
 #: ../src/libs/print_settings.c:2484
 msgid "black point compensation"
@@ -24382,13 +24289,6 @@ msgid "drop to root"
 msgstr "volver a la raíz"
 
 #: ../src/libs/tagging.c:3100
-#, fuzzy
-#| msgid ""
-#| "attached tags,\n"
-#| "press Delete or double-click to detach\n"
-#| "right-click for other actions on attached tag,\n"
-#| "press Tab to give the focus to entry,\n"
-#| "ctrl+scroll to resize the window"
 msgid ""
 "attached tags\n"
 "press Delete or double-click to detach\n"
@@ -24398,8 +24298,7 @@ msgstr ""
 "Etiquetas adjuntas. \n"
 "Para disociarlas, pulse dos veces o la tecla Supr.\n"
 "Pulse clic secundario para mostrar más opciones.\n"
-"Pulse Tab para tener el foco en el campo para el ingreso de texto.\n"
-"Use Ctrl+Desplazamiento para cambiar el tamaño de la ventana."
+"Pulse Tab para tener el foco en el campo para el ingreso de texto."
 
 #: ../src/libs/tagging.c:3111
 msgid "attach"
@@ -24459,15 +24358,6 @@ msgid "clear entry"
 msgstr "Borrar texto"
 
 #: ../src/libs/tagging.c:3213
-#, fuzzy
-#| msgid ""
-#| "tag dictionary,\n"
-#| "press Enter or double-click to attach selected tag on selected images,\n"
-#| "idem for shift+Enter plus gives the focus to entry,\n"
-#| "shift+click to fully expand the selected tag,\n"
-#| "right-click for other actions on selected tag,\n"
-#| "press shift+Tab to give the focus to entry,\n"
-#| "ctrl+scroll to resize the window"
 msgid ""
 "tag dictionary,\n"
 "Enter or double-click to attach selected tag on selected images\n"
@@ -24485,8 +24375,7 @@ msgstr ""
 "Pulse el botón secundario del ratón en la etiqueta seleccionada para elegir "
 "otras acciones disponibles.\n"
 "Pulse Mayús+Tab para tener el foco para el ingreso de texto en el campo "
-"correspondiente,\n"
-"Use Ctrl+Desplazamiento para cambiar el tamaño de la ventana."
+"correspondiente."
 
 #: ../src/libs/tagging.c:3248
 msgid ""
@@ -24953,10 +24842,10 @@ msgid "switching encoding to relative (down = %d)"
 msgstr "Cambiando la codificación a relativa (bloqueados = %d)"
 
 #: ../src/libs/tools/midi.c:558
-#, fuzzy, c-format
+#, c-format
 #| msgid "send as email"
 msgid "%s opened as midi%d"
-msgstr "enviar como correo electrónico"
+msgstr "%s abierto como MIDI %d"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -25054,10 +24943,10 @@ msgid "no image to open!"
 msgstr "No hay ninguna imagen para abrir"
 
 #: ../src/views/darkroom.c:1331
-#, fuzzy
-#| msgid "no userdefined presets for favorite modules were found"
 msgid "no user-defined presets for favorite modules were found"
-msgstr "Los módulos favoritos no tienen ajustes predefinidos por el usuario"
+msgstr ""
+"No se han encontrado preajustes definidos por el usuario para los módulos "
+"favoritos"
 
 #: ../src/views/darkroom.c:1476
 msgid "no styles have been created yet"
@@ -25068,10 +24957,8 @@ msgid "quick access to presets"
 msgstr "Acceso rápido a los preajustes"
 
 #: ../src/views/darkroom.c:2340
-#, fuzzy
-#| msgid "quick access to presets"
 msgid "quick access to styles"
-msgstr "Acceso rápido a los preajustes"
+msgstr "Acceso rápido a los estilos"
 
 #: ../src/views/darkroom.c:2342
 msgid "quick access for applying any of your styles"
@@ -25290,22 +25177,16 @@ msgid "histogram profile"
 msgstr "perfil del histograma"
 
 #: ../src/views/darkroom.c:2605 ../src/views/lighttable.c:1225
-#, fuzzy
-#| msgid "display profile"
 msgid "display ICC profiles"
-msgstr "perfil (pantalla)"
+msgstr "perfiles ICC de la pantalla"
 
 #: ../src/views/darkroom.c:2609 ../src/views/lighttable.c:1229
-#, fuzzy
-#| msgid "preview display profile"
 msgid "preview display ICC profiles"
-msgstr "vista previa del perfil (pantalla)"
+msgstr "vista previa del perfil ICC de la pantalla"
 
 #: ../src/views/darkroom.c:2613
-#, fuzzy
-#| msgid "softproof profile"
 msgid "softproof ICC profiles"
-msgstr "perfil (impresión)"
+msgstr "prueba de perfiles ICC"
 
 #: ../src/views/darkroom.c:2617
 msgid "histogram and color picker ICC profiles"
@@ -25326,10 +25207,8 @@ msgstr "vista previa completa"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
 #: ../src/views/darkroom.c:2672
-#, fuzzy
-#| msgid "force pan & zoom with mouse"
 msgid "force pan/zoom/rotate with mouse"
-msgstr "forzar alejar o acercar con el ratón"
+msgstr "forzar alejar/acercar/rotar con el ratón"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:2684
@@ -25462,10 +25341,8 @@ msgstr "buen caballero"
 
 #. Show infos key
 #: ../src/views/lighttable.c:656 ../src/views/lighttable.c:1266
-#, fuzzy
-#| msgid "show guides"
 msgid "show infos"
-msgstr "mostrar retícula"
+msgstr "mostrar información"
 
 #: ../src/views/lighttable.c:759
 msgid "middle"
