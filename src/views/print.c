@@ -346,16 +346,6 @@ gboolean try_enter(dt_view_t *self)
 {
   dt_print_t *prt = (dt_print_t*)self->data;
 
-  // if discovery job is still running and populating the comboboxes,
-  // weird things can happen including mis-initialized GUI or even a
-  // crash in drawing a widget
-  if(darktable.lib->proxy.print_settings.printer_discovery_running(darktable.lib->proxy.print_settings.module))
-  {
-    // FIXME: a less modal possibility would be to hide relevant print settings widgets until they are populated
-    dt_control_log(_("scanning printers, please try again to enter print view in a few moments"));
-    return TRUE;
-  }
-
   //  now check that there is at least one selected image
 
   const dt_imgid_t imgid = dt_act_on_get_main_image();

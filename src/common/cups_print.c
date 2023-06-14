@@ -55,24 +55,6 @@ extern void cupsFreeDestInfo() __attribute__((weak_import));
 // this stage, so instead of breaking the compilation on platforms using
 // recent CUPS version we kill the warning.
 
-typedef struct dt_prtctl_t
-{
-  void (*cb_exec)(dt_printer_info_t *, void *);
-  void (*cb_state)(gboolean running, void *user_data);
-  void *user_data;
-} dt_prtctl_t;
-
-static void _state_changed_callback(dt_job_t *job, dt_job_state_t state)
-{
-  const dt_prtctl_t *const pctl = dt_control_job_get_params(job);
-  if(pctl->cb_state)
-  {
-    const gboolean running =
-      (state == DT_JOB_STATE_RUNNING || state == DT_JOB_STATE_QUEUED);
-    pctl->cb_state(running, pctl->user_data);
-  }
-}
-
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo)
 {
@@ -159,17 +141,17 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
 
 static int _dest_cb(void *user_data, unsigned flags, cups_dest_t *dest)
 {
-  const dt_prtctl_t *pctl = (dt_prtctl_t *)user_data;
   const char *psvalue = cupsGetOption("printer-state", dest->num_options, dest->options);
 
   // check that the printer is ready
   if(psvalue!=NULL && strtol(psvalue, NULL, 10) < IPP_PRINTER_STOPPED)
   {
-    dt_printer_info_t pr;
-    memset(&pr, 0, sizeof(pr));
-    dt_get_printer_info(dest->name, &pr);
-    if(pctl->cb_exec) pctl->cb_exec(&pr, pctl->user_data);
+    // printer info is passed to callback which will free its memory
+    dt_printer_info_t *pr = g_malloc0(sizeof(dt_printer_info_t));
+    dt_get_printer_info(dest->name, pr);
     dt_print(DT_DEBUG_PRINT, "[print] new printer %s found\n", dest->name);
+    if(user_data)
+      ((dt_prtctl_cb_t)user_data)(pr);
   }
   else
     dt_print(DT_DEBUG_PRINT, "[print] skip printer %s as stopped\n", dest->name);
@@ -181,13 +163,13 @@ static int _cancel = 0;
 
 static int _detect_printers_callback(dt_job_t *job)
 {
-  dt_prtctl_t *pctl = dt_control_job_get_params(job);
+  dt_prtctl_cb_t pctl_cb = dt_control_job_get_params(job);
   int res;
 #if((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 6)) || CUPS_VERSION_MAJOR > 1
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
   if(&cupsEnumDests != NULL)
 #endif
-    res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, pctl);
+    res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, pctl_cb);
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
   else
 #endif
@@ -198,7 +180,7 @@ static int _detect_printers_callback(dt_job_t *job)
     const int num_dests = cupsGetDests(&dests);
     for(int k=0; k<num_dests; k++)
     {
-      _dest_cb((void *)pctl, 0, &dests[k]);
+      _dest_cb((void *)pctl_cb, 0, &dests[k]);
     }
     cupsFreeDests(num_dests, dests);
     res=1;
@@ -212,22 +194,13 @@ void dt_printers_abort_discovery(void)
   _cancel = 1;
 }
 
-void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data),
-                           void (*cb_state)(gboolean running, void *user_data),
-                           void *user_data)
+void dt_printers_discovery(dt_prtctl_cb_t cb)
 {
   // asynchronously checks for available printers
   dt_job_t *job = dt_control_job_create(&_detect_printers_callback, "detect connected printers");
   if(job)
   {
-    dt_prtctl_t *prtctl = g_malloc0(sizeof(dt_prtctl_t));
-
-    prtctl->cb_exec = cb;
-    prtctl->cb_state = cb_state;
-    prtctl->user_data = user_data;
-
-    dt_control_job_set_params(job, prtctl, g_free);
-    dt_control_job_set_state_callback(job, &_state_changed_callback);
+    dt_control_job_set_params(job, cb, NULL);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
   }
 }

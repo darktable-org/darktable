@@ -31,6 +31,7 @@
 #include "common/tags.h"
 #include "common/variables.h"
 #include "control/jobs.h"
+#include "control/signal.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
@@ -106,7 +107,6 @@ typedef struct dt_lib_print_settings_t
   char *v_iccprofile, *v_piccprofile, *v_style;
   gboolean v_style_append, v_black_point_compensation;
   gboolean busy;
-  gboolean discovery_running;
 
   // for adding new area
   gboolean creation;
@@ -1385,24 +1385,11 @@ static GList* _get_profiles()
   return g_list_reverse(list);  // list was built in reverse order, so un-reverse it
 }
 
-static gboolean _print_discovery_running(struct dt_lib_module_t *self)
-{
-  dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
-  return d->discovery_running;
-}
-
-static void _discovery_state_callback(gboolean running, void *user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)self->data;
-  d->discovery_running = running;
-}
-
-static void _new_printer_callback(dt_printer_info_t *printer,
-                                  void *user_data)
+static void _lib_print_settings_printer_discovered(gpointer instance,
+                                                   dt_printer_info_t *printer,
+                                                   dt_lib_module_t *self)
 {
   static int count = 0;
-  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   const dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)self->data;
 
   char *default_printer = dt_conf_get_string("plugins/print/print/printer");
@@ -1419,9 +1406,19 @@ static void _new_printer_callback(dt_printer_info_t *printer,
   }
   count++;
   g_free(default_printer);
+  // printer info was allocated in the thread which detects printers
+  g_free(printer);
 
   g_signal_handlers_unblock_by_func(G_OBJECT(d->printers),
                                     G_CALLBACK(_printer_changed), NULL);
+}
+
+static void _new_printer_callback(dt_printer_info_t *printer)
+{
+  // this is called from a non-GUI thread, but raising a signal will
+  // throw this back to the GUI thread to add to the panel widgets
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRINTER_DISCOVERED,
+                                printer);
 }
 
 void view_enter(struct dt_lib_module_t *self,
@@ -2905,11 +2902,10 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(button, "print_settings_button");
 
   // Let's start the printer discovery now
-  d->discovery_running = TRUE;
-  darktable.lib->proxy.print_settings.module = self;
-  darktable.lib->proxy.print_settings.printer_discovery_running =
-    _print_discovery_running;
-  dt_printers_discovery(_new_printer_callback, _discovery_state_callback, self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PRINTER_DISCOVERED,
+                                  G_CALLBACK(_lib_print_settings_printer_discovered),
+                                  (gpointer)self);
+  dt_printers_discovery(_new_printer_callback);
 }
 
 void *legacy_params(dt_lib_module_t *self,
@@ -3393,6 +3389,10 @@ void *get_params(dt_lib_module_t *self, int *size)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_lib_print_settings_printer_discovered),
+                                     self);
 
   // these can be called on shutdown, resulting in null-pointer
   // dereference and division by zero -- not sure what interaction

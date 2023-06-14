@@ -83,16 +83,6 @@ typedef struct dt_lib_t
       gboolean is_linear;
     } histogram;
 
-#ifdef HAVE_PRINT
-    /** Print settings processing hooks */
-    struct
-    {
-      // FIXME: if do printer discovery work in main print view, maybe this isn't necessary
-      struct dt_lib_module_t *module;
-      gboolean (*printer_discovery_running)(struct dt_lib_module_t *self);
-    } print_settings;
-#endif
-
     struct
     {
       struct dt_lib_module_t *module;
