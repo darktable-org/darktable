@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-13 22:35-0600\n"
+"PO-Revision-Date: 2023-06-14 00:50-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1156,7 +1156,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4476
 msgid "middle mouse button zooms to 200%"
-msgstr ""
+msgstr "Ampliar 200% con el botón medio del ratón"
 
 #: ../build/bin/preferences_gen.h:4491
 #, no-c-format
@@ -1165,6 +1165,10 @@ msgid ""
 "on middle mouse clicks. if disabled, it will toggle between viewport size "
 "and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
+"Al estar activado, el nivel de ampliación cambiará cíclicamente entre 100%, "
+"200% y ajuste de imagen a la ventana. Si se desactiva, se alternará entre la "
+"ampliación actual y el 100%. Además, cualquier otro nivel de ampliación se "
+"podrá realizar con la tecla \"Ctrl\"."
 
 #: ../build/bin/preferences_gen.h:4513
 msgid "pattern for the image information line"
@@ -1368,6 +1372,9 @@ msgid ""
 "if enabled, the module name will be automatically updated to match a preset "
 "name or a preset instance name if present."
 msgstr ""
+"Si se activa, el nombre del módulo se actualizará automáticamente para que "
+"coincida con un nombre de preajuste o un nombre de preajuste duplicado si "
+"existe."
 
 #: ../build/bin/preferences_gen.h:5317
 msgid "image processing"
@@ -3760,31 +3767,31 @@ msgstr "Floyd-Steinberg automático"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:200
 msgid "posterize 2 levels per channel"
-msgstr ""
+msgstr "posterizar 2 niveles por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:201
 msgid "posterize 3 levels per channel"
-msgstr ""
+msgstr "posterizar 3 niveles por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:202
 msgid "posterize 4 levels per channel"
-msgstr ""
+msgstr "posterizar 4 niveles por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:203
 msgid "posterize 5 levels per channel"
-msgstr ""
+msgstr "posterizar 5 niveles por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:204
 msgid "posterize 6 levels per channel"
-msgstr ""
+msgstr "posterizar 6 niveles por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:205
 msgid "posterize 7 levels per channel"
-msgstr ""
+msgstr "posterizar 7 niveles por canal"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:206
 msgid "posterize 8 levels per channel"
-msgstr ""
+msgstr "posterizar 8 niveles por canal"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:79
 #: ../build/lib/darktable/plugins/introspection_exposure.c:146
@@ -6095,12 +6102,16 @@ msgstr "Todos se pueden ajustar como antes, excepto por \"magic\""
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
+"Los valores del compilador OpenCL para todos los dispositivos han sido "
+"reestablecidos."
 
 #: ../src/common/darktable.c:2008
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
 msgstr ""
+"Los datos de los parámetros de configuración general de OpenCL «por "
+"dispositivo» se han recreado con un nombre actualizado."
 
 #: ../src/common/darktable.c:2010
 #, fuzzy
@@ -6118,6 +6129,8 @@ msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
 msgstr ""
+"Si se usan nombres de dispositivos en «opencl_device_priority» deberían ser "
+"actualizados con los nuevos nombres."
 
 #: ../src/common/database.c:2756
 #, c-format
@@ -6623,7 +6636,7 @@ msgstr "JPEG XL"
 
 #: ../src/common/image.h:226
 msgid "QOI"
-msgstr ""
+msgstr "QOI"
 
 #: ../src/common/imagebuf.c:132
 msgid "insufficient memory"
@@ -6675,6 +6688,10 @@ msgid ""
 "or, if this directory does not exist, from\n"
 "<b>%s</b>"
 msgstr ""
+"darktable estará cargando %s desde\n"
+"<b>%s</b>, \n"
+"o si este directorio no existe, entonces cargará desde\n"
+"<b>%s</b>"
 
 #. clang-format off
 #: ../src/common/metadata.c:46
@@ -8658,6 +8675,7 @@ msgstr "%s: módulo «%s» versión incoincidente: %d != %d"
 #: ../src/develop/develop.c:2834
 msgid "module duplicate, can't move new instance after the base one\n"
 msgstr ""
+"Módulo duplicado: no es posible mover el duplicado después del módulo base.\n"
 
 #: ../src/develop/imageop.c:1031
 msgid "new instance"
@@ -9968,7 +9986,7 @@ msgstr "Clic Secundario"
 
 #: ../src/gui/accelerators.c:1112
 msgid "to copy Lua command"
-msgstr ""
+msgstr "para copiar un comando Lua"
 
 #: ../src/gui/accelerators.c:1344
 msgid "shortcut for move exists with single effect"
@@ -11052,7 +11070,7 @@ msgstr "Pulsar para guardar y aplicar los cambios CSS hechos en el editor"
 
 #: ../src/gui/preferences.c:422
 msgid "open help page for CSS tweaks"
-msgstr ""
+msgstr "Abrir la página de ayuda para los ajustes CSS"
 
 #. load default text with some pointers
 #: ../src/gui/preferences.c:443
@@ -11250,6 +11268,8 @@ msgid ""
 "the parameters will be reset to their default values, which may be "
 "automatically set based on image metadata"
 msgstr ""
+"Los parámetros se restablecerán a sus valores iniciales, que pueden fijarse "
+"automáticamente en función de los metadatos de la imagen."
 
 #: ../src/gui/presets.c:607
 msgid "auto apply this preset to matching images"
@@ -12418,7 +12438,7 @@ msgstr "Sólo %d líneas se pueden conservar en los parámetros."
 #: ../src/iop/ashift.c:5201
 #, c-format
 msgid "rotation adjusted by %3.1f° to %3.1f°"
-msgstr ""
+msgstr "Ajuste de la rotación de %3.1f° a %3.1f°"
 
 #: ../src/iop/ashift.c:5852 ../src/iop/ashift.c:5854 ../src/iop/ashift.c:5959
 #: ../src/iop/ashift.c:5961
@@ -14646,7 +14666,7 @@ msgstr ""
 
 #: ../src/iop/colorbalance.c:160
 msgid "shift colors selectively by luminance range"
-msgstr ""
+msgstr "desplazar colores selectivamente por rango de luminancia"
 
 #: ../src/iop/colorbalance.c:164
 msgid "non-linear, Lab, scene-referred"
