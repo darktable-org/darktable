@@ -8,15 +8,16 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-21 20:30+0200\n"
-"PO-Revision-Date: 2023-06-12 23:14+0200\n"
-"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
+"PO-Revision-Date: 2023-06-15 00:02+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 21.12.3\n"
+"X-Generator: Lokalize 22.12.3\n"
 
 #: ../build/bin/conf_gen.h:172 ../build/bin/preferences_gen.h:7632
 msgctxt "preferences"
@@ -681,10 +682,9 @@ msgid "complementary"
 msgstr "Complementare"
 
 #: ../build/bin/conf_gen.h:2795
-#, fuzzy
 msgctxt "preferences"
 msgid "split complementary"
-msgstr "Complementare diviso"
+msgstr "Separazione complementare"
 
 #: ../build/bin/conf_gen.h:2796
 msgctxt "preferences"
@@ -1431,7 +1431,6 @@ msgstr ""
 "Applica automaticamente i valori predefiniti per il flusso di lavoro sui pixel"
 
 #: ../build/bin/preferences_gen.h:5599
-#, fuzzy
 msgid ""
 "scene-referred workflow is based on linear modules and will auto-apply "
 "filmic or sigmoid, color calibration and exposure,\n"
@@ -1441,8 +1440,8 @@ msgstr ""
 "Il workflow riferito alla scena è basato su moduli lineari e applicherà"
 "automaticamente filmic o sigmoid, calibrazione colore e esposizione,\n"
 "il worflow riferito allo schermo è basato sui moduli Lab e applicherà "
-"automaticamente curva base, bilanciamento del bianco e l'ordine legacy "
-"della coda moduli."
+"automaticamente curva base, bilanciamento del bianco e l'ordine della "
+"coda di sviluppo dei moduli legacy."
 
 #: ../build/bin/preferences_gen.h:5621
 msgid "auto-apply per camera basecurve presets"
@@ -1995,13 +1994,17 @@ msgid "order or exclude MIDI devices"
 msgstr "Ordina o escludi dispositivi MIDI"
 
 #: ../build/bin/preferences_gen.h:7396
-#, fuzzy
 msgid ""
 "comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list\n"
 "or if preceded by '-' prevent matching devices from loading. add encoding "
 "and number of knobs like 'BeatStep:63:16'"
 msgstr ""
+"Una lista di termini, separati da virgola, con i frammenti dei nomi dei "
+"dispositivi i quali, se corrispondono, caricano il dispositivo MIDI "
+"all'identificativo dato dalla posizione della lista,\n"
+"se preceduto da '-' impedisce che i dispositivi corrispondenti vengano "
+"caricati. Aggiunge l'encoding e il numero di manopole tipo 'BeatStep:63:16'"
 
 #. tags
 #: ../build/bin/preferences_gen.h:7412 ../src/develop/lightroom.c:1516
@@ -4001,7 +4004,6 @@ msgid "density"
 msgstr "Densità"
 
 #: ../build/lib/darktable/plugins/introspection_grain.c:58
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_grain.c:117
 #: ../src/iop/bilat.c:450
 msgid "coarseness"
@@ -9103,15 +9105,15 @@ msgstr ""
 "disabilitazione OpenCL per questa sessione!"
 
 #: ../src/develop/pixelpipe_hb.c:2854
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
 "'%s' as that is processed later in the pixel pipe.\n"
 "raster mask is ignored."
 msgstr ""
 "Il modulo '%s' non può ottenere la maschera raster dal modulo\n"
-"'%s'  in quanto viene elaborato più avanti nella pixelpipe.\n"
-"La maschera raster verrà ignorata."
+"'%s' in quanto viene elaborato dopo nel flusso di sviluppo (pixelpipe).\n"
+"La maschera raster viene ignorata."
 
 #: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1173
 #, c-format
@@ -12629,21 +12631,19 @@ msgid "luma"
 msgstr "Luma"
 
 #: ../src/iop/atrous.c:1666
-#, fuzzy
 msgid "change lightness at each feature size"
-msgstr "Cambia chiarezza per ogni dimensione caratteristica"
+msgstr "Cambia chiarezza per ogni dimensione della caratteristica"
 
 #: ../src/iop/atrous.c:1667
-#, fuzzy
 msgid "change color saturation at each feature size"
-msgstr "Cambia la saturazione del colore per ogni dimensione caratteristica"
+msgstr ""
+"Cambia la saturazione del colore per ogni dimensione della caratteristica"
 
 #: ../src/iop/atrous.c:1668
 msgid "edges"
 msgstr "Margini"
 
 #: ../src/iop/atrous.c:1668
-#, fuzzy
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -13095,9 +13095,8 @@ msgid "framing"
 msgstr "cornice"
 
 #: ../src/iop/borders.c:192
-#, fuzzy
 msgid "borders|enlarge canvas|expand canvas"
-msgstr "margini|ingrandsci canvas|espandi canvas"
+msgstr "margini|ingrandsci la tela|espandi la tela"
 
 #: ../src/iop/borders.c:197
 msgid "add solid borders or margins around the picture"
@@ -14423,14 +14422,12 @@ msgstr ""
 " <tt>ꝏ</tt>"
 
 #: ../src/iop/clipping.c:3076
-#, fuzzy
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
 "<b>Applica</b>: clicca <tt>ok</tt>, <b>Attiva/disattiva simmetria</b>: clicca"
-" <tt>ꝏ</"
-"tt>\n"
+" ꝏ\n"
 "<b>Muovi la linea/il punto di controllo</b>: trascina"
 
 #: ../src/iop/clipping.c:3083
@@ -18957,7 +18954,6 @@ msgid "merge from:"
 msgstr "Unisci da:"
 
 #: ../src/iop/retouch.c:2314
-#, fuzzy
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -18965,12 +18961,12 @@ msgid ""
 "top line indicates that the scale is visible at current zoom level\n"
 "bottom line indicates that the scale has shapes on it"
 msgstr ""
-"Il selettore scorrevole in cima regola la partenza delle scale di fusione\n"
+"Il selettore scorrevole in alto regola la partenza delle scale di fusione\n"
 "Quello in basso imposta la quantità delle scale\n"
 "Il punto evidenzia la scala utilizzata\n"
 "La linea superiore indica che la scala è visibile al livello di zoom "
-"utilizzato\n"
-"La linea inferiore evidenzia che esistono delle forme sulla scala"
+"corrente\n"
+"La linea inferiore evidenzia che ci sono delle forme sulla scala"
 
 #: ../src/iop/retouch.c:2334
 msgid "display masks"
@@ -21815,9 +21811,8 @@ msgid "complementary"
 msgstr "complementare"
 
 #: ../src/libs/histogram.c:137
-#, fuzzy
 msgid "split complementary"
-msgstr "completamentare diviso"
+msgstr "Separazione complementare"
 
 #: ../src/libs/histogram.c:138
 msgid "dyad"
@@ -24272,10 +24267,10 @@ msgstr "e..."
 #: ../src/libs/tools/darktable.c:307
 msgid "translator-credits"
 msgstr ""
-"Matteo Mardegan <matteo@mardegan.org> (2019-2021)\n"
 "Luca Cignoni (2022-2023)\n"
+"Matteo Mardegan (2019-2023)\n"
 "Nelle precedenti versioni:\n"
-"Maurizio Paglia (2018-2020)\n"
+"Maurizio Paglia (2018-2022)\n"
 "Germano Massullo (2015-2017)\n"
 "Mauro 'bartokk' Bartoccelli (2013-2014)"
 
