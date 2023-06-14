@@ -1010,4 +1010,16 @@ are available on raw.pixls.us:
 ## Translations
 
 - New English translation with capital letters
-- ???
+- German
+- European Spanish
+- French
+- Hebrew
+- Hungarian
+- Japanese
+- Polish
+- Brazilian Portuguese
+- Slovenian
+- Albanian
+- Ukrainian
+- Chinese - China
+- Chinese - Taiwan
