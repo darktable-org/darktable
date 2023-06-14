@@ -909,11 +909,11 @@ improvements and enhancements:
 
 ### Mandatory
 
-- ???
+- None
 
 ### Optional
 
-- ???
+- None
 
 ## RawSpeed changes
 
