@@ -1018,6 +1018,7 @@ are available on raw.pixls.us:
 - Japanese
 - Polish
 - Brazilian Portuguese
+- Russian
 - Slovenian
 - Albanian
 - Ukrainian
