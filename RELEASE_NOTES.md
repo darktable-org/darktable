@@ -1012,6 +1012,7 @@ are available on raw.pixls.us:
 - New English translation with capital letters
 - German
 - European Spanish
+- Finnish
 - French
 - Hebrew
 - Hungarian
