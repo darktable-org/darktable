@@ -201,9 +201,6 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   { "dt-location-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
     TRUE }, // DT_SIGNAL_LOCATION_CHANGED
 
-  { "dt-printer-discovered", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
-    FALSE }, // DT_SIGNAL_PRINTER_DISCOVERED
-
 };
 
 static GType _signal_type;

@@ -269,9 +269,6 @@ typedef enum dt_signal_t
   /* \brief This signal is raised when the user choses a new location from map (module location)*/
   DT_SIGNAL_LOCATION_CHANGED,
 
-  /* \brief This signal is raised when a new printer is discovered and should be added to the print settings. */
-  DT_SIGNAL_PRINTER_DISCOVERED,
-
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
