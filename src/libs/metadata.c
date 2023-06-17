@@ -534,10 +534,10 @@ static void _update_layout(dt_lib_module_t *self)
                             dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
     g_free(setting);
 
-    gtk_widget_set_visible(d->label[i], !hidden);
-    GtkWidget *current = GTK_WIDGET(d->textview[i]);
-    gtk_widget_set_visible(gtk_widget_get_parent(current), !hidden);
+    gtk_widget_set_visible(gtk_widget_get_parent(d->label[i]), !hidden);
+    gtk_widget_set_visible(d->swindow[i], !hidden);
 
+    GtkWidget *current = GTK_WIDGET(d->textview[i]);
     if(!hidden)
     {
       if(!first) first = previous = current;
@@ -842,7 +842,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *evbox = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(self->widget), evbox);
   gtk_container_add(GTK_CONTAINER(evbox), GTK_WIDGET(grid));
-  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(0));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
