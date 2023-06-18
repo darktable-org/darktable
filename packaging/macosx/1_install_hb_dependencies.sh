@@ -12,7 +12,7 @@ if ! [ -x "$(command -v brew)" ]; then
     echo 'Homebrew not found. Follow instructions as provided by https://brew.sh/ to install it.' >&2
     exit 1
 else
-    echo "Found homebrew running in $(arch)-based environment."
+    echo "Found homebrew running in $(uname -m)-based environment."
 fi
 
 # Make sure that homebrew is up-to-date
