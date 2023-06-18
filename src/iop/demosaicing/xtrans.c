@@ -2193,9 +2193,6 @@ static int process_markesteijn_cl(
       dev_edge_in = dev_edge_out = NULL;
     }
 
-    if(piece->pipe->want_detail_mask)
-      dt_dev_write_rawdetail_mask_cl(piece, dev_tmp, roi_in, TRUE);
-
     if(scaled)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");

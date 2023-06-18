@@ -26,6 +26,7 @@
 #include "common/image_cache.h"
 #include "common/dng_opcode.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
@@ -326,6 +327,155 @@ static void _adjust_xtrans_filters(
   }
 }
 
+static gboolean _calc_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
+                                  float *const restrict src)
+{
+  const dt_dev_detail_mask_t *details = &piece->pipe->details;
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+  const uint32_t filters = piece->pipe->dsc.filters;
+
+  const int width = details->roi.width;
+  const int height = details->roi.height;
+  float *mask = details->data;
+
+  const size_t msize = (size_t)width * height;
+  float *tmp = dt_alloc_align_float(msize);
+  if(!tmp) return TRUE;
+
+  if(filters)
+  {
+    static float weights[25]= {
+      1.0f,  4.0f,  6.0f,  4.0f, 1.0f,
+      4.0f, 16.0f, 24.0f, 16.0f, 4.0f,
+      6.0f, 24.0f, 36.0f, 24.0f, 6.0f,
+      4.0f, 16.0f, 24.0f, 16.0f, 4.0f,
+      1.0f,  4.0f,  6.0f,  4.0f, 1.0f };
+    const dt_iop_roi_t *const roi_in = &details->roi;
+#ifdef _OPENMP
+    #pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(src, tmp, width, height, roi_in, filters, xtrans) \
+    shared(weights) \
+    schedule(simd:static) aligned(src, tmp, weights : 64) collapse(2)
+#endif
+    for(int row = 0; row < height; row++)
+    {
+      for(int col = 0; col < width; col++)
+      {
+        dt_aligned_pixel_t sum = { 0.0f, 0.0f, 0.0f, 0.0f };
+        dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
+        for(int y = 0; y < 5; y++)
+        {
+          for(int x = 0; x < 5; x++)
+          {
+            const int yy = MIN(height-1, MAX(0, row + y - 2));
+            const int xx = MIN(width-1, MAX(0, col + x - 2));
+            const int color = (filters == 9u) ? FCxtrans(yy, xx, roi_in, xtrans) : FC(yy, xx, filters);
+            sum[color] += weights[5*y + x] * fmaxf(0.0f, src[(size_t)yy * width + xx]);
+            cnt[color] += weights[5*y + x];
+          }
+        }
+        // add a gamma sqrtf() as it reduces noise variance
+        tmp[(size_t)row * width + col] = sqrtf((sum[0]/cnt[0] + sum[1]/cnt[1] + sum[2]/cnt[2]) * 0.5f);
+      }
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+    #pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(tmp, src, msize) \
+    schedule(simd:static) aligned(tmp, src : 64)
+#endif
+    for(size_t idx = 0; idx < msize; idx++)
+      tmp[idx] = sqrtf((fmaxf(0.0f, src[4 * idx]) + fmaxf(0.0f, src[4 * idx + 1]) + fmaxf(0.0f, src[4 * idx + 2])) / 3.0f);
+
+    float *tmp2 = dt_alloc_align_float(msize);
+    if(tmp2)  // we can do some blurring
+    {
+      const int border = dt_masks_blur_fast(tmp, tmp2, width, height, 0.8f, 1.2f, 1.5f);
+      dt_masks_extend_border(tmp2, width, height, border);
+      dt_free_align(tmp);
+      tmp = tmp2;
+    }
+  }
+
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(mask, tmp, width, height) \
+  schedule(simd:static) aligned(mask, tmp : 64) collapse(2)
+#endif
+  for(size_t row = 1; row < height - 1; row++)
+  {
+    for(size_t col = 1; col < width - 1; col++)
+    {
+      const size_t idx = row * width + col;
+      // scharr operator
+      const float gx = 47.0f * (tmp[idx-width-1] - tmp[idx-width+1])
+                     + 162.f * (tmp[idx-1]       - tmp[idx+1])
+                     + 47.0f * (tmp[idx+width-1] - tmp[idx+width+1]);
+      const float gy = 47.0f * (tmp[idx-width-1] - tmp[idx+width-1])
+                     + 162.f * (tmp[idx-width]   - tmp[idx+width])
+                     + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
+      mask[idx] = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f))
+                        / 16.0f; // 16 is the same as used in detail
+    }
+  }
+  dt_masks_extend_border(mask, width, height, 1);
+  dt_free_align(tmp);
+  return FALSE;
+}
+
+static uint64_t _raw_hash(dt_dev_pixelpipe_iop_t *piece,
+                          const dt_iop_roi_t *const roi)
+{
+  uint64_t hash = 5381;
+  char *str = (char *)roi;
+  for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
+    hash = ((hash << 5) + hash) ^ str[i];
+
+  const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
+  str = (char *)d;
+  for(size_t i = 0; i < sizeof(dt_iop_rawprepare_data_t); i++)
+    hash = ((hash << 5) + hash) ^ str[i];
+  return hash;
+}
+
+static gboolean _write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
+                                     float *const data,
+                                     const dt_iop_roi_t *const roi)
+{
+  dt_dev_pixelpipe_t *p = piece->pipe;
+
+  uint64_t hash = _raw_hash(piece, roi);
+  if((hash == p->details.hash)
+      && (hash != 0)
+      && (p->details.data))
+    return FALSE;
+
+  dt_dev_clear_detail_mask(p);
+
+  const int width = roi->width;
+  const int height = roi->height;
+  float *mask = dt_alloc_align_float((size_t)width * height);
+  if(!mask) goto error;
+
+  p->details.data = mask;
+  memcpy(&p->details.roi, roi, sizeof(dt_iop_roi_t));
+  p->details.hash = hash;
+
+  if(_calc_scharr_mask(piece, data))
+    goto error;
+
+  dt_print_pipe(DT_DEBUG_MASKS, "write scharr mask", p, NULL, roi, NULL, "\n");
+  return FALSE;
+
+  error:
+  dt_print_pipe(DT_DEBUG_ALWAYS,
+           "couldn't write scharr mask", p, NULL, roi, NULL, "\n");
+  dt_dev_clear_detail_mask(p);
+  return TRUE;
+}
+
 static int _BL(const dt_iop_roi_t *const roi_out,
                const dt_iop_rawprepare_data_t *const d,
                const int row,
@@ -433,6 +583,9 @@ void process(
     }
   }
 
+  if(piece->pipe->want_detail_mask)
+    _write_rawdetail_mask(piece, (float *const)ovoid, roi_out);
+
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && d->apply_gainmaps)
   {
     const uint32_t map_w = d->gainmaps[0]->map_points_h;
@@ -477,9 +630,6 @@ void process(
       }
     }
   }
-
-  if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-    dt_dev_write_rawdetail_mask(piece, (float *const)ovoid, roi_in, FALSE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
@@ -551,13 +701,23 @@ int process_cl(
   const int height = roi_out->height;
 
   size_t sizes[] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid), 1 };
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG((width)), CLARG((height)),
-    CLARG(csx), CLARG(csy), CLARG(dev_sub), CLARG(dev_div), CLARG(roi_out->x), CLARG(roi_out->y));
+  dt_opencl_set_kernel_args(devid, kernel, 0,
+                            CLARG(dev_in),
+                            CLARG(dev_out),
+                            CLARG((width)),
+                            CLARG(height),
+                            CLARG(csx),
+                            CLARG(csy),
+                            CLARG(dev_sub),
+                            CLARG(dev_div),
+                            CLARG(roi_out->x),
+                            CLARG(roi_out->y));
   if(gainmap_args)
   {
     const int map_size[2] = { d->gainmaps[0]->map_points_h, d->gainmaps[0]->map_points_v };
     const float im_to_rel[2] = { 1.0f / piece->buf_in.width, 1.0f / piece->buf_in.height };
-    const float rel_to_map[2] = { 1.0f / d->gainmaps[0]->map_spacing_h, 1.0f / d->gainmaps[0]->map_spacing_v };
+    const float rel_to_map[2] = { 1.0f / d->gainmaps[0]->map_spacing_h,
+                                  1.0f / d->gainmaps[0]->map_spacing_v };
     const float map_origin[2] = { d->gainmaps[0]->map_origin_h, d->gainmaps[0]->map_origin_v };
 
     for(int i = 0; i < 4; i++)
@@ -587,14 +747,21 @@ int process_cl(
       dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     _adjust_xtrans_filters(piece->pipe, csx, csy);
   }
+  if(piece->pipe->want_detail_mask)
+  {
+    const size_t planes = (piece->pipe->dsc.filters == 0) ? 4 : 1;
+    float *tmp = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * planes);
+    if(tmp)
+    {
+      dt_opencl_read_host_from_device(devid, tmp, dev_out, roi_out->width, roi_out->height, 4 * planes);
+      _write_rawdetail_mask(piece, tmp, roi_out);
+      dt_free_align(tmp);
+    }
+    else dt_dev_clear_detail_mask(piece->pipe);
+  }
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 
-  if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-  {
-    err = dt_dev_write_rawdetail_mask_cl(piece, dev_out, roi_in, FALSE);
-    if(err != CL_SUCCESS) goto error;
-  }
   return TRUE;
 
 error:

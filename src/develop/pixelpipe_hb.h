@@ -288,19 +288,6 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
                               const dt_mask_id_t raster_mask_id,
                               const struct dt_iop_module_t *target_module,
                               gboolean *free_mask);
-// some helper functions related to the details mask interface
-void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe);
-
-gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
-                                     float *const rgb,
-                                     const dt_iop_roi_t *const roi_in,
-                                     const gboolean mode);
-#ifdef HAVE_OPENCL
-gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
-                                        cl_mem in,
-                                        const dt_iop_roi_t *const roi_in,
-                                        const gboolean mode);
-#endif
 
 /* specialized version of dt_print for pixelpipe debugging */
 void dt_print_pipe(dt_debug_thread_t thread,
@@ -311,10 +298,6 @@ void dt_print_pipe(dt_debug_thread_t thread,
                    const dt_iop_roi_t *roi_out,
                    const char *msg, ...);
 
-// helper function writing the pipe-processed ctmask data to dest
-float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
-                                  float *src,
-                                  const struct dt_iop_module_t *target_module);
 
 #ifdef __cplusplus
 } // extern "C"

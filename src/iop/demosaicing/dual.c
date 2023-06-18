@@ -30,7 +30,7 @@ static float slider2contrast(float slider)
 }
 static void dual_demosaic(
         dt_dev_pixelpipe_iop_t *piece,
-        float *const restrict rgb_data,
+        float *const restrict high_data,
         const float *const restrict raw_data,
         dt_iop_roi_t *const roi_out,
         const dt_iop_roi_t *const roi_in,
@@ -39,58 +39,54 @@ static void dual_demosaic(
         const gboolean dual_mask,
         const float dual_threshold)
 {
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-  if((width < 16) || (height < 16)) return;
+  if((roi_in->width < 16) || (roi_in->height < 16)) return;
 
   // If the threshold is zero and we don't want to see the blend mask we don't do anything
   if(dual_threshold <= 0.0f) return;
 
-  float *blend = dt_alloc_align_float((size_t) width * height);
-  float *vng_image = dt_alloc_align_float((size_t) 4 * width * height);
-  if(!blend || !vng_image)
-  {
-    if(blend) dt_free_align(blend);
-    if(vng_image) dt_free_align(vng_image);
-    dt_control_log(_("[dual demosaic] can't allocate internal buffers"));
-    return;
-  }
+  const size_t msize = roi_in->width * roi_in->height;
+  float *vng_image = NULL;
 
   const float contrastf = slider2contrast(dual_threshold);
-  if(dt_masks_calc_detail_mask(&piece->pipe->details, blend, contrastf, TRUE))
-    return;
+
+  float *mask = dt_masks_calc_detail_mask(piece, contrastf, TRUE, FALSE);
+  if(!mask) goto error;
 
   if(dual_mask)
   {
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(blend, rgb_data, width, height) \
-  schedule(simd:static) aligned(blend, rgb_data : 64)
+  dt_omp_firstprivate(mask, high_data, msize) \
+  schedule(simd:static) aligned(mask, high_data : 64)
 #endif
-    for(int idx = 0; idx < width * height; idx++)
-    {
-      for(int c = 0; c < 4; c++)
-        rgb_data[idx * 4 + c] = blend[idx];
-    }
+    for(int idx = 0; idx < msize; idx++)
+      high_data[idx * 4 + 3] = mask[idx];
   }
   else
   {
+    vng_image = dt_alloc_align_float((size_t) 4 * msize);
+    if(!vng_image) goto error;
+
     vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
     color_smoothing(vng_image, roi_out, 2);
+
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(blend, rgb_data, vng_image, width, height) \
-  schedule(simd:static) aligned(blend, vng_image, rgb_data : 64)
+  dt_omp_firstprivate(mask, high_data, vng_image, msize) \
+  schedule(simd:static) aligned(mask, vng_image, high_data : 64)
 #endif
-    for(int idx = 0; idx < width * height; idx++)
+    for(int idx = 0; idx < msize; idx++)
     {
       const int oidx = 4 * idx;
-      for(int c = 0; c < 4; c++)
-        rgb_data[oidx + c] = interpolatef(blend[idx], rgb_data[oidx + c], vng_image[oidx + c]);
+      for(int c = 0; c < 3; c++)
+        high_data[oidx + c] = interpolatef(mask[idx], high_data[oidx + c], vng_image[oidx + c]);
+      high_data[oidx + 3] = 0.0f;
     }
   }
-  dt_free_align(blend);
+
+  error:
+
+  dt_free_align(mask);
   dt_free_align(vng_image);
 }
 
@@ -105,6 +101,7 @@ gboolean dual_demosaic_cl(
         const int showmask)
 {
   const int devid = piece->pipe->devid;
+
   const int width = roi_in->width;
   const int height = roi_in->height;
 
@@ -112,47 +109,30 @@ gboolean dual_demosaic_cl(
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
 
   const float contrastf = slider2contrast(data->dual_thrs);
-  if(showmask)
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 
   cl_int err = CL_SUCCESS;
-  cl_mem dev_blurmat = NULL;
-  cl_mem mask = NULL;
-  cl_mem scharr = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-  cl_mem tmp = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
 
-  err = dt_opencl_write_host_to_device(devid, piece->pipe->details.data, scharr, width, height, sizeof(float));
-  if(err != CL_SUCCESS) goto finish;
+  cl_mem cl_mask = NULL;
+  float *mask = dt_masks_calc_detail_mask(piece, contrastf, TRUE, FALSE);
+  if(!mask) goto finish;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_read_mask, width, height,
-      CLARG(tmp), CLARG(scharr), CLARG(width), CLARG(height));
-  if(err != CL_SUCCESS) goto finish;
-
-  dt_opencl_release_mem_object(scharr);
-  scharr = NULL;
-
-  mask = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
-  const int flag = 1;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_blend, width, height,
-      CLARG(tmp), CLARG(mask), CLARG(width), CLARG(height), CLARG(contrastf), CLARG(flag));
-  if(err != CL_SUCCESS) goto finish;
-
-  float blurmat[13];
-  dt_masks_blur_9x9_coeff(blurmat, 2.0f);
-  dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(blurmat), blurmat);
-
-  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_mask_blur, width, height,
-      CLARG(mask), CLARG(tmp), CLARG(width), CLARG(height), CLARG(dev_blurmat));
+  cl_mask = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
+  err = dt_opencl_write_buffer_to_device(devid, mask, cl_mask, 0, width * height * sizeof(float), TRUE);
+  dt_free_align(mask);
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_write_blended_dual, width, height,
-      CLARG(high_image), CLARG(low_image), CLARG(out), CLARG(width), CLARG(height), CLARG(tmp), CLARG(showmask));
+      CLARG(high_image),
+      CLARG(low_image),
+      CLARG(out),
+      CLARG(width),
+      CLARG(height),
+      CLARG(cl_mask),
+      CLARG(showmask));
 
   finish:
-  dt_opencl_release_mem_object(scharr);
-  dt_opencl_release_mem_object(mask);
-  dt_opencl_release_mem_object(tmp);
-  dt_opencl_release_mem_object(dev_blurmat);
+
+  dt_opencl_release_mem_object(cl_mask);
   return (err == CL_SUCCESS);
 }
 #endif

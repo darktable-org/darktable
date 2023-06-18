@@ -18,18 +18,21 @@
 
 /* How are "detail masks" implemented?
 
-  The detail masks (DM) are used by the dual demosaicer and as a
-  further refinement step for shape / parametric masks.  They contain
-  threshold weighed values of pixel-wise local signal changes so they
-  can be understood as "areas with or without local detail".
+  The details masks are used by the dual demosaicer and as a refinement
+  step for shape / parametric masks.
+  They contain threshold weighed values of pixel-wise local signal changes
+  so they can be understood as "areas with or without local detail".
 
-  As the DM using algorithms (like dual demosaicing, sharpening ...)
-  are all pixel peeping we want the "original data" from the sensor to
-  calculate it.  (Calculating the mask from the modules roi might not
-  detect such regions at all because of scaling / rotating artifacts,
-  some blurring earlier in the pipeline, color changes ...)
+  The using modules (like dual demosaicing, sharpening ...) all want
+  the "original data" from the sensor and not what the have as data input.
+  (Calculating the mask from the modules roi might not detect such regions
+  at all because of scaling / rotating artifacts, blurring earlier in the
+  pipeline, color changes ...)
 
-  In all cases the user interface is pretty simple, we just pass a
+  So we prepare an intermediate scharr mask in rawprepare using Y0 data.
+  (for sraws we have rgb data available, for raws we avarage)
+
+  In all cases the user interface is pretty simple, we require a
   threshold value, which is in the range of -1.0 to 1.0 by an
   additional slider in the masks refinement section.  Positive values
   will select regions with lots of local detail, negatives select for
@@ -37,52 +40,15 @@
   look for high frequency content.)  A threshold value of 0.0 means
   bypassing.
 
-  So the first important point is:
+  The details mask is taken from the prepared scharr mask, is slightly
+  gaussian-blurred for noise resistance and sized&cropped according to the
+  current roi. We have this returning a valid buffer or NULL in case of errors
 
-  We make sure taking the input data for the DM right from the
-  demosaicer for normal raws or from rawprepare in case of
-  monochromes. This means some additional housekeeping for the
-  pixelpipe.
-
-  If any mask in any module selects a threshold of != 0.0 we leave a
-  flag in the pipe struct telling a) we want a DM and b) we want it
-  from either demosaic or from rawprepare.  If such a flag has not
-  been previously set we will force a pipeline reprocessing.
-
-  gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode, const dt_aligned_pixel_t wb);
-  or it's _cl equivalent write a preliminary mask holding signal-change values for every pixel.
-  These mask values are calculated as
-  a) get Y0 for every pixel
-  b) apply a scharr operator on it
-
-  This raw detail mask (RM) is not scaled but only cropped to the roi
-  of the writing module (demosaic or rawprepare).  The pipe gets roi
-  copy of the writing module so we can later scale/distort the LM.
-
-  Calculating the RM is done for performance and lower mem pressure
-  reasons, so we don't have to pass full data to the module. Also the
-  RM can be used by other modules.
-
-  If a mask uses the details refinement step it takes the raw details
-  mask RM and calculates an intermediate mask (IM) which is still not
-  scaled but has the roi of the writing module.
-
-  For every pixel we calculate the IM value via a sigmoid function
-  with the threshold and RM as parameters.
-
-  At last the IM is slightly blurred to avoid hard transitions, as
-  there still is no scaling we can use a constant sigma. As the
-  blur_9x9 is pretty fast both in openmp/cl code paths - much faster
-  than dt gaussians - it is used here.  Now we have an unscaled detail
-  mask which requires to be transformed through the pipeline using
-
-  float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
-
-  returning a pointer to a distorted mask (DT) with same size as used
-  in the module wanting the refinement.  This DM is finally used to
-  refine the original mask.
-
-  All other refinements and parametric parameters are untouched.
+  float *dt_masks_calc_detail_mask(
+    struct dt_dev_pixelpipe_iop_t *piece,
+    const float threshold,
+    const gboolean detail, // use detail mode as in mask refinements
+    const gboolean output) // if true include target module in mask resizing
 
   Some additional comments:
 
@@ -96,11 +62,11 @@
      detail refinemnt.
 
   3. Of course credit goes to Ingo @heckflosse from rt team for the
-     original idea. (in the rt world this is knowb as details mask)
+     original idea. (in the rt world this is known as details mask)
 
   4. Thanks to rawfiner for pointing out how to use Y0 and scharr for better maths.
 
-  hanno@schwalm-bremen.de 21/04/29
+  hanno@schwalm-bremen.de
 */
 
 void dt_masks_extend_border(float *const mask,
@@ -260,16 +226,15 @@ void dt_masks_blur_9x9(float *const restrict src,
   const size_t w4 = 4*width;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(blurmat, src, out) \
-  dt_omp_sharedconst(width, height, w1, w2, w3, w4) \
+  dt_omp_firstprivate(blurmat, src, out, height, w1, w2, w3, w4) \
   schedule(simd:static) aligned(src, out : 64)
  #endif
   for(size_t row = 4; row < height - 4; row++)
   {
-    for(size_t col = 4; col < width - 4; col++)
+    for(size_t col = 4; col < w1 - 4; col++)
     {
-      const size_t i = row * width + col;
-      out[row * width + col] = fminf(1.0f, fmaxf(0.0f, FAST_BLUR_9));
+      const size_t i = row * w1 + col;
+      out[i] = fminf(1.0f, fmaxf(0.0f, FAST_BLUR_9));
     }
   }
   dt_masks_extend_border(out, width, height, 4);
@@ -363,8 +328,7 @@ int dt_masks_blur_fast(float *const restrict src,
   {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(gain, width, height, clip) \
+  dt_omp_firstprivate(src, out, gain, width, height, clip) \
   schedule(simd:static) aligned(src, out : 64)
 #endif
     for(size_t i = 0; i < width * height; i++)
@@ -376,16 +340,15 @@ int dt_masks_blur_fast(float *const restrict src,
     _masks_blur_5x5_coeff(blurmat, sigma);
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(gain, width, height, w1, w2, clip) \
+  dt_omp_firstprivate(src, out, gain, height, w1, w2, clip) \
   shared(blurmat) \
   schedule(simd:static) aligned(src, out : 64)
 #endif
     for(size_t row = 2; row < height - 2; row++)
     {
-      for(size_t col = 2; col < width - 2; col++)
+      for(size_t col = 2; col < w1 - 2; col++)
       {
-        const size_t i = row * width + col;
+        const size_t i = row * w1 + col;
         out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_5));
       }
     }
@@ -396,16 +359,15 @@ int dt_masks_blur_fast(float *const restrict src,
     dt_masks_blur_9x9_coeff(blurmat, sigma);
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(gain, width, height, w1, w2, w3, w4, clip) \
+  dt_omp_firstprivate(src, out, gain, height, w1, w2, w3, w4, clip) \
   shared(blurmat) \
   schedule(simd:static) aligned(src, out : 64)
  #endif
     for(size_t row = 4; row < height - 4; row++)
     {
-      for(size_t col = 4; col < width - 4; col++)
+      for(size_t col = 4; col < w1 - 4; col++)
       {
-        const size_t i = row * width + col;
+        const size_t i = row * w1 + col;
         out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_9));
       }
     }
@@ -414,122 +376,147 @@ int dt_masks_blur_fast(float *const restrict src,
   _masks_blur_13x13_coeff(blurmat, sigma);
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(gain, width, height, w1, w2, w3, w4, w5, w6, clip) \
+  dt_omp_firstprivate(src, out, gain, height, w1, w2, w3, w4, w5, w6, clip) \
   shared(blurmat) \
   schedule(simd:static) aligned(src, out : 64)
  #endif
   for(size_t row = 6; row < height - 6; row++)
   {
-    for(size_t col = 6; col < width - 6; col++)
+    for(size_t col = 6; col < w1 - 6; col++)
     {
-      const size_t i = row * width + col;
+      const size_t i = row * w1 + col;
       out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_13));
     }
   }
   return 6;
 }
 
-gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
-                                  float *const restrict src,
-                                  const dt_aligned_pixel_t wb)
+void dt_dev_clear_detail_mask(dt_dev_pixelpipe_t *pipe)
 {
-  const int width = details->roi.width;
-  const int height = details->roi.height;
-  float *mask = details->data;
-
-  const size_t msize = (size_t)width * height;
-  float *tmp = dt_alloc_align_float(msize);
-  if(!tmp) return TRUE;
-
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(tmp, src, msize, wb) \
-  schedule(simd:static) aligned(tmp, src : 64)
-#endif
-  for(size_t idx =0; idx < msize; idx++)
-  {
-    const float val = CLIP(src[4 * idx] / wb[0])
-                    + CLIP(src[4 * idx + 1] / wb[1])
-                    + CLIP(src[4 * idx + 2] / wb[2]);
-    // add a gamma. sqrtf should make noise variance the same for all image
-    tmp[idx] = sqrtf(val / 3.0f);
-  }
-
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, tmp, width, height) \
-  schedule(simd:static) aligned(mask, tmp : 64)
- #endif
-  for(size_t row = 1; row < height - 1; row++)
-  {
-    for(size_t col = 1; col < width - 1; col++)
-    {
-      const size_t idx = row * width + col;
-      // scharr operator
-      const float gx = 47.0f * (tmp[idx-width-1] - tmp[idx-width+1])
-                    + 162.0f * (tmp[idx-1]       - tmp[idx+1])
-                     + 47.0f * (tmp[idx+width-1] - tmp[idx+width+1]);
-      const float gy = 47.0f * (tmp[idx-width-1] - tmp[idx+width-1])
-                    + 162.0f * (tmp[idx-width]   - tmp[idx+width])
-                     + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
-      const float gradient_magnitude = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-      mask[idx] = gradient_magnitude / 16.0f;
-    }
-  }
-  dt_masks_extend_border(mask, width, height, 1);
-  dt_free_align(tmp);
-  return FALSE;
+  if(pipe->details.data) dt_free_align(pipe->details.data);
+  memset(&pipe->details, 0, sizeof(dt_dev_detail_mask_t));
 }
 
-static inline float _calcBlendFactor(float val, float threshold)
-{
-    // sigmoid function
-    // result is in ]0;1] range
-    // inflexion point is at (x, y) (threshold, 0.5)
-    return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
-}
-
-gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
-                               float *const restrict out,
+float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
                                const float threshold,
-                               const gboolean detail)
+                               const gboolean detail,
+                               const gboolean output)
 {
-  if((details->roi.width <= 0)
-     || (details->roi.height <= 0)
-     || !details->data
-     || (details->hash == 0))
-    return TRUE;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  dt_dev_detail_mask_t *details = &pipe->details;
 
-  const size_t msize = (size_t) details->roi.width * details->roi.height;
-  float *tmp = dt_alloc_align_float(msize);
-  if(!tmp)
+  dt_print_pipe(DT_DEBUG_MASKS,
+    "calc detail mask",
+       pipe, piece->module, &details->roi, &piece->processed_roi_out, "%s\n",
+       details->data ? "" : "no mask data available");
+
+  if(!details->data)
+    return NULL;
+
+  const size_t dsize = (size_t) details->roi.width * details->roi.height;
+  float *tmp = dt_alloc_align_float(dsize);
+  float *mask = dt_alloc_align_float(dsize);
+  if(!tmp || !mask)
   {
-    dt_iop_image_fill(out, 0.0f, details->roi.width, details->roi.height, 1);
-    return TRUE;
+    dt_free_align(tmp);
+    dt_free_align(mask);
+    return NULL;
   }
 
+  const float thresh = 16.0f / fmaxf(1e-9, threshold);
   float *src = details->data;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, tmp, msize, threshold, detail, out) \
-  schedule(simd:static) aligned(src, tmp, out : 64)
+  dt_omp_firstprivate(src, tmp, dsize, thresh, detail) \
+  schedule(simd:static) aligned(src, tmp : 64)
 #endif
-  for(size_t idx = 0; idx < msize; idx++)
+  for(size_t idx = 0; idx < dsize; idx++)
   {
-    const float blend = CLIP(_calcBlendFactor(src[idx], threshold));
+    // sigmoid function, result is in [0;1] range, inflexion point at threshold=0.5
+    const float blend = CLIP(1.0f / (1.0f + dt_fast_expf(16.0f - thresh * src[idx])));
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
   // for very small images the blurring should be slightly less to have an effect at all
   const float blurring = (MIN(details->roi.width, details->roi.height) < 500) ? 1.5f : 2.0f;
-  dt_masks_blur_9x9(tmp, out, details->roi.width, details->roi.height, blurring);
+  dt_masks_blur_9x9(tmp, mask, details->roi.width, details->roi.height, blurring);
   dt_free_align(tmp);
-  return FALSE;
+
+  gboolean valid = FALSE;
+
+  GList *source_iter;
+  for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
+  {
+    const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
+    if(dt_iop_module_is(candidate->module->so, "rawprepare")
+       && candidate->enabled)
+    {
+      valid = TRUE;
+      break;
+    }
+  }
+  if(!valid)
+  {
+    dt_free_align(mask);
+    return NULL;
+  }
+
+  dt_iop_module_t *target_module = piece->module;
+  float *resmask = mask;
+  float *inmask  = mask;
+
+  if(source_iter)
+  {
+    for(GList *iter = g_list_next(source_iter); iter; iter = g_list_next(iter))
+    {
+      dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
+
+      // we might not want to include the target module in the 'distort_mask' list
+      if((module->module == target_module) && !output) break;
+
+      if(module->enabled
+         && !(module->module->dev->gui_module
+              && module->module->dev->gui_module != module->module
+              && module->module->dev->gui_module->operation_tags_filter()
+                 & module->module->operation_tags()))
+      {
+        // hack against pipes not using finalscale
+        if(module->module->distort_mask
+              && !(dt_iop_module_is(module->module->so, "finalscale")
+                    && module->processed_roi_in.width == 0
+                    && module->processed_roi_in.height == 0))
+        {
+          float *tmp = dt_alloc_align_float((size_t)module->processed_roi_out.width
+                                            * module->processed_roi_out.height);
+          dt_print_pipe(DT_DEBUG_MASKS,
+             "distort detail mask", pipe, module->module, &module->processed_roi_in, &module->processed_roi_out, "\n");
+
+          module->module->distort_mask(module->module, module, inmask, tmp,
+                                       &module->processed_roi_in,
+                                       &module->processed_roi_out);
+          resmask = tmp;
+          if(inmask != src) dt_free_align(inmask);
+          inmask = tmp;
+        }
+        else if(!module->module->distort_mask
+                && (module->processed_roi_in.width != module->processed_roi_out.width
+                    || module->processed_roi_in.height != module->processed_roi_out.height
+                    || module->processed_roi_in.x != module->processed_roi_out.x
+                    || module->processed_roi_in.y != module->processed_roi_out.y))
+              dt_print_pipe(DT_DEBUG_ALWAYS,
+                      "distort details mask",
+                      pipe, module->module,
+                      &module->processed_roi_in, &module->processed_roi_out,
+                      "misses distort_mask()\n");
+
+        if((module->module == target_module) && output) break;
+      }
+    }
+  }
+  return resmask;
 }
 #undef FAST_BLUR_5
 #undef FAST_BLUR_9
 #undef FAST_BLUR_13
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

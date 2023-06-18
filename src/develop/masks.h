@@ -674,13 +674,14 @@ void dt_masks_blur_9x9(float *const src,
                        const int width,
                        const int height,
                        const float sigma);
-gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
-                                  float *const src,
-                                  const dt_aligned_pixel_t wb);
-gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
-                               float *const out,
+
+// some helper functions related to the details mask interface
+void dt_dev_clear_detail_mask(dt_dev_pixelpipe_t *pipe);
+
+float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
                                const float threshold,
-                               const gboolean detail);
+                               const gboolean detail,
+                               const gboolean output);
 
 /** the output data are blurred-val * gain and are clipped to be within 0 to clip
     The returned int might be used to expand the border as this depends on sigma */

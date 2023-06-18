@@ -637,9 +637,6 @@ static int process_default_cl(
       }
     }
 
-    if(piece->pipe->want_detail_mask)
-      dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, TRUE);
-
     if(scaled)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");
