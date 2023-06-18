@@ -132,7 +132,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Darktable.Nightly.AppImage
-          path: ${{ env.BUILD_DIR }}/Darktable-*.AppImage
+          path: ${{ env.BUILD_DIR }}/Darktable-*.AppImage*
           retention-days: 1
 
   Windows:
@@ -394,6 +394,6 @@ jobs:
 
             Please help us improve Darktable by reporting any issues you encounter! :wink:
           files: |
-            Darktable-*.AppImage
+            Darktable-*.AppImage*
             darktable-*.dmg
             darktable-*.exe
