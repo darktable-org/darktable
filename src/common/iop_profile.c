@@ -1516,12 +1516,12 @@ gboolean dt_ioppr_transform_image_colorspace_cl
   if(profile_info == NULL)
   {
     *converted_cst = cst_from;
-    return FALSE;
+    return TRUE;
   }
   if(profile_info->type == DT_COLORSPACE_NONE)
   {
     *converted_cst = cst_from;
-    return FALSE;
+    return TRUE;
   }
 
   const size_t ch = 4;
