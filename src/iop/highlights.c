@@ -274,6 +274,17 @@ static uint64_t img_opphash = 0;
 #include "hlreconstruct/inpaint.c"
 #include "hlreconstruct/lch.c"
 
+void distort_mask(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        const float *const in,
+        float *const out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
+}
+
 /* inpaint opposed and segmentation based algorithms want the whole image for proper calculation
    of chrominance correction and best candidates so we change both rois.
 */
