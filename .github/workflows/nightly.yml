@@ -392,7 +392,11 @@ jobs:
             Also, new versions can make changes to the database schema, so it's best to run
             them with a separate library.
 
-            Please help us improve Darktable by reporting any issues you encounter! :wink:
+            The `*.AppImage.zsync` file is not intended to be downloaded and used locally.
+            Just ignore it. This file contains technical information required by AppImage
+            auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
+
+            __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
             Darktable-*.AppImage*
             darktable-*.dmg
