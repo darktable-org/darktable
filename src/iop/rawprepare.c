@@ -327,77 +327,73 @@ static void _adjust_xtrans_filters(
   }
 }
 
-static gboolean _calc_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
+static float * _calc_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
+                                  const dt_iop_roi_t *const roi,
                                   float *const restrict src)
 {
-  const dt_dev_detail_mask_t *details = &piece->pipe->details;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
 
-  const int width = details->roi.width;
-  const int height = details->roi.height;
-  float *mask = details->data;
+  const int width = roi->width;
+  const int height = roi->height;
 
   const size_t msize = (size_t)width * height;
   float *tmp = dt_alloc_align_float(msize);
-  if(!tmp) return TRUE;
+  float *mask = dt_alloc_align_float(msize);
 
+  if(!mask || !tmp)
+  {
+    dt_free_align(tmp);
+    dt_free_align(mask);
+    return NULL;
+  }
+ 
   if(filters)
   {
-    static float weights[25]= {
-      1.0f,  4.0f,  6.0f,  4.0f, 1.0f,
-      4.0f, 16.0f, 24.0f, 16.0f, 4.0f,
-      6.0f, 24.0f, 36.0f, 24.0f, 6.0f,
-      4.0f, 16.0f, 24.0f, 16.0f, 4.0f,
-      1.0f,  4.0f,  6.0f,  4.0f, 1.0f };
-    const dt_iop_roi_t *const roi_in = &details->roi;
+    // we calculate the average in a 3x3 area for every rgb photosite channel
+    // as the input signal for the scharr operator
 #ifdef _OPENMP
     #pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(src, tmp, width, height, roi_in, filters, xtrans) \
-    shared(weights) \
-    schedule(simd:static) aligned(src, tmp, weights : 64) collapse(2)
+    dt_omp_firstprivate(src, mask, roi, filters, width, height, xtrans) \
+    schedule(simd:static) aligned(src, tmp : 64) collapse(2)
 #endif
-    for(int row = 0; row < height; row++)
+    for(int row = 1; row < height-1; row++)
     {
-      for(int col = 0; col < width; col++)
+      for(int col = 1; col < width-1; col++)
       {
         dt_aligned_pixel_t sum = { 0.0f, 0.0f, 0.0f, 0.0f };
         dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int y = 0; y < 5; y++)
+        for(int y = -1; y < 2; y++)
         {
-          for(int x = 0; x < 5; x++)
+          for(int x = -1; x < 2; x++)
           {
-            const int yy = MIN(height-1, MAX(0, row + y - 2));
-            const int xx = MIN(width-1, MAX(0, col + x - 2));
-            const int color = (filters == 9u) ? FCxtrans(yy, xx, roi_in, xtrans) : FC(yy, xx, filters);
-            sum[color] += weights[5*y + x] * fmaxf(0.0f, src[(size_t)yy * width + xx]);
-            cnt[color] += weights[5*y + x];
+            const int yy = row + y;
+            const int xx = col + x;
+            const int color = (filters == 9u) ? FCxtrans(yy, xx, roi, xtrans) : FC(yy, xx, filters);
+            sum[color] += fmaxf(0.0f, src[(size_t)yy * width + xx]);
+            cnt[color] += 1.0f;
           }
         }
         // add a gamma sqrtf() as it reduces noise variance
-        tmp[(size_t)row * width + col] = sqrtf((sum[0]/cnt[0] + sum[1]/cnt[1] + sum[2]/cnt[2]) * 0.5f);
+        mask[(size_t)row * width + col] = sqrtf((sum[0]/cnt[0] + sum[1]/cnt[1] + sum[2]/cnt[2]) / 3.0f);
       }
     }
+    dt_masks_extend_border(mask, width, height, 1);
   }
   else
   {
 #ifdef _OPENMP
     #pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(tmp, src, msize) \
+    dt_omp_firstprivate(mask, src, msize) \
     schedule(simd:static) aligned(tmp, src : 64)
 #endif
     for(size_t idx = 0; idx < msize; idx++)
-      tmp[idx] = sqrtf((fmaxf(0.0f, src[4 * idx]) + fmaxf(0.0f, src[4 * idx + 1]) + fmaxf(0.0f, src[4 * idx + 2])) / 3.0f);
-
-    float *tmp2 = dt_alloc_align_float(msize);
-    if(tmp2)  // we can do some blurring
-    {
-      const int border = dt_masks_blur_fast(tmp, tmp2, width, height, 0.8f, 1.2f, 1.5f);
-      dt_masks_extend_border(tmp2, width, height, border);
-      dt_free_align(tmp);
-      tmp = tmp2;
-    }
+      mask[idx] = sqrtf((fmaxf(0.0f, src[4 * idx]) + fmaxf(0.0f, src[4 * idx + 1]) + fmaxf(0.0f, src[4 * idx + 2])) / 3.0f);
   }
+
+  // some gaussian blur for stability of the scharr operator
+  const int border = dt_masks_blur_fast(mask, tmp, width, height, /* sigma */ 0.8f, 1.5f, 1.0f);
+  dt_masks_extend_border(tmp, width, height, border);
 
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
@@ -416,13 +412,13 @@ static gboolean _calc_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
       const float gy = 47.0f * (tmp[idx-width-1] - tmp[idx+width-1])
                      + 162.f * (tmp[idx-width]   - tmp[idx+width])
                      + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
-      mask[idx] = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f))
-                        / 16.0f; // 16 is the same as used in detail
+      mask[idx] = fminf(1.0f, sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f)))
+                  / 16.0f; // 16 is the same as used in detail
     }
   }
   dt_masks_extend_border(mask, width, height, 1);
   dt_free_align(tmp);
-  return FALSE;
+  return mask;
 }
 
 static uint64_t _raw_hash(dt_dev_pixelpipe_iop_t *piece,
@@ -440,8 +436,8 @@ static uint64_t _raw_hash(dt_dev_pixelpipe_iop_t *piece,
   return hash;
 }
 
-static gboolean _write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
-                                     float *const data,
+static void _write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
+                                     float *const src,
                                      const dt_iop_roi_t *const roi)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
@@ -450,30 +446,19 @@ static gboolean _write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
   if((hash == p->details.hash)
       && (hash != 0)
       && (p->details.data))
-    return FALSE;
+    return;
 
   dt_dev_clear_detail_mask(p);
+  p->details.data = _calc_scharr_mask(piece, roi, src);
+  if(p->details.data)
+  {
+    memcpy(&p->details.roi, roi, sizeof(dt_iop_roi_t));
+    p->details.hash = hash;
+  }
 
-  const int width = roi->width;
-  const int height = roi->height;
-  float *mask = dt_alloc_align_float((size_t)width * height);
-  if(!mask) goto error;
+  dt_print_pipe(DT_DEBUG_MASKS, "write scharr mask", p, NULL, roi, NULL, "%s\n",
+    (p->details.data) ? "" : "couldn't write scharr mask");
 
-  p->details.data = mask;
-  memcpy(&p->details.roi, roi, sizeof(dt_iop_roi_t));
-  p->details.hash = hash;
-
-  if(_calc_scharr_mask(piece, data))
-    goto error;
-
-  dt_print_pipe(DT_DEBUG_MASKS, "write scharr mask", p, NULL, roi, NULL, "\n");
-  return FALSE;
-
-  error:
-  dt_print_pipe(DT_DEBUG_ALWAYS,
-           "couldn't write scharr mask", p, NULL, roi, NULL, "\n");
-  dt_dev_clear_detail_mask(p);
-  return TRUE;
 }
 
 static int _BL(const dt_iop_roi_t *const roi_out,

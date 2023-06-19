@@ -77,8 +77,7 @@ void dt_masks_extend_border(float *const mask,
   if(border <= 0) return;
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask) \
-  dt_omp_sharedconst(width, height, border) \
+  dt_omp_firstprivate(mask, width, height, border) \
   schedule(static)
  #endif
   for(size_t row = border; row < height - border; row++)
@@ -92,8 +91,7 @@ void dt_masks_extend_border(float *const mask,
   }
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask) \
-  dt_omp_sharedconst(width, height, border) \
+  dt_omp_firstprivate(mask, width, height, border) \
   schedule(static)
  #endif
   for(size_t col = 0; col < width; col++)
@@ -144,7 +142,7 @@ void _masks_blur_5x5_coeff(float *c,
   /* c00 */ c[4]  = kernel[2][2];
 }
 #define FAST_BLUR_5 ( \
-  blurmat[0] * ((src[i - w2 - 1] + src[i - w2 + 1])                       \
+      blurmat[0] * ((src[i - w2 - 1] + src[i - w2 + 1])                   \
                  + (src[i - w1 - 2] + src[i - w1 + 2])                    \
                  + (src[i + w1 - 2] + src[i + w1 + 2])                    \
                  + (src[i + w2 - 1] + src[i + w2 + 1]))                   \
