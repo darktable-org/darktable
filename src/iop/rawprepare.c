@@ -355,7 +355,7 @@ static float * _calc_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 #ifdef _OPENMP
     #pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(src, mask, roi, filters, width, height, xtrans) \
-    schedule(simd:static) aligned(src, tmp : 64) collapse(2)
+    schedule(simd:static) aligned(src, mask : 64) collapse(2)
 #endif
     for(int row = 1; row < height-1; row++)
     {
@@ -385,7 +385,7 @@ static float * _calc_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 #ifdef _OPENMP
     #pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(mask, src, msize) \
-    schedule(simd:static) aligned(tmp, src : 64)
+    schedule(simd:static) aligned(mask, src : 64)
 #endif
     for(size_t idx = 0; idx < msize; idx++)
       mask[idx] = sqrtf((fmaxf(0.0f, src[4 * idx]) + fmaxf(0.0f, src[4 * idx + 1]) + fmaxf(0.0f, src[4 * idx + 2])) / 3.0f);
