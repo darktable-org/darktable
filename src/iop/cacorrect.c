@@ -1326,6 +1326,17 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->scale = 1.0f;
 }
 
+void distort_mask(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        const float *const in,
+        float *const out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
+}
+
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_image_t *img = &module->dev->image_storage;
