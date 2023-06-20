@@ -735,6 +735,25 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     goto end;
   }
 
+  if(strlen(deviceversion) < 9)
+  {
+     dt_print_nts(DT_DEBUG_OPENCL,
+                 "   *** no proper device version ***\n");
+    res = TRUE;
+    goto end;
+  }
+  else
+  {
+    if((strncmp(deviceversion+7, "1.0", 3) == 0)
+      || (strncmp(deviceversion+7, "1.1", 3) == 0))
+    {
+      dt_print_nts(DT_DEBUG_OPENCL,
+                 "   *** insufficient device version ***\n");
+      res = TRUE;
+      goto end;
+    }
+  }
+
   if(!device_available)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
