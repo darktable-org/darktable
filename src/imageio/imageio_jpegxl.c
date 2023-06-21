@@ -223,20 +223,26 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 
     if(status == JXL_DEC_COLOR_ENCODING)
     {
+#if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0, 9, 0)
       if(JxlDecoderGetICCProfileSize(decoder, &pixel_format, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size)
          == JXL_DEC_SUCCESS)
+#else
+      if(JxlDecoderGetICCProfileSize(decoder, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size) == JXL_DEC_SUCCESS)
+#endif
       {
         if(icc_size)
         {
           img->profile_size = icc_size;
           img->profile = (uint8_t *)g_malloc0(icc_size);
-          JxlDecoderGetColorAsICCProfile(decoder,
-                                         &pixel_format,
-                                         JXL_COLOR_PROFILE_TARGET_DATA,
-                                         img->profile,
+#if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0, 9, 0)
+          JxlDecoderGetColorAsICCProfile(decoder, &pixel_format, JXL_COLOR_PROFILE_TARGET_DATA, img->profile,
                                          icc_size);
+#else
+          JxlDecoderGetColorAsICCProfile(decoder, JXL_COLOR_PROFILE_TARGET_DATA, img->profile, icc_size);
+#endif
         }
-      } else
+      }
+      else
       {
         // According to libjxl docs, the only situation where an ICC profile is not available
         // is when the image has an unknown or XYB color space. But dt does not support such
