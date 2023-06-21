@@ -35,6 +35,8 @@ jobs:
     steps:
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
+          # Remove azure mirror because it is unreliable and sometimes unpredictably leads to failed CI
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
           sudo apt-get update
           sudo apt-get -y install \
             ${{ matrix.compiler.packages }}
@@ -60,7 +62,6 @@ jobs:
             libglib2.0-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
-            libheif-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
@@ -68,7 +69,6 @@ jobs:
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
-            libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
@@ -102,7 +102,9 @@ jobs:
             libgmic-dev \
             libgphoto2-dev \
             libheif-dev \
+            libimath-dev \
             libjxl-dev \
+            libopenexr-dev \
             x11proto-dev \
             libxfixes-dev;
       - uses: actions/checkout@v3
@@ -392,7 +394,11 @@ jobs:
             Also, new versions can make changes to the database schema, so it's best to run
             them with a separate library.
 
-            Please help us improve Darktable by reporting any issues you encounter! :wink:
+            The `*.AppImage.zsync` file is not intended to be downloaded and used locally.
+            Just ignore it. This file contains technical information required by AppImage
+            auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
+
+            __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
             Darktable-*.AppImage*
             darktable-*.dmg
