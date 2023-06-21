@@ -664,8 +664,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
       }
     }
     dt_masks_extend_border(tmp, pwidth, pheight, segall->border);
-    dt_masks_blur_fast(tmp, luminance, pwidth, pheight, 1.2f, 1.0f, 20.0f);
-    dt_masks_extend_border(luminance, pwidth, pheight, segall->border);
+    dt_masks_blur(tmp, luminance, pwidth, pheight, 1.2f, 1.0f, 20.0f);
   }
 
   if(do_recovery)
@@ -686,7 +685,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           _segment_gradients(distance, recout, tmp, recovery_mode, segall, id, recovery_close);
       }
 
-      dt_masks_blur_fast(recout, gradient, pwidth, pheight, 1.2f, 1.0f, 20.0f);
+      dt_masks_blur(recout, gradient, pwidth, pheight, 1.2f, 1.0f, 20.0f);
       // possibly add some noise
       const float noise_level = data->noise_level;
       if(noise_level > 0.0f)

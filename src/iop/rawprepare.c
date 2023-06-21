@@ -392,8 +392,7 @@ static float * _calc_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
   }
 
   // some gaussian blur for stability of the scharr operator
-  const int border = dt_masks_blur_fast(mask, tmp, width, height, /* sigma */ 0.8f, 1.5f, 1.0f);
-  dt_masks_extend_border(tmp, width, height, border);
+  dt_masks_blur(mask, tmp, width, height, /* sigma */ 0.8f, 1.5f, 1.0f);
 
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
