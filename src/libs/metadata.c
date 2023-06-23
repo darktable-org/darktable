@@ -52,7 +52,6 @@ typedef struct dt_lib_metadata_t
   char *setting_name[DT_METADATA_NUMBER];
   char *edited[DT_METADATA_NUMBER];
   gboolean editing[DT_METADATA_NUMBER];
-  char *name[DT_METADATA_NUMBER];
   GtkWidget *label[DT_METADATA_NUMBER];
   GtkWidget *apply_button;
   gboolean init_layout;
@@ -101,13 +100,10 @@ static void _text_set_all_selected(GtkTextView *textview,
 static void _text_set_italic(GtkTextView *textview,
                              const gboolean italic)
 {
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
-  GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(buffer, &start, &end);
   if(italic)
-    gtk_text_buffer_apply_tag_by_name(buffer, "italic", &start, &end);
+    dt_gui_add_class(GTK_WIDGET(textview), "dt_metadata_multi");
   else
-    gtk_text_buffer_remove_tag_by_name(buffer, "italic", &start, &end);
+    dt_gui_remove_class(GTK_WIDGET(textview), "dt_metadata_multi");
 }
 
 static void _set_text_buffer(GtkTextBuffer *buffer,
@@ -136,13 +132,9 @@ static void _set_textview_editing(const gboolean editing,
   }
   d->editing[i] = editing;
   if(editing)
-  {
-    gchar *markup = g_strdup_printf("<u><i>%s</i></u>", d->name[i]);
-    gtk_label_set_markup(GTK_LABEL(d->label[i]), markup);
-    g_free(markup);
-  }
+    dt_gui_add_class(d->label[i], "dt_metadata_changed");
   else if(d->label[i])
-    gtk_label_set_text(GTK_LABEL(d->label[i]), d->name[i]);
+    dt_gui_remove_class(d->label[i], "dt_metadata_changed");
 }
 
 static gboolean _is_textview_editing(const int i,
@@ -631,6 +623,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
     (_("metadata settings"), GTK_WINDOW(win),
      GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_YES,
      _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_ACCEPT, NULL);
+  dt_gui_dialog_add_help(GTK_DIALOG(dialog), "metadata_preferences");
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -849,14 +842,16 @@ void gui_init(dt_lib_module_t *self)
   {
     if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
       continue;
-    d->name[i] = _(dt_metadata_get_name_by_display_order(i));
-    d->label[i] = dt_ui_label_new(d->name[i]);
+    const char *name = (char *)dt_metadata_get_name_by_display_order(i);
+    d->label[i] = dt_ui_label_new(_(name));
+    gtk_widget_set_halign(d->label[i], GTK_ALIGN_FILL);
     GtkWidget *labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
 
     GtkWidget *textview = gtk_text_view_new();
+    dt_action_define(DT_ACTION(self), NULL, name, textview, &dt_action_def_entry);
     gtk_widget_set_tooltip_text(textview,
               _("metadata text"
               "\nctrl+enter inserts a new line (caution, may not be compatible with standard metadata)"
@@ -867,10 +862,7 @@ void gui_init(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(buffer), "buffer_tv", GINT_TO_POINTER(textview));
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
     g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
-    gtk_text_buffer_create_tag(gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview)),
-                                "italic", "style", PANGO_STYLE_ITALIC, NULL);
 
-    const char *name = (char *)dt_metadata_get_name_by_display_order(i);
     d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", name);
 
     GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
@@ -888,7 +880,7 @@ void gui_init(dt_lib_module_t *self)
 
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
-    gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK);
+    gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK | GDK_ENTER_NOTIFY_MASK);
     g_signal_connect(textview, "key-press-event", G_CALLBACK(_key_pressed), self);
     g_signal_connect(textview, "focus", G_CALLBACK(_textview_focus), self);
     g_signal_connect(textview, "populate-popup", G_CALLBACK(_populate_popup_multi), self);
