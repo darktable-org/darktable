@@ -41,6 +41,7 @@ dt_help_url urls_db[] =
   {"styles",                     "module-reference/utility-modules/lighttable/styles/#module-controls"},
   {"timeline",                   "module-reference/utility-modules/lighttable/timeline/"},
   {"metadata",                   "module-reference/utility-modules/shared/metadata-editor/"},
+  {"metadata_preferences",       "module-reference/utility-modules/shared/metadata-editor/#preferences"},
   {"tagging",                    "module-reference/utility-modules/shared/tagging/"},
   {"geotagging",                 "module-reference/utility-modules/shared/geotagging/"},
   {"collect",                    "module-reference/utility-modules/shared/collections/"},

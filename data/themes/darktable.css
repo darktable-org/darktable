@@ -1820,6 +1820,17 @@ treeview#delete-dialog:selected
    border-top: 2.4em solid @plugin_bg_color;
 }
 
+.dt_metadata_changed
+{
+  font-style: italic;
+  text-decoration-line: underline;
+}
+
+.dt_metadata_multi
+{
+  font-style: italic;
+}
+
 /*** --- Thumbtable css part ---
 
 Hierarchy :
