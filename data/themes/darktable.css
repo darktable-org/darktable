@@ -369,6 +369,7 @@ textview
 
 .combo,
 entry,
+.dt_metadata_multi,
 textview
 {
   padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of workaround just below */
@@ -1829,6 +1830,7 @@ treeview#delete-dialog:selected
 .dt_metadata_multi
 {
   font-style: italic;
+  margin: 0.07em; /* match textview */
 }
 
 /*** --- Thumbtable css part ---
