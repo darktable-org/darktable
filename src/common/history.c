@@ -925,20 +925,21 @@ char *dt_history_get_name_label(const char *name,
                                 const char *label,
                                 const gboolean markup)
 {
+  char *result = NULL;
+
   if(!label
      || strlen(label) == 0
      || strcmp(label, "0") == 0)
   {
-    return g_strdup_printf("%s", name);
+    result = g_markup_escape_text(name, -1);
   }
   else
   {
-    return g_strdup_printf("%s • %s%s%s",
-                           name,
-                           markup ? "<small>" : "",
-                           label,
-                           markup ? "</small>" : "");
+    result = markup ? g_markup_printf_escaped("%s • <small>%s</small>", name, label)
+                    : g_markup_printf_escaped("%s • %s", name, label);
   }
+
+  return result;
 }
 
 GList *dt_history_get_items(const dt_imgid_t imgid,
