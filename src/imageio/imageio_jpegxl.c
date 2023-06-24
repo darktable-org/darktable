@@ -223,7 +223,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 
     if(status == JXL_DEC_COLOR_ENCODING)
     {
-      if(JxlDecoderGetICCProfileSize(decoder, &pixel_format, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size)
+      if(JxlDecoderGetICCProfileSize(decoder, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size)
          == JXL_DEC_SUCCESS)
       {
         if(icc_size)
@@ -231,7 +231,6 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
           img->profile_size = icc_size;
           img->profile = (uint8_t *)g_malloc0(icc_size);
           JxlDecoderGetColorAsICCProfile(decoder,
-                                         &pixel_format,
                                          JXL_COLOR_PROFILE_TARGET_DATA,
                                          img->profile,
                                          icc_size);
