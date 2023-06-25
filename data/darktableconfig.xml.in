@@ -3614,7 +3614,7 @@
     <type>float</type>
     <default>10</default>
     <shortdescription>the interval within which same widget changes are merged for undo</shortdescription>
-    <longdescription>when continously manipulating the same widget (slider, curve) no new undo records are created during this time</longdescription>
+    <longdescription>when continuously manipulating the same widget (slider, curve) no new undo records are created during this time</longdescription>
   </dtconfig>
   <dtconfig>
     <name>darkroom/undo/review_secs</name>

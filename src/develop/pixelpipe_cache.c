@@ -577,7 +577,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   size_t freed = 0;
 
   int invalid = 0;
-  // We should always free cachelines maked as not valid
+  // We should always free cachelines marked as not valid
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->data[k] != NULL) && (cache->hash[k] == UNUSED_CACHEHASH))

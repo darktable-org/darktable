@@ -3540,7 +3540,7 @@ void dt_dev_image_ext(const dt_imgid_t imgid,
 
   dt_dev_process_image_job(&dev);
 
-  // record resulting image and dimentions
+  // record resulting image and dimensions
 
   const uint32_t bufsize =
     sizeof(uint32_t) * dev.pipe->backbuf_width * dev.pipe->backbuf_height;

@@ -191,7 +191,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
    * f(scene_zero) = display_black_target
    * f(scene_grey) = MIDDLE_GREY
    * f(scene_inf)  = display_white_target
-   * Slope at scene_grey independet of skewness i.e. only changed by the contrast parameter.
+   * Slope at scene_grey independent of skewness i.e. only changed by the contrast parameter.
    */
 
   // Calculate a reference slope for no skew and a normalized display

@@ -2852,7 +2852,7 @@ void dt_masks_line_stroke(cairo_t *cr,
 
   cairo_stroke_preserve(cr);
 
-  // second the forground draw, lighter (same size as darker if selected)
+  // second the foreground draw, lighter (same size as darker if selected)
   cairo_set_line_width
     (cr, (line_width / (selected && !border ? 1.0 : 2.0)));
 

@@ -2199,7 +2199,7 @@ static void _track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGp
   }
   else
   {
-    /* the line must be splitted in order to seek the geodesic line */
+    /* the line must be split in order to seek the geodesic line */
     OsmGpsMapPoint *ith_point;
     double f, ith_lat, ith_lon;
     const int n_segments = ceil(d / DT_MINIMUM_DISTANCE_FOR_GEODESIC);

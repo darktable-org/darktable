@@ -653,7 +653,7 @@ gboolean dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
     return TRUE;
   }
 
-  // allocation is fine so we now define struct data and initialize first two ununsed lines for safety
+  // allocation is fine so we now define struct data and initialize first two unused lines for safety
   seg->nr = 2;
   seg->border = border;
   seg->slots = slots;

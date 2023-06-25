@@ -1626,7 +1626,7 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original,
                                         dt_aligned_pixel_t Ych_final,
                                         const float saturation)
 {
-  // Note : Ych is normalized trough the LMS conversion,
+  // Note : Ych is normalized through the LMS conversion,
   // meaning c is actually a saturation (saturation ~= chroma / brightness).
   // So copy-pasting c and h from a different Y is equivalent to
   // tonemapping with a norm, which is equivalent to doing exposure compensation :

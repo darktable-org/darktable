@@ -784,7 +784,7 @@ static void _popup_date_tree_selection_change(GtkTreeView *self, GtkDarktableRan
     }
 
     GMatchInfo *match_info;
-    // we capture each date componenent
+    // we capture each date component
     GRegex *regex = g_regex_new(
         "^\\s*(\\d{4})?(?::(\\d{2}))?(?::(\\d{2}))?(?: (\\d{2}))?(?::(\\d{2}))?(?::(\\d{2}))?\\s*$", 0, 0, NULL);
     g_regex_match_full(regex, text, -1, 0, 0, &match_info, NULL);
