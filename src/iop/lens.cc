@@ -2165,7 +2165,7 @@ static int _init_coeffs_md_v2(const dt_image_t *img,
   }
 
   // calculate the optimal scaling value to show the maximum
-  // visibile image box after distortion correction
+  // visible image box after distortion correction
   // It does so by walking from the normalized radius [0, 1] at the shorter image
   // border to 1.
   // TODO(sgotti) Theoretically, since the distortion function should always be

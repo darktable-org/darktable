@@ -437,7 +437,7 @@ int mouse_moved(dt_lib_module_t *self,
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  // if panning, do not hanlde here, let darkroom do the job
+  // if panning, do not handle here, let darkroom do the job
   if(d->panning) return 0;
 
   if(d->selected >= 0)

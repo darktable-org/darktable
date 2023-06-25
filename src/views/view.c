@@ -1596,7 +1596,7 @@ void dt_view_paint_pixbuf(
     h = processed_height * ((float)w / (float)processed_width);
   }
 
-  // adjust dimention if needed
+  // adjust dimension if needed
   if(w > width)
   {
     const int32_t ow = w;

@@ -399,8 +399,8 @@ typedef struct dt_masks_form_gui_t
   uint64_t pipe_hash;
 } dt_masks_form_gui_t;
 
-/** special value to indicate an invalid or unitialized coordinate (replaces */
-/** former use of NAN and isnan() by the most negative float) **/
+/** special value to indicate an invalid or uninitialized coordinate */
+/** (replaces former use of NAN and isnan() by the most negative float) **/
 #define DT_INVALID_COORDINATE (-FLT_MAX)
 
 /** the shape-specific function tables */

@@ -163,7 +163,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
 
-  // Get decoded pixel values bit depth (ths is used to scale values to [0..1] range)
+  // Get decoded pixel values bit depth (this is used to scale values to [0..1] range)
   const int decoded_values_bit_depth = heif_image_get_bits_per_pixel_range(heif_img, heif_channel_interleaved);
   // Get original pixel values bit depth by querying the luma channel depth (this may differ from decoded values bit depth)
   const int original_values_bit_depth = heif_image_handle_get_luma_bits_per_pixel(handle);
