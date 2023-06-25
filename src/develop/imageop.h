@@ -611,7 +611,7 @@ static inline void copy_pixel_nontemporal(
 
 // after writing data using copy_pixel_nontemporal, it is necessary to
 // ensure that the writes have completed before attempting reads from
-// a different core.  This function produces the required memmory
+// a different core.  This function produces the required memory
 // fence to ensure proper visibility
 static inline void dt_sfence()
 {

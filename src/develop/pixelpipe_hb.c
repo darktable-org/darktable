@@ -1156,7 +1156,7 @@ static gboolean _pixelpipe_process_on_CPU(
   // the data buffers must always have a 64 alignment
   if((((uintptr_t)input) & 63) || (((uintptr_t)*output) & 63))
     dt_print(DT_DEBUG_ALWAYS,
-             "[pixelpipe_process_on_CPU] buffer aligment problem: IN=%p OUT=%p\n",
+             "[pixelpipe_process_on_CPU] buffer alignment problem: IN=%p OUT=%p\n",
              input, *output);
 
   // Fetch RGB working profile
@@ -1873,7 +1873,7 @@ static gboolean _dev_pixelpipe_process_rec(
               }
               else
                 dt_print(DT_DEBUG_ALWAYS,
-                         "[bench module GPU] [%s] `%s' finished without sucess\n",
+                         "[bench module GPU] [%s] `%s' finished without success\n",
                          full ? "full" : "export", module->op);
               darktable.unmuted = old_muted;
             }

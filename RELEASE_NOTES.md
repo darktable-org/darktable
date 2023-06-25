@@ -869,7 +869,7 @@ improvements and enhancements:
 - Added an `aspect_ratio` field to `dt_lua_image_t` for image
   orientation retrieval support.
 
-- `dt_lua_image_t` now repects the "show time in milliseconds" setting
+- `dt_lua_image_t` now respects the "show time in milliseconds" setting
   in lighttable preferences and will return `exif_datetime_taken` with
   milliseconds when enabled.
 
