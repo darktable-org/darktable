@@ -99,10 +99,7 @@ static void _textbuffer_changed(GtkTextBuffer *buffer, dt_lib_metadata_t *d)
                                   : metadata[0] != 0;
       g_free(metadata);
 
-      if(this_changed)
-        dt_gui_add_class(d->label[i], "dt_metadata_changed");
-      else if(d->label[i])
-        dt_gui_remove_class(d->label[i], "dt_metadata_changed");
+      gtk_widget_set_name(d->label[i], this_changed ? "dt-metadata-changed" : NULL);
 
       gtk_container_foreach(GTK_CONTAINER(d->textview[i]),
                             (GtkCallback)gtk_widget_set_visible,
@@ -702,7 +699,7 @@ void gui_init(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
 
     GtkWidget *unchanged = gtk_label_new("<leave unchanged>");
-    dt_gui_add_class(unchanged, "dt_metadata_multi");
+    gtk_widget_set_name(unchanged, "dt-metadata-multi");
     gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(textview), unchanged, GTK_TEXT_WINDOW_WIDGET, 0, 0);
 
     d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", name);
