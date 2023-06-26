@@ -101,7 +101,7 @@ you can build the software yourself following the instructions [below](#building
 *When using a pre-built package, ensure that it has been built with Lua, OpenCL, OpenMP and Colord support.
 These are optional and will not prevent darktable from running if missing,
 but their absence will degrade the user experience.
-Notably, some Flatpak, Snap and AppImage packages lack OpenCL and Lua support.*
+You can check for them by running darktable with the `--version` command line option.*
 
 ### Development snapshot
 
