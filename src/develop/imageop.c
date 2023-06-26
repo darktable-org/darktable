@@ -944,7 +944,12 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_set_name(entry, "iop-panel-label");
   gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
   gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
-  gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
+  gtk_entry_set_text(GTK_ENTRY(entry),
+                     strcmp(module->multi_name, "0")
+                     || module->multi_priority > 0
+                     || module->multi_name_hand_edited
+                       ? module->multi_name
+                       : "");
 
   //  hide module instance name as we need the space for the entry
   gtk_widget_hide(module->instance_name);
