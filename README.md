@@ -108,7 +108,7 @@ Notably, some Flatpak, Snap and AppImage packages lack OpenCL and Lua support.*
 The development snapshot reflects the current state of the master branch. It is intended for testing and is generally not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
 
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
-* [Binary packages are provided for macOS and Windows on a nightly basis](https://github.com/darktable-org/darktable/actions/workflows/nightly.yml) (x86_64 only).
+* [Binary packages are provided for Linux (AppImage), macOS and Windows on a nightly basis](https://github.com/darktable-org/darktable/releases/tag/nightly) (x86_64 only).
 
 Updating from older versions
 ----------------------------
