@@ -94,7 +94,7 @@ you can build the software yourself following the instructions [below](#building
 * [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.4.0/darktable-4.4.0-win64.exe)
 * [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.4.0/darktable-4.4.0-x86_64.dmg)
 * [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.4.0/darktable-4.4.0-arm64.dmg)
-* [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
+* [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
 
