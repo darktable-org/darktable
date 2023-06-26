@@ -1211,24 +1211,28 @@ static void _iop_panel_name(dt_iop_module_t *module)
 
   gtk_label_set_text(iname, new_label);
 
-  // check last history item and see if we can change its label
-  // accordingly. this must be done for the proper module and
-  // corresponding multi-priority.
-  // note: do not update for trouble messages has this will create
-  //       some infinite loop with lens module.
-  const GList *history = g_list_last(darktable.develop->history);
-
-  if(history && !module->has_trouble)
+  if(dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
   {
-    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+    // check last history item and see if we can change its label
+    // accordingly. this must be done for the proper module and
+    // corresponding multi-priority.
+    // note: do not update for trouble messages has this will create
+    //       some infinite loop with lens module.
 
-    if(hitem->module == module
-       && hitem->module->multi_priority == module->multi_priority)
+    const GList *history = g_list_last(darktable.develop->history);
+
+    if(history && !module->has_trouble)
     {
-      const gboolean changed = g_strcmp0(hitem->multi_name, multi_name);
-      if(changed)
+      dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+
+      if(hitem->module == module
+         && hitem->module->multi_priority == module->multi_priority)
       {
-        dt_dev_add_history_item(darktable.develop, module, FALSE);
+        const gboolean changed = g_strcmp0(hitem->multi_name, multi_name);
+        if(changed)
+        {
+          dt_dev_add_history_item(darktable.develop, module, FALSE);
+        }
       }
     }
   }
