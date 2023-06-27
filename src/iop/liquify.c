@@ -1010,13 +1010,13 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
         // DT_LIQUIFY_WARP_TYPE_RADIAL_GROW or _SHRINK
         // abs_strength is negative for _SHRINK
         const float abs_lookup = abs_strength * lookup_table[idist] / iradius;
-        *q1 += abs_lookup * (x - y_i);
+        *q1 -= abs_lookup * (x - y_i);
         if(x!=0)
-          *q2 -= abs_lookup * (x + y_i);
+          *q2 += abs_lookup * (x + y_i);
         if(x!=0&&y!=0)
-          *q3 -= abs_lookup * (x - y_i);
+          *q3 += abs_lookup * (x - y_i);
         if(y!=0)
-          *q4 += abs_lookup * (x + y_i);
+          *q4 -= abs_lookup * (x + y_i);
       }
     }
   }
