@@ -113,7 +113,7 @@ The development snapshot reflects the current state of the master branch. It is 
 Updating from older versions
 ----------------------------
 
-When updating darktable from an older release, you only need install
+When updating darktable from an older release, you only need to install
 the newest version. Existing files will be preserved.
 
 However, newer releases occasionally need to change the structure of the library database
