@@ -105,7 +105,9 @@ You can check for them by running darktable with the `--version` command line op
 
 ### Development snapshot
 
-The development snapshot reflects the current state of the master branch. It is intended for testing and is generally not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
+Development snapshots reflect the current state of the master branch. They are intended for testing and
+are generally less stable than releases, but sometimes it's the fastest way to get a fix if a previous release
+contained a bug. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
 
 * [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
 * [Binary packages are provided for Linux (AppImage), macOS and Windows on a nightly basis](https://github.com/darktable-org/darktable/releases/tag/nightly) (x86_64 only).
