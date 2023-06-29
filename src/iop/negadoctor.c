@@ -383,6 +383,7 @@ void init(dt_iop_module_t *module)
   d->Dmin[0] = 1.00f;
   d->Dmin[1] = 0.45f;
   d->Dmin[2] = 0.25f;
+  d->Dmin[3] = 1.00f; // keep parameter validation with -d common happy
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -564,6 +565,7 @@ static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self
 
   float RGB_min = v_minf(RGB);
   for(size_t k = 0; k < 3; k++) p->wb_low[k] = RGB[k] / RGB_min;
+  p->wb_low[3] = 1.0f;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->wb_low_R, p->wb_low[0]);
@@ -611,6 +613,7 @@ static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *sel
   dt_aligned_pixel_t RGB = { 2.0f - c.red, 2.0f - c.green, 2.0f - c.blue };
   float RGB_min = v_minf(RGB);
   for(size_t k = 0; k < 3; k++) p->wb_high[k] = RGB[k] / RGB_min;
+  p->wb_high[3] = 1.0f;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->wb_high_R, p->wb_high[0]);
@@ -706,6 +709,7 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
 
   const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
   for(int c = 0; c < 3; c++) p->wb_low[c] =  RGB_v_min / RGB_min[c];
+  p->wb_low[3] = 1.0f;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->wb_low_R, p->wb_low[0]);
@@ -732,6 +736,7 @@ static void apply_auto_WB_high(dt_iop_module_t *self)
 
   const float RGB_v_min = v_minf(RGB_min); // warning : must be positive
   for(int c = 0; c < 3; c++) p->wb_high[c] = RGB_min[c] / RGB_v_min;
+  p->wb_high[3] = 1.0f;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->wb_high_R, p->wb_high[0]);
