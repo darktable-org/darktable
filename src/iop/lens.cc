@@ -2856,6 +2856,53 @@ void process(dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
+cl_mem _preprocess_vignette_cl(struct dt_iop_module_t *self,
+                        dt_dev_pixelpipe_iop_t *piece,
+                        cl_mem dev_in,
+                        const dt_iop_roi_t *const roi)
+{
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
+
+  _init_vignette_spline(d);
+
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean vigmask = g && fullpipe && g->vig_masking;
+  const int devid = piece->pipe->devid;
+ 
+  if(vigmask)
+    piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
+
+  cl_mem dev_spline = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(d->vigspline), d->vigspline); 
+  if(dev_spline == NULL) return NULL;
+
+  cl_mem dev_vig = (cl_mem)dt_opencl_alloc_device(devid, roi->width, roi->height, 4 * sizeof(float));
+  const float w2 = 0.5f * roi->scale * piece->buf_in.width;
+  const float h2 = 0.5f * roi->scale * piece->buf_in.height;
+  const float inv_maxr = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float intensity = 2.0f * d->v_intensity;
+  const int splinesize = VIGSPLINES;
+
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lens_man_vignette, roi->width, roi->height,
+          CLARG(dev_in), CLARG(dev_vig), CLARG(dev_spline),
+          CLARG(roi->width), CLARG(roi->height),
+          CLARG(w2), CLARG(h2), CLARG(roi->x), CLARG(roi->y), CLARG(inv_maxr),
+          CLARG(intensity),
+          CLARG(splinesize),
+          CLARG(vigmask));
+
+  if(err != CL_SUCCESS)
+  {
+    dt_opencl_release_mem_object(dev_spline);
+    dt_opencl_release_mem_object(dev_vig);
+    return NULL;
+  }
+
+  dt_opencl_release_mem_object(dev_spline);
+  return (cl_mem)dev_vig;
+}
+
 int process_cl(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
@@ -2864,7 +2911,19 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   // process_cl is called only for lensfun method
-  return _process_cl_lf(self, piece, dev_in, dev_out, roi_in, roi_out);
+  cl_mem data = dev_in;
+ 
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  if(d->v_intensity > 0.0f)
+  {
+    cl_mem ndata = _preprocess_vignette_cl(self, piece, dev_in, roi_in);
+    if(ndata) data = ndata;    
+  }
+
+  cl_int err = _process_cl_lf(self, piece, data, dev_out, roi_in, roi_out);
+  if(data != dev_in)
+    dt_opencl_release_mem_object(data);
+  return err;
 }
 #endif
 
@@ -3009,7 +3068,7 @@ void commit_params(struct dt_iop_module_t *self,
   const gboolean use_lensfun = d->method == DT_IOP_LENS_METHOD_LENSFUN;
 
   // no OpenCL for LENS_METHOD_EMBEDDED_METADATA or manual vignette correction
-  piece->process_cl_ready = use_lensfun && (d->v_intensity <= 0.0f);
+  piece->process_cl_ready = use_lensfun;
 
   if(use_lensfun)
   {
@@ -3060,8 +3119,8 @@ void init_global(dt_iop_module_so_t *module)
     dt_opencl_create_kernel(program, "lens_distort_lanczos3");
   gd->kernel_lens_vignette =
     dt_opencl_create_kernel(program, "lens_vignette");
-//  gd->kernel_lens_man_vignette =
-//    dt_opencl_create_kernel(program, "lens_man_vignette");
+  gd->kernel_lens_man_vignette =
+    dt_opencl_create_kernel(program, "lens_man_vignette");
 
   lfDatabase *dt_iop_lensfun_db = new lfDatabase;
   gd->db = (lfDatabase *)dt_iop_lensfun_db;
@@ -3298,7 +3357,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos2);
   dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos3);
   dt_opencl_free_kernel(gd->kernel_lens_vignette);
-//  dt_opencl_free_kernel(gd->kernel_lens_man_vignette);
+  dt_opencl_free_kernel(gd->kernel_lens_man_vignette);
   free(module->data);
   module->data = NULL;
 }
