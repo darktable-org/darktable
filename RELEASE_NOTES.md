@@ -40,6 +40,10 @@ for more information on how to contribute._
 
 - Fix inverted and corrupted grow/shrink in Liquify module.
 
+- Fix FilmicRGB V7 CPU code path to disable the gamut mapping.
+
+- Fix Negadoctor CPU code path where clipping was not properly computed.
+
 - Fix snapshot label when containing non escaped characters.
 
 - Fix possible crash on Windows when using mask in the Color Balance RGB
