@@ -300,7 +300,7 @@ static inline void _process_pixel(const dt_aligned_pixel_t pix_in,
     {
       // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
       pix_out[c] = (print_gamma[c] > soft_clip[c])
-        ? soft_clip[c] + (1.0f - e_to_gamma[c] * soft_clip_comp[c])
+        ? soft_clip[c] + (1.0f - e_to_gamma[c]) * soft_clip_comp[c]
         : print_gamma[c];
     }
 }
