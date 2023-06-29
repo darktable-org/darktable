@@ -2614,6 +2614,48 @@ ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int widt
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+float _calc_vignette_spline(const float radius, float *spline, const int splinesize)
+{
+  if(radius >= 1.0f) return spline[splinesize-1];
+
+  const float r = radius * (float)(splinesize-1 - 1);
+  const int i = (int)r;
+  const float frac = r - (float)i;
+
+  const float p0 = spline[i];
+  return p0 + (spline[i+1] - p0) * frac;
+}
+
+kernel void lens_man_vignette(
+            read_only image2d_t in,
+            write_only image2d_t out,
+            global float *spline,            
+            const int width,
+            const int height,
+            const float w2,
+            const float h2,
+            const int roix,
+            const int roiy,
+            const float inv_maxr,
+            const float intensity,
+            const int splinesize,
+            const int vigmask)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float dx = ((float)(roix + x) - w2);
+  const float dy = ((float)(roiy + y) - h2);
+  const float radius = sqrt(dx*dx + dy*dy) * inv_maxr;
+  const float4 val = intensity * _calc_vignette_spline(radius, spline, splinesize);
+  
+  float4 pixel  = read_imagef(in, sampleri, (int2)(x, y));
+  pixel *= (1.0f + val);
+  pixel.w = (vigmask) ? val.w : pixel.y;
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
 
 kernel void
 lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float4 *pi)
