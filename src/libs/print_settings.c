@@ -785,8 +785,6 @@ static void _set_printer(const dt_lib_module_t *self,
   if(ps->prt.printer.is_turboprint)
     dt_bauhaus_combobox_set(ps->pprofile, 0);
 
-  dt_conf_set_string("plugins/print/print/printer", printer_name);
-
   // add papers for the given printer
   dt_bauhaus_combobox_clear(ps->papers);
   if(ps->paper_list) g_list_free_full(ps->paper_list, free);
@@ -822,7 +820,10 @@ _printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
   const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
 
   if(printer_name)
-    _set_printer (self, printer_name);
+  {
+    _set_printer(self, printer_name);
+    dt_conf_set_string("plugins/print/print/printer", printer_name);
+  }
 }
 
 static void
@@ -1388,46 +1389,31 @@ static gboolean _new_printer_callback(gpointer user_data)
 {
   static int count = 0;
   dt_printer_discovered_t *printer = (dt_printer_discovered_t *)user_data;
-  const dt_lib_module_t *self = (dt_lib_module_t *)printer->user_data;
+  dt_lib_module_t *self = (dt_lib_module_t *)printer->user_data;
   const dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
 
-  char *default_printer = dt_conf_get_string("plugins/print/print/printer");
+  const char *const default_printer =
+    dt_conf_get_string_const("plugins/print/print/printer");
 
   g_signal_handlers_block_by_func(G_OBJECT(d->printers),
-                                  G_CALLBACK(_printer_changed), NULL);
+                                  G_CALLBACK(_printer_changed), self);
 
   dt_bauhaus_combobox_add(d->printers, printer->name);
 
-  if(!g_strcmp0(default_printer, printer->name) || default_printer[0]=='\0')
+  // Activate printer if it was selected in conf, but as a fallback
+  // activate the first detected printer. Having the first printer
+  // active gets the print view into a usable state (we need a paper
+  // size). It also handles if the printer name in conf is either not
+  // set or is no longer connected.
+  if(!g_strcmp0(default_printer, printer->name) || count == 0)
   {
     dt_bauhaus_combobox_set(d->printers, count);
     _set_printer(self, printer->name);
   }
   count++;
-  g_free(default_printer);
 
   g_signal_handlers_unblock_by_func(G_OBJECT(d->printers),
-                                    G_CALLBACK(_printer_changed), NULL);
-  return G_SOURCE_REMOVE;
-}
-
-static gboolean _printer_detect_complete(gpointer user_data)
-{
-  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  const dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
-
-  // FIXME: can use the new faster dt_conf_get_string_const?
-  char *default_printer = dt_conf_get_string("plugins/print/print/printer");
-  // if the default printer from conf is available, this will be a
-  // NOP, but if it is offline, this will set the printer to the first
-  // on the list. Not setting the printer would mean that we would
-  // enter printer view with no papers loaded.
-  if(!dt_bauhaus_combobox_set_from_text(d->printers, default_printer))
-  {
-    dt_bauhaus_combobox_set(d->printers, 0);
-  }
-  g_free(default_printer);
-
+                                    G_CALLBACK(_printer_changed), self);
   return G_SOURCE_REMOVE;
 }
 
@@ -2913,7 +2899,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Let's start the printer discovery now
 
-  dt_printers_discovery(_new_printer_callback, _printer_detect_complete, self);
+  dt_printers_discovery(_new_printer_callback, self);
 }
 
 void *legacy_params(dt_lib_module_t *self,

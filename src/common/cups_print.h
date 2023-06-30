@@ -76,8 +76,7 @@ typedef struct dt_printer_discovered_t
 } dt_printer_discovered_t;
 
 // Asynchronous printer discovery, cb will be called for each printer found
-void dt_printers_discovery(GSourceFunc cb_exec, GSourceFunc cb_complete,
-                           void *user_data);
+void dt_printers_discovery(GSourceFunc cb_exec, void *user_data);
 void dt_printers_abort_discovery(void);
 
 // initialize the pinfo structure

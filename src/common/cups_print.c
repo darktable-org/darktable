@@ -58,7 +58,6 @@ extern void cupsFreeDestInfo() __attribute__((weak_import));
 typedef struct dt_prtctl_t
 {
   GSourceFunc cb_exec;
-  GSourceFunc cb_complete;
   void *user_data;
 } dt_prtctl_t;
 
@@ -147,19 +146,6 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
   cupsFreeDests(num_dests, dests);
 }
 
-void _printer_detect_complete(dt_job_t *job, dt_job_state_t state)
-{
-  if(state == DT_JOB_STATE_FINISHED)
-  {
-    dt_prtctl_t *pctl = dt_control_job_get_params(job);
-    if(pctl->cb_complete)
-    {
-      // callback needs to be in GUI thread
-      g_idle_add_full(G_PRIORITY_DEFAULT_IDLE, pctl->cb_complete, pctl->user_data, NULL);
-    }
-  }
-}
-
 static int _dest_cb(void *user_data, unsigned flags, cups_dest_t *dest)
 {
   const dt_prtctl_t *pctl = (dt_prtctl_t *)user_data;
@@ -220,8 +206,7 @@ void dt_printers_abort_discovery(void)
   _cancel = 1;
 }
 
-void dt_printers_discovery(GSourceFunc cb_exec, GSourceFunc cb_complete,
-                           void *user_data)
+void dt_printers_discovery(GSourceFunc cb_exec, void *user_data)
 {
   // asynchronously checks for available printers
   dt_job_t *job = dt_control_job_create(&_detect_printers_callback, "detect connected printers");
@@ -230,11 +215,9 @@ void dt_printers_discovery(GSourceFunc cb_exec, GSourceFunc cb_complete,
     dt_prtctl_t *prtctl = g_malloc0(sizeof(dt_prtctl_t));
 
     prtctl->cb_exec = cb_exec;
-    prtctl->cb_complete = cb_complete;
     prtctl->user_data = user_data;
 
     dt_control_job_set_params(job, prtctl, g_free);
-    dt_control_job_set_state_callback(job, &_printer_detect_complete);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
   }
 }
