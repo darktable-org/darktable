@@ -157,7 +157,7 @@ typedef struct dt_iop_lens_params_t
   float scale_md;  // $DEFAULT: 1 $MIN: 0.1 $MAX: 2.0 $DESCRIPTION: "image scale"
   // whether the params have already been computed
   gboolean has_been_set;
-  float v_intensity; // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 2.0 $DESCRIPTION: "intensity"
+  float v_intensity; // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "intensity"
   float v_radius; // $DEFAULT: 0.5 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "radius"
   float v_strength; // $DEFAULT: 0.5 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "strength"
   float reserved[2];
@@ -1963,33 +1963,25 @@ static inline float _calc_vignette_spline(const float radius, const float *splin
 }
 
 
-static float * _preprocess_vignette(struct dt_iop_module_t *self,
+static void _preprocess_vignette(struct dt_iop_module_t *self,
                         dt_dev_pixelpipe_iop_t *piece,
                         const float *const data,
-                        const dt_iop_roi_t *const roi)
+                        float *vig,
+                        const dt_iop_roi_t *const roi,
+                        const gboolean mask)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   _init_vignette_spline(d);
- 
-  float *vig = dt_alloc_align_float((size_t) 4 * roi->width * roi->height);
- 
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean vigmask = g && fullpipe && g->vig_masking;
-
-  if(vigmask)
-    piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
 
   const float w2 = 0.5f * roi->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi->scale * piece->buf_in.height;
   const float inv_maxr = 1.0f / sqrtf(w2*w2 + h2*h2);
-  const float intensity = d->v_intensity;
+  const float intensity = 2.0f * d->v_intensity;
   const float *spline = d->vigspline;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(data, vig, roi, w2, h2, vigmask, inv_maxr, intensity, spline) \
+    dt_omp_firstprivate(data, vig, roi, w2, h2, mask, inv_maxr, intensity, spline) \
     schedule(static) \
     collapse(2)
 #endif
@@ -2006,10 +1998,9 @@ static float * _preprocess_vignette(struct dt_iop_module_t *self,
       for_three_channels(c)
         vig[idx + c] = (1.0f + val) * data[idx+c];
 
-      vig[idx + 3] = (vigmask) ? val : vig[idx + 1]; 
+      vig[idx + 3] = (mask) ? val : vig[idx + 1]; 
     }
   }
-  return vig;
 }
 /* manually controlled vignette end */
 
@@ -2661,7 +2652,7 @@ static void _process_md(struct dt_iop_module_t *self,
   const struct dt_interpolation *interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
-  // Allocate temporary storage if we haven't got that from manual vignette or take that
+  // Allocate temporary storage if we haven't got that from manual vignette
   float *buf = (float *) ivoid;
   if(!backbuf)
   {
@@ -2834,12 +2825,19 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
-
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+  const gboolean correction = mask || (d->v_intensity > 0.0f);
   float *data = (float *)ivoid;
-  const gboolean man_vignette = d->v_intensity > 0.0f;
 
-  if(man_vignette)
-    data = _preprocess_vignette(self, piece, (float *)ivoid, roi_in);
+  if(mask)
+    piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
+ 
+  if(correction)
+  {
+    data = dt_alloc_align_float((size_t) 4 * roi_in->width * roi_in->height);
+    _preprocess_vignette(self, piece, (float *)ivoid, data, roi_in, mask);
+  }
     
   if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
@@ -2847,7 +2845,7 @@ void process(dt_iop_module_t *self,
   }
   else
   {
-    _process_md(self, piece, data, ovoid, roi_in, roi_out, man_vignette);
+    _process_md(self, piece, data, ovoid, roi_in, roi_out, correction);
   }
 
   if(data != (float *)ivoid)
@@ -2856,51 +2854,37 @@ void process(dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
-cl_mem _preprocess_vignette_cl(struct dt_iop_module_t *self,
+cl_int _preprocess_vignette_cl(struct dt_iop_module_t *self,
                         dt_dev_pixelpipe_iop_t *piece,
                         cl_mem dev_in,
-                        const dt_iop_roi_t *const roi)
+                        cl_mem dev_vig,
+                        const dt_iop_roi_t *const roi,
+                        const gboolean mask)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
 
   _init_vignette_spline(d);
-
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean vigmask = g && fullpipe && g->vig_masking;
-  const int devid = piece->pipe->devid;
  
-  if(vigmask)
-    piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
+  cl_mem dev_spline = (cl_mem)dt_opencl_copy_host_to_device_constant(piece->pipe->devid, sizeof(d->vigspline), d->vigspline); 
+  if(dev_spline == NULL) return DT_OPENCL_SYSMEM_ALLOCATION;
 
-  cl_mem dev_spline = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(d->vigspline), d->vigspline); 
-  if(dev_spline == NULL) return NULL;
-
-  cl_mem dev_vig = (cl_mem)dt_opencl_alloc_device(devid, roi->width, roi->height, 4 * sizeof(float));
   const float w2 = 0.5f * roi->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi->scale * piece->buf_in.height;
   const float inv_maxr = 1.0f / sqrtf(w2*w2 + h2*h2);
   const float intensity = 2.0f * d->v_intensity;
   const int splinesize = VIGSPLINES;
 
-  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lens_man_vignette, roi->width, roi->height,
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_lens_man_vignette, roi->width, roi->height,
           CLARG(dev_in), CLARG(dev_vig), CLARG(dev_spline),
           CLARG(roi->width), CLARG(roi->height),
           CLARG(w2), CLARG(h2), CLARG(roi->x), CLARG(roi->y), CLARG(inv_maxr),
           CLARG(intensity),
           CLARG(splinesize),
-          CLARG(vigmask));
-
-  if(err != CL_SUCCESS)
-  {
-    dt_opencl_release_mem_object(dev_spline);
-    dt_opencl_release_mem_object(dev_vig);
-    return NULL;
-  }
+          CLARG(mask));
 
   dt_opencl_release_mem_object(dev_spline);
-  return (cl_mem)dev_vig;
+  return err;
 }
 
 int process_cl(struct dt_iop_module_t *self,
@@ -2914,14 +2898,24 @@ int process_cl(struct dt_iop_module_t *self,
   cl_mem data = dev_in;
  
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
-  if(d->v_intensity > 0.0f)
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+  const gboolean correction = mask || (d->v_intensity > 0.0f);
+
+  if(mask)
+    piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
+
+  cl_int err = CL_SUCCESS;
+  if(correction)
   {
-    cl_mem ndata = _preprocess_vignette_cl(self, piece, dev_in, roi_in);
-    if(ndata) data = ndata;    
+    data = (cl_mem)dt_opencl_alloc_device(piece->pipe->devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+    err = _preprocess_vignette_cl(self, piece, dev_in, data, roi_in, mask);
   }
 
-  cl_int err = _process_cl_lf(self, piece, data, dev_out, roi_in, roi_out);
-  if(data != dev_in)
+  if(err == CL_SUCCESS)
+    err = _process_cl_lf(self, piece, data, dev_out, roi_in, roi_out);
+
+  if((data != dev_in) && data)
     dt_opencl_release_mem_object(data);
   return err;
 }
@@ -4293,9 +4287,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_set_homogeneous(GTK_STACK(g->methods), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->methods, TRUE, TRUE, 0);
 
-  gtk_stack_add_named(GTK_STACK(g->methods), box_lf, "lensfun");
-  gtk_stack_add_named(GTK_STACK(g->methods), box_md, "metadata");
-
   // message box to inform user what corrections have been done. this
   // is useful as depending on lensfuns profile only some of the lens
   // flaws can be corrected
@@ -4309,11 +4300,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
+  gtk_stack_add_named(GTK_STACK(g->methods), box_lf, "lensfun");
+  gtk_stack_add_named(GTK_STACK(g->methods), box_md, "metadata");
+
   // widget for extra manual vignette correction, FIXME manual reference
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/lens/manualvignette",
-     _("manual vignette"),
+     _("manual vignette correction"),
      GTK_BOX(main_box),
      DT_ACTION(self));
   gtk_widget_set_tooltip_text(g->cs.expander,
@@ -4322,7 +4316,8 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(g->cs.container);
 
   g->v_intensity = dt_bauhaus_slider_from_params(self, "v_intensity");
-  dt_bauhaus_slider_set_digits(g->v_intensity, 3);
+  dt_bauhaus_slider_set_format(g->v_intensity, "%");
+  dt_bauhaus_slider_set_digits(g->v_intensity, 1);
   dt_bauhaus_widget_set_quad_paint(g->v_intensity, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->v_intensity, TRUE);
   dt_bauhaus_widget_set_quad_active(g->v_intensity, FALSE);
@@ -4330,9 +4325,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->v_radius = dt_bauhaus_slider_from_params(self, "v_radius");
   dt_bauhaus_slider_set_format(g->v_radius, "%");
+  dt_bauhaus_slider_set_digits(g->v_radius, 1);
 
   g->v_strength = dt_bauhaus_slider_from_params(self, "v_strength");
   dt_bauhaus_slider_set_format(g->v_strength, "%");
+  dt_bauhaus_slider_set_digits(g->v_strength, 1);
 
   self->widget = main_box;
 
