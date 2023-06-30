@@ -67,6 +67,12 @@ for more information on how to contribute._
 
 - Allow entering full preview mode when no image hovered or selected.
 
+- Fix a case where no default auto-preset were applied to the
+  image. If a user's auto-preset is created for a module we want to
+  disable the default auto-preset only if the user's preset is
+  actually applied (meaning the filter on camera, lens, iso, aperture
+  or exposure matches).
+
 ## Lua
 
 ### API Version
