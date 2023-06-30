@@ -1411,6 +1411,26 @@ static gboolean _new_printer_callback(gpointer user_data)
   return G_SOURCE_REMOVE;
 }
 
+static gboolean _printer_detect_complete(gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
+
+  // FIXME: can use the new faster dt_conf_get_string_const?
+  char *default_printer = dt_conf_get_string("plugins/print/print/printer");
+  // if the default printer from conf is available, this will be a
+  // NOP, but if it is offline, this will set the printer to the first
+  // on the list. Not setting the printer would mean that we would
+  // enter printer view with no papers loaded.
+  if(!dt_bauhaus_combobox_set_from_text(d->printers, default_printer))
+  {
+    dt_bauhaus_combobox_set(d->printers, 0);
+  }
+  g_free(default_printer);
+
+  return G_SOURCE_REMOVE;
+}
+
 void view_enter(struct dt_lib_module_t *self,
                 struct dt_view_t *old_view,
                 struct dt_view_t *new_view)
@@ -2893,7 +2913,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Let's start the printer discovery now
 
-  dt_printers_discovery(_new_printer_callback, self);
+  dt_printers_discovery(_new_printer_callback, _printer_detect_complete, self);
 }
 
 void *legacy_params(dt_lib_module_t *self,
