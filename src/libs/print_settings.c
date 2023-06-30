@@ -1392,12 +1392,6 @@ static gboolean _new_printer_callback(gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)printer->user_data;
   const dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
 
-  const char *const default_printer =
-    dt_conf_get_string_const("plugins/print/print/printer");
-
-  g_signal_handlers_block_by_func(G_OBJECT(d->printers),
-                                  G_CALLBACK(_printer_changed), self);
-
   dt_bauhaus_combobox_add(d->printers, printer->name);
 
   // Activate printer if it was selected in conf, but as a fallback
@@ -1405,15 +1399,18 @@ static gboolean _new_printer_callback(gpointer user_data)
   // active gets the print view into a usable state (we need a paper
   // size). It also handles if the printer name in conf is either not
   // set or is no longer connected.
-  if(!g_strcmp0(default_printer, printer->name) || count == 0)
+  if(!g_strcmp0(dt_conf_get_string_const("plugins/print/print/printer"),
+                printer->name) || count == 0)
   {
+    // block value-changed so that _printer_changed() doesn't change
+    // conf string
+    ++darktable.gui->reset;
     dt_bauhaus_combobox_set(d->printers, count);
+    --darktable.gui->reset;
     _set_printer(self, printer->name);
   }
   count++;
 
-  g_signal_handlers_unblock_by_func(G_OBJECT(d->printers),
-                                    G_CALLBACK(_printer_changed), self);
   return G_SOURCE_REMOVE;
 }
 
