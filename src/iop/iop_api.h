@@ -117,7 +117,7 @@ OPTIONAL(void, gui_reset, struct dt_iop_module_t *self);
 /** construct widget. */
 OPTIONAL(void, gui_init, struct dt_iop_module_t *self);
 /** apply color picker results */
-OPTIONAL(void, color_picker_apply, struct dt_iop_module_t *self, struct _GtkWidget *picker, struct dt_dev_pixelpipe_iop_t *piece);
+OPTIONAL(void, color_picker_apply, struct dt_iop_module_t *self, struct _GtkWidget *picker, struct dt_dev_pixelpipe_t *pipe);
 /** called by standard widget callbacks after value changed */
 OPTIONAL(void, gui_changed, struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
 /** destroy widget. */
