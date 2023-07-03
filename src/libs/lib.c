@@ -827,18 +827,6 @@ static gboolean _lib_draw_callback(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean _lib_mouse_leave_callback(GtkWidget *widget,
-                                          GdkEventCrossing *e,
-                                          gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-
-  if(self->mouse_leave)
-    self->mouse_leave(self);
-
-  return TRUE;
-}
-
 void dt_lib_gui_queue_update(dt_lib_module_t *module)
 {
   module->gui_uptodate = FALSE;
@@ -1057,6 +1045,17 @@ static gboolean _header_enter_notify_callback(GtkWidget *eventbox,
   return FALSE;
 }
 
+static gboolean _body_enter_leave_callback(GtkWidget *widget,
+                                            GdkEventCrossing *e,
+                                            gpointer user_data)
+{
+  // set or clear focused module when entering or leaving (not when opening popup)
+  if(e->detail != GDK_NOTIFY_INFERIOR && e->mode == GDK_CROSSING_NORMAL)
+    darktable.lib->gui_module = e->type == GDK_ENTER_NOTIFY ? user_data : NULL;
+
+  return FALSE;
+}
+
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 {
   /* check if module is expandable */
@@ -1090,9 +1089,11 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
 
-  /* connect mouse button callbacks for focus and presets */
+  /* (un)focus module when entering/leaving body */
+  g_signal_connect(G_OBJECT(body_evb), "enter-notify-event",
+                   G_CALLBACK(_body_enter_leave_callback), module);
   g_signal_connect(G_OBJECT(body_evb), "leave-notify-event",
-                   G_CALLBACK(_lib_mouse_leave_callback), module);
+                   G_CALLBACK(_body_enter_leave_callback), module);
 
   /*
    * initialize the header widgets

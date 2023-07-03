@@ -1161,8 +1161,7 @@ static inline gint wavelets_process(const float *const restrict in,
   float *restrict residual; // will store the temp buffer containing the last step of blur
   // allocate a one-row temporary buffer for the decomposition
   size_t padded_size;
-  float *const DT_ALIGNED_ARRAY tempbuf =
-    dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
+  float *const restrict tempbuf = dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
   for(int s = 0; s < scales; ++s)
   {
     /* fprintf(stdout, "Wavelet decompose : scale %i\n", s); */

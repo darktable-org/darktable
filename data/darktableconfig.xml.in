@@ -1252,7 +1252,7 @@
     <type>string</type>
     <default>120|400</default>
     <shortdescription>delimiters for size categories</shortdescription>
-    <longdescription>size categories are used to be able to set different overlays and CSS values depending of the size of the thumbnail, separated by |.\nfor example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px</longdescription>
+    <longdescription>size categories are used to be able to set different overlays and CSS values depending of the size of the thumbnail, separated by |.\nfor example, 120|400 means 3 categories of thumbnails: &lt;120px, 120-400px, >400px</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
@@ -1268,7 +1268,7 @@
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="general">
+  <dtconfig>
     <name>pressure_sensitivity</name>
     <type>
       <enum>
@@ -1284,7 +1284,7 @@
     <shortdescription>pen pressure control for brush masks</shortdescription>
     <longdescription> - 'off': pressure reading ignored,\n - 'hardness'/'opacity'/'brush size': pressure reading controls specified attribute,\n - 'absolute'/'relative': pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="general">
+  <dtconfig>
     <name>brush_smoothing</name>
     <type>
       <enum>
@@ -1309,7 +1309,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>middle mouse button zooms to 200%</shortdescription>
-    <longdescription>when clicking the middle mouse button to zoom, the zoom level will cycle through 100%, 200% and then back to fit the screen. otherwise it switches between fit to screen and 100% and the 'ctrl' key can be used to control the zoom level.</longdescription>
+    <longdescription>if enabled, the zoom level will cycle between 100%, 200% and fit to viewport on middle mouse clicks. if disabled, it will toggle between viewport size and 100%, and the 'ctrl' key can be used to control the zoom level.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>channel_display</name>

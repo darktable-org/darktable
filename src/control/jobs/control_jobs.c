@@ -370,7 +370,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
       d->wb_coeffs[i] = image.wb_coeffs[i];
     // give priority to DNG embedded matrix: see dt_colorspaces_conversion_matrices_xyz() and its call from
     // iop/temperature.c with image_storage.adobe_XYZ_to_CAM[][] and image_storage.d65_color_matrix[] as inputs
-    if(!isnan(image.d65_color_matrix[0]))
+    if(dt_is_valid_colormatrix(image.d65_color_matrix[0]))
     {
         for(int i = 0; i < 9; ++i)
           d->adobe_XYZ_to_CAM[i/3][i%3] = image.d65_color_matrix[i];
@@ -857,8 +857,8 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_NONE,
       modal_dialog->send_to_trash
-        ? _("could not send %s to trash%s\n%s\n\n do you want to physically delete the file from disk without using trash?")
-        : _("could not physically delete from disk %s%s\n%s"),
+        ? _("could not send %s to trash%s\n%s\n\n do you want to delete the file from disk without using trash?")
+        : _("could not delete from disk %s%s\n%s"),
       modal_dialog->filename,
       modal_dialog->error_message != NULL ? ": " : "",
       modal_dialog->error_message != NULL ? modal_dialog->error_message : "");
@@ -874,8 +874,8 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
 
   if(modal_dialog->send_to_trash)
   {
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_yes, physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_no, only remove from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_delete permanently"), _DT_DELETE_DIALOG_CHOICE_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_remove from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   }
   else
   {

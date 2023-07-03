@@ -206,10 +206,11 @@ jobs:
             cc:p
             cmake:p
             cmocka:p
+            libxslt:p
             ninja:p
             nsis:p
             python-jsonschema:p
-            dbus-glib:p
+            curl:p
             drmingw:p
             exiv2:p
             gcc-libs:p
@@ -218,21 +219,22 @@ jobs:
             graphicsmagick:p
             gtk3:p
             icu:p
+            imath:p
             iso-codes:p
             lcms2:p
             lensfun:p
             libavif:p
-            libexif:p
             libgphoto2:p
             libheif:p
             libjpeg-turbo:p
             libjxl:p
+            libpng:p
             libraw:p
+            librsvg:p
             libsecret:p
             libtiff:p
             libwebp:p
             libxml2:p
-            libxslt:p
             lua:p
             omp:p
             openexr:p

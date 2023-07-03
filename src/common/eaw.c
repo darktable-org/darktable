@@ -195,9 +195,10 @@ void eaw_decompose_and_synthesize(float *const restrict out,
         const ssize_t clamp_y = CLAMP(y,0,height-1);
         for(ssize_t ii = 0; ii < 5; ii++)
         {
-          ssize_t x = i + mult * ((ii)-2);
-          if(x >= width) x = width - 1;		// we might be looking beyond the right edge
-          px2 = ((float *)in) + 4 * x + (size_t)4 * clamp_y * width;
+          const ssize_t x = i + mult * ((ii)-2);
+          // ensure that we don't look past either edge (left edge is possible at higher scales on small images)
+          const ssize_t clamp_x = CLAMP(x, 0, width - 1);
+          px2 = ((float *)in) + 4 * clamp_x + (size_t)4 * clamp_y * width;
           SUM_PIXEL_CONTRIBUTION;
         }
       }
@@ -373,9 +374,10 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
         const int clamp_y = CLAMP(y,0,height-1);
         for(int ii = 0; ii < 5; ii++)
         {
-          int x = i + mult * ((ii)-2);
-          if(x >= width) x = width - 1;		// we might be looking past the right edge
-          px2 = ((float *)in) + 4 * x + (size_t)4 * clamp_y * width;
+          const int x = i + mult * ((ii)-2);
+          // ensure that we don't look past either edge (left edge is possible at higher scales on small images)
+          const int clamp_x = CLAMP(x, 0, width-1);
+          px2 = ((float *)in) + 4 * clamp_x + (size_t)4 * clamp_y * width;
           SUM_PIXEL_CONTRIBUTION;
         }
       }

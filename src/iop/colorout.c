@@ -23,7 +23,6 @@
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/dttypes.h"
-#include "common/file_location.h"
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
@@ -360,7 +359,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self,
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
 
-  if(!isnan(d->cmatrix[0][0]))
+  if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     const size_t npixels = (size_t)roi_out->width * roi_out->height;
     float *const restrict out = (float *const)ovoid;
@@ -547,7 +546,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
-  else if(!isnan(d->cmatrix[0][0]))
+  else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     if (!_transform_cmatrix(d, out, (float*)ivoid, npixels))
       process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
@@ -604,7 +603,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     cmsDeleteTransform(d->xform);
     d->xform = NULL;
   }
-  d->cmatrix[0][0] = NAN;
+  dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
@@ -730,17 +729,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
   if(d->mode != DT_PROFILE_NORMAL || force_lcms2
-     || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-                                                      LUT_SAMPLES))
+     || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
+                                                      d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
-    d->cmatrix[0][0] = NAN;
+    dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
     piece->process_cl_ready = FALSE;
     d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                           out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
-  if(!d->xform && isnan(d->cmatrix[0][0]))
+  if(!d->xform && !dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS,
@@ -749,10 +748,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
 
     if(d->mode != DT_PROFILE_NORMAL
-       || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-                                                        LUT_SAMPLES))
+       || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix,
+                                                        d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
-      d->cmatrix[0][0] = NAN;
+      dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       piece->process_cl_ready = FALSE;
 
       d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
@@ -865,11 +864,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_iop_colorout_gui_data_t *g = IOP_GUI_ALLOC(colorout);
 
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->output_intent, self, NULL, N_("output intent"),
@@ -896,15 +890,12 @@ void gui_init(struct dt_iop_module_t *self)
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 
-  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-  char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(g->output_profile, tooltip);
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
+  char *tooltip = dt_ioppr_get_location_tooltip("out", _("export ICC profiles"));
+  gtk_widget_set_tooltip_markup(g->output_profile, tooltip);
   g_free(tooltip);
 
-  g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->output_profile), "value-changed",
+                   G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,

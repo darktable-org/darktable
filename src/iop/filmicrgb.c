@@ -2036,7 +2036,7 @@ static inline void filmic_v5(const float *const restrict in, float *const restri
 
     gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix_trans, output_matrix, output_matrix_trans,
                   export_input_matrix_trans, export_output_matrix, export_output_matrix_trans,
-                  display_black, display_white, data->saturation, use_output_profile);
+                  display_black, display_white, 0.0f, use_output_profile);
     copy_pixel_nontemporal(out + k, pix_out);
   }
   dt_omploop_sfence();	// ensure that nontemporal writes complete before we attempt to read output
@@ -3250,7 +3250,7 @@ void init_presets(dt_iop_module_so_t *self)
        1, DEVELOP_BLEND_CS_RGB_SCENE);
 
     dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
-                              self->version(), FOR_RAW);
+                              self->version(), FOR_RAW | FOR_MATRIX);
 
     dt_gui_presets_update_autoapply(_("scene-referred default"),
                                     self->op, self->version(), TRUE);

@@ -133,6 +133,7 @@ typedef struct dt_gui_gtk_t
   GtkWidget *focus_peaking_button;
 
   double dpi, dpi_factor, ppd, ppd_thb;
+  gboolean have_pen_pressure;
 
   int icon_size; // size of top panel icons
 

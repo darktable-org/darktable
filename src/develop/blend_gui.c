@@ -608,7 +608,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode,
 
   _box_set_visible(data->top_box, mask_mode & DEVELOP_MASK_ENABLED);
 
-  dt_iop_set_mask_mode(data->module, mask_mode);
+  dt_iop_advertise_rastermask(data->module, mask_mode);
 
   if((mask_mode & DEVELOP_MASK_ENABLED)
      && ((data->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
@@ -1381,12 +1381,24 @@ static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
 
 static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button,
                                             dt_iop_module_t *module,
-                                            const unsigned int mask_mode)
+                                            unsigned int mask_mode)
 {
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
   dt_iop_request_focus(module);
+
+  // test if need to add drawn or parametric mask
+  if(!button)
+  {
+    if(module->blend_params->mask_mode & (mask_mode | DEVELOP_MASK_RASTER))
+      return FALSE;
+
+    mask_mode |= module->blend_params->mask_mode | DEVELOP_MASK_ENABLED;
+    button = g_list_nth_data(data->masks_modes_toggles,
+                            g_list_index(data->masks_modes,
+                                          GUINT_TO_POINTER(mask_mode)));
+  }
 
   const gboolean was_toggled = !gtk_toggle_button_get_active(button);
   gtk_toggle_button_set_active(button, was_toggled);
@@ -1563,6 +1575,8 @@ static gboolean _blendop_masks_add_shape(GtkWidget *widget,
   }
 
   if(this < 0) return FALSE;
+
+  _blendop_masks_modes_toggle(NULL, self, DEVELOP_MASK_MASK);
 
   // set all shape buttons to inactive
   for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
@@ -2850,6 +2864,9 @@ static void _raster_value_changed_callback(GtkWidget *widget,
 {
   raster_combo_entry_t *entry = dt_bauhaus_combobox_get_data(widget);
 
+  if(!entry)
+    return;
+
   // nothing to do
   if(entry->module == module->raster_mask.sink.source
      && entry->id == module->raster_mask.sink.id)
@@ -2862,7 +2879,7 @@ static void _raster_value_changed_callback(GtkWidget *widget,
   }
 
   module->raster_mask.sink.source = entry->module;
-  module->raster_mask.sink.id = entry->id;
+  module->raster_mask.sink.id = entry->module ? entry->id : INVALID_MASKID;
 
   gboolean reprocess = FALSE;
 

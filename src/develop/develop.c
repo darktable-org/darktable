@@ -1671,6 +1671,11 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // select all presets from one of the following table and add them
   // into memory.history. Note that this is appended to possibly
   // already present default modules.
+  //
+  // Also it may be possible that multiple presets for a module not
+  // supporting multiple instances (e.g. demosaic) may be added. Those
+  // instances are properly merged in dt_dev_read_history_ext.
+
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[2048];
@@ -1699,12 +1704,20 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "       ('ioporder', 'metadata', 'modulegroups', 'export',"
            "        'tagging', 'collect', '%s')"
            // select all user's auto presets or the hard-coded presets (for the workflow)
-           // if non auto-presets for the same operation found.
+           // if non auto-presets for the same operation and matching
+           // camera/lens/focal/format/exposure found.
            "   AND (writeprotect = 0"
            "        OR (SELECT NOT EXISTS"
            "             (SELECT op"
            "              FROM presets"
-           "              WHERE autoapply = 1 AND operation = op AND writeprotect = 0)))"
+           "              WHERE autoapply = 1 AND operation = op AND writeprotect = 0"
+           "                    AND ((?2 LIKE model AND ?3 LIKE maker)"
+           "                         OR (?4 LIKE model AND ?5 LIKE maker))"
+           "                    AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+           "                    AND ?8 BETWEEN exposure_min AND exposure_max"
+           "                    AND ?9 BETWEEN aperture_min AND aperture_max"
+           "                    AND ?10 BETWEEN focal_length_min AND focal_length_max"
+           "                    AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0)))))"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            // auto module:
            //  ON  : we take as the preset label either the multi-name
@@ -2151,7 +2164,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
       if(dt_iop_module_is(module->so, module_name))
       {
-        if(module->multi_priority == multi_priority)
+        // make sure that module not supporting multiple instances are
+        // selected here.
+        if(module->multi_priority == multi_priority
+           || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
         {
           hist->module = module;
           if(multi_name)
@@ -2234,7 +2250,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     hist->enabled = enabled;
     hist->num = num;
     hist->iop_order = iop_order;
-    hist->multi_priority = multi_priority;
+    hist->multi_priority = (hist->module->flags() & IOP_FLAGS_ONE_INSTANCE)
+      ? 0
+      : multi_priority;
+
     hist->multi_name_hand_edited = multi_name_hand_edited;
     g_strlcpy(hist->op_name, hist->module->op, sizeof(hist->op_name));
     g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));

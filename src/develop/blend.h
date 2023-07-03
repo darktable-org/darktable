@@ -27,7 +27,7 @@
 #include "gui/color_picker_proxy.h"
 #include "common/imagebuf.h"
 
-#define DEVELOP_BLEND_VERSION (12)
+#define DEVELOP_BLEND_VERSION (13)
 
 #ifdef __cplusplus
 extern "C" {
@@ -180,8 +180,8 @@ typedef enum dt_develop_blendif_channels_t
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t
 {
-  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
-   *  or raster mask */
+  /** what kind of masking to use: off, non-mask (uniformly),
+   *  hand-drawn mask and/or conditional mask or raster mask */
   uint32_t mask_mode;
   /** blending color space type */
   int32_t blend_cst;
@@ -397,13 +397,13 @@ gboolean dt_develop_blend_params_is_all_zero(const void *params,
                                              const size_t length);
 
 /** update blendop params from older versions */
-int dt_develop_blend_legacy_params(dt_iop_module_t *module,
+gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
                                    const void *const old_params,
                                    const int old_version,
                                    void *new_params,
                                    const int new_version,
                                    const int length);
-int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
+gboolean dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
                                            const void *const old_params,
                                            const int old_version,
                                            void *new_params,
@@ -433,7 +433,7 @@ void dt_develop_blendif_process_parameters(float *const parameters,
  *
  * The initialized profile may only be used to convert from RGB to XYZ.
  */
-int dt_develop_blendif_init_masking_profile
+gboolean dt_develop_blendif_init_masking_profile
   (struct dt_dev_pixelpipe_iop_t *piece,
    dt_iop_order_iccprofile_info_t *blending_profile,
    const dt_develop_blend_colorspace_t cst);
@@ -522,11 +522,12 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module,
 
 #ifdef HAVE_OPENCL
 /** apply blend for opencl modules*/
-int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
-                                struct dt_dev_pixelpipe_iop_t *piece,
-                                cl_mem dev_in, cl_mem dev_out,
-                                const struct dt_iop_roi_t *roi_in,
-                                const struct dt_iop_roi_t *roi_out);
+gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
+                                     struct dt_dev_pixelpipe_iop_t *piece,
+                                     cl_mem dev_in,
+                                     cl_mem dev_out,
+                                     const struct dt_iop_roi_t *roi_in,
+                                     const struct dt_iop_roi_t *roi_out);
 #endif
 
 #ifdef __cplusplus

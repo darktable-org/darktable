@@ -219,7 +219,7 @@ void dt_develop_blendif_process_parameters(float *const restrict parameters,
 }
 
 // See function definition in blend.h for important information
-int dt_develop_blendif_init_masking_profile
+gboolean dt_develop_blendif_init_masking_profile
   (struct dt_dev_pixelpipe_iop_t *piece,
    dt_iop_order_iccprofile_info_t *blending_profile,
    const dt_develop_blend_colorspace_t cst)
@@ -235,7 +235,7 @@ int dt_develop_blendif_init_masking_profile
   const dt_iop_order_iccprofile_info_t *const profile = (cst == DEVELOP_BLEND_CS_RGB_SCENE)
       ? dt_ioppr_get_pipe_current_profile_info(piece->module, piece->pipe)
       : dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
-  if(!profile) return 0;
+  if(!profile) return FALSE;
 
   memcpy(blending_profile, profile, sizeof(dt_iop_order_iccprofile_info_t));
   for(size_t y = 0; y < 3; y++)
@@ -250,7 +250,7 @@ int dt_develop_blendif_init_masking_profile
     }
   }
 
-  return 1;
+  return TRUE;
 }
 
 static inline float _detail_mask_threshold(const float level,
@@ -544,6 +544,13 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
                                                 self->raster_mask.sink.source,
                                                 self->raster_mask.sink.id,
                                                 self, &free_mask);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend raster on CPU",
+       piece->pipe, self, roi_in, roi_out, "%s %s %s at %p\n",
+       dt_iop_colorspace_to_name(cst),
+       free_mask ? "temp" : "permanent",
+       d->raster_mask_invert ? "inverted" : "",
+       raster_mask);
     if(raster_mask)
     {
       // invert if required
@@ -566,17 +573,18 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     }
     else
     {
-      // fallback for when the raster mask couldn't be applied
-      const float value = d->raster_mask_invert ? 0.0 : 1.0;
-      dt_iop_image_fill(mask, value, owidth, oheight, 1);  // mask[k] = value;
+      // fallback if no raster mask is available
+      dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1);  // mask[k] = value;
     }
   }
   else
   {
+    const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
     dt_print_pipe(DT_DEBUG_PIPE,
        "blend with form on CPU",
-       piece->pipe, self, roi_in, roi_out,
-       "\n");
+       piece->pipe, self, roi_in, roi_out, "%s %s\n",
+       dt_iop_colorspace_to_name(cst),
+       inverted ? "inverted" : "");
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one
@@ -588,7 +596,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     {
       dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
-      if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+      if(inverted)
       {
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); // mask[k] = 1.0f - mask[k];
@@ -599,7 +607,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
+      const float fill = inverted ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
     else
@@ -732,13 +740,19 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   // TODO: should we skip raster masks?
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID))
   {
-    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
+    const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "write raster mask on CPU", piece->pipe, self, roi_in, roi_out, "%s at %p\n",
+       new ? "new" : "replaced",
+       _mask);
   }
   else
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+       "clear raster mask on CPU", piece->pipe, self, roi_in, roi_out, "\n");
   }
 }
 
@@ -865,7 +879,7 @@ static inline void _blend_process_cl_exchange(cl_mem *a, cl_mem *b)
   *b = tmp;
 }
 
-int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
+gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                 struct dt_dev_pixelpipe_iop_t *piece,
                                 cl_mem dev_in,
                                 cl_mem dev_out,
@@ -1023,7 +1037,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   if(dev_mask_1 == NULL) goto error;
 
   dt_iop_order_iccprofile_info_t profile;
-  const int use_profile =
+  const gboolean use_profile =
     dt_develop_blendif_init_masking_profile(piece, &profile, blend_csp);
 
   err = dt_ioppr_build_iccprofile_params_cl(use_profile ? &profile : NULL,
@@ -1063,6 +1077,13 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                                 self->raster_mask.sink.source,
                                                 self->raster_mask.sink.id,
                                                 self, &free_mask);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend raster CL",
+       piece->pipe, self, roi_in, roi_out, "%s %s %s at %p\n",
+       dt_iop_colorspace_to_name(cst),
+       d->raster_mask_invert ? "inverted" : "",
+       free_mask ? "temp" : "permanent",
+       raster_mask);
     if(raster_mask)
     {
       // invert if required
@@ -1084,9 +1105,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     }
     else
     {
-      // fallback for when the raster mask couldn't be applied
-      const float value = d->raster_mask_invert ? 0.0 : 1.0;
-      dt_iop_image_fill(mask, value, owidth, oheight, 1); //mask[k] = value;
+      // fallback if no raster mask is applied
+      dt_iop_image_fill(mask, 0.0f, owidth, oheight, 1); //mask[k] = value;
     }
 
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1,
@@ -1101,9 +1121,12 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
   else
   {
+    const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
     dt_print_pipe(DT_DEBUG_PIPE,
-       "blend with form on GPU",
-       piece->pipe, self, roi_in, roi_out, "\n");
+       "blend with form CL",
+       piece->pipe, self, roi_in, roi_out, "%s %s\n",
+       dt_iop_colorspace_to_name(cst),
+       inverted ? "inverted" : "");
     // we blend with a drawn and/or parametric mask
 
     // get the drawn mask if there is one
@@ -1115,7 +1138,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     {
       dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
-      if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+      if(inverted)
       {
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); //mask[k] = 1.0f - mask[k]
@@ -1126,7 +1149,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
+      const float fill = inverted ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
     else
@@ -1357,15 +1380,26 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self,
     {
       err = dt_opencl_copy_device_to_host(devid, mask, dev_mask_1,
                                           owidth, oheight, sizeof(float));
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS)
+      {
+        // As we have not written the mask we must remove an existing one.
+        g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
+        goto error;
+      }
     }
-    g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
+    const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "write raster mask CL", piece->pipe, self, roi_in, roi_out, "%s at %p\n",
+       new ? "new" : "replaced",
+       _mask);
   }
   else
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID));
     dt_free_align(_mask);
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+       "clear raster mask CL", piece->pipe, self, roi_in, roi_out, "\n");
   }
 
   dt_opencl_release_mem_object(dev_blendif_params);
@@ -1392,7 +1426,7 @@ error:
   dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl,
                                      &dev_work_profile_info,
                                      &dev_work_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] error: %s\n", cl_errstr(err));
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_PIPE, "[opencl_blendop] error: %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1576,7 +1610,7 @@ static void _fix_masks_combine(dt_develop_blend_params_t *bp)
 }
 
 /** update blendop params from older versions */
-int dt_develop_blend_legacy_params(dt_iop_module_t *module,
+gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
                                    const void *const old_params,
                                    const int old_version,
                                    void *new_params,
@@ -1600,10 +1634,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
 
     *n = default_display_blend_params;
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 1 && new_version == 12)
+  if(old_version == 1 && new_version == 13)
   {
     /** blend legacy parameters version 1 */
     typedef struct dt_develop_blend_params1_t
@@ -1625,10 +1659,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->blend_mode = _blend_legacy_blend_mode(o->mode);
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 2 && new_version == 12)
+  if(old_version == 2 && new_version == 13)
   {
     /** blend legacy parameters version 2 */
     typedef struct dt_develop_blend_params2_t
@@ -1666,10 +1700,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
                                     // 2; also switch off old "active" bit
     for(int i = 0; i < (4 * 8); i++) n->blendif_parameters[i] = o->blendif_parameters[i];
 
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 3 && new_version == 12)
+  if(old_version == 3 && new_version == 13)
   {
     /** blend legacy parameters version 3 */
     typedef struct dt_develop_blend_params3_t
@@ -1707,10 +1741,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 4 && new_version == 12)
+  if(old_version == 4 && new_version == 13)
   {
     /** blend legacy parameters version 4 */
     typedef struct dt_develop_blend_params4_t
@@ -1750,10 +1784,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active);
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 5 && new_version == 12)
+  if(old_version == 5 && new_version == 13)
   {
     /** blend legacy parameters version 5 (identical to version 6)*/
     typedef struct dt_develop_blend_params5_t
@@ -1802,10 +1836,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 6 && new_version == 12)
+  if(old_version == 6 && new_version == 13)
   {
     /** blend legacy parameters version 6 (identical to version 7) */
     typedef struct dt_develop_blend_params6_t
@@ -1847,10 +1881,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 7 && new_version == 12)
+  if(old_version == 7 && new_version == 13)
   {
     /** blend legacy parameters version 7 */
     typedef struct dt_develop_blend_params7_t
@@ -1892,10 +1926,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 8 && new_version == 12)
+  if(old_version == 8 && new_version == 13)
   {
     /** blend legacy parameters version 8 */
     typedef struct dt_develop_blend_params8_t
@@ -1949,10 +1983,10 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->blendif_parameters, o->blendif_parameters,
            sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 9 && new_version == 12)
+  if(old_version == 9 && new_version == 13)
   {
     /** blend legacy parameters version 9 */
     typedef struct dt_develop_blend_params9_t
@@ -1990,7 +2024,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
       gboolean raster_mask_invert;
     } dt_develop_blend_params9_t;
 
-    if(length != sizeof(dt_develop_blend_params9_t)) return 1;
+    if(length != sizeof(dt_develop_blend_params9_t)) return TRUE;
 
     dt_develop_blend_params9_t *o = (dt_develop_blend_params9_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
@@ -2012,13 +2046,13 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->raster_mask_source, o->raster_mask_source,
            sizeof(n->raster_mask_source));
     n->raster_mask_instance = o->raster_mask_instance;
-    n->raster_mask_id = o->raster_mask_id;
+    n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
     n->raster_mask_invert = o->raster_mask_invert;
     _fix_masks_combine(n);
-    return 0;
+    return FALSE;
   }
 
-  if(old_version == 10 && new_version == 12)
+  if(old_version == 10 && new_version == 13)
   {
     /** blend legacy parameters version 10 */
     typedef struct dt_develop_blend_params10_t
@@ -2061,7 +2095,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
       gboolean raster_mask_invert;
     } dt_develop_blend_params10_t;
 
-    if(length != sizeof(dt_develop_blend_params10_t)) return 1;
+    if(length != sizeof(dt_develop_blend_params10_t)) return TRUE;
 
     dt_develop_blend_params10_t *o = (dt_develop_blend_params10_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
@@ -2093,14 +2127,14 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
     memcpy(n->raster_mask_source, o->raster_mask_source,
            sizeof(n->raster_mask_source));
     n->raster_mask_instance = o->raster_mask_instance;
-    n->raster_mask_id = o->raster_mask_id;
+    n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
     n->raster_mask_invert = o->raster_mask_invert;
 
     _fix_masks_combine(n);
 
-    return 0;
+    return FALSE;
   }
-  if(old_version == 11 && new_version == 12)
+  if(old_version == 11 && new_version == 13)
   {
     if(length != sizeof(dt_develop_blend_params_t)) return 1;
 
@@ -2109,12 +2143,24 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module,
 
     *n = *o;
     _fix_masks_combine(n);
-    return 0;
+    n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
+    return FALSE;
   }
-  return 1;
+  if(old_version == 12 && new_version == 13)
+  {
+    if(length != sizeof(dt_develop_blend_params_t)) return 1;
+
+    dt_develop_blend_params_t *o = (dt_develop_blend_params_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+
+    *n = *o;
+    n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
+    return FALSE;
+  }
+  return TRUE;
 }
 
-int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
+gboolean dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
                                            const void *const old_params,
                                            const int old_version,
                                            void *new_params,
@@ -2126,18 +2172,18 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so,
   if(dt_iop_load_module_by_so(module, module_so, NULL))
   {
     free(module);
-    return 1;
+    return TRUE;
   }
 
   if(module->params_size == 0)
   {
     dt_iop_cleanup_module(module);
     free(module);
-    return 1;
+    return TRUE;
   }
 
   // convert the old blend params to new
-  const int res = dt_develop_blend_legacy_params(module, old_params, old_version,
+  const gboolean res = dt_develop_blend_legacy_params(module, old_params, old_version,
                                                  new_params, dt_develop_blend_version(),
                                                  length);
   dt_iop_cleanup_module(module);

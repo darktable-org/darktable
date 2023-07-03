@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -1171,10 +1171,6 @@ void gui_init(dt_view_t *self)
   gtk_container_add(GTK_CONTAINER(lib->profile_floating_window), vbox);
 
   /** let's fill the encapsulating widgets */
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
 
   static const gchar *intents_list[]
     = { N_("perceptual"),
@@ -1226,16 +1222,13 @@ void gui_init(dt_view_t *self)
     }
   }
 
-  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-  char *tooltip = g_strdup_printf(_("display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(display_profile, tooltip);
+  char *tooltip = dt_ioppr_get_location_tooltip("out", _("display ICC profiles"));
+  gtk_widget_set_tooltip_markup(display_profile, tooltip);
   g_free(tooltip);
-  tooltip = g_strdup_printf(_("preview display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(display2_profile, tooltip);
+
+  tooltip = dt_ioppr_get_location_tooltip("out", _("preview display ICC profiles"));
+  gtk_widget_set_tooltip_markup(display2_profile, tooltip);
   g_free(tooltip);
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
 
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(_profile_display_profile_callback), NULL);
 

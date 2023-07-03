@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -56,13 +57,13 @@ typedef enum dt_iop_dither_type_t
   DITHER_FS8BIT = 3,      // $DESCRIPTION: "Floyd-Steinberg 8-bit RGB"
   DITHER_FS16BIT = 4,     // $DESCRIPTION: "Floyd-Steinberg 16-bit RGB"
   DITHER_FSAUTO = 5,      // $DESCRIPTION: "Floyd-Steinberg auto"
-  POSTER_2 = 0x101,	  // $DESCRIPTION: "Posterize 2 levels per channel"
-  POSTER_3 = 0x102,	  // $DESCRIPTION: "Posterize 3 levels per channel"
-  POSTER_4 = 0x103,	  // $DESCRIPTION: "Posterize 4 levels per channel"
-  POSTER_5 = 0x104,	  // $DESCRIPTION: "Posterize 5 levels per channel"
-  POSTER_6 = 0x105,	  // $DESCRIPTION: "Posterize 6 levels per channel"
-  POSTER_7 = 0x106,	  // $DESCRIPTION: "Posterize 7 levels per channel"
-  POSTER_8 = 0x107,	  // $DESCRIPTION: "Posterize 8 levels per channel"
+  POSTER_2 = 0x101,	  // $DESCRIPTION: "posterize 2 levels per channel"
+  POSTER_3 = 0x102,	  // $DESCRIPTION: "posterize 3 levels per channel"
+  POSTER_4 = 0x103,	  // $DESCRIPTION: "posterize 4 levels per channel"
+  POSTER_5 = 0x104,	  // $DESCRIPTION: "posterize 5 levels per channel"
+  POSTER_6 = 0x105,	  // $DESCRIPTION: "posterize 6 levels per channel"
+  POSTER_7 = 0x106,	  // $DESCRIPTION: "posterize 7 levels per channel"
+  POSTER_8 = 0x107,	  // $DESCRIPTION: "posterize 8 levels per channel"
 } dt_iop_dither_type_t;
 
 #define POSTERIZE_FLAG 0x100

@@ -389,7 +389,13 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
     grpt->formid = form->formid;
     grpt->parentid = grp->formid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
-    if(grp->points) grpt->state |= DT_MASKS_STATE_UNION;
+    if(grp->points)
+    {
+      if(form->type == DT_MASKS_BRUSH)
+        grpt->state |= DT_MASKS_STATE_SUM;
+      else
+        grpt->state |= DT_MASKS_STATE_UNION;
+    }
     grpt->opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
     grp->points = g_list_append(grp->points, grpt);
     // we save the group
@@ -1817,7 +1823,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
 
   // if we are here that mean we have to permanently delete this form
   // we drop the form from all modules
-  int form_removed = 0;
+  gboolean form_removed = FALSE;
   for(GList *iops = darktable.develop->iop; iops; iops = g_list_next(iops))
   {
     dt_iop_module_t *m = (dt_iop_module_t *)iops->data;
@@ -1852,7 +1858,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
           }
           if(ok)
           {
-            form_removed = 1;
+            form_removed = TRUE;
             dt_masks_iop_update(m);
             dt_masks_update_image(darktable.develop);
             if(iopgrp->points == NULL) dt_masks_form_remove(m, NULL, iopgrp);
@@ -1868,7 +1874,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module,
     if(f->formid == id)
     {
       darktable.develop->forms = g_list_remove(darktable.develop->forms, f);
-      form_removed = 1;
+      form_removed = TRUE;
       break;
     }
   }

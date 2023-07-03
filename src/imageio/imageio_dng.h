@@ -205,7 +205,7 @@ static inline void _imageio_dng_write_tiff_header(
   b = _imageio_dng_make_tag(EXIF_TAG_WHITE_LEVEL, LONG, 1, white.u, buf, b, &cnt); /* WhiteLevel in float, actually. */
 
   // ColorMatrix1 try to get camera matrix else m[k] like before
-  if(!isnan(adobe_XYZ_to_CAM[0][0]))
+  if(dt_is_valid_colormatrix(adobe_XYZ_to_CAM[0][0]))
   {
     den = 10000;
     for(int k= 0; k < 3; k++)

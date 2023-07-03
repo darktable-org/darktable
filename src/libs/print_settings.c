@@ -22,7 +22,6 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/cups_print.h"
-#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/pdf.h"
@@ -1306,9 +1305,26 @@ static void _load_image_full_page(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
   dt_control_queue_redraw_center();
 }
 
-static void _print_settings_activate_or_update_callback(gpointer instance,
-                                                        const dt_imgid_t imgid,
-                                                        gpointer user_data)
+static void _print_settings_update_callback(gpointer instance,
+                                            const dt_imgid_t imgid,
+                                            gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  // if a mipmap has arrived for an image just activated in fullpage
+  // mode, reorient the page (landscape or portrait) based on the
+  // mipmap's orientation
+  if(ps->imgs.count == 1 && ps->imgs.box[0].imgid == imgid && !ps->has_changed)
+  {
+    dt_printing_clear_box(&ps->imgs.box[0]);
+    _load_image_full_page(ps, imgid);
+  }
+}
+
+static void _print_settings_activate_callback(gpointer instance,
+                                              const dt_imgid_t imgid,
+                                              gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1402,16 +1418,15 @@ void view_enter(struct dt_lib_module_t *self,
   // mode which activates an image: get image_id and orientation
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
                                   DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                                  G_CALLBACK(_print_settings_activate_or_update_callback),
+                                  G_CALLBACK(_print_settings_activate_callback),
                                   self);
 
   // when an updated mipmap, we may have new orientation information
-  // about the current image. This updates the image_id as well and
-  // zeros out dimensions, but there should be no harm in that
+  // about the current image.
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                            DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_print_settings_activate_or_update_callback),
-                            self);
+                                  DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                                  G_CALLBACK(_print_settings_update_callback),
+                                  self);
 
   // NOTE: it would be proper to set image_id here to -1, but this
   // seems to make no difference
@@ -1422,8 +1437,11 @@ void view_leave(struct dt_lib_module_t *self,
                 struct dt_view_t *new_view)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                               G_CALLBACK(_print_settings_activate_or_update_callback),
-                               self);
+                                     G_CALLBACK(_print_settings_activate_callback),
+                                     self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_print_settings_update_callback),
+                                     self);
 }
 
 static gboolean _expose_again(gpointer user_data)
@@ -2287,13 +2305,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   dt_gui_add_help_link(self->widget, "print_overview");
 
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-
   GtkWidget *label;
 
   d->paper_list = NULL;
@@ -2449,9 +2460,8 @@ void gui_init(dt_lib_module_t *self)
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
-  char *tooltip = g_strdup_printf(_("printer ICC profiles in %s or %s"),
-                                  user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(d->pprofile, tooltip);
+  char *tooltip = dt_ioppr_get_location_tooltip("out", _("printer ICC profiles"));
+  gtk_widget_set_tooltip_markup(d->pprofile, tooltip);
   g_free(tooltip);
 
   g_signal_connect(G_OBJECT(d->pprofile), "value-changed",
@@ -2798,9 +2808,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
-  tooltip = g_strdup_printf(_("output ICC profiles in %s or %s"),
-                            user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(d->profile, tooltip);
+  tooltip = dt_ioppr_get_location_tooltip("out", _("output ICC profiles"));
+  gtk_widget_set_tooltip_markup(d->profile, tooltip);
   g_free(tooltip);
 
   g_signal_connect(G_OBJECT(d->profile), "value-changed",
@@ -2880,9 +2889,6 @@ void gui_init(dt_lib_module_t *self)
   d->print_button = GTK_BUTTON(button);
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   dt_gui_add_help_link(button, "print_settings_button");
-
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
 
   // Let's start the printer discovery now
 

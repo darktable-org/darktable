@@ -353,13 +353,13 @@ void dt_iop_load_modules_so(void);
 /** cleans up the dlopen refs. */
 void dt_iop_unload_modules_so(void);
 /** load a module for a given .so */
-int dt_iop_load_module_by_so(dt_iop_module_t *module,
+gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
                              dt_iop_module_so_t *so,
                              struct dt_develop_t *dev);
 /** returns a list of instances referencing stuff loaded in load_modules_so. */
 GList *dt_iop_load_modules_ext(struct dt_develop_t *dev, gboolean no_image);
 GList *dt_iop_load_modules(struct dt_develop_t *dev);
-int dt_iop_load_module(dt_iop_module_t *module,
+gboolean dt_iop_load_module(dt_iop_module_t *module,
                        dt_iop_module_so_t *module_so,
                        struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
@@ -422,7 +422,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                                 const struct dt_develop_blend_params_t *blendop_params);
 /** make sure the raster mask is advertised if available */
-void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode);
+void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 void dt_iop_gui_set_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
@@ -489,7 +489,7 @@ gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
     for instance 0 or if hand-edited. Otherwise the name is the empty string.
  */
 const char *dt_iop_get_instance_name(const dt_iop_module_t *module);
-
+const char *dt_iop_get_instance_id(const dt_iop_module_t *module);
 /** get module flags, works in dev and lt mode */
 int dt_iop_get_module_flags(const char *op);
 

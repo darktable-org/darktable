@@ -373,7 +373,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
   return 0;
 }
 
-int dt_iop_load_module_by_so(dt_iop_module_t *module,
+gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
                              dt_iop_module_so_t *so,
                              dt_develop_t *dev)
 {
@@ -460,10 +460,10 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
-    return 1; // empty params hurt us in many places, just add a dummy value
+    return TRUE; // empty params hurt us in many places, just add a dummy value
   }
   module->enabled = module->default_enabled; // apply (possibly new) default.
-  return 0;
+  return FALSE;
 }
 
 void dt_iop_init_pipe(struct dt_iop_module_t *module,
@@ -944,7 +944,12 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_set_name(entry, "iop-panel-label");
   gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
   gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
-  gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
+  gtk_entry_set_text(GTK_ENTRY(entry),
+                     strcmp(module->multi_name, "0")
+                     || module->multi_priority > 0
+                     || module->multi_name_hand_edited
+                       ? module->multi_name
+                       : "");
 
   //  hide module instance name as we need the space for the entry
   gtk_widget_hide(module->instance_name);
@@ -1206,24 +1211,28 @@ static void _iop_panel_name(dt_iop_module_t *module)
 
   gtk_label_set_text(iname, new_label);
 
-  // check last history item and see if we can change its label
-  // accordingly. this must be done for the proper module and
-  // corresponding multi-priority.
-  // note: do not update for trouble messages has this will create
-  //       some infinite loop with lens module.
-  const GList *history = g_list_last(darktable.develop->history);
-
-  if(history && !module->has_trouble)
+  if(dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
   {
-    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+    // check last history item and see if we can change its label
+    // accordingly. this must be done for the proper module and
+    // corresponding multi-priority.
+    // note: do not update for trouble messages has this will create
+    //       some infinite loop with lens module.
 
-    if(hitem->module == module
-       && hitem->module->multi_priority == module->multi_priority)
+    const GList *history = g_list_last(darktable.develop->history);
+
+    if(history && !module->has_trouble)
     {
-      const gboolean changed = g_strcmp0(hitem->multi_name, multi_name);
-      if(changed)
+      dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+
+      if(hitem->module == module
+         && hitem->module->multi_priority == module->multi_priority)
       {
-        dt_dev_add_history_item(darktable.develop, module, FALSE);
+        const gboolean changed = g_strcmp0(hitem->multi_name, multi_name);
+        if(changed)
+        {
+          dt_dev_add_history_item(darktable.develop, module, FALSE);
+        }
       }
     }
   }
@@ -1587,7 +1596,23 @@ static void _iop_preferences_changed(gpointer instance, gpointer self)
     dt_iop_module_so_t *mod = (dt_iop_module_so_t *)iop->data;
 
     if(mod->pref_based_presets)
+    {
+      sqlite3_stmt *stmt;
+      // first delete auto built-in presets for this module
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "DELETE FROM data.presets"
+         " WHERE writeprotect = 1"
+         "   AND operation = ?1",
+         -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, mod->op, -1, SQLITE_TRANSIENT);
+
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      // and reload whatever new presets are needed for the new workflow
       _init_presets(mod);
+    }
 
     iop = g_list_next(iop);
   }
@@ -1675,7 +1700,7 @@ void dt_iop_load_modules_so(void)
                                   (gpointer)(darktable.iop));
 }
 
-int dt_iop_load_module(dt_iop_module_t *module,
+gboolean dt_iop_load_module(dt_iop_module_t *module,
                        dt_iop_module_so_t *module_so,
                        dt_develop_t *dev)
 {
@@ -1683,9 +1708,9 @@ int dt_iop_load_module(dt_iop_module_t *module,
   if(dt_iop_load_module_by_so(module, module_so, dev))
   {
     free(module);
-    return 1;
+    return TRUE;
   }
-  return 0;
+  return FALSE;
 }
 
 GList *dt_iop_load_modules_ext(dt_develop_t *dev, const gboolean no_image)
@@ -1771,9 +1796,9 @@ void dt_iop_unload_modules_so()
   }
 }
 
-void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
+void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
 {
-  static const int key = 0;
+  static const int key = BLEND_RASTER_ID;
   // showing raster masks doesn't make sense, one can use the original
   // source instead. or does it?
   if(mask_mode & DEVELOP_MASK_ENABLED && !(mask_mode & DEVELOP_MASK_RASTER))
@@ -1788,47 +1813,73 @@ void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
 }
 
 /* make sure that blend_params are in sync with the iop struct
-   Also watch out for a raster mask source module to get it's first `target`
-   entry, if so we invalidate all cachelines from modules with a higher iop order.
-   To support this, dt_iop_commit_blend_params() either returns NULL or the source module.
+   1. Handling of raster mask users must only be done if we don't use module's default
+      blending parameters.
+   2. Also watch out for a raster mask source module to get it's first `target`
+      entry, if so we should invalidate all cachelines from modules with a higher iop order
+      in dt_iop_commit_blend_params() callers.
+      To support this, dt_iop_commit_blend_params() either returns NULL or the source module.
 */
 dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
-                                const dt_develop_blend_params_t *blendop_params)
+                                            const dt_develop_blend_params_t *blendop_params)
 {
-  if(module->raster_mask.sink.source)
-    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
-
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
   if(blendop_params->blend_cst == DEVELOP_BLEND_CS_NONE)
   {
     module->blend_params->blend_cst =
       dt_develop_blend_default_module_blend_colorspace(module);
   }
-  dt_iop_set_mask_mode(module, blendop_params->mask_mode);
+  dt_iop_advertise_rastermask(module, blendop_params->mask_mode);
 
-  if(module->dev)
+  // If we use default blending parameters or don't have a dev
+  // we don't manage raster mask users and set all stuff to defaults
+  if(blendop_params == module->default_blendop_params
+     || module->dev == NULL)
   {
-    for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+    module->raster_mask.sink.source = NULL;
+    module->raster_mask.sink.id = INVALID_MASKID;
+    return NULL;
+  }
+
+  for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
+  {
+    dt_iop_module_t *candidate = (dt_iop_module_t *)iter->data;
+    if(dt_iop_module_is(candidate->so, blendop_params->raster_mask_source))
     {
-      dt_iop_module_t *m = (dt_iop_module_t *)iter->data;
-      if(dt_iop_module_is(m->so, blendop_params->raster_mask_source))
+      if(candidate->multi_priority == blendop_params->raster_mask_instance)
       {
-        if(m->multi_priority == blendop_params->raster_mask_instance)
-        {
-          const gboolean in_use = dt_iop_is_raster_mask_used(m, blendop_params->raster_mask_id);
-          g_hash_table_insert(m->raster_mask.source.users,
-                              module, GINT_TO_POINTER(blendop_params->raster_mask_id));
-          module->raster_mask.sink.source = m;
-          module->raster_mask.sink.id = blendop_params->raster_mask_id;
-          return in_use ? NULL : m;
-        }
+        const gboolean new = g_hash_table_insert(candidate->raster_mask.source.users,
+                            module,
+                            GINT_TO_POINTER(blendop_params->raster_mask_id));
+        module->raster_mask.sink.source = candidate;
+        module->raster_mask.sink.id = blendop_params->raster_mask_id;
+        dt_print_pipe(DT_DEBUG_PIPE,
+                      "commit_blend_params",
+                      NULL, module, NULL, NULL, "raster mask from '%s%s' %s\n",
+                      candidate->op, dt_iop_get_instance_id(candidate),
+                      new ? "new" : "existing");
+
+        return candidate;
       }
     }
   }
 
+  /* We don't use a raster mask as source so we will remove this
+     module as a user from the hash table and set sink source and id
+     to default == 'nothing'
+  */
+  dt_iop_module_t *sink_source = module->raster_mask.sink.source;
+  if(sink_source)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE,
+                  "commit_blend_params",
+                  NULL, module, NULL, NULL, "clear raster mask source '%s%s'\n",
+                  sink_source->op, dt_iop_get_instance_id(sink_source));
+    g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
+  }
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = INVALID_MASKID;
-  return NULL;
+  return sink_source;
 }
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
@@ -2848,14 +2899,17 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->label = gtk_label_new(module->name());
   gtk_widget_set_name(module->label, "iop-panel-label");
   gtk_label_set_ellipsize(GTK_LABEL(module->label), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_valign(module->label, GTK_ALIGN_BASELINE);
   g_object_set(G_OBJECT(module->label), "xalign", 0.0, (gchar *)0);
 
   gtk_container_add(GTK_CONTAINER(lab), module->label);
+  gtk_widget_set_valign(lab, GTK_ALIGN_BASELINE);
 
   module->instance_name = gtk_label_new("");
   hw[IOP_MODULE_INSTANCE_NAME] = module->instance_name;
   gtk_widget_set_name(module->instance_name, "iop-module-name");
   gtk_label_set_ellipsize(GTK_LABEL(module->instance_name), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_valign(module->instance_name, GTK_ALIGN_BASELINE);
   g_object_set(G_OBJECT(module->instance_name), "xalign", 0.0, (gchar *)0);
 
   if((module->flags() & IOP_FLAGS_DEPRECATED) && module->deprecated_msg())
@@ -3463,6 +3517,11 @@ const char *dt_iop_get_instance_name(const dt_iop_module_t *module)
   return (module->multi_priority > 0 || module->multi_name_hand_edited)
     ? module->multi_name
     : "";
+}
+const char *dt_iop_get_instance_id(const dt_iop_module_t *module)
+{
+  const char *ids[] = { "", ".1", ".2", ".3", ".4", ".5", ".6", ".x" };
+  return ids[MIN(module->multi_priority, 7)];
 }
 
 void dt_iop_refresh_center(dt_iop_module_t *module)

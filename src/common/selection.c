@@ -127,7 +127,7 @@ const dt_selection_t *dt_selection_new()
   /* initialize last_single_id based on current database */
   s->last_single_id = NO_IMGID;
 
-  if(dt_collection_get_selected_count(darktable.collection) >= 1)
+  if(dt_collection_get_selected_count() >= 1)
   {
     GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
     if(selected_image)
@@ -308,7 +308,7 @@ void dt_selection_select_range(dt_selection_t *selection,
   if(!selection->collection) return;
 
   // if no selection is made, add the selected image to the selection and return
-  if(!dt_collection_get_selected_count(darktable.collection))
+  if(!dt_collection_get_selected_count())
   {
     dt_selection_select(selection, imgid);
     return;

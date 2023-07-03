@@ -1,22 +1,29 @@
 /*
- *    This file is part of darktable,
- *    Copyright (C) 2021 darktable developers.
- *
- *    darktable is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    darktable is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+    This file is part of darktable,
+    Copyright (C) 2021-2023 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #pragma once
+
+// uncomment the next line to use something other than NAN to signal an invalid color matrix
+// leave commented out for backward compatibility in case some instances have been missed.
+//#define NO_COLORMATRIX_NAN
+
+#include <float.h>
+#include <math.h>
 
 // When included by a C++ file, restrict qualifiers are not allowed
 #ifdef __cplusplus
@@ -159,6 +166,13 @@ static inline void pack_3xSSE_to_3x3(const dt_colormatrix_t input, float output[
   output[8] = input[2][2];
 }
 
+static inline void dt_colormatrix_copy(dt_colormatrix_t out, const dt_colormatrix_t in)
+{
+  for(size_t i = 0; i < 4; i++)
+    for_each_channel(c)
+      out[i][c] = in[i][c];
+}
+
 // vectorized multiplication of padded 3x3 matrices
 static inline void dt_colormatrix_mul(dt_colormatrix_t dst, const dt_colormatrix_t m1, const dt_colormatrix_t m2)
 {
@@ -185,6 +199,36 @@ static inline void dt_colormatrix_transpose(dt_colormatrix_t dst,
     dst[3][c] = src[c][3];
   }
 }
+
+// dt_mark_colormatrix_invalid could/should be a function,
+// but it was converted to macros due to this GCC compiler bug:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105689
+#ifdef NO_COLORMATRIX_NAN
+#define dt_mark_colormatrix_invalid(matrix) do{*(matrix) = -FLT_MAX;}while(0)
+
+static inline int dt_is_valid_colormatrix(float matrix)
+{
+  return matrix != -FLT_MAX;
+}
+#else
+
+#ifdef __GNUC__
+#pragma GCC push_options
+#pragma GCC optimize ("-fno-finite-math-only")
+#endif
+
+#define dt_mark_colormatrix_invalid(matrix) do{*(matrix) = NAN;}while(0)
+
+static inline int dt_is_valid_colormatrix(float matrix)
+{
+  return isfinite(matrix);
+}
+
+#ifdef __GNUC__
+#pragma GCC pop_options
+#endif
+
+#endif /* NO_COLORMATRIX_NAN */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

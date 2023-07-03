@@ -432,17 +432,12 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
   table->code_scrolling = TRUE;
 
   // get the total number of images
-  int nbid = 1;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM memory.collected_images", -1,
-                              &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  const uint32_t nbid = MAX(1, dt_collection_get_collected_count());
 
   // the number of line before
   float lbefore = (table->offset - 1) / table->thumbs_per_row;
-  if((table->offset - 1) % table->thumbs_per_row) lbefore++;
+  if((table->offset - 1) % table->thumbs_per_row)
+    lbefore++;
 
   // if scrollbars are used, we can have partial row shown
   if(table->thumbs_area.y != 0)
@@ -678,13 +673,7 @@ static gboolean _move(dt_thumbtable_t *table,
       {
         // special case for zoom == 1 as we don't want any space under
         // last image (the image would have disappear)
-        int nbid = 1;
-        sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "SELECT COUNT(*) FROM memory.collected_images",
-                                    -1, &stmt, NULL);
-        if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
-        sqlite3_finalize(stmt);
+        const uint32_t nbid = MAX(1, dt_collection_get_collected_count());
         if(nbid <= last->rowid)
           return FALSE;
       }
@@ -776,7 +765,7 @@ static gboolean _move(dt_thumbtable_t *table,
   }
 
   // and we store it
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
     dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
@@ -879,7 +868,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
   dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
   dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
@@ -1110,7 +1099,7 @@ static gboolean _event_draw(GtkWidget *widget,
   // but we don't really want to draw something, this is just to know
   // when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if(!darktable.collection || darktable.collection->count == 0)
+  if(!darktable.collection || (dt_collection_get_count(darktable.collection) == 0))
   {
     GtkAllocation allocation;
     gtk_widget_get_allocation(table->widget, &allocation);
@@ -1561,6 +1550,9 @@ static void _dt_collection_changed_callback(gpointer instance,
 {
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  dt_collection_history_save();
+
   if(query_change == DT_COLLECTION_CHANGE_RELOAD)
   {
     dt_imgid_t old_hover = dt_control_get_mouse_over_id();
@@ -1713,7 +1705,7 @@ static void _dt_collection_changed_callback(gpointer instance,
       table->offset_imgid = _thumb_get_imgid(1);
     table->offset = MAX(1, nrow);
     if(offset_changed)
-      dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+      dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
     if(offset_changed && table->mode == DT_THUMBTABLE_MODE_ZOOM)
       dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
 
@@ -1761,11 +1753,13 @@ static void _dt_collection_changed_callback(gpointer instance,
   }
   else
   {
-    // otherwise we reset the offset to the beginning
-    table->offset = 1;
+    // otherwise we reset the offset to the wanted position or the beginning
+    const int nextpos = MAX(dt_conf_get_int("plugins/lighttable/collect/history_next_pos"), 1);
+    table->offset = nextpos;
     table->offset_imgid = _thumb_get_imgid(table->offset);
-    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
-    dt_conf_set_int("lighttable/zoomable/last_offset", 1);
+    dt_conf_set_int("plugins/lighttable/collect/history_pos0", nextpos);
+    dt_conf_set_int("plugins/lighttable/collect/history_next_pos", 0);
+    dt_conf_set_int("lighttable/zoomable/last_offset", nextpos);
     dt_conf_set_int("lighttable/zoomable/last_pos_x", 0);
     dt_conf_set_int("lighttable/zoomable/last_pos_y", 0);
     dt_thumbtable_full_redraw(table, TRUE);
@@ -2017,7 +2011,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_gui_add_class(table->widget, cl);
   g_free(cl);
 
-  table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/recentcollect/pos0"));
+  table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/collect/history_pos0"));
 
   // set widget signals
   gtk_widget_set_events(table->widget,
@@ -2161,8 +2155,18 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, const gboolean force)
 
       // ensure that the overall layout doesn't change
       // (i.e. we don't get empty spaces in the very first row)
-      const int offset_row = (table->offset-1) / table->thumbs_per_row;
-      offset = offset_row * table->thumbs_per_row + 1;
+      offset = (table->offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
+
+      // ensure that we don't go up too far (we only want a space <thumb_size at the bottom)
+      if(table->offset != offset && offset > 1 && table->thumbs_per_row > 1)
+      {
+        const uint32_t nb = dt_collection_get_collected_count();
+        // get how many full blank line we have at the bottom
+
+        const int move
+            = (table->rows - 1) - ((nb - (offset - 1) + table->thumbs_per_row - 1) / table->thumbs_per_row);
+        if(move > 0) offset = MAX(1, offset - move * table->thumbs_per_row);
+      }
       table->offset = offset;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
@@ -2428,7 +2432,7 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table,
   if(offset < 1 || offset == table->offset)
     return FALSE;
   table->offset = offset;
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   if(redraw) dt_thumbtable_full_redraw(table, TRUE);
   return TRUE;
 }
@@ -2918,7 +2922,7 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table,
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
   dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
   dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
   dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);

@@ -295,9 +295,9 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       /* go thru the attributes to find and get values of lon / lat*/
       while(*attribute_name)
       {
-        if(strcmp(*attribute_name, "lon") == 0)
+        if(strcmp(*attribute_name, "lon") == 0 && **attribute_value)
           gpx->current_track_point->longitude = g_ascii_strtod(*attribute_value, NULL);
-        else if(strcmp(*attribute_name, "lat") == 0)
+        else if(strcmp(*attribute_name, "lat") == 0 && **attribute_value)
           gpx->current_track_point->latitude = g_ascii_strtod(*attribute_value, NULL);
 
         attribute_name++;

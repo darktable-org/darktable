@@ -25,7 +25,6 @@
 #include "common/colormatrices.c"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
-#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -495,7 +494,8 @@ static void _profile_changed(GtkWidget *widget, gpointer user_data)
     }
   }
   // should really never happen.
-  dt_print(DT_DEBUG_ALWAYS, "[colorin] color profile %s seems to have disappeared!\n",
+  dt_print(DT_DEBUG_ALWAYS,
+           "[colorin] color profile %s seems to have disappeared!\n",
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
@@ -533,10 +533,11 @@ static void _workicc_changed(GtkWidget *widget, gpointer user_data)
       dt_ioppr_add_profile_info_to_list(self->dev, p->type_work,
                                         p->filename_work, DT_INTENT_PERCEPTUAL);
     if(work_profile == NULL
-       || isnan(work_profile->matrix_in[0][0])
-       || isnan(work_profile->matrix_out[0][0]))
+       || !dt_is_valid_colormatrix(work_profile->matrix_in[0][0])
+       || !dt_is_valid_colormatrix(work_profile->matrix_out[0][0]))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[colorin] can't extract matrix from colorspace `%s',"
+      dt_print(DT_DEBUG_ALWAYS,
+               "[colorin] can't extract matrix from colorspace `%s',"
                " it will be replaced by Rec2020 RGB!\n", p->filename_work);
       dt_control_log(_("can't extract matrix from colorspace `%s'"
                        ", it will be replaced by Rec2020 RGB!"), p->filename_work);
@@ -553,7 +554,8 @@ static void _workicc_changed(GtkWidget *widget, gpointer user_data)
   else
   {
     // should really never happen.
-    dt_print(DT_DEBUG_ALWAYS, "[colorin] color profile %s seems to have disappeared!\n",
+    dt_print(DT_DEBUG_ALWAYS,
+             "[colorin] color profile %s seems to have disappeared!\n",
              dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
 }
@@ -661,8 +663,9 @@ int process_cl(struct dt_iop_module_t *self,
   if(dev_g == NULL) goto error;
   dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if(dev_b == NULL) goto error;
-  dev_coeffs
-      = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->unbounded_coeffs);
+  dev_coeffs =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3,
+                                           (float *)d->unbounded_coeffs);
   if(dev_coeffs == NULL) goto error;
   err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
                                          CLARG(dev_in), CLARG(dev_out),
@@ -795,11 +798,21 @@ static void _cmatrix_fastpath_simple(float *const restrict out,
                                      size_t npixels,
                                      const dt_colormatrix_t cmatrix)
 {
-  const dt_aligned_pixel_t cmatrix_row0 = { cmatrix[0][0], cmatrix[1][0], cmatrix[2][0], 0.0f };
-  const dt_aligned_pixel_t cmatrix_row1 = { cmatrix[0][1], cmatrix[1][1], cmatrix[2][1], 0.0f };
-  const dt_aligned_pixel_t cmatrix_row2 = { cmatrix[0][2], cmatrix[1][2], cmatrix[2][2], 0.0f };
+  const dt_aligned_pixel_t cmatrix_row0 = { cmatrix[0][0],
+                                            cmatrix[1][0],
+                                            cmatrix[2][0],
+                                            0.0f };
+  const dt_aligned_pixel_t cmatrix_row1 = { cmatrix[0][1],
+                                            cmatrix[1][1],
+                                            cmatrix[2][1],
+                                            0.0f };
+  const dt_aligned_pixel_t cmatrix_row2 = { cmatrix[0][2],
+                                            cmatrix[1][2],
+                                            cmatrix[2][2],
+                                            0.0f };
 
-  // this function is called from inside a parallel for loop, so no need for further parallelization
+  // this function is called from inside a parallel for loop, so no
+  // need for further parallelization
   for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t res;
@@ -824,7 +837,8 @@ static inline void _cmatrix_fastpath_clipping_sse(float *const restrict out,
   const __m128 lm1 = _mm_set_ps(0.0f, lmatrix[2][1], lmatrix[1][1], lmatrix[0][1]);
   const __m128 lm2 = _mm_set_ps(0.0f, lmatrix[2][2], lmatrix[1][2], lmatrix[0][2]);
 
-  // this function is called from inside a parallel for loop, so no need for further parallelization
+  // this function is called from inside a parallel for loop, so no
+  // need for further parallelization
   for(size_t k = 0; k < npixels; k++)
   {
     __m128 input = _mm_load_ps(in + 4*k);
@@ -861,14 +875,33 @@ static inline void _cmatrix_fastpath_clipping(float *const restrict out,
     return;
   }
 #endif
-  const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0], nmatrix[1][0], nmatrix[2][0], 0.0f };
-  const dt_aligned_pixel_t nmatrix_row1 = { nmatrix[0][1], nmatrix[1][1], nmatrix[2][1], 0.0f };
-  const dt_aligned_pixel_t nmatrix_row2 = { nmatrix[0][2], nmatrix[1][2], nmatrix[2][2], 0.0f };
-  const dt_aligned_pixel_t lmatrix_row0 = { lmatrix[0][0], lmatrix[1][0], lmatrix[2][0], 0.0f };
-  const dt_aligned_pixel_t lmatrix_row1 = { lmatrix[0][1], lmatrix[1][1], lmatrix[2][1], 0.0f };
-  const dt_aligned_pixel_t lmatrix_row2 = { lmatrix[0][2], lmatrix[1][2], lmatrix[2][2], 0.0f };
-  
-  // this function is called from inside a parallel for loop, so no need for further parallelization
+  const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0],
+                                            nmatrix[1][0],
+                                            nmatrix[2][0],
+                                            0.0f };
+  const dt_aligned_pixel_t nmatrix_row1 = { nmatrix[0][1],
+                                            nmatrix[1][1],
+                                            nmatrix[2][1],
+                                            0.0f };
+  const dt_aligned_pixel_t nmatrix_row2 = { nmatrix[0][2],
+                                            nmatrix[1][2],
+                                            nmatrix[2][2],
+                                            0.0f };
+  const dt_aligned_pixel_t lmatrix_row0 = { lmatrix[0][0],
+                                            lmatrix[1][0],
+                                            lmatrix[2][0],
+                                            0.0f };
+  const dt_aligned_pixel_t lmatrix_row1 = { lmatrix[0][1],
+                                            lmatrix[1][1],
+                                            lmatrix[2][1],
+                                            0.0f };
+  const dt_aligned_pixel_t lmatrix_row2 = { lmatrix[0][2],
+                                            lmatrix[1][2],
+                                            lmatrix[2][2],
+                                            0.0f };
+
+  // this function is called from inside a parallel for loop, so no
+  // need for further parallelization
   for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t nRGB;
@@ -908,7 +941,8 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
     size_t start = chunksize * dt_get_thread_num();
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
-      _cmatrix_fastpath_clipping(out + 4*start, in + 4*start, end-start, d->nmatrix, d->lmatrix);
+      _cmatrix_fastpath_clipping(out + 4*start, in + 4*start,
+                                 end-start, d->nmatrix, d->lmatrix);
     else
       _cmatrix_fastpath_simple(out + 4*start, in + 4*start, end-start, d->cmatrix);
   }
@@ -928,11 +962,21 @@ static void _cmatrix_proper_simple(float *const restrict out,
                                    const dt_iop_colorin_data_t *const d,
                                    const dt_colormatrix_t cmatrix)
 {
-  const dt_aligned_pixel_t cmatrix_row0 = { cmatrix[0][0], cmatrix[1][0], cmatrix[2][0], 0.0f };
-  const dt_aligned_pixel_t cmatrix_row1 = { cmatrix[0][1], cmatrix[1][1], cmatrix[2][1], 0.0f };
-  const dt_aligned_pixel_t cmatrix_row2 = { cmatrix[0][2], cmatrix[1][2], cmatrix[2][2], 0.0f };
+  const dt_aligned_pixel_t cmatrix_row0 = { cmatrix[0][0],
+                                            cmatrix[1][0],
+                                            cmatrix[2][0],
+                                            0.0f };
+  const dt_aligned_pixel_t cmatrix_row1 = { cmatrix[0][1],
+                                            cmatrix[1][1],
+                                            cmatrix[2][1],
+                                            0.0f };
+  const dt_aligned_pixel_t cmatrix_row2 = { cmatrix[0][2],
+                                            cmatrix[1][2],
+                                            cmatrix[2][2],
+                                            0.0f };
 
-  // this function is called from inside a parallel for loop, so no need for further parallelization
+  // this function is called from inside a parallel for loop, so no
+  // need for further parallelization
   for(size_t k = 0; k < npixels; k++)
   {
     dt_aligned_pixel_t cam;
@@ -995,13 +1039,31 @@ static inline void _cmatrix_proper_clipping(float *const restrict out,
     return;
   }
 #endif
-  const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0], nmatrix[1][0], nmatrix[2][0], 0.0f };
-  const dt_aligned_pixel_t nmatrix_row1 = { nmatrix[0][1], nmatrix[1][1], nmatrix[2][1], 0.0f };
-  const dt_aligned_pixel_t nmatrix_row2 = { nmatrix[0][2], nmatrix[1][2], nmatrix[2][2], 0.0f };
-  const dt_aligned_pixel_t lmatrix_row0 = { lmatrix[0][0], lmatrix[1][0], lmatrix[2][0], 0.0f };
-  const dt_aligned_pixel_t lmatrix_row1 = { lmatrix[0][1], lmatrix[1][1], lmatrix[2][1], 0.0f };
-  const dt_aligned_pixel_t lmatrix_row2 = { lmatrix[0][2], lmatrix[1][2], lmatrix[2][2], 0.0f };
-  
+  const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0],
+                                            nmatrix[1][0],
+                                            nmatrix[2][0],
+                                            0.0f };
+  const dt_aligned_pixel_t nmatrix_row1 = { nmatrix[0][1],
+                                            nmatrix[1][1],
+                                            nmatrix[2][1],
+                                            0.0f };
+  const dt_aligned_pixel_t nmatrix_row2 = { nmatrix[0][2],
+                                            nmatrix[1][2],
+                                            nmatrix[2][2],
+                                            0.0f };
+  const dt_aligned_pixel_t lmatrix_row0 = { lmatrix[0][0],
+                                            lmatrix[1][0],
+                                            lmatrix[2][0],
+                                            0.0f };
+  const dt_aligned_pixel_t lmatrix_row1 = { lmatrix[0][1],
+                                            lmatrix[1][1],
+                                            lmatrix[2][1],
+                                            0.0f };
+  const dt_aligned_pixel_t lmatrix_row2 = { lmatrix[0][2],
+                                            lmatrix[1][2],
+                                            lmatrix[2][2],
+                                            0.0f };
+
   // this function is called from inside a parallel for loop, so no need for further parallelization
   for(size_t k = 0; k < npixels; k++)
   {
@@ -1049,7 +1111,8 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
     size_t start = chunksize * dt_get_thread_num();
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
-      _cmatrix_proper_clipping(out + 4*start, in + 4*start, end-start, d, d->nmatrix, d->lmatrix);
+      _cmatrix_proper_clipping(out + 4*start, in + 4*start,
+                               end-start, d, d->nmatrix, d->lmatrix);
     else
       _cmatrix_proper_simple(out + 4*start, in + 4*start, end-start, d, d->cmatrix);
   }
@@ -1188,8 +1251,9 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         ivoid, ovoid, roi_in, roi_out))
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
+                                        self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
     return;
 
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
@@ -1204,7 +1268,7 @@ void process(struct dt_iop_module_t *self,
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
-  else if(!isnan(d->cmatrix[0][0]))
+  else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     process_cmatrix(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
@@ -1287,14 +1351,14 @@ void commit_params(struct dt_iop_module_t *self,
     d->xform_nrgb_Lab = NULL;
   }
 
-  d->cmatrix[0][0] = d->nmatrix[0][0] = d->lmatrix[0][0] = NAN;
+  dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
+  dt_mark_colormatrix_invalid(&d->nmatrix[0][0]);
+  dt_mark_colormatrix_invalid(&d->lmatrix[0][0]);
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   d->nonlinearlut = FALSE;
   piece->process_cl_ready = TRUE;
-  char datadir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
 
   dt_colorspaces_color_profile_type_t type = p->type;
   if(type == DT_COLORSPACE_LAB)
@@ -1339,7 +1403,7 @@ void commit_params(struct dt_iop_module_t *self,
   {
     // embedded matrix, hopefully D65
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, pipe->image.id, 'r');
-    if(isnan(cimg->d65_color_matrix[0]))
+    if(!dt_is_valid_colormatrix(cimg->d65_color_matrix[0]))
       type = DT_COLORSPACE_STANDARD_MATRIX;
     else
     {
@@ -1351,7 +1415,7 @@ void commit_params(struct dt_iop_module_t *self,
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
   {
-    if(isnan(pipe->image.adobe_XYZ_to_CAM[0][0]))
+    if(!dt_is_valid_colormatrix(pipe->image.adobe_XYZ_to_CAM[0][0]))
     {
       if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
@@ -1415,7 +1479,8 @@ void commit_params(struct dt_iop_module_t *self,
       input_format = TYPE_XYZA_FLT;
       break;
     default:
-      dt_print(DT_DEBUG_ALWAYS, "[colorin] input profile color space `%c%c%c%c' not supported\n",
+      dt_print(DT_DEBUG_ALWAYS,
+               "[colorin] input profile color space `%c%c%c%c' not supported\n",
                (char)(input_color_space>>24),
                (char)(input_color_space>>16),
                (char)(input_color_space>>8),
@@ -1430,11 +1495,11 @@ void commit_params(struct dt_iop_module_t *self,
   {
     // user wants us to clip to a given RGB profile
     if(dt_colorspaces_get_matrix_from_input_profile
-       (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-        LUT_SAMPLES))
+       (d->input, d->cmatrix,
+        d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       piece->process_cl_ready = FALSE;
-      d->cmatrix[0][0] = NAN;
+      dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
       d->xform_cam_nrgb = cmsCreateTransform(d->input, input_format, d->nrgb,
@@ -1460,15 +1525,15 @@ void commit_params(struct dt_iop_module_t *self,
                                                     LUT_SAMPLES))
     {
       piece->process_cl_ready = FALSE;
-      d->cmatrix[0][0] = NAN;
+      dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, input_format, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
     }
   }
 
   // we might have failed generating the clipping transformations, check that:
-  if(d->nrgb && ((!d->xform_cam_nrgb && isnan(d->nmatrix[0][0]))
-                 || (!d->xform_nrgb_Lab && isnan(d->lmatrix[0][0]))))
+  if(d->nrgb && ((!d->xform_cam_nrgb && !dt_is_valid_colormatrix(d->nmatrix[0][0]))
+                 || (!d->xform_nrgb_Lab && !dt_is_valid_colormatrix(d->lmatrix[0][0]))))
   {
     if(d->xform_cam_nrgb)
     {
@@ -1484,7 +1549,7 @@ void commit_params(struct dt_iop_module_t *self,
   }
 
   // user selected a non-supported input profile, check that:
-  if(!d->xform_cam_Lab && isnan(d->cmatrix[0][0]))
+  if(!d->xform_cam_Lab && !dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
     if(p->type == DT_COLORSPACE_FILE)
       dt_print(DT_DEBUG_ALWAYS, "[colorin] unsupported input profile `%s' has"
@@ -1503,7 +1568,7 @@ void commit_params(struct dt_iop_module_t *self,
                                                     LUT_SAMPLES))
     {
       piece->process_cl_ready = FALSE;
-      d->cmatrix[0][0] = NAN;
+      dt_mark_colormatrix_invalid(&d->cmatrix[0][0]);
       d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, Lab,
                                             TYPE_LabA_FLT, p->intent, 0);
     }
@@ -1606,12 +1671,15 @@ void gui_update(struct dt_iop_module_t *self)
   if(idx < 0)
   {
     idx = 0;
-    dt_print(DT_DEBUG_ALWAYS, "[colorin] could not find requested working profile `%s'!\n",
+    dt_print(DT_DEBUG_ALWAYS,
+             "[colorin] could not find requested working profile `%s'!\n",
              dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
   dt_bauhaus_combobox_set(g->work_combobox, idx);
 
-  for(const GList *prof = g->image_profiles; prof; prof = g_list_next(prof))
+  for(const GList *prof = g->image_profiles;
+      prof;
+      prof = g_list_next(prof))
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
     if(pp->type == p->type
@@ -1759,6 +1827,94 @@ void reload_defaults(dt_iop_module_t *module)
     color_profile = DT_COLORSPACE_EMBEDDED_ICC;
   }
 
+  // We'll update the input profile hint with information on the
+  // embedded ICC profile if it exists.  Since the tooltip info is now
+  // image dependent, we need to set the tooltip for each image
+  // change.
+
+  // We need gui_data to access widget in order to change tooltip.
+  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *) module->gui_data;
+
+  // reload_defaults() can be called with unavailable (i.e., NULL) gui_data.
+  // In this case, we have nothing to do with tooltips.
+
+  if(g)
+  {
+    char *tooltip_part_profile_dirs =
+      dt_ioppr_get_location_tooltip("in", _("external ICC profiles"));
+
+    // In case of embedded ICC profile we will modify tooltip with the
+    // profile info, otherwise reset tooltip to generic text.
+    if(color_profile == DT_COLORSPACE_EMBEDDED_ICC)
+    {
+      cmsHPROFILE cmsprofile = cmsOpenProfileFromMem(img->profile, img->profile_size);
+
+      char iccDesc[64]; iccDesc[0] = '\0';
+      cmsGetProfileInfoASCII(cmsprofile, cmsInfoDescription, "en", "US", iccDesc, 64);
+      char iccManuf[64]; iccManuf[0] = '\0';
+      cmsGetProfileInfoASCII(cmsprofile, cmsInfoManufacturer, "en", "US", iccManuf, 64);
+      char iccModel[64]; iccModel[0] = '\0';
+      cmsGetProfileInfoASCII(cmsprofile, cmsInfoModel, "en", "US", iccModel, 64);
+
+      // This is the only profile field in which, although it usually
+      // contains a short copyright text, in theory profile creators can
+      // put as long text as they want. So, we can't take a fast
+      // approach of statically allocating memory of some sufficient
+      // size and have to find out the size of the field at run-time and
+      // dynamically allocate memory.
+      char* iccCopyr;
+      const guint32 bufsize = cmsGetProfileInfoASCII(cmsprofile, cmsInfoCopyright,
+                                                     "en", "US", NULL, 0);
+      if(bufsize)
+      {
+        iccCopyr = malloc(bufsize+1);
+        cmsGetProfileInfoASCII(cmsprofile, cmsInfoCopyright,
+                               "en", "US", iccCopyr, bufsize);
+      }
+      else
+      {
+        iccCopyr = "";
+      }
+
+      const guint8 iccMajorVersion = cmsGetEncodedICCversion(cmsprofile) >> 24;
+      const guint8 iccMinorVersion = (cmsGetEncodedICCversion(cmsprofile) << 8) >> 28;
+
+      char *iccType = "";
+
+      if(cmsIsMatrixShaper(cmsprofile))
+        iccType = "Matrix";
+      else if(cmsIsCLUT(cmsprofile, INTENT_PERCEPTUAL, LCMS_USED_AS_INPUT))
+        iccType = "LUT";
+
+      char *tooltip = g_markup_printf_escaped(_("embedded ICC profile properties:\n\n"
+                                                "name: <b>%s</b>\n"
+                                                "version: <b>%d.%d</b>\n"
+                                                "type: <b>%s</b>\n"
+                                                "manufacturer: <b>%s</b>\n"
+                                                "model: <b>%s</b>\n"
+                                                "copyright: <b>%s</b>\n\n"),
+                                              iccDesc,
+                                              iccMajorVersion, iccMinorVersion,
+                                              iccType,
+                                              iccManuf,
+                                              iccModel,
+                                              iccCopyr);
+      char *tooltip2 = g_strconcat(tooltip, tooltip_part_profile_dirs, NULL);
+      gtk_widget_set_tooltip_markup(g->profile_combobox, tooltip2);
+      g_free(tooltip);
+      g_free(tooltip2);
+      g_free(tooltip_part_profile_dirs);
+      if(bufsize)
+        free(iccCopyr);
+    }
+    else
+    {
+      // If the current image does not have an embedded profile, let's
+      // display a generic tooltip
+      gtk_widget_set_tooltip_markup(g->profile_combobox, tooltip_part_profile_dirs);
+      g_free(tooltip_part_profile_dirs);
+    }
+  }
 
   if(color_profile != DT_COLORSPACE_NONE)
     d->type = color_profile;
@@ -1772,7 +1928,7 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_ADOBERGB;
   else if(dt_image_is_ldr(img))
     d->type = DT_COLORSPACE_SRGB;
-  else if(!isnan(img->d65_color_matrix[0])) // image is DNG, EXR, or RGBE
+  else if(dt_is_valid_colormatrix(img->d65_color_matrix[0])) // image is DNG, EXR, or RGBE
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
   else if(dt_image_is_matrix_correction_supported(img)) // image is raw
     d->type = DT_COLORSPACE_STANDARD_MATRIX;
@@ -1805,8 +1961,8 @@ static void update_profile_list(dt_iop_module_t *self)
     dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
   if(cimg->profile)
   {
-    dt_colorspaces_color_profile_t *prof
-        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+    dt_colorspaces_color_profile_t *prof =
+      (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_EMBEDDED_ICC, ""),
               sizeof(prof->name));
     prof->type = DT_COLORSPACE_EMBEDDED_ICC;
@@ -1815,10 +1971,10 @@ static void update_profile_list(dt_iop_module_t *self)
   }
   dt_image_cache_read_release(darktable.image_cache, cimg);
   // use the matrix embedded in some DNGs and EXRs
-  if(!isnan(self->dev->image_storage.d65_color_matrix[0]))
+  if(dt_is_valid_colormatrix(self->dev->image_storage.d65_color_matrix[0]))
   {
-    dt_colorspaces_color_profile_t *prof
-        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+    dt_colorspaces_color_profile_t *prof =
+      (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_EMBEDDED_MATRIX, ""),
               sizeof(prof->name));
     prof->type = DT_COLORSPACE_EMBEDDED_MATRIX;
@@ -1826,11 +1982,11 @@ static void update_profile_list(dt_iop_module_t *self)
     prof->in_pos = ++pos;
   }
 
-  if(!isnan(self->dev->image_storage.adobe_XYZ_to_CAM[0][0])
+  if(dt_is_valid_colormatrix(self->dev->image_storage.adobe_XYZ_to_CAM[0][0])
      && !(self->dev->image_storage.flags & DT_IMAGE_4BAYER))
   {
-    dt_colorspaces_color_profile_t *prof
-        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+    dt_colorspaces_color_profile_t *prof =
+      (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_STANDARD_MATRIX, ""),
               sizeof(prof->name));
     prof->type = DT_COLORSPACE_STANDARD_MATRIX;
@@ -1844,8 +2000,8 @@ static void update_profile_list(dt_iop_module_t *self)
     if(!strcasecmp(self->dev->image_storage.camera_makermodel,
                    dt_profiled_colormatrices[k].makermodel))
     {
-      dt_colorspaces_color_profile_t *prof
-          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+      dt_colorspaces_color_profile_t *prof =
+        (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_ENHANCED_MATRIX, ""),
                 sizeof(prof->name));
       prof->type = DT_COLORSPACE_ENHANCED_MATRIX;
@@ -1861,8 +2017,8 @@ static void update_profile_list(dt_iop_module_t *self)
     if(!strcmp(self->dev->image_storage.camera_makermodel,
                dt_vendor_colormatrices[k].makermodel))
     {
-      dt_colorspaces_color_profile_t *prof
-          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+      dt_colorspaces_color_profile_t *prof =
+        (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_VENDOR_MATRIX, ""),
                 sizeof(prof->name));
       prof->type = DT_COLORSPACE_VENDOR_MATRIX;
@@ -1878,8 +2034,8 @@ static void update_profile_list(dt_iop_module_t *self)
     if(!strcmp(self->dev->image_storage.camera_makermodel,
                dt_alternate_colormatrices[k].makermodel))
     {
-      dt_colorspaces_color_profile_t *prof
-          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+      dt_colorspaces_color_profile_t *prof =
+        (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_ALTERNATE_MATRIX, ""),
                 sizeof(prof->name));
       prof->type = DT_COLORSPACE_ALTERNATE_MATRIX;
@@ -1922,11 +2078,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->image_profiles = NULL;
 
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->profile_combobox = dt_bauhaus_combobox_new(self);
@@ -1938,26 +2089,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
-  {
-    char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
-    char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
-    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"),
-                                    user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
-    g_free(system_profile_dir);
-    g_free(user_profile_dir);
-    g_free(tooltip);
-  }
+  // We do not set the tooltip for the input profile widget because
+  // this tooltip will always be overwritten in reload_defaults().
 
   dt_bauhaus_combobox_set(g->work_combobox, 0);
   {
-    char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
-    char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
-    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"),
-                                    user_profile_dir, system_profile_dir);
-    gtk_widget_set_tooltip_text(g->work_combobox, tooltip);
-    g_free(system_profile_dir);
-    g_free(user_profile_dir);
+    char *tooltip = dt_ioppr_get_location_tooltip("out", _("working ICC profiles"));
+    gtk_widget_set_tooltip_markup(g->work_combobox, tooltip);
     g_free(tooltip);
   }
 

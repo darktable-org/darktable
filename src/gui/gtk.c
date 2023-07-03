@@ -974,7 +974,7 @@ static gboolean _button_released(GtkWidget *w, GdkEventButton *event, gpointer u
   return TRUE;
 }
 
-static gboolean _mouse_moved(GtkWidget *w, GdkEventMotion *event, gpointer user_data)
+static gboolean _mouse_moved(GtkWidget *w, GdkEventMotion *event, dt_gui_gtk_t *gui)
 {
   double pressure = 1.0;
   GdkDevice *device = gdk_event_get_source_device((GdkEvent *)event);
@@ -982,6 +982,7 @@ static gboolean _mouse_moved(GtkWidget *w, GdkEventMotion *event, gpointer user_
   if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
   {
     gdk_event_get_axis ((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
+    gui->have_pen_pressure = pressure != 1.0;
   }
   dt_control_mouse_moved(event->x, event->y, pressure, event->state & 0xf);
   return FALSE;
@@ -1078,6 +1079,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gui->show_overlays = dt_conf_get_bool("lighttable/ui/expose_statuses");
   gui->presets_popup_menu = NULL;
   gui->last_preset = NULL;
+  gui->have_pen_pressure = FALSE;
 
   // load the style / theme
   GtkSettings *settings = gtk_settings_get_default();
@@ -1110,7 +1112,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   g_signal_connect(G_OBJECT(widget), "configure-event", G_CALLBACK(_configure), gui);
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(_draw), NULL);
-  g_signal_connect(G_OBJECT(widget), "motion-notify-event", G_CALLBACK(_mouse_moved), NULL);
+  g_signal_connect(G_OBJECT(widget), "motion-notify-event", G_CALLBACK(_mouse_moved), gui);
   g_signal_connect(G_OBJECT(widget), "leave-notify-event", G_CALLBACK(_center_leave), NULL);
   g_signal_connect(G_OBJECT(widget), "enter-notify-event", G_CALLBACK(_center_enter), NULL);
   g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_button_pressed), NULL);

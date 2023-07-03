@@ -155,7 +155,7 @@ typedef struct dt_iop_colorbalancergb_data_t
   float *gamut_LUT;
   float *chroma_LUT;
   float max_chroma;
-  float checker_color_1[4], checker_color_2[4];
+  dt_aligned_pixel_t checker_color_1, checker_color_2;
   dt_iop_colorbalancrgb_saturation_t saturation_formula;
   size_t checker_size;
   gboolean lut_inited;
@@ -1328,7 +1328,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = calloc(1, sizeof(dt_iop_colorbalancergb_data_t));
+  piece->data = dt_calloc_align(64, sizeof(dt_iop_colorbalancergb_data_t));
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
   d->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
   d->lut_inited = FALSE;
@@ -1339,7 +1339,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 {
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
   if(d->gamut_LUT) dt_free_align(d->gamut_LUT);
-  free(piece->data);
+  dt_free_align(piece->data);
   piece->data = NULL;
 }
 
@@ -1740,7 +1740,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(self->dev && self->dev->pipe)
     output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
 
-  if(!output_profile || isnan(output_profile->matrix_out[0][0]))
+  if(!output_profile || !dt_is_valid_colormatrix(output_profile->matrix_out[0][0]))
   {
     output_profile = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "",
                                                        DT_INTENT_RELATIVE_COLORIMETRIC);
