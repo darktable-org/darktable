@@ -2614,7 +2614,7 @@ ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int widt
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-float _calc_vignette_spline(const float radius, float *spline, const int splinesize)
+float _calc_vignette_spline(const float radius, global float *spline, const int splinesize)
 {
   if(radius >= 1.0f) return spline[splinesize-1];
 
