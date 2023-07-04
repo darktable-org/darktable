@@ -147,7 +147,7 @@ static void _dt_style_cleanup_multi_instance(int id)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT rowid,operation"
+      "SELECT rowid, operation"
       " FROM data.style_items"
       " WHERE styleid=?1"
       " ORDER BY operation, multi_priority ASC",
@@ -252,7 +252,8 @@ static gboolean dt_styles_create_style_header(const char *name,
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "INSERT INTO data.styles (name, description, id, iop_list)"
-      " VALUES (?1, ?2, (SELECT COALESCE(MAX(id),0)+1 FROM data.styles), ?3)", -1, &stmt, NULL);
+      " VALUES (?1, ?2, (SELECT COALESCE(MAX(id),0)+1 FROM data.styles), ?3)",
+      -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, description, -1, SQLITE_STATIC);
@@ -702,7 +703,8 @@ void dt_multiple_styles_apply_to_list(GList *styles,
      do that only in the darkroom as there is nothing to be saved
      when in the lighttable (and it would write over current history stack) */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+    dt_dev_write_history(darktable.develop);
 
   if(!styles && !list)
   {
@@ -765,7 +767,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
                                 const gboolean append)
 {
   // get any instance of the same operation so we can copy it
-  dt_iop_module_t *mod_src = dt_iop_get_module_by_op_priority(dev->iop, style_item->operation, -1);
+  dt_iop_module_t *mod_src =
+    dt_iop_get_module_by_op_priority(dev->iop, style_item->operation, -1);
 
   if(mod_src)
   {
@@ -798,13 +801,15 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
          && (style_item->blendop_version == dt_develop_blend_version())
          && (style_item->blendop_params_size == sizeof(dt_develop_blend_params_t)))
       {
-        memcpy(module->blend_params, style_item->blendop_params, sizeof(dt_develop_blend_params_t));
+        memcpy(module->blend_params, style_item->blendop_params,
+               sizeof(dt_develop_blend_params_t));
       }
       else if(style_item->blendop_params
-              && dt_develop_blend_legacy_params(module, style_item->blendop_params,
-                                                style_item->blendop_version,
-                                                module->blend_params, dt_develop_blend_version(),
-                                                style_item->blendop_params_size) == 0)
+              && dt_develop_blend_legacy_params
+                   (module, style_item->blendop_params,
+                    style_item->blendop_version,
+                    module->blend_params, dt_develop_blend_version(),
+                    style_item->blendop_params_size) == 0)
       {
         // do nothing
       }
@@ -853,9 +858,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
           {
             // FIXME: not sure how to handle this here...
             // quick and dirty hack to handle spot removal legacy_params
-            /* memcpy(module->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
-            memcpy(module->blend_params, module->default_blendop_params,
-                   sizeof(dt_develop_blend_params_t)); */
+            /* memcpy(module->blend_params, module->blend_params,
+                      sizeof(dt_develop_blend_params_t));
+               memcpy(module->blend_params, module->default_blendop_params,
+                      sizeof(dt_develop_blend_params_t)); */
           }
         }
 
@@ -1006,7 +1012,8 @@ void _styles_apply_to_image_ext(const char *name,
       style_item->blendop_version = sqlite3_column_int(stmt, 6);
       style_item->params_size = sqlite3_column_bytes(stmt, 3);
       style_item->params = (void *)malloc(style_item->params_size);
-      memcpy(style_item->params, (void *)sqlite3_column_blob(stmt, 3), style_item->params_size);
+      memcpy(style_item->params, (void *)sqlite3_column_blob(stmt, 3),
+             style_item->params_size);
       style_item->blendop_params_size = sqlite3_column_bytes(stmt, 5);
       style_item->blendop_params = (void *)malloc(style_item->blendop_params_size);
       memcpy(style_item->blendop_params, (void *)sqlite3_column_blob(stmt, 5),
@@ -1016,7 +1023,7 @@ void _styles_apply_to_image_ext(const char *name,
       si_list = g_list_prepend(si_list, style_item);
     }
     sqlite3_finalize(stmt);
-    si_list = g_list_reverse(si_list);  // list was built in reverse order, so un-reverse it
+    si_list = g_list_reverse(si_list); // list was built in reverse order, so un-reverse it
 
     dt_ioppr_update_for_style_items(dev_dest, si_list, FALSE);
 
@@ -1036,7 +1043,8 @@ void _styles_apply_to_image_ext(const char *name,
     {
       hist = dt_history_snapshot_item_init();
       hist->imgid = newimgid;
-      dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+      dt_history_snapshot_undo_create
+        (hist->imgid, &hist->before, &hist->before_history_end);
     }
 
     // write history and forms to db
@@ -1047,7 +1055,8 @@ void _styles_apply_to_image_ext(const char *name,
       dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
       dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
       dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
-                     dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+                     dt_history_snapshot_undo_pop,
+                     dt_history_snapshot_undo_lt_history_data_free);
       dt_undo_end_group(darktable.undo);
     }
 
@@ -1070,7 +1079,8 @@ void _styles_apply_to_image_ext(const char *name,
     if(dt_dev_is_current_image(darktable.develop, newimgid))
     {
       dt_dev_reload_history_items(darktable.develop);
-      dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+      dt_dev_modulegroups_set(darktable.develop,
+                              dt_dev_modulegroups_get(darktable.develop));
     }
 
     /* update xmp file */
@@ -1087,7 +1097,8 @@ void _styles_apply_to_image_ext(const char *name,
       dt_image_reset_aspect_ratio(newimgid, TRUE);
 
     /* redraw center view to update visible mipmaps */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, newimgid);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
+                                  DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, newimgid);
   }
 }
 
@@ -1217,7 +1228,8 @@ GList *dt_styles_get_item_list(const char *name,
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      if(strcmp((const char*)sqlite3_column_text(stmt, 3), "mask_manager") == 0) continue;
+      if(strcmp((const char*)sqlite3_column_text(stmt, 3), "mask_manager") == 0)
+        continue;
 
       // name of current item of style
       char iname[512] = { 0 };
@@ -1263,13 +1275,15 @@ GList *dt_styles_get_item_list(const char *name,
         // internal module name.
 
         if(has_multi_name && with_multi_name)
-          g_snprintf(iname, sizeof(iname), "%s %s", sqlite3_column_text(stmt, 3), multi_name);
+          g_snprintf(iname, sizeof(iname), "%s %s",
+                     sqlite3_column_text(stmt, 3), multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", sqlite3_column_text(stmt, 3));
       }
       else
       {
-        const gchar *itname = dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 3));
+        const gchar *itname =
+          dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 3));
         if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", itname, multi_name);
         else
@@ -1340,7 +1354,8 @@ GList *dt_styles_get_list(const char *filter)
 static char *dt_style_encode(sqlite3_stmt *stmt, int row)
 {
   const int32_t len = sqlite3_column_bytes(stmt, row);
-  char *vparams = dt_exif_xmp_encode((const unsigned char *)sqlite3_column_blob(stmt, row), len, NULL);
+  char *vparams = dt_exif_xmp_encode
+    ((const unsigned char *)sqlite3_column_blob(stmt, row), len, NULL);
   return vparams;
 }
 
@@ -1392,7 +1407,8 @@ void dt_styles_save_to_file(const char *style_name,
   if(writer == NULL)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
+             "[dt_styles_save_to_file] Error creating the xml writer\n, path: %s",
+             stylename);
     return;
   }
   rc = xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
@@ -1635,8 +1651,9 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
 
   /* decode and store blendop params */
   int blendop_params_len = 0;
-  unsigned char *blendop_params = dt_exif_xmp_decode(
-      plugin->blendop_params->str, strlen(plugin->blendop_params->str), &blendop_params_len);
+  unsigned char *blendop_params = dt_exif_xmp_decode
+    (plugin->blendop_params->str,
+     strlen(plugin->blendop_params->str), &blendop_params_len);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, blendop_params, blendop_params_len, SQLITE_TRANSIENT);
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version);
