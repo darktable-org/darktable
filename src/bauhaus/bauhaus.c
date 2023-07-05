@@ -542,7 +542,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
 
 static void dt_bauhaus_window_show(GtkWidget *w, gpointer user_data)
 {
-  gtk_grab_add(GTK_WIDGET(user_data));
+  gtk_grab_add(GTK_WIDGET(w));
 }
 
 static void dt_bh_init(DtBauhausWidget *class)
@@ -740,9 +740,10 @@ void dt_bauhaus_init()
                                                        | darktable.gui->scroll_mask);
 
   GObject *window = G_OBJECT(darktable.bauhaus->popup_window), *area = G_OBJECT(darktable.bauhaus->popup_area);
+  g_signal_connect(window, "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
   g_signal_connect(window, "show", G_CALLBACK(dt_bauhaus_window_show), area);
   g_signal_connect(area, "draw", G_CALLBACK(dt_bauhaus_popup_draw), NULL);
-  g_signal_connect(area, "motion-notify-event", G_CALLBACK(dt_bauhaus_popup_motion_notify), NULL);
+  g_signal_connect(window, "motion-notify-event", G_CALLBACK(dt_bauhaus_popup_motion_notify), NULL);
   g_signal_connect(area, "leave-notify-event", G_CALLBACK(dt_bauhaus_popup_leave_notify), NULL);
   g_signal_connect(area, "button-press-event", G_CALLBACK(dt_bauhaus_popup_button_press), NULL);
   g_signal_connect(area, "button-release-event", G_CALLBACK (dt_bauhaus_popup_button_release), NULL);
@@ -2459,7 +2460,7 @@ void dt_bauhaus_hide_popup()
 {
   if(darktable.bauhaus->current)
   {
-    gtk_grab_remove(darktable.bauhaus->popup_area);
+    gtk_grab_remove(darktable.bauhaus->popup_window);
     gtk_widget_hide(darktable.bauhaus->popup_window);
     gtk_window_set_attached_to(GTK_WINDOW(darktable.bauhaus->popup_window), NULL);
     darktable.bauhaus->current = NULL;
