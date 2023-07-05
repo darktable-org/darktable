@@ -3278,7 +3278,7 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
 
   dt_action_register(DT_ACTION(self), N_("jump back to previous collection"), _history_previous, GDK_KEY_k,
-                     GDK_CONTROL_MASK);
+                     GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
