@@ -654,12 +654,13 @@ static void _show_shortcuts_prefs(GtkWidget *w)
     gtk_window_resize(GTK_WINDOW(shortcuts_dialog), _shortcuts_dialog_posize.w, _shortcuts_dialog_posize.h);
   }
   g_signal_connect(G_OBJECT(shortcuts_dialog), "configure-event", G_CALLBACK(_resize_shortcuts_dialog), NULL);
+  gtk_widget_show_all(shortcuts_dialog); // separately show_all content later, otherwise activates first treeview
 
   //grab the content area of the dialog
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(shortcuts_dialog));
   gtk_box_pack_start(GTK_BOX(content), dt_shortcuts_prefs(w), TRUE, TRUE, 0);
+  gtk_widget_show_all(content);
 
-  gtk_widget_show_all(shortcuts_dialog);
   gtk_dialog_run(GTK_DIALOG(shortcuts_dialog));
   gtk_widget_destroy(shortcuts_dialog);
 }

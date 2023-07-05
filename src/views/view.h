@@ -59,8 +59,9 @@ typedef enum dt_view_type_flags_t
   DT_VIEW_SLIDESHOW  = 1 << 4,
   DT_VIEW_PRINT      = 1 << 5,
   DT_VIEW_KNIGHT     = 1 << 6,
+  DT_VIEW_FALLBACK   = 1 << 29,
   DT_VIEW_OTHER      = 1 << 30, // for your own unpublished user view
-  DT_VIEW_ALL        = ~DT_VIEW_NONE,
+  DT_VIEW_ALL        = ~DT_VIEW_FALLBACK,
 } dt_view_type_flags_t;
 
 // flags that a view can set in flags()
