@@ -174,6 +174,7 @@ are available on raw.pixls.us:
 - Polish
 - Brazilian Portuguese
 - Russian
+- Turkish
 - Slovenian
 - Albanian
 - Ukrainian
