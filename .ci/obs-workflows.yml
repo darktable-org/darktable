@@ -1,4 +1,4 @@
-develop:
+master:
   steps:
     - trigger_services:
         project: graphics:darktable:master
