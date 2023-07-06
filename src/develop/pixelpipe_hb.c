@@ -627,7 +627,7 @@ void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe)
 {
   if(!pipe->want_detail_mask)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(pipe, NULL);
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, 0);
   }
   pipe->want_detail_mask = TRUE;
 }

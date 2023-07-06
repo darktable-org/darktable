@@ -380,34 +380,20 @@ static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache, const
 
 void dt_dev_pixelpipe_cache_invalidate_later(
         const struct dt_dev_pixelpipe_t *pipe,
-        const struct dt_iop_module_t *module)
+        const int32_t order)
 {
   const dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
-  const int32_t order = module ? module->iop_order : 0;
 
-  gchar vbuf[1024] = { 0 };
-  gchar buf[8] = { 0 };
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->ioporder[k] >= order) && (cache->hash[k] != INVALID_CACHEHASH))
-    {
       _mark_invalid_cacheline(cache, k);
-      if(darktable.unmuted & DT_DEBUG_PIPE)
-      {
-        g_snprintf(buf, sizeof(buf), "%i ", k);
-        g_strlcat(vbuf, buf, sizeof(vbuf));
-      }
-    }
   }
-
-  if(vbuf[0])
-    dt_print_pipe(DT_DEBUG_PIPE,
-      "invalidated cache from", pipe, module, NULL, NULL, "order=%i, lines: %s\n", order, vbuf);
 }
 
 void dt_dev_pixelpipe_cache_flush(const struct dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_invalidate_later(pipe, NULL);
+  dt_dev_pixelpipe_cache_invalidate_later(pipe, 0);
 }
 
 void dt_dev_pixelpipe_important_cacheline(
