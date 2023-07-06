@@ -927,7 +927,7 @@ void process(struct dt_iop_module_t *self,
         dt_aligned_pixel_t lengths;
         for_four_channels(i)
         {
-          lengths[i] = -length + counts[i] * length_inc;
+          lengths[i] = -(length + counts[i] * length_inc);
           curr_density[i] = _compute_density(-density, lengths[i]);
         }
         for(int i = 0; i < 4; i++)
@@ -939,13 +939,13 @@ void process(struct dt_iop_module_t *self,
           }
           // use streaming writes to eliminate the memory reads from loading cache lines
           copy_pixel_nontemporal(out + 4*(x+i), res);
-          length += 4*length_inc;
         }
+        length += 4*length_inc;
       }
       // handle the left-over pixels
       for(int x = width & ~3; x < width; x++)
       {
-        const float curr_density = _compute_density(density, length);
+        const float curr_density = _compute_density(-density, -length);
         dt_aligned_pixel_t res;	// the compiler will optimize this into a register
         for_each_channel(l, aligned(in : 16))
         {
