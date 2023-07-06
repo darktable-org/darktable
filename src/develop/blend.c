@@ -1219,7 +1219,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
         cl_mem guide = dev_in;
         if(!rois_equal)
         {
-          dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
+          dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
           if(dev_guide == NULL) goto error;
           guide = dev_guide;
           size_t origin_1[] = { dx, dy, 0 };
@@ -1296,7 +1296,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
-  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
+  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
   if(dev_tmp == NULL) goto error;
 
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
