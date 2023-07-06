@@ -1072,8 +1072,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
       markup_text = g_markup_printf_escaped("%s\n%s\n%s%s\n%s",
                                             _("press keys with mouse click and scroll or move combinations to create a shortcut"),
                                             _("click to open shortcut configuration"),
-                                            add_remove_qap > 0 ? _("ctrl+click to add to quick access panel\n") :
-                                            add_remove_qap < 0 ? _("ctrl+click to remove from quick access panel\n")  : "",
+                                            add_remove_qap == CPF_DIRECTION_UP   ? _("ctrl+click to add to quick access panel\n") :
+                                            add_remove_qap == CPF_DIRECTION_DOWN ? _("ctrl+click to remove from quick access panel\n")  : "",
                                             _("scroll to change default speed"),
                                             _("right click to exit mapping mode"));
     }
@@ -2654,6 +2654,12 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
   dt_shortcuts_save(NULL, FALSE);
 }
 
+static void _notice_clicked(GtkWidget *button, gpointer user_data)
+{
+  gtk_widget_hide(button);
+  dt_conf_set_bool("accel/hide_notice", TRUE);
+}
+
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 {
   // Save the shortcuts before editing
@@ -2858,6 +2864,25 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
 
   GtkWidget *top_level = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  if(!dt_conf_get_bool("accel/hide_notice"))
+  {
+    button = gtk_button_new_with_label(
+      _("The recommended way to assign shortcuts to visual elements is the <b>visual shortcut mapping</b> mode.\n"
+        "This is switched on by toggling the <i>\"keyboard\"</i> button next to preferences in the top panel. "
+        "In this mode, clicking on a widget or area will open this dialog with the appropriate selection for advanced configuration.\n"
+        "Multiple shortcuts can be assigned to the same action. "
+        "This is especially useful if it has multiple <i>elements</i>, like the module buttons or the colorpickers attached to sliders. "
+        "However, with <i>fallbacks</i> enabled one can use the same simple shortcuts and "
+        "change their <i>element</i> or <i>effect</i> by adding mouse clicks."));
+    gtk_widget_set_tooltip_text(button, _("click to dismiss this notice permanently"));
+    gtk_widget_set_hexpand(button, TRUE);
+    GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(button)));
+    gtk_label_set_use_markup(label, TRUE);
+    gtk_label_set_line_wrap(label, TRUE);
+    gtk_label_set_xalign(label, 0);
+    g_signal_connect(button, "clicked", G_CALLBACK(_notice_clicked), NULL);
+    gtk_box_pack_start(GTK_BOX(top_level), button, FALSE, FALSE, 0);
+  }
   gtk_box_pack_start(GTK_BOX(top_level), container, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(top_level), button_bar, FALSE, FALSE, 0);
 
