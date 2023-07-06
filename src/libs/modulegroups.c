@@ -2218,7 +2218,7 @@ static int _lib_modulegroups_basics_module_toggle_action(dt_lib_module_t *self, 
     _manage_direct_save(self);
   }
 
-  return found_item ? -1 : 1;
+  return found_item ? CPF_DIRECTION_DOWN : CPF_DIRECTION_UP;
 }
 
 static int _lib_modulegroups_basics_module_toggle(dt_lib_module_t *self, GtkWidget *widget, gboolean doit)
