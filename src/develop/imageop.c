@@ -2055,7 +2055,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
   // this should be redundant! (but is not)
   dt_iop_module_t *inserted = dt_iop_commit_blend_params(module, blendop_params);
   if(inserted)
-    dt_dev_pixelpipe_cache_invalidate_later(pipe, inserted);
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, inserted->iop_order);
 #ifdef HAVE_OPENCL
   // assume process_cl is ready, commit_params can overwrite this.
   if(module->process_cl)
@@ -3530,7 +3530,7 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(dev->pipe, module);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->pipe, module->iop_order);
     //ensure that commit_params gets called to pick up any GUI changes
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate(dev);
@@ -3544,7 +3544,7 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(dev->preview_pipe, module);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->preview_pipe, module->iop_order);
     //ensure that commit_params gets called to pick up any GUI changes
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
@@ -3558,7 +3558,7 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
   dt_develop_t *dev = module->dev;
   if(dev && dev->gui_attached)
   {
-    dt_dev_pixelpipe_cache_invalidate_later(dev->preview2_pipe, module);
+    dt_dev_pixelpipe_cache_invalidate_later(dev->preview2_pipe, module->iop_order);
     //ensure that commit_params gets called to pick up any GUI changes
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
