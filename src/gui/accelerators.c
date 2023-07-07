@@ -493,7 +493,6 @@ static gint _shortcut_compare_func(gconstpointer shortcut_a,
   if(a_category == DT_SHORTCUT_CATEGORY_DISABLED
      || a_category == DT_SHORTCUT_CATEGORY_SPEED)
     // Order disabled default shortcuts by action to immediately find correct one
-    //FIXME order by (full) name, but avoid slow full path generation and comparison
     return GPOINTER_TO_INT(a->action) - GPOINTER_TO_INT(b->action);
 
   return 0;
@@ -2314,6 +2313,32 @@ static gboolean _fallback_type_is_relevant(dt_action_t *ac, dt_action_type_t typ
   return FALSE;
 }
 
+static gint _sort_speed_shortcuts(GtkTreeModel *model,
+                                  GtkTreeIter *a,
+                                  GtkTreeIter *b,
+                                  gpointer user_data)
+{
+  gpointer data_a, data_b;
+
+  gtk_tree_model_get(model, a, 0, &data_a, -1);
+  gtk_tree_model_get(model, b, 0, &data_b, -1);
+  if(_is_shortcut_category(data_a) || _is_shortcut_category(data_b))
+    return 0;
+
+  dt_shortcut_t *shortcut_a = g_sequence_get(data_a);
+  dt_shortcut_t *shortcut_b = g_sequence_get(data_b);
+  if(!_shortcut_is_speed(shortcut_a) || !_shortcut_is_speed(shortcut_b))
+    return 0;
+
+  gchar *label_a = _action_full_label(shortcut_a->action);
+  gchar *label_b = _action_full_label(shortcut_b->action);
+  gint return_value = g_utf8_collate(label_a, label_b);
+  g_free(label_a);
+  g_free(label_b);
+
+  return return_value;
+}
+
 static gboolean _visible_shortcuts(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
   void *data_ptr = NULL;
@@ -2677,6 +2702,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 
   _add_shortcuts_to_tree();
 
+  gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(_shortcuts_store), _sort_speed_shortcuts, NULL, NULL);
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(_shortcuts_store), GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
   GtkTreeModel *filtered_shortcuts = gtk_tree_model_filter_new(GTK_TREE_MODEL(_shortcuts_store), NULL);
   g_object_unref(G_OBJECT(_shortcuts_store));
 
