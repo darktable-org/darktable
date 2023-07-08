@@ -968,8 +968,7 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
   // circle in quadrants and doing only the inside we have to calculate
   // hypotf only for PI / 16 = 0.196 of the stamp area.
   // We don't do octants to avoid false sharing of cache lines between threads.
-  // doesn't work for OSX see issue #7349
-  #if defined(_OPENMP) && !defined(__APPLE__)
+  #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) \
     dt_omp_firstprivate(iradius, strength, abs_strength, table_size, global_width) \
     dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent)
