@@ -1038,6 +1038,29 @@ static void _dev_add_history_item_ext(
   }
   if((module->enabled) && (!no_image))
     module->write_input_hint = TRUE;
+
+  // This could be the place to check for automatic history writing
+  const double user_delay = (double)dt_conf_get_int("autosave_interval"); 
+  const double now = dt_get_wtime();
+
+  static double last = 0.0;
+  static gboolean proper_timing = TRUE;
+
+  if((user_delay >= 1.0) && proper_timing && ((now - last) > user_delay))
+  {
+    // Ok, lets save status for image
+    dt_dev_write_history(dev);
+    dt_image_write_sidecar_file(dev->image_storage.id);
+    last = now;
+
+    // if the above writing to database and xmp took too long we disable automatic mode
+    const double spent = dt_get_wtime() - now;
+    if(spent > 0.5)
+      proper_timing = FALSE;
+    dt_print(DT_DEBUG_DEV, "autosave history took %fsec%s\n",
+      spent,
+      proper_timing ? "" : ", now disabled because of very slow drive/system");
+  }
 }
 
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op)
