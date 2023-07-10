@@ -135,15 +135,6 @@ static inline void _preserve_hue_and_energy(float *pix_io,
                                             const dt_iop_sigmoid_value_order_t order,
                                             const float hue_preservation)
 {
-  if (per_channel[order.max] - per_channel[order.min] < 1e-9f ||
-    per_channel[order.mid] - per_channel[order.min] < 1e-9f )
-  {
-    pix_io[0] = per_channel[0];
-    pix_io[1] = per_channel[1];
-    pix_io[2] = per_channel[2];
-    return;  // Nothing to fix
-  }
-
   // Naive Hue correction of the middle channel
   const float full_hue_correction =
     per_channel[order.min] + ((per_channel[order.max] - per_channel[order.min]) *
