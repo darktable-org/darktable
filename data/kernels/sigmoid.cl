@@ -136,7 +136,8 @@ static inline void _preserve_hue_and_energy(float *pix_io,
                                             const float hue_preservation)
 {
   // Naive Hue correction of the middle channel
-  const float midscale = (pix_io[order.mid] - pix_io[order.min]) / (pix_io[order.max] - pix_io[order.min]);
+  const float chroma = pix_io[order.max] - pix_io[order.min];
+  const float midscale = chroma != 0.f ? (pix_io[order.mid] - pix_io[order.min]) / chroma : 0.f;
   const float full_hue_correction =
     per_channel[order.min] + (per_channel[order.max] - per_channel[order.min]) * midscale;
   const float naive_hue_mid =
@@ -144,7 +145,8 @@ static inline void _preserve_hue_and_energy(float *pix_io,
 
   const float per_channel_energy = per_channel[0] + per_channel[1] + per_channel[2];
   const float naive_hue_energy = per_channel[order.min] + naive_hue_mid + per_channel[order.max];
-  const float blend_factor = 2.0f * pix_io[order.min] / (pix_io[order.min] + pix_io[order.mid]);
+  const float pix_in_min_plus_mid = pix_io[order.min] + pix_io[order.mid];
+  const float blend_factor = pix_in_min_plus_mid != 0.f ? 2.0f * pix_io[order.min] / pix_in_min_plus_mid : 0.f;
   const float energy_target = blend_factor * per_channel_energy + (1.0f - blend_factor) * naive_hue_energy;
 
   // Preserve hue constrained to maintain the same energy as the per channel result
