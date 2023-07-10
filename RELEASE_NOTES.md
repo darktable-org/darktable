@@ -40,6 +40,11 @@ for more information on how to contribute._
 
 - Graduated Density : Fix density computation for negative EVs.
 
+- Fixed wrong allocation of opencl image buffers for blending in
+  DEVELOP_BLEND_CS_RAW.
+
+- Fixed roi_in calculation in highlights and cacorrect modules.
+
 ## Lua
 
 ### API Version
