@@ -393,15 +393,6 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
 static inline void preserve_hue_and_energy(const dt_aligned_pixel_t pix_in, const dt_aligned_pixel_t per_channel, dt_aligned_pixel_t pix_out,
     const dt_iop_sigmoid_value_order_t order, const float hue_preservation)
 {
-  if (per_channel[order.max] - per_channel[order.min] < 1e-9 ||
-      per_channel[order.mid] - per_channel[order.min] < 1e-9 )
-  {
-    pix_out[order.min] = per_channel[order.min];
-    pix_out[order.mid] = per_channel[order.mid];
-    pix_out[order.max] = per_channel[order.max];
-    return;  // Nothing to fix
-  }
-
   // Naive Hue correction of the middle channel
   const float full_hue_correction = per_channel[order.min] + ((per_channel[order.max] - per_channel[order.min]) * (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]));
   const float naive_hue_mid = (1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
