@@ -173,7 +173,7 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
 {
   const float clamped_value = fmaxf(value, 0.0f);
   // The following equation can be derived as a model for film + paper but it has a pole at 0
-  // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
+  // magnitude * powf(1.0f + paper_exp * powf(film_fog + value, -film_power), -paper_power);
   // Rewritten on a stable around zero form:
   const float film_response = powf(film_fog + clamped_value, film_power);
   const float paper_response = magnitude * powf(film_response / (paper_exp + film_response), paper_power);
@@ -196,7 +196,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // Calculate a reference slope for no skew and a normalized display
   const float ref_film_power = params->middle_grey_contrast;
   const float ref_paper_power = 1.0f;
-  const float ref_magnitude = 1.0;
+  const float ref_magnitude = 1.0f;
   const float ref_film_fog = 0.0f;
   const float ref_paper_exposure = powf(ref_film_fog + MIDDLE_GREY, ref_film_power) * ((ref_magnitude / MIDDLE_GREY) - 1.0f);
   const float delta = 1e-6f;
@@ -397,27 +397,27 @@ static inline void preserve_hue_and_energy(const dt_aligned_pixel_t pix_in, cons
   const float chroma = pix_in[order.max] - pix_in[order.min];
   const float midscale = chroma != 0.f ? (pix_in[order.mid] - pix_in[order.min]) / chroma : 0.f;
   const float full_hue_correction = per_channel[order.min] + (per_channel[order.max] - per_channel[order.min]) * midscale;
-  const float naive_hue_mid = (1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
+  const float naive_hue_mid = (1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
 
   const float per_channel_energy = per_channel[0] + per_channel[1] + per_channel[2];
   const float naive_hue_energy = per_channel[order.min] + naive_hue_mid + per_channel[order.max];
   const float pix_in_min_plus_mid = pix_in[order.min] + pix_in[order.mid];
-  const float blend_factor = pix_in_min_plus_mid != 0.f ? 2.0 * pix_in[order.min] / pix_in_min_plus_mid : 0.f;
-  const float energy_target = blend_factor * per_channel_energy + (1.0 - blend_factor) * naive_hue_energy;
+  const float blend_factor = pix_in_min_plus_mid != 0.f ? 2.0f * pix_in[order.min] / pix_in_min_plus_mid : 0.f;
+  const float energy_target = blend_factor * per_channel_energy + (1.0f - blend_factor) * naive_hue_energy;
 
   // Preserve hue constrained to maintain the same energy as the per channel result
   if (naive_hue_mid <= per_channel[order.mid])
   {
-    const float corrected_mid = ((1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * (midscale * per_channel[order.max] + (1.0 - midscale) * (energy_target - per_channel[order.max])))
-                                / (1.0 + hue_preservation * (1.0 - midscale));
+    const float corrected_mid = ((1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation * (midscale * per_channel[order.max] + (1.0f - midscale) * (energy_target - per_channel[order.max])))
+                                / (1.0f + hue_preservation * (1.0f - midscale));
     pix_out[order.min] = energy_target - per_channel[order.max] - corrected_mid;
     pix_out[order.mid] = corrected_mid;
     pix_out[order.max] = per_channel[order.max];
   }
   else
   {
-    const float corrected_mid = ((1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * (per_channel[order.min] * (1.0f - midscale) + midscale * (energy_target - per_channel[order.min])))
-                                / (1.0 + hue_preservation * midscale);
+    const float corrected_mid = ((1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation * (per_channel[order.min] * (1.0f - midscale) + midscale * (energy_target - per_channel[order.min])))
+                                / (1.0f + hue_preservation * midscale);
     pix_out[order.min] = per_channel[order.min];
     pix_out[order.mid] = corrected_mid;
     pix_out[order.max] = energy_target - per_channel[order.min] - corrected_mid;
