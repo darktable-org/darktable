@@ -107,7 +107,7 @@ typedef enum dt_highlights_mask_t
 typedef struct dt_iop_highlights_params_t
 {
   // params of v1
-  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
+  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_OPPOSED $DESCRIPTION: "method"
   float blendL; // unused $DEFAULT: 1.0
   float blendC; // unused $DEFAULT: 0.0
   float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
@@ -1001,11 +1001,6 @@ void reload_defaults(dt_iop_module_t *self)
   // enable this per default if raw or sraw if not true monochrome
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
   self->hide_enable_button = !(self->default_enabled);
-
-  dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
-
-  if(!dt_image_altered(self->dev->image_storage.id))
-    d->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
 
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "notapplicable");
