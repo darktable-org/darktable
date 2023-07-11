@@ -1002,11 +1002,6 @@ void reload_defaults(dt_iop_module_t *self)
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
   self->hide_enable_button = !(self->default_enabled);
 
-  dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
-
-  if(!dt_image_altered(self->dev->image_storage.id))
-    d->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
-
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "notapplicable");
 
