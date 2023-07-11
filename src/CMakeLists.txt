@@ -957,7 +957,7 @@ target_link_libraries(lib_darktable PRIVATE lib_darktable_imageio_rawspeed)
 #
 if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
-  install(TARGETS lib_darktable DESTINATION bin COMPONENT DTApplication)
+  install(TARGETS lib_darktable RUNTIME DESTINATION bin COMPONENT DTApplication)
 else(WIN32)
   install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
