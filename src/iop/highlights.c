@@ -569,7 +569,7 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece,
   float *const out = (float *const)ovoid;
 
   const int ch = (piece->pipe->dsc.filters) ? piece->colors : 1;
-  const size_t msize = (size_t)roi_out->width * roi_out->height * ch; 
+  const size_t msize = (size_t)roi_out->width * roi_out->height * ch;
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
     dt_omp_firstprivate(clip, in, out, msize) \
