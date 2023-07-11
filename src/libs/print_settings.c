@@ -1503,7 +1503,7 @@ static void _snap_to_grid(dt_lib_print_settings_t *ps,
   {
     // V lines
     const float step =
-      gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size)) * units[ps->unit];
+      gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size)) / units[ps->unit];
 
     // only display the grid if a step of 5 pixels
     const float diff = DT_PIXEL_APPLY_DPI(5);
