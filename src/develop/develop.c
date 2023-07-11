@@ -1053,13 +1053,15 @@ static void _dev_add_history_item_ext(
     dt_image_write_sidecar_file(dev->image_storage.id);
     last = now;
 
-    // if the above writing to database and xmp took too long we disable automatic mode
     const double spent = dt_get_wtime() - now;
+    dt_print(DT_DEBUG_DEV, "autosave history took %fsec\n", spent);
+
+    // if writing to database and the xmp took too long we disable automatic mode for this session
     if(spent > 0.5)
+    {
       proper_timing = FALSE;
-    dt_print(DT_DEBUG_DEV, "autosave history took %fsec%s\n",
-      spent,
-      proper_timing ? "" : ", now disabled because of very slow drive/system");
+      dt_control_log(_("Autosaving history has been disabled for this session because of a slow drive used"));
+    }
   }
 }
 
