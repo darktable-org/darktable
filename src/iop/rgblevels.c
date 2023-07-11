@@ -604,7 +604,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       // Reset
       dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
       dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
-      dt_iop_rgblevels_params_t *default_params = (dt_iop_rgblevels_params_t *)self->default_params;
+      const dt_iop_rgblevels_params_t *const default_params = (dt_iop_rgblevels_params_t *)self->default_params;
 
       for(int i = 0; i < 3; i++)
         p->levels[c->channel][i] = default_params->levels[c->channel][i];

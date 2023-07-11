@@ -616,7 +616,7 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_denoiseprofile_params_t *v10 = new_params;
 
     // start with a clean default
-    dt_iop_denoiseprofile_params_t *d = self->default_params;
+    const dt_iop_denoiseprofile_params_t *const d = self->default_params;
     *v10 = *d;
 
     v10->radius = v9.radius;
@@ -3586,7 +3586,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
   {
     // reset current curve
     dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-    dt_iop_denoiseprofile_params_t *d =
+    const dt_iop_denoiseprofile_params_t *const d =
       (dt_iop_denoiseprofile_params_t *)self->default_params;
 
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -3679,7 +3679,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = IOP_GUI_ALLOC(denoiseprofile);
-  dt_iop_denoiseprofile_params_t *p =
+  const dt_iop_denoiseprofile_params_t *const p =
     (dt_iop_denoiseprofile_params_t *)self->default_params;
 
   g->profiles = NULL;

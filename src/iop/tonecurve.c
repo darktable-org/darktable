@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -764,7 +764,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 {
   // create part of the pixelpipe
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
-  dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
+  const dt_iop_tonecurve_params_t *const default_params = (dt_iop_tonecurve_params_t *)self->default_params;
   piece->data = (void *)d;
   d->autoscale_ab = DT_S_SCALE_AUTOMATIC;
   d->unbound_ab = 1;
@@ -1104,7 +1104,7 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *c = IOP_GUI_ALLOC(tonecurve);
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->default_params;
+  const dt_iop_tonecurve_params_t *const p = (dt_iop_tonecurve_params_t *)self->default_params;
 
   for(int ch = 0; ch < ch_max; ch++)
   {
@@ -1666,7 +1666,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_iop_tonecurve_params_t *d = (dt_iop_tonecurve_params_t *)self->default_params;
+  const dt_iop_tonecurve_params_t *const d = (dt_iop_tonecurve_params_t *)self->default_params;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
   int ch = c->channel;

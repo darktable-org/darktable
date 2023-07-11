@@ -172,7 +172,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     const dt_iop_channelmixer_params_v1_t *old = (dt_iop_channelmixer_params_v1_t *)old_params;
     dt_iop_channelmixer_params_t *new = (dt_iop_channelmixer_params_t *)new_params;
-    dt_iop_channelmixer_params_t *defaults = (dt_iop_channelmixer_params_t *)self->default_params;
+    const dt_iop_channelmixer_params_t *const defaults = (dt_iop_channelmixer_params_t *)self->default_params;
 
     *new = *defaults; // start with a fresh copy of default parameters
     new->algorithm_version = CHANNEL_MIXER_VERSION_1;
@@ -605,7 +605,7 @@ void init(dt_iop_module_t *module)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_channelmixer_gui_data_t *g = IOP_GUI_ALLOC(channelmixer);
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->default_params;
+  const dt_iop_channelmixer_params_t *const p = (dt_iop_channelmixer_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

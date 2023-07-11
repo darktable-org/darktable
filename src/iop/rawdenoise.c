@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -547,7 +547,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)malloc(sizeof(dt_iop_rawdenoise_data_t));
-  dt_iop_rawdenoise_params_t *default_params = (dt_iop_rawdenoise_params_t *)self->default_params;
+  const dt_iop_rawdenoise_params_t *const default_params = (dt_iop_rawdenoise_params_t *)self->default_params;
 
   piece->data = (void *)d;
   for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
@@ -809,7 +809,7 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
   {
     // reset current curve
     dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
-    dt_iop_rawdenoise_params_t *d = (dt_iop_rawdenoise_params_t *)self->default_params;
+    const dt_iop_rawdenoise_params_t *const d = (dt_iop_rawdenoise_params_t *)self->default_params;
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
     {
       p->x[ch][k] = d->x[ch][k];
@@ -884,7 +884,7 @@ static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *c = IOP_GUI_ALLOC(rawdenoise);
-  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->default_params;
+  const dt_iop_rawdenoise_params_t *const p = (dt_iop_rawdenoise_params_t *)self->default_params;
 
   c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
