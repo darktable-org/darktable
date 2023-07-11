@@ -49,7 +49,7 @@ extern "C" {
 extern GType DT_BAUHAUS_WIDGET_TYPE;
 
 #define DT_BAUHAUS_SLIDER_MAX_STOPS 20
-#define DT_BAUHAUS_COMBO_MAX_TEXT 180
+#define DT_BAUHAUS_MAX_TEXT 180
 
 typedef enum dt_bauhaus_type_t
 {
@@ -212,7 +212,7 @@ typedef struct dt_bauhaus_t
   int change_active;
   float mouse_line_distance;
   // key input buffer
-  char keys[64];
+  char keys[DT_BAUHAUS_MAX_TEXT];
   int keys_cnt;
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
@@ -282,9 +282,6 @@ void dt_bauhaus_widget_reset(GtkWidget *widget);
 
 // update all bauhaus widgets in an iop module from their params fields
 void dt_bauhaus_update_module(dt_iop_module_t *self);
-
-void dt_bauhaus_hide_popup();
-void dt_bauhaus_show_popup(GtkWidget *w);
 
 // slider:
 GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self);
