@@ -45,6 +45,9 @@ for more information on how to contribute._
 
 - Fixed roi_in calculation in highlights and cacorrect modules.
 
+- Fix snap to grid for cm/inch units in print view. Only mm was
+  properly handled.
+
 ## Lua
 
 ### API Version
