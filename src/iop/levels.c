@@ -154,7 +154,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_levels_params_v1_t *o = (dt_iop_levels_params_v1_t *)old_params;
     dt_iop_levels_params_t *n = (dt_iop_levels_params_t *)new_params;
-    dt_iop_levels_params_t *d = (dt_iop_levels_params_t *)self->default_params;
+    const dt_iop_levels_params_t *const d = (dt_iop_levels_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 

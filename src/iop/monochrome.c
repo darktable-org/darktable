@@ -464,7 +464,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset
-      dt_iop_monochrome_params_t *p0 = (dt_iop_monochrome_params_t *)self->default_params;
+      const dt_iop_monochrome_params_t *const p0 = (dt_iop_monochrome_params_t *)self->default_params;
       p->a = p0->a;
       p->b = p0->b;
       p->size = p0->size;

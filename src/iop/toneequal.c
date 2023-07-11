@@ -366,7 +366,7 @@ int legacy_params(dt_iop_module_t *self,
       (dt_iop_toneequalizer_params_v1_t *)old_params;
     dt_iop_toneequalizer_params_t *n =
       (dt_iop_toneequalizer_params_t *)new_params;
-    dt_iop_toneequalizer_params_t *d =
+    const dt_iop_toneequalizer_params_t *const d =
       (dt_iop_toneequalizer_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
@@ -3072,7 +3072,7 @@ static gboolean area_button_press(GtkWidget *widget,
      && event->type == GDK_2BUTTON_PRESS)
   {
     dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
-    dt_iop_toneequalizer_params_t *d =
+    const dt_iop_toneequalizer_params_t *const d =
       (dt_iop_toneequalizer_params_t *)self->default_params;
 
     // reset nodes params

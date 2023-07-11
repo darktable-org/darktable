@@ -166,7 +166,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_atrous_params_v1_t *o = (dt_iop_atrous_params_v1_t *)old_params;
     dt_iop_atrous_params_t *n = (dt_iop_atrous_params_t *)new_params;
-    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
+    const dt_iop_atrous_params_t *const d = (dt_iop_atrous_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
@@ -643,7 +643,7 @@ static inline void _apply_mix(dt_iop_module_t *self,
                               const float mix,
                               const float px, const float py, float *x, float *y)
 {
-  dt_iop_atrous_params_t *dp = (dt_iop_atrous_params_t *)self->default_params;
+  const dt_iop_atrous_params_t *const dp = (dt_iop_atrous_params_t *)self->default_params;
   *x = fminf(1.0f, fmaxf(0.0f, px + (mix - 1.0f) * (px - dp->x[ch][k])));
   *y = fminf(1.0f, fmaxf(0.0f, py + (mix - 1.0f) * (py - dp->y[ch][k])));
 }
@@ -680,7 +680,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)malloc(sizeof(dt_iop_atrous_data_t));
-  dt_iop_atrous_params_t *default_params = (dt_iop_atrous_params_t *)self->default_params;
+  const dt_iop_atrous_params_t *const default_params = (dt_iop_atrous_params_t *)self->default_params;
   piece->data = (void *)d;
   for(int ch = 0; ch < atrous_none; ch++)
   {
@@ -1419,7 +1419,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
   {
     // reset current curve
     dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
+    const dt_iop_atrous_params_t *const d = (dt_iop_atrous_params_t *)self->default_params;
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     for(int k = 0; k < BANDS; k++)
@@ -1533,7 +1533,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-  dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
+  const dt_iop_atrous_params_t *const d = (dt_iop_atrous_params_t *)self->default_params;
 
   const int node = element - 1;
   const int ch1 = c->channel;
@@ -1643,7 +1643,7 @@ const dt_action_def_t _action_def_equalizer
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *c = IOP_GUI_ALLOC(atrous);
-  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->default_params;
+  const dt_iop_atrous_params_t *const p = (dt_iop_atrous_params_t *)self->default_params;
 
   c->num_samples = 0;
   c->band_max = 0;

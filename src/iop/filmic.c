@@ -206,7 +206,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_filmic_params_v1_t *o = (dt_iop_filmic_params_v1_t *)old_params;
     dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
-    dt_iop_filmic_params_t *d = (dt_iop_filmic_params_t *)self->default_params;
+    const dt_iop_filmic_params_t *const d = (dt_iop_filmic_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
@@ -250,7 +250,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_filmic_params_v2_t *o = (dt_iop_filmic_params_v2_t *)old_params;
     dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
-    dt_iop_filmic_params_t *d = (dt_iop_filmic_params_t *)self->default_params;
+    const dt_iop_filmic_params_t *const d = (dt_iop_filmic_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
@@ -1471,7 +1471,7 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpoi
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_filmic_gui_data_t *g = IOP_GUI_ALLOC(filmic);
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->default_params;
+  const dt_iop_filmic_params_t *const p = (dt_iop_filmic_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

@@ -180,7 +180,7 @@ int legacy_params(dt_iop_module_t *self,
 
     dt_iop_exposure_params_v2_t *o = (dt_iop_exposure_params_v2_t *)old_params;
     dt_iop_exposure_params_t *n = (dt_iop_exposure_params_t *)new_params;
-    dt_iop_exposure_params_t *d = (dt_iop_exposure_params_t *)self->default_params;
+    const dt_iop_exposure_params_t *const d = (dt_iop_exposure_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
@@ -200,7 +200,7 @@ int legacy_params(dt_iop_module_t *self,
 
     dt_iop_exposure_params_v3_t *o = (dt_iop_exposure_params_v3_t *)old_params;
     dt_iop_exposure_params_t *n = (dt_iop_exposure_params_t *)new_params;
-    dt_iop_exposure_params_t *d = (dt_iop_exposure_params_t *)self->default_params;
+    const dt_iop_exposure_params_t *const d = (dt_iop_exposure_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
@@ -230,7 +230,7 @@ int legacy_params(dt_iop_module_t *self,
 
     dt_iop_exposure_params_v4_t *o = (dt_iop_exposure_params_v4_t *)old_params;
     dt_iop_exposure_params_t *n = (dt_iop_exposure_params_t *)new_params;
-    dt_iop_exposure_params_t *d = (dt_iop_exposure_params_t *)self->default_params;
+    const dt_iop_exposure_params_t *const d = (dt_iop_exposure_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
@@ -256,7 +256,7 @@ int legacy_params(dt_iop_module_t *self,
 
     dt_iop_exposure_params_v5_t *o = (dt_iop_exposure_params_v5_t *)old_params;
     dt_iop_exposure_params_t *n = (dt_iop_exposure_params_t *)new_params;
-    dt_iop_exposure_params_t *d = (dt_iop_exposure_params_t *)self->default_params;
+    const dt_iop_exposure_params_t *const d = (dt_iop_exposure_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 

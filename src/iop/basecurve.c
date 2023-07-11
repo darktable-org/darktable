@@ -463,7 +463,7 @@ static gboolean _check_camera(dt_iop_basecurve_params_t *d,
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_basecurve_params_t *d = module->default_params;
+  dt_iop_basecurve_params_t *const d = module->default_params;
 
   if(module->multi_priority == 0)
   {
@@ -1939,7 +1939,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  dt_iop_basecurve_params_t *d = (dt_iop_basecurve_params_t *)self->default_params;
+  const dt_iop_basecurve_params_t *const d = (dt_iop_basecurve_params_t *)self->default_params;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   int ch = 0;
@@ -2167,7 +2167,7 @@ static void logbase_callback(GtkWidget *slider, gpointer user_data)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *c = IOP_GUI_ALLOC(basecurve);
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->default_params;
+  const dt_iop_basecurve_params_t *const p = (dt_iop_basecurve_params_t *)self->default_params;
 
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
   c->minmax_curve_type = p->basecurve_type[0];
