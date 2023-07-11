@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable developers.
+    Copyright (C) 2018-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   if(old_version == 1 && new_version == 2)
   {
     dt_iop_mask_manager_params_t *n = (dt_iop_mask_manager_params_t *)new_params;
-    dt_iop_mask_manager_params_t *d = (dt_iop_mask_manager_params_t *)self->default_params;
+    const dt_iop_mask_manager_params_t *const d = (dt_iop_mask_manager_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
     return 0;

@@ -273,7 +273,7 @@ int legacy_params(dt_iop_module_t *self,
 
     dt_iop_retouch_params_v1_t *o = (dt_iop_retouch_params_v1_t *)old_params;
     dt_iop_retouch_params_t *n = (dt_iop_retouch_params_t *)new_params;
-    dt_iop_retouch_params_t *d = (dt_iop_retouch_params_t *)self->default_params;
+    const dt_iop_retouch_params_t *const d = (dt_iop_retouch_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
     for(int i = 0; i < RETOUCH_NO_FORMS; i++)
@@ -334,7 +334,7 @@ int legacy_params(dt_iop_module_t *self,
 
     dt_iop_retouch_params_v2_t *o = (dt_iop_retouch_params_v2_t *)old_params;
     dt_iop_retouch_params_t *n = (dt_iop_retouch_params_t *)new_params;
-    dt_iop_retouch_params_t *d = (dt_iop_retouch_params_t *)self->default_params;
+    const dt_iop_retouch_params_t *const d = (dt_iop_retouch_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
@@ -2403,7 +2403,7 @@ void change_image(struct dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = IOP_GUI_ALLOC(retouch);
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->default_params;
+  const dt_iop_retouch_params_t *const p = (dt_iop_retouch_params_t *)self->default_params;
 
   change_image(self);
 
