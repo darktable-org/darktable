@@ -983,15 +983,6 @@ void gui_update(struct dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
-
-  d->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
-  p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
-}
-
 void reload_defaults(dt_iop_module_t *self)
 {
   // we might be called from presets update infrastructure => there is no image
