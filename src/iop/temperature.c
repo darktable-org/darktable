@@ -545,12 +545,13 @@ void process(struct dt_iop_module_t *self,
     for(int j = 0; j < roi_out->height; j++)
     {
       int i = 0;
-      const int alignment = ((4 - (j * width & (4 - 1))) & (4 - 1));
+
+      const int alignment = 3 & (4 - ((j*width) & 3));
       const int offset_j = j + roi_out->y;
 
       // process the unaligned sensels at the start of the row (when
       // width is not a multiple of 4)
-      for( ; i < alignment; i++)
+      for(; i < alignment; i++)
       {
         const size_t p = (size_t)j * width + i;
         out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
@@ -562,16 +563,17 @@ void process(struct dt_iop_module_t *self,
           d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
 
       // process sensels four at a time
-      for(; i < (width & ~3); i += 4)
+      for(; i < width - 4; i += 4)
       {
         const size_t p = (size_t)j * width + i;
         scaled_copy_4wide(out + p,in + p, coeffs);
       }
+
       // process the leftover sensels
-      for(i = width & ~3; i < width; i++)
+      for(; i < width; i++)
       {
         const size_t p = (size_t)j * width + i;
-        out[p] = in[p] * d_coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
+        out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
       }
     }
   }
