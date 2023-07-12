@@ -48,9 +48,6 @@ for more information on how to contribute._
 - Fix snap to grid for cm/inch units in print view. Only mm was
   properly handled.
 
-- Fix issue where the highlight reconstruction method was reset to
-  clip when applying a style from the lighttable.
-
 ## Lua
 
 ### API Version
