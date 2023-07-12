@@ -1136,10 +1136,10 @@ static gboolean area_draw(GtkWidget *widget,
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
-  GdkRGBA bright_bg_color, really_dark_bg_color;
+  GdkRGBA bright_bg_color, graph_bg;
   GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
   gboolean color_found = gtk_style_context_lookup_color
-    (context, "selected_bg_color", &bright_bg_color);
+    (context, "graph_overlay", &bright_bg_color);
   if(!color_found)
   {
     bright_bg_color.red = 1.0;
@@ -1147,15 +1147,14 @@ static gboolean area_draw(GtkWidget *widget,
     bright_bg_color.blue = 0.0;
     bright_bg_color.alpha = 1.0;
   }
-
   color_found = gtk_style_context_lookup_color
-    (context, "really_dark_bg_color", &really_dark_bg_color);
+    (context, "graph_bg", &graph_bg);
   if(!color_found)
   {
-    really_dark_bg_color.red = 1.0;
-    really_dark_bg_color.green = 0.0;
-    really_dark_bg_color.blue = 0.0;
-    really_dark_bg_color.alpha = 1.0;
+    graph_bg.red = 1.0;
+    graph_bg.green = 0.0;
+    graph_bg.blue = 0.0;
+    graph_bg.alpha = 1.0;
   }
 
   gdk_cairo_set_source_rgba(cr, &bright_bg_color);
@@ -1166,7 +1165,7 @@ static gboolean area_draw(GtkWidget *widget,
   height -= 2 * inset;
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
-  gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
+  gdk_cairo_set_source_rgba(cr, &graph_bg);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
 
@@ -1195,7 +1194,7 @@ static gboolean area_draw(GtkWidget *widget,
 
   // draw grid
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
-  gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
+  gdk_cairo_set_source_rgba(cr, &graph_bg);
   dt_draw_grid(cr, 8, 0, 0, width, height);
 
   cairo_save(cr);
@@ -1211,8 +1210,7 @@ static gboolean area_draw(GtkWidget *widget,
     cairo_save(cr);
     for(int k = 1; k < c->num_samples; k += 2)
     {
-      cairo_set_source_rgba(cr, really_dark_bg_color.red,
-                            really_dark_bg_color.green, really_dark_bg_color.blue, .3);
+      cairo_set_source_rgba(cr, graph_bg.red, graph_bg.green, graph_bg.blue, .3);
       cairo_move_to(cr, width * c->sample[k - 1], 0.0f);
       cairo_line_to(cr, width * c->sample[k - 1], -height);
       cairo_line_to(cr, width * c->sample[k], -height);
@@ -1234,8 +1232,7 @@ static gboolean area_draw(GtkWidget *widget,
     cairo_save(cr);
     cairo_scale(cr, width / (BANDS - 1.0),
                 -(height - DT_PIXEL_APPLY_DPI(5)) / c->band_max);
-    cairo_set_source_rgba(cr, really_dark_bg_color.red,
-                          really_dark_bg_color.green, really_dark_bg_color.blue, .3);
+    cairo_set_source_rgba(cr, graph_bg.red, graph_bg.green, graph_bg.blue, .3);
     cairo_move_to(cr, 0, 0);
     for(int k = 0; k < BANDS; k++) cairo_line_to(cr, k, c->band_hist[k]);
     cairo_line_to(cr, BANDS - 1.0, 0.);
@@ -1388,7 +1385,7 @@ static gboolean area_draw(GtkWidget *widget,
     pango_font_description_set_absolute_size(desc, (.06 * height) * PANGO_SCALE);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-    gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
+    gdk_cairo_set_source_rgba(cr, &graph_bg);
     //cairo_select_font_face(cr, "Roboto", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, .06 * height);
     pango_layout_set_text(layout, _("coarse"), -1);
