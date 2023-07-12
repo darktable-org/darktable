@@ -349,13 +349,10 @@ const char *name()
   return _("WebP");
 }
 
-static void compression_changed(GtkWidget *widget, dt_imageio_module_format_t *self)
+static void compression_changed(GtkWidget *widget, gpointer user_data)
 {
-  dt_imageio_webp_gui_data_t *gui = self->gui_data;
   const int comp_type = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
-
-  gtk_widget_set_visible(gui->quality, comp_type != webp_lossless);
 }
 
 static void quality_changed(GtkWidget *slider, gpointer user_data)
@@ -400,9 +397,6 @@ void gui_init(dt_imageio_module_format_t *self)
   if(quality >= 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
-
-  gtk_widget_set_visible(gui->quality, comp_type != webp_lossless);
-  gtk_widget_set_no_show_all(gui->quality, TRUE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->hint, self, NULL, N_("image hint"),
                                _("image characteristics hint for the underlying encoder.\n"
