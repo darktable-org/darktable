@@ -1880,7 +1880,7 @@ static gboolean _dev_pixelpipe_process_rec(
           }
           const gboolean pfm_dump = darktable.dump_pfm_pipe
             && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
-            && dt_str_commasubstring(darktable.dump_pfm_module, module->op);
+            && dt_str_commasubstring(darktable.dump_pfm_pipe, module->op);
 
           if(pfm_dump)
             dt_opencl_dump_pipe_pfm(module->op, pipe->devid, cl_mem_input,
