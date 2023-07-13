@@ -792,6 +792,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
     (devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
      &(cl->dev[dev].max_global_mem), NULL);
+
   if(cl->dev[dev].max_global_mem < (uint64_t)512ul * 1024ul * 1024ul)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
@@ -821,6 +822,15 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   GLOBAL MEM SIZE:          %.0f MB\n",
                (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
+  // let us use up to a quarter of global memory for shared mem devices and report it
+  if(shared_clmem)
+  {
+    cl->dev[dev].max_global_mem = MIN(cl->dev[dev].max_global_mem, darktable.dtresources.total_memory / 4);
+    dt_print_nts(DT_DEBUG_OPENCL,
+               "   GLOBAL MEM SIZE (shared): %.0f MB\n",
+               (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
+  }
+
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MAX MEM ALLOC:            %.0f MB\n",
                (double)cl->dev[dev].max_mem_alloc / 1024.0 / 1024.0);
