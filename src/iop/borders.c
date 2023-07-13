@@ -75,7 +75,7 @@ typedef struct dt_iop_borders_params_t
   float color[3];           // border color $DEFAULT: 1.0
   float aspect;             /* aspect ratio of the outer frame w/h
                                $MIN: 1.0 $MAX: 3.0 $DEFAULT: DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE $DESCRIPTION: "aspect ratio" */
-  char aspect_text[20];     /* aspect ratio of the outer frame w/h (user string version)
+  char aspect_text[20];     /* UNUSED aspect ratio of the outer frame w/h (user string version)
                                DEFAULT: "constant border" */
   dt_iop_orientation_t aspect_orient;        /* aspect ratio orientation
                                $DEFAULT: 0 $DESCRIPTION: "orientation" */
@@ -83,11 +83,11 @@ typedef struct dt_iop_borders_params_t
                                $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.1 $DESCRIPTION: "border size" */
   float pos_h;              /* picture horizontal position ratio into the final image
                                $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "horizontal offset" */
-  char pos_h_text[20];      /* picture horizontal position ratio into the final image (user string version)
+  char pos_h_text[20];      /* UNUSED picture horizontal position ratio into the final image (user string version)
                                DEFAULT: "1/2" */
   float pos_v;              /* picture vertical position ratio into the final image
                                $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "vertical offset"*/
-  char pos_v_text[20];      /* picture vertical position ratio into the final image (user string version)
+  char pos_v_text[20];      /* UNUSED picture vertical position ratio into the final image (user string version)
                                DEFAULT: "1/2" */
   float frame_size;         /* frame line width relative to border width
                                $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "frame line size" */
@@ -785,14 +785,8 @@ static void aspect_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
   const int which = dt_bauhaus_combobox_get(combo);
-  const char *text = dt_bauhaus_combobox_get_text(combo);
-  if(which == dt_bauhaus_combobox_length(combo)-1)
+  if(which < DT_IOP_BORDERS_ASPECT_COUNT)
   {
-    g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
-  }
-  else if(which < DT_IOP_BORDERS_ASPECT_COUNT)
-  {
-    g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
     p->aspect = _aspect_ratios[which];
     ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->aspect_slider,p->aspect);
@@ -807,14 +801,8 @@ static void position_h_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
   const int which = dt_bauhaus_combobox_get(combo);
-  const char *text = dt_bauhaus_combobox_get_text(combo);
-  if(which == dt_bauhaus_combobox_length(combo)-1)
+  if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
-  }
-  else if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
-  {
-    g_strlcpy(p->pos_h_text, text, sizeof(p->pos_h_text));
     p->pos_h = _pos_h_ratios[which];
     ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->pos_h_slider,p->pos_h);
@@ -829,14 +817,8 @@ static void position_v_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
   const int which = dt_bauhaus_combobox_get(combo);
-  const char *text = dt_bauhaus_combobox_get_text(combo);
-  if(which == dt_bauhaus_combobox_length(combo)-1)
+  if(which < DT_IOP_BORDERS_POSITION_V_COUNT)
   {
-    g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
-  }
-  else if(which < DT_IOP_BORDERS_POSITION_V_COUNT)
-  {
-    g_strlcpy(p->pos_v_text, text, sizeof(p->pos_v_text));
     p->pos_v = _pos_v_ratios[which];
     ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->pos_v_slider,p->pos_v);
@@ -861,7 +843,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
     dt_bauhaus_combobox_set(g->aspect, k);
   }
-  else if(!w || w == g->pos_h_slider)
+  if(!w || w == g->pos_h_slider)
   {
     for(k = 0; k < DT_IOP_BORDERS_POSITION_H_COUNT; k++)
     {
@@ -870,7 +852,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
     dt_bauhaus_combobox_set(g->pos_h, k);
   }
-  else if(!w || w == g->pos_v_slider)
+  if(!w || w == g->pos_v_slider)
   {
     for(k = 0; k < DT_IOP_BORDERS_POSITION_V_COUNT; k++)
     {
@@ -945,7 +927,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->aspect, self, NULL, N_("aspect"),
-                               _("select the aspect ratio (right click on slider below to type your own w:h)"),
+                               _("select the aspect ratio\n"
+                                 "(right click on slider below to type your own w:h)"),
                                0, aspect_changed, self,
                                N_("image"),
                                N_("3:1"),
@@ -968,32 +951,30 @@ void gui_init(struct dt_iop_module_t *self)
                                N_("square"),
                                N_("constant border"),
                                N_("custom..."));
-  dt_bauhaus_combobox_set_editable(g->aspect, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
 
   g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
-  gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio (right click to enter number or w:h)"));
+  gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio\n"
+                                                  "(right click to enter number or w:h)"));
 
   g->aspect_orient = dt_bauhaus_combobox_from_params(self, "aspect_orient");
   gtk_widget_set_tooltip_text(g->aspect_orient, _("aspect ratio orientation of the image with border"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->pos_h, self, NULL, N_("horizontal position"),
-                               _("select the horizontal position ratio relative to top "
-                                 "or right click and type your own (y:h)"),
+                               _("select the horizontal position ratio relative to top\n"
+                                 "(right click on slider below to type your own x:w)"),
                                0, position_h_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"), N_("5/8"), N_("2/3"), N_("custom..."));
-  dt_bauhaus_combobox_set_editable(g->pos_h, 1);
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h, TRUE, TRUE, 0);
 
   g->pos_h_slider = dt_bauhaus_slider_from_params(self, "pos_h");
   gtk_widget_set_tooltip_text(g->pos_h_slider, _("custom horizontal position"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->pos_v, self, NULL, N_("vertical position"),
-                               _("select the vertical position ratio relative to left "
-                                 "or right click and type your own (x:w)"),
+                               _("select the vertical position ratio relative to left\n"
+                                 "(right click on slider below to type your own y:h)"),
                                0, position_v_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"), N_("5/8"), N_("2/3"), N_("custom..."));
-  dt_bauhaus_combobox_set_editable(g->pos_v, 1);
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v, TRUE, TRUE, 0);
 
   g->pos_v_slider = dt_bauhaus_slider_from_params(self, "pos_v");
@@ -1038,18 +1019,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->frame_picker), _("pick frame line color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("frame line color"), g->frame_picker, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-}
-
-
-void init(dt_iop_module_t *self)
-{
-  dt_iop_default_init(self);
-
-  dt_iop_borders_params_t *defaults = self->default_params;
-
-  g_strlcpy(defaults->aspect_text, "constant border", sizeof(defaults->aspect_text));
-  g_strlcpy(defaults->pos_h_text, "1/2", sizeof(defaults->pos_h_text));
-  g_strlcpy(defaults->pos_v_text, "1/2", sizeof(defaults->pos_v_text));
 }
 
 // clang-format off
