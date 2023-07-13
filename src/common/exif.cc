@@ -3533,6 +3533,8 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     int num = 0;
     gboolean all_ok = TRUE;
     GList *history_entries = NULL;
+    gboolean has_highlights = FALSE;
+    int add_to_history_end = 0;
 
     if(xmp_version < 2)
     {
@@ -3568,6 +3570,54 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       goto end;
     }
     sqlite3_finalize(stmt);
+
+    /* Check if the XMP has the now default enabled highlights module.
+
+       If not we want to add this module but with the CLIP method instead of
+       the new default OPPOSED one. This is to keep compatibility with old-edits.
+     */
+
+    for(GList *iter = history_entries; iter; iter = g_list_next(iter))
+    {
+      history_entry_t *entry = (history_entry_t *)iter->data;
+
+      if(!strcmp(entry->operation, "highlights"))
+        has_highlights = TRUE;
+    }
+
+    // highlights module is not part of history, add a simple CLIP method
+    if(!has_highlights)
+    {
+      const char *default_clip =
+        "000000000000803f00000000000000000000803f"
+        "000000001e00000006000000cdcccc3e000000400000000000000000";
+      const char *no_blend = "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ=";
+
+      history_entry_t *entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
+      entry->operation = g_strdup("highlights");
+      entry->enabled = TRUE;
+      entry->modversion = 4;
+      entry->params = dt_exif_xmp_decode(default_clip,
+                                         strlen(default_clip),
+                                         &entry->params_len);
+      entry->multi_name = g_strdup("");
+      entry->multi_name_hand_edited = FALSE;
+      entry->multi_priority = 0;
+      entry->blendop_version = 13;
+      entry->blendop_params = dt_exif_xmp_decode(no_blend,
+                                                 strlen(no_blend),
+                                                 &entry->blendop_params_len);
+      // we insert the module in second position, just after
+      // rawprepare. This is to ensure that history_end do include
+      // this module. Just adding one to history_end won't work if the
+      // history_end is not pointing to the last history item.
+      entry->num = 1;
+      entry->iop_order = -1;
+
+      add_to_history_end++;
+      history_entries = g_list_append(history_entries, entry);
+    }
+
     // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2
       (dt_database_get(darktable.db),
@@ -3589,7 +3639,13 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       }
       else
       {
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, entry->num);
+        DT_DEBUG_SQLITE3_BIND_INT
+          (stmt, 2,
+           entry->num
+           + (entry->num > 1
+              || (entry->num == 1 && strcmp(entry->operation, "highlights"))
+              ? add_to_history_end
+              : 0));
       }
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, entry->modversion);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, entry->operation, -1, SQLITE_TRANSIENT);
@@ -3761,7 +3817,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end")))
        != xmpData.end() && num > 0)
     {
-      int history_end = MIN(pos->toLong(), num);
+      int history_end = MIN(pos->toLong(), num) + add_to_history_end;
       if(num_masks > 0) history_end++;
       if((history_end < 1) && preset_applied) preset_applied = -1;
       DT_DEBUG_SQLITE3_PREPARE_V2
