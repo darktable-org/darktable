@@ -200,6 +200,11 @@ typedef struct dt_opencl_device_t
   // also used for blacklisted drivers
   gboolean disabled;
 
+  // keep track of devices using shared system memory. If so
+  // 1. available device memory is restricted and
+  // 2. available system memory knows about "taking away"
+  gboolean shared_clmem;
+
   // Some devices are known to be unused by other apps so there is no need to test for available memory at all.
   int forced_headroom;
 
