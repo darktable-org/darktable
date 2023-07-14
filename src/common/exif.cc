@@ -3534,6 +3534,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     gboolean all_ok = TRUE;
     GList *history_entries = NULL;
     gboolean has_highlights = FALSE;
+    gboolean has_rawprepare = FALSE;
     int add_to_history_end = 0;
 
     if(xmp_version < 2)
@@ -3571,51 +3572,68 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     }
     sqlite3_finalize(stmt);
 
-    /* Check if the XMP has the now default enabled highlights module.
-
-       If not we want to add this module but with the CLIP method instead of
-       the new default OPPOSED one. This is to keep compatibility with old-edits.
-     */
-
-    for(GList *iter = history_entries; iter; iter = g_list_next(iter))
+    if(xmp_version < 5)
     {
-      history_entry_t *entry = (history_entry_t *)iter->data;
+      /* Check if the XMP has the now default enabled highlights module.
 
-      if(!strcmp(entry->operation, "highlights"))
-        has_highlights = TRUE;
-    }
+         If not we want to add this module but with the CLIP method instead of
+         the new default OPPOSED one. This is to keep compatibility with old-edits.
 
-    // highlights module is not part of history, add a simple CLIP method
-    if(!has_highlights)
-    {
-      const char *default_clip =
-        "000000000000803f00000000000000000000803f"
-        "000000001e00000006000000cdcccc3e000000400000000000000000";
-      const char *no_blend = "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ=";
+         Starting with xmp_version = 5 all modules are always recorded, so we don't
+         want to check for this.
+      */
 
-      history_entry_t *entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
-      entry->operation = g_strdup("highlights");
-      entry->enabled = TRUE;
-      entry->modversion = 4;
-      entry->params = dt_exif_xmp_decode(default_clip,
-                                         strlen(default_clip),
-                                         &entry->params_len);
-      entry->multi_name = g_strdup("");
-      entry->multi_name_hand_edited = FALSE;
-      entry->multi_priority = 0;
-      entry->blendop_version = 13;
-      entry->blendop_params = dt_exif_xmp_decode(no_blend,
-                                                 strlen(no_blend),
-                                                 &entry->blendop_params_len);
-      // we insert the module in second position, just after
-      // rawprepare. This is to ensure that history_end do include
-      // this module. Just adding one to history_end won't work if the
-      // history_end is not pointing to the last history item.
-      entry->num = 1;
-      entry->iop_order = -1;
+      for(GList *iter = history_entries; iter; iter = g_list_next(iter))
+        {
+          history_entry_t *entry = (history_entry_t *)iter->data;
 
-      add_to_history_end++;
-      history_entries = g_list_append(history_entries, entry);
+          if(!strcmp(entry->operation, "highlights"))
+            has_highlights = TRUE;
+          else if(!strcmp(entry->operation, "rawprepare"))
+            has_rawprepare = TRUE;
+        }
+
+      // Module highlights is not part of history, add a simple CLIP method
+      if(has_rawprepare && !has_highlights)
+        {
+          // The following lines are Exif encoded parameters. the parameters from iop
+          // dt_iop_highlights_params_t are taken as raw bytes and encoded to be stored
+          // into the XMP. We have captured here:
+          //   - The default CLIP parameters (only the
+          //     method being set to DT_IOP_HIGHLIGHTS_CLIP and the clip field are
+          //     actually needed) for version 4 of highlights.
+          //   - The default blend parameters (no blending activated) for version 13
+          //     of dt_develop_blend_params_t.
+
+          const char *default_clip =
+            "000000000000803f00000000000000000000803f00000000"
+            "1e00000006000000cdcccc3e000000400000000000000000";
+          const char *no_blend = "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ=";
+
+          history_entry_t *entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
+          entry->operation = g_strdup("highlights");
+          entry->enabled = TRUE;
+          entry->modversion = 4;
+          entry->params = dt_exif_xmp_decode(default_clip,
+                                             strlen(default_clip),
+                                             &entry->params_len);
+          entry->multi_name = g_strdup("");
+          entry->multi_name_hand_edited = FALSE;
+          entry->multi_priority = 0;
+          entry->blendop_version = 13;
+          entry->blendop_params = dt_exif_xmp_decode(no_blend,
+                                                     strlen(no_blend),
+                                                     &entry->blendop_params_len);
+          // we insert the module in second position, just after
+          // rawprepare. This is to ensure that history_end do include
+          // this module. Just adding one to history_end won't work if the
+          // history_end is not pointing to the last history item.
+          entry->num = 1;
+          entry->iop_order = -1;
+
+          add_to_history_end++;
+          history_entries = g_list_append(history_entries, entry);
+        }
     }
 
     // clang-format off
