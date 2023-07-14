@@ -101,15 +101,16 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
 
   uint8_t intval;
   float floatval;
+  const size_t npixels = (size_t)desc.width * desc.height;
 
 #ifdef _OPENMP
 #pragma omp parallel for private(intval, floatval)
 #endif
-  for(int i=0; i < desc.width * desc.height * 4; i++)
+  for(size_t index = 0; index < npixels * 4; index++)
   {
-    intval = *(int_RGBA_buf+i);
+    intval = *(int_RGBA_buf + index);
     floatval = intval / 255.f;
-    *(mipbuf+i) = floatval;
+    *(mipbuf + index) = floatval;
   }
 
   img->buf_dsc.cst = IOP_CS_RGB;
