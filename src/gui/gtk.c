@@ -3160,6 +3160,11 @@ static const dt_action_def_t _action_def_focus_tabs
       DT_ACTION_ELEMENTS_NUM(tabs),
       NULL, TRUE };
 
+static void _get_height_if_visible(GtkWidget *w, gint *height)
+{
+  if(gtk_widget_get_visible(w)) *height = gtk_widget_get_allocated_height(w);
+}
+
 static gint _get_container_row_heigth(GtkWidget *w)
 {
   gint height = DT_PIXEL_APPLY_DPI(10);
@@ -3188,13 +3193,7 @@ static gint _get_container_row_heigth(GtkWidget *w)
     g_object_unref(layout);
   }
   else
-  {
-    GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(w));
-    if(child)
-    {
-      height = gtk_widget_get_allocated_height(child);
-    }
-  }
+    gtk_container_foreach(GTK_CONTAINER(w), (GtkCallback)_get_height_if_visible, &height);
 
   return height;
 }
@@ -3226,14 +3225,17 @@ static gboolean _resize_wrap_draw(GtkWidget *w, void *cr, const char *config_str
   height += increment - 1;
   height -= height % increment;
 
-  GtkBorder padding;
-  gtk_style_context_get_padding(gtk_widget_get_style_context(sw),
-                                gtk_widget_get_state_flags(sw),
+  GtkBorder padding, margin;
+  gtk_style_context_get_padding(gtk_widget_get_style_context(w),
+                                gtk_widget_get_state_flags(w),
                                 &padding);
+  gtk_style_context_get_margin(gtk_widget_get_style_context(sw),
+                               gtk_widget_get_state_flags(sw),
+                               &margin);
 
   gint old_height = 0;
   gtk_widget_get_size_request(sw, NULL, &old_height);
-  const gint new_height = height + padding.top + padding.bottom + (GTK_IS_TEXT_VIEW(w) ? 2 : 0);
+  const gint new_height = height + padding.top + padding.bottom + margin.top + margin.bottom;
   if(new_height != old_height)
   {
     gtk_widget_set_size_request(sw, -1, new_height);
