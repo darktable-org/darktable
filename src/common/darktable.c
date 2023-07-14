@@ -148,6 +148,7 @@ static int usage(const char *argv0)
   printf("  --dump-pfm <modulea,moduleb>\n");
   printf("  --dump-pipe <modulea,moduleb>\n");
   printf("  --bench-module <modulea,moduleb>\n");
+  printf("  --dumpdir <directory to hold dumped files>\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
@@ -435,7 +436,7 @@ void dt_dump_pfm_file(
   snprintf(path, sizeof(path), "%s/%s", darktable.tmp_directory, pipe);
   if(!dt_util_test_writable_dir(path))
   {
-    if(g_mkdir(path, 0750))
+    if(g_mkdir_with_parents(path, 0750))
     {
       dt_print(DT_DEBUG_ALWAYS, "%20s can't create directory '%s'\n", head, path);
       return;
@@ -780,7 +781,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
-      else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
+      else if(!strcmp(argv[k], "--dumpdir") && argc > k + 1)
+      {
+        darktable.tmp_directory = g_strdup(argv[++k]);
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+     else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
         localedir_from_command = argv[++k];
         argv[k-1] = NULL;
@@ -1036,7 +1043,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(darktable.dump_pfm_module || darktable.dump_pfm_pipe)
   {
-    darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
+    if(darktable.tmp_directory == NULL)
+      darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
     dt_print(DT_DEBUG_ALWAYS, "[init] darktable dump directory is '%s'\n",
     (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
   }
