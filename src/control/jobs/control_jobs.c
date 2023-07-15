@@ -2294,6 +2294,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
       dt_control_job_set_progress(job, fraction);
       g_usleep(100);
     }
+    if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
+      break;
   }
   g_free(prev_output);
 
@@ -2344,7 +2346,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const char *datetime_ov
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import"), FALSE);
+  dt_control_job_add_progress(job, _("import"), TRUE);
   dt_control_job_set_params(job, params, _control_import_job_cleanup);
 
   params->index = g_list_sort(imgs, (GCompareFunc)_sort_filename);
