@@ -51,6 +51,11 @@ for more information on how to contribute._
 - Fix issue where the highlight reconstruction method was reset to
   clip when applying a style from the lighttable.
 
+- Fix loading some image format using GraphicMagick on Windows.
+
+- Fix some possible wrong pixels at the lower-right border of images
+  due to some miscalculation in colorin & colorbalance.
+
 ## Lua
 
 ### API Version
