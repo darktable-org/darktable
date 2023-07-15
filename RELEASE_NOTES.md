@@ -40,10 +40,11 @@ for more information on how to contribute._
 
 - Graduated Density : Fix density computation for negative EVs.
 
-- Fixed wrong allocation of opencl image buffers for blending in
+- Fixed wrong allocation of OpenCL image buffers for blending in
   DEVELOP_BLEND_CS_RAW.
 
-- Fixed roi_in calculation in highlights and cacorrect modules.
+- Fixed roi_in calculation in highlights and RAW Chromatic
+  Abberrations modules.
 
 - Fix snap to grid for cm/inch units in print view. Only mm was
   properly handled.
@@ -54,7 +55,7 @@ for more information on how to contribute._
 - Fix loading some image format using GraphicMagick on Windows.
 
 - Fix some possible wrong pixels at the lower-right border of images
-  due to some miscalculation in colorin & colorbalance.
+  due to some miscalculation in Input Color Profile & Color Balance.
 
 ## Lua
 
