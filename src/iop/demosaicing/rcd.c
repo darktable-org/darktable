@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@
 */
 
 /* Some notes about the algorithm
-* 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable. Why does 8 **not** work?
-* 2. For the outermost tiles we only have to discard a 6 pixel border region interpolated otherwise.
+* 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable.
+* 2. For the outermost tiles we only have to discard a 7 pixel border region interpolated otherwise.
 * 3. The tilesize has a significant influence on performance, the default is a good guess for modern
 *    x86/64 machines, tested on Xeon E-2288G, i5-8250U.
 */
@@ -66,7 +66,7 @@
 #endif
 
 #define RCD_BORDER 9          // avoid tile-overlap errors
-#define RCD_MARGIN 6          // for the outermost tiles we can have a smaller outer border
+#define RCD_MARGIN 7          // for the outermost tiles we can have a smaller outer border
 #define RCD_TILEVALID (DT_RCD_TILESIZE - 2 * RCD_BORDER)
 #define w1 DT_RCD_TILESIZE
 #define w2 (2 * DT_RCD_TILESIZE)
@@ -189,7 +189,8 @@ static void rcd_ppg_border(
         color[1] = pc;
 
       color[3] = 0.0f;
-      memcpy(buf, color, sizeof(float) * 4);
+      for_each_channel(k)
+        buf[k] = color[k];
       buf += 4;
       buf_in++;
     }
@@ -271,7 +272,8 @@ static void rcd_ppg_border(
             color[0] = (guess1 + guess2) * .25f;
         }
       }
-      memcpy(buf, color, sizeof(float) * 4);
+      for_each_channel(k)
+        buf[k] = color[k];
       buf += 4;
     }
   }
@@ -291,9 +293,9 @@ static void rcd_demosaic(
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  if((width < 16) || (height < 16))
+  if((width < 2*RCD_BORDER) || (height < 2*RCD_BORDER))
   {
-    dt_control_log(_("[rcd_demosaic] too small area"));
+    rcd_ppg_border(out, in, width, height, filters, RCD_BORDER);
     return;
   }
 
@@ -323,10 +325,8 @@ static void rcd_demosaic(
     // No overlapping use so re-use same buffer
     float *const lpf = PQ_Dir;
 
-    // There has been a discussion about the schedule strategy, at least on the tested machines the
-    // dynamic scheduling seems to be slightly faster.
 #ifdef _OPENMP
-  #pragma omp for schedule(simd:dynamic, 6) collapse(2) nowait
+  #pragma omp for schedule(simd:static) collapse(2)
 #endif
     for(int tile_vertical = 0; tile_vertical < num_vertical; tile_vertical++)
     {
@@ -768,7 +768,7 @@ static int process_rcd_cl(
 
     {
       // write output
-      const int myborder = 6;
+      const int myborder = RCD_MARGIN;
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_write_output, width, height,
         CLARG(dev_aux), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(scaler),
         CLARG(myborder));
@@ -841,12 +841,6 @@ error:
 }
 
 #endif
-
-
-
-
-
-
 
 #undef RCD_BORDER
 #undef RCD_MARGIN
