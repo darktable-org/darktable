@@ -39,6 +39,7 @@ export DEPLOY_GTK_VERSION=3
 export VERSION=$(sh ../tools/get_git_version_string.sh)
 export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 
-export UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
+# Instruct LDAI (LinuxDeploy AppImage plugin) to embed AppImage update information
+export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
 
 ./linuxdeploy-x86_64.AppImage --appdir ../AppDir --plugin gtk --output appimage
