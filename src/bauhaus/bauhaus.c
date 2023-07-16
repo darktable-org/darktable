@@ -88,11 +88,11 @@ static float _widget_get_quad_width(dt_bauhaus_widget_t *w)
     return .0f;
 }
 
-static void _combobox_next_sensitive(dt_bauhaus_widget_t *w, int delta, const gboolean mute)
+static void _combobox_next_sensitive(dt_bauhaus_widget_t *w, int delta, guint state, const gboolean mute)
 {
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
 
-  delta *= dt_accel_get_speed_multiplier(GTK_WIDGET(w), 0);
+  delta *= dt_accel_get_speed_multiplier(GTK_WIDGET(w), state);
   int new_pos = d->active;
   int step = delta > 0 ? 1 : -1;
   int cur = new_pos + step;
@@ -323,7 +323,7 @@ static void _combobox_popup_scroll(int amt)
   const dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
   int old_value = d->active;
 
-  _combobox_next_sensitive(darktable.bauhaus->current, amt, d->mute_scrolling);
+  _combobox_next_sensitive(darktable.bauhaus->current, amt, 0, d->mute_scrolling);
 
   gint wx = 0, wy = 0;
   const int skip = darktable.bauhaus->line_height;
@@ -2674,7 +2674,7 @@ static gboolean _widget_scroll(GtkWidget *widget, GdkEventScroll *event)
         _slider_add_step(widget, - delta_y, event->state, force);
     }
     else
-      _combobox_next_sensitive(w, delta_y, FALSE);
+      _combobox_next_sensitive(w, delta_y, 0, FALSE);
   }
   return TRUE; // Ensure that scrolling the combobox cannot move side panel
 }
@@ -2702,7 +2702,7 @@ static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
       if(w->type == DT_BAUHAUS_SLIDER)
         _slider_add_step(widget, delta, event->state, FALSE);
       else
-        _combobox_next_sensitive(w, delta, FALSE);
+        _combobox_next_sensitive(w, delta, 0, FALSE);
 
       return TRUE;
     case GDK_KEY_Return:
@@ -3518,7 +3518,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       move_size *= - 1;
     case DT_ACTION_EFFECT_NEXT:
       ++darktable.gui->reset;
-      _combobox_next_sensitive(w, move_size, FALSE);
+      _combobox_next_sensitive(w, move_size, GDK_MODIFIER_MASK, FALSE);
       --darktable.gui->reset;
 
       g_idle_add(_combobox_idle_value_changed, widget);
