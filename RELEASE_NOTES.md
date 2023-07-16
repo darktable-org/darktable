@@ -44,7 +44,7 @@ for more information on how to contribute._
   DEVELOP_BLEND_CS_RAW.
 
 - Fixed roi_in calculation in highlights and RAW Chromatic
-  Abberrations modules.
+  Aberrations modules.
 
 - Fix snap to grid for cm/inch units in print view. Only mm was
   properly handled.
