@@ -42,4 +42,7 @@ export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 # Instruct LDAI (LinuxDeploy AppImage plugin) to embed AppImage update information
 export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
 
+# Skip checking AppStream metadata for issues (temporarily, as the site is currently down and the verification will fail)
+export LDAI_NO_APPSTREAM=1
+
 ./linuxdeploy-x86_64.AppImage --appdir ../AppDir --plugin gtk --output appimage
