@@ -295,8 +295,8 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   # Add GraphicsMagick libraries
   if(GraphicsMagick_FOUND)
     install(DIRECTORY
-        "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q16/coders"
-        DESTINATION lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q16/
+        "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_VERSION}/modules-Q16/coders"
+        DESTINATION lib/GraphicsMagick-${GraphicsMagick_VERSION}/modules-Q16/
         COMPONENT DTApplication
         FILES_MATCHING PATTERN "*"
         # For some reason *.la files must be kept alongside DLLs

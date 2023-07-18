@@ -3,8 +3,9 @@
 #
 
 # This module defines
-# GraphicsMagick_INCLUDE_DIR, where to find *.h etc
-# GraphicsMagick_LIBRARY, the libraries
+# GraphicsMagick_VERSION
+# GraphicsMagick_INCLUDE_DIRS, where to find *.h etc
+# GraphicsMagick_LIBRARIES, the libraries
 # GraphicsMagick_FOUND, If false, do not try to use LCMS.
 
 
@@ -26,13 +27,12 @@ find_library(GraphicsMagick_LIBRARY
   HINTS ${GraphicsMagick_PKGCONF_LIBRARY_DIRS}
 )
 
+if(GraphicsMagick_PKGCONF_VERSION)
+  set(GraphicsMagick_VERSION ${GraphicsMagick_PKGCONF_VERSION})
+endif()
+
 # Set the include dir variables and the libraries and let libfind_process do the rest.
 # NOTE: Singular variables for this library, plural for libraries this lib depends on.
 set(GraphicsMagick_PROCESS_INCLUDES ${GraphicsMagick_INCLUDE_DIR})
 set(GraphicsMagick_PROCESS_LIBS ${GraphicsMagick_LIBRARY})
 libfind_process(GraphicsMagick)
-
-if(GraphicsMagick_FOUND)
-  set(GraphicsMagick_INCLUDE_DIRS ${GraphicsMagick_INCLUDE_DIR})
-  set(GraphicsMagick_LIBRARIES ${GraphicsMagick_LIBRARY})
-endif(GraphicsMagick_FOUND)
