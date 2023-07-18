@@ -408,21 +408,33 @@ void modify_roi_in(
   roi_in->scale = 1.0f;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  const int method = data->demosaicing_method;
+  const dt_iop_demosaic_method_t method = data->demosaicing_method;
   const gboolean passthrough = (method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-                               (method == DT_IOP_DEMOSAIC_PASSTHR_MONOX);
-
-  // set position to closest sensor pattern snap
+                               (method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
+                               (method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
+                               (method == DT_IOP_DEMOSAIC_PASSTHR_COLORX);
+  // set position to closest top/left sensor pattern snap
   if(!passthrough)
   {
     const int aligner = (piece->pipe->dsc.filters != 9u) ? DT_BAYER_SNAPPER : DT_XTRANS_SNAPPER;
     const int dx = roi_in->x % aligner;
     const int dy = roi_in->y % aligner;
+
+/*
+    // This code is correctly working on CPU, OpenCL artefacts needs a FIXME
     const int shift_x = (dx > aligner / 2) ? aligner - dx : -dx;
     const int shift_y = (dy > aligner / 2) ? aligner - dy : -dy;
 
     roi_in->x = MAX(0, roi_in->x + shift_x);
     roi_in->y = MAX(0, roi_in->y + shift_y);
+
+    // if we shift to the right/bottom we also need to expand the roi
+    roi_in->width += MAX(0, shift_x);
+    roi_in->height += MAX(0, shift_y);
+*/
+
+    roi_in->x = MAX(0, roi_in->x - dx);
+    roi_in->y = MAX(0, roi_in->y - dy);
   }
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
