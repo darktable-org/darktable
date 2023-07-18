@@ -587,7 +587,8 @@ static void rt_paste_forms_from_scale(dt_iop_retouch_params_t *p,
   {
     for(int i = 0; i < RETOUCH_NO_FORMS; i++)
     {
-      if(p->rt_forms[i].scale == source_scale) p->rt_forms[i].scale = dest_scale;
+      if(p->rt_forms[i].scale == source_scale)
+        p->rt_forms[i].scale = dest_scale;
     }
   }
 }
@@ -1663,7 +1664,8 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
     return TRUE;
   }
 
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  if(self->off)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 
   g->display_wavelet_scale = !gtk_toggle_button_get_active(togglebutton);
@@ -1708,7 +1710,8 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance,
 
     dt_iop_gui_leave_critical_section(self);
 
-    for(int i = 0; i < 3; i++) p->preview_levels[i] = g->preview_levels[i];
+    for(int i = 0; i < 3; i++)
+      p->preview_levels[i] = g->preview_levels[i];
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1716,7 +1719,8 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance,
 
     // update the gradient slider
     double dlevels[3];
-    for(int i = 0; i < 3; i++) dlevels[i] = p->preview_levels[i];
+    for(int i = 0; i < 3; i++)
+      dlevels[i] = p->preview_levels[i];
 
     ++darktable.gui->reset;
     dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
@@ -1944,7 +1948,8 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
     }
   }
 
-  if(accept) p->algorithm = new_algo;
+  if(accept)
+    p->algorithm = new_algo;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone),
                                (p->algorithm == DT_IOP_RETOUCH_CLONE));
@@ -2038,7 +2043,8 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
 
   g->mask_display = !gtk_toggle_button_get_active(togglebutton);
 
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+  if(module->off)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
   dt_iop_refresh_center(module);
@@ -3993,7 +3999,8 @@ void process(struct dt_iop_module_t *self,
   }
 
   // if user wants to preview a detail scale adjust levels
-  if(dwt_p->return_layer > 0 && dwt_p->return_layer < dwt_p->scales + 1)
+  if(dwt_p->return_layer > 0
+     && dwt_p->return_layer < dwt_p->scales + 1)
   {
     rt_adjust_levels(self, piece, in_retouch,
                      roi_rt->width, roi_rt->height, 4, levels);
