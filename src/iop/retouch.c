@@ -2530,7 +2530,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self,
                               int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
   int roir = *_roir;
   int roib = *_roib;
@@ -2635,7 +2635,7 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self,
                                                 int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
   int roir = *_roir;
   int roib = *_roib;
@@ -2728,7 +2728,7 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self,
                                        int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
   int roir = *_roir;
   int roib = *_roib;
