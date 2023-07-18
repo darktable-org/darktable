@@ -784,11 +784,7 @@ static void rt_resynch_params(struct dt_iop_module_t *self)
     }
   }
 
-  // we reaffect params
-  for(int i = 0; i < RETOUCH_NO_FORMS; i++)
-  {
-    p->rt_forms[i] = forms_d[i];
-  }
+  memcpy(p->rt_forms, forms_d, sizeof(p->rt_forms));
 }
 
 static gboolean rt_masks_form_is_in_roi(dt_iop_module_t *self,
