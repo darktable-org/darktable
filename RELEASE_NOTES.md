@@ -61,6 +61,10 @@ for more information on how to contribute._
   clone area inactive when the source was outside of the cropped
   area. This bug was only visible in darkroom main view.
 
+- Fix positioning of demosaicer RoI in according to algorithm and
+  sensor. Avoid some possible (small) black artifacts on image
+  borders.
+
 ## Lua
 
 ### API Version
