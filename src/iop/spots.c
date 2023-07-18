@@ -441,8 +441,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
   int roix = roi_in->x;
   int roiy = roi_in->y;
 
-  // dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
   // We iterate through all spots or polygons
   dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
@@ -568,7 +567,7 @@ void _process(struct dt_iop_module_t *self,
               const int ch)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
 // we don't modify most of the image:
   dt_iop_copy_image_roi(out, in, ch, roi_in, roi_out, 0);
