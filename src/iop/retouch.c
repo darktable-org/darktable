@@ -587,7 +587,8 @@ static void rt_paste_forms_from_scale(dt_iop_retouch_params_t *p,
   {
     for(int i = 0; i < RETOUCH_NO_FORMS; i++)
     {
-      if(p->rt_forms[i].scale == source_scale) p->rt_forms[i].scale = dest_scale;
+      if(p->rt_forms[i].scale == source_scale)
+        p->rt_forms[i].scale = dest_scale;
     }
   }
 }
@@ -783,11 +784,7 @@ static void rt_resynch_params(struct dt_iop_module_t *self)
     }
   }
 
-  // we reaffect params
-  for(int i = 0; i < RETOUCH_NO_FORMS; i++)
-  {
-    p->rt_forms[i] = forms_d[i];
-  }
+  memcpy(p->rt_forms, forms_d, sizeof(p->rt_forms));
 }
 
 static gboolean rt_masks_form_is_in_roi(dt_iop_module_t *self,
@@ -1663,7 +1660,8 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
     return TRUE;
   }
 
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  if(self->off)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 
   g->display_wavelet_scale = !gtk_toggle_button_get_active(togglebutton);
@@ -1708,7 +1706,8 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance,
 
     dt_iop_gui_leave_critical_section(self);
 
-    for(int i = 0; i < 3; i++) p->preview_levels[i] = g->preview_levels[i];
+    for(int i = 0; i < 3; i++)
+      p->preview_levels[i] = g->preview_levels[i];
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1716,7 +1715,8 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance,
 
     // update the gradient slider
     double dlevels[3];
-    for(int i = 0; i < 3; i++) dlevels[i] = p->preview_levels[i];
+    for(int i = 0; i < 3; i++)
+      dlevels[i] = p->preview_levels[i];
 
     ++darktable.gui->reset;
     dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
@@ -1944,7 +1944,8 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
     }
   }
 
-  if(accept) p->algorithm = new_algo;
+  if(accept)
+    p->algorithm = new_algo;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone),
                                (p->algorithm == DT_IOP_RETOUCH_CLONE));
@@ -2038,7 +2039,8 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
 
   g->mask_display = !gtk_toggle_button_get_active(togglebutton);
 
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+  if(module->off)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
   dt_iop_refresh_center(module);
@@ -2223,15 +2225,6 @@ void gui_focus(struct dt_iop_module_t *self,
        || g->suppress_mask)
       dt_iop_refresh_center(self);
   }
-}
-
-/** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self,
-                   dt_iop_params_t *params,
-                   dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
-{
-  memcpy(piece->data, params, sizeof(dt_iop_retouch_params_t));
 }
 
 void tiling_callback(struct dt_iop_module_t *self,
@@ -2792,7 +2785,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self,
                               int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
   int roir = *_roir;
   int roib = *_roib;
@@ -2908,7 +2901,7 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self,
                                                 int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
   int roir = *_roir;
   int roib = *_roib;
@@ -3007,7 +3000,7 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self,
                                        int *_roiy)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
   int roir = *_roir;
   int roib = *_roib;
@@ -3993,7 +3986,8 @@ void process(struct dt_iop_module_t *self,
   }
 
   // if user wants to preview a detail scale adjust levels
-  if(dwt_p->return_layer > 0 && dwt_p->return_layer < dwt_p->scales + 1)
+  if(dwt_p->return_layer > 0
+     && dwt_p->return_layer < dwt_p->scales + 1)
   {
     rt_adjust_levels(self, piece, in_retouch,
                      roi_rt->width, roi_rt->height, 4, levels);
