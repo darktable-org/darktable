@@ -57,6 +57,10 @@ for more information on how to contribute._
 - Fix some possible wrong pixels at the lower-right border of images
   due to some miscalculation in Input Color Profile & Color Balance.
 
+- Fix retouch module ROI computation when a crop is active making some
+  clone area inactive when the source was outside of the cropped
+  area. This bug was only visible in darkroom main view.
+
 ## Lua
 
 ### API Version
