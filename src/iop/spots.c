@@ -798,15 +798,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-/** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self,
-                   dt_iop_params_t *params,
-                   dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
-{
-  memcpy(piece->data, params, sizeof(dt_iop_spots_params_t));
-}
-
 void init_pipe(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
