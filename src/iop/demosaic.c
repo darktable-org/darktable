@@ -413,7 +413,7 @@ void modify_roi_in(
                                (method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
                                (method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
                                (method == DT_IOP_DEMOSAIC_PASSTHR_COLORX);
-  // set position to closest sensor pattern snap
+  // set position to closest top/left sensor pattern snap
   if(!passthrough)
   {
     const int aligner = (piece->pipe->dsc.filters != 9u) ? DT_BAYER_SNAPPER : DT_XTRANS_SNAPPER;
