@@ -1221,12 +1221,23 @@ void dt_opencl_init(
 
   all_platforms = malloc(sizeof(cl_platform_id) * DT_OPENCL_MAX_PLATFORMS);
   all_num_devices = malloc(sizeof(cl_uint) * DT_OPENCL_MAX_PLATFORMS);
-  cl_uint num_platforms = 0;
 
-  cl_int err = (cl->dlocl->symbols->dt_clGetPlatformIDs)
+  cl_uint num_platforms = 0;
+  cl_int err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(0, NULL, &num_platforms);
+  if((err != CL_SUCCESS) || (num_platforms == 0))
+  {
+    logerror = "no platform detected - Fix the OpenCL installation or add a driver";
+    dt_print_nts(DT_DEBUG_OPENCL,
+                 "[opencl_init] no platform (%i) detected: %s\n", num_platforms, cl_errstr(err));
+    goto finally;
+  }
+
+  num_platforms = 0;
+  err = (cl->dlocl->symbols->dt_clGetPlatformIDs)
     (DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
   {
+    logerror = "couldn't get platforms - Fix the OpenCL installation or add a driver";
     dt_print_nts(DT_DEBUG_OPENCL,
                  "[opencl_init] could not get platforms: %s\n", cl_errstr(err));
     goto finally;
@@ -1234,7 +1245,7 @@ void dt_opencl_init(
 
   if(num_platforms == 0)
   {
-    logerror = "no opencl platform available";
+    logerror = "couldn't get platforms - Fix the OpenCL installation or add a driver";
     dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no opencl platform available\n");
     goto finally;
   }
