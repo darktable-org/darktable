@@ -1210,32 +1210,6 @@ static void _iop_panel_name(dt_iop_module_t *module)
 
   gtk_label_set_text(iname, new_label);
 
-  if(dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
-  {
-    // check last history item and see if we can change its label
-    // accordingly. this must be done for the proper module and
-    // corresponding multi-priority.
-    // note: do not update for trouble messages has this will create
-    //       some infinite loop with lens module.
-
-    const GList *history = g_list_last(darktable.develop->history);
-
-    if(history && !module->has_trouble)
-    {
-      dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
-
-      if(hitem->module == module
-         && hitem->module->multi_priority == module->multi_priority)
-      {
-        const gboolean changed = g_strcmp0(hitem->multi_name, multi_name);
-        if(changed)
-        {
-          dt_dev_add_history_item(darktable.develop, module, FALSE);
-        }
-      }
-    }
-  }
-
   g_free(multi_name);
   g_free(new_label);
 }
@@ -1313,8 +1287,6 @@ void dt_iop_gui_init(dt_iop_module_t *module)
 {
   ++darktable.gui->reset;
   --darktable.bauhaus->skip_accel;
-  if(module->label_recompute_handle)
-    g_source_remove(module->label_recompute_handle);
   if(module->gui_init) module->gui_init(module);
   ++darktable.bauhaus->skip_accel;
   --darktable.gui->reset;
@@ -1752,10 +1724,6 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
-  if(module->label_recompute_handle)
-    g_source_remove(module->label_recompute_handle);
-  module->label_recompute_handle = 0;
-
   module->cleanup(module);
 
   free(module->blend_params);
@@ -2008,46 +1976,12 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   return all_ok;
 }
 
-static gboolean _iop_update_label(gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-
-  const gboolean is_default_params =
-    memcmp(module->params, module->default_params, module->params_size) == 0;
-
-  char *preset_name = dt_presets_get_module_label
-    (module->op,
-     module->params, module->params_size, is_default_params,
-     module->blend_params, sizeof(dt_develop_blend_params_t));
-
-  // if we have a preset-name, use it. otherwise set the label to the multi-priority
-  // except for 0 where the multi-name is cleared.
-
-  if(preset_name)
-    snprintf(module->multi_name, sizeof(module->multi_name), "%s", preset_name);
-  else if(module->multi_priority != 0)
-    snprintf(module->multi_name, sizeof(module->multi_name), "%d", module->multi_priority);
-  else
-    g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
-
-  g_free(preset_name);
-
-  dt_iop_gui_update_header(module);
-
-  module->label_recompute_handle = 0;
-  return G_SOURCE_REMOVE;
-}
-
 void dt_iop_commit_params(dt_iop_module_t *module,
                           dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params,
                           dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
 {
-  const gboolean module_is_enabled = module->enabled;
-  const gboolean module_params_changed
-    = memcmp(module->params, params, module->params_size) == 0;
-
   // 1. commit params
 
   memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
@@ -2069,22 +2003,6 @@ void dt_iop_commit_params(dt_iop_module_t *module,
     _iop_validate_params(module->so->get_introspection()->field, params,
                          TRUE, module->so->op);
   module->commit_params(module, params, pipe, piece);
-
-  // adjust the label to match presets if possible or otherwise the default
-  // multi_name for this module.
-
-  if(!dt_iop_is_hidden(module)
-     && module_is_enabled
-     && module_params_changed
-     && !module->multi_name_hand_edited
-     && module->instance_name
-     && gtk_widget_get_visible(module->instance_name)
-     && dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
-  {
-    if(module->label_recompute_handle)
-      g_source_remove(module->label_recompute_handle);
-    module->label_recompute_handle = g_timeout_add(500, _iop_update_label, module);
-  }
 
   // 2. compute the hash only if piece is enabled
 
@@ -2122,11 +2040,6 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
-  // clear possible deferred handler has the module won't be available anymore
-  if(module->label_recompute_handle)
-    g_source_remove(module->label_recompute_handle);
-  module->label_recompute_handle = 0;
-
   g_slist_free_full(module->widget_list, g_free);
   module->widget_list = NULL;
   module->gui_cleanup(module);

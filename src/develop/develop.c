@@ -1122,8 +1122,44 @@ static void _dev_add_history_item(dt_develop_t *dev,
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
+  gchar *saved_name = g_strdup(module->multi_name);
+
+  // adjust the label to match presets if possible or otherwise the default
+  // multi_name for this module.
+  if(dev->gui_attached
+    &&!dt_iop_is_hidden(module)
+    && module->enabled
+    && !module->multi_name_hand_edited
+    && module->instance_name
+    && gtk_widget_get_visible(module->instance_name)
+    && dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
+  {
+    const gboolean is_default_params =
+      memcmp(module->params, module->default_params, module->params_size) == 0;
+
+    char *preset_name = dt_presets_get_module_label
+      (module->op,
+      module->params, module->params_size, is_default_params,
+      module->blend_params, sizeof(dt_develop_blend_params_t));
+
+    // if we have a preset-name, use it. otherwise set the label to the multi-priority
+    // except for 0 where the multi-name is cleared.
+    if(preset_name)
+      snprintf(module->multi_name, sizeof(module->multi_name), "%s", preset_name);
+    else if(module->multi_priority != 0)
+      snprintf(module->multi_name, sizeof(module->multi_name), "%d", module->multi_priority);
+    else
+      g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
+
+    g_free(preset_name);
+
+    dt_iop_gui_update_header(module);
+  }
+
   const gboolean need_end_record =
-    _dev_undo_start_record_target(dev, target);
+    _dev_undo_start_record_target(dev, strcmp(saved_name, module->multi_name) ? NULL : target);
+
+  g_free(saved_name);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 

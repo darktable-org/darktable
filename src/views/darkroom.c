@@ -911,14 +911,6 @@ static gboolean _dev_load_requested_image(gpointer user_data);
 
 static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid)
 {
-  // deactivate module label timer if set
-  if(darktable.develop->gui_module
-     && darktable.develop->gui_module->label_recompute_handle)
-  {
-    g_source_remove(darktable.develop->gui_module->label_recompute_handle);
-    darktable.develop->gui_module->label_recompute_handle = 0;
-  }
-
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
   dev->proxy.chroma_adaptation = NULL;
