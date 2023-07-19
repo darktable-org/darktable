@@ -92,6 +92,8 @@ enum
   md_exif_exposure,
   md_exif_exposure_bias,
   md_exif_focal_length,
+  md_exif_focal_length_ff,
+  md_exif_crop_factor,
   md_exif_focus_distance,
   md_exif_iso,
   md_exif_datetime,
@@ -141,6 +143,8 @@ static const char *_labels[] = {
   N_("exposure"),
   N_("exposure bias"),
   N_("focal length"),
+  N_("FF equiv focal length"),
+  N_("crop factor"),
   N_("focus distance"),
   N_("ISO"),
   N_("datetime"),
@@ -731,14 +735,22 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_exif_focal_length:
+        (void)g_snprintf(text, sizeof(text), _("%.1f mm"), (double)img->exif_focal_length);
+        _metadata_update_value(md_exif_focal_length, text, self);
+        break;
+
+      case md_exif_focal_length_ff:
         if(img->exif_crop && (img->exif_crop != 1.0f))
-          (void)g_snprintf(text, sizeof(text), _("%.1f mm (%.1f mm FF equiv, crop %.1f)"),
-                           (double)img->exif_focal_length,
-                           (double)img->exif_crop * img->exif_focal_length,
-                           (double)img->exif_crop);
+          (void)g_snprintf(text, sizeof(text), _("%.1f mm"),
+                           (double)img->exif_crop * img->exif_focal_length);
         else
           (void)g_snprintf(text, sizeof(text), _("%.1f mm"), (double)img->exif_focal_length);
-        _metadata_update_value(md_exif_focal_length, text, self);
+        _metadata_update_value(md_exif_focal_length_ff, text, self);
+        break;
+
+      case md_exif_crop_factor:
+        (void)g_snprintf(text, sizeof(text), _("%.1f"), (double)img->exif_crop);
+        _metadata_update_value(md_exif_crop_factor, text, self);
         break;
 
       case md_exif_focus_distance:
