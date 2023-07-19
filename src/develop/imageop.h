@@ -317,9 +317,6 @@ typedef struct dt_iop_module_t
   gboolean multi_name_hand_edited;
   GtkWidget *multimenu_button;
 
-  /** delayed-event handling */
-  guint label_recompute_handle;
-
   void (*process_plain)(struct dt_iop_module_t *self,
                         struct dt_dev_pixelpipe_iop_t *piece,
                         const void *const i,
