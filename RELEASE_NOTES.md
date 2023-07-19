@@ -12,8 +12,8 @@ $ sha256sum darktable-4.4.2-x86_64.dmg
 ??? darktable-4.4.2-x86_64.dmg
 $ sha256sum darktable-4.4.2-arm64.dmg
 ??? darktable-4.4.2-arm64.dmg
-$ sha256sum darktable-4.4.2.exe
-??? darktable-4.4.2.exe
+$ sha256sum darktable-4.4.2-win64.exe
+??? darktable-4.4.2-win64.exe
 ```
 
 When updating from the stable 4.2.x series, please bear in
@@ -24,11 +24,11 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-Since darktable 4.4.0:
+Since darktable 4.4.1:
 
-- ?? commits to darktable+rawspeed
-- ?? pull requests handled
-- ?? issues closed
+- 53 commits to darktable+rawspeed
+- 19 pull requests handled
+-  1 issues closed
 
 
 _Please note that the darktable documentation is not currently complete for release 4.4
