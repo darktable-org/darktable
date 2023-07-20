@@ -16859,7 +16859,7 @@ msgid ""
 "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: right click"
 msgstr ""
-"<b>bewegen</b>: Klick+ziehen - <b>zeigen/verbergen der Ausblend-Regler<b>: Klick\n"
+"<b>bewegen</b>: Klick+ziehen - <b>zeigen/verbergen der Ausblend-Regler</b>: Klick\n"
 "<b>automatisch, spitz, glatt, symmetrisch</b>: Strg+Klick - <b>Entfernen</b>: Rechtsklick"
 
 #: ../src/iop/liquify.c:3736 ../src/iop/liquify.c:3738

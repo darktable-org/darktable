@@ -1074,6 +1074,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
   gboolean refresh_needed = FALSE;
   char imported[256] = { 0 };
   int n_import = 0;                // number of iop imported
+  gboolean is_lr = FALSE;
 
   // Get full pathname
   char *pathname = dt_get_lightroom_xmp(imgid);
@@ -1091,7 +1092,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   // Parse xml document
 
-  doc = xmlParseEntity(pathname);
+  doc = xmlReadFile(pathname, NULL, 0);
 
   if(doc == NULL)
   {
@@ -1158,6 +1159,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       g_free(pathname);
       return FALSE;
     }
+    is_lr = TRUE;
     xmlFree(value);
   }
 // we could bail out here if we ONLY wanted to load a file known to be from lightroom.
@@ -1254,7 +1256,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
   //  Integrates into the history all the imported iop
 
-  if(dev != NULL && dt_image_is_raw(&dev->image_storage))
+  if(dev != NULL && is_lr && dt_image_is_raw(&dev->image_storage))
   {
     // set colorin to cmatrix which is the default from Adobe (so closer to what Lightroom does)
     dt_iop_colorin_params_v1_t pci = (dt_iop_colorin_params_v1_t){ "cmatrix", DT_INTENT_PERCEPTUAL };

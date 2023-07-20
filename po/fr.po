@@ -15532,7 +15532,7 @@ msgstr "N&B : avec rouge"
 
 #: ../src/iop/colorzones.c:629
 msgid "B&W: with skin tones"
-msgstr "N&W : avec tons chairs"
+msgstr "N&B : avec tons chairs"
 
 #: ../src/iop/colorzones.c:652
 msgid "polarizing filter"
@@ -22748,7 +22748,7 @@ msgstr "Mode : différence"
 
 #: ../src/libs/masks.c:1139
 msgid "mode: sum"
-msgstr "Modes :addition"
+msgstr "Mode : addition"
 
 #: ../src/libs/masks.c:1145
 msgid "mode: exclusion"

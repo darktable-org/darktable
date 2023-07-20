@@ -944,7 +944,12 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_widget_set_name(entry, "iop-panel-label");
   gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
   gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
-  gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
+  gtk_entry_set_text(GTK_ENTRY(entry),
+                     strcmp(module->multi_name, "0")
+                     || module->multi_priority > 0
+                     || module->multi_name_hand_edited
+                       ? module->multi_name
+                       : "");
 
   //  hide module instance name as we need the space for the entry
   gtk_widget_hide(module->instance_name);
@@ -1206,24 +1211,28 @@ static void _iop_panel_name(dt_iop_module_t *module)
 
   gtk_label_set_text(iname, new_label);
 
-  // check last history item and see if we can change its label
-  // accordingly. this must be done for the proper module and
-  // corresponding multi-priority.
-  // note: do not update for trouble messages has this will create
-  //       some infinite loop with lens module.
-  const GList *history = g_list_last(darktable.develop->history);
-
-  if(history && !module->has_trouble)
+  if(dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
   {
-    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+    // check last history item and see if we can change its label
+    // accordingly. this must be done for the proper module and
+    // corresponding multi-priority.
+    // note: do not update for trouble messages has this will create
+    //       some infinite loop with lens module.
 
-    if(hitem->module == module
-       && hitem->module->multi_priority == module->multi_priority)
+    const GList *history = g_list_last(darktable.develop->history);
+
+    if(history && !module->has_trouble)
     {
-      const gboolean changed = g_strcmp0(hitem->multi_name, multi_name);
-      if(changed)
+      dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+
+      if(hitem->module == module
+         && hitem->module->multi_priority == module->multi_priority)
       {
-        dt_dev_add_history_item(darktable.develop, module, FALSE);
+        const gboolean changed = g_strcmp0(hitem->multi_name, multi_name);
+        if(changed)
+        {
+          dt_dev_add_history_item(darktable.develop, module, FALSE);
+        }
       }
     }
   }
@@ -2890,14 +2899,17 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->label = gtk_label_new(module->name());
   gtk_widget_set_name(module->label, "iop-panel-label");
   gtk_label_set_ellipsize(GTK_LABEL(module->label), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_valign(module->label, GTK_ALIGN_BASELINE);
   g_object_set(G_OBJECT(module->label), "xalign", 0.0, (gchar *)0);
 
   gtk_container_add(GTK_CONTAINER(lab), module->label);
+  gtk_widget_set_valign(lab, GTK_ALIGN_BASELINE);
 
   module->instance_name = gtk_label_new("");
   hw[IOP_MODULE_INSTANCE_NAME] = module->instance_name;
   gtk_widget_set_name(module->instance_name, "iop-module-name");
   gtk_label_set_ellipsize(GTK_LABEL(module->instance_name), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_valign(module->instance_name, GTK_ALIGN_BASELINE);
   g_object_set(G_OBJECT(module->instance_name), "xalign", 0.0, (gchar *)0);
 
   if((module->flags() & IOP_FLAGS_DEPRECATED) && module->deprecated_msg())

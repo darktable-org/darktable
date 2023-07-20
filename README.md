@@ -89,26 +89,26 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.2.1 (stable)
+4.4.1 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1-win64.exe)
-* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1_x86_64.dmg)
-* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.2.1/darktable-4.2.1_arm64.dmg)
-* [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.4.1/darktable-4.4.1-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.4.1/darktable-4.4.1-x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.4.1/darktable-4.4.1-arm64.dmg)
+* [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
 
 *When using a pre-built package, ensure that it has been built with Lua, OpenCL, OpenMP and Colord support.
 These are optional and will not prevent darktable from running if missing,
 but their absence will degrade the user experience.
-Notably, some Flatpak, Snap and AppImage packages lack OpenCL and Lua support.*
+You can check for them by running darktable with the `--version` command line option.*
 
 ### Development snapshot
 
 The development snapshot reflects the current state of the master branch. It is intended for testing and is generally not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
 
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
-* [Binary packages are provided for macOS and Windows on a nightly basis](https://github.com/darktable-org/darktable/actions/workflows/nightly.yml) (x86_64 only).
+* [Binary packages are provided for Linux (AppImage), macOS and Windows on a nightly basis](https://github.com/darktable-org/darktable/releases/tag/nightly) (x86_64 only).
 
 Updating from older versions
 ----------------------------
@@ -264,7 +264,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.2.1
+4.4.1
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
 Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
@@ -274,7 +274,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.2.1
+git checkout tags/release-4.4.1
 ```
 
 ### Get submodules

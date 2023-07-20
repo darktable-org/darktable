@@ -922,7 +922,7 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   assert(piece->colors == 4);
-  const int clipping = (d->nrgb != NULL);
+  const gboolean clipping = (d->nrgb != NULL);
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = (float*)ivoid;
@@ -932,7 +932,7 @@ static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
   // figure out the number of pixels each thread needs to process
   // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
   const size_t nthreads = dt_get_num_threads();
-  const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
+  const size_t chunksize = 4 * (((npixels / nthreads) + 4) / 4);
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d, clipping)  \
   schedule(static)
@@ -1092,7 +1092,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   assert(piece->colors == 4);
-  const int clipping = (d->nrgb != NULL);
+  const gboolean clipping = (d->nrgb != NULL);
 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = (float*)ivoid;
@@ -1102,7 +1102,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
   // figure out the number of pixels each thread needs to process
   // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
   const size_t nthreads = dt_get_num_threads();
-  const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
+  const size_t chunksize = 4 * (((npixels / nthreads) + 4) / 4);
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, clipping, d) \
   schedule(static)

@@ -580,21 +580,17 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   else
   {
     const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
-    dt_print_pipe(DT_DEBUG_PIPE,
-       "blend with form on CPU",
-       piece->pipe, self, roi_in, roi_out, "%s %s\n",
-       dt_iop_colorspace_to_name(cst),
-       inverted ? "inverted" : "");
-    // we blend with a drawn and/or parametric mask
+    gboolean form_ok = FALSE;
 
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
+    // we blend with a drawn and/or parametric mask
     if(form
        && (!(self->flags() & IOP_FLAGS_NO_MASKS))
        && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-      dt_masks_group_render_roi(self, piece, form, roi_out, mask);
+      form_ok = dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
       if(inverted)
       {
@@ -616,6 +612,14 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
+
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend with form on CPU",
+       piece->pipe, self, roi_in, roi_out, "%s%s%s\n",
+       dt_iop_colorspace_to_name(cst),
+       inverted ? ", inverted" : "",
+       form ? ( form_ok ? ", form available and rendered" : ", render problem on form") : ",no form");
+
     _refine_with_detail_mask(self, piece, mask, roi_in, roi_out, d->details);
 
     // get parametric mask (if any) and apply global opacity
@@ -1122,21 +1126,16 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   else
   {
     const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
-    dt_print_pipe(DT_DEBUG_PIPE,
-       "blend with form CL",
-       piece->pipe, self, roi_in, roi_out, "%s %s\n",
-       dt_iop_colorspace_to_name(cst),
-       inverted ? "inverted" : "");
-    // we blend with a drawn and/or parametric mask
-
+    gboolean form_ok = FALSE;
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
+    // we blend with a drawn and/or parametric mask
     if(form
        && (!(self->flags() & IOP_FLAGS_NO_MASKS))
        && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-      dt_masks_group_render_roi(self, piece, form, roi_out, mask);
+      form_ok = dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
       if(inverted)
       {
@@ -1158,6 +1157,14 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
+
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend with form CL",
+       piece->pipe, self, roi_in, roi_out, "%s%s%s\n",
+       dt_iop_colorspace_to_name(cst),
+       inverted ? ", inverted" : "",
+       form ? ( form_ok ? ", form available and rendered" : ", render problem on form") : ",no form");
+
     _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
 
     // write mask from host to device
@@ -1219,7 +1226,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
         cl_mem guide = dev_in;
         if(!rois_equal)
         {
-          dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
+          dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
           if(dev_guide == NULL) goto error;
           guide = dev_guide;
           size_t origin_1[] = { dx, dy, 0 };
@@ -1296,7 +1303,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
-  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
+  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
   if(dev_tmp == NULL) goto error;
 
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
