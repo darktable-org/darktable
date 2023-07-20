@@ -143,7 +143,7 @@ static const char *_labels[] = {
   N_("exposure"),
   N_("exposure bias"),
   N_("focal length"),
-  N_("FF equiv focal length"),
+  N_("35mm equiv focal length"),
   N_("crop factor"),
   N_("focus distance"),
   N_("ISO"),
