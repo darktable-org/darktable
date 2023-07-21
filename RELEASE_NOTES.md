@@ -59,12 +59,14 @@ improvements and enhancements:
 
 ### API Version
 
-- API version is now 9.1.0
+- API version is now 9.2.0
 
 ### Add action support for Lua
 
 
 ### Other Lua changes
+
+- Allow access to image change_timestamp.
 
 ## Notes
 
