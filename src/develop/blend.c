@@ -1022,6 +1022,14 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
+
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend with form CL",
+       piece->pipe, self, roi_in, roi_out, "%s%s%s\n",
+       dt_iop_colorspace_to_name(cst),
+       inverted ? ", inverted" : "",
+       form ? ( form_ok ? ", form available and rendered" : ", render problem on form") : ",no form");
+
     _refine_with_detail_mask(self, piece, mask, roi_in, roi_out, d->details);
 
     // write mask from host to device
