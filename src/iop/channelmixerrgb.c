@@ -2073,7 +2073,7 @@ void process(struct dt_iop_module_t *self,
         // anyway
         _auto_detect_WB(in, out, data->illuminant_type, roi_in->width, roi_in->height,
                         ch, RGB_to_XYZ, g->XYZ);
-        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
         dt_iop_gui_leave_critical_section(self);
       }
 

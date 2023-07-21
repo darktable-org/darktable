@@ -315,7 +315,7 @@ typedef struct dt_iop_module_t
   GtkWidget *guides_combo;
 
   /** Last user action changed any module parameter via history? */
-  gboolean iopcache_hint;
+  gboolean  write_input_hint;
 
   /** flag in case the module has troubles (bad settings) - if TRUE,
    * show a warning sign next to module label */
