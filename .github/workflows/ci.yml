@@ -108,6 +108,7 @@ jobs:
             libgraphicsmagick1-dev \
             libgtk-3-dev \
             libheif-dev \
+            libilmbase-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
