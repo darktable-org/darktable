@@ -60,6 +60,7 @@ typedef struct dt_iop_hotpixels_data_t
   gboolean permissive;
   gboolean markfixed;
   gboolean monochrome;
+  gboolean pure_monochrome;
 } dt_iop_hotpixels_data_t;
 
 
@@ -165,7 +166,8 @@ static int process_bayer(const dt_iop_hotpixels_data_t *data,
 static int process_monochrome(const dt_iop_hotpixels_data_t *data,
                          const void *const ivoid,
                          void *const ovoid,
-                         const dt_iop_roi_t *const roi_out)
+                         const dt_iop_roi_t *const roi_out,
+                         const int planes)
 {
   const float threshold = data->threshold;
   const float multiplier = data->multiplier;
@@ -177,15 +179,15 @@ static int process_monochrome(const dt_iop_hotpixels_data_t *data,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ivoid, markfixed, min_neighbours, multiplier, ovoid, \
-                      roi_out, threshold, width) \
+                      roi_out, threshold, width, planes) \
   reduction(+ : fixed) \
   schedule(static)
 #endif
   for(int row = 1; row < roi_out->height - 1; row++)
   {
-    const float *in = (float *)ivoid + (size_t)width * row + 1;
-    float *out = (float *)ovoid + (size_t)width * row + 1;
-    for(int col = 1; col < width - 1; col++, in++, out++)
+    const float *in = (float *)ivoid + (size_t)planes * (width * row + 1);
+    float *out = (float *)ovoid + (size_t)planes * (width * row + 1);
+    for(int col = 1; col < width - 1; col++, in += planes, out += planes)
     {
       float mid = *in * multiplier;
       if(*in > threshold)
@@ -200,19 +202,22 @@ static int process_monochrome(const dt_iop_hotpixels_data_t *data,
     count++;                                                                                                 \
     if(other > maxin) maxin = other;                                                                         \
   }
-        TESTONE(-1);
-        TESTONE(-width);
-        TESTONE(+1);
-        TESTONE(+width);
+        TESTONE(-planes);
+        TESTONE(-planes*width);
+        TESTONE(planes);
+        TESTONE(planes*width);
 #undef TESTONE
         if(count >= min_neighbours)
         {
-          *out = maxin;
+          for(int c=0; c < planes; c++)
+            out[c] = maxin;
           fixed++;
           if(markfixed)
           {
-            for(int i = -1; i >= -10 && i >= -col; i -= 1) out[i] = *in;
-            for(int i = 1; i <= 10 && i < width - col; i++) out[i] = *in;
+            for(int i = -1; i >= -10 && i >= -col; i -= 1)
+              for(int c = 0; c < planes; c++) out[4*i + c] = *in;
+            for(int i = 1; i <= 10 && i < width - col; i++)
+              for(int c = 0; c < planes; c++) out[4*i + c] = *in;
           }
         }
       }
@@ -342,13 +347,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
 
   // The processing loop should output only a few pixels, so just copy everything first
-  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, 1);
+  const int planes = data->pure_monochrome ? 4 : 1;
+  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, planes);
 
-  int fixed;
+  int fixed = 0;
 
-  if(data->monochrome)
+  if(data->monochrome || data->pure_monochrome)
   {
-    fixed = process_monochrome(data, ivoid, ovoid, roi_out);
+    fixed = process_monochrome(data, ivoid, ovoid, roi_out, planes);
   }
   else if(piece->pipe->dsc.filters == 9u)
   {
@@ -368,9 +374,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void reload_defaults(dt_iop_module_t *module)
 {
   const dt_image_t *img = &module->dev->image_storage;
-  const gboolean enabled = dt_image_is_raw(img);
+
+  const gboolean monoraw = (img->flags & DT_IMAGE_S_RAW) && (img->flags & DT_IMAGE_MONOCHROME);
+  const gboolean supported = dt_image_is_raw(img) || monoraw;
   // can't be switched on for non-raw images:
-  module->hide_enable_button = !enabled;
+  module->hide_enable_button = !supported;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -385,9 +393,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->markfixed = p->markfixed && (!(pipe->type & (DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_THUMBNAIL)));
 
   const dt_image_t *img = &pipe->image;
-  d->monochrome = dt_image_is_monochrome(img);
-
-  if(!dt_image_is_raw(img) || p->strength == 0.0) piece->enabled = FALSE;
+  const gboolean monoraw = (img->flags & DT_IMAGE_S_RAW) && (img->flags & DT_IMAGE_MONOCHROME);
+  const gboolean supported = dt_image_is_raw(img) || monoraw;
+  d->monochrome = img->flags & DT_IMAGE_MONOCHROME_BAYER;
+  d->pure_monochrome = monoraw;
+  if(!supported || p->strength == 0.0) piece->enabled = FALSE;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -412,9 +422,10 @@ void gui_update(dt_iop_module_t *self)
   gtk_label_set_text(g->message, "");
 
   const dt_image_t *img = &self->dev->image_storage;
-  const gboolean enabled = dt_image_is_raw(img);
+  const gboolean monoraw = (img->flags & DT_IMAGE_S_RAW) && (img->flags & DT_IMAGE_MONOCHROME);
+  const gboolean supported = dt_image_is_raw(img) || monoraw;
   // can't be switched on for non-raw images:
-  self->hide_enable_button = !enabled;
+  self->hide_enable_button = !supported;
 
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
 }
