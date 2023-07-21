@@ -54,6 +54,8 @@ improvements and enhancements:
 
 ## Bug Fixes
 
+- Fixes OpenCL platform checking which could lead to a freeze of
+  darktable.
 
 ## Lua
 
