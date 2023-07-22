@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-05-31 19:11+0300\n"
+"PO-Revision-Date: 2023-07-22 21:07+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.3.1\n"
+"X-Generator: Poedit 3.3.2\n"
 
 #: ../build/bin/conf_gen.h:172 ../build/bin/preferences_gen.h:7632
 msgctxt "preferences"
@@ -15649,7 +15649,7 @@ msgstr ""
 #: ../src/iop/demosaic.c:1086
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "Матрицю кольорів `%s' не знайдено для Quad Bayer зображення!"
+msgstr "Матрицю кольорів `%s' не знайдено для Bayer4 зображення!"
 
 #: ../src/iop/demosaic.c:1238
 msgid ""
@@ -15675,7 +15675,7 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:1248
 msgid "Bayer4 sensor demosaicing methods."
-msgstr "Методи демозаїкізації Quad Bayer."
+msgstr "Методи демозаїкізації Bayer4."
 
 #: ../src/iop/demosaic.c:1252
 msgid ""
@@ -17566,7 +17566,7 @@ msgstr ""
 #: ../src/iop/invert.c:92 ../src/iop/invert.c:427
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "Матрицю кольорів `%s' не знайдено для Quad Bayer зображення"
+msgstr "Матрицю кольорів `%s' не знайдено для Bayer4 зображення"
 
 #: ../src/iop/invert.c:108
 msgid "invert"
