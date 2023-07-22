@@ -51,6 +51,7 @@ improvements and enhancements:
 
 ## Other Changes
 
+- Hotpixels module now also supports monochrome images.
 
 ## Bug Fixes
 
