@@ -206,7 +206,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   }
 
   current = d->items;
-  for(int k = 0; k < CLAMPS(_conf_get_max_shown_items(), 0, _conf_get_max_saved_items()); k++)
+  for(int k = 0; k < CLAMPS(_conf_get_max_shown_items(), 0, _conf_get_max_saved_items()) && current; k++)
   {
     dt_lib_recentcollect_item_t *item = (dt_lib_recentcollect_item_t *)current->data;
     const gchar *line = gtk_button_get_label(GTK_BUTTON(item->button));
