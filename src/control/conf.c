@@ -439,7 +439,6 @@ gchar *dt_conf_read_values(const char *filename,
       const char* ret = fgets(line, LINE_SIZE, f);
       if(ret != NULL)
       {
-        // only remove trailing carriage return, newline but leave whitespace #14906
         line[strcspn(line, "\r\n")] = 0;
         char *c = line;
         char *end = line + strlen(line);
