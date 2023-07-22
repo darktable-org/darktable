@@ -439,7 +439,7 @@ gchar *dt_conf_read_values(const char *filename,
       const char* ret = fgets(line, LINE_SIZE, f);
       if(ret != NULL)
       {
-        g_strchomp(line);
+        line[strcspn(line, "\r\n")] = 0;
         char *c = line;
         char *end = line + strlen(line);
         // check for '=' which is separator between the conf name and value
