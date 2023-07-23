@@ -219,7 +219,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS | IOP_FLAGS_GUIDES_WIDGET;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
