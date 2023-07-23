@@ -219,7 +219,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS | IOP_FLAGS_GUIDES_SPECIAL_DRAW;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
@@ -227,6 +227,12 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
                                             dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
+}
+
+int operation_tags_filter()
+{
+  // switch off clipping and decoration, we want to see the full image.
+  return IOP_TAG_CLIPPING;
 }
 
 int legacy_params(dt_iop_module_t *self,
@@ -2227,6 +2233,9 @@ void gui_focus(struct dt_iop_module_t *self,
        || g->suppress_mask)
       dt_iop_refresh_center(self);
   }
+
+  if(!darktable.develop->image_loading)
+    self->dev->crop_request = (self->dev->crop_request & ~DT_DEV_CROP_RETOUCH) | (in ? DT_DEV_CROP_RETOUCH : DT_DEV_CROP_NONE);
 }
 
 void tiling_callback(struct dt_iop_module_t *self,
