@@ -1729,14 +1729,12 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         cw->x = thumb_x + (slot_max_thumb_width - cw->width) / 2; // x position should be horizontally centered within the slot
         cw->y = thumb_y;                                // y position starts at 0
         thumb_y += cw->height + spacing;               // and is increased by the heigth of the thumb + spacing of spacing for placing the next image of the slot
-        rows->data = g_list_append(rows->data, cw); // append thumbnail to row
       }
+      rows->data = g_list_append(rows->data, slot); // append slot to row
       row_heigth = MAX(row_heigth, thumb_y - row_y);
       total_height = MAX(total_height, thumb_y);        // update total height of all thumbs combined as we fill column by column with thumbnails
       thumb_x += slot_max_thumb_width + spacing;
       total_width = MAX(total_width, thumb_x);          // update total width of all thumbs combined as we fill column by column with thumbnails
-
-      g_list_free(slot);
     }
     g_list_free(slots);
     slots = NULL;
@@ -1750,7 +1748,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   total_width -= spacing;
   total_height -= spacing;
 
-  //int thumb_iter_counter = 0;
   for(const GList *iter = rows; iter; iter = g_list_next(iter))
   {
     GList *row = (GList *)iter->data;
@@ -1758,22 +1755,52 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     int xoff = 0;
     int max_row_heigth = 0;
 
-    for(GList *slot_cw_iter = row;
+    // loop through slots of the row to calculate row width and max_row_heigth
+    for(GList *slot_iter = row;
+        slot_iter;
+        slot_iter = g_list_next(slot_iter))
+    {
+      GList *slot = (GList *)slot_iter->data;
+      int slot_heigth = 0;
+
+      // loop through thumbs of the slot
+      // to calculate slot heigth and update row width
+      // which is used for xoffset of row
+      for(GList *slot_cw_iter = slot;
         slot_cw_iter;
         slot_cw_iter = g_list_next(slot_cw_iter))
-    {
-      dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
-      row_width = MAX(row_width, cw->x + cw->width);
-      max_row_heigth = MAX(max_row_heigth, cw->height); //tbd: this is wrong for stacked images, should be (cw->y - row_y + cw->heigth)
+      {
+        dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
+        slot_heigth += cw->height + spacing;
+        row_width = MAX(row_width, cw->x + cw->width);
+      }
+      slot_heigth -= spacing;
+      max_row_heigth = MAX(max_row_heigth, slot_heigth);
     }
-
     xoff = (total_width - row_width) / 2;
 
-    for(GList *cw_iter = row; cw_iter; cw_iter = g_list_next(cw_iter))
+    // loop through all slots and thumbs again to apply offset
+    for(GList *slot_iter = row;
+        slot_iter;
+        slot_iter = g_list_next(slot_iter))
     {
-      dt_thumbnail_t *cw = (dt_thumbnail_t *)cw_iter->data;
-      cw->x += xoff;
-      cw->height = max_row_heigth; // tbd: this is wrong for stacked images in a slot. Their height should be max_row_heigth*(thumb_height/stack_height)
+      GList *slot = (GList *)slot_iter->data;
+      int slot_height = 0;
+  
+      for(GList *cw_iter = slot; cw_iter; cw_iter = g_list_next(cw_iter))
+      {
+        dt_thumbnail_t *cw = (dt_thumbnail_t *)cw_iter->data;
+        slot_height += cw->height + spacing;
+      }
+      slot_height -= spacing;
+
+      for(GList *cw_iter = slot; cw_iter; cw_iter = g_list_next(cw_iter))
+      {
+        dt_thumbnail_t *cw = (dt_thumbnail_t *)cw_iter->data;
+        cw->x += xoff;
+        cw->height = (max_row_heigth - g_list_length(slot)-1) * cw->height / slot_height;
+      }
+      g_list_free(slot);
     }
     g_list_free(row);
   }
