@@ -53,6 +53,9 @@ improvements and enhancements:
 
 - Hotpixels module now also supports monochrome images.
 
+- Retouch module do not need the internal guide widget, so it has been
+  removed.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
