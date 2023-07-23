@@ -56,6 +56,9 @@ improvements and enhancements:
 - Retouch module do not need the internal guide widget, so it has been
   removed.
 
+- Allow import session to be canceled by clicking on the cross in the
+  progress bar on bottom left.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
