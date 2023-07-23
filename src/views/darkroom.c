@@ -665,7 +665,7 @@ void expose(
   if(image_surface_imgid == dev->image_storage.id)
   {
     cairo_destroy(cr);
-    cairo_set_source_surface(cri, image_surface, 0, 0);
+    cairo_set_source_surface(cri, image_surface, 0.0, 0.0);
     cairo_paint(cri);
   }
 
@@ -728,13 +728,27 @@ void expose(
   {
     if(dev->form_visible && display_masks)
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
-    // module
-    if(dev->gui_module && dev->gui_module != dev->proxy.rotate
+
+    // gui active module
+    if(dev->gui_module
+       && dev->gui_module != dev->proxy.rotate
        && dev->gui_module->gui_post_expose
        && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     {
       cairo_save(cri);
       dev->gui_module->gui_post_expose(dev->gui_module, cri,
+                                       width, height, pointerx, pointery);
+      cairo_restore(cri);
+    }
+
+    // the post expose of crop needs special care
+    if(dev->crop_module
+       && dev->gui_module != dev->proxy.rotate
+       && dev->crop_request != 0
+       && dev->crop_module->gui_post_expose)
+    {
+      cairo_save(cri);
+      dev->crop_module->gui_post_expose(dev->crop_module, cri,
                                        width, height, pointerx, pointery);
       cairo_restore(cri);
     }

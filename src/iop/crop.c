@@ -1350,8 +1350,13 @@ void gui_post_expose(struct dt_iop_module_t *self,
   dt_develop_t *dev = self->dev;
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
 
-  // we don't do anything if the image is not ready
-  if(!g->preview_ready) return;
+  // is this expose enforced by another module in focus?
+  const gboolean external = self->dev->crop_module != NULL
+                        && self->dev->crop_request != 0;
+
+  // we don't do anything if the image is not ready within crop module
+  // and we don't have visualizing enforced by other modules
+  if(!g->preview_ready && !external) return;
 
   _aspect_apply(self, GRAB_HORIZONTAL);
 
@@ -1367,16 +1372,16 @@ void gui_post_expose(struct dt_iop_module_t *self,
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-  const double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
-
   // draw cropping window
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+
+  const double fillc = external ? 0.75 : 0.2;
   if(_set_max_clip(self))
   {
-    cairo_set_source_rgba(cr, .2, .2, .2, .8);
+    cairo_set_source_rgba(cr, fillc, fillc, fillc, 1.0 - fillc);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
     cairo_rectangle(cr, g->clip_max_x * wd, g->clip_max_y * ht,
                         g->clip_max_w * wd, g->clip_max_h * ht);
@@ -1384,13 +1389,19 @@ void gui_post_expose(struct dt_iop_module_t *self,
                         g->clip_w * wd, g->clip_h * ht);
     cairo_fill(cr);
   }
+
+  const double dashes = (external ? 0.1 : 0.5) * DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
+  const double effect = external ? 0.6 : 1.0;
   if(g->clip_x > .0f || g->clip_y > .0f || g->clip_w < 1.0f || g->clip_h < 1.0f)
   {
-    cairo_set_line_width(cr, dashes / 2.0);
+    cairo_set_line_width(cr, dashes);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
-    dt_draw_set_color_overlay(cr, TRUE, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, effect);
     cairo_stroke(cr);
   }
+
+  if(external)
+    return;
 
   // draw cropping window dimensions if first mouse button is pressed
   if(darktable.control->button_down && darktable.control->button_down_which == 1)

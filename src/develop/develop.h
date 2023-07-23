@@ -107,6 +107,15 @@ typedef enum dt_clipping_preview_mode_t
   DT_CLIPPING_PREVIEW_SATURATION = 3
 } dt_clipping_preview_mode_t;
 
+// We require a bitflag for each supported module
+typedef enum dt_cropexpose_mod_t
+{
+  DT_DEV_CROP_NONE = 0,
+  DT_DEV_CROP_RETOUCH = 1 << 0,
+  DT_DEV_CROP_ASHIFT = 1 << 1,
+  DT_DEV_CROP_LIQUIFY = 1 << 2
+} dt_cropexpose_mod_t;
+
 typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
@@ -138,7 +147,9 @@ typedef struct dt_develop_t
   uint32_t average_delay;
   uint32_t preview_average_delay;
   uint32_t preview2_average_delay;
-  struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
+  struct dt_iop_module_t *gui_module;  // this module claims gui expose/event callbacks.
+  struct dt_iop_module_t *crop_module; // set by dt_dev_pixelpipe_synch() if an enabled crop module is included in history
+  dt_cropexpose_mod_t crop_request;    // set by the modules requesting crop_module expose
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
   // width, height: dimensions of window
