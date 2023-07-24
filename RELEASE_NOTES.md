@@ -59,6 +59,9 @@ improvements and enhancements:
 - Allow import session to be canceled by clicking on the cross in the
   progress bar on bottom left.
 
+- Add support for auto orientation when importing AVIF/HEIF images
+  (requires at least libavif 0.9.2 and/or libheif 1.16.0).
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
