@@ -54,10 +54,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
-  /* Be permissive so we can load even slightly-offspec files (libavif 0.9.1 or later) */
-#if AVIF_VERSION >= 90100
+  /* Be permissive so we can load even slightly-offspec files */
   decoder->strictFlags = AVIF_STRICT_DISABLED;
-#endif
 
   result = avifDecoderReadFile(decoder, &avif_image, filename);
   if(result != AVIF_RESULT_OK)
@@ -90,6 +88,12 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
       dt_exif_read_from_blob(img, exif->data + offset, exif->size - offset);
     }
   }
+
+  /* Override any Exif orientation from AVIF irot/imir transformations */
+  /* TODO: Add user crop from AVIF clap transformation */
+  const int angle = avif_image.transformFlags & AVIF_TRANSFORM_IROT ? avif_image.irot.angle : 0;
+  const int flip = avif_image.transformFlags & AVIF_TRANSFORM_IMIR ? avif_image.imir.mode : -1;
+  img->orientation = dt_image_transformation_to_flip_bits(angle, flip);
 
   /* This will set the depth from the avif */
   avifRGBImageSetDefaults(&rgb, &avif_image);
