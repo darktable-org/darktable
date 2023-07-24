@@ -271,9 +271,9 @@
   <dtconfig prefs="storage" section="XMP">
     <name>autosave_interval</name>
     <type>int</type>
-    <default>0</default>
+    <default>10</default>
     <shortdescription>try to save history while developing</shortdescription>
-    <longdescription>If zero (default) autosaving is disabled, otherwise it's time in seconds. Autosaving might be disabled on slow drives.</longdescription>
+    <longdescription>if zero (default) autosaving is disabled, otherwise it's time in seconds. autosaving might be disabled on slow drives.</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>
