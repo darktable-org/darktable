@@ -1961,6 +1961,26 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   d->import_case = (widget == GTK_WIDGET(d->import_inplace)) ? DT_IMPORT_INPLACE : DT_IMPORT_COPY;
+
+  if(d->import_case == DT_IMPORT_COPY)
+  {
+    const gboolean setup = dt_conf_get_bool("setup_import_directory");
+    if(setup == FALSE)
+    {
+      const gboolean understood = dt_gui_show_standalone_yes_no_dialog
+            (_("import base directory"),
+             _("before copying images to the darktable base directory make sure it is defined as you prefer."
+               "\nfurther information can be found in the darktable manual."
+               "\n\ninspect darktable preferences -> import."
+               "\ncheck and possibly correct the 'base directory naming pattern'"),
+            _("show this information again"), _("understood & done"));
+      if(understood)
+        dt_conf_set_bool("setup_import_directory", TRUE);
+      else
+        return;
+    }
+  }
+
 #ifdef HAVE_GPHOTO2
   // on some systems, GPhoto2 is somewhat prone to crashing while
   // scanning for new devices; this manifests as a crash during long
