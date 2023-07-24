@@ -157,9 +157,9 @@ typedef struct dt_iop_lens_params_t
   float scale_md;  // $DEFAULT: 1 $MIN: 0.1 $MAX: 2.0 $DESCRIPTION: "image scale"
   // whether the params have already been computed
   gboolean has_been_set;
-  float v_intensity; // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "intensity"
+  float v_strength; // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "strength"
   float v_radius; // $DEFAULT: 0.5 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "radius"
-  float v_strength; // $DEFAULT: 0.5 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "strength"
+  float v_steepness; // $DEFAULT: 0.5 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "steepness"
   float reserved[2];
 } dt_iop_lens_params_t;
 
@@ -184,7 +184,7 @@ typedef struct dt_iop_lens_gui_data_t
   GtkWidget *find_camera_button;
   GtkWidget *cor_dist_ft, *cor_vig_ft, *cor_ca_r_ft, *cor_ca_b_ft, *scale_md;
   GtkWidget *use_latest_md_algo;
-  GtkWidget *v_intensity, *v_radius, *v_strength;
+  GtkWidget *v_strength, *v_radius, *v_steepness;
   dt_gui_collapsible_section_t cs;
   GtkLabel *message;
   int corrections_done;
@@ -233,9 +233,9 @@ typedef struct dt_iop_lens_data_t
   dt_iop_lens_embedded_metadata_version md_version;
   int nc;
   float knots_dist[MAXKNOTS], knots_vig[MAXKNOTS], cor_rgb[3][MAXKNOTS], vig[MAXKNOTS];
-  float v_intensity;
-  float v_radius;
   float v_strength;
+  float v_radius;
+  float v_steepness;
   float reserved[2];
   float vigspline[VIGSPLINES];
   uint32_t vighash;
@@ -430,9 +430,9 @@ int legacy_params(
     n->has_been_set = TRUE;
 
     // new in v10
-    n->v_intensity = 0.0f;
+    n->v_strength = 0.0f;
     n->v_radius = 0.5f;
-    n->v_strength = 0.5f;
+    n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
     return 0;
@@ -495,9 +495,9 @@ int legacy_params(
     n->has_been_set = TRUE;
 
     // new in v10
-    n->v_intensity = 0.0f;
+    n->v_strength = 0.0f;
     n->v_radius = 0.5f;
-    n->v_strength = 0.5f;
+    n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
     return 0;
@@ -561,9 +561,9 @@ int legacy_params(
     n->has_been_set = o->modified;
 
     // new in v10
-    n->v_intensity = 0.0f;
+    n->v_strength = 0.0f;
     n->v_radius = 0.5f;
-    n->v_strength = 0.5f;
+    n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
     return o->modified == 0 ? -1 : 0;
@@ -628,9 +628,9 @@ int legacy_params(
     n->has_been_set = o->modified;
 
     // new in v10
-    n->v_intensity = 0.0f;
+    n->v_strength = 0.0f;
     n->v_radius = 0.5f;
-    n->v_strength = 0.5f;
+    n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
  
     return o->modified == 0 ? -1 : 0;
@@ -701,9 +701,9 @@ int legacy_params(
     n->has_been_set = o->modified;
 
     // new in v10
-    n->v_intensity = 0.0f;
+    n->v_strength = 0.0f;
     n->v_radius = 0.5f;
-    n->v_strength = 0.5f;
+    n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
     return o->modified == 0 ? -1 : 0;
@@ -772,9 +772,9 @@ int legacy_params(
     n->has_been_set = FALSE;
 
     // new in v10
-    n->v_intensity = 0.0f;
+    n->v_strength = 0.0f;
     n->v_radius = 0.5f;
-    n->v_strength = 0.5f;
+    n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
     return 0;
@@ -838,9 +838,9 @@ int legacy_params(
     n->has_been_set = FALSE;
 
     // new in v10
-    n->v_intensity = 0.0f;
+    n->v_strength = 0.0f;
     n->v_radius = 0.5f;
-    n->v_strength = 0.5f;
+    n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
     return 0;
@@ -883,9 +883,9 @@ int legacy_params(
 
     memcpy(n, o, sizeof(dt_iop_lens_params_v9_t));
     // new in v10
-    n->v_intensity = 0.0f;
+    n->v_strength = 0.0f;
     n->v_radius = 0.5f;
-    n->v_strength = 0.5f;
+    n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
     return 0;
@@ -1501,7 +1501,7 @@ static void _tiling_callback_lf(struct dt_iop_module_t *self,
   tiling->xalign = 1;
   tiling->yalign = 1;
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
-  if(d->v_intensity != 0.0f) tiling->factor += 1.0f;
+  if(d->v_strength != 0.0f) tiling->factor += 1.0f;
 }
 
 static int _distort_transform_lf(
@@ -1921,7 +1921,7 @@ static uint64_t _get_vignette_hash(dt_iop_lens_data_t *d)
 {
   uint64_t hash = 5381;
   char *pstr = (char *)(&d->v_radius);
-  // radius & strength are the parameters used for the spline so represented in the cache
+  // radius & steepness are the parameters used for the spline so represented in the cache
   for(size_t ip = 0; ip < 2 * sizeof(float); ip++)
     hash = ((hash << 5) + hash) ^ pstr[ip];
 
@@ -1943,7 +1943,7 @@ static void _init_vignette_spline(dt_iop_lens_data_t *d)
   for(int i = 0; i < VIGSPLINES; i++)
   {
     const double radius = (double)i / (double)(VIGSPLINES - 1);
-    const double v = d->v_strength;
+    const double v = d->v_steepness;
     const double b = 1.0 + d->v_radius * 10.0;
     const double mul = -v / tanh (b);
     d->vigspline[i] = (float)(v + mul * tanh(b * (1.0 - radius)));
@@ -1976,12 +1976,12 @@ static void _preprocess_vignette(struct dt_iop_module_t *self,
   const float w2 = 0.5f * roi->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi->scale * piece->buf_in.height;
   const float inv_maxr = 1.0f / sqrtf(w2*w2 + h2*h2);
-  const float intensity = 2.0f * d->v_intensity;
+  const float strength = 2.0f * d->v_strength;
   const float *spline = d->vigspline;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(data, vig, roi, w2, h2, mask, inv_maxr, intensity, spline) \
+    dt_omp_firstprivate(data, vig, roi, w2, h2, mask, inv_maxr, strength, spline) \
     schedule(static) \
     collapse(2)
 #endif
@@ -1993,7 +1993,7 @@ static void _preprocess_vignette(struct dt_iop_module_t *self,
       const float dx = ((float)(roi->x + col) - w2);
       const float dy = ((float)(roi->y + row) - h2);
       const float radius = sqrtf(dx*dx + dy*dy) * inv_maxr;
-      const float val = intensity * _calc_vignette_spline(radius, spline);
+      const float val = strength * _calc_vignette_spline(radius, spline);
 
       for_three_channels(c)
         vig[idx + c] = (1.0f + val) * data[idx+c];
@@ -2827,7 +2827,7 @@ void process(dt_iop_module_t *self,
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
-  const gboolean correction = mask || (d->v_intensity > 0.0f);
+  const gboolean correction = mask || (d->v_strength > 0.0f);
   float *data = (float *)ivoid;
 
   if(mask)
@@ -2872,14 +2872,14 @@ cl_int _preprocess_vignette_cl(struct dt_iop_module_t *self,
   const float w2 = 0.5f * roi->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi->scale * piece->buf_in.height;
   const float inv_maxr = 1.0f / sqrtf(w2*w2 + h2*h2);
-  const float intensity = 2.0f * d->v_intensity;
+  const float strength = 2.0f * d->v_strength;
   const int splinesize = VIGSPLINES;
 
   cl_int err = dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_lens_man_vignette, roi->width, roi->height,
           CLARG(dev_in), CLARG(dev_vig), CLARG(dev_spline),
           CLARG(roi->width), CLARG(roi->height),
           CLARG(w2), CLARG(h2), CLARG(roi->x), CLARG(roi->y), CLARG(inv_maxr),
-          CLARG(intensity),
+          CLARG(strength),
           CLARG(splinesize),
           CLARG(mask));
 
@@ -2900,7 +2900,7 @@ int process_cl(struct dt_iop_module_t *self,
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
-  const gboolean correction = mask || (d->v_intensity > 0.0f);
+  const gboolean correction = mask || (d->v_strength > 0.0f);
 
   if(mask)
     piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
@@ -3055,9 +3055,9 @@ void commit_params(struct dt_iop_module_t *self,
   if(dt_image_is_monochrome(&self->dev->image_storage))
     d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
 
-  d->v_intensity = p->v_intensity;
-  d->v_radius = p->v_radius;
   d->v_strength = p->v_strength;
+  d->v_radius = p->v_radius;
+  d->v_steepness = p->v_steepness;
 
   const gboolean use_lensfun = d->method == DT_IOP_LENS_METHOD_LENSFUN;
 
@@ -4315,21 +4315,21 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(g->cs.container);
 
-  g->v_intensity = dt_bauhaus_slider_from_params(self, "v_intensity");
-  dt_bauhaus_slider_set_format(g->v_intensity, "%");
-  dt_bauhaus_slider_set_digits(g->v_intensity, 1);
-  dt_bauhaus_widget_set_quad_paint(g->v_intensity, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->v_intensity, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->v_intensity, FALSE);
-  g_signal_connect(G_OBJECT(g->v_intensity), "quad-pressed", G_CALLBACK(_visualize_callback), self);
+  g->v_strength = dt_bauhaus_slider_from_params(self, "v_strength");
+  dt_bauhaus_slider_set_format(g->v_strength, "%");
+  dt_bauhaus_slider_set_digits(g->v_strength, 1);
+  dt_bauhaus_widget_set_quad_paint(g->v_strength, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->v_strength, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->v_strength, FALSE);
+  g_signal_connect(G_OBJECT(g->v_strength), "quad-pressed", G_CALLBACK(_visualize_callback), self);
 
   g->v_radius = dt_bauhaus_slider_from_params(self, "v_radius");
   dt_bauhaus_slider_set_format(g->v_radius, "%");
   dt_bauhaus_slider_set_digits(g->v_radius, 1);
 
-  g->v_strength = dt_bauhaus_slider_from_params(self, "v_strength");
-  dt_bauhaus_slider_set_format(g->v_strength, "%");
-  dt_bauhaus_slider_set_digits(g->v_strength, 1);
+  g->v_steepness = dt_bauhaus_slider_from_params(self, "v_steepness");
+  dt_bauhaus_slider_set_format(g->v_steepness, "%");
+  dt_bauhaus_slider_set_digits(g->v_steepness, 1);
 
   self->widget = main_box;
 
@@ -4346,7 +4346,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     const gboolean was_visualize = g->vig_masking;
-    dt_bauhaus_widget_set_quad_active(g->v_intensity, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->v_strength, FALSE);
     g->vig_masking = FALSE;
     if(was_visualize)
       dt_dev_reprocess_center(self->dev);
