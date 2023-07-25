@@ -264,7 +264,7 @@ jobs:
           retention-days: 2
 
   macOS:
-    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    if: 0 && (github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch')
     name: Nightly darktable macOS
     runs-on: ${{ matrix.build.os }}
     strategy:
