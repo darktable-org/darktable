@@ -54,6 +54,7 @@
 #include <lensfun.h>
 
 #define MAXKNOTS 16
+#define VIGSPLINES 512
 
 extern "C" {
 
@@ -66,7 +67,7 @@ extern "C" {
 #error lensfun 0.3.95 is not supported since its API is not backward compatible with lensfun stable release.
 #endif
 
-DT_MODULE_INTROSPECTION(9, dt_iop_lens_params_t)
+DT_MODULE_INTROSPECTION(10, dt_iop_lens_params_t)
 
 typedef enum dt_iop_lens_method_t
 {
@@ -156,6 +157,10 @@ typedef struct dt_iop_lens_params_t
   float scale_md;  // $DEFAULT: 1 $MIN: 0.1 $MAX: 2.0 $DESCRIPTION: "image scale"
   // whether the params have already been computed
   gboolean has_been_set;
+  float v_strength; // $DEFAULT: 0.0 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "strength"
+  float v_radius; // $DEFAULT: 0.5 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "radius"
+  float v_steepness; // $DEFAULT: 0.5 $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "steepness"
+  float reserved[2];
 } dt_iop_lens_params_t;
 
 typedef struct dt_iop_lens_gui_modifier_t
@@ -179,9 +184,12 @@ typedef struct dt_iop_lens_gui_data_t
   GtkWidget *find_camera_button;
   GtkWidget *cor_dist_ft, *cor_vig_ft, *cor_ca_r_ft, *cor_ca_b_ft, *scale_md;
   GtkWidget *use_latest_md_algo;
+  GtkWidget *v_strength, *v_radius, *v_steepness;
+  dt_gui_collapsible_section_t cs;
   GtkLabel *message;
   int corrections_done;
   gboolean lensfun_trouble;
+  gboolean vig_masking;
   const lfCamera *camera;
 } dt_iop_lens_gui_data_t;
 
@@ -193,6 +201,7 @@ typedef struct dt_iop_lens_global_data_t
   int kernel_lens_distort_lanczos2;
   int kernel_lens_distort_lanczos3;
   int kernel_lens_vignette;
+  int kernel_lens_man_vignette;
   lfDatabase *db;
 } dt_iop_lens_global_data_t;
 
@@ -224,6 +233,12 @@ typedef struct dt_iop_lens_data_t
   dt_iop_lens_embedded_metadata_version md_version;
   int nc;
   float knots_dist[MAXKNOTS], knots_vig[MAXKNOTS], cor_rgb[3][MAXKNOTS], vig[MAXKNOTS];
+  float v_strength;
+  float v_radius;
+  float v_steepness;
+  float reserved[2];
+  float vigspline[VIGSPLINES];
+  uint32_t vighash;
 } dt_iop_lens_data_t;
 
 
@@ -354,7 +369,7 @@ int legacy_params(
         void *new_params,
         const int new_version)
 {
-  if(old_version == 2 && new_version == 9)
+  if(old_version == 2 && new_version == 10)
   {
     // legacy params of version 2; version 1 comes from ancient times
     // and seems to be forgotten by now.
@@ -414,10 +429,16 @@ int legacy_params(
     // new in v9
     n->has_been_set = TRUE;
 
+    // new in v10
+    n->v_strength = 0.0f;
+    n->v_radius = 0.5f;
+    n->v_steepness = 0.5f;
+    n->reserved[0] = n->reserved[1] = 0.0f;
+
     return 0;
   }
 
-  if(old_version == 3 && new_version == 9)
+  if(old_version == 3 && new_version == 10)
   {
     typedef struct
     {
@@ -473,10 +494,16 @@ int legacy_params(
     // new in v9
     n->has_been_set = TRUE;
 
+    // new in v10
+    n->v_strength = 0.0f;
+    n->v_radius = 0.5f;
+    n->v_steepness = 0.5f;
+    n->reserved[0] = n->reserved[1] = 0.0f;
+
     return 0;
   }
 
-  if(old_version == 4 && new_version == 9)
+  if(old_version == 4 && new_version == 10)
   {
     typedef struct
     {
@@ -533,10 +560,16 @@ int legacy_params(
     // new in v9
     n->has_been_set = o->modified;
 
+    // new in v10
+    n->v_strength = 0.0f;
+    n->v_radius = 0.5f;
+    n->v_steepness = 0.5f;
+    n->reserved[0] = n->reserved[1] = 0.0f;
+
     return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 5 && new_version == 9)
+  if(old_version == 5 && new_version == 10)
   {
     typedef struct
     {
@@ -594,10 +627,16 @@ int legacy_params(
     // new in v9
     n->has_been_set = o->modified;
 
+    // new in v10
+    n->v_strength = 0.0f;
+    n->v_radius = 0.5f;
+    n->v_steepness = 0.5f;
+    n->reserved[0] = n->reserved[1] = 0.0f;
+ 
     return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 6 && new_version == 9)
+  if(old_version == 6 && new_version == 10)
   {
     typedef struct
     {
@@ -661,10 +700,16 @@ int legacy_params(
     // new in v9
     n->has_been_set = o->modified;
 
+    // new in v10
+    n->v_strength = 0.0f;
+    n->v_radius = 0.5f;
+    n->v_steepness = 0.5f;
+    n->reserved[0] = n->reserved[1] = 0.0f;
+
     return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 7 && new_version == 9)
+  if(old_version == 7 && new_version == 10)
   {
     typedef struct
     {
@@ -726,9 +771,15 @@ int legacy_params(
     // new in v9
     n->has_been_set = FALSE;
 
+    // new in v10
+    n->v_strength = 0.0f;
+    n->v_radius = 0.5f;
+    n->v_steepness = 0.5f;
+    n->reserved[0] = n->reserved[1] = 0.0f;
+
     return 0;
   }
-  if(old_version == 8 && new_version == 9)
+  if(old_version == 8 && new_version == 10)
   {
     typedef struct
     {
@@ -786,9 +837,59 @@ int legacy_params(
     // new in v9
     n->has_been_set = FALSE;
 
+    // new in v10
+    n->v_strength = 0.0f;
+    n->v_radius = 0.5f;
+    n->v_steepness = 0.5f;
+    n->reserved[0] = n->reserved[1] = 0.0f;
+
     return 0;
   }
 
+  if(old_version == 9 && new_version == 10)
+  {
+    typedef struct
+    {
+      dt_iop_lens_method_t method;
+      dt_iop_lens_modflag_t modify_flags;
+      dt_iop_lens_mode_t inverse;
+      float scale;
+      float crop;
+      float focal;
+      float aperture;
+      float distance;
+      dt_iop_lens_lenstype_t target_geom;
+      char camera[128];
+      char lens[128];
+      gboolean tca_override;
+      float tca_r;
+      float tca_b;
+
+      float cor_dist_ft;
+      float cor_vig_ft;
+      float cor_ca_r_ft;
+      float cor_ca_b_ft;
+      float scale_md_v1;
+      dt_iop_lens_embedded_metadata_version md_version;
+      float scale_md;
+      gboolean has_been_set;
+    } dt_iop_lens_params_v9_t;
+
+    const dt_iop_lens_params_v9_t *o = (dt_iop_lens_params_v9_t *)old_params;
+    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
+    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    memcpy(n, o, sizeof(dt_iop_lens_params_v9_t));
+    // new in v10
+    n->v_strength = 0.0f;
+    n->v_radius = 0.5f;
+    n->v_steepness = 0.5f;
+    n->reserved[0] = n->reserved[1] = 0.0f;
+
+    return 0;
+  }
   return 1;
 }
 
@@ -1399,7 +1500,8 @@ static void _tiling_callback_lf(struct dt_iop_module_t *self,
   tiling->overlap = 4;
   tiling->xalign = 1;
   tiling->yalign = 1;
-  return;
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  if(d->v_strength != 0.0f) tiling->factor += 1.0f;
 }
 
 static int _distort_transform_lf(
@@ -1809,16 +1911,104 @@ static void _commit_params_lf(struct dt_iop_module_t *self,
 }
 /* lensfun processing end*/
 
+#ifdef __GNUC__
+  #pragma GCC push_options
+  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
+#endif
+
+/* manually controlled vignette using a linear spline */
+static uint64_t _get_vignette_hash(dt_iop_lens_data_t *d)
+{
+  uint64_t hash = 5381;
+  char *pstr = (char *)(&d->v_radius);
+  // radius & steepness are the parameters used for the spline so represented in the cache
+  for(size_t ip = 0; ip < 2 * sizeof(float); ip++)
+    hash = ((hash << 5) + hash) ^ pstr[ip];
+
+  return hash;
+}
+
+static void _init_vignette_spline(dt_iop_lens_data_t *d)
+{
+  uint64_t vhash = _get_vignette_hash(d);
+  if(d->vighash == vhash) return;
+  d->vighash = vhash;
+
+  /* basic math idea from rawtherapee code */
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(d) \
+    schedule(static)
+#endif
+  for(int i = 0; i < VIGSPLINES; i++)
+  {
+    const double radius = (double)i / (double)(VIGSPLINES - 1);
+    const double v = d->v_steepness;
+    const double b = 1.0 + d->v_radius * 10.0;
+    const double mul = -v / tanh (b);
+    d->vigspline[i] = (float)(v + mul * tanh(b * (1.0 - radius)));
+  }
+}
+
+static inline float _calc_vignette_spline(const float radius, const float *spline)
+{
+  if(radius >= 1.0f) return spline[VIGSPLINES-1];
+
+  const float r = radius * (float)(VIGSPLINES - 1);
+  const float frac = r - truncf(r);
+  const int i = (int)r;
+
+  const float p0 = spline[i];
+  return p0 + (spline[i+1] - p0) * frac;
+}
+
+
+static void _preprocess_vignette(struct dt_iop_module_t *self,
+                        dt_dev_pixelpipe_iop_t *piece,
+                        const float *const data,
+                        float *vig,
+                        const dt_iop_roi_t *const roi,
+                        const gboolean mask)
+{
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  _init_vignette_spline(d);
+
+  const float w2 = 0.5f * roi->scale * piece->buf_in.width;
+  const float h2 = 0.5f * roi->scale * piece->buf_in.height;
+  const float inv_maxr = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float strength = 2.0f * d->v_strength;
+  const float *spline = d->vigspline;
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(data, vig, roi, w2, h2, mask, inv_maxr, strength, spline) \
+    schedule(static) \
+    collapse(2)
+#endif
+  for(int row = 0; row < roi->height; row++)
+  {
+    for(int col = 0; col < roi->width; col++)
+    {
+      const size_t idx = 4 * (size_t)(row * roi->width + col);
+      const float dx = ((float)(roi->x + col) - w2);
+      const float dy = ((float)(roi->y + row) - h2);
+      const float radius = sqrtf(dx*dx + dy*dy) * inv_maxr;
+      const float val = strength * _calc_vignette_spline(radius, spline);
+
+      for_three_channels(c)
+        vig[idx + c] = (1.0f + val) * data[idx+c];
+
+      vig[idx + 3] = (mask) ? val : vig[idx + 1]; 
+    }
+  }
+}
+/* manually controlled vignette end */
+
 /* embedded metadata processing start */
 
 /* This code is based on the algorithm developed by Freddie Witherden
  * <freddie@witherden.org> in pull request
  * https://github.com/darktable-org/darktable/pull/7092 */
-
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
-#endif
 
 static inline float _interpolate_linear_spline(const float *xi,
                                                const float *yi,
@@ -2446,7 +2636,8 @@ static void _process_md(struct dt_iop_module_t *self,
                         const void *const ivoid,
                         void *const ovoid,
                         const dt_iop_roi_t *const roi_in,
-                        const dt_iop_roi_t *const roi_out)
+                        const dt_iop_roi_t *const roi_out,
+                        const gboolean backbuf)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
@@ -2461,11 +2652,14 @@ static void _process_md(struct dt_iop_module_t *self,
   const struct dt_interpolation *interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
-  // Allocate temporary storage
-  const size_t bufsize = (size_t) roi_in->width * roi_in->height * 4;
-  float *buf = dt_alloc_align_float(bufsize);
-  dt_iop_image_copy(buf, (float*)ivoid, bufsize);
-
+  // Allocate temporary storage if we haven't got that from manual vignette
+  float *buf = (float *) ivoid;
+  if(!backbuf)
+  {
+    const size_t bufsize = (size_t) roi_in->width * roi_in->height * 4;
+    buf = dt_alloc_align_float(bufsize);
+    dt_iop_image_copy(buf, (float*)ivoid, bufsize);
+  }
   // Correct vignetting
   if(d->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
   {
@@ -2532,7 +2726,8 @@ static void _process_md(struct dt_iop_module_t *self,
     }
   }
 
-  dt_free_align(buf);
+  if(!backbuf)
+    dt_free_align(buf);
 }
 
 static void _modify_roi_in_md(struct dt_iop_module_t *self,
@@ -2616,11 +2811,11 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   roi_in->height = (int)fminf(orig_h - roi_in->y, yM - roi_in->y + interpolation->width);
 }
 
+/* embedded metadata processing end */
+
 #ifdef __GNUC__
   #pragma GCC pop_options
 #endif
-
-/* embedded metadata processing end */
 
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
@@ -2630,19 +2825,68 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+  const gboolean correction = mask || (d->v_strength > 0.0f);
+  float *data = (float *)ivoid;
 
+  if(mask)
+    piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
+ 
+  if(correction)
+  {
+    data = dt_alloc_align_float((size_t) 4 * roi_in->width * roi_in->height);
+    _preprocess_vignette(self, piece, (float *)ivoid, data, roi_in, mask);
+  }
+    
   if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
-    _process_lf(self, piece, ivoid, ovoid, roi_in, roi_out);
+    _process_lf(self, piece, data, ovoid, roi_in, roi_out);
   }
   else
   {
-    _process_md(self, piece, ivoid, ovoid, roi_in, roi_out);
+    _process_md(self, piece, data, ovoid, roi_in, roi_out, correction);
   }
+
+  if(data != (float *)ivoid)
+    dt_free_align(data);
 }
 
 
 #ifdef HAVE_OPENCL
+cl_int _preprocess_vignette_cl(struct dt_iop_module_t *self,
+                        dt_dev_pixelpipe_iop_t *piece,
+                        cl_mem dev_in,
+                        cl_mem dev_vig,
+                        const dt_iop_roi_t *const roi,
+                        const gboolean mask)
+{
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
+
+  _init_vignette_spline(d);
+ 
+  cl_mem dev_spline = (cl_mem)dt_opencl_copy_host_to_device_constant(piece->pipe->devid, sizeof(d->vigspline), d->vigspline); 
+  if(dev_spline == NULL) return DT_OPENCL_SYSMEM_ALLOCATION;
+
+  const float w2 = 0.5f * roi->scale * piece->buf_in.width;
+  const float h2 = 0.5f * roi->scale * piece->buf_in.height;
+  const float inv_maxr = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const float strength = 2.0f * d->v_strength;
+  const int splinesize = VIGSPLINES;
+
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_lens_man_vignette, roi->width, roi->height,
+          CLARG(dev_in), CLARG(dev_vig), CLARG(dev_spline),
+          CLARG(roi->width), CLARG(roi->height),
+          CLARG(w2), CLARG(h2), CLARG(roi->x), CLARG(roi->y), CLARG(inv_maxr),
+          CLARG(strength),
+          CLARG(splinesize),
+          CLARG(mask));
+
+  dt_opencl_release_mem_object(dev_spline);
+  return err;
+}
+
 int process_cl(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
@@ -2651,7 +2895,29 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   // process_cl is called only for lensfun method
-  return _process_cl_lf(self, piece, dev_in, dev_out, roi_in, roi_out);
+  cl_mem data = dev_in;
+ 
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+  const gboolean correction = mask || (d->v_strength > 0.0f);
+
+  if(mask)
+    piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
+
+  cl_int err = CL_SUCCESS;
+  if(correction)
+  {
+    data = (cl_mem)dt_opencl_alloc_device(piece->pipe->devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+    err = _preprocess_vignette_cl(self, piece, dev_in, data, roi_in, mask);
+  }
+
+  if(err == CL_SUCCESS)
+    err = _process_cl_lf(self, piece, data, dev_out, roi_in, roi_out);
+
+  if((data != dev_in) && data)
+    dt_opencl_release_mem_object(data);
+  return err;
 }
 #endif
 
@@ -2789,10 +3055,16 @@ void commit_params(struct dt_iop_module_t *self,
   if(dt_image_is_monochrome(&self->dev->image_storage))
     d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
 
-  // no OpenCL for LENS_METHOD_EMBEDDED_METADATA
-  piece->process_cl_ready = (d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA) ? FALSE : TRUE;
+  d->v_strength = p->v_strength;
+  d->v_radius = p->v_radius;
+  d->v_steepness = p->v_steepness;
 
-  if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
+  const gboolean use_lensfun = d->method == DT_IOP_LENS_METHOD_LENSFUN;
+
+  // no OpenCL for LENS_METHOD_EMBEDDED_METADATA or manual vignette correction
+  piece->process_cl_ready = use_lensfun;
+
+  if(use_lensfun)
   {
     _commit_params_lf(self, p, pipe, piece);
   }
@@ -2841,6 +3113,8 @@ void init_global(dt_iop_module_so_t *module)
     dt_opencl_create_kernel(program, "lens_distort_lanczos3");
   gd->kernel_lens_vignette =
     dt_opencl_create_kernel(program, "lens_vignette");
+  gd->kernel_lens_man_vignette =
+    dt_opencl_create_kernel(program, "lens_man_vignette");
 
   lfDatabase *dt_iop_lensfun_db = new lfDatabase;
   gd->db = (lfDatabase *)dt_iop_lensfun_db;
@@ -3077,6 +3351,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos2);
   dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos3);
   dt_opencl_free_kernel(gd->kernel_lens_vignette);
+  dt_opencl_free_kernel(gd->kernel_lens_man_vignette);
   free(module->data);
   module->data = NULL;
 }
@@ -3854,6 +4129,15 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   _display_errors(self);
 }
 
+static void _visualize_callback(GtkWidget *quad, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  g->vig_masking = dt_bauhaus_widget_get_quad_active(quad);
+  dt_dev_reprocess_center(self->dev);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_lens_gui_data_t *g = IOP_GUI_ALLOC(lens);
@@ -3988,7 +4272,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->scale_md, _("image scaling"));
 
   // main widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *main_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_widget_set_name(self->widget, "lens-module");
 
   // selector for correction method
@@ -4003,9 +4287,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_set_homogeneous(GTK_STACK(g->methods), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->methods, TRUE, TRUE, 0);
 
-  gtk_stack_add_named(GTK_STACK(g->methods), box_lf, "lensfun");
-  gtk_stack_add_named(GTK_STACK(g->methods), box_md, "metadata");
-
   // message box to inform user what corrections have been done. this
   // is useful as depending on lensfuns profile only some of the lens
   // flaws can be corrected
@@ -4019,6 +4300,39 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
+  gtk_stack_add_named(GTK_STACK(g->methods), box_lf, "lensfun");
+  gtk_stack_add_named(GTK_STACK(g->methods), box_md, "metadata");
+
+  // widget for extra manual vignette correction, FIXME manual reference
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/lens/manualvignette",
+     _("manual vignette correction"),
+     GTK_BOX(main_box),
+     DT_ACTION(self));
+  gtk_widget_set_tooltip_text(g->cs.expander,
+      _("additional manually controlled optical vignetting correction"));
+
+  self->widget = GTK_WIDGET(g->cs.container);
+
+  g->v_strength = dt_bauhaus_slider_from_params(self, "v_strength");
+  dt_bauhaus_slider_set_format(g->v_strength, "%");
+  dt_bauhaus_slider_set_digits(g->v_strength, 1);
+  dt_bauhaus_widget_set_quad_paint(g->v_strength, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->v_strength, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->v_strength, FALSE);
+  g_signal_connect(G_OBJECT(g->v_strength), "quad-pressed", G_CALLBACK(_visualize_callback), self);
+
+  g->v_radius = dt_bauhaus_slider_from_params(self, "v_radius");
+  dt_bauhaus_slider_set_format(g->v_radius, "%");
+  dt_bauhaus_slider_set_digits(g->v_radius, 1);
+
+  g->v_steepness = dt_bauhaus_slider_from_params(self, "v_steepness");
+  dt_bauhaus_slider_set_format(g->v_steepness, "%");
+  dt_bauhaus_slider_set_digits(g->v_steepness, 1);
+
+  self->widget = main_box;
+
   /* add signal handler for preview pipe finish to update message on
      corrections done */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
@@ -4028,6 +4342,15 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  if(!in)
+  {
+    const gboolean was_visualize = g->vig_masking;
+    dt_bauhaus_widget_set_quad_active(g->v_strength, FALSE);
+    g->vig_masking = FALSE;
+    if(was_visualize)
+      dt_dev_reprocess_center(self->dev);
+  }
   _display_errors(self);
 }
 
@@ -4110,6 +4433,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 }
 
+#undef VIGSPLINES
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
