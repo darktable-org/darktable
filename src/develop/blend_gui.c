@@ -1354,41 +1354,6 @@ static gboolean _blendop_blendif_showmask_clicked(GtkToggleButton *button,
   return TRUE;
 }
 
-/*
-static gboolean _blendop_blendif_showraster_clicked(GtkToggleButton *button,
-                                                  GdkEventButton *event,
-                                                  dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return TRUE;
-
-  if(event->button == 1)
-  {
-    const gboolean active = !gtk_toggle_button_get_active(button);
-    gtk_toggle_button_set_active(button, active);
-
-    module->request_mask_display = active ? DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL
-                                          : DT_DEV_PIXELPIPE_DISPLAY_NONE;
-
-    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
-
-    ++darktable.gui->reset;
-
-    // (re)set the header mask indicator too
-    if(module->mask_indicator)
-      gtk_toggle_button_set_active
-        (GTK_TOGGLE_BUTTON(module->mask_indicator),
-         module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
-
-    --darktable.gui->reset;
-
-    dt_iop_request_focus(module);
-    dt_iop_refresh_center(module);
-  }
-
-  return TRUE;
-}
-*/
-
 static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
                                                   GdkEventButton *event,
                                                   dt_iop_module_t *module)
