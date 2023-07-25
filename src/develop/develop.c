@@ -898,13 +898,12 @@ int dt_dev_write_history_item(const dt_imgid_t imgid,
   return 0;
 }
 
-static void _dev_add_history_item_ext(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable,
-        const gboolean new_item,
-        const gboolean no_image,
-        const gboolean include_masks)
+static void _dev_add_history_item_ext(dt_develop_t *dev,
+                                      dt_iop_module_t *module,
+                                      const gboolean enable,
+                                      const gboolean new_item,
+                                      const gboolean no_image,
+                                      const gboolean include_masks)
 {
   int kept_module = 0;
   GList *history = g_list_nth(dev->history, dev->history_end);
@@ -1080,11 +1079,10 @@ const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const ch
   return NULL;
 }
 
-void dt_dev_add_history_item_ext(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable,
-        const int no_image)
+void dt_dev_add_history_item_ext(dt_develop_t *dev,
+                                 dt_iop_module_t *module,
+                                 const gboolean enable,
+                                 const int no_image)
 {
   _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
 }
@@ -1109,12 +1107,11 @@ static gboolean _dev_undo_start_record_target(dt_develop_t *dev, gpointer target
   return TRUE;
 }
 
-static void _dev_add_history_item(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable,
-        const gboolean new_item,
-        const gpointer target)
+static void _dev_add_history_item(dt_develop_t *dev,
+                                  dt_iop_module_t *module,
+                                  const gboolean enable,
+                                  const gboolean new_item,
+                                  const gpointer target)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
@@ -1170,36 +1167,32 @@ static void _dev_add_history_item(
   }
 }
 
-void dt_dev_add_history_item(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        gboolean enable)
+void dt_dev_add_history_item(dt_develop_t *dev,
+                             dt_iop_module_t *module,
+                             gboolean enable)
 {
   _dev_add_history_item(dev, module, enable, FALSE, NULL);
 }
 
-void dt_dev_add_history_item_target(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable,
-        gpointer target)
+void dt_dev_add_history_item_target(dt_develop_t *dev,
+                                    dt_iop_module_t *module,
+                                    const gboolean enable,
+                                    gpointer target)
 {
   _dev_add_history_item(dev, module, enable, FALSE, target);
 }
 
-void dt_dev_add_new_history_item(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable)
+void dt_dev_add_new_history_item(dt_develop_t *dev,
+                                 dt_iop_module_t *module,
+                                 const gboolean enable)
 {
   _dev_add_history_item(dev, module, enable, TRUE, NULL);
 }
 
-void dt_dev_add_masks_history_item_ext(
-        dt_develop_t *dev,
-        dt_iop_module_t *_module,
-        const gboolean _enable,
-        const gboolean no_image)
+void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
+                                       dt_iop_module_t *_module,
+                                       const gboolean _enable,
+                                       const gboolean no_image)
 {
   dt_iop_module_t *module = _module;
   gboolean enable = _enable;
