@@ -217,18 +217,15 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3], i, j;
     float tmp[6];
     dt_aligned_pixel_t rgbd;
 
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
@@ -295,16 +292,13 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3];
     dt_aligned_pixel_t rgbd;
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
@@ -383,16 +377,13 @@ void correct_pixel_pyramid(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3];
     dt_aligned_pixel_t rgbd;
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
