@@ -512,7 +512,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
                                  && self->dev->gui_attached
                                  && (self == self->dev->gui_module)
                                  && (piece->pipe == self->dev->pipe)
-                                 && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
+                                 && (mask_mode != DEVELOP_MASK_ENABLED);
 
   // obtaining the list of mask operations to perform
   _develop_mask_post_processing post_operations[3];
@@ -967,7 +967,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
                                  && self->dev->gui_attached
                                  && (self == self->dev->gui_module)
                                  && (piece->pipe == self->dev->pipe)
-                                 && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
+                                 && (mask_mode != DEVELOP_MASK_ENABLED);
 
   // obtaining the list of mask operations to perform
   _develop_mask_post_processing post_operations[3];
