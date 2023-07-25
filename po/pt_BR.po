@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-24 16:34-0300\n"
-"PO-Revision-Date: 2023-07-24 16:33-0300\n"
+"POT-Creation-Date: 2023-07-25 15:33-0300\n"
+"PO-Revision-Date: 2023-07-25 15:33-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2302,7 +2302,7 @@ msgstr "ajuste de proporção"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:3893
+#: ../src/iop/lens.cc:4177
 msgid "lens model"
 msgstr "modelo da lente"
 
@@ -2375,7 +2375,7 @@ msgstr "preservar cores"
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:262
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:249
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:153
-#: ../build/lib/darktable/plugins/introspection_lens.cc:458
+#: ../build/lib/darktable/plugins/introspection_lens.cc:531
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
@@ -2656,6 +2656,8 @@ msgstr "guia"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
+#: ../build/lib/darktable/plugins/introspection_lens.cc:339
+#: ../build/lib/darktable/plugins/introspection_lens.cc:500
 #: ../src/iop/atrous.c:1524 ../src/iop/bilateral.cc:352 ../src/iop/clahe.c:337
 #: ../src/iop/dither.c:762 ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:677
 #: ../src/iop/sharpen.c:442
@@ -2666,6 +2668,8 @@ msgstr "raio"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:136
 #: ../build/lib/darktable/plugins/introspection_highlights.c:137
 #: ../build/lib/darktable/plugins/introspection_highlights.c:240
+#: ../build/lib/darktable/plugins/introspection_lens.cc:333
+#: ../build/lib/darktable/plugins/introspection_lens.cc:496
 #: ../src/iop/bloom.c:378 ../src/iop/denoiseprofile.c:3818
 #: ../src/iop/grain.c:586 ../src/iop/hazeremoval.c:203
 #: ../src/iop/hotpixels.c:467 ../src/iop/nlmeans.c:462 ../src/iop/velvia.c:281
@@ -4124,22 +4128,22 @@ msgstr "marcar pixels corrigidos"
 msgid "detect by 3 neighbors"
 msgstr "detectar por 3 vizinhos"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:166
-#: ../build/lib/darktable/plugins/introspection_lens.cc:347
+#: ../build/lib/darktable/plugins/introspection_lens.cc:189
+#: ../build/lib/darktable/plugins/introspection_lens.cc:400
 msgid "correction method"
 msgstr "modo de correção"
 
 #. Page CORRECTIONS
-#: ../build/lib/darktable/plugins/introspection_lens.cc:172
-#: ../build/lib/darktable/plugins/introspection_lens.cc:351
+#: ../build/lib/darktable/plugins/introspection_lens.cc:195
+#: ../build/lib/darktable/plugins/introspection_lens.cc:404
 #: ../src/iop/negadoctor.c:907
 msgid "corrections"
 msgstr "correções"
 
 #. mode choice
 #. Add check to control whether the style is to replace or append the current module
-#: ../build/lib/darktable/plugins/introspection_lens.cc:178
-#: ../build/lib/darktable/plugins/introspection_lens.cc:355
+#: ../build/lib/darktable/plugins/introspection_lens.cc:201
+#: ../build/lib/darktable/plugins/introspection_lens.cc:408
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:128
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:219
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
@@ -4153,68 +4157,73 @@ msgstr "correções"
 msgid "mode"
 msgstr "modo"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:214
-#: ../build/lib/darktable/plugins/introspection_lens.cc:379
-#: ../src/iop/lens.cc:3929
+#: ../build/lib/darktable/plugins/introspection_lens.cc:237
+#: ../build/lib/darktable/plugins/introspection_lens.cc:432
+#: ../src/iop/lens.cc:4213
 msgid "target geometry"
 msgstr "geometria alvo"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:244
-#: ../build/lib/darktable/plugins/introspection_lens.cc:399
+#: ../build/lib/darktable/plugins/introspection_lens.cc:267
+#: ../build/lib/darktable/plugins/introspection_lens.cc:452
 msgid "TCA overwrite"
 msgstr "sobrescrever ACT"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:250
-#: ../build/lib/darktable/plugins/introspection_lens.cc:403
+#: ../build/lib/darktable/plugins/introspection_lens.cc:273
+#: ../build/lib/darktable/plugins/introspection_lens.cc:456
 msgid "TCA red"
 msgstr "ACT vermelho"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:256
-#: ../build/lib/darktable/plugins/introspection_lens.cc:407
+#: ../build/lib/darktable/plugins/introspection_lens.cc:279
+#: ../build/lib/darktable/plugins/introspection_lens.cc:460
 msgid "TCA blue"
 msgstr "ACT azul"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:262
-#: ../build/lib/darktable/plugins/introspection_lens.cc:411
+#: ../build/lib/darktable/plugins/introspection_lens.cc:285
+#: ../build/lib/darktable/plugins/introspection_lens.cc:464
 msgid "distortion fine-tune"
 msgstr "ajuste fino de distorção"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:268
-#: ../build/lib/darktable/plugins/introspection_lens.cc:415
+#: ../build/lib/darktable/plugins/introspection_lens.cc:291
+#: ../build/lib/darktable/plugins/introspection_lens.cc:468
 msgid "vignetting fine-tune"
 msgstr "ajuste fino de vinheta"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:274
-#: ../build/lib/darktable/plugins/introspection_lens.cc:419
+#: ../build/lib/darktable/plugins/introspection_lens.cc:297
+#: ../build/lib/darktable/plugins/introspection_lens.cc:472
 msgid "TCA red fine-tune"
 msgstr "ajuste fino de TCA vermelho"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:280
-#: ../build/lib/darktable/plugins/introspection_lens.cc:423
+#: ../build/lib/darktable/plugins/introspection_lens.cc:303
+#: ../build/lib/darktable/plugins/introspection_lens.cc:476
 msgid "TCA blue fine-tune"
 msgstr "ajuste fino de TCA azul"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:286
-#: ../build/lib/darktable/plugins/introspection_lens.cc:427
+#: ../build/lib/darktable/plugins/introspection_lens.cc:309
+#: ../build/lib/darktable/plugins/introspection_lens.cc:480
 msgid "scale fine-tune"
 msgstr "ajuste fino de escala"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:298
-#: ../build/lib/darktable/plugins/introspection_lens.cc:435
+#: ../build/lib/darktable/plugins/introspection_lens.cc:321
+#: ../build/lib/darktable/plugins/introspection_lens.cc:488
 msgid "image scale"
 msgstr "escala da imagem"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:453
+#: ../build/lib/darktable/plugins/introspection_lens.cc:345
+#: ../build/lib/darktable/plugins/introspection_lens.cc:504
+msgid "steepness"
+msgstr "inclunação"
+
+#: ../build/lib/darktable/plugins/introspection_lens.cc:526
 msgid "embedded metadata"
 msgstr "metadados embutidos"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:454
+#: ../build/lib/darktable/plugins/introspection_lens.cc:527
 msgid "Lensfun database"
 msgstr "base de dados Lensfun"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../build/lib/darktable/plugins/introspection_lens.cc:459
+#: ../build/lib/darktable/plugins/introspection_lens.cc:532
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2367
 #: ../src/gui/accelerators.c:2447 ../src/gui/gtk.c:1204 ../src/gui/gtk.c:3136
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3709
@@ -4224,68 +4233,68 @@ msgstr "base de dados Lensfun"
 msgid "all"
 msgstr "tudo"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:460
+#: ../build/lib/darktable/plugins/introspection_lens.cc:533
 msgid "distortion & TCA"
 msgstr "distorção & ACT"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:461
+#: ../build/lib/darktable/plugins/introspection_lens.cc:534
 msgid "distortion & vignetting"
 msgstr "distorção & vinheta"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:462
+#: ../build/lib/darktable/plugins/introspection_lens.cc:535
 msgid "TCA & vignetting"
 msgstr "ACT & vinheta"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:463
+#: ../build/lib/darktable/plugins/introspection_lens.cc:536
 msgid "only distortion"
 msgstr "apenas distorção"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:464
+#: ../build/lib/darktable/plugins/introspection_lens.cc:537
 msgid "only TCA"
 msgstr "apenas ACT"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:465
+#: ../build/lib/darktable/plugins/introspection_lens.cc:538
 msgid "only vignetting"
 msgstr "apenas vinheta"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:469
+#: ../build/lib/darktable/plugins/introspection_lens.cc:542
 #: ../src/libs/modulegroups.c:2318
 msgid "correct"
 msgstr "corrigir"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:470
+#: ../build/lib/darktable/plugins/introspection_lens.cc:543
 msgid "distort"
 msgstr "distorcer"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:475
+#: ../build/lib/darktable/plugins/introspection_lens.cc:548
 msgid "rectilinear"
 msgstr "retilínea"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:476
+#: ../build/lib/darktable/plugins/introspection_lens.cc:549
 msgid "fisheye"
 msgstr "olho de peixe"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:477
+#: ../build/lib/darktable/plugins/introspection_lens.cc:550
 msgid "panoramic"
 msgstr "panorâmica"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:478
+#: ../build/lib/darktable/plugins/introspection_lens.cc:551
 msgid "equirectangular"
 msgstr "equiretangular"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:479
+#: ../build/lib/darktable/plugins/introspection_lens.cc:552
 msgid "orthographic"
 msgstr "ortográfica"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:480
+#: ../build/lib/darktable/plugins/introspection_lens.cc:553
 msgid "stereographic"
 msgstr "estereográfica"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:481
+#: ../build/lib/darktable/plugins/introspection_lens.cc:554
 msgid "equisolid angle"
 msgstr "ângulo equisólido"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:482
+#: ../build/lib/darktable/plugins/introspection_lens.cc:555
 msgid "Thoby fisheye"
 msgstr "olho de peixe Thoby"
 
@@ -6622,7 +6631,7 @@ msgstr ""
 msgid "OpenCL scheduling profile set to default"
 msgstr "perfil de escalonamento OpenCL ajustado para padrão"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:3541
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:3816
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:81
 msgid "mm"
 msgstr "mm"
@@ -12161,7 +12170,7 @@ msgstr "corretivo ou criativo"
 #: ../src/iop/denoiseprofile.c:730 ../src/iop/diffuse.c:146
 #: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:132 ../src/iop/exposure.c:134
 #: ../src/iop/flip.c:111 ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
-#: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:244 ../src/iop/lens.cc:246
+#: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:259 ../src/iop/lens.cc:261
 #: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/retouch.c:210
 #: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:103
 #: ../src/iop/splittoning.c:106 ../src/iop/splittoning.c:108
@@ -12668,7 +12677,7 @@ msgstr ""
 #: ../src/iop/defringe.c:82 ../src/iop/denoiseprofile.c:727
 #: ../src/iop/flip.c:110 ../src/iop/hazeremoval.c:112
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:75
-#: ../src/iop/invert.c:119 ../src/iop/lens.cc:243 ../src/iop/nlmeans.c:95
+#: ../src/iop/invert.c:119 ../src/iop/lens.cc:258 ../src/iop/nlmeans.c:95
 #: ../src/iop/profile_gamma.c:102 ../src/iop/rawdenoise.c:130
 #: ../src/iop/retouch.c:209 ../src/iop/sharpen.c:96 ../src/iop/spots.c:69
 #: ../src/iop/temperature.c:212
@@ -17505,23 +17514,23 @@ msgstr "seleciona a cor do material do filme na imagem"
 msgid "select color of film material"
 msgstr "seleciona a cor do material do filme"
 
-#: ../src/iop/lens.cc:232
+#: ../src/iop/lens.cc:247
 msgid "lens correction"
 msgstr "correção da lente"
 
-#: ../src/iop/lens.cc:237
+#: ../src/iop/lens.cc:252
 msgid "vignette|chromatic aberrations|distortion"
 msgstr "vinheta|aberrações cromáticas|distorção"
 
-#: ../src/iop/lens.cc:242
+#: ../src/iop/lens.cc:257
 msgid "correct lenses optical flaws"
 msgstr "corrige falhas óticas das lentes"
 
-#: ../src/iop/lens.cc:245
+#: ../src/iop/lens.cc:260
 msgid "geometric and reconstruction, RGB"
 msgstr "geométrico e reconstrução, RGB"
 
-#: ../src/iop/lens.cc:3243
+#: ../src/iop/lens.cc:3518
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -17534,7 +17543,7 @@ msgstr ""
 "montagem:\t\t%s\n"
 "fator de corte:\t%.1f"
 
-#: ../src/iop/lens.cc:3496
+#: ../src/iop/lens.cc:3771
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -17553,31 +17562,31 @@ msgstr ""
 "tipo:\t\t\t%s\n"
 "montagem:\t\t%s"
 
-#: ../src/iop/lens.cc:3542
+#: ../src/iop/lens.cc:3817
 msgid "focal length (mm)"
 msgstr "distância focal (mm)"
 
-#: ../src/iop/lens.cc:3568
+#: ../src/iop/lens.cc:3843
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:3569
+#: ../src/iop/lens.cc:3844
 msgid "f-number (aperture)"
 msgstr "número f (abertura)"
 
-#: ../src/iop/lens.cc:3585
+#: ../src/iop/lens.cc:3860
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:3586
+#: ../src/iop/lens.cc:3861
 msgid "distance to subject"
 msgstr "distância do objeto"
 
-#: ../src/iop/lens.cc:3747
+#: ../src/iop/lens.cc:4022
 msgid "camera/lens not found"
 msgstr "câmera/lente não encontrados"
 
-#: ../src/iop/lens.cc:3748
+#: ../src/iop/lens.cc:4023
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your Lensfun database is up-to-date\n"
@@ -17588,45 +17597,45 @@ msgstr ""
 "atualizada\n"
 "executando lensfun-update-data"
 
-#: ../src/iop/lens.cc:3878
+#: ../src/iop/lens.cc:4162
 msgid "camera model"
 msgstr "modelo da câmera"
 
-#: ../src/iop/lens.cc:3883
+#: ../src/iop/lens.cc:4167
 msgid "find camera"
 msgstr "encontrar câmera"
 
-#: ../src/iop/lens.cc:3898
+#: ../src/iop/lens.cc:4182
 msgid "find lens"
 msgstr "encontrar lentes"
 
 #. scale
-#: ../src/iop/lens.cc:3932 ../src/iop/vignette.c:970
+#: ../src/iop/lens.cc:4216 ../src/iop/vignette.c:970
 #: ../src/iop/watermark.c:1326 ../src/libs/export.c:1165
 msgid "scale"
 msgstr "escala"
 
-#: ../src/iop/lens.cc:3937
+#: ../src/iop/lens.cc:4221
 msgid "auto scale"
 msgstr "escalonamento automático"
 
-#: ../src/iop/lens.cc:3941
+#: ../src/iop/lens.cc:4225
 msgid "correct distortions or apply them"
 msgstr "corrige ou aplica distorções"
 
-#: ../src/iop/lens.cc:3948
+#: ../src/iop/lens.cc:4232
 msgid "transversal chromatic aberration red"
 msgstr "aberrações cromáticas transversais vermelho"
 
-#: ../src/iop/lens.cc:3952
+#: ../src/iop/lens.cc:4236
 msgid "transversal chromatic aberration blue"
 msgstr "aberrações cromáticas transversais azul"
 
-#: ../src/iop/lens.cc:3958
+#: ../src/iop/lens.cc:4242
 msgid "use latest algorithm"
 msgstr "usar o algoritmo mais recente"
 
-#: ../src/iop/lens.cc:3960
+#: ../src/iop/lens.cc:4244
 msgid ""
 "you're using an old version of the algorithm.\n"
 "once enabled, you won't be able to\n"
@@ -17636,37 +17645,45 @@ msgstr ""
 "uma vez que habilitá-lo, não poderá\n"
 "retornar ao algoritmo antigo."
 
-#: ../src/iop/lens.cc:3969
+#: ../src/iop/lens.cc:4253
 msgid "tune the warp and chromatic aberration correction"
 msgstr "ajusta a correção de distorção e de aberração cromática"
 
-#: ../src/iop/lens.cc:3973
+#: ../src/iop/lens.cc:4257
 msgid "tune the vignette correction"
 msgstr "ajusta a correção da vinheta"
 
-#: ../src/iop/lens.cc:3977
+#: ../src/iop/lens.cc:4261
 msgid "tune the TCA red correction"
 msgstr "ajusta a correção dde TCA vermelho"
 
-#: ../src/iop/lens.cc:3981
+#: ../src/iop/lens.cc:4265
 msgid "tune the TCA blue correction"
 msgstr "ajusta a correção dde TCA azul"
 
-#: ../src/iop/lens.cc:3988
+#: ../src/iop/lens.cc:4272
 msgid "image scaling"
 msgstr "mudança de escala da imagem"
 
-#: ../src/iop/lens.cc:4000
+#: ../src/iop/lens.cc:4284
 msgid "which corrections to apply"
 msgstr "quais correções aplicar"
 
-#: ../src/iop/lens.cc:4013
+#: ../src/iop/lens.cc:4294
 msgid "corrections done: "
 msgstr "correções feitas: "
 
-#: ../src/iop/lens.cc:4015
+#: ../src/iop/lens.cc:4296
 msgid "which corrections have actually been done"
 msgstr "quais correções foram realizadas efetivamente"
+
+#: ../src/iop/lens.cc:4310
+msgid "manual vignette correction"
+msgstr "correção manual de vinheta"
+
+#: ../src/iop/lens.cc:4314
+msgid "additional manually controlled optical vignetting correction"
+msgstr "correção adicional de vinheta manualmente controlada"
 
 #: ../src/iop/levels.c:112
 msgid "this module is deprecated. please use the RGB levels module instead."
@@ -20067,7 +20084,7 @@ msgid ""
 "• image: scale watermark relative to whole image\n"
 "• larger border: scale larger watermark border relative to larger image "
 "border\n"
-"• smaller border: scale smaller watermark border relative to smaller image "
+"• smaller border: scale larger watermark border relative to smaller image "
 "border\n"
 "• height: scale watermark height to image height\n"
 "• advanced options: choose watermark and image dimensions independently"
@@ -20075,7 +20092,7 @@ msgstr ""
 "escolha como ajustar a escala da marca d'água\n"
 "• imagem: encaixa a marca d'água na imagem inteira\n"
 "• maior borda: ajusta a maior borda da marca d'água à maior borda da imagem\n"
-"• menor borda: ajusta a menor borda da marca d'água à menor borda da imagem\n"
+"• menor borda: ajusta a maior borda da marca d'água à menor borda da imagem\n"
 "• altura: ajusta a marca d'água para a altura da imagem\n"
 "• opções avançadas: escolher dimensões da marca d'água e da imagem "
 "independentemente"
