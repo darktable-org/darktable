@@ -898,6 +898,36 @@ int dt_dev_write_history_item(const dt_imgid_t imgid,
   return 0;
 }
 
+static void _dev_auto_save(dt_develop_t *dev)
+{
+  // This could be the place to check for automatic history writing
+  const double user_delay = (double)dt_conf_get_int("autosave_interval");
+  const double now = dt_get_wtime();
+
+  static double last = 0.0;
+  static gboolean proper_timing = TRUE;
+
+  if((user_delay >= 1.0) && proper_timing && ((now - last) > user_delay))
+  {
+    // Ok, lets save status for image
+    dt_dev_write_history(dev);
+    dt_image_write_sidecar_file(dev->image_storage.id);
+    last = now;
+
+    const double spent = dt_get_wtime() - now;
+    dt_print(DT_DEBUG_DEV, "autosave history took %fsec\n", spent);
+
+    // if writing to database and the xmp took too long we disable
+    // automatic mode for this session
+    if(spent > 0.5)
+    {
+      proper_timing = FALSE;
+      dt_control_log(_("autosaving history has been disabled"
+                       " for this session because of a slow drive used"));
+    }
+  }
+}
+
 static void _dev_add_history_item_ext(dt_develop_t *dev,
                                       dt_iop_module_t *module,
                                       const gboolean enable,
@@ -1038,30 +1068,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
   if((module->enabled) && (!no_image))
     module->write_input_hint = TRUE;
 
-  // This could be the place to check for automatic history writing
-  const double user_delay = (double)dt_conf_get_int("autosave_interval"); 
-  const double now = dt_get_wtime();
-
-  static double last = 0.0;
-  static gboolean proper_timing = TRUE;
-
-  if((user_delay >= 1.0) && proper_timing && ((now - last) > user_delay))
-  {
-    // Ok, lets save status for image
-    dt_dev_write_history(dev);
-    dt_image_write_sidecar_file(dev->image_storage.id);
-    last = now;
-
-    const double spent = dt_get_wtime() - now;
-    dt_print(DT_DEBUG_DEV, "autosave history took %fsec\n", spent);
-
-    // if writing to database and the xmp took too long we disable automatic mode for this session
-    if(spent > 0.5)
-    {
-      proper_timing = FALSE;
-      dt_control_log(_("Autosaving history has been disabled for this session because of a slow drive used"));
-    }
-  }
+  _dev_auto_save(dev);
 }
 
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op)
