@@ -1332,7 +1332,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->scale_base, _("choose how to scale the watermark\n"
                                                "• image: scale watermark relative to whole image\n"
                                                "• larger border: scale larger watermark border relative to larger image border\n"
-                                               "• smaller border: scale smaller watermark border relative to smaller image border\n"
+                                               "• smaller border: scale larger watermark border relative to smaller image border\n"
                                                "• height: scale watermark height to image height\n"
                                                "• advanced options: choose watermark and image dimensions independently"));
 
