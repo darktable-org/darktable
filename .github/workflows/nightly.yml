@@ -360,7 +360,8 @@ jobs:
       # We need write permission to update the nightly tag
       contents: write
     runs-on: ubuntu-latest
-    needs: [AppImage, Windows, macOS]
+    #needs: [AppImage, Windows, macOS]
+    needs: [AppImage, Windows]
     steps:
       - name: Download AppImage artifact
         uses: actions/download-artifact@v3
@@ -370,10 +371,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: Darktable.Nightly.Windows
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: Darktable.Nightly.macOS
+      #- name: Download macOS artifact
+      #  uses: actions/download-artifact@v3
+      #  with:
+      #    name: Darktable.Nightly.macOS
       - name: Update nightly release
         uses: andelf/nightly-release@main
         env:
@@ -401,5 +402,5 @@ jobs:
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
             Darktable-*.AppImage*
-            darktable-*.dmg
+          #  darktable-*.dmg
             darktable-*.exe
