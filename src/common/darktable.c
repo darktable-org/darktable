@@ -131,7 +131,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {act_on,cache,camctl,camsupport,control,dev,imageio,\n");
   printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
-  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe,\n");
+  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe,expose\n");
   printf("      all,common (-d dev,imageio,masks,opencl,params,pipe)}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
@@ -855,6 +855,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_VERBOSE;
         else if(!strcmp(argv[k + 1], "pipe"))
           darktable.unmuted |= DT_DEBUG_PIPE;
+        else if(!strcmp(argv[k + 1], "expose"))
+          darktable.unmuted |= DT_DEBUG_EXPOSE;
         else
           return usage(argv[0]);
         k++;
