@@ -404,6 +404,38 @@ static void _darkroom_pickers_draw(dt_view_t *self,
   cairo_restore(cri);
 }
 
+static inline gboolean _full_request(dt_develop_t *dev)
+{
+  return
+        dev->image_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->image_status == DT_DEV_PIXELPIPE_INVALID
+     || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp;
+} 
+
+static inline gboolean _preview_request(dt_develop_t *dev)
+{
+  return
+        dev->preview_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
+     || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp; 
+}
+
+static inline gboolean _preview2_request(dt_develop_t *dev)
+{
+  return
+     (dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY
+       || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
+       || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
+     && dev->gui_attached
+     && dev->second_window.widget
+     && GTK_IS_WIDGET(dev->second_window.widget);
+}
+
+static inline gboolean _any_request(dt_develop_t *dev)
+{
+  return _full_request(dev) || _preview_request(dev) || _preview2_request(dev);
+}
+
 void expose(
     dt_view_t *self,
     cairo_t *cri,
@@ -438,26 +470,32 @@ void expose(
     dev->gui_synch = FALSE;
   }
 
-  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY
-     || dev->image_status == DT_DEV_PIXELPIPE_INVALID
-     || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp)
+  dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] initial requests: %s%s%s%s\n",
+      _full_request(dev)     ? " full" : "",
+      _preview_request(dev)  ? " preview" : "",
+      _preview2_request(dev) ? " preview_2" : "",
+      _any_request(dev)      ? "" : "none");
+
+  if(_full_request(dev))
   {
     dt_dev_process_image(dev);
   }
 
-  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY
-     || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
-     || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp)
+  if(_preview_request(dev))
   {
     dt_dev_process_preview(dev);
   }
 
-  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY
-     || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
-     || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
+  if(_preview2_request(dev))
   {
     dt_dev_process_preview2(dev);
   }
+
+  dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] requests after pipe jobs: %s%s%s%s\n",
+      _full_request(dev)     ? " full" : "",
+      _preview_request(dev)  ? " preview" : "",
+      _preview2_request(dev) ? " preview_2" : "",
+      _any_request(dev)      ? "" : "none");
 
   dt_pthread_mutex_t *mutex = NULL;
   // FIXME: these four dt_control_get_dev_*() calls each lock/unlock global_mutex -- consolidate this work
@@ -515,6 +553,7 @@ void expose(
      && dev->pipe->backbuf_zoom_x == zoom_x
      && dev->pipe->backbuf_zoom_y == zoom_y)
   {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] draw image\n");
     // draw image
     mutex = &dev->pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
@@ -527,7 +566,7 @@ void expose(
     {
       // force middle grey in background
       dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_BG);
-   }
+    }
     else
     {
       if(dev->full_preview)
@@ -546,6 +585,7 @@ void expose(
   else if(dev->preview_pipe->output_backbuf
           && dev->preview_pipe->output_imgid == dev->image_storage.id)
   {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] draw preview\n");
     // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
@@ -597,6 +637,7 @@ void expose(
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] can't draw image\n");
     gchar *load_txt;
     float fontsize;
 
@@ -629,6 +670,7 @@ void expose(
 
     if(dt_conf_get_bool("darkroom/ui/loading_screen"))
     {
+      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] loading screen\n");
       dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
       cairo_paint(cr);
 
@@ -670,7 +712,16 @@ void expose(
   }
 
   /* if we are in full preview mode, we don"t want anything else than the image */
-  if(dev->full_preview) return;
+  if(dev->full_preview)
+  {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] full preview finished, remaining requests: %s%s%s%s\n\n",
+      _full_request(dev)     ? " full" : "",
+      _preview_request(dev)  ? " preview" : "",
+      _preview2_request(dev) ? " preview_2" : "",
+      _any_request(dev)      ? "" : "none");
+    return;
+  }
+
 
   // Displaying sample areas if enabled
   if(darktable.lib->proxy.colorpicker.live_samples
@@ -678,6 +729,7 @@ void expose(
          || (darktable.lib->proxy.colorpicker.selected_sample &&
              darktable.lib->proxy.colorpicker.selected_sample != darktable.lib->proxy.colorpicker.primary_sample)))
   {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] pickers draw: livesamples FALSE\n");
     _darkroom_pickers_draw(
       self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
       darktable.lib->proxy.colorpicker.live_samples, FALSE);
@@ -719,6 +771,7 @@ void expose(
   // by picker
   if(dt_iop_color_picker_is_visible(dev))
   {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] pickers draw: livesamples TRUE\n");
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample,
                        .next = NULL };
     _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
@@ -727,12 +780,16 @@ void expose(
   else
   {
     if(dev->form_visible && display_masks)
+    {
+      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] masks post expose\n");
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+    }
     // module
     if(dev->gui_module && dev->gui_module != dev->proxy.rotate
        && dev->gui_module->gui_post_expose
        && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     {
+      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] gui_post_expose [%s]\n", dev->gui_module->op);
       cairo_save(cri);
       dev->gui_module->gui_post_expose(dev->gui_module, cri,
                                        width, height, pointerx, pointery);
@@ -747,6 +804,7 @@ void expose(
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
   {
     gchar *label = darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK ? _("gamut check") : _("soft proof");
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] proof: %s\n", label);
     cairo_set_source_rgba(cri, 0.5, 0.5, 0.5, 0.5);
     PangoLayout *layout;
     PangoRectangle ink;
@@ -767,6 +825,11 @@ void expose(
     pango_font_description_free(desc);
     g_object_unref(layout);
   }
+  dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] finished, remaining requests: %s%s%s%s\n\n",
+      _full_request(dev)     ? " full" : "",
+      _preview_request(dev)  ? " preview" : "",
+      _preview2_request(dev) ? " preview_2" : "",
+      _any_request(dev)      ? "" : "none");
 }
 
 void reset(dt_view_t *self)
