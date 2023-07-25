@@ -755,8 +755,8 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
       {
         if(strtod(token[1], NULL) != 0.0f)
         {
-          dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MIN != 0.0 is not supported\n");
-          dt_control_log(_("DOMAIN MIN != 0.0 is not supported"));
+          dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MIN other than 0 is not supported\n");
+          dt_control_log(_("DOMAIN MIN other than 0 is not supported"));
           if(lclut) dt_free_align(lclut);
           free(line);
           fclose(cube_file);
@@ -767,8 +767,8 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
       {
         if(strtod(token[1], NULL) != 1.0f)
         {
-          dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MAX != 1.0 is not supported\n");
-          dt_control_log(_("DOMAIN MAX != 1.0 is not supported"));
+          dt_print(DT_DEBUG_ALWAYS, "[lut3d] DOMAIN MAX other than 1 is not supported\n");
+          dt_control_log(_("DOMAIN MAX other than 1 is not supported"));
           if(lclut) dt_free_align(lclut);
           free(line);
           fclose(cube_file);
