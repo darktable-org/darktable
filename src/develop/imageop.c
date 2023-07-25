@@ -2652,17 +2652,13 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_
 
   const gboolean is_active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bt));
   const dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  const gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
 
   module->request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_MASK;
   module->request_mask_display |= (is_active ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_NONE);
 
   // set the module show mask button too
   if(bd->showmask)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), !raster && is_active);
-
-  if(bd->raster_show)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_show), raster && is_active);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), is_active);
 
   dt_iop_request_focus(module);
   dt_iop_refresh_center(module);
