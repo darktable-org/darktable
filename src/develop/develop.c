@@ -1541,7 +1541,9 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid)
 
 void dt_dev_write_history(dt_develop_t *dev)
 {
+  dt_database_start_transaction(darktable.db);
   dt_dev_write_history_ext(dev, dev->image_storage.id);
+  dt_database_release_transaction(darktable.db);
 }
 
 static int _dev_get_module_nb_records(void)
