@@ -4622,18 +4622,24 @@ void dt_database_start_transaction(const struct dt_database_t *db)
   // if top level a simple unamed transaction is used BEGIN / COMMIT / ROLLBACK
   // otherwise we use a savepoint (named transaction).
 
-  if(trxid == 0 || TRUE)
+  if(trxid == 0)
   {
     // In theads application it may be safer to use an IMMEDIATE transaction:
     // "BEGIN IMMEDIATE TRANSACTION"
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "BEGIN TRANSACTION", NULL, NULL, NULL);
   }
-#ifdef USE_NESTED_TRANSACTIONS
   else
+#ifdef USE_NESTED_TRANSACTIONS
   {
     char SQLTRX[32] = { 0 };
     g_snprintf(SQLTRX, sizeof(SQLTRX), "SAVEPOINT trx%d", trxid);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#else
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_database_start_transaction] nested transaction detected (%d)\n",
+             trxid);
   }
 #endif
 
@@ -4651,16 +4657,22 @@ void dt_database_release_transaction(const struct dt_database_t *db)
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_database_release_transaction] COMMIT outside a transaction\n");
 
-  if(trxid == 1 || TRUE)
+  if(trxid == 1)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "COMMIT TRANSACTION", NULL, NULL, NULL);
   }
-#ifdef USE_NESTED_TRANSACTIONS
   else
+#ifdef USE_NESTED_TRANSACTIONS
   {
     char SQLTRX[64] = { 0 };
     g_snprintf(SQLTRX, sizeof(SQLTRX), "RELEASE SAVEPOINT trx%d", trxid - 1);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#else
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_database_end_transaction] nested transaction detected (%d)\n",
+             trxid);
   }
 #endif
 }
@@ -4673,16 +4685,22 @@ void dt_database_rollback_transaction(const struct dt_database_t *db)
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_database_rollback_transaction] ROLLBACK outside a transaction\n");
 
-  if(trxid == 1 || TRUE)
+  if(trxid == 1)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
-#ifdef USE_NESTED_TRANSACTIONS
   else
+#ifdef USE_NESTED_TRANSACTIONS
   {
     char SQLTRX[64] = { 0 };
     g_snprintf(SQLTRX, sizeof(SQLTRX), "ROLLBACK TRANSACTION TO SAVEPOINT trx%d", trxid - 1);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#else
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_database_rollback_transaction] nested transaction detected (%d)\n",
+             trxid);
   }
 #endif
 }

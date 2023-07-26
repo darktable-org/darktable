@@ -898,13 +898,42 @@ int dt_dev_write_history_item(const dt_imgid_t imgid,
   return 0;
 }
 
-static void _dev_add_history_item_ext(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable,
-        const gboolean new_item,
-        const gboolean no_image,
-        const gboolean include_masks)
+static void _dev_auto_save(dt_develop_t *dev)
+{
+  // This could be the place to check for automatic history writing
+  const double user_delay = (double)dt_conf_get_int("autosave_interval");
+  const double now = dt_get_wtime();
+
+  static double last = 0.0;
+  static gboolean proper_timing = TRUE;
+
+  if((user_delay >= 1.0) && proper_timing && ((now - last) > user_delay))
+  {
+    // Ok, lets save status for image
+    dt_dev_write_history(dev);
+    dt_image_write_sidecar_file(dev->image_storage.id);
+    last = now;
+
+    const double spent = dt_get_wtime() - now;
+    dt_print(DT_DEBUG_DEV, "autosave history took %fsec\n", spent);
+
+    // if writing to database and the xmp took too long we disable
+    // automatic mode for this session
+    if(spent > 0.5)
+    {
+      proper_timing = FALSE;
+      dt_control_log(_("autosaving history has been disabled"
+                       " for this session because of a slow drive used"));
+    }
+  }
+}
+
+static void _dev_add_history_item_ext(dt_develop_t *dev,
+                                      dt_iop_module_t *module,
+                                      const gboolean enable,
+                                      const gboolean new_item,
+                                      const gboolean no_image,
+                                      const gboolean include_masks)
 {
   int kept_module = 0;
   GList *history = g_list_nth(dev->history, dev->history_end);
@@ -1038,6 +1067,8 @@ static void _dev_add_history_item_ext(
   }
   if((module->enabled) && (!no_image))
     module->write_input_hint = TRUE;
+
+  _dev_auto_save(dev);
 }
 
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op)
@@ -1055,11 +1086,10 @@ const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const ch
   return NULL;
 }
 
-void dt_dev_add_history_item_ext(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable,
-        const int no_image)
+void dt_dev_add_history_item_ext(dt_develop_t *dev,
+                                 dt_iop_module_t *module,
+                                 const gboolean enable,
+                                 const int no_image)
 {
   _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
 }
@@ -1084,12 +1114,11 @@ static gboolean _dev_undo_start_record_target(dt_develop_t *dev, gpointer target
   return TRUE;
 }
 
-static void _dev_add_history_item(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable,
-        const gboolean new_item,
-        const gpointer target)
+static void _dev_add_history_item(dt_develop_t *dev,
+                                  dt_iop_module_t *module,
+                                  const gboolean enable,
+                                  const gboolean new_item,
+                                  const gpointer target)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
@@ -1145,36 +1174,32 @@ static void _dev_add_history_item(
   }
 }
 
-void dt_dev_add_history_item(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        gboolean enable)
+void dt_dev_add_history_item(dt_develop_t *dev,
+                             dt_iop_module_t *module,
+                             gboolean enable)
 {
   _dev_add_history_item(dev, module, enable, FALSE, NULL);
 }
 
-void dt_dev_add_history_item_target(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable,
-        gpointer target)
+void dt_dev_add_history_item_target(dt_develop_t *dev,
+                                    dt_iop_module_t *module,
+                                    const gboolean enable,
+                                    gpointer target)
 {
   _dev_add_history_item(dev, module, enable, FALSE, target);
 }
 
-void dt_dev_add_new_history_item(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable)
+void dt_dev_add_new_history_item(dt_develop_t *dev,
+                                 dt_iop_module_t *module,
+                                 const gboolean enable)
 {
   _dev_add_history_item(dev, module, enable, TRUE, NULL);
 }
 
-void dt_dev_add_masks_history_item_ext(
-        dt_develop_t *dev,
-        dt_iop_module_t *_module,
-        const gboolean _enable,
-        const gboolean no_image)
+void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
+                                       dt_iop_module_t *_module,
+                                       const gboolean _enable,
+                                       const gboolean no_image)
 {
   dt_iop_module_t *module = _module;
   gboolean enable = _enable;
@@ -1516,7 +1541,9 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid)
 
 void dt_dev_write_history(dt_develop_t *dev)
 {
+  dt_database_start_transaction(darktable.db);
   dt_dev_write_history_ext(dev, dev->image_storage.id);
+  dt_database_release_transaction(darktable.db);
 }
 
 static int _dev_get_module_nb_records(void)

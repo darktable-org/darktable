@@ -268,6 +268,13 @@
     <shortdescription>store XMP tags in compressed format</shortdescription>
     <longdescription>entries in XMP tags can get rather large and may exceed the available space to store the history stack in output files.\nthis option allows XMP tags to be compressed and save space.</longdescription>
   </dtconfig>
+  <dtconfig prefs="storage" section="XMP">
+    <name>autosave_interval</name>
+    <type>int</type>
+    <default>10</default>
+    <shortdescription>save history while developing</shortdescription>
+    <longdescription>save history periodically (interval in seconds), if set to zero auto-saving is disabled. auto-saving might be disabled on slow drives.</longdescription>
+  </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>
     <type>bool</type>
