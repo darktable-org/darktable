@@ -272,8 +272,8 @@
     <name>autosave_interval</name>
     <type>int</type>
     <default>10</default>
-    <shortdescription>try to save history while developing</shortdescription>
-    <longdescription>if zero (default) autosaving is disabled, otherwise it's time in seconds. autosaving might be disabled on slow drives.</longdescription>
+    <shortdescription>save history while developing</shortdescription>
+    <longdescription>save history periodically (interval in seconds), if set to zero auto-saving is disabled. auto-saving might be disabled on slow drives.</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>
