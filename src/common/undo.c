@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2021 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,11 @@ typedef struct dt_undo_item_t
   dt_undo_data_t data;
   double ts;
   gboolean is_group;
-  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs);
+  void (*undo)(gpointer user_data,
+               dt_undo_type_t type,
+               dt_undo_data_t data,
+               dt_undo_action_t action,
+               GList **imgs);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
 
@@ -77,9 +81,16 @@ static void _free_undo_data(void *p)
   free(item);
 }
 
-static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t data,
-                         gboolean is_group,
-                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action, GList **imgs),
+static void _undo_record(dt_undo_t *self,
+                         gpointer user_data,
+                         const dt_undo_type_t type,
+                         const dt_undo_data_t data,
+                         const gboolean is_group,
+                         void (*undo)(gpointer user_data,
+                                      const dt_undo_type_t type,
+                                      const dt_undo_data_t item,
+                                      const dt_undo_action_t action,
+                                      GList **imgs),
                          void (*free_data)(gpointer data))
 {
   if(!self) return;
@@ -91,8 +102,9 @@ static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t typ
   }
   else
   {
-    // do not block, if an undo record is asked and there is a lock it means that this call has been done in un
-    // undo/redo callback. We just skip this event.
+    // do not block, if an undo record is asked and there is a lock it
+    // means that this call has been done in un undo/redo callback. We
+    // just skip this event.
 
     if(!self->locked)
     {
@@ -122,7 +134,8 @@ static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t typ
   }
 }
 
-void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
+void dt_undo_start_group(dt_undo_t *self,
+                         const dt_undo_type_t type)
 {
   if(!self) return;
 
@@ -151,8 +164,15 @@ void dt_undo_end_group(dt_undo_t *self)
   }
 }
 
-void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t data,
-                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action, GList **imgs),
+void dt_undo_record(dt_undo_t *self,
+                    gpointer user_data,
+                    dt_undo_type_t type,
+                    dt_undo_data_t data,
+                    void (*undo)(gpointer user_data,
+                                 const dt_undo_type_t type,
+                                 const dt_undo_data_t item,
+                                 const dt_undo_action_t action,
+                                 GList **imgs),
                     void (*free_data)(gpointer data))
 {
   _undo_record(self, user_data, type, data, FALSE, undo, free_data);
@@ -163,7 +183,9 @@ gint _images_list_cmp(gconstpointer a, gconstpointer b)
   return GPOINTER_TO_INT(a) - GPOINTER_TO_INT(b);
 }
 
-static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_t action)
+static void _undo_do_undo_redo(dt_undo_t *self,
+                               const uint32_t filter,
+                               const dt_undo_action_t action)
 {
   if(!self) return;
 
@@ -177,8 +199,12 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
 
   // check for first item that is matching the given pattern
 
-  dt_print(DT_DEBUG_UNDO, "[undo] action %s for %d (from length %d -> to length %d)\n",
-           action == DT_ACTION_UNDO?"UNDO":"DO", filter, g_list_length(*from), g_list_length(*to));
+  dt_print(DT_DEBUG_UNDO,
+           "[undo] action %s for %d (from length %d -> to length %d)\n",
+           action == DT_ACTION_UNDO ? "UNDO" : "DO",
+           filter,
+           g_list_length(*from),
+           g_list_length(*to));
 
   for(GList *l = *from; l; l = g_list_next(l))
   {
@@ -239,7 +265,9 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
 
           l = next;
           if(l) item = (dt_undo_item_t *)l->data;
-        } while(l && (item->type & filter) && (in_group || (fabs(item->ts - first_item_ts) < MAX_TIME_PERIOD)));
+        } while(l
+                && (item->type & filter)
+                && (in_group || (fabs(item->ts - first_item_ts) < MAX_TIME_PERIOD)));
       }
 
       break;
@@ -259,20 +287,21 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
     dt_image_synch_xmps(imgs);
   }
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
 }
 
-void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
+void dt_undo_do_redo(dt_undo_t *self, const uint32_t filter)
 {
   _undo_do_undo_redo(self, filter, DT_ACTION_REDO);
 }
 
-void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
+void dt_undo_do_undo(dt_undo_t *self, const uint32_t filter)
 {
   _undo_do_undo_redo(self, filter, DT_ACTION_UNDO);
 }
 
-static void _undo_clear_list(GList **list, uint32_t filter)
+static void _undo_clear_list(GList **list, const uint32_t filter)
 {
   // check for first item that is matching the given pattern
 
@@ -306,8 +335,12 @@ void dt_undo_clear(dt_undo_t *self, uint32_t filter)
   UNLOCK;
 }
 
-static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
-                          void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item))
+static void _undo_iterate(GList *list,
+                          const uint32_t filter,
+                          gpointer user_data,
+                          void (*apply)(gpointer user_data,
+                                        const dt_undo_type_t type,
+                                        const dt_undo_data_t item))
 {
   // check for first item that is matching the given pattern
   for(GList *l = list; l; l = g_list_next(l))
@@ -320,8 +353,12 @@ static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
   };
 }
 
-void dt_undo_iterate_internal(dt_undo_t *self, uint32_t filter, gpointer user_data,
-                              void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item))
+void dt_undo_iterate_internal(dt_undo_t *self,
+                              const uint32_t filter,
+                              gpointer user_data,
+                              void (*apply)(gpointer user_data,
+                                            const dt_undo_type_t type,
+                                            const dt_undo_data_t item))
 {
   if(!self) return;
 
@@ -330,8 +367,12 @@ void dt_undo_iterate_internal(dt_undo_t *self, uint32_t filter, gpointer user_da
 }
 
 
-void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
-                     void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item))
+void dt_undo_iterate(dt_undo_t *self,
+                     const uint32_t filter,
+                     gpointer user_data,
+                     void (*apply)(gpointer user_data,
+                                   const dt_undo_type_t type,
+                                   const dt_undo_data_t item))
 {
   if(!self) return;
 
@@ -345,4 +386,3 @@ void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
