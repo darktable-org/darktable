@@ -68,7 +68,6 @@
 
 #define DT_UI_PANEL_MODULE_SPACING 0
 #define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
-#define DT_RESIZE_HANDLE_SIZE DT_PIXEL_APPLY_DPI(5)
 
 typedef enum dt_gui_view_switch_t
 {

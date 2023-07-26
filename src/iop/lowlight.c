@@ -500,7 +500,7 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   const int inset = DT_IOP_LOWLIGHT_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
+  int width = allocation.width, height = allocation.height - DT_RESIZE_HANDLE_SIZE;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -673,7 +673,7 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -684,7 +684,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   const int inset = DT_IOP_LOWLIGHT_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+  int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
   if(c->dragging)
@@ -753,7 +753,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     const int inset = DT_IOP_LOWLIGHT_INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
-    int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+    int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
     c->mouse_pick
         = dt_draw_curve_calc_value(c->transition_curve, CLAMP(event->x - inset, 0, width) / (float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;

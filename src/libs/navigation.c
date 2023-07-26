@@ -320,7 +320,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
   cairo_paint(crf);
   cairo_surface_destroy(cst);
 
-  return TRUE;
+  return FALSE;
 }
 
 void _lib_navigation_set_position(dt_lib_module_t *self,
