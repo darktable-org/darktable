@@ -1458,7 +1458,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
   dt_colormatrix_transpose(toY0U0V0_trans,toY0U0V0);
   dt_colormatrix_t toRGB_trans;
   dt_colormatrix_transpose(toRGB_trans,toRGB);
-  
+
   for_each_channel(i)
     wb[i] *= d->strength * compensate_strength * in_scale;
 
@@ -3540,7 +3540,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
