@@ -60,6 +60,7 @@ typedef enum dt_iop_lut3d_colorspace_t
   DT_IOP_REC709,      // $DESCRIPTION: "gamma Rec709 RGB"
   DT_IOP_LIN_REC709,  // $DESCRIPTION: "linear Rec709 RGB"
   DT_IOP_LIN_REC2020, // $DESCRIPTION: "linear Rec2020 RGB"
+  DT_IOP_LIN_PROPHOTO,// $DESCRIPTION: "linear Prophoto RGB"
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t
@@ -216,18 +217,15 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3], i, j;
     float tmp[6];
     dt_aligned_pixel_t rgbd;
 
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
@@ -294,16 +292,13 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3];
     dt_aligned_pixel_t rgbd;
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
@@ -382,16 +377,13 @@ void correct_pixel_pyramid(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
+    const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
     int rgbi[3];
     dt_aligned_pixel_t rgbd;
-    for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-
-    rgbd[0] = input[0] * (float)(level - 1);
-    rgbd[1] = input[1] * (float)(level - 1);
-    rgbd[2] = input[2] * (float)(level - 1);
+    for_each_channel(c)
+      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
 
     rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
     rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
@@ -990,6 +982,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
     : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
+    : (d->params.colorspace == DT_IOP_LIN_PROPHOTO) ? DT_COLORSPACE_PROPHOTO_RGB
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
@@ -1063,6 +1056,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
     : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
+    : (d->params.colorspace == DT_IOP_LIN_PROPHOTO) ? DT_COLORSPACE_PROPHOTO_RGB
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
