@@ -230,4 +230,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${CMAKE_INSTAL
 #
 # Install bash completion file. users/packagers can symlink that to /etc/bash_completion.d/
 #
-install(FILES darktable.bash DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+if ((NOT WIN32) OR BUILD_MSYS2_INSTALL)
+  install(FILES darktable.bash DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+endif()
