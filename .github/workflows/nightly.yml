@@ -401,5 +401,5 @@ jobs:
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
             Darktable-*.AppImage*
-            darktable-*.dmg
+            # darktable-*.dmg
             darktable-*.exe
