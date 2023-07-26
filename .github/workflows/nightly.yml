@@ -370,10 +370,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: Darktable.Nightly.Windows
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: Darktable.Nightly.macOS
+      # - name: Download macOS artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: Darktable.Nightly.macOS
       - name: Update nightly release
         uses: andelf/nightly-release@main
         env:
