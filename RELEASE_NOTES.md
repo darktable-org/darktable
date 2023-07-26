@@ -42,6 +42,9 @@ The following is a summary of the main features added to darktable
 4.6. Please see the user manual for more details of the individual
 changes (where available).
 
+- While editing images the history is periodically saved. This is done
+  every 10 seconds by default. The interval can be changed via the
+  preferences or fully disabled if the interval is set to 0.
 
 ## Performance Improvements
 
