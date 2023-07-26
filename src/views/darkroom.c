@@ -469,8 +469,8 @@ void expose(
     --darktable.gui->reset;
     dev->gui_synch = FALSE;
   }
-
-  dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] initial requests: %s%s%s%s\n",
+  if(darktable.unmuted & DT_DEBUG_EXPOSE)
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] initial requests: %s%s%s%s\n",
       _full_request(dev)     ? " full" : "",
       _preview_request(dev)  ? " preview" : "",
       _preview2_request(dev) ? " preview_2" : "",
@@ -491,7 +491,8 @@ void expose(
     dt_dev_process_preview2(dev);
   }
 
-  dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] requests after pipe jobs: %s%s%s%s\n",
+  if(darktable.unmuted & DT_DEBUG_EXPOSE)
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] requests after pipe jobs: %s%s%s%s\n",
       _full_request(dev)     ? " full" : "",
       _preview_request(dev)  ? " preview" : "",
       _preview2_request(dev) ? " preview_2" : "",
@@ -714,11 +715,12 @@ void expose(
   /* if we are in full preview mode, we don"t want anything else than the image */
   if(dev->full_preview)
   {
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] full preview finished, remaining requests: %s%s%s%s\n\n",
-      _full_request(dev)     ? " full" : "",
-      _preview_request(dev)  ? " preview" : "",
-      _preview2_request(dev) ? " preview_2" : "",
-      _any_request(dev)      ? "" : "none");
+    if(darktable.unmuted & DT_DEBUG_EXPOSE)
+      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] full preview finished, remaining requests: %s%s%s%s\n\n",
+        _full_request(dev)     ? " full" : "",
+        _preview_request(dev)  ? " preview" : "",
+        _preview2_request(dev) ? " preview_2" : "",
+        _any_request(dev)      ? "" : "none");
     return;
   }
 
@@ -825,7 +827,8 @@ void expose(
     pango_font_description_free(desc);
     g_object_unref(layout);
   }
-  dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] finished, remaining requests: %s%s%s%s\n\n",
+  if(darktable.unmuted & DT_DEBUG_EXPOSE)
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] finished, remaining requests: %s%s%s%s\n\n",
       _full_request(dev)     ? " full" : "",
       _preview_request(dev)  ? " preview" : "",
       _preview2_request(dev) ? " preview_2" : "",
