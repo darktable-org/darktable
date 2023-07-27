@@ -3491,24 +3491,15 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                         g_list_index(bd->masks_modes,
                                      (gconstpointer)DEVELOP_MASK_DISABLED)));
 
-    GtkWidget *obox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_set_homogeneous(GTK_BOX(obox), FALSE);
-    bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0, 100.0, 0);
-    dt_bauhaus_widget_set_quad_visibility(bd->opacity_slider, FALSE);
-    dt_bauhaus_widget_set_field(bd->opacity_slider,
-                                &module->blend_params->opacity,
-                                DT_INTROSPECTION_TYPE_FLOAT);
-    dt_bauhaus_widget_set_label(bd->opacity_slider, N_("blend"), N_("opacity"));
-    dt_bauhaus_slider_set_format(bd->opacity_slider, "%");
-    module->fusion_slider = bd->opacity_slider;
-    gtk_widget_set_tooltip_text(bd->opacity_slider,
-                                _("set the opacity of the blending"));
-    gtk_box_pack_start(GTK_BOX(obox), GTK_WIDGET(bd->opacity_slider), TRUE, TRUE, 0);
+    // global section holding the eye and showmask buttons
+    GtkWidget *gbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(gbox), dt_ui_label_new(_("blend mask")), TRUE, TRUE, 0);
+    dt_gui_add_class(gbox, "dt_section_label");
 
     bd->showmask = dt_iop_togglebutton_new(module, "blend`tools",
                                            N_("display mask and/or color channel"), NULL,
                                            G_CALLBACK(_blendop_blendif_showmask_clicked),
-                                           FALSE, 0, 0, dtgtk_cairo_paint_showmask, obox);
+                                           FALSE, 0, 0, dtgtk_cairo_paint_showmask, gbox);
     gtk_widget_set_tooltip_text
       (bd->showmask,
        _("display mask and/or color channel.\n"
@@ -3520,20 +3511,19 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     bd->suppress = dt_iop_togglebutton_new(module, "blend`tools",
                                            N_("temporarily switch off blend mask"), NULL,
                                            G_CALLBACK(_blendop_blendif_suppress_toggled),
-                                           FALSE, 0, 0, dtgtk_cairo_paint_eye_toggle, obox);
+                                           FALSE, 0, 0, dtgtk_cairo_paint_eye_toggle, gbox);
     gtk_widget_set_tooltip_text
       (bd->suppress,
        _("temporarily switch off blend mask.\n"
          "only for module in focus"));
     dt_gui_add_class(bd->suppress, "dt_transparent_background");
 
-
     GtkWidget *blend_modes_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_action_t * ac = dt_bauhaus_widget_set_label(bd->blend_modes_combo,
                                                    N_("blend"),
-                                                   N_("blend mode"));
+                                                   N_("mode"));
     dt_bauhaus_combobox_add_introspection(bd->blend_modes_combo, ac,
                                           dt_develop_blend_mode_names, -1, -1);
     gtk_widget_set_tooltip_text(bd->blend_modes_combo, _("choose blending mode"));
@@ -3563,13 +3553,23 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
                                 DT_INTROSPECTION_TYPE_FLOAT);
     dt_bauhaus_widget_set_label(bd->blend_mode_parameter_slider,
                                 N_("blend"),
-                                N_("blend fulcrum"));
+                                N_("fulcrum"));
     dt_bauhaus_slider_set_format(bd->blend_mode_parameter_slider, _(" EV"));
     dt_bauhaus_slider_set_soft_range(bd->blend_mode_parameter_slider, -3.0, 3.0);
     gtk_widget_set_tooltip_text(bd->blend_mode_parameter_slider,
                                 _("adjust the fulcrum used by some blending"
                                   " operations"));
     gtk_widget_set_visible(bd->blend_mode_parameter_slider, FALSE);
+
+    bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0, 100.0, 0);
+    dt_bauhaus_widget_set_field(bd->opacity_slider,
+                                &module->blend_params->opacity,
+                                DT_INTROSPECTION_TYPE_FLOAT);
+    dt_bauhaus_widget_set_label(bd->opacity_slider, N_("blend"), N_("opacity"));
+    dt_bauhaus_slider_set_format(bd->opacity_slider, "%");
+    gtk_widget_set_tooltip_text(bd->opacity_slider,
+                                _("set the opacity of the blending"));
+    module->fusion_slider = bd->opacity_slider;
 
     bd->masks_combine_combo = _combobox_new_from_list
       (module,
@@ -3647,7 +3647,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("mask refinement")), TRUE, TRUE, 0);
     dt_gui_add_class(hbox, "dt_section_label");
 
-
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(box), TRUE, TRUE, 0);
 
@@ -3658,18 +3657,17 @@ void dt_iop_gui_init_blending(GtkWidget *iopw,
     {
       gtk_box_pack_start(GTK_BOX(bd->masks_modes_box), GTK_WIDGET(l->data), TRUE, TRUE, 0);
     }
-    gtk_box_pack_start(GTK_BOX(bd->masks_modes_box),
-                       GTK_WIDGET(presets_button), FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(bd->masks_modes_box), GTK_WIDGET(presets_button), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_box), FALSE, FALSE, 0);
-    dt_gui_add_help_link(GTK_WIDGET(bd->masks_modes_box),
-                         "masks_blending");
+    dt_gui_add_help_link(GTK_WIDGET(bd->masks_modes_box), "masks_blending");
     gtk_widget_set_name(GTK_WIDGET(bd->masks_modes_box), "blending-tabs");
 
     bd->top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+    gtk_box_pack_start(GTK_BOX(bd->top_box), gbox, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->top_box), blend_modes_hbox, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->top_box),
-                       bd->blend_mode_parameter_slider, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->top_box), obox, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->top_box), bd->blend_mode_parameter_slider, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->top_box), bd->opacity_slider, TRUE, TRUE, 0);
     _add_wrapped_box(box, bd->top_box, NULL);
 
     dt_iop_gui_init_masks(iopw, module);
