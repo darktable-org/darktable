@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-07-24 08:24+0200\n"
-"PO-Revision-Date: 2023-07-24 12:12+0300\n"
+"PO-Revision-Date: 2023-07-27 15:01+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -12483,11 +12483,11 @@ msgstr "Збільшення різкості"
 
 #: ../src/iop/atrous.c:774
 msgid "denoise chroma"
-msgstr "знешумлення кольорового шуму"
+msgstr "Знешумлення кольорового шуму"
 
 #: ../src/iop/atrous.c:789
 msgid "denoise"
-msgstr "знешумлення"
+msgstr "Знешумлення"
 
 #: ../src/iop/atrous.c:805 ../src/iop/bloom.c:75 ../src/iop/diffuse.c:421
 msgid "bloom"
@@ -12499,39 +12499,39 @@ msgstr "Чіткість"
 
 #: ../src/iop/atrous.c:840
 msgid "deblur: large blur, strength 3"
-msgstr "усунення розмиття: велике розмиття, інтенсивність 3"
+msgstr "Усунення розмиття: велике розмиття, інтенсивність 3"
 
 #: ../src/iop/atrous.c:857
 msgid "deblur: medium blur, strength 3"
-msgstr "усунення розмиття: середнє розмиття, інтенсивність 3"
+msgstr "Усунення розмиття: середнє розмиття, інтенсивність 3"
 
 #: ../src/iop/atrous.c:873
 msgid "deblur: fine blur, strength 3"
-msgstr "усунення розмиття: дрібне розмиття, інтенсивність 3"
+msgstr "Усунення розмиття: дрібне розмиття, інтенсивність 3"
 
 #: ../src/iop/atrous.c:891
 msgid "deblur: large blur, strength 2"
-msgstr "усунення розмиття: велике розмиття, інтенсивність 2"
+msgstr "Усунення розмиття: велике розмиття, інтенсивність 2"
 
 #: ../src/iop/atrous.c:908
 msgid "deblur: medium blur, strength 2"
-msgstr "усунення розмиття: середнє розмиття, інтенсивність 2"
+msgstr "Усунення розмиття: середнє розмиття, інтенсивність 2"
 
 #: ../src/iop/atrous.c:924
 msgid "deblur: fine blur, strength 2"
-msgstr "усунення розмиття: дрібне розмиття, інтенсивність 2"
+msgstr "Усунення розмиття: дрібне розмиття, інтенсивність 2"
 
 #: ../src/iop/atrous.c:942
 msgid "deblur: large blur, strength 1"
-msgstr "усунення розмиття: велике розмиття, інтенсивність 1"
+msgstr "Усунення розмиття: велике розмиття, інтенсивність 1"
 
 #: ../src/iop/atrous.c:959
 msgid "deblur: medium blur, strength 1"
-msgstr "усунення розмиття: середнє розмиття, інтенсивність 1"
+msgstr "Усунення розмиття: середнє розмиття, інтенсивність 1"
 
 #: ../src/iop/atrous.c:975
 msgid "deblur: fine blur, strength 1"
-msgstr "усунення розмиття: дрібне розмиття, інтенсивність 1"
+msgstr "Усунення розмиття: дрібне розмиття, інтенсивність 1"
 
 #: ../src/iop/atrous.c:1291 ../src/iop/atrous.c:1527
 #: ../src/iop/denoiseprofile.c:3510 ../src/iop/rawdenoise.c:740
