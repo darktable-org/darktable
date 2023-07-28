@@ -36,6 +36,8 @@ extern "C" {
  * DPI */
 #define DT_PIXEL_APPLY_DPI(value) ((value) * darktable.gui->dpi_factor)
 
+#define DT_RESIZE_HANDLE_SIZE DT_PIXEL_APPLY_DPI(5)
+
 typedef struct dt_gui_widgets_t
 {
 
