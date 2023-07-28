@@ -70,6 +70,9 @@ improvements and enhancements:
 - Fixes OpenCL platform checking which could lead to a freeze of
   darktable.
 
+- Fix the calculation of resizable widgets based on linesize of
+  contents.
+
 ## Lua
 
 ### API Version
