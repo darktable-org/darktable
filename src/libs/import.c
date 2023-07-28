@@ -130,7 +130,7 @@ typedef struct dt_lib_import_t
   GtkButton *mount_camera;
   GtkButton *unmount_camera;
 
-  GtkWidget *ignore_exif, *rating, *apply_metadata, *recursive;
+  GtkWidget *ignore_exif, *rating, *apply_metadata, *recursive, *red_only_set_max_rathing;
   GtkWidget *import_new;
   dt_import_metadata_t metadata;
   GtkBox *devices;
@@ -2009,6 +2009,26 @@ void init(dt_lib_module_t *self)
 }
 #endif
 
+static void _ignore_exif_toggled(GtkWidget *widget, dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  const gboolean visibility = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  GtkWidget *grid = gtk_widget_get_parent(d->red_only_set_max_rathing);
+  int row = -1;
+  GtkWidget *w = NULL;
+  do
+  {
+    w = gtk_grid_get_child_at(GTK_GRID(grid), 1, ++row);
+  } while (w != NULL && w != d->red_only_set_max_rathing);
+  if(w != NULL && GTK_IS_WIDGET(w))
+  {
+    gtk_widget_set_sensitive(w, visibility);
+    w = gtk_grid_get_child_at(GTK_GRID(grid), 0, row);
+    if(GTK_IS_WIDGET(w))
+      gtk_widget_set_sensitive(w, visibility);
+  }
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -2056,12 +2076,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   guint line = 0;
   d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", 0, line++, FALSE);
+  d->red_only_set_max_rathing = dt_gui_preferences_bool(grid, "ui_last/red_only_set_max_rathing", 0, line++, FALSE);
   d->rating = dt_gui_preferences_int(grid, "ui_last/import_initial_rating", 0, line++);
   d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0, line++, FALSE);
   d->metadata.apply_metadata = d->apply_metadata;
   gtk_box_pack_start(GTK_BOX(d->cs.container), GTK_WIDGET(grid), FALSE, FALSE, 0);
   d->metadata.box = GTK_WIDGET(d->cs.container);
   dt_import_metadata_init(&d->metadata);
+  g_signal_connect(d->ignore_exif, "toggled",G_CALLBACK(_ignore_exif_toggled), self);
+  _ignore_exif_toggled(d->ignore_exif, self);
 
 #ifdef USE_LUA
   /* initialize the lua area and make sure it survives its parent's destruction*/
@@ -2102,6 +2125,7 @@ const struct
   {"ui_last/import_apply_metadata",     "apply_metadata",     DT_BOOL},
   {"ui_last/import_recursive",          "recursive",          DT_BOOL},
   {"ui_last/ignore_exif_rating",        "ignore_exif_rating", DT_BOOL},
+  {"ui_last/red_only_set_max_rathing",  "red_only_set_max_rathing",   DT_BOOL},
   {"session/use_filename",              "use_filename",       DT_BOOL},
   {"session/base_directory_pattern",    "base_pattern",       DT_STRING},
   {"session/sub_directory_pattern",     "sub_pattern",        DT_STRING},
@@ -2285,6 +2309,7 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   dt_gui_preferences_bool_update(d->ignore_exif);
   dt_gui_preferences_int_update(d->rating);
+  dt_gui_preferences_bool_update(d->red_only_set_max_rathing);
   dt_gui_preferences_bool_update(d->apply_metadata);
   dt_import_metadata_update(&d->metadata);
 }

@@ -1834,6 +1834,11 @@ static uint32_t _image_import_internal(const int32_t film_id,
 
   const gboolean res = dt_exif_xmp_read(img, dtfilename, 0);
 
+  if(!dt_conf_get_bool("ui_last/ignore_exif_rating") && dt_conf_get_bool("ui_last/red_only_set_max_rathing"))
+  {
+    if(g_access(normalized_filename, W_OK) != 0)
+      img->flags |= DT_VIEW_STAR_5;
+  }
   // write through to db, but not to xmp.
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 

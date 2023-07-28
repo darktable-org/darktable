@@ -1007,6 +1007,13 @@
     <longdescription>initial star rating for all images when importing a filmroll</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
+    <name>ui_last/red_only_set_max_rathing</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>if read only give 5-stars</shortdescription>
+    <longdescription>when file is read only give 5-stars rating, it overrides 'initial rating'</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/ignore_exif_rating</name>
     <type>bool</type>
     <default>false</default>
