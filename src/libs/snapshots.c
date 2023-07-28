@@ -671,7 +671,7 @@ void gui_init(dt_lib_module_t *self)
   char localtmpdir[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(localtmpdir, sizeof(localtmpdir));
 
-  for(int k = MAX_SNAPSHOT-1; k >= 0; k--)
+  for(int k = 0; k < MAX_SNAPSHOT; k++)
   {
     _clear_snapshot_entry(&d->snapshot[k]);
 
@@ -718,7 +718,7 @@ void gui_init(dt_lib_module_t *self)
                      G_CALLBACK(_lib_button_button_pressed_callback), self);
 
     /* add button to snapshot box */
-    gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
 
     /* prevent widget to show on external show all */
     gtk_widget_set_no_show_all(d->snapshot[k].button, TRUE);

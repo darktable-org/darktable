@@ -1490,7 +1490,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   cairo_surface_destroy(cst);
 
   dt_show_times_f(&start, "[histogram]", "scope draw");
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,

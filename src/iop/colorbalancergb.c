@@ -585,7 +585,7 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
   dt_colormatrix_t input_matrix_trans;
   dt_colormatrix_transpose(input_matrix_trans, input_matrix);
-  
+
   // Premultiply the output matrix
 
   /* What we do here is equivalent to :
@@ -1690,7 +1690,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_surface_destroy(cst);
   g_object_unref(layout);
   pango_font_description_free(desc);
-  return TRUE;
+  return FALSE;
 }
 
 
