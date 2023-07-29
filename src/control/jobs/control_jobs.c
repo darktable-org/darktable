@@ -1439,14 +1439,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     // update the message. initialize_store() might have changed the number of images
     dt_control_job_set_progress_message(job, message);
 
-    // remove 'changed' tag from image
-    if(dt_tag_detach(tagid, imgid, FALSE, FALSE)) tag_change = TRUE;
-    // make sure the 'exported' tag is set on the image
-    if(dt_tag_attach(etagid, imgid, FALSE, FALSE)) tag_change = TRUE;
-
-    /* register export timestamp in cache */
-    dt_image_cache_set_export_timestamp(darktable.image_cache, imgid);
-
     // check if image still exists:
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
     if(image)
@@ -1468,6 +1460,17 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
                            settings->export_masks, settings->icc_type, settings->icc_filename, settings->icc_intent,
                            &metadata) != 0)
           dt_control_job_cancel(job);
+        else
+        {
+          // remove 'changed' tag from image
+          if(dt_tag_detach(tagid, imgid, FALSE, FALSE)) tag_change = TRUE;
+
+          // make sure the 'exported' tag is set on the image
+          if(dt_tag_attach(etagid, imgid, FALSE, FALSE)) tag_change = TRUE;
+
+          /* register export timestamp in cache */
+          dt_image_cache_set_export_timestamp(darktable.image_cache, imgid);
+        }
       }
     }
 
