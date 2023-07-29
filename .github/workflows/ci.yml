@@ -74,6 +74,11 @@ jobs:
     steps:
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
+          # The libunwind-14* packages are already installed in the CI image, they are part
+          # of the Clang 14 compiler-specific packages. Due to the shortcomings of inter-package
+          # dependencies, their presence prevents the installation of similar packages for Clang 15.
+          # So we have to remove them first.
+          sudo apt remove -y libunwind-14 libunwind-14-dev
           # Remove azure mirror because it is unreliable and sometimes unpredictably leads to failed CI
           sudo sed -i 's/azure\.//' /etc/apt/sources.list
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
