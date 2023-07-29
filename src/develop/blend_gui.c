@@ -601,7 +601,7 @@ static void _box_set_visible(GtkBox *box, gboolean visible)
   gtk_revealer_set_reveal_child(revealer, visible);
 }
 
-static void _blendop_masks_mode_callback(const unsigned int mask_mode,
+static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
                                          dt_iop_gui_blend_data_t *data)
 {
   data->module->blend_params->mask_mode = mask_mode;
@@ -639,6 +639,8 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode,
       data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), FALSE);
       gtk_widget_hide(GTK_WIDGET(data->showmask));
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), FALSE);
+      gtk_widget_hide(GTK_WIDGET(data->suppress));
 
       // disable also guided-filters on RAW based color space
       gtk_widget_set_sensitive(data->masks_feathering_guide_combo, FALSE);
@@ -655,6 +657,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode,
     else
     {
       gtk_widget_show(GTK_WIDGET(data->showmask));
+      gtk_widget_show(GTK_WIDGET(data->suppress));
     }
 
     _box_set_visible(data->bottom_box, TRUE);
@@ -765,7 +768,7 @@ static void _blendop_masks_combine_callback(GtkWidget *combo,
 {
   dt_develop_blend_params_t *const d = data->module->blend_params;
 
-  const unsigned combine =
+  const uint32_t combine =
     GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(data->masks_combine_combo));
   d->mask_combine &= ~(DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL);
   d->mask_combine |= combine;
@@ -1381,7 +1384,7 @@ static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
 
 static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button,
                                             dt_iop_module_t *module,
-                                            unsigned int mask_mode)
+                                            dt_develop_mask_mode_t mask_mode)
 {
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
@@ -1425,11 +1428,16 @@ static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button,
                       g_list_index(data->masks_modes,
                                    (gconstpointer)DEVELOP_MASK_DISABLED)));
   }
+
   // (un)set the mask indicator, but not for uniform blend
-  if(mask_mode == DEVELOP_MASK_ENABLED)
-    add_remove_mask_indicator(module, FALSE);
-  else
+  const gboolean supported = mask_mode & ~DEVELOP_MASK_ENABLED;
+  if(supported)
     add_remove_mask_indicator(module, was_toggled);
+  else
+    add_remove_mask_indicator(module, FALSE);
+  // also hide the eye and showmask buttons for uniform blend
+  gtk_widget_set_visible(data->showmask, supported);
+  gtk_widget_set_visible(data->suppress, supported);
 
   ++darktable.gui->reset;
 
@@ -3057,7 +3065,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
       break;
   }
 
-  const unsigned int mode = g_list_index(bd->masks_modes,
+  const dt_develop_mask_mode_t mode = g_list_index(bd->masks_modes,
                                          GUINT_TO_POINTER(module->blend_params->mask_mode));
 
   // unsets currently toggled if any, won't try to untoggle the cancel button
@@ -3069,7 +3077,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->selected_mask_mode), FALSE);
   }
 
-  if(mode > 0)
+  if(mode != DEVELOP_MASK_DISABLED)
   {
     GtkToggleButton *to_be_activated =
       GTK_TOGGLE_BUTTON(g_list_nth_data(bd->masks_modes_toggles, mode));
@@ -3083,10 +3091,13 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
                                               GUINT_TO_POINTER(DEVELOP_MASK_DISABLED)));
   }
 
+  const gboolean valid_masking = module->blend_params->mask_mode & ~DEVELOP_MASK_ENABLED;
+
   // (un)set the mask indicator
-  add_remove_mask_indicator(module,
-                            (module->blend_params->mask_mode != DEVELOP_MASK_DISABLED)
-                            && (module->blend_params->mask_mode != DEVELOP_MASK_ENABLED));
+  add_remove_mask_indicator(module, valid_masking);
+  // also hide the eye and showmask buttons for uniform blend
+  gtk_widget_set_visible(bd->showmask, valid_masking);
+  gtk_widget_set_visible(bd->suppress, valid_masking);
 
   // initialization of blending modes
   if(bd->csp != bd->blend_modes_csp)
@@ -3215,7 +3226,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   dt_iop_gui_update_raster(module);
 
   /* now show hide controls as required */
-  const unsigned int mask_mode = module->blend_params->mask_mode;
+  const dt_develop_mask_mode_t mask_mode = module->blend_params->mask_mode;
 
   _box_set_visible(bd->top_box, mask_mode & DEVELOP_MASK_ENABLED);
 
@@ -3246,14 +3257,17 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     {
       module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), FALSE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
       // (re)set the header mask indicator too
       if(module->mask_indicator)
           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator), FALSE);
       gtk_widget_hide(GTK_WIDGET(bd->showmask));
+      gtk_widget_hide(GTK_WIDGET(bd->suppress));
     }
     else
     {
       gtk_widget_show(GTK_WIDGET(bd->showmask));
+      gtk_widget_show(GTK_WIDGET(bd->suppress));
     }
 
     _box_set_visible(bd->bottom_box, TRUE);
