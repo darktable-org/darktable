@@ -486,12 +486,19 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     return;
   }
 
+  const gboolean valid_request =
+      self->dev->gui_attached
+      && (self == self->dev->gui_module)
+      && (piece->pipe == self->dev->pipe);
+
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
-    (self->dev->gui_attached
-      && (self == self->dev->gui_module)
-      && (piece->pipe == self->dev->pipe)
-      && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
+      valid_request && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL)
+        ? self->request_mask_display
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
+  const dt_dev_pixelpipe_display_mask_t request_raster_display =
+      valid_request && (mask_mode & DEVELOP_MASK_RASTER)
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
@@ -501,10 +508,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
 
   // check if mask should be suppressed temporarily (i.e. just set to global opacity value)
   const gboolean suppress_mask = self->suppress_mask
-                                 && self->dev->gui_attached
-                                 && (self == self->dev->gui_module)
-                                 && (piece->pipe == self->dev->pipe)
-                                 && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
+                                 && valid_request
+                                 && (mask_mode & ~DEVELOP_MASK_ENABLED);
 
   // obtaining the list of mask operations to perform
   _develop_mask_post_processing post_operations[3];
@@ -739,6 +744,11 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     piece->pipe->mask_display = request_mask_display;
   }
+  else if(request_raster_display
+          & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
+  {
+    piece->pipe->mask_display = request_raster_display;
+  }
 
   // check if we should store the mask for export or use in subsequent modules
   // TODO: should we skip raster masks?
@@ -927,26 +937,30 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   // only non-zero if mask_display was set by an _earlier_ module
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
 
+  const gboolean valid_request =
+      self->dev->gui_attached
+      && (self == self->dev->gui_module)
+      && (piece->pipe == self->dev->pipe);
+
   // does user want us to display a specific channel?
-  const dt_dev_pixelpipe_display_mask_t request_mask_display
-      = (self->dev->gui_attached
-         && (self == self->dev->gui_module)
-         && (piece->pipe == self->dev->pipe)
-         && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
-            ? self->request_mask_display
-            : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  const dt_dev_pixelpipe_display_mask_t request_mask_display =
+      valid_request && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL)
+        ? self->request_mask_display
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
+  const dt_dev_pixelpipe_display_mask_t request_raster_display =
+      valid_request && (mask_mode & DEVELOP_MASK_RASTER)
+        ? self->request_mask_display
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // get channel max values depending on colorspace
   const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
   const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
 
-  // check if mask should be suppressed temporarily (i.e. just set to global
-  // opacity value)
+  // check if mask should be suppressed temporarily (i.e. just set to global opacity value)
   const gboolean suppress_mask = self->suppress_mask
-                                 && self->dev->gui_attached
-                                 && (self == self->dev->gui_module)
-                                 && (piece->pipe == self->dev->pipe)
-                                 && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
+                                 && valid_request
+                                 && (mask_mode & ~DEVELOP_MASK_ENABLED);
 
   // obtaining the list of mask operations to perform
   _develop_mask_post_processing post_operations[3];
@@ -1375,6 +1389,11 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
      & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
   {
     piece->pipe->mask_display = request_mask_display;
+  }
+  else if(request_raster_display
+          & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
+  {
+    piece->pipe->mask_display = request_raster_display;
   }
 
 
