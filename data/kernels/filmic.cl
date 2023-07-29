@@ -1038,7 +1038,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
 kernel void
 filmic_mask_clipped_pixels(read_only image2d_t in, write_only image2d_t out,
                            int width, int height,
-                           const float normalize, const float feathering, write_only image2d_t is_clipped)
+                           const float normalize, const float feathering, global uint *is_clipped)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -1052,7 +1052,7 @@ filmic_mask_clipped_pixels(read_only image2d_t in, write_only image2d_t out,
   const float argument = -pix_max * normalize + feathering;
   const float weight = clamp(1.0f / ( 1.0f + native_exp2(argument)), 0.f, 1.f);
 
-  if(4.f > argument) write_imageui(is_clipped, (int2)(0, 0), 1);
+  if(4.f > argument) *is_clipped = 1;
 
   write_imagef(out, (int2)(x, y), weight);
 }

@@ -2468,6 +2468,8 @@ int process_cl(struct dt_iop_module_t *self,
   dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
   cl_float *profile_lut_cl = NULL;
 
+  cl_mem clipped = NULL;
+
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
@@ -2483,9 +2485,10 @@ int process_cl(struct dt_iop_module_t *self,
   // used to adjust noise level depending on size. Don't amplify noise if magnified > 100%
   const float scale = MAX(piece->iscale / roi_in->scale, 1.f);
 
-  // get the number of OpenCL threads
-  uint16_t is_clipped = 0;
-  cl_mem clipped = dt_opencl_alloc_device(devid, 1, 1, sizeof(uint16_t));
+  uint32_t is_clipped = 0;
+  clipped = dt_opencl_alloc_device_buffer(devid, sizeof(uint32_t));
+  err = dt_opencl_write_buffer_to_device(devid, &is_clipped, clipped, 0, sizeof(uint16_t), CL_TRUE);
+  if(err != CL_SUCCESS) goto error;
 
   // build a mask of clipped pixels
   mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
@@ -2494,8 +2497,9 @@ int process_cl(struct dt_iop_module_t *self,
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_mask, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  // read the number of clipped pixels
-  dt_opencl_copy_device_to_host(devid, &is_clipped, clipped, 1, 1, sizeof(uint16_t));
+  // check for clipped pixels
+  err = dt_opencl_read_buffer_from_device(devid, &is_clipped, clipped, 0, sizeof(uint32_t), CL_TRUE);
+  if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(clipped);
   clipped = NULL;
 
@@ -2626,6 +2630,7 @@ error:
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(export_input_matrix_cl);
   dt_opencl_release_mem_object(export_output_matrix_cl);
+  dt_opencl_release_mem_object(clipped);
   dt_print(DT_DEBUG_OPENCL, "[opencl_filmicrgb] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
