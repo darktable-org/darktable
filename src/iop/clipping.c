@@ -336,13 +336,13 @@ int flags()
 
 int operation_tags()
 {
-  return IOP_TAG_DISTORT | IOP_TAG_CLIPPING;
+  return IOP_TAG_DISTORT | IOP_TAG_CROPPING;
 }
 
 int operation_tags_filter()
 {
   // switch off watermark, it gets confused.
-  return IOP_TAG_DECORATION | IOP_TAG_CLIPPING;
+  return IOP_TAG_DECORATION | IOP_TAG_CROPPING;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,

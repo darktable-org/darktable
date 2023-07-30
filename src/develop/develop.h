@@ -260,8 +260,16 @@ typedef struct dt_develop_t
     // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
     gboolean wb_is_D65;
     dt_aligned_pixel_t wb_coeffs;
-
   } proxy;
+
+
+  // for exposing the crop
+  struct
+  {
+    // set by dt_dev_pixelpipe_synch() if an enabled crop module is included in history
+    struct dt_iop_module_t *exposer; 
+    struct dt_iop_module_t *requester;
+  } cropping;
 
   // for the overexposure indicator
   struct

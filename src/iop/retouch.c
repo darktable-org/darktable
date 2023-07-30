@@ -229,6 +229,12 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
+int operation_tags_filter()
+{
+  // switch off cropping and decoration, we want to see the full image.
+  return IOP_TAG_DECORATION | IOP_TAG_CROPPING;
+}
+
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
@@ -2227,6 +2233,7 @@ void gui_focus(struct dt_iop_module_t *self,
        || g->suppress_mask)
       dt_iop_refresh_center(self);
   }
+  self->dev->cropping.requester = (in && !darktable.develop->image_loading) ? self : NULL;
 }
 
 void tiling_callback(struct dt_iop_module_t *self,
@@ -2375,6 +2382,8 @@ void gui_update(dt_iop_module_t *self)
   for(int i = 0; i < 3; i++)
     dlevels[i] = p->preview_levels[i];
   dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
+
+  self->dev->cropping.requester = (self->expanded) ? self : NULL;
 }
 
 void change_image(struct dt_iop_module_t *self)
