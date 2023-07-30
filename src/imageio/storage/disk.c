@@ -41,13 +41,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DT_MODULE(3)
+DT_MODULE(4)
 
+extern darktable_t darktable;
+
+// options for conflict handling
 typedef enum dt_disk_onconflict_actions_t
 {
   DT_EXPORT_ONCONFLICT_UNIQUEFILENAME = 0,
   DT_EXPORT_ONCONFLICT_OVERWRITE = 1,
-  DT_EXPORT_ONCONFLICT_SKIP = 2
+  DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED = 2,
+  DT_EXPORT_ONCONFLICT_SKIP = 3
 } dt_disk_onconflict_actions_t;
 
 // gui data
@@ -75,7 +79,8 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
                     const size_t old_params_size, const int old_version, const int new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 3)
+  // convert version 1 settings
+  if(old_version == 1 && new_version == 4)
   {
     typedef struct dt_imageio_disk_v1_t
     {
@@ -93,7 +98,9 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
     *new_size = self->params_size(self);
     return n;
   }
-  if(old_version == 2 && new_version == 3)
+
+  // convert version 2 settings
+  if(old_version == 2 && new_version == 4)
   {
     typedef struct dt_imageio_disk_v2_t
     {
@@ -107,6 +114,42 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     n->onsave_action = (o->overwrite) ? DT_EXPORT_ONCONFLICT_OVERWRITE: DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
+
+    *new_size = self->params_size(self);
+    return n;
+  }
+
+  // convert version 3 settings
+  if(old_version == 3 && new_version == 4)
+  {
+    typedef enum dt_disk_onconflict_actions_v3_t
+    {
+      DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V3 = 0,
+      DT_EXPORT_ONCONFLICT_OVERWRITE_V3 = 1,
+      DT_EXPORT_ONCONFLICT_SKIP_V3 = 2,
+    } dt_disk_onconflict_actions_v3_t;
+
+    typedef struct dt_imageio_disk_v3_t
+    {
+      char filename[DT_MAX_PATH_FOR_PARAMS];
+      dt_disk_onconflict_actions_v3_t onsave_action;
+      dt_variables_params_t *vp;
+    } dt_imageio_disk_v3_t;
+
+    dt_imageio_disk_t *n = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
+    dt_imageio_disk_v3_t *o = (dt_imageio_disk_v3_t *)old_params;
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    switch(o->onsave_action)
+    {
+      case DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V3: n->onsave_action = DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
+                                                break;
+      case DT_EXPORT_ONCONFLICT_OVERWRITE_V3: n->onsave_action = DT_EXPORT_ONCONFLICT_OVERWRITE;
+                                                break;
+      case DT_EXPORT_ONCONFLICT_SKIP_V3: n->onsave_action = DT_EXPORT_ONCONFLICT_SKIP;
+                                                break;
+      default: n->onsave_action = DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
+    }
 
     *new_size = self->params_size(self);
     return n;
@@ -184,6 +227,7 @@ void gui_init(dt_imageio_module_storage_t *self)
                                onsave_action_toggle_callback, self,
                                N_("create unique filename"),
                                N_("overwrite"),
+                               N_("overwrite if changed"),
                                N_("skip"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
 }
@@ -257,17 +301,22 @@ try_again:
         goto try_again;
     }
 
+    // get the directory path of the output file
     char *output_dir = g_path_get_dirname(filename);
 
+    // try to create the output directory (including parent directories, if necessary)
     if(g_mkdir_with_parents(output_dir, 0755))
     {
+      // output directory could not be created
       dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] could not create directory: `%s'!\n", output_dir);
       dt_control_log(_("could not create directory `%s'!"), output_dir);
       fail = TRUE;
       goto failed;
     }
+    // make sure the outpur directory is writeable
     if(g_access(output_dir, W_OK | X_OK) != 0)
     {
+      // output directory is not writeable
       dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] could not write to directory: `%s'!\n", output_dir);
       dt_control_log(_("could not write to directory `%s'!"), output_dir);
       fail = TRUE;
@@ -283,9 +332,12 @@ try_again:
   failed:
     g_free(output_dir);
 
+    // conflict handling option: unique filename is generated if the file already exists
     if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_UNIQUEFILENAME)
     {
       int seq = 1;
+
+      // increase filename suffix until a filename is generated that is unique
       while(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
         snprintf(c, filename_free_space, "_%.2d.%s", seq, ext);
@@ -293,13 +345,37 @@ try_again:
       }
     }
 
+    // conflict handling option: skip
     if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_SKIP)
     {
+      // check if the file exists
       if(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
+        // file exists, skip
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
         dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'\n", filename);
         dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
+                       num, total, filename);
+        return 0;
+      }
+    }
+
+    // conflict handling option: overwrite if newer
+    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED)
+    {
+      // get the image data
+      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      GTimeSpan change_timestamp = img->change_timestamp;
+      GTimeSpan export_timestamp = img->export_timestamp;
+      dt_image_cache_read_release(darktable.image_cache, img);
+
+      // check if the export timestamp in the database is more recent than the change
+      // date, if yes skip the image
+      if(export_timestamp > change_timestamp)
+      {
+        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+        dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping (not modified since export) `%s'\n", filename);
+        dt_control_log(ngettext("%d/%d skipping (not modified since export) `%s'", "%d/%d skipping (not modified since export) `%s'", num),
                        num, total, filename);
         return 0;
       }
