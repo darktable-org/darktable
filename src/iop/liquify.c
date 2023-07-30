@@ -308,12 +308,18 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_GUIDES_WIDGET;
+  return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 int operation_tags()
 {
    return IOP_TAG_DISTORT;
+}
+
+int operation_tags_filter()
+{
+  // switch off cropping, we want to see the full image.
+  return IOP_TAG_DECORATION | IOP_TAG_CROPPING;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
@@ -2795,14 +2801,15 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module);
 
-void gui_focus(struct dt_iop_module_t *module,
+void gui_focus(struct dt_iop_module_t *self,
                const gboolean in)
 {
   if(!in)
   {
     dt_collection_hint_message(darktable.collection);
-    btn_make_radio_callback(NULL, NULL, module);
+    btn_make_radio_callback(NULL, NULL, self);
   }
+  self->dev->cropping.requester = (in && !darktable.develop->image_loading) ? self : NULL;
 }
 
 static void sync_pipe(struct dt_iop_module_t *module,
@@ -3662,9 +3669,10 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
   return TRUE;
 }
 
-void gui_update(dt_iop_module_t *module)
+void gui_update(dt_iop_module_t *self)
 {
-  update_warp_count(module);
+  update_warp_count(self);
+  self->dev->cropping.requester = (self->expanded) ? self : NULL;
 }
 
 void gui_init(dt_iop_module_t *self)

@@ -104,7 +104,7 @@ typedef enum dt_iop_tags_t
   IOP_TAG_NONE = 0,
   IOP_TAG_DISTORT = 1 << 0,
   IOP_TAG_DECORATION = 1 << 1,
-  IOP_TAG_CLIPPING = 1 << 2,
+  IOP_TAG_CROPPING = 1 << 2,
 
   // might be some other filters togglable by user?
   // IOP_TAG_SLOW       = 1<<3,
@@ -132,7 +132,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
   IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
-  IOP_FLAGS_GUIDES_WIDGET = 1 << 15       // require the guides widget
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15,      // require the guides widget
+  IOP_FLAGS_CROP_EXPOSER = 1 << 16        // offers crop exposing
 } dt_iop_flags_t;
 
 /** status of a module*/
