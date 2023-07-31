@@ -1703,7 +1703,7 @@ static gboolean _blendop_masks_polarity_callback(GtkToggleButton *togglebutton,
 
 gboolean blend_color_picker_apply(dt_iop_module_t *module,
                                   GtkWidget *picker,
-                                  dt_dev_pixelpipe_iop_t *piece)
+                                  dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
@@ -1750,7 +1750,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module,
     const dt_iop_colorspace_type_t cst = _blendif_colorpicker_cst(data);
     const dt_iop_order_iccprofile_info_t *work_profile =
       (blend_csp == DEVELOP_BLEND_CS_RGB_SCENE)
-        ? dt_ioppr_get_pipe_current_profile_info(piece->module, piece->pipe)
+        ? dt_ioppr_get_pipe_current_profile_info(module, pipe)
         : dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
 
     gboolean reverse_hues = FALSE;

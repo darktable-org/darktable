@@ -271,7 +271,9 @@ dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *mod
     return IOP_CS_NONE;
 }
 
-static void _iop_color_picker_pickerdata_ready_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
+static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
+                                                        dt_iop_module_t *module,
+                                                        dt_dev_pixelpipe_t *pipe,
                                                         gpointer user_data)
 {
   // an iop colorpicker receives new data from the pixelpipe
@@ -282,15 +284,16 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance, dt_io
   // modules between colorin & colorout may need the work_profile
   // to work properly. This will force colorin to be run and it
   // will set the work_profile if needed.
-  piece->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  piece->pipe->cache_obsolete = TRUE;
+  // FIXME: is this overdoing it? see #14812
+  pipe->changed |= DT_DEV_PIPE_REMOVE;
+  pipe->cache_obsolete = TRUE;
 
   // iops only need new picker data if the pointer has moved
   if(_record_point_area(picker))
   {
-    if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, piece))
+    if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, pipe))
       if(module->color_picker_apply)
-        module->color_picker_apply(module, picker->colorpick, piece);
+        module->color_picker_apply(module, picker->colorpick, pipe);
   }
 }
 
