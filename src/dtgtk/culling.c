@@ -1510,7 +1510,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     number_of_thumbs++;
   }
   avg_thumb_aspect_r /= number_of_thumbs;
-  
+
   // estimate a good start value for number of rows and columns to use in thumbnail placement by taking the square root
   //  of the number of thumbnails. E.g. 9 thumbnails: probably 3x3. Prefer wide configuration e.g. 8 thumbnails: 3x2
   int thumbs_per_row = 0;
@@ -1544,7 +1544,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     thumbs_per_row = thumbs_per_row_new;
     thumbs_per_col = thumbs_per_col_new;
     thumb_placement_ratio = thumb_placement_ratio_new;
-    
+
     // if the ratio of placed thumbnails is bigger than the screen aspect ratio (they take too much horizontal space)
     //  reduce number of images per row by 1 and vice versa.
     if(thumb_placement_ratio * avg_thumb_aspect_r > screen_aspect_r)
@@ -1573,8 +1573,8 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   //  even though there is room for 3. So we punish the placement ratio of the 3x2 configuration for the 2 empty slots by
   //  multiplying it with (1 + free_spots_row/total_spots/row) = (1 + 2/3) = 1.66
   //  this prefers a configurations with well filled rows unless it is a lot better to place one image alone in a row.
-  punishment_weight = 
-      (1 + 
+  punishment_weight =
+      (1 +
         (thumbs_per_row - ((number_of_thumbs - 1) % thumbs_per_row + 1)) /
           (float)thumbs_per_row);
   new_punishment_weight =
@@ -1597,23 +1597,23 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   //  AND the resulting deviation from a perfect placement is lower than before
   //  --> stop when we make negative progress
   } while(thumbs_per_row > 0
-          && thumbs_per_row <= number_of_thumbs 
+          && thumbs_per_row <= number_of_thumbs
           && new_deviation_punished < old_deviation_punished);
-  
+
   // Now we have a good estimation how many thumbnails SHOULD fit in each row and column.
   // Actual placement might differ
 
   // Vertical image stacking:
   //  Vertical stacking is only allowed if the heigth of the biggest thumbnail is more than the height
   //  of 2 or more thumbs combined.
-  //  for example: we have three images and image 3 is higher than heights of image 1 and 2 combined 
+  //  for example: we have three images and image 3 is higher than heights of image 1 and 2 combined
   //  [  1  ] | 3 |                                                         | 3 |
   //  [  2  ] | 3 |      instead of this placement -->    [  1  ]  [  2  ]  | 3 |
   //          | 3 |                                                         | 3 |
   // in this case, images 1 and 2 would be stacked in one slot and image 3 will be placed in a new slot alone.
   // if all images have similar heigths, they will not be stacked and placed in a separate slot.
 
-  // Note: Stacking only make sense for images in the same row as the portrait image. 
+  // Note: Stacking only make sense for images in the same row as the portrait image.
   //       The algorithm does not check for this so unneccessary stacking can occur.
 
   GList *slots = NULL;
@@ -1630,7 +1630,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       GList *slot = (GList *)slot_iter->data;
       // Calculate current total height of slot
       int slot_heigth = 0;
-      
+
       for(GList *slot_cw_iter = slot;
           slot_cw_iter;
           slot_cw_iter = g_list_next(slot_cw_iter))
@@ -1653,7 +1653,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     {
       slots = g_list_prepend(slots, g_list_prepend(NULL, thumb));
     }
-    
+
   }
   slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
 
@@ -1691,7 +1691,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       {
         create_new_row = TRUE;
         // if this is the last image and we are about to place it in a new row,
-        //  check if the aspect ratio of thumbnail placement is better if we keep the thumbnail in the previous row 
+        //  check if the aspect ratio of thumbnail placement is better if we keep the thumbnail in the previous row
         if(!slot_iter->next)
         {
           const float ratio_same_row = _absmul((thumb_x + slot_max_thumb_width) /
@@ -1706,7 +1706,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
           }
         }
       }
-      
+
       if(create_new_row)
       {
         thumb_x = 0;
