@@ -448,7 +448,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // go in reload_defaults (if they depend on the image) or gui_init.
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;

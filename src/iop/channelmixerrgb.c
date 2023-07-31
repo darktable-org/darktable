@@ -4352,10 +4352,10 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 
 void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
-                        dt_dev_pixelpipe_iop_t *piece)
+                        dt_dev_pixelpipe_t *pipe)
 {
   if(darktable.gui->reset) return;
-  _auto_set_illuminant(self, piece->pipe);
+  _auto_set_illuminant(self, pipe);
 }
 
 

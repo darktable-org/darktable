@@ -783,7 +783,7 @@ static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 
 void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
-                        dt_dev_pixelpipe_iop_t *piece)
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
