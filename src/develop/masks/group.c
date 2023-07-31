@@ -17,6 +17,7 @@
 */
 
 #include "common/debug.h"
+#include "common/box_filters.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -806,6 +807,22 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
 
         nb_ok++;
       }
+    }
+
+    memcpy(bufs, buffer, npixels * sizeof(float));
+    dt_box_mean(buffer, height, width, 1, 2, 20);
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+          dt_omp_firstprivate(npixels) \
+          dt_omp_sharedconst(buffer, bufs) schedule(simd:static) aligned(buffer, bufs : 64)
+#else
+#pragma omp parallel for shared(bufs, buffer)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      if(bufs[index] == 0.0f) buffer[index] = 0.0f;
     }
 
     if(darktable.dump_pfm_module)
