@@ -1689,7 +1689,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       gboolean create_new_row = FALSE;
       if(thumb_x + slot_max_thumb_width > row_width_limit * 1.2)
       {
-        create_new_row = true;
+        create_new_row = TRUE;
         // if this is the last image and we are about to place it in a new row,
         //  check if the aspect ratio of thumbnail placement is better if we keep the thumbnail in the previous row 
         if(!slot_iter->next)
