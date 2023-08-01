@@ -412,11 +412,6 @@ static inline gboolean _full_request(dt_develop_t *dev)
      || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp;
 } 
 
-static inline gboolean _full_ready(dt_develop_t *dev)
-{
-  return dev->image_status == DT_DEV_PIXELPIPE_VALID;
-}
-
 static inline gboolean _preview_request(dt_develop_t *dev)
 {
   return
