@@ -2382,8 +2382,6 @@ void gui_update(dt_iop_module_t *self)
   for(int i = 0; i < 3; i++)
     dlevels[i] = p->preview_levels[i];
   dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
-
-  self->dev->cropping.requester = (self->expanded) ? self : NULL;
 }
 
 void change_image(struct dt_iop_module_t *self)
