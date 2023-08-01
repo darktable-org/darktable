@@ -305,9 +305,6 @@ int dt_opencl_finish(const int devid);
 /** cleans up command queue if in synchron mode or while exporting, returns TRUE in case of success */
 gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
 
-/** enqueues a synchronization point. */
-gboolean dt_opencl_enqueue_barrier(const int devid);
-
 /** locks a device for your thread's exclusive use and returns it's id */
 int dt_opencl_lock_device(const int pipetype);
 
@@ -564,10 +561,6 @@ static inline gboolean dt_opencl_finish(const int devid)
 static inline gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
 {
   return FALSE;
-}
-static inline gboolean dt_opencl_enqueue_barrier(const int devid)
-{
-  return -1;
 }
 static inline int dt_opencl_lock_device(const int dev)
 {

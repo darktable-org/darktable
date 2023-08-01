@@ -141,8 +141,8 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
                                            (void (**)(void)) & ocl->symbols->dt_clCreateKernel);
     success = success && dt_gmodule_symbol(module, "clCreateBuffer",
                                            (void (**)(void)) & ocl->symbols->dt_clCreateBuffer);
-    success = success && dt_gmodule_symbol(module, "clCreateImage2D",
-                                           (void (**)(void)) & ocl->symbols->dt_clCreateImage2D);
+    success = success && dt_gmodule_symbol(module, "clCreateImage",
+                                           (void (**)(void)) & ocl->symbols->dt_clCreateImage);
     success = success && dt_gmodule_symbol(module, "clEnqueueWriteBuffer",
                                            (void (**)(void)) & ocl->symbols->dt_clEnqueueWriteBuffer);
     success = success && dt_gmodule_symbol(module, "clSetKernelArg",
@@ -184,8 +184,6 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
                                            (void (**)(void)) & ocl->symbols->dt_clGetEventProfilingInfo);
     success = success && dt_gmodule_symbol(module, "clGetKernelInfo",
                                            (void (**)(void)) & ocl->symbols->dt_clGetKernelInfo);
-    success = success && dt_gmodule_symbol(module, "clEnqueueBarrier",
-                                           (void (**)(void)) & ocl->symbols->dt_clEnqueueBarrier);
     success = success && dt_gmodule_symbol(module, "clGetKernelWorkGroupInfo",
                                            (void (**)(void)) & ocl->symbols->dt_clGetKernelWorkGroupInfo);
     success = success && dt_gmodule_symbol(module, "clEnqueueReadBuffer",
