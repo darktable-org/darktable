@@ -1379,7 +1379,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
   pzx += 0.5f;
   pzy += 0.5f;
 
-  const double fillc = external ? 0.75 : 0.2;
+  const double fillc = external ? 0.9 : 0.2;
   const double dashes = (external ? 0.3 : 0.5) * DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
   const double effect = external ? 0.6 : 1.0;
 
