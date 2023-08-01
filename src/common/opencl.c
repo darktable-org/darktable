@@ -1845,14 +1845,6 @@ gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
     return TRUE;
 }
 
-gboolean dt_opencl_enqueue_barrier(const int devid)
-{
-  dt_opencl_t *cl = darktable.opencl;
-  if(!_cldev_running(devid)) return TRUE;
-  return ((cl->dlocl->symbols->dt_clEnqueueBarrier)(cl->dev[devid].cmd_queue))
-    ? TRUE : FALSE;
-}
-
 static int _take_from_list(int *list, int value)
 {
   int result = -1;
@@ -3261,11 +3253,11 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid,
   else
     return NULL;
 
-  // TODO: if fmt = uint16_t, blow up to 4xuint16_t and copy manually!
-  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D)
-    (darktable.opencl->dev[devid].context,
-     CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, width, height,
-     rowpitch, host, &err);
+  const cl_image_desc desc = (cl_image_desc)
+        {CL_MEM_OBJECT_IMAGE2D, width, height, 0, 0, rowpitch, 0, 0, 0, NULL};
+
+  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage)
+    (darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, &desc, host, &err);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device]"
@@ -3361,9 +3353,11 @@ void *dt_opencl_alloc_device(const int devid,
   else
     return NULL;
 
-  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D)
-    (darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE, &fmt,
-     width, height, 0, NULL, &err);
+  const cl_image_desc desc = (cl_image_desc)
+        {CL_MEM_OBJECT_IMAGE2D, width, height, 0, 0, 0, 0, 0, 0, NULL};
+
+  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage)
+    (darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, &desc, NULL, &err);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -3400,11 +3394,14 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid,
   else
     return NULL;
 
-  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D)
+  const cl_image_desc desc = (cl_image_desc)
+        {CL_MEM_OBJECT_IMAGE2D, width, height, 0, 0, rowpitch, 0, 0, 0, NULL};
+
+  cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage)
     (darktable.opencl->dev[devid].context,
      CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
-     &fmt, width, height,
-     rowpitch, host, &err);
+     &fmt, &desc, host, &err);
+
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_use_host_pointer]"
