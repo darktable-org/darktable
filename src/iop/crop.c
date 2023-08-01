@@ -1383,7 +1383,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
   const double dashes = (external ? 0.3 : 0.5) * DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
   const double effect = external ? 0.6 : 1.0;
 
-  if(_set_max_clip(self))
+  if(_set_max_clip(self) && !external)
   {
     cairo_set_source_rgba(cr, fillc, fillc, fillc, 1.0 - fillc);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
