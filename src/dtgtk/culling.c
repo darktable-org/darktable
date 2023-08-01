@@ -1794,11 +1794,16 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       }
       slot_height -= spacing;
 
+      // Scale up thumbnails so that they take up all available vertical space
       for(GList *cw_iter = slot; cw_iter; cw_iter = g_list_next(cw_iter))
       {
         dt_thumbnail_t *cw = (dt_thumbnail_t *)cw_iter->data;
+        const float stack_heigth_factor = 
+          (max_row_heigth - spacing * (g_list_length(slot) - 1)) / (float)slot_height;
+        cw->height *= stack_heigth_factor;
+        cw->width *= stack_heigth_factor;
+
         cw->x += xoff;
-        cw->height = (max_row_heigth - g_list_length(slot)-1) * cw->height / slot_height;
       }
       g_list_free(slot);
     }
