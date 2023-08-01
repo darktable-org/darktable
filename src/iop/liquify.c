@@ -3672,7 +3672,6 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
 void gui_update(dt_iop_module_t *self)
 {
   update_warp_count(self);
-  self->dev->cropping.requester = (self->expanded) ? self : NULL;
 }
 
 void gui_init(dt_iop_module_t *self)
