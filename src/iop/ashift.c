@@ -153,8 +153,8 @@ int operation_tags()
 
 int operation_tags_filter()
 {
-  // switch off clipping and decoration, we want to see the full image.
-  return IOP_TAG_DECORATION | IOP_TAG_CLIPPING;
+  // switch off cropping and decoration, we want to see the full image.
+  return IOP_TAG_DECORATION | IOP_TAG_CROPPING;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
