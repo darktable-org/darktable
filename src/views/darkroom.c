@@ -548,11 +548,13 @@ void expose(
     dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
-  if(dev->pipe->output_backbuf                            // do we have an image?
+  const gboolean expose_full = 
+        dev->pipe->output_backbuf                         // do we have an image?
      && dev->pipe->output_imgid == dev->image_storage.id  // same image?
      && dev->pipe->backbuf_scale == backbuf_scale         // same zoom scale?
      && dev->pipe->backbuf_zoom_x == zoom_x
-     && dev->pipe->backbuf_zoom_y == zoom_y)
+     && dev->pipe->backbuf_zoom_y == zoom_y;
+  if(expose_full)
   {
     dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] draw image\n");
     // draw image
@@ -708,7 +710,7 @@ void expose(
   if(image_surface_imgid == dev->image_storage.id)
   {
     cairo_destroy(cr);
-    cairo_set_source_surface(cri, image_surface, 0, 0);
+    cairo_set_source_surface(cri, image_surface, 0.0, 0.0);
     cairo_paint(cri);
   }
 
@@ -758,14 +760,6 @@ void expose(
     cairo_restore(cri);
   }
 
-  // display mask if we have a current module activated or if the
-  // masks manager module is expanded
-
-  const gboolean display_masks =
-    (dev->gui_module && dev->gui_module->enabled
-     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
-    || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
-
   // draw colorpicker for in focus module or execute module callback hook
   // FIXME: draw picker in gui_post_expose() hook in
   // libs/colorpicker.c -- catch would be that live samples would
@@ -781,21 +775,46 @@ void expose(
   }
   else
   {
+    // display mask if we have a current module activated or if the
+    // masks manager module is expanded
+    const gboolean display_masks =
+      (dev->gui_module
+      && dev->gui_module->enabled
+      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+    || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+
     if(dev->form_visible && display_masks)
     {
       dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] masks post expose\n");
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
     }
-    // module
-    if(dev->gui_module && dev->gui_module != dev->proxy.rotate
-       && dev->gui_module->gui_post_expose
-       && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+
+    // true if anything could be exposed
+    if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
     {
-      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] gui_post_expose [%s]\n", dev->gui_module->op);
-      cairo_save(cri);
-      dev->gui_module->gui_post_expose(dev->gui_module, cri,
+      // the cropping.exposer->gui_post_expose needs special care
+      if(expose_full
+        && dev->cropping.exposer
+        && dev->cropping.requester
+        && dev->cropping.exposer->gui_post_expose)
+      {
+        dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] cropper post_expose [%s]\n", dev->cropping.exposer->op);
+        cairo_save(cri);
+        dev->cropping.exposer->gui_post_expose(dev->cropping.exposer, cri,
                                        width, height, pointerx, pointery);
-      cairo_restore(cri);
+        cairo_restore(cri);
+      }
+
+      // gui active module
+      if(dev->gui_module->gui_post_expose
+       && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+      {
+        dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] gui_post_expose [%s]\n", dev->gui_module->op);
+        cairo_save(cri);
+        dev->gui_module->gui_post_expose(dev->gui_module, cri,
+                                       width, height, pointerx, pointery);
+        cairo_restore(cri);
+      }
     }
   }
 

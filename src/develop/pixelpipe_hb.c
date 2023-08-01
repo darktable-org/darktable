@@ -472,6 +472,10 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       const gboolean active = hist->enabled;
       piece->enabled = active;
 
+      // the last crop module in the pixelpipe might handle the exposing if enabled 
+      if(piece->module->flags() & IOP_FLAGS_CROP_EXPOSER)
+        dev->cropping.exposer = active ? piece->module : NULL;
+
       // Styles, presets or history copy&paste might set history items
       // not appropriate for the image.  Fixing that seemed to be
       // almost impossible after long discussions but at least we can
@@ -537,6 +541,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
 
+  dev->cropping.exposer = NULL;
   dt_print(DT_DEBUG_PARAMS,
            "[pixelpipe] [%s] synch all modules with defaults_params\n",
            dt_dev_pixelpipe_type_to_str(pipe->type));
