@@ -1130,8 +1130,6 @@ static void _dev_add_history_item(dt_develop_t *dev,
     &&!dt_iop_is_hidden(module)
     && module->enabled
     && !module->multi_name_hand_edited
-    && module->instance_name
-    && gtk_widget_get_visible(module->instance_name)
     && dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
   {
     const gboolean is_default_params =
