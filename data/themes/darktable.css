@@ -369,6 +369,7 @@ textview
 
 .combo,
 entry,
+#dt-metadata-multi,
 textview
 {
   padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of workaround just below */
@@ -1606,6 +1607,18 @@ progressbar progress
   color: @disabled_fg_color;
 }
 
+#dt-metadata-changed
+{
+  font-style: italic;
+  text-decoration-line: underline;
+}
+
+#dt-metadata-multi
+{
+  font-style: italic;
+  margin: 0.07em; /* match textview */
+}
+
 /*---------------------
   - Set color pickers -
   ---------------------*/
@@ -1819,6 +1832,7 @@ treeview#delete-dialog:selected
 {
    border-top: 2.4em solid @plugin_bg_color;
 }
+
 
 /*** --- Thumbtable css part ---
 

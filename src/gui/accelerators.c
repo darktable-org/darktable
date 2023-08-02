@@ -274,32 +274,56 @@ static float _action_process_entry(gpointer target,
                                    dt_action_effect_t effect,
                                    float move_size)
 {
+  GtkTextBuffer *buffer = GTK_IS_TEXT_VIEW(target)
+                        ? gtk_text_view_get_buffer(target)
+                        : NULL;
   if(DT_PERFORM_ACTION(move_size))
   {
+    gint start_or_end = -1;
     switch(effect)
     {
     case DT_ACTION_EFFECT_FOCUS:
       gtk_widget_grab_focus(target);
       break;
     case DT_ACTION_EFFECT_START:
-      gtk_widget_grab_focus(target);
-      gtk_editable_set_position(target, 0);
-      break;
+      start_or_end = 0;
     case DT_ACTION_EFFECT_END:
       gtk_widget_grab_focus(target);
-      gtk_editable_set_position(target, -1);
+      if(buffer)
+      {
+        GtkTextIter iter;
+        gtk_text_buffer_get_iter_at_offset(buffer, &iter, start_or_end);
+        gtk_text_buffer_place_cursor(buffer, &iter);
+      }
+      else
+        gtk_editable_set_position(target, start_or_end);
       break;
     case DT_ACTION_EFFECT_CLEAR:
-      gtk_editable_delete_text(target, 0, -1);
+      if(buffer)
+        gtk_text_buffer_set_text(buffer, "", 0);
+      else
+        gtk_editable_delete_text(target, 0, -1);
       break;
     case DT_ACTION_EFFECT_SET:;
       gint position = move_size;
-      gtk_editable_insert_text(target, _entry_set_element, -1, &position);
+      if(buffer)
+      {
+        GtkTextIter iter;
+        gtk_text_buffer_get_iter_at_offset(buffer, &iter, move_size);
+        gtk_text_buffer_insert(buffer, &iter, _entry_set_element, -1);
+      }
+      else
+        gtk_editable_insert_text(target, _entry_set_element, -1, &position);
       break;
     }
   }
   else if(effect == DT_ACTION_EFFECT_SET)
-    gtk_entry_set_text(target, _entry_set_element);
+  {
+    if(buffer)
+      gtk_text_buffer_set_text(buffer, _entry_set_element, -1);
+    else
+      gtk_entry_set_text(target, _entry_set_element);
+  }
 
   return DT_ACTION_NOT_VALID;
 }
