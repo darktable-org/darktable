@@ -78,7 +78,7 @@ typedef struct dt_iop_sigmoid_gui_data_t
 
 typedef struct dt_iop_sigmoid_global_data_t
 {
-  int kernel_sigmoid_loglogistic_per_channel_interpolated;
+  int kernel_sigmoid_loglogistic_per_channel;
   int kernel_sigmoid_loglogistic_rgb_ratio;
 } dt_iop_sigmoid_global_data_t;
 
@@ -424,8 +424,8 @@ static inline void preserve_hue_and_energy(const dt_aligned_pixel_t pix_in, cons
   }
 }
 
-void process_loglogistic_per_channel_interpolated(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
 
@@ -482,7 +482,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if (module_data->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
-    process_loglogistic_per_channel_interpolated(piece, ivoid, ovoid, roi_in, roi_out);
+    process_loglogistic_per_channel(piece, ivoid, ovoid, roi_in, roi_out);
   }
   else // DT_SIGMOID_METHOD_RGB_RATIO
   {
@@ -515,7 +515,7 @@ int process_cl(struct dt_iop_module_t *self,
   if (d->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
     const float hue_preservation = d->hue_preservation;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel_interpolated,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel,
                                            width, height,
                                            CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
                                            CLARG(white_target), CLARG(paper_exp),
@@ -551,15 +551,15 @@ void init_global(dt_iop_module_so_t *module)
     (dt_iop_sigmoid_global_data_t *)malloc(sizeof(dt_iop_sigmoid_global_data_t));
 
   module->data = gd;
-  gd->kernel_sigmoid_loglogistic_per_channel_interpolated =
-    dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel_interpolated");
+  gd->kernel_sigmoid_loglogistic_per_channel =
+    dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");
   gd->kernel_sigmoid_loglogistic_rgb_ratio = dt_opencl_create_kernel(program, "sigmoid_loglogistic_rgb_ratio");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel_interpolated);
+  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
   free(module->data);
   module->data = NULL;
