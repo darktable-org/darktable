@@ -2894,12 +2894,12 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   if(!dt_conf_get_bool("accel/hide_notice"))
   {
     button = gtk_button_new_with_label(
-      _("The recommended way to assign shortcuts to visual elements is the <b>visual shortcut mapping</b> mode.\n"
-        "This is switched on by toggling the <i>\"keyboard\"</i> button next to preferences in the top panel. "
-        "In this mode, clicking on a widget or area will open this dialog with the appropriate selection for advanced configuration.\n"
-        "Multiple shortcuts can be assigned to the same action. "
-        "This is especially useful if it has multiple <i>elements</i>, like the module buttons or the colorpickers attached to sliders. "
-        "However, with <i>fallbacks</i> enabled one can use the same simple shortcuts and "
+      _("the recommended way to assign shortcuts to visual elements is the <b>visual shortcut mapping</b> mode.\n"
+        "this is switched on by toggling the <i>\"keyboard\"</i> button next to preferences in the top panel. "
+        "in this mode, clicking on a widget or area will open this dialog with the appropriate selection for advanced configuration.\n"
+        "multiple shortcuts can be assigned to the same action. "
+        "this is especially useful if it has multiple <i>elements</i>, like the module buttons or the colorpickers attached to sliders. "
+        "however, with <i>fallbacks</i> enabled one can use the same simple shortcuts and "
         "change their <i>element</i> or <i>effect</i> by adding mouse clicks."));
     gtk_widget_set_tooltip_text(button, _("click to dismiss this notice permanently"));
     gtk_widget_set_hexpand(button, TRUE);
