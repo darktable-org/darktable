@@ -3013,6 +3013,9 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
   p->details.hash = hash;
 
   dt_print_pipe(DT_DEBUG_PIPE, "write detail mask CPU", p, NULL, roi_in, NULL, "\n");
+  if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
+    dt_dump_pfm("scharr_cpu", mask, width, height, sizeof(float), "detail");
+
   return FALSE;
 
   error:
@@ -3079,6 +3082,9 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
   dt_print_pipe(DT_DEBUG_PIPE, "write detail mask CL", p, NULL, roi_in, NULL, "\n");
+  if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
+    dt_dump_pfm("scharr_cl", mask, width, height, sizeof(float), "detail");
+
   return FALSE;
 
   error:
