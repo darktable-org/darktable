@@ -173,16 +173,16 @@ static inline void _preserve_hue_and_energy(float *pix_io,
 }
 
 kernel void
-sigmoid_loglogistic_per_channel_interpolated (read_only image2d_t in,
-                                              write_only image2d_t out,
-                                              const int width,
-                                              const int height,
-                                              const float white_target,
-                                              const float paper_exp,
-                                              const float film_fog,
-                                              const float contrast_power,
-                                              const float skew_power,
-                                              const float hue_preservation)
+sigmoid_loglogistic_per_channel (read_only image2d_t in,
+                                 write_only image2d_t out,
+                                 const int width,
+                                 const int height,
+                                 const float white_target,
+                                 const float paper_exp,
+                                 const float film_fog,
+                                 const float contrast_power,
+                                 const float skew_power,
+                                 const float hue_preservation)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
