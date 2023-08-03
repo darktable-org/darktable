@@ -419,7 +419,8 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       dt_iop_module_t *base =
         dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
 
-      module = dt_dev_module_duplicate(dev_dest, base);
+      module = dt_dev_module_duplicate_ext(dev_dest, base, FALSE);
+      dt_ioppr_resync_modules_order(dev_dest);
 
       if(!module)
       {
