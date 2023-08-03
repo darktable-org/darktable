@@ -60,7 +60,7 @@ typedef enum dt_iop_lut3d_colorspace_t
   DT_IOP_REC709,      // $DESCRIPTION: "gamma Rec709 RGB"
   DT_IOP_LIN_REC709,  // $DESCRIPTION: "linear Rec709 RGB"
   DT_IOP_LIN_REC2020, // $DESCRIPTION: "linear Rec2020 RGB"
-  DT_IOP_LIN_PROPHOTO,// $DESCRIPTION: "linear Prophoto RGB"
+  DT_IOP_LIN_PROPHOTO,// $DESCRIPTION: "linear ProPhoto RGB"
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t
