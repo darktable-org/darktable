@@ -2890,7 +2890,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 
   // the multi instance name
   g_strlcpy(module->multi_name, mname, sizeof(module->multi_name));
-  module->multi_name_hand_edited = 0;
+  module->multi_name_hand_edited = FALSE;
 
   // we insert this module into dev->iop
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, dt_sort_iop_by_order);
