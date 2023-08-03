@@ -337,11 +337,8 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
      && mod_replace == NULL
      && (!append || !mod_src->enabled))
   {
-    // we haven't found a module to replace
-    // check if there's a module with the same (operation, multi_name) on dev->iop
-    // we do that if in overwrite mode or if the module being merged is disabled.
-    // In this later case we do want to disable a current instance of the same
-    // module & multi-priority.
+    // we haven't found a module to replace check if there's a module
+    // with the same (operation, multi_name) on dev->iop
 
     for(GList *modules_dest = dev_dest->iop;
         modules_dest;
@@ -350,7 +347,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
       if(strcmp(mod_src->op, mod_dest->op) == 0
-         && strcmp(modsrc_multi_name, mod_dest->multi_name) == 0)
+         && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
       {
         // but only if it hasn't been used already
         if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
@@ -359,6 +356,35 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
           modules_used = g_list_append(modules_used, mod_dest);
           mod_replace = mod_dest;
           break;
+        }
+      }
+    }
+
+    // we haven't found a module to replace yet.  check if there's a
+    // module with the same (operation, multi_name) on dev->iop in
+    // relaxed mode. that is, if multi_name is not hand edited we
+    // replace the same multi_priority.
+
+    if(mod_replace == NULL)
+    {
+      for(GList *modules_dest = dev_dest->iop;
+          modules_dest;
+          modules_dest = g_list_next(modules_dest))
+      {
+        dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
+
+        if(strcmp(mod_src->op, mod_dest->op) == 0
+           && !mod_dest->multi_name_hand_edited
+           && mod_src->multi_priority == mod_dest->multi_priority)
+        {
+          // but only if it hasn't been used already
+          if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
+          {
+            // we will replace this module
+            modules_used = g_list_append(modules_used, mod_dest);
+            mod_replace = mod_dest;
+            break;
+          }
         }
       }
     }
