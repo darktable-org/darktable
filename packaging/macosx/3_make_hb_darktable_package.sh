@@ -24,6 +24,8 @@ dtResourcesDir="$dtWorkingDir"/Contents/Resources
 dtExecDir="$dtWorkingDir"/Contents/MacOS
 dtExecutables=$(echo "$dtExecDir"/darktable{,-chart,-cli,-cltest,-generate-cache,-rs-identify,-curve-tool,-noiseprofile})
 homebrewHome=$(brew --prefix)
+homebrewHomeRel="@loader_path/../../../.."
+
 
 # Install direct and transitive dependencies
 function install_dependencies {
@@ -31,6 +33,9 @@ function install_dependencies {
 
     # Get dependencies of current executable
     oToolLDependencies=$(otool -L "$1" 2>/dev/null | grep compatibility | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' | uniq)
+
+    # Handle library relative paths
+    oToolLDependencies=$(echo "$oToolLDependencies" | sed "s#${homebrewHomeRel}#${homebrewHome}#")
 
     # Filter for homebrew dependencies
     if [[ "$oToolLDependencies" == *"$homebrewHome"* ]]; then
@@ -83,6 +88,9 @@ function reset_exec_path {
         fi
     fi
 
+    # Handle library relative paths
+    oToolLDependencies=$(echo "$oToolLDependencies" | sed "s#${homebrewHomeRel}#${homebrewHome}#")
+
     # Filter for any homebrew specific paths
     if [[ "$oToolLDependencies" == *"$homebrewHome"* ]]; then
         hbDependencies=$(echo "$oToolLDependencies" | grep "$homebrewHome")
@@ -102,6 +110,13 @@ function reset_exec_path {
 
             # Set correct executable path
             install_name_tool -change "$hbDependency" "@executable_path/../Resources/lib/$dynDepOrigFile" "$1"
+
+            # Check for loader path
+            oToolLoader=$(otool -L "$1" 2>/dev/null | grep '@loader_path' | grep $dynDepOrigFile | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' ) || true
+            if [[ -n "$oToolLoader" ]]; then
+                echo "Resetting loader path for dependency <$hbDependency> of <$1>"
+                install_name_tool -change "$oToolLoader" "@loader_path/../Resources/lib/$dynDepOrigFile" "$1"
+            fi
         done
 
     fi
