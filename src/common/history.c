@@ -360,7 +360,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       }
     }
 
-    // we haven't found a module to replace yet.  check if there's a
+    // we haven't found a module to replace yet. check if there's a
     // module with the same (operation, multi_name) on dev->iop in
     // relaxed mode. that is, if multi_name is not hand edited we
     // replace the same multi_priority.
