@@ -1482,20 +1482,13 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     return TRUE;
   }
 
-  int total_thumb_width = 0;
-  int max_thumb_height = 0;
-  int max_thumb_width = 0;
-  float avg_thumb_aspect_r = 0.0f;
-
-  // variables to hold vertical and horizontal width of all thumbnails after their final placement
-  // as well as horizontal and vertical spacing distance between thumbnails (1 = lowest value possible. Will be scaled up later)
-  unsigned int total_width = 0;
-  unsigned int total_height = 0;
+  // initialize horizontal and vertical spacing distance between thumbnails with lowest value possible. Will be scaled up later.
   const int spacing = 1;
 
   // reinit size and positions of each thumbnail, remember size from biggest thumbnail, calculate average thumbnail ratio
-  int number_of_thumbs  = 0;
-  for(GList *l = table->list; l; l = g_list_next(l))
+  int max_thumb_height = 0;
+
+    for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
     const float aspect_ratio = thumb->aspect_ratio;
@@ -1503,13 +1496,130 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     thumb->height = (gint)(1 / sqrt(aspect_ratio) * 100);
     thumb->x = thumb->y = 0;
 
-    total_thumb_width  += thumb->width;
-    max_thumb_width = MAX(max_thumb_width, thumb->width);
     max_thumb_height = MAX(max_thumb_height, thumb->height);
-    avg_thumb_aspect_r += thumb->width / (float)thumb->height;
-    number_of_thumbs++;
   }
-  avg_thumb_aspect_r /= number_of_thumbs;
+
+  // Vertical image stacking:
+  //  Vertical stacking is only allowed if the heigth of the biggest thumbnail is more than the height
+  //  of 2 or more thumbs combined.
+  //  for example: we have three images and image 3 is higher than heights of image 1 and 2 combined
+  //  [  1  ] | 3 |                                                         | 3 |
+  //  [  2  ] | 3 |      instead of this placement -->    [  1  ]  [  2  ]  | 3 |
+  //          | 3 |                                                         | 3 |
+  // in this case, images 1 and 2 would be stacked in one slot and image 3 will be placed in a new slot alone.
+  // if all images have similar heigths, they will not be stacked and placed in a separate slot.
+
+  // Note: Stacking only make sense for images in the same row as the portrait image.
+  //       The algorithm does not check for this so unneccessary stacking can occur.
+
+  GList *slots = NULL;
+  int max_slot_heigth = 0;
+
+  // loop through all thumbs
+  for(GList *l = table->list; l; l = g_list_next(l))
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+    GList *slot_iter = slots;
+
+    // loop through newly created slots to check for available space
+    for(; slot_iter; slot_iter = slot_iter->next)
+    {
+      GList *slot = (GList *)slot_iter->data;
+      int slot_heigth = 0;
+
+      // loop through thumbnails in slot
+      for(GList *slot_thumb_iter = slot;
+          slot_thumb_iter;
+          slot_thumb_iter = g_list_next(slot_thumb_iter))
+      {
+        dt_thumbnail_t *slot_thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        slot_heigth = slot_heigth + slot_thumb->height + spacing;
+      }
+      slot_heigth -= spacing;
+
+      // Add thumbnail to slot if the slot height after adding the thumbnail
+      // doesn't exceed the height of the highest thumbnail
+      if(slot_heigth + spacing + thumb->height < max_thumb_height)
+      {
+        slot_iter->data = g_list_append(slot, thumb);
+        max_slot_heigth = 
+          MAX(max_slot_heigth, slot_heigth + spacing + thumb->height);
+        break;
+      }
+    }
+    // Otherwise, create a new slot with only this thumbnail
+    if(!slot_iter)
+    {
+      slots = g_list_prepend(slots, g_list_prepend(NULL, thumb));
+      max_slot_heigth = MAX(max_slot_heigth, thumb->height);
+    }
+  }
+  slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
+
+
+
+
+
+  // finished assigning thumbnails to slots
+  // we also know max slot height, so we can now scale all slots to this heigth
+  // and calculate average slot heigth and width
+  int slot_counter = 0;
+  float avg_slot_aspect_r = 0.0f;
+  int total_slot_width = 0;
+
+  for(GList *slot_iter = slots;
+      slot_iter;
+      slot_iter = g_list_next(slot_iter))
+  {
+    slot_counter++;
+
+    GList *slot = (GList *)slot_iter->data;
+    int slot_heigth = 0;
+    int scaled_slot_height = 0;
+    int scaled_slot_width = 0;
+
+    // calculate current slot heigth for upscaling
+    for(GList *slot_thumb_iter = slot;
+      slot_thumb_iter;
+      slot_thumb_iter = g_list_next(slot_thumb_iter))
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+      slot_heigth += thumb->height + spacing;
+    }
+    slot_heigth -= spacing;
+
+    // apply scaling to even out heights
+    for(GList *slot_thumb_iter = slot;
+      slot_thumb_iter;
+      slot_thumb_iter = g_list_next(slot_thumb_iter))
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+      const float stack_heigth_factor = 
+        (max_slot_heigth - spacing * (g_list_length(slot) - 1)) / (float)slot_heigth;
+      thumb->height *= stack_heigth_factor;
+      thumb->width *= stack_heigth_factor;
+
+      // calculate new slot height and width
+      scaled_slot_width = MAX(scaled_slot_width, thumb->width);
+      scaled_slot_height += thumb->height + spacing;
+    }
+    scaled_slot_height -= spacing;
+    total_slot_width += scaled_slot_width + spacing;
+
+    // iterative formula to calculate average slot ratio
+    avg_slot_aspect_r += (scaled_slot_width/(float)scaled_slot_height - avg_slot_aspect_r) / slot_counter;
+  }
+  total_slot_width -= spacing;
+
+
+
+  
+
+  // variables to hold vertical and horizontal width of all thumbnails after their final placement
+  
+  unsigned int total_width = 0;
+  unsigned int total_height = 0;
+
 
   // estimate a good start value for number of rows and columns to use in thumbnail placement by taking the square root
   //  of the number of thumbnails. E.g. 9 thumbnails: probably 3x3. Prefer wide configuration e.g. 8 thumbnails: 3x2
@@ -1518,8 +1628,8 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   int thumbs_per_col = 0;
   int thumbs_per_col_new = 0;
 
-  thumbs_per_row = thumbs_per_row_new = ceil(sqrt(number_of_thumbs ));
-  thumbs_per_col = thumbs_per_col_new = (number_of_thumbs  + thumbs_per_row - 1) / thumbs_per_row;
+  thumbs_per_row = thumbs_per_row_new = ceil(sqrt(slot_counter));
+  thumbs_per_col = thumbs_per_col_new = (slot_counter  + thumbs_per_row - 1) / thumbs_per_row;
 
   const float screen_aspect_r = table->view_width / (float)table->view_height;
   float thumb_placement_ratio = 0.0f;
@@ -1547,7 +1657,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
     // if the ratio of placed thumbnails is bigger than the screen aspect ratio (they take too much horizontal space)
     //  reduce number of images per row by 1 and vice versa.
-    if(thumb_placement_ratio * avg_thumb_aspect_r > screen_aspect_r)
+    if(thumb_placement_ratio * avg_slot_aspect_r > screen_aspect_r)
     {
       thumbs_per_row_new = thumbs_per_row - 1;
     }
@@ -1559,103 +1669,50 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     if(thumbs_per_row_new == 0) break;
 
     // update column cound and placement ratio
-    thumbs_per_col_new = (number_of_thumbs  + thumbs_per_row_new - 1) / thumbs_per_row_new;
+    thumbs_per_col_new = (slot_counter  + thumbs_per_row_new - 1) / thumbs_per_row_new;
     thumb_placement_ratio_new = thumbs_per_row_new / (float)thumbs_per_col_new;
 
-  // calculate old and new deviation between screen ratio and ratio of placed thumbnails
-  // 1.0 means that screen and placement ratio are equal (perfect match)
-  // the further away from 1.0 we get, the worse. There are not negative values.
-  old_deviation = _absmul(thumb_placement_ratio * avg_thumb_aspect_r, screen_aspect_r);
-  new_deviation = _absmul(thumb_placement_ratio_new * avg_thumb_aspect_r, screen_aspect_r);
+    // calculate old and new deviation between screen ratio and ratio of placed thumbnails
+    // 1.0 means that screen and placement ratio are equal (perfect match)
+    // the further away from 1.0 we get, the worse. There are not negative values.
+    old_deviation = _absmul(thumb_placement_ratio * avg_slot_aspect_r, screen_aspect_r);
+    new_deviation = _absmul(thumb_placement_ratio_new * avg_slot_aspect_r, screen_aspect_r);
 
-  // Punish old and new configuration for not-full last rows (if they have any)
-  //  E.g. we could place 4 images in a 2x2 or 3x2 configuration, but in 3x2 there will be only 1 image in the last row
-  //  even though there is room for 3. So we punish the placement ratio of the 3x2 configuration for the 2 empty slots by
-  //  multiplying it with (1 + free_spots_row/total_spots/row) = (1 + 2/3) = 1.66
-  //  this prefers a configurations with well filled rows unless it is a lot better to place one image alone in a row.
-  punishment_weight =
-      (1 +
-        (thumbs_per_row - ((number_of_thumbs - 1) % thumbs_per_row + 1)) /
-          (float)thumbs_per_row);
-  new_punishment_weight =
-      (1 + (thumbs_per_row_new - ((number_of_thumbs - 1) % thumbs_per_row_new + 1)) /
-          (float)thumbs_per_row_new);
+    // Punish old and new configuration for not-full last rows (if they have any)
+    //  E.g. we could place 4 images in a 2x2 or 3x2 configuration, but in 3x2 there will be only 1 image in the last row
+    //  even though there is room for 3. So we punish the placement ratio of the 3x2 configuration for the 2 empty slots by
+    //  multiplying it with (1 + free_spots_row/total_spots/row) = (1 + 2/3) = 1.66
+    //  this prefers a configurations with well filled rows unless it is a lot better to place one image alone in a row.
+    punishment_weight =
+        (1 +
+          (thumbs_per_row - ((slot_counter - 1) % thumbs_per_row + 1)) /
+            (float)thumbs_per_row);
+    new_punishment_weight =
+        (1 + (thumbs_per_row_new - ((slot_counter - 1) % thumbs_per_row_new + 1)) /
+            (float)thumbs_per_row_new);
 
-  // if all thumbs are placed in a single row or column, the weight from above formula will be 1.0 (= no punishment)
-  //  this can cause the algorithm to be biased towards single row/column configurations - so we add some punishment manually
-  if(thumbs_per_col == 1 || thumbs_per_row == 1)
-    punishment_weight = 1.5;
-  if(thumbs_per_col_new == 1 || thumbs_per_row_new == 1)
-    new_punishment_weight = 1.5;
+    // if all thumbs are placed in a single row or column, the weight from above formula will be 1.0 (= no punishment)
+    //  this can cause the algorithm to be biased towards single row/column configurations - so we add some punishment manually
+    if(thumbs_per_col == 1 || thumbs_per_row == 1)
+      punishment_weight = 1.5;
+    if(thumbs_per_col_new == 1 || thumbs_per_row_new == 1)
+      new_punishment_weight = 1.5;
 
-  // apply weight factor
-  old_deviation_punished = old_deviation * punishment_weight;
-  new_deviation_punished = new_deviation * new_punishment_weight;
+    // apply weight factor
+    old_deviation_punished = old_deviation * punishment_weight;
+    new_deviation_punished = new_deviation * new_punishment_weight;
 
-  // try to improve as long as row-count bigger than 0
-  //  AND row-count lower or equal total number of thumbs
-  //  AND the resulting deviation from a perfect placement is lower than before
-  //  --> stop when we make negative progress
+    // try to improve as long as row-count bigger than 0
+    //  AND row-count lower or equal total number of thumbs
+    //  AND the resulting deviation from a perfect placement is lower than before
+    //  --> stop when we make negative progress
   } while(thumbs_per_row > 0
-          && thumbs_per_row <= number_of_thumbs
+          && thumbs_per_row <= slot_counter
           && new_deviation_punished < old_deviation_punished);
 
   // Now we have a good estimation how many thumbnails SHOULD fit in each row and column.
   // Actual placement might differ
 
-  // Vertical image stacking:
-  //  Vertical stacking is only allowed if the heigth of the biggest thumbnail is more than the height
-  //  of 2 or more thumbs combined.
-  //  for example: we have three images and image 3 is higher than heights of image 1 and 2 combined
-  //  [  1  ] | 3 |                                                         | 3 |
-  //  [  2  ] | 3 |      instead of this placement -->    [  1  ]  [  2  ]  | 3 |
-  //          | 3 |                                                         | 3 |
-  // in this case, images 1 and 2 would be stacked in one slot and image 3 will be placed in a new slot alone.
-  // if all images have similar heigths, they will not be stacked and placed in a separate slot.
-
-  // Note: Stacking only make sense for images in the same row as the portrait image.
-  //       The algorithm does not check for this so unneccessary stacking can occur.
-
-  GList *slots = NULL;
-
-  // loop through all thumbs
-  for(GList *l = table->list; l; l = g_list_next(l))
-  {
-    dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-    GList *slot_iter = slots;
-
-    // start placing thumbs into slots
-    for(; slot_iter; slot_iter = slot_iter->next)
-    {
-      GList *slot = (GList *)slot_iter->data;
-      // Calculate current total height of slot
-      int slot_heigth = 0;
-
-      for(GList *slot_cw_iter = slot;
-          slot_cw_iter;
-          slot_cw_iter = g_list_next(slot_cw_iter))
-      {
-        dt_thumbnail_t *slot_cw = (dt_thumbnail_t *)slot_cw_iter->data;
-        slot_heigth = slot_heigth + slot_cw->height + spacing;
-      }
-      slot_heigth -= spacing;
-
-      // Add thumbnail to slot if the slot height after adding the thumbnail
-      // doesn't exceed the height of the highest thumbnail
-      if(slot_heigth + spacing + thumb->height < max_thumb_height)
-      {
-        slot_iter->data = g_list_append(slot, thumb);
-        break;
-      }
-    }
-    // Otherwise, create a new slot with only this thumbnail
-    if(!slot_iter)
-    {
-      slots = g_list_prepend(slots, g_list_prepend(NULL, thumb));
-    }
-
-  }
-  slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
 
   // create a nested list to hold all thumbnails in their final placement in rows
   GList *rows = g_list_append(NULL, NULL);
@@ -1663,7 +1720,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     int row_y = 0;
     int thumb_x = 0;
     int row_heigth = 0;
-    const int row_width_limit = total_thumb_width / number_of_thumbs * thumbs_per_row;
+    const int row_width_limit = total_slot_width / slot_counter * thumbs_per_row;
 
     // work with one slot at a time
     for(GList *slot_iter = slots; slot_iter; slot_iter = g_list_next(slot_iter))
@@ -1673,13 +1730,13 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       // Calculate max width and total height of thumbs in the slot so that all thumbs can be centered within the slot
       int slot_max_thumb_width = 0;
       int slot_total_heigth = 0;
-      for(GList *slot_cw_iter = slot;
-          slot_cw_iter;
-          slot_cw_iter = g_list_next(slot_cw_iter))
+      for(GList *slot_thumb_iter = slot;
+          slot_thumb_iter;
+          slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
-        dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
-        slot_max_thumb_width = MAX(slot_max_thumb_width, cw->width);
-        slot_total_heigth = slot_total_heigth + cw->height + spacing;
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        slot_max_thumb_width = MAX(slot_max_thumb_width, thumb->width);
+        slot_total_heigth = slot_total_heigth + thumb->height + spacing;
       }
       // don't include bottom spacing in height calculation
       slot_total_heigth -= spacing;
@@ -1721,14 +1778,14 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
       // loop through all images assigned to a slot and calculate their placement
       //  place all of them within the same row
-      for(GList *slot_cw_iter = slot;
-          slot_cw_iter;
-          slot_cw_iter = g_list_next(slot_cw_iter))
+      for(GList *slot_thumb_iter = slot;
+          slot_thumb_iter;
+          slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
-        dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
-        cw->x = thumb_x + (slot_max_thumb_width - cw->width) / 2; // x position should be horizontally centered within the slot
-        cw->y = thumb_y;                                // y position starts at 0
-        thumb_y += cw->height + spacing;               // and is increased by the heigth of the thumb + spacing of spacing for placing the next image of the slot
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        thumb->x = thumb_x + (slot_max_thumb_width - thumb->width) / 2; // x position should be horizontally centered within the slot
+        thumb->y = thumb_y;                                // y position starts at 0
+        thumb_y += thumb->height + spacing;               // and is increased by the heigth of the thumb + spacing of spacing for placing the next image of the slot
       }
       rows->data = g_list_append(rows->data, slot); // append slot to row
       row_heigth = MAX(row_heigth, thumb_y - row_y);
@@ -1753,7 +1810,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     GList *row = (GList *)iter->data;
     int row_width = 0;
     int xoff = 0;
-    int max_row_heigth = 0;
 
     // loop through slots of the row to calculate row width and max_row_heigth
     for(GList *slot_iter = row;
@@ -1761,21 +1817,17 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         slot_iter = g_list_next(slot_iter))
     {
       GList *slot = (GList *)slot_iter->data;
-      int slot_heigth = 0;
 
       // loop through thumbs of the slot
       // to calculate slot heigth and update row width
       // which is used for xoffset of row
-      for(GList *slot_cw_iter = slot;
-        slot_cw_iter;
-        slot_cw_iter = g_list_next(slot_cw_iter))
+      for(GList *slot_thumb_iter = slot;
+        slot_thumb_iter;
+        slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
-        dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
-        slot_heigth += cw->height + spacing;
-        row_width = MAX(row_width, cw->x + cw->width);
-      }
-      slot_heigth -= spacing;
-      max_row_heigth = MAX(max_row_heigth, slot_heigth);
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        row_width = MAX(row_width, thumb->x + thumb->width);
+      }      
     }
     xoff = (total_width - row_width) / 2;
 
@@ -1785,25 +1837,12 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         slot_iter = g_list_next(slot_iter))
     {
       GList *slot = (GList *)slot_iter->data;
-      int slot_height = 0;
-  
-      for(GList *cw_iter = slot; cw_iter; cw_iter = g_list_next(cw_iter))
-      {
-        dt_thumbnail_t *cw = (dt_thumbnail_t *)cw_iter->data;
-        slot_height += cw->height + spacing;
-      }
-      slot_height -= spacing;
 
       // Scale up thumbnails so that they take up all available vertical space
-      for(GList *cw_iter = slot; cw_iter; cw_iter = g_list_next(cw_iter))
+      for(GList *slot_thumb_iter = slot; slot_thumb_iter; slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
-        dt_thumbnail_t *cw = (dt_thumbnail_t *)cw_iter->data;
-        const float stack_heigth_factor = 
-          (max_row_heigth - spacing * (g_list_length(slot) - 1)) / (float)slot_height;
-        cw->height *= stack_heigth_factor;
-        cw->width *= stack_heigth_factor;
-
-        cw->x += xoff;
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        thumb->x += xoff;
       }
       g_list_free(slot);
     }
