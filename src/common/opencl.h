@@ -72,7 +72,7 @@ extern "C" {
 // version for current darktable cl kernels
 // this is reflected in the kernel directory and allows to
 // enforce a new kernel compilation cycle
-#define DT_OPENCL_KERNELS 1
+#define DT_OPENCL_KERNELS 2
 
 typedef enum dt_opencl_memory_t
 {
