@@ -417,20 +417,15 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     {
       dt_iop_module_t *base =
         dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
-      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
-      if(dt_iop_load_module(module, base->so, dev_dest))
+
+      module = dt_dev_module_duplicate(dev_dest, base);
+
+      if(!module)
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[dt_history_merge_module_into_history]"
                  " can't load module %s\n", mod_src->op);
         module_added = FALSE;
-      }
-      else
-      {
-        module->instance = mod_src->instance;
-        module->multi_priority = mod_src->multi_priority;
-        module->iop_order = dt_ioppr_get_iop_order(dev_dest->iop_order_list,
-                                                   module->op, module->multi_priority);
       }
     }
     else
@@ -509,10 +504,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
                module->op, module->multi_name, module->iop_order,
                module->multi_priority);
 
-    // if this is a new module just add it to the list
-    if(mod_replace == NULL)
-      dev_dest->iop = g_list_insert_sorted(dev_dest->iop, module, dt_sort_iop_by_order);
-    else
+    if(mod_replace != NULL)
       dev_dest->iop = g_list_sort(dev_dest->iop, dt_sort_iop_by_order);
   }
 
