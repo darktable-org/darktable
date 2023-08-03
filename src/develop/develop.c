@@ -2833,7 +2833,9 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
 
 
 /** duplicate a existent module */
-dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *base)
+dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
+                                             dt_iop_module_t *base,
+                                             const gboolean reorder_iop)
 {
   // we create the new module
   dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
@@ -2897,7 +2899,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, dt_sort_iop_by_order);
 
   // always place the new instance after the base one
-  if(!dt_ioppr_move_iop_after(base->dev, module, base))
+  if(reorder_iop && !dt_ioppr_move_iop_after(base->dev, module, base))
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_dev_module_duplicate] can't move new instance after the base one\n");
@@ -2906,6 +2908,11 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 
   // that's all. rest of insertion is gui work !
   return module;
+}
+
+dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *base)
+{
+  return dt_dev_module_duplicate_ext(dev, base, TRUE);
 }
 
 void dt_dev_invalidate_history_module(GList *list,
