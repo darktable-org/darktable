@@ -413,8 +413,12 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     }
 
     module->enabled = mod_src->enabled;
-    g_strlcpy(module->multi_name, modsrc_multi_name, sizeof(module->multi_name));
-    module->multi_name_hand_edited = mod_src->multi_name_hand_edited;
+
+    if(!module->multi_name_hand_edited)
+    {
+      g_strlcpy(module->multi_name, mod_src->multi_name, sizeof(module->multi_name));
+      module->multi_name_hand_edited = mod_src->multi_name_hand_edited;
+    }
 
     if(auto_init)
     {
