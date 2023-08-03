@@ -267,7 +267,7 @@ typedef struct dt_develop_t
   struct
   {
     // set by dt_dev_pixelpipe_synch() if an enabled crop module is included in history
-    struct dt_iop_module_t *exposer; 
+    struct dt_iop_module_t *exposer;
     struct dt_iop_module_t *requester;
   } cropping;
 
@@ -466,7 +466,9 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
  */
 void dt_dev_masks_list_change(dt_develop_t *dev);
 void dt_dev_masks_list_update(dt_develop_t *dev);
-void dt_dev_masks_list_remove(dt_develop_t *dev, dt_mask_id_t formid, dt_mask_id_t parentid);
+void dt_dev_masks_list_remove(dt_develop_t *dev,
+                              const dt_mask_id_t formid,
+                              const dt_mask_id_t parentid);
 void dt_dev_masks_selection_change(dt_develop_t *dev,
                                    struct dt_iop_module_t *module,
                                    const dt_mask_id_t selectid);

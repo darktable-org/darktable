@@ -2803,8 +2803,8 @@ void dt_dev_masks_list_update(dt_develop_t *dev)
 }
 
 void dt_dev_masks_list_remove(dt_develop_t *dev,
-                              dt_mask_id_t formid,
-                              dt_mask_id_t parentid)
+                              const dt_mask_id_t formid,
+                              const dt_mask_id_t parentid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.list_remove)
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
@@ -2837,7 +2837,8 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 {
   // we create the new module
   dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, base->so, base->dev)) return NULL;
+  if(dt_iop_load_module(module, base->so, base->dev))
+    return NULL;
   module->instance = base->instance;
 
   // we set the multi-instance priority and the iop order
