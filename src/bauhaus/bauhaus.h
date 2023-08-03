@@ -216,8 +216,6 @@ typedef struct dt_bauhaus_t
   int keys_cnt;
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
-  // flag set on button press indicating that popup should be hidden in button release handler
-  gboolean hiding;
 
   // initialise or connect accelerators in set_label
   int skip_accel;
