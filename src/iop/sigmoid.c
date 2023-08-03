@@ -79,7 +79,6 @@ typedef struct dt_iop_sigmoid_gui_data_t
 typedef struct dt_iop_sigmoid_global_data_t
 {
   int kernel_sigmoid_loglogistic_per_channel;
-  int kernel_sigmoid_loglogistic_per_channel_interpolated;
   int kernel_sigmoid_loglogistic_rgb_ratio;
 } dt_iop_sigmoid_global_data_t;
 
@@ -176,7 +175,7 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
 {
   const float clamped_value = fmaxf(value, 0.0f);
   // The following equation can be derived as a model for film + paper but it has a pole at 0
-  // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
+  // magnitude * powf(1.0f + paper_exp * powf(film_fog + value, -film_power), -paper_power);
   // Rewritten on a stable around zero form:
   const float film_response = powf(film_fog + clamped_value, film_power);
   const float paper_response = magnitude * powf(film_response / (paper_exp + film_response), paper_power);
@@ -199,7 +198,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // Calculate a reference slope for no skew and a normalized display
   const float ref_film_power = params->middle_grey_contrast;
   const float ref_paper_power = 1.0f;
-  const float ref_magnitude = 1.0;
+  const float ref_magnitude = 1.0f;
   const float ref_film_fog = 0.0f;
   const float ref_paper_exposure = powf(ref_film_fog + MIDDLE_GREY, ref_film_power) * ((ref_magnitude / MIDDLE_GREY) - 1.0f);
   const float delta = 1e-6f;
@@ -308,47 +307,6 @@ static void pixel_channel_order(const dt_aligned_pixel_t pix_in, dt_iop_sigmoid_
   }
 }
 
-
-void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
-
-  const float *const in = (const float *)ivoid;
-  float *const out = (float *)ovoid;
-  const size_t npixels = (size_t)roi_in->width * roi_in->height;
-
-  const float white_target = module_data->white_target;
-  const float paper_exp = module_data->paper_exposure;
-  const float film_fog = module_data->film_fog;
-  const float contrast_power = module_data->film_power;
-  const float skew_power = module_data->paper_power;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, white_target, paper_exp, film_fog, contrast_power, skew_power) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
-  for(size_t k = 0; k < 4 * npixels; k += 4)
-  {
-    const float *const restrict pix_in = in + k;
-    float *const restrict pix_out = out + k;
-    dt_aligned_pixel_t pix_in_strict_positive;
-
-    // Force negative values to zero
-    desaturate_negative_values(pix_in, pix_in_strict_positive);
-
-    for_each_channel(c, aligned(pix_in_strict_positive, pix_out))
-    {
-      pix_out[c] = generalized_loglogistic_sigmoid(pix_in_strict_positive[c], white_target, paper_exp, film_fog, contrast_power, skew_power);
-    }
-
-    // Copy over the alpha channel
-    pix_out[3] = pix_in[3];
-  }
-}
-
 void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -437,47 +395,39 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
 static inline void preserve_hue_and_energy(const dt_aligned_pixel_t pix_in, const dt_aligned_pixel_t per_channel, dt_aligned_pixel_t pix_out,
     const dt_iop_sigmoid_value_order_t order, const float hue_preservation)
 {
-  if (per_channel[order.max] - per_channel[order.min] < 1e-9 ||
-      per_channel[order.mid] - per_channel[order.min] < 1e-9 )
-  {
-    pix_out[order.min] = per_channel[order.min];
-    pix_out[order.mid] = per_channel[order.mid];
-    pix_out[order.max] = per_channel[order.max];
-    return;  // Nothing to fix
-  }
-
   // Naive Hue correction of the middle channel
-  const float full_hue_correction = per_channel[order.min] + ((per_channel[order.max] - per_channel[order.min]) * (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]));
-  const float naive_hue_mid = (1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
+  const float chroma = pix_in[order.max] - pix_in[order.min];
+  const float midscale = chroma != 0.f ? (pix_in[order.mid] - pix_in[order.min]) / chroma : 0.f;
+  const float full_hue_correction = per_channel[order.min] + (per_channel[order.max] - per_channel[order.min]) * midscale;
+  const float naive_hue_mid = (1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
 
-  const float per_channel_energy = per_channel[order.min] + per_channel[order.mid] + per_channel[order.max];
+  const float per_channel_energy = per_channel[0] + per_channel[1] + per_channel[2];
   const float naive_hue_energy = per_channel[order.min] + naive_hue_mid + per_channel[order.max];
-  const float blend_factor = 2.0 * pix_in[order.min] / (pix_in[order.min] + pix_in[order.mid]);
-  const float midscale = (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]);
+  const float pix_in_min_plus_mid = pix_in[order.min] + pix_in[order.mid];
+  const float blend_factor = pix_in_min_plus_mid != 0.f ? 2.0f * pix_in[order.min] / pix_in_min_plus_mid : 0.f;
+  const float energy_target = blend_factor * per_channel_energy + (1.0f - blend_factor) * naive_hue_energy;
 
   // Preserve hue constrained to maintain the same energy as the per channel result
   if (naive_hue_mid <= per_channel[order.mid])
   {
-    const float energy_target = blend_factor * per_channel_energy + (1.0 - blend_factor) * naive_hue_energy;
-    const float corrected_mid = ((1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * (midscale * per_channel[order.max] + (1.0 - midscale) * (energy_target - per_channel[order.max])))
-                                / (1.0 + hue_preservation * (1.0 - midscale));
+    const float corrected_mid = ((1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation * (midscale * per_channel[order.max] + (1.0f - midscale) * (energy_target - per_channel[order.max])))
+                                / (1.0f + hue_preservation * (1.0f - midscale));
     pix_out[order.min] = energy_target - per_channel[order.max] - corrected_mid;
     pix_out[order.mid] = corrected_mid;
     pix_out[order.max] = per_channel[order.max];
   }
   else
   {
-    const float energy_target = blend_factor * per_channel_energy + (1.0 - blend_factor) * naive_hue_energy;
-    const float corrected_mid = ((1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * (per_channel[order.min] * (1.0f - midscale) + midscale * (energy_target - per_channel[order.min])))
-                                / (1.0 + hue_preservation * midscale);
+    const float corrected_mid = ((1.0f - hue_preservation) * per_channel[order.mid] + hue_preservation * (per_channel[order.min] * (1.0f - midscale) + midscale * (energy_target - per_channel[order.min])))
+                                / (1.0f + hue_preservation * midscale);
     pix_out[order.min] = per_channel[order.min];
     pix_out[order.mid] = corrected_mid;
     pix_out[order.max] = energy_target - per_channel[order.min] - corrected_mid;
   }
 }
 
-void process_loglogistic_per_channel_interpolated(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
 
@@ -534,16 +484,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if (module_data->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
-    if (module_data->hue_preservation >= 0.001f)
-    {
-      process_loglogistic_per_channel_interpolated(piece, ivoid, ovoid, roi_in, roi_out);
-    }
-    else
-    {
-      process_loglogistic_per_channel(piece, ivoid, ovoid, roi_in, roi_out);
-    }
+    process_loglogistic_per_channel(piece, ivoid, ovoid, roi_in, roi_out);
   }
-  else
+  else // DT_SIGMOID_METHOD_RGB_RATIO
   {
     process_loglogistic_rgb_ratio(piece, ivoid, ovoid, roi_in, roi_out);
   }
@@ -574,31 +517,14 @@ int process_cl(struct dt_iop_module_t *self,
   if (d->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
     const float hue_preservation = d->hue_preservation;
-
-    if (hue_preservation >= 0.001f)
-    {
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel_interpolated,
-                                             width, height,
-                                             CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-                                             CLARG(white_target), CLARG(paper_exp),
-                                             CLARG(film_fog), CLARG(contrast_power),
-                                             CLARG(skew_power), CLARG(hue_preservation));
-      if(err != CL_SUCCESS) goto error;
-      return TRUE;
-    }
-    else
-    {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel,
-                                             width, height,
-                                             CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-                                             CLARG(white_target), CLARG(paper_exp),
-                                             CLARG(film_fog), CLARG(contrast_power),
-                                             CLARG(skew_power));
-      if(err != CL_SUCCESS) goto error;
-      return TRUE;
-
-    }
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel,
+                                           width, height,
+                                           CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                           CLARG(white_target), CLARG(paper_exp),
+                                           CLARG(film_fog), CLARG(contrast_power),
+                                           CLARG(skew_power), CLARG(hue_preservation));
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
   }
   else
   {
@@ -627,9 +553,8 @@ void init_global(dt_iop_module_so_t *module)
     (dt_iop_sigmoid_global_data_t *)malloc(sizeof(dt_iop_sigmoid_global_data_t));
 
   module->data = gd;
-  gd->kernel_sigmoid_loglogistic_per_channel = dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");
-  gd->kernel_sigmoid_loglogistic_per_channel_interpolated =
-    dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel_interpolated");
+  gd->kernel_sigmoid_loglogistic_per_channel =
+    dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");
   gd->kernel_sigmoid_loglogistic_rgb_ratio = dt_opencl_create_kernel(program, "sigmoid_loglogistic_rgb_ratio");
 }
 
@@ -637,7 +562,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
-  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel_interpolated);
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
   free(module->data);
   module->data = NULL;
