@@ -413,7 +413,6 @@ static gboolean _popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
      || event->x_root < (int)wx - tol || event->y_root < (int)wy - tol)
   {
     _widget_reject(darktable.bauhaus->current);
-    _popup_hide();
     return TRUE;
   }
 
@@ -475,7 +474,7 @@ static gboolean _popup_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
 static gboolean _popup_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   if(darktable.bauhaus->current && (darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX)
-     && (event->button == 1) && dt_gui_long_click(event->time, darktable.bauhaus->opentime) && !darktable.bauhaus->hiding)
+     && (event->button == 1) && dt_gui_long_click(event->time, darktable.bauhaus->opentime))
   {
     gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_ACTIVE, TRUE);
 
@@ -492,10 +491,7 @@ static gboolean _popup_button_release(GtkWidget *widget, GdkEventButton *event, 
       _widget_accept(darktable.bauhaus->current);
     _popup_hide();
   }
-  else if(darktable.bauhaus->hiding)
-  {
-    _popup_hide();
-  }
+
   return TRUE;
 }
 
@@ -504,20 +500,19 @@ static gboolean _popup_button_press(GtkWidget *widget, GdkEventButton *event, gp
   if(event->window != gtk_widget_get_window(widget))
   {
     _widget_reject(darktable.bauhaus->current);
-    _popup_hide();
     return TRUE;
   }
 
   if(event->button == 1)
   {
+    gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
+                               GTK_STATE_FLAG_FOCUSED, FALSE);
     if(darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX
        && !dt_gui_long_click(event->time, darktable.bauhaus->opentime))
     {
       // counts as double click, reset:
       dt_bauhaus_widget_reset(GTK_WIDGET(darktable.bauhaus->current));
-      _widget_reject(darktable.bauhaus->current);
-      gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                                 GTK_STATE_FLAG_FOCUSED, FALSE);
+      _popup_hide();
     }
     else
     {
@@ -526,10 +521,8 @@ static gboolean _popup_button_press(GtkWidget *widget, GdkEventButton *event, gp
       darktable.bauhaus->end_mouse_x = event->x - padding->left;
       darktable.bauhaus->end_mouse_y = event->y - padding->top;
       _widget_accept(darktable.bauhaus->current);
-      gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
-                                 GTK_STATE_FLAG_FOCUSED, FALSE);
+      _popup_hide();
     }
-    darktable.bauhaus->hiding = TRUE;
   }
   else if(event->button == 2 && darktable.bauhaus->current->type == DT_BAUHAUS_SLIDER)
   {
@@ -539,14 +532,14 @@ static gboolean _popup_button_press(GtkWidget *widget, GdkEventButton *event, gp
   else
   {
     _widget_reject(darktable.bauhaus->current);
-    darktable.bauhaus->hiding = TRUE;
   }
   return TRUE;
 }
 
 static void _window_show(GtkWidget *w, gpointer user_data)
 {
-  gtk_grab_add(GTK_WIDGET(w));
+  // make sure combo popup handles button release
+  gtk_grab_add(GTK_WIDGET(user_data));
 }
 
 static void dt_bh_init(DtBauhausWidget *class)
@@ -1853,19 +1846,9 @@ static void _draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr, float width)
 
 static void _widget_reject(dt_bauhaus_widget_t *w)
 {
-  switch(w->type)
-  {
-    case DT_BAUHAUS_COMBOBOX:
-      break;
-    case DT_BAUHAUS_SLIDER:
-    {
-      dt_bauhaus_slider_data_t *d = &w->data.slider;
-      _slider_set_normalized(w, d->oldpos);
-    }
-    break;
-    default:
-      break;
-  }
+  if(w->type == DT_BAUHAUS_SLIDER)
+    _slider_set_normalized(w, w->data.slider.oldpos);
+  _popup_hide();
 }
 
 static void _widget_accept(dt_bauhaus_widget_t *w)
@@ -2463,11 +2446,10 @@ static void _popup_hide()
 {
   if(darktable.bauhaus->current)
   {
-    gtk_grab_remove(darktable.bauhaus->popup_window);
+    gtk_grab_remove(darktable.bauhaus->popup_area);
     gtk_widget_hide(darktable.bauhaus->popup_window);
     gtk_window_set_attached_to(GTK_WINDOW(darktable.bauhaus->popup_window), NULL);
     darktable.bauhaus->current = NULL;
-    // TODO: give focus to center view? do in accept() as well?
   }
   _stop_cursor();
 }
@@ -2480,7 +2462,6 @@ static void _popup_show(GtkWidget *widget)
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->change_active = 0;
   darktable.bauhaus->mouse_line_distance = 0.0f;
-  darktable.bauhaus->hiding = FALSE;
   _stop_cursor();
 
   bauhaus_request_focus(w);
@@ -3081,11 +3062,10 @@ static gboolean _popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer
             dt_bauhaus_slider_set_val(GTK_WIDGET(darktable.bauhaus->current), new_value);
         }
       }
-      // fall through
-    case GDK_KEY_Escape:
-      darktable.bauhaus->keys_cnt = 0;
-      _widget_reject(darktable.bauhaus->current);
       _popup_hide();
+      break;
+    case GDK_KEY_Escape:
+      _widget_reject(darktable.bauhaus->current);
       break;
     case GDK_KEY_Home:
     case GDK_KEY_KP_Home:
