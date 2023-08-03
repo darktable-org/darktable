@@ -1927,8 +1927,7 @@ gboolean dt_history_paste_on_list(const GList *list, const gboolean undo)
 
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
 
-  if(cv->view(cv) == DT_VIEW_DARKROOM
-     && darktable.view_manager->copy_paste.copy_iop_order)
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
   }
@@ -1983,8 +1982,7 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
 
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
 
-  if(cv->view(cv) == DT_VIEW_DARKROOM
-     && darktable.view_manager->copy_paste.copy_iop_order)
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
   }
