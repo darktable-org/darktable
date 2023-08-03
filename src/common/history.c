@@ -374,8 +374,9 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
         dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
         if(strcmp(mod_src->op, mod_dest->op) == 0
-           && !mod_dest->multi_name_hand_edited
-           && mod_src->multi_priority == mod_dest->multi_priority)
+           && ( (!mod_dest->multi_name_hand_edited
+                 && mod_src->multi_priority == mod_dest->multi_priority)
+                || !mod_dest->enabled))
         {
           // but only if it hasn't been used already
           if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
