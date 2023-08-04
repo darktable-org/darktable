@@ -144,10 +144,10 @@ typedef struct dt_iop_lens_params_t
   float tca_b; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA blue"
 
   // embedded metadata method parameters
-  float cor_dist_ft;  // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "distortion fine-tune"
-  float cor_vig_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "vignetting fine-tune"
-  float cor_ca_r_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "TCA red fine-tune"
-  float cor_ca_b_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "TCA blue fine-tune"
+  float cor_dist_ft;  // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "distortion"
+  float cor_vig_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "vignetting"
+  float cor_ca_r_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "TCA red"
+  float cor_ca_b_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "TCA blue"
   // TODO should be possible to also add tca fine tune modifications
 
   // scale_md_v1 is used by embedded metadata algorithm v1. Kept for backward compatibility
@@ -185,7 +185,7 @@ typedef struct dt_iop_lens_gui_data_t
   GtkWidget *cor_dist_ft, *cor_vig_ft, *cor_ca_r_ft, *cor_ca_b_ft, *scale_md;
   GtkWidget *use_latest_md_algo;
   GtkWidget *v_strength, *v_radius, *v_steepness;
-  dt_gui_collapsible_section_t cs;
+  dt_gui_collapsible_section_t fine_tune, vignette;
   GtkLabel *message;
   int corrections_done;
   gboolean lensfun_trouble;
@@ -632,7 +632,7 @@ int legacy_params(
     n->v_radius = 0.5f;
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
- 
+
     return o->modified == 0 ? -1 : 0;
   }
 
@@ -1998,7 +1998,7 @@ static void _preprocess_vignette(struct dt_iop_module_t *self,
       for_three_channels(c)
         vig[idx + c] = (1.0f + val) * data[idx+c];
 
-      vig[idx + 3] = (mask) ? val : vig[idx + 1]; 
+      vig[idx + 3] = (mask) ? val : vig[idx + 1];
     }
   }
 }
@@ -2832,13 +2832,13 @@ void process(dt_iop_module_t *self,
 
   if(mask)
     piece->pipe->mask_display =  DT_DEV_PIXELPIPE_DISPLAY_MASK;
- 
+
   if(correction)
   {
     data = dt_alloc_align_float((size_t) 4 * roi_in->width * roi_in->height);
     _preprocess_vignette(self, piece, (float *)ivoid, data, roi_in, mask);
   }
-    
+
   if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
     _process_lf(self, piece, data, ovoid, roi_in, roi_out);
@@ -2865,8 +2865,8 @@ cl_int _preprocess_vignette_cl(struct dt_iop_module_t *self,
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
 
   _init_vignette_spline(d);
- 
-  cl_mem dev_spline = (cl_mem)dt_opencl_copy_host_to_device_constant(piece->pipe->devid, sizeof(d->vigspline), d->vigspline); 
+
+  cl_mem dev_spline = (cl_mem)dt_opencl_copy_host_to_device_constant(piece->pipe->devid, sizeof(d->vigspline), d->vigspline);
   if(dev_spline == NULL) return DT_OPENCL_SYSMEM_ALLOCATION;
 
   const float w2 = 0.5f * roi->scale * piece->buf_in.width;
@@ -2896,7 +2896,7 @@ int process_cl(struct dt_iop_module_t *self,
 {
   // process_cl is called only for lensfun method
   cl_mem data = dev_in;
- 
+
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   const gboolean mask = g && g->vig_masking && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
@@ -4247,24 +4247,36 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box_md), g->use_latest_md_algo, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->use_latest_md_algo), "toggled", G_CALLBACK(_use_latest_md_algo_callback), self);
 
-  g->cor_dist_ft = dt_bauhaus_slider_from_params(self, "cor_dist_ft");
+  // we put fine-tuning values under an expander
+  dt_gui_new_collapsible_section
+    (&g->fine_tune,
+     "plugins/darkroom/lens/expand_fine_tune",
+     _("fine-tuning"),
+     GTK_BOX(self->widget),
+     DT_ACTION(self));
+  self->widget = GTK_WIDGET(g->fine_tune.container);
+  // DT_IOP_SECTION_FOR_PARAMS doesn't work in C++ so create section module manually
+  dt_iop_module_section_t sect_mod = {DT_ACTION_TYPE_IOP_SECTION, self, (gchar *)N_("fine-tune")};
+  dt_iop_module_t *sect = (dt_iop_module_t *)&sect_mod;
+
+  g->cor_dist_ft = dt_bauhaus_slider_from_params(sect, "cor_dist_ft");
   dt_bauhaus_slider_set_digits(g->cor_dist_ft, 3);
   gtk_widget_set_tooltip_text(g->cor_dist_ft,
                               _("tune the warp and chromatic aberration correction"));
 
-  g->cor_vig_ft = dt_bauhaus_slider_from_params(self, "cor_vig_ft");
+  g->cor_vig_ft = dt_bauhaus_slider_from_params(sect, "cor_vig_ft");
   dt_bauhaus_slider_set_digits(g->cor_vig_ft, 3);
   gtk_widget_set_tooltip_text(g->cor_vig_ft, _("tune the vignette correction"));
 
-  g->cor_ca_r_ft = dt_bauhaus_slider_from_params(self, "cor_ca_r_ft");
+  g->cor_ca_r_ft = dt_bauhaus_slider_from_params(sect, "cor_ca_r_ft");
   dt_bauhaus_slider_set_digits(g->cor_ca_r_ft, 3);
   gtk_widget_set_tooltip_text(g->cor_ca_r_ft, _("tune the TCA red correction"));
 
-  g->cor_ca_b_ft = dt_bauhaus_slider_from_params(self, "cor_ca_b_ft");
+  g->cor_ca_b_ft = dt_bauhaus_slider_from_params(sect, "cor_ca_b_ft");
   dt_bauhaus_slider_set_digits(g->cor_ca_b_ft, 3);
   gtk_widget_set_tooltip_text(g->cor_ca_b_ft, _("tune the TCA blue correction"));
 
-  g->scale_md = dt_bauhaus_slider_from_params(self, "scale_md");
+  g->scale_md = dt_bauhaus_slider_from_params(sect, "scale_md");
   dt_bauhaus_slider_set_digits(g->scale_md, 4);
   dt_bauhaus_widget_set_quad_paint(g->scale_md, dtgtk_cairo_paint_refresh, 0, NULL);
   g_signal_connect(G_OBJECT(g->scale_md), "quad-pressed",
@@ -4305,17 +4317,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   // widget for extra manual vignette correction, FIXME manual reference
   dt_gui_new_collapsible_section
-    (&g->cs,
-     "plugins/darkroom/lens/manualvignette",
+    (&g->vignette,
+     "plugins/darkroom/lens/expand_vignette",
      _("manual vignette correction"),
      GTK_BOX(main_box),
      DT_ACTION(self));
-  gtk_widget_set_tooltip_text(g->cs.expander,
+  gtk_widget_set_tooltip_text(g->vignette.expander,
       _("additional manually controlled optical vignetting correction"));
 
-  self->widget = GTK_WIDGET(g->cs.container);
+  self->widget = GTK_WIDGET(g->vignette.container);
+  sect_mod.section = (gchar *)N_("vignette");
 
-  g->v_strength = dt_bauhaus_slider_from_params(self, "v_strength");
+  g->v_strength = dt_bauhaus_slider_from_params(sect, "v_strength");
   dt_bauhaus_slider_set_format(g->v_strength, "%");
   dt_bauhaus_slider_set_digits(g->v_strength, 1);
   dt_bauhaus_widget_set_quad_paint(g->v_strength, dtgtk_cairo_paint_showmask, 0, NULL);
@@ -4323,11 +4336,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->v_strength, FALSE);
   g_signal_connect(G_OBJECT(g->v_strength), "quad-pressed", G_CALLBACK(_visualize_callback), self);
 
-  g->v_radius = dt_bauhaus_slider_from_params(self, "v_radius");
+  g->v_radius = dt_bauhaus_slider_from_params(sect, "v_radius");
   dt_bauhaus_slider_set_format(g->v_radius, "%");
   dt_bauhaus_slider_set_digits(g->v_radius, 1);
 
-  g->v_steepness = dt_bauhaus_slider_from_params(self, "v_steepness");
+  g->v_steepness = dt_bauhaus_slider_from_params(sect, "v_steepness");
   dt_bauhaus_slider_set_format(g->v_steepness, "%");
   dt_bauhaus_slider_set_digits(g->v_steepness, 1);
 
