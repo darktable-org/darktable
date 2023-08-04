@@ -1598,8 +1598,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         (max_slot_heigth - spacing * (g_list_length(slot) - 1)) / (float)slot_heigth;
       
       // limit scaling so that width does not increase by more than 20%
-      if((thumb->width/(float)thumb->height) * stack_heigth_factor < 1.20)
-        stack_heigth_factor = 1.20 / (thumb->width/(float)thumb->height);
+      stack_heigth_factor = MIN(stack_heigth_factor, table->view_width / (float)thumb->width);
       thumb->height *= stack_heigth_factor;
       thumb->width *= stack_heigth_factor;
 
