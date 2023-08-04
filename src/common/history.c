@@ -337,6 +337,11 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
      && mod_replace == NULL
      && (!append || !mod_src->enabled))
   {
+    dt_iop_module_t *mod_same_name = NULL;
+    dt_iop_module_t *mod_same_prio = NULL;
+    dt_iop_module_t *mod_unused = NULL;
+    dt_iop_module_t *mod_default = NULL;
+
     // we haven't found a module to replace check if there's a module
     // with the same (operation, multi_name) on dev->iop
 
@@ -346,49 +351,50 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     {
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
+      // look for not yet used module
       if(strcmp(mod_src->op, mod_dest->op) == 0
-         && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
+         && _search_list_iop_by_module(modules_used, mod_dest) == NULL)
       {
-        // but only if it hasn't been used already
-        if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
+        if(strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
         {
-          // we will replace this module
-          modules_used = g_list_append(modules_used, mod_dest);
-          mod_replace = mod_dest;
-          break;
+          mod_same_name = mod_dest;
+        }
+        else if(!mod_dest->multi_name_hand_edited
+                && mod_src->multi_priority == mod_dest->multi_priority)
+        {
+          mod_same_prio = mod_dest;
+        }
+        else if(!mod_dest->enabled)
+        {
+          mod_unused = mod_dest;
+        }
+        else if(memcmp(mod_dest->params,
+                       mod_dest->default_params,
+                       mod_dest->params_size) == 0
+                && memcmp(mod_dest->blend_params,
+                          mod_dest->default_blendop_params,
+                          sizeof(dt_develop_blend_params_t)) == 0)
+        {
+          mod_default = mod_dest;
         }
       }
     }
 
-    // we haven't found a module to replace yet. check if there's a
-    // module with the same (operation, multi_name) on dev->iop in
-    // relaxed mode. that is, if multi_name is not hand edited we
-    // replace the same multi_priority.
+    // now select the destination module by order of preference:
+    // - same name
+    // - not enabled
+    // - enabled but has default params
+    // - same prio
+    dt_iop_module_t *mod_dest =
+      mod_same_name ? mod_same_name
+      : (mod_unused ? mod_unused
+         : (mod_default ? mod_default
+            : (mod_same_prio ? mod_same_prio
+               : NULL)));
 
-    if(mod_replace == NULL)
-    {
-      for(GList *modules_dest = dev_dest->iop;
-          modules_dest;
-          modules_dest = g_list_next(modules_dest))
-      {
-        dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
-
-        if(strcmp(mod_src->op, mod_dest->op) == 0
-           && ( (!mod_dest->multi_name_hand_edited
-                 && mod_src->multi_priority == mod_dest->multi_priority)
-                || !mod_dest->enabled))
-        {
-          // but only if it hasn't been used already
-          if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
-          {
-            // we will replace this module
-            modules_used = g_list_append(modules_used, mod_dest);
-            mod_replace = mod_dest;
-            break;
-          }
-        }
-      }
-    }
+    // we will replace this module
+    modules_used = g_list_append(modules_used, mod_dest);
+    mod_replace = mod_dest;
   }
 
   if(module_added && mod_replace == NULL)
