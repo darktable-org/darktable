@@ -500,6 +500,9 @@ void dt_dev_masks_selection_change(dt_develop_t *dev,
  * multi instances
  */
 /** duplicate a existent module */
+struct dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
+                                                    struct dt_iop_module_t *base,
+                                                    const gboolean reorder_iop);
 struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev,
                                                 struct dt_iop_module_t *base);
 /** remove an existent module */

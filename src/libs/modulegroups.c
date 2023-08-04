@@ -865,7 +865,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     GtkWidget *w = module->expander;
 
     if(module->enabled)
-    dt_print(DT_DEBUG_IOPORDER, "%20s %d%s",
+    dt_print(DT_DEBUG_IOPORDER, "%20s %d%s\n",
       module->op, module->iop_order, (dt_iop_is_hidden(module)) ? ", hidden" : "");
 
       /* skip modules without an gui */

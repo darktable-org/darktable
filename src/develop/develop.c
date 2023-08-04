@@ -928,6 +928,39 @@ static void _dev_auto_save(dt_develop_t *dev)
   }
 }
 
+static void _dev_auto_module_label(dt_develop_t *dev,
+                                   dt_iop_module_t *module)
+{
+  // adjust the label to match presets if possible or otherwise the default
+  // multi_name for this module.
+  if(!dt_iop_is_hidden(module)
+    && !module->multi_name_hand_edited
+    && dt_conf_get_bool("darkroom/ui/auto_module_name_update"))
+  {
+    const gboolean is_default_params =
+      memcmp(module->params, module->default_params, module->params_size) == 0;
+
+    char *preset_name = dt_presets_get_module_label
+      (module->op,
+       module->params, module->params_size, is_default_params,
+       module->blend_params, sizeof(dt_develop_blend_params_t));
+
+    // if we have a preset-name, use it. otherwise set the label to the multi-priority
+    // except for 0 where the multi-name is cleared.
+    if(preset_name)
+      snprintf(module->multi_name, sizeof(module->multi_name), "%s", preset_name);
+    else if(module->multi_priority != 0)
+      snprintf(module->multi_name, sizeof(module->multi_name), "%d", module->multi_priority);
+    else
+      g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
+
+    g_free(preset_name);
+
+    if(dev->gui_attached)
+      dt_iop_gui_update_header(module);
+  }
+}
+
 static void _dev_add_history_item_ext(dt_develop_t *dev,
                                       dt_iop_module_t *module,
                                       const gboolean enable,
@@ -935,6 +968,9 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
                                       const gboolean no_image,
                                       const gboolean include_masks)
 {
+  // try to auto-name the module based on the presets if possible
+  _dev_auto_module_label(dev, module);
+
   int kept_module = 0;
   GList *history = g_list_nth(dev->history, dev->history_end);
   // look for leaks on top of history in two steps
@@ -1122,8 +1158,12 @@ static void _dev_add_history_item(dt_develop_t *dev,
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
+  gchar *saved_name = g_strdup(module->multi_name);
+
   const gboolean need_end_record =
-    _dev_undo_start_record_target(dev, target);
+    _dev_undo_start_record_target(dev, strcmp(saved_name, module->multi_name) ? NULL : target);
+
+  g_free(saved_name);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -2769,8 +2809,8 @@ void dt_dev_masks_list_update(dt_develop_t *dev)
 }
 
 void dt_dev_masks_list_remove(dt_develop_t *dev,
-                              dt_mask_id_t formid,
-                              dt_mask_id_t parentid)
+                              const dt_mask_id_t formid,
+                              const dt_mask_id_t parentid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.list_remove)
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
@@ -2799,11 +2839,14 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
 
 
 /** duplicate a existent module */
-dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *base)
+dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
+                                             dt_iop_module_t *base,
+                                             const gboolean reorder_iop)
 {
   // we create the new module
   dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, base->so, base->dev)) return NULL;
+  if(dt_iop_load_module(module, base->so, base->dev))
+    return NULL;
   module->instance = base->instance;
 
   // we set the multi-instance priority and the iop order
@@ -2856,13 +2899,13 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 
   // the multi instance name
   g_strlcpy(module->multi_name, mname, sizeof(module->multi_name));
-  module->multi_name_hand_edited = 0;
+  module->multi_name_hand_edited = FALSE;
 
   // we insert this module into dev->iop
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, dt_sort_iop_by_order);
 
   // always place the new instance after the base one
-  if(!dt_ioppr_move_iop_after(base->dev, module, base))
+  if(reorder_iop && !dt_ioppr_move_iop_after(base->dev, module, base))
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_dev_module_duplicate] can't move new instance after the base one\n");
@@ -2871,6 +2914,11 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 
   // that's all. rest of insertion is gui work !
   return module;
+}
+
+dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *base)
+{
+  return dt_dev_module_duplicate_ext(dev, base, TRUE);
 }
 
 void dt_dev_invalidate_history_module(GList *list,

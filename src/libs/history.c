@@ -1169,7 +1169,7 @@ void gui_update(dt_lib_module_t *self)
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 }
 
-static void _lib_history_truncate(gboolean compress)
+static void _lib_history_truncate(const gboolean compress)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(!dt_is_valid_imgid(imgid)) return;
