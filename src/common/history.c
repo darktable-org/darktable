@@ -392,9 +392,12 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
             : (mod_same_prio ? mod_same_prio
                : NULL)));
 
-    // we will replace this module
-    modules_used = g_list_append(modules_used, mod_dest);
-    mod_replace = mod_dest;
+    if(mod_dest)
+    {
+      // we will replace this module
+      modules_used = g_list_append(modules_used, mod_dest);
+      mod_replace = mod_dest;
+    }
   }
 
   if(module_added && mod_replace == NULL)
