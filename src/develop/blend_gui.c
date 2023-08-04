@@ -729,13 +729,13 @@ static void _blendop_blend_mode_callback(GtkWidget *combo,
 
     if(_blendif_blend_parameter_enabled(data->blend_modes_csp, bp->blend_mode))
     {
-      gtk_widget_set_sensitive(data->blend_mode_parameter_slider, TRUE);
+      gtk_widget_show(data->blend_mode_parameter_slider);
     }
     else
     {
       bp->blend_parameter = 0.0f;
       dt_bauhaus_slider_set(data->blend_mode_parameter_slider, bp->blend_parameter);
-      gtk_widget_set_sensitive(data->blend_mode_parameter_slider, FALSE);
+      gtk_widget_hide(data->blend_mode_parameter_slider);
     }
     dt_dev_add_history_item(darktable.develop, data->module, TRUE);
   }
@@ -3193,12 +3193,10 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   dt_bauhaus_slider_set(bd->blend_mode_parameter_slider,
                         module->blend_params->blend_parameter);
-  gtk_widget_set_sensitive
+  gtk_widget_set_visible
     (bd->blend_mode_parameter_slider,
      _blendif_blend_parameter_enabled(bd->blend_modes_csp,
                                       module->blend_params->blend_mode));
-  gtk_widget_set_visible(bd->blend_mode_parameter_slider,
-                         bd->blend_modes_csp == DEVELOP_BLEND_CS_RGB_SCENE);
 
   dt_bauhaus_combobox_set_from_value
     (bd->masks_combine_combo,
