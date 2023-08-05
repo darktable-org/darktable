@@ -552,8 +552,9 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_FULL,
-                           DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(darktable.mipmap_cache,
+                      &buf, dev->image_storage.id, DT_MIPMAP_FULL,
+                      DT_MIPMAP_BLOCKING, 'r');
   dt_show_times(&start, "[dt_dev_process_image_job] loading image.");
 
   // failed to load raw?
@@ -583,7 +584,8 @@ void dt_dev_process_image_job(dt_develop_t *dev)
       dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       dev->preview2_input_changed = TRUE;
       dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->gui_synch = TRUE; // notify gui thread we want to synch (call gui_update in the modules)
+      dev->gui_synch = TRUE; // notify gui thread we want to synch
+                             // (call gui_update in the modules)
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
       dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
@@ -690,7 +692,8 @@ static inline void _dt_dev_load_pipeline_defaults(dt_develop_t *dev)
 }
 
 // load the raw and get the new image struct, blocking in gui thread
-static inline void _dt_dev_load_raw(dt_develop_t *dev, const dt_imgid_t imgid)
+static inline void _dt_dev_load_raw(dt_develop_t *dev,
+                                    const dt_imgid_t imgid)
 {
   // first load the raw, to make sure dt_image_t will contain all and correct data.
   dt_mipmap_buffer_t buf;
@@ -708,7 +711,8 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const dt_imgid_t imgid)
   dev->requested_id = dev->image_storage.id;
 }
 
-void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid)
+void dt_dev_reload_image(dt_develop_t *dev,
+                         const dt_imgid_t imgid)
 {
   _dt_dev_load_raw(dev, imgid);
   dev->image_force_reload = dev->image_loading =
@@ -718,11 +722,10 @@ void dt_dev_reload_image(dt_develop_t *dev, const dt_imgid_t imgid)
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
 }
 
-float dt_dev_get_zoom_scale(
-        dt_develop_t *dev,
-        dt_dev_zoom_t zoom,
-        const int closeup_factor,
-        const int preview)
+float dt_dev_get_zoom_scale(dt_develop_t *dev,
+                            dt_dev_zoom_t zoom,
+                            const int closeup_factor,
+                            const int preview)
 {
   float zoom_scale;
 
@@ -791,12 +794,15 @@ void dt_dev_load_image_ext(dt_develop_t *dev,
   dt_unlock_image(imgid);
 }
 
-void dt_dev_load_image(dt_develop_t *dev, const dt_imgid_t imgid)
+void dt_dev_load_image(dt_develop_t *dev,
+                       const dt_imgid_t imgid)
 {
   dt_dev_load_image_ext(dev, imgid, -1);
 }
 
-void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
+void dt_dev_configure(dt_develop_t *dev,
+                      int wd,
+                      int ht)
 {
   // fixed border on every side
   const int32_t tb = dev->border_size;
@@ -813,7 +819,9 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
   }
 }
 
-void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht)
+void dt_dev_second_window_configure(dt_develop_t *dev,
+                                    int wd,
+                                    int ht)
 {
   // fixed border on every side
   int32_t tb = 0;
@@ -907,7 +915,7 @@ static void _dev_auto_save(dt_develop_t *dev)
   const double user_delay = (double)dt_conf_get_int("autosave_interval");
   const double now = dt_get_wtime();
 
-  const dt_imgid_t imgid = dev->image_storage.id; 
+  const dt_imgid_t imgid = dev->image_storage.id;
 
   /* We can only autosave database & xmp while we have a valid image id
      and we are not currently loading or changing it in main darkroom
@@ -916,7 +924,7 @@ static void _dev_auto_save(dt_develop_t *dev)
                         && ((now - last) > user_delay)
                         && !dev->image_loading
                         && dev->requested_id == imgid
-                        && dt_is_valid_imgid(imgid);  
+                        && dt_is_valid_imgid(imgid);
 
   if(saving)
   {
@@ -959,9 +967,11 @@ static void _dev_auto_module_label(dt_develop_t *dev,
     // if we have a preset-name, use it. otherwise set the label to the multi-priority
     // except for 0 where the multi-name is cleared.
     if(preset_name)
-      snprintf(module->multi_name, sizeof(module->multi_name), "%s", preset_name);
+      snprintf(module->multi_name,
+               sizeof(module->multi_name), "%s", preset_name);
     else if(module->multi_priority != 0)
-      snprintf(module->multi_name, sizeof(module->multi_name), "%d", module->multi_priority);
+      snprintf(module->multi_name,
+               sizeof(module->multi_name), "%d", module->multi_priority);
     else
       g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
 
@@ -1119,7 +1129,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
   if((module->enabled) && (!no_image))
     module->write_input_hint = TRUE;
 
-  // possibly save database and sidecar file 
+  // possibly save database and sidecar file
   if(dev->autosaving)
     _dev_auto_save(dev);
 }
@@ -1150,8 +1160,10 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev,
 static gboolean _dev_undo_start_record_target(dt_develop_t *dev, gpointer target)
 {
   const double this_time = dt_get_wtime();
-  const double merge_time = dev->gui_previous_time + dt_conf_get_float("darkroom/undo/merge_same_secs");
-  const double review_time = dev->gui_previous_pipe_time + dt_conf_get_float("darkroom/undo/review_secs");
+  const double merge_time =
+    dev->gui_previous_time + dt_conf_get_float("darkroom/undo/merge_same_secs");
+  const double review_time =
+    dev->gui_previous_pipe_time + dt_conf_get_float("darkroom/undo/review_secs");
   dev->gui_previous_pipe_time = merge_time;
   if(target && target == dev->gui_previous_target
      && this_time < MIN(merge_time, review_time))
@@ -1194,19 +1206,6 @@ static void _dev_add_history_item(dt_develop_t *dev,
   {
     _dev_add_history_item_ext(dev, module, enable, new_item, FALSE, FALSE, FALSE);
   }
-#if 0
-  {
-    // debug:
-    printf("remaining %d history items:\n", dev->history_end);
-    int i = 0;
-    for(GList *history = dev->history; history; history = g_list_next(history))
-    {
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-      printf("%d %s\n", i, hist->module->op);
-      i++;
-    }
-  }
-#endif
 
   /* attach changed tag reflecting actual change */
   const dt_imgid_t imgid = dev->image_storage.id;
@@ -1240,7 +1239,7 @@ static void _dev_add_history_item(dt_develop_t *dev,
 
 void dt_dev_add_history_item(dt_develop_t *dev,
                              dt_iop_module_t *module,
-                             gboolean enable)
+                             const gboolean enable)
 {
   _dev_add_history_item(dev, module, enable, FALSE, NULL);
 }
@@ -1561,7 +1560,8 @@ static void _cleanup_history(const dt_imgid_t imgid)
   sqlite3_finalize(stmt);
 }
 
-void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid)
+void dt_dev_write_history_ext(dt_develop_t *dev,
+                              const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
   dt_lock_image(imgid);
@@ -1622,7 +1622,9 @@ static int _dev_get_module_nb_records(void)
   return cnt;
 }
 
-void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const dt_imgid_t imgid)
+void _dev_insert_module(dt_develop_t *dev,
+                        dt_iop_module_t *module,
+                        const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
 
@@ -1699,8 +1701,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            && !dt_history_check_module_exists(imgid, module->op, FALSE))
         {
           dt_print(DT_DEBUG_PARAMS,
-                  "[_dev_auto_apply_presets] missing mandatory module %s for image id=%d `%s'\n",
-                  module->op, imgid, dev->image_storage.filename);
+                   "[_dev_auto_apply_presets] missing mandatory module %s"
+                   " for image id=%d `%s'\n",
+                   module->op, imgid, dev->image_storage.filename);
 
           // If the module is white-balance and we are dealing with a
           // raw file we need to add one now with the default legacy
@@ -1955,7 +1958,8 @@ static void _dev_add_default_modules(dt_develop_t *dev, const dt_imgid_t imgid)
   }
 }
 
-static void _dev_merge_history(dt_develop_t *dev, const dt_imgid_t imgid)
+static void _dev_merge_history(dt_develop_t *dev,
+                               const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
 
@@ -2059,7 +2063,8 @@ static void _dev_merge_history(dt_develop_t *dev, const dt_imgid_t imgid)
   }
 }
 
-void _dev_write_history(dt_develop_t *dev, const dt_imgid_t imgid)
+void _dev_write_history(dt_develop_t *dev,
+                        const dt_imgid_t imgid)
 {
   _cleanup_history(imgid);
   // write history entries
@@ -2073,7 +2078,7 @@ void _dev_write_history(dt_develop_t *dev, const dt_imgid_t imgid)
 }
 
 // helper function for debug strings
-char *_print_validity(gboolean state)
+char *_print_validity(const gboolean state)
 {
   if(state)
     return "ok";
@@ -2321,11 +2326,16 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     }
 
     // Run a battery of tests
-    const gboolean is_valid_module_name = (strcmp(module_name, hist->module->op) == 0);
-    const gboolean is_valid_blendop_version = (blendop_version == dt_develop_blend_version());
-    const gboolean is_valid_blendop_size = (bl_length == sizeof(dt_develop_blend_params_t));
-    const gboolean is_valid_module_version = (modversion == hist->module->version());
-    const gboolean is_valid_params_size = (param_length == hist->module->params_size);
+    const gboolean is_valid_module_name =
+      (strcmp(module_name, hist->module->op) == 0);
+    const gboolean is_valid_blendop_version =
+      (blendop_version == dt_develop_blend_version());
+    const gboolean is_valid_blendop_size =
+      (bl_length == sizeof(dt_develop_blend_params_t));
+    const gboolean is_valid_module_version =
+      (modversion == hist->module->version());
+    const gboolean is_valid_params_size =
+      (param_length == hist->module->params_size);
 
     dt_print(DT_DEBUG_PARAMS,
              "[history] successfully loaded module %s from history\n"
@@ -2352,10 +2362,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
 
     // update module iop_order only on active history entries
-    if(history_end_current > dev->history_end) hist->module->iop_order = hist->iop_order;
+    if(history_end_current > dev->history_end)
+      hist->module->iop_order = hist->iop_order;
 
     // Copy blending params if valid, else try to convert legacy params
-    if(blendop_params && is_valid_blendop_version && is_valid_blendop_size)
+    if(blendop_params
+       && is_valid_blendop_version
+       && is_valid_blendop_size)
     {
       memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     }
@@ -2509,7 +2522,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     // depending on the xmp_writing mode we either us safe or relaxed
     const gboolean always = (dt_image_get_xmp_mode() == DT_WRITE_XMP_ALWAYS);
     dt_image_cache_write_release
-      (darktable.image_cache, image, always ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
+      (darktable.image_cache,
+       image,
+       always ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
   }
   else if(legacy_params)
   {
@@ -2573,7 +2588,8 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
 
 void dt_dev_reprocess_preview(dt_develop_t *dev)
 {
-  if(darktable.gui->reset || !dev || !dev->gui_attached) return;
+  if(darktable.gui->reset || !dev || !dev->gui_attached)
+    return;
 
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
   dev->preview_pipe->cache_obsolete = TRUE;
@@ -2629,7 +2645,9 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev,
   if(boxhh) *boxhh = boxh;
 }
 
-void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
+void dt_dev_get_processed_size(const dt_develop_t *dev,
+                               int *procw,
+                               int *proch)
 {
   if(!dev) return;
 
@@ -2678,7 +2696,8 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   *zoom_y = zoom2_y;
 }
 
-gboolean dt_dev_is_current_image(dt_develop_t *dev, const dt_imgid_t imgid)
+gboolean dt_dev_is_current_image(dt_develop_t *dev,
+                                 const dt_imgid_t imgid)
 {
   return (dev->image_storage.id == imgid) ? TRUE : FALSE;
 }
@@ -2719,7 +2738,8 @@ void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
   dt_dev_add_history_item(exposure->dev, exposure, TRUE);
 }
 
-void dt_dev_exposure_set_exposure(dt_develop_t *dev, const float exposure)
+void dt_dev_exposure_set_exposure(dt_develop_t *dev,
+                                  const float exposure)
 {
   dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
 
@@ -2737,7 +2757,8 @@ float dt_dev_exposure_get_exposure(dt_develop_t *dev)
   return 0.0;
 }
 
-void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
+void dt_dev_exposure_set_black(dt_develop_t *dev,
+                               const float black)
 {
   dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
 
@@ -2755,7 +2776,8 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return 0.0;
 }
 
-void dt_dev_modulegroups_set(dt_develop_t *dev, const uint32_t group)
+void dt_dev_modulegroups_set(dt_develop_t *dev,
+                             const uint32_t group)
 {
   if(dev->proxy.modulegroups.module
      && dev->proxy.modulegroups.set
@@ -2803,7 +2825,8 @@ void dt_dev_modulegroups_update_visibility(dt_develop_t *dev)
     dev->proxy.modulegroups.update_visibility(dev->proxy.modulegroups.module);
 }
 
-gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module)
+gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev,
+                                        gchar *module)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test_visible)
     return dev->proxy.modulegroups.test_visible(dev->proxy.modulegroups.module, module);
@@ -2852,7 +2875,8 @@ void dt_dev_invalidate_from_gui(dt_develop_t *dev)
   dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
 }
 
-void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_delay)
+void dt_dev_average_delay_update(const dt_times_t *start,
+                                 uint32_t *average_delay)
 {
   dt_times_t end;
   dt_get_times(&end);
@@ -2958,7 +2982,8 @@ void dt_dev_invalidate_history_module(GList *list,
   }
 }
 
-void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
+void dt_dev_module_remove(dt_develop_t *dev,
+                          dt_iop_module_t *module)
 {
   // if(darktable.gui->reset) return;
   dt_pthread_mutex_lock(&dev->history_mutex);
@@ -3036,7 +3061,9 @@ int dt_dev_distort_backtransform(dt_develop_t *dev,
     (dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
-// only call directly or indirectly from dt_dev_distort_transform_plus, so that it runs with the history locked
+// only call directly or indirectly from
+// dt_dev_distort_transform_plus, so that it runs with the history
+// locked
 int dt_dev_distort_transform_locked(dt_develop_t *dev,
                                     dt_dev_pixelpipe_t *pipe,
                                     const double iop_order,
@@ -3056,10 +3083,14 @@ int dt_dev_distort_transform_locked(dt_develop_t *dev,
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order))
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
+               && module->iop_order >= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+               && module->iop_order > iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
+               && module->iop_order <= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
+               && module->iop_order < iop_order))
        && !(dev->gui_module && dev->gui_module != module
             && (dev->gui_module->operation_tags_filter() & module->operation_tags())))
     {
@@ -3079,7 +3110,9 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev,
                                   const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  const int success = dt_dev_distort_transform_locked(dev,pipe,iop_order,transf_direction,points,points_count);
+  const int success =
+    dt_dev_distort_transform_locked(dev, pipe, iop_order, transf_direction,
+                                    points, points_count);
 
   if(success
       && (dev->preview_downsampling != 1.0f)
@@ -3093,7 +3126,9 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev,
   return 1;
 }
 
-// only call directly or indirectly from dt_dev_distort_transform_plus, so that it runs with the history locked
+// only call directly or indirectly from
+// dt_dev_distort_transform_plus, so that it runs with the history
+// locked
 int dt_dev_distort_backtransform_locked(dt_develop_t *dev,
                                         dt_dev_pixelpipe_t *pipe,
                                         const double iop_order,
@@ -3143,8 +3178,10 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev,
   if((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
-      for(size_t idx=0; idx < 2 * points_count; idx++)
-        points[idx] /= dev->preview_downsampling;
+  {
+    for(size_t idx=0; idx < 2 * points_count; idx++)
+      points[idx] /= dev->preview_downsampling;
+  }
 
   const int success = dt_dev_distort_backtransform_locked
     (dev, pipe, iop_order,
@@ -3425,7 +3462,8 @@ dt_dev_zoom_t dt_second_window_get_dev_zoom(dt_develop_t *dev)
   return dev->second_window.zoom;
 }
 
-void dt_second_window_set_dev_zoom(dt_develop_t *dev, const dt_dev_zoom_t value)
+void dt_second_window_set_dev_zoom(dt_develop_t *dev,
+                                   const dt_dev_zoom_t value)
 {
   dev->second_window.zoom = value;
 }
@@ -3435,7 +3473,8 @@ int dt_second_window_get_dev_closeup(dt_develop_t *dev)
   return dev->second_window.closeup;
 }
 
-void dt_second_window_set_dev_closeup(dt_develop_t *dev, const int value)
+void dt_second_window_set_dev_closeup(dt_develop_t *dev,
+                                      const int value)
 {
   dev->second_window.closeup = value;
 }
@@ -3445,7 +3484,8 @@ float dt_second_window_get_dev_zoom_x(dt_develop_t *dev)
   return dev->second_window.zoom_x;
 }
 
-void dt_second_window_set_dev_zoom_x(dt_develop_t *dev, const float value)
+void dt_second_window_set_dev_zoom_x(dt_develop_t *dev,
+                                     const float value)
 {
   dev->second_window.zoom_x = value;
 }
@@ -3455,7 +3495,8 @@ float dt_second_window_get_dev_zoom_y(dt_develop_t *dev)
   return dev->second_window.zoom_y;
 }
 
-void dt_second_window_set_dev_zoom_y(dt_develop_t *dev, const float value)
+void dt_second_window_set_dev_zoom_y(dt_develop_t *dev,
+                                     const float value)
 {
   dev->second_window.zoom_y = value;
 }
@@ -3505,12 +3546,15 @@ float dt_second_window_get_zoom_scale(dt_develop_t *dev,
   return zoom_scale;
 }
 
-void dt_second_window_set_zoom_scale(dt_develop_t *dev, const float value)
+void dt_second_window_set_zoom_scale(dt_develop_t *dev,
+                                     const float value)
 {
   dev->second_window.zoom_scale = value;
 }
 
-void dt_second_window_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
+void dt_second_window_get_processed_size(const dt_develop_t *dev,
+                                         int *procw,
+                                         int *proch)
 {
   if(!dev) return;
 
@@ -3589,7 +3633,8 @@ void dt_dev_undo_start_record(dt_develop_t *dev)
 
   /* record current history state : before change (needed for undo) */
   if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
+                                  DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
 
   dev->gui_previous_target = NULL;
 }
