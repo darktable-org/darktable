@@ -3241,6 +3241,30 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 {
   PREAMBLE(1.15, 1, 0, 0)
 
+  // plus or minus
+  if(flags & (CPF_DIRECTION_UP | CPF_DIRECTION_DOWN))
+  {
+    cairo_set_line_width(cr, .06);
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
+
+    cairo_move_to(cr, 1.1, .4);
+    cairo_line_to(cr, 1.3, .4);
+
+    if(flags == CPF_DIRECTION_UP)
+    {
+      cairo_move_to(cr, 1.2, .3);
+      cairo_line_to(cr, 1.2, .5);
+    }
+
+    cairo_save(cr);
+    cairo_set_source_rgb(cr, 1., 1., 1.);
+    cairo_set_line_width(cr, .15);
+    cairo_stroke_preserve(cr);
+    cairo_restore(cr);
+
+    cairo_stroke(cr);
+  }
+
   //keyboard outline
   cairo_set_line_width(cr, .05);
   cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
@@ -3250,6 +3274,14 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   cairo_line_to(cr, .1, .73);
   cairo_line_to(cr, .9, .73);
   cairo_line_to(cr, .9, .27);
+
+  if(data)
+  {
+    cairo_save(cr);
+    cairo_set_source_rgb(cr, 1., 1., 1.);
+    cairo_fill_preserve(cr);
+    cairo_restore(cr);
+  }
 
   cairo_stroke(cr);
 
