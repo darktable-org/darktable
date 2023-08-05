@@ -1514,12 +1514,17 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
   GList *slots = NULL;
   int max_slot_heigth = 0;
+  int avg_thumb_width = 0;
 
   // loop through all thumbs
+  int thumb_counter = 0;
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
     GList *slot_iter = slots;
+
+    thumb_counter++;
+    avg_thumb_width += (thumb->width - avg_thumb_width) / (float)thumb_counter;
 
     // loop through newly created slots to check for available space
     for(; slot_iter; slot_iter = slot_iter->next)
@@ -1597,8 +1602,9 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       float stack_heigth_factor = 
         (max_slot_heigth - spacing * (g_list_length(slot) - 1)) / (float)slot_heigth;
       
-      // limit scaling so that width does not increase by more than 20%
-      stack_heigth_factor = MIN(stack_heigth_factor, table->view_width / (float)thumb->width);
+      // limit scaling so that width does not increase to more than twice the average thumbnail width
+      stack_heigth_factor = MIN(stack_heigth_factor, 2 * avg_thumb_width / (float)thumb->width);
+      //stack_heigth_factor = 1.0;
       thumb->height *= stack_heigth_factor;
       thumb->width *= stack_heigth_factor;
 
@@ -1610,7 +1616,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     total_slot_width += scaled_slot_width + spacing;
 
     // iterative formula to calculate average slot ratio
-    avg_slot_aspect_r += (scaled_slot_width/(float)scaled_slot_height - avg_slot_aspect_r) / slot_counter;
+    avg_slot_aspect_r += (scaled_slot_width/(float)scaled_slot_height - avg_slot_aspect_r) / (float)slot_counter;
   }
   total_slot_width -= spacing;
 
@@ -1813,6 +1819,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     GList *row = (GList *)iter->data;
     int row_width = 0;
     int xoff = 0;
+    int yoff = 0;
 
     // loop through slots of the row to calculate row width and max_row_heigth
     for(GList *slot_iter = row;
@@ -1820,6 +1827,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         slot_iter = g_list_next(slot_iter))
     {
       GList *slot = (GList *)slot_iter->data;
+      int slot_heigth = 0;
 
       // loop through thumbs of the slot
       // to calculate slot heigth and update row width
@@ -1830,7 +1838,17 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       {
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
         row_width = MAX(row_width, thumb->x + thumb->width);
-      }      
+        slot_heigth += thumb->height + spacing;
+      }
+      slot_heigth -= spacing;
+      yoff = (max_slot_heigth - slot_heigth) / 2;
+
+      // center all thumbnails vertically in a slot
+      for(GList *slot_thumb_iter = slot; slot_thumb_iter; slot_thumb_iter = g_list_next(slot_thumb_iter))
+      {
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        thumb->y += yoff;
+      }
     }
     xoff = (total_width - row_width) / 2;
 
