@@ -414,8 +414,8 @@ extern const dt_masks_functions_t dt_masks_functions_group;
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
 
-/** get points in real space with respect of distortion dx and dy are used to eventually move the center of
- * the circle */
+/** get points in real space with respect of distortion dx and dy are
+ * used to eventually move the center of the circle */
 int dt_masks_get_points_border(dt_develop_t *dev,
                                dt_masks_form_t *form,
                                float **points,
@@ -454,6 +454,7 @@ static inline int dt_masks_get_mask(const dt_iop_module_t *const module,
     ? form->functions->get_mask(module, piece, form, buffer, width, height, posx, posy)
     : 0;
 }
+
 static inline int dt_masks_get_mask_roi(const dt_iop_module_t *const module,
                                         const dt_dev_pixelpipe_iop_t *const piece,
                                         dt_masks_form_t *const form,
@@ -670,15 +671,15 @@ void dt_masks_extend_border(float *const mask,
                             const int border);
 void dt_masks_blur_coeff(float *coeffs, const float sigma);
 void dt_masks_blur(float *const src,
-                       float *const out,
-                       const int width,
-                       const int height,
-                       const float sigma,
-                       const float gain,
-                       const float clip);
+                   float *const out,
+                   const int width,
+                   const int height,
+                   const float sigma,
+                   const float gain,
+                   const float clip);
 gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
-                                  float *const src,
-                                  const dt_aligned_pixel_t wb);
+                                      float *const src,
+                                      const dt_aligned_pixel_t wb);
 gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
                                float *const out,
                                const float threshold,

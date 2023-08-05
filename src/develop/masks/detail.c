@@ -201,12 +201,12 @@ void dt_masks_blur_coeff(float *c, const float sigma)
   blurmat[0]  * src[i] )
 
 void dt_masks_blur(float *const restrict src,
-                       float *const restrict out,
-                       const int width,
-                       const int height,
-                       const float sigma,
-                       const float gain,
-                       const float clip)
+                   float *const restrict out,
+                   const int width,
+                   const int height,
+                   const float sigma,
+                   const float gain,
+                   const float clip)
 {
   float blurmat[13];
   dt_masks_blur_coeff(blurmat, sigma);
@@ -233,8 +233,8 @@ void dt_masks_blur(float *const restrict src,
 }
 
 gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
-                                  float *const restrict src,
-                                  const dt_aligned_pixel_t wb)
+                                      float *const restrict src,
+                                      const dt_aligned_pixel_t wb)
 {
   const int width = details->roi.width;
   const int height = details->roi.height;
@@ -293,9 +293,9 @@ static inline float _calcBlendFactor(float val, float threshold)
 }
 
 gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
-                               float *const restrict out,
-                               const float threshold,
-                               const gboolean detail)
+                                   float *const restrict out,
+                                   const float threshold,
+                                   const gboolean detail)
 {
   if((details->roi.width <= 0)
      || (details->roi.height <= 0)
