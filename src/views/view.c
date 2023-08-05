@@ -224,7 +224,8 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
    When expanders get destroyed, they destroy the child
    so remove the child before that
    */
-static void _remove_child(GtkWidget *child,GtkContainer *container)
+static void _remove_child(GtkWidget *child,
+                          GtkContainer *container)
 {
   if(DTGTK_IS_EXPANDER(child))
   {
@@ -310,7 +311,8 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     vm->current_view = NULL;
 
     /* remove sticky accels window */
-    if(vm->accels_window.window) dt_view_accels_hide(vm);
+    if(vm->accels_window.window)
+      dt_view_accels_hide(vm);
     return FALSE;
   }
 
@@ -343,7 +345,8 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       /* does this module belong to current view ?*/
       if(dt_lib_is_visible_in_view(plugin, old_view))
       {
-        if(plugin->view_leave) plugin->view_leave(plugin, old_view, new_view);
+        if(plugin->view_leave)
+          plugin->view_leave(plugin, old_view, new_view);
       }
     }
 
@@ -407,7 +410,8 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
         else
           gtk_widget_hide(plugin->widget);
       }
-      if(plugin->view_enter) plugin->view_enter(plugin, old_view, new_view);
+      if(plugin->view_enter)
+        plugin->view_enter(plugin, old_view, new_view);
 
       /* add module to its container */
       dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
@@ -535,7 +539,8 @@ void dt_view_manager_mouse_leave(dt_view_manager_t *vm)
 
 void dt_view_manager_mouse_enter(dt_view_manager_t *vm)
 {
-  if(!vm->current_view) return;
+  if(!vm->current_view)
+    return;
   if(vm->current_view->mouse_enter)
     vm->current_view->mouse_enter(vm->current_view);
 }
@@ -574,7 +579,8 @@ int dt_view_manager_button_released(dt_view_manager_t *vm,
                                     const int which,
                                     const uint32_t state)
 {
-  if(!vm->current_view) return 0;
+  if(!vm->current_view)
+    return 0;
   dt_view_t *v = vm->current_view;
 
   /* lets check if any plugins want to handle button press */
@@ -608,7 +614,8 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm,
                                    const int type,
                                    const uint32_t state)
 {
-  if(!vm->current_view) return 0;
+  if(!vm->current_view)
+    return 0;
   dt_view_t *v = vm->current_view;
 
   /* lets check if any plugins want to handle button press */
@@ -655,7 +662,8 @@ void dt_view_manager_scrolled(dt_view_manager_t *vm,
                               const int up,
                               const int state)
 {
-  if(!vm->current_view) return;
+  if(!vm->current_view)
+    return;
   if(vm->current_view->scrolled)
     vm->current_view->scrolled(vm->current_view, x, y, up, state);
 }
@@ -664,7 +672,8 @@ void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm,
                                        const double x,
                                        const double y)
 {
-  if(!vm->current_view) return;
+  if(!vm->current_view)
+    return;
   if(vm->current_view->scrollbar_changed)
     vm->current_view->scrollbar_changed(vm->current_view, x, y);
 }
@@ -827,7 +836,8 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
         }
       }
     }
-    if(have_lock) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+    if(have_lock)
+      pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
     const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_wd);
     tmp_surface = cairo_image_surface_create_for_data(rgbbuf,
@@ -851,7 +861,10 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     else if(mip != buf.size)
       cairo_pattern_set_filter(cairo_get_source(cr),
-                               CAIRO_FILTER_FAST); // not the right size, so we scale as fast a possible
+                               CAIRO_FILTER_FAST); // not the right
+                                                   // size, so we
+                                                   // scale as fast a
+                                                   // possible
     else
       cairo_pattern_set_filter(cairo_get_source(cr),
                                ((darktable.gui->filter_image == CAIRO_FILTER_FAST)
@@ -1081,17 +1094,18 @@ GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm)
 
 void dt_view_active_images_reset(const gboolean raise)
 {
-  if(!darktable.view_manager->active_images) return;
+  if(!darktable.view_manager->active_images)
+    return;
   g_slist_free(darktable.view_manager->active_images);
   darktable.view_manager->active_images = NULL;
 
-  if(raise) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                          DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  if(raise)
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 void dt_view_active_images_add(dt_imgid_t imgid, gboolean raise)
 {
-  darktable.view_manager->active_images
-      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  darktable.view_manager->active_images =
+    g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
   if(raise)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
@@ -1350,9 +1364,12 @@ GSList *dt_mouse_action_create_format(GSList *actions,
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
   gchar *atxt = NULL;
-  if(ma->mods & GDK_SHIFT_MASK  ) atxt = dt_util_dstrcat(atxt, "%s+", _("shift"));
-  if(ma->mods & GDK_CONTROL_MASK) atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
-  if(ma->mods & GDK_MOD1_MASK   ) atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
+  if(ma->mods & GDK_SHIFT_MASK  )
+    atxt = dt_util_dstrcat(atxt, "%s+", _("shift"));
+  if(ma->mods & GDK_CONTROL_MASK)
+    atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
+  if(ma->mods & GDK_MOD1_MASK   )
+    atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
 
   switch(ma->action)
   {
@@ -1714,10 +1731,9 @@ void dt_view_paint_surface(cairo_t *cr,
   cairo_restore(cr);
 }
 
-cairo_surface_t *dt_view_create_surface(
-  uint8_t *buffer,
-  const size_t processed_width,
-  const size_t processed_height)
+cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
+                                        const size_t processed_width,
+                                        const size_t processed_height)
 {
   const int32_t stride =
     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
