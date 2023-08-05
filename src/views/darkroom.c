@@ -120,7 +120,9 @@ static int display_image_cb(lua_State *L)
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
-  dt_dev_init((dt_develop_t *)self->data, TRUE);
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  dt_dev_init(dev, TRUE);
 
   darktable.view_manager->proxy.darkroom.view = self;
 
@@ -138,6 +140,7 @@ void init(dt_view_t *self)
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "darkroom-image-loaded");
 #endif
+  dev->autosaving = TRUE;
 }
 
 uint32_t view(const dt_view_t *self)
@@ -884,7 +887,7 @@ gboolean try_enter(dt_view_t *self)
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
     dt_image_cache_read_release(darktable.image_cache, img);
-    return 1;
+    return TRUE;
   }
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
