@@ -79,6 +79,7 @@ void dt_dev_init(dt_develop_t *dev,
   dev->history_updating = dev->image_force_reload = FALSE;
   dev->image_loading = dev->preview_loading = FALSE;
   dev->preview2_loading = dev->preview_input_changed = dev->preview2_input_changed = FALSE;
+  dev->autosaving = FALSE;
   dev->image_invalid_cnt = 0;
   dev->pipe = dev->preview_pipe = dev->preview2_pipe = NULL;
   dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
@@ -900,28 +901,38 @@ int dt_dev_write_history_item(const dt_imgid_t imgid,
 
 static void _dev_auto_save(dt_develop_t *dev)
 {
-  // This could be the place to check for automatic history writing
+  // keep track of last saving time
+  static double last = 0.0;
+
   const double user_delay = (double)dt_conf_get_int("autosave_interval");
   const double now = dt_get_wtime();
 
-  static double last = 0.0;
-  static gboolean proper_timing = TRUE;
+  const dt_imgid_t imgid = dev->image_storage.id; 
 
-  if((user_delay >= 1.0) && proper_timing && ((now - last) > user_delay))
+  /* We can only autosave database & xmp while we have a valid image id
+     and we are not currently loading or changing it in main darkroom
+  */
+  const gboolean saving = (user_delay >= 1.0)
+                        && ((now - last) > user_delay)
+                        && !dev->image_loading
+                        && dev->requested_id == imgid
+                        && dt_is_valid_imgid(imgid);  
+
+  if(saving)
   {
     // Ok, lets save status for image
     dt_dev_write_history(dev);
-    dt_image_write_sidecar_file(dev->image_storage.id);
+    dt_image_write_sidecar_file(imgid);
     last = now;
 
     const double spent = dt_get_wtime() - now;
     dt_print(DT_DEBUG_DEV, "autosave history took %fsec\n", spent);
 
     // if writing to database and the xmp took too long we disable
-    // automatic mode for this session
+    // autosaving mode for this session
     if(spent > 0.5)
     {
-      proper_timing = FALSE;
+      dev->autosaving = FALSE;
       dt_control_log(_("autosaving history has been disabled"
                        " for this session because of a slow drive used"));
     }
@@ -1104,7 +1115,9 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
   if((module->enabled) && (!no_image))
     module->write_input_hint = TRUE;
 
-  _dev_auto_save(dev);
+  // possibly save database and sidecar file 
+  if(dev->autosaving)
+    _dev_auto_save(dev);
 }
 
 const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op)
@@ -1435,7 +1448,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
     dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext end");
 
   // check if masks have changed
-  int masks_changed = 0;
+  gboolean masks_changed = FALSE;
   if(cnt < end_prev)
     history = g_list_nth(dev->history, cnt);
   else if(cnt > end_prev)
@@ -1447,7 +1460,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
     if(hist->forms != NULL)
-      masks_changed = 1;
+      masks_changed = TRUE;
 
     history = g_list_next(history);
   }
@@ -1477,7 +1490,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
   darktable.develop->history_updating = FALSE;
 
   // check if the order of modules has changed
-  int dev_iop_changed = (g_list_length(dev_iop) != g_list_length(dev->iop));
+  gboolean dev_iop_changed = (g_list_length(dev_iop) != g_list_length(dev->iop));
   if(!dev_iop_changed)
   {
     modules = dev->iop;
@@ -1489,7 +1502,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
 
       if(module->iop_order != module_old->iop_order)
       {
-        dev_iop_changed = 1;
+        dev_iop_changed = TRUE;
         break;
       }
 
