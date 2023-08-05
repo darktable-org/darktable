@@ -668,12 +668,14 @@ void dt_masks_extend_border(float *const mask,
                             const int width,
                             const int height,
                             const int border);
-void dt_masks_blur_9x9_coeff(float *coeffs, const float sigma);
-void dt_masks_blur_9x9(float *const src,
+void dt_masks_blur_coeff(float *coeffs, const float sigma);
+void dt_masks_blur(float *const src,
                        float *const out,
                        const int width,
                        const int height,
-                       const float sigma);
+                       const float sigma,
+                       const float gain,
+                       const float clip);
 gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
                                   float *const src,
                                   const dt_aligned_pixel_t wb);
@@ -681,16 +683,6 @@ gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
                                float *const out,
                                const float threshold,
                                const gboolean detail);
-
-/** the output data are blurred-val * gain and are clipped to be within 0 to clip
-    The returned int might be used to expand the border as this depends on sigma */
-int dt_masks_blur_fast(float *const src,
-                       float *const out,
-                       const int width,
-                       const int height,
-                       const float sigma,
-                       const float gain,
-                       const float clip);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
