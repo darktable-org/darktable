@@ -428,10 +428,12 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
                                  float *zoom_x,
                                  float *zoom_y);
 
-void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
+void dt_dev_configure(dt_develop_t *dev,
+                      int wd,
+                      int ht);
 void dt_dev_second_window_configure(dt_develop_t *dev,
-                                    const int wd,
-                                    const int ht);
+                                    int wd,
+                                    int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*
