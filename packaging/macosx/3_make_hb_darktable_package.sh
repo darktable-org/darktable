@@ -115,7 +115,7 @@ function reset_exec_path {
             oToolLoader=$(otool -L "$1" 2>/dev/null | grep '@loader_path' | grep $dynDepOrigFile | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' ) || true
             if [[ -n "$oToolLoader" ]]; then
                 echo "Resetting loader path for dependency <$hbDependency> of <$1>"
-                install_name_tool -change "$oToolLoader" "@loader_path/./$dynDepOrigFile" "$1"
+                install_name_tool -change "$oToolLoader" "@loader_path/$dynDepOrigFile" "$1"
             fi
         done
 
