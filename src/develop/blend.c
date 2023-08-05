@@ -825,7 +825,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   float blurmat[13];
-  dt_masks_blur_9x9_coeff(blurmat, 2.0f);
+  dt_masks_blur_coeff(blurmat, 2.0f);
   cl_mem dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(blurmat), blurmat);
   if(dev_blurmat != NULL)
   {

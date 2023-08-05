@@ -143,52 +143,7 @@ void dt_masks_extend_border(float *const mask,
   }
 }
 
-void _masks_blur_5x5_coeff(float *c,
-                           const float sigma)
-{
-  float kernel[5][5];
-  const float temp = -2.0f * sqrf(sigma);
-  const float range = sqrf(3.0f * 0.84f);
-  float sum = 0.0f;
-  for(int k = -2; k <= 2; k++)
-  {
-    for(int j = -2; j <= 2; j++)
-    {
-      if((sqrf(k) + sqrf(j)) <= range)
-      {
-        kernel[k + 2][j + 2] = expf((sqrf(k) + sqrf(j)) / temp);
-        sum += kernel[k + 2][j + 2];
-      }
-      else
-        kernel[k + 2][j + 2] = 0.0f;
-    }
-  }
-  for(int i = 0; i < 5; i++)
-  {
-#if defined(__GNUC__)
-  #pragma GCC ivdep
-#endif
-    for(int j = 0; j < 5; j++)
-      kernel[i][j] /= sum;
-  }
-  /* c21 */ c[0]  = kernel[0][1];
-  /* c20 */ c[1]  = kernel[0][2];
-  /* c11 */ c[2]  = kernel[1][1];
-  /* c10 */ c[3]  = kernel[1][2];
-  /* c00 */ c[4]  = kernel[2][2];
-}
-#define FAST_BLUR_5 ( \
-  blurmat[0] * ((src[i - w2 - 1] + src[i - w2 + 1])                       \
-                 + (src[i - w1 - 2] + src[i - w1 + 2])                    \
-                 + (src[i + w1 - 2] + src[i + w1 + 2])                    \
-                 + (src[i + w2 - 1] + src[i + w2 + 1]))                   \
-    + blurmat[1] * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2])  \
-    + blurmat[2] * (src[i - w1 - 1] + src[i - w1 + 1] + src[i + w1 - 1]   \
-                    + src[i + w1 + 1])                                    \
-    + blurmat[3] * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1])  \
-    + blurmat[4] * src[i] )
-
-void dt_masks_blur_9x9_coeff(float *c, const float sigma)
+void dt_masks_blur_coeff(float *c, const float sigma)
 {
   float kernel[9][9];
   const float temp = -2.0f * sqrf(sigma);
@@ -245,14 +200,16 @@ void dt_masks_blur_9x9_coeff(float *c, const float sigma)
   blurmat[1]  * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
   blurmat[0]  * src[i] )
 
-void dt_masks_blur_9x9(float *const restrict src,
+void dt_masks_blur(float *const restrict src,
                        float *const restrict out,
                        const int width,
                        const int height,
-                       const float sigma)
+                       const float sigma,
+                       const float gain,
+                       const float clip)
 {
   float blurmat[13];
-  dt_masks_blur_9x9_coeff(blurmat, sigma);
+  dt_masks_blur_coeff(blurmat, sigma);
 
   const size_t w1 = width;
   const size_t w2 = 2*width;
@@ -260,7 +217,7 @@ void dt_masks_blur_9x9(float *const restrict src,
   const size_t w4 = 4*width;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(blurmat, src, out) \
+  dt_omp_firstprivate(blurmat, src, out, clip, gain) \
   dt_omp_sharedconst(width, height, w1, w2, w3, w4) \
   schedule(simd:static) aligned(src, out : 64)
  #endif
@@ -269,165 +226,10 @@ void dt_masks_blur_9x9(float *const restrict src,
     for(size_t col = 4; col < width - 4; col++)
     {
       const size_t i = row * width + col;
-      out[row * width + col] = fminf(1.0f, fmaxf(0.0f, FAST_BLUR_9));
+      out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_9));
     }
   }
   dt_masks_extend_border(out, width, height, 4);
-}
-
-void _masks_blur_13x13_coeff(float *c, const float sigma)
-{
-  float kernel[13][13];
-  const float temp = -2.0f * sqrf(sigma);
-  const float range = sqrf(3.0f * 2.0f);
-  float sum = 0.0f;
-  for(int k = -6; k <= 6; k++)
-  {
-    for(int j = -6; j <= 6; j++)
-    {
-      if((sqrf(k) + sqrf(j)) <= range)
-      {
-        kernel[k + 6][j + 6] = expf((sqrf(k) + sqrf(j)) / temp);
-        sum += kernel[k + 6][j + 6];
-      }
-      else
-        kernel[k + 6][j + 6] = 0.0f;
-    }
-  }
-  for(int i = 0; i < 13; i++)
-  {
-#if defined(__GNUC__)
-  #pragma GCC ivdep
-#endif
-    for(int j = 0; j < 13; j++)
-      kernel[i][j] /= sum;
-  }
-  /* c60 */ c[0]  = kernel[0][6];
-  /* c53 */ c[1]  = kernel[1][3];
-  /* c52 */ c[2]  = kernel[1][4];
-  /* c51 */ c[3]  = kernel[1][5];
-  /* c50 */ c[4]  = kernel[1][6];
-  /* c44 */ c[5]  = kernel[2][2];
-  /* c42 */ c[6]  = kernel[2][4];
-  /* c41 */ c[7]  = kernel[2][5];
-  /* c40 */ c[8]  = kernel[2][6];
-  /* c33 */ c[9]  = kernel[3][3];
-  /* c32 */ c[10] = kernel[3][4];
-  /* c31 */ c[11] = kernel[3][5];
-  /* c30 */ c[12] = kernel[3][6];
-  /* c22 */ c[13] = kernel[4][4];
-  /* c21 */ c[14] = kernel[4][5];
-  /* c20 */ c[15] = kernel[4][6];
-  /* c11 */ c[16] = kernel[5][5];
-  /* c10 */ c[17] = kernel[5][6];
-  /* c00 */ c[18] = kernel[6][6];
-}
-
-#define FAST_BLUR_13 ( \
-  blurmat[0] * (src[i - w6] + src[i - 6] + src[i + 6] + src[i + w6]) + \
-  blurmat[1] * ((src[i - w5 - 3] + src[i - w5 + 3]) + (src[i - w3 - 5] + src[i - w3 + 5]) + (src[i + w3 - 5] + src[i + w3 + 5]) + (src[i + w5 - 3] + src[i + w5 + 3])) + \
-  blurmat[2] * ((src[i - w5 - 2] + src[i - w5 + 2]) + (src[i - w2 - 5] + src[i - w2 + 5]) + (src[i + w2 - 5] + src[i + w2 + 5]) + (src[i + w5 - 2] + src[i + w5 + 2])) + \
-  blurmat[3] * ((src[i - w5 - 1] + src[i - w5 + 1]) + (src[i - w1 - 5] + src[i - w1 + 5]) + (src[i + w1 - 5] + src[i + w1 + 5]) + (src[i + w5 - 1] + src[i + w5 + 1])) + \
-  blurmat[4] * ((src[i - w5] + src[i - 5] + src[i + 5] + src[i + w5]) + ((src[i - w4 - 3] + src[i - w4 + 3]) + (src[i - w3 - 4] + src[i - w3 + 4]) + (src[i + w3 - 4] + src[i + w3 + 4]) + (src[i + w4 - 3] + src[i + w4 + 3]))) + \
-  blurmat[5] * (src[i - w4 - 4] + src[i - w4 + 4] + src[i + w4 - 4] + src[i + w4 + 4]) + \
-  blurmat[6] * ((src[i - w4 - 2] + src[i - w4 + 2]) + (src[i - w2 - 4] + src[i - w2 + 4]) + (src[i + w2 - 4] + src[i + w2 + 4]) + (src[i + w4 - 2] + src[i + w4 + 2])) + \
-  blurmat[7] * ((src[i - w4 - 1] + src[i - w4 + 1]) + (src[i - w1 - 4] + src[i - w1 + 4]) + (src[i + w1 - 4] + src[i + w1 + 4]) + (src[i + w4 - 1] + src[i + w4 + 1])) + \
-  blurmat[8] * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) + \
-  blurmat[9] * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) + \
-  blurmat[10] * ((src[i - w3 - 2] + src[i - w3 + 2]) + (src[i - w2 - 3] + src[i - w2 + 3]) + (src[i + w2 - 3] + src[i + w2 + 3]) + (src[i + w3 - 2] + src[i + w3 + 2])) + \
-  blurmat[11] * ((src[i - w3 - 1] + src[i - w3 + 1]) + (src[i - w1 - 3] + src[i - w1 + 3]) + (src[i + w1 - 3] + src[i + w1 + 3]) + (src[i + w3 - 1] + src[i + w3 + 1])) + \
-  blurmat[12] * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) + \
-  blurmat[13] * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) + \
-  blurmat[14] * ((src[i - w2 - 1] + src[i - w2 + 1]) + (src[i - w1 - 2] + src[i - w1 + 2]) + (src[i + w1 - 2] + src[i + w1 + 2]) + (src[i + w2 - 1] + src[i + w2 + 1])) + \
-  blurmat[15] * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) + \
-  blurmat[16] * (src[i - w1 - 1] + src[i - w1 + 1] + src[i + w1 - 1] + src[i + w1 + 1]) + \
-  blurmat[17] * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
-  blurmat[18] * src[i] )
-
-int dt_masks_blur_fast(float *const restrict src,
-                       float *const restrict out,
-                       const int width,
-                       const int height,
-                       const float sigma,
-                       const float gain,
-                       const float clip)
-{
-  float blurmat[19];
-  const size_t w1 = width;
-  const size_t w2 = 2*width;
-  const size_t w3 = 3*width;
-  const size_t w4 = 4*width;
-  const size_t w5 = 5*width;
-  const size_t w6 = 6*width;
-  if(sigma <= 0.0f)
-  {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(gain, width, height, clip) \
-  schedule(simd:static) aligned(src, out : 64)
-#endif
-    for(size_t i = 0; i < width * height; i++)
-      out[i] = fmaxf(0.0f, fminf(clip, gain * src[i]));
-    return 0;
-  }
-  else if(sigma <= 0.8f)
-  {
-    _masks_blur_5x5_coeff(blurmat, sigma);
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(gain, width, height, w1, w2, clip) \
-  shared(blurmat) \
-  schedule(simd:static) aligned(src, out : 64)
-#endif
-    for(size_t row = 2; row < height - 2; row++)
-    {
-      for(size_t col = 2; col < width - 2; col++)
-      {
-        const size_t i = row * width + col;
-        out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_5));
-      }
-    }
-    return 2;
-  }
-  else if(sigma <= 1.5f)
-  {
-    dt_masks_blur_9x9_coeff(blurmat, sigma);
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(gain, width, height, w1, w2, w3, w4, clip) \
-  shared(blurmat) \
-  schedule(simd:static) aligned(src, out : 64)
- #endif
-    for(size_t row = 4; row < height - 4; row++)
-    {
-      for(size_t col = 4; col < width - 4; col++)
-      {
-        const size_t i = row * width + col;
-        out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_9));
-      }
-    }
-    return 4;
-  }
-  _masks_blur_13x13_coeff(blurmat, sigma);
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(gain, width, height, w1, w2, w3, w4, w5, w6, clip) \
-  shared(blurmat) \
-  schedule(simd:static) aligned(src, out : 64)
- #endif
-  for(size_t row = 6; row < height - 6; row++)
-  {
-    for(size_t col = 6; col < width - 6; col++)
-    {
-      const size_t i = row * width + col;
-      out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_13));
-    }
-  }
-  return 6;
 }
 
 gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
@@ -522,7 +324,7 @@ gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
   }
   // for very small images the blurring should be slightly less to have an effect at all
   const float blurring = (MIN(details->roi.width, details->roi.height) < 500) ? 1.5f : 2.0f;
-  dt_masks_blur_9x9(tmp, out, details->roi.width, details->roi.height, blurring);
+  dt_masks_blur(tmp, out, details->roi.width, details->roi.height, blurring, 1.0f, 1.0f);
   dt_free_align(tmp);
   return FALSE;
 }
