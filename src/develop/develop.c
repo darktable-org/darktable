@@ -966,10 +966,14 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
                                       const gboolean enable,
                                       const gboolean new_item,
                                       const gboolean no_image,
-                                      const gboolean include_masks)
+                                      const gboolean include_masks,
+                                      const gboolean auto_name_module)
 {
   // try to auto-name the module based on the presets if possible
-  _dev_auto_module_label(dev, module);
+  if(auto_name_module)
+  {
+    _dev_auto_module_label(dev, module);
+  }
 
   int kept_module = 0;
   GList *history = g_list_nth(dev->history, dev->history_end);
@@ -1127,7 +1131,7 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev,
                                  const gboolean enable,
                                  const int no_image)
 {
-  _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
+  _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE, TRUE);
 }
 
 static gboolean _dev_undo_start_record_target(dt_develop_t *dev, gpointer target)
@@ -1158,10 +1162,16 @@ static void _dev_add_history_item(dt_develop_t *dev,
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
+  // record current name, needed to ensure we do an undo record
+  // if the module name is changed.
+
   gchar *saved_name = g_strdup(module->multi_name);
 
+  _dev_auto_module_label(dev, module);
+
   const gboolean need_end_record =
-    _dev_undo_start_record_target(dev, strcmp(saved_name, module->multi_name) ? NULL : target);
+    _dev_undo_start_record_target(dev,
+                                  strcmp(saved_name, module->multi_name) ? NULL : target);
 
   g_free(saved_name);
 
@@ -1169,7 +1179,7 @@ static void _dev_add_history_item(dt_develop_t *dev,
 
   if(dev->gui_attached)
   {
-    _dev_add_history_item_ext(dev, module, enable, new_item, FALSE, FALSE);
+    _dev_add_history_item_ext(dev, module, enable, new_item, FALSE, FALSE, FALSE);
   }
 #if 0
   {
@@ -1207,7 +1217,8 @@ static void _dev_add_history_item(dt_develop_t *dev,
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    if(tag_change)
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* redraw */
     dt_control_queue_redraw_center();
@@ -1260,7 +1271,7 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
   }
   if(module)
   {
-    _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, TRUE);
+    _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, TRUE, TRUE);
   }
   else
     dt_print(DT_DEBUG_ALWAYS,
