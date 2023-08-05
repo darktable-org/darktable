@@ -167,17 +167,18 @@ char* dt_view_extend_modes_str(const char * name,
                                const gboolean is_bw,
                                const gboolean is_bw_flow);
 /** expose an image and return a cair0_surface. */
-dt_view_surface_value_t dt_view_image_get_surface(dt_imgid_t imgid,
-                                                  int32_t width,
-                                                  int32_t height,
+dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
+                                                  const int32_t width,
+                                                  const int32_t height,
                                                   cairo_surface_t **surface,
                                                   const gboolean quality);
 
 
 /** Set the selection bit to a given value for the specified image */
-void dt_view_set_selection(dt_imgid_t imgid, int value);
+void dt_view_set_selection(const dt_imgid_t imgid,
+                           const int value);
 /** toggle selection of given image. */
-void dt_view_toggle_selection(dt_imgid_t imgid);
+void dt_view_toggle_selection(const dt_imgid_t imgid);
 
 /**
  * holds all relevant data needed to manage the view
@@ -286,9 +287,13 @@ typedef struct dt_view_manager_t
     {
       struct dt_lib_module_t *module;
       void (*update)(struct dt_lib_module_t *);
-      void (*set_sort)(struct dt_lib_module_t *, int sort, gboolean asc);
-      void (*reset_filter)(struct dt_lib_module_t *, gboolean smart_filter);
-      void (*show_pref_menu)(struct dt_lib_module_t *, GtkWidget *bt);
+      void (*set_sort)(struct dt_lib_module_t *,
+                       const int sort,
+                       const gboolean asc);
+      void (*reset_filter)(struct dt_lib_module_t *,
+                           const gboolean smart_filter);
+      void (*show_pref_menu)(struct dt_lib_module_t *,
+                             GtkWidget *bt);
     } module_filtering;
 
     /* filmstrip proxy object */
@@ -309,16 +314,23 @@ typedef struct dt_view_manager_t
     {
       struct dt_lib_module_t *module;
       struct dt_view_t *view;
-      void (*set_zoom)(struct dt_lib_module_t *module, gint zoom);
+      void (*set_zoom)(struct dt_lib_module_t *module,
+                       const gint zoom);
       gint (*get_zoom)(struct dt_lib_module_t *module);
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
-      void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
+      void (*set_layout)(struct dt_lib_module_t *module,
+                         const dt_lighttable_layout_t layout);
       void (*culling_init_mode)(struct dt_view_t *view);
       void (*culling_preview_refresh)(struct dt_view_t *view);
       void (*culling_preview_reload_overlays)(struct dt_view_t *view);
       gboolean (*get_preview_state)(struct dt_view_t *view);
-      void (*set_preview_state)(struct dt_view_t *view, gboolean state, gboolean sticky, gboolean focus);
-      void (*change_offset)(struct dt_view_t *view, gboolean reset, dt_imgid_t imgid);
+      void (*set_preview_state)(struct dt_view_t *view,
+                                const gboolean state,
+                                const gboolean sticky,
+                                const gboolean focus);
+      void (*change_offset)(struct dt_view_t *view,
+                            const gboolean reset,
+                            const dt_imgid_t imgid);
     } lighttable;
 
     /* tethering view proxy object */
@@ -326,7 +338,8 @@ typedef struct dt_view_manager_t
     {
       struct dt_view_t *view;
       const char *(*get_job_code)(const dt_view_t *view);
-      void (*set_job_code)(const dt_view_t *view, const char *name);
+      void (*set_job_code)(const dt_view_t *view,
+                           const char *name);
       int32_t (*get_selected_imgid)(const dt_view_t *view);
     } tethering;
 
@@ -342,15 +355,33 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_view_t *view;
-      void (*center_on_location)(const dt_view_t *view, gdouble lon, gdouble lat, double zoom);
-      void (*center_on_bbox)(const dt_view_t *view, gdouble lon1, gdouble lat1, gdouble lon2, gdouble lat2);
+      void (*center_on_location)(const dt_view_t *view,
+                                 const gdouble lon,
+                                 const gdouble lat,
+                                 const double zoom);
+      void (*center_on_bbox)(const dt_view_t *view,
+                             const gdouble lon1,
+                             const gdouble lat1,
+                             const gdouble lon2,
+                             const gdouble lat2);
       void (*show_osd)(const dt_view_t *view);
-      void (*set_map_source)(const dt_view_t *view, OsmGpsMapSource_t map_source);
-      GObject *(*add_marker)(const dt_view_t *view, dt_geo_map_display_t type, GList *points);
-      gboolean (*remove_marker)(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
-      void (*add_location)(const dt_view_t *view, dt_map_location_data_t *p, const guint posid);
-      void (*location_action)(const dt_view_t *view, const int action);
-      void (*drag_set_icon)(const dt_view_t *view, GdkDragContext *context, const dt_imgid_t imgid, const int count);
+      void (*set_map_source)(const dt_view_t *view,
+                             const OsmGpsMapSource_t map_source);
+      GObject *(*add_marker)(const dt_view_t *view,
+                             const dt_geo_map_display_t type,
+                             GList *points);
+      gboolean (*remove_marker)(const dt_view_t *view,
+                                const dt_geo_map_display_t type,
+                                GObject *marker);
+      void (*add_location)(const dt_view_t *view,
+                           dt_map_location_data_t *p,
+                           const guint posid);
+      void (*location_action)(const dt_view_t *view,
+                              const int action);
+      void (*drag_set_icon)(const dt_view_t *view,
+                            GdkDragContext *context,
+                            const dt_imgid_t imgid,
+                            const int count);
       gboolean (*redraw)(gpointer user_data);
       gboolean (*display_selected)(gpointer user_data);
     } map;
@@ -361,7 +392,9 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_view_t *view;
-      void (*print_settings)(const dt_view_t *view, dt_print_info_t *pinfo, dt_images_box *imgs);
+      void (*print_settings)(const dt_view_t *view,
+                             dt_print_info_t *pinfo,
+                             dt_images_box *imgs);
     } print;
 #endif
   } proxy;
@@ -376,11 +409,17 @@ void dt_view_manager_cleanup(dt_view_manager_t *vm);
 /** return translated name. */
 const char *dt_view_manager_name(dt_view_manager_t *vm);
 /** switch to this module. returns TRUE if the module fails to change. */
-gboolean dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name);
-gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *new_view);
+gboolean dt_view_manager_switch(dt_view_manager_t *vm,
+                                const char *view_name);
+gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
+                                        const dt_view_t *new_view);
 /** expose current module. */
-void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height,
-                            int32_t pointerx, int32_t pointery);
+void dt_view_manager_expose(dt_view_manager_t *vm,
+                            cairo_t *cr,
+                            const int32_t width,
+                            const int32_t height,
+                            const int32_t pointerx,
+                            const int32_t pointery);
 /** reset current view. */
 void dt_view_manager_reset(dt_view_manager_t *vm);
 /** get current view of the view manager. */
@@ -388,29 +427,66 @@ const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm);
 
 void dt_view_manager_mouse_enter(dt_view_manager_t *vm);
 void dt_view_manager_mouse_leave(dt_view_manager_t *vm);
-void dt_view_manager_mouse_moved(dt_view_manager_t *vm, double x, double y, double pressure, int which);
-int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, int which, uint32_t state);
-int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, double pressure, int which,
-                                   int type, uint32_t state);
-void dt_view_manager_configure(dt_view_manager_t *vm, int width, int height);
-void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up, int state);
-void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y);
+void dt_view_manager_mouse_moved(dt_view_manager_t *vm,
+                                 const double x,
+                                 const double y,
+                                 const double pressure,
+                                 const int which);
+int dt_view_manager_button_released(dt_view_manager_t *vm,
+                                    const double x,
+                                    const double y,
+                                    const int which,
+                                    const uint32_t state);
+int dt_view_manager_button_pressed(dt_view_manager_t *vm,
+                                   const double x,
+                                   const double y,
+                                   const double pressure,
+                                   const int which,
+                                   const int type,
+                                   const uint32_t state);
+void dt_view_manager_configure(dt_view_manager_t *vm,
+                               const int width,
+                               const int height);
+void dt_view_manager_scrolled(dt_view_manager_t *vm,
+                              const double x,
+                              const double y,
+                              const int up,
+                              const int state);
+void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm,
+                                       const double x,
+                                       const double y);
 
 /** add widget to the current view toolbox */
-void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t view);
+void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,
+                                      GtkWidget *tool,
+                                      const dt_view_type_flags_t view);
 
 /** add widget to the current module toolbox */
-void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t view);
+void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm,
+                                        GtkWidget *tool,
+                                        const dt_view_type_flags_t view);
 
 /** set scrollbar positions, gui method. */
-void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hscroll_lower, float hsize, float hwinsize,
-                           float vpos, float vscroll_lower, float vsize, float vwinsize);
+void dt_view_set_scrollbar(dt_view_t *view,
+                           const float hpos,
+                           const float hscroll_lower,
+                           const float hsize,
+                           const float hwinsize,
+                           const float vpos,
+                           const float vscroll_lower,
+                           const float vsize,
+                           const float vwinsize);
 
 /** add mouse action record to list of mouse actions */
-GSList *dt_mouse_action_create_simple(GSList *actions, dt_mouse_action_type_t type, GdkModifierType accel,
+GSList *dt_mouse_action_create_simple(GSList *actions,
+                                      const dt_mouse_action_type_t type,
+                                      const GdkModifierType accel,
                                       const char *const description);
-GSList *dt_mouse_action_create_format(GSList *actions, dt_mouse_action_type_t type, GdkModifierType accel,
-                                      const char *const format_string, const char *const replacement);
+GSList *dt_mouse_action_create_format(GSList *actions,
+                                      const dt_mouse_action_type_t type,
+                                      const GdkModifierType accel,
+                                      const char *const format_string,
+                                      const char *const replacement);
 
 /*
  * Tethering View PROXY
@@ -418,27 +494,32 @@ GSList *dt_mouse_action_create_format(GSList *actions, dt_mouse_action_type_t ty
 /** get the current selected image id for tethering session */
 int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm);
 /** set the current jobcode for tethering session */
-void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name);
+void dt_view_tethering_set_job_code(const dt_view_manager_t *vm,
+                                    const char *name);
 /** get the current jobcode for tethering session */
 const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
 
 /** update the collection module */
 void dt_view_collection_update(const dt_view_manager_t *vm);
-void dt_view_filtering_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc);
+void dt_view_filtering_set_sort(const dt_view_manager_t *vm,
+                                const int sort,
+                                const gboolean asc);
 void dt_view_collection_update_history_state(const dt_view_manager_t *vm);
 
 /*
  * Filter dropdown proxy
  */
-void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter);
+void dt_view_filtering_reset(const dt_view_manager_t *vm,
+                             const gboolean smart_filter);
 void dt_view_filtering_show_pref_menu(const dt_view_manager_t *vm, GtkWidget *bt);
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm);
 GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm);
 GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm);
 
 // active images functions
-void dt_view_active_images_reset(gboolean raise);
-void dt_view_active_images_add(dt_imgid_t imgid, gboolean raise);
+void dt_view_active_images_reset(const gboolean raise);
+void dt_view_active_images_add(const dt_imgid_t imgid,
+                               const gboolean raise);
 GSList *dt_view_active_images_get();
 
 /** get the lighttable current layout */
@@ -448,9 +529,13 @@ dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm);
 /** get the lighttable full preview state */
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
 /** set the lighttable full preview state */
-void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean sticky, gboolean focus);
+void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm,
+                                          const gboolean state,
+                                          const gboolean sticky,
+                                          const gboolean focus);
 /** sets the lighttable image in row zoom */
-void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
+void dt_view_lighttable_set_zoom(dt_view_manager_t *vm,
+                                 const gint zoom);
 /** gets the lighttable image in row zoom */
 gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
 /** reinit culling for new mode */
@@ -460,7 +545,9 @@ void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm);
 /** force refresh of culling and/or preview overlays */
 void dt_view_lighttable_culling_preview_reload_overlays(dt_view_manager_t *vm);
 /** sets the offset image (for culling and full preview) */
-void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, dt_imgid_t imgid);
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm,
+                                      const gboolean reset,
+                                      const dt_imgid_t imgid);
 
 /* accel window */
 void dt_view_accels_show(dt_view_manager_t *vm);
@@ -468,29 +555,50 @@ void dt_view_accels_hide(dt_view_manager_t *vm);
 void dt_view_accels_refresh(dt_view_manager_t *vm);
 
 /* audio */
-void dt_view_audio_start(dt_view_manager_t *vm, dt_imgid_t imgid);
+void dt_view_audio_start(dt_view_manager_t *vm,
+                         const dt_imgid_t imgid);
 void dt_view_audio_stop(dt_view_manager_t *vm);
 
 /*
  * Map View Proxy
  */
 #ifdef HAVE_MAP
-void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom);
-void dt_view_map_center_on_bbox(const dt_view_manager_t *vm, gdouble lon1, gdouble lat1, gdouble lon2, gdouble lat2);
+void dt_view_map_center_on_location(const dt_view_manager_t *vm,
+                                    const gdouble lon,
+                                    const gdouble lat,
+                                    const gdouble zoom);
+void dt_view_map_center_on_bbox(const dt_view_manager_t *vm,
+                                const gdouble lon1,
+                                const gdouble lat1,
+                                const gdouble lon2,
+                                const gdouble lat2);
 void dt_view_map_show_osd(const dt_view_manager_t *vm);
-void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
-GObject *dt_view_map_add_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GList *points);
-gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GObject *marker);
-void dt_view_map_add_location(const dt_view_manager_t *vm, dt_map_location_data_t *p, const guint posid);
-void dt_view_map_location_action(const dt_view_manager_t *vm, const int action);
-void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const dt_imgid_t imgid, const int count);
+void dt_view_map_set_map_source(const dt_view_manager_t *vm,
+                                const OsmGpsMapSource_t map_source);
+GObject *dt_view_map_add_marker(const dt_view_manager_t *vm,
+                                const dt_geo_map_display_t type,
+                                GList *points);
+gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm,
+                                   const dt_geo_map_display_t type,
+                                   GObject *marker);
+void dt_view_map_add_location(const dt_view_manager_t *vm,
+                              dt_map_location_data_t *p,
+                              const guint posid);
+void dt_view_map_location_action(const dt_view_manager_t *vm,
+                                 const int action);
+void dt_view_map_drag_set_icon(const dt_view_manager_t *vm,
+                               GdkDragContext *context,
+                               const dt_imgid_t imgid,
+                               const int count);
 #endif
 
 /*
  * Print View Proxy
  */
 #ifdef HAVE_PRINT
-void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo, dt_images_box *imgs);
+void dt_view_print_settings(const dt_view_manager_t *vm,
+                            dt_print_info_t *pinfo,
+                            dt_images_box *imgs);
 #endif
 
 /*
@@ -505,37 +613,33 @@ typedef enum _window_t
   DT_WINDOW_SLIDESHOW
 } dt_window_t;
 
-void dt_view_paint_buffer(
-  cairo_t *cr,
-  const size_t width,
-  const size_t height,
-  uint8_t *buffer,
-  const size_t processed_width,
-  const size_t processed_height,
-  const dt_window_t window);
+void dt_view_paint_buffer(cairo_t *cr,
+                          const size_t width,
+                          const size_t height,
+                          uint8_t *buffer,
+                          const size_t processed_width,
+                          const size_t processed_height,
+                          const dt_window_t window);
 
-void dt_view_paint_pixbuf(
-  cairo_t *cr,
-  const size_t width,
-  const size_t height,
-  uint8_t *buffer,
-  const size_t processed_width,
-  const size_t processed_height,
-  const dt_window_t window);
+void dt_view_paint_pixbuf(cairo_t *cr,
+                          const size_t width,
+                          const size_t height,
+                          uint8_t *buffer,
+                          const size_t processed_width,
+                          const size_t processed_height,
+                          const dt_window_t window);
 
-cairo_surface_t *dt_view_create_surface(
-  uint8_t *buffer,
-  const size_t processed_width,
-  const size_t processed_height);
+cairo_surface_t *dt_view_create_surface(uint8_t *buffer,
+                                        const size_t processed_width,
+                                        const size_t processed_height);
 
-void dt_view_paint_surface(
-  cairo_t *cr,
-  const size_t width,
-  const size_t height,
-  cairo_surface_t *surface,
-  const size_t processed_width,
-  const size_t processed_height,
-  const dt_window_t window);
+void dt_view_paint_surface(cairo_t *cr,
+                           const size_t width,
+                           const size_t height,
+                           cairo_surface_t *surface,
+                           const size_t processed_width,
+                           const size_t processed_height,
+                           const dt_window_t window);
 
 typedef uint64_t dt_view_context_t;
 
