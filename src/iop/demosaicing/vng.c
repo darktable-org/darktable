@@ -632,7 +632,7 @@ static int process_vng_cl(
     }
 
     if(piece->pipe->want_detail_mask && data->demosaicing_method == DT_IOP_DEMOSAIC_VNG)
-      dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, TRUE);
+      dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
 
     if(scaled)
     {

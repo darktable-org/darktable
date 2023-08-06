@@ -243,7 +243,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = NO_IMGID;
 
-  memset(&pipe->details, 0, sizeof(dt_dev_detail_mask_t));
+  memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
   pipe->want_detail_mask = FALSE;
 
   pipe->processing = FALSE;
@@ -372,7 +372,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
   g_list_free(pipe->nodes);
   pipe->nodes = NULL;
 
-  dt_dev_clear_rawdetail_mask(pipe);
+  dt_dev_clear_scharr_mask(pipe);
 
   // also cleanup iop here
   if(pipe->iop)
@@ -472,7 +472,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       const gboolean active = hist->enabled;
       piece->enabled = active;
 
-      // the last crop module in the pixelpipe might handle the exposing if enabled 
+      // the last crop module in the pixelpipe might handle the exposing if enabled
       if(piece->module->flags() & IOP_FLAGS_CROP_EXPOSER)
         dev->cropping.exposer = active ? piece->module : NULL;
 
@@ -1768,9 +1768,6 @@ static gboolean _dev_pixelpipe_process_rec(
           }
         }
 
-        // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %p and %p \n", module->op,
-        // cl_mem_input, *cl_mem_output);
-
         // indirectly give gpu some air to breathe (and to do display related stuff)
         dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
 
@@ -1977,9 +1974,6 @@ static gboolean _dev_pixelpipe_process_rec(
       {
         /* image is too big for direct opencl processing -> try to
          * process image via tiling */
-
-        // fprintf(stderr, "[opencl_pixelpipe 3] module '%s' tiling with process_tiling_cl\n",
-        //         module->op);
 
         /* we might need to copy back valid image from device to host */
         if(cl_mem_input != NULL)
@@ -2201,8 +2195,6 @@ static gboolean _dev_pixelpipe_process_rec(
         dt_print_pipe(DT_DEBUG_OPENCL,
            "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
                 "couldn't run module on GPU, falling back to CPU");
-
-        // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
 
         /* we might need to free unused output buffer */
         if(*cl_mem_output != NULL)
@@ -2977,42 +2969,42 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
   return raster_mask;
 }
 
-void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
+void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe)
 {
-  if(pipe->details.data) dt_free_align(pipe->details.data);
-  memset(&pipe->details, 0, sizeof(dt_dev_detail_mask_t));
+  if(pipe->scharr.data) dt_free_align(pipe->scharr.data);
+  memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
 }
 
-gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
+gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
                                      float *const rgb,
                                      const dt_iop_roi_t *const roi_in,
                                      const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  dt_dev_clear_rawdetail_mask(p);
+  dt_dev_clear_scharr_mask(p);
 
   const int width = roi_in->width;
   const int height = roi_in->height;
   float *mask = dt_alloc_align_float((size_t)width * height);
   if(!mask) goto error;
 
-  p->details.data = mask;
-  memcpy(&p->details.roi, roi_in, sizeof(dt_iop_roi_t));
+  p->scharr.data = mask;
+  memcpy(&p->scharr.roi, roi_in, sizeof(dt_iop_roi_t));
 
   const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
   const dt_aligned_pixel_t wb = { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
                                   wboff ? 1.0f : p->dsc.temperature.coeffs[1],
                                   wboff ? 1.0f : p->dsc.temperature.coeffs[2]};
-  if(dt_masks_calc_rawdetail_mask(&p->details, rgb, wb))
+  if(dt_masks_calc_scharr_mask(&p->scharr, rgb, wb))
     goto error;
 
   uint64_t hash = 5381;
-  const char *str = (const char *)&p->details.roi;
+  const char *str = (const char *)&p->scharr.roi;
   for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
     hash = ((hash << 5) + hash) ^ str[i];
-  p->details.hash = hash;
+  p->scharr.hash = hash;
 
-  dt_print_pipe(DT_DEBUG_PIPE, "write detail mask CPU", p, NULL, roi_in, NULL, "\n");
+  dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CPU", p, NULL, roi_in, NULL, "\n");
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
     dt_dump_pfm("scharr_cpu", mask, width, height, sizeof(float), "detail");
 
@@ -3020,20 +3012,20 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
 
   error:
   dt_print_pipe(DT_DEBUG_ALWAYS,
-           "write detail mask CPU", p, NULL, roi_in, NULL,
+           "write scharr mask CPU", p, NULL, roi_in, NULL,
            "couldn't write detail mask\n");
-  dt_dev_clear_rawdetail_mask(p);
+  dt_dev_clear_scharr_mask(p);
   return TRUE;
 }
 
 #ifdef HAVE_OPENCL
-gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
                                         cl_mem in,
                                         const dt_iop_roi_t *const roi_in,
                                         const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  dt_dev_clear_rawdetail_mask(p);
+  dt_dev_clear_scharr_mask(p);
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -3070,18 +3062,18 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
   if(err != CL_SUCCESS) goto error;
 
-  p->details.data = mask;
-  memcpy(&p->details.roi, roi_in, sizeof(dt_iop_roi_t));
+  p->scharr.data = mask;
+  memcpy(&p->scharr.roi, roi_in, sizeof(dt_iop_roi_t));
 
   uint64_t hash = 5381;
-  const char *str = (const char *)&p->details.roi;
+  const char *str = (const char *)&p->scharr.roi;
   for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
     hash = ((hash << 5) + hash) ^ str[i];
-  p->details.hash = hash;
+  p->scharr.hash = hash;
 
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  dt_print_pipe(DT_DEBUG_PIPE, "write detail mask CL", p, NULL, roi_in, NULL, "\n");
+  dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CL", p, NULL, roi_in, NULL, "\n");
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
     dt_dump_pfm("scharr_cl", mask, width, height, sizeof(float), "detail");
 
@@ -3089,11 +3081,11 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
   error:
   dt_print_pipe(DT_DEBUG_ALWAYS,
-           "write detail mask CL", p, NULL, roi_in, NULL,
-           "couldn't write detail mask: %s\n", cl_errstr(err));
+           "write scharr mask CL", p, NULL, roi_in, NULL,
+           "couldn't write scharr mask: %s\n", cl_errstr(err));
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  dt_dev_clear_rawdetail_mask(p);
+  dt_dev_clear_scharr_mask(p);
   return TRUE;
 }
 #endif
@@ -3129,7 +3121,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
   if(!valid) return NULL;
 
   dt_print_pipe(DT_DEBUG_MASKS,
-           "distort detail mask", pipe, target_module, &pipe->details.roi, NULL, "\n");
+           "distort detail mask", pipe, target_module, &pipe->scharr.roi, NULL, "\n");
 
   float *resmask = src;
   float *inmask  = src;
