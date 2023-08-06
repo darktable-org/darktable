@@ -1197,7 +1197,7 @@ static void _dev_add_history_item(dt_develop_t *dev,
   const gboolean multi_name_changed = strcmp(saved_name, module->multi_name) != 0;
 
   const gboolean need_end_record =
-    _dev_undo_start_record_target(dev, multi_name_changed ? target : NULL);
+    _dev_undo_start_record_target(dev, multi_name_changed ? NULL : target);
 
   g_free(saved_name);
 
