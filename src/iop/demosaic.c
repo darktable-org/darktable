@@ -465,7 +465,7 @@ void tiling_callback(
 
   // check if output buffer has same dimension as input buffer (thus avoiding one
   // additional temporary buffer)
-  const int unscaled = (roi_out->width == roi_in->width && roi_out->height == roi_in->height);
+  const gboolean unscaled = (roi_out->width == roi_in->width && roi_out->height == roi_in->height);
 
   // define aligners
   tiling->xalign = is_xtrans ? DT_XTRANS_SNAPPER : DT_BAYER_SNAPPER;
@@ -577,7 +577,7 @@ void process(
 {
   const dt_image_t *img = &self->dev->image_storage;
 
-  dt_dev_clear_rawdetail_mask(piece->pipe);
+  dt_dev_clear_scharr_mask(piece->pipe);
 
   dt_iop_roi_t roi = *roi_in;
   dt_iop_roi_t roo = *roi_out;
@@ -596,7 +596,11 @@ void process(
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-    showmask = (g->visual_mask);
+    if(g->visual_mask)
+    {
+      showmask = TRUE;
+      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    }
     // take care of passthru modes
     if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
       demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
@@ -607,7 +611,7 @@ void process(
   if(qual_flags & DT_DEMOSAIC_FULL_SCALE)
   {
     // Full demosaic and then scaling if needed
-    const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
+    const gboolean scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
     float *tmp = (float *) o;
     if(scaled)
     {
@@ -697,7 +701,7 @@ void process(
     }
 
     if(piece->pipe->want_detail_mask)
-      dt_dev_write_rawdetail_mask(piece, tmp, roi_in, TRUE);
+      dt_dev_write_scharr_mask(piece, tmp, roi_in, TRUE);
 
     if((demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast)
     {
@@ -726,7 +730,7 @@ void process(
 
     // this is used for preview pipes, currently there is now writing mask implemented
     // we just clear the mask data as we might have changed the preview downsampling
-    dt_dev_clear_rawdetail_mask(piece->pipe);
+    dt_dev_clear_scharr_mask(piece->pipe);
   }
   if(data->color_smoothing)
     color_smoothing(o, roi_out, data->color_smoothing);
@@ -743,7 +747,7 @@ int process_cl(
 {
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  dt_dev_clear_rawdetail_mask(piece->pipe);
+  dt_dev_clear_scharr_mask(piece->pipe);
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
@@ -753,7 +757,11 @@ int process_cl(
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-    showmask = (g->visual_mask);
+    if(g->visual_mask)
+    {
+      showmask = TRUE;
+      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    }
     // take care of passthru modes
     if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
       demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
@@ -998,7 +1006,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   if(bayer && xmethod)   use_method = DT_IOP_DEMOSAIC_RCD;
   if(xtrans && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
 
-  // we don't have to fully check for available bayer4 modes here as process() takes care of this 
+  // we don't have to fully check for available bayer4 modes here as process() takes care of this
   if(bayer4)             use_method &= ~DT_DEMOSAIC_DUAL;
 
   if(use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
@@ -1075,10 +1083,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 
   // green-equilibrate over full image excludes tiling
-  // The details mask is written inside process, this does not allow tiling.
+  // The details mask calculation required for dual demosaicing does not allow tiling.
   if((d->green_eq == DT_IOP_GREEN_EQ_FULL
       || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
-      || piece->pipe->want_detail_mask)
+      || (use_method & DT_DEMOSAIC_DUAL))
   {
     piece->process_tiling_ready = FALSE;
   }
@@ -1148,7 +1156,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   const gboolean bayerpassing =
    (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-   || (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR); 
+   || (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR);
 
   if(bayer4 && !(bayerpassing || (use_method == DT_IOP_DEMOSAIC_VNG4)))
     use_method = DT_IOP_DEMOSAIC_VNG4;
@@ -1156,7 +1164,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   const gboolean isppg = (use_method == DT_IOP_DEMOSAIC_PPG);
   const gboolean isdual = (use_method & DT_DEMOSAIC_DUAL) && !bayer4;
   const gboolean islmmse = (use_method == DT_IOP_DEMOSAIC_LMMSE);
-  const gboolean passing = 
+  const gboolean passing =
     bayerpassing
     || (use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
     || (use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX);

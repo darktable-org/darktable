@@ -677,11 +677,10 @@ void dt_masks_blur(float *const src,
                    const float sigma,
                    const float gain,
                    const float clip);
-gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
+gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
                                       float *const src,
                                       const dt_aligned_pixel_t wb);
-gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
-                               float *const out,
+float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
                                const float threshold,
                                const gboolean detail);
 

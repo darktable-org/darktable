@@ -479,7 +479,7 @@ void process(
   }
 
   if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-    dt_dev_write_rawdetail_mask(piece, (float *const)ovoid, roi_in, FALSE);
+    dt_dev_write_scharr_mask(piece, (float *const)ovoid, roi_in, FALSE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
@@ -592,7 +592,7 @@ int process_cl(
 
   if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
   {
-    err = dt_dev_write_rawdetail_mask_cl(piece, dev_out, roi_in, FALSE);
+    err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_in, FALSE);
     if(err != CL_SUCCESS) goto error;
   }
   return TRUE;
