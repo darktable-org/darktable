@@ -142,7 +142,7 @@ typedef struct dt_dev_pixelpipe_t
   // the data for the luminance mask are kept in a buffer written by demosaic or rawprepare
   // as we have to scale the mask later we keep size at that stage
   gboolean want_detail_mask;
-  struct dt_dev_detail_mask_t details;
+  struct dt_dev_detail_mask_t scharr;
 
   // avoid cached data for processed module
   gboolean nocache;
@@ -289,14 +289,14 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
                               const struct dt_iop_module_t *target_module,
                               gboolean *free_mask);
 // some helper functions related to the details mask interface
-void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe);
+void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe);
 
-gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece,
+gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
                                      float *const rgb,
                                      const dt_iop_roi_t *const roi_in,
                                      const gboolean mode);
 #ifdef HAVE_OPENCL
-gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece,
+gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
                                         cl_mem in,
                                         const dt_iop_roi_t *const roi_in,
                                         const gboolean mode);

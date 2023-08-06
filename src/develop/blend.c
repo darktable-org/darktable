@@ -276,28 +276,20 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   float *warp_mask = NULL;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->details.data == NULL)
+  if(p->scharr.data == NULL)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on CPU",
        piece->pipe, self, roi_in, roi_out, "no mask data available\n");
     return;
   }
-  const int iwidth  = p->details.roi.width;
-  const int iheight = p->details.roi.height;
-  const int owidth  = roi_out->width;
-  const int oheight = roi_out->height;
+
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on CPU",
        piece->pipe, self, roi_in, roi_out, "\n");
 
-  const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
-
-  lum = dt_alloc_align_float(bufsize);
+  lum = dt_masks_calc_detail_mask(piece, threshold, detail);
   if(!lum) goto error;
-
-  if(dt_masks_calc_detail_mask(&p->details, lum, threshold, detail))
-    goto error;
 
   // here we have the slightly blurred full detail mask available
   warp_mask = dt_dev_distort_detail_mask(p, lum, self);
@@ -306,7 +298,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
 
   if(warp_mask == NULL) goto error;
 
-  const size_t msize = (size_t)owidth * oheight;
+  const size_t msize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
@@ -790,15 +782,15 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->details.data == NULL)
+  if(p->scharr.data == NULL)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
        "refine_detail_mask on GPU",
        piece->pipe, self, roi_in, roi_out, "no detail data available\n");
     return;
   }
-  const int iwidth  = p->details.roi.width;
-  const int iheight = p->details.roi.height;
+  const int iwidth  = p->scharr.roi.width;
+  const int iheight = p->scharr.roi.height;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
        "refine_detail_mask on GPU",
        piece->pipe, self, roi_in, roi_out, "\n");
@@ -810,7 +802,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if((lum == NULL) || (tmp == NULL) || (out == NULL) || (blur == NULL))
     goto error;
 
-  err = dt_opencl_write_host_to_device(devid, p->details.data, tmp,
+  err = dt_opencl_write_host_to_device(devid, p->scharr.data, tmp,
                                        iwidth, iheight, sizeof(float));
   if(err != CL_SUCCESS) goto error;
 

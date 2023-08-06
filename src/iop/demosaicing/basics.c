@@ -638,7 +638,7 @@ static int process_default_cl(
     }
 
     if(piece->pipe->want_detail_mask)
-      dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, TRUE);
+      dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
 
     if(scaled)
     {

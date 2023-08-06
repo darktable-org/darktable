@@ -49,26 +49,28 @@
   from either demosaic or from rawprepare.  If such a flag has not
   been previously set we will force a pipeline reprocessing.
 
-  gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode, const dt_aligned_pixel_t wb);
-  or it's _cl equivalent write a preliminary mask holding signal-change values for every pixel.
-  These mask values are calculated as
+  gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
+                                     float *const rgb,
+                                     const dt_iop_roi_t *const roi_in,
+                                     const gboolean rawmode)
+  or it's _cl equivalent write a preliminary mask holding signal-change values
+  for every pixel. These mask values are calculated as
   a) get Y0 for every pixel
   b) apply a scharr operator on it
 
-  This raw detail mask (RM) is not scaled but only cropped to the roi
+  This scharr mask (SM) is not scaled but only cropped to the roi
   of the writing module (demosaic or rawprepare).  The pipe gets roi
   copy of the writing module so we can later scale/distort the LM.
 
-  Calculating the RM is done for performance and lower mem pressure
-  reasons, so we don't have to pass full data to the module. Also the
-  RM can be used by other modules.
+  Calculating the SM is done for performance and lower mem pressure
+  reasons, so we don't have to pass full data to the module.
 
-  If a mask uses the details refinement step it takes the raw details
-  mask RM and calculates an intermediate mask (IM) which is still not
+  If a mask uses the details refinement step it takes the scharr
+  mask and calculates an intermediate mask (IM) which is still not
   scaled but has the roi of the writing module.
 
   For every pixel we calculate the IM value via a sigmoid function
-  with the threshold and RM as parameters.
+  with the threshold and scharr as parameters.
 
   At last the IM is slightly blurred to avoid hard transitions, as
   there still is no scaling we can use a constant sigma. As the
@@ -93,7 +95,7 @@
 
   2. In the gui the slider is above the rest of the refinemt sliders
      to emphasize that blurring & feathering use the mask corrected by
-     detail refinemnt.
+     detail refinement.
 
   3. Of course credit goes to Ingo @heckflosse from rt team for the
      original idea. (in the rt world this is knowb as details mask)
@@ -232,7 +234,7 @@ void dt_masks_blur(float *const restrict src,
   dt_masks_extend_border(out, width, height, 4);
 }
 
-gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
+gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
                                       float *const restrict src,
                                       const dt_aligned_pixel_t wb)
 {
@@ -284,53 +286,54 @@ gboolean dt_masks_calc_rawdetail_mask(dt_dev_detail_mask_t *details,
   return FALSE;
 }
 
-static inline float _calcBlendFactor(float val, float threshold)
+static inline float _calcBlendFactor(float val, float ithreshold)
 {
     // sigmoid function
     // result is in ]0;1] range
     // inflexion point is at (x, y) (threshold, 0.5)
-    return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
+    return 1.0f / (1.0f + dt_fast_expf(16.0f - ithreshold * val));
 }
 
-gboolean dt_masks_calc_detail_mask(dt_dev_detail_mask_t *details,
-                                   float *const restrict out,
-                                   const float threshold,
-                                   const gboolean detail)
+float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
+                               const float threshold,
+                               const gboolean detail)
 {
-  if((details->roi.width <= 0)
-     || (details->roi.height <= 0)
-     || !details->data
-     || (details->hash == 0))
-    return TRUE;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  dt_dev_detail_mask_t *details = &pipe->scharr;
+
+  if(!details->data)
+    return NULL;
 
   const size_t msize = (size_t) details->roi.width * details->roi.height;
   float *tmp = dt_alloc_align_float(msize);
-  if(!tmp)
+  float *mask = dt_alloc_align_float(msize);
+  if(!tmp || !mask)
   {
-    dt_iop_image_fill(out, 0.0f, details->roi.width, details->roi.height, 1);
-    return TRUE;
+    dt_free_align(tmp);
+    dt_free_align(mask);
+    return NULL;
   }
 
+  const float ithreshold = 16.0f / (fmaxf(1e-7, threshold));
   float *src = details->data;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, tmp, msize, threshold, detail, out) \
-  schedule(simd:static) aligned(src, tmp, out : 64)
+  dt_omp_firstprivate(src, tmp, msize, ithreshold, detail) \
+  schedule(simd:static) aligned(src, tmp : 64)
 #endif
   for(size_t idx = 0; idx < msize; idx++)
   {
-    const float blend = CLIP(_calcBlendFactor(src[idx], threshold));
+    const float blend = CLIP(_calcBlendFactor(src[idx], ithreshold));
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
   // for very small images the blurring should be slightly less to have an effect at all
   const float blurring = (MIN(details->roi.width, details->roi.height) < 500) ? 1.5f : 2.0f;
-  dt_masks_blur(tmp, out, details->roi.width, details->roi.height, blurring, 1.0f, 1.0f);
+  dt_masks_blur(tmp, mask, details->roi.width, details->roi.height, blurring, 1.0f, 1.0f);
   dt_free_align(tmp);
-  return FALSE;
+  return mask;
 }
-#undef FAST_BLUR_5
 #undef FAST_BLUR_9
-#undef FAST_BLUR_13
+
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -119,7 +119,7 @@ static uint64_t _dev_pixelpipe_cache_basichash(
           not valid any more.
           Do we have to keep the roi of details mask? No as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
-  */ 
+  */
   const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
@@ -171,7 +171,7 @@ uint64_t dt_dev_pixelpipe_cache_hash(
   for(size_t i = 0; i < sizeof(dt_iop_roi_t); i++)
     hash = ((hash << 5) + hash) ^ str[i];
 
-  str = (char *)&pipe->details.hash;
+  str = (char *)&pipe->scharr.hash;
   for(size_t i = 0; i < sizeof(uint64_t); i++)
     hash = ((hash << 5) + hash) ^ str[i];
 
@@ -237,7 +237,7 @@ static int __get_cacheline(struct dt_dev_pixelpipe_cache_t *cache)
   if(oldest > 0) return oldest;
 
   oldest = _get_oldest_cacheline(cache, DT_CACHETEST_PLAIN);
-  return (oldest == 0) ? cache->calls & 1 : oldest; 
+  return (oldest == 0) ? cache->calls & 1 : oldest;
 }
 
 static int _get_cacheline(struct dt_dev_pixelpipe_t *pipe)
@@ -319,7 +319,7 @@ gboolean dt_dev_pixelpipe_cache_get(
     dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
           pipe, module, NULL, NULL,
           "%s, hash=%" PRIx64 "\n",
-          dt_iop_colorspace_to_name(cdsc->cst), hash); 
+          dt_iop_colorspace_to_name(cdsc->cst), hash);
     return FALSE;
   }
   // We need a fresh buffer as there was no hit.

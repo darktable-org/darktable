@@ -28,7 +28,7 @@ static inline float calcBlendFactor(float val, float threshold)
     // sigmoid function
     // result is in ]0;1] range
     // inflexion point is at (x, y) (threshold, 0.5)
-    return 1.0f / (1.0f + native_exp(16.0f - (16.0f / threshold) * val));
+    return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
 }
 
 // Populate cfa and rgb data by normalized input
@@ -270,6 +270,34 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   }
 }
 
+__kernel void write_blended_dual(__read_only image2d_t high,
+                                 __read_only image2d_t low,
+                                 __write_only image2d_t out,
+                                 const int w,
+                                 const int height,
+                                 global float *mask,
+                                 const int showmask)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+
+  float4 data;
+
+  const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
+  const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
+  const float4 blender = mask[idx];
+  data = mix(low_val, high_val, blender);
+
+  if(showmask)
+    data.w = mask[idx];
+  else
+    data.w = 0.0f;
+
+  write_imagef(out, (int2)(col, row), fmax(data, 0.0f));
+}
+
 __kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const int w, const int height, const float red, const float green, const float blue)
 {
   const int col = get_global_id(0);
@@ -310,7 +338,6 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
   out[oidx] = gradient_magnitude / 16.0f;
 }
 
-
 __kernel void write_scharr_mask(global float *in, __write_only image2d_t out, const int w, const int height)
 {
   const int col = get_global_id(0);
@@ -336,7 +363,6 @@ __kernel void write_scharr_mask(global float *in, __write_only image2d_t out, co
   const float gradient_magnitude = native_sqrt(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
   write_imagef(out, (int2)(col, row), gradient_magnitude / 16.0f);
 }
-
 
 __kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
 {
@@ -372,28 +398,6 @@ __kernel void writeout_mask(global const float *mask, __write_only image2d_t out
   write_imagef(out, (int2)(col, row), val);  
 }
 
-__kernel void write_blended_dual(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-  const int idx = mad24(row, w, col);
-
-  float4 data;
-
-  if(showmask)
-  {
-    data = mask[idx];
-  }
-  else
-  {
-    const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
-    const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
-    const float4 blender = mask[idx];
-    data = mix(low_val, high_val, blender);
-  }
-  write_imagef(out, (int2)(col, row), fmax(data, 0.0f));
-}
 
 __kernel void fastblur_mask_9x9(global float *src, global float *out, const int w, const int height, global const float *kern)
 {
