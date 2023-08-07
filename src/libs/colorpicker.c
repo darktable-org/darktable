@@ -326,7 +326,7 @@ static void _statistic_changed(GtkWidget *widget, dt_lib_module_t *self)
   _update_picker_output(self);
   _update_samples_output(self);
   if(darktable.lib->proxy.colorpicker.display_samples)
-      dt_dev_invalidate_from_gui(darktable.develop);
+    dt_dev_invalidate_all(darktable.develop);
 }
 
 static void _color_mode_changed(GtkWidget *widget, dt_lib_module_t *self)
@@ -365,9 +365,9 @@ static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, dt_co
   {
     darktable.lib->proxy.colorpicker.selected_sample = sample;
     if(darktable.lib->proxy.colorpicker.display_samples)
-      dt_dev_invalidate_from_gui(darktable.develop);
-   	else
-   	  dt_control_queue_redraw_center();
+      dt_dev_invalidate_all(darktable.develop);
+
+    dt_control_queue_redraw_center();
   }
 
   return FALSE;
@@ -381,9 +381,9 @@ static gboolean _sample_leave_callback(GtkWidget *widget, GdkEvent *event, gpoin
   {
     darktable.lib->proxy.colorpicker.selected_sample = NULL;
     if(darktable.lib->proxy.colorpicker.display_samples)
-      dt_dev_invalidate_from_gui(darktable.develop);
-   	else
-   	  dt_control_queue_redraw_center();
+      dt_dev_invalidate_all(darktable.develop);
+
+    dt_control_queue_redraw_center();
   }
 
   return FALSE;
@@ -400,7 +400,7 @@ static void _remove_sample(dt_colorpicker_sample_t *sample)
 static void _remove_sample_cb(GtkButton *widget, dt_colorpicker_sample_t *sample)
 {
   _remove_sample(sample);
-  dt_dev_invalidate_from_gui(darktable.develop);
+  dt_dev_invalidate_all(darktable.develop);
 }
 
 static gboolean _live_sample_button(GtkWidget *widget, GdkEventButton *event, dt_colorpicker_sample_t *sample)
@@ -429,12 +429,12 @@ static gboolean _live_sample_button(GtkWidget *widget, GdkEventButton *event, dt
     if(picker->module)
     {
       picker->module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      dt_control_queue_redraw_center();
     }
     else
     {
-      dt_dev_invalidate_from_gui(darktable.develop);
+      dt_dev_invalidate_all(darktable.develop);
     }
+    dt_control_queue_redraw_center();
   }
   return FALSE;
 }
@@ -496,23 +496,25 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   // Updating the display
   _update_samples_output(self);
   if(darktable.lib->proxy.colorpicker.display_samples)
-      dt_dev_invalidate_from_gui(darktable.develop);
-   	else
-   	  dt_control_queue_redraw_center();
+    dt_dev_invalidate_all(darktable.develop);
+
+  dt_control_queue_redraw_center();
 }
 
 static void _display_samples_changed(GtkToggleButton *button, gpointer data)
 {
   dt_conf_set_bool("ui_last/colorpicker_display_samples", gtk_toggle_button_get_active(button));
   darktable.lib->proxy.colorpicker.display_samples = gtk_toggle_button_get_active(button);
-  dt_dev_invalidate_from_gui(darktable.develop);
+  dt_dev_invalidate_all(darktable.develop);
+  dt_control_queue_redraw_center();
 }
 
 static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
 {
   dt_conf_set_bool("ui_last/colorpicker_restrict_histogram", gtk_toggle_button_get_active(button));
   darktable.lib->proxy.colorpicker.restrict_histogram = gtk_toggle_button_get_active(button);
-  dt_dev_invalidate_from_gui(darktable.develop);
+  dt_dev_invalidate_all(darktable.develop);
+  dt_control_queue_redraw_center();
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -691,7 +693,7 @@ void gui_reset(dt_lib_module_t *self)
   if(darktable.lib->proxy.colorpicker.restrict_histogram
      && darktable.lib->proxy.colorpicker.picker_proxy)
   {
-    dt_dev_invalidate_from_gui(darktable.develop);
+    dt_dev_invalidate_all(darktable.develop);
   }
   dt_iop_color_picker_reset(NULL, FALSE);
 
@@ -721,7 +723,7 @@ void gui_reset(dt_lib_module_t *self)
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box)))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
   else
-    dt_dev_invalidate_from_gui(darktable.develop);
+    dt_dev_invalidate_all(darktable.develop);
 
   // redraw without a picker
   dt_control_queue_redraw_center();
