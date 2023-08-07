@@ -848,7 +848,7 @@ void dt_dev_second_window_configure(dt_develop_t *dev,
 }
 
 // helper used to synch a single history item with db
-int dt_dev_write_history_item(const dt_imgid_t imgid,
+static void _dev_write_history_item(const dt_imgid_t imgid,
                               dt_dev_history_item_t *h,
                               const int32_t num)
 {
@@ -903,8 +903,6 @@ int dt_dev_write_history_item(const dt_imgid_t imgid,
     if(form)
       dt_masks_write_masks_history_item(imgid, num, form);
   }
-
-  return 0;
 }
 
 static void _dev_auto_save(dt_develop_t *dev)
@@ -1578,7 +1576,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev,
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    (void)dt_dev_write_history_item(imgid, hist, i);
+    _dev_write_history_item(imgid, hist, i);
 
     dt_print(DT_DEBUG_IOPORDER, "%20s, num %2i, order %2d, v(%i), multiprio %i%s\n",
       hist->module->op, i, hist->iop_order, hist->module->version(), hist->multi_priority,
@@ -1623,7 +1621,7 @@ static int _dev_get_module_nb_records(void)
   return cnt;
 }
 
-void _dev_insert_module(dt_develop_t *dev,
+static void _dev_insert_module(dt_develop_t *dev,
                         dt_iop_module_t *module,
                         const dt_imgid_t imgid)
 {
@@ -2064,7 +2062,7 @@ static void _dev_merge_history(dt_develop_t *dev,
   }
 }
 
-void _dev_write_history(dt_develop_t *dev,
+static void _dev_write_history(dt_develop_t *dev,
                         const dt_imgid_t imgid)
 {
   _cleanup_history(imgid);
@@ -2073,7 +2071,7 @@ void _dev_write_history(dt_develop_t *dev,
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    (void)dt_dev_write_history_item(imgid, hist, i);
+    _dev_write_history_item(imgid, hist, i);
     history = g_list_next(history);
   }
 }
