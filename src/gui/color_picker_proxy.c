@@ -219,7 +219,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
     }
     else
     {
-      dt_dev_invalidate_from_gui(darktable.develop);
+      dt_dev_invalidate_all(darktable.develop);
     }
     // force applying the next incoming sample
     self->changed = TRUE;
@@ -236,7 +236,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
     }
     else if(darktable.lib->proxy.colorpicker.restrict_histogram)
     {
-      dt_dev_invalidate_from_gui(darktable.develop);
+      dt_dev_invalidate_all(darktable.develop);
     }
   }
 

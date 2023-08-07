@@ -2171,7 +2171,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
                                GTK_STATE_FLAG_NORMAL, TRUE);
 
     if(out_focus_module->operation_tags_filter())
-      dt_dev_invalidate_from_gui(darktable.develop);
+      dt_dev_invalidate_all(darktable.develop);
 
     dt_iop_connect_accels_multi(out_focus_module->so);
 
@@ -2199,7 +2199,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
                                GTK_STATE_FLAG_SELECTED, TRUE);
 
     if(module->operation_tags_filter())
-      dt_dev_invalidate_from_gui(darktable.develop);
+      dt_dev_invalidate_all(darktable.develop);
 
     dt_iop_connect_accels_multi(module->so);
 
