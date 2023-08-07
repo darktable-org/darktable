@@ -836,10 +836,11 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, const gboolean copy
 
 static void _gui_copy_callback(GtkButton *button, gpointer user_data)
 {
-  dt_iop_module_t *module = dt_iop_gui_duplicate(user_data, FALSE);
+  dt_iop_module_t *base = (dt_iop_module_t *)user_data;
+  dt_iop_module_t *module = dt_iop_gui_duplicate(base, FALSE);
 
   /* setup key accelerators */
-  dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
+  dt_iop_connect_accels_multi(base->so);
 
   if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
     dt_iop_gui_rename_module(module);
@@ -847,10 +848,11 @@ static void _gui_copy_callback(GtkButton *button, gpointer user_data)
 
 static void _gui_duplicate_callback(GtkButton *button, gpointer user_data)
 {
-  dt_iop_module_t *module = dt_iop_gui_duplicate(user_data, TRUE);
+  dt_iop_module_t *base = (dt_iop_module_t *)user_data;
+  dt_iop_module_t *module = dt_iop_gui_duplicate(base, TRUE);
 
   /* setup key accelerators */
-  dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
+  dt_iop_connect_accels_multi(base->so);
 
   if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
     dt_iop_gui_rename_module(module);
