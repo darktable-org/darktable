@@ -1615,26 +1615,57 @@ void init_presets(dt_lib_module_t *self)
       buf += fsize;
       const void *sdata = buf;
 
-      void *new_fdata = NULL, *new_sdata = NULL;
-      size_t new_fsize = fsize, new_ssize = ssize;
-      const int32_t new_fversion = fmod->version(), new_sversion = smod->version();
+      void *new_fdata = NULL;
+      void *new_sdata = NULL;
+      size_t new_fsize = fsize;
+      size_t new_ssize = ssize;
+      const int32_t new_fversion = fmod->version();
+      const int32_t new_sversion = smod->version();
 
-      if(fversion < new_fversion)
+      int32_t cversion = fversion;
+      int32_t new_version = new_fversion;
+      size_t new_size = 0;
+      void *data = (void *)malloc(fsize);
+      memcpy(data, fdata, fsize);
+      while(cversion < new_fversion)
       {
-        if(!(fmod->legacy_params
-             && (new_fdata = fmod->legacy_params(fmod, fdata, fsize,
-                                                 fversion, new_fversion, &new_fsize))
-                != NULL))
+        if(fmod->legacy_params
+           && (new_fdata = fmod->legacy_params(fmod, data, new_fsize,
+                                               cversion, &new_version, &new_size))
+                != NULL)
+        {
+          free(data);
+          data = new_fdata;
+          new_fsize = new_size;
+          cversion = new_version;
+        }
+        else
+        {
           goto delete_preset;
+        }
       }
 
-      if(sversion < new_sversion)
+      cversion = sversion;
+      new_version = new_sversion;
+      new_size = 0;
+      data = (void *)malloc(ssize);
+      memcpy(data, sdata, ssize);
+      while(cversion < new_sversion)
       {
-        if(!(smod->legacy_params
-             && (new_sdata = smod->legacy_params(smod, sdata, ssize,
-                                                 sversion, new_sversion, &new_ssize))
-                != NULL))
+        if(smod->legacy_params
+           && (new_sdata = smod->legacy_params(smod, data, new_ssize,
+                                               cversion, &new_version, &new_size))
+           != NULL)
+        {
+          free(data);
+          data = new_sdata;
+          new_ssize = new_size;
+          cversion = new_version;
+        }
+        else
+        {
           goto delete_preset;
+        }
       }
 
       if(new_fdata || new_sdata)

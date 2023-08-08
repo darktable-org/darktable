@@ -590,10 +590,14 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_tiff_t) - sizeof(TIFF *);
 }
 
-void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params, const size_t old_params_size,
-                    const int old_version, const int new_version, size_t *new_size)
+void *legacy_params(dt_imageio_module_format_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
+                    size_t *new_size)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && *new_version == 4)
   {
     typedef struct dt_imageio_tiff_v1_t
     {
@@ -623,7 +627,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     *new_size = self->params_size(self);
     return n;
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2 && *new_version == 4)
   {
     typedef struct dt_imageio_tiff_v2_t
     {
@@ -654,7 +658,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     *new_size = self->params_size(self);
     return n;
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3 && *new_version == 4)
   {
     typedef struct dt_imageio_tiff_v3_t
     {
@@ -692,6 +696,23 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     *new_size = self->params_size(self);
     return n;
   }
+
+  // incremental update supported:
+  /*
+  if(old_version = 4)
+  {
+    // let's update from 4 to 5
+    typedef struct dt_imageio_tiff_v5_t
+    {
+      ...
+    } dt_imageio_tiff_v5_t;
+
+    ...
+    *new_size = sizeof(dt_imageio_tiff_v5_t) - sizeof(TIFF *);
+    *new_version = 5;
+    return n;
+  }
+  */
   return NULL;
 }
 

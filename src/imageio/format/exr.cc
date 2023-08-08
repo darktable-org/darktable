@@ -384,11 +384,14 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_exr_t);
 }
 
-void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
-                    const size_t old_params_size, const int old_version, const int new_version,
+void *legacy_params(dt_imageio_module_format_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 5)
+  if(old_version == 1 && *new_version == 5)
   {
     struct dt_imageio_exr_v1_t
     {
@@ -411,7 +414,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     *new_size = self->params_size(self);
     return n;
   }
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2 && *new_version == 5)
   {
     struct dt_imageio_exr_v2_t
     {
@@ -437,7 +440,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     *new_size = self->params_size(self);
     return n;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3 && *new_version == 5)
   {
     struct dt_imageio_exr_v3_t
     {
@@ -461,7 +464,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     *new_size = self->params_size(self);
     return n;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4 && *new_version == 5)
   {
     struct dt_imageio_exr_v4_t
     {
@@ -483,6 +486,23 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     *new_size = self->params_size(self);
     return n;
   }
+
+  // incremental update supported:
+  /*
+  if(old_version = 5)
+  {
+    // let's update from 5 to 6
+    typedef struct dt_imageio_exr_v6_t
+    {
+      ...
+    } dt_imageio_exr_v6_t;
+
+    ...
+    *new_size = sizeof(dt_imageio_exr_v6_t);
+    *new_version = 6;
+    return n;
+  }
+  */
   return NULL;
 }
 
