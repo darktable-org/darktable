@@ -1181,13 +1181,33 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /*
      * Get the focus distance in meters.
      */
-    if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance")
-       || FIND_EXIF_TAG("Exif.NikonLd3.FocusDistance")
-       || (Exiv2::testVersion(0, 27, 4)
-           && FIND_EXIF_TAG("Exif.NikonLd4.FocusDistance")))
+    if(Exiv2::testVersion(0, 27, 4) && FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() != 0)
+    {
+      // Z lens, need to specifically look for the second instance of Exif.NikonLd4.FocusDistance
+      // unless using Exiv2 0.28.x and later (also expanded to 2 bytes of precision since 0.28.1).
+#if EXIV2_TEST_VERSION(0, 28, 0)
+      if(FIND_EXIF_TAG("Exif.NikonLd4.FocusDistance2"))
+      {
+        float value = pos->toFloat();
+        if(Exiv2::testVersion(0, 28, 1)) value /= 256.0f;
+#else
+      pos = exifData.end();
+      for(auto it = exifData.begin(); it != exifData.end(); it++)
+      {
+        if(it->key() == "Exif.NikonLd4.FocusDistance") pos = it;
+      }
+      if(pos != exifData.end() && pos->size())
+      {
+        float value = pos->toFloat();
+#endif
+        img->exif_focus_distance = 0.01f * pow(10.0f, value / 40.0f);
+      }
+    }
+    else if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance") || FIND_EXIF_TAG("Exif.NikonLd3.FocusDistance")
+            || (Exiv2::testVersion(0, 27, 4) && FIND_EXIF_TAG("Exif.NikonLd4.FocusDistance")))
     {
       float value = pos->toFloat();
-      img->exif_focus_distance = (0.01 * pow(10, value / 40));
+      img->exif_focus_distance = 0.01f * pow(10.0f, value / 40.0f);
     }
     else if(FIND_EXIF_TAG("Exif.OlympusFi.FocusDistance"))
     {
