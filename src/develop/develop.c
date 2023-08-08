@@ -2871,11 +2871,6 @@ void dt_dev_masks_selection_change(dt_develop_t *dev,
     dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
 }
 
-void dt_dev_invalidate_from_gui(dt_develop_t *dev)
-{
-  dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
-}
-
 void dt_dev_average_delay_update(const dt_times_t *start,
                                  uint32_t *average_delay)
 {
