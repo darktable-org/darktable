@@ -3549,7 +3549,7 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
   else
   {
     // copy the input buffer to the output
-    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
     // and set the module's trouble message
     if(module)
       dt_iop_set_module_trouble_message

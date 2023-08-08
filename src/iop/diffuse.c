@@ -1337,7 +1337,7 @@ void process(dt_iop_module_t *self,
   if(fastmode)
   {
     const size_t ch = piece->colors;
-    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
     return;
   }
 
@@ -1362,7 +1362,7 @@ void process(dt_iop_module_t *self,
                                  0, NULL))
   {
     dt_print(DT_DEBUG_ALWAYS,"[diffuse] out of memory, skipping\n");
-    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);

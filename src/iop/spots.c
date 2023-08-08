@@ -570,7 +570,7 @@ void _process(struct dt_iop_module_t *self,
   dt_develop_blend_params_t *bp = piece->blendop_data;
 
 // we don't modify most of the image:
-  dt_iop_copy_image_roi(out, in, ch, roi_in, roi_out, 0);
+  dt_iop_copy_image_roi(out, in, ch, roi_in, roi_out);
 
   // iterate through all forms
   dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);

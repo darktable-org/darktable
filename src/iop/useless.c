@@ -204,7 +204,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 #if 0
 /** optional, always needed if tiling is permitted by setting IOP_FLAGS_ALLOW_TILING
-    Also define this if the module uses more memory on the OpenCl device than the in& output buffers. 
+    Also define this if the module uses more memory on the OpenCl device than the in& output buffers.
 */
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
@@ -318,7 +318,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       // been allocated have been freed, and the module's trouble flag has been set.  We can simply pass
       // through the input image and return now, since there isn't anything else we need to clean up at
       // this point.
-      dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+      dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
       return;
     }
   }

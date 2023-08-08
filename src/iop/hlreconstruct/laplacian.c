@@ -637,7 +637,7 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self,
                                  4 | DT_IMGSZ_INPUT, &clipping_mask,
                                  0, NULL))
   {
-    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
 
@@ -653,7 +653,7 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self,
   {
     dt_free_align(interpolated);
     dt_free_align(clipping_mask);
-    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
 
