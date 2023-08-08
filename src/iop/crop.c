@@ -338,7 +338,7 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -389,7 +389,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
+  dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
 }
 
 #ifdef HAVE_OPENCL

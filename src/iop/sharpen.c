@@ -291,7 +291,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                   1 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &tmp, &padded_size,
                                   0))
   {
-    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
     return;
   }
 
@@ -305,7 +305,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(!mat)
   {
     dt_print(DT_DEBUG_ALWAYS,"[sharpen] out of memory\n");
-    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
     return;
   }
   const float *const restrict in = (float*)ivoid;

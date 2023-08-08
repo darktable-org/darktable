@@ -404,7 +404,7 @@ void process(struct dt_iop_module_t *self,
     dt_gaussian_t *g = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, order);
     if(!g)
     {
-      dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
+      dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out);
       return;
     }
     dt_gaussian_blur_4c(g, in, out);
@@ -419,7 +419,7 @@ void process(struct dt_iop_module_t *self,
     dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
     if(!b)
     {
-      dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
+      dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out);
       return;
     }
     dt_bilateral_splat(b, in);

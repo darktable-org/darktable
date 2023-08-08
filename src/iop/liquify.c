@@ -1421,7 +1421,7 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_out)
 {
   // 1. copy the whole image (we'll change only a small part of it)
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, 1);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
@@ -1454,7 +1454,7 @@ void process(struct dt_iop_module_t *module,
                                         in, out, roi_in, roi_out))
     return;
   // 1. copy the whole image (we'll change only a small part of it)
-  dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, 1);
+  dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out);
 
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
