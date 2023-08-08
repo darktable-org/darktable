@@ -1580,8 +1580,8 @@ void init_presets(dt_lib_module_t *self)
       const char *buf = (const char *)op_params;
 
       // skip 6*int32_t: max_width, max_height, upscale, high_quality
-      // and iccintent, icctype
-      buf += 6 * sizeof(int32_t);
+      // and export_masks, iccintent, icctype
+      buf += 7 * sizeof(int32_t);
       // skip metadata presets string
       buf += strlen(buf) + 1;
       // next skip iccfilename
@@ -2026,6 +2026,8 @@ void *get_params(dt_lib_module_t *self, int *size)
           + 4 * sizeof(int32_t) + fsize + ssize + 7 * sizeof(int32_t)
           + strlen(iccfilename) + 1 + strlen(metadata_export) + 1;
 
+  //??? WARNING: Any change here must be also done on get_params AND init_presets
+  //             if some parameters are added before fname & sname
   char *params = (char *)calloc(1, *size);
   int pos = 0;
   memcpy(params + pos, &max_width, sizeof(int32_t));
@@ -2086,6 +2088,8 @@ int set_params(dt_lib_module_t *self,
   // apply these stored presets again (parse blob)
   const char *buf = (const char *)params;
 
+  //??? WARNING: Any change here must be also done on get_params AND init_presets
+  //             if some parameters are added before fname & sname
   const int max_width = *(const int *)buf;
   buf += sizeof(int32_t);
   const int max_height = *(const int *)buf;
