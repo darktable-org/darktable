@@ -73,11 +73,14 @@ const char *name(const struct dt_imageio_module_storage_t *self)
   return _("website gallery");
 }
 
-void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_params,
-                    const size_t old_params_size, const int old_version, const int new_version,
+void *legacy_params(dt_imageio_module_storage_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && *new_version == 2)
   {
     typedef struct dt_imageio_gallery_v1_t
     {
@@ -98,6 +101,23 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
     *new_size = self->params_size(self);
     return n;
   }
+
+  // incremental update supported:
+  /*
+  if(old_version = 2)
+  {
+    // let's update from 2 to 3
+    typedef struct dt_imageio_gallery_v3_t
+    {
+      ...
+    } dt_imageio_gallery_v3_t;
+
+    ...
+    *new_size = sizeof(dt_imageio_gallery_v3_t) - 2 * sizeof(void *) - DT_MAX_PATH_FOR_PARAMS;
+    *new_version = 3;
+    return n;
+  }
+  */
   return NULL;
 }
 

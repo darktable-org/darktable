@@ -71,11 +71,14 @@ const char *name(const struct dt_imageio_module_storage_t *self)
   return _("file on disk");
 }
 
-void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_params,
-                    const size_t old_params_size, const int old_version, const int new_version,
+void *legacy_params(dt_imageio_module_storage_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && *new_version == 3)
   {
     typedef struct dt_imageio_disk_v1_t
     {
@@ -93,7 +96,7 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
     *new_size = self->params_size(self);
     return n;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && *new_version == 3)
   {
     typedef struct dt_imageio_disk_v2_t
     {
@@ -111,6 +114,23 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
     *new_size = self->params_size(self);
     return n;
   }
+
+  // incremental update supported:
+  /*
+  if(old_version = 3)
+  {
+    // let's update from 3 to 4
+    typedef struct dt_imageio_disk_v3_t
+    {
+      ...
+    } dt_imageio_disk_v3_t;
+
+    ...
+    *new_size = sizeof(dt_imageio_disk_v3_t) - sizeof(void *);
+    *new_version = 4;
+    return n;
+  }
+  */
   return NULL;
 }
 
@@ -391,4 +411,3 @@ char *ask_user_confirmation(dt_imageio_module_storage_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
