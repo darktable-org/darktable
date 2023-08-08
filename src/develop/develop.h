@@ -434,7 +434,6 @@ void dt_dev_configure(dt_develop_t *dev,
 void dt_dev_second_window_configure(dt_develop_t *dev,
                                     int wd,
                                     int ht);
-void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*
  * exposure plugin hook, set the exposure and the black level
