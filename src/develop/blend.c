@@ -664,7 +664,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
           float *const restrict guide = dt_alloc_align_float(obuffsize * ch);
           if(guide)
           {
-            dt_iop_copy_image_roi(guide, (float *restrict)ivoid, ch, roi_in, roi_out, 0);
+            dt_iop_copy_image_roi(guide, (float *restrict)ivoid, ch, roi_in, roi_out);
             _develop_blend_process_feather(guide, mask, owidth, oheight, ch, guide_weight,
                                            d->feathering_radius,
                                            roi_out->scale / piece->iscale);

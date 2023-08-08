@@ -107,15 +107,14 @@ static inline void dt_iop_image_copy_by_size(float *const __restrict__ out,
 
 // Copy an image buffer, specifying the region of interest.  The
 // output RoI may be larger than the input RoI, in which case the
-// result is optionally padded with zeros.  If the output RoI is
-// smaller than the input RoI, only a portion of the input buffer will
-// be copied.
+// result is padded with zeros.
+// If the output RoI is smaller than the input RoI, only a portion of
+// the input buffer will be copied.
 void dt_iop_copy_image_roi(float *const __restrict__ out,
                            const float *const __restrict__ in,
                            const size_t ch,
                            const dt_iop_roi_t *const __restrict__ roi_in,
-                           const dt_iop_roi_t *const __restrict__ roi_out,
-                           const int zero_pad);
+                           const dt_iop_roi_t *const __restrict__ roi_out);
 
 // Copy one image buffer to another, multiplying each element by the
 // specified scale factor

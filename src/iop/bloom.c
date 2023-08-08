@@ -114,7 +114,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &blurlightness, 0))
   {
     // out of memory, so just copy image through to output
-    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
 

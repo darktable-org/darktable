@@ -1271,7 +1271,7 @@ void process_fusion(struct dt_iop_module_t *self,
     comb[k] = dt_alloc_align_float((size_t)4 * w * h);
     if(!col[k] || !comb[k])
     {
-      dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+      dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
       dt_print(DT_DEBUG_ALWAYS,"[basecurve] process_fusion out of memory, skipping\n");
       goto cleanup;
     }

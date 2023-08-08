@@ -270,7 +270,7 @@ void process(
   float *out = dt_alloc_align_float(roi_in->width * roi_in->height);
   if(!out)
   {
-    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
     return;
   }
@@ -1285,7 +1285,7 @@ void process(
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
   {
-    for(size_t col = 0; col < roi_out->width; col++) 
+    for(size_t col = 0; col < roi_out->width; col++)
     {
       const size_t ox = row * roi_out->width + col;
       const size_t irow = row + roi_out->y;
@@ -1336,7 +1336,7 @@ void distort_mask(
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 void reload_defaults(dt_iop_module_t *module)

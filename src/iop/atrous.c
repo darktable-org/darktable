@@ -302,7 +302,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
 
   if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 0))
   {
-    dt_iop_copy_image_roi(out, i, piece->colors, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(out, i, piece->colors, roi_in, roi_out);
     return;
   }
 
