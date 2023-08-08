@@ -4579,7 +4579,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->reconstruct_structure_vs_texture,
                               /* xgettext:no-c-format */
                               _("decide which reconstruction strategy to favor,\n"
-                                "between inpainting a smooth color gradient,\n"
+                                "inpainting a smooth color gradient\n"
                                 "or trying to recover the textured details.\n"
                                 "0% is an equal mix of both.\n"
                                 "increase if at least one RGB channel is not clipped.\n"
@@ -4590,7 +4590,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->reconstruct_bloom_vs_details,
                               /* xgettext:no-c-format */
                               _("decide which reconstruction strategy to favor,\n"
-                                "between blooming highlights like film does,\n"
+                                "blooming highlights like film does\n"
                                 "or trying to recover sharp details.\n"
                                 "0% is an equal mix of both.\n"
                                 "increase if you want more details.\n"
@@ -4602,7 +4602,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->reconstruct_grey_vs_color,
                               /* xgettext:no-c-format */
                               _("decide which reconstruction strategy to favor,\n"
-                                "between recovering monochromatic highlights,\n"
+                                "recovering monochromatic highlights\n"
                                 "or trying to recover colorful highlights.\n"
                                 "0% is an equal mix of both.\n"
                                 "increase if you want more color.\n"
