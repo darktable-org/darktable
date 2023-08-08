@@ -2893,31 +2893,31 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
       {
         for(GList *iter = g_list_next(source_iter); iter; iter = g_list_next(iter))
         {
-          dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
+          dt_dev_pixelpipe_iop_t *it_piece = (dt_dev_pixelpipe_iop_t *)iter->data;
 
-          if(module->enabled
-             && !(module->module->dev->gui_module
-                  && module->module->dev->gui_module != module->module
-                  && (module->module->dev->gui_module->operation_tags_filter()
-                      & module->module->operation_tags())))
+          if(it_piece->enabled
+             && !(it_piece->module->dev->gui_module
+                  && it_piece->module->dev->gui_module != it_piece->module
+                  && (it_piece->module->dev->gui_module->operation_tags_filter()
+                      & it_piece->module->operation_tags())))
           {
-            if(module->module->distort_mask
+            if(it_piece->module->distort_mask
               // hack against pipes not using finalscale
-              && !(dt_iop_module_is(module->module->so, "finalscale")
-                    && module->processed_roi_in.width == 0
-                    && module->processed_roi_in.height == 0))
+              && !(dt_iop_module_is(it_piece->module->so, "finalscale")
+                    && it_piece->processed_roi_in.width == 0
+                    && it_piece->processed_roi_in.height == 0))
             {
               float *transformed_mask =
-                dt_alloc_align_float((size_t)module->processed_roi_out.width
-                                     * module->processed_roi_out.height);
+                dt_alloc_align_float((size_t)it_piece->processed_roi_out.width
+                                     * it_piece->processed_roi_out.height);
               if(transformed_mask)
               {
-                module->module->distort_mask(module->module,
-                                             module,
+                it_piece->module->distort_mask(it_piece->module,
+                                             it_piece,
                                              raster_mask,
                                              transformed_mask,
-                                             &module->processed_roi_in,
-                                             &module->processed_roi_out);
+                                             &it_piece->processed_roi_in,
+                                             &it_piece->processed_roi_out);
 
                 // As we might have multiple modules doing a transformation we want to
                 // de-allocate all intermediate buffers and only leave the last one
@@ -2931,29 +2931,29 @@ float *dt_dev_get_raster_mask(const struct dt_dev_pixelpipe_iop_t *piece,
               {
                 dt_print_pipe(DT_DEBUG_ALWAYS,
                       "no distort raster mask",
-                      piece->pipe, module->module,
-                      &module->processed_roi_in, &module->processed_roi_out,
+                      piece->pipe, it_piece->module,
+                      &it_piece->processed_roi_in, &it_piece->processed_roi_out,
                       "skipped transforming mask due to lack of memory\n");
                 return NULL;
               }
             }
-            else if(!module->module->distort_mask
-                    && (module->processed_roi_in.width != module->processed_roi_out.width
-                        || module->processed_roi_in.height != module->processed_roi_out.height
-                        || module->processed_roi_in.x != module->processed_roi_out.x
-                        || module->processed_roi_in.y != module->processed_roi_out.y))
+            else if(!it_piece->module->distort_mask
+                    && (it_piece->processed_roi_in.width != it_piece->processed_roi_out.width
+                        || it_piece->processed_roi_in.height != it_piece->processed_roi_out.height
+                        || it_piece->processed_roi_in.x != it_piece->processed_roi_out.x
+                        || it_piece->processed_roi_in.y != it_piece->processed_roi_out.y))
             {
               dt_print_pipe(DT_DEBUG_ALWAYS,
                       "distort raster mask",
-                      piece->pipe, module->module,
-                      &module->processed_roi_in, &module->processed_roi_out,
+                      piece->pipe, it_piece->module,
+                      &it_piece->processed_roi_in, &it_piece->processed_roi_out,
                       "misses distort_mask() function\n");
               return NULL;
             }
           }
 
           if(target_module
-             && module->module == target_module)
+             && it_piece->module == target_module)
             break;
         }
       }
@@ -3129,43 +3129,43 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_t *pipe,
   {
     for(GList *iter = source_iter; iter; iter = g_list_next(iter))
     {
-      dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
-      if(module->enabled
-         && !(module->module->dev->gui_module
-              && module->module->dev->gui_module != module->module
-              && module->module->dev->gui_module->operation_tags_filter()
-                 & module->module->operation_tags()))
+      dt_dev_pixelpipe_iop_t *it_piece = (dt_dev_pixelpipe_iop_t *)iter->data;
+      if(it_piece->enabled
+         && !(it_piece->module->dev->gui_module
+              && it_piece->module->dev->gui_module != it_piece->module
+              && it_piece->module->dev->gui_module->operation_tags_filter()
+                 & it_piece->module->operation_tags()))
       {
         // hack against pipes not using finalscale
-        if(module->module->distort_mask
-              && !(dt_iop_module_is(module->module->so, "finalscale")
-                    && module->processed_roi_in.width == 0
-                    && module->processed_roi_in.height == 0))
+        if(it_piece->module->distort_mask
+              && !(dt_iop_module_is(it_piece->module->so, "finalscale")
+                    && it_piece->processed_roi_in.width == 0
+                    && it_piece->processed_roi_in.height == 0))
         {
-          float *tmp = dt_alloc_align_float((size_t)module->processed_roi_out.width
-                                            * module->processed_roi_out.height);
+          float *tmp = dt_alloc_align_float((size_t)it_piece->processed_roi_out.width
+                                            * it_piece->processed_roi_out.height);
           dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
-             "distort detail mask", pipe, module->module, &module->processed_roi_in, &module->processed_roi_out, "\n");
+             "distort detail mask", pipe, it_piece->module, &it_piece->processed_roi_in, &it_piece->processed_roi_out, "\n");
 
-          module->module->distort_mask(module->module, module, inmask, tmp,
-                                       &module->processed_roi_in,
-                                       &module->processed_roi_out);
+          it_piece->module->distort_mask(it_piece->module, it_piece, inmask, tmp,
+                                       &it_piece->processed_roi_in,
+                                       &it_piece->processed_roi_out);
           resmask = tmp;
           if(inmask != src) dt_free_align(inmask);
           inmask = tmp;
         }
-        else if(!module->module->distort_mask
-                && (module->processed_roi_in.width != module->processed_roi_out.width
-                    || module->processed_roi_in.height != module->processed_roi_out.height
-                    || module->processed_roi_in.x != module->processed_roi_out.x
-                    || module->processed_roi_in.y != module->processed_roi_out.y))
+        else if(!it_piece->module->distort_mask
+                && (it_piece->processed_roi_in.width != it_piece->processed_roi_out.width
+                    || it_piece->processed_roi_in.height != it_piece->processed_roi_out.height
+                    || it_piece->processed_roi_in.x != it_piece->processed_roi_out.x
+                    || it_piece->processed_roi_in.y != it_piece->processed_roi_out.y))
               dt_print_pipe(DT_DEBUG_ALWAYS,
                       "distort details mask",
-                      pipe, module->module,
-                      &module->processed_roi_in, &module->processed_roi_out,
+                      pipe, it_piece->module,
+                      &it_piece->processed_roi_in, &it_piece->processed_roi_out,
                       "misses distort_mask()\n");
 
-        if(module->module == target_module) break;
+        if(it_piece->module == target_module) break;
       }
     }
   }
