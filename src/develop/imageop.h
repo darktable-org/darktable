@@ -349,6 +349,12 @@ gboolean dt_iop_load_module(dt_iop_module_t *module,
                        struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_cleanup_module(dt_iop_module_t *module);
+/** migrate legacy params */
+int dt_iop_legacy_params(dt_iop_module_t *module,
+                         const void *const old_params,
+                         const int old_version,
+                         void *new_params,
+                         const int new_version);
 /** initialize pipe. */
 void dt_iop_init_pipe(struct dt_iop_module_t *module,
                       struct dt_dev_pixelpipe_t *pipe,

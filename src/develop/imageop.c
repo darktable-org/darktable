@@ -1330,6 +1330,27 @@ void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
   module->histogram_stats.pixels = 0;
 }
 
+int dt_iop_legacy_params(dt_iop_module_t *module,
+                         const void *const old_params,
+                         const int old_version,
+                         void *new_params,
+                         const int new_version)
+{
+  int ret = 0;
+
+  if(module->legacy_params)
+  {
+    ret = module->legacy_params(module, old_params, old_version,
+                                new_params, new_version);
+  }
+  else
+  {
+    ret = 1;
+  }
+
+  return ret;
+}
+
 static void _init_presets(dt_iop_module_so_t *module_so)
 {
   if(module_so->init_presets)
@@ -1434,8 +1455,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       {
         // convert the old params to new
         const int legacy_ret =
-          module->legacy_params(module, old_params, old_params_version,
-                                new_params, module_version);
+          dt_iop_legacy_params(module, old_params, old_params_version,
+                               new_params, module_version);
 
         if(legacy_ret == 1)
         {
@@ -1445,7 +1466,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
           free(module);
           continue;
         }
-        else if (legacy_ret == -1)
+        else if(legacy_ret == -1)
           auto_init = TRUE;
       }
       else
