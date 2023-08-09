@@ -459,7 +459,7 @@ gboolean dt_opencl_read_device_config(const int devid)
   }
   else // this is used if updating to 4.0 or fresh installs; see
        // commenting _opencl_get_unused_device_mem()
-    cl->dev[devid].forced_headroom = 400;
+    cl->dev[devid].forced_headroom = 600;
   dt_opencl_write_device_config(devid);
   return !existing_device || !safety_ok;
 }

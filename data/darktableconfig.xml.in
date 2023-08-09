@@ -333,7 +333,7 @@
     </type>
     <default>nothing</default>
     <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>allows runtime tuning of OpenCL devices:\n - 'memory size': uses a fixed headroom (400MB as default),\n - 'memory transfer': tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
+    <longdescription>possibly tune performance of OpenCL devices:\nyou are strongly advised to leave this at `nothing` unless you fully understand what this is about\n - 'memory size': darktable uses all memory of your device except some fixed safety margin (600MB headroom).\n    expect severe problems if your system makes use of your graphics card otherwise.\n - 'memory transfer': tries a different memory access mode (pinned memory) used for tiling.\n    only in a few cases this will improve performance,\n    you should always do precise benchmarking before leaving this 'on'.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
