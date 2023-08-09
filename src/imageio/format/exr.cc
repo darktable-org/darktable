@@ -391,17 +391,24 @@ void *legacy_params(dt_imageio_module_format_t *self,
                     int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && *new_version == 5)
+  typedef struct _imageio_exr_v5_t
   {
-    struct dt_imageio_exr_v1_t
+    dt_imageio_module_data_t global;
+    dt_imageio_exr_compression_t compression;
+    dt_imageio_exr_pixeltype_t pixel_type;
+  } dt_imageio_exr_v5_t;
+
+  if(old_version == 1)
+  {
+    typedef struct _imageio_exr_v1_t
     {
       int max_width, max_height;
       int width, height;
       char style[128];
-    };
+    } dt_imageio_exr_v1_t;
 
     const dt_imageio_exr_v1_t *o = (dt_imageio_exr_v1_t *)old_params;
-    dt_imageio_exr_t *n = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_v5_t *n = (dt_imageio_exr_v5_t *)malloc(sizeof(dt_imageio_exr_v5_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -411,22 +418,24 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->global.style_append = FALSE;
     n->compression = PIZ_COMPRESSION;
     n->pixel_type = EXR_PT_FLOAT;
-    *new_size = self->params_size(self);
+
+    *new_version = 5;
+    *new_size = sizeof(dt_imageio_exr_v5_t);
     return n;
   }
-  if(old_version == 2 && *new_version == 5)
+  if(old_version == 2)
   {
-    struct dt_imageio_exr_v2_t
+    typedef struct _imageio_exr_v2_t
     {
       int max_width, max_height;
       int width, height;
       char style[128];
       dt_imageio_exr_compression_t compression;
       dt_imageio_exr_pixeltype_t pixel_type;
-    };
+    } dt_imageio_exr_v2_t;
 
     const dt_imageio_exr_v2_t *o = (dt_imageio_exr_v2_t *)old_params;
-    dt_imageio_exr_t *n = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_v5_t *n = (dt_imageio_exr_v5_t *)malloc(sizeof(dt_imageio_exr_v5_t));
 
     // last param was dropped (pixel type)
     n->global.max_width = o->max_width;
@@ -437,21 +446,23 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->global.style_append = FALSE;
     n->compression = o->compression;
     n->pixel_type = o->pixel_type >= EXR_PT_HALF ? o->pixel_type : EXR_PT_FLOAT;
-    *new_size = self->params_size(self);
+
+    *new_version = 5;
+    *new_size = sizeof(dt_imageio_exr_v5_t);
     return n;
   }
-  if(old_version == 3 && *new_version == 5)
+  if(old_version == 3)
   {
-    struct dt_imageio_exr_v3_t
+    typedef struct _imageio_exr_v3_t
     {
       int max_width, max_height;
       int width, height;
       char style[128];
       dt_imageio_exr_compression_t compression;
-    };
+    } dt_imageio_exr_v3_t;
 
     const dt_imageio_exr_v3_t *o = (dt_imageio_exr_v3_t *)old_params;
-    dt_imageio_exr_t *n = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_v5_t *n = (dt_imageio_exr_v5_t *)malloc(sizeof(dt_imageio_exr_v5_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -461,19 +472,21 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->global.style_append = FALSE;
     n->compression = o->compression;
     n->pixel_type = EXR_PT_FLOAT;
-    *new_size = self->params_size(self);
+
+    *new_version = 5;
+    *new_size = sizeof(dt_imageio_exr_v5_t);
     return n;
   }
-  if(old_version == 4 && *new_version == 5)
+  if(old_version == 4)
   {
-    struct dt_imageio_exr_v4_t
+    typedef struct _imageio_exr_v4_t
     {
       dt_imageio_module_data_t global;
       dt_imageio_exr_compression_t compression;
-    };
+    } dt_imageio_exr_v4_t;
 
     const dt_imageio_exr_v4_t *o = (dt_imageio_exr_v4_t *)old_params;
-    dt_imageio_exr_t *n = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_v5_t *n = (dt_imageio_exr_v5_t *)malloc(sizeof(dt_imageio_exr_v5_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -483,7 +496,9 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->global.style_append = o->global.style_append;
     n->compression = o->compression;
     n->pixel_type = EXR_PT_FLOAT;
-    *new_size = self->params_size(self);
+
+    *new_version = 5;
+    *new_size = sizeof(dt_imageio_exr_v5_t);
     return n;
   }
 

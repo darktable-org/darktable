@@ -83,7 +83,18 @@ void *legacy_params(dt_imageio_module_storage_t *self,
                     int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && *new_version == 2)
+  typedef struct dt_imageio_gallery_v2_t
+  {
+    char filename[DT_MAX_PATH_FOR_PARAMS];
+    char title[1024];
+    char cached_dirname[DT_MAX_PATH_FOR_PARAMS]; // expanded during
+                                                 // first img store, not
+                                                 // stored in param struct.
+    dt_variables_params_t *vp;
+    GList *l;
+  } dt_imageio_gallery_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_gallery_v1_t
     {
@@ -95,14 +106,17 @@ void *legacy_params(dt_imageio_module_storage_t *self,
       GList *l;
     } dt_imageio_gallery_v1_t;
 
-    dt_imageio_gallery_t *n = (dt_imageio_gallery_t *)malloc(sizeof(dt_imageio_gallery_t));
-    dt_imageio_gallery_v1_t *o = (dt_imageio_gallery_v1_t *)old_params;
+    const dt_imageio_gallery_v1_t *o = (dt_imageio_gallery_v1_t *)old_params;
+    dt_imageio_gallery_v2_t *n =
+      (dt_imageio_gallery_v2_t *)malloc(sizeof(dt_imageio_gallery_v2_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->title, o->title, sizeof(n->title));
     g_strlcpy(n->cached_dirname, o->cached_dirname, sizeof(n->cached_dirname));
 
-    *new_size = self->params_size(self);
+    *new_version = 2;
+    *new_size = sizeof(dt_imageio_gallery_v2_t)
+                - 2 * sizeof(void *) - DT_MAX_PATH_FOR_PARAMS;
     return n;
   }
 

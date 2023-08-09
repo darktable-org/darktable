@@ -262,7 +262,15 @@ void *legacy_params(dt_imageio_module_format_t *self,
                     int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && *new_version == 2)
+  typedef struct dt_imageio_webp_v2_t
+  {
+    dt_imageio_module_data_t global;
+    int comp_type;
+    int quality;
+    int hint;
+  } dt_imageio_webp_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_webp_v1_t
     {
@@ -274,8 +282,8 @@ void *legacy_params(dt_imageio_module_format_t *self,
       int hint;
     } dt_imageio_webp_v1_t;
 
-    dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
-    dt_imageio_webp_t *n = (dt_imageio_webp_t *)malloc(sizeof(dt_imageio_webp_t));
+    const dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
+    dt_imageio_webp_v2_t *n = (dt_imageio_webp_v2_t *)malloc(sizeof(dt_imageio_webp_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -286,7 +294,9 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->comp_type = o->comp_type;
     n->quality = o->quality;
     n->hint = o->hint;
-    *new_size = self->params_size(self);
+
+    *new_version = 2;
+    *new_size = sizeof(dt_imageio_webp_v2_t);
     return n;
   }
 

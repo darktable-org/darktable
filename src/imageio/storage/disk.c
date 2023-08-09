@@ -81,51 +81,6 @@ void *legacy_params(dt_imageio_module_storage_t *self,
                     int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1)
-  {
-    typedef struct dt_imageio_disk_v1_t
-    {
-      char filename[1024];
-      dt_variables_params_t *vp;
-      gboolean overwrite;
-    } dt_imageio_disk_v1_t;
-
-    dt_imageio_disk_t *n = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
-    dt_imageio_disk_v1_t *o = (dt_imageio_disk_v1_t *)old_params;
-
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
-    n->onsave_action = (o->overwrite)
-      ? DT_EXPORT_ONCONFLICT_OVERWRITE
-      : DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
-
-    *new_version = 3;
-    *new_size = self->params_size(self);
-    return n;
-  }
-  if(old_version == 2)
-  {
-    typedef struct dt_imageio_disk_v2_t
-    {
-      char filename[DT_MAX_PATH_FOR_PARAMS];
-      gboolean overwrite;
-      dt_variables_params_t *vp;
-    } dt_imageio_disk_v2_t;
-
-    dt_imageio_disk_t *n = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
-    dt_imageio_disk_v2_t *o = (dt_imageio_disk_v2_t *)old_params;
-
-    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
-    n->onsave_action = (o->overwrite)
-      ? DT_EXPORT_ONCONFLICT_OVERWRITE
-      : DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
-
-    *new_version = 3;
-    *new_size = self->params_size(self);
-    return n;
-  }
-
-  // incremental converts
-
   typedef enum dt_disk_onconflict_actions_v3_t
   {
     DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V3 = 0,
@@ -140,33 +95,87 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     dt_variables_params_t *vp;
   } dt_imageio_disk_v3_t;
 
+  if(old_version == 1)
+  {
+    typedef struct dt_imageio_disk_v1_t
+    {
+      char filename[1024];
+      dt_variables_params_t *vp;
+      gboolean overwrite;
+    } dt_imageio_disk_v1_t;
+
+    const dt_imageio_disk_v1_t *o = (dt_imageio_disk_v1_t *)old_params;
+    dt_imageio_disk_v3_t *n = (dt_imageio_disk_v3_t *)malloc(sizeof(dt_imageio_disk_v3_t));
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    n->onsave_action = (o->overwrite)
+      ? DT_EXPORT_ONCONFLICT_OVERWRITE_V3
+      : DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V3;
+
+    *new_version = 3;
+    *new_size = sizeof(dt_imageio_disk_v3_t) - sizeof(void *);
+    return n;
+  }
+  if(old_version == 2)
+  {
+    typedef struct dt_imageio_disk_v2_t
+    {
+      char filename[DT_MAX_PATH_FOR_PARAMS];
+      gboolean overwrite;
+      dt_variables_params_t *vp;
+    } dt_imageio_disk_v2_t;
+
+    const dt_imageio_disk_v2_t *o = (dt_imageio_disk_v2_t *)old_params;
+    dt_imageio_disk_v3_t *n = (dt_imageio_disk_v3_t *)malloc(sizeof(dt_imageio_disk_v3_t));
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    n->onsave_action = (o->overwrite)
+      ? DT_EXPORT_ONCONFLICT_OVERWRITE_V3
+      : DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V3;
+
+    *new_version = 3;
+    *new_size = sizeof(dt_imageio_disk_v3_t) - sizeof(void *);
+    return n;
+  }
+
+  // incremental converts
+
+  typedef enum dt_disk_onconflict_actions_v4_t
+  {
+    DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V4 = 0,
+    DT_EXPORT_ONCONFLICT_OVERWRITE_V4 = 1,
+    DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED_V4 = 2,
+    DT_EXPORT_ONCONFLICT_SKIP_V4 = 3
+  } dt_disk_onconflict_actions_v4_t;
+
   typedef struct dt_imageio_disk_v4_t
   {
     char filename[DT_MAX_PATH_FOR_PARAMS];
-    dt_disk_onconflict_actions_v3_t onsave_action;
+    dt_disk_onconflict_actions_v4_t onsave_action;
     dt_variables_params_t *vp;
   } dt_imageio_disk_v4_t;
 
   // from 3 to 4 only
   if(old_version == 3)
   {
-    dt_imageio_disk_t *n = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_v4_t));
-    dt_imageio_disk_v3_t *o = (dt_imageio_disk_v3_t *)old_params;
+    const dt_imageio_disk_v3_t *o = (dt_imageio_disk_v3_t *)old_params;
+    dt_imageio_disk_v4_t *n =
+      (dt_imageio_disk_v4_t *)malloc(sizeof(dt_imageio_disk_v4_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     switch(o->onsave_action)
     {
       case DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V3:
-        n->onsave_action = DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
+        n->onsave_action = DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V4;
         break;
       case DT_EXPORT_ONCONFLICT_OVERWRITE_V3:
-        n->onsave_action = DT_EXPORT_ONCONFLICT_OVERWRITE;
+        n->onsave_action = DT_EXPORT_ONCONFLICT_OVERWRITE_V4;
         break;
       case DT_EXPORT_ONCONFLICT_SKIP_V3:
-        n->onsave_action = DT_EXPORT_ONCONFLICT_SKIP;
+        n->onsave_action = DT_EXPORT_ONCONFLICT_SKIP_V4;
         break;
       default:
-        n->onsave_action = DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
+        n->onsave_action = DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V4;
     }
 
     // size of v4 did not change

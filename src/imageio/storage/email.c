@@ -59,7 +59,13 @@ void *legacy_params(dt_imageio_module_storage_t *self,
                     int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && *new_version == 2)
+  typedef struct dt_imageio_email_v2_t
+  {
+    char filename[DT_MAX_PATH_FOR_PARAMS];
+    GList *images;
+  } dt_imageio_email_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_email_v1_t
     {
@@ -67,12 +73,14 @@ void *legacy_params(dt_imageio_module_storage_t *self,
       GList *images;
     } dt_imageio_email_v1_t;
 
-    dt_imageio_email_t *n = (dt_imageio_email_t *)malloc(sizeof(dt_imageio_email_t));
-    dt_imageio_email_v1_t *o = (dt_imageio_email_v1_t *)old_params;
+    const dt_imageio_email_v1_t *o = (dt_imageio_email_v1_t *)old_params;
+    dt_imageio_email_v2_t *n =
+      (dt_imageio_email_v2_t *)malloc(sizeof(dt_imageio_email_v2_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
 
-    *new_size = self->params_size(self);
+    *new_version = 2;
+    *new_size = sizeof(dt_imageio_email_v2_t) - sizeof(GList *);
     return n;
   }
 
