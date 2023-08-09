@@ -532,9 +532,18 @@ void *legacy_params(dt_imageio_module_format_t *self,
                     int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && *new_version == 2)
+  typedef struct _imageio_j2k_v2_t
   {
-    typedef struct dt_imageio_j2k_v1_t
+    dt_imageio_module_data_t global;
+    int bpp;
+    dt_imageio_j2k_format_t format;
+    dt_imageio_j2k_preset_t preset;
+    int quality;
+  } dt_imageio_j2k_v2_t;
+
+  if(old_version == 1)
+  {
+    typedef struct _imageio_j2k_v1_t
     {
       int max_width, max_height;
       int width, height;
@@ -545,8 +554,8 @@ void *legacy_params(dt_imageio_module_format_t *self,
       int quality;
     } dt_imageio_j2k_v1_t;
 
-    dt_imageio_j2k_v1_t *o = (dt_imageio_j2k_v1_t *)old_params;
-    dt_imageio_j2k_t *n = (dt_imageio_j2k_t *)malloc(sizeof(dt_imageio_j2k_t));
+    const dt_imageio_j2k_v1_t *o = (dt_imageio_j2k_v1_t *)old_params;
+    dt_imageio_j2k_v2_t *n = (dt_imageio_j2k_v2_t *)malloc(sizeof(dt_imageio_j2k_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -558,7 +567,9 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->format = o->format;
     n->preset = o->preset;
     n->quality = o->quality;
-    *new_size = self->params_size(self);
+
+    *new_version = 2;
+    *new_size = sizeof(dt_imageio_j2k_v2_t);
     return n;
   }
 

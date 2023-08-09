@@ -597,7 +597,18 @@ void *legacy_params(dt_imageio_module_format_t *self,
                     int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && *new_version == 4)
+  typedef struct dt_imageio_tiff_v4_t
+  {
+    dt_imageio_module_data_t global;
+    int bpp;
+    int pixelformat;
+    int compress;
+    int compresslevel;
+    int shortfile;
+    TIFF *handle;
+  } dt_imageio_tiff_v4_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_tiff_v1_t
     {
@@ -610,7 +621,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v1_t;
 
     const dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
-    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -624,10 +635,12 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->compresslevel = 6;
     n->shortfile = 0;
     n->handle = o->handle;
-    *new_size = self->params_size(self);
+
+    *new_version = 4;
+    *new_size = sizeof(dt_imageio_tiff_v4_t) - sizeof(TIFF *);
     return n;
   }
-  else if(old_version == 2 && *new_version == 4)
+  else if(old_version == 2)
   {
     typedef struct dt_imageio_tiff_v2_t
     {
@@ -641,7 +654,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v2_t;
 
     const dt_imageio_tiff_v2_t *o = (dt_imageio_tiff_v2_t *)old_params;
-    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -655,10 +668,12 @@ void *legacy_params(dt_imageio_module_format_t *self,
     n->compresslevel = 6;
     n->shortfile = 0;
     n->handle = o->handle;
-    *new_size = self->params_size(self);
+
+    *new_version = 4;
+    *new_size = sizeof(dt_imageio_tiff_v4_t) - sizeof(TIFF *);
     return n;
   }
-  else if(old_version == 3 && *new_version == 4)
+  else if(old_version == 3)
   {
     typedef struct dt_imageio_tiff_v3_t
     {
@@ -671,7 +686,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v3_t;
 
     const dt_imageio_tiff_v3_t *o = (dt_imageio_tiff_v3_t *)old_params;
-    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -693,7 +708,9 @@ void *legacy_params(dt_imageio_module_format_t *self,
     }
     n->shortfile = o->shortfile;
     n->handle = o->handle;
-    *new_size = self->params_size(self);
+
+    *new_version = 4;
+    *new_size = sizeof(dt_imageio_tiff_v4_t) - sizeof(TIFF *);
     return n;
   }
 
