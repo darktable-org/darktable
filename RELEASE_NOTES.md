@@ -157,11 +157,7 @@ are available on raw.pixls.us:
 - Panasonic DMC-FX150
 - Pentax Q10
 - Phase One IQ250
-- Samsung GX10
-- Samsung GX20
 - Samsung EK-GN120
-- Samsung SM-G920F
-- Samsung SM-G935F
 - Sinar Hy6/ Sinarback eXact
 - ST Micro STV680
 
