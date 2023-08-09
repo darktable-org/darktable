@@ -501,6 +501,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].nvidia_sm_20 = 0;
   cl->dev[dev].vendor = NULL;
   cl->dev[dev].fullname = NULL;
+  cl->dev[dev].platform = NULL;
   cl->dev[dev].cname = NULL;
   cl->dev[dev].options = NULL;
   cl->dev[dev].memory_in_use = 0;
@@ -656,6 +657,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   cl->dev[dev].fullname = strdup(fullname);
   cl->dev[dev].cname = strdup(cname);
+  cl->dev[dev].platform = strdup(platform_name);
 
   const gboolean newdevice = dt_opencl_read_device_config(dev);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1133,6 +1135,30 @@ end:
   return res;
 }
 
+void dt_opencl_wrong_platforms(void)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(cl->wrong_platforms)
+  {
+    const gboolean setup = dt_conf_get_bool("setup_wrong_platforms");
+    if(setup == FALSE)
+    {
+      const gboolean understood = dt_gui_show_standalone_yes_no_dialog
+            (_("OpenCL platform and driver setup"),
+             _("while initializing the OpenCL devices a wrongful mix of graphics cards and drivers has been found."
+               "\nthis always results in instability or crashes, darktable OpenCL is disabled for now."
+               "\n\ncheck the system OpenCL installation and watch out for:"
+               "\n  - multiple drivers installed for a device."
+               "\n  - missing OpenCL platforms"
+               "\nand make use of tools like 'clinfo'"),
+             _("show this information again"), _("understood & will do"));
+
+      if(understood)
+        dt_conf_set_bool("setup_wrong_platforms", TRUE);
+    }
+  }
+}
+
 void dt_opencl_init(
         dt_opencl_t *cl,
         const gboolean exclude_opencl,
@@ -1163,6 +1189,7 @@ void dt_opencl_init(
   cl->dev_priority_preview2 = NULL;
   cl->dev_priority_export = NULL;
   cl->dev_priority_thumbnail = NULL;
+  cl->wrong_platforms = FALSE;
 
   cl_platform_id *all_platforms = NULL;
   cl_uint *all_num_devices = NULL;
@@ -1360,6 +1387,21 @@ void dt_opencl_init(
   {
     if(_opencl_device_init(cl, dev, devices, k))
       continue;
+
+    // let's check if any device with the same full name has another platform
+    for(int l = 0; l < k; l++)
+    {
+      if(   (strcmp(cl->dev[k].fullname, cl->dev[l].fullname) == 0)
+         && (strcmp(cl->dev[k].platform, cl->dev[l].platform) != 0))
+        cl->wrong_platforms = TRUE;
+    }
+
+    if(cl->wrong_platforms)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] driver vs device mismatch, disabling opencl\n");
+      dev = 0;
+      continue;
+    }
     // increase dev only if _opencl_device_init was successful
     ++dev;
   }

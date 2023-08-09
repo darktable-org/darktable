@@ -1464,7 +1464,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // initialize undo struct
     darktable.undo = dt_undo_init();
-  }
+
+    dt_opencl_wrong_platforms();
+}
 
   dt_print(DT_DEBUG_MEMORY, "[memory] after successful startup\n");
   dt_print_mem_usage();

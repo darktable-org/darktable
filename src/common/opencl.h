@@ -143,6 +143,7 @@ typedef struct dt_opencl_device_t
   int nvidia_sm_20;
   const char *vendor;
   const char *fullname;
+  const char *platform;
   const char *cname;
   const char *options;
   cl_int summary;
@@ -226,6 +227,7 @@ typedef struct dt_opencl_t
   gboolean print_statistics;
   gboolean enabled;
   gboolean stopped;
+  gboolean wrong_platforms;
   int num_devs;
   int error_count;
   int opencl_synchronization_timeout;
@@ -293,7 +295,8 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
 
 /** inits the opencl subsystem. */
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics);
-
+/** reporting an error for buggy OpenCL installations*/
+void dt_opencl_wrong_platforms(void);
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
 
@@ -547,9 +550,14 @@ static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl
   cl->inited = FALSE;
   cl->enabled = FALSE;
   cl->stopped = FALSE;
+  cl->wrong_platforms = FALSE;
   cl->error_count = 0;
   dt_conf_set_bool("opencl", FALSE);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] this version of darktable was built without opencl support\n");
+}
+
+static inline void dt_opencl_wrong_platforms(void)
+{
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 {
