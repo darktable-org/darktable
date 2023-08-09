@@ -542,6 +542,7 @@ typedef struct dt_opencl_t
   gboolean inited;
   gboolean enabled;
   gboolean stopped;
+  gboolean wrong_platforms;
   int error_count;
 } dt_opencl_t;
 
