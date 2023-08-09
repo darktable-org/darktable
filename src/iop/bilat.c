@@ -56,25 +56,7 @@ typedef struct dt_iop_bilat_params_t
   float sigma_s; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 shadows 100 & spatial 1 100 50
   float detail;  // $MIN: -1.0 $MAX: 4.0 $DEFAULT: 0.25
   float midtone; // $MIN: 0.001 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "midtone range"
-}
-dt_iop_bilat_params_t;
-
-typedef struct dt_iop_bilat_params_v2_t
-{
-  uint32_t mode;
-  float sigma_r;
-  float sigma_s;
-  float detail;
-}
-dt_iop_bilat_params_v2_t;
-
-typedef struct dt_iop_bilat_params_v1_t
-{
-  float sigma_r;
-  float sigma_s;
-  float detail;
-}
-dt_iop_bilat_params_v1_t;
+} dt_iop_bilat_params_t;
 
 typedef dt_iop_bilat_params_t dt_iop_bilat_data_t;
 
@@ -87,8 +69,7 @@ typedef struct dt_iop_bilat_gui_data_t
   GtkWidget *range;
   GtkWidget *detail;
   GtkWidget *mode;
-}
-dt_iop_bilat_gui_data_t;
+} dt_iop_bilat_gui_data_t;
 
 // this returns a translatable name
 const char *name()
@@ -127,29 +108,65 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 2 && new_version == 3)
+  typedef struct dt_iop_bilat_params_v3_t
   {
-    const dt_iop_bilat_params_v2_t *p2 = old_params;
-    dt_iop_bilat_params_t *p = new_params;
-    p->detail  = p2->detail;
-    p->sigma_r = p2->sigma_r;
-    p->sigma_s = p2->sigma_s;
-    p->midtone = 0.2f;
-    p->mode    = p2->mode;
+    dt_iop_bilat_mode_t mode;
+    float sigma_r;
+    float sigma_s;
+    float detail;
+    float midtone;
+  } dt_iop_bilat_params_v3_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_bilat_params_v1_t
+    {
+      float sigma_r;
+      float sigma_s;
+      float detail;
+    } dt_iop_bilat_params_v1_t;
+
+    const dt_iop_bilat_params_v1_t *o = old_params;
+    dt_iop_bilat_params_v3_t *n =
+      (dt_iop_bilat_params_v3_t *)malloc(sizeof(dt_iop_bilat_params_v3_t));
+    n->detail  = o->detail;
+    n->sigma_r = o->sigma_r;
+    n->sigma_s = o->sigma_s;
+    n->midtone = 0.2f;
+    n->mode    = s_mode_bilateral;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_bilat_params_v3_t);
+    *new_version = 3;
     return 0;
   }
-  else if(old_version == 1 && new_version == 3)
+
+  if(old_version == 2)
   {
-    const dt_iop_bilat_params_v1_t *p1 = old_params;
-    dt_iop_bilat_params_t *p = new_params;
-    p->detail  = p1->detail;
-    p->sigma_r = p1->sigma_r;
-    p->sigma_s = p1->sigma_s;
-    p->midtone = 0.2f;
-    p->mode    = s_mode_bilateral;
+    typedef struct dt_iop_bilat_params_v2_t
+    {
+      uint32_t mode;
+      float sigma_r;
+      float sigma_s;
+      float detail;
+    } dt_iop_bilat_params_v2_t;
+
+    const dt_iop_bilat_params_v2_t *o = old_params;
+    dt_iop_bilat_params_v3_t *n =
+      (dt_iop_bilat_params_v3_t *)malloc(sizeof(dt_iop_bilat_params_v3_t));
+    n->detail  = o->detail;
+    n->sigma_r = o->sigma_r;
+    n->sigma_s = o->sigma_s;
+    n->midtone = 0.2f;
+    n->mode    = o->mode;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_bilat_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;

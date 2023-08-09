@@ -362,14 +362,56 @@ static dt_iop_lens_lenstype_t _lenstype_from_lensfun_lenstype(lfLensType lt)
   }
 }
 
-int legacy_params(
-        dt_iop_module_t *self,
-        const void *const old_params,
-        const int old_version,
-        void *new_params,
-        const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 2 && new_version == 10)
+  typedef struct _iop_lens_params_v10_t
+  {
+    dt_iop_lens_method_t method;
+    dt_iop_lens_modflag_t modify_flags;
+
+    // NOTE: the options for lensfun and metadata correction methods should be
+    // kept separate since also if similar their value have different effects.
+    // additionally this could permit to switch between the methods.
+    // the unique parameter in common is modify_flags
+
+    // lensfun method parameters
+    dt_iop_lens_mode_t inverse;
+    float scale;
+    float crop;
+    float focal;
+    float aperture;
+    float distance;
+    dt_iop_lens_lenstype_t target_geom;
+    char camera[128];
+    char lens[128];
+    gboolean tca_override;
+    float tca_r;
+    float tca_b;
+
+    // embedded metadata method parameters
+    float cor_dist_ft;
+    float cor_vig_ft;
+    float cor_ca_r_ft;
+    float cor_ca_b_ft;
+
+    float scale_md_v1;
+    dt_iop_lens_embedded_metadata_version md_version;
+
+    float scale_md;
+
+    gboolean has_been_set;
+    float v_strength;
+    float v_radius;
+    float v_steepness;
+    float reserved[2];
+  } dt_iop_lens_params_v10_t;
+
+ if(old_version == 2)
   {
     // legacy params of version 2; version 1 comes from ancient times
     // and seems to be forgotten by now.
@@ -390,10 +432,8 @@ int legacy_params(
     } dt_iop_lens_params_v2_t;
 
     const dt_iop_lens_params_v2_t *o = (dt_iop_lens_params_v2_t *)old_params;
-    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
-    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_lens_params_v10_t *n =
+      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -435,10 +475,13 @@ int legacy_params(
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lens_params_v10_t);
+    *new_version = 10;
     return 0;
   }
 
-  if(old_version == 3 && new_version == 10)
+  if(old_version == 3)
   {
     typedef struct
     {
@@ -457,10 +500,8 @@ int legacy_params(
     } dt_iop_lens_params_v3_t;
 
     const dt_iop_lens_params_v3_t *o = (dt_iop_lens_params_v3_t *)old_params;
-    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
-    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_lens_params_v10_t *n =
+      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -500,10 +541,13 @@ int legacy_params(
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lens_params_v10_t);
+    *new_version = 10;
     return 0;
   }
 
-  if(old_version == 4 && new_version == 10)
+  if(old_version == 4)
   {
     typedef struct
     {
@@ -523,10 +567,8 @@ int legacy_params(
     } dt_iop_lens_params_v4_t;
 
     const dt_iop_lens_params_v4_t *o = (dt_iop_lens_params_v4_t *)old_params;
-    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
-    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_lens_params_v10_t *n =
+      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = (dt_iop_lens_mode_t)o->inverse;
@@ -566,10 +608,13 @@ int legacy_params(
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lens_params_v10_t);
+    *new_version = 10;
     return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 5 && new_version == 10)
+  if(old_version == 5)
   {
     typedef struct
     {
@@ -589,10 +634,8 @@ int legacy_params(
     } dt_iop_lens_params_v5_t;
 
     const dt_iop_lens_params_v5_t *o = (dt_iop_lens_params_v5_t *)old_params;
-    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
-    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_lens_params_v10_t *n =
+      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
     // The unique method in previous versions was lensfun
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
@@ -633,10 +676,13 @@ int legacy_params(
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lens_params_v10_t);
+    *new_version = 10;
     return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 6 && new_version == 10)
+  if(old_version == 6)
   {
     typedef struct
     {
@@ -661,10 +707,8 @@ int legacy_params(
 
 
     const dt_iop_lens_params_v6_t *o = (dt_iop_lens_params_v6_t *)old_params;
-    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
-    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_lens_params_v10_t *n =
+      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -706,10 +750,13 @@ int legacy_params(
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lens_params_v10_t);
+    *new_version = 10;
     return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 7 && new_version == 10)
+  if(old_version == 7)
   {
     typedef struct
     {
@@ -734,10 +781,8 @@ int legacy_params(
 
 
     const dt_iop_lens_params_v7_t *o = (dt_iop_lens_params_v7_t *)old_params;
-    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
-    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_lens_params_v10_t *n =
+      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -777,9 +822,12 @@ int legacy_params(
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lens_params_v10_t);
+    *new_version = 10;
     return 0;
   }
-  if(old_version == 8 && new_version == 10)
+  if(old_version == 8)
   {
     typedef struct
     {
@@ -808,10 +856,8 @@ int legacy_params(
     } dt_iop_lens_params_v8_t;
 
     const dt_iop_lens_params_v8_t *o = (dt_iop_lens_params_v8_t *)old_params;
-    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
-    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_lens_params_v10_t *n =
+      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
     n->method = o->method;
     n->modify_flags = (dt_iop_lens_modflag_t)o->modify_flags;
@@ -843,10 +889,13 @@ int legacy_params(
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lens_params_v10_t);
+    *new_version = 10;
     return 0;
   }
 
-  if(old_version == 9 && new_version == 10)
+  if(old_version == 9)
   {
     typedef struct
     {
@@ -876,10 +925,8 @@ int legacy_params(
     } dt_iop_lens_params_v9_t;
 
     const dt_iop_lens_params_v9_t *o = (dt_iop_lens_params_v9_t *)old_params;
-    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
-    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_lens_params_v10_t *n =
+      (dt_iop_lens_params_v10_t *)malloc(sizeof(dt_iop_lens_params_v10_t));
 
     memcpy(n, o, sizeof(dt_iop_lens_params_v9_t));
     // new in v10
@@ -888,6 +935,9 @@ int legacy_params(
     n->v_steepness = 0.5f;
     n->reserved[0] = n->reserved[1] = 0.0f;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_lens_params_v10_t);
+    *new_version = 10;
     return 0;
   }
   return 1;

@@ -165,21 +165,38 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
+  typedef struct dt_iop_colorzones_params_v5_t
+  {
+    dt_iop_colorzones_channel_t channel;
+    // three curves (L, C, h) with max number of nodes
+    dt_iop_colorzones_node_t curve[DT_IOP_COLORZONES_MAX_CHANNELS][DT_IOP_COLORZONES_MAXNODES];
+    int curve_num_nodes[DT_IOP_COLORZONES_MAX_CHANNELS];
+    int curve_type[DT_IOP_COLORZONES_MAX_CHANNELS];
+    float strength;
+    dt_iop_colorzones_modes_t mode;
+    int splines_version;
+  } dt_iop_colorzones_params_v5_t;
+
 #define DT_IOP_COLORZONES1_BANDS 6
 
-  if(old_version == 1 && new_version == 5)
+  if(old_version == 1)
   {
-    typedef struct dt_iop_colorzones_params1_t
+    typedef struct dt_iop_colorzones_params_v1_t
     {
       int32_t channel;
       float equalizer_x[3][DT_IOP_COLORZONES1_BANDS], equalizer_y[3][DT_IOP_COLORZONES1_BANDS];
-    } dt_iop_colorzones_params1_t;
+    } dt_iop_colorzones_params_v1_t;
 
-    const dt_iop_colorzones_params1_t *old = old_params;
-    dt_iop_colorzones_params_t *new = new_params;
+    const dt_iop_colorzones_params_v1_t *old = old_params;
+    dt_iop_colorzones_params_v5_t *new =
+      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
 
     new->channel = old->channel;
 
@@ -217,18 +234,23 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->strength = 0.0f;
     new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     new->splines_version = DT_IOP_COLORZONES_SPLINES_V1;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorzones_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2)
   {
-    typedef struct dt_iop_colorzones_params2_t
+    typedef struct dt_iop_colorzones_params_v2_t
     {
       int32_t channel;
       float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
-    } dt_iop_colorzones_params2_t;
+    } dt_iop_colorzones_params_v2_t;
 
-    const dt_iop_colorzones_params2_t *old = old_params;
-    dt_iop_colorzones_params_t *new = new_params;
+    const dt_iop_colorzones_params_v2_t *old = old_params;
+    dt_iop_colorzones_params_v5_t *new =
+      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int b = 0; b < DT_IOP_COLORZONES_BANDS; b++)
@@ -245,19 +267,24 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->strength = 0.0f;
     new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     new->splines_version = DT_IOP_COLORZONES_SPLINES_V1;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorzones_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3)
   {
-    typedef struct dt_iop_colorzones_params3_t
+    typedef struct dt_iop_colorzones_params_v3_t
     {
       int32_t channel;
       float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
       float strength;
-    } dt_iop_colorzones_params3_t;
+    } dt_iop_colorzones_params_v3_t;
 
-    const dt_iop_colorzones_params3_t *old = old_params;
-    dt_iop_colorzones_params_t *new = new_params;
+    const dt_iop_colorzones_params_v3_t *old = old_params;
+    dt_iop_colorzones_params_v5_t *new =
+      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int b = 0; b < DT_IOP_COLORZONES_BANDS; b++)
@@ -276,11 +303,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->strength = old->strength;
     new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     new->splines_version = DT_IOP_COLORZONES_SPLINES_V1;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorzones_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4)
   {
-    typedef struct dt_iop_colorzones_params4_t
+    typedef struct dt_iop_colorzones_params_v4_t
     {
       int32_t channel;
       dt_iop_colorzones_node_t curve[DT_IOP_COLORZONES_MAX_CHANNELS][DT_IOP_COLORZONES_MAXNODES];
@@ -288,10 +319,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int curve_type[DT_IOP_COLORZONES_MAX_CHANNELS];
       float strength;
       int mode;
-    } dt_iop_colorzones_params4_t;
+    } dt_iop_colorzones_params_v4_t;
 
-    const dt_iop_colorzones_params4_t *old = old_params;
-    dt_iop_colorzones_params_t *new = new_params;
+    const dt_iop_colorzones_params_v4_t *old = old_params;
+    dt_iop_colorzones_params_v5_t *new =
+      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int i = 0; i < DT_IOP_COLORZONES_MAXNODES; i++)
@@ -310,6 +342,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->strength = old->strength;
     new->mode = old->mode;
     new->splines_version = DT_IOP_COLORZONES_SPLINES_V1;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorzones_params_v5_t);
+    *new_version = 5;
     return 0;
   }
 #undef DT_IOP_COLORZONES1_BANDS

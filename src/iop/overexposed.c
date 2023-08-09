@@ -88,15 +88,6 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
-{
-  // we do no longer have module params in here and just ignore any legacy entries
-  return 0;
-}
-
-
 // void init_key_accels(dt_iop_module_so_t *self)
 // {
 //   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lower threshold"));
@@ -470,4 +461,3 @@ void init(dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

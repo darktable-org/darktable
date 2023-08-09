@@ -122,17 +122,49 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version < 3 && new_version == 3)
+  typedef struct dt_iop_global_tonemap_params_v3_t
   {
-    dt_iop_global_tonemap_params_t *o = (dt_iop_global_tonemap_params_t *)old_params;
-    dt_iop_global_tonemap_params_t *n = (dt_iop_global_tonemap_params_t *)new_params;
+    _iop_operator_t operator; // $DEFAULT: OPERATOR_DRAGO
+    struct
+    {
+      float bias;
+      float max_light;
+    } drago;
+    float detail;
+  } dt_iop_global_tonemap_params_v3_t;
+
+  if(old_version < 3)
+  {
+    typedef struct dt_iop_global_tonemap_params_v1_t
+    {
+      _iop_operator_t operator; // $DEFAULT: OPERATOR_DRAGO
+      struct
+      {
+        float bias;
+        float max_light;
+      } drago;
+    } dt_iop_global_tonemap_params_v1_t;
+
+    const dt_iop_global_tonemap_params_v1_t *o =
+      (dt_iop_global_tonemap_params_v1_t *)old_params;
+    dt_iop_global_tonemap_params_v3_t *n =
+      (dt_iop_global_tonemap_params_v3_t *)
+      malloc(sizeof(dt_iop_global_tonemap_params_v3_t));
 
     // only appended detail, 0 is no-op
-    memcpy(n, o, sizeof(dt_iop_global_tonemap_params_t) - sizeof(float));
+    memcpy(n, o, sizeof(dt_iop_global_tonemap_params_v1_t));
     n->detail = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_global_tonemap_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -648,4 +680,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

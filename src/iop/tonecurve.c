@@ -97,35 +97,6 @@ typedef enum dt_iop_tonecurve_autoscale_t
                                       $DESCRIPTION: "RGB, linked channels" */
 } dt_iop_tonecurve_autoscale_t;
 
-// parameter structure of tonecurve 1st version, needed for use in legacy_params()
-typedef struct dt_iop_tonecurve_params1_t
-{
-  float tonecurve_x[6], tonecurve_y[6];
-  int tonecurve_preset;
-} dt_iop_tonecurve_params1_t;
-
-// parameter structure of tonecurve 3rd version, needed for use in legacy_params()
-typedef struct dt_iop_tonecurve_params3_t
-{
-  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
-                                                                   // of nodes
-  int tonecurve_nodes[3];
-  int tonecurve_type[3];
-  int tonecurve_autoscale_ab;
-  int tonecurve_preset;
-} dt_iop_tonecurve_params3_t;
-
-typedef struct dt_iop_tonecurve_params4_t
-{
-  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
-                                                                   // of nodes
-  int tonecurve_nodes[3];
-  int tonecurve_type[3];
-  int tonecurve_autoscale_ab;
-  int tonecurve_preset;
-  int tonecurve_unbound_ab;
-} dt_iop_tonecurve_params4_t;
-
 typedef struct dt_iop_tonecurve_params_t
 {
   dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
@@ -216,24 +187,48 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, Lab, display-referred"));
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 5)
+ typedef struct dt_iop_tonecurve_params_v5_t
+ {
+   dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];
+
+   int tonecurve_nodes[3];
+   int tonecurve_type[3];
+   dt_iop_tonecurve_autoscale_t tonecurve_autoscale_ab;
+   int tonecurve_preset;
+   int tonecurve_unbound_ab;
+   dt_iop_rgb_norms_t preserve_colors;
+ } dt_iop_tonecurve_params_v5_t;
+
+  if(old_version == 1)
   {
-    dt_iop_tonecurve_params1_t *o = (dt_iop_tonecurve_params1_t *)old_params;
-    dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
+    typedef struct dt_iop_tonecurve_params_v1_t
+    {
+      float tonecurve_x[6], tonecurve_y[6];
+      int tonecurve_preset;
+    } dt_iop_tonecurve_params_v1_t;
+
+    const dt_iop_tonecurve_params_v1_t *o = (dt_iop_tonecurve_params_v1_t *)old_params;
+    dt_iop_tonecurve_params_v5_t *n =
+      (dt_iop_tonecurve_params_v5_t *)malloc(sizeof(dt_iop_tonecurve_params_v5_t));
 
     // start with a fresh copy of default parameters
     // unfortunately default_params aren't inited at this stage.
-    *n = (dt_iop_tonecurve_params_t){ { { { 0.0, 0.0 }, { 1.0, 1.0 } },
-                                        { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } },
-                                        { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } } },
-                                      { 2, 3, 3 },
-                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-                                      1,
-                                      0,
-                                      1 };
+    *n = (dt_iop_tonecurve_params_v5_t)
+      { { { { 0.0, 0.0 }, { 1.0, 1.0 } },
+          { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } },
+          { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } } },
+        { 2, 3, 3 },
+        { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
+        1,
+        0,
+        1 };
     for(int k = 0; k < 6; k++) n->tonecurve[ch_L][k].x = o->tonecurve_x[k];
     for(int k = 0; k < 6; k++) n->tonecurve[ch_L][k].y = o->tonecurve_y[k];
     n->tonecurve_nodes[ch_L] = 6;
@@ -242,17 +237,32 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
     n->preserve_colors = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_tonecurve_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  else if(old_version == 2 && new_version == 5)
+  else if(old_version == 2)
   {
-    // version 2 never really materialized so there should be no legacy history stacks of that version around
+    // version 2 never really materialized so there should be no
+    // legacy history stacks of that version around
     return 1;
   }
-  else if(old_version == 3 && new_version == 5)
+  else if(old_version == 3)
   {
-    dt_iop_tonecurve_params3_t *o = (dt_iop_tonecurve_params3_t *)old_params;
-    dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
+    typedef struct dt_iop_tonecurve_params_v3_t
+    {
+      dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];
+      int tonecurve_nodes[3];
+      int tonecurve_type[3];
+      int tonecurve_autoscale_ab;
+      int tonecurve_preset;
+    } dt_iop_tonecurve_params_v3_t;
+
+    const dt_iop_tonecurve_params_v3_t *o = (dt_iop_tonecurve_params_v3_t *)old_params;
+    dt_iop_tonecurve_params_v5_t *n =
+      (dt_iop_tonecurve_params_v5_t *)malloc(sizeof(dt_iop_tonecurve_params_v5_t));
 
     memcpy(n->tonecurve, o->tonecurve, sizeof(n->tonecurve));
     memcpy(n->tonecurve_nodes, o->tonecurve_nodes, sizeof(n->tonecurve_nodes));
@@ -261,15 +271,34 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
     n->preserve_colors = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_tonecurve_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  else if(old_version == 4 && new_version == 5)
+  else if(old_version == 4)
   {
-    dt_iop_tonecurve_params4_t *o = (dt_iop_tonecurve_params4_t *)old_params;
-    dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
+    typedef struct dt_iop_tonecurve_params_v4_t
+    {
+      dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];
+      int tonecurve_nodes[3];
+      int tonecurve_type[3];
+      int tonecurve_autoscale_ab;
+      int tonecurve_preset;
+      int tonecurve_unbound_ab;
+    } dt_iop_tonecurve_params_v4_t;
 
-    memcpy(n->tonecurve, o->tonecurve, sizeof(dt_iop_tonecurve_params4_t));
+    const dt_iop_tonecurve_params_v4_t *o = (dt_iop_tonecurve_params_v4_t *)old_params;
+    dt_iop_tonecurve_params_v5_t *n =
+      (dt_iop_tonecurve_params_v5_t *)malloc(sizeof(dt_iop_tonecurve_params_v5_t));
+
+    memcpy(n->tonecurve, o->tonecurve, sizeof(dt_iop_tonecurve_params_v4_t));
     n->preserve_colors = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_tonecurve_params_v5_t);
+    *new_version = 5;
     return 0;
   }
   return 1;
@@ -1801,4 +1830,3 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

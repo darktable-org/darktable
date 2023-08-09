@@ -181,21 +181,34 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_iop_colorbalance_params_v3_t
+  {
+    dt_iop_colorbalance_mode_t mode;
+    float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
+    float saturation;
+    float contrast;
+    float grey;
+    float saturation_out;
+  } dt_iop_colorbalance_params_v3_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_colorbalance_params_v1_t
     {
       float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
     } dt_iop_colorbalance_params_v1_t;
 
-    dt_iop_colorbalance_params_v1_t *o = (dt_iop_colorbalance_params_v1_t *)old_params;
-    dt_iop_colorbalance_params_t *n = (dt_iop_colorbalance_params_t *)new_params;
-    const dt_iop_colorbalance_params_t *const d = (dt_iop_colorbalance_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_colorbalance_params_v1_t *o =
+      (dt_iop_colorbalance_params_v1_t *)old_params;
+    dt_iop_colorbalance_params_v3_t *n =
+      (dt_iop_colorbalance_params_v3_t *)malloc(sizeof(dt_iop_colorbalance_params_v3_t));
 
     for(int i = 0; i < CHANNEL_SIZE; i++)
     {
@@ -204,10 +217,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       n->gain[i] = o->gain[i];
     }
     n->mode = LEGACY;
+    n->saturation = 1.0f;
+    n->contrast = 1.0f;
+    n->grey = 18.0f;
+    n->saturation_out = 1.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorbalance_params_v3_t);
+    *new_version = 3;
     return 0;
   }
 
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2)
   {
     typedef struct dt_iop_colorbalance_params_v2_t
     {
@@ -216,11 +237,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float saturation, contrast, grey;
     } dt_iop_colorbalance_params_v2_t;
 
-    dt_iop_colorbalance_params_v2_t *o = (dt_iop_colorbalance_params_v2_t *)old_params;
-    dt_iop_colorbalance_params_t *n = (dt_iop_colorbalance_params_t *)new_params;
-    const dt_iop_colorbalance_params_t *const d = (dt_iop_colorbalance_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_colorbalance_params_v2_t *o =
+      (dt_iop_colorbalance_params_v2_t *)old_params;
+    dt_iop_colorbalance_params_v3_t *n =
+      (dt_iop_colorbalance_params_v3_t *)malloc(sizeof(dt_iop_colorbalance_params_v3_t));
 
     for(int i = 0; i < CHANNEL_SIZE; i++)
     {
@@ -233,6 +253,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->saturation = o->saturation;
     n->contrast = o->contrast;
     n->grey = o->grey;
+    n->saturation_out = 1.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorbalance_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;

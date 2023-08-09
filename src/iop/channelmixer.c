@@ -160,10 +160,26 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_channelmixer_params_v2_t
+  {
+    /** amount of red to mix value */
+    float red[CHANNEL_SIZE]; // $MIN: -1.0 $MAX: 1.0
+    /** amount of green to mix value */
+    float green[CHANNEL_SIZE]; // $MIN: -1.0 $MAX: 1.0
+    /** amount of blue to mix value */
+    float blue[CHANNEL_SIZE]; // $MIN: -1.0 $MAX: 1.0
+    /** algorithm version */
+    _channelmixer_algorithm_t algorithm_version;
+  } dt_iop_channelmixer_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_channelmixer_params_v1_t
     {
@@ -172,36 +188,44 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float blue[7];
     } dt_iop_channelmixer_params_v1_t;
 
-    const dt_iop_channelmixer_params_v1_t *old = (dt_iop_channelmixer_params_v1_t *)old_params;
-    dt_iop_channelmixer_params_t *new = (dt_iop_channelmixer_params_t *)new_params;
-    const dt_iop_channelmixer_params_t *const defaults = (dt_iop_channelmixer_params_t *)self->default_params;
+    const dt_iop_channelmixer_params_v1_t *o =
+      (dt_iop_channelmixer_params_v1_t *)old_params;
+    dt_iop_channelmixer_params_v2_t *n =
+      (dt_iop_channelmixer_params_v2_t *)malloc(sizeof(dt_iop_channelmixer_params_v2_t));
 
-    *new = *defaults; // start with a fresh copy of default parameters
-    new->algorithm_version = CHANNEL_MIXER_VERSION_1;
+    memset(n, 0, sizeof(dt_iop_channelmixer_params_v2_t));
+
+    n->algorithm_version = CHANNEL_MIXER_VERSION_1;
 
     // copy gray mixing parameters
-    new->red[CHANNEL_GRAY] = old->red[6];
-    new->green[CHANNEL_GRAY] = old->green[6];
-    new->blue[CHANNEL_GRAY] = old->blue[6];
+    n->red[CHANNEL_GRAY] = o->red[6];
+    n->green[CHANNEL_GRAY] = o->green[6];
+    n->blue[CHANNEL_GRAY] = o->blue[6];
 
     // version 1 does not use RGB mixing when gray is enabled
-    if(new->red[CHANNEL_GRAY] == 0.0f && new->green[CHANNEL_GRAY] == 0.0f && new->blue[CHANNEL_GRAY] == 0.0f)
+    if(n->red[CHANNEL_GRAY] == 0.0f
+       && n->green[CHANNEL_GRAY] == 0.0f
+       && n->blue[CHANNEL_GRAY] == 0.0f)
     {
       for(int i = 0; i < 3; i++)
       {
-        new->red[CHANNEL_RED + i] = old->red[3 + i];
-        new->green[CHANNEL_RED + i] = old->green[3 + i];
-        new->blue[CHANNEL_RED + i] = old->blue[3 + i];
+        n->red[CHANNEL_RED + i] = o->red[3 + i];
+        n->green[CHANNEL_RED + i] = o->green[3 + i];
+        n->blue[CHANNEL_RED + i] = o->blue[3 + i];
       }
     }
 
     // copy HSL mixing parameters
     for(int i = 0; i < 3; i++)
     {
-      new->red[i] = old->red[i];
-      new->green[i] = old->green[i];
-      new->blue[i] = old->blue[i];
+      n->red[i] = o->red[i];
+      n->green[i] = o->green[i];
+      n->blue[i] = o->blue[i];
     }
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_channelmixer_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -774,4 +798,3 @@ void init_presets(dt_iop_module_so_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

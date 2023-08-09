@@ -164,10 +164,25 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_profilegamma_params_v2_t
+  {
+    dt_iop_profilegamma_mode_t mode;
+    float linear;
+    float gamma;
+    float dynamic_range;
+    float grey_point;
+    float shadows_range;
+    float security_factor;
+  } dt_iop_profilegamma_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_profilegamma_params_v1_t
     {
@@ -175,15 +190,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float gamma;
     } dt_iop_profilegamma_params_v1_t;
 
-    dt_iop_profilegamma_params_v1_t *o = (dt_iop_profilegamma_params_v1_t *)old_params;
-    dt_iop_profilegamma_params_t *n = (dt_iop_profilegamma_params_t *)new_params;
-    const dt_iop_profilegamma_params_t *const d = (dt_iop_profilegamma_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_profilegamma_params_v1_t *o =
+      (dt_iop_profilegamma_params_v1_t *)old_params;
+    dt_iop_profilegamma_params_v2_t *n =
+      (dt_iop_profilegamma_params_v2_t *)malloc(sizeof(dt_iop_profilegamma_params_v2_t));
 
     n->linear = o->linear;
     n->gamma = o->gamma;
     n->mode = PROFILEGAMMA_GAMMA;
+    n->dynamic_range = 10.0f;
+    n->grey_point = 18.0f;
+    n->shadows_range = -5.0f;
+    n->security_factor = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_profilegamma_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -680,4 +702,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

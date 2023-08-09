@@ -313,43 +313,70 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RAW;
 }
 
-int legacy_params(
-        dt_iop_module_t *self,
-        const void *const old_params,
-        const int old_version,
-        void *new_params,
-        const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  typedef struct dt_iop_demosaic_params_t dt_iop_demosaic_params_v4_t;
-  typedef struct dt_iop_demosaic_params_v3_t
+  typedef struct dt_iop_demosaic_params_v4_t
   {
     dt_iop_demosaic_greeneq_t green_eq;
     float median_thrs;
-    uint32_t color_smoothing;
+    dt_iop_demosaic_smooth_t color_smoothing;
     dt_iop_demosaic_method_t demosaicing_method;
     dt_iop_demosaic_lmmse_t lmmse_refine;
-  } dt_iop_demosaic_params_v3_t;
+    float dual_thrs;
+  } dt_iop_demosaic_params_v4_t;
 
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 2)
   {
-    dt_iop_demosaic_params_v3_t *o = (dt_iop_demosaic_params_v3_t *)old_params;
-    dt_iop_demosaic_params_v4_t *n = (dt_iop_demosaic_params_v4_t *)new_params;
-    memcpy(n, o, sizeof *o);
-    n->dual_thrs = 0.20f;
-    return 0;
-  }
+    typedef struct dt_iop_demosaic_params_v2_t
+    {
+      dt_iop_demosaic_greeneq_t green_eq;
+      float median_thrs;
+    } dt_iop_demosaic_params_v2_t;
 
-  if(old_version == 2 && new_version == 3)
-  {
-    dt_iop_demosaic_params_t *o = (dt_iop_demosaic_params_t *)old_params;
-    dt_iop_demosaic_params_t *n = (dt_iop_demosaic_params_t *)new_params;
+    const dt_iop_demosaic_params_v2_t *o = (dt_iop_demosaic_params_v2_t *)old_params;
+    dt_iop_demosaic_params_v4_t *n =
+      (dt_iop_demosaic_params_v4_t *)malloc(sizeof(dt_iop_demosaic_params_v4_t));
     n->green_eq = o->green_eq;
     n->median_thrs = o->median_thrs;
     n->color_smoothing = 0;
     n->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
     n->lmmse_refine = DT_LMMSE_REFINE_1;
+    n->dual_thrs = 0.20f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_demosaic_params_v4_t);
+    *new_version = 4;
     return 0;
   }
+
+  if(old_version == 3)
+  {
+    typedef struct dt_iop_demosaic_params_v3_t
+    {
+      dt_iop_demosaic_greeneq_t green_eq;
+      float median_thrs;
+      uint32_t color_smoothing;
+      dt_iop_demosaic_method_t demosaicing_method;
+      dt_iop_demosaic_lmmse_t lmmse_refine;
+    } dt_iop_demosaic_params_v3_t;
+
+    const dt_iop_demosaic_params_v3_t *o = (dt_iop_demosaic_params_v3_t *)old_params;
+    dt_iop_demosaic_params_v4_t *n =
+      (dt_iop_demosaic_params_v4_t *)malloc(sizeof(dt_iop_demosaic_params_v4_t));
+    memcpy(n, o, sizeof *o);
+    n->dual_thrs = 0.20f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_demosaic_params_v4_t);
+    *new_version = 4;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -1306,4 +1333,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

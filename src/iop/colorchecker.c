@@ -150,13 +150,24 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-int legacy_params(
-    dt_iop_module_t  *self,
-    const void *const old_params,
-    const int         old_version,
-    void             *new_params,
-    const int         new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
+  typedef struct dt_iop_colorchecker_params_v2_t
+  {
+    float source_L[MAX_PATCHES];
+    float source_a[MAX_PATCHES];
+    float source_b[MAX_PATCHES];
+    float target_L[MAX_PATCHES];
+    float target_a[MAX_PATCHES];
+    float target_b[MAX_PATCHES];
+    int32_t num_patches;
+  } dt_iop_colorchecker_params_v2_t;
+
   static const float colorchecker_Lab_v1[] = {
     39.19, 13.76,  14.29,  // dark skin
     65.18, 19.00,  17.32,  // light skin
@@ -184,30 +195,34 @@ int legacy_params(
     21.46, 0.06,   -0.95,  // black
   };
 
-  typedef struct dt_iop_colorchecker_params_v1_t
+  if(old_version == 1)
   {
-    float target_L[24];
-    float target_a[24];
-    float target_b[24];
-  } dt_iop_colorchecker_params_v1_t;
-
-  if(old_version == 1 && new_version == 2)
-  {
-    dt_iop_colorchecker_params_v1_t *p1 =
-      (dt_iop_colorchecker_params_v1_t *)old_params;
-    dt_iop_colorchecker_params_t  *p2 =
-      (dt_iop_colorchecker_params_t  *)new_params;
-
-    p2->num_patches = 24;
-    for(int k=0;k<24;k++)
+    typedef struct dt_iop_colorchecker_params_v1_t
     {
-      p2->target_L[k] = p1->target_L[k];
-      p2->target_a[k] = p1->target_a[k];
-      p2->target_b[k] = p1->target_b[k];
-      p2->source_L[k] = colorchecker_Lab_v1[3 * k + 0];
-      p2->source_a[k] = colorchecker_Lab_v1[3 * k + 1];
-      p2->source_b[k] = colorchecker_Lab_v1[3 * k + 2];
+      float target_L[24];
+      float target_a[24];
+      float target_b[24];
+    } dt_iop_colorchecker_params_v1_t;
+
+    const dt_iop_colorchecker_params_v1_t *o =
+      (dt_iop_colorchecker_params_v1_t *)old_params;
+    dt_iop_colorchecker_params_v2_t  *n =
+      (dt_iop_colorchecker_params_v2_t  *)malloc(sizeof(dt_iop_colorchecker_params_v2_t));
+
+    n->num_patches = 24;
+    for(int k=0; k<24; k++)
+    {
+      n->target_L[k] = o->target_L[k];
+      n->target_a[k] = o->target_a[k];
+      n->target_b[k] = o->target_b[k];
+      n->source_L[k] = colorchecker_Lab_v1[3 * k + 0];
+      n->source_a[k] = colorchecker_Lab_v1[3 * k + 1];
+      n->source_b[k] = colorchecker_Lab_v1[3 * k + 2];
     }
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorchecker_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
