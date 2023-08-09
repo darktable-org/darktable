@@ -347,10 +347,33 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_toneequalizer_params_v2_t
+  {
+    float noise;
+    float ultra_deep_blacks;
+    float deep_blacks;
+    float blacks;
+    float shadows;
+    float midtones;
+    float highlights;
+    float whites;
+    float speculars;
+    float blending;
+    float smoothing;
+    float feathering;
+    float quantization;
+    float contrast_boost;
+    float exposure_boost;
+    dt_iop_toneequalizer_filter_t details;
+    dt_iop_luminance_mask_method_t method;
+    int iterations;
+  } dt_iop_toneequalizer_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_toneequalizer_params_v1_t
     {
@@ -362,14 +385,10 @@ int legacy_params(dt_iop_module_t *self,
       dt_iop_luminance_mask_method_t method;
     } dt_iop_toneequalizer_params_v1_t;
 
-    dt_iop_toneequalizer_params_v1_t *o =
+    const dt_iop_toneequalizer_params_v1_t *o =
       (dt_iop_toneequalizer_params_v1_t *)old_params;
-    dt_iop_toneequalizer_params_t *n =
-      (dt_iop_toneequalizer_params_t *)new_params;
-    const dt_iop_toneequalizer_params_t *const d =
-      (dt_iop_toneequalizer_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    dt_iop_toneequalizer_params_v2_t *n =
+      (dt_iop_toneequalizer_params_v2_t *)malloc(sizeof(dt_iop_toneequalizer_params_v2_t));
 
     // Olds params
     n->noise = o->noise;
@@ -392,8 +411,12 @@ int legacy_params(dt_iop_module_t *self,
     n->method = o->method;
 
     // New params
-    n->quantization = 0.01f;
+    n->quantization = 0.0f;
     n->smoothing = sqrtf(2.0f);
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_toneequalizer_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;

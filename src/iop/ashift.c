@@ -460,43 +460,70 @@ typedef struct dt_iop_ashift_global_data_t
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 5)
+  typedef struct dt_iop_ashift_params_v5_t
   {
-    typedef struct dt_iop_ashift_params1_t
+    float rotation;
+    float lensshift_v;
+    float lensshift_h;
+    float shear;
+    float f_length;
+    float crop_factor;
+    float orthocorr;
+    float aspect;
+    dt_iop_ashift_mode_t mode;
+    dt_iop_ashift_crop_t cropmode;
+    float cl;
+    float cr;
+    float ct;
+    float cb;
+    float last_drawn_lines[MAX_SAVED_LINES * 4];
+    int last_drawn_lines_count;
+    float last_quad_lines[8];
+  } dt_iop_ashift_params_v5_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_ashift_params_v1_t
     {
       float rotation;
       float lensshift_v;
       float lensshift_h;
       int toggle;
-    } dt_iop_ashift_params1_t;
+    } dt_iop_ashift_params_v1_t;
 
-    const dt_iop_ashift_params1_t *old = old_params;
-    dt_iop_ashift_params_t *new = new_params;
-    new->rotation = old->rotation;
-    new->lensshift_v = old->lensshift_v;
-    new->lensshift_h = old->lensshift_h;
-    new->shear = 0.0f;
-    new->f_length = DEFAULT_F_LENGTH;
-    new->crop_factor = 1.0f;
-    new->orthocorr = 100.0f;
-    new->aspect = 1.0f;
-    new->mode = ASHIFT_MODE_GENERIC;
-    new->cropmode = ASHIFT_CROP_OFF;
-    new->cl = 0.0f;
-    new->cr = 1.0f;
-    new->ct = 0.0f;
-    new->cb = 1.0f;
-    for(int i = 0; i < MAX_SAVED_LINES * 4; i++) new->last_drawn_lines[i] = 0.0f;
-    for(int i = 0; i < 8; i++) new->last_quad_lines[i] = 0.0f;
-    new->last_drawn_lines_count = 0;
+    const dt_iop_ashift_params_v1_t *o = old_params;
+    dt_iop_ashift_params_v5_t *n =
+      (dt_iop_ashift_params_v5_t *)malloc(sizeof(dt_iop_ashift_params_v5_t));
+    n->rotation = o->rotation;
+    n->lensshift_v = o->lensshift_v;
+    n->lensshift_h = o->lensshift_h;
+    n->shear = 0.0f;
+    n->f_length = DEFAULT_F_LENGTH;
+    n->crop_factor = 1.0f;
+    n->orthocorr = 100.0f;
+    n->aspect = 1.0f;
+    n->mode = ASHIFT_MODE_GENERIC;
+    n->cropmode = ASHIFT_CROP_OFF;
+    n->cl = 0.0f;
+    n->cr = 1.0f;
+    n->ct = 0.0f;
+    n->cb = 1.0f;
+    for(int i = 0; i < MAX_SAVED_LINES * 4; i++) n->last_drawn_lines[i] = 0.0f;
+    for(int i = 0; i < 8; i++) n->last_quad_lines[i] = 0.0f;
+    n->last_drawn_lines_count = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_ashift_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2)
   {
-    typedef struct dt_iop_ashift_params2_t
+    typedef struct dt_iop_ashift_params_v2_t
     {
       float rotation;
       float lensshift_v;
@@ -507,32 +534,37 @@ int legacy_params(dt_iop_module_t *self,
       float aspect;
       dt_iop_ashift_mode_t mode;
       int toggle;
-    } dt_iop_ashift_params2_t;
+    } dt_iop_ashift_params_v2_t;
 
-    const dt_iop_ashift_params2_t *old = old_params;
-    dt_iop_ashift_params_t *new = new_params;
-    new->rotation = old->rotation;
-    new->lensshift_v = old->lensshift_v;
-    new->lensshift_h = old->lensshift_h;
-    new->shear = 0.0f;
-    new->f_length = old->f_length;
-    new->crop_factor = old->crop_factor;
-    new->orthocorr = old->orthocorr;
-    new->aspect = old->aspect;
-    new->mode = old->mode;
-    new->cropmode = ASHIFT_CROP_OFF;
-    new->cl = 0.0f;
-    new->cr = 1.0f;
-    new->ct = 0.0f;
-    new->cb = 1.0f;
-    for(int i = 0; i < MAX_SAVED_LINES * 4; i++) new->last_drawn_lines[i] = 0.0f;
-    for(int i = 0; i < 8; i++) new->last_quad_lines[i] = 0.0f;
-    new->last_drawn_lines_count = 0;
+    const dt_iop_ashift_params_v2_t *o = old_params;
+    dt_iop_ashift_params_v5_t *n =
+      (dt_iop_ashift_params_v5_t *)malloc(sizeof(dt_iop_ashift_params_v5_t));
+    n->rotation = o->rotation;
+    n->lensshift_v = o->lensshift_v;
+    n->lensshift_h = o->lensshift_h;
+    n->shear = 0.0f;
+    n->f_length = o->f_length;
+    n->crop_factor = o->crop_factor;
+    n->orthocorr = o->orthocorr;
+    n->aspect = o->aspect;
+    n->mode = o->mode;
+    n->cropmode = ASHIFT_CROP_OFF;
+    n->cl = 0.0f;
+    n->cr = 1.0f;
+    n->ct = 0.0f;
+    n->cb = 1.0f;
+    for(int i = 0; i < MAX_SAVED_LINES * 4; i++) n->last_drawn_lines[i] = 0.0f;
+    for(int i = 0; i < 8; i++) n->last_quad_lines[i] = 0.0f;
+    n->last_drawn_lines_count = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_ashift_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3)
   {
-    typedef struct dt_iop_ashift_params3_t
+    typedef struct dt_iop_ashift_params_v3_t
     {
       float rotation;
       float lensshift_v;
@@ -548,32 +580,37 @@ int legacy_params(dt_iop_module_t *self,
       float cr;
       float ct;
       float cb;
-    } dt_iop_ashift_params3_t;
+    } dt_iop_ashift_params_v3_t;
 
-    const dt_iop_ashift_params3_t *old = old_params;
-    dt_iop_ashift_params_t *new = new_params;
-    new->rotation = old->rotation;
-    new->lensshift_v = old->lensshift_v;
-    new->lensshift_h = old->lensshift_h;
-    new->shear = 0.0f;
-    new->f_length = old->f_length;
-    new->crop_factor = old->crop_factor;
-    new->orthocorr = old->orthocorr;
-    new->aspect = old->aspect;
-    new->mode = old->mode;
-    new->cropmode = old->cropmode;
-    new->cl = old->cl;
-    new->cr = old->cr;
-    new->ct = old->ct;
-    new->cb = old->cb;
-    for(int i = 0; i < MAX_SAVED_LINES * 4; i++) new->last_drawn_lines[i] = 0.0f;
-    for(int i = 0; i < 8; i++) new->last_quad_lines[i] = 0.0f;
-    new->last_drawn_lines_count = 0;
+    const dt_iop_ashift_params_v3_t *o = old_params;
+    dt_iop_ashift_params_v5_t *n =
+      (dt_iop_ashift_params_v5_t *)malloc(sizeof(dt_iop_ashift_params_v5_t));
+    n->rotation = o->rotation;
+    n->lensshift_v = o->lensshift_v;
+    n->lensshift_h = o->lensshift_h;
+    n->shear = 0.0f;
+    n->f_length = o->f_length;
+    n->crop_factor = o->crop_factor;
+    n->orthocorr = o->orthocorr;
+    n->aspect = o->aspect;
+    n->mode = o->mode;
+    n->cropmode = o->cropmode;
+    n->cl = o->cl;
+    n->cr = o->cr;
+    n->ct = o->ct;
+    n->cb = o->cb;
+    for(int i = 0; i < MAX_SAVED_LINES * 4; i++) n->last_drawn_lines[i] = 0.0f;
+    for(int i = 0; i < 8; i++) n->last_quad_lines[i] = 0.0f;
+    n->last_drawn_lines_count = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_ashift_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4)
   {
-    typedef struct dt_iop_ashift_params4_t
+    typedef struct dt_iop_ashift_params_v4_t
     {
       float rotation;
       float lensshift_v;
@@ -590,27 +627,32 @@ int legacy_params(dt_iop_module_t *self,
       float cr;
       float ct;
       float cb;
-    } dt_iop_ashift_params4_t;
+    } dt_iop_ashift_params_v4_t;
 
-    const dt_iop_ashift_params4_t *old = old_params;
-    dt_iop_ashift_params_t *new = new_params;
-    new->rotation = old->rotation;
-    new->lensshift_v = old->lensshift_v;
-    new->lensshift_h = old->lensshift_h;
-    new->shear = old->shear;
-    new->f_length = old->f_length;
-    new->crop_factor = old->crop_factor;
-    new->orthocorr = old->orthocorr;
-    new->aspect = old->aspect;
-    new->mode = old->mode;
-    new->cropmode = old->cropmode;
-    new->cl = old->cl;
-    new->cr = old->cr;
-    new->ct = old->ct;
-    new->cb = old->cb;
-    for(int i = 0; i < MAX_SAVED_LINES * 4; i++) new->last_drawn_lines[i] = 0.0f;
-    for(int i = 0; i < 8; i++) new->last_quad_lines[i] = 0.0f;
-    new->last_drawn_lines_count = 0;
+    const dt_iop_ashift_params_v4_t *o = old_params;
+    dt_iop_ashift_params_v5_t *n =
+      (dt_iop_ashift_params_v5_t *)malloc(sizeof(dt_iop_ashift_params_v5_t));
+    n->rotation = o->rotation;
+    n->lensshift_v = o->lensshift_v;
+    n->lensshift_h = o->lensshift_h;
+    n->shear = o->shear;
+    n->f_length = o->f_length;
+    n->crop_factor = o->crop_factor;
+    n->orthocorr = o->orthocorr;
+    n->aspect = o->aspect;
+    n->mode = o->mode;
+    n->cropmode = o->cropmode;
+    n->cl = o->cl;
+    n->cr = o->cr;
+    n->ct = o->ct;
+    n->cb = o->cb;
+    for(int i = 0; i < MAX_SAVED_LINES * 4; i++) n->last_drawn_lines[i] = 0.0f;
+    for(int i = 0; i < 8; i++) n->last_quad_lines[i] = 0.0f;
+    n->last_drawn_lines_count = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_ashift_params_v5_t);
+    *new_version = 5;
     return 0;
   }
 

@@ -92,10 +92,17 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_spots_params_v2_t
+  {
+    int clone_id[64];
+    int clone_algo[64];
+  } dt_iop_spots_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_spots_v1_t
     {
@@ -109,11 +116,12 @@ int legacy_params(dt_iop_module_t *self,
       dt_iop_spots_v1_t spot[32];
     } dt_iop_spots_params_v1_t;
 
-    dt_iop_spots_params_v1_t *o = (dt_iop_spots_params_v1_t *)old_params;
-    dt_iop_spots_params_t *n = (dt_iop_spots_params_t *)new_params;
-    const dt_iop_spots_params_t *const d = (dt_iop_spots_params_t *)self->default_params;
+    const dt_iop_spots_params_v1_t *o = (dt_iop_spots_params_v1_t *)old_params;
+    dt_iop_spots_params_v2_t *n =
+      (dt_iop_spots_params_v2_t *)malloc(sizeof(dt_iop_spots_params_v2_t));
 
-    *n = *d; // start with a fresh copy of default parameters
+    memset(n, 0, sizeof(dt_iop_spots_params_v2_t));
+
     for(int i = 0; i < o->num_spots; i++)
     {
       // we have to register a new circle mask
@@ -122,7 +130,8 @@ int legacy_params(dt_iop_module_t *self,
       // spots v1 was before raw orientation changes
       form->version = 1;
 
-      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
+      dt_masks_point_circle_t *circle =
+        (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
       circle->center[0] = o->spot[i].x;
       circle->center[1] = o->spot[i].y;
       circle->radius = o->spot[i].radius;
@@ -169,6 +178,9 @@ int legacy_params(dt_iop_module_t *self,
       dt_masks_write_masks_history_item(self->dev->image_storage.id, last_spot_num, form);
     }
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spots_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;

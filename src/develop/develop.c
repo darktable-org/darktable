@@ -2398,8 +2398,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     }
     else
     {
-      if(dt_iop_legacy_params(hist->module, module_params, modversion,
-                              hist->params, hist->module->version()) == 1)
+      if(dt_iop_legacy_params
+         (hist->module,
+          module_params, param_length, modversion,
+          &hist->params, hist->module->version()) == 1)
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[dev_read_history] module `%s' version mismatch: history"

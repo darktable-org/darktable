@@ -85,10 +85,22 @@ typedef struct dt_iop_grain_data_t
 } dt_iop_grain_data_t;
 
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_grain_params_v2_t
+  {
+    _dt_iop_grain_channel_t channel;
+    float scale;
+    float strength;
+    float midtones_bias;
+  } dt_iop_grain_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_grain_params_v1_t
     {
@@ -98,13 +110,17 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } dt_iop_grain_params_v1_t;
 
     const dt_iop_grain_params_v1_t *o = old_params;
-    dt_iop_grain_params_t *n = new_params;
+    dt_iop_grain_params_v2_t *n =
+      (dt_iop_grain_params_v2_t *)malloc(sizeof(dt_iop_grain_params_v2_t));
 
     n->channel = o->channel;
     n->scale = o->scale;
     n->strength = o->strength;
     n->midtones_bias = 0.0; // it produces the same results as the old version
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_grain_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -597,4 +613,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

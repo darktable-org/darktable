@@ -117,10 +117,58 @@ typedef struct dt_iop_borders_gui_data_t
 } dt_iop_borders_gui_data_t;
 
 // ******* Check and update legacy params...(esp. ver 4)
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_iop_borders_params_v3_t
+  {
+    float color[3];           // border color $DEFAULT: 1.0
+    float aspect;             /* aspect ratio of the outer frame w/h
+                               $MIN: 1.0 $MAX: 3.0 $DEFAULT: DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE $DESCRIPTION: "aspect ratio" */
+    char aspect_text[20];     /* UNUSED aspect ratio of the outer frame w/h (user string version)
+                                 DEFAULT: "constant border" */
+    dt_iop_orientation_t aspect_orient;        /* aspect ratio orientation
+                                                  $DEFAULT: 0 $DESCRIPTION: "orientation" */
+    float size;               /* border width relative to overall frame width
+                                 $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.1 $DESCRIPTION: "border size" */
+    float pos_h;              /* picture horizontal position ratio into the final image
+                                 $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "horizontal offset" */
+    char pos_h_text[20];      /* UNUSED picture horizontal position ratio into the final image (user string version)
+                                 DEFAULT: "1/2" */
+    float pos_v;              /* picture vertical position ratio into the final image
+                                 $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "vertical offset"*/
+    char pos_v_text[20];      /* UNUSED picture vertical position ratio into the final image (user string version)
+                                 DEFAULT: "1/2" */
+    float frame_size;         /* frame line width relative to border width
+                                 $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "frame line size" */
+    float frame_offset;       /* frame offset from picture size relative to [border width - frame width]
+                                 $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "frame line offset" */
+    float frame_color[3];     // frame line color $DEFAULT: 0.0
+    gboolean max_border_size; /* the way border size is computed
+                                 $DEFAULT: TRUE */
+  } dt_iop_borders_params_v3_t;
+
+  dt_iop_borders_params_v3_t default_v3 =
+    { { 1.0f, 1.0f, 1.0f },
+      DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE,
+      "                   ",
+      0,
+      0.1f,
+      0.5f,
+      "                   ",
+      0.5f,
+      "                   ",
+      0.0f,
+      0.5f,
+      { 0.0f, 0.0f, 0.0f },
+      TRUE
+    };
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_borders_params_v1_t
     {
@@ -129,11 +177,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float size;     // border width relative to overall frame width
     } dt_iop_borders_params_v1_t;
 
-    dt_iop_borders_params_v1_t *o = (dt_iop_borders_params_v1_t *)old_params;
-    dt_iop_borders_params_t *n = (dt_iop_borders_params_t *)new_params;
-    const dt_iop_borders_params_t *const d = (dt_iop_borders_params_t *)self->default_params;
+    const dt_iop_borders_params_v1_t *o = (dt_iop_borders_params_v1_t *)old_params;
+    dt_iop_borders_params_v3_t *n =
+      (dt_iop_borders_params_v3_t *)malloc(sizeof(dt_iop_borders_params_v3_t));
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_v3; // start with a fresh copy of default parameters
     memcpy(n->color, o->color, sizeof(o->color));
     n->aspect = (o->aspect < 1) ? 1 / o->aspect : o->aspect;
     // no auto orientation in legacy param due to already convert aspect ratio
@@ -141,10 +189,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
                                      : DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT;
     n->size = fabsf(o->size); // no negative size any more (was for "constant border" detect)
     n->max_border_size = FALSE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_borders_params_v3_t);
+    *new_version = 3;
     return 0;
   }
 
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2)
   {
     typedef struct dt_iop_borders_params_v2_t
     {
@@ -162,11 +214,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float frame_color[3]; // frame line color
     } dt_iop_borders_params_v2_t;
 
-    dt_iop_borders_params_v2_t *o = (dt_iop_borders_params_v2_t *)old_params;
-    dt_iop_borders_params_t *n = (dt_iop_borders_params_t *)new_params;
+    const dt_iop_borders_params_v2_t *o = (dt_iop_borders_params_v2_t *)old_params;
+    dt_iop_borders_params_v3_t *n =
+      (dt_iop_borders_params_v3_t *)malloc(sizeof(dt_iop_borders_params_v3_t));
 
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v2_t));
     n->max_border_size = FALSE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_borders_params_v3_t);
+    *new_version = 3;
     return 0;
   }
 

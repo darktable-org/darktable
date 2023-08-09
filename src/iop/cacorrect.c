@@ -99,14 +99,29 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RAW;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_cacorrect_params_v2_t
   {
-    dt_iop_cacorrect_params_t *n = (dt_iop_cacorrect_params_t *)new_params;
+    gboolean avoidshift;
+    dt_iop_cacorrect_multi_t iterations;
+  } dt_iop_cacorrect_params_v2_t;
+
+  if(old_version == 1)
+  {
+    dt_iop_cacorrect_params_v2_t *n =
+      (dt_iop_cacorrect_params_v2_t *)malloc(sizeof(dt_iop_cacorrect_params_v2_t));
     n->avoidshift = FALSE;
     n->iterations = 1;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_cacorrect_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -1285,7 +1300,7 @@ void process(
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
   {
-    for(size_t col = 0; col < roi_out->width; col++) 
+    for(size_t col = 0; col < roi_out->width; col++)
     {
       const size_t ox = row * roi_out->width + col;
       const size_t irow = row + roi_out->y;
@@ -1434,4 +1449,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

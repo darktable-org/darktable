@@ -168,10 +168,36 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_diffuse_params_v2_t
+  {
+    // global parameters
+    int iterations;
+    float sharpness;
+    int radius;
+    float regularization;
+    float variance_threshold;
+
+    float anisotropy_first;
+    float anisotropy_second;
+    float anisotropy_third;
+    float anisotropy_fourth;
+
+    float threshold;
+
+    float first;
+    float second;
+    float third;
+    float fourth;
+
+    // v2
+    int radius_center;
+  } dt_iop_diffuse_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_diffuse_params_v1_t
     {
@@ -195,11 +221,9 @@ int legacy_params(dt_iop_module_t *self,
       float fourth;
     } dt_iop_diffuse_params_v1_t;
 
-    dt_iop_diffuse_params_v1_t *o = (dt_iop_diffuse_params_v1_t *)old_params;
-    dt_iop_diffuse_params_t *n = (dt_iop_diffuse_params_t *)new_params;
-    const dt_iop_diffuse_params_t *const d = (dt_iop_diffuse_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_diffuse_params_v1_t *o = (dt_iop_diffuse_params_v1_t *)old_params;
+    dt_iop_diffuse_params_v2_t *n =
+      (dt_iop_diffuse_params_v2_t *)malloc(sizeof(dt_iop_diffuse_params_v2_t));
 
     // copy common parameters
     memcpy(n, o, sizeof(dt_iop_diffuse_params_v1_t));
@@ -207,6 +231,9 @@ int legacy_params(dt_iop_module_t *self,
     // init only new parameters
     n->radius_center = 0;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_diffuse_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
