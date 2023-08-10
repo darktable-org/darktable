@@ -46,6 +46,7 @@
 #endif
 #include "osx.h"
 #include "libintl.h"
+#include "dt_metal.h"
 
 extern "C" int apple_main(int argc, char *argv[]);
 
@@ -287,6 +288,8 @@ void dt_osx_prepare_environment()
     g_free(lib_path);
     g_free(res_path);
   }
+
+  dt_metal_get_devices();
 }
 
 void dt_osx_focus_window()
