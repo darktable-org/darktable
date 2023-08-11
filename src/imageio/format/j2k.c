@@ -560,17 +560,18 @@ void *legacy_params(dt_imageio_module_format_t *self,
   }
 
   // incremental update supported:
+
+  typedef struct dt_imageio_j2k_v3_t
+  {
+    dt_imageio_module_data_t global;
+    int bpp;
+    dt_imageio_j2k_preset_t preset;
+    int quality;
+  } dt_imageio_j2k_v3_t;
+
   if(old_version == 2)
   {
     // let's update from 2 to 3
-    typedef struct dt_imageio_j2k_v3_t
-    {
-      dt_imageio_module_data_t global;
-      int bpp;
-      dt_imageio_j2k_preset_t preset;
-      int quality;
-    } dt_imageio_j2k_v3_t;
-
     const dt_imageio_j2k_v2_t *o = (dt_imageio_j2k_v2_t *)old_params;
     dt_imageio_j2k_v3_t *n = (dt_imageio_j2k_v3_t *)malloc(sizeof(dt_imageio_j2k_v3_t));
 
