@@ -327,12 +327,7 @@ static gboolean _key_pressed(GtkWidget *textview,
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
-      if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-      {
-        // insert new line
-        event->state &= ~GDK_CONTROL_MASK;  //TODO: on Mac, remap Ctrl to Cmd key
-      }
-      else
+      if(!dt_modifier_is(event->state, GDK_CONTROL_MASK))
       {
         gtk_button_clicked(GTK_BUTTON(d->apply_button));
         return TRUE;
