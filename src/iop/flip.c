@@ -145,21 +145,25 @@ merge_two_orientations(dt_image_orientation_t raw_orientation,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_flip_params_v2_t
+  {
+    dt_image_orientation_t orientation;
+  } dt_iop_flip_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_flip_params_v1_t
     {
       int32_t orientation;
     } dt_iop_flip_params_v1_t;
 
-    const dt_iop_flip_params_v1_t *old = (dt_iop_flip_params_v1_t *)old_params;
-    dt_iop_flip_params_t *n = (dt_iop_flip_params_t *)new_params;
-    const dt_iop_flip_params_t *d = (dt_iop_flip_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_flip_params_v1_t *o = (dt_iop_flip_params_v1_t *)old_params;
+    dt_iop_flip_params_v2_t *n =
+      (dt_iop_flip_params_v2_t *)malloc(sizeof(dt_iop_flip_params_v2_t));
 
     // we might be called from presets update infrastructure => there is no image
     dt_image_orientation_t image_orientation = ORIENTATION_NONE;
@@ -167,9 +171,13 @@ int legacy_params(dt_iop_module_t *self,
     if(self->dev)
       image_orientation = dt_image_orientation(&self->dev->image_storage);
 
-    n->orientation = merge_two_orientations(image_orientation,
-                                            (dt_image_orientation_t)(old->orientation));
+    n->orientation = merge_two_orientations
+      (image_orientation,
+       (dt_image_orientation_t)(o->orientation));
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_flip_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;

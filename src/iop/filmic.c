@@ -184,10 +184,33 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_iop_filmic_params_v3_t
+  {
+    float grey_point_source;
+    float black_point_source;
+    float white_point_source;
+    float security_factor;
+    float grey_point_target;
+    float black_point_target;
+    float white_point_target;
+    float output_power;
+    float latitude_stops;
+    float contrast;
+    float saturation;
+    float global_saturation;
+    float balance;
+    int interpolator;
+    int preserve_color;
+  } dt_iop_filmic_params_v3_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_filmic_params_v1_t
     {
@@ -206,11 +229,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int interpolator;
     } dt_iop_filmic_params_v1_t;
 
-    dt_iop_filmic_params_v1_t *o = (dt_iop_filmic_params_v1_t *)old_params;
-    dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
-    const dt_iop_filmic_params_t *const d = (dt_iop_filmic_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_filmic_params_v1_t *o = (dt_iop_filmic_params_v1_t *)old_params;
+    dt_iop_filmic_params_v3_t *n =
+      (dt_iop_filmic_params_v3_t *)malloc(sizeof(dt_iop_filmic_params_v3_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -227,10 +248,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->interpolator = o->interpolator;
     n->preserve_color = 0;
     n->global_saturation = 100;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmic_params_v3_t);
+    *new_version = 3;
     return 0;
   }
 
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2)
   {
     typedef struct dt_iop_filmic_params_v2_t
     {
@@ -250,11 +275,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int preserve_color;
     } dt_iop_filmic_params_v2_t;
 
-    dt_iop_filmic_params_v2_t *o = (dt_iop_filmic_params_v2_t *)old_params;
+    const dt_iop_filmic_params_v2_t *o = (dt_iop_filmic_params_v2_t *)old_params;
     dt_iop_filmic_params_t *n = (dt_iop_filmic_params_t *)new_params;
-    const dt_iop_filmic_params_t *const d = (dt_iop_filmic_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -271,6 +293,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->interpolator = o->interpolator;
     n->preserve_color = o->preserve_color;
     n->global_saturation = 100;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmic_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -1677,4 +1703,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

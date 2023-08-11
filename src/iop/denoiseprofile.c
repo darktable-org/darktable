@@ -231,11 +231,16 @@ static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece,
   dt_dump_pfm(name, buf, width, height,  4 * sizeof(float), "denoiseprofile");
 }
 
-int legacy_params(dt_iop_module_t *self,
-                  const void *const old_params,
-                  const int old_version,
-                  void *new_params,
-                  const int new_version)
+/* old legacy_params routine used up to v11
+   this is now called into the legacy_params supporting incremental
+   updates. It was too risky to rewrite the old legacy params support
+   as it is a very tricky code.
+*/
+int legacy_params_to11(dt_iop_module_t *self,
+                       const void *const old_params,
+                       const int old_version,
+                       void *new_params,
+                       const int new_version)
 {
   typedef struct dt_iop_denoiseprofile_params_v1_t
   {
@@ -424,7 +429,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 4)
     {
       // first update to v4
-      if(legacy_params(self, old_params, old_version, &v4, 4))
+      if(legacy_params_to11(self, old_params, old_version, &v4, 4))
         return 1;
     }
     else
@@ -456,7 +461,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 5)
     {
       // first update to v5
-      if(legacy_params(self, old_params, old_version, &v5, 5)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v5, 5)) return 1;
     }
     else
       memcpy(&v5, old_params, sizeof(v5)); // was v5 already
@@ -488,7 +493,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 6)
     {
       // first update to v6
-      if(legacy_params(self, old_params, old_version, &v6, 6)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v6, 6)) return 1;
     }
     else
       memcpy(&v6, old_params, sizeof(v6)); // was v6 already
@@ -525,7 +530,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 7)
     {
       // first update to v7
-      if(legacy_params(self, old_params, old_version, &v7, 7)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v7, 7)) return 1;
     }
     else
       memcpy(&v7, old_params, sizeof(v7)); // was v7 already
@@ -563,7 +568,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 8)
     {
       // first update to v8
-      if(legacy_params(self, old_params, old_version, &v8, 8)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v8, 8)) return 1;
     }
     else
       memcpy(&v8, old_params, sizeof(v8)); // was v8 already
@@ -609,7 +614,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 9)
     {
       // first update to v9
-      if(legacy_params(self, old_params, old_version, &v9, 9)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v9, 9)) return 1;
     }
     else
       memcpy(&v9, old_params, sizeof(v9)); // was v9 already
@@ -658,7 +663,7 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_denoiseprofile_params_t *v11 = new_params;
     if(old_version < 10)
     {
-      if(legacy_params(self, old_params, old_version, v11, 10)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, v11, 10)) return 1;
     }
     else
       memcpy(v11, old_params, sizeof(*v11)); // was v10 already
@@ -676,6 +681,53 @@ int legacy_params(dt_iop_module_t *self,
   }
   return 1;
 }
+
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
+{
+  typedef struct dt_iop_denoiseprofile_params_v11_t
+  {
+    float radius;
+    float nbhood;
+    float strength;
+    float shadows;
+    float bias;
+    float scattering;
+    float central_pixel_weight;
+    float overshooting;
+    float a[3], b[3];
+    dt_iop_denoiseprofile_mode_t mode;
+    float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    gboolean wb_adaptive_anscombe;
+    gboolean fix_anscombe_and_nlmeans_norm;
+    gboolean use_new_vst;
+    dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode;
+  } dt_iop_denoiseprofile_params_v11_t;
+
+  if(old_version < 11)
+  {
+    *new_params = (dt_iop_denoiseprofile_params_v11_t *)
+      malloc(sizeof(dt_iop_denoiseprofile_params_v11_t));
+
+    const int ret = legacy_params_to11(self,
+                                       old_params,
+                                       old_version,
+                                       *new_params,
+                                       11);
+
+    *new_params_size = sizeof(dt_iop_denoiseprofile_params_v11_t);
+    *new_version = 11;
+    return ret;
+  }
+
+  return 1;
+}
+
 
 void init_presets(dt_iop_module_so_t *self)
 {

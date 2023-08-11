@@ -380,6 +380,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
                                                     struct dt_iop_filmic_rgb_spline_t *const spline);
 
+// BEWARE: convert_to_spline_v3 supports up to v6 of params (see legacy_params)
 // convert parameters from spline v1 or v2 to spline v3
 static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
 {
@@ -444,10 +445,47 @@ static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
   n->spline_version = DT_FILMIC_SPLINE_VERSION_V3;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 6)
+  typedef struct dt_iop_filmicrgb_params_v6_t
+  {
+    float grey_point_source;
+    float black_point_source;
+    float white_point_source;
+    float reconstruct_threshold;
+    float reconstruct_feather;
+    float reconstruct_bloom_vs_details;
+    float reconstruct_grey_vs_color;
+    float reconstruct_structure_vs_texture;
+    float security_factor;
+    float grey_point_target;
+    float black_point_target;
+    float white_point_target;
+    float output_power;
+    float latitude;
+    float contrast;
+    float saturation;
+    float balance;
+    float noise_level;
+    dt_iop_filmicrgb_methods_type_t preserve_color;
+    dt_iop_filmicrgb_colorscience_type_t version;
+    gboolean auto_hardness;
+    gboolean custom_grey;
+    int high_quality_reconstruction;
+    dt_iop_filmic_noise_distribution_t noise_distribution;
+    dt_iop_filmicrgb_curve_type_t shadows;
+    dt_iop_filmicrgb_curve_type_t highlights;
+    gboolean compensate_icc_black;
+    dt_iop_filmicrgb_spline_version_type_t spline_version;
+    gboolean enable_highlight_reconstruction;
+  } dt_iop_filmicrgb_params_v6_t;
+
+ if(old_version == 1)
   {
     typedef struct dt_iop_filmicrgb_params_v1_t
     {
@@ -466,11 +504,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int preserve_color;
     } dt_iop_filmicrgb_params_v1_t;
 
-    dt_iop_filmicrgb_params_v1_t *o = (dt_iop_filmicrgb_params_v1_t *)old_params;
-    dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
-    const dt_iop_filmicrgb_params_t *const d = (dt_iop_filmicrgb_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_filmicrgb_params_v1_t *o = (dt_iop_filmicrgb_params_v1_t *)old_params;
+    dt_iop_filmicrgb_params_v6_t *n =
+      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -487,25 +523,30 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->preserve_color = o->preserve_color;
     n->shadows = DT_FILMIC_CURVE_POLY_4;
     n->highlights = DT_FILMIC_CURVE_POLY_3;
-    n->reconstruct_threshold
-        = 6.0f; // for old edits, this ensures clipping threshold >> white level, so it's a no-op
-    n->reconstruct_bloom_vs_details = d->reconstruct_bloom_vs_details;
-    n->reconstruct_grey_vs_color = d->reconstruct_grey_vs_color;
-    n->reconstruct_structure_vs_texture = d->reconstruct_structure_vs_texture;
+    n->reconstruct_threshold = 6.0f; // for old edits, this ensures
+                                     // clipping threshold >> white
+                                     // level, so it's a no-op
+    n->reconstruct_bloom_vs_details = 100.0f;
+    n->reconstruct_grey_vs_color = 100.0f;
+    n->reconstruct_structure_vs_texture = 0.0f;
     n->reconstruct_feather = 3.0f;
     n->version = DT_FILMIC_COLORSCIENCE_V1;
     n->auto_hardness = TRUE;
     n->custom_grey = TRUE;
     n->high_quality_reconstruction = 0;
-    n->noise_distribution = d->noise_distribution;
+    n->noise_distribution = DT_FILMIC_NOISE_GAUSSIAN;
     n->noise_level = 0.f;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
-    convert_to_spline_v3(n);
+    convert_to_spline_v3((dt_iop_filmicrgb_params_t*)n);
     n->enable_highlight_reconstruction = TRUE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmicrgb_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  if(old_version == 2 && new_version == 6)
+  if(old_version == 2)
   {
     typedef struct dt_iop_filmicrgb_params_v2_t
     {
@@ -535,11 +576,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       dt_iop_filmicrgb_curve_type_t highlights;
     } dt_iop_filmicrgb_params_v2_t;
 
-    dt_iop_filmicrgb_params_v2_t *o = (dt_iop_filmicrgb_params_v2_t *)old_params;
-    dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
-    const dt_iop_filmicrgb_params_t *const d = (dt_iop_filmicrgb_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_filmicrgb_params_v2_t *o = (dt_iop_filmicrgb_params_v2_t *)old_params;
+    dt_iop_filmicrgb_params_v6_t *n =
+      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -565,59 +604,62 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->auto_hardness = o->auto_hardness;
     n->custom_grey = o->custom_grey;
     n->high_quality_reconstruction = o->high_quality_reconstruction;
-    n->noise_level = d->noise_level;
-    n->noise_distribution = d->noise_distribution;
+    n->noise_level = 0.2f;
+    n->noise_distribution = DT_FILMIC_NOISE_GAUSSIAN;
     n->noise_level = 0.f;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
     n->enable_highlight_reconstruction = TRUE;
-    convert_to_spline_v3(n);
+    convert_to_spline_v3((dt_iop_filmicrgb_params_t*)n);
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmicrgb_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  if(old_version == 3 && new_version == 6)
+
+  if(old_version == 3)
   {
     typedef struct dt_iop_filmicrgb_params_v3_t
     {
-      float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
-      float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
-      float white_point_source;    // $MIN: 0 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
-      float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
-      float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
-      float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION:
-                                          // "bloom/reconstruct"
-      float reconstruct_grey_vs_color;    // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray/colorful
-                                          // details"
-      float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION:
-                                              // "structure/texture"
-      float security_factor;    // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
-      float grey_point_target;  // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle gray"
-      float black_point_target; // $MIN: 0 $MAX: 20 $DEFAULT: 0 $DESCRIPTION: "target black luminance"
-      float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
-      float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
-      float latitude;           // $MIN: 0.01 $MAX: 100 $DEFAULT: 33.0
-      float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.50
-      float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
-      float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows/highlights balance"
-      float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.1f $DESCRIPTION: "add noise in highlights"
-      dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION:
-                                                      // "preserve chrominance"
-      dt_iop_filmicrgb_colorscience_type_t version;   // $DEFAULT: DT_FILMIC_COLORSCIENCE_V3 $DESCRIPTION: "color
-                                                      // science"
-      gboolean auto_hardness;                         // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
-      gboolean custom_grey;            // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
-      int high_quality_reconstruction; // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality
-                                       // reconstruction"
-      int noise_distribution;          // $DEFAULT: DT_NOISE_POISSONIAN $DESCRIPTION: "type of noise"
-      dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in shadows"
-      dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in
-                                                // highlights"
+      float grey_point_source;
+      float black_point_source;
+      float white_point_source;
+      float reconstruct_threshold;
+      float reconstruct_feather;
+      float reconstruct_bloom_vs_details;
+
+      float reconstruct_grey_vs_color;
+
+      float reconstruct_structure_vs_texture;
+
+      float security_factor;
+      float grey_point_target;
+      float black_point_target;
+      float white_point_target;
+      float output_power;
+      float latitude;
+      float contrast;
+      float saturation;
+      float balance;
+      float noise_level;
+      dt_iop_filmicrgb_methods_type_t preserve_color;
+
+      dt_iop_filmicrgb_colorscience_type_t version;
+
+      gboolean auto_hardness;
+      gboolean custom_grey;
+      int high_quality_reconstruction;
+
+      int noise_distribution;
+      dt_iop_filmicrgb_curve_type_t shadows;
+      dt_iop_filmicrgb_curve_type_t highlights;
+
     } dt_iop_filmicrgb_params_v3_t;
 
-    dt_iop_filmicrgb_params_v3_t *o = (dt_iop_filmicrgb_params_v3_t *)old_params;
-    dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
-    const dt_iop_filmicrgb_params_t *const d = (dt_iop_filmicrgb_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_filmicrgb_params_v3_t *o = (dt_iop_filmicrgb_params_v3_t *)old_params;
+    dt_iop_filmicrgb_params_v6_t *n =
+      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -643,52 +685,59 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->auto_hardness = o->auto_hardness;
     n->custom_grey = o->custom_grey;
     n->high_quality_reconstruction = o->high_quality_reconstruction;
-    n->noise_level = d->noise_level;
-    n->noise_distribution = d->noise_distribution;
-    n->noise_level = d->noise_level;
+    n->noise_level = 0.2f;
+    n->noise_distribution = DT_FILMIC_NOISE_GAUSSIAN;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
     n->enable_highlight_reconstruction = TRUE;
-    convert_to_spline_v3(n);
+    convert_to_spline_v3((dt_iop_filmicrgb_params_t*)n);
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmicrgb_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  if(old_version == 4 && new_version == 6)
+  if(old_version == 4)
   {
     typedef struct dt_iop_filmicrgb_params_v4_t
     {
-      float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
-      float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
-      float white_point_source;    // $MIN: 0 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
-      float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
-      float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
-      float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom ↔ reconstruct"
-      float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray ↔ colorful details"
-      float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "structure ↔ texture"
-      float security_factor;                  // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
-      float grey_point_target;                // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle gray"
-      float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
-      float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
-      float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
-      float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 50.0
-      float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.1
-      float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
-      float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
-      float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
-      dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
-      dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V3 $DESCRIPTION: "color science"
-      gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
-      gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
-      int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
-      dt_iop_filmic_noise_distribution_t noise_distribution; // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
-      dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in shadows"
-      dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in highlights"
-      gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
-      gint internal_version; // $DEFAULT: 2020 $DESCRIPTION: "version of the spline generator"
+      float grey_point_source;
+      float black_point_source;
+      float white_point_source;
+      float reconstruct_threshold;
+      float reconstruct_feather;
+      float reconstruct_bloom_vs_details;
+      float reconstruct_grey_vs_color;
+      float reconstruct_structure_vs_texture;
+      float security_factor;
+      float grey_point_target;
+      float black_point_target;
+      float white_point_target;
+      float output_power;
+      float latitude;
+      float contrast;
+      float saturation;
+      float balance;
+      float noise_level;
+      dt_iop_filmicrgb_methods_type_t preserve_color;
+      dt_iop_filmicrgb_colorscience_type_t version;
+      gboolean auto_hardness;
+      gboolean custom_grey;
+      int high_quality_reconstruction;
+      dt_iop_filmic_noise_distribution_t noise_distribution;
+      dt_iop_filmicrgb_curve_type_t shadows;
+      dt_iop_filmicrgb_curve_type_t highlights;
+      gboolean compensate_icc_black;
+      gint internal_version;
     } dt_iop_filmicrgb_params_v4_t;
 
-    dt_iop_filmicrgb_params_v4_t *o = (dt_iop_filmicrgb_params_v4_t *)old_params;
-    dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
-    *n = *(dt_iop_filmicrgb_params_t*)o; // structure didn't change except the enum instead of gint for internal_version
+    const dt_iop_filmicrgb_params_v4_t *o = (dt_iop_filmicrgb_params_v4_t *)old_params;
+    dt_iop_filmicrgb_params_v6_t *n =
+      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+
+    *n = *(dt_iop_filmicrgb_params_v6_t*)o; // structure didn't change
+                                            // except the enum instead of
+                                            // gint for internal_version
     // we still need to convert the internal_version (in year) to the enum
     switch(o->internal_version)
     {
@@ -705,48 +754,50 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
         return 1;
     }
     n->enable_highlight_reconstruction = TRUE;
-    convert_to_spline_v3(n);
+    convert_to_spline_v3((dt_iop_filmicrgb_params_t*)n);
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmicrgb_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  if(old_version == 5 && new_version == 6)
+  if(old_version == 5)
   {
     typedef struct dt_iop_filmicrgb_params_v5_t
     {
-      float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
-      float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
-      float white_point_source;    // $MIN: 0.1 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
-      float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
-      float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
-      float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom ↔ reconstruct"
-      float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray ↔ colorful details"
-      float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "structure ↔ texture"
-      float security_factor;                  // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
-      float grey_point_target;                // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle gray"
-      float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
-      float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
-      float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
-      float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 0.01
-      float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.0
-      float saturation;         // $MIN: -200 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
-      float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
-      float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
-      dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
-      dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V4 $DESCRIPTION: "color science"
-      gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
-      gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
-      int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
-      dt_iop_filmic_noise_distribution_t noise_distribution; // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
-      dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in shadows"
-      dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in highlights"
-      gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
-      dt_iop_filmicrgb_spline_version_type_t spline_version; // $DEFAULT: DT_FILMIC_SPLINE_VERSION_V3 $DESCRIPTION: "spline handling"
+      float grey_point_source;
+      float black_point_source;
+      float white_point_source;
+      float reconstruct_threshold;
+      float reconstruct_feather;
+      float reconstruct_bloom_vs_details;
+      float reconstruct_grey_vs_color;
+      float reconstruct_structure_vs_texture;
+      float security_factor;
+      float grey_point_target;
+      float black_point_target;
+      float white_point_target;
+      float output_power;
+      float latitude;
+      float contrast;
+      float saturation;
+      float balance;
+      float noise_level;
+      dt_iop_filmicrgb_methods_type_t preserve_color;
+      dt_iop_filmicrgb_colorscience_type_t version;
+      gboolean auto_hardness;
+      gboolean custom_grey;
+      int high_quality_reconstruction;
+      dt_iop_filmic_noise_distribution_t noise_distribution;
+      dt_iop_filmicrgb_curve_type_t shadows;
+      dt_iop_filmicrgb_curve_type_t highlights;
+      gboolean compensate_icc_black;
+      dt_iop_filmicrgb_spline_version_type_t spline_version;
     } dt_iop_filmicrgb_params_v5_t;
 
-    dt_iop_filmicrgb_params_v5_t *o = (dt_iop_filmicrgb_params_v5_t *)old_params;
-    dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
-
-    // Init params with defaults
-    memcpy(new_params, self->default_params, sizeof(dt_iop_filmicrgb_params_t));
+    const dt_iop_filmicrgb_params_v5_t *o = (dt_iop_filmicrgb_params_v5_t *)old_params;
+    dt_iop_filmicrgb_params_v6_t *n =
+      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     // Copy over the old parameters
     n->grey_point_source = o->grey_point_source;
@@ -781,6 +832,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     // New parameter
     n->enable_highlight_reconstruction = TRUE;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_filmicrgb_params_v6_t);
+    *new_version = 6;
     return 0;
   }
   return 1;

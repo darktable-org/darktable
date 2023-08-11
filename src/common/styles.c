@@ -826,15 +826,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
              || module->params_size != style_item->params_size
              || strcmp(style_item->operation, module->op)))
       {
-        int legacy_ret = 1;
-
-        if(module->legacy_params)
-          legacy_ret =
-            module->legacy_params(module, style_item->params,
-                                  labs(style_item->module_version),
-                                  module->params, labs(module->version()));
-        else
-          legacy_ret = 0;
+        const int legacy_ret =
+          dt_iop_legacy_params
+          (module,
+           style_item->params, style_item->params_size, style_item->module_version,
+           &module->params, module->version());
 
         if(legacy_ret == 1)
         {

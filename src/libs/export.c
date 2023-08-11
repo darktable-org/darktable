@@ -1580,8 +1580,8 @@ void init_presets(dt_lib_module_t *self)
       const char *buf = (const char *)op_params;
 
       // skip 6*int32_t: max_width, max_height, upscale, high_quality
-      // and iccintent, icctype
-      buf += 6 * sizeof(int32_t);
+      // and export_masks, iccintent, icctype
+      buf += 7 * sizeof(int32_t);
       // skip metadata presets string
       buf += strlen(buf) + 1;
       // next skip iccfilename
@@ -1615,26 +1615,57 @@ void init_presets(dt_lib_module_t *self)
       buf += fsize;
       const void *sdata = buf;
 
-      void *new_fdata = NULL, *new_sdata = NULL;
-      size_t new_fsize = fsize, new_ssize = ssize;
-      const int32_t new_fversion = fmod->version(), new_sversion = smod->version();
+      void *new_fdata = NULL;
+      void *new_sdata = NULL;
+      size_t new_fsize = fsize;
+      size_t new_ssize = ssize;
+      const int32_t new_fversion = fmod->version();
+      const int32_t new_sversion = smod->version();
 
-      if(fversion < new_fversion)
+      int32_t cversion = fversion;
+      int32_t new_version = new_fversion;
+      size_t new_size = 0;
+      void *data = (void *)malloc(fsize);
+      memcpy(data, fdata, fsize);
+      while(cversion < new_fversion)
       {
-        if(!(fmod->legacy_params
-             && (new_fdata = fmod->legacy_params(fmod, fdata, fsize,
-                                                 fversion, new_fversion, &new_fsize))
-                != NULL))
+        if(fmod->legacy_params
+           && (new_fdata = fmod->legacy_params(fmod, data, new_fsize,
+                                               cversion, &new_version, &new_size))
+                != NULL)
+        {
+          free(data);
+          data = new_fdata;
+          new_fsize = new_size;
+          cversion = new_version;
+        }
+        else
+        {
           goto delete_preset;
+        }
       }
 
-      if(sversion < new_sversion)
+      cversion = sversion;
+      new_version = new_sversion;
+      new_size = 0;
+      data = (void *)malloc(ssize);
+      memcpy(data, sdata, ssize);
+      while(cversion < new_sversion)
       {
-        if(!(smod->legacy_params
-             && (new_sdata = smod->legacy_params(smod, sdata, ssize,
-                                                 sversion, new_sversion, &new_ssize))
-                != NULL))
+        if(smod->legacy_params
+           && (new_sdata = smod->legacy_params(smod, data, new_ssize,
+                                               cversion, &new_version, &new_size))
+           != NULL)
+        {
+          free(data);
+          data = new_sdata;
+          new_ssize = new_size;
+          cversion = new_version;
+        }
+        else
+        {
           goto delete_preset;
+        }
       }
 
       if(new_fdata || new_sdata)
@@ -1995,6 +2026,8 @@ void *get_params(dt_lib_module_t *self, int *size)
           + 4 * sizeof(int32_t) + fsize + ssize + 7 * sizeof(int32_t)
           + strlen(iccfilename) + 1 + strlen(metadata_export) + 1;
 
+  //??? WARNING: Any change here must be also done on get_params AND init_presets
+  //             if some parameters are added before fname & sname
   char *params = (char *)calloc(1, *size);
   int pos = 0;
   memcpy(params + pos, &max_width, sizeof(int32_t));
@@ -2055,6 +2088,8 @@ int set_params(dt_lib_module_t *self,
   // apply these stored presets again (parse blob)
   const char *buf = (const char *)params;
 
+  //??? WARNING: Any change here must be also done on get_params AND init_presets
+  //             if some parameters are added before fname & sname
   const int max_width = *(const int *)buf;
   buf += sizeof(int32_t);
   const int max_height = *(const int *)buf;

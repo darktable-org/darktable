@@ -103,15 +103,39 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, Lab, display-referred"));
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_monochrome_params_v2_t
   {
-    dt_iop_monochrome_params_t *p1 = (dt_iop_monochrome_params_t *)old_params;
-    dt_iop_monochrome_params_t *p2 = (dt_iop_monochrome_params_t *)new_params;
-    memcpy(p2, p1, sizeof(dt_iop_monochrome_params_t) - sizeof(float));
-    p2->highlights = 0.0f;
+    float a;
+    float b;
+    float size;
+    float highlights;
+  } dt_iop_monochrome_params_v2_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_monochrome_params_v1_t
+    {
+      float a;
+      float b;
+      float size;
+    } dt_iop_monochrome_params_v1_t;
+
+    const dt_iop_monochrome_params_v1_t *o = (dt_iop_monochrome_params_v1_t *)old_params;
+    dt_iop_monochrome_params_v2_t *n =
+      (dt_iop_monochrome_params_v2_t *)malloc(sizeof(dt_iop_monochrome_params_v2_t));
+    memcpy(n, o, sizeof(dt_iop_monochrome_params_v1_t));
+    n->highlights = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_monochrome_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -583,4 +607,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

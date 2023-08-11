@@ -168,10 +168,28 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_negadoctor_params_v2_t
+  {
+    dt_iop_negadoctor_filmstock_t film_stock;
+    float Dmin[4];
+    float wb_high[4];
+    float wb_low[4];
+    float D_max;
+    float offset;
+    float black;
+    float gamma;
+    float soft_clip;
+    float exposure;
+  } dt_iop_negadoctor_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_negadoctor_params_v1_t
     {
@@ -187,11 +205,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float exposure;                         // extra exposure
     } dt_iop_negadoctor_params_v1_t;
 
-    dt_iop_negadoctor_params_v1_t *o = (dt_iop_negadoctor_params_v1_t *)old_params;
-    dt_iop_negadoctor_params_t *n = (dt_iop_negadoctor_params_t *)new_params;
-    const dt_iop_negadoctor_params_t *const d = (dt_iop_negadoctor_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_negadoctor_params_v1_t *o = (dt_iop_negadoctor_params_v1_t *)old_params;
+    dt_iop_negadoctor_params_v2_t *n =
+      (dt_iop_negadoctor_params_v2_t *)malloc(sizeof(dt_iop_negadoctor_params_v2_t));
 
     // WARNING: when copying the arrays in a for loop, gcc wrongly assumed
     //          that n and o were aligned and used AVX instructions for me,
@@ -216,6 +232,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->soft_clip = o->soft_clip;
     n->exposure = o->exposure;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_negadoctor_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -1091,4 +1110,3 @@ void gui_reset(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

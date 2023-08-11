@@ -118,15 +118,6 @@ typedef struct dt_iop_crop_data_t
   float cx, cy, cw, ch; // crop window
 } dt_iop_crop_data_t;
 
-int legacy_params(dt_iop_module_t *self,
-                  const void *const old_params,
-                  const int old_version,
-                  void *new_params,
-                  const int new_version)
-{
-  return 0;
-}
-
 const char *name()
 {
   return _("crop");

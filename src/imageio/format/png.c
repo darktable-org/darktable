@@ -352,10 +352,24 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_module_data_t) + 2 * sizeof(int);
 }
 
-void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params, const size_t old_params_size,
-                    const int old_version, const int new_version, size_t *new_size)
+void *legacy_params(dt_imageio_module_format_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
+                    size_t *new_size)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_imageio_png_v3_t
+  {
+    dt_imageio_module_data_t global;
+    int bpp;
+    int compression;
+    FILE *f;
+    png_structp png_ptr;
+    png_infop info_ptr;
+  } dt_imageio_png_v3_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_png_v1_t
     {
@@ -368,8 +382,8 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       png_infop info_ptr;
     } dt_imageio_png_v1_t;
 
-    dt_imageio_png_v1_t *o = (dt_imageio_png_v1_t *)old_params;
-    dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+    const dt_imageio_png_v1_t *o = (dt_imageio_png_v1_t *)old_params;
+    dt_imageio_png_v3_t *n = (dt_imageio_png_v3_t *)malloc(sizeof(dt_imageio_png_v3_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -382,10 +396,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     n->f = o->f;
     n->png_ptr = o->png_ptr;
     n->info_ptr = o->info_ptr;
-    *new_size = self->params_size(self);
+
+    *new_version = 3;
+    *new_size = sizeof(dt_imageio_module_data_t) + 2 * sizeof(int);
     return n;
   }
-  else if(old_version == 2 && new_version == 3)
+  else if(old_version == 2)
   {
     typedef struct dt_imageio_png_v2_t
     {
@@ -399,8 +415,8 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       png_infop info_ptr;
     } dt_imageio_png_v2_t;
 
-    dt_imageio_png_v2_t *o = (dt_imageio_png_v2_t *)old_params;
-    dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+    const dt_imageio_png_v2_t *o = (dt_imageio_png_v2_t *)old_params;
+    dt_imageio_png_v3_t *n = (dt_imageio_png_v3_t *)malloc(sizeof(dt_imageio_png_v3_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -413,9 +429,29 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     n->f = o->f;
     n->png_ptr = o->png_ptr;
     n->info_ptr = o->info_ptr;
-    *new_size = self->params_size(self);
+
+    *new_version = 3;
+    *new_size = sizeof(dt_imageio_module_data_t) + 2 * sizeof(int);
     return n;
   }
+
+
+  // incremental update supported:
+  /*
+  if(old_version = 3)
+  {
+    // let's update from 3 to 4
+    typedef struct dt_imageio_png_v4_t
+    {
+      ...
+    } dt_imageio_png_v4_t;
+
+    ...
+    *new_size = sizeof(dt_imageio_module_data_t) + 2 * sizeof(int);
+    *new_version = 4;
+    return n;
+  }
+  */
   return NULL;
 }
 

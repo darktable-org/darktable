@@ -60,35 +60,49 @@ typedef struct dt_iop_invert_data_t
   float color[4]; // color of film material
 } dt_iop_invert_data_t;
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_invert_params_v2_t
+  {
+    float color[4];
+  } dt_iop_invert_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_invert_params_v1_t
     {
       float color[3]; // color of film material
     } dt_iop_invert_params_v1_t;
 
-    dt_iop_invert_params_v1_t *o = (dt_iop_invert_params_v1_t *)old_params;
-    dt_iop_invert_params_t *n = (dt_iop_invert_params_t *)new_params;
+    const dt_iop_invert_params_v1_t *o = (dt_iop_invert_params_v1_t *)old_params;
+    dt_iop_invert_params_v2_t *n =
+      (dt_iop_invert_params_v2_t *)malloc(sizeof(dt_iop_invert_params_v2_t));
 
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
     n->color[3] = NAN;
 
-    if(self->dev && self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+    if(self->dev
+       && self->dev->image_storage.flags & DT_IMAGE_4BAYER)
     {
       double RGB_to_CAM[4][3];
 
-      // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-      if(!dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.adobe_XYZ_to_CAM,
-                                                 RGB_to_CAM, NULL,
-                                                 self->dev->image_storage.d65_color_matrix, NULL))
+      // Get and store the matrix to go from camera to RGB for 4Bayer
+      // images (used for spot WB)
+      if(!dt_colorspaces_conversion_matrices_rgb
+         (self->dev->image_storage.adobe_XYZ_to_CAM,
+          RGB_to_CAM, NULL,
+          self->dev->image_storage.d65_color_matrix, NULL))
       {
         const char *camera = self->dev->image_storage.camera_makermodel;
-        dt_print(DT_DEBUG_ALWAYS, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[invert] `%s' color matrix not found for 4bayer image\n", camera);
         dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
       }
       else
@@ -97,6 +111,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       }
     }
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_invert_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -514,4 +531,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

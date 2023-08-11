@@ -103,14 +103,37 @@ typedef enum _grab_region_t
 /* calculate the aspect ratios for current image */
 static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_applied, int select);
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(new_version <= old_version) return 1;
-  if(new_version != 5) return 1;
+  typedef struct dt_iop_clipping_params_v5_t
+  {
+    float angle;
+    float cx;
+    float cy;
+    float cw;
+    float ch;
+    float k_h, k_v;
+    float kxa;
+    float kya;
+    float kxb;
+    float kyb;
+    float kxc;
+    float kyc;
+    float kxd;
+    float kyd;
+    int k_type, k_sym;
+    int k_apply;
+    gboolean crop_auto;
+    int ratio_n;
+    int ratio_d;
+  } dt_iop_clipping_params_v5_t;
 
-  dt_iop_clipping_params_t *n = (dt_iop_clipping_params_t *)new_params;
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2)
   {
     union {
         float f;
@@ -123,6 +146,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     k.f = o->k_h;
     int is_horizontal;
@@ -155,11 +180,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = 0;
     n->crop_auto = 1;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3)
   {
     // old structure def
     typedef struct old_params_t
@@ -168,6 +198,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -183,11 +215,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = 0;
     n->crop_auto = 1;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4)
   {
     typedef struct old_params_t
     {
@@ -198,6 +235,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -208,12 +247,17 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = o->k_apply;
     n->crop_auto = o->crop_auto;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
 
-  return 0;
+  return 1;
 }
 
 typedef struct dt_iop_clipping_gui_data_t
@@ -3354,4 +3398,3 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
