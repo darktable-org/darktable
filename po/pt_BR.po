@@ -12056,8 +12056,8 @@ msgstr[1] "%d/%d pulando `%s'"
 #, c-format
 msgid "%d/%d skipping (not modified since export) `%s'"
 msgid_plural "%d/%d skipping (not modified since export) `%s'"
-msgstr[0] "%d/%d ignoradas (não modificada desde a exportação) `%d'"
-msgstr[1] "%d/%d ignorada (não modificada desde a exportação) `%d'"
+msgstr[0] "%d/%d ignoradas (não modificada desde a exportação) `%s'"
+msgstr[1] "%d/%d ignorada (não modificada desde a exportação) `%s'"
 
 #: ../src/imageio/storage/disk.c:465 ../src/imageio/storage/email.c:188
 #: ../src/imageio/storage/gallery.c:457 ../src/imageio/storage/latex.c:376
