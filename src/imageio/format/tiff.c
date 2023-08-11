@@ -716,13 +716,14 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
   // incremental update supported:
   /*
+  typedef struct dt_imageio_tiff_v5_t
+  {
+    ...
+  } dt_imageio_tiff_v5_t;
+
   if(old_version == 4)
   {
     // let's update from 4 to 5
-    typedef struct dt_imageio_tiff_v5_t
-    {
-      ...
-    } dt_imageio_tiff_v5_t;
 
     ...
     *new_size = sizeof(dt_imageio_tiff_v5_t) - sizeof(TIFF *);
