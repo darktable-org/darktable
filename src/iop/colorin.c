@@ -196,12 +196,25 @@ static void _resolve_work_profile(dt_colorspaces_color_profile_type_t *work_type
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
+  typedef struct dt_iop_colorin_params_v7_t
+  {
+    dt_colorspaces_color_profile_type_t type;
+    char filename[DT_IOP_COLOR_ICC_LEN];
+    dt_iop_color_intent_t intent;
+    dt_iop_color_normalize_t normalize;
+    gboolean blue_mapping;
+    // working color profile
+    dt_colorspaces_color_profile_type_t type_work;
+    char filename_work[DT_IOP_COLOR_ICC_LEN];
+  } dt_iop_colorin_params_v7_t;
+
 #define DT_IOP_COLOR_ICC_LEN_V5 100
 
-  if(old_version == 1 && new_version == 7)
+  if(old_version == 1)
   {
     typedef struct dt_iop_colorin_params_v1_t
     {
@@ -210,7 +223,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v1_t;
 
     const dt_iop_colorin_params_v1_t *old = (dt_iop_colorin_params_v1_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -251,9 +265,13 @@ int legacy_params(dt_iop_module_t *self,
     new->blue_mapping = TRUE;
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 2 && new_version == 7)
+  if(old_version == 2)
   {
     typedef struct dt_iop_colorin_params_v2_t
     {
@@ -263,7 +281,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v2_t;
 
     const dt_iop_colorin_params_v2_t *old = (dt_iop_colorin_params_v2_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -304,9 +323,13 @@ int legacy_params(dt_iop_module_t *self,
     new->blue_mapping = TRUE;
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 3 && new_version == 7)
+  if(old_version == 3)
   {
     typedef struct dt_iop_colorin_params_v3_t
     {
@@ -317,7 +340,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v3_t;
 
     const dt_iop_colorin_params_v3_t *old = (dt_iop_colorin_params_v3_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -359,9 +383,12 @@ int legacy_params(dt_iop_module_t *self,
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 4 && new_version == 7)
+  if(old_version == 4)
   {
     typedef struct dt_iop_colorin_params_v4_t
     {
@@ -373,7 +400,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v4_t;
 
     const dt_iop_colorin_params_v4_t *old = (dt_iop_colorin_params_v4_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
@@ -384,9 +412,13 @@ int legacy_params(dt_iop_module_t *self,
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
 
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 5 && new_version == 7)
+  if(old_version == 5)
   {
     typedef struct dt_iop_colorin_params_v5_t
     {
@@ -401,7 +433,8 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v5_t;
 
     const dt_iop_colorin_params_v5_t *old = (dt_iop_colorin_params_v5_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
@@ -413,9 +446,12 @@ int legacy_params(dt_iop_module_t *self,
     g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
     _resolve_work_profile(&new->type_work, new->filename_work);
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
-  if(old_version == 6 && new_version == 7)
+  if(old_version == 6)
   {
     // The structure is equal to to v7 (current) but a new version is
     // introduced to convert invalid working profile choice to the
@@ -433,10 +469,14 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorin_params_v6_t;
 
     const dt_iop_colorin_params_v6_t *old = (dt_iop_colorin_params_v6_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v7_t *new =
+      (dt_iop_colorin_params_v7_t *)malloc(sizeof(dt_iop_colorin_params_v7_t));
     memcpy(new, old, sizeof(*new));
     _resolve_work_profile(&new->type_work, new->filename_work);
 
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorin_params_v7_t);
+    *new_version = 7;
     return 0;
   }
   return 1;

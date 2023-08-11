@@ -202,19 +202,44 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  typedef struct dt_iop_highlights_params_v4_t
   {
-    /*
-      params of v2 :
-        float clip
-      + params of v3
-      + params of v4
-    */
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 5 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
-    dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
+    // params of v1
+    dt_iop_highlights_mode_t mode;
+    float blendL;
+    float blendC;
+    float strength;
+    // params of v2
+    float clip;
+    // params of v3
+    float noise_level;
+    int iterations;
+    dt_atrous_wavelets_scales_t scales;
+    float candidating;
+    float combine;
+    dt_recovery_mode_t recovery;
+    // params of v4
+    float solid_color;
+  } dt_iop_highlights_params_v4_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_highlights_params_v1_t
+    {
+      dt_iop_highlights_mode_t mode;
+      float blendL, blendC, blendh;
+      float strength;
+    } dt_iop_highlights_params_v1_t;
+
+    const dt_iop_highlights_params_v1_t *o = (dt_iop_highlights_params_v1_t *)old_params;
+    dt_iop_highlights_params_v4_t *n =
+      (dt_iop_highlights_params_v4_t *)malloc(sizeof(dt_iop_highlights_params_v4_t));
+    memcpy(n, o, sizeof(dt_iop_highlights_params_v1_t));
+
     n->clip = 1.0f;
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
@@ -224,22 +249,27 @@ int legacy_params(dt_iop_module_t *self,
     n->scales = 5;
     n->solid_color = 0.f;
     n->strength = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_highlights_params_v4_t);
+    *new_version = 4;
     return 0;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2)
   {
-    /*
-      params of v3 :
-        float noise_level;
-        int iterations;
-        dt_atrous_wavelets_scales_t scales;
-        float candidating;
-        float combine;
-        int recovery;
-      + params of v4
-    */
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
-    dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
+    typedef struct dt_iop_highlights_params_v2_t
+    {
+      dt_iop_highlights_mode_t mode;
+      float blendL, blendC, blendh;
+      float strength;
+      float clip;
+    } dt_iop_highlights_params_v2_t;
+
+    const dt_iop_highlights_params_v2_t *o = (dt_iop_highlights_params_v2_t *)old_params;
+    dt_iop_highlights_params_v4_t *n =
+      (dt_iop_highlights_params_v4_t *)malloc(sizeof(dt_iop_highlights_params_v4_t));
+    memcpy(n, o, sizeof(dt_iop_highlights_params_v2_t));
+
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
     n->combine = 2.f;
@@ -248,18 +278,38 @@ int legacy_params(dt_iop_module_t *self,
     n->scales = 5;
     n->solid_color = 0.f;
     n->strength = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_highlights_params_v4_t);
+    *new_version = 4;
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3)
   {
-    /*
-      params of v4 :
-        float solid_color;
-    */
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - sizeof(float));
-    dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
+    typedef struct dt_iop_highlights_params_v3_t
+    {
+      dt_iop_highlights_mode_t mode;
+      float blendL, blendC, blendh;
+      float strength;
+      float noise_level;
+      int iterations;
+      dt_atrous_wavelets_scales_t scales;
+      float candidating;
+      float combine;
+      dt_recovery_mode_t recovery;
+    } dt_iop_highlights_params_v3_t;
+
+    const dt_iop_highlights_params_v3_t *o = (dt_iop_highlights_params_v3_t *)old_params;
+    dt_iop_highlights_params_v4_t *n =
+      (dt_iop_highlights_params_v4_t *)malloc(sizeof(dt_iop_highlights_params_v4_t));
+    memcpy(n, o, sizeof(dt_iop_highlights_params_v3_t));
+
     n->solid_color = 0.f;
     n->strength = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_highlights_params_v4_t);
+    *new_version = 4;
     return 0;
   }
 

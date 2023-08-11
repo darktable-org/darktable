@@ -1330,6 +1330,58 @@ void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
   module->histogram_stats.pixels = 0;
 }
 
+int dt_iop_legacy_params(dt_iop_module_t *module,
+                         const void *const old_params,
+                         const int32_t old_params_size,
+                         const int old_version,
+                         void **new_params,
+                         int new_version)
+{
+  int ret = 0;
+  gboolean auto_init = FALSE;
+
+  if(module->legacy_params)
+  {
+    int cversion = old_version;
+    void *oparams = malloc(old_params_size);
+    memcpy(oparams, old_params, old_params_size);
+    void *params = NULL;
+    int version = new_version;
+    int32_t params_size = 0;
+
+    while(cversion < new_version)
+    {
+      params = NULL;
+      ret = module->legacy_params(module, oparams, cversion,
+                                  &params, &params_size, &version);
+
+      if(ret == 1)
+      {
+        free(oparams);
+        return ret;
+      }
+      if(ret == -1)
+        auto_init = TRUE;
+
+      cversion = version;
+      free(oparams);
+      oparams = params;
+    }
+
+    if(params)
+    {
+      memcpy(*new_params, params, params_size);
+      free(params);
+    }
+  }
+  else
+  {
+    ret = 1;
+  }
+
+  return auto_init ? -1 : ret;
+}
+
 static void _init_presets(dt_iop_module_so_t *module_so)
 {
   if(module_so->init_presets)
@@ -1434,8 +1486,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       {
         // convert the old params to new
         const int legacy_ret =
-          module->legacy_params(module, old_params, old_params_version,
-                                new_params, module_version);
+          dt_iop_legacy_params(module, old_params, old_params_size, old_params_version,
+                               &new_params, module_version);
 
         if(legacy_ret == 1)
         {
@@ -1445,7 +1497,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
           free(module);
           continue;
         }
-        else if (legacy_ret == -1)
+        else if(legacy_ret == -1)
           auto_init = TRUE;
       }
       else
@@ -1454,8 +1506,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       dt_print(DT_DEBUG_ALWAYS,
                "[imageop_init_presets] updating '%s' preset '%s'"
                " from version %d to version %d\nto:'%s'",
-              module_so->op, name, old_params_version, module_version,
-              dt_exif_xmp_encode(new_params, new_params_size, NULL));
+               module_so->op, name, old_params_version, module_version,
+               dt_exif_xmp_encode(new_params, new_params_size, NULL));
 
       // and write the new params back to the database
       sqlite3_stmt *stmt2;

@@ -150,10 +150,40 @@ typedef enum dt_iop_watermark_base_scale_v2_t
   DT_SCALE_SMALLER_BORDER = 2 // $DESCRIPTION: "smaller border"
 } dt_iop_watermark_base_scale_v2_t;
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 6)
+  typedef struct dt_iop_watermark_params_v6_t
+  {
+    /** opacity value of rendering watermark */
+    float opacity;
+    /** scale value of rendering watermark */
+    float scale;
+    /** Pixel independent xoffset, 0 to 1 */
+    float xoffset;
+    /** Pixel independent yoffset, 0 to 1 */
+    float yoffset;
+    /** Alignment value 0-8 3x3 */
+    int alignment;
+    /** Rotation **/
+    float rotate;
+    dt_iop_watermark_base_scale_t scale_base;
+    dt_iop_watermark_img_scale_t scale_img;
+    dt_iop_watermark_svg_scale_t scale_svg;
+    char filename[64];
+    /* simple text */
+    char text[512];
+    /* text color */
+    float color[3];
+    /* text font */
+    char font[64];
+  } dt_iop_watermark_params_v6_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_watermark_params_v1_t
     {
@@ -170,11 +200,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char filename[64];
     } dt_iop_watermark_params_v1_t;
 
-    dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    const dt_iop_watermark_params_t *const d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -187,9 +216,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  else if(old_version == 2 && new_version == 6)
+  else if(old_version == 2)
   {
     typedef struct dt_iop_watermark_params_v2_t
     {
@@ -207,11 +240,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char filename[64];
     } dt_iop_watermark_params_v2_t;
 
-    dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    const dt_iop_watermark_params_t *const d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -224,9 +256,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  else if(old_version == 3 && new_version == 6)
+  else if(old_version == 3)
   {
     typedef struct dt_iop_watermark_params_v3_t
     {
@@ -246,11 +282,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char filename[64];
     } dt_iop_watermark_params_v3_t;
 
-    dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    const dt_iop_watermark_params_t *const d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -264,9 +299,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  else if(old_version == 4 && new_version == 6)
+  else if(old_version == 4)
   {
     typedef struct dt_iop_watermark_params_v4_t
     {
@@ -292,11 +331,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char font[64];
     } dt_iop_watermark_params_v4_t;
 
-    dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    const dt_iop_watermark_params_t *const d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -312,9 +350,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  else if(old_version == 5 && new_version == 6)
+  else if(old_version == 5)
   {
     typedef struct dt_iop_watermark_params_v5_t
     {
@@ -340,11 +382,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char font[64];
     } dt_iop_watermark_params_v5_t;
 
-    dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    const dt_iop_watermark_params_t *const d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -360,6 +401,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
   return 1;

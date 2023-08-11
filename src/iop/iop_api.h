@@ -164,8 +164,13 @@ OPTIONAL(void, modify_roi_in, struct dt_iop_module_t *self, struct dt_dev_pixelp
                               const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
 OPTIONAL(void, modify_roi_out, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
-OPTIONAL(int, legacy_params, struct dt_iop_module_t *self, const void *const old_params, const int old_version,
-                             void *new_params, const int new_version);
+OPTIONAL(int, legacy_params,
+         struct dt_iop_module_t *self,
+         const void *const old_params,
+         const int old_version,
+         void **new_params,
+         int32_t *new_params_size,
+         int *new_version);
 // allow to select a shape inside an iop
 OPTIONAL(void, masks_selection_changed, struct dt_iop_module_t *self, const int form_selected_id);
 
@@ -232,4 +237,3 @@ OPTIONAL(void, set_preferences, void *menu, struct dt_iop_module_t *self);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

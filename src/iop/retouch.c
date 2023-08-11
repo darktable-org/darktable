@@ -238,10 +238,32 @@ int operation_tags_filter()
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_iop_retouch_params_v3_t
+  {
+    dt_iop_retouch_form_data_t rt_forms[RETOUCH_NO_FORMS]; // array of masks index and additional data
+
+    dt_iop_retouch_algo_type_t algorithm; // $DEFAULT: DT_IOP_RETOUCH_HEAL clone, heal, blur, fill
+
+    int num_scales;       // $DEFAULT: 0 number of wavelets scales
+    int curr_scale;       // $DEFAULT: 0 current wavelet scale
+    int merge_from_scale; // $DEFAULT: 0
+
+    float preview_levels[3];
+
+    dt_iop_retouch_blur_types_t blur_type; // $DEFAULT: DT_IOP_RETOUCH_BLUR_GAUSSIAN $DESCRIPTION: "blur type" gaussian, bilateral
+    float blur_radius; // $MIN: 0.1 $MAX: 200.0 $DEFAULT: 10.0 $DESCRIPTION: "blur radius" radius for blur algorithm
+
+    dt_iop_retouch_fill_modes_t fill_mode; // $DEFAULT: DT_IOP_RETOUCH_FILL_ERASE $DESCRIPTION: "fill mode" mode for fill algorithm, erase or fill with color
+    float fill_color[3];   // $DEFAULT: 0.0 color for fill algorithm
+    float fill_brightness; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "brightness" value to be added to the color
+    int max_heal_iter;     // $DEFAULT: 2000 $DESCRIPTION: "max_iter" number of iterations for heal algorithm
+  } dt_iop_retouch_params_v3_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_retouch_form_data_v1_t
     {
@@ -279,11 +301,10 @@ int legacy_params(dt_iop_module_t *self,
       float fill_brightness; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "brightness" value to be added to the color
     } dt_iop_retouch_params_v1_t;
 
-    dt_iop_retouch_params_v1_t *o = (dt_iop_retouch_params_v1_t *)old_params;
-    dt_iop_retouch_params_t *n = (dt_iop_retouch_params_t *)new_params;
-    const dt_iop_retouch_params_t *const d = (dt_iop_retouch_params_t *)self->default_params;
+    const dt_iop_retouch_params_v1_t *o = (dt_iop_retouch_params_v1_t *)old_params;
+    dt_iop_retouch_params_v3_t *n =
+      (dt_iop_retouch_params_v3_t *)malloc(sizeof(dt_iop_retouch_params_v3_t));
 
-    *n = *d; // start with a fresh copy of default parameters
     for(int i = 0; i < RETOUCH_NO_FORMS; i++)
     {
       dt_iop_retouch_form_data_v1_t of = o->rt_forms[i];
@@ -316,9 +337,13 @@ int legacy_params(dt_iop_module_t *self,
 
     n->max_heal_iter = 1000;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_retouch_params_v3_t);
+    *new_version = 3;
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+
+  if(old_version == 2)
   {
     typedef struct dt_iop_retouch_params_v2_t
     {
@@ -340,16 +365,17 @@ int legacy_params(dt_iop_module_t *self,
       float fill_brightness; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "brightness" value to be added to the color
     } dt_iop_retouch_params_v2_t;
 
-    dt_iop_retouch_params_v2_t *o = (dt_iop_retouch_params_v2_t *)old_params;
-    dt_iop_retouch_params_t *n = (dt_iop_retouch_params_t *)new_params;
-    const dt_iop_retouch_params_t *const d = (dt_iop_retouch_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_retouch_params_v2_t *o = (dt_iop_retouch_params_v2_t *)old_params;
+    dt_iop_retouch_params_v3_t *n =
+      (dt_iop_retouch_params_v3_t *)malloc(sizeof(dt_iop_retouch_params_v3_t));
 
     memcpy(n, o, sizeof(dt_iop_retouch_params_v2_t));
 
     n->max_heal_iter = 1000;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_retouch_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;

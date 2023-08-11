@@ -123,10 +123,19 @@ typedef struct dt_iop_temperature_preset_data_t
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 2 && new_version == 3)
+  typedef struct dt_iop_temperature_params_v3_t
+  {
+    float red;
+    float green;
+    float blue;
+    float g2;
+  } dt_iop_temperature_params_v3_t;
+
+  if(old_version == 2)
   {
     typedef struct dt_iop_temperature_params_v2_t
     {
@@ -134,14 +143,18 @@ int legacy_params(dt_iop_module_t *self,
       float coeffs[3];
     } dt_iop_temperature_params_v2_t;
 
-    dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
-    dt_iop_temperature_params_t *n = (dt_iop_temperature_params_t *)new_params;
+    const dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
+    dt_iop_temperature_params_v3_t *n =
+      (dt_iop_temperature_params_v3_t *)malloc(sizeof(dt_iop_temperature_params_v3_t));
 
     n->red = o->coeffs[0];
     n->green = o->coeffs[1];
     n->blue = o->coeffs[2];
     n->g2 = NAN;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_temperature_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
