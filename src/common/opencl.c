@@ -501,6 +501,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].nvidia_sm_20 = 0;
   cl->dev[dev].vendor = NULL;
   cl->dev[dev].fullname = NULL;
+  cl->dev[dev].platform = NULL;
   cl->dev[dev].cname = NULL;
   cl->dev[dev].options = NULL;
   cl->dev[dev].memory_in_use = 0;
@@ -656,6 +657,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   cl->dev[dev].fullname = strdup(fullname);
   cl->dev[dev].cname = strdup(cname);
+  cl->dev[dev].platform = strdup(platform_name);
 
   const gboolean newdevice = dt_opencl_read_device_config(dev);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1360,6 +1362,24 @@ void dt_opencl_init(
   {
     if(_opencl_device_init(cl, dev, devices, k))
       continue;
+
+    gboolean any_double_driver = FALSE;
+    // let's check if any already detected device with the same full name has another platform
+    // that would clearly be wrong!
+    for(int l = 0; l < k; l++)
+    {
+      const gboolean double_driver = ((strcmp(cl->dev[k].fullname, cl->dev[l].fullname) == 0)
+                                  &&  (strcmp(cl->dev[k].platform, cl->dev[l].platform) != 0));
+      if(double_driver)
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] Can't use platform '%s' for device '%s' as already used by '%s'\n",
+          cl->dev[k].platform, cl->dev[k].fullname, cl->dev[l].platform);
+
+      any_double_driver |= double_driver;
+    }
+
+    if(any_double_driver)
+      continue;
+
     // increase dev only if _opencl_device_init was successful
     ++dev;
   }
@@ -1619,6 +1639,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 
       free((void *)(cl->dev[i].vendor));
       free((void *)(cl->dev[i].fullname));
+      free((void *)(cl->dev[i].platform));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
     }

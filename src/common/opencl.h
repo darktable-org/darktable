@@ -143,6 +143,7 @@ typedef struct dt_opencl_device_t
   int nvidia_sm_20;
   const char *vendor;
   const char *fullname;
+  const char *platform;
   const char *cname;
   const char *options;
   cl_int summary;
