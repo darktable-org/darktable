@@ -302,7 +302,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
   // incremental update supported:
   /*
-  if(old_version = 2)
+  if(old_version == 2)
   {
     // let's update from 2 to 3
     typedef struct dt_imageio_webp_v3_t

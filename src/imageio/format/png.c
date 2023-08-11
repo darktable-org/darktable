@@ -438,7 +438,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
   // incremental update supported:
   /*
-  if(old_version = 3)
+  if(old_version == 3)
   {
     // let's update from 3 to 4
     typedef struct dt_imageio_png_v4_t
