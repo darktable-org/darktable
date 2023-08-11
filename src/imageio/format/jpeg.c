@@ -360,13 +360,14 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
   // incremental update supported:
   /*
+  typedef struct dt_imageio_jpeg_v3_t
+  {
+    ...
+  } dt_imageio_jpeg_v3_t;
+
   if(old_version == 2)
   {
     // let's update from 2 to 3
-    typedef struct dt_imageio_jpeg_v3_t
-    {
-      ...
-    } dt_imageio_jpeg_v3_t;
 
     ...
     *new_size = sizeof(dt_imageio_module_data_t) + sizeof(int);

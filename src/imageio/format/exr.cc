@@ -504,13 +504,14 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
   // incremental update supported:
   /*
+  typedef struct dt_imageio_exr_v6_t
+  {
+    ...
+  } dt_imageio_exr_v6_t;
+
   if(old_version == 5)
   {
     // let's update from 5 to 6
-    typedef struct dt_imageio_exr_v6_t
-    {
-      ...
-    } dt_imageio_exr_v6_t;
 
     ...
     *new_size = sizeof(dt_imageio_exr_v6_t);
