@@ -188,6 +188,7 @@ if(APPLE)
     enable_language(OBJCXX)
   else()
     set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
+    set_source_files_properties(osx/dt_metal.mm PROPERTIES LANGUAGE CXX)
   endif()
 endif(APPLE)
 

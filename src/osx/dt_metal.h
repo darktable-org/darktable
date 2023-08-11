@@ -16,4 +16,20 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void dt_metal_get_devices();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void dt_metal_init();
+
+
+#ifdef __cplusplus
+}
+#endif
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

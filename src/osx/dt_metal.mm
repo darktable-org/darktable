@@ -16,20 +16,41 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _DARWIN_C_SOURCE
+
+
 #include <Metal/Metal.h>
+#include "dt_metal.h"
+#include "common/darktable.h"
 
 
-void dt_metal_get_devices() {
-   printf("hugo: Testing Metal!\n");
-   id<MTLDevice> device = MTLCreateSystemDefaultDevice();
-   NSString* deviceName = [device name];
-   printf("hugo: System default device: %s\n", [deviceName UTF8String]);
+void dt_metal_get_devices()
+{
 
-   printf("hugo: ---------------------------\n");
-   printf("hugo: All devices:\n");
-   NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
-   for (int i = 0; i < [devices count]; i++) {
-      deviceName = [[devices objectAtIndex:i] name];
-      printf("hugo: %s\n", [deviceName UTF8String]);
-   }  
+  id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+  NSString* deviceName = [device name];
+  dt_print(DT_DEBUG_ALL, 
+           "[dt_metal_get_devices] System default device: %s\n",
+           [deviceName UTF8String]);
+
+  dt_print(DT_DEBUG_METAL,
+           "[dt_metal_get_devices] All devices:\n");
+
+  NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
+  for (int i = 0; i < [devices count]; i++) {
+    deviceName = [[devices objectAtIndex:i] name];
+    dt_print(DT_DEBUG_METAL,
+             "[dt_metal_get_devices] Device: %s\n",
+             [deviceName UTF8String]);
+  }  
 }
+
+void dt_metal_init()
+{
+  dt_metal_get_devices();
+}
+
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

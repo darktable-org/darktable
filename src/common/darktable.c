@@ -23,6 +23,7 @@
 #endif
 #ifdef __APPLE__
 #include <sys/malloc.h>
+#include "osx/dt_metal.h"
 #endif
 
 #include "common/collection.h"
@@ -1154,6 +1155,7 @@ int dt_init(int argc,
           !strcmp(darg, "expose") ? DT_DEBUG_EXPOSE :
           !strcmp(darg, "picker") ? DT_DEBUG_PICKER :
           !strcmp(darg, "ai") ? DT_DEBUG_AI : // AI related stuff.
+          !strcmp(darg, "metal") ? DT_DEBUG_METAL : // macOS metal
           0;
         if(dadd)
           darktable.unmuted |= dadd;
@@ -1879,6 +1881,10 @@ int dt_init(int argc,
     dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _detect_opencl_job_create(exclude_opencl));
   else
     dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
+
+#ifdef __APPLE__
+  dt_metal_init();
+#endif
 
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
