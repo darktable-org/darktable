@@ -38,7 +38,7 @@ hbDependencies="adwaita-icon-theme \
     icu4c \
     intltool \
     iso-codes \
-    jpeg \
+    jpeg-turbo \
     jpeg-xl \
     json-glib \
     jsonschema \
