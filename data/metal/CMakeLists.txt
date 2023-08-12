@@ -9,6 +9,11 @@ set(DARKTABLE_METALLIB "darktable.metallib")
 
 add_custom_target(compile_metal_kernels ALL)
 
+add_custom_target(
+  ${DARKTABLE_METALLIB} ALL
+  DEPENDS ${DARKTABLE_METALDIR}/${DARKTABLE_METALLIB}
+)
+
 macro (compile_metal_kernel IN)
   get_filename_component(KERNAME ${IN} NAME)
   get_filename_component(KERNNAME_WLE ${IN} NAME_WLE)
@@ -43,7 +48,3 @@ add_custom_command(
   COMMENT "Building ${DARKTABLE_METALLIB}"
 )
 
-add_custom_target(
-  run ALL
-  DEPENDS ${DARKTABLE_METALDIR}/${DARKTABLE_METALLIB}
-)
