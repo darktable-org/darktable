@@ -44,8 +44,6 @@ add_custom_command(
 )
 
 add_custom_target(
-  ${DARKTABLE_METALLIB}
+  run ALL
   DEPENDS ${DARKTABLE_METALDIR}/${DARKTABLE_METALLIB}
 )
-
-#add_dependencies(compile_metal_kernels ${DARKTABLE_METALLIB})

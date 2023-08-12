@@ -55,7 +55,7 @@ void dt_metal_create_library()
            "[dt_metal_create_library] Create library for device: %s\n",
            [[device name] UTF8String]);
 
-  NSURL *url = [NSURL fileURLWithPath:@"/Users/mario/myLib.metallib"];
+  NSURL *url = [NSURL fileURLWithPath:@"/Users/mario/src/darktable/build/bin/metal/darktable.metallib"];
 
   NSError *libraryError = NULL;
 
