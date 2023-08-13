@@ -133,7 +133,6 @@ jobs:
         if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
-          name: Darktable.Nightly.AppImage
           path: ${{ env.BUILD_DIR }}/Darktable-*.AppImage*
           retention-days: 1
 
@@ -259,7 +258,6 @@ jobs:
         if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
-          name: Darktable.Nightly.Windows
           path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
           retention-days: 2
 
@@ -356,7 +354,6 @@ jobs:
         if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
-          name: Darktable.Nightly.macOS
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
           retention-days: 2
 
@@ -367,18 +364,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [AppImage, Windows, macOS]
     steps:
-      - name: Download AppImage artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v3
-        with:
-          name: Darktable.Nightly.AppImage
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: Darktable.Nightly.Windows
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: Darktable.Nightly.macOS
       - name: Update nightly release
         uses: andelf/nightly-release@main
         env:
@@ -405,6 +392,4 @@ jobs:
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
-            Darktable-*.AppImage*
-            darktable-*.dmg
-            darktable-*.exe
+            artifact/*
