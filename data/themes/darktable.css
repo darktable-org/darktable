@@ -18,9 +18,9 @@
 
 /*** This has been tested with GTK 3.24 on Gnome ***/
 
-/*--------------------------------------
-  - Perceptually uniform grey gradient -
-  --------------------------------------*/
+/*----------------------------------------------------------
+  - Perceptually uniform grey gradient on LCH color space. -
+  --------------------------------------------------------*/
 
 /* grey_00 = pure black is forbidden for visual assessment */
 @define-color grey_00 #000000;
@@ -187,7 +187,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color thumbnail_star_bg_color @grey_35;
 @define-color thumbnail_star_hover_color @grey_80;
 @define-color thumbnail_fg_color @grey_55;
-@define-color thumbnail_bg50_color @grey_100;
+@define-color thumbnail_bg50_color @grey_95;
 @define-color thumbnail_selected_bg_color @grey_70;
 @define-color thumbnail_hover_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_90;
@@ -1647,7 +1647,7 @@ progressbar progress
    be careful to not change that unless you really now what you do */
 #picker-black
 {
-  color: @grey_00;
+  color: @grey_05;
   border: 0;
 }
 
@@ -1659,7 +1659,7 @@ progressbar progress
 
 #picker-white
 {
-  color: @grey_100;
+  color: @grey_95;
   border: 0;
 }
 
