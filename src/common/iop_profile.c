@@ -1297,6 +1297,8 @@ void dt_ioppr_transform_image_colorspace_rgb
    const dt_iop_order_iccprofile_info_t *const profile_info_to,
    const char *message)
 {
+  if(profile_info_from == NULL || profile_info_to == NULL)
+    return;
   if(profile_info_from->type == DT_COLORSPACE_NONE
      || profile_info_to->type == DT_COLORSPACE_NONE)
   {
