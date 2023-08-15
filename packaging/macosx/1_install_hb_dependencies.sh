@@ -32,7 +32,7 @@ hbDependencies="adwaita-icon-theme \
     glib \
     gmic \
     gphoto2 \
-    graphicsmagick \
+    imagemagick@6 \
     gtk-mac-integration \
     gtk+3 \
     icu4c \
