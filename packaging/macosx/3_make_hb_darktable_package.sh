@@ -24,18 +24,19 @@ dtResourcesDir="$dtWorkingDir"/Contents/Resources
 dtExecDir="$dtWorkingDir"/Contents/MacOS
 dtExecutables=$(echo "$dtExecDir"/darktable{,-chart,-cli,-cltest,-generate-cache,-rs-identify,-curve-tool,-noiseprofile})
 homebrewHome=$(brew --prefix)
-homebrewHomeRel="@loader_path/../../../.."
 
 
 # Install direct and transitive dependencies
 function install_dependencies {
     local hbDependencies
 
+    absolutePath=$(dirname $(realpath "$1"))
+
     # Get dependencies of current executable
     oToolLDependencies=$(otool -L "$1" 2>/dev/null | grep compatibility | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' | uniq)
 
     # Handle library relative paths
-    oToolLDependencies=$(echo "$oToolLDependencies" | sed "s#${homebrewHomeRel}#${homebrewHome}#")
+    oToolLDependencies=$(echo "$oToolLDependencies" | sed "s#@loader_path#${absolutePath}#")
 
     # Filter for homebrew dependencies
     if [[ "$oToolLDependencies" == *"$homebrewHome"* ]]; then
@@ -62,7 +63,7 @@ function install_dependencies {
                     cp -L "$hbDependency" "$dynDepTargetFile"
 
                     # Handle transitive dependencies
-                    install_dependencies "$dynDepTargetFile"
+                    install_dependencies "$hbDependency"
                 fi
             fi
         done
@@ -89,7 +90,7 @@ function reset_exec_path {
     fi
 
     # Handle library relative paths
-    oToolLDependencies=$(echo "$oToolLDependencies" | sed "s#${homebrewHomeRel}#${homebrewHome}#")
+    oToolLDependencies=$(echo "$oToolLDependencies" | sed "s#@loader_path/[../]*opt/#${homebrewHome}/opt/#")
 
     # Filter for any homebrew specific paths
     if [[ "$oToolLDependencies" == *"$homebrewHome"* ]]; then
@@ -115,7 +116,8 @@ function reset_exec_path {
             oToolLoader=$(otool -L "$1" 2>/dev/null | grep '@loader_path' | grep $dynDepOrigFile | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' ) || true
             if [[ -n "$oToolLoader" ]]; then
                 echo "Resetting loader path for dependency <$hbDependency> of <$1>"
-                install_name_tool -change "$oToolLoader" "@loader_path/$dynDepOrigFile" "$1"
+                oToolLoaderNew=$(echo $oToolLoader | sed "s#@loader_path/##" | sed "s#../../../../opt/.*##")
+                install_name_tool -change "$oToolLoader" "@loader_path/${oToolLoaderNew}${dynDepOrigFile}" "$1"
             fi
         done
 
@@ -214,7 +216,7 @@ for dtExecutable in $dtExecutables; do
 done
 
 # Add homebrew shared objects
-dtSharedObjDirs="gtk-3.0 libgphoto2 libgphoto2_port gdk-pixbuf-2.0 gio"
+dtSharedObjDirs="ImageMagick gtk-3.0 libgphoto2 libgphoto2_port gdk-pixbuf-2.0 gio"
 for dtSharedObj in $dtSharedObjDirs; do
     cp -LR "$homebrewHome"/lib/"$dtSharedObj" "$dtResourcesDir"/lib/
 done
