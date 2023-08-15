@@ -104,3 +104,4 @@ fi
 # link keg-only packages
 brew link --force libomp
 brew link --force libsoup@2
+brew link --force imagemagick@6
