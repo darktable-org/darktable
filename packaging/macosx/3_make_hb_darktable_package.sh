@@ -30,7 +30,7 @@ homebrewHome=$(brew --prefix)
 function install_dependencies {
     local hbDependencies
 
-    absolutePath=$(dirname $(realpath "$1"))
+    absolutePath=$(dirname $(grealpath "$1"))
 
     # Get dependencies of current executable
     oToolLDependencies=$(otool -L "$1" 2>/dev/null | grep compatibility | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' | uniq)
