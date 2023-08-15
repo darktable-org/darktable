@@ -21,6 +21,7 @@ brew upgrade
 
 # Define homebrew dependencies
 hbDependencies="adwaita-icon-theme \
+    coreutils \
     cmake \
     pkg-config \
     cmocka \
