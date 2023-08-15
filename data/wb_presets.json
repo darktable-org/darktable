@@ -100088,6 +100088,322 @@
           ]
         },
         {
+          "model": "TG-6",
+          "presets": [
+            {
+              "name": "Daylight",
+              "tuning": -7,
+              "channels": [
+                1.5625,
+                1,
+                2.0,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "channels": [
+                1.8203125,
+                1,
+                1.7578125,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 7,
+              "channels": [
+                2.0703125,
+                1,
+                1.5078125,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "tuning": -7,
+              "channels": [
+                1.828125,
+                1,
+                1.5078125,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                2.1328125,
+                1,
+                1.328125,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "tuning": 7,
+              "channels": [
+                2.4296875,
+                1,
+                1.140625,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -7,
+              "channels": [
+                1.6796875,
+                1,
+                1.796875,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                1.9609375,
+                1,
+                1.578125,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 7,
+              "channels": [
+                2.234375,
+                1,
+                1.3515625,
+                0
+              ]
+            },
+            {
+              "name": "Tungsten",
+              "tuning": -7,
+              "channels": [
+                0.9609375,
+                1,
+                3.3828125,
+                0
+              ]
+            },
+            {
+              "name": "Tungsten",
+              "channels": [
+                1.125,
+                1,
+                2.96875,
+                0
+              ]
+            },
+            {
+              "name": "Tungsten",
+              "tuning": 7,
+              "channels": [
+                1.28125,
+                1,
+                2.546875,
+                0
+              ]
+            },
+            {
+              "name": "Cool White Fluorescent",
+              "tuning": -7,
+              "channels": [
+                1.5078125,
+                1,
+                2.703125,
+                0
+              ]
+            },
+            {
+              "name": "Cool White Fluorescent",
+              "channels": [
+                1.7578125,
+                1,
+                2.375,
+                0
+              ]
+            },
+            {
+              "name": "Cool White Fluorescent",
+              "tuning": 7,
+              "channels": [
+                2.0,
+                1,
+                2.0390625,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": -7,
+              "channels": [
+                1.1796875,
+                1,
+                2.8515625,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "channels": [
+                1.375,
+                1,
+                2.5078125,
+                0
+              ]
+            },
+            {
+              "name": "Underwater",
+              "tuning": 7,
+              "channels": [
+                1.5625,
+                1,
+                2.15625,
+                0
+              ]
+            },
+            {
+              "name": "Flash",
+              "tuning": -7,
+              "channels": [
+                1.7734375,
+                1,
+                1.703125,
+                0
+              ]
+            },
+            {
+              "name": "Flash",
+              "channels": [
+                2.0625,
+                1,
+                1.5,
+                0
+              ]
+            },
+            {
+              "name": "Flash",
+              "tuning": 7,
+              "channels": [
+                2.34375,
+                1,
+                1.2890625,
+                0
+              ]
+            },
+            {
+              "name": "3000K",
+              "channels": [
+                1.125,
+                1,
+                2.96875,
+                0
+              ]
+            },
+            {
+              "name": "3300K",
+              "channels": [
+                1.328125,
+                1,
+                2.359375,
+                0
+              ]
+            },
+            {
+              "name": "3600K",
+              "channels": [
+                1.4140625,
+                1,
+                2.171875,
+                0
+              ]
+            },
+            {
+              "name": "3900K",
+              "channels": [
+                1.5,
+                1,
+                2.0234375,
+                0
+              ]
+            },
+            {
+              "name": "4000K",
+              "channels": [
+                1.7578125,
+                1,
+                2.375,
+                0
+              ]
+            },
+            {
+              "name": "4300K",
+              "channels": [
+                1.609375,
+                1,
+                2.078125,
+                0
+              ]
+            },
+            {
+              "name": "4500K",
+              "channels": [
+                1.7265625,
+                1,
+                1.9921875,
+                0
+              ]
+            },
+            {
+              "name": "4800K",
+              "channels": [
+                1.7265625,
+                1,
+                1.8984375,
+                0
+              ]
+            },
+            {
+              "name": "5300K",
+              "channels": [
+                1.8203125,
+                1,
+                1.7578125,
+                0
+              ]
+            },
+            {
+              "name": "6000K",
+              "channels": [
+                1.9609375,
+                1,
+                1.578125,
+                0
+              ]
+            },
+            {
+              "name": "6600K",
+              "channels": [
+                1.984375,
+                1,
+                1.59375,
+                0
+              ]
+            },
+            {
+              "name": "7500K",
+              "channels": [
+                2.1328125,
+                1,
+                1.328125,
+                0
+              ]
+            }
+          ]
+        },
+        {
           "model": "XZ-1",
           "presets": [
             {
