@@ -183,22 +183,6 @@ static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
   return DT_DARKROOM_LAYOUT_EDITING;
 }
 
-static cairo_filter_t _get_filtering_level(dt_develop_t *dev,
-                                           const dt_dev_zoom_t zoom,
-                                           const int closeup)
-{
-  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-
-  // for pixel representation above 1:1, that is when a single pixel on the image
-  // is represented on screen by multiple pixels we want to disable any cairo filter
-  // which could only blur or smooth the output.
-
-  if(scale >= 0.9999f)
-    return CAIRO_FILTER_FAST;
-  else
-    return darktable.gui->dr_filter_image;
-}
-
 void _display_module_trouble_message_callback(gpointer instance,
                                               dt_iop_module_t *module,
                                               const char *const trouble_msg,
@@ -413,14 +397,14 @@ static inline gboolean _full_request(dt_develop_t *dev)
         dev->image_status == DT_DEV_PIXELPIPE_DIRTY
      || dev->image_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp;
-} 
+}
 
 static inline gboolean _preview_request(dt_develop_t *dev)
 {
   return
         dev->preview_status == DT_DEV_PIXELPIPE_DIRTY
      || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
-     || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp; 
+     || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp;
 }
 
 static inline gboolean _preview2_request(dt_develop_t *dev)
@@ -448,7 +432,6 @@ void expose(
     int32_t pointery)
 {
   cairo_set_source_rgb(cri, .2, .2, .2);
-  cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
@@ -479,20 +462,9 @@ void expose(
       _preview2_request(dev) ? " preview_2" : "",
       _any_request(dev)      ? "" : "none");
 
-  if(_full_request(dev))
-  {
-    dt_dev_process_image(dev);
-  }
-
-  if(_preview_request(dev))
-  {
-    dt_dev_process_preview(dev);
-  }
-
-  if(_preview2_request(dev))
-  {
-    dt_dev_process_preview2(dev);
-  }
+  if(_full_request(dev)) dt_dev_process_image(dev);
+  if(_preview_request(dev)) dt_dev_process_preview(dev);
+  if(_preview2_request(dev)) dt_dev_process_preview2(dev);
 
   if(darktable.unmuted & DT_DEBUG_EXPOSE)
     dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] requests after pipe jobs: %s%s%s%s\n",
@@ -507,26 +479,6 @@ void expose(
   const float zoom_x = dt_control_get_dev_zoom_x();
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
-  const float backbuf_scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
-
-  // define and handle a cairo CAIRO_FORMAT_RGB24 surface here to make modules draw more fluently
-  static cairo_surface_t *image_surface = NULL;
-  static int image_surface_width = 0;
-  static int image_surface_height = 0;
-  static dt_imgid_t image_surface_imgid = NO_IMGID;
-  // make a usable surface with requested width & height
-  if(image_surface_width != width
-     || image_surface_height != height
-     || image_surface == NULL)
-  {
-    image_surface_width = width;
-    image_surface_height = height;
-    if(image_surface) cairo_surface_destroy(image_surface);
-    image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
-    image_surface_imgid = NO_IMGID; // make sure the surface data are unknown
-  }
-  cairo_surface_t *surface;
-  cairo_t *cr = cairo_create(image_surface);
 
   // adjust scroll bars
   {
@@ -551,12 +503,9 @@ void expose(
     dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
-  const gboolean expose_full = 
+  const gboolean expose_full =
         dev->pipe->output_backbuf                         // do we have an image?
-     && dev->pipe->output_imgid == dev->image_storage.id  // same image?
-     && dev->pipe->backbuf_scale == backbuf_scale         // same zoom scale?
-     && dev->pipe->backbuf_zoom_x == zoom_x
-     && dev->pipe->backbuf_zoom_y == zoom_y;
+     && dev->pipe->output_imgid == dev->image_storage.id; // same image?
   if(expose_full)
   {
     dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] draw image\n");
@@ -566,80 +515,16 @@ void expose(
     const size_t wd = dev->pipe->output_backbuf_width;
     const size_t ht = dev->pipe->output_backbuf_height;
 
-    surface = dt_view_create_surface(dev->pipe->output_backbuf, wd, ht);
+    cairo_surface_t *surface = dt_view_create_surface(dev->pipe->output_backbuf, wd, ht);
 
-    if(dev->iso_12646.enabled)
-    {
-      // force middle grey in background
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_BG);
-    }
-    else
-    {
-      if(dev->full_preview)
-        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_PREVIEW_BG);
-      else
-        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
-    }
-    cairo_paint(cr);
-
-    dt_view_paint_surface(cr, width, height, surface, wd, ht, DT_WINDOW_MAIN);
+    dt_view_paint_surface(cri, width, height, surface, wd, ht, DT_WINDOW_MAIN,
+                          dev->pipe->backbuf_scale,
+                          dev->pipe->backbuf_zoom_x,
+                          dev->pipe->backbuf_zoom_y);
 
     cairo_surface_destroy(surface);
+
     dt_pthread_mutex_unlock(mutex);
-    image_surface_imgid = dev->image_storage.id;
-  }
-  else if(dev->preview_pipe->output_backbuf
-          && dev->preview_pipe->output_imgid == dev->image_storage.id)
-  {
-    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] draw preview\n");
-    // draw preview
-    mutex = &dev->preview_pipe->backbuf_mutex;
-    dt_pthread_mutex_lock(mutex);
-
-    if(dev->iso_12646.enabled)
-    {
-      // force middle grey in background
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_BG);
-    }
-    else
-    {
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
-    }
-
-    cairo_paint(cr);
-
-    if(dev->iso_12646.enabled)
-    {
-      // draw the white frame around picture
-      const double ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio");
-      const double tbw = tb * (1.0 - ratio);
-      cairo_rectangle(cr, tbw, tbw, dwidth - 2.0 * tbw, dheight - 2.0 * tbw);
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_FG);
-      cairo_fill(cr);
-    }
-
-    cairo_rectangle(cr, tb, tb, dwidth - 2.0 * tb, dheight - 2.0 *tb);
-    cairo_clip(cr);
-
-    surface = dt_view_create_surface(dev->preview_pipe->output_backbuf,
-                                     dev->preview_pipe->output_backbuf_width,
-                                     dev->preview_pipe->output_backbuf_height);
-
-    const double zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-    const double wd = dev->preview_pipe->output_backbuf_width;
-    const double ht = dev->preview_pipe->output_backbuf_height;
-
-    cairo_translate(cr, dwidth / 2.0, dheight / 2.0);
-    cairo_scale(cr, zoom_scale, zoom_scale);
-    cairo_translate(cr, -0.5 * wd - zoom_x * wd, - 0.5 * ht - zoom_y * ht);
-
-    cairo_rectangle(cr, 0.0, 0.0, wd, ht);
-    cairo_set_source_surface(cr, surface, 0.0, 0.0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev, zoom, closeup));
-    cairo_fill(cr);
-    cairo_surface_destroy(surface);
-    dt_pthread_mutex_unlock(mutex);
-    image_surface_imgid = dev->image_storage.id;
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
@@ -677,8 +562,8 @@ void expose(
     if(dt_conf_get_bool("darkroom/ui/loading_screen"))
     {
       dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] loading screen\n");
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
-      cairo_paint(cr);
+      dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
+      cairo_paint(cri);
 
       // waiting message
       PangoRectangle ink;
@@ -686,35 +571,26 @@ void expose(
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
       pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
       pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-      layout = pango_cairo_create_layout(cr);
+      layout = pango_cairo_create_layout(cri);
       pango_layout_set_font_description(layout, desc);
       pango_layout_set_text(layout, load_txt, -1);
       pango_layout_get_pixel_extents(layout, &ink, NULL);
       const double xc = dwidth / 2.0, yc = dheight * 0.85 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * 0.5;
-      cairo_move_to(cr, xc - wd, yc + 1.0 / 3.0 * fontsize - fontsize);
-      pango_cairo_layout_path(cr, layout);
-      cairo_set_line_width(cr, 2.0);
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
-      cairo_stroke_preserve(cr);
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
-      cairo_fill(cr);
+      cairo_move_to(cri, xc - wd, yc + 1.0 / 3.0 * fontsize - fontsize);
+      pango_cairo_layout_path(cri, layout);
+      cairo_set_line_width(cri, 2.0);
+      dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_LOG_BG);
+      cairo_stroke_preserve(cri);
+      dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_LOG_FG);
+      cairo_fill(cri);
       pango_font_description_free(desc);
       g_object_unref(layout);
-      image_surface_imgid = dev->image_storage.id;
     }
     else
     {
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);
-  }
-  cairo_restore(cri);
-
-  if(image_surface_imgid == dev->image_storage.id)
-  {
-    cairo_destroy(cr);
-    cairo_set_source_surface(cri, image_surface, 0.0, 0.0);
-    cairo_paint(cri);
   }
 
   /* if we are in full preview mode, we don"t want anything else than the image */
@@ -4122,22 +3998,6 @@ GSList *mouse_actions(const dt_view_t *self)
  * DPI */
 #define DT_PIXEL_APPLY_DPI_2ND_WND(dev, value) ((value) * dev->second_window.dpi_factor)
 
-static cairo_filter_t _get_second_window_filtering_level(dt_develop_t *dev,
-                                                         const dt_dev_zoom_t zoom,
-                                                         const int closeup)
-{
-  const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-
-  // for pixel representation above 1:1, that is when a single pixel on the image
-  // is represented on screen by multiple pixels we want to disable any cairo filter
-  // which could only blur or smooth the output.
-
-  if(scale >= 0.9999f)
-    return CAIRO_FILTER_FAST;
-  else
-    return darktable.gui->dr_filter_image;
-}
-
 static void dt_second_window_change_cursor(dt_develop_t *dev, dt_cursor_t curs)
 {
   GtkWidget *widget = dev->second_window.second_wnd;
@@ -4155,106 +4015,33 @@ static void second_window_expose(GtkWidget *widget,
                                  int32_t pointery)
 {
   cairo_set_source_rgb(cri, 0.2, 0.2, 0.2);
-  cairo_save(cri);
 
   // account for border, make it transparent for other modules called below:
   pointerx -= dev->second_window.border_size;
   pointery -= dev->second_window.border_size;
 
-  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY
-     || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
-     || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
-    dt_dev_process_preview2(dev);
+  if(_preview2_request(dev)) dt_dev_process_preview2(dev);
 
-  dt_pthread_mutex_t *mutex = NULL;
-  const float zoom_y = dt_second_window_get_dev_zoom_y(dev);
-  const float zoom_x = dt_second_window_get_dev_zoom_x(dev);
-  const dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
-  const int closeup = dt_second_window_get_dev_closeup(dev);
-  const float backbuf_scale = dt_second_window_get_zoom_scale(dev, zoom, 1.0f, 0) * dev->second_window.ppd;
-
-  static cairo_surface_t *image_surface = NULL;
-  static int image_surface_width = 0;
-  static int image_surface_height = 0;
-  static dt_imgid_t image_surface_imgid = NO_IMGID;
-
-  if(image_surface_width != width
-     || image_surface_height != height
-     || image_surface == NULL)
-  {
-    // create double-buffered image to draw on, to make modules draw more fluently.
-    image_surface_width = width;
-    image_surface_height = height;
-    if(image_surface) cairo_surface_destroy(image_surface);
-    image_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width * dev->second_window.ppd, height * dev->second_window.ppd);
-    cairo_surface_set_device_scale(image_surface, dev->second_window.ppd, dev->second_window.ppd);
-
-    image_surface_imgid = NO_IMGID; // invalidate old stuff
-  }
-
-  cairo_surface_t *surface;
-  cairo_t *cr = cairo_create(image_surface);
-
-  if(dev->preview2_pipe->output_backbuf  // do we have an image?
-     && dev->preview2_pipe->backbuf_scale == backbuf_scale // is this the zoom scale we want to display?
-     && dev->preview2_pipe->backbuf_zoom_x == zoom_x
-     && dev->preview2_pipe->backbuf_zoom_y == zoom_y)
+  if(dev->preview2_pipe->output_backbuf)  // do we have an image?
   {
     // draw image
-    mutex = &dev->preview2_pipe->backbuf_mutex;
+    dt_pthread_mutex_t *mutex = mutex = &dev->preview2_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
     const size_t wd = dev->preview2_pipe->output_backbuf_width;
     const size_t ht = dev->preview2_pipe->output_backbuf_height;
 
-    surface = dt_view_create_surface(dev->preview2_pipe->output_backbuf, wd, ht);
+    cairo_surface_t *surface = dt_view_create_surface(dev->preview2_pipe->output_backbuf, wd, ht);
 
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
-    cairo_paint(cr);
-
-    dt_view_paint_surface(cr, width, height, surface, wd, ht, DT_WINDOW_SECOND);
-
-    cairo_surface_destroy(surface);
-    dt_pthread_mutex_unlock(mutex);
-    image_surface_imgid = dev->image_storage.id;
-  }
-  else if(dev->preview_pipe->output_backbuf)
-  {
-    // draw preview
-    mutex = &dev->preview_pipe->backbuf_mutex;
-    dt_pthread_mutex_lock(mutex);
-
-    const double tb = dev->second_window.border_size;
-    const double wd = dev->preview_pipe->output_backbuf_width;
-    const double ht = dev->preview_pipe->output_backbuf_height;
-    const double zoom_scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 1);
-
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
-    cairo_paint(cr);
-    cairo_rectangle(cr, tb, tb, width - 2.0 * tb, height - 2.0 * tb);
-    cairo_clip(cr);
-
-    surface = dt_view_create_surface(dev->preview_pipe->output_backbuf, wd, ht);
-
-    cairo_translate(cr, width / 2.0, height / 2.0f);
-    cairo_scale(cr, zoom_scale, zoom_scale);
-    cairo_translate(cr, - 0.5f * wd - zoom_x * wd, - 0.5f * ht - zoom_y * ht);
-    // avoid to draw the 1px garbage that sometimes shows up in the preview :(
-    cairo_rectangle(cr, 0.0, 0.0, wd - 1.0, ht - 1.0);
-    cairo_set_source_surface(cr, surface, 0.0, 0.0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_second_window_filtering_level(dev, zoom, closeup));
-    cairo_fill(cr);
-    cairo_surface_destroy(surface);
-    dt_pthread_mutex_unlock(mutex);
-    image_surface_imgid = dev->image_storage.id;
-  }
-
-  cairo_restore(cri);
-
-  if(image_surface_imgid == dev->image_storage.id)
-  {
-    cairo_destroy(cr);
-    cairo_set_source_surface(cri, image_surface, 0, 0);
+    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cri);
+
+    dt_view_paint_surface(cri, width, height, surface, wd, ht, DT_WINDOW_SECOND,
+                          dev->preview2_pipe->backbuf_scale,
+                          dev->preview2_pipe->backbuf_zoom_x,
+                          dev->preview2_pipe->backbuf_zoom_y);
+
+    cairo_surface_destroy(surface);
+    dt_pthread_mutex_unlock(mutex);
   }
 }
 
