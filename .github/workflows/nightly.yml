@@ -113,6 +113,10 @@ jobs:
           submodules: true
           # We have to fetch the entire history to correctly generate the version for the AppImage filename
           fetch-depth: 0
+      - name: Update lensfun data
+        continue-on-error: true
+        run: |
+          sudo lensfun-update-data
       - name: Build and Install
         run: |
           bash tools/appimage-build-script.sh
