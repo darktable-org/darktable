@@ -21254,7 +21254,7 @@ msgstr "Paramètres généraux"
 
 #: ../src/libs/export_metadata.c:309
 msgid "EXIF data"
-msgstr "Donnée EXIF"
+msgstr "Données EXIF"
 
 #: ../src/libs/export_metadata.c:310
 msgid "export EXIF metadata"
