@@ -34583,6 +34583,47 @@
           ]
         },
         {
+          "model": "M (Typ 240)",
+          "presets": [
+            {
+              "name": "Daylight",
+              "channels": [
+                2.285156,
+                1,
+                1.312500,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                2.347656,
+                1,
+                1.195312,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                2.460938,
+                1,
+                1.109375,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "channels": [
+                1.589844,
+                1,
+                1.839844,
+                0
+              ]
+            }
+          ]
+        },
+        {
           "model": "D-LUX 6",
           "presets": [
             {
