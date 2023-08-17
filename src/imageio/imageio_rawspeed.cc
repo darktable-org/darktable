@@ -290,6 +290,28 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     }
 
     img->buf_dsc.filters = 0u;
+
+    // dimensions of uncropped image
+    iPoint2D dimUncropped = r->getUncroppedDim();
+    img->width = dimUncropped.x;
+    img->height = dimUncropped.y;
+
+    // dimensions of cropped image
+    iPoint2D dimCropped = r->dim;
+
+    // crop - Top,Left corner
+    iPoint2D cropTL = r->getCropOffset();
+    img->crop_x = cropTL.x;
+    img->crop_y = cropTL.y;
+
+    // crop - Bottom,Right corner
+    iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
+    img->crop_right = cropBR.x;
+    img->crop_bottom = cropBR.y;
+
+    img->fuji_rotation_pos = r->metadata.fujiRotationPos;
+    img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
+
     if(!r->isCFA)
     {
       const dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
@@ -324,27 +346,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       default:
         return DT_IMAGEIO_LOAD_FAILED;
     }
-
-    // dimensions of uncropped image
-    iPoint2D dimUncropped = r->getUncroppedDim();
-    img->width = dimUncropped.x;
-    img->height = dimUncropped.y;
-
-    // dimensions of cropped image
-    iPoint2D dimCropped = r->dim;
-
-    // crop - Top,Left corner
-    iPoint2D cropTL = r->getCropOffset();
-    img->crop_x = cropTL.x;
-    img->crop_y = cropTL.y;
-
-    // crop - Bottom,Right corner
-    iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
-    img->crop_right = cropBR.x;
-    img->crop_bottom = cropBR.y;
-
-    img->fuji_rotation_pos = r->metadata.fujiRotationPos;
-    img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
 
     // as the X-Trans filters comments later on states, these are for
     // cropped image, so we need to uncrop them.
@@ -439,8 +440,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags |= DT_IMAGE_S_RAW;
-  img->width = r->dim.x;
-  img->height = r->dim.y;
 
   // actually we want to store full floats here:
   img->buf_dsc.channels = 4;
@@ -527,9 +526,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
         for(int i = 0; i < img->width; i++, out += 4)
         {
           for(int k = 0; k < 3; k++)
-          {
             out[k] = (float)in(j, cpp * i + k) / (float)UINT16_MAX;
-          }
+          out[3] = 0.0f;
         }
       }
     }
@@ -546,9 +544,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
         for(int i = 0; i < img->width; i++, out += 4)
         {
           for(int k = 0; k < 3; k++)
-          {
             out[k] = in(j, cpp * i + k);
-          }
+          out[3] = 0.0f;
         }
       }
     }
