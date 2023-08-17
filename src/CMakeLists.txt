@@ -430,7 +430,7 @@ include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND Exiv2_VERSION VERSION_LESS "0.28.0")
-  set(CMAKE_CXX_STANDARD 14)
+  add_compile_definitions(_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR)
 endif()
 
 # Optionally enable ISOBMFF support in Exiv2
