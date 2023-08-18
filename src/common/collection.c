@@ -2460,19 +2460,14 @@ void dt_collection_update_query(const dt_collection_t *collection,
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
     const int off = dt_conf_get_int(confname);
 
-    if(off || !text || text[0] == '\0')
+    if(!off)
     {
-      if(!off && mode == 1) // for OR show all
-      {
-        query_parts[i + num_rules] = g_strdup(" OR 1=1");
-        nb++;
-      }
+      gchar *query;
+
+      if(!text || text[0] == '\0')
+        query = g_strdup("1=1");
       else
-        query_parts[i + num_rules] = g_strdup("");
-    }
-    else
-    {
-      gchar *query = get_query_string(property, text);
+        query = get_query_string(property, text);
 
       if(nb == 0)
         query_parts[i + num_rules] = g_strdup_printf(" %s", query);
