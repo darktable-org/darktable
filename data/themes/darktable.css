@@ -837,6 +837,12 @@ menuitem > arrow
   padding-right: 0.42em;
 }
 
+/* fix for multiinstance menu rendering for Roboto font on macos and external diplays */
+menuitem label
+{
+padding: 0.01em;
+}
+
 /* then spacing around bauhaus widgets */
 .dt_bauhaus
 {
