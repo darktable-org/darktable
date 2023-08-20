@@ -2477,6 +2477,9 @@ void dt_collection_update_query(const dt_collection_t *collection,
       g_free(query);
       nb++;
     }
+    else
+      query_parts[i + num_rules] = g_strdup("");
+      
     g_free(text);
   }
 
