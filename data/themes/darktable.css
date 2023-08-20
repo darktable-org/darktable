@@ -840,7 +840,7 @@ menuitem > arrow
 /* fix for multiinstance menu rendering for Roboto font on macos and external diplays */
 menuitem label
 {
-padding: 0.01em;
+padding: 0.01em 0.42em;
 }
 
 /* then spacing around bauhaus widgets */
