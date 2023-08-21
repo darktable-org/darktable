@@ -51,7 +51,9 @@ int rawspeed_get_number_of_processor_cores()
 
 using namespace rawspeed;
 
-static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
+static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img,
+                                                          const RawImage r,
+                                                          dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
 
 static void dt_rawspeed_load_meta()
@@ -72,9 +74,14 @@ static void dt_rawspeed_load_meta()
   }
 }
 
-gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
-                                   char *mk, int mk_len, char *md, int md_len,
-                                   char *al, int al_len)
+gboolean dt_rawspeed_lookup_makermodel(const char *maker,
+                                       const char *model,
+                                       char *mk,
+                                       const int mk_len,
+                                       char *md,
+                                       const int md_len,
+                                       char *al,
+                                       const int al_len)
 {
   gboolean got_it_done = FALSE;
   try {
@@ -105,11 +112,14 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   return got_it_done;
 }
 
-uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint32_t crop_y)
+uint32_t dt_rawspeed_crop_dcraw_filters(const uint32_t filters,
+                                        const uint32_t crop_x,
+                                        const uint32_t crop_y)
 {
-  if(!filters || filters == 9u) return filters;
-
-  return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
+  if(!filters || filters == 9u)
+    return filters;
+  else
+    return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
 }
 
 // CR3 files are for now handled by LibRaw, we do not want RawSpeed to try to open them
@@ -125,11 +135,15 @@ static gboolean _ignore_image(const gchar *filename)
   ext++;
 
   if(dt_conf_key_not_empty("libraw_extensions"))
-    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), (char *)NULL);
+    extensions_whitelist = g_strjoin(" ", always_by_libraw,
+                                     dt_conf_get_string_const("libraw_extensions"),
+                                     (char *)NULL);
   else
     extensions_whitelist = g_strdup(always_by_libraw);
 
-  dt_print(DT_DEBUG_IMAGEIO, "[rawspeed_open] extensions list to ignore: `%s'\n", extensions_whitelist);
+  dt_print(DT_DEBUG_IMAGEIO,
+           "[rawspeed_open] extensions list to ignore: `%s'\n",
+           extensions_whitelist);
 
   gchar *ext_lowercased = g_ascii_strdown(ext,-1);
   if(g_strstr_len(extensions_whitelist,-1,ext_lowercased))
@@ -143,12 +157,15 @@ static gboolean _ignore_image(const gchar *filename)
   return FALSE;
 }
 
-dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
+dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
+                                             const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
 {
-  if(_ignore_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
+  if(_ignore_image(filename))
+    return DT_IMAGEIO_LOAD_FAILED;
 
-  if(!img->exif_inited) (void)dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void)dt_exif_read(img, filename);
 
   char filen[PATH_MAX] = { 0 };
   snprintf(filen, sizeof(filen), "%s", filename);
@@ -177,9 +194,15 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     for(const auto &error : errors)
       dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
 
-    g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
-    g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
-    g_strlcpy(img->camera_alias, r->metadata.canonical_alias.c_str(), sizeof(img->camera_alias));
+    g_strlcpy(img->camera_maker,
+              r->metadata.canonical_make.c_str(),
+              sizeof(img->camera_maker));
+    g_strlcpy(img->camera_model,
+              r->metadata.canonical_model.c_str(),
+              sizeof(img->camera_model));
+    g_strlcpy(img->camera_alias,
+              r->metadata.canonical_alias.c_str(),
+              sizeof(img->camera_alias));
     dt_image_refresh_makermodel(img);
 
     // We used to partial match the Canon local rebrandings so lets pass on
@@ -221,7 +244,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     for(uint32_t i = 0; i < (sizeof(legacy_aliases) / sizeof(legacy_aliases[1])); i++)
       if(!strcmp(legacy_aliases[i].origname, r->metadata.model.c_str()))
       {
-        g_strlcpy(img->camera_legacy_makermodel, legacy_aliases[i].mungedname, sizeof(img->camera_legacy_makermodel));
+        g_strlcpy(img->camera_legacy_makermodel,
+                  legacy_aliases[i].mungedname,
+                  sizeof(img->camera_legacy_makermodel));
         break;
       }
 
@@ -292,20 +317,20 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->buf_dsc.filters = 0u;
 
     // dimensions of uncropped image
-    iPoint2D dimUncropped = r->getUncroppedDim();
+    const iPoint2D dimUncropped = r->getUncroppedDim();
     img->width = dimUncropped.x;
     img->height = dimUncropped.y;
 
     // dimensions of cropped image
-    iPoint2D dimCropped = r->dim;
+    const iPoint2D dimCropped = r->dim;
 
     // crop - Top,Left corner
-    iPoint2D cropTL = r->getCropOffset();
+    const iPoint2D cropTL = r->getCropOffset();
     img->crop_x = cropTL.x;
     img->crop_y = cropTL.y;
 
     // crop - Bottom,Right corner
-    iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
+    const iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
     img->crop_right = cropBR.x;
     img->crop_bottom = cropBR.y;
 
@@ -349,9 +374,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     // as the X-Trans filters comments later on states, these are for
     // cropped image, so we need to uncrop them.
-    img->buf_dsc.filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
+    img->buf_dsc.filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(),
+                                                          cropTL.x,
+                                                          cropTL.y);
 
-    if(FILTERS_ARE_4BAYER(img->buf_dsc.filters)) img->flags |= DT_IMAGE_4BAYER;
+    if(FILTERS_ARE_4BAYER(img->buf_dsc.filters))
+      img->flags |= DT_IMAGE_4BAYER;
 
     if(img->buf_dsc.filters)
     {
@@ -401,8 +429,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     }
     else
     {
-      dt_imageio_flip_buffers((char *)buf, (char *)(&(r->getByteDataAsUncroppedArray2DRef()(0, 0))), r->getBpp(),
-                              dimUncropped.x, dimUncropped.y, dimUncropped.x, dimUncropped.y, r->pitch,
+      dt_imageio_flip_buffers((char *)buf,
+                              (char *)(&(r->getByteDataAsUncroppedArray2DRef()(0, 0))),
+                              r->getBpp(),
+                              dimUncropped.x, dimUncropped.y,
+                              dimUncropped.x, dimUncropped.y,
+                              r->pitch,
                               ORIENTATION_NONE);
     }
 
@@ -434,7 +466,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   return DT_IMAGEIO_OK;
 }
 
-dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img,
+                                                  const RawImage r,
+                                                  dt_mipmap_buffer_t *mbuf)
 {
   // sraw aren't real raw, but not ldr either (need white balance and stuff)
   img->flags &= ~DT_IMAGE_LDR;
@@ -449,7 +483,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
     return DT_IMAGEIO_LOAD_FAILED;
 
   const uint32_t cpp = r->getCpp();
-  if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_LOAD_FAILED;
+  if(cpp != 1 && cpp != 3 && cpp != 4)
+    return DT_IMAGEIO_LOAD_FAILED;
 
   // if buf is NULL, we quit the fct here
   if(!mbuf)
@@ -459,10 +494,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
     return DT_IMAGEIO_OK;
   }
 
-  if(cpp == 1) img->flags |= DT_IMAGE_MONOCHROME;
+  if(cpp == 1)
+    img->flags |= DT_IMAGE_MONOCHROME;
 
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
-  if(!buf) return DT_IMAGEIO_CACHE_FULL;
+  if(!buf)
+    return DT_IMAGEIO_CACHE_FULL;
 
   if(cpp == 1)
   {
