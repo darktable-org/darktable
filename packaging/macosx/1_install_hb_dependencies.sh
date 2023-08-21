@@ -21,6 +21,7 @@ brew upgrade
 
 # Define homebrew dependencies
 hbDependencies="adwaita-icon-theme \
+    coreutils \
     cmake \
     pkg-config \
     cmocka \
@@ -32,7 +33,7 @@ hbDependencies="adwaita-icon-theme \
     glib \
     gmic \
     gphoto2 \
-    graphicsmagick \
+    imagemagick@6 \
     gtk-mac-integration \
     gtk+3 \
     icu4c \
@@ -103,3 +104,4 @@ fi
 # link keg-only packages
 brew link --force libomp
 brew link --force libsoup@2
+brew link --force imagemagick@6
