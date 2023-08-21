@@ -75,6 +75,9 @@ improvements and enhancements:
 - Fix the calculation of resizable widgets based on linesize of
   contents.
 
+- Fixed a bug in the collection filter module where the conjunction of
+  multiple filters were not handled properly.
+
 ## Lua
 
 ### API Version
