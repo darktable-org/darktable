@@ -837,12 +837,6 @@ menuitem > arrow
   padding-right: 0.42em;
 }
 
-/* fix for multiinstance menu rendering for Roboto font on macos and external diplays */
-menuitem label
-{
-padding: 0.01em 0.42em;
-}
-
 /* then spacing around bauhaus widgets */
 .dt_bauhaus
 {
@@ -850,6 +844,7 @@ padding: 0.01em 0.42em;
 }
 
 /* and set menuitem related to sort of combobox like metadata presets in import module */
+menuitem label,
 #view-dropdown button,
 #view-dropdown menuitem,
 #view-label
