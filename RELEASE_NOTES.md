@@ -78,6 +78,8 @@ improvements and enhancements:
 - Fixed a bug in the collection filter module where the conjunction of
   multiple filters were not handled properly.
 
+- Fix focus distance detection for Nikon Z mount lens corrections.
+
 ## Lua
 
 ### API Version
