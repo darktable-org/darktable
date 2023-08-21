@@ -849,8 +849,8 @@ void dt_dev_second_window_configure(dt_develop_t *dev,
 
 // helper used to synch a single history item with db
 static void _dev_write_history_item(const dt_imgid_t imgid,
-                              dt_dev_history_item_t *h,
-                              const int32_t num)
+                                    dt_dev_history_item_t *h,
+                                    const int32_t num)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -1622,8 +1622,8 @@ static int _dev_get_module_nb_records(void)
 }
 
 static void _dev_insert_module(dt_develop_t *dev,
-                        dt_iop_module_t *module,
-                        const dt_imgid_t imgid)
+                               dt_iop_module_t *module,
+                               const dt_imgid_t imgid)
 {
   sqlite3_stmt *stmt;
 
@@ -1927,7 +1927,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   return TRUE;
 }
 
-static void _dev_add_default_modules(dt_develop_t *dev, const dt_imgid_t imgid)
+static void _dev_add_default_modules(dt_develop_t *dev,
+                                     const dt_imgid_t imgid)
 {
   //start with those modules that cannot be disabled
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
@@ -2063,7 +2064,7 @@ static void _dev_merge_history(dt_develop_t *dev,
 }
 
 static void _dev_write_history(dt_develop_t *dev,
-                        const dt_imgid_t imgid)
+                               const dt_imgid_t imgid)
 {
   _cleanup_history(imgid);
   // write history entries
