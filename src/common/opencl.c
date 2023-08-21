@@ -320,7 +320,7 @@ error:
 gboolean dt_opencl_avoid_atomics(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  return (!_cldev_running(devid)) ? FALSE : (cl->dev[devid].avoid_atomics ? TRUE : FALSE);
+  return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].avoid_atomics;
 }
 
 int dt_opencl_micro_nap(const int devid)
@@ -344,14 +344,14 @@ void dt_opencl_write_device_config(const int devid)
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
   g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i 0.0 %.3f",
-    (cl->dev[devid].avoid_atomics) ? 1 : 0,
+    cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
     cl->dev[devid].clroundup_wd,
     cl->dev[devid].clroundup_ht,
     cl->dev[devid].event_handles,
-    (cl->dev[devid].asyncmode) ? 1 : 0,
-    (cl->dev[devid].disabled) ? 1 : 0,
+    cl->dev[devid].asyncmode,
+    cl->dev[devid].disabled,
     cl->dev[devid].advantage);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
@@ -417,7 +417,6 @@ gboolean dt_opencl_read_device_config(const int devid)
   }
   // do some safety housekeeping
 
-  cldid->avoid_atomics = cldid->avoid_atomics ? TRUE : FALSE;
   cldid->pinned_memory &= (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED);
   if((cldid->micro_nap < 0) || (cldid->micro_nap > 1000000))
     cldid->micro_nap = 250;
@@ -431,6 +430,7 @@ gboolean dt_opencl_read_device_config(const int devid)
   cldid->use_events = cldid->event_handles ? TRUE : FALSE;
   cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
   cldid->disabled = cldid->disabled ? TRUE : FALSE;
+  cldid->avoid_atomics = cldid->avoid_atomics ? TRUE : FALSE;
 
   cldid->advantage = fmaxf(0.0f, cldid->advantage);
 
@@ -476,7 +476,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].totallost = 0;
   cl->dev[dev].summary = CL_COMPLETE;
   cl->dev[dev].used_global_mem = 0;
-  cl->dev[dev].nvidia_sm_20 = 0;
+  cl->dev[dev].nvidia_sm_20 = FALSE;
   cl->dev[dev].vendor = NULL;
   cl->dev[dev].fullname = NULL;
   cl->dev[dev].cname = NULL;
@@ -485,7 +485,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].peak_memory = 0;
   cl->dev[dev].used_available = 0;
   // setting sane/conservative defaults at first
-  cl->dev[dev].avoid_atomics = 0;
+  cl->dev[dev].avoid_atomics = FALSE;
   cl->dev[dev].micro_nap = 250;
   cl->dev[dev].pinned_memory = DT_OPENCL_PINNING_OFF;
   cl->dev[dev].clroundup_wd = 16;

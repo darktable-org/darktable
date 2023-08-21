@@ -140,7 +140,7 @@ typedef struct dt_opencl_device_t
   int totalsuccess;
   int totallost;
   int maxeventslot;
-  int nvidia_sm_20;
+  gboolean nvidia_sm_20;
   const char *vendor;
   const char *fullname;
   const char *cname;
@@ -157,7 +157,7 @@ typedef struct dt_opencl_device_t
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
   // they are processed with a bad performance.
-  int avoid_atomics;
+  gboolean avoid_atomics;
 
   // pause OpenCL processing for this number of microseconds from time to time
   int micro_nap;
@@ -296,9 +296,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 void dt_opencl_cleanup(dt_opencl_t *cl);
 
 const char *cl_errstr(cl_int error);
+
 /** both finish functions return TRUE in case of success */
 /** cleans up command queue. */
-int dt_opencl_finish(const int devid);
+gboolean dt_opencl_finish(const int devid);
 
 /** cleans up command queue if in synchron mode or while exporting, returns TRUE in case of success */
 gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
