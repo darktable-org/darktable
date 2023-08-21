@@ -64,6 +64,7 @@ static float _opencl_benchmark_cpu(const size_t width,
 
 static gboolean _opencl_load_program(const int dev,
                                      const int prog,
+                                     const char *programname,
                                      const char *filename,
                                      const char *binname,
                                      const char *cachedir,
@@ -1074,7 +1075,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "[dt_opencl_device_init] testing program `%s' ..\n", programname);
       int loaded_cached;
       char md5sum[33];
-      if(_opencl_load_program(dev, prog, filename, binname, cachedir,
+      if(_opencl_load_program(dev, prog, programname, filename, binname, cachedir,
                               md5sum, includemd5, &loaded_cached)
          && _opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached))
       {
@@ -1543,7 +1544,7 @@ finally:
     free(locale);
   }
 
-  return;
+  dt_opencl_update_settings();
 }
 
 void dt_opencl_cleanup(dt_opencl_t *cl)
@@ -2297,6 +2298,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
 static gboolean _opencl_load_program(
         const int dev,
         const int prog,
+        const char *programname,
         const char *filename,
         const char *binname,
         const char *cachedir,
@@ -2463,6 +2465,8 @@ static gboolean _opencl_load_program(
              "[opencl_load_program] could not load cached binary program,"
              " trying to compile source\n");
 
+    dt_control_log(_("building OpenCL program %s for %s"),
+                  programname, cl->dev[dev].fullname);
     cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(
         cl->dev[dev].context, 1, (const char **)&file, &filesize, &err);
     free(file);
@@ -2660,51 +2664,56 @@ static gboolean _opencl_build_program(const int dev,
 int dt_opencl_create_kernel(const int prog, const char *name)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return -1;
-  if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
-  dt_pthread_mutex_lock(&cl->lock);
-  int k = 0;
-  for(int dev = 0; dev < cl->num_devs; dev++)
+
+  static int k = 0;
+  cl->name_saved[k] = name;
+  cl->program_saved[k] = prog;
+
+  if(k >= DT_OPENCL_MAX_KERNELS)
   {
-    cl_int err;
-    for(; k < DT_OPENCL_MAX_KERNELS; k++)
-      if(!cl->dev[dev].kernel_used[k])
-      {
-        cl->dev[dev].kernel_used[k] = 1;
-        cl->dev[dev].kernel[k] =
-          (cl->dlocl->symbols->dt_clCreateKernel)
-            (cl->dev[dev].program[prog], name, &err);
-        if(err != CL_SUCCESS)
-        {
-          dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_create_kernel] could not create kernel `%s'! (%s)\n",
-                   name, cl_errstr(err));
-          cl->dev[dev].kernel_used[k] = 0;
-          goto error;
-        }
-        else
-          break;
-      }
-    if(k < DT_OPENCL_MAX_KERNELS)
-    {
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-               "[opencl_create_kernel] successfully loaded kernel `%s' (%d)"
-               " for device %d\n",
-               name, k, dev);
-    }
-    else
+    dt_print(DT_DEBUG_OPENCL,
+              "[opencl_create_kernel] too many kernels! can't create kernel `%s'\n",
+              name);
+    return -1;
+  }
+  return k++;
+}
+
+
+static gboolean _check_kernel(const int dev, const int kernel)
+{
+  dt_opencl_t *cl = darktable.opencl;
+
+  if(!cl->inited || dev < 0) return FALSE;
+  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return FALSE;
+  
+  if(cl->dev[dev].kernel_used[kernel]) return TRUE;
+
+  const int prog = cl->program_saved[kernel];
+  if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return FALSE;
+  dt_pthread_mutex_lock(&cl->lock);
+
+  cl_int err;
+  if(!cl->dev[dev].kernel_used[kernel]
+     && cl->name_saved[kernel])
+  {
+    cl->dev[dev].kernel_used[kernel] = 1;
+    cl->dev[dev].kernel[kernel] =
+      (cl->dlocl->symbols->dt_clCreateKernel)
+        (cl->dev[dev].program[prog], cl->name_saved[kernel], &err);
+    if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_create_kernel] too many kernels! can't create kernel `%s'\n",
-               name);
-      goto error;
+                "[opencl_create_kernel] could not create kernel `%s'! (%s)\n",
+                cl->name_saved[kernel], cl_errstr(err));
+      cl->dev[dev].kernel_used[kernel] = 0;
+      cl->name_saved[kernel] = NULL; // don't try again
+      dt_pthread_mutex_unlock(&cl->lock);
+      return FALSE;
     }
   }
   dt_pthread_mutex_unlock(&cl->lock);
-  return k;
-error:
-  dt_pthread_mutex_unlock(&cl->lock);
-  return -1;
+  return TRUE;
 }
 
 void dt_opencl_free_kernel(const int kernel)
@@ -2763,10 +2772,9 @@ int dt_opencl_get_kernel_work_group_size(
         const int kernel,
         size_t *kernelworkgroupsize)
 {
-  dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || dev < 0) return -1;
-  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
+  if(!_check_kernel(dev, kernel)) return -1;
 
+  dt_opencl_t *cl = darktable.opencl;
   return (cl->dlocl->symbols->dt_clGetKernelWorkGroupInfo)(cl->dev[dev].kernel[kernel],
                                                            cl->dev[dev].devid,
                                                            CL_KERNEL_WORK_GROUP_SIZE,
@@ -2781,9 +2789,9 @@ int dt_opencl_set_kernel_arg(
         const size_t size,
         const void *arg)
 {
+  if(!_check_kernel(dev, kernel)) return -1;
+  
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || dev < 0) return -1;
-  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   return (cl->dlocl->symbols->dt_clSetKernelArg)
     (cl->dev[dev].kernel[kernel], num, size, arg);
 }

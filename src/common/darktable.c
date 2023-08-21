@@ -513,6 +513,20 @@ void dt_dump_pipe_pfm(
   dt_dump_pfm_file(pipe, data, width, height, bpp, mod, "[dt_dump_pipe_pfm]", input, !input, TRUE);
 }
 
+static int32_t _detect_opencl_job_run(dt_job_t *job)
+{
+  darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
+  dt_opencl_init(darktable.opencl, GPOINTER_TO_INT(dt_control_job_get_params(job)), TRUE);
+  return 0;
+}
+
+static dt_job_t *_detect_opencl_job_create(gboolean exclude_opencl)
+{
+  dt_job_t *job = dt_control_job_create(&_detect_opencl_job_run, "detect opencl devices");
+  if(!job) return NULL;
+  dt_control_job_set_params(job, GINT_TO_POINTER(exclude_opencl), NULL);
+  return job;
+}
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
@@ -1354,10 +1368,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
-  dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
-#ifdef HAVE_OPENCL
-  dt_opencl_update_settings();
-#endif
+  if(init_gui)
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
+                       _detect_opencl_job_create(exclude_opencl));
+  else
+    dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());

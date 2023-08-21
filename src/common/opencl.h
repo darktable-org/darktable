@@ -268,6 +268,10 @@ typedef struct dt_opencl_t
 
   // global kernels for guided filter.
   struct dt_guided_filter_cl_global_t *guided_filter;
+
+  // saved kernel info for deferred initialisation
+  int program_saved[DT_OPENCL_MAX_KERNELS];
+  const char *name_saved[DT_OPENCL_MAX_KERNELS];
 } dt_opencl_t;
 
 /** description of memory requirements of local buffer
