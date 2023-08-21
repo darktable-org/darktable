@@ -65,6 +65,8 @@ improvements and enhancements:
 - Add support for auto orientation when importing AVIF/HEIF images
   (requires at least libavif 0.9.2 and/or libheif 1.16.0).
 
+- Tune CA correct module performances (gain about 10% on CPU).
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
