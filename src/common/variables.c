@@ -699,7 +699,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "OPENCL.ACTIVATED")
           || _has_prefix(variable, "OPENCL_ACTIVATED"))
   {
-    if(dt_opencl_is_enabled())
+    if(dt_opencl_running())
       result = g_strdup(_("yes"));
     else
       result = g_strdup(_("no"));
