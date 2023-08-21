@@ -51,17 +51,6 @@
 
 static const char *_opencl_get_vendor_by_id(unsigned int id);
 
-static float _opencl_benchmark_gpu(const int devid,
-                                   const size_t width,
-                                   const size_t height,
-                                   const int count,
-                                   const float sigma);
-
-static float _opencl_benchmark_cpu(const size_t width,
-                                   const size_t height,
-                                   const int count,
-                                   const float sigma);
-
 static gboolean _opencl_load_program(const int dev,
                                      const int prog,
                                      const char *programname,
@@ -354,7 +343,7 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %f %.3f",
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i 0.0 %.3f",
     (cl->dev[devid].avoid_atomics) ? 1 : 0,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
@@ -363,7 +352,6 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].event_handles,
     (cl->dev[devid].asyncmode) ? 1 : 0,
     (cl->dev[devid].disabled) ? 1 : 0,
-    cl->dev[devid].benchmark,
     cl->dev[devid].advantage);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
@@ -400,11 +388,11 @@ gboolean dt_opencl_read_device_config(const int devid)
     int event_handles;
     int asyncmode;
     int disabled;
-    float benchmark;
+    float dummy; // unused
     float advantage;
     sscanf(dat, "%i %i %i %i %i %i %i %i %f %f",
            &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht,
-           &event_handles, &asyncmode, &disabled, &benchmark, &advantage);
+           &event_handles, &asyncmode, &disabled, &dummy, &advantage);
 
     // some rudimentary safety checking if string seems to be ok
     safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513);
@@ -419,7 +407,6 @@ gboolean dt_opencl_read_device_config(const int devid)
       cldid->event_handles = event_handles;
       cldid->asyncmode = asyncmode;
       cldid->disabled = disabled;
-      cldid->benchmark = benchmark;
       cldid->advantage = advantage;
     }
     else // if there is something wrong with the found conf key reset to defaults
@@ -440,7 +427,6 @@ gboolean dt_opencl_read_device_config(const int devid)
     cldid->clroundup_ht = 16;
   if(cldid->event_handles < 0)
     cldid->event_handles = 0x40000000;
-  cldid->benchmark = fminf(1e6, fmaxf(0.0f, cl->dev[devid].benchmark));
 
   cldid->use_events = cldid->event_handles ? TRUE : FALSE;
   cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
@@ -463,15 +449,6 @@ gboolean dt_opencl_read_device_config(const int devid)
     cl->dev[devid].forced_headroom = 400;
   dt_opencl_write_device_config(devid);
   return !existing_device || !safety_ok;
-}
-
-static float dt_opencl_device_perfgain(const int devid)
-{
-  dt_opencl_t *cl = darktable.opencl;
-  const float tcpu = cl->cpubenchmark;
-  const float tgpu = cl->dev[devid].benchmark;
-  if((tcpu < 1e-8) || (tgpu < 1e-8)) return 1.0f;
-  return (tcpu / tgpu);
 }
 
 // returns 0 if all ok or an error if we failed to init this device
@@ -513,7 +490,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].pinned_memory = DT_OPENCL_PINNING_OFF;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
-  cl->dev[dev].benchmark = 0.0f;
   cl->dev[dev].advantage = 0.0f;
   cl->dev[dev].use_events = TRUE;
   cl->dev[dev].event_handles = 128;
@@ -875,9 +851,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
-  if(cl->dev[dev].benchmark > 0.0f)
-    dt_print_nts(DT_DEBUG_OPENCL,
-                 "   PERFORMANCE:              %.3f\n", dt_opencl_device_perfgain(dev));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1171,13 +1144,6 @@ void dt_opencl_init(
   char *platform_name = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
   char *platform_vendor = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
 
-  cl->cpubenchmark = dt_conf_get_float("dt_cpubenchmark");
-  if(cl->cpubenchmark <= 0.0f)
-  {
-    cl->cpubenchmark = _opencl_benchmark_cpu(1024, 1024, 5, 100.0f);
-    dt_conf_set_float("dt_cpubenchmark", cl->cpubenchmark);
-  }
-
   if(exclude_opencl)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
@@ -1419,16 +1385,6 @@ finally:
     cl->colorspaces = dt_colorspaces_init_cl_global();
     cl->guided_filter = dt_guided_filter_init_cl_global();
 
-    // make sure all active cl devices have a benchmark result
-    for(int n = 0; n < cl->num_devs; n++)
-    {
-      if((cl->dev[n].benchmark <= 0.0f) && (cl->dev[n].disabled == FALSE))
-      {
-        cl->dev[n].benchmark = _opencl_benchmark_gpu(n, 1024, 1024, 5, 100.0f);
-        dt_opencl_write_device_config(n);
-      }
-    }
-
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
     const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
@@ -1442,65 +1398,11 @@ finally:
     if(newcheck && !manually)
     {
       dt_conf_set_string("opencl_checksum", checksum);
-
-      // get minima and maxima of performance data of all active devices
-      const float tcpu = cl->cpubenchmark;
-      float tgpumin = FLT_MAX;
-      float tgpumax = -FLT_MAX;
-      for(int n = 0; n < cl->num_devs; n++)
-      {
-        if((cl->dev[n].benchmark > 0.0f) && (cl->dev[n].disabled == FALSE))
-        {
-          tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
-          tgpumax = fmaxf(cl->dev[n].benchmark, tgpumax);
-        }
-      }
-
-      if(tcpu < tgpumin / 3.0f)
-      {
-        // de-activate opencl for darktable in case the cpu is three
-        // times faster than the fastest GPU.  FIXME the problem here
-        // is that the benchmark might not reflect real-world
-        // performance.  user can always manually overrule this later.
-        cl->enabled = FALSE;
-        dt_conf_set_bool("opencl", FALSE);
-        dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] due to a slow GPU the opencl flag has been"
-                     " set to OFF.\n");
-        dt_control_log(_("due to a slow GPU hardware acceleration using OpenCL"
-                         " has been deactivated"));
-      }
-      else if((cl->num_devs >= 2) && ((tgpumax / tgpumin) < 1.1f))
-      {
-        // set scheduling profile to "multiple GPUs" if more than one
-        // device has been found and they are equally fast
-        dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
-        dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] set scheduling profile for multiple GPUs.\n");
-        dt_control_log(_("multiple GPUs detected - OpenCL scheduling profile"
-                         " has been set accordingly"));
-      }
-      else if((tcpu >= 2.0f * tgpumin) && (cl->num_devs == 1))
-      {
-        // set scheduling profile to "very fast GPU" if fastest GPU is
-        // at least 2 times better than CPU and there is just one
-        // device We might want a better benchmark but even with the
-        // current result (underestimates real world performance) this
-        // is safe.
-        dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
-        dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] set scheduling profile for very fast GPU.\n");
-        dt_control_log(_("very fast GPU detected - OpenCL scheduling profile"
-                         " has been set accordingly"));
-      }
-      else
-      {
-        // set scheduling profile to "default"
-        dt_conf_set_string("opencl_scheduling_profile", "default");
-        dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] set scheduling profile to default.\n");
-        dt_control_log(_("OpenCL scheduling profile set to default"));
-      }
+      // set scheduling profile to "default"
+      dt_conf_set_string("opencl_scheduling_profile", "default");
+      dt_print(DT_DEBUG_OPENCL,
+                     "[opencl_init] set scheduling profile to default, setup has changed.\n");
+        dt_control_log(_("OpenCL scheduling profile set to default, setup has changed"));
     }
     // apply config settings for scheduling profile: sets device
     // priorities and pixelpipe synchronization timeout
@@ -1661,161 +1563,6 @@ static const char *_opencl_get_vendor_by_id(unsigned int id)
   }
 
   return vendor;
-}
-
-// FIXME this benchmark simply doesn't reflect the power of a cl
-// device in a meaningful way resulting in:
-// - the config setting for very-fast GPU often misses a proper setting
-// - at the moment we can't use a cpu vs gpu performance ratio to decide
-//   if tiled-gpu might be worse than untiled-cpu
-static float _opencl_benchmark_gpu(const int devid,
-                                   const size_t width,
-                                   const size_t height,
-                                   const int count,
-                                   const float sigma)
-{
-  const int bpp = 4 * sizeof(float);
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
-  cl_mem dev_mem = NULL;
-  float *buf = NULL;
-  dt_gaussian_cl_t *g = NULL;
-
-  const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
-  const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
-  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
-
-  buf = dt_alloc_align(64, width * height * bpp);
-  if(buf == NULL) goto error;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, tea_states, width) \
-  shared(buf)
-#endif
-  for(size_t j = 0; j < height; j++)
-  {
-    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
-    tea_state[0] = j + dt_get_thread_num();
-    size_t index = j * 4 * width;
-    for(int i = 0; i < 4 * width; i++)
-    {
-      encrypt_tea(tea_state);
-      buf[index + i] = 100.0f * tpdf(tea_state[0]);
-    }
-  }
-
-  // start timer
-  double start = dt_get_wtime();
-
-  // allocate dev_mem buffer
-  dev_mem = dt_opencl_alloc_device_use_host_pointer(devid, width, height,
-                                                    bpp, width*bpp, buf);
-  if(dev_mem == NULL) goto error;
-
-  // prepare gaussian filter
-  g = dt_gaussian_init_cl(devid, width, height, 4, Labmax, Labmin, sigma, 0);
-  if(!g) goto error;
-
-  // gaussian blur
-  for(int n = 0; n < count; n++)
-  {
-    err = dt_gaussian_blur_cl(g, dev_mem, dev_mem);
-    if(err != CL_SUCCESS) goto error;
-  }
-
-  // cleanup gaussian filter
-  dt_gaussian_free_cl(g);
-  g = NULL;
-
-  // copy dev_mem -> buf
-  err = dt_opencl_copy_device_to_host(devid, buf, dev_mem, width, height, bpp);
-  if(err != CL_SUCCESS) goto error;
-
-  // free dev_mem
-  dt_opencl_release_mem_object(dev_mem);
-
-  // end timer
-  double end = dt_get_wtime();
-
-  dt_free_align(buf);
-  free_tea_states(tea_states);
-  return (end - start);
-
-error:
-  dt_gaussian_free_cl(g);
-  dt_free_align(buf);
-  free_tea_states(tea_states);
-  dt_opencl_release_mem_object(dev_mem);
-  return FLT_MAX;
-}
-
-static float _opencl_benchmark_cpu(
-        const size_t width,
-        const size_t height,
-        const int count,
-        const float sigma)
-{
-  const int bpp = 4 * sizeof(float);
-  float *buf = NULL;
-  dt_gaussian_t *g = NULL;
-
-  const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
-  const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
-  const size_t nthreads = dt_get_num_threads();
-  unsigned int *const tea_states = alloc_tea_states(nthreads);
-
-  buf = dt_alloc_align(64, width * height * bpp);
-  if(buf == NULL) goto error;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) num_threads(nthreads)    \
-  dt_omp_firstprivate(height, width, tea_states) \
-  shared(buf)
-#endif
-  for(size_t j = 0; j < height; j++)
-  {
-    const size_t threadnum = dt_get_thread_num();
-    unsigned int *tea_state = get_tea_state(tea_states,threadnum);
-    tea_state[0] = j + threadnum;
-    size_t index = j * 4 * width;
-    for(int i = 0; i < 4 * width; i++)
-    {
-      encrypt_tea(tea_state);
-      buf[index + i] = 100.0f * tpdf(tea_state[0]);
-    }
-  }
-
-  // start timer
-  double start = dt_get_wtime();
-
-  // prepare gaussian filter
-  g = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, 0);
-  if(!g) goto error;
-
-  // gaussian blur
-  for(int n = 0; n < count; n++)
-  {
-    dt_gaussian_blur(g, buf, buf);
-  }
-
-  // cleanup gaussian filter
-  dt_gaussian_free(g);
-  g = NULL;
-
-  // end timer
-  double end = dt_get_wtime();
-
-  dt_free_align(buf);
-  free_tea_states(tea_states);
-  return (end - start);
-
-error:
-  dt_gaussian_free(g);
-  dt_free_align(buf);
-  free_tea_states(tea_states);
-  return FLT_MAX;
 }
 
 gboolean dt_opencl_finish(const int devid)
