@@ -273,7 +273,7 @@ jobs:
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
-        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON]
+        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DUSE_GRAPHICSMAGICK=OFF -DUSE_IMAGEMAGICK=ON]
         target:
           - skiptest
         generator:
@@ -308,19 +308,9 @@ jobs:
           # handle keg-only libs
           brew link --force libomp
           brew link --force libsoup@2
-      - name: Downgrade libjpeg-turbo
+      - name: use ImageMagick 6
         run: |
-          brew uninstall --ignore-dependencies libjpeg-turbo
-          brew link libjpeg-turbo --overwrite
-      - name: Rebuild graphicsmagick without modules
-        run: |
-          export HOMEBREW_NO_INSTALL_FROM_API=1
-
-          gm_formula=`brew edit --print-path graphicsmagick`
-          cat $gm_formula | sed '/--with-modules/d' > gm_formula.tmp
-          mv gm_formula.tmp $gm_formula
-
-          brew reinstall --build-from-source graphicsmagick
+          brew link --overwrite --force imagemagick@6
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
