@@ -2951,7 +2951,7 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_dev_module_duplicate] can't move new instance after the base one\n");
-    dt_control_log(_("module duplicate, can't move new instance after the base one\n"));
+    dt_control_log(_("duplicate module, can't move new instance after the base one\n"));
   }
 
   // that's all. rest of insertion is gui work !
