@@ -20,7 +20,7 @@ jobs:
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
-        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON]
+        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DUSE_GRAPHICSMAGICK=OFF -DUSE_IMAGEMAGICK=ON]
         target:
           - skiptest
         generator:
@@ -46,22 +46,18 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
           brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
           brew bundle --verbose || true
           # handle keg-only libs
           brew link --force libomp
           brew link --force libsoup@2
-      - name: Rebuild graphicsmagick without modules
+      - name: use ImageMagick 6
         run: |
-          export HOMEBREW_NO_INSTALL_FROM_API=1
-
-          gm_formula=`brew edit --print-path graphicsmagick`
-          cat $gm_formula | sed '/--with-modules/d' > gm_formula.tmp
-          mv gm_formula.tmp $gm_formula
-
-          brew reinstall --build-from-source graphicsmagick
+          brew link --overwrite --force imagemagick@6
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
