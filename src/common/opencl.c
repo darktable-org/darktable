@@ -231,7 +231,7 @@ const char *cl_errstr(cl_int error)
 static inline void _check_clmem_err(const int devid, const cl_int err)
 {
   if((err == CL_MEM_OBJECT_ALLOCATION_FAILURE) || (err == CL_OUT_OF_RESOURCES))
-  darktable.opencl->dev[devid].runtime_error |= DT_OPENCL_TUNE_MEMSIZE;
+  darktable.opencl->dev[devid].clmem_error |= TRUE;
 }
 
 static inline gboolean _cl_running(void)
@@ -332,8 +332,7 @@ int dt_opencl_micro_nap(const int devid)
 gboolean dt_opencl_use_pinned_memory(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!_cldev_running(devid)) return FALSE;
-  return (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED);
+  return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].pinned_memory;
 }
 
 void dt_opencl_write_device_config(const int devid)
@@ -346,7 +345,7 @@ void dt_opencl_write_device_config(const int devid)
   g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i 0.0 %.3f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
-    cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
+    cl->dev[devid].pinned_memory,
     cl->dev[devid].clroundup_wd,
     cl->dev[devid].clroundup_ht,
     cl->dev[devid].event_handles,
@@ -417,7 +416,6 @@ gboolean dt_opencl_read_device_config(const int devid)
   }
   // do some safety housekeeping
 
-  cldid->pinned_memory &= (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED);
   if((cldid->micro_nap < 0) || (cldid->micro_nap > 1000000))
     cldid->micro_nap = 250;
   if((cldid->clroundup_wd < 2) || (cldid->clroundup_wd > 512))
@@ -431,6 +429,7 @@ gboolean dt_opencl_read_device_config(const int devid)
   cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
   cldid->disabled = cldid->disabled ? TRUE : FALSE;
   cldid->avoid_atomics = cldid->avoid_atomics ? TRUE : FALSE;
+  cldid->pinned_memory = cldid->pinned_memory ? TRUE : FALSE;
 
   cldid->advantage = fmaxf(0.0f, cldid->advantage);
 
@@ -487,7 +486,9 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   // setting sane/conservative defaults at first
   cl->dev[dev].avoid_atomics = FALSE;
   cl->dev[dev].micro_nap = 250;
-  cl->dev[dev].pinned_memory = DT_OPENCL_PINNING_OFF;
+  cl->dev[dev].pinned_memory = FALSE;
+  cl->dev[dev].pinned_error = FALSE;
+  cl->dev[dev].clmem_error = FALSE;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].advantage = 0.0f;
@@ -497,7 +498,6 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].disabled = FALSE;
   cl->dev[dev].forced_headroom = 0;
   cl->dev[dev].tuneactive = DT_OPENCL_TUNE_NOTHING;
-  cl->dev[dev].runtime_error = DT_OPENCL_TUNE_NOTHING;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *device_name = NULL;
@@ -828,14 +828,13 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   }
 
   dt_sys_resources_t *resrc = &darktable.dtresources;
-  const gboolean pinning = (cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_ON)
-    || (resrc->tunemode & DT_OPENCL_TUNE_PINNED);
+  const gboolean pinning = cl->dev[dev].pinned_memory;
   const gboolean tuning = resrc->tunemode & DT_OPENCL_TUNE_MEMSIZE;
   dt_print_nts(DT_DEBUG_OPENCL,
                "   ASYNC PIXELPIPE:          %s\n",
                (cl->dev[dev].asyncmode) ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   PINNED MEMORY TRANSFER:   %s\n", pinning ? "WANTED" : "NO");
+               "   PINNED MEMORY TRANSFER:   %s\n", pinning ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MEMORY TUNING:            %s\n", tuning ? "WANTED" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1481,7 +1480,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
                      " peak memory usage %zu bytes (%.1f MB)%s\n",
                      cl->dev[i].fullname, i, cl->dev[i].peak_memory,
                      (float)cl->dev[i].peak_memory/(1024*1024),
-                     (cl->dev[i].runtime_error & DT_OPENCL_TUNE_MEMSIZE)
+                     cl->dev[i].clmem_error
                        ? ", clmem runtime problem"
                        : "");
       }
@@ -1500,7 +1499,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
                        (cl->dev[i].maxeventslot > 1024)
                          ? "\n *** Warning, slots > 1024"
                          : "",
-                       (cl->dev[i].runtime_error & DT_OPENCL_TUNE_MEMSIZE)
+                       cl->dev[i].clmem_error
                          ? ", clmem runtime problem"
                          : "");
         }
@@ -2433,7 +2432,7 @@ static gboolean _check_kernel(const int dev, const int kernel)
 
   if(!cl->inited || dev < 0) return FALSE;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return FALSE;
-  
+
   if(cl->dev[dev].kernel_used[kernel]) return TRUE;
 
   const int prog = cl->program_saved[kernel];
@@ -2537,7 +2536,7 @@ int dt_opencl_set_kernel_arg(
         const void *arg)
 {
   if(!_check_kernel(dev, kernel)) return -1;
-  
+
   dt_opencl_t *cl = darktable.opencl;
   return (cl->dlocl->symbols->dt_clSetKernelArg)
     (cl->dev[dev].kernel[kernel], num, size, arg);
@@ -3357,18 +3356,7 @@ void dt_opencl_check_tuning(const int devid)
   const dt_opencl_tunemode_t tunemode = res->tunemode;
   cl->dev[devid].tuneactive = tunemode & DT_OPENCL_TUNE_MEMSIZE;
 
-  const dt_opencl_pinmode_t pinmode = cl->dev[devid].pinned_memory;
-  const gboolean safe_clmemsize =
-    cl->dev[devid].max_global_mem <
-    (size_t) (darktable.dtresources.total_memory / 16lu / cl->num_devs);
-  const gboolean want_pinned = (pinmode & DT_OPENCL_PINNING_ON)
-    || (tunemode & DT_OPENCL_TUNE_PINNED);
-
-  if(((pinmode & DT_OPENCL_PINNING_DISABLED) == 0)
-       && ((cl->dev[devid].runtime_error & DT_OPENCL_TUNE_PINNED) == 0)
-       && want_pinned
-       && safe_clmemsize)
-    cl->dev[devid].tuneactive |= DT_OPENCL_TUNE_PINNED;
+  const gboolean pinning = cl->dev[devid].pinned_memory;
 
   int level = res->level;
   const gboolean info = ((oldlevel != level) || (oldtuned != tunemode));
@@ -3383,7 +3371,7 @@ void dt_opencl_check_tuning(const int devid)
                "[dt_opencl_check_tuning] reference mode %i,"
                " use %luMB (pinning=%s) on device `%s' id=%i\n",
                level, cl->dev[devid].used_available / 1024lu / 1024lu,
-               (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED) ? "ON" : "OFF",
+               pinning ? "ON" : "OFF",
                cl->dev[devid].fullname, devid);
     return;
   }
@@ -3396,8 +3384,7 @@ void dt_opencl_check_tuning(const int devid)
       : 400;
 
     const int reserved_mb =
-      MAX(1, headroom) + ((cl->dev[devid].runtime_error & DT_OPENCL_TUNE_MEMSIZE)
-                          ? 400 : 0);
+      MAX(1, headroom) + (cl->dev[devid].clmem_error ? 400 : 0);
     const int global_mb = cl->dev[devid].max_global_mem / 1024lu / 1024lu;
     cl->dev[devid].used_available = (size_t)
       (MAX(0, global_mb - reserved_mb)) * 1024ul * 1024ul;
@@ -3416,7 +3403,7 @@ void dt_opencl_check_tuning(const int devid)
        "[dt_opencl_check_tuning] use %luMB (tunemem=%s, pinning=%s) on device `%s' id=%i\n",
        cl->dev[devid].used_available / 1024lu / 1024lu,
        (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_MEMSIZE) ? "ON" : "OFF",
-       (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED)  ? "ON" : "OFF",
+       pinning  ? "ON" : "OFF",
        cl->dev[devid].fullname, devid);
 }
 
