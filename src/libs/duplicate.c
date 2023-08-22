@@ -230,7 +230,7 @@ void gui_post_expose(dt_lib_module_t *self,
 
   if(d->preview_surf)
     dt_view_paint_surface(cri, width, height, d->preview_surf,
-                          d->processed_width, d->processed_height, DT_WINDOW_MAIN);
+                          d->processed_width, d->processed_height, DT_WINDOW_MAIN, 0, 0, 0);
 }
 
 static void _thumb_remove(gpointer user_data)
