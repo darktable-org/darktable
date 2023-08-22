@@ -104,12 +104,6 @@ typedef enum dt_opencl_tunemode_t
   DT_OPENCL_TUNE_PINNED  = 2
 } dt_opencl_tunemode_t;
 
-typedef enum dt_opencl_pinmode_t
-{
-  DT_OPENCL_PINNING_OFF = 0,
-  DT_OPENCL_PINNING_ON = 1,
-  DT_OPENCL_PINNING_DISABLED = 2
-} dt_opencl_pinmode_t;
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -151,8 +145,6 @@ typedef struct dt_opencl_device_t
   size_t used_available;
   // flags what tuning modes should be used
   dt_opencl_tunemode_t tuneactive; 
-  // flags detected errors
-  dt_opencl_tunemode_t runtime_error;
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
@@ -167,13 +159,13 @@ typedef struct dt_opencl_device_t
   // this can often be avoided by using indirect transfers via pinned memory,
   // other devices have more efficient direct memory transfer implementations.
   // We can't predict on solid grounds if a device belongs to the first or second group,
-  // also pinned mem transfer requires slightly more video ram plus system memory. 
-  // this holds a bitmask defined by dt_opencl_pinmode_t
-  // the device specific conf key might hold
-  // 0 -> disabled by default; might be switched on by tune for performance
-  // 1 -> enabled by default
-  // 2 -> disabled under all circumstances. This could/should be used if we give away / ship specific keys for buggy systems 
-  dt_opencl_pinmode_t pinned_memory;
+  // also pinned mem transfer requires slightly more video ram plus system memory.
+  // If TRUE in the device-specific conf pinned transfer is enabled
+  gboolean pinned_memory;
+
+  // flags reporting cl runtime error conditions
+  gboolean pinned_error;
+  gboolean clmem_error;
 
   // in OpenCL processing round width/height of global work groups to a multiple of these values.
   // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
