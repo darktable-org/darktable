@@ -1710,21 +1710,23 @@ void dt_view_paint_surface(cairo_t *cr,
 
   cairo_translate(cr, 0.5 * width, 0.5 * height);
 
-  const double maxw = MIN(0.5 * width - tb, 0.5 * wd * zoom_scale);
-  const double maxh = MIN(0.5 * height - tb, 0.5 * ht * zoom_scale);
+  gboolean matching = dev->preview_pipe->output_imgid == dev->image_storage.id;
+
+  const double maxw = MIN(width - tb * 2, matching ? wd * zoom_scale : processed_width * (1<<closeup));
+  const double maxh = MIN(height - tb * 2, matching ? ht * zoom_scale : processed_height * (1<<closeup));
 
   if(dev->iso_12646.enabled
      && window != DT_WINDOW_SLIDESHOW)
   {
     // draw the white frame around picture
-    const double ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio");
+    const double ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio") * 2;
     const double borw = maxw + tb * ratio, borh = maxh + tb * ratio;
-    cairo_rectangle(cr, -borw, -borh, 2.0 * borw, 2.0 * borh);
+    cairo_rectangle(cr, -0.5 * borw, -0.5 * borh, borw, borh);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_FG);
     cairo_fill(cr);
   }
 
-  cairo_rectangle(cr, -maxw, -maxh, 2.0 * maxw, 2.0 * maxh);
+  cairo_rectangle(cr, -0.5 * maxw, -0.5 * maxh, maxw, maxh);
   cairo_clip(cr);
 
   cairo_scale(cr, zoom_scale, zoom_scale);
@@ -1733,7 +1735,7 @@ void dt_view_paint_surface(cairo_t *cr,
 
   double back_scale = buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale;
 
-  if(back_scale < 1.0 || offset_x != zoom_x || offset_y != zoom_y)
+  if(matching && (back_scale < 1.0 || offset_x != zoom_x || offset_y != zoom_y))
   {
     dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] draw preview\n");
     // draw preview
