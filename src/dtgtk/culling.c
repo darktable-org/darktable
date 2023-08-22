@@ -1730,6 +1730,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     int thumb_x = 0;
     int row_heigth = 0;
     const int row_width_limit = total_slot_width / slot_counter * thumbs_per_row;
+    int remaining_slot_width = total_slot_width;
 
     // work with one slot at a time
     for(GList *slot_iter = slots; slot_iter; slot_iter = g_list_next(slot_iter))
@@ -1751,13 +1752,27 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       slot_total_heigth -= spacing;
 
       // if slot is about to be placed outside of allocated horizonal space, place the slot in a new row
-      //  we allow for 20% tolerance to account for the influence of images with mixed aspect ratios in the math
+      //  we allow for 20% thumbnail width tolerance to account for the influence of images with mixed aspect ratios in the math
       gboolean create_new_row = FALSE;
-      if(thumb_x + slot_max_thumb_width > row_width_limit * 1.2)
+
+      // if slot would fit within the 20% buffer zone, we check if its width is about the same as the buffer zone
+      //  if yes, we only place the slot here if it stops the next row from overflowing
+      //  otherwise there is no good reason to squeze it in and the slot will be placed in the next row instead
+      if(thumb_x + slot_max_thumb_width > row_width_limit && thumb_x + slot_max_thumb_width <= row_width_limit + avg_thumb_width * 0.2)
+        if(slot_max_thumb_width < 0.3 * avg_thumb_width)
+        {
+          // if the remaining slots will only fit into the next row if slot is squezed into the current row, do it 
+          if(remaining_slot_width - slot_max_thumb_width - spacing <= row_width_limit && remaining_slot_width > row_width_limit)
+            create_new_row = FALSE;
+          else
+            create_new_row = TRUE;
+        }
+
+      if(thumb_x + slot_max_thumb_width > row_width_limit + avg_thumb_width * 0.2)
       {
         create_new_row = TRUE;
         // if this is the last image and we are about to place it in a new row,
-        //  check if the aspect ratio of thumbnail placement is better if we keep the thumbnail in the previous row
+        //  check if the aspect ratio of thumbnail placement is better if we keep the thumbnail in the current row
         if(!slot_iter->next)
         {
           const float ratio_same_row = _absmul((thumb_x + slot_max_thumb_width) /
@@ -1801,6 +1816,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       total_height = MAX(total_height, thumb_y);        // update total height of all thumbs combined as we fill column by column with thumbnails
       thumb_x += slot_max_thumb_width + spacing;
       total_width = MAX(total_width, thumb_x);          // update total width of all thumbs combined as we fill column by column with thumbnails
+      remaining_slot_width -= (slot_max_thumb_width + spacing);
     }
     g_list_free(slots);
     slots = NULL;
