@@ -1571,6 +1571,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   int slot_counter = 0;
   float avg_slot_aspect_r = 0.0f;
   int total_slot_width = 0;
+  int avg_slot_width = 0;
 
   for(GList *slot_iter = slots;
       slot_iter;
@@ -1615,8 +1616,9 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     scaled_slot_height -= spacing;
     total_slot_width += scaled_slot_width + spacing;
 
-    // iterative formula to calculate average slot ratio
+    // iterative formula to calculate average slot ratio and width
     avg_slot_aspect_r += (scaled_slot_width/(float)scaled_slot_height - avg_slot_aspect_r) / (float)slot_counter;
+    avg_slot_width += (scaled_slot_width - avg_slot_width) / (float)thumb_counter;
   }
   total_slot_width -= spacing;
 
@@ -1758,29 +1760,31 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       // if slot would fit within the 20% buffer zone, we check if its width is about the same as the buffer zone
       //  if yes, we only place the slot here if it stops the next row from overflowing
       //  otherwise there is no good reason to squeze it in and the slot will be placed in the next row instead
-      if(thumb_x + slot_max_thumb_width > row_width_limit && thumb_x + slot_max_thumb_width <= row_width_limit + avg_thumb_width * 0.2)
-        if(slot_max_thumb_width < 0.3 * avg_thumb_width)
+      if(thumb_x + slot_max_thumb_width > row_width_limit && thumb_x + slot_max_thumb_width <= row_width_limit + avg_slot_width * 0.6)
+      {
+        if(slot_max_thumb_width < 0.6 * avg_slot_width)
         {
           // if the remaining slots will only fit into the next row if slot is squezed into the current row, do it 
           if(remaining_slot_width - slot_max_thumb_width - spacing <= row_width_limit && remaining_slot_width > row_width_limit)
             create_new_row = FALSE;
-          else
-            create_new_row = TRUE;
         }
-
-      if(thumb_x + slot_max_thumb_width > row_width_limit + avg_thumb_width * 0.2)
+      }
+      else if(thumb_x + slot_max_thumb_width > row_width_limit + avg_slot_width * 0.6)
       {
         create_new_row = TRUE;
         // if this is the last image and we are about to place it in a new row,
         //  check if the aspect ratio of thumbnail placement is better if we keep the thumbnail in the current row
         if(!slot_iter->next)
         {
-          const float ratio_same_row = _absmul((thumb_x + slot_max_thumb_width) /
-                                  (float)MAX(row_heigth, slot_total_heigth), table->view_width /
-                                  (float)table->view_height);
-          const float ratio_new_row = _absmul(MAX(thumb_x, slot_max_thumb_width) /
-                                  (float)(row_heigth + slot_total_heigth), table->view_width /
-                                  (float)table->view_height);
+          const float ratio_same_row = _absmul(
+            MAX(total_width, (thumb_x + slot_max_thumb_width)) / (float)MAX(total_height, row_y + slot_total_heigth),
+            table->view_width / (float)table->view_height
+          );
+          const float ratio_new_row = _absmul(
+            MAX(total_width, slot_max_thumb_width) / (float)(total_height + slot_total_heigth),
+            table->view_width / (float)table->view_height
+          );
+
           if(ratio_new_row > ratio_same_row)
           {
             create_new_row = FALSE;
