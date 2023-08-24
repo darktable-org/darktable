@@ -342,7 +342,7 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i 0.0 %.3f",
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %.3f %.3f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
@@ -351,6 +351,7 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].event_handles,
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
+    0.0f, // dummy for now as we don't have the benching any more
     cl->dev[devid].advantage);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
@@ -360,7 +361,7 @@ void dt_opencl_write_device_config(const int devid)
   // specific but also depend on the devid to support systems with two
   // similar cards.
   g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
-  g_snprintf(dat, 510, "%i", cl->dev[devid].forced_headroom);
+  g_snprintf(dat, 510, "%i", cl->dev[devid].headroom);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -439,13 +440,13 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
-    int forced_headroom;
-    sscanf(dat, "%i", &forced_headroom);
-    if(forced_headroom > 0) cldid->forced_headroom = forced_headroom;
+    int headroom;
+    sscanf(dat, "%i", &headroom);
+    if(headroom > 0) cldid->headroom = headroom;
   }
   else // this is used if updating to 4.0 or fresh installs; see
        // commenting _opencl_get_unused_device_mem()
-    cl->dev[devid].forced_headroom = 400;
+    cldid->headroom = DT_OPENCL_DEFAULT_HEADROOM;
   dt_opencl_write_device_config(devid);
   return !existing_device || !safety_ok;
 }
@@ -496,8 +497,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].event_handles = 128;
   cl->dev[dev].asyncmode = FALSE;
   cl->dev[dev].disabled = FALSE;
-  cl->dev[dev].forced_headroom = 0;
-  cl->dev[dev].tuneactive = DT_OPENCL_TUNE_NOTHING;
+  cl->dev[dev].headroom = 0;
+  cl->dev[dev].tunehead = FALSE;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *device_name = NULL;
@@ -828,20 +829,16 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   }
 
   dt_sys_resources_t *resrc = &darktable.dtresources;
-  const gboolean pinning = cl->dev[dev].pinned_memory;
-  const gboolean tuning = resrc->tunemode & DT_OPENCL_TUNE_MEMSIZE;
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   ASYNC PIXELPIPE:          %s\n",
-               (cl->dev[dev].asyncmode) ? "YES" : "NO");
+               "   ASYNC PIXELPIPE:          %s\n", cl->dev[dev].asyncmode ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   PINNED MEMORY TRANSFER:   %s\n", pinning ? "YES" : "NO");
+               "   PINNED MEMORY TRANSFER:   %s\n", cl->dev[dev].pinned_memory ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MEMORY TUNING:            %s\n", tuning ? "WANTED" : "NO");
+               "   HEADROOM:                 %s\n", resrc->tunehead ? "USED" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   FORCED HEADROOM:          %i\n", cl->dev[dev].forced_headroom);
+               "   HEADROOM:                 %iMb\n", cl->dev[dev].headroom);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   AVOID ATOMICS:            %s\n",
-               (cl->dev[dev].avoid_atomics) ? "YES" : "NO");
+               "   AVOID ATOMICS:            %s\n", cl->dev[dev].avoid_atomics ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MICRO NAP:                %i\n", cl->dev[dev].micro_nap);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -853,8 +850,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL,
                "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   DEFAULT DEVICE:           %s\n",
-               (type & CL_DEVICE_TYPE_DEFAULT) ? "YES" : "NO");
+               "   DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "YES" : "NO");
 
   if(cl->dev[dev].disabled)
   {
@@ -3351,17 +3347,16 @@ void dt_opencl_check_tuning(const int devid)
   if(!_cldev_running(devid)) return;
 
   static int oldlevel = -999;
-  static int oldtuned = -999;
+  static int oldtunehead = -999;
 
-  const dt_opencl_tunemode_t tunemode = res->tunemode;
-  cl->dev[devid].tuneactive = tunemode & DT_OPENCL_TUNE_MEMSIZE;
+  const gboolean tunehead = res->tunehead;
+  const int level = res->level;
 
-  const gboolean pinning = cl->dev[devid].pinned_memory;
+  cl->dev[devid].tunehead = tunehead;
 
-  int level = res->level;
-  const gboolean info = ((oldlevel != level) || (oldtuned != tunemode));
+  const gboolean info = ((oldlevel != level) || (oldtunehead != tunehead));
   oldlevel = level;
-  oldtuned = tunemode;
+  oldtunehead = tunehead;
 
   if(level < 0)
   {
@@ -3370,18 +3365,19 @@ void dt_opencl_check_tuning(const int devid)
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
                "[dt_opencl_check_tuning] reference mode %i,"
                " use %luMB (pinning=%s) on device `%s' id=%i\n",
-               level, cl->dev[devid].used_available / 1024lu / 1024lu,
-               pinning ? "ON" : "OFF",
+               level,
+               cl->dev[devid].used_available / 1024lu / 1024lu,
+               cl->dev[devid].pinned_memory ? "ON" : "OFF",
                cl->dev[devid].fullname, devid);
     return;
   }
 
   const size_t allmem = cl->dev[devid].max_global_mem;
-  if(cl->dev[devid].tuneactive & DT_OPENCL_TUNE_MEMSIZE)
+  if(cl->dev[devid].tunehead)
   {
-    const int headroom = (cl->dev[devid].forced_headroom)
-      ? cl->dev[devid].forced_headroom
-      : 400;
+    const int headroom = (cl->dev[devid].headroom)
+      ? cl->dev[devid].headroom
+      : DT_OPENCL_DEFAULT_HEADROOM;
 
     const int reserved_mb =
       MAX(1, headroom) + (cl->dev[devid].clmem_error ? 400 : 0);
@@ -3400,10 +3396,10 @@ void dt_opencl_check_tuning(const int devid)
 
   if(info)
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-       "[dt_opencl_check_tuning] use %luMB (tunemem=%s, pinning=%s) on device `%s' id=%i\n",
+       "[dt_opencl_check_tuning] use %luMB (headroom=%s, pinning=%s) on device `%s' id=%i\n",
        cl->dev[devid].used_available / 1024lu / 1024lu,
-       (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_MEMSIZE) ? "ON" : "OFF",
-       pinning  ? "ON" : "OFF",
+       cl->dev[devid].tunehead ? "ON" : "OFF",
+       cl->dev[devid].pinned_memory  ? "ON" : "OFF",
        cl->dev[devid].fullname, devid);
 }
 
@@ -3526,22 +3522,6 @@ static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
     profile = OPENCL_PROFILE_VERYFAST_GPU;
 
   return profile;
-}
-
-int dt_opencl_get_tuning_mode(void)
-{
-  int res = DT_OPENCL_TUNE_NOTHING;
-  const char *pstr = dt_conf_get_string_const("opencl_tuning_mode");
-  if(pstr)
-  {
-    if(!strcmp(pstr, "memory size"))
-      res = DT_OPENCL_TUNE_MEMSIZE;
-    else if(!strcmp(pstr, "memory transfer"))
-      res = DT_OPENCL_TUNE_PINNED;
-    else if(!strcmp(pstr, "memory size and transfer"))
-      res = DT_OPENCL_TUNE_MEMSIZE | DT_OPENCL_TUNE_PINNED;
-  }
-  return res;
 }
 
 /** set opencl specific synchronization timeout */
