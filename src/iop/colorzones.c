@@ -1818,7 +1818,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
   c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
 
-  darktable.control->element = 7 * _mouse_to_curve(c->mouse_x, c->zoom_factor, c->offset_x) + 0.5f;
+  darktable.control->element = (int)(8.0 * _mouse_to_curve(c->mouse_x, c->zoom_factor, c->offset_x) + 0.5f) % 8;
 
   // move a node
   if(event->state & GDK_BUTTON1_MASK)
@@ -2311,7 +2311,7 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
   int ch = c->channel;
   const int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
-  float x = (float)element / 7.0;
+  float x = (float)element / 8.0;
 
   gboolean close_enough = FALSE;
   int node = 0;
