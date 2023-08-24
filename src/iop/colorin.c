@@ -861,60 +861,12 @@ static void _cmatrix_fastpath_simple(float *const restrict out,
   }
 }
 
-#ifdef __SSE2__
-static inline void _cmatrix_fastpath_clipping_sse(float *const restrict out,
-                                                  const float *const restrict in,
-                                                  size_t npixels,
-                                                  const dt_colormatrix_t nmatrix,
-                                                  const dt_colormatrix_t lmatrix)
-{
-  // only color matrix. use our optimized fast path!
-  const __m128 nm0 = _mm_set_ps(0.0f, nmatrix[2][0], nmatrix[1][0], nmatrix[0][0]);
-  const __m128 nm1 = _mm_set_ps(0.0f, nmatrix[2][1], nmatrix[1][1], nmatrix[0][1]);
-  const __m128 nm2 = _mm_set_ps(0.0f, nmatrix[2][2], nmatrix[1][2], nmatrix[0][2]);
-
-  const __m128 lm0 = _mm_set_ps(0.0f, lmatrix[2][0], lmatrix[1][0], lmatrix[0][0]);
-  const __m128 lm1 = _mm_set_ps(0.0f, lmatrix[2][1], lmatrix[1][1], lmatrix[0][1]);
-  const __m128 lm2 = _mm_set_ps(0.0f, lmatrix[2][2], lmatrix[1][2], lmatrix[0][2]);
-
-  // this function is called from inside a parallel for loop, so no
-  // need for further parallelization
-  for(size_t k = 0; k < npixels; k++)
-  {
-    __m128 input = _mm_load_ps(in + 4*k);
-    // convert to gamut space
-    __m128 nrgb = ((nm0 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(0, 0, 0, 0))) +
-                   (nm1 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(1, 1, 1, 1))) +
-                   (nm2 * _mm_shuffle_ps(input, input, _MM_SHUFFLE(2, 2, 2, 2))));
-    // clip to gamut
-    __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-    // convert to output space
-    __m128 xyz = ((lm0 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0))) +
-                  (lm1 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1))) +
-                  (lm2 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
-    _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(xyz));
-  }
-  _mm_sfence();
-}
-#endif
-
 static inline void _cmatrix_fastpath_clipping(float *const restrict out,
                                               const float *const restrict in,
                                               size_t npixels,
                                               const dt_colormatrix_t nmatrix,
                                               const dt_colormatrix_t lmatrix)
 {
-#ifdef __SSE2__
-  // we can't remove the SSE version yet, because I haven't been able to
-  // convince GCC10 to put the color matrix rows into registers, unlike
-  // with the SSE version.  That makes the non-SSE version quite a bit
-  // slower with fewer than 32 threads.
-  if(darktable.codepath.SSE2)
-  {
-    _cmatrix_fastpath_clipping_sse(out, in, npixels, nmatrix, lmatrix);
-    return;
-  }
-#endif
   const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0],
                                             nmatrix[1][0],
                                             nmatrix[2][0],
@@ -1028,43 +980,6 @@ static void _cmatrix_proper_simple(float *const restrict out,
   }
 }
 
-#ifdef __SSE2__
-static inline void _cmatrix_proper_clipping_sse(float *const restrict out,
-                                                const float *const restrict in,
-                                                size_t npixels,
-                                                const dt_iop_colorin_data_t *const d,
-                                                const dt_colormatrix_t nmatrix,
-                                                const dt_colormatrix_t lmatrix)
-{
-  const __m128 nm0 = _mm_set_ps(0.0f, d->nmatrix[2][0], d->nmatrix[1][0], d->nmatrix[0][0]);
-  const __m128 nm1 = _mm_set_ps(0.0f, d->nmatrix[2][1], d->nmatrix[1][1], d->nmatrix[0][1]);
-  const __m128 nm2 = _mm_set_ps(0.0f, d->nmatrix[2][2], d->nmatrix[1][2], d->nmatrix[0][2]);
-  const __m128 lm0 = _mm_set_ps(0.0f, d->lmatrix[2][0], d->lmatrix[1][0], d->lmatrix[0][0]);
-  const __m128 lm1 = _mm_set_ps(0.0f, d->lmatrix[2][1], d->lmatrix[1][1], d->lmatrix[0][1]);
-  const __m128 lm2 = _mm_set_ps(0.0f, d->lmatrix[2][2], d->lmatrix[1][2], d->lmatrix[0][2]);
-
-  // this function is called from inside a parallel for loop, so no need for further parallelization
-  for(size_t k = 0; k < npixels; k++)
-  {
-    dt_aligned_pixel_t cam;
-    copy_pixel(cam, in + 4*k);
-    _apply_tone_curves(cam, d);
-
-    // convert to clipping colorspace
-    __m128 nrgb = ((nm0 * _mm_set1_ps(cam[0]))
-                   + (nm1 * _mm_set1_ps(cam[1]))
-                   + (nm2 * _mm_set1_ps(cam[2])));
-    // clip to gamut
-    __m128 crgb = _mm_min_ps(_mm_max_ps(nrgb, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-    // convert to output colorspace
-    __m128 xyz = ((lm0 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(0, 0, 0, 0)))
-                  + (lm1 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(1, 1, 1, 1)))
-                  + (lm2 * _mm_shuffle_ps(crgb, crgb, _MM_SHUFFLE(2, 2, 2, 2))));
-    _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(xyz));
-  }
-}
-#endif
-
 static inline void _cmatrix_proper_clipping(float *const restrict out,
                                             const float *const restrict in,
                                             size_t npixels,
@@ -1072,13 +987,6 @@ static inline void _cmatrix_proper_clipping(float *const restrict out,
                                             const dt_colormatrix_t nmatrix,
                                             const dt_colormatrix_t lmatrix)
 {
-#ifdef __SSE2__
-  if(darktable.codepath.SSE2)
-  {
-    _cmatrix_proper_clipping_sse(out, in, npixels, d, nmatrix, lmatrix);
-    return;
-  }
-#endif
   const dt_aligned_pixel_t nmatrix_row0 = { nmatrix[0][0],
                                             nmatrix[1][0],
                                             nmatrix[2][0],
