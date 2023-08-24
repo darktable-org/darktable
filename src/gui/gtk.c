@@ -45,6 +45,7 @@
 #include "gui/presets.h"
 #include "views/view.h"
 #include "gui/about.h"
+#include "gui/preferences.h"
 
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_WAYLAND
@@ -1073,6 +1074,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                    G_CALLBACK(darktable_show_about_dialog), NULL);
   gtkosx_application_insert_app_menu_item(OSXApp, mi_about, 0);
 
+  GtkWidget *mi_prefs = gtk_menu_item_new_with_label (_("preferences"));
+  g_signal_connect(G_OBJECT(mi_prefs), "activate",
+                   G_CALLBACK(dt_gui_preferences_show), NULL);
+  gtkosx_application_insert_app_menu_item(OSXApp, mi_prefs, 1);
 
 #endif
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(_osx_quit_callback), NULL);
