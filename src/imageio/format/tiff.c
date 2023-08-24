@@ -66,7 +66,7 @@ typedef struct dt_imageio_tiff_gui_t
 
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
@@ -386,7 +386,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
       while(g_hash_table_iter_next(&rm_iter, &key, &value))
       {
         if(free_mask) dt_free_align(raster_mask);
-        raster_mask = dt_dev_get_raster_mask(pipe, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
+        raster_mask = dt_dev_get_raster_mask(piece, piece->module, GPOINTER_TO_INT(key), NULL, &free_mask);
 
 
         size_t w = d->global.width, h = d->global.height;
@@ -585,34 +585,30 @@ exit:
   return rc;
 }
 
-#if 0
-int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
-{
-  tiff->handle = TIFFOpen(filename, "rl");
-  if( tiff->handle )
-  {
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGEWIDTH, &tiff->width);
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGELENGTH, &tiff->height);
-  }
-  return 1;
-}
-
-int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
-{
-  TIFFClose(tiff->handle);
-  return 1;
-}
-#endif
-
 size_t params_size(dt_imageio_module_format_t *self)
 {
   return sizeof(dt_imageio_tiff_t) - sizeof(TIFF *);
 }
 
-void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params, const size_t old_params_size,
-                    const int old_version, const int new_version, size_t *new_size)
+void *legacy_params(dt_imageio_module_format_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
+                    size_t *new_size)
 {
-  if(old_version == 1 && new_version == 4)
+  typedef struct dt_imageio_tiff_v4_t
+  {
+    dt_imageio_module_data_t global;
+    int bpp;
+    int pixelformat;
+    int compress;
+    int compresslevel;
+    int shortfile;
+    TIFF *handle;
+  } dt_imageio_tiff_v4_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_tiff_v1_t
     {
@@ -625,7 +621,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_tiff_v1_t;
 
     const dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
-    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -639,10 +635,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     n->compresslevel = 6;
     n->shortfile = 0;
     n->handle = o->handle;
-    *new_size = self->params_size(self);
+
+    *new_version = 4;
+    *new_size = sizeof(dt_imageio_tiff_v4_t) - sizeof(TIFF *);
     return n;
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2)
   {
     typedef struct dt_imageio_tiff_v2_t
     {
@@ -656,7 +654,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_tiff_v2_t;
 
     const dt_imageio_tiff_v2_t *o = (dt_imageio_tiff_v2_t *)old_params;
-    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -670,10 +668,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     n->compresslevel = 6;
     n->shortfile = 0;
     n->handle = o->handle;
-    *new_size = self->params_size(self);
+
+    *new_version = 4;
+    *new_size = sizeof(dt_imageio_tiff_v4_t) - sizeof(TIFF *);
     return n;
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3)
   {
     typedef struct dt_imageio_tiff_v3_t
     {
@@ -686,7 +686,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_tiff_v3_t;
 
     const dt_imageio_tiff_v3_t *o = (dt_imageio_tiff_v3_t *)old_params;
-    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -708,9 +708,29 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     }
     n->shortfile = o->shortfile;
     n->handle = o->handle;
-    *new_size = self->params_size(self);
+
+    *new_version = 4;
+    *new_size = sizeof(dt_imageio_tiff_v4_t) - sizeof(TIFF *);
     return n;
   }
+
+  // incremental update supported:
+  /*
+  typedef struct dt_imageio_tiff_v5_t
+  {
+    ...
+  } dt_imageio_tiff_v5_t;
+
+  if(old_version == 4)
+  {
+    // let's update from 4 to 5
+
+    ...
+    *new_size = sizeof(dt_imageio_tiff_v5_t) - sizeof(TIFF *);
+    *new_version = 5;
+    return n;
+  }
+  */
   return NULL;
 }
 
@@ -904,7 +924,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // shortfile option combo box
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("b&w image"), NULL, shortmode,
-                               shortfile_combobox_changed, self, N_("write rgb colors"), N_("write grayscale"));
+                               shortfile_combobox_changed, self, N_("write RGB colors"), N_("write grayscale"));
   dt_bauhaus_combobox_set_default(gui->shortfiles,
                                   dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->shortfiles, TRUE, TRUE, 0);

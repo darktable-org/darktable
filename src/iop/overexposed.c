@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,13 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include <stdlib.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include <cairo.h>
 
 #include "common/opencl.h"
@@ -83,19 +81,12 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
-
-
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
-{
-  // we do no longer have module params in here and just ignore any legacy entries
-  return 0;
-}
-
 
 // void init_key_accels(dt_iop_module_so_t *self)
 // {
@@ -128,7 +119,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *restrict img_tmp = NULL;
   if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, ch, &img_tmp, 0))
   {
-    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
     dt_control_log(_("module overexposed failed in buffer allocation"));
     return;
   }
@@ -153,18 +144,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                             work_profile, self->op);
   else
   {
-    fprintf(stderr, "[overexposed process] can't create transform profile\n");
-    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    dt_print(DT_DEBUG_ALWAYS, "[overexposed process] can't create transform profile\n");
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
     dt_control_log(_("module overexposed failed in color conversion"));
     goto process_finish;
   }
-
-
-  #ifdef __SSE2__
-    // flush denormals to zero to avoid performance penalty if there are a lot of near-zero values
-    const unsigned int oldMode = _MM_GET_FLUSH_ZERO_MODE();
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-  #endif
+  // flush denormals to zero to avoid performance penalty if there are a lot of near-zero values
+  const unsigned int oldMode = dt_mm_enable_flush_zero();
 
   if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_ANYRGB)
   {
@@ -330,9 +316,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  #ifdef __SSE2__
-    _MM_SET_FLUSH_ZERO_MODE(oldMode);
-  #endif
+  dt_mm_restore_flush_zero(oldMode);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -365,7 +349,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_tmp == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    fprintf(stderr, "[overexposed process_cl] error allocating memory for color transformation\n");
+    dt_print(DT_DEBUG_ALWAYS, "[overexposed process_cl] error allocating memory for color transformation\n");
     dt_control_log(_("module overexposed failed in buffer allocation"));
     goto error;
   }
@@ -375,7 +359,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                                current_profile, work_profile, self->op);
   else
   {
-    fprintf(stderr, "[overexposed process_cl] can't create transform profile\n");
+    dt_print(DT_DEBUG_ALWAYS, "[overexposed process_cl] can't create transform profile\n");
     dt_control_log(_("module overexposed failed in color conversion"));
     goto error;
   }
@@ -466,8 +450,8 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_overexposed_t));
   module->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
-  module->hide_enable_button = 1;
-  module->default_enabled = 1;
+  module->hide_enable_button = TRUE;
+  module->default_enabled = TRUE;
   module->params_size = sizeof(dt_iop_overexposed_t);
   module->gui_data = NULL;
 }
@@ -477,4 +461,3 @@ void init(dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

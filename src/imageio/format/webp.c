@@ -117,7 +117,7 @@ void cleanup(dt_imageio_module_format_t *self)
 
 int write_image(dt_imageio_module_data_t *webp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   int res = 1;
@@ -255,11 +255,22 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_webp_t);
 }
 
-void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
-                    const size_t old_params_size, const int old_version, const int new_version,
+void *legacy_params(dt_imageio_module_format_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_imageio_webp_v2_t
+  {
+    dt_imageio_module_data_t global;
+    int comp_type;
+    int quality;
+    int hint;
+  } dt_imageio_webp_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_webp_v1_t
     {
@@ -271,8 +282,8 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       int hint;
     } dt_imageio_webp_v1_t;
 
-    dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
-    dt_imageio_webp_t *n = (dt_imageio_webp_t *)malloc(sizeof(dt_imageio_webp_t));
+    const dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
+    dt_imageio_webp_v2_t *n = (dt_imageio_webp_v2_t *)malloc(sizeof(dt_imageio_webp_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -283,9 +294,29 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     n->comp_type = o->comp_type;
     n->quality = o->quality;
     n->hint = o->hint;
-    *new_size = self->params_size(self);
+
+    *new_version = 2;
+    *new_size = sizeof(dt_imageio_webp_v2_t);
     return n;
   }
+
+  // incremental update supported:
+  /*
+  typedef struct dt_imageio_webp_v3_t
+  {
+    ...
+  } dt_imageio_webp_v3_t;
+
+  if(old_version == 2)
+  {
+    // let's update from 2 to 3
+
+    ...
+    *new_size = sizeof(dt_imageio_webp_v3_t);
+    *new_version = 3;
+    return n;
+  }
+  */
   return NULL;
 }
 

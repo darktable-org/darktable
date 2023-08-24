@@ -76,27 +76,47 @@ typedef struct dt_iop_basecurve_params_t
   dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "preserve colors" */
 } dt_iop_basecurve_params_t;
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 6)
+  typedef struct dt_iop_basecurve_params_v6_t
   {
-    typedef struct dt_iop_basecurve_params1_t
+    // three curves (c, ., .) with max number of nodes
+    // the other two are reserved, maybe we'll have cam rgb at some point.
+    dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+    int basecurve_nodes[3];
+    int basecurve_type[3];
+    int exposure_fusion;
+    float exposure_stops;
+    float exposure_bias;
+    dt_iop_rgb_norms_t preserve_colors;
+  } dt_iop_basecurve_params_v6_t;
+
+ if(old_version == 1)
+  {
+    typedef struct dt_iop_basecurve_params_v1_t
     {
       float tonecurve_x[6], tonecurve_y[6];
       int tonecurve_preset;
-    } dt_iop_basecurve_params1_t;
+    } dt_iop_basecurve_params_v1_t;
 
-    dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
-    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
+    const dt_iop_basecurve_params_v1_t *o = (dt_iop_basecurve_params_v1_t *)old_params;
+    dt_iop_basecurve_params_v6_t *n =
+      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
 
     // start with a fresh copy of default parameters
     // unfortunately default_params aren't inited at this stage.
-    *n = (dt_iop_basecurve_params_t){ {
-                                        { { 0.0, 0.0 }, { 1.0, 1.0 } },
-                                      },
-                                      { 2, 3, 3 },
-                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } , 0, 1};
+    *n = (dt_iop_basecurve_params_v6_t)
+      { {
+          { { 0.0, 0.0 }, { 1.0, 1.0 } },
+        },
+        { 2, 3, 3 },
+        { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE } , 0, 1};
+
     for(int k = 0; k < 6; k++) n->basecurve[0][k].x = o->tonecurve_x[k];
     for(int k = 0; k < 6; k++) n->basecurve[0][k].y = o->tonecurve_y[k];
     n->basecurve_nodes[0] = 6;
@@ -105,31 +125,36 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->exposure_stops = 1;
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
+
+    *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  if(old_version == 2 && new_version == 6)
+  if(old_version == 2)
   {
-    typedef struct dt_iop_basecurve_params2_t
+    typedef struct dt_iop_basecurve_params_v2_t
     {
       // three curves (c, ., .) with max number of nodes
       // the other two are reserved, maybe we'll have cam rgb at some point.
       dt_iop_basecurve_node_t basecurve[3][MAXNODES];
       int basecurve_nodes[3];
       int basecurve_type[3];
-    } dt_iop_basecurve_params2_t;
+    } dt_iop_basecurve_params_v2_t;
 
-    dt_iop_basecurve_params2_t *o = (dt_iop_basecurve_params2_t *)old_params;
-    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_basecurve_params2_t));
+    dt_iop_basecurve_params_v2_t *o = (dt_iop_basecurve_params_v2_t *)old_params;
+    dt_iop_basecurve_params_v6_t *n =
+      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+
+    memcpy(n, o, sizeof(dt_iop_basecurve_params_v2_t));
     n->exposure_fusion = 0;
     n->exposure_stops = 1;
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
-  if(old_version == 3 && new_version == 6)
+  if(old_version == 3)
   {
-    typedef struct dt_iop_basecurve_params3_t
+    typedef struct dt_iop_basecurve_params_v3_t
     {
       // three curves (c, ., .) with max number of nodes
       // the other two are reserved, maybe we'll have cam rgb at some point.
@@ -138,20 +163,25 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int basecurve_type[3];
       int exposure_fusion;  // number of exposure fusion steps
       float exposure_stops; // number of stops between fusion images
-    } dt_iop_basecurve_params3_t;
+    } dt_iop_basecurve_params_v3_t;
 
-    dt_iop_basecurve_params3_t *o = (dt_iop_basecurve_params3_t *)old_params;
-    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_basecurve_params3_t));
-    n->exposure_stops = (o->exposure_fusion == 0 && o->exposure_stops == 0) ? 1.0f : o->exposure_stops;
+    dt_iop_basecurve_params_v3_t *o = (dt_iop_basecurve_params_v3_t *)old_params;
+    dt_iop_basecurve_params_v6_t *n =
+      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+    memcpy(n, o, sizeof(dt_iop_basecurve_params_v3_t));
+    n->exposure_stops =
+      (o->exposure_fusion == 0 && o->exposure_stops == 0) ? 1.0f : o->exposure_stops;
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
+
+    *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  if(old_version == 4 && new_version == 6)
+  if(old_version == 4)
   {
     // same as v3 but semantics/defaults changed
-    typedef struct dt_iop_basecurve_params4_t
+    typedef struct dt_iop_basecurve_params_v4_t
     {
       // three curves (c, ., .) with max number of nodes
       // the other two are reserved, maybe we'll have cam rgb at some point.
@@ -160,18 +190,23 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int basecurve_type[3];
       int exposure_fusion;  // number of exposure fusion steps
       float exposure_stops; // number of stops between fusion images
-    } dt_iop_basecurve_params4_t;
+    } dt_iop_basecurve_params_v4_t;
 
-    dt_iop_basecurve_params4_t *o = (dt_iop_basecurve_params4_t *)old_params;
-    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
+    dt_iop_basecurve_params_v4_t *o = (dt_iop_basecurve_params_v4_t *)old_params;
+    dt_iop_basecurve_params_v6_t *n =
+      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+
+    memcpy(n, o, sizeof(dt_iop_basecurve_params_v4_t));
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
+
+    *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  if(old_version == 5 && new_version == 6)
+  if(old_version == 5)
   {
-    typedef struct dt_iop_basecurve_params5_t
+    typedef struct dt_iop_basecurve_params_v5_t
     {
       // three curves (c, ., .) with max number of nodes
       // the other two are reserved, maybe we'll have cam rgb at some point.
@@ -181,12 +216,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int exposure_fusion;    // number of exposure fusion steps
       float exposure_stops;   // number of stops between fusion images
       float exposure_bias;    // whether to do exposure-fusion with over or under-exposure
-    } dt_iop_basecurve_params5_t;
+    } dt_iop_basecurve_params_v5_t;
 
-    dt_iop_basecurve_params5_t *o = (dt_iop_basecurve_params5_t *)old_params;
-    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_basecurve_params5_t));
+    dt_iop_basecurve_params_v5_t *o = (dt_iop_basecurve_params_v5_t *)old_params;
+    dt_iop_basecurve_params_v6_t *n =
+      (dt_iop_basecurve_params_v6_t *)malloc(sizeof(dt_iop_basecurve_params_v6_t));
+    memcpy(n, o, sizeof(dt_iop_basecurve_params_v5_t));
     n->preserve_colors = DT_RGB_NORM_NONE;
+
+    *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
+    *new_version = 6;
     return 0;
   }
   return 1;
@@ -365,9 +404,9 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -463,7 +502,7 @@ static gboolean _check_camera(dt_iop_basecurve_params_t *d,
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_basecurve_params_t *d = module->default_params;
+  dt_iop_basecurve_params_t *const d = module->default_params;
 
   if(module->multi_priority == 0)
   {
@@ -516,6 +555,25 @@ void init_presets(dt_iop_module_so_t *self)
 
   // sql commit
   dt_database_release_transaction(darktable.db);
+
+  // auto-applied display-referred default
+  self->pref_based_presets = TRUE;
+
+  const gboolean is_display_referred = dt_is_display_referred();
+
+  if(is_display_referred)
+  {
+    dt_gui_presets_add_generic
+      (_("display-referred default"), self->op, self->version(),
+       NULL, 0,
+       1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+    dt_gui_presets_update_ldr(_("display-referred default"), self->op,
+                              self->version(), FOR_RAW);
+
+    dt_gui_presets_update_autoapply(_("display-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
 }
 
 static float exposure_increment(float stops, int e, float fusion, float bias)
@@ -1252,7 +1310,7 @@ void process_fusion(struct dt_iop_module_t *self,
     comb[k] = dt_alloc_align_float((size_t)4 * w * h);
     if(!col[k] || !comb[k])
     {
-      dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+      dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
       dt_print(DT_DEBUG_ALWAYS,"[basecurve] process_fusion out of memory, skipping\n");
       goto cleanup;
     }
@@ -1533,7 +1591,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
 
-  dt_iop_cancel_history_update(self);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -1675,22 +1732,10 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   width -= 2 * inset;
   height -= 2 * inset;
 
-#if 0
-  // draw shadow around
-  float alpha = 1.0f;
-  for(int k=0; k<inset; k++)
-  {
-    cairo_rectangle(cr, -k, -k, width + 2*k, height + 2*k);
-    cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-    alpha *= 0.6f;
-    cairo_fill(cr);
-  }
-#else
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb(cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
-#endif
 
   cairo_set_source_rgb(cr, .3, .3, .3);
   cairo_rectangle(cr, 0, 0, width, height);
@@ -1900,7 +1945,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
     {
       // no vertex was close, create a new one!
       c->selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, liny);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     }
   }
   else
@@ -1933,7 +1978,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  dt_iop_basecurve_params_t *d = (dt_iop_basecurve_params_t *)self->default_params;
+  const dt_iop_basecurve_params_t *const d = (dt_iop_basecurve_params_t *)self->default_params;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
   int ch = 0;
@@ -1995,7 +2040,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
             if(dist < min) c->selected = selected;
           }
 
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
           gtk_widget_queue_draw(self->widget);
         }
       }
@@ -2012,7 +2057,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
         p->basecurve[ch][k].y = d->basecurve[ch][k].y;
       }
       c->selected = -2; // avoid motion notify re-inserting immediately.
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
       gtk_widget_queue_draw(self->widget);
       return TRUE;
     }
@@ -2024,7 +2069,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
       float reset_value = c->selected == 0 ? 0 : 1;
       basecurve[c->selected].y = basecurve[c->selected].x = reset_value;
       gtk_widget_queue_draw(self->widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
       return TRUE;
     }
 
@@ -2037,7 +2082,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->basecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     return TRUE;
   }
   return FALSE;
@@ -2065,7 +2110,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self,
   dt_iop_basecurve_sanity_check(self, widget);
 
   gtk_widget_queue_draw(widget);
-  dt_iop_queue_history_update(self, FALSE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   return TRUE;
 }
 
@@ -2161,7 +2206,7 @@ static void logbase_callback(GtkWidget *slider, gpointer user_data)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *c = IOP_GUI_ALLOC(basecurve);
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->default_params;
+  const dt_iop_basecurve_params_t *const p = (dt_iop_basecurve_params_t *)self->default_params;
 
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
   c->minmax_curve_type = p->basecurve_type[0];
@@ -2171,7 +2216,6 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1;
   c->loglogscale = 0;
-  self->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -2226,7 +2270,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->minmax_curve);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }

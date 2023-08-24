@@ -32,12 +32,12 @@
 #endif
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
-static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid);
+static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t imgid);
 
 typedef struct dt_gui_styles_dialog_t
 {
   gboolean edit;
-  int32_t imgid;
+  dt_imgid_t imgid;
   gchar *nameorig;
   GtkWidget *name, *description, *duplicate;
   GtkTreeView *items;
@@ -52,6 +52,7 @@ typedef enum _style_items_columns_t
   DT_STYLE_ITEMS_COL_ISACTIVE,
   DT_STYLE_ITEMS_COL_AUTOINIT,
   DT_STYLE_ITEMS_COL_NAME,
+  DT_STYLE_ITEMS_COL_MASK,
   DT_STYLE_ITEMS_COL_NUM,
   DT_STYLE_ITEMS_COL_UPDATE_NUM,
   DT_STYLE_ITEMS_NUM_COLS
@@ -59,18 +60,18 @@ typedef enum _style_items_columns_t
 
 static int _single_selected_imgid()
 {
-  int imgid = -1;
+  dt_imgid_t imgid = NO_IMGID;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid FROM main.selected_images",
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(imgid == -1)
+    if(!dt_is_valid_imgid(imgid))
       imgid = sqlite3_column_int(stmt, 0);
     else
     {
-      imgid = -1;
+      imgid = NO_IMGID;
       break;
     }
   }
@@ -472,7 +473,7 @@ static void _gui_styles_update_toggled(GtkCellRendererToggle *cell,
   gtk_tree_path_free(path);
 }
 
-void dt_gui_styles_dialog_new(int imgid)
+void dt_gui_styles_dialog_new(dt_imgid_t imgid)
 {
   _gui_styles_dialog_run(FALSE, NULL, imgid);
 }
@@ -487,7 +488,7 @@ static gint _g_list_find_module_by_name(gconstpointer a, gconstpointer b)
   return strncmp(((dt_iop_module_t *)a)->op, b, strlen(((dt_iop_module_t *)a)->op));
 }
 
-static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
+static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t imgid)
 {
   char title[512];
 
@@ -513,10 +514,12 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *dialog = GTK_DIALOG(
       gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  _("_cancel"), GTK_RESPONSE_REJECT,
-                                  _("select _all"),  GTK_RESPONSE_YES,
+                                   _("select _all"),  GTK_RESPONSE_YES,
                                   _("select _none"), GTK_RESPONSE_NONE,
-                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL));
+                                  _("_cancel"), GTK_RESPONSE_REJECT,
+                                 _("_save"), GTK_RESPONSE_ACCEPT, NULL));
+  dt_gui_dialog_add_help(dialog, "styles");
+
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
 #endif
@@ -572,12 +575,14 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   sd->items = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkListStore *liststore = gtk_list_store_new(
     DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN,
-    GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+    GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING,
+    GDK_TYPE_PIXBUF, G_TYPE_INT, G_TYPE_INT);
 
   sd->items_new = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkListStore *liststore_new = gtk_list_store_new
     (DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING,
-      GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+     GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING,
+     GDK_TYPE_PIXBUF, G_TYPE_INT, G_TYPE_INT);
 
   /* enabled */
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
@@ -623,7 +628,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   }
 
   /* update */
-  if(edit && imgid != -1)
+  if(edit && dt_is_valid_imgid(imgid))
   {
     renderer = gtk_cell_renderer_toggle_new();
     gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
@@ -661,14 +666,34 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_NAME);
   g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1,
-                                              _("item"), renderer, "text",
+                                              _("item"), renderer, "markup",
                                               DT_STYLE_ITEMS_COL_NAME, NULL);
 
   if(edit)
   {
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items_new), -1,
-                                                _("item"), renderer, "text",
+                                                _("item"), renderer, "markup",
                                                 DT_STYLE_ITEMS_COL_NAME, NULL);
+  }
+
+  /* mask */
+  renderer = gtk_cell_renderer_pixbuf_new();
+  column = gtk_tree_view_column_new_with_attributes
+    (_("mask"), renderer, "pixbuf",
+     DT_STYLE_ITEMS_COL_MASK, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(sd->items), column);
+  gtk_tree_view_column_set_alignment(column, 0.5);
+  gtk_tree_view_column_set_clickable(column, FALSE);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(30));
+
+  if(edit)
+  {
+    column = gtk_tree_view_column_new_with_attributes(_("mask"), renderer, "pixbuf",
+                                                      DT_STYLE_ITEMS_COL_MASK, NULL);
+    gtk_tree_view_column_set_alignment(column, 0.5);
+    gtk_tree_view_column_set_clickable(column, FALSE);
+    gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(30));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(sd->items_new), column);
   }
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(sd->items)), GTK_SELECTION_SINGLE);
@@ -683,6 +708,8 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
   GdkPixbuf *is_inactive_pb =
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
+  GdkPixbuf *mask =
+    dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_showmask);
 
   /* fill list with history items */
   GtkTreeIter iter;
@@ -696,12 +723,13 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                        DT_STYLE_ITEMS_COL_NUM,      -1,
                        -1);
     /* get history items for named style and populate the items list */
-    GList *items = dt_styles_get_item_list(name, FALSE, imgid, TRUE);
+    GList *items = dt_styles_get_item_list(name, TRUE, imgid, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
         dt_style_item_t *item = (dt_style_item_t *)items_iter->data;
+        const dt_develop_mask_mode_t mask_mode = item->blendop_params->mask_mode;
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
         {
@@ -712,6 +740,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                              DT_STYLE_ITEMS_COL_UPDATE,     FALSE,
                              DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
                              DT_STYLE_ITEMS_COL_NAME,       item->name,
+                             DT_STYLE_ITEMS_COL_MASK,       mask_mode > 0 ? mask : NULL,
                              DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
                              -1);
@@ -726,6 +755,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                              DT_STYLE_ITEMS_COL_AUTOINIT,   FALSE,
                              DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
                              DT_STYLE_ITEMS_COL_NAME,       item->name,
+                             DT_STYLE_ITEMS_COL_MASK,       mask_mode > 0 ? mask : NULL,
                              DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
                              -1);
@@ -748,7 +778,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                        -1);
     g_free(label);
 
-    GList *items = dt_history_get_items(imgid, FALSE);
+    GList *items = dt_history_get_items(imgid, FALSE, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
@@ -777,6 +807,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
            DT_STYLE_ITEMS_COL_AUTOINIT, FALSE,
            DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
            DT_STYLE_ITEMS_COL_NAME,     item->name,
+           DT_STYLE_ITEMS_COL_MASK,     item->mask_mode > 0 ? mask : NULL,
            DT_STYLE_ITEMS_COL_NUM,      item->num,
            -1);
 
@@ -818,32 +849,66 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 typedef struct _preview_data_t
 {
   char style_name[128];
-  int imgid;
+  dt_imgid_t imgid;
+  gboolean first_draw;
+  cairo_surface_t *surface;
+  guint8 *hash;
+  int hash_len;
 } _preview_data_t;
 
 static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   _preview_data_t *data = (_preview_data_t *)user_data;
-  gboolean res = FALSE;
 
-  if(data->imgid > 0)
+  if(dt_is_valid_imgid(data->imgid) && !data->first_draw && !data->surface)
+    data->surface = dt_gui_get_style_preview(data->imgid, data->style_name);
+
+  if(data->surface)
   {
-    cairo_surface_t *surface = dt_gui_get_style_preview(data->imgid, data->style_name);
     const int psize = dt_conf_get_int("ui/style/preview_size");
-    const int swidth = cairo_image_surface_get_width(surface);
-    const int sheight = cairo_image_surface_get_height(surface);
-    cairo_set_source_surface(cr, surface, .5f * (psize - swidth), .5f * (psize - sheight));
+    const int swidth = cairo_image_surface_get_width(data->surface);
+    const int sheight = cairo_image_surface_get_height(data->surface);
+    cairo_set_source_surface(cr, data->surface, .5f * (psize - swidth), .5f * (psize - sheight));
     cairo_paint(cr);
-    cairo_surface_destroy(surface);
-
-    res=TRUE;
+  }
+  else
+  {
+    data->first_draw = FALSE;
+    gtk_widget_queue_draw(widget);
   }
 
-  return res;
+  return FALSE;
 }
 
-GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
+GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 {
+  static _preview_data_t data = { "", -1, FALSE, NULL, NULL, 0};
+
+  dt_history_hash_values_t hash = { NULL, 0, NULL, 0, NULL, 0 };
+  dt_history_hash_read(imgid, &hash);
+
+  if(imgid != data.imgid
+     || g_strcmp0(data.style_name, name)
+     || data.hash_len != hash.current_len
+     || memcmp(data.hash, hash.current, data.hash_len))
+  {
+    if(data.surface)
+    {
+      cairo_surface_destroy(data.surface);
+      data.surface = NULL;
+    }
+    data.imgid = imgid;
+    g_strlcpy(data.style_name, name, sizeof(data.style_name));
+    g_free(data.hash);
+    data.hash = g_malloc(hash.current_len);
+    memcpy(data.hash, hash.current, hash.current_len);
+    data.hash_len = hash.current_len;
+  }
+
+  dt_history_hash_free(&hash);
+
+  if(!*name) return NULL;
+
   GtkWidget *ht = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *label = NULL;
@@ -869,7 +934,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 
   gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
-  GList *items = dt_styles_get_item_list(name, FALSE, -1, FALSE);
+  GList *items = dt_styles_get_item_list(name, TRUE, -1, FALSE);
   GList *l = items;
   while(l)
   {
@@ -899,7 +964,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 
   g_list_free_full(items, dt_style_item_free);
 
-  if(imgid > 0)
+  if(dt_is_valid_imgid(imgid))
   {
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
@@ -910,16 +975,14 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
     gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
     gtk_widget_set_app_paintable(da, TRUE);
     gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
-    _preview_data_t *data = g_malloc(sizeof(_preview_data_t));
-    g_strlcpy(data->style_name, name, sizeof(data->style_name));
-    data->imgid = imgid;
-    g_signal_connect_data(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), data, (GClosureNotify)g_free, 0);
+    data.first_draw = TRUE;
+    g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), &data);
   }
 
   return ht;
 }
 
-cairo_surface_t *dt_gui_get_style_preview(const uint32_t imgid, const char *name)
+cairo_surface_t *dt_gui_get_style_preview(const dt_imgid_t imgid, const char *name)
 {
   const int psize = dt_conf_get_int("ui/style/preview_size");
   cairo_surface_t *surface = dt_imageio_preview(imgid, psize, psize, -1, name);

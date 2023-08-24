@@ -38,7 +38,7 @@ struct dt_iop_module_t;
 typedef struct dt_dev_history_item_t
 {
   struct dt_iop_module_t *module; // pointer to image operation module
-  int32_t enabled;                // switched respective module on/off
+  gboolean enabled;               // switched respective module on/off
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   char op_name[20];
@@ -48,7 +48,7 @@ typedef struct dt_dev_history_item_t
   gboolean multi_name_hand_edited;
   GList *forms;        // snapshot of dt_develop_t->forms
   int num;             // num of history on database
-  int32_t focus_hash;  // used to determine whether or not to start a
+  gboolean focus_hash;  // used to determine whether or not to start a
                        // new item or to merge down
 } dt_dev_history_item_t;
 
@@ -99,42 +99,6 @@ typedef enum dt_dev_pixelpipe_status_t
   DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
 } dt_dev_pixelpipe_status_t;
 
-typedef enum dt_dev_pixelpipe_display_mask_t
-{
-  DT_DEV_PIXELPIPE_DISPLAY_NONE = 0,
-  DT_DEV_PIXELPIPE_DISPLAY_MASK = 1 << 0,
-  DT_DEV_PIXELPIPE_DISPLAY_CHANNEL = 1 << 1,
-  DT_DEV_PIXELPIPE_DISPLAY_OUTPUT = 1 << 2,
-  DT_DEV_PIXELPIPE_DISPLAY_L = 1 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_a = 2 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_b = 3 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_R = 4 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_G = 5 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_B = 6 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_GRAY = 7 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_LCH_C = 8 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_LCH_h = 9 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz = 13 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3, // show module's output
-                                               // without processing
-                                               // by later iops
-  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
-  DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
-} dt_dev_pixelpipe_display_mask_t;
-
-typedef enum dt_develop_detail_mmask_t
-{
-  DT_DEV_DETAIL_MASK_NONE = 0,
-  DT_DEV_DETAIL_MASK_REQUIRED = 1,
-  DT_DEV_DETAIL_MASK_DEMOSAIC = 2,
-  DT_DEV_DETAIL_MASK_RAWPREPARE = 4
-} dt_develop_detail_mask_t;
-
 typedef enum dt_clipping_preview_mode_t
 {
   DT_CLIPPING_PREVIEW_GAMUT = 0,
@@ -156,13 +120,18 @@ struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
   gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
-                        // gui_init'ed.
-  int32_t gui_leaving;  // set if everything is scheduled to shut down.
-  int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
-  int32_t focus_hash;   // determines whether to start a new history item or to merge down.
+                         // gui_init'ed.
+  gboolean gui_leaving;  // set if everything is scheduled to shut down.
+  gboolean gui_synch;    // set to TRUE by the render threads if gui_update should be called in the modules.
+
+  gpointer gui_previous_target; // widget that was changed last time. If same again, don't save undo.
+  double   gui_previous_time;   // last time that widget was changed. If too recent, don't save undo.
+  double   gui_previous_pipe_time; // time pipe finished after last widget was changed.
+
+  gboolean focus_hash;   // determines whether to start a new history item or to merge down.
   gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
   gboolean preview_input_changed, preview2_input_changed;
-
+  gboolean autosaving;
   dt_dev_pixelpipe_status_t image_status, preview_status, preview2_status;
   int32_t image_invalid_cnt;
   uint32_t timestamp;
@@ -177,8 +146,11 @@ typedef struct dt_develop_t
 
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe, *preview_pipe, *preview2_pipe;
-  dt_pthread_mutex_t pipe_mutex, preview_pipe_mutex,
-      preview2_pipe_mutex; // these are locked while the pipes are still in use
+
+  // these are locked while the pipes are still in use:
+  dt_pthread_mutex_t pipe_mutex;
+  dt_pthread_mutex_t preview_pipe_mutex;
+  dt_pthread_mutex_t preview2_pipe_mutex;
 
   // image under consideration, which
   // is copied each time an image is changed. this means we have some information
@@ -187,6 +159,7 @@ typedef struct dt_develop_t
   // calling into the cache explicitly. this should never be accessed directly, but
   // by the iop through the copy their respective pixelpipe holds, for thread-safety.
   dt_image_t image_storage;
+  dt_imgid_t requested_id;
 
   // history stack
   dt_pthread_mutex_t history_mutex;
@@ -219,7 +192,7 @@ typedef struct dt_develop_t
   GList *allforms;
 
   //full preview stuff
-  int full_preview;
+  gboolean full_preview;
   int full_preview_last_zoom, full_preview_last_closeup;
   float full_preview_last_zoom_x, full_preview_last_zoom_y;
   struct dt_iop_module_t *full_preview_last_module;
@@ -245,7 +218,8 @@ typedef struct dt_develop_t
     {
       struct dt_lib_module_t *module;
       /* switch module group */
-      void (*set)(struct dt_lib_module_t *self, uint32_t group);
+      void (*set)(struct dt_lib_module_t *self,
+                  const uint32_t group);
       /* get current module group */
       uint32_t (*get)(struct dt_lib_module_t *self);
       /* get activated module group */
@@ -255,11 +229,13 @@ typedef struct dt_develop_t
                        const uint32_t group,
                        struct dt_iop_module_t *module);
       /* switch to modulegroup */
-      void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
+      void (*switch_group)(struct dt_lib_module_t *self,
+                           struct dt_iop_module_t *module);
       /* update modulegroup visibility */
       void (*update_visibility)(struct dt_lib_module_t *self);
       /* test if module is preset in one of the current groups */
-      gboolean (*test_visible)(struct dt_lib_module_t *self, gchar *module);
+      gboolean (*test_visible)(struct dt_lib_module_t *self,
+                               gchar *module);
       /* add or remove module or widget in current quick access list */
       gboolean (*basics_module_toggle)(struct dt_lib_module_t *self,
                                        GtkWidget *widget,
@@ -272,12 +248,14 @@ typedef struct dt_develop_t
       struct dt_lib_module_t *module;
       /* treview list refresh */
       void (*list_change)(struct dt_lib_module_t *self);
-      void (*list_remove)(struct dt_lib_module_t *self, int formid, int parentid);
+      void (*list_remove)(struct dt_lib_module_t *self,
+                          const dt_mask_id_t formid,
+                          const dt_mask_id_t parentid);
       void (*list_update)(struct dt_lib_module_t *self);
       /* selected forms change */
       void (*selection_change)(struct dt_lib_module_t *self,
                                struct dt_iop_module_t *module,
-                               const int selectid);
+                               const dt_mask_id_t selectid);
     } masks;
 
     // what is the ID of the module currently doing pipeline chromatic
@@ -290,13 +268,22 @@ typedef struct dt_develop_t
     // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
     gboolean wb_is_D65;
     dt_aligned_pixel_t wb_coeffs;
-
   } proxy;
+
+
+  // for exposing the crop
+  struct
+  {
+    // set by dt_dev_pixelpipe_synch() if an enabled crop module is included in history
+    struct dt_iop_module_t *exposer;
+    struct dt_iop_module_t *requester;
+  } cropping;
 
   // for the overexposure indicator
   struct
   {
-    GtkWidget *floating_window, *button; // yes, having gtk stuff in here is ugly. live with it.
+    GtkWidget *floating_window, *button;
+    // yes, having gtk stuff in here is ugly. live with it.
 
     gboolean enabled;
     dt_dev_overexposed_colorscheme_t colorscheme;
@@ -308,7 +295,8 @@ typedef struct dt_develop_t
   // for the raw overexposure indicator
   struct
   {
-    GtkWidget *floating_window, *button; // yes, having gtk stuff in here is ugly. live with it.
+    GtkWidget *floating_window, *button;
+    // yes, having gtk stuff in here is ugly. live with it.
 
     gboolean enabled;
     dt_dev_rawoverexposed_mode_t mode;
@@ -367,11 +355,15 @@ void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
 void dt_dev_process_preview2(dt_develop_t *dev);
 
-void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
-void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
+void dt_dev_load_image(dt_develop_t *dev,
+                       const dt_imgid_t imgid);
+void dt_dev_reload_image(dt_develop_t *dev,
+                         const dt_imgid_t imgid);
 /** checks if provided imgid is the image currently in develop */
-int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
-const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op);
+gboolean dt_dev_is_current_image(dt_develop_t *dev,
+                                 const dt_imgid_t imgid);
+const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev,
+                                                     const char *op);
 void dt_dev_add_history_item_ext(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
                                  const gboolean enable,
@@ -379,6 +371,10 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev,
 void dt_dev_add_history_item(dt_develop_t *dev,
                              struct dt_iop_module_t *module,
                              const gboolean enable);
+void dt_dev_add_history_item_target(dt_develop_t *dev,
+                                    struct dt_iop_module_t *module,
+                                    const gboolean enable,
+                                    const gpointer target);
 void dt_dev_add_new_history_item(dt_develop_t *dev,
                                  struct dt_iop_module_t *module,
                                  const gboolean enable);
@@ -392,15 +388,16 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
-void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid);
+void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,
-                             const int imgid,
+                             const dt_imgid_t imgid,
                              const gboolean no_image,
                              const gboolean snapshot);
 void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_free_history_item(gpointer data);
-void dt_dev_invalidate_history_module(GList *list, struct dt_iop_module_t *module);
+void dt_dev_invalidate_history_module(GList *list,
+                                      struct dt_iop_module_t *module);
 
 void dt_dev_invalidate(dt_develop_t *dev);
 // also invalidates preview (which is unaffected by resize/zoom/pan)
@@ -411,7 +408,9 @@ void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev);
 void dt_dev_reprocess_preview(dt_develop_t *dev);
 
-void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch);
+void dt_dev_get_processed_size(const dt_develop_t *dev,
+                               int *procw,
+                               int *proch);
 void dt_dev_check_zoom_bounds(dt_develop_t *dev,
                               float *zoom_x,
                               float *zoom_y,
@@ -429,9 +428,12 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
                                  float *zoom_x,
                                  float *zoom_y);
 
-void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
-void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht);
-void dt_dev_invalidate_from_gui(dt_develop_t *dev);
+void dt_dev_configure(dt_develop_t *dev,
+                      int wd,
+                      int ht);
+void dt_dev_second_window_configure(dt_develop_t *dev,
+                                    int wd,
+                                    int ht);
 
 /*
  * exposure plugin hook, set the exposure and the black level
@@ -442,11 +444,13 @@ gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
 /** reset exposure to defaults */
 void dt_dev_exposure_reset_defaults(dt_develop_t *dev);
 /** set exposure */
-void dt_dev_exposure_set_exposure(dt_develop_t *dev, const float exposure);
+void dt_dev_exposure_set_exposure(dt_develop_t *dev,
+                                  const float exposure);
 /** get exposure */
 float dt_dev_exposure_get_exposure(dt_develop_t *dev);
 /** set exposure black level */
-void dt_dev_exposure_set_black(dt_develop_t *dev, const float black);
+void dt_dev_exposure_set_black(dt_develop_t *dev,
+                               const float black);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
 
@@ -454,7 +458,8 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
  * modulegroups plugin hooks
  */
 /** switch to modulegroup of module */
-void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
+void dt_dev_modulegroups_switch(dt_develop_t *dev,
+                                struct dt_iop_module_t *module);
 /** update modulegroup visibility */
 void dt_dev_modulegroups_update_visibility(dt_develop_t *dev);
 /** set the active modulegroup */
@@ -470,7 +475,8 @@ gboolean dt_dev_modulegroups_test(dt_develop_t *dev,
 /** reorder the module list */
 void dt_dev_reorder_gui_module_list(dt_develop_t *dev);
 /** test if the iop is visible in current groups layout **/
-gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module);
+gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev,
+                                        gchar *module);
 /** add or remove module or widget in current quick access list **/
 int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev,
                                              GtkWidget *widget,
@@ -484,23 +490,25 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
  */
 void dt_dev_masks_list_change(dt_develop_t *dev);
 void dt_dev_masks_list_update(dt_develop_t *dev);
-void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid);
+void dt_dev_masks_list_remove(dt_develop_t *dev,
+                              const dt_mask_id_t formid,
+                              const dt_mask_id_t parentid);
 void dt_dev_masks_selection_change(dt_develop_t *dev,
                                    struct dt_iop_module_t *module,
-                                   const int selectid);
+                                   const dt_mask_id_t selectid);
 
 /*
  * multi instances
  */
 /** duplicate a existent module */
+struct dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
+                                                    struct dt_iop_module_t *base,
+                                                    const gboolean reorder_iop);
 struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev,
                                                 struct dt_iop_module_t *base);
 /** remove an existent module */
-void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
-/** update "show" values of the multi instance part (show_move, show_delete, ...) */
-void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module);
-/** same, but for all modules */
-void dt_dev_modules_update_multishow(dt_develop_t *dev);
+void dt_dev_module_remove(dt_develop_t *dev,
+                          struct dt_iop_module_t *module);
 /** generates item multi-instance name */
 gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
 
@@ -508,9 +516,13 @@ gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
  * distort functions
  */
 /** apply all transforms to the specified points (in preview pipe space) */
-int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count);
+int dt_dev_distort_transform(dt_develop_t *dev,
+                             float *points,
+                             const size_t points_count);
 /** reverse apply all transforms to the specified points (in preview pipe space) */
-int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count);
+int dt_dev_distort_backtransform(dt_develop_t *dev,
+                                 float *points,
+                                 const size_t points_count);
 /** same fct, but we can specify iop with priority between pmin and pmax */
 int dt_dev_distort_transform_plus(dt_develop_t *dev,
                                   struct dt_dev_pixelpipe_t *pipe,
@@ -544,7 +556,8 @@ int dt_dev_distort_backtransform_locked(dt_develop_t *dev,
                                         const size_t points_count);
 
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
-struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
+struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
+                                                           struct dt_dev_pixelpipe_t *pipe,
                                                            struct dt_iop_module_t *module);
 /*
  * hash functions
@@ -552,7 +565,10 @@ struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, st
 /** generate hash value out of all module settings of pixelpipe */
 uint64_t dt_dev_hash(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
-uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction);
+uint64_t dt_dev_hash_plus(dt_develop_t *dev,
+                          struct dt_dev_pixelpipe_t *pipe,
+                          const double iop_order,
+                          const int transf_direction);
 /** wait until hash value found in hash matches hash value defined by
  * dev/pipe/pmin/pmax with timeout */
 int dt_dev_wait_hash(dt_develop_t *dev,
@@ -595,20 +611,27 @@ int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev,
  * second darkroom window zoom heplers
 */
 dt_dev_zoom_t dt_second_window_get_dev_zoom(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom(dt_develop_t *dev, const dt_dev_zoom_t value);
+void dt_second_window_set_dev_zoom(dt_develop_t *dev,
+                                   const dt_dev_zoom_t value);
 int dt_second_window_get_dev_closeup(dt_develop_t *dev);
-void dt_second_window_set_dev_closeup(dt_develop_t *dev, const int value);
+void dt_second_window_set_dev_closeup(dt_develop_t *dev,
+                                      const int value);
 float dt_second_window_get_dev_zoom_x(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom_x(dt_develop_t *dev, const float value);
+void dt_second_window_set_dev_zoom_x(dt_develop_t *dev,
+                                     const float value);
 float dt_second_window_get_dev_zoom_y(dt_develop_t *dev);
-void dt_second_window_set_dev_zoom_y(dt_develop_t *dev, const float value);
+void dt_second_window_set_dev_zoom_y(dt_develop_t *dev,
+                                     const float value);
 float dt_second_window_get_free_zoom_scale(dt_develop_t *dev);
 float dt_second_window_get_zoom_scale(dt_develop_t *dev,
                                       const dt_dev_zoom_t zoom,
                                       const int closeup_factor,
                                       const int preview);
-void dt_second_window_set_zoom_scale(dt_develop_t *dev, const float value);
-void dt_second_window_get_processed_size(const dt_develop_t *dev, int *procw, int *proch);
+void dt_second_window_set_zoom_scale(dt_develop_t *dev,
+                                     const float value);
+void dt_second_window_get_processed_size(const dt_develop_t *dev,
+                                         int *procw,
+                                         int *proch);
 void dt_second_window_check_zoom_bounds(dt_develop_t *dev,
                                         float *zoom_x,
                                         float *zoom_y,
@@ -631,26 +654,24 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
  * final processed sizes will align perfectly on the darkroom view.
  *
  */
-void dt_dev_image(
-  uint32_t imgid,
-  size_t width,
-  size_t height,
-  int history_end,
-  uint8_t **buf,
-  size_t *processed_width,
-  size_t *processed_height);
+void dt_dev_image(const dt_imgid_t imgid,
+                  const size_t width,
+                  const size_t height,
+                  const int history_end,
+                  uint8_t **buf,
+                  size_t *processed_width,
+                  size_t *processed_height);
 
-void dt_dev_image_ext(
-  uint32_t imgid,
-  size_t width,
-  size_t height,
-  int history_end,
-  uint8_t **buf,
-  size_t *processed_width,
-  size_t *processed_height,
-  int border_size,
-  gboolean iso_12646,
-  int32_t snapshot_id);
+void dt_dev_image_ext(const dt_imgid_t imgid,
+                      const size_t width,
+                      const size_t height,
+                      const int history_end,
+                      uint8_t **buf,
+                      size_t *processed_width,
+                      size_t *processed_height,
+                      const int border_size,
+                      const gboolean iso_12646,
+                      const int32_t snapshot_id);
 
 #ifdef __cplusplus
 } // extern "C"

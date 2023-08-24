@@ -36,13 +36,13 @@ exif_get_ascii_datafield(
 
   try
   {
-    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(filename);
+    auto image = Exiv2::ImageFactory::open(filename);
     assert(image.get() != 0);
     image->readMetadata();
 
     Exiv2::ExifData &exifData = image->exifData();
 
-    Exiv2::Value::AutoPtr val = exifData[key].getValue();
+    auto val = exifData[key].getValue();
 
     if (val->typeId() != Exiv2::asciiString)
     {

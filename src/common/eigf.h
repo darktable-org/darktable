@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ static inline void eigf_variance_analysis(const float *const restrict guide, // 
 {
   // We also use gaussian blurs instead of the square blurs of the guided filter
   const size_t Ndim = width * height;
-  float *const restrict in = dt_alloc_sse_ps(Ndim * 4);
+  float *const restrict in = dt_alloc_align_float(Ndim * 4);
 
   float ming = 10000000.0f;
   float maxg = 0.0f;
@@ -141,7 +141,7 @@ static inline void eigf_variance_analysis_no_mask(const float *const restrict gu
 {
   // We also use gaussian blurs instead of the square blurs of the guided filter
   const size_t Ndim = width * height;
-  float *const restrict in = dt_alloc_sse_ps(Ndim * 2);
+  float *const restrict in = dt_alloc_align_float(Ndim * 2);
 
   float ming = 10000000.0f;
   float maxg = 0.0f;
@@ -276,12 +276,12 @@ static inline void fast_eigf_surface_blur(float *const restrict image,
   const size_t num_elem_ds = ds_width * ds_height;
   const size_t num_elem = width * height;
 
-  float *const restrict mask = dt_alloc_sse_ps(dt_round_size_sse(num_elem));
-  float *const restrict ds_image = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds));
-  float *const restrict ds_mask = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds));
+  float *const restrict mask = dt_alloc_align_float(num_elem);
+  float *const restrict ds_image = dt_alloc_align_float(num_elem_ds);
+  float *const restrict ds_mask = dt_alloc_align_float(num_elem_ds);
   // average - variance arrays: store the guide and mask averages and variances
-  float *const restrict ds_av = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds * 4));
-  float *const restrict av = dt_alloc_sse_ps(dt_round_size_sse(num_elem * 4));
+  float *const restrict ds_av = dt_alloc_align_float(num_elem_ds * 4);
+  float *const restrict av = dt_alloc_align_float(num_elem * 4);
 
   if(!ds_image || !ds_mask || !ds_av || !av)
   {

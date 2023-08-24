@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,7 +90,9 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -430,7 +432,8 @@ static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventB
         break;
       default: // reset everything
       {
-        dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->default_params;
+        const dt_iop_colorcorrection_params_t *const d =
+          (dt_iop_colorcorrection_params_t *)self->default_params;
         memcpy(p, d, sizeof(*p));
         dt_dev_add_history_item(darktable.develop, self, TRUE);
       }

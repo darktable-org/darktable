@@ -44,7 +44,7 @@ OPTIONAL(void, gui_init, struct dt_view_t *self);       // create gtk elements, 
 OPTIONAL(void, cleanup, struct dt_view_t *self);        // cleanup *data
 OPTIONAL(void, expose, struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                        int32_t pointery);         // expose the module (gtk callback)
-OPTIONAL(int, try_enter, struct dt_view_t *self); // test if enter can succeed.
+OPTIONAL(gboolean, try_enter, struct dt_view_t *self); // test if enter can succeed.
 OPTIONAL(void, enter, struct dt_view_t *self);    // mode entered, this module got focus. return non-null on failure.
 OPTIONAL(void, leave, struct dt_view_t *self);    // mode left (is called after the new try_enter has succeeded).
 OPTIONAL(void, reset, struct dt_view_t *self);    // reset default appearance

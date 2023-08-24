@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ typedef enum dt_iop_colorzones_splines_version_t
 typedef enum dt_iop_colorzones_channel_t
 {
   DT_IOP_COLORZONES_L = 0, // $DESCRIPTION: "lightness"
-  DT_IOP_COLORZONES_C = 1, // $DESCRIPTION: "saturation"
+  DT_IOP_COLORZONES_C = 1, // $DESCRIPTION: "chroma"
   DT_IOP_COLORZONES_h = 2, // $DESCRIPTION: "hue"
   DT_IOP_COLORZONES_MAX_CHANNELS = 3
 } dt_iop_colorzones_channel_t;
@@ -141,7 +141,7 @@ const char *name()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("selectively shift hues, saturation and brightness of pixels"),
+  return dt_iop_set_description(self, _("selectively shift hues, chroma and lightness of pixels"),
                                       _("creative"),
                                       _("linear or non-linear, Lab, display-referred"),
                                       _("non-linear, Lab"),
@@ -158,26 +158,45 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
+  typedef struct dt_iop_colorzones_params_v5_t
+  {
+    dt_iop_colorzones_channel_t channel;
+    // three curves (L, C, h) with max number of nodes
+    dt_iop_colorzones_node_t curve[DT_IOP_COLORZONES_MAX_CHANNELS][DT_IOP_COLORZONES_MAXNODES];
+    int curve_num_nodes[DT_IOP_COLORZONES_MAX_CHANNELS];
+    int curve_type[DT_IOP_COLORZONES_MAX_CHANNELS];
+    float strength;
+    dt_iop_colorzones_modes_t mode;
+    int splines_version;
+  } dt_iop_colorzones_params_v5_t;
+
 #define DT_IOP_COLORZONES1_BANDS 6
 
-  if(old_version == 1 && new_version == 5)
+  if(old_version == 1)
   {
-    typedef struct dt_iop_colorzones_params1_t
+    typedef struct dt_iop_colorzones_params_v1_t
     {
       int32_t channel;
       float equalizer_x[3][DT_IOP_COLORZONES1_BANDS], equalizer_y[3][DT_IOP_COLORZONES1_BANDS];
-    } dt_iop_colorzones_params1_t;
+    } dt_iop_colorzones_params_v1_t;
 
-    const dt_iop_colorzones_params1_t *old = old_params;
-    dt_iop_colorzones_params_t *new = new_params;
+    const dt_iop_colorzones_params_v1_t *old = old_params;
+    dt_iop_colorzones_params_v5_t *new =
+      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
 
     new->channel = old->channel;
 
@@ -215,18 +234,23 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->strength = 0.0f;
     new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     new->splines_version = DT_IOP_COLORZONES_SPLINES_V1;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorzones_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2)
   {
-    typedef struct dt_iop_colorzones_params2_t
+    typedef struct dt_iop_colorzones_params_v2_t
     {
       int32_t channel;
       float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
-    } dt_iop_colorzones_params2_t;
+    } dt_iop_colorzones_params_v2_t;
 
-    const dt_iop_colorzones_params2_t *old = old_params;
-    dt_iop_colorzones_params_t *new = new_params;
+    const dt_iop_colorzones_params_v2_t *old = old_params;
+    dt_iop_colorzones_params_v5_t *new =
+      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int b = 0; b < DT_IOP_COLORZONES_BANDS; b++)
@@ -243,19 +267,24 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->strength = 0.0f;
     new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     new->splines_version = DT_IOP_COLORZONES_SPLINES_V1;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorzones_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3)
   {
-    typedef struct dt_iop_colorzones_params3_t
+    typedef struct dt_iop_colorzones_params_v3_t
     {
       int32_t channel;
       float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
       float strength;
-    } dt_iop_colorzones_params3_t;
+    } dt_iop_colorzones_params_v3_t;
 
-    const dt_iop_colorzones_params3_t *old = old_params;
-    dt_iop_colorzones_params_t *new = new_params;
+    const dt_iop_colorzones_params_v3_t *old = old_params;
+    dt_iop_colorzones_params_v5_t *new =
+      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int b = 0; b < DT_IOP_COLORZONES_BANDS; b++)
@@ -274,11 +303,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->strength = old->strength;
     new->mode = DT_IOP_COLORZONES_MODE_SMOOTH;
     new->splines_version = DT_IOP_COLORZONES_SPLINES_V1;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorzones_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4)
   {
-    typedef struct dt_iop_colorzones_params4_t
+    typedef struct dt_iop_colorzones_params_v4_t
     {
       int32_t channel;
       dt_iop_colorzones_node_t curve[DT_IOP_COLORZONES_MAX_CHANNELS][DT_IOP_COLORZONES_MAXNODES];
@@ -286,10 +319,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int curve_type[DT_IOP_COLORZONES_MAX_CHANNELS];
       float strength;
       int mode;
-    } dt_iop_colorzones_params4_t;
+    } dt_iop_colorzones_params_v4_t;
 
-    const dt_iop_colorzones_params4_t *old = old_params;
-    dt_iop_colorzones_params_t *new = new_params;
+    const dt_iop_colorzones_params_v4_t *old = old_params;
+    dt_iop_colorzones_params_v5_t *new =
+      (dt_iop_colorzones_params_v5_t *)malloc(sizeof(dt_iop_colorzones_params_v5_t));
     new->channel = old->channel;
 
     for(int i = 0; i < DT_IOP_COLORZONES_MAXNODES; i++)
@@ -308,6 +342,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->strength = old->strength;
     new->mode = old->mode;
     new->splines_version = DT_IOP_COLORZONES_SPLINES_V1;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorzones_params_v5_t);
+    *new_version = 5;
     return 0;
   }
 #undef DT_IOP_COLORZONES1_BANDS
@@ -422,7 +460,7 @@ void process_display(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   }
 
   piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
-  piece->pipe->bypass_blendif = 1;
+  piece->pipe->bypass_blendif = TRUE;
 }
 
 void process_v1(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -603,7 +641,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS - 1;
     p.curve_type[c] = CATMULL_ROM;
   }
-  dt_gui_presets_add_generic(_("red black white"), self->op,
+  dt_gui_presets_add_generic(_("B&W: with red"), self->op,
                              version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // black white and skin tones
@@ -626,7 +664,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS - 1;
     p.curve_type[c] = CATMULL_ROM;
   }
-  dt_gui_presets_add_generic(_("black white and skin tones"), self->op,
+  dt_gui_presets_add_generic(_("B&W: with skin tones"), self->op,
                              version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // polarizing filter
@@ -701,7 +739,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS - 1;
     p.curve_type[c] = CATMULL_ROM;
   }
-  dt_gui_presets_add_generic(_("black & white film"), self->op,
+  dt_gui_presets_add_generic(_("B&W: film"), self->op,
                              version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // neutral preset with just a set of nodes uniformly distributed along the hue axis
@@ -1404,7 +1442,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean _bottom_area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
@@ -1606,7 +1644,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, i
       curve[node].y = new_y;
     }
 
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
   }
 
   gtk_widget_queue_draw(widget);
@@ -1825,7 +1863,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
       {
         dt_iop_colorzones_get_params(p, c, c->channel, c->mouse_x, c->mouse_y, c->mouse_radius);
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       }
     }
     else if(event->y > height)
@@ -1862,7 +1900,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
         c->selected = _add_node(curve, &p->curve_num_nodes[ch], linx, liny);
 
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       }
     }
     else
@@ -1898,7 +1936,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
-  dt_iop_colorzones_params_t *d = (dt_iop_colorzones_params_t *)self->default_params;
+  const dt_iop_colorzones_params_t *const d = (dt_iop_colorzones_params_t *)self->default_params;
 
   if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
 
@@ -1964,7 +2002,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
         }
 
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
         gtk_widget_queue_draw(self->widget);
       }
 
@@ -1982,7 +2020,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       dt_bauhaus_combobox_set(c->interpolator, p->curve_type[ch]);
 
       dt_iop_color_picker_reset(self, TRUE);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       gtk_widget_queue_draw(self->widget);
 
       return TRUE;
@@ -2008,7 +2046,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
 
       dt_iop_color_picker_reset(self, TRUE);
       gtk_widget_queue_draw(self->widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
       return TRUE;
     }
 
@@ -2138,7 +2176,7 @@ static void _interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
     p->curve_type[g->channel] = MONOTONE_HERMITE;
 
   dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -2176,13 +2214,14 @@ static void _display_mask_callback(GtkToggleButton *togglebutton, dt_iop_module_
   dt_iop_refresh_center(module);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   if(picker == g->colorpicker_set_values)
   {
     dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
-    dt_iop_colorzones_params_t *d = (dt_iop_colorzones_params_t *)self->default_params;
+    const dt_iop_colorzones_params_t *const d = (dt_iop_colorzones_params_t *)self->default_params;
 
     const int ch_curve = g->channel;
     const int ch_val = p->channel;
@@ -2291,7 +2330,7 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
                      ? curve[node].y
                      : dt_draw_curve_calc_value(c->minmax_curve[ch], x);
 
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     float bottop = -1e6;
     switch(effect)
@@ -2314,7 +2353,9 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
       return_value = curve[node].y;
       break;
     default:
-      fprintf(stderr, "[_action_process_zones] unknown shortcut effect (%d) for color zones\n", effect);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_action_process_zones] unknown shortcut effect (%d) for color zones\n",
+               effect);
       break;
     }
 
@@ -2343,7 +2384,6 @@ void gui_reset(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->edit_by_area = 0;
   c->display_mask = FALSE;
-  self->timeout_handle = 0;
   c->mouse_radius = 1.f / DT_IOP_COLORZONES_BANDS;
 
   _reset_display_selection(self);
@@ -2361,7 +2401,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = IOP_GUI_ALLOC(colorzones);
-  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->default_params;
+  const dt_iop_colorzones_params_t *const p = (dt_iop_colorzones_params_t *)self->default_params;
 
   self->histogram_cst = IOP_CS_LCH;
 
@@ -2385,7 +2425,6 @@ void gui_init(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->edit_by_area = 0;
   c->display_mask = FALSE;
-  self->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -2399,7 +2438,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(c->channel_tabs), &notebook_def);
 
   dt_ui_notebook_page(c->channel_tabs, N_("lightness"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, N_("saturation"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("chroma"), NULL);
   dt_ui_notebook_page(c->channel_tabs, N_("hue"), NULL);
 
   gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
@@ -2412,6 +2451,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA, hbox, IOP_CS_LCH);
   gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(c->colorpicker, "keep-active");
+  dt_action_define_iop(self, N_("pickers"), N_("show color"), c->colorpicker, &dt_action_def_toggle);
   c->colorpicker_set_values = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, hbox, IOP_CS_LCH);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(c->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
@@ -2421,6 +2461,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                            "drag to create a flat curve\n"
                                                            "ctrl+drag to create a positive curve\n"
                                                            "shift+drag to create a negative curve"));
+  dt_action_define_iop(self, N_("pickers"), N_("create curve"), c->colorpicker_set_values, &dt_action_def_toggle);
 
   // the nice graph
   c->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/colorzones/aspect_percent"));
@@ -2458,7 +2499,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_from_params(self, "channel");
-  dt_bauhaus_combobox_remove_at(c->select_by, DT_IOP_COLORZONES_MAX_CHANNELS);
   gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
 
   c->mode = dt_bauhaus_combobox_from_params(self, "mode");
@@ -2510,8 +2550,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[g->channel]);
 
-  dt_iop_cancel_history_update(self);
-
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -2521,8 +2559,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/colorzones/gui_channel", c->channel);
 
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++) dt_draw_curve_destroy(c->minmax_curve[ch]);
-
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }
@@ -2556,9 +2592,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
   if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-    piece->request_histogram |= (DT_REQUEST_ON);
+    piece->request_histogram |= DT_REQUEST_ON;
   else
-    piece->request_histogram &= ~(DT_REQUEST_ON);
+    piece->request_histogram &= ~DT_REQUEST_ON;
 
 #if 0 // print new preset
   printf("p.channel = %d;\n", p->channel);
@@ -2570,7 +2606,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 
   // display selection don't work with opencl
-  piece->process_cl_ready = (g && g->display_mask) ? 0 : 1;
+  piece->process_cl_ready = (g && g->display_mask) ? FALSE : TRUE;
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   d->mode = p->mode;
 
@@ -2649,7 +2685,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorzones_data_t *d = malloc(sizeof(dt_iop_colorzones_data_t));
-  dt_iop_colorzones_params_t *default_params = (dt_iop_colorzones_params_t *)self->default_params;
+  const dt_iop_colorzones_params_t *const default_params =
+    (dt_iop_colorzones_params_t *)self->default_params;
   piece->data = d;
 
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
@@ -2679,10 +2716,10 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_colorzones_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorzones_params_t));
-  module->default_enabled = 0; // we're a rather slow and rare op.
+  module->default_enabled = FALSE;
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
-  module->request_histogram |= (DT_REQUEST_ON);
+  module->request_histogram |= DT_REQUEST_ON;
 
   _reset_parameters(module->default_params, DT_IOP_COLORZONES_h, DT_IOP_COLORZONES_SPLINES_V2);
 }

@@ -939,6 +939,34 @@ void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gin
   cairo_stroke(cr);
 }
 
+void dtgtk_cairo_paint_masks_sum(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  // note : as the icon is not square, we don't want PREAMBLE macro
+  // we want 2 round of radius R that intersect in the middle,
+  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // with a safety belt of *0.95 to be sure the stroke is draw inside the area
+  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
+  const float padding_left = (w - r * 3.6) / 2.0;
+
+  // we draw the outline of the 2 circles
+  cairo_save(cr);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, .3);
+  cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_restore(cr);
+
+  // we draw the intersection of the 2 circles we slightly different radius so they are more visible
+  cairo_push_group(cr);
+  cairo_arc(cr, padding_left + r * 1.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_IN);
+  cairo_arc(cr, padding_left + r * 2.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
+}
+
 void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
@@ -3213,6 +3241,30 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 {
   PREAMBLE(1.15, 1, 0, 0)
 
+  // plus or minus
+  if(flags & (CPF_DIRECTION_UP | CPF_DIRECTION_DOWN))
+  {
+    cairo_set_line_width(cr, .06);
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
+
+    cairo_move_to(cr, 1.1, .4);
+    cairo_line_to(cr, 1.3, .4);
+
+    if(flags == CPF_DIRECTION_UP)
+    {
+      cairo_move_to(cr, 1.2, .3);
+      cairo_line_to(cr, 1.2, .5);
+    }
+
+    cairo_save(cr);
+    cairo_set_source_rgb(cr, 1., 1., 1.);
+    cairo_set_line_width(cr, .15);
+    cairo_stroke_preserve(cr);
+    cairo_restore(cr);
+
+    cairo_stroke(cr);
+  }
+
   //keyboard outline
   cairo_set_line_width(cr, .05);
   cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
@@ -3222,6 +3274,14 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   cairo_line_to(cr, .1, .73);
   cairo_line_to(cr, .9, .73);
   cairo_line_to(cr, .9, .27);
+
+  if(data)
+  {
+    cairo_save(cr);
+    cairo_set_source_rgb(cr, 1., 1., 1.);
+    cairo_fill_preserve(cr);
+    cairo_restore(cr);
+  }
 
   cairo_stroke(cr);
 

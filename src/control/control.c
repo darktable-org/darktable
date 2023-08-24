@@ -45,7 +45,7 @@
 
 static float _action_process_accels_show(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(darktable.view_manager->accels_window.window == NULL)
     {
@@ -75,7 +75,7 @@ static float _action_process_modifiers(gpointer target, dt_action_element_t elem
 {
   GdkModifierType mask = 1;
   if(element) mask <<= element + 1; // ctrl = 4, alt = 8
-  if(!isnan(move_size))
+  if(DT_PERFORM_ACTION(move_size))
   {
     if(dt_modifier_shortcuts & mask)
     {
@@ -164,7 +164,7 @@ void dt_control_init(dt_control_t *s)
 
   s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
     "lua",
-    C_("accel", "lua scripts"),
+    C_("accel", "Lua scripts"),
     .target = NULL,
     .owner = NULL,
     .next = &s->actions_fallbacks };
@@ -188,8 +188,6 @@ void dt_control_init(dt_control_t *s)
   dt_action_insert_sorted(&s->actions_iops, &s->actions_focus);
 
   s->widgets = g_hash_table_new(NULL, NULL);
-  s->combo_introspection = g_hash_table_new(NULL, NULL);
-  s->combo_list = g_hash_table_new(NULL, NULL);
   s->shortcuts = g_sequence_new(g_free);
   s->enable_fallbacks = dt_conf_get_bool("accel/enable_fallbacks");
   s->mapping_widget = NULL;
@@ -236,7 +234,7 @@ void dt_control_init(dt_control_t *s)
 
   s->button_down = 0;
   s->button_down_which = 0;
-  s->mouse_over_id = -1;
+  s->mouse_over_id = NO_IMGID;
   s->dev_closeup = 0;
   s->dev_zoom_x = 0;
   s->dev_zoom_y = 0;
@@ -885,7 +883,7 @@ void dt_control_hinter_message(const struct dt_control_t *s, const char *message
   if(s->proxy.hinter.module) return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
 }
 
-int32_t dt_control_get_mouse_over_id()
+dt_imgid_t dt_control_get_mouse_over_id()
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   const int32_t result = darktable.control->mouse_over_id;
@@ -893,7 +891,7 @@ int32_t dt_control_get_mouse_over_id()
   return result;
 }
 
-void dt_control_set_mouse_over_id(int32_t value)
+void dt_control_set_mouse_over_id(dt_imgid_t value)
 {
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   if(darktable.control->mouse_over_id != value)

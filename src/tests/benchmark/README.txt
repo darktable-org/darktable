@@ -58,6 +58,12 @@ The following commandline options are available:
    		store temporary files in a scratch directory under
    		PATH (default /tmp)
 
+   -I FILE / --iopstats FILE
+   		store per-IOP average run time to FILE
+
+   --verbose
+		run verbosely
+
 Report
 ------
 
@@ -144,6 +150,9 @@ Thruput Sidecar dt           Hardware
 
 644	3.8	3.7.0+1370   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
 666     3.8     3.9.0+1630   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+640	3.8	4.3.0+923    32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+
+640	4.2	4.3.0+923    32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
 
 [*] darktable 3.2.1 using the v3.4 sidecar skips two modules which
   didn't yet exist, so this number is actually over-reporting the

@@ -35,7 +35,7 @@
 
 int dt_lua_duplicate_image(lua_State *L)
 {
-  int imgid;
+  dt_imgid_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
   imgid = dt_image_duplicate(imgid);
   luaA_push(L, dt_lua_image_t, &imgid);
@@ -44,7 +44,7 @@ int dt_lua_duplicate_image(lua_State *L)
 
 int dt_lua_delete_image(lua_State *L)
 {
-  int imgid;
+  dt_imgid_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
   dt_image_remove(imgid);
   return 0;
@@ -52,7 +52,7 @@ int dt_lua_delete_image(lua_State *L)
 
 int dt_lua_move_image(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   dt_lua_film_t filmid = -1;
   if(luaL_testudata(L, 1, "dt_lua_image_t"))
   {
@@ -78,7 +78,7 @@ int dt_lua_move_image(lua_State *L)
 
 int dt_lua_copy_image(lua_State *L)
 {
-  dt_lua_image_t imgid = -1;
+  dt_lua_image_t imgid = NO_IMGID;
   dt_lua_film_t filmid = -1;
   if(luaL_testudata(L, 1, "dt_lua_image_t"))
   {
@@ -195,7 +195,7 @@ static int database_numindex(lua_State *L)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
   }
   else
@@ -219,7 +219,7 @@ static int database_get_image(lua_State *L)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
   }
   else
@@ -242,7 +242,7 @@ static int collection_numindex(lua_State *L)
   {
     return luaL_error(L, "incorrect index in database");
   }
-  int imgid = dt_collection_get_nth(darktable.collection,index-1);
+  dt_imgid_t imgid = dt_collection_get_nth(darktable.collection,index-1);
   if(imgid >0)
   {
     luaA_push(L, dt_lua_image_t, &imgid);

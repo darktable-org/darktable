@@ -37,7 +37,8 @@ typedef enum dt_imageio_retval_t
 {
   DT_IMAGEIO_OK = 0,         // all good :)
   DT_IMAGEIO_FILE_NOT_FOUND, // file has been lost
-  DT_IMAGEIO_LOAD_FAILED,    // file either corrupted or in a format not supported by the current loader
+  DT_IMAGEIO_LOAD_FAILED,    // file either corrupted or in a format
+                             // not supported by the current loader.
   DT_IMAGEIO_CACHE_FULL      // buffer allocation for image data failed
 } dt_imageio_retval_t;
 
@@ -65,8 +66,8 @@ typedef enum
   // To reuse : force to 0 in DB loading and force to 0 in DB saving
   // Use it to store a state that doesn't need to go in DB
   DT_IMAGE_THUMBNAIL_DEPRECATED = 16,
-  // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping
-  // etc.
+  // set during import if the image is low-dynamic range, i.e. doesn't
+  // need demosaic, wb, highlight clipping etc.
   DT_IMAGE_LDR = 32,
   // set during import if the image is raw data, i.e. it needs demosaicing.
   DT_IMAGE_RAW = 64,
@@ -88,8 +89,8 @@ typedef enum
   DT_IMAGE_4BAYER = 16384,
   // image was detected as monochrome
   DT_IMAGE_MONOCHROME = 32768,
-  // DNG image has exif tags which are not cached in the database but must be read and stored in dt_image_t
-  // when the image is loaded.
+  // DNG image has exif tags which are not cached in the database but
+  // must be read and stored in dt_image_t when the image is loaded.
   DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS = 65536,
   // image is an sraw
   DT_IMAGE_S_RAW = 1 << 17,
@@ -126,6 +127,8 @@ typedef enum dt_exif_image_orientation_t
   EXIF_ORIENTATION_TRANSVERSE        = 7
 } dt_exif_image_orientation_t;
 
+#define DT_EXIF_TAG_UNINITIALIZED (-FLT_MAX)
+
 typedef enum dt_image_orientation_t
 {
   ORIENTATION_NULL    = -1,     //-1, or autodetect
@@ -161,7 +164,7 @@ typedef union dt_image_correction_data_t
   struct {
     int nc;
     float cropf;
-    float knots[9], distortion[9], ca_r[9], ca_b[9], vignetting[9];
+    float knots[11], distortion[11], ca_r[11], ca_b[11], vignetting[11];
   } fuji;
   struct {
     int planes;
@@ -235,7 +238,7 @@ struct dt_cache_entry_t;
 typedef struct dt_image_t
 {
   // minimal exif data here (all in multiples of 4-byte to interface nicely with c++):
-  int32_t exif_inited;
+  gboolean exif_inited;
   dt_image_orientation_t orientation;
   float exif_exposure;
   float exif_exposure_bias;
@@ -270,8 +273,9 @@ typedef struct dt_image_t
   float aspect_ratio;
 
   // used by library
-  int32_t num, flags, film_id, id, group_id, version;
-
+  int32_t num, flags, film_id, version;
+  dt_imgid_t id;
+  dt_imgid_t group_id;
   //timestamps
   GTimeSpan import_timestamp, change_timestamp, export_timestamp, print_timestamp;
 
@@ -282,9 +286,13 @@ typedef struct dt_image_t
   float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
   uint8_t *profile;          // embedded profile, for example from JPEGs
   uint32_t profile_size;
-  dt_image_colorspace_t colorspace; // the colorspace that is specified in exif. mostly used for jpeg files
+  dt_image_colorspace_t colorspace; // the colorspace that is
+                                    // specified in exif. mostly used
+                                    // for jpeg files
 
-  dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
+  dt_image_raw_parameters_t legacy_flip; // unfortunately needed to
+                                         // convert old bits to new
+                                         // flip module.
 
   /* gps coords */
   dt_image_geoloc_t geoloc;
@@ -310,7 +318,8 @@ typedef struct dt_image_t
   /* GainMaps from DNG OpcodeList2 exif tag */
   GList *dng_gain_maps;
 
-  /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
+  /* convenience pointer back into the image cache, so we can return
+   * dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
 
@@ -330,13 +339,13 @@ void dt_image_init(dt_image_t *img);
 /** Refresh makermodel from the raw and exif values **/
 void dt_image_refresh_makermodel(dt_image_t *img);
 /** returns non-zero if the image contains low-dynamic range data. */
-int dt_image_is_ldr(const dt_image_t *img);
+gboolean dt_image_is_ldr(const dt_image_t *img);
 /** returns non-zero if the image contains mosaic data. */
-int dt_image_is_raw(const dt_image_t *img);
+gboolean dt_image_is_raw(const dt_image_t *img);
 /** returns non-zero if the image contains float data. */
-int dt_image_is_hdr(const dt_image_t *img);
+gboolean dt_image_is_hdr(const dt_image_t *img);
 /** set the monochrome flags if monochrome is TRUE and clear it otherwise */
-void dt_image_set_monochrome_flag(const int32_t imgid, const gboolean monochrome);
+void dt_image_set_monochrome_flag(const dt_imgid_t imgid, const gboolean monochrome);
 /** returns non-zero if this image was taken using a monochrome camera */
 gboolean dt_image_is_monochrome(const dt_image_t *img);
 /** returns non-zero if the image supports a color correction matrix */
@@ -349,11 +358,11 @@ int dt_image_monochrome_flags(const dt_image_t *img);
  * image wants monochrome workflow */
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 /** returns the image filename */
-char *dt_image_get_filename(const int32_t imgid);
+char *dt_image_get_filename(const dt_imgid_t imgid);
 /** returns the full path name where the image was imported
  * from. from_cache=TRUE check and return local cached filename if
  * any. */
-void dt_image_full_path(const int32_t imgid,
+void dt_image_full_path(const dt_imgid_t imgid,
                         char *pathname,
                         const size_t pathname_len,
                         gboolean *from_cache);
@@ -372,7 +381,7 @@ void dt_image_path_append_version_no_db(const int version,
                                         char *pathname,
                                         const size_t pathname_len);
 /** appends version numbering for duplicated images. */
-void dt_image_path_append_version(const int32_t imgid,
+void dt_image_path_append_version(const dt_imgid_t imgid,
                                   char *pathname,
                                   const size_t pathname_len);
 /** prints a one-line exif information string. */
@@ -387,37 +396,40 @@ int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
 /** get image id by filename */
-int32_t dt_image_get_id_full_path(const gchar *filename);
+dt_imgid_t dt_image_get_id_full_path(const gchar *filename);
 /** get image id by film_id and filename */
-int32_t dt_image_get_id(const uint32_t film_id, const gchar *filename);
+dt_imgid_t dt_image_get_id(const uint32_t film_id,
+                           const gchar *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
-uint32_t dt_image_import(int32_t film_id,
-                         const char *filename,
-                         const gboolean override_ignore_jpegs,
-                         const gboolean raise_signals);
-/** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
-uint32_t dt_image_import_lua(const int32_t film_id,
-                             const char *filename,
-                             const gboolean override_ignore_jpegs);
+dt_imgid_t dt_image_import(int32_t film_id,
+                           const char *filename,
+                           const gboolean override_ignore_jpegs,
+                           const gboolean raise_signals);
+/** imports a new image from raw/etc file and adds it to the data base
+ * and image cache. Use from lua thread.*/
+dt_imgid_t dt_image_import_lua(const int32_t film_id,
+                               const char *filename,
+                               const gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
-void dt_image_remove(const int32_t imgid);
+void dt_image_remove(const dt_imgid_t imgid);
 /** duplicates the given image in the database with the duplicate
     getting the supplied version number. if that version already
     exists just return the imgid without producing new
     duplicate. called with newversion -1 a new duplicate is produced
     with the next free version number. */
-int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion);
+dt_imgid_t dt_image_duplicate_with_version(const dt_imgid_t imgid,
+                                           const int32_t newversion);
 /** duplicates the given image in the database. */
-int32_t dt_image_duplicate(const int32_t imgid);
+dt_imgid_t dt_image_duplicate(const dt_imgid_t imgid);
 /** flips the image, clock wise, if given flag. */
-void dt_image_flip(const int32_t imgid, const int32_t cw);
-void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_flip);
-dt_image_orientation_t dt_image_get_orientation(const int32_t imgid);
+void dt_image_flip(const dt_imgid_t imgid, const int32_t cw);
+void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t user_flip);
+dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid);
 /** get max width and height of the final processed image with its current history stack */
-gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
-void dt_image_update_final_size(const int32_t imgid);
+gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height);
+void dt_image_update_final_size(const dt_imgid_t imgid);
 /** set image location lon/lat/ele */
-void dt_image_set_location(const int32_t imgid,
+void dt_image_set_location(const dt_imgid_t imgid,
                            const dt_image_geoloc_t *geoloc,
                            const gboolean undo_on,
                            const gboolean group_on);
@@ -430,25 +442,25 @@ void dt_image_set_images_locations(const GList *imgs,
                                    const GArray *gloc,
                                    const gboolean undo_on);
 /** get image location lon/lat/ele */
-void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
+void dt_image_get_location(const dt_imgid_t imgid, dt_image_geoloc_t *geoloc);
 /** returns TRUE if current hash is not basic nor auto_apply, FALSE otherwise. */
-gboolean dt_image_altered(const int32_t imgid);
+gboolean dt_image_altered(const dt_imgid_t imgid);
 /** returns TRUE if current hash is basic, FALSE otherwise. */
-gboolean dt_image_basic(const int32_t imgid);
+gboolean dt_image_basic(const dt_imgid_t imgid);
 /** set the image final/cropped aspect ratio */
-float dt_image_set_aspect_ratio(const int32_t imgid, const gboolean raise);
+float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise);
 /** set the image raw aspect ratio */
-void dt_image_set_raw_aspect_ratio(const int32_t imgid);
+void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid);
 /** set the image final/cropped aspect ratio */
-void dt_image_set_aspect_ratio_to(const int32_t imgid,
+void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
                                   const float aspect_ratio,
                                   const gboolean raise);
 /** set the image final/cropped aspect ratio if different from stored*/
-void dt_image_set_aspect_ratio_if_different(const int32_t imgid,
+void dt_image_set_aspect_ratio_if_different(const dt_imgid_t imgid,
                                             const float aspect_ratio,
                                             const gboolean raise);
 /** reset the image final/cropped aspect ratio to 0.0 */
-void dt_image_reset_aspect_ratio(const int32_t imgid,
+void dt_image_reset_aspect_ratio(const dt_imgid_t imgid,
                                  const gboolean raise);
 /** get the ratio of cropped raw sensor data */
 float dt_image_get_sensor_ratio(const dt_image_t *img);
@@ -484,37 +496,63 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
   }
 }
 
+/** return the raw orientation from heif transforms */
+static inline dt_image_orientation_t dt_image_transformation_to_flip_bits(const int angle, const int flip)
+{
+  if(angle == 1)
+  {
+    if(flip == 1) return ORIENTATION_TRANSVERSE;
+    if(flip == 0) return ORIENTATION_TRANSPOSE;
+    return ORIENTATION_ROTATE_CCW_90_DEG;
+  }
+  if(angle == 2)
+  {
+    if(flip == 1) return ORIENTATION_FLIP_VERTICALLY;
+    if(flip == 0) return ORIENTATION_FLIP_HORIZONTALLY;
+    return ORIENTATION_ROTATE_180_DEG;
+  }
+  if(angle == 3)
+  {
+    if(flip == 1) return ORIENTATION_TRANSPOSE;
+    if(flip == 0) return ORIENTATION_TRANSVERSE;
+    return ORIENTATION_ROTATE_CW_90_DEG;
+  }
+  if(flip == 1) return ORIENTATION_FLIP_HORIZONTALLY;
+  if(flip == 0) return ORIENTATION_FLIP_VERTICALLY;
+  return ORIENTATION_NONE;
+}
+
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid. returns -1 on error, 0 on success. */
-int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
+int32_t dt_image_move(const dt_imgid_t imgid, const int32_t filmid);
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid and the name given by newname.
  *  returns -1 on error, 0 on success. */
-int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *newname);
+int32_t dt_image_rename(const dt_imgid_t imgid, const int32_t filmid, const gchar *newname);
 /** physically copy image to the folder of the film roll with filmid and
  *  duplicate update database entries. */
-int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
+int32_t dt_image_copy(const dt_imgid_t imgid, const int32_t filmid);
 /** physically copy image to the folder of the film roll with filmid and
  *  the name given by newname, and duplicate update database entries. */
-int32_t dt_image_copy_rename(const int32_t imgid,
-                             const int32_t filmid,
-                             const gchar *newname);
-int dt_image_local_copy_set(const int32_t imgid);
-int dt_image_local_copy_reset(const int32_t imgid);
+dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
+                                const int32_t filmid,
+                                const gchar *newname);
+int dt_image_local_copy_set(const dt_imgid_t imgid);
+int dt_image_local_copy_reset(const dt_imgid_t imgid);
 /* check whether it is safe to remove a file */
-gboolean dt_image_safe_remove(const int32_t imgid);
+gboolean dt_image_safe_remove(const dt_imgid_t imgid);
 /* try to sync .xmp for all local copies */
 void dt_image_local_copy_synch(void);
 // xmp functions:
-int dt_image_write_sidecar_file(const int32_t imgid);
-void dt_image_synch_xmp(const int selected);
+gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid);
+void dt_image_synch_xmp(const int32_t selected);
 void dt_image_synch_xmps(const GList *img);
 void dt_image_synch_all_xmp(const gchar *pathname);
 /** get the mode xmp sidecars are written */
 dt_imageio_write_xmp_t dt_image_get_xmp_mode();
 
 // add an offset to the exif_datetime_taken field
-void dt_image_add_time_offset(const int32_t imgid, const long int offset);
+void dt_image_add_time_offset(const dt_imgid_t imgid, const long int offset);
 // set datetime to exif_datetime_taken field
 void dt_image_set_datetime(const GList *imgs,
                            const char *datetime,
@@ -524,15 +562,15 @@ void dt_image_set_datetimes(const GList *imgs,
                             const GArray *dtime,
                             const gboolean undo_on);
 // return image datetime string into the given buffer (size = DT_DATETIME_LENGTH)
-void dt_image_get_datetime(const int32_t imgid, char *datetime);
+void dt_image_get_datetime(const dt_imgid_t imgid, char *datetime);
 
 /** helper function to get the audio file filename that is
  * accompanying the image. g_free() after use */
-char *dt_image_get_audio_path(const int32_t imgid);
+char *dt_image_get_audio_path(const dt_imgid_t imgid);
 char *dt_image_get_audio_path_from_path(const char *image_path);
 /** helper function to get the text file filename that is accompanying
  * the image. g_free() after use */
-char *dt_image_get_text_path(const int32_t imgid);
+char *dt_image_get_text_path(const dt_imgid_t imgid);
 char *dt_image_get_text_path_from_path(const char *image_path);
 
 float dt_image_get_exposure_bias(const struct dt_image_t *image_storage);

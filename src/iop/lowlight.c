@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,9 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -118,14 +120,20 @@ static float lookup(const float *lut, const float i)
   return lut[bin1] * f + lut[bin0] * (1. - f);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const restrict i,
+             void *const restrict o,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         i, o, roi_in, roi_out))
+    return;
   dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)(piece->data);
-  const int ch = piece->colors;
 
   // empiric coefficient
-  const float c = 0.5f;
+  const float coeff = 0.5f;
   const float threshold = 0.01f;
 
   // scotopic white, blue saturated
@@ -134,19 +142,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
+  const float *lut = d->lut;
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, i, o, roi_out, threshold, c) \
-  shared(d, XYZ_sw) \
+  dt_omp_firstprivate(i, o, npixels, threshold, coeff, lut, XYZ_sw)        \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < (size_t)npixels; k++)
   {
-    float *in = (float *)i + ch * k;
-    float *out = (float *)o + ch * k;
+    const float *const in = (float *)i + 4 * k;
+    float *const out = (float *)o + 4 * k;
     dt_aligned_pixel_t XYZ, XYZ_s;
     float V;
-    float w;
 
     dt_Lab_to_XYZ(in, XYZ);
 
@@ -163,22 +172,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // scale using empiric coefficient and fit inside limits
-    V = fminf(1.0f, fmaxf(0.0f, c * V));
+//    V = fminf(1.0f, fmaxf(0.0f, coeff * V));
+    V = CLIP(coeff * V);
 
     // blending coefficient from curve
-    w = lookup(d->lut, in[0] / 100.f);
+    const float w = lookup(lut, in[0] / 100.f);
 
-    XYZ_s[0] = V * XYZ_sw[0];
-    XYZ_s[1] = V * XYZ_sw[1];
-    XYZ_s[2] = V * XYZ_sw[2];
+    for_each_channel(c)
+      XYZ_s[c] = V * XYZ_sw[c];
 
-    XYZ[0] = w * XYZ[0] + (1.0f - w) * XYZ_s[0];
-    XYZ[1] = w * XYZ[1] + (1.0f - w) * XYZ_s[1];
-    XYZ[2] = w * XYZ[2] + (1.0f - w) * XYZ_s[2];
+    for_each_channel(c)
+      XYZ[c] = w * XYZ[c] + (1.0f - w) * XYZ_s[c];
 
-    dt_XYZ_to_Lab(XYZ, out);
-
-    out[3] = in[3];
+    dt_aligned_pixel_t res;
+    dt_XYZ_to_Lab(XYZ, res);
+    copy_pixel_nontemporal(out, res);
   }
 }
 
@@ -256,7 +264,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)malloc(sizeof(dt_iop_lowlight_data_t));
-  dt_iop_lowlight_params_t *default_params = (dt_iop_lowlight_params_t *)self->default_params;
+  const dt_iop_lowlight_params_t *const default_params = (dt_iop_lowlight_params_t *)self->default_params;
   piece->data = (void *)d;
   d->curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(d->curve, default_params->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,
@@ -281,7 +289,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_lowlight_gui_data_t *g = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
   dt_bauhaus_slider_set(g->scale_blueness, p->blueness);
-  dt_iop_cancel_history_update(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -493,7 +500,8 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   const int inset = DT_IOP_LOWLIGHT_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
+  int width = allocation.width;
+  int height = allocation.height - DT_RESIZE_HANDLE_SIZE;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -666,7 +674,7 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -677,7 +685,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   const int inset = DT_IOP_LOWLIGHT_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+  int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
   if(c->dragging)
@@ -698,7 +706,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
       dt_iop_lowlight_get_params(p, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    dt_iop_queue_history_update(self, FALSE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
   }
   else if(event->y > height)
   {
@@ -730,13 +738,13 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-    dt_iop_lowlight_params_t *d = (dt_iop_lowlight_params_t *)self->default_params;
+    const dt_iop_lowlight_params_t *const d = (dt_iop_lowlight_params_t *)self->default_params;
     for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++)
     {
       p->transition_x[k] = d->transition_x[k];
       p->transition_y[k] = d->transition_y[k];
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     gtk_widget_queue_draw(self->widget);
   }
   else if(event->button == 1)
@@ -746,7 +754,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     const int inset = DT_IOP_LOWLIGHT_INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
-    int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+    int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE, width = allocation.width - 2 * inset;
     c->mouse_pick
         = dt_draw_curve_calc_value(c->transition_curve, CLAMP(event->x - inset, 0, width) / (float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
@@ -797,7 +805,7 @@ static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *c = IOP_GUI_ALLOC(lowlight);
-  dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->default_params;
+  const dt_iop_lowlight_params_t *const p = (dt_iop_lowlight_params_t *)self->default_params;
 
   c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(c->transition_curve, p->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,
@@ -809,7 +817,6 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
-  self->timeout_handle = 0;
   c->mouse_radius = 1.0 / DT_IOP_LOWLIGHT_BANDS;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -835,7 +842,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
-  dt_iop_cancel_history_update(self);
 
   IOP_GUI_FREE;
 }
@@ -845,4 +851,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

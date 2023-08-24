@@ -50,9 +50,9 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -110,7 +110,7 @@ int process_cl(struct dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO,
                 "clip_and_zoom_roi CL",
-                piece->pipe, self->so->op, roi_in, roi_out, "device=%i\n", devid);
+                piece->pipe, self, roi_in, roi_out, "device=%i\n", devid);
   const cl_int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
   if(err != CL_SUCCESS)
   {
@@ -131,7 +131,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO,
-                "clip_and_zoom_roi", piece->pipe, self->so->op, roi_in, roi_out, "\n");
+                "clip_and_zoom_roi", piece->pipe, self, roi_in, roi_out, "\n");
   dt_iop_clip_and_zoom_roi(ovoid, ivoid, roi_out, roi_in, roi_out->width, roi_in->width);
 }
 
@@ -140,7 +140,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) piece->enabled = 0;
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) piece->enabled = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self,
@@ -162,8 +162,8 @@ void init(dt_iop_module_t *self)
 {
   self->params = calloc(1, sizeof(dt_iop_finalscale_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_finalscale_params_t));
-  self->default_enabled = 1;
-  self->hide_enable_button = 1;
+  self->default_enabled = TRUE;
+  self->hide_enable_button = TRUE;
   self->params_size = sizeof(dt_iop_finalscale_params_t);
   self->gui_data = NULL;
 }

@@ -36,14 +36,6 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_colorcontrast_params_t)
 
-typedef struct dt_iop_colorcontrast_params1_t
-{
-  float a_steepness;
-  float a_offset;
-  float b_steepness;
-  float b_offset;
-} dt_iop_colorcontrast_params1_t;
-
 typedef struct dt_iop_colorcontrast_params_t
 {
   float a_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "green-magenta contrast"
@@ -110,9 +102,9 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -120,19 +112,42 @@ int default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_colorcontrast_params_v2_t
   {
-    const dt_iop_colorcontrast_params1_t *old = old_params;
-    dt_iop_colorcontrast_params_t *new = new_params;
+    float a_steepness;
+    float a_offset;
+    float b_steepness;
+    float b_offset;
+    int unbound;
+  } dt_iop_colorcontrast_params_v2_t;
 
-    new->a_steepness = old->a_steepness;
-    new->a_offset = old->a_offset;
-    new->b_steepness = old->b_steepness;
-    new->b_offset = old->b_offset;
-    new->unbound = 0;
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_colorcontrast_params_v1_t
+    {
+      float a_steepness;
+      float a_offset;
+      float b_steepness;
+      float b_offset;
+    } dt_iop_colorcontrast_params_v1_t;
+
+    const dt_iop_colorcontrast_params_v1_t *o = old_params;
+    dt_iop_colorcontrast_params_v2_t *n =
+      (dt_iop_colorcontrast_params_v2_t *)malloc(sizeof(dt_iop_colorcontrast_params_v2_t));
+
+    n->a_steepness = o->a_steepness;
+    n->a_offset = o->a_offset;
+    n->b_steepness = o->b_steepness;
+    n->b_offset = o->b_offset;
+    n->unbound = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorcontrast_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -180,8 +195,8 @@ void process(struct dt_iop_module_t *self,
 
   const dt_aligned_pixel_t slope = { 1.0f, d->a_steepness, d->b_steepness, 1.0f };
   const dt_aligned_pixel_t offset = { 0.0f, d->a_offset, d->b_offset, 0.0f };
-  const dt_aligned_pixel_t lowlimit = { -INFINITY, -128.0f, -128.0f, -INFINITY };
-  const dt_aligned_pixel_t highlimit = { INFINITY, 128.0f, 128.0f, INFINITY };
+  const dt_aligned_pixel_t lowlimit = { -FLT_MAX, -128.0f, -128.0f, -FLT_MAX };
+  const dt_aligned_pixel_t highlimit = { FLT_MAX, 128.0f, 128.0f, FLT_MAX };
 
   if(d->unbound)
   {

@@ -12,7 +12,7 @@ if ! [ -x "$(command -v brew)" ]; then
     echo 'Homebrew not found. Follow instructions as provided by https://brew.sh/ to install it.' >&2
     exit 1
 else
-    echo "Found homebrew running in $(arch)-based environment."
+    echo "Found homebrew running in $(uname -m)-based environment."
 fi
 
 # Make sure that homebrew is up-to-date
@@ -21,6 +21,7 @@ brew upgrade
 
 # Define homebrew dependencies
 hbDependencies="adwaita-icon-theme \
+    coreutils \
     cmake \
     pkg-config \
     cmocka \
@@ -32,15 +33,16 @@ hbDependencies="adwaita-icon-theme \
     glib \
     gmic \
     gphoto2 \
-    graphicsmagick \
+    imagemagick@6 \
     gtk-mac-integration \
     gtk+3 \
     icu4c \
     intltool \
     iso-codes \
-    jpeg \
+    jpeg-turbo \
     jpeg-xl \
     json-glib \
+    jsonschema \
     lensfun \
     libavif \
     libheif \
@@ -60,9 +62,6 @@ hbDependencies="adwaita-icon-theme \
     pugixml \
     sdl2 \
     webp"
-
-# Dependencies that must be linked
-hbMustLink="libomp"
 
 # Categorize dependency list
 standalone=
@@ -102,30 +101,7 @@ if [ "${notfound}" ]; then
     brew install ${notfound}
 fi
 
-# Fix for unlinked keg-only dependencies
-echo
-echo "Checking for unlinked keg-only dependencies..."
-# This is a lot easier with jq...
-#unlinked=$( brew info --json=v1 ${hbMustLink}| jq "map(select(.linked_keg == null) | .name)" | jq -r '.[]' )
-mustlink=$(
-    name=
-    brew info --json=v1 $hbMustLink \
-        | grep -Eo '"(full_name|linked_keg)":.*' \
-        | sed -e 's/"//g;s/://g;s/,//g' \
-        | while read key value;
-        do
-            if [ "${key}" == "full_name" ]; then
-              name="${value}"
-            fi
-            if [ "${name}" -a "${key}" == "linked_keg" -a "${value}" == "null" ]; then
-              echo "${name}"
-            fi
-        done
-)
-if [ "${mustlink}" ]; then
-    echo
-    echo "Unlinked dependencies found! Attempting to relink..."
-    brew link --force ${mustlink}
-else
-    echo "None."
-fi
+# link keg-only packages
+brew link --force libomp
+brew link --force libsoup@2
+brew link --force imagemagick@6

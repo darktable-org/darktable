@@ -1,11 +1,18 @@
 name: Mark stale issues and pull requests
 
 on:
+  workflow_dispatch:
   schedule:
   - cron: "0 0 * * *"
 
 permissions:
   contents: read
+
+env:
+  BEFORE_ISSUE_STALE: 60
+  BEFORE_ISSUE_CLOSE: 300
+  BEFORE_PR_STALE: 60
+  BEFORE_PR_CLOSE: 300
 
 jobs:
   stale:
@@ -16,19 +23,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/stale@v5
+    - uses: actions/stale@v8
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-issue-message: 'This issue did not get any activity in the past 60 days and will be closed in 365 days if no update occurs. Please check if the master branch has fixed it and report again or close the issue.'
-        stale-pr-message: 'This pull request did not get any activity in the past 60 days and will be closed in 365 days if no update occurs. Please verify it has no conflicts with the master branch and rebase if needed. Mention it now if you need help or give permission to other people to finish your work.'
-        close-issue-message: 'This issue did not get any activity in the past year and thus has been closed. Please check if the newest release or master branch has it fixed. Please, create a new issue if the issue is not fixed.'
-        close-pr-message: 'This pull reguest did not get any activity in the past year and thus has been closed.'
+        stale-issue-message: 'This issue has been marked as stale due to inactivity for the last ${{ env.BEFORE_ISSUE_STALE }} days. It will be automatically closed in ${{ env.BEFORE_ISSUE_CLOSE }} days if no update occurs. Please check if the master branch has fixed it and report again or close the issue.'
+        stale-pr-message: 'This pull request has been marked as stale due to inactivity for the last ${{ env.BEFORE_PR_STALE }} days. It will be automatically closed in ${{ env.BEFORE_PR_CLOSE }} days if no update occurs. Please verify it has no conflicts with the master branch and rebase if needed. Mention it now if you need help or give permission to other people to finish your work.'
+        close-issue-message: 'This issue was closed because it has been inactive for ${{ env.BEFORE_ISSUE_CLOSE }} days since being marked as stale. Please check if the newest release or nightly build has it fixed. Please, create a new issue if the issue is not fixed.'
+        close-pr-message: 'This pull reguest was closed because it has been inactive for ${{ env.BEFORE_PR_CLOSE }} days since being marked as stale.'
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
-        days-before-stale: 60
-        days-before-close: 365
+        days-before-issue-stale: ${{ env.BEFORE_ISSUE_STALE }}
+        days-before-issue-close: ${{ env.BEFORE_ISSUE_CLOSE }}
+        days-before-pr-stale: ${{ env.BEFORE_PR_STALE }}
+        days-before-pr-close: ${{ env.BEFORE_PR_CLOSE }}
+        ascending: true
         remove-stale-when-updated: true
         exempt-all-milestones: true
         exempt-pr-labels: 'bugfix,wip'
         exempt-issue-labels: 'scope: camera support,bugfix: wip'
-        operations-per-run: 500
+        operations-per-run: 800

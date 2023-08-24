@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable developers.
+    Copyright (C) 2018-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -22,12 +22,12 @@
 
 static int _group_number(int group_id)
 {
-  if      (group_id == IOP_GROUP_EFFECT)  return 5;
+  if     (group_id == IOP_GROUP_EFFECT)  return 5;
   else if(group_id == IOP_GROUP_CORRECT) return 4;
   else if(group_id == IOP_GROUP_COLOR)   return 3;
   else if(group_id == IOP_GROUP_TONE)    return 2;
   else if(group_id == IOP_GROUP_BASIC)   return 1;
-  else                                    return 0;
+  else                                   return 0;
 }
 
 int dt_iop_get_group(const dt_iop_module_t *module)
@@ -65,4 +65,3 @@ int dt_iop_get_group(const dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

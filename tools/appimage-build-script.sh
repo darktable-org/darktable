@@ -13,17 +13,18 @@ fi
 rm -rf {build,AppDir}
 mkdir {build,AppDir}
 
-cd build
-
 # For AppImage we have to install app in /usr subfolder of the AppDir
-
 export DESTDIR=../AppDir
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DBINARY_PACKAGE_BUILD=1 -DDONT_USE_INTERNAL_LUA=Off
-cmake --build . --target install --parallel $(nproc)
+# The CLI parameters of this script will be passed verbatim to build.sh.
+# This allows you to conveniently manage the enabling/disabling of various features.
+# For example, you can easily build darktable with support for ImageMagick instead of GraphicsMagick
+# by running this script with the parameters `--disable-graphicsmagick --enable-imagemagick`
+./build.sh --build-dir ./build/ --prefix /usr --build-type Release $@ --install -- "-DBINARY_PACKAGE_BUILD=1 -DDONT_USE_INTERNAL_LUA=Off -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
 
 # Sanitize path to executable in org.darktable.darktable.desktop (it will be handled by AppImage).
 # In fact, most desktop files do not include the full path to the program in the Exec field
 # (relying on the OS's path lookup functionality). When we'll do the same, this hack can be removed.
+cd build
 sed -i 's/\/usr\/bin\///' ../AppDir/usr/share/applications/org.darktable.darktable.desktop
 
 # Since linuxdeploy is itself an AppImage, we don't rely on it being installed on the build system, but download it every time
@@ -37,5 +38,8 @@ chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh
 export DEPLOY_GTK_VERSION=3
 export VERSION=$(sh ../tools/get_git_version_string.sh)
 export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
+
+# Instruct LDAI (LinuxDeploy AppImage plugin) to embed AppImage update information
+export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
 
 ./linuxdeploy-x86_64.AppImage --appdir ../AppDir --plugin gtk --output appimage

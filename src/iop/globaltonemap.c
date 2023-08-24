@@ -115,22 +115,56 @@ int default_group()
   return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version < 3 && new_version == 3)
+  typedef struct dt_iop_global_tonemap_params_v3_t
   {
-    dt_iop_global_tonemap_params_t *o = (dt_iop_global_tonemap_params_t *)old_params;
-    dt_iop_global_tonemap_params_t *n = (dt_iop_global_tonemap_params_t *)new_params;
+    _iop_operator_t operator; // $DEFAULT: OPERATOR_DRAGO
+    struct
+    {
+      float bias;
+      float max_light;
+    } drago;
+    float detail;
+  } dt_iop_global_tonemap_params_v3_t;
+
+  if(old_version < 3)
+  {
+    typedef struct dt_iop_global_tonemap_params_v1_t
+    {
+      _iop_operator_t operator; // $DEFAULT: OPERATOR_DRAGO
+      struct
+      {
+        float bias;
+        float max_light;
+      } drago;
+    } dt_iop_global_tonemap_params_v1_t;
+
+    const dt_iop_global_tonemap_params_v1_t *o =
+      (dt_iop_global_tonemap_params_v1_t *)old_params;
+    dt_iop_global_tonemap_params_v3_t *n =
+      (dt_iop_global_tonemap_params_v3_t *)
+      malloc(sizeof(dt_iop_global_tonemap_params_v3_t));
 
     // only appended detail, 0 is no-op
-    memcpy(n, o, sizeof(dt_iop_global_tonemap_params_t) - sizeof(float));
+    memcpy(n, o, sizeof(dt_iop_global_tonemap_params_v1_t));
     n->detail = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_global_tonemap_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -174,7 +208,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   /* precalcs */
   const float eps = 0.0001f;
   float lwmax;
-  float tmp_lwmax = NAN;
+  float tmp_lwmax = -FLT_MAX;
 
   // Drago needs the absolute Lmax value of the image. In pixelpipe FULL we can not reliably get this value
   // as the pixelpipe might only see part of the image (region of interest). Therefore we try to get lwmax from
@@ -186,7 +220,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     dt_iop_gui_leave_critical_section(self);
 
     // note that the case 'hash == 0' on first invocation in a session implies that g->lwmax
-    // is NAN which initiates special handling below to avoid inconsistent results. in all
+    // is -FLT_MAX which initiates special handling below to avoid inconsistent results. in all
     // other cases we make sure that the preview pipe has left us with proper readings for
     // lwmax. if data are not yet there we need to wait (with timeout).
     if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
@@ -198,7 +232,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 
   // in all other cases we calculate lwmax here
-  if(isnan(tmp_lwmax))
+  if(tmp_lwmax == -FLT_MAX)
   {
     lwmax = eps;
 #ifdef _OPENMP
@@ -350,7 +384,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(d->operator== OPERATOR_DRAGO)
   {
     const float eps = 0.0001f;
-    float tmp_lwmax = NAN;
+    float tmp_lwmax = -FLT_MAX;
 
     // see comments in process() about lwmax value
     if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
@@ -366,7 +400,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_iop_gui_leave_critical_section(self);
     }
 
-    if(isnan(tmp_lwmax))
+    if(tmp_lwmax == -FLT_MAX)
     {
       dt_opencl_local_buffer_t flocopt
         = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
@@ -546,7 +580,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->detail = p->detail;
 
   // drago needs the maximum L-value of the whole image so it must not use tiling
-  if(d->operator == OPERATOR_DRAGO) piece->process_tiling_ready = 0;
+  if(d->operator == OPERATOR_DRAGO) piece->process_tiling_ready = FALSE;
 
 #ifdef HAVE_OPENCL
   if(d->detail != 0.0f)
@@ -610,7 +644,7 @@ void gui_update(struct dt_iop_module_t *self)
   gui_changed(self, NULL, 0);
 
   dt_iop_gui_enter_critical_section(self);
-  g->lwmax = NAN;
+  g->lwmax = -FLT_MAX;
   g->hash = 0;
   dt_iop_gui_leave_critical_section(self);
 }
@@ -619,7 +653,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_global_tonemap_gui_data_t *g = IOP_GUI_ALLOC(global_tonemap);
 
-  g->lwmax = NAN;
+  g->lwmax = -FLT_MAX;
   g->hash = 0;
 
   g->operator = dt_bauhaus_combobox_from_params(self, N_("operator"));
@@ -646,4 +680,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

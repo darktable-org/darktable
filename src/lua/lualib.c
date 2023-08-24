@@ -24,7 +24,7 @@
 
 typedef struct position_description_t
 {
-  const char *view;
+  dt_view_type_flags_t view;
   uint32_t container;
   int position;
 } position_description_t;
@@ -35,7 +35,7 @@ typedef struct
   lua_widget widget;
   gboolean expandable;
   GList *position_descriptions;
-  const char **views;
+  dt_view_type_flags_t views;
 } lua_lib_data_t;
 
 static int expandable_wrapper(struct dt_lib_module_t *self)
@@ -74,14 +74,13 @@ static void gui_cleanup_wrapper(struct dt_lib_module_t *self)
 {
   lua_lib_data_t *gui_data =self->data;
   free(gui_data->name);
-  free(gui_data->views);
   g_list_free(gui_data->position_descriptions);
   free(self->data);
   self->widget = NULL;
 }
 
 
-static const char **view_wrapper(struct dt_lib_module_t *self)
+static dt_view_type_flags_t view_wrapper(struct dt_lib_module_t *self)
 {
   lua_lib_data_t *gui_data = self->data;
   return (gui_data->views);
@@ -92,7 +91,7 @@ static position_description_t *get_position_description(lua_lib_data_t *gui_data
   for(GList *iter = gui_data->position_descriptions; iter; iter = g_list_next(iter))
   {
     position_description_t *position_description = (position_description_t *)iter->data;
-    if(!strcmp(position_description->view, cur_view->module_name)) return position_description;
+    if(position_description->view == cur_view->view(cur_view)) return position_description;
   }
   return NULL;
 }
@@ -235,7 +234,7 @@ static int register_lib(lua_State *L)
     position_description_t *position_description = malloc(sizeof(position_description_t));
     data->position_descriptions = g_list_append(data->position_descriptions, position_description);
 
-    position_description->view = tmp_view->module_name;
+    position_description->view = tmp_view->view(tmp_view);
 
     // get the container
     lua_pushinteger(L,1);
@@ -253,12 +252,11 @@ static int register_lib(lua_State *L)
 
     lua_pop(L, 1);
   }
-  data->views = calloc(g_list_length(data->position_descriptions) + 1, sizeof(char *));
-  int i = 0;
+  data->views = DT_VIEW_NONE;
   for(GList *iter = data->position_descriptions; iter; iter = g_list_next(iter))
   {
     position_description_t *position_description = (position_description_t *)iter->data;
-    data->views[i++] = position_description->view;
+    data->views |= position_description->view;
   }
 
   lua_widget widget;

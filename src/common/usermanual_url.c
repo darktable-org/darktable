@@ -34,18 +34,21 @@ dt_help_url urls_db[] =
   {"filter",                     NULL},
   {"colorlabels",                "lighttable/digital-asset-management/star-color/#color-labels"},
   {"import",                     "module-reference/utility-modules/lighttable/import/"},
+  {"import_dialog",              "module-reference/utility-modules/lighttable/import/#import-dialog"},
   {"select",                     "module-reference/utility-modules/lighttable/select/"},
   {"image",                      "module-reference/utility-modules/lighttable/selected-image/"},
   {"copy_history",               "module-reference/utility-modules/lighttable/history-stack/"},
   {"styles",                     "module-reference/utility-modules/lighttable/styles/#module-controls"},
   {"timeline",                   "module-reference/utility-modules/lighttable/timeline/"},
   {"metadata",                   "module-reference/utility-modules/shared/metadata-editor/"},
+  {"metadata_preferences",       "module-reference/utility-modules/shared/metadata-editor/#preferences"},
   {"tagging",                    "module-reference/utility-modules/shared/tagging/"},
   {"geotagging",                 "module-reference/utility-modules/shared/geotagging/"},
   {"collect",                    "module-reference/utility-modules/shared/collections/"},
   {"recentcollect",              "module-reference/utility-modules/shared/recent-collections/"},
   {"metadata_view",              "module-reference/utility-modules/shared/image-information/"},
   {"export",                     "module-reference/utility-modules/shared/export/"},
+  {"export_dialog",              "module-reference/utility-modules/shared/export/#metadata-preferences"},
   {"histogram",                  "module-reference/utility-modules/shared/histogram/"},
   {"navigation",                 "module-reference/utility-modules/darkroom/navigation/"},
   {"snapshots",                  "module-reference/utility-modules/darkroom/snapshots/"},
@@ -92,6 +95,10 @@ dt_help_url urls_db[] =
   {"overexposed",                "module-reference/utility-modules/darkroom/clipping/"},
   {"softproof",                  "module-reference/utility-modules/darkroom/soft-proof/"},
   {"gamut",                      "module-reference/utility-modules/darkroom/gamut/"},
+  {"shortcuts",                  "preferences-settings/shortcuts/"},
+  {"presets",                    "preferences-settings/presets/"},
+  {"css_tweaks",                 "preferences-settings/general/#css-theme-modifications"},
+  {"preset_dialog",              "darkroom/processing-modules/presets/#creating-and-editing-presets"},
 
   // iop links
   {"ashift",                     "module-reference/processing-modules/rotate-perspective/"},
@@ -174,7 +181,7 @@ dt_help_url urls_db[] =
   {"zonesystem",                 "module-reference/processing-modules/zone-system/"},
 };
 
-char *dt_get_help_url(char *name)
+char *dt_get_help_url(const char *name)
 {
   if(name==NULL) return NULL;
 

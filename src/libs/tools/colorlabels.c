@@ -42,10 +42,9 @@ const char *name(dt_lib_module_t *self)
   return _("colorlabels");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", "tethering", NULL};
-  return v;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
 uint32_t container(dt_lib_module_t *self)

@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2021 darktable developers.
+   Copyright (C) 2010-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -115,7 +116,9 @@ int flags()
          | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -161,10 +164,25 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_profilegamma_params_v2_t
+  {
+    dt_iop_profilegamma_mode_t mode;
+    float linear;
+    float gamma;
+    float dynamic_range;
+    float grey_point;
+    float shadows_range;
+    float security_factor;
+  } dt_iop_profilegamma_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_profilegamma_params_v1_t
     {
@@ -172,15 +190,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float gamma;
     } dt_iop_profilegamma_params_v1_t;
 
-    dt_iop_profilegamma_params_v1_t *o = (dt_iop_profilegamma_params_v1_t *)old_params;
-    dt_iop_profilegamma_params_t *n = (dt_iop_profilegamma_params_t *)new_params;
-    dt_iop_profilegamma_params_t *d = (dt_iop_profilegamma_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_profilegamma_params_v1_t *o =
+      (dt_iop_profilegamma_params_v1_t *)old_params;
+    dt_iop_profilegamma_params_v2_t *n =
+      (dt_iop_profilegamma_params_v2_t *)malloc(sizeof(dt_iop_profilegamma_params_v2_t));
 
     n->linear = o->linear;
     n->gamma = o->gamma;
     n->mode = PROFILEGAMMA_GAMMA;
+    n->dynamic_range = 10.0f;
+    n->grey_point = 18.0f;
+    n->shadows_range = -5.0f;
+    n->security_factor = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_profilegamma_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -459,7 +484,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   if     (picker == g->grey_point)
@@ -471,7 +497,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   else if(picker == g->auto_button)
     apply_autotune(self);
   else
-    fprintf(stderr, "[profile_gamma] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[profile_gamma] unknown color picker\n");
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -640,13 +666,13 @@ void gui_init(dt_iop_module_t *self)
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "shadows_range"));
   dt_bauhaus_slider_set_soft_max(g->shadows_range, 0.0);
   dt_bauhaus_slider_set_format(g->shadows_range, _(" EV"));
-  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle gray and pure black\nthis is a reading a posemeter would give you on the scene"));
+  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle gray and pure black\nthis is a reading a light meter would give you on the scene"));
 
   g->dynamic_range
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "dynamic_range"));
   dt_bauhaus_slider_set_soft_range(g->dynamic_range, 0.5, 16.0);
   dt_bauhaus_slider_set_format(g->dynamic_range, _(" EV"));
-  gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
+  gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a light meter would give you on the scene"));
 
   gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(C_("section", "optimize automatically")), FALSE, FALSE, 0);
 
@@ -676,4 +702,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

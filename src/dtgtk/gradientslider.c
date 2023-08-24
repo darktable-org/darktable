@@ -600,7 +600,7 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
 
   // do we have a picker value to draw?
-  if(!isnan(gslider->picker[0]))
+  if(!dt_isnan(gslider->picker[0]))
   {
     int vx_min = _scale_to_screen(widget, CLAMP(gslider->picker[1], 0.0, 1.0));
     int vx_max = _scale_to_screen(widget, CLAMP(gslider->picker[2], 0.0, 1.0));

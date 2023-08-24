@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,8 +55,6 @@ static GType pointer_trouble[] = { G_TYPE_POINTER, G_TYPE_STRING, G_TYPE_STRING 
 static GType collection_args[] = { G_TYPE_UINT, G_TYPE_UINT, G_TYPE_POINTER, G_TYPE_UINT };
 static GType image_export_arg[]
     = { G_TYPE_UINT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER };
-static GType history_will_change_arg[]
-= { G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_POINTER };
 static GType geotag_arg[] = { G_TYPE_POINTER, G_TYPE_UINT };
 
 // callback for the destructor of DT_SIGNAL_COLLECTION_CHANGED
@@ -151,8 +149,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     FALSE }, // DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED
   { "dt-develop-ui-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
-  { "dt-develop-history-will-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3,
-    history_will_change_arg, NULL, FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
+  { "dt-develop-history-will-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
   { "dt-develop-history-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_CHANGE
   { "dt-develop-history-invalidated", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
@@ -343,7 +341,7 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
         g_value_set_pointer(&instance_and_params[i], va_arg(extra_args, void *));
         break;
       default:
-        fprintf(stderr, "error: unsupported parameter type `%s' for signal `%s'\n",
+        dt_print(DT_DEBUG_ALWAYS, "error: unsupported parameter type `%s' for signal `%s'\n",
                 g_type_name(type), signal_description->name);
         va_end(extra_args);
         for(int j = 0; j <= i; j++) g_value_unset(&instance_and_params[j]);

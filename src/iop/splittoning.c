@@ -91,7 +91,9 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -163,44 +165,54 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict out = DT_IS_ALIGNED((float*)ovoid);
   const int npixels = roi_out->width * roi_out->height;
 
+  const float shadow_hue = data->shadow_hue;
+  const float shadow_saturation = data->shadow_saturation;
+  const float highlight_hue = data->highlight_hue;
+  const float highlight_saturation = data->highlight_saturation;
+  const float balance = data->balance;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(compress, npixels)  \
-  dt_omp_sharedconst(data, in, out) \
+  dt_omp_firstprivate(in, out, npixels, shadow_hue, shadow_saturation, \
+                      highlight_hue, highlight_saturation, balance, compress)   \
   schedule(static)
 #endif
   for(int k = 0; k < 4 * npixels; k += 4)
   {
     float h, s, l;
     rgb2hsl(in+k, &h, &s, &l);
-    if(l < data->balance - compress)
+    if(l < balance - compress)
     {
       dt_aligned_pixel_t mixrgb;
-      hsl2rgb(mixrgb, data->shadow_hue, data->shadow_saturation, l);
+      hsl2rgb(mixrgb, shadow_hue, shadow_saturation, l);
 
-      const float ra = CLIP((data->balance - compress - l) * 2.0f);
+      const float ra = CLIP((balance - compress - l) * 2.0f);
       const float la = (1.0f - ra);
 
+      dt_aligned_pixel_t toned;
       for_each_channel(c,aligned(in,out))
-        out[k+c] = CLIP(in[k+c] * la + mixrgb[c] * ra);
+        toned[c] = CLIP(in[k+c] * la + mixrgb[c] * ra);
+      copy_pixel_nontemporal(out + k, toned);
     }
-    else if(l > data->balance + compress)
+    else if(l > balance + compress)
     {
       dt_aligned_pixel_t mixrgb;
-      hsl2rgb(mixrgb, data->highlight_hue, data->highlight_saturation, l);
+      hsl2rgb(mixrgb, highlight_hue, highlight_saturation, l);
 
-      const float ra = CLIP((l - (data->balance + compress)) * 2.0f);
+      const float ra = CLIP((l - (balance + compress)) * 2.0f);
       const float la = (1.0f - ra);
 
+      dt_aligned_pixel_t toned;
       for_each_channel(c,aligned(in,out))
-        out[k+c] = CLIP(in[k+c] * la + mixrgb[c] * ra);
+        toned[c] = CLIP(in[k+c] * la + mixrgb[c] * ra);
+      copy_pixel_nontemporal(out + k, toned);
     }
     else
     {
-      copy_pixel(out + k, in +k);
+      copy_pixel_nontemporal(out + k, in +k);
     }
-
   }
+  dt_omploop_sfence(); // ensure that nontemporal writes flush to RAM before continuing
 }
 
 #ifdef HAVE_OPENCL
@@ -355,7 +367,8 @@ static void colorpick_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;

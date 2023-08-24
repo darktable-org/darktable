@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2021 darktable developers.
+    Copyright (C) 2018-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -75,7 +75,8 @@ gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev)
 
 static gboolean _record_point_area(dt_iop_color_picker_t *self)
 {
-  const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
+  const dt_colorpicker_sample_t *const sample =
+    darktable.lib->proxy.colorpicker.primary_sample;
   gboolean changed = self->changed;
   if(self && sample)
   {
@@ -117,7 +118,8 @@ static void _color_picker_reset(dt_iop_color_picker_t *picker)
   }
 }
 
-void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep)
+void dt_iop_color_picker_reset(dt_iop_module_t *module,
+                               const gboolean keep)
 {
   dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
   if(picker && picker->module == module)
@@ -132,13 +134,17 @@ void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep)
   }
 }
 
-static void _init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *module,
-                         dt_iop_color_picker_flags_t flags, GtkWidget *button)
+static void _init_picker(dt_iop_color_picker_t *picker,
+                         dt_iop_module_t *module,
+                         const dt_iop_color_picker_flags_t flags,
+                         GtkWidget *button)
 {
   // module is NULL if primary colorpicker
   picker->module     = module;
   picker->flags      = flags;
-  picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL) : IOP_CS_NONE;
+  picker->picker_cst = module
+    ? module->default_colorspace(module, NULL, NULL)
+    : IOP_CS_NONE;
   picker->colorpick  = button;
   picker->changed    = FALSE;
 
@@ -152,7 +158,9 @@ static void _init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *module,
   _color_picker_reset(picker);
 }
 
-static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventButton *e, dt_iop_color_picker_t *self)
+static gboolean _color_picker_callback_button_press(GtkWidget *button,
+                                                    GdkEventButton *e,
+                                                    dt_iop_color_picker_t *self)
 {
   // module is NULL if primary colorpicker
   dt_iop_module_t *module = self->module;
@@ -219,7 +227,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
     }
     else
     {
-      dt_dev_invalidate_from_gui(darktable.develop);
+      dt_dev_invalidate_all(darktable.develop);
     }
     // force applying the next incoming sample
     self->changed = TRUE;
@@ -232,11 +240,12 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
     {
       module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
       // will turn off live sample button
-      darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
+      darktable.lib->proxy.colorpicker.update_panel
+        (darktable.lib->proxy.colorpicker.module);
     }
     else if(darktable.lib->proxy.colorpicker.restrict_histogram)
     {
-      dt_dev_invalidate_from_gui(darktable.develop);
+      dt_dev_invalidate_all(darktable.develop);
     }
   }
 
@@ -245,15 +254,18 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
   return TRUE;
 }
 
-static void _color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self)
+static void _color_picker_callback(GtkWidget *button,
+                                   dt_iop_color_picker_t *self)
 {
   _color_picker_callback_button_press(button, NULL, self);
 }
 
-void dt_iop_color_picker_set_cst(dt_iop_module_t *module, const dt_iop_colorspace_type_t picker_cst)
+void dt_iop_color_picker_set_cst(dt_iop_module_t *module,
+                                 const dt_iop_colorspace_type_t picker_cst)
 {
   dt_iop_color_picker_t *const picker = darktable.lib->proxy.colorpicker.picker_proxy;
-  // this is a bit hacky, because the code was built for when a module "owned" an active pcicker
+  // this is a bit hacky, because the code was built for when a module
+  // "owned" an active pcicker
   if(picker && picker->module == module && picker->picker_cst != picker_cst)
   {
     picker->picker_cst = picker_cst;
@@ -271,7 +283,9 @@ dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *mod
     return IOP_CS_NONE;
 }
 
-static void _iop_color_picker_pickerdata_ready_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
+static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
+                                                        dt_iop_module_t *module,
+                                                        dt_dev_pixelpipe_t *pipe,
                                                         gpointer user_data)
 {
   // an iop colorpicker receives new data from the pixelpipe
@@ -282,19 +296,21 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance, dt_io
   // modules between colorin & colorout may need the work_profile
   // to work properly. This will force colorin to be run and it
   // will set the work_profile if needed.
-  piece->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  piece->pipe->cache_obsolete = 1;
+  // FIXME: is this overdoing it? see #14812
+  pipe->changed |= DT_DEV_PIPE_REMOVE;
+  pipe->cache_obsolete = TRUE;
 
   // iops only need new picker data if the pointer has moved
   if(_record_point_area(picker))
   {
-    if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, piece))
+    if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, pipe))
       if(module->color_picker_apply)
-        module->color_picker_apply(module, picker->colorpick, piece);
+        module->color_picker_apply(module, picker->colorpick, pipe);
   }
 }
 
-static void _color_picker_proxy_preview_pipe_callback(gpointer instance, gpointer user_data)
+static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
+                                                      gpointer user_data)
 {
   dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
   if(picker)
@@ -325,23 +341,35 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance, gpointe
 void dt_iop_color_picker_init(void)
 {
   // we have incoming iop picker data
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY,
-                                  G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_CONTROL_PICKERDATA_READY,
+                                  G_CALLBACK(_iop_color_picker_pickerdata_ready_callback),
+                                  NULL);
   // we have new primary picker data as preview pipe has run to conclusion
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                  G_CALLBACK(_color_picker_proxy_preview_pipe_callback), NULL);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                                  G_CALLBACK(_color_picker_proxy_preview_pipe_callback),
+                                  NULL);
 }
 
 void dt_iop_color_picker_cleanup(void)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_color_picker_proxy_preview_pipe_callback), NULL);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
+    (darktable.signals,
+     G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
+    (darktable.signals,
+     G_CALLBACK(_color_picker_proxy_preview_pipe_callback), NULL);
 }
 
-static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_flags_t flags, GtkWidget *w,
-                                    const gboolean init_cst, const dt_iop_colorspace_type_t cst)
+static GtkWidget *_color_picker_new(dt_iop_module_t *module,
+                                    const dt_iop_color_picker_flags_t flags,
+                                    GtkWidget *w,
+                                    const gboolean init_cst,
+                                    const dt_iop_colorspace_type_t cst)
 {
-  dt_iop_color_picker_t *color_picker = (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
+  dt_iop_color_picker_t *color_picker =
+    (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
 
   if(w == NULL || GTK_IS_BOX(w))
   {
@@ -351,7 +379,8 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker
     if(init_cst)
       color_picker->picker_cst = cst;
     g_signal_connect_data(G_OBJECT(button), "button-press-event",
-                          G_CALLBACK(_color_picker_callback_button_press), color_picker, (GClosureNotify)g_free, 0);
+                          G_CALLBACK(_color_picker_callback_button_press),
+                          color_picker, (GClosureNotify)g_free, 0);
     if(w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
 
     return button;
@@ -364,18 +393,23 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker
     if(init_cst)
       color_picker->picker_cst = cst;
     g_signal_connect_data(G_OBJECT(w), "quad-pressed",
-                          G_CALLBACK(_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
+                          G_CALLBACK(_color_picker_callback),
+                          color_picker, (GClosureNotify)g_free, 0);
 
     return w;
   }
 }
 
-GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_flags_t flags, GtkWidget *w)
+GtkWidget *dt_color_picker_new(dt_iop_module_t *module,
+                               const dt_iop_color_picker_flags_t flags,
+                               GtkWidget *w)
 {
   return _color_picker_new(module, flags, w, FALSE, IOP_CS_NONE);
 }
 
-GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_flags_t flags, GtkWidget *w,
+GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module,
+                                        const dt_iop_color_picker_flags_t flags,
+                                        GtkWidget *w,
                                         const dt_iop_colorspace_type_t cst)
 {
   return _color_picker_new(module, flags, w, TRUE, cst);
@@ -386,4 +420,3 @@ GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_pi
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

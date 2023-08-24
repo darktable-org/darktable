@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2015-2021 darktable developers.
+ *    Copyright (C) 2015-2023 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ JsonParser *dt_noiseprofile_init(const char *alternative)
   JsonParser *parser = json_parser_new();
   if(!json_parser_load_from_file(parser, filename, &error))
   {
-    fprintf(stderr, "[noiseprofile] error: parsing json from `%s' failed\n%s\n", filename, error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[noiseprofile] error: parsing json from `%s' failed\n%s\n", filename, error->message);
     g_error_free(error);
     g_object_unref(parser);
     return NULL;
@@ -59,7 +59,7 @@ JsonParser *dt_noiseprofile_init(const char *alternative)
   if(!dt_noiseprofile_verify(parser))
   {
     dt_control_log(_("noiseprofile file `%s' is not valid"), filename);
-    fprintf(stderr, "[noiseprofile] error: `%s' is not a valid noiseprofile file. run with -d control for details\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[noiseprofile] error: `%s' is not a valid noiseprofile file. run with -d control for details\n", filename);
     g_object_unref(parser);
     return NULL;
   }

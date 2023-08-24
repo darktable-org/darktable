@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -103,14 +103,37 @@ typedef enum _grab_region_t
 /* calculate the aspect ratios for current image */
 static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_applied, int select);
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(new_version <= old_version) return 1;
-  if(new_version != 5) return 1;
+  typedef struct dt_iop_clipping_params_v5_t
+  {
+    float angle;
+    float cx;
+    float cy;
+    float cw;
+    float ch;
+    float k_h, k_v;
+    float kxa;
+    float kya;
+    float kxb;
+    float kyb;
+    float kxc;
+    float kyc;
+    float kxd;
+    float kyd;
+    int k_type, k_sym;
+    int k_apply;
+    gboolean crop_auto;
+    int ratio_n;
+    int ratio_d;
+  } dt_iop_clipping_params_v5_t;
 
-  dt_iop_clipping_params_t *n = (dt_iop_clipping_params_t *)new_params;
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2)
   {
     union {
         float f;
@@ -123,6 +146,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     k.f = o->k_h;
     int is_horizontal;
@@ -155,11 +180,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = 0;
     n->crop_auto = 1;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3)
   {
     // old structure def
     typedef struct old_params_t
@@ -168,6 +198,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -183,11 +215,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = 0;
     n->crop_auto = 1;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4)
   {
     typedef struct old_params_t
     {
@@ -198,6 +235,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -208,12 +247,17 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = o->k_apply;
     n->crop_auto = o->crop_auto;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
 
-  return 0;
+  return 1;
 }
 
 typedef struct dt_iop_clipping_gui_data_t
@@ -336,16 +380,18 @@ int flags()
 
 int operation_tags()
 {
-  return IOP_TAG_DISTORT | IOP_TAG_CLIPPING;
+  return IOP_TAG_DISTORT | IOP_TAG_CROPPING;
 }
 
 int operation_tags_filter()
 {
   // switch off watermark, it gets confused.
-  return IOP_TAG_DECORATION | IOP_TAG_CLIPPING;
+  return IOP_TAG_DECORATION | IOP_TAG_CROPPING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -901,7 +947,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   float p[2], o[2];
   dt_boundingbox_t aabb = { roi_out_x + d->cix * so, roi_out_y + d->ciy * so, roi_out_x + d->cix * so + roi_out->width,
                   roi_out_y + d->ciy * so + roi_out->height };
-  dt_boundingbox_t aabb_in = { INFINITY, INFINITY, -INFINITY, -INFINITY };
+  dt_boundingbox_t aabb_in = { FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX };
   for(int c = 0; c < 4; c++)
   {
     // get corner points of roi_out
@@ -1312,8 +1358,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // we show a error on stderr if we have clamped something
     if(d->cx != p->cx || d->cy != p->cy || d->cw != fabsf(p->cw) || d->ch != fabsf(p->ch))
     {
-      fprintf(stderr, "[crop&rotate] invalid crop data for %d : x=%0.04f y=%0.04f w=%0.04f h=%0.04f\n",
-              pipe->image.id, p->cx, p->cy, p->cw, p->ch);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[crop&rotate] invalid crop data for %d : x=%0.04f y=%0.04f w=%0.04f h=%0.04f\n",
+               pipe->image.id, p->cx, p->cy, p->cw, p->ch);
     }
   }
 }
@@ -2165,7 +2212,7 @@ void gui_init(struct dt_iop_module_t *self)
       // some sanity check
       if(n == 0 || d == 0)
       {
-        fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
+        dt_print(DT_DEBUG_ALWAYS, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
         dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
         continue;
       }
@@ -2177,7 +2224,7 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else
     {
-      fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
+      dt_print(DT_DEBUG_ALWAYS, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
       dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
       continue;
     }
@@ -3118,7 +3165,7 @@ static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_
   }
   g->applied = 1;
   const gboolean changed = fabs(p->cx - old[0]) > eps || fabs(p->cy - old[1]) > eps || fabs(p->cw - old[2]) > eps || fabs(p->ch - old[3]) > eps;
-  // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+  // dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
   if(changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3351,4 +3398,3 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

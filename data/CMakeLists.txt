@@ -59,6 +59,9 @@ if(NOT WIN32)
   if("qoi" IN_LIST DT_SUPPORTED_EXTENSIONS)
     list(APPEND DESKTOP_MIME_TYPES image/qoi)
   endif()
+  if("fits" IN_LIST DT_SUPPORTED_EXTENSIONS)
+    list(APPEND DESKTOP_MIME_TYPES image/fits)
+  endif()
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/org.darktable.darktable.desktop.in)
   file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
   add_custom_command(
@@ -227,4 +230,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${CMAKE_INSTAL
 #
 # Install bash completion file. users/packagers can symlink that to /etc/bash_completion.d/
 #
-install(FILES darktable.bash DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+if ((NOT WIN32) OR BUILD_MSYS2_INSTALL)
+  install(FILES darktable.bash DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+endif()

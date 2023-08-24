@@ -43,30 +43,11 @@ static char J2K_HEAD[] = { 0xFF, 0x4F, 0xFF, 0x51, 0x00 };
 
 static void color_sycc_to_rgb(opj_image_t *img);
 
-/**
-sample error callback expecting a FILE* client object
-*/
 static void error_callback(const char *msg, void *client_data)
 {
   FILE *stream = (FILE *)client_data;
   fprintf(stream, "[j2k_open] Error: %s", msg);
 }
-/**
-sample warning callback expecting a FILE* client object
-*/
-// static void warning_callback(const char *msg, void *client_data)
-// {
-//   FILE *stream = (FILE*)client_data;
-//   fprintf(stream, "[j2k_open] Warning: %s", msg);
-// }
-/**
-sample debug callback expecting no client object
-*/
-// static void info_callback(const char *msg, void *client_data)
-// {
-//   (void)client_data;
-//   fprintf(stdout, "[j2k_open] Info: %s", msg);
-// }
 
 static int get_file_format(const char *filename)
 {
@@ -728,4 +709,3 @@ static void color_sycc_to_rgb(opj_image_t *img)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

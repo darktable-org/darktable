@@ -160,7 +160,9 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -448,10 +450,8 @@ static inline void _update_saturation_slider_end_color(GtkWidget *slider, float 
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }
 
-void color_picker_apply(
-	dt_iop_module_t *self,
-        GtkWidget *picker,
-        dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
@@ -927,7 +927,7 @@ void process(struct dt_iop_module_t *self,
         dt_aligned_pixel_t lengths;
         for_four_channels(i)
         {
-          lengths[i] = -length + counts[i] * length_inc;
+          lengths[i] = -(length + counts[i] * length_inc);
           curr_density[i] = _compute_density(-density, lengths[i]);
         }
         for(int i = 0; i < 4; i++)
@@ -939,13 +939,13 @@ void process(struct dt_iop_module_t *self,
           }
           // use streaming writes to eliminate the memory reads from loading cache lines
           copy_pixel_nontemporal(out + 4*(x+i), res);
-          length += 4*length_inc;
         }
+        length += 4*length_inc;
       }
       // handle the left-over pixels
       for(int x = width & ~3; x < width; x++)
       {
-        const float curr_density = _compute_density(density, length);
+        const float curr_density = _compute_density(-density, -length);
         dt_aligned_pixel_t res;	// the compiler will optimize this into a register
         for_each_channel(l, aligned(in : 16))
         {

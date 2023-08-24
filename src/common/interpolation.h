@@ -21,10 +21,6 @@
 #include "common/opencl.h"
 #include "develop/pixelpipe_hb.h"
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -45,23 +41,19 @@ enum dt_interpolation_type
 };
 
 /** Interpolation function */
-typedef float (*dt_interpolation_func)(float width, float t);
-
-#if defined(__SSE2__)
-/** Interpolation function (SSE) */
-typedef __m128 (*dt_interpolation_sse_func)(__m128 width, __m128 t);
-#endif
+typedef float (*dt_interpolation_func)(float *taps,
+                                       size_t num_taps,
+                                       float width,
+                                       float first_tap,
+                                       float interval);
 
 /** Interpolation structure */
 struct dt_interpolation
 {
   enum dt_interpolation_type id;     /**< Id such as defined by the dt_interpolation_type */
   const char *name;                  /**< internal name  */
-  int width;                         /**< Half width of its kernel support */
-  dt_interpolation_func func;        /**< Kernel function */
-#if defined(__SSE2__)
-  dt_interpolation_sse_func funcsse; /**< Kernel function (four params a time) */
-#endif
+  size_t width;                      /**< Half width of its kernel support */
+  dt_interpolation_func maketaps;    /**< Kernel function */
 };
 
 /** Compute a single interpolated sample.
@@ -108,11 +100,6 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const
  *
  */
 void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const float *in, float *out,
-                                      const float x, const float y, const int width, const int height,
-                                      const int linestride);
-
-// same as above for single channel images (i.e., masks). no SSE or CPU code paths for now
-void dt_interpolation_compute_pixel1c(const struct dt_interpolation *itor, const float *in, float *out,
                                       const float x, const float y, const int width, const int height,
                                       const int linestride);
 

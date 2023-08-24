@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,10 +49,8 @@ typedef cl_int (*dt_clSetCommandQueueProperty_t)(cl_command_queue, cl_command_qu
                                                  cl_command_queue_properties *);
 typedef cl_mem (*dt_clCreateBuffer_t)(cl_context, cl_mem_flags, size_t, void *, cl_int *);
 typedef cl_mem (*dt_clCreateSubBuffer_t)(cl_mem, cl_mem_flags, cl_buffer_create_type, const void *, cl_int *);
-typedef cl_mem (*dt_clCreateImage2D_t)(cl_context, cl_mem_flags, const cl_image_format *, size_t, size_t,
-                                       size_t, void *, cl_int *);
-typedef cl_mem (*dt_clCreateImage3D_t)(cl_context, cl_mem_flags, const cl_image_format *, size_t, size_t,
-                                       size_t, size_t, size_t, void *, cl_int *);
+typedef cl_mem (*dt_clCreateImage_t)(cl_context context, cl_mem_flags flags, const cl_image_format *image_format,
+                                     const cl_image_desc *image_desc, void *host_ptr, cl_int *errcode_ret);
 typedef cl_int (*dt_clRetainMemObject_t)(cl_mem);
 typedef cl_int (*dt_clReleaseMemObject_t)(cl_mem);
 typedef cl_int (*dt_clGetSupportedImageFormats_t)(cl_context, cl_mem_flags, cl_mem_object_type, cl_uint,
@@ -138,7 +136,6 @@ typedef cl_int (*dt_clEnqueueNativeKernel_t)(cl_command_queue, void (*user_func)
                                              const cl_event *, cl_event *);
 typedef cl_int (*dt_clEnqueueMarker_t)(cl_command_queue, cl_event *);
 typedef cl_int (*dt_clEnqueueWaitForEvents_t)(cl_command_queue, cl_uint, const cl_event *);
-typedef cl_int (*dt_clEnqueueBarrier_t)(cl_command_queue);
 
 typedef struct dt_dlopencl_symbols_t
 {
@@ -158,8 +155,7 @@ typedef struct dt_dlopencl_symbols_t
   dt_clSetCommandQueueProperty_t dt_clSetCommandQueueProperty;
   dt_clCreateBuffer_t dt_clCreateBuffer;
   dt_clCreateSubBuffer_t dt_clCreateSubBuffer;
-  dt_clCreateImage2D_t dt_clCreateImage2D;
-  dt_clCreateImage3D_t dt_clCreateImage3D;
+  dt_clCreateImage_t dt_clCreateImage;
   dt_clRetainMemObject_t dt_clRetainMemObject;
   dt_clReleaseMemObject_t dt_clReleaseMemObject;
   dt_clGetSupportedImageFormats_t dt_clGetSupportedImageFormats;
@@ -214,14 +210,13 @@ typedef struct dt_dlopencl_symbols_t
   dt_clEnqueueNativeKernel_t dt_clEnqueueNativeKernel;
   dt_clEnqueueMarker_t dt_clEnqueueMarker;
   dt_clEnqueueWaitForEvents_t dt_clEnqueueWaitForEvents;
-  dt_clEnqueueBarrier_t dt_clEnqueueBarrier;
 } dt_dlopencl_symbols_t;
 
 
 
 typedef struct dt_dlopencl_t
 {
-  int have_opencl;
+  gboolean have_opencl;
   dt_dlopencl_symbols_t *symbols;
   char *library;
 } dt_dlopencl_t;

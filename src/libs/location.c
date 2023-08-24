@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -100,10 +100,9 @@ const char *name(dt_lib_module_t *self)
   return _("find location");
 }
 
-const char **views(dt_lib_module_t *self)
+dt_view_type_flags_t views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"map", NULL};
-  return v;
+  return DT_VIEW_MAP;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -391,7 +390,7 @@ static gboolean _lib_location_search(gpointer user_data)
 bail_out:
   if(err)
   {
-    fprintf(stderr, "location search: %s\n", err->message);
+    dt_print(DT_DEBUG_ALWAYS, "location search: %s\n", err->message);
     g_error_free(err);
   }
 
@@ -600,7 +599,7 @@ broken_bbox:
         else
         {
           gchar *s = g_strndup(*avalue, 100);
-          fprintf(stderr, "unsupported outline: %s%s\n", s, strlen(s) == strlen(*avalue) ? "" : " ...");
+          dt_print(DT_DEBUG_ALWAYS, "unsupported outline: %s%s\n", s, strlen(s) == strlen(*avalue) ? "" : " ...");
           g_free(s);
         }
       }

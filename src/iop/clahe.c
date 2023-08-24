@@ -79,7 +79,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -306,7 +308,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_rlce_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
   *((dt_iop_rlce_params_t *)module->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };

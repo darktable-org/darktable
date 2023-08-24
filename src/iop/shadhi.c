@@ -66,61 +66,6 @@ typedef enum dt_iop_shadhi_algo_t
   SHADHI_ALGO_BILATERAL // $DESCRIPTION: "bilateral filter"
 } dt_iop_shadhi_algo_t;
 
-/* legacy version 1 params */
-typedef struct dt_iop_shadhi_params1_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float reserved1;
-  float highlights;
-  float reserved2;
-  float compress;
-} dt_iop_shadhi_params1_t;
-
-/* legacy version 2 params */
-typedef struct dt_iop_shadhi_params2_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float reserved1;
-  float highlights;
-  float reserved2;
-  float compress;
-  float shadows_ccorrect;
-  float highlights_ccorrect;
-} dt_iop_shadhi_params2_t;
-
-typedef struct dt_iop_shadhi_params3_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float reserved1;
-  float highlights;
-  float reserved2;
-  float compress;
-  float shadows_ccorrect;
-  float highlights_ccorrect;
-  unsigned int flags;
-} dt_iop_shadhi_params3_t;
-
-typedef struct dt_iop_shadhi_params4_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float whitepoint;
-  float highlights;
-  float reserved2;
-  float compress;
-  float shadows_ccorrect;
-  float highlights_ccorrect;
-  unsigned int flags;
-  float low_approximation;
-} dt_iop_shadhi_params4_t;
-
 typedef struct dt_iop_shadhi_params_t
 {
   dt_gaussian_order_t order; // $DEFAULT: DT_IOP_GAUSSIAN_ZERO
@@ -134,7 +79,7 @@ typedef struct dt_iop_shadhi_params_t
   float highlights_ccorrect; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "highlights color adjustment"
   unsigned int flags;        // $DEFAULT: UNBOUND_DEFAULT
   float low_approximation;   // $DEFAULT: 0.000001
-  dt_iop_shadhi_algo_t shadhi_algo; // $DEFAULT: SHADHI_ALGO_GAUSSIAN $DESCRIPTION: "soften with" $DEFAULT: 0
+  dt_iop_shadhi_algo_t shadhi_algo; // $DEFAULT: SHADHI_ALGO_BILATERAL $DESCRIPTION: "soften with"
 } dt_iop_shadhi_params_t;
 
 typedef struct dt_iop_shadhi_gui_data_t
@@ -185,7 +130,9 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -200,13 +147,45 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, Lab, display-referred"));
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 5)
+  typedef struct dt_iop_shadhi_params_v5_t
   {
-    const dt_iop_shadhi_params1_t *old = old_params;
-    dt_iop_shadhi_params_t *new = new_params;
+    dt_gaussian_order_t order;
+    float radius;
+    float shadows;
+    float whitepoint;
+    float highlights;
+    float reserved2;
+    float compress;
+    float shadows_ccorrect;
+    float highlights_ccorrect;
+    unsigned int flags;
+    float low_approximation;
+    dt_iop_shadhi_algo_t shadhi_algo;
+  } dt_iop_shadhi_params_v5_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_shadhi_params_v1_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float shadows;
+      float reserved1;
+      float highlights;
+      float reserved2;
+      float compress;
+    } dt_iop_shadhi_params_v1_t;
+
+    const dt_iop_shadhi_params_v1_t *old = old_params;
+    dt_iop_shadhi_params_v5_t *new =
+      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = 0.5f * old->shadows;
@@ -219,12 +198,30 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->highlights_ccorrect = 0.0f;
     new->low_approximation = 0.01f;
     new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_shadhi_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  else if(old_version == 2 && new_version == 5)
+  else if(old_version == 2)
   {
-    const dt_iop_shadhi_params2_t *old = old_params;
-    dt_iop_shadhi_params_t *new = new_params;
+    typedef struct dt_iop_shadhi_params_v2_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float shadows;
+      float reserved1;
+      float highlights;
+      float reserved2;
+      float compress;
+      float shadows_ccorrect;
+      float highlights_ccorrect;
+    } dt_iop_shadhi_params_v2_t;
+
+    const dt_iop_shadhi_params_v2_t *old = old_params;
+    dt_iop_shadhi_params_v5_t *new =
+      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -237,12 +234,31 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->flags = 0;
     new->low_approximation = 0.01f;
     new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_shadhi_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  else if(old_version == 3 && new_version == 5)
+  else if(old_version == 3)
   {
-    const dt_iop_shadhi_params3_t *old = old_params;
-    dt_iop_shadhi_params_t *new = new_params;
+    typedef struct dt_iop_shadhi_params_v3_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float shadows;
+      float reserved1;
+      float highlights;
+      float reserved2;
+      float compress;
+      float shadows_ccorrect;
+      float highlights_ccorrect;
+      unsigned int flags;
+    } dt_iop_shadhi_params_v3_t;
+
+    const dt_iop_shadhi_params_v3_t *old = old_params;
+    dt_iop_shadhi_params_v5_t *new =
+      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -255,12 +271,32 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->flags = old->flags;
     new->low_approximation = 0.01f;
     new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_shadhi_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  else if(old_version == 4 && new_version == 5)
+  else if(old_version == 4)
   {
-    const dt_iop_shadhi_params4_t *old = old_params;
-    dt_iop_shadhi_params_t *new = new_params;
+    typedef struct dt_iop_shadhi_params_v4_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float shadows;
+      float whitepoint;
+      float highlights;
+      float reserved2;
+      float compress;
+      float shadows_ccorrect;
+      float highlights_ccorrect;
+      unsigned int flags;
+      float low_approximation;
+    } dt_iop_shadhi_params_v4_t;
+
+    const dt_iop_shadhi_params_v4_t *old = old_params;
+    dt_iop_shadhi_params_v5_t *new =
+      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -273,6 +309,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->flags = old->flags;
     new->low_approximation = old->low_approximation;
     new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_shadhi_params_v5_t);
+    *new_version = 5;
     return 0;
   }
   return 1;
@@ -302,15 +342,22 @@ static inline float sign(float x)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(ivoid, ovoid : 64)
 #endif
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
+
   const dt_iop_shadhi_data_t *const restrict data = (dt_iop_shadhi_data_t *)piece->data;
   const float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
   const int width = roi_out->width;
   const int height = roi_out->height;
-  const int ch = piece->colors;
 
   const int order = data->order;
   const float radius = fmaxf(0.1f, data->radius);
@@ -336,11 +383,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     if(unbound_mask)
     {
-      for(int k = 0; k < 4; k++) Labmax[k] = INFINITY;
-      for(int k = 0; k < 4; k++) Labmin[k] = -INFINITY;
+      for(int k = 0; k < 4; k++) Labmax[k] = FLT_MAX;
+      for(int k = 0; k < 4; k++) Labmin[k] = -FLT_MAX;
     }
 
-    dt_gaussian_t *g = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
+    dt_gaussian_t *g = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, order);
     if(!g) return;
     dt_gaussian_blur_4c(g, in, out);
     dt_gaussian_free(g);
@@ -359,24 +406,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_bilateral_free(b);
   }
 
-  const dt_aligned_pixel_t max = { 1.0f, 1.0f, 1.0f, 1.0f };
-  const dt_aligned_pixel_t min = { 0.0f, -1.0f, -1.0f, 0.0f };
-  const float lmin = 0.0f;
-  const float lmax = max[0] + fabsf(min[0]);
-  const float halfmax = lmax / 2.0;
-  const float doublemax = lmax * 2.0;
-
+#define min_A (-1.0f)
+#define min_B (-1.0f)
+#define max_A (1.0f)
+#define max_B (1.0f)
+#define halfmax (0.5f)
+#define lmin (0.0f)
+#define lmax (1.0f)
+#define doublemax (2.0f * lmax)
+  const size_t npixels = (size_t)width * height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, compress, doublemax, flags, halfmax, height, \
-                      highlights, highlights_ccorrect, lmax, lmin, \
-                      low_approximation, max, min,  shadows, \
-                      shadows_ccorrect, unbound_mask, whitepoint, width) \
-  dt_omp_sharedconst(in, out) \
+  dt_omp_firstprivate(npixels, in, out, compress, flags, highlights, \
+                      highlights_ccorrect, low_approximation, shadows, \
+                      shadows_ccorrect, unbound_mask, whitepoint) \
   schedule(static)
 #endif
-  for(size_t j = 0; j < (size_t)width * height * ch; j += ch)
+  for(size_t j = 0; j < 4 * npixels; j += 4)
   {
     dt_aligned_pixel_t ta, tb;
     _Lab_scale(&in[j], ta);
@@ -390,7 +437,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     tb[0] = tb[0] > 0.0f ? tb[0] / whitepoint : tb[0];
 
     // overlay highlights
-    float highlights2 = highlights * highlights;
+    float highlights2 = highlights * highlights;  // 0.0 .. 4.0
     const float highlights_xform = CLAMP(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
 
     while(highlights2 > 0.0f)
@@ -406,7 +453,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float optrans = chunk * highlights_xform;
       highlights2 -= 1.0f;
 
-      ta[0] = la * (1.0 - optrans)
+      ta[0] = la * (1.0f - optrans)
               + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb) : doublemax * la
                                                                                            * lb) * optrans;
 
@@ -415,14 +462,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float chroma_factor = (ta[0] * lref * (1.0f - highlights_ccorrect)
                                    + (1.0f - ta[0]) * href * highlights_ccorrect);
       ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
-      ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP(ta[1], min[1], max[1]);
+      ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP(ta[1], min_A, max_A);
 
       ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
-      ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP(ta[2], min[2], max[2]);
+      ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP(ta[2], min_B, max_B);
     }
 
     // overlay shadows
-    float shadows2 = shadows * shadows;
+    float shadows2 = shadows * shadows; // 0.0 .. 4.0
     const float shadows_xform = CLAMP(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
 
     while(shadows2 > 0.0f)
@@ -439,7 +486,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float optrans = chunk * shadows_xform;
       shadows2 -= 1.0f;
 
-      ta[0] = la * (1.0 - optrans)
+      ta[0] = la * (1.0f - optrans)
               + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb) : doublemax * la
                                                                                            * lb) * optrans;
 
@@ -448,16 +495,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float chroma_factor = (ta[0] * lref * shadows_ccorrect
                                    + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect));
       ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
-      ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP(ta[1], min[1], max[1]);
+      ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP(ta[1], min_A, max_A);
 
       ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
-      ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP(ta[2], min[2], max[2]);
+      ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP(ta[2], min_A, max_B);
     }
 
     _Lab_rescale(ta, &out[j]);
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
@@ -506,8 +551,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     if(unbound_mask)
     {
-      for(int k = 0; k < 4; k++) Labmax[k] = INFINITY;
-      for(int k = 0; k < 4; k++) Labmin[k] = -INFINITY;
+      for(int k = 0; k < 4; k++) Labmax[k] = FLT_MAX;
+      for(int k = 0; k < 4; k++) Labmin[k] = -FLT_MAX;
     }
 
     g = dt_gaussian_init_cl(devid, width, height, channels, Labmax, Labmin, sigma, order);
@@ -690,4 +735,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

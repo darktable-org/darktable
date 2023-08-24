@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2022 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -70,7 +71,9 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -137,12 +140,15 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   return 1;
 }
 
-void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void distort_mask(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        const float *const in,
+        float *const out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
-  // TODO
-  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
-  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
@@ -235,8 +241,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->x_scale = 1.0f;
   d->y_scale = 1.0f;
 
-  if(isnan(p->pixel_aspect_ratio) || p->pixel_aspect_ratio <= 0.0f || p->pixel_aspect_ratio == 1.0f)
-    piece->enabled = 0;
+  if(dt_isnan(p->pixel_aspect_ratio) || p->pixel_aspect_ratio <= 0.0f || p->pixel_aspect_ratio == 1.0f)
+    piece->enabled = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -258,7 +264,7 @@ void reload_defaults(dt_iop_module_t *self)
 
   d->pixel_aspect_ratio = image->pixel_aspect_ratio;
 
-  self->default_enabled = (!isnan(d->pixel_aspect_ratio) &&
+  self->default_enabled = (!dt_isnan(d->pixel_aspect_ratio) &&
                            d->pixel_aspect_ratio > 0.0f &&
                            d->pixel_aspect_ratio != 1.0f);
 

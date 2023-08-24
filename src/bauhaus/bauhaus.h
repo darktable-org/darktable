@@ -48,10 +48,8 @@ extern "C" {
 
 extern GType DT_BAUHAUS_WIDGET_TYPE;
 
-#define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX 500
-#define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN 25
 #define DT_BAUHAUS_SLIDER_MAX_STOPS 20
-#define DT_BAUHAUS_COMBO_MAX_TEXT 180
+#define DT_BAUHAUS_MAX_TEXT 180
 
 typedef enum dt_bauhaus_type_t
 {
@@ -199,6 +197,8 @@ enum
 typedef struct dt_bauhaus_t
 {
   struct dt_bauhaus_widget_t *current;
+  // the widget that has the mouse over it
+  GtkWidget *hovered;
   GtkWidget *popup_window;
   GtkWidget *popup_area;
   // are set by the motion notification, to be used during drawing.
@@ -212,15 +212,14 @@ typedef struct dt_bauhaus_t
   int change_active;
   float mouse_line_distance;
   // key input buffer
-  char keys[64];
+  char keys[DT_BAUHAUS_MAX_TEXT];
   int keys_cnt;
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
-  // flag set on button press indicating that popup should be hidden in button release handler
-  gboolean hiding;
 
   // initialise or connect accelerators in set_label
   int skip_accel;
+  GHashTable *combo_introspection, *combo_list;
 
   // appearance relevant stuff:
   // sizes and fonts:
@@ -282,9 +281,6 @@ void dt_bauhaus_widget_reset(GtkWidget *widget);
 // update all bauhaus widgets in an iop module from their params fields
 void dt_bauhaus_update_module(dt_iop_module_t *self);
 
-void dt_bauhaus_hide_popup();
-void dt_bauhaus_show_popup(GtkWidget *w);
-
 // slider:
 GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self);
 GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, float step,
@@ -331,6 +327,7 @@ void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 float dt_bauhaus_slider_get_default(GtkWidget *widget);
 void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, dt_bauhaus_curve_t dir));
+void dt_bauhaus_slider_set_log_curve(GtkWidget *widget);
 
 // combobox:
 void dt_bauhaus_combobox_from_widget(struct dt_bauhaus_widget_t* widget,dt_iop_module_t *self);
@@ -354,6 +351,7 @@ gboolean dt_bauhaus_combobox_set_entry_label(GtkWidget *widget, const int pos, c
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *w, const char *text);
 gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *w, int value);
+int dt_bauhaus_combobox_get_from_value(GtkWidget *widget, int value);
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos);
 void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,

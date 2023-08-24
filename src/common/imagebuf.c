@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,8 +22,9 @@
 static size_t parallel_imgop_minimum = 500000;
 static size_t parallel_imgop_maxthreads = 4;
 
-// Allocate one or more buffers as detailed in the given parameters.  If any allocation fails, free all of them,
-// set the module's trouble flag, and return FALSE.
+// Allocate one or more buffers as detailed in the given parameters.
+// If any allocation fails, free all of them, set the module's trouble
+// flag, and return FALSE.
 gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
                                     const struct dt_iop_roi_t *const roi_in,
                                     const struct dt_iop_roi_t *const roi_out, ...)
@@ -139,17 +140,23 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
 }
 
 
-// Copy an image buffer, specifying the number of floats it contains.  Use of this function is to be preferred
-// over a bare memcpy both because it helps document the purpose of the code and because it gives us a single
-// point where we can optimize performance on different architectures.
-void dt_iop_image_copy(float *const __restrict__ out, const float *const __restrict__ in, const size_t nfloats)
+// Copy an image buffer, specifying the number of floats it contains.
+// Use of this function is to be preferred over a bare memcpy both
+// because it helps document the purpose of the code and because it
+// gives us a single point where we can optimize performance on
+// different architectures.
+void dt_iop_image_copy(float *const __restrict__ out,
+                       const float *const __restrict__ in,
+                       const size_t nfloats)
 {
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
@@ -173,60 +180,87 @@ void dt_iop_image_copy(float *const __restrict__ out, const float *const __restr
   memcpy(out, in, nfloats * sizeof(float));
 }
 
-// Copy an image buffer, specifying the regions of interest.
-// The output RoI may be larger than the input RoI, in which case the result is optionally padded with zeros.
-// If the output RoI is smaller than the input RoI, only a portion of the input buffer will be copied.
-void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __restrict__ in, const size_t ch,
+// Copy an image buffer, specifying the regions of interest.  The
+// output RoI may be larger than the input RoI, in which case the
+// result is padded with zeros.  If the output RoI is
+// smaller than the input RoI, only a portion of the input buffer will
+// be copied.
+void dt_iop_copy_image_roi(float *const __restrict__ out,
+                           const float *const __restrict__ in,
+                           const size_t ch,
                            const dt_iop_roi_t *const __restrict__ roi_in,
-                           const dt_iop_roi_t *const __restrict__ roi_out, const int zero_pad)
+                           const dt_iop_roi_t *const __restrict__ roi_out)
 {
-  if(roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  if(roi_in->width == roi_out->width
+     && roi_in->height == roi_out->height)
   {
     // fast path, just copy the entire contents of the buffer
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
+    return;
   }
-  else if(roi_in->width <= roi_out->width && roi_in->height <= roi_out->height)
+
+  const int dy = roi_out->y - roi_in->y;
+  const int dx = roi_out->x - roi_in->x;
+
+  // we may copy data per line if data for roi_out are fully available in roi_in
+  if((roi_in->width - dx >= roi_out->width)
+      && (roi_in->height - dy >= roi_out->height))
   {
-    // output needs padding
-    fprintf(stderr,"copy_image_roi with larger output not yet implemented\n");
-    //TODO
-  }
-  else if(roi_in->width >= roi_out->width && roi_in->height >= roi_out->height)
-  {
-    const size_t dy = roi_out->y - roi_in->y;
-    const size_t dx = ch * roi_out->x - roi_in->x;
     const size_t lwidth = sizeof(float) * roi_out->width * ch;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, out, roi_in, roi_out) \
-  dt_omp_sharedconst(dx, dy, lwidth) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, dx, dy, lwidth) \
   schedule(static)
 #endif
     for(size_t row = 0; row < roi_out->height; row++)
     {
-      float *o = out + ch * row * roi_out->width;
-      const float *i = in + ch * roi_in->width * (row + dy) + dx;
+      float *o = out + (size_t)(ch * row * roi_out->width);
+      const float *i = in + (size_t)(ch * (roi_in->width * (row + dy) + dx));
       memcpy(o, i, lwidth);
     }
+    return;
   }
-  else
+
+  // the RoI are inconsistant so we do a copy per location and fill by zero if
+  // not available in RoI-in
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(out, in, roi_in, roi_out, dx, dy, ch) \
+  schedule(static) collapse(2)
+#endif
+  for(int row = 0; row < roi_out->height; row++)
   {
-    // inconsistent RoIs!!
-    fprintf(stderr,"copy_image_roi called with inconsistent RoI!\n");
-    //TODO
+    for(int col = 0; col < roi_out->width; col++)
+    {
+      const int irow = row + dy;
+      const int icol = col + dx;
+      const size_t ox = (size_t)ch * (row * roi_out->width + col);
+      const size_t ix = (size_t)ch * (irow * roi_in->width + icol);
+      const gboolean avail = irow >= 0 && irow < roi_in->height
+                          && icol >= 0 && icol < roi_in->width;
+
+      for(int c = 0; c < ch; c++)
+        out[ox+c] = avail ? in[ix+c] : 0.0f;
+    }
   }
 }
 
-void dt_iop_image_scaled_copy(float *const restrict buf, const float *const restrict src, const float scale,
-                              const size_t width, const size_t height, const size_t ch)
+void dt_iop_image_scaled_copy(float *const restrict buf,
+                              const float *const restrict src,
+                              const float scale,
+                              const size_t width,
+                              const size_t height,
+                              const size_t ch)
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf, src : 16) default(none) \
   dt_omp_firstprivate(buf, src, scale, nfloats) schedule(simd:static) num_threads(nthreads)
@@ -243,7 +277,10 @@ void dt_iop_image_scaled_copy(float *const restrict buf, const float *const rest
     buf[k] = scale * src[k];
 }
 
-void dt_iop_image_fill(float *const buf, const float fill_value, const size_t width, const size_t height,
+void dt_iop_image_fill(float *const buf,
+                       const float fill_value,
+                       const size_t width,
+                       const size_t height,
                        const size_t ch)
 {
   const size_t nfloats = width * height * ch;
@@ -286,16 +323,21 @@ void dt_iop_image_fill(float *const buf, const float fill_value, const size_t wi
   }
 }
 
-void dt_iop_image_add_const(float *const buf, const float add_value, const size_t width, const size_t height,
+void dt_iop_image_add_const(float *const buf,
+                            const float add_value,
+                            const size_t width,
+                            const size_t height,
                             const size_t ch)
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, add_value, nfloats) schedule(simd:static) num_threads(nthreads)
@@ -312,16 +354,21 @@ void dt_iop_image_add_const(float *const buf, const float add_value, const size_
     buf[k] += add_value;
 }
 
-void dt_iop_image_add_image(float *const buf, const float* const other_image,
-                            const size_t width, const size_t height, const size_t ch)
+void dt_iop_image_add_image(float *const buf,
+                            const float* const other_image,
+                            const size_t width,
+                            const size_t height,
+                            const size_t ch)
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf, other_image : 16) default(none) \
   dt_omp_firstprivate(buf, other_image, nfloats) schedule(simd:static) num_threads(nthreads)
@@ -338,16 +385,21 @@ void dt_iop_image_add_image(float *const buf, const float* const other_image,
     buf[k] += other_image[k];
 }
 
-void dt_iop_image_sub_image(float *const buf, const float* const other_image,
-                            const size_t width, const size_t height, const size_t ch)
+void dt_iop_image_sub_image(float *const buf,
+                            const float* const other_image,
+                            const size_t width,
+                            const size_t height,
+                            const size_t ch)
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf, other_image : 16) default(none) \
   dt_omp_firstprivate(buf, other_image, nfloats) schedule(simd:static) num_threads(nthreads)
@@ -364,16 +416,21 @@ void dt_iop_image_sub_image(float *const buf, const float* const other_image,
     buf[k] -= other_image[k];
 }
 
-void dt_iop_image_invert(float *const buf, const float max_value, const size_t width, const size_t height,
+void dt_iop_image_invert(float *const buf,
+                         const float max_value,
+                         const size_t width,
+                         const size_t height,
                          const size_t ch)
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, max_value, nfloats) schedule(simd:static) num_threads(nthreads)
@@ -390,16 +447,21 @@ void dt_iop_image_invert(float *const buf, const float max_value, const size_t w
     buf[k] = max_value - buf[k];
 }
 
-void dt_iop_image_mul_const(float *const buf, const float mul_value, const size_t width, const size_t height,
+void dt_iop_image_mul_const(float *const buf,
+                            const float mul_value,
+                            const size_t width,
+                            const size_t height,
                             const size_t ch)
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, mul_value, nfloats) schedule(simd:static) num_threads(nthreads)
@@ -416,16 +478,21 @@ void dt_iop_image_mul_const(float *const buf, const float mul_value, const size_
     buf[k] *= mul_value;
 }
 
-void dt_iop_image_div_const(float *const buf, const float div_value, const size_t width, const size_t height,
+void dt_iop_image_div_const(float *const buf,
+                            const float div_value,
+                            const size_t width,
+                            const size_t height,
                             const size_t ch)
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, div_value, nfloats) schedule(simd:static) num_threads(nthreads)
@@ -443,17 +510,23 @@ void dt_iop_image_div_const(float *const buf, const float div_value, const size_
 }
 
 // elementwise: buf = lammda*buf + (1-lambda)*other
-void dt_iop_image_linear_blend(float *const restrict buf, const float lambda, const float *const restrict other,
-                               const size_t width, const size_t height, const size_t ch)
+void dt_iop_image_linear_blend(float *const restrict buf,
+                               const float lambda,
+                               const float *const restrict other,
+                               const size_t width,
+                               const size_t height,
+                               const size_t ch)
 {
   const size_t nfloats = width * height * ch;
   const float lambda_1 = 1.0f - lambda;
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum/2) // is the task big enough to outweigh threading overhead?
   {
-    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
-    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
-    // memory won't be able to take advantage of more than four cores).
+    // we can gain a little by using a small number of threads in
+    // parallel, but not much since the memory bus quickly saturates
+    // (basically, each core can saturate a memory channel, so a
+    // system with quad-channel memory won't be able to take advantage
+    // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, lambda, lambda_1,  nfloats) \
@@ -471,8 +544,9 @@ void dt_iop_image_linear_blend(float *const restrict buf, const float lambda, co
     buf[k] = lambda*buf[k] + lambda_1*other[k];
 }
 
-// perform timings to determine the optimal threshold for switching to parallel operations, as well as the
-// maximal number of threads before saturating the memory bus
+// perform timings to determine the optimal threshold for switching to
+// parallel operations, as well as the maximal number of threads
+// before saturating the memory bus
 void dt_iop_image_copy_benchmark()
 {
   ///TODO

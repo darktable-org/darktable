@@ -123,10 +123,19 @@ typedef struct dt_iop_temperature_preset_data_t
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 2 && new_version == 3)
+  typedef struct dt_iop_temperature_params_v3_t
+  {
+    float red;
+    float green;
+    float blue;
+    float g2;
+  } dt_iop_temperature_params_v3_t;
+
+  if(old_version == 2)
   {
     typedef struct dt_iop_temperature_params_v2_t
     {
@@ -134,14 +143,18 @@ int legacy_params(dt_iop_module_t *self,
       float coeffs[3];
     } dt_iop_temperature_params_v2_t;
 
-    dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
-    dt_iop_temperature_params_t *n = (dt_iop_temperature_params_t *)new_params;
+    const dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
+    dt_iop_temperature_params_v3_t *n =
+      (dt_iop_temperature_params_v3_t *)malloc(sizeof(dt_iop_temperature_params_v3_t));
 
     n->red = o->coeffs[0];
     n->green = o->coeffs[1];
     n->blue = o->coeffs[2];
     n->g2 = NAN;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_temperature_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -165,7 +178,7 @@ static inline void _temp_array_from_params(double a[4],
   a[3] = p->g2;
 }
 
-static int ignore_missing_wb(dt_image_t *img)
+static gboolean _ignore_missing_wb(dt_image_t *img)
 {
   // Ignore files that end with "-hdr.dng" since these are broken files we
   // generated without any proper WB tagged
@@ -225,9 +238,9 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_UNSAFE_COPY;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   // This module may work in RAW or RGB (e.g. for TIFF files)
   // depending on the input The module does not change the color space
@@ -545,12 +558,13 @@ void process(struct dt_iop_module_t *self,
     for(int j = 0; j < roi_out->height; j++)
     {
       int i = 0;
-      const int alignment = ((4 - (j * width & (4 - 1))) & (4 - 1));
+
+      const int alignment = 3 & (4 - ((j*width) & 3));
       const int offset_j = j + roi_out->y;
 
       // process the unaligned sensels at the start of the row (when
       // width is not a multiple of 4)
-      for( ; i < alignment; i++)
+      for(; i < alignment; i++)
       {
         const size_t p = (size_t)j * width + i;
         out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
@@ -562,16 +576,17 @@ void process(struct dt_iop_module_t *self,
           d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
 
       // process sensels four at a time
-      for(; i < (width & ~3); i += 4)
+      for(; i < width - 4; i += 4)
       {
         const size_t p = (size_t)j * width + i;
         scaled_copy_4wide(out + p,in + p, coeffs);
       }
+
       // process the leftover sensels
-      for(i = width & ~3; i < width; i++)
+      for(; i < width; i++)
       {
         const size_t p = (size_t)j * width + i;
-        out[p] = in[p] * d_coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
+        out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
       }
     }
   }
@@ -594,7 +609,7 @@ void process(struct dt_iop_module_t *self,
     }
   }
 
-  piece->pipe->dsc.temperature.enabled = 1;
+  piece->pipe->dsc.temperature.enabled = TRUE;
   for(int k = 0; k < 4; k++)
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
@@ -659,7 +674,7 @@ int process_cl(struct dt_iop_module_t *self,
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_xtrans);
 
-  piece->pipe->dsc.temperature.enabled = 1;
+  piece->pipe->dsc.temperature.enabled = TRUE;
   for(int k = 0; k < 4; k++)
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
@@ -689,7 +704,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   if(self->hide_enable_button)
   {
-    piece->enabled = 0;
+    piece->enabled = FALSE;
     return;
   }
 
@@ -700,7 +715,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
-    piece->process_cl_ready = 0;
+    piece->process_cl_ready = FALSE;
 
   if(g)
   {
@@ -1338,7 +1353,7 @@ void gui_update(struct dt_iop_module_t *self)
     }
   }
 
-  if(!found || isnan(g->mod_temp)) // reset or initialize user-defined
+  if(!found || g->mod_temp != -FLT_MAX) // reset or initialize user-defined
   {
     g->mod_temp = tempK;
     g->mod_tint = tint;
@@ -1368,7 +1383,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
+static gboolean calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
 {
   if(!dt_image_is_matrix_correction_supported(&module->dev->image_storage))
   {
@@ -1377,7 +1392,7 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
     bwb[1] = 1.0;
     bwb[3] = 1.0;
 
-    return 0;
+    return FALSE;
   }
 
   double mul[4];
@@ -1392,10 +1407,10 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
     bwb[1] = 1.0;
     bwb[3] = mul[3] / mul[1];
 
-    return 0;
+    return FALSE;
   }
 
-  return 1;
+  return TRUE;
 }
 
 static void prepare_matrices(dt_iop_module_t *module)
@@ -1426,7 +1441,7 @@ static void prepare_matrices(dt_iop_module_t *module)
                                               g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
     char *camera = module->dev->image_storage.camera_makermodel;
-    fprintf(stderr, "[temperature] `%s' color matrix not found for image\n", camera);
+    dt_print(DT_DEBUG_ALWAYS, "[temperature] `%s' color matrix not found for image\n", camera);
     dt_control_log(_("`%s' color matrix not found for image"), camera);
   }
 }
@@ -1441,7 +1456,7 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
   const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
   for(int k = 0; ok && k < num_coeffs; k++)
   {
-    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f)
+    if(!dt_isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f)
       ok = FALSE;
   }
   if(ok)
@@ -1450,7 +1465,7 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
     return;
   }
 
-  if(!ignore_missing_wb(&(module->dev->image_storage)))
+  if(!_ignore_missing_wb(&(module->dev->image_storage)))
   {
     //  only display this if we have a sample, otherwise it is better to keep
     //  on screen the more important message about missing sample and the way
@@ -1458,9 +1473,9 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
     if(!img->camera_missing_sample)
       dt_control_log(_("failed to read camera white balance information from `%s'!"),
                      img->filename);
-    fprintf(stderr,
-            "[temperature] failed to read camera white balance information from `%s'!\n",
-            img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[temperature] failed to read camera white balance information from `%s'!\n",
+             img->filename);
   }
 
   double bwb[4];
@@ -1500,7 +1515,8 @@ void reload_defaults(dt_iop_module_t *module)
   *d = (dt_iop_temperature_params_t){ 1.0, 1.0, 1.0, 1.0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) return;
+  if(!module->dev || !dt_is_valid_imgid(module->dev->image_storage.id))
+    return;
 
   const gboolean is_raw =
     dt_image_is_matrix_correction_supported(&module->dev->image_storage);
@@ -1524,7 +1540,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_is_scene_referred()
     || (is_workflow_none && another_cat_defined);
 
-  module->default_enabled = 0;
+  module->default_enabled = FALSE;
   module->hide_enable_button = true_monochrome;
 
   // White balance module doesn't need to be enabled for true_monochrome raws (like
@@ -1538,7 +1554,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(is_raw)
     {
       // raw images need wb:
-      module->default_enabled = 1;
+      module->default_enabled = TRUE;
 
       // if workflow = modern, only set WB coeffs equivalent to D65 illuminant
       // full chromatic adaptation is deferred to channelmixerrgb
@@ -1615,6 +1631,9 @@ void reload_defaults(dt_iop_module_t *module)
     g->as_shot_wb[2] /= g->as_shot_wb[1];
     g->as_shot_wb[3] /= g->as_shot_wb[1];
     g->as_shot_wb[1] = 1.0;
+
+    for(int k = 0; k < 4; k++)
+      g->mod_coeff[k] = g->daylight_wb[k];
 
     float TempK, tint;
     mul2temp(module, d, &TempK, &tint);
@@ -1881,9 +1900,8 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void color_picker_apply(dt_iop_module_t *self,
-                        GtkWidget *picker,
-                        dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   if(darktable.gui->reset) return;
 
@@ -2081,11 +2099,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance setting"));
   gtk_box_pack_start(box_enabled, g->finetune, TRUE, TRUE, 0);
 
-  g->mod_temp = NAN;
+  g->mod_temp = -FLT_MAX;
   for(int k = 0; k < 4; k++)
   {
     g->daylight_wb[k] = 1.0;
-    g->as_shot_wb[k] = 1.f;
+    g->as_shot_wb[k] = 1.0;
+    g->mod_coeff[k] = 1.0;
   }
 
   GtkWidget *temp_label_box = gtk_event_box_new();
@@ -2120,7 +2139,8 @@ void gui_init(struct dt_iop_module_t *self)
     (&g->cs,
      "plugins/darkroom/temperature/expand_coefficients",
      _("channel coefficients"),
-     GTK_BOX(box_enabled));
+     GTK_BOX(box_enabled),
+     DT_ACTION(self));
 
   self->widget = GTK_WIDGET(g->cs.container);
 

@@ -72,31 +72,68 @@ const char *name(const struct dt_imageio_module_storage_t *self)
   return _("LaTeX book template");
 }
 
-void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_params,
-                    const size_t old_params_size, const int old_version, const int new_version,
+void *legacy_params(dt_imageio_module_storage_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_imageio_latex_v2_t
+  {
+    char filename[DT_MAX_PATH_FOR_PARAMS];
+    char title[1024];
+    char cached_dirname[DT_MAX_PATH_FOR_PARAMS]; // expanded during
+                                                 // first img store,
+                                                 // not stored in
+                                                 // param struct.
+    dt_variables_params_t *vp;
+    GList *l;
+  } dt_imageio_latex_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_latex_v1_t
     {
       char filename[1024];
       char title[1024];
-      char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
+      char cached_dirname[1024]; // expanded during first img store,
+                                 // not stored in param struct.
       dt_variables_params_t *vp;
       GList *l;
     } dt_imageio_latex_v1_t;
 
-    dt_imageio_latex_t *n = (dt_imageio_latex_t *)malloc(sizeof(dt_imageio_latex_t));
-    dt_imageio_latex_v1_t *o = (dt_imageio_latex_v1_t *)old_params;
+    const dt_imageio_latex_v1_t *o = (dt_imageio_latex_v1_t *)old_params;
+    dt_imageio_latex_v2_t *n =
+      (dt_imageio_latex_v2_t *)malloc(sizeof(dt_imageio_latex_v2_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->title, o->title, sizeof(n->title));
     g_strlcpy(n->cached_dirname, o->cached_dirname, sizeof(n->cached_dirname));
 
-    *new_size = self->params_size(self);
+    *new_version = 2;
+    *new_size = sizeof(dt_imageio_latex_v2_t)
+                 - 2 * sizeof(void *) - DT_MAX_PATH_FOR_PARAMS;
     return n;
   }
+
+  // incremental update supported:
+  /*
+  typedef struct dt_imageio_latex_v3_t
+  {
+    ...
+  } dt_imageio_latex_v3_t;
+
+  if(old_version == 2)
+  {
+    // let's update from 2 to 3
+
+    ...
+    *new_size = sizeof(dt_imageio_latex_v3_t) - 2 * sizeof(void *) - DT_MAX_PATH_FOR_PARAMS;
+    *new_version = 3;
+    return n;
+  }
+  */
   return NULL;
 }
 
@@ -195,7 +232,7 @@ static gint sort_pos(pair_t *a, pair_t *b)
   return a->pos - b->pos;
 }
 
-int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
+int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const dt_imgid_t imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
@@ -336,7 +373,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type, icc_filename,
                     icc_intent, self, sdata, num, total, metadata);
 
-  printf("[export_job] exported to `%s'\n", filename);
+  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
@@ -438,4 +475,3 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -23,7 +23,9 @@
 #include <CoreServices/CoreServices.h>
 #include <AppKit/AppKit.h>
 #include <gtk/gtk.h>
+#ifdef GDK_WINDOWING_QUARTZ
 #include <gdk/gdkquartz.h>
+#endif
 #include <gio/gio.h>
 #include <glib.h>
 #include <string.h>

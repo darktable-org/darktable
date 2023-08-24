@@ -25,7 +25,7 @@ void _clear_pos(dt_image_pos *pos)
 
 void dt_printing_clear_box(dt_image_box *img)
 {
-  img->imgid = -1;
+  img->imgid = NO_IMGID;
   img->max_width = img->max_height = 0;
   img->exp_width = img->exp_height = 0;
   img->dis_width = img->dis_height = 0;
@@ -279,7 +279,7 @@ void dt_printing_get_image_pos(const dt_images_box *imgs, const dt_image_box *im
 }
 
 void dt_printing_setup_image(dt_images_box *imgs, const int idx,
-                             const int32_t imgid, const int32_t width, const int32_t height,
+                             const dt_imgid_t imgid, const int32_t width, const int32_t height,
                              const dt_alignment_t alignment)
 {
   dt_image_box *box = &imgs->box[idx];

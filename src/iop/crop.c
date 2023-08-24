@@ -118,15 +118,6 @@ typedef struct dt_iop_crop_data_t
   float cx, cy, cw, ch; // crop window
 } dt_iop_crop_data_t;
 
-int legacy_params(dt_iop_module_t *self,
-                  const void *const old_params,
-                  const int old_version,
-                  void *new_params,
-                  const int new_version)
-{
-  return 0;
-}
-
 const char *name()
 {
   return _("crop");
@@ -156,12 +147,12 @@ int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI
     | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_ALLOW_FAST_PIPE
-    | IOP_FLAGS_GUIDES_SPECIAL_DRAW | IOP_FLAGS_GUIDES_WIDGET;
+    | IOP_FLAGS_GUIDES_SPECIAL_DRAW | IOP_FLAGS_GUIDES_WIDGET | IOP_FLAGS_CROP_EXPOSER;
 }
 
 int operation_tags()
 {
-  return IOP_TAG_DISTORT | IOP_TAG_CLIPPING;
+  return IOP_TAG_DISTORT | IOP_TAG_CROPPING;
 }
 
 int operation_tags_filter()
@@ -170,9 +161,9 @@ int operation_tags_filter()
   return IOP_TAG_DECORATION;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -231,7 +222,7 @@ static void _commit_box(dt_iop_module_t *self,
     || fabs(p->cw - old[2]) > eps
     || fabs(p->ch - old[3]) > eps;
 
-  // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+  // dt_print(DT_DEBUG_ALWAYS, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
 
   if(changed)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -338,7 +329,7 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -389,7 +380,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
+  dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
 }
 
 #ifdef HAVE_OPENCL
@@ -1164,9 +1155,9 @@ void gui_init(struct dt_iop_module_t *self)
       // some sanity check
       if(n == 0 || d == 0)
       {
-        fprintf(stderr,
-                "invalid ratio format for `%s'. it should be \"number:number\"\n",
-                nv->key);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "invalid ratio format for `%s'. it should be \"number:number\"\n",
+                 nv->key);
         dt_control_log
           (_("invalid ratio format for `%s'. it should be \"number:number\""),
            nv->key);
@@ -1180,9 +1171,9 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else
     {
-      fprintf(stderr,
-              "invalid ratio format for `%s'. it should be \"number:number\"\n",
-              nv->key);
+      dt_print(DT_DEBUG_ALWAYS,
+               "invalid ratio format for `%s'. it should be \"number:number\"\n",
+               nv->key);
       dt_control_log
         (_("invalid ratio format for `%s'. it should be \"number:number\""),
          nv->key);
@@ -1250,7 +1241,8 @@ void gui_init(struct dt_iop_module_t *self)
     (&g->cs,
      "plugins/darkroom/crop/expand_margins",
      _("margins"),
-     GTK_BOX(box_enabled));
+     GTK_BOX(box_enabled),
+     DT_ACTION(self));
 
   self->widget = GTK_WIDGET(g->cs.container);
 
@@ -1318,16 +1310,21 @@ static _grab_region_t _gui_get_grab(float pzx,
     // we are inside the crop box
     grab = GRAB_CENTER;
 
-    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border)
+    float h_border = border / wd;
+    float v_border = border / ht;
+    if(!(g->clip_x || g->clip_y || g->clip_w != 1.0f || g->clip_h != 1.0f))
+      h_border = v_border = 0.45;
+
+    if(pzx >= g->clip_x && pzx < g->clip_x + h_border)
       grab |= GRAB_LEFT; // left border
 
-    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border)
+    if(pzy >= g->clip_y && pzy < g->clip_y + v_border)
       grab |= GRAB_TOP;  // top border
 
-    if(pzx <= g->clip_x + g->clip_w && pzx * wd > (g->clip_w + g->clip_x) * wd - border)
+    if(pzx <= g->clip_x + g->clip_w && pzx > (g->clip_w + g->clip_x) - h_border)
       grab |= GRAB_RIGHT; // right border
 
-    if(pzy <= g->clip_y + g->clip_h && pzy * ht > (g->clip_h + g->clip_y) * ht - border)
+    if(pzy <= g->clip_y + g->clip_h && pzy > (g->clip_h + g->clip_y) - v_border)
       grab |= GRAB_BOTTOM; // bottom border
   }
   return grab;
@@ -1344,8 +1341,14 @@ void gui_post_expose(struct dt_iop_module_t *self,
   dt_develop_t *dev = self->dev;
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
 
-  // we don't do anything if the image is not ready
-  if(!g->preview_ready) return;
+  // is this expose enforced by another module in focus?
+  const gboolean external = dev->cropping.exposer
+                        &&  dev->cropping.requester
+                        && (dev->cropping.exposer != dev->cropping.requester);
+
+  // we don't do anything if the image is not ready within crop module
+  // and we don't have visualizing enforced by other modules
+  if(!(g->preview_ready || external)) return;
 
   _aspect_apply(self, GRAB_HORIZONTAL);
 
@@ -1361,16 +1364,19 @@ void gui_post_expose(struct dt_iop_module_t *self,
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-  const double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
-
   // draw cropping window
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
-  if(_set_max_clip(self))
+
+  const double fillc = external ? 0.9 : 0.2;
+  const double dashes = (external ? 0.3 : 0.5) * DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
+  const double effect = external ? 0.6 : 1.0;
+
+  if(_set_max_clip(self) && !external)
   {
-    cairo_set_source_rgba(cr, .2, .2, .2, .8);
+    cairo_set_source_rgba(cr, fillc, fillc, fillc, 1.0 - fillc);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
     cairo_rectangle(cr, g->clip_max_x * wd, g->clip_max_y * ht,
                         g->clip_max_w * wd, g->clip_max_h * ht);
@@ -1378,13 +1384,16 @@ void gui_post_expose(struct dt_iop_module_t *self,
                         g->clip_w * wd, g->clip_h * ht);
     cairo_fill(cr);
   }
+
   if(g->clip_x > .0f || g->clip_y > .0f || g->clip_w < 1.0f || g->clip_h < 1.0f)
   {
-    cairo_set_line_width(cr, dashes / 2.0);
+    cairo_set_line_width(cr, dashes);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
-    dt_draw_set_color_overlay(cr, TRUE, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, effect);
     cairo_stroke(cr);
   }
+
+  if(external) return;
 
   // draw cropping window dimensions if first mouse button is pressed
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
@@ -1538,16 +1547,18 @@ int mouse_moved(struct dt_iop_module_t *self,
       if(g->shift_hold)
       {
         /* the center is locked, scale crop radial with locked ratio */
-        float xx = 0.0f;
-        float yy = 0.0f;
-
+        float ratio = 0.0f;
         if(g->cropping & GRAB_LEFT || g->cropping & GRAB_RIGHT)
-          xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+        {
+          float xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+          ratio = (g->prev_clip_w - 2.0f * xx) / g->prev_clip_w;
+        }
         if(g->cropping & GRAB_TOP || g->cropping & GRAB_BOTTOM)
-          yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
-
-        float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
-                            (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+        {
+          float yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
+          ratio = fmaxf(ratio,
+                        (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+        }
 
         // ensure we don't get too small crop size
         if(g->prev_clip_w * ratio < 0.1f)

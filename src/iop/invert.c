@@ -21,9 +21,6 @@
 #endif
 #include <gtk/gtk.h>
 #include <stdlib.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include "common/colorspaces.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -63,35 +60,49 @@ typedef struct dt_iop_invert_data_t
   float color[4]; // color of film material
 } dt_iop_invert_data_t;
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_invert_params_v2_t
+  {
+    float color[4];
+  } dt_iop_invert_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_invert_params_v1_t
     {
       float color[3]; // color of film material
     } dt_iop_invert_params_v1_t;
 
-    dt_iop_invert_params_v1_t *o = (dt_iop_invert_params_v1_t *)old_params;
-    dt_iop_invert_params_t *n = (dt_iop_invert_params_t *)new_params;
+    const dt_iop_invert_params_v1_t *o = (dt_iop_invert_params_v1_t *)old_params;
+    dt_iop_invert_params_v2_t *n =
+      (dt_iop_invert_params_v2_t *)malloc(sizeof(dt_iop_invert_params_v2_t));
 
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
     n->color[3] = NAN;
 
-    if(self->dev && self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+    if(self->dev
+       && self->dev->image_storage.flags & DT_IMAGE_4BAYER)
     {
       double RGB_to_CAM[4][3];
 
-      // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-      if(!dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.adobe_XYZ_to_CAM,
-                                                 RGB_to_CAM, NULL,
-                                                 self->dev->image_storage.d65_color_matrix, NULL))
+      // Get and store the matrix to go from camera to RGB for 4Bayer
+      // images (used for spot WB)
+      if(!dt_colorspaces_conversion_matrices_rgb
+         (self->dev->image_storage.adobe_XYZ_to_CAM,
+          RGB_to_CAM, NULL,
+          self->dev->image_storage.d65_color_matrix, NULL))
       {
         const char *camera = self->dev->image_storage.camera_makermodel;
-        fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[invert] `%s' color matrix not found for 4bayer image\n", camera);
         dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
       }
       else
@@ -100,6 +111,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       }
     }
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_invert_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -136,7 +150,9 @@ int flags()
   return IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_DEPRECATED;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RAW;
 }
@@ -164,7 +180,8 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   static dt_aligned_pixel_t old = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -232,212 +249,126 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
+  const size_t height = roi_out->height;
+  const size_t width = roi_out->width;
+
   if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(film_rgb_f, in, out, roi_out, xtrans) \
-    schedule(static) \
-    collapse(2)
+    dt_omp_firstprivate(film_rgb_f, in, out, roi_out, height, width, xtrans) \
+    schedule(static)
 #endif
-    for(int j = 0; j < roi_out->height; j++)
+    for(size_t j = 0; j < height; j++)
     {
-      for(int i = 0; i < roi_out->width; i++)
+      const size_t p = j * width;
+      size_t i = 0;
+      int alignment = ((4 - (j * width & (4 - 1))) & (4 - 1));
+
+      // process unaligned pixels at start of row
+      for(; i < alignment && i < width; i++)
+        out[p+i] = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - in[p+i], 0.0f, 1.0f);
+
+      // set up the filter colors for the current row of the image
+      const dt_aligned_pixel_t film[3] = {
+        { film_rgb_f[FCxtrans(j, i + 0, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 1, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 2, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 3, roi_out, xtrans)] },
+        { film_rgb_f[FCxtrans(j, i + 4, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 5, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 6, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 7, roi_out, xtrans)] },
+        { film_rgb_f[FCxtrans(j, i + 8, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 9, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 10, roi_out, xtrans)],
+          film_rgb_f[FCxtrans(j, i + 11, roi_out, xtrans)] }
+      };
+
+      // process aligned pixels four at a time
+      for(size_t f = 0; i < width - (4 - 1); f = (f+1)%3, i += 4)
       {
-        const size_t p = (size_t)j * roi_out->width + i;
-        out[p] = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - in[p], 0.0f, 1.0f);
+        dt_aligned_pixel_t v;
+        for_each_channel(c)
+          v[c] = CLAMP(film[f][c] - in[p+i+c], 0.0f, 1.0f);
+        copy_pixel_nontemporal(out + p + i, v);
       }
+
+      // process the remaining pixels
+      for(; i < width; i++)
+        out[p+i] = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - in[p+i], 0.0f, 1.0f);
+
     }
 
-    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 4; k++)
+      piece->pipe->dsc.processed_maximum[k] = 1.0f;
   }
   else if(filters)
   { // bayer float mosaiced
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(film_rgb_f, filters, in, out, roi_out) \
-    schedule(static) \
-    collapse(2)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        const size_t p = (size_t)j * roi_out->width + i;
-        out[p] = CLAMP(film_rgb_f[FC(j + roi_out->y, i + roi_out->x, filters)] - in[p], 0.0f, 1.0f);
-      }
-    }
-
-    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
-  }
-  else
-  { // non-mosaiced
-    const int ch = piece->colors;
+    const size_t x = roi_out->x;
+    const size_t y = roi_out->y;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
-    schedule(static) \
-    collapse(2)
-#endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        const size_t p = (size_t)k + c;
-        out[p] = d->color[c] - in[p];
-      }
-    }
-  }
-}
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
-
-  const float *const m = piece->pipe->dsc.processed_maximum;
-
-  const dt_aligned_pixel_t film_rgb_f
-      = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2], d->color[3] * m[3] };
-
-  // FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
-  //   if(self->request_color_pick){
-  // do nothing
-  //   }
-
-  const uint32_t filters = piece->pipe->dsc.filters;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-
-  if(filters == 9u)
-  { // xtrans float mosaiced
-
-    const __m128 val_min = _mm_setzero_ps();
-    const __m128 val_max = _mm_set1_ps(1.0f);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(film_rgb_f, ivoid, ovoid, roi_out, val_max, val_min, xtrans) \
+    dt_omp_firstprivate(film_rgb_f, filters, in, out, roi_out, height, width, x, y) \
     schedule(static)
 #endif
-    for(int j = 0; j < roi_out->height; j++)
+    for(int j = 0; j < height; j++)
     {
-      const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
-
-      int i = 0;
-
-      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+      const size_t p = (size_t)j * width;
+      size_t i = 0;
+      int alignment = ((4 - (j * width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
-      for(; i < alignment && i < roi_out->width; i++, out++, in++)
-        *out = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - *in, 0.0f, 1.0f);
+      for(; i < alignment && i < width; i++)
+        out[p+i] = CLAMP(film_rgb_f[FC(j + y, i + x, filters)] - in[p+i], 0.0f, 1.0f);
 
-      const __m128 film[3] = { _mm_set_ps(film_rgb_f[FCxtrans(j, i + 3, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 2, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 1, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 0, roi_out, xtrans)]),
-                               _mm_set_ps(film_rgb_f[FCxtrans(j, i + 7, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 6, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 5, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 4, roi_out, xtrans)]),
-                               _mm_set_ps(film_rgb_f[FCxtrans(j, i + 11, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 10, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 9, roi_out, xtrans)],
-                                          film_rgb_f[FCxtrans(j, i + 8, roi_out, xtrans)]) };
+      // set up the filter mask for the current row of the image
+      const dt_aligned_pixel_t film = { film_rgb_f[FC(j + y, x + i, filters)],
+                                        film_rgb_f[FC(j + y, x + i + 1, filters)],
+                                        film_rgb_f[FC(j + y, x + i + 2, filters)],
+                                        film_rgb_f[FC(j + y, x + i + 3, filters)] };
 
-      // process aligned pixels with SSE
-      for(int c = 0; c < 3 && i < roi_out->width - (4 - 1); c++, i += 4, in += 4, out += 4)
+      // process aligned pixels four at a time
+      for(; i < width - (4 - 1); i += 4)
       {
-        __m128 v;
-
-        v = _mm_load_ps(in);
-        v = _mm_sub_ps(film[c], v);
-        v = _mm_min_ps(v, val_max);
-        v = _mm_max_ps(v, val_min);
-        _mm_stream_ps(out, v);
+        dt_aligned_pixel_t inv;
+        for_four_channels(c, aligned(in))
+          inv[c] = CLAMP(film[c] - in[p+i+c], 0.0f, 1.0f);
+        copy_pixel_nontemporal(out + p + i, inv);
       }
 
-      // process the rest
-      for(; i < roi_out->width; i++, out++, in++)
-        *out = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - *in, 0.0f, 1.0f);
+      // process the remaining pixels
+      for(; i < roi_out->width; i++)
+        out[p+i] = CLAMP(film_rgb_f[FC(j + y, i + x, filters)] - in[p+i], 0.0f, 1.0f);
     }
-    _mm_sfence();
 
-    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
-  }
-  else if(filters)
-  { // bayer float mosaiced
-
-    const __m128 val_min = _mm_setzero_ps();
-    const __m128 val_max = _mm_set1_ps(1.0f);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(film_rgb_f, filters, ivoid, ovoid, roi_out, val_max, val_min) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
-
-      int i = 0;
-      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
-
-      // process unaligned pixels
-      for(; i < alignment && i < roi_out->width; i++, out++, in++)
-        *out = CLAMP(film_rgb_f[FC(j + roi_out->y, i + roi_out->x, filters)] - *in, 0.0f, 1.0f);
-
-      const __m128 film = _mm_set_ps(film_rgb_f[FC(j + roi_out->y, roi_out->x + i + 3, filters)],
-                                     film_rgb_f[FC(j + roi_out->y, roi_out->x + i + 2, filters)],
-                                     film_rgb_f[FC(j + roi_out->y, roi_out->x + i + 1, filters)],
-                                     film_rgb_f[FC(j + roi_out->y, roi_out->x + i, filters)]);
-
-      // process aligned pixels with SSE
-      for(; i < roi_out->width - (4 - 1); i += 4, in += 4, out += 4)
-      {
-        const __m128 input = _mm_load_ps(in);
-        const __m128 subtracted = _mm_sub_ps(film, input);
-        _mm_stream_ps(out, _mm_max_ps(_mm_min_ps(subtracted, val_max), val_min));
-      }
-
-      // process the rest
-      for(; i < roi_out->width; i++, out++, in++)
-        *out = CLAMP(film_rgb_f[FC(j + roi_out->y, i + roi_out->x, filters)] - *in, 0.0f, 1.0f);
-    }
-    _mm_sfence();
-
-    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 4; k++)
+      piece->pipe->dsc.processed_maximum[k] = 1.0f;
   }
   else
   { // non-mosaiced
-    const int ch = piece->colors;
+    assert(piece->colors == 4);
+    const size_t npixels = height * width;
 
-    const __m128 film = _mm_set_ps(1.0f, d->color[2], d->color[1], d->color[0]);
+    const dt_aligned_pixel_t color = { d->color[0], d->color[1], d->color[2], 1.0f };
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, film, ivoid, ovoid, roi_out) \
-    schedule(static)
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(in, out, npixels, color)      \
+    schedule(simd:static)
 #endif
-    for(int k = 0; k < roi_out->height; k++)
+    for(size_t k = 0; k < npixels; k++)
     {
-      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-      for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
-      {
-        const __m128 input = _mm_load_ps(in);
-        const __m128 subtracted = _mm_sub_ps(film, input);
-        _mm_stream_ps(out, subtracted);
-      }
+      dt_aligned_pixel_t inv;
+      for_each_channel(c)
+        inv[c] = color[c] - in[4*k+c];
+      copy_pixel_nontemporal(out + 4*k, inv);
     }
-    _mm_sfence();
+    dt_omploop_sfence();
   }
 }
-#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -512,7 +443,7 @@ void reload_defaults(dt_iop_module_t *self)
                                                    self->dev->image_storage.d65_color_matrix, NULL))
         {
           const char *camera = self->dev->image_storage.camera_makermodel;
-          fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
+          dt_print(DT_DEBUG_ALWAYS, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
           dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
         }
       }
@@ -548,12 +479,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   for(int k = 0; k < 4; k++) d->color[k] = p->color[k];
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = 0;
+  if(pipe->image.buf_dsc.filters == 9u) piece->process_cl_ready = FALSE;
 
   // 4Bayer images not implemented in OpenCL yet
-  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = FALSE;
 
-  if(self->hide_enable_button) piece->enabled = 0;
+  if(self->hide_enable_button) piece->enabled = FALSE;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -600,4 +531,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

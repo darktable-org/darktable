@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,7 +155,7 @@ typedef struct dt_iop_colorbalancergb_data_t
   float *gamut_LUT;
   float *chroma_LUT;
   float max_chroma;
-  float checker_color_1[4], checker_color_2[4];
+  dt_aligned_pixel_t checker_color_1, checker_color_2;
   dt_iop_colorbalancrgb_saturation_t saturation_formula;
   size_t checker_size;
   gboolean lut_inited;
@@ -198,51 +198,120 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 5)
+  typedef struct dt_iop_colorbalancergb_params_v5_t
+  {
+    /* params of v1 */
+    float shadows_Y;
+    float shadows_C;
+    float shadows_H;
+    float midtones_Y;
+    float midtones_C;
+    float midtones_H;
+    float highlights_Y;
+    float highlights_C;
+    float highlights_H;
+    float global_Y;
+    float global_C;
+    float global_H;
+    float shadows_weight;
+    float white_fulcrum;
+    float highlights_weight;
+    float chroma_shadows;
+    float chroma_highlights;
+    float chroma_global;
+    float chroma_midtones;
+    float saturation_global;
+    float saturation_highlights;
+    float saturation_midtones;
+    float saturation_shadows;
+    float hue_angle;
+
+    /* params of v2 */
+    float brilliance_global;
+    float brilliance_highlights;
+    float brilliance_midtones;
+    float brilliance_shadows;
+
+    /* params of v3 */
+    float mask_grey_fulcrum;
+
+    /* params of v4 */
+    float vibrance;
+    float grey_fulcrum;
+    float contrast;
+
+    /* params of v5 */
+    dt_iop_colorbalancrgb_saturation_t saturation_formula;
+
+    /* add future params after this so the legacy params import can use a blind memcpy */
+  } dt_iop_colorbalancergb_params_v5_t;
+
+  dt_iop_colorbalancergb_params_v5_t default_v5 =
+    { 0.0f,  0.0f,  0.0f,  0.0f,    0.0f,
+      0.0f,  0.0f,  0.0f,  0.0f,    0.0f,
+      0.0f,  0.0f,  1.0f,  0.0f,    1.0f,
+      0.0f,  0.0f,  0.0f,  0.0f,    0.0f,
+      0.0f,  0.0f,  0.0f,  0.0f,    0.0f,
+      0.0f,  0.0f,  0.0f,  0.1845f, 0.0f,
+      0.0f,  0.0f,  1
+    };
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_colorbalancergb_params_v1_t
     {
-      float shadows_Y;             // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float shadows_C;             // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float shadows_H;             // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float midtones_Y;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float midtones_C;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float midtones_H;            // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float highlights_Y;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float highlights_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float highlights_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float global_Y;              // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float shadows_weight;        // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
-      float white_fulcrum;       // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "fulcrum"
-      float highlights_weight;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
-      float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
-      float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-      float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
-      float chroma_midtones;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mid-tones"
-      float saturation_global;     // $MIN: -5.0 $MAX: 5.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation global"
-      float saturation_highlights; // $MIN: -0.2 $MAX: 0.2 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-      float saturation_midtones;   // $MIN: -0.2 $MAX: 0.2 $DEFAULT: 0.0 $DESCRIPTION: "mid-tones"
-      float saturation_shadows;    // $MIN: -0.2 $MAX: 0.2 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
-      float hue_angle;             // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
+      float shadows_Y;
+      float shadows_C;
+      float shadows_H;
+      float midtones_Y;
+      float midtones_C;
+      float midtones_H;
+      float highlights_Y;
+      float highlights_C;
+      float highlights_H;
+      float global_Y;
+      float global_C;
+      float global_H;
+      float shadows_weight;
+      float white_fulcrum;
+      float highlights_weight;
+      float chroma_shadows;
+      float chroma_highlights;
+      float chroma_global;
+      float chroma_midtones;
+      float saturation_global;
+      float saturation_highlights;
+      float saturation_midtones;
+      float saturation_shadows;
+      float hue_angle;
     } dt_iop_colorbalancergb_params_v1_t;
 
+    const dt_iop_colorbalancergb_params_v1_t *o =
+      (dt_iop_colorbalancergb_params_v1_t *)old_params;
+    dt_iop_colorbalancergb_params_v5_t *n =
+      (dt_iop_colorbalancergb_params_v5_t *)
+      malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
+
     // Init params with defaults
-    memcpy(new_params, self->default_params, sizeof(dt_iop_colorbalancergb_params_t));
+    memcpy(n, &default_v5, sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Copy the common part of the params struct
-    memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v1_t));
+    memcpy(n, o, sizeof(dt_iop_colorbalancergb_params_v1_t));
 
-    dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
     n->saturation_global /= 180.f / M_PI;
     n->mask_grey_fulcrum = 0.1845f;
     n->vibrance = 0.f;
@@ -250,172 +319,196 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->contrast = 0.f;
     n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorbalancergb_params_v5_t);
+    *new_version = 5;
     return 0;
   }
 
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2)
   {
     typedef struct dt_iop_colorbalancergb_params_v2_t
     {
       /* params of v1 */
-      float shadows_Y;             // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float shadows_C;             // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float shadows_H;             // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float midtones_Y;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float midtones_C;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float midtones_H;            // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float highlights_Y;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float highlights_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float highlights_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float global_Y;              // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float shadows_weight;        // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "shadows fall-off"
-      float white_fulcrum;         // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "white pivot"
-      float highlights_weight;     // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "highlights fall-off"
-      float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
-      float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-      float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
-      float chroma_midtones;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mid-tones"
-      float saturation_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
-      float saturation_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-      float saturation_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mid-tones"
-      float saturation_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
-      float hue_angle;             // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
+      float shadows_Y;
+      float shadows_C;
+      float shadows_H;
+      float midtones_Y;
+      float midtones_C;
+      float midtones_H;
+      float highlights_Y;
+      float highlights_C;
+      float highlights_H;
+      float global_Y;
+      float global_C;
+      float global_H;
+      float shadows_weight;
+      float white_fulcrum;
+      float highlights_weight;
+      float chroma_shadows;
+      float chroma_highlights;
+      float chroma_global;
+      float chroma_midtones;
+      float saturation_global;
+      float saturation_highlights;
+      float saturation_midtones;
+      float saturation_shadows;
+      float hue_angle;
 
       /* params of v2 */
-      float brilliance_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
-      float brilliance_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-      float brilliance_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mid-tones"
-      float brilliance_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
-
+      float brilliance_global;
+      float brilliance_highlights;
+      float brilliance_midtones;
+      float brilliance_shadows;
     } dt_iop_colorbalancergb_params_v2_t;
 
+    const dt_iop_colorbalancergb_params_v2_t *o =
+      (dt_iop_colorbalancergb_params_v2_t *)old_params;
+    dt_iop_colorbalancergb_params_v5_t *n =
+      (dt_iop_colorbalancergb_params_v5_t *)
+      malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
+
     // Init params with defaults
-    memcpy(new_params, self->default_params, sizeof(dt_iop_colorbalancergb_params_t));
+    memcpy(n, &default_v5, sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Copy the common part of the params struct
-    memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v2_t));
+    memcpy(n, o, sizeof(dt_iop_colorbalancergb_params_v2_t));
 
-    dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
     n->mask_grey_fulcrum = 0.1845f;
     n->vibrance = 0.f;
     n->grey_fulcrum = 0.1845f;
     n->contrast = 0.f;
     n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorbalancergb_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3)
   {
     typedef struct dt_iop_colorbalancergb_params_v3_t
     {
       /* params of v1 */
-      float shadows_Y;             // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float shadows_C;             // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float shadows_H;             // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float midtones_Y;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float midtones_C;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float midtones_H;            // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float highlights_Y;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float highlights_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float highlights_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float global_Y;              // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-      float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-      float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-      float shadows_weight;        // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "shadows fall-off"
-      float white_fulcrum;         // $MIN: -16.0 $MAX:   16.0 $DEFAULT: 0.0 $DESCRIPTION: "white fulcrum"
-      float highlights_weight;     // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "highlights fall-off"
-      float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
-      float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-      float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
-      float chroma_midtones;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mid-tones"
-      float saturation_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
-      float saturation_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-      float saturation_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mid-tones"
-      float saturation_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
-      float hue_angle;             // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
+      float shadows_Y;
+      float shadows_C;
+      float shadows_H;
+      float midtones_Y;
+      float midtones_C;
+      float midtones_H;
+      float highlights_Y;
+      float highlights_C;
+      float highlights_H;
+      float global_Y;
+      float global_C;
+      float global_H;
+      float shadows_weight;
+      float white_fulcrum;
+      float highlights_weight;
+      float chroma_shadows;
+      float chroma_highlights;
+      float chroma_global;
+      float chroma_midtones;
+      float saturation_global;
+      float saturation_highlights;
+      float saturation_midtones;
+      float saturation_shadows;
+      float hue_angle;
 
       /* params of v2 */
-      float brilliance_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
-      float brilliance_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-      float brilliance_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mid-tones"
-      float brilliance_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
+      float brilliance_global;
+      float brilliance_highlights;
+      float brilliance_midtones;
+      float brilliance_shadows;
 
       /* params of v3 */
-      float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "middle-gray fulcrum"
-
+      float mask_grey_fulcrum;
     } dt_iop_colorbalancergb_params_v3_t;
 
+    const dt_iop_colorbalancergb_params_v3_t *o =
+      (dt_iop_colorbalancergb_params_v3_t *)old_params;
+    dt_iop_colorbalancergb_params_v5_t *n =
+      (dt_iop_colorbalancergb_params_v5_t *)
+      malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
+
     // Init params with defaults
-    memcpy(new_params, self->default_params, sizeof(dt_iop_colorbalancergb_params_t));
+    memcpy(n, &default_v5, sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Copy the common part of the params struct
-    memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v3_t));
+    memcpy(n, o, sizeof(dt_iop_colorbalancergb_params_v3_t));
 
-    dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
     n->vibrance = 0.f;
     n->grey_fulcrum = 0.1845f;
     n->contrast = 0.f;
     n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorbalancergb_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4)
   {
     typedef struct dt_iop_colorbalancergb_params_v4_t
     {
       /* params of v1 */
-      float shadows_Y;             // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "lift luminance"
-      float shadows_C;             // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "lift chroma"
-      float shadows_H;             // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "lift hue"
-      float midtones_Y;            // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "power luminance"
-      float midtones_C;            // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "power chroma"
-      float midtones_H;            // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "power hue"
-      float highlights_Y;          // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "gain luminance"
-      float highlights_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "gain chroma"
-      float highlights_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "gain hue"
-      float global_Y;              // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "offset luminance"
-      float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "offset chroma"
-      float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "offset hue"
-      float shadows_weight;        // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "shadows fall-off"
-      float white_fulcrum;         // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "white fulcrum"
-      float highlights_weight;     // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "highlights fall-off"
-      float chroma_shadows;        // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma shadows"
-      float chroma_highlights;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma highlights"
-      float chroma_global;         // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma global"
-      float chroma_midtones;       // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma mid-tones"
-      float saturation_global;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation global"
-      float saturation_highlights; // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation highlights"
-      float saturation_midtones;   // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation mid-tones"
-      float saturation_shadows;    // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation shadows"
-      float hue_angle;             // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
+      float shadows_Y;
+      float shadows_C;
+      float shadows_H;
+      float midtones_Y;
+      float midtones_C;
+      float midtones_H;
+      float highlights_Y;
+      float highlights_C;
+      float highlights_H;
+      float global_Y;
+      float global_C;
+      float global_H;
+      float shadows_weight;
+      float white_fulcrum;
+      float highlights_weight;
+      float chroma_shadows;
+      float chroma_highlights;
+      float chroma_global;
+      float chroma_midtones;
+      float saturation_global;
+      float saturation_highlights;
+      float saturation_midtones;
+      float saturation_shadows;
+      float hue_angle;
 
       /* params of v2 */
-      float brilliance_global;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "brilliance global"
-      float brilliance_highlights; // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "brilliance highlights"
-      float brilliance_midtones;   // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "brilliance mid-tones"
-      float brilliance_shadows;    // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "brilliance shadows"
+      float brilliance_global;
+      float brilliance_highlights;
+      float brilliance_midtones;
+      float brilliance_shadows;
 
       /* params of v3 */
-      float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "mask middle-gray fulcrum"
+      float mask_grey_fulcrum;
 
       /* params of v4 */
-      float vibrance;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0 $DESCRIPTION: "global vibrance"
-      float grey_fulcrum;     // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "contrast gray fulcrum"
-      float contrast;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0. $DESCRIPTION: "contrast"
-
+      float vibrance;
+      float grey_fulcrum;
+      float contrast;
     } dt_iop_colorbalancergb_params_v4_t;
 
+    const dt_iop_colorbalancergb_params_v4_t *o =
+      (dt_iop_colorbalancergb_params_v4_t *)old_params;
+    dt_iop_colorbalancergb_params_v5_t *n =
+      (dt_iop_colorbalancergb_params_v5_t *)
+      malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
+
     // Init params with defaults
-    memcpy(new_params, self->default_params, sizeof(dt_iop_colorbalancergb_params_t));
+    memcpy(n, &default_v5, sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Copy the common part of the params struct
-    memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v4_t));
+    memcpy(n, o, sizeof(dt_iop_colorbalancergb_params_v4_t));
 
-    dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
     n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorbalancergb_params_v5_t);
+    *new_version = 5;
     return 0;
   }
 
@@ -543,9 +636,12 @@ static inline float lookup_gamut(const float *const gamut_lut, const float x)
   return out;
 }
 
-
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)piece->data;
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
@@ -553,7 +649,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
 
-  self->cache_next_important = TRUE; // The cpu code is pretty heavy stuff so an importance hint
 
   // work profile can't be fetched in commit_params since it is not yet initialised
   // work_profile->matrix_in === RGB_to_XYZ
@@ -574,11 +669,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   * so we pre-multiply the 3 conversion matrices and operate only one matrix product
   */
-  dt_colormatrix_t input_matrix;
-  dt_colormatrix_t output_matrix;
+  dt_colormatrix_t input_matrix = { { 0.0f } };
+  dt_colormatrix_t output_matrix = { { 0.0f } };
 
   dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in); // output_matrix used as temp buffer
   dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
+  dt_colormatrix_t input_matrix_trans;
+  dt_colormatrix_transpose(input_matrix_trans, input_matrix);
 
   // Premultiply the output matrix
 
@@ -588,6 +685,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   */
 
   dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
+  dt_colormatrix_t output_matrix_trans;
+  dt_colormatrix_transpose(output_matrix_trans, output_matrix);
 
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
@@ -617,31 +716,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     { sinf(d->hue_angle),  cosf(d->hue_angle) },
   };
 
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
+  const size_t out_width = roi_out->width;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, \
-    global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2, L_white, \
-    hue_rotation_matrix) \
-    schedule(static) collapse(2)
+  dt_omp_firstprivate(in, out, npixels, out_width, d, g, mask_display, \
+                      input_matrix_trans, output_matrix_trans, gamut_LUT,     \
+                      global, highlights, shadows, midtones, chroma, \
+                      saturation, brilliance, checker_1, checker_2, L_white, \
+                      hue_rotation_matrix)                              \
+  schedule(static)
 #endif
-  for(size_t i = 0; i < roi_out->height; i++)
-  for(size_t j = 0; j < roi_out->width; j++)
+  for(size_t k  = 0; k < 4 * npixels; k += 4)
   {
-    const size_t k = ((i * roi_out->width) + j) * 4;
-    const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
-    float *const restrict pix_out = __builtin_assume_aligned(out + k, 16);
-
-    dt_aligned_pixel_t XYZ_D65 = { 0.f };
-    dt_aligned_pixel_t LMS = { 0.f };
-    dt_aligned_pixel_t RGB = { 0.f };
-    dt_aligned_pixel_t Yrg = { 0.f };
-    dt_aligned_pixel_t Ych = { 0.f };
-
     // clip pipeline RGB
-    for_four_channels(c, aligned(pix_in:16)) RGB[c] = fmaxf(pix_in[c], 0.0f);
+    dt_aligned_pixel_t RGB;
+    copy_pixel(RGB, in + k);
+    dt_vector_clipneg(RGB);
 
     // go to CIE 2006 LMS D65
-    dot_product(RGB, input_matrix, LMS);
+    dt_aligned_pixel_t LMS;
+    dt_apply_transposed_color_matrix(RGB, input_matrix_trans, LMS);
 
     /* The previous line is equivalent to :
       // go to CIE 1931 XYZ 2° D50
@@ -655,19 +751,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     */
 
     // go to Filmlight Yrg
+    dt_aligned_pixel_t Yrg = { 0.f };
     LMS_to_Yrg(LMS, Yrg);
 
     // go to Ych
+    dt_aligned_pixel_t Ych = { 0.f };
     Yrg_to_Ych(Yrg, Ych);
 
     // Sanitize input : no negative luminance
-    Ych[0] = fmaxf(Ych[0], 0.f);
+    Ych[0] = MAX(Ych[0], 0.f);
 
     // Opacities for luma masks
     dt_aligned_pixel_t opacities;
     dt_aligned_pixel_t opacities_comp;
     opacity_masks(powf(Ych[0], 0.4101205819200422f), // center middle grey in 50 %
-                  d->shadows_weight, d->highlights_weight, d->midtones_weight, d->mask_grey_fulcrum, opacities, opacities_comp);
+                  d->shadows_weight, d->highlights_weight, d->midtones_weight,
+                  d->mask_grey_fulcrum, opacities, opacities_comp);
 
     // Hue shift - do it now because we need the gamut limit at output hue right after
     // The hue rotation is implemented as a matrix multiplication.
@@ -679,7 +778,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
     const float vibrance = d->vibrance * (1.0f - powf(Ych[1], fabsf(d->vibrance)));
-    const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
+    const float chroma_factor = MAX(1.f + chroma_boost + vibrance, 0.f);
     Ych[1] *= chroma_factor;
 
     // clip chroma at constant hue and Y if needed
@@ -695,31 +794,42 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     LMS_to_gradingRGB(LMS, RGB);
 
     // Color balance
-    for_four_channels(c, aligned(RGB, opacities, opacities_comp, global, shadows, midtones, highlights:16))
+    for_four_channels(c, aligned(RGB, global))
     {
       // global : offset
       RGB[c] += global[c];
-
+    }
+    for_four_channels(c, aligned(RGB, opacities, opacities_comp, shadows, midtones, highlights:16))
+    {
       //  highlights, shadows : 2 slopes with masking
       RGB[c] *= opacities_comp[2] * (opacities_comp[0] + opacities[0] * shadows[c]) + opacities[2] * highlights[c];
       // factorization of : (RGB[c] * (1.f - alpha) + RGB[c] * d->shadows[c] * alpha) * (1.f - beta)  + RGB[c] * d->highlights[c] * beta;
-
-      // midtones : power with sign preservation
-      const float sign = (RGB[c] < 0.f) ? -1.f : 1.f;
-      RGB[c] = sign * powf(fabsf(RGB[c]) / d->white_fulcrum, midtones[c]) * d->white_fulcrum;
     }
+    dt_aligned_pixel_t sign;
+    for_each_channel(c)
+      sign[c] = (RGB[c] < 0.f) ? -1.f : 1.f;
+    dt_aligned_pixel_t abs_RGB;
+    for_each_channel(c)
+      abs_RGB[c] = fabsf(RGB[c]);
+    dt_aligned_pixel_t scaled_RGB;
+    for_each_channel(c)
+      scaled_RGB[c] = abs_RGB[c] /d->white_fulcrum;
+    dt_vector_powf(scaled_RGB, midtones, RGB);
+    for_each_channel(c)
+      RGB[c] = RGB[c] * sign[c] * d->white_fulcrum;
 
     // for the non-linear ops we need to go in Yrg again because RGB doesn't preserve color
     gradingRGB_to_LMS(RGB, LMS);
     LMS_to_Yrg(LMS, Yrg);
 
     // Y midtones power (gamma)
-    Yrg[0] = powf(fmaxf(Yrg[0] / d->white_fulcrum, 0.f), d->midtones_Y) * d->white_fulcrum;
+    Yrg[0] = powf(MAX(Yrg[0] / d->white_fulcrum, 0.f), d->midtones_Y) * d->white_fulcrum;
 
     // Y fulcrumed contrast
     Yrg[0] = d->grey_fulcrum * powf(Yrg[0] / d->grey_fulcrum, d->contrast);
 
     Yrg_to_LMS(Yrg, LMS);
+    dt_aligned_pixel_t XYZ_D65 = { 0.f };
     LMS_to_XYZ(LMS, XYZ_D65);
 
     // Perceptual color adjustments
@@ -749,12 +859,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                 d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
       SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-      SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
-      SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
+      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
+      SO[0] = MAX(SO[0] * boosts[0], 0.f);
 
       // Project back to JCh, that is rotate back of -T angle
-      JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
-      JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
+      JC[0] = MAX(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
+      JC[1] = MAX(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
       // Gamut mapping
       const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
@@ -777,27 +887,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float dd = -0.56f;
       float Iz = JC[0] + d0;
       Iz /= (1.f + dd - dd * Iz);
-      Iz = fmaxf(Iz, 0.f);
+      Iz = MAX(Iz, 0.f);
 
-      const dt_colormatrix_t AI
-          = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-              {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-              {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+      static const dt_colormatrix_t AI_trans
+          = { {  1.0f,                 1.0f,                                1.0f, 0.0f },
+              {  0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f, 0.0f },
+              {  0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f, 0.0f } };
 
       // Do a test conversion to L'M'S'
       const dt_aligned_pixel_t IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
-      dot_product(IzAzBz, AI, LMS);
+      dt_apply_transposed_color_matrix(IzAzBz, AI_trans, LMS);
 
       // Clip chroma
       float max_C = JC[1];
       if(LMS[0] < 0.f)
-        max_C = fmin(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
+        max_C = MIN(-Iz / (AI_trans[1][0] * cos_H + AI_trans[2][0] * sin_H), max_C);
 
       if(LMS[1] < 0.f)
-        max_C = fmin(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
+        max_C = MIN(-Iz / (AI_trans[1][1] * cos_H + AI_trans[2][1] * sin_H), max_C);
 
       if(LMS[2] < 0.f)
-        max_C = fmin(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
+        max_C = MIN(-Iz / (AI_trans[1][2] * cos_H + AI_trans[2][2] * sin_H), max_C);
 
       // Project back to JzAzBz for real
       Jab[0] = JC[0];
@@ -813,7 +923,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       xyY_to_dt_UCS_JCH(xyY, L_white, JCH);
       dt_UCS_JCH_to_HCB(JCH, HCB);
 
-      const float radius = hypotf(HCB[1], HCB[2]);
+      const float radius = dt_fast_hypotf(HCB[1], HCB[2]);
       const float sin_T = (radius > 0.f) ? HCB[1] / radius : 0.f;
       const float cos_T = (radius > 0.f) ? HCB[2] / radius : 0.f;
       const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { { cos_T,  sin_T }, { -sin_T, cos_T } };
@@ -823,23 +933,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float P = HCB[1];
       float W = sin_T * HCB[1] + cos_T * HCB[2];
 
-      float a = fmaxf(1.f + d->saturation_global + scalar_product(opacities, saturation), 0.f);
-      const float b = fmaxf(1.f + d->brilliance_global + scalar_product(opacities, brilliance), 0.f);
+      float a = MAX(1.f + d->saturation_global + scalar_product(opacities, saturation), 0.f);
+      const float b = MAX(1.f + d->brilliance_global + scalar_product(opacities, brilliance), 0.f);
 
-      const float max_a = hypotf(P, W) / P;
+      const float max_a = dt_fast_hypotf(P, W) / P;
       a = soft_clip(a, 0.5f * max_a, max_a);
 
       const float P_prime = (a - 1.f) * P;
       const float W_prime = sqrtf(sqf(P) * (1.f - sqf(a)) + sqf(W)) * b;
 
-      HCB[1] = fmaxf(M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime, 0.f);
-      HCB[2] = fmaxf(M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime, 0.f);
+      HCB[1] = MAX(M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime, 0.f);
+      HCB[2] = MAX(M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime, 0.f);
 
       dt_UCS_HCB_to_JCH(HCB, JCH);
 
       // Gamut mapping
       const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING : this is M²
-      const float max_chroma = 15.932993652962535f * powf(JCH[0] * L_white, 0.6523997524738018f) * powf(max_colorfulness, 0.6007557017508491f) / L_white;
+      const float max_chroma = (15.932993652962535f * powf(JCH[0] * L_white, 0.6523997524738018f)
+                                * powf(max_colorfulness, 0.6007557017508491f) / L_white);
       const dt_aligned_pixel_t JCH_gamut_boundary = { JCH[0], max_chroma, JCH[2], 0.f };
       dt_aligned_pixel_t HSB_gamut_boundary;
       dt_UCS_JCH_to_HSB(JCH_gamut_boundary, HSB_gamut_boundary);
@@ -854,7 +965,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // Project back to D50 pipeline RGB
-    dot_product(XYZ_D65, output_matrix, pix_out);
+    dt_aligned_pixel_t pix_out;
+    dt_apply_transposed_color_matrix(XYZ_D65, output_matrix_trans, pix_out);
 
     /* The previous line is equivalent to :
       XYZ_D65_to_50(XYZ_D65, XYZ_D50);           // matrix product
@@ -865,35 +977,47 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       // draw checkerboard
       dt_aligned_pixel_t color;
+      const size_t i = (k / 4) / out_width;
+      const size_t j = (k / 4) % out_width;
       if(i % checker_1 < i % checker_2)
       {
-        if(j % checker_1 < j % checker_2) for_four_channels(c) color[c] = d->checker_color_2[c];
-        else for_four_channels(c) color[c] = d->checker_color_1[c];
+        if(j % checker_1 < j % checker_2)
+          copy_pixel(color, d->checker_color_2);
+        else
+          copy_pixel(color, d->checker_color_1);
       }
       else
       {
-        if(j % checker_1 < j % checker_2) for_four_channels(c) color[c] = d->checker_color_1[c];
-        else for_four_channels(c) color[c] = d->checker_color_2[c];
+        if(j % checker_1 < j % checker_2)
+          copy_pixel(color, d->checker_color_1);
+        else
+          copy_pixel(color, d->checker_color_2);
       }
 
       float opacity = opacities[g->mask_type];
       const float opacity_comp = 1.0f - opacity;
 
-      for_four_channels(c, aligned(pix_out, color:16)) pix_out[c] = opacity_comp * color[c] + opacity * fmaxf(pix_out[c], 0.f);
+      dt_vector_clipneg(pix_out);
+      for_four_channels(c, aligned(pix_out, color:16))
+        pix_out[c] = opacity_comp * color[c] + opacity * pix_out[c];
       pix_out[3] = 1.0f; // alpha is opaque, we need to preview it
     }
     else
     {
-      for_four_channels(c, aligned(pix_out:16)) pix_out[c] = fmaxf(pix_out[c], 0.f);
-      pix_out[3] = pix_in[3]; // alpha copy
+      dt_vector_clipneg(pix_out);
     }
+    copy_pixel_nontemporal(out + k, pix_out);
   }
+  dt_omploop_sfence();	// ensure all nontemporal writes complete before we use them
 }
 
 
 #if HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorbalancergb_data_t *const d = (dt_iop_colorbalancergb_data_t *)piece->data;
   dt_iop_colorbalancergb_global_data_t *const gd = (dt_iop_colorbalancergb_global_data_t *)self->global_data;
@@ -1192,7 +1316,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
             hue = Jch[2];
 
             const size_t index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
-            LUT_saturation[index] = fmaxf(saturation, LUT_saturation[index]);
+            LUT_saturation[index] = MAX(saturation, LUT_saturation[index]);
           }
 
       // anti-aliasing on the LUT (simple 5-taps 1D box average)
@@ -1297,7 +1421,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = calloc(1, sizeof(dt_iop_colorbalancergb_data_t));
+  piece->data = dt_calloc_align(64, sizeof(dt_iop_colorbalancergb_data_t));
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
   d->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
   d->lut_inited = FALSE;
@@ -1308,14 +1432,14 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 {
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
   if(d->gamut_LUT) dt_free_align(d->gamut_LUT);
-  free(piece->data);
+  dt_free_align(piece->data);
   piece->data = NULL;
 }
 
-void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_aligned_pixel_t RGB,
+void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, const dt_aligned_pixel_t RGB,
                      dt_aligned_pixel_t Ych)
 {
-  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, pipe);
   if(work_profile == NULL) return; // no point
 
   dt_aligned_pixel_t XYZ_D50 = { 0.f };
@@ -1329,15 +1453,16 @@ void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
 }
 
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
 
   dt_aligned_pixel_t Ych = { 0.f };
   dt_aligned_pixel_t max_Ych = { 0.f };
-  pipe_RGB_to_Ych(self, piece, (const float *)self->picked_color, Ych);
-  pipe_RGB_to_Ych(self, piece, (const float *)self->picked_color_max, max_Ych);
+  pipe_RGB_to_Ych(self, pipe, (const float *)self->picked_color, Ych);
+  pipe_RGB_to_Ych(self, pipe, (const float *)self->picked_color_max, max_Ych);
   const float picked_hue = get_hue_angle_from_Ych(Ych);
   const float hue = RAD_TO_DEG(picked_hue) + 180.f;   // take the opponent color
 
@@ -1381,7 +1506,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     dt_bauhaus_slider_set(g->grey_fulcrum, p->grey_fulcrum);
   }
   else
-    fprintf(stderr, "[colorbalancergb] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker\n");
   --darktable.gui->reset;
 
   gui_changed(self, picker, NULL);
@@ -1657,7 +1782,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_surface_destroy(cst);
   g_object_unref(layout);
   pango_font_description_free(desc);
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -1709,7 +1834,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(self->dev && self->dev->pipe)
     output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
 
-  if(!output_profile || isnan(output_profile->matrix_out[0][0]))
+  if(!output_profile || !dt_is_valid_colormatrix(output_profile->matrix_out[0][0]))
   {
     output_profile = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "",
                                                        DT_INTENT_RELATIVE_COLORIMETRIC);

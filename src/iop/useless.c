@@ -123,7 +123,9 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -187,7 +189,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-static const int mask_id = 1; // key "0" is reserved for the pipe
+static const dt_mask_id_t mask_id = NO_MASKID + 1; // key "0" is reserved for the pipe
 static const char *mask_name = "useless checkerboard";
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -202,7 +204,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 #if 0
 /** optional, always needed if tiling is permitted by setting IOP_FLAGS_ALLOW_TILING
-    Also define this if the module uses more memory on the OpenCl device than the in& output buffers. 
+    Also define this if the module uses more memory on the OpenCl device than the in& output buffers.
 */
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
@@ -316,7 +318,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       // been allocated have been freed, and the module's trouble flag has been set.  We can simply pass
       // through the input image and return now, since there isn't anything else we need to clean up at
       // this point.
-      dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+      dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
       return;
     }
   }
@@ -374,7 +376,7 @@ void init(dt_iop_module_t *module)
   dt_iop_default_init(module);
 
   // Any non-default settings; for example disabling the on/off switch:
-  module->hide_enable_button = 1;
+  module->hide_enable_button = TRUE;
   // To make this work correctly, you also need to hide the widgets, otherwise moving one
   // would enable the module anyway. The standard way is to set up a gtk_stack and show
   // the page that only has a label with an explanatory text when the module can't be used.
@@ -446,7 +448,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // go in reload_defaults (if they depend on the image) or gui_init.
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
@@ -510,11 +513,11 @@ void reload_defaults(dt_iop_module_t *module)
   // As an example, switch off for non-raw images. The enable button was already hidden in init().
   if(!dt_image_is_raw(&module->dev->image_storage))
   {
-    module->default_enabled = 0;
+    module->default_enabled = FALSE;
   }
   else
   {
-    module->default_enabled = 1;
+    module->default_enabled = TRUE;
     d->checker_scale = 3; // something dependent on exif, for example.
   }
 

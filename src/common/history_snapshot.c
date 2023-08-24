@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ dt_undo_lt_history_t *dt_history_snapshot_item_init(void)
   return (dt_undo_lt_history_t *)g_malloc0(sizeof(dt_undo_lt_history_t));
 }
 
-void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *history_end)
+void dt_history_snapshot_undo_create(const dt_imgid_t imgid, int *snap_id, int *history_end)
 {
   // create history & mask snapshots for imgid, return the snapshot id
   sqlite3_stmt *stmt;
@@ -127,13 +127,14 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
   else
   {
     dt_database_rollback_transaction(darktable.db);
-    fprintf(stderr, "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n", imgid);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n", imgid);
   }
 
   dt_unlock_image(imgid);
 }
 
-static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_id, const int history_end)
+static void _history_snapshot_undo_restore(const dt_imgid_t imgid, const int snap_id, const int history_end)
 {
   // restore the given snapshot for imgid
   sqlite3_stmt *stmt;
@@ -214,14 +215,15 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
   else
   {
     dt_database_rollback_transaction(darktable.db);
-    fprintf(stderr, "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n", imgid);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n", imgid);
   }
   dt_unlock_image(imgid);
 
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 }
 
-static void _clear_undo_snapshot(const int32_t imgid, const int snap_id)
+static void _clear_undo_snapshot(const dt_imgid_t imgid, const int snap_id)
 {
   sqlite3_stmt *stmt;
 

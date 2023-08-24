@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/darktable.h"
 #include "common/module_api.h"
 
 #ifdef FULL_API_H
@@ -66,7 +67,7 @@ OPTIONAL(int, initialize_store, struct dt_imageio_module_storage_t *self, struct
                                 struct dt_imageio_module_format_t **format, struct dt_imageio_module_data_t **fdata,
                                 GList **images, const gboolean high_quality, const gboolean upscale);
 /* this actually does the work */
-REQUIRED(int, store, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data, const int imgid,
+REQUIRED(int, store, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data, const dt_imgid_t imgid,
                      struct dt_imageio_module_format_t *format, struct dt_imageio_module_data_t *fdata, const int num,
                      const int total, const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
                      const enum dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
@@ -74,9 +75,13 @@ REQUIRED(int, store, struct dt_imageio_module_storage_t *self, struct dt_imageio
 /* called once at the end (after exporting all images), if implemented. */
 OPTIONAL(void, finalize_store, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *data);
 
-OPTIONAL(void *, legacy_params, struct dt_imageio_module_storage_t *self, const void *const old_params,
-                 const size_t old_params_size, const int old_version, const int new_version,
-                 size_t *new_size);
+OPTIONAL(void *, legacy_params,
+         struct dt_imageio_module_storage_t *self,
+         const void *const old_params,
+         const size_t old_params_size,
+         const int old_version,
+         int *new_version,
+         size_t *new_size);
 REQUIRED(size_t, params_size, struct dt_imageio_module_storage_t *self);
 REQUIRED(void *, get_params, struct dt_imageio_module_storage_t *self);
 REQUIRED(void, free_params, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *data);
@@ -101,4 +106,3 @@ OPTIONAL(char *, ask_user_confirmation, struct dt_imageio_module_storage_t *self
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

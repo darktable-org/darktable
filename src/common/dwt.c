@@ -21,9 +21,6 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "dwt.h"
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 /* Based on the original source code of GIMP's Wavelet Decompose plugin, by Marco Rossini
  *
@@ -33,7 +30,7 @@
 
 dwt_params_t *dt_dwt_init(float *image, const int width, const int height, const int ch, const int scales,
                           const int return_layer, const int merge_from_scale, void *user_data,
-                          const float preview_scale, const int use_sse)
+                          const float preview_scale)
 {
   dwt_params_t *p = (dwt_params_t *)malloc(sizeof(dwt_params_t));
   if(!p) return NULL;
@@ -47,7 +44,6 @@ dwt_params_t *dt_dwt_init(float *image, const int width, const int height, const
   p->merge_from_scale = merge_from_scale;
   p->user_data = user_data;
   p->preview_scale = preview_scale;
-  p->use_sse = use_sse;
 
   return p;
 }
@@ -696,7 +692,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   buffer[1] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
   if(buffer[1] == NULL)
   {
-    printf("not enough memory for wavelet decomposition");
+    dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -705,7 +701,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   layers = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
   if(layers == NULL)
   {
-    printf("not enough memory for wavelet decomposition");
+    dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -726,7 +722,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     merged_layers = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
     if(merged_layers == NULL)
     {
-      printf("not enough memory for wavelet decomposition");
+      dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
@@ -755,7 +751,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     temp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
     if(temp == NULL)
     {
-      printf("not enough memory for wavelet decomposition");
+      dt_print(DT_DEBUG_ALWAYS, "[dwt] not enough memory for wavelet decomposition\n");
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
@@ -944,4 +940,3 @@ cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

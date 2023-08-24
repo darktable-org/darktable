@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2022 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** a class to manage a collection of zoomable thumbnails for culling or full preview.  */
+
+/** a class to manage a collection of zoomable thumbnails for culling
+ * or full preview.  */
+
 #include "dtgtk/culling.h"
 #include "common/collection.h"
 #include "common/debug.h"
@@ -31,19 +34,23 @@ static inline float _absmul(float a, float b)
 {
   return a > b ? a / b : b / a;
 }
+
 static inline int _get_max_in_memory_images()
 {
-  const int max_in_memory_images = dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images");
+  const int max_in_memory_images =
+    dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images");
   return MIN(max_in_memory_images, FULL_PREVIEW_IN_MEMORY_LIMIT);
 }
+
 // specials functions for GList globals actions
 static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
-  const int imgid = GPOINTER_TO_INT(b);
-  if(th->imgid < 0 || imgid < 0) return 1;
+  const dt_imgid_t imgid = GPOINTER_TO_INT(b);
+  if(!dt_is_valid_imgid(th->imgid) || !dt_is_valid_imgid(imgid)) return 1;
   return (th->imgid != imgid);
 }
+
 static void _list_remove_thumb(gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
@@ -55,7 +62,9 @@ static int _get_selection_count()
 {
   int nb = 0;
   gchar *query = g_strdup(  //TODO: since this is a fixed string, do we need to copy?
-      "SELECT count(*) FROM main.selected_images AS s, memory.collected_images as m WHERE s.imgid = m.imgid");
+      "SELECT count(*)"
+      " FROM main.selected_images AS s, memory.collected_images as m"
+      " WHERE s.imgid = m.imgid");
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(stmt != NULL)
@@ -72,11 +81,14 @@ static int _get_selection_count()
 }
 
 // get imgid from rowid
-static int _thumb_get_imgid(int rowid)
+static dt_imgid_t _thumb_get_imgid(int rowid)
 {
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
-  gchar *query = g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
+  gchar *query = g_strdup_printf
+    ("SELECT imgid"
+     " FROM memory.collected_images"
+     " WHERE rowid=%d", rowid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -87,11 +99,14 @@ static int _thumb_get_imgid(int rowid)
   return id;
 }
 // get rowid from imgid
-static int _thumb_get_rowid(int imgid)
+static int _thumb_get_rowid(dt_imgid_t imgid)
 {
-  int id = -1;
+  dt_imgid_t id = NO_IMGID;
   sqlite3_stmt *stmt;
-  gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  gchar *query = g_strdup_printf
+    ("SELECT rowid"
+     " FROM memory.collected_images"
+     " WHERE imgid=%d", imgid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -104,7 +119,7 @@ static int _thumb_get_rowid(int imgid)
 
 // compute thumb_size, thumbs_per_row and rows for the current widget size
 // return TRUE if something as changed (or forced) FALSE otherwise
-static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
+static gboolean _compute_sizes(dt_culling_t *table, const gboolean force)
 {
   gboolean ret = FALSE; // return value to show if something as changed
   GtkAllocation allocation;
@@ -121,16 +136,18 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
   if(table->list)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)table->list->data;
-    if(th->imgid != table->offset_imgid || th->display_focus != table->focus) ret = TRUE;
+    if(th->imgid != table->offset_imgid || th->display_focus != table->focus)
+      ret = TRUE;
   }
-  else if(table->offset_imgid > 0)
+  else if(dt_is_valid_imgid(table->offset_imgid))
     ret = TRUE;
 
   if(table->mode == DT_CULLING_MODE_CULLING)
   {
     const int npr = dt_view_lighttable_get_zoom(darktable.view_manager);
 
-    if(force || allocation.width != table->view_width || allocation.height != table->view_height
+    if(force || allocation.width != table->view_width
+       || allocation.height != table->view_height
        || npr != table->thumbs_count)
     {
       table->thumbs_count = npr;
@@ -141,7 +158,9 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
   }
   else if(table->mode == DT_CULLING_MODE_PREVIEW)
   {
-    if(force || allocation.width != table->view_width || allocation.height != table->view_height)
+    if(force
+       || allocation.width != table->view_width
+       || allocation.height != table->view_height)
     {
       table->thumbs_count = 1;
       table->view_width = allocation.width;
@@ -155,7 +174,7 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
 // set mouse_over_id to thumb under mouse or to first thumb
 static void _thumbs_refocus(dt_culling_t *table)
 {
-  int overid = -1;
+  dt_imgid_t overid = NO_IMGID;
 
   if(table->mouse_inside)
   {
@@ -179,7 +198,7 @@ static void _thumbs_refocus(dt_culling_t *table)
   }
 
   // if overid not valid, we use the offset image
-  if(overid <= 0)
+  if(!dt_is_valid_imgid(overid))
   {
     overid = table->offset_imgid;
   }
@@ -188,7 +207,7 @@ static void _thumbs_refocus(dt_culling_t *table)
   dt_control_set_mouse_over_id(overid);
 }
 
-static void _thumbs_move(dt_culling_t *table, int move)
+static void _thumbs_move(dt_culling_t *table, const int move)
 {
   if(move == 0) return;
   int new_offset = table->offset;
@@ -199,10 +218,11 @@ static void _thumbs_move(dt_culling_t *table, int move)
     {
       sqlite3_stmt *stmt;
       // clang-format off
-      gchar *query = g_strdup_printf("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
-                                     "WHERE m.imgid=s.imgid AND m.rowid<=%d "
-                                     "ORDER BY m.rowid DESC LIMIT 1 OFFSET %d",
-                                     table->offset, -1 * move);
+      gchar *query = g_strdup_printf
+        ("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s"
+         " WHERE m.imgid=s.imgid AND m.rowid<=%d"
+         " ORDER BY m.rowid DESC LIMIT 1 OFFSET %d",
+         table->offset, -1 * move);
       // clang-format on
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -211,13 +231,15 @@ static void _thumbs_move(dt_culling_t *table, int move)
       }
       else
       {
-        // if we are here, that means we don't have enough space to move as wanted. So we move to first position
+        // if we are here, that means we don't have enough space to
+        // move as wanted. So we move to first position
         g_free(query);
         sqlite3_finalize(stmt);
         // clang-format off
-        query = g_strdup_printf("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
-                                    "WHERE m.imgid=s.imgid "
-                                    "ORDER BY m.rowid LIMIT 1");
+        query = g_strdup_printf
+          ("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s"
+           " WHERE m.imgid=s.imgid"
+           " ORDER BY m.rowid LIMIT 1");
         // clang-format on
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
         if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -249,10 +271,11 @@ static void _thumbs_move(dt_culling_t *table, int move)
     {
       sqlite3_stmt *stmt;
       // clang-format off
-      gchar *query = g_strdup_printf(
-                            "SELECT COUNT(m.rowid) FROM memory.collected_images as m, main.selected_images as s "
-                            "WHERE m.imgid=s.imgid AND m.rowid>%d",
-                            table->offset);
+      gchar *query = g_strdup_printf
+        ("SELECT COUNT(m.rowid)"
+         " FROM memory.collected_images as m, main.selected_images as s"
+         " WHERE m.imgid=s.imgid AND m.rowid>%d",
+         table->offset);
       // clang-format on
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       int nb_after = 0;
@@ -267,10 +290,11 @@ static void _thumbs_move(dt_culling_t *table, int move)
       {
         const int delta = MIN(nb_after + 1 - table->thumbs_count, move);
         // clang-format off
-        query = g_strdup_printf("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
-                                "WHERE m.imgid=s.imgid AND m.rowid>=%d "
-                                "ORDER BY m.rowid LIMIT 1 OFFSET %d",
-                                table->offset, delta);
+        query = g_strdup_printf
+          ("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s"
+           " WHERE m.imgid=s.imgid AND m.rowid>=%d"
+           " ORDER BY m.rowid LIMIT 1 OFFSET %d",
+           table->offset, delta);
         // clang-format on
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
         if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -291,9 +315,11 @@ static void _thumbs_move(dt_culling_t *table, int move)
     {
       sqlite3_stmt *stmt;
       // clang-format off
-      gchar *query = g_strdup_printf("SELECT COUNT(m.rowid) FROM memory.collected_images as m "
-                                     "WHERE m.rowid>%d",
-                                     table->offset);
+      gchar *query = g_strdup_printf
+        ("SELECT COUNT(m.rowid)"
+         " FROM memory.collected_images as m"
+         " WHERE m.rowid>%d",
+         table->offset);
       // clang-format on
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -327,14 +353,21 @@ static void _set_table_zoom_ratio(dt_culling_t *table, dt_thumbnail_t *th)
   table->zoom_ratio = dt_thumbnail_get_zoom_ratio(th);
 }
 
-static void _get_root_offset(GtkWidget *w_image_box, float x_root, float y_root, int *x_offset, int *y_offset)
+static void _get_root_offset(GtkWidget *w_image_box,
+                             const float x_root,
+                             const float y_root,
+                             int *x_offset,
+                             int *y_offset)
 {
   gdk_window_get_origin(gtk_widget_get_window(w_image_box), x_offset, y_offset);
   *x_offset = x_root - *x_offset;
   *y_offset = y_root - *y_offset;
 }
 
-static gboolean _zoom_and_shift(dt_thumbnail_t *th, const int x_offset, const int y_offset, const float zoom_delta)
+static gboolean _zoom_and_shift(dt_thumbnail_t *th,
+                                const int x_offset,
+                                const int y_offset,
+                                const float zoom_delta)
 {
   const float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
   if(zd == th->zoom)
@@ -366,7 +399,10 @@ static gboolean _zoom_and_shift(dt_thumbnail_t *th, const int x_offset, const in
   return TRUE;
 }
 
-static gboolean _zoom_to_x_root(dt_thumbnail_t *th, const float x_root, const float y_root, const float zoom_delta)
+static gboolean _zoom_to_x_root(dt_thumbnail_t *th,
+                                const float x_root,
+                                const float y_root,
+                                const float zoom_delta)
 {
   int x_offset = 0;
   int y_offset = 0;
@@ -376,7 +412,8 @@ static gboolean _zoom_to_x_root(dt_thumbnail_t *th, const float x_root, const fl
   return _zoom_and_shift(th, x_offset, y_offset, zoom_delta);
 }
 
-static gboolean _zoom_to_center(dt_thumbnail_t *th, const float zoom_delta)
+static gboolean _zoom_to_center(dt_thumbnail_t *th,
+                                const float zoom_delta)
 {
   const float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
   if(zd == th->zoom)
@@ -388,15 +425,19 @@ static gboolean _zoom_to_center(dt_thumbnail_t *th, const float zoom_delta)
   int iw = 0;
   int ih = 0;
   gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
-  th->zoomx = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
-  th->zoomy = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, ih / 2.0 - (ih / 2.0 - th->zoomy) * z_ratio));
+  th->zoomx = fmaxf(iw - th->img_width * z_ratio,
+                    fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
+  th->zoomy = fmaxf(ih - th->img_height * z_ratio,
+                    fminf(0.0f, ih / 2.0 - (ih / 2.0 - th->zoomy) * z_ratio));
 
   dt_thumbnail_image_refresh(th);
 
   return TRUE;
 }
 
-static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, const float x_root,
+static gboolean _thumbs_zoom_add(dt_culling_t *table,
+                                 const float zoom_delta,
+                                 const float x_root,
                                  const float y_root, int state)
 {
   const int max_in_memory_images = _get_max_in_memory_images();
@@ -419,7 +460,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
     // if shift+ctrl, we only change the current image
     if(dt_modifiers_include(state, GDK_SHIFT_MASK))
     {
-      const int mouseid = dt_control_get_mouse_over_id();
+      const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
       for(GList *l = table->list; l; l = g_list_next(l))
       {
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -433,7 +474,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
     }
     else
     {
-      const int mouseid = dt_control_get_mouse_over_id();
+      const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
       int x_offset = 0;
       int y_offset = 0;
       gboolean to_pointer = FALSE;
@@ -479,16 +520,20 @@ static void _zoom_thumb_fit(dt_thumbnail_t *th)
   dt_thumbnail_image_refresh(th);
 }
 
-static gboolean _zoom_thumb_max(dt_thumbnail_t *th, float x_root, float y_root)
+static gboolean _zoom_thumb_max(dt_thumbnail_t *th,
+                                const float x_root,
+                                const float y_root)
 {
   dt_thumbnail_get_zoom100(th);
   return _zoom_to_x_root(th, x_root, y_root, ZOOM_MAX);
 }
 
 // toggle zoom max / zoom fit of image currently having mouse over id
-static void _toggle_zoom_current(dt_culling_t *table, float x_root, float y_root)
+static void _toggle_zoom_current(dt_culling_t *table,
+                                 const float x_root,
+                                 const float y_root)
 {
-  const int id = dt_control_get_mouse_over_id();
+  const dt_imgid_t id = dt_control_get_mouse_over_id();
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -504,7 +549,9 @@ static void _toggle_zoom_current(dt_culling_t *table, float x_root, float y_root
 }
 
 // toggle zoom max / zoom fit of all images in culling table
-static void _toggle_zoom_all(dt_culling_t *table, float x_root, float y_root)
+static void _toggle_zoom_all(dt_culling_t *table,
+                             const float x_root,
+                             const float y_root)
 {
   gboolean zmax = TRUE;
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -523,7 +570,9 @@ static void _toggle_zoom_all(dt_culling_t *table, float x_root, float y_root)
     _thumbs_zoom_add(table, ZOOM_MAX, x_root, y_root, 0);
 }
 
-static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+static gboolean _event_scroll(GtkWidget *widget,
+                              GdkEvent *event,
+                              gpointer user_data)
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_culling_t *table = (dt_culling_t *)user_data;
@@ -550,18 +599,22 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!GTK_IS_CONTAINER(gtk_widget_get_parent(widget))) return TRUE;
 
-  // we render the background (can be visible if before first image / after last image)
+  // we render the background (can be visible if before first image /
+  // after last image)
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gtk_render_background(context, cr, 0, 0, gtk_widget_get_allocated_width(widget),
                         gtk_widget_get_allocated_height(widget));
 
-  // but we don't really want to draw something, this is just to know when the widget is really ready
+  // but we don't really want to draw something, this is just to know
+  // when the widget is really ready
   dt_culling_t *table = (dt_culling_t *)user_data;
   dt_culling_full_redraw(table, FALSE);
   return FALSE; // let's propagate this event
 }
 
-static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _event_leave_notify(GtkWidget *widget,
+                                    GdkEventCrossing *event,
+                                    gpointer user_data)
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
   // if the leaving cause is the hide of the widget, no mouseover change
@@ -571,30 +624,42 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
     return FALSE;
   }
 
-  // if we leave thumbtable in favour of an inferior (a thumbnail) it's not a real leave !
-  // same if this is not a mouse move action (shortcut that activate a button for example)
+  // if we leave thumbtable in favour of an inferior (a thumbnail)
+  // it's not a real leave !  same if this is not a mouse move action
+  // (shortcut that activate a button for example)
   if(event->detail == GDK_NOTIFY_INFERIOR || event->mode == GDK_CROSSING_GTK_GRAB
      || event->mode == GDK_CROSSING_GRAB)
     return FALSE;
 
   table->mouse_inside = FALSE;
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
 }
 
-static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _event_enter_notify(GtkWidget *widget,
+                                    GdkEventCrossing *event,
+                                    gpointer user_data)
 {
-  // we only handle the case where we enter thumbtable from an inferior (a thumbnail)
-  // this is when the mouse enter an "empty" area of thumbtable
+  // we only handle the case where we enter thumbtable from an
+  // inferior (a thumbnail) this is when the mouse enter an "empty"
+  // area of thumbtable
   if(event->detail != GDK_NOTIFY_INFERIOR) return FALSE;
 
-  dt_control_set_mouse_over_id(-1);
+  dt_control_set_mouse_over_id(NO_IMGID);
   return TRUE;
 }
 
-static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _event_button_press(GtkWidget *widget,
+                                    GdkEventButton *event,
+                                    gpointer user_data)
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
+
+  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  {
+    // make sure any edition field loses the focus
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+  }
 
   if(event->button == 2)
   {
@@ -606,9 +671,9 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
     return TRUE;
   }
 
-  const int id = dt_control_get_mouse_over_id();
+  const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(id > 0 && event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(dt_is_valid_imgid(id) && event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     dt_view_manager_switch(darktable.view_manager, "darkroom");
     return TRUE;
@@ -620,7 +685,9 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   return TRUE;
 }
 
-static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean _event_motion_notify(GtkWidget *widget,
+                                     GdkEventMotion *event,
+                                     gpointer user_data)
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
   table->mouse_inside = TRUE;
@@ -633,7 +700,9 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
 
   // get the max zoom of all images
   const int max_in_memory_images = _get_max_in_memory_images();
-  if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images) return FALSE;
+  if(table->mode == DT_CULLING_MODE_CULLING
+     && table->thumbs_count > max_in_memory_images)
+    return FALSE;
 
   float fz = 1.0f;
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -653,7 +722,7 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
 
     if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
     {
-      int mouseid = dt_control_get_mouse_over_id();
+      const dt_imgid_t mouseid = dt_control_get_mouse_over_id();
       for(GList *l = table->list; l; l = g_list_next(l))
       {
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -701,7 +770,9 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   return TRUE;
 }
 
-static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _event_button_release(GtkWidget *widget,
+                                      GdkEventButton *event,
+                                      gpointer user_data)
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
   table->panning = FALSE;
@@ -709,7 +780,8 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
 }
 
 // called each time the preference change, to update specific parts
-static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
+static void _dt_pref_change_callback(gpointer instance,
+                                     gpointer user_data)
 {
   if(!user_data) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
@@ -740,23 +812,29 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
 
   // if we are in dynamic mode, zoom = selection count
   if(table->mode == DT_CULLING_MODE_CULLING
-     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+     && dt_view_lighttable_get_layout(darktable.view_manager)
+        == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     sqlite3_stmt *stmt;
     int sel_count = 0;
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT count(*) "
-                                "FROM memory.collected_images AS col, main.selected_images as sel "
-                                "WHERE col.imgid=sel.imgid",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT count(*)"
+       " FROM memory.collected_images AS col, main.selected_images as sel"
+       " WHERE col.imgid=sel.imgid",
+       -1, &stmt, NULL);
     // clang-format on
     if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    const int nz = (sel_count <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : sel_count;
+    const int nz = (sel_count <= 1)
+      ? dt_conf_get_int("plugins/lighttable/culling_num_images")
+      : sel_count;
+
     dt_view_lighttable_set_zoom(darktable.view_manager, nz);
   }
-  // if we navigate only in the selection we just redraw to ensure no unselected image is present
+  // if we navigate only in the selection we just redraw to ensure no
+  // unselected image is present
   if(table->navigate_inside_selection)
   {
     dt_culling_full_redraw(table, TRUE);
@@ -764,7 +842,9 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   }
 }
 
-static void _dt_profile_change_callback(gpointer instance, int type, gpointer user_data)
+static void _dt_profile_change_callback(gpointer instance,
+                                        const int type,
+                                        gpointer user_data)
 {
   if(!user_data) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
@@ -784,20 +864,23 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 
-  const int imgid = dt_control_get_mouse_over_id();
+  const dt_imgid_t imgid = dt_control_get_mouse_over_id();
 
   // we crawl over all images to find the right one
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     // if needed, the change mouseover value of the thumb
-    if(th->mouse_over != (th->imgid == imgid)) dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
+    if(th->mouse_over != (th->imgid == imgid))
+      dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
   }
 }
 
-static void _dt_filmstrip_change(gpointer instance, int imgid, gpointer user_data)
+static void _dt_filmstrip_change(gpointer instance,
+                                 const dt_imgid_t imgid,
+                                 gpointer user_data)
 {
-  if(!user_data || imgid <= 0) return;
+  if(!user_data || !dt_is_valid_imgid(imgid)) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 
@@ -835,7 +918,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
   dt_gui_add_class(table->widget, "dt_fullview");
-  // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
+  // TODO dt_gui_add_help_link(table->widget, "lighttable_filemanager");
 
   // overlays
   gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
@@ -846,7 +929,8 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   dt_gui_add_class(table->widget, cl0);
   free(cl0);
 
-  otxt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+  otxt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d",
+                         table->mode);
   table->overlays_block_timeout = 2;
   if(!dt_conf_key_exists(otxt))
     table->overlays_block_timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
@@ -859,31 +943,45 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   g_free(otxt);
 
   // set widget signals
-  gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
-                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_set_events(table->widget,
+                        GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
+                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_app_paintable(table->widget, TRUE);
   gtk_widget_set_can_focus(table->widget, TRUE);
 
-  g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_event_scroll), table);
-  g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_event_draw), table);
-  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event", G_CALLBACK(_event_leave_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "enter-notify-event", G_CALLBACK(_event_enter_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-press-event", G_CALLBACK(_event_button_press), table);
-  g_signal_connect(G_OBJECT(table->widget), "motion-notify-event", G_CALLBACK(_event_motion_notify), table);
-  g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
+  g_signal_connect(G_OBJECT(table->widget), "scroll-event",
+                   G_CALLBACK(_event_scroll), table);
+  g_signal_connect(G_OBJECT(table->widget), "draw",
+                   G_CALLBACK(_event_draw), table);
+  g_signal_connect(G_OBJECT(table->widget), "leave-notify-event",
+                   G_CALLBACK(_event_leave_notify), table);
+  g_signal_connect(G_OBJECT(table->widget), "enter-notify-event",
+                   G_CALLBACK(_event_enter_notify), table);
+  g_signal_connect(G_OBJECT(table->widget), "button-press-event",
+                   G_CALLBACK(_event_button_press), table);
+  g_signal_connect(G_OBJECT(table->widget), "motion-notify-event",
+                   G_CALLBACK(_event_motion_notify), table);
+  g_signal_connect(G_OBJECT(table->widget), "button-release-event",
+                   G_CALLBACK(_event_button_release), table);
 
   // we register globals signals
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                            G_CALLBACK(_dt_mouse_over_image_callback), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            G_CALLBACK(_dt_profile_change_callback), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_change_callback),
-                            table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                            G_CALLBACK(_dt_filmstrip_change), table);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                                  G_CALLBACK(_dt_mouse_over_image_callback), table);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                                  G_CALLBACK(_dt_profile_change_callback), table);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_PREFERENCES_CHANGE,
+                                  G_CALLBACK(_dt_pref_change_callback),
+                                  table);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
+                                  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                                  G_CALLBACK(_dt_filmstrip_change), table);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                            G_CALLBACK(_dt_selection_changed_callback), table);
+                                  G_CALLBACK(_dt_selection_changed_callback), table);
 
   g_object_ref(table->widget);
 
@@ -892,7 +990,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 
 // initialize offset, ... values
 // to be used when reentering culling
-void dt_culling_init(dt_culling_t *table, int fallback_offset)
+void dt_culling_init(dt_culling_t *table, const int fallback_offset)
 {
   /** HOW it works :
    *
@@ -927,48 +1025,51 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
 
   const gboolean culling_dynamic
       = (table->mode == DT_CULLING_MODE_CULLING
-         && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
+         && dt_view_lighttable_get_layout(darktable.view_manager)
+            == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
 
   // get first id
   sqlite3_stmt *stmt;
   gchar *query = NULL;
-  int first_id = -1;
+  dt_imgid_t first_id = NO_IMGID;
 
   // prioritize mouseover if available
   first_id = dt_control_get_mouse_over_id();
 
   // try active images
-  if(first_id < 1 && darktable.view_manager->active_images)
+  if(!dt_is_valid_imgid(first_id) && darktable.view_manager->active_images)
      first_id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
 
   // overwrite with selection no active images
-  if(first_id < 1)
+  if(!dt_is_valid_imgid(first_id))
   {
     // search the first selected image
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT col.imgid "
-                                "FROM memory.collected_images AS col, main.selected_images as sel "
-                                "WHERE col.imgid=sel.imgid "
-                                "ORDER BY col.rowid "
-                                "LIMIT 1",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT col.imgid"
+       " FROM memory.collected_images AS col, main.selected_images as sel"
+       " WHERE col.imgid=sel.imgid"
+       " ORDER BY col.rowid"
+       " LIMIT 1",
+       -1, &stmt, NULL);
     // clang-format on
-    if(sqlite3_step(stmt) == SQLITE_ROW) first_id = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      first_id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
   }
 
   // if no new offset is available until now, we continue with the fallback one
-  if(first_id == -1)
+  if(!dt_is_valid_imgid(first_id))
     first_id = _thumb_get_imgid(fallback_offset);
 
   // if this also fails we start at the beginning of the collection
-  if(first_id < 1)
+  if(!dt_is_valid_imgid(first_id))
   {
     first_id = _thumb_get_imgid(1);
   }
 
-  if(first_id < 1)
+  if(!dt_is_valid_imgid(first_id))
   {
     // Collection probably empty?
     return;
@@ -977,13 +1078,15 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   // selection count
   int sel_count = 0;
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT count(*) "
-                              "FROM memory.collected_images AS col, main.selected_images as sel "
-                              "WHERE col.imgid=sel.imgid",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT count(*)"
+     " FROM memory.collected_images AS col, main.selected_images as sel"
+     " WHERE col.imgid=sel.imgid",
+     -1, &stmt, NULL);
   // clang-format on
-  if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    sel_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
   // special culling dynamic mode
@@ -992,7 +1095,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
     if(sel_count == 0)
     {
       dt_control_log(_("no image selected!"));
-      first_id = -1;
+      first_id = NO_IMGID;
     }
     table->navigate_inside_selection = TRUE;
     table->offset = _thumb_get_rowid(first_id);
@@ -1003,10 +1106,11 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   // is first_id inside selection ?
   gboolean inside = FALSE;
   // clang-format off
-  query = g_strdup_printf("SELECT col.imgid "
-                          "FROM memory.collected_images AS col, main.selected_images AS sel "
-                          "WHERE col.imgid=sel.imgid AND col.imgid=%d",
-                          first_id);
+  query = g_strdup_printf
+    ("SELECT col.imgid"
+     " FROM memory.collected_images AS col, main.selected_images AS sel"
+     " WHERE col.imgid=sel.imgid AND col.imgid=%d",
+     first_id);
   // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW) inside = TRUE;
@@ -1029,11 +1133,12 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
     {
       // we ensure that the selection is continuous
       // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT MIN(rowid), MAX(rowid) "
-                                  "FROM memory.collected_images AS col, main.selected_images as sel "
-                                  "WHERE col.imgid=sel.imgid ",
-                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "SELECT MIN(rowid), MAX(rowid)"
+         " FROM memory.collected_images AS col, main.selected_images as sel"
+         " WHERE col.imgid=sel.imgid",
+         -1, &stmt, NULL);
       // clang-format on
       if(sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -1066,7 +1171,8 @@ static void _thumbs_prefetch(dt_culling_t *table)
     maxw = MAX(maxw, th->width);
     maxh = MAX(maxh, th->height);
   }
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, maxw, maxh);
+  dt_mipmap_size_t mip =
+    dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, maxw, maxh);
 
   // prefetch next image
   gchar *query;
@@ -1075,33 +1181,38 @@ static void _thumbs_prefetch(dt_culling_t *table)
   if(table->navigate_inside_selection)
   {
     // clang-format off
-    query = g_strdup_printf(
-                          "SELECT m.imgid "
-                          "FROM memory.collected_images AS m, main.selected_images AS s "
-                          "WHERE m.imgid = s.imgid"
-                          " AND m.rowid > (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
-                          "ORDER BY m.rowid "
-                          "LIMIT 1",
-                          last->imgid);
+    query = g_strdup_printf
+      ("SELECT m.imgid"
+       " FROM memory.collected_images AS m, main.selected_images AS s"
+       " WHERE m.imgid = s.imgid"
+       "   AND m.rowid > (SELECT mm.rowid"
+       "                  FROM memory.collected_images AS mm"
+       "                  WHERE mm.imgid=%d)"
+       " ORDER BY m.rowid "
+       " LIMIT 1",
+       last->imgid);
     // clang-format on
   }
   else
   {
     // clang-format off
-    query = g_strdup_printf(
-                          "SELECT m.imgid "
-                          "FROM memory.collected_images AS m "
-                          "WHERE m.rowid > (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
-                          "ORDER BY m.rowid "
-                          "LIMIT 1",
-                          last->imgid);
+    query = g_strdup_printf
+      ("SELECT m.imgid"
+       " FROM memory.collected_images AS m "
+       " WHERE m.rowid > (SELECT mm.rowid"
+       "                  FROM memory.collected_images AS mm"
+       "                  WHERE mm.imgid=%d) "
+       " ORDER BY m.rowid "
+       " LIMIT 1",
+       last->imgid);
     // clang-format on
   }
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int id = sqlite3_column_int(stmt, 0);
-    if(id > 0) dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
+    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
+    if(dt_is_valid_imgid(id))
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
   }
   sqlite3_finalize(stmt);
   g_free(query);
@@ -1111,38 +1222,44 @@ static void _thumbs_prefetch(dt_culling_t *table)
   if(table->navigate_inside_selection)
   {
     // clang-format off
-    query = g_strdup_printf(
-                          "SELECT m.imgid "
-                          "FROM memory.collected_images AS m, main.selected_images AS s "
-                          "WHERE m.imgid = s.imgid"
-                          " AND m.rowid < (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
-                          "ORDER BY m.rowid DESC "
-                          "LIMIT 1",
-                          prev->imgid);
+    query = g_strdup_printf
+      ("SELECT m.imgid"
+       " FROM memory.collected_images AS m, main.selected_images AS s"
+       " WHERE m.imgid = s.imgid"
+       "   AND m.rowid < (SELECT mm.rowid"
+       "                  FROM memory.collected_images AS mm"
+       "                  WHERE mm.imgid=%d)"
+       " ORDER BY m.rowid DESC "
+       " LIMIT 1",
+       prev->imgid);
     // clang-format on
   }
   else
   {
     // clang-format off
-    query = g_strdup_printf(
-                          "SELECT m.imgid "
-                          "FROM memory.collected_images AS m "
-                          "WHERE m.rowid < (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
-                          "ORDER BY m.rowid DESC "
-                          "LIMIT 1",
-                          prev->imgid);
+    query = g_strdup_printf
+      ("SELECT m.imgid"
+       " FROM memory.collected_images AS m"
+       " WHERE m.rowid < (SELECT mm.rowid"
+       "                  FROM memory.collected_images AS mm"
+       "                  WHERE mm.imgid=%d) "
+       " ORDER BY m.rowid DESC "
+       " LIMIT 1",
+       prev->imgid);
     // clang-format on
   }
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int id = sqlite3_column_int(stmt, 0);
-    if(id > 0) dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
+    const dt_imgid_t id = sqlite3_column_int(stmt, 0);
+    if(dt_is_valid_imgid(id))
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
   }
   sqlite3_finalize(stmt);
 }
 
-static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
+static gboolean _thumbs_recreate_list_at(dt_culling_t *table,
+                                         const int offset)
 {
   gchar *query = NULL;
   sqlite3_stmt *stmt;
@@ -1150,39 +1267,44 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   if(table->navigate_inside_selection)
   {
     // clang-format off
-    query = g_strdup_printf("SELECT m.rowid, m.imgid, b.aspect_ratio "
-                            "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
-                            "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %d "
-                            "ORDER BY m.rowid "
-                            "LIMIT %d",
-                            offset, table->thumbs_count);
+    query = g_strdup_printf
+      ("SELECT m.rowid, m.imgid, b.aspect_ratio"
+       " FROM memory.collected_images AS m, main.selected_images AS s, images AS b"
+       " WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %d"
+       " ORDER BY m.rowid "
+       " LIMIT %d",
+       offset, table->thumbs_count);
     // clang-format on
   }
   else
   {
     // clang-format off
-    query = g_strdup_printf("SELECT m.rowid, m.imgid, b.aspect_ratio "
-                            "FROM (SELECT rowid, imgid "
-                            "FROM memory.collected_images "
-                            "WHERE rowid < %d + %d "
-                            "ORDER BY rowid DESC "
-                            "LIMIT %d) AS m, "
-                            "images AS b "
-                            "WHERE m.imgid = b.id "
-                            "ORDER BY m.rowid",
-                            offset, table->thumbs_count, table->thumbs_count);
+    query = g_strdup_printf
+      ("SELECT m.rowid, m.imgid, b.aspect_ratio "
+       " FROM (SELECT rowid, imgid "
+       "       FROM memory.collected_images "
+       "       WHERE rowid < %d + %d "
+       "       ORDER BY rowid DESC "
+       "       LIMIT %d) AS m, "
+       " images AS b "
+       " WHERE m.imgid = b.id "
+       " ORDER BY m.rowid",
+       offset, table->thumbs_count, table->thumbs_count);
     // clang-format on
   }
 
   GList *newlist = NULL;
   int pos = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW && g_list_shorter_than(newlist, table->thumbs_count+1))
+  while(sqlite3_step(stmt) == SQLITE_ROW
+        && g_list_shorter_than(newlist, table->thumbs_count+1))
   {
     const int nrow = sqlite3_column_int(stmt, 0);
-    const int nid = sqlite3_column_int(stmt, 1);
+    const dt_imgid_t nid = sqlite3_column_int(stmt, 1);
     // first, we search if the thumb is already here
-    GList *tl = g_list_find_custom(table->list, GINT_TO_POINTER(nid), _list_compare_by_imgid);
+    GList *tl = g_list_find_custom(table->list,
+                                   GINT_TO_POINTER(nid),
+                                   _list_compare_by_imgid);
     if(tl)
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
@@ -1194,9 +1316,9 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     }
     else
     {
-      // we create a completely new thumb
-      // we set its size to the thumb it replace in the list if any otherwise we set it to something > 0 to trigger
-      // draw events
+      // we create a completely new thumb we set its size to the thumb
+      // it replace in the list if any otherwise we set it to
+      // something > 0 to trigger draw events
       int nw = 40;
       int nh = 40;
       if(table->mode == DT_CULLING_MODE_PREVIEW)
@@ -1207,13 +1329,15 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       else if(table->list)
       {
         dt_thumbnail_t *th_model
-            = (dt_thumbnail_t *)g_list_nth_data(table->list, MIN(pos, g_list_length(table->list) - 1));
+            = (dt_thumbnail_t *)g_list_nth_data(table->list,
+                                                MIN(pos, g_list_length(table->list) - 1));
         nw = th_model->width;
         nh = th_model->height;
       }
       else if(newlist)
       {
-        dt_thumbnail_t *th_model = (dt_thumbnail_t *)newlist->data;  // get most recently added
+        dt_thumbnail_t *th_model = (dt_thumbnail_t *)newlist->data;
+        // get most recently added
         nw = th_model->width;
         nh = th_model->height;
       }
@@ -1250,23 +1374,26 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   {
     const int nb = table->thumbs_count - g_list_length(newlist);
     // clang-format off
-    query = g_strdup_printf("SELECT m.rowid, m.imgid, b.aspect_ratio "
-                            "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
-                            "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %d "
-                            "ORDER BY m.rowid DESC "
-                            "LIMIT %d",
-                            offset, nb);
+    query = g_strdup_printf
+      ("SELECT m.rowid, m.imgid, b.aspect_ratio"
+       " FROM memory.collected_images AS m, main.selected_images AS s, images AS b"
+       " WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %d"
+       " ORDER BY m.rowid DESC"
+       " LIMIT %d",
+       offset, nb);
     // clang-format on
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(stmt != NULL)
     {
       pos = 0;
-      while(sqlite3_step(stmt) == SQLITE_ROW && g_list_shorter_than(newlist, table->thumbs_count+1))
+      while(sqlite3_step(stmt) == SQLITE_ROW
+            && g_list_shorter_than(newlist, table->thumbs_count+1))
       {
         const int nrow = sqlite3_column_int(stmt, 0);
         const int nid = sqlite3_column_int(stmt, 1);
         // first, we search if the thumb is already here
-        GList *tl = g_list_find_custom(table->list, GINT_TO_POINTER(nid), _list_compare_by_imgid);
+        GList *tl = g_list_find_custom(table->list,
+                                       GINT_TO_POINTER(nid), _list_compare_by_imgid);
         if(tl)
         {
           dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
@@ -1277,9 +1404,9 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         }
         else
         {
-          // we create a completely new thumb
-          // we set its size to the thumb it replace in the list if any otherwise we set it to something > 0 to
-          // trigger draw events
+          // we create a completely new thumb we set its size to the
+          // thumb it replace in the list if any otherwise we set it
+          // to something > 0 to trigger draw events
           int nw = 40;
           int nh = 40;
           if(table->list)
@@ -1339,6 +1466,8 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 
 static gboolean _thumbs_compute_positions(dt_culling_t *table)
 {
+  // This code computes sizes and positions of thumbnails in culling view mode
+
   if(!gtk_widget_get_visible(table->widget)) return FALSE;
   if(!table->list) return FALSE;
 
@@ -1353,14 +1482,19 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     return TRUE;
   }
 
-  int sum_w = 0, max_h = 0, max_w = 0;
+  int total_thumb_width = 0;
+  int max_thumb_height = 0;
+  int max_thumb_width = 0;
+  float avg_thumb_aspect_r = 0.0f;
 
-  unsigned int total_width = 0, total_height = 0;
-  int distance = 1;
-  float avg_ratio = 0;
+  // variables to hold vertical and horizontal width of all thumbnails after their final placement
+  // as well as horizontal and vertical spacing distance between thumbnails (1 = lowest value possible. Will be scaled up later)
+  unsigned int total_width = 0;
+  unsigned int total_height = 0;
+  const int spacing = 1;
 
-  // reinit size and positions and get max values
-  int count = 0;
+  // reinit size and positions of each thumbnail, remember size from biggest thumbnail, calculate average thumbnail ratio
+  int number_of_thumbs  = 0;
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
@@ -1369,149 +1503,280 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     thumb->height = (gint)(1 / sqrt(aspect_ratio) * 100);
     thumb->x = thumb->y = 0;
 
-    sum_w += thumb->width;
-    max_w = MAX(max_w, thumb->width);
-    max_h = MAX(max_h, thumb->height);
-    avg_ratio += thumb->width / (float)thumb->height;
-    count++;
+    total_thumb_width  += thumb->width;
+    max_thumb_width = MAX(max_thumb_width, thumb->width);
+    max_thumb_height = MAX(max_thumb_height, thumb->height);
+    avg_thumb_aspect_r += thumb->width / (float)thumb->height;
+    number_of_thumbs++;
   }
+  avg_thumb_aspect_r /= number_of_thumbs;
 
-  avg_ratio /= count;
+  // estimate a good start value for number of rows and columns to use in thumbnail placement by taking the square root
+  //  of the number of thumbnails. E.g. 9 thumbnails: probably 3x3. Prefer wide configuration e.g. 8 thumbnails: 3x2
+  int thumbs_per_row = 0;
+  int thumbs_per_row_new = 0;
+  int thumbs_per_col = 0;
+  int thumbs_per_col_new = 0;
 
-  int per_row, tmp_per_row, per_col, tmp_per_col;
-  per_row = tmp_per_row = ceil(sqrt(count));
-  per_col = tmp_per_col = (count + per_row - 1) / per_row;
+  thumbs_per_row = thumbs_per_row_new = ceil(sqrt(number_of_thumbs ));
+  thumbs_per_col = thumbs_per_col_new = (number_of_thumbs  + thumbs_per_row - 1) / thumbs_per_row;
 
-  float tmp_slot_ratio, slot_ratio;
-  tmp_slot_ratio = slot_ratio = (table->view_width / (float)per_row) / (table->view_height / (float)per_col);
+  const float screen_aspect_r = table->view_width / (float)table->view_height;
+  float thumb_placement_ratio = 0.0f;
+  float thumb_placement_ratio_new = 0.0f;
+  thumb_placement_ratio = thumb_placement_ratio_new = thumbs_per_row / (float)thumbs_per_col;
+
+  // increase and decrease number of thumbs per row and calculate how the resulting ratio of placed thumbnails
+  //  compares to the ratio of the available screen space. Ideally both aspect ratios are equal.
+  //  Iterate until the best configuration has been found.
+  //  Note: The average thumbnail aspect ratio from the previous step is not equal to the actual thumbnail ratio
+  //        since it does not take into account thumbnail rotation or thumbs with different aspect ratios.
+  //        That means we are just doing an approximation here.
+  float old_deviation = 1.0f;
+  float new_deviation = 1.0f;
+  float punishment_weight = 1.0f;
+  float new_punishment_weight = 1.0f;
+  float old_deviation_punished = 1.0f;
+  float new_deviation_punished = 1.0f;
 
   do
   {
-    per_row = tmp_per_row;
-    per_col = tmp_per_col;
-    slot_ratio = tmp_slot_ratio;
+    thumbs_per_row = thumbs_per_row_new;
+    thumbs_per_col = thumbs_per_col_new;
+    thumb_placement_ratio = thumb_placement_ratio_new;
 
-    if(avg_ratio > slot_ratio)
+    // if the ratio of placed thumbnails is bigger than the screen aspect ratio (they take too much horizontal space)
+    //  reduce number of images per row by 1 and vice versa.
+    if(thumb_placement_ratio * avg_thumb_aspect_r > screen_aspect_r)
     {
-      tmp_per_row = per_row - 1;
+      thumbs_per_row_new = thumbs_per_row - 1;
     }
     else
     {
-      tmp_per_row = per_row + 1;
+      thumbs_per_row_new = thumbs_per_row + 1;
     }
 
-    if(tmp_per_row == 0) break;
+    if(thumbs_per_row_new == 0) break;
 
-    tmp_per_col = (count + tmp_per_row - 1) / tmp_per_row;
+    // update column cound and placement ratio
+    thumbs_per_col_new = (number_of_thumbs  + thumbs_per_row_new - 1) / thumbs_per_row_new;
+    thumb_placement_ratio_new = thumbs_per_row_new / (float)thumbs_per_col_new;
 
-    tmp_slot_ratio = (table->view_width / (float)tmp_per_row) / (table->view_height / (float)tmp_per_col);
+  // calculate old and new deviation between screen ratio and ratio of placed thumbnails
+  // 1.0 means that screen and placement ratio are equal (perfect match)
+  // the further away from 1.0 we get, the worse. There are not negative values.
+  old_deviation = _absmul(thumb_placement_ratio * avg_thumb_aspect_r, screen_aspect_r);
+  new_deviation = _absmul(thumb_placement_ratio_new * avg_thumb_aspect_r, screen_aspect_r);
 
-  } while(per_row > 0 && per_row <= count && _absmul(tmp_slot_ratio, avg_ratio) < _absmul(slot_ratio, avg_ratio));
+  // Punish old and new configuration for not-full last rows (if they have any)
+  //  E.g. we could place 4 images in a 2x2 or 3x2 configuration, but in 3x2 there will be only 1 image in the last row
+  //  even though there is room for 3. So we punish the placement ratio of the 3x2 configuration for the 2 empty slots by
+  //  multiplying it with (1 + free_spots_row/total_spots/row) = (1 + 2/3) = 1.66
+  //  this prefers a configurations with well filled rows unless it is a lot better to place one image alone in a row.
+  punishment_weight =
+      (1 +
+        (thumbs_per_row - ((number_of_thumbs - 1) % thumbs_per_row + 1)) /
+          (float)thumbs_per_row);
+  new_punishment_weight =
+      (1 + (thumbs_per_row_new - ((number_of_thumbs - 1) % thumbs_per_row_new + 1)) /
+          (float)thumbs_per_row_new);
+
+  // if all thumbs are placed in a single row or column, the weight from above formula will be 1.0 (= no punishment)
+  //  this can cause the algorithm to be biased towards single row/column configurations - so we add some punishment manually
+  if(thumbs_per_col == 1 || thumbs_per_row == 1)
+    punishment_weight = 1.5;
+  if(thumbs_per_col_new == 1 || thumbs_per_row_new == 1)
+    new_punishment_weight = 1.5;
+
+  // apply weight factor
+  old_deviation_punished = old_deviation * punishment_weight;
+  new_deviation_punished = new_deviation * new_punishment_weight;
+
+  // try to improve as long as row-count bigger than 0
+  //  AND row-count lower or equal total number of thumbs
+  //  AND the resulting deviation from a perfect placement is lower than before
+  //  --> stop when we make negative progress
+  } while(thumbs_per_row > 0
+          && thumbs_per_row <= number_of_thumbs
+          && new_deviation_punished < old_deviation_punished);
+
+  // Now we have a good estimation how many thumbnails SHOULD fit in each row and column.
+  // Actual placement might differ
+
+  // Vertical image stacking:
+  //  Vertical stacking is only allowed if the heigth of the biggest thumbnail is more than the height
+  //  of 2 or more thumbs combined.
+  //  for example: we have three images and image 3 is higher than heights of image 1 and 2 combined
+  //  [  1  ] | 3 |                                                         | 3 |
+  //  [  2  ] | 3 |      instead of this placement -->    [  1  ]  [  2  ]  | 3 |
+  //          | 3 |                                                         | 3 |
+  // in this case, images 1 and 2 would be stacked in one slot and image 3 will be placed in a new slot alone.
+  // if all images have similar heigths, they will not be stacked and placed in a separate slot.
+
+  // Note: Stacking only make sense for images in the same row as the portrait image.
+  //       The algorithm does not check for this so unneccessary stacking can occur.
 
   GList *slots = NULL;
 
-  // Vertical layout
+  // loop through all thumbs
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
     GList *slot_iter = slots;
+
+    // start placing thumbs into slots
     for(; slot_iter; slot_iter = slot_iter->next)
     {
       GList *slot = (GList *)slot_iter->data;
       // Calculate current total height of slot
-      int slot_h = distance;
-      for(GList *slot_cw_iter = slot; slot_cw_iter; slot_cw_iter = g_list_next(slot_cw_iter))
+      int slot_heigth = 0;
+
+      for(GList *slot_cw_iter = slot;
+          slot_cw_iter;
+          slot_cw_iter = g_list_next(slot_cw_iter))
       {
         dt_thumbnail_t *slot_cw = (dt_thumbnail_t *)slot_cw_iter->data;
-        slot_h = slot_h + slot_cw->height + distance;
+        slot_heigth = slot_heigth + slot_cw->height + spacing;
       }
-      // Add window to slot if the slot height after adding the window
-      // doesn't exceed max window height
-      if(slot_h + distance + thumb->height < max_h)
+      slot_heigth -= spacing;
+
+      // Add thumbnail to slot if the slot height after adding the thumbnail
+      // doesn't exceed the height of the highest thumbnail
+      if(slot_heigth + spacing + thumb->height < max_thumb_height)
       {
         slot_iter->data = g_list_append(slot, thumb);
         break;
       }
     }
-    // Otherwise, create a new slot with only this window
-    if(!slot_iter) slots = g_list_prepend(slots, g_list_prepend(NULL, thumb));
+    // Otherwise, create a new slot with only this thumbnail
+    if(!slot_iter)
+    {
+      slots = g_list_prepend(slots, g_list_prepend(NULL, thumb));
+    }
+
   }
   slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
 
+  // create a nested list to hold all thumbnails in their final placement in rows
   GList *rows = g_list_append(NULL, NULL);
   {
-    int row_y = 0, x = 0, row_h = 0;
-    int max_row_w = sum_w / per_col;
+    int row_y = 0;
+    int thumb_x = 0;
+    int row_heigth = 0;
+    const int row_width_limit = total_thumb_width / number_of_thumbs * thumbs_per_row;
+
+    // work with one slot at a time
     for(GList *slot_iter = slots; slot_iter; slot_iter = g_list_next(slot_iter))
     {
       GList *slot = (GList *)slot_iter->data;
 
-      // Max width of windows in the slot
-      int slot_max_w = 0;
-      for(GList *slot_cw_iter = slot; slot_cw_iter; slot_cw_iter = g_list_next(slot_cw_iter))
+      // Calculate max width and total height of thumbs in the slot so that all thumbs can be centered within the slot
+      int slot_max_thumb_width = 0;
+      int slot_total_heigth = 0;
+      for(GList *slot_cw_iter = slot;
+          slot_cw_iter;
+          slot_cw_iter = g_list_next(slot_cw_iter))
       {
         dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
-        slot_max_w = MAX(slot_max_w, cw->width);
+        slot_max_thumb_width = MAX(slot_max_thumb_width, cw->width);
+        slot_total_heigth = slot_total_heigth + cw->height + spacing;
+      }
+      // don't include bottom spacing in height calculation
+      slot_total_heigth -= spacing;
+
+      // if slot is about to be placed outside of allocated horizonal space, place the slot in a new row
+      //  we allow for 20% tolerance to account for the influence of images with mixed aspect ratios in the math
+      gboolean create_new_row = FALSE;
+      if(thumb_x + slot_max_thumb_width > row_width_limit * 1.2)
+      {
+        create_new_row = TRUE;
+        // if this is the last image and we are about to place it in a new row,
+        //  check if the aspect ratio of thumbnail placement is better if we keep the thumbnail in the previous row
+        if(!slot_iter->next)
+        {
+          const float ratio_same_row = _absmul((thumb_x + slot_max_thumb_width) /
+                                  (float)MAX(row_heigth, slot_total_heigth), table->view_width /
+                                  (float)table->view_height);
+          const float ratio_new_row = _absmul(MAX(thumb_x, slot_max_thumb_width) /
+                                  (float)(row_heigth + slot_total_heigth), table->view_width /
+                                  (float)table->view_height);
+          if(ratio_new_row > ratio_same_row)
+          {
+            create_new_row = FALSE;
+          }
+        }
       }
 
-      int y = row_y;
-      for(GList *slot_cw_iter = slot; slot_cw_iter; slot_cw_iter = g_list_next(slot_cw_iter))
+      if(create_new_row)
       {
-        dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
-        cw->x = x + (slot_max_w - cw->width) / 2;
-        cw->y = y;
-        y += cw->height + distance;
-        rows->data = g_list_append(rows->data, cw);
-      }
-
-      row_h = MAX(row_h, y - row_y);
-      total_height = MAX(total_height, y);
-      x += slot_max_w + distance;
-      total_width = MAX(total_width, x);
-
-      if(x > max_row_w)
-      {
-        x = 0;
-        row_y += row_h;
-        row_h = 0;
+        thumb_x = 0;
+        row_y += row_heigth;
+        row_heigth = 0;
         rows = g_list_append(rows, 0);
-        rows = rows->next;              // keep rows pointing at last element to avoid quadratic runtime
+        rows = rows->next; // keep rows pointing at last element to
+                           // avoid quadratic runtime
       }
+
+      int thumb_y = row_y;
+
+      // loop through all images assigned to a slot and calculate their placement
+      //  place all of them within the same row
+      for(GList *slot_cw_iter = slot;
+          slot_cw_iter;
+          slot_cw_iter = g_list_next(slot_cw_iter))
+      {
+        dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
+        cw->x = thumb_x + (slot_max_thumb_width - cw->width) / 2; // x position should be horizontally centered within the slot
+        cw->y = thumb_y;                                // y position starts at 0
+        thumb_y += cw->height + spacing;               // and is increased by the heigth of the thumb + spacing of spacing for placing the next image of the slot
+        rows->data = g_list_append(rows->data, cw); // append thumbnail to row
+      }
+      row_heigth = MAX(row_heigth, thumb_y - row_y);
+      total_height = MAX(total_height, thumb_y);        // update total height of all thumbs combined as we fill column by column with thumbnails
+      thumb_x += slot_max_thumb_width + spacing;
+      total_width = MAX(total_width, thumb_x);          // update total width of all thumbs combined as we fill column by column with thumbnails
+
       g_list_free(slot);
     }
     g_list_free(slots);
     slots = NULL;
   }
 
-  rows = g_list_first(rows); // rows points at the last element of the constructed list, so move it back to the start
+  rows = g_list_first(rows); // rows points at the last element of the
+                             // constructed list, so move it back to
+                             // the start
 
-  total_width -= distance;
-  total_height -= distance;
+  // once we placed all images, we can remove the space at the right and the bottom
+  total_width -= spacing;
+  total_height -= spacing;
 
+  //int thumb_iter_counter = 0;
   for(const GList *iter = rows; iter; iter = g_list_next(iter))
   {
     GList *row = (GList *)iter->data;
-    int row_w = 0, xoff;
-    int max_rh = 0;
+    int row_width = 0;
+    int xoff = 0;
+    int max_row_heigth = 0;
 
-    for(GList *slot_cw_iter = row; slot_cw_iter; slot_cw_iter = g_list_next(slot_cw_iter))
+    for(GList *slot_cw_iter = row;
+        slot_cw_iter;
+        slot_cw_iter = g_list_next(slot_cw_iter))
     {
       dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
-      row_w = MAX(row_w, cw->x + cw->width);
-      max_rh = MAX(max_rh, cw->height);
+      row_width = MAX(row_width, cw->x + cw->width);
+      max_row_heigth = MAX(max_row_heigth, cw->height); //tbd: this is wrong for stacked images, should be (cw->y - row_y + cw->heigth)
     }
 
-    xoff = (total_width - row_w) / 2;
+    xoff = (total_width - row_width) / 2;
 
     for(GList *cw_iter = row; cw_iter; cw_iter = g_list_next(cw_iter))
     {
       dt_thumbnail_t *cw = (dt_thumbnail_t *)cw_iter->data;
       cw->x += xoff;
-      cw->height = max_rh;
+      cw->height = max_row_heigth; // tbd: this is wrong for stacked images in a slot. Their height should be max_row_heigth*(thumb_height/stack_height)
     }
     g_list_free(row);
   }
-
   g_list_free(rows);
 
   float factor = (float)(table->view_width - 1) / total_width;
@@ -1521,6 +1786,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   const int xoff = (table->view_width - (float)total_width * factor) / 2;
   const int yoff = (table->view_height - (float)total_height * factor) / 2;
 
+  // scale everything to match the size of your screen
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
@@ -1547,15 +1813,16 @@ void dt_culling_update_active_images_list(dt_culling_t *table)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
     // we update the active images list
-    darktable.view_manager->active_images
-        = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(thumb->imgid));
+    darktable.view_manager->active_images =
+      g_slist_append(darktable.view_manager->active_images,
+                     GINT_TO_POINTER(thumb->imgid));
   }
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 
 // recreate the list of thumb if needed and recomputes sizes and positions if needed
-void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
+void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
 {
   if(!gtk_widget_get_visible(table->widget)) return;
   const double start = dt_get_wtime();
@@ -1606,13 +1873,16 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     {
       gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
       // and we resize the thumb
-      const float zoom_ratio = thumb->zoom_100 > 1 ? thumb->zoom / thumb->zoom_100 : IMG_TO_FIT;
+      const float zoom_ratio = thumb->zoom_100 > 1
+        ? thumb->zoom / thumb->zoom_100
+        : IMG_TO_FIT;
       dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE, zoom_ratio);
     }
 
     // we update the active images list
     darktable.view_manager->active_images
-        = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(thumb->imgid));
+        = g_slist_append(darktable.view_manager->active_images,
+                         GINT_TO_POINTER(thumb->imgid));
   }
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
@@ -1623,7 +1893,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     // deactivate selection_change event
     table->select_desactivate = TRUE;
     // deselect all
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                          "DELETE FROM main.selected_images",
+                          NULL, NULL, NULL);
     // select all active images
     GList *ls = NULL;
     for(GList *l = table->list; l; l = g_list_next(l))
@@ -1642,7 +1914,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   _thumbs_prefetch(table);
 
   // ensure that no hidden image as the focus
-  const int selid = dt_control_get_mouse_over_id();
+  const dt_imgid_t selid = dt_control_get_mouse_over_id();
   if(selid >= 0)
   {
     gboolean in_list = FALSE;
@@ -1657,7 +1929,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     }
     if(!in_list)
     {
-      dt_control_set_mouse_over_id(-1);
+      dt_control_set_mouse_over_id(NO_IMGID);
     }
   }
 
@@ -1699,7 +1971,7 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move)
   return TRUE;
 }
 
-void dt_culling_change_offset_image(dt_culling_t *table, int imgid)
+void dt_culling_change_offset_image(dt_culling_t *table, dt_imgid_t imgid)
 {
   table->offset = _thumb_get_rowid(imgid);
   dt_culling_full_redraw(table, TRUE);
@@ -1741,7 +2013,8 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
   dt_gui_remove_class(table->widget, cl0);
   dt_gui_add_class(table->widget, cl1);
 
-  txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+  txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d",
+                        table->mode);
   int timeout = 2;
   if(!dt_conf_key_exists(txt))
     timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
@@ -1753,15 +2026,18 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
   table->show_tooltips = dt_conf_get_bool(txt);
   g_free(txt);
 
-  // we need to change the overlay content if we pass from normal to extended overlays
-  // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
+  // we need to change the overlay content if we pass from normal to
+  // extended overlays this is not done on the fly with css to avoid
+  // computing extended msg for nothing and to reserve space if needed
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     dt_thumbnail_set_overlay(th, over, timeout);
     th->tooltip = table->show_tooltips;
     // and we resize the bottom area
-    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
+    const float zoom_ratio = th->zoom_100 > 1
+      ? th->zoom / th->zoom_100
+      : table->zoom_ratio;
     dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
   }
 
@@ -1788,7 +2064,8 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
     dt_gui_remove_class(table->widget, cl0);
     dt_gui_add_class(table->widget, cl1);
 
-    txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+    txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d",
+                          table->mode);
     timeout = 2;
     if(!dt_conf_key_exists(txt))
       timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
@@ -1806,14 +2083,17 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
   g_free(cl0);
   g_free(cl1);
 
-  // we need to change the overlay content if we pass from normal to extended overlays
-  // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
+  // we need to change the overlay content if we pass from normal to
+  // extended overlays this is not done on the fly with css to avoid
+  // computing extended msg for nothing and to reserve space if needed
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     dt_thumbnail_set_overlay(th, over, timeout);
     // and we resize the bottom area
-    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
+    const float zoom_ratio = th->zoom_100 > 1
+      ? th->zoom / th->zoom_100
+      : table->zoom_ratio;
     dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
   }
 
@@ -1825,4 +2105,3 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

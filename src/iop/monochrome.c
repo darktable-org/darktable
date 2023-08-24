@@ -87,7 +87,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -101,15 +103,39 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, Lab, display-referred"));
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_monochrome_params_v2_t
   {
-    dt_iop_monochrome_params_t *p1 = (dt_iop_monochrome_params_t *)old_params;
-    dt_iop_monochrome_params_t *p2 = (dt_iop_monochrome_params_t *)new_params;
-    memcpy(p2, p1, sizeof(dt_iop_monochrome_params_t) - sizeof(float));
-    p2->highlights = 0.0f;
+    float a;
+    float b;
+    float size;
+    float highlights;
+  } dt_iop_monochrome_params_v2_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_monochrome_params_v1_t
+    {
+      float a;
+      float b;
+      float size;
+    } dt_iop_monochrome_params_v1_t;
+
+    const dt_iop_monochrome_params_v1_t *o = (dt_iop_monochrome_params_v1_t *)old_params;
+    dt_iop_monochrome_params_v2_t *n =
+      (dt_iop_monochrome_params_v2_t *)malloc(sizeof(dt_iop_monochrome_params_v2_t));
+    memcpy(n, o, sizeof(dt_iop_monochrome_params_v1_t));
+    n->highlights = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_monochrome_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -140,9 +166,9 @@ void init_presets(dt_iop_module_so_t *self)
   // dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
-static float color_filter(const float ai, const float bi, const float a, const float b, const float size)
+static float color_filter(const float ai, const float bi, const float a, const float b, const float dbl_size)
 {
-  return dt_fast_expf(-CLAMPS(((ai - a) * (ai - a) + (bi - b) * (bi - b)) / (2.0 * size), 0.0f, 1.0f));
+  return dt_fast_expf(-CLAMPS(((ai - a) * (ai - a) + (bi - b) * (bi - b)) / dbl_size, 0.0f, 1.0f));
 }
 
 static float envelope(const float L)
@@ -153,7 +179,7 @@ static float envelope(const float L)
   if(x < beta)
   {
     // return 1.0f-fabsf(x/beta-1.0f)^2
-    const float tmp = fabsf(x / beta - 1.0f);
+    const float tmp = (x / beta - 1.0f); // no need for fabsf since we square the value
     return 1.0f - tmp * tmp;
   }
   else
@@ -169,7 +195,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
-  const float sigma2 = (d->size * 128.0) * (d->size * 128.0f);
+  const float sigma2 = 2.0f * (d->size * 128.0f) * (d->size * 128.0f);
 // first pass: evaluate color filter:
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   const float *const restrict in = (const float *)i;
@@ -177,15 +203,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float d_a = d->a;
   const float d_b = d->b;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(in, out, npixels, sigma2, d_a, d_b) \
-  schedule(static)
+  schedule(simd:static) aligned(in, out:64)
 #endif
   for(int k = 0; k < 4*npixels; k += 4)
   {
     out[k+0] = 100.0f * color_filter(in[k+1], in[k+2], d_a, d_b, sigma2);
     out[k+1] = out[k+2] = 0.0f;
-    out[k+3] = in[k+3];
   }
 
   // second step: blur filter contribution:
@@ -202,9 +227,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float highlights = d->highlights;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(in, out, npixels, highlights) \
-  schedule(static)
+  schedule(simd:static) aligned(in, out:64)
 #endif
   for(int k = 0; k < 4*npixels; k += 4)
   {
@@ -410,7 +435,8 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   return TRUE;
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
@@ -465,7 +491,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset
-      dt_iop_monochrome_params_t *p0 = (dt_iop_monochrome_params_t *)self->default_params;
+      const dt_iop_monochrome_params_t *const p0 = (dt_iop_monochrome_params_t *)self->default_params;
       p->a = p0->a;
       p->b = p0->b;
       p->size = p0->size;
@@ -581,4 +607,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
