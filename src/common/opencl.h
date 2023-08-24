@@ -33,6 +33,7 @@
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
 #define DT_OPENCL_CBUFFSIZE 1024
+#define DT_OPENCL_DEFAULT_HEADROOM 600
 
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
@@ -97,13 +98,6 @@ typedef struct dt_opencl_eventtag_t
   char tag[DT_OPENCL_EVENTNAMELENGTH];
 } dt_opencl_eventtag_t;
 
-typedef enum dt_opencl_tunemode_t
-{
-  DT_OPENCL_TUNE_NOTHING = 0,
-  DT_OPENCL_TUNE_MEMSIZE = 1,
-  DT_OPENCL_TUNE_PINNED  = 2
-} dt_opencl_tunemode_t;
-
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -143,8 +137,8 @@ typedef struct dt_opencl_device_t
   size_t memory_in_use;
   size_t peak_memory;
   size_t used_available;
-  // flags what tuning modes should be used
-  dt_opencl_tunemode_t tuneactive; 
+  // flags if we want headroom mode
+  gboolean tunehead; 
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
@@ -191,7 +185,7 @@ typedef struct dt_opencl_device_t
   gboolean disabled;
 
   // Some devices are known to be unused by other apps so they can use all memory.
-  int forced_headroom;
+  int headroom;
 
   float advantage;  
 } dt_opencl_device_t;
@@ -292,7 +286,6 @@ const char *cl_errstr(cl_int error);
 /** both finish functions return TRUE in case of success */
 /** cleans up command queue. */
 gboolean dt_opencl_finish(const int devid);
-
 /** cleans up command queue if in synchron mode or while exporting, returns TRUE in case of success */
 gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
 
@@ -368,9 +361,6 @@ gboolean dt_opencl_is_enabled(void);
 
 /** disable opencl */
 void dt_opencl_disable(void);
-
-/** get OpenCL tuning mode flags */
-int dt_opencl_get_tuning_mode(void);
 
 /** runtime check for cl system running */
 gboolean dt_opencl_running(void);
@@ -596,11 +586,6 @@ static inline gboolean dt_opencl_is_enabled(void)
 }
 static inline void dt_opencl_disable(void)
 {
-}
-/** get OpenCL tuning mode flags */
-static inline int dt_opencl_get_tuning_mode(void)
-{
-  return 0;
 }
 static inline gboolean dt_opencl_running(void)
 {

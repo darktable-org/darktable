@@ -1560,13 +1560,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   return 0;
 }
 
+
 void dt_get_sysresource_level()
 {
   static int oldlevel = -999;
-  static int oldtunecl = -999;
+  static int oldtunehead = -999;
 
   dt_sys_resources_t *res = &darktable.dtresources;
-  const int tunecl = dt_opencl_get_tuning_mode();
+  const gboolean tunehead = dt_conf_get_bool("opencl_tune_headroom");
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1587,10 +1588,10 @@ void dt_get_sysresource_level()
     else if(!strcmp(config, "mini"))         level = -2;
     else if(!strcmp(config, "notebook"))     level = -3;
   }
-  const gboolean mod = ((level != oldlevel) || (oldtunecl != tunecl));
+  const gboolean mod = ((level != oldlevel) || (oldtunehead != tunehead));
   res->level = oldlevel = level;
-  oldtunecl = tunecl;
-  res->tunemode = tunecl;
+  oldtunehead = tunehead;
+  res->tunehead = tunehead;
   if(mod && (darktable.unmuted & (DT_DEBUG_MEMORY | DT_DEBUG_OPENCL | DT_DEBUG_DEV)))
   {
     const int oldgrp = res->group;
@@ -1610,14 +1611,7 @@ void dt_get_sysresource_level()
     dt_print(DT_DEBUG_ALWAYS,
              "  singlebuff:      %luMB\n",
              dt_get_singlebuffer_mem() / 1024lu / 1024lu);
-#ifdef HAVE_OPENCL
-    dt_print(DT_DEBUG_ALWAYS,
-             "  OpenCL tune mem: %s\n",
-             ((tunecl & DT_OPENCL_TUNE_MEMSIZE) && (level >= 0)) ? "WANTED" : "OFF");
-    dt_print(DT_DEBUG_ALWAYS,
-             "  OpenCL pinned:   %s\n",
-             ((tunecl & DT_OPENCL_TUNE_PINNED) && (level >= 0)) ? "WANTED" : "OFF");
-#endif
+
     res->group = oldgrp;
   }
 }
