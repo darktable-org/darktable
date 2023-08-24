@@ -138,6 +138,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/thumbnail_btn.c"
   "dtgtk/thumbtable.c"
   "dtgtk/togglebutton.c"
+  "gui/about.c"
   "gui/accelerators.c"
   "gui/gtkentry.c"
   "gui/guides.c"
@@ -1042,3 +1043,17 @@ if(USE_LIBRAW AND NOT (DONT_USE_INTERNAL_LIBRAW AND libraw_FOUND))
   add_subdirectory(external/LibRaw-cmake)
   target_link_libraries(lib_darktable PRIVATE libraw::libraw)
 endif()
+
+add_custom_command(
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tools/
+  COMMAND bash ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMENT "Generating authors.h for about dialog."
+)
+
+add_custom_target(
+  generate_authors_h ALL
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
