@@ -44,6 +44,7 @@
 #include "control/signal.h"
 #include "gui/presets.h"
 #include "views/view.h"
+#include "gui/about.h"
 
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_WAYLAND
@@ -1064,6 +1065,15 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
   gtkosx_application_set_menu_bar(
       OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); // needed for default entries to show up
+
+  // GTK translates the item with index 0 automatically so no need to localize.
+  // Furthermore, the application name (darktable) is automatically appended.
+  GtkWidget *mi_about = gtk_menu_item_new_with_label ("About");
+  g_signal_connect(G_OBJECT(mi_about), "activate",
+                   G_CALLBACK(darktable_show_about_dialog), NULL);
+  gtkosx_application_insert_app_menu_item(OSXApp, mi_about, 0);
+
+
 #endif
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(_osx_quit_callback), NULL);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile", G_CALLBACK(_osx_openfile_callback), NULL);
