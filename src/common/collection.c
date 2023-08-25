@@ -2126,7 +2126,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           if(strcmp(escaped_text, _("not defined")) != 0)
             // clang-format off
             query = g_strdup_printf("(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-                                    "        LIKE '%%%s%%'))", keyid, escaped_text);
+                                    "        LIKE '%s'))", keyid, escaped_text);
             // clang-format on
           else
             // clang-format off
