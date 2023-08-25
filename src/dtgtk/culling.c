@@ -1834,14 +1834,17 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   total_width -= spacing;
   total_height -= spacing;
 
-  for(const GList *iter = rows; iter; iter = g_list_next(iter))
+  // loop through all thumbnails to apply offsets for final positioning
+  // loop through rows
+  for(const GList *row_iter = rows; row_iter; row_iter = g_list_next(row_iter))
   {
-    GList *row = (GList *)iter->data;
+    GList *row = (GList *)row_iter->data;
     int row_width = 0;
+    int row_heigth = 0;
     int xoff = 0;
     int yoff = 0;
 
-    // loop through slots of the row to calculate row width and max_row_heigth
+    // loop through slots of the row
     for(GList *slot_iter = row;
         slot_iter;
         slot_iter = g_list_next(slot_iter))
@@ -1850,8 +1853,8 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       int slot_heigth = 0;
 
       // loop through thumbs of the slot
-      // to calculate slot heigth and update row width
-      // which is used for xoffset of row
+      // to calculate slot heigth and update row width and heigth
+      // which is used for xoffset of row and yoffset of individual thumbs
       for(GList *slot_thumb_iter = slot;
         slot_thumb_iter;
         slot_thumb_iter = g_list_next(slot_thumb_iter))
@@ -1861,14 +1864,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         slot_heigth += thumb->height + spacing;
       }
       slot_heigth -= spacing;
-      yoff = (max_slot_heigth - slot_heigth) / 2;
-
-      // center all thumbnails vertically in a slot
-      for(GList *slot_thumb_iter = slot; slot_thumb_iter; slot_thumb_iter = g_list_next(slot_thumb_iter))
-      {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
-        thumb->y += yoff;
-      }
+      row_heigth = MAX(row_heigth, slot_heigth);
     }
     xoff = (total_width - row_width) / 2;
 
@@ -1879,11 +1875,24 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     {
       GList *slot = (GList *)slot_iter->data;
 
-      // Scale up thumbnails so that they take up all available vertical space
+      // calculate vertical offset
+      int slot_heigth = 0;
+      for(GList *slot_thumb_iter = slot;
+        slot_thumb_iter;
+        slot_thumb_iter = g_list_next(slot_thumb_iter))
+      {
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        slot_heigth += thumb->height + spacing;
+      }
+      slot_heigth -= spacing;
+      yoff = (row_heigth - slot_heigth) / 2;
+
+      // Apply vertical and horizontal offsets
       for(GList *slot_thumb_iter = slot; slot_thumb_iter; slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
         thumb->x += xoff;
+        thumb->y += yoff;
       }
       g_list_free(slot);
     }
