@@ -1488,7 +1488,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   // reinit size and positions of each thumbnail, remember size from biggest thumbnail, calculate average thumbnail ratio
   int max_thumb_height = 0;
 
-    for(GList *l = table->list; l; l = g_list_next(l))
+  for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
     const float aspect_ratio = thumb->aspect_ratio;
@@ -1502,12 +1502,12 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   // Vertical image stacking:
   //  Vertical stacking is only allowed if the heigth of the biggest thumbnail is more than the height
   //  of 2 or more thumbs combined.
-  //  for example: we have three images and image 3 is higher than heights of image 1 and 2 combined
-  //  [  1  ] | 3 |                                                         | 3 |
-  //  [  2  ] | 3 |      instead of this placement -->    [  1  ]  [  2  ]  | 3 |
-  //          | 3 |                                                         | 3 |
-  // in this case, images 1 and 2 would be stacked in one slot and image 3 will be placed in a new slot alone.
-  // if all images have similar heigths, they will not be stacked and placed in a separate slot.
+  //  for example: we have three images and image 2 is higher than heights of image 1 and 3 combined
+  //  [  1  ] | 2 |                                                | 2 |
+  //  [  3  ] | 2 |      instead of this placement -->    [  1  ]  | 2 |  [  3  ]
+  //          | 2 |                                                | 2 |
+  // in this case, images 1 and 3 would be stacked in one slot and image 2 will be placed in a new slot alone.
+  // if all images have similar heigths, they will not be stacked and placed in separate slots.
 
   // Note: Stacking only make sense for images in the same row as the portrait image.
   //       The algorithm does not check for this so unneccessary stacking can occur.
@@ -1562,12 +1562,9 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
 
 
-
-
-
   // finished assigning thumbnails to slots
   // we also know max slot height, so we can now scale all slots to this heigth
-  // and calculate average slot heigth and width
+  // and then calculate average slot heigth and width
   int slot_counter = 0;
   float avg_slot_aspect_r = 0.0f;
   int total_slot_width = 0;
@@ -1605,7 +1602,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       
       // limit scaling so that width does not increase to more than twice the average thumbnail width
       stack_heigth_factor = MIN(stack_heigth_factor, 2 * avg_thumb_width / (float)thumb->width);
-      //stack_heigth_factor = 1.0;
       thumb->height *= stack_heigth_factor;
       thumb->width *= stack_heigth_factor;
 
@@ -1621,16 +1617,11 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     avg_slot_width += (scaled_slot_width - avg_slot_width) / (float)thumb_counter;
   }
   total_slot_width -= spacing;
-
-
-
   
 
   // variables to hold vertical and horizontal width of all thumbnails after their final placement
-  
   unsigned int total_width = 0;
   unsigned int total_height = 0;
-
 
   // estimate a good start value for number of rows and columns to use in thumbnail placement by taking the square root
   //  of the number of thumbnails. E.g. 9 thumbnails: probably 3x3. Prefer wide configuration e.g. 8 thumbnails: 3x2
@@ -1786,9 +1777,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
           );
 
           if(ratio_new_row > ratio_same_row)
-          {
             create_new_row = FALSE;
-          }
         }
       }
 
