@@ -51,6 +51,14 @@ changes (where available).
 One of the major highlights of this release is the number of performance
 improvements and enhancements:
 
+## Performance Improvements
+
+- Initialise OpenCL in the background. Especially under Windows this
+  can take a long time (>1 minute) when the OpenCL modules need to be
+  (re)compiled, at first run or after driver updates. Nothing used to
+  happen during that time, making it look like darktable failed to
+  start. Now the UI comes up and reports progress in toast
+  messages. Until OpenCL is fully available processing will be slower.
 
 ## Other Changes
 
@@ -67,6 +75,15 @@ improvements and enhancements:
 
 - Tune CA correct module performances (gain about 10% on CPU).
 
+- Rastermasks are visualized the same way as other masks in the module
+  header and via the mask visualize button.
+
+- A manually controlled vignette correction has been added tot the
+  lens module.
+
+- Always show the full uncropped image with cropping rectangle as a
+  marker while working in liquify and retouch modules.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -79,6 +96,8 @@ improvements and enhancements:
   multiple filters were not handled properly.
 
 - Fix focus distance detection for Nikon Z mount lens corrections.
+
+- Fixed wrong cropping of sensor data for sraw dng files.
 
 ## Lua
 
