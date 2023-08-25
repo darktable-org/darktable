@@ -132,14 +132,9 @@ typedef struct dt_iop_sigmoid_data_t
 
 typedef struct dt_iop_sigmoid_gui_data_t
 {
-  GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *hue_preservation_slider,
-      *display_black_slider, *display_white_slider;
-
-  GtkWidget *red_inset_slider, *green_inset_slider, *blue_inset_slider, *purity_slider,
-      *red_rotation_slider, *green_rotation_slider, *blue_rotation_slider;
+  GtkWidget *color_processing_list, *hue_preservation_slider;
 
   dt_gui_collapsible_section_t display_luminance_section, primaries_section;
-
 } dt_iop_sigmoid_gui_data_t;
 
 typedef struct dt_iop_sigmoid_global_data_t
@@ -720,54 +715,18 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_sigmoid_gui_data_t *g = (dt_iop_sigmoid_gui_data_t *)self->gui_data;
   dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
 
-  gtk_widget_set_visible(g->hue_preservation_slider, p->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL);
+  if(!w || w == g->color_processing_list)
+    gtk_widget_set_visible(g->hue_preservation_slider, p->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL);
 }
 
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_sigmoid_gui_data_t *g = (dt_iop_sigmoid_gui_data_t *)self->gui_data;
-  dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
 
-  dt_bauhaus_slider_set(g->contrast_slider, p->middle_grey_contrast);
-  dt_bauhaus_slider_set(g->skewness_slider, p->contrast_skewness);
-  dt_bauhaus_slider_set(g->hue_preservation_slider, p->hue_preservation);
-  dt_bauhaus_slider_set(g->display_black_slider, p->display_black_target);
-  dt_bauhaus_slider_set(g->display_white_slider, p->display_white_target);
-
-  dt_bauhaus_slider_set(g->red_inset_slider, p->red_inset);
-  dt_bauhaus_slider_set(g->green_inset_slider, p->green_inset);
-  dt_bauhaus_slider_set(g->blue_inset_slider, p->blue_inset);
-  dt_bauhaus_slider_set(g->purity_slider, p->purity);
-  dt_bauhaus_slider_set(g->red_rotation_slider, p->red_rotation);
-  dt_bauhaus_slider_set(g->green_rotation_slider, p->green_rotation);
-  dt_bauhaus_slider_set(g->blue_rotation_slider, p->blue_rotation);
-
-  dt_bauhaus_combobox_set_from_value(g->color_processing_list, p->color_processing);
   dt_gui_update_collapsible_section(&g->display_luminance_section);
   dt_gui_update_collapsible_section(&g->primaries_section);
 
   gui_changed(self, NULL, NULL);
-}
-
-static GtkWidget *setup_inset_slider(dt_iop_module_t *self, const char *param_name, const char *tooltip)
-{
-  GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
-  dt_bauhaus_slider_set_format(slider, "%");
-  dt_bauhaus_slider_set_digits(slider, 1);
-  dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, 0.f, 0.5f);
-  gtk_widget_set_tooltip_text(slider, tooltip);
-  return slider;
-}
-
-static GtkWidget *setup_rotation_slider(dt_iop_module_t *self, const char *param_name, const char *tooltip)
-{
-  GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
-  dt_bauhaus_slider_set_format(slider, "°");
-  dt_bauhaus_slider_set_digits(slider, 1);
-  dt_bauhaus_slider_set_factor(slider, 180.f / DT_M_PI_F);
-  gtk_widget_set_tooltip_text(slider, tooltip);
-  return slider;
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -776,16 +735,16 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // Look controls
-  g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
-  dt_bauhaus_slider_set_soft_range(g->contrast_slider, 0.7f, 3.0f);
-  dt_bauhaus_slider_set_digits(g->contrast_slider, 3);
-  gtk_widget_set_tooltip_text(g->contrast_slider, _("compression of the applied curve\n"
-                                                    "implicitly defines the supported input dynamic range"));
-  g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
-  gtk_widget_set_tooltip_text(g->skewness_slider, _("shift the compression towards shadows or highlights.\n"
-                                                    "negative values increase contrast in shadows.\n"
-                                                    "positive values increase contrast in highlights.\n"
-                                                    "the opposite end will see a reduction in contrast."));
+  GtkWidget *slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
+  dt_bauhaus_slider_set_soft_range(slider, 0.7f, 3.0f);
+  dt_bauhaus_slider_set_digits(slider, 3);
+  gtk_widget_set_tooltip_text(slider, _("compression of the applied curve\n"
+                                        "implicitly defines the supported input dynamic range"));
+  slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
+  gtk_widget_set_tooltip_text(slider, _("shift the compression towards shadows or highlights.\n"
+                                        "negative values increase contrast in shadows.\n"
+                                        "positive values increase contrast in highlights.\n"
+                                        "the opposite end will see a reduction in contrast."));
 
   // Color handling
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
@@ -807,16 +766,31 @@ void gui_init(dt_iop_module_t *self)
                                 _("set custom primaries"));
 
   self->widget = GTK_WIDGET(g->primaries_section.container);
+  dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("primaries"));
 
-  g->red_inset_slider = setup_inset_slider(self, "red_inset", _("red primary inset"));
-  g->red_rotation_slider = setup_rotation_slider(self, "red_rotation", _("red primary rotation"));
-  g->green_inset_slider = setup_inset_slider(self, "green_inset", _("green primary inset"));
-  g->green_rotation_slider = setup_rotation_slider(self, "green_rotation", _("green primary rotation"));
-  g->blue_inset_slider = setup_inset_slider(self, "blue_inset", _("blue primary inset"));
-  g->blue_rotation_slider = setup_rotation_slider(self, "blue_rotation", _("blue primary rotation"));
+#define setup_color_combo(color, inset_tooltip, rotation_tooltip)   \
+  slider = dt_bauhaus_slider_from_params(sect, #color "_inset");    \
+  dt_bauhaus_slider_set_format(slider, "%");                        \
+  dt_bauhaus_slider_set_digits(slider, 1);                          \
+  dt_bauhaus_slider_set_factor(slider, 100.f);                      \
+  dt_bauhaus_slider_set_soft_range(slider, 0.f, 0.5f);              \
+  gtk_widget_set_tooltip_text(slider, inset_tooltip);               \
+                                                                    \
+  slider = dt_bauhaus_slider_from_params(sect, #color "_rotation"); \
+  dt_bauhaus_slider_set_format(slider, "°");                        \
+  dt_bauhaus_slider_set_digits(slider, 1);                          \
+  dt_bauhaus_slider_set_factor(slider, 180.f / DT_M_PI_F);          \
+  gtk_widget_set_tooltip_text(slider, rotation_tooltip); 
 
-  g->purity_slider = setup_inset_slider(self, "purity", _("purity"));
-  dt_bauhaus_slider_set_soft_range(g->purity_slider, -0.2f, 0.2f);
+  setup_color_combo(red, _("red primary inset"), _("red primary rotation"));
+  setup_color_combo(green, _("green primary inset"), _("green primary rotation"));
+  setup_color_combo(blue, _("blue primary inset"), _("blue primary rotation"));
+
+  slider = dt_bauhaus_slider_from_params(sect, "purity");
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_digits(slider, 1);
+  dt_bauhaus_slider_set_factor(slider, 100.f);
+  dt_bauhaus_slider_set_soft_range(slider, -0.2f, 0.2f);
 
   // display luminance section
   dt_gui_new_collapsible_section
@@ -830,17 +804,17 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(g->display_luminance_section.container);
 
-  g->display_black_slider = dt_bauhaus_slider_from_params(self, "display_black_target");
-  dt_bauhaus_slider_set_soft_range(g->display_black_slider, 0.0f, 1.0f);
-  dt_bauhaus_slider_set_digits(g->display_black_slider, 4);
-  dt_bauhaus_slider_set_format(g->display_black_slider, "%");
-  gtk_widget_set_tooltip_text(g->display_black_slider, _("the black luminance of the target display or print.\n"
-                                                         "can be used creatively for a faded look."));
-  g->display_white_slider = dt_bauhaus_slider_from_params(self, "display_white_target");
-  dt_bauhaus_slider_set_soft_range(g->display_white_slider, 50.0f, 100.0f);
-  dt_bauhaus_slider_set_format(g->display_white_slider, "%");
-  gtk_widget_set_tooltip_text(g->display_white_slider, _("the white luminance of the target display or print.\n"
-                                                         "can be used creatively for a faded look or blowing out whites earlier."));
+  slider = dt_bauhaus_slider_from_params(self, "display_black_target");
+  dt_bauhaus_slider_set_soft_range(slider, 0.0f, 1.0f);
+  dt_bauhaus_slider_set_digits(slider, 4);
+  dt_bauhaus_slider_set_format(slider, "%");
+  gtk_widget_set_tooltip_text(slider, _("the black luminance of the target display or print.\n"
+                                        "can be used creatively for a faded look."));
+  slider = dt_bauhaus_slider_from_params(self, "display_white_target");
+  dt_bauhaus_slider_set_soft_range(slider, 50.0f, 100.0f);
+  dt_bauhaus_slider_set_format(slider, "%");
+  gtk_widget_set_tooltip_text(slider, _("the white luminance of the target display or print.\n"
+                                        "can be used creatively for a faded look or blowing out whites earlier."));
 
   self->widget = main_box;
 }
