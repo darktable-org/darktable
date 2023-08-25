@@ -285,10 +285,9 @@ void finalize_store(dt_imageio_module_storage_t *self,
 
   argv[argc] = NULL;
 
-  dt_print(DT_DEBUG_ALWAYS, "[email] launching '");
-  for(int k=0; k<argc; k++)
-    dt_print(DT_DEBUG_ALWAYS, " %s", argv[k]);
-  dt_print(DT_DEBUG_ALWAYS, "'\n");
+  gchar *cmdline = g_strjoinv(" ", argv);
+  dt_print(DT_DEBUG_ALWAYS, "[email] launching '%s'\n", cmdline);
+  g_free(cmdline);
 
   gint exit_status = 0;
 
