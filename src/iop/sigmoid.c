@@ -61,7 +61,7 @@ typedef struct dt_iop_sigmoid_params_t
   float green_rotation;   // $MIN: -0.4  $MAX: 0.4  $DEFAULT: 0.0 $DESCRIPTION: "green rotation"
   float blue_inset;       // $MIN:  0.0  $MAX: 0.99 $DEFAULT: 0.0 $DESCRIPTION: "blue inset"
   float blue_rotation;    // $MIN: -0.4  $MAX: 0.4  $DEFAULT: 0.0 $DESCRIPTION: "blue rotation"
-  float purity;           // $MIN: -0.99 $MAX: 1.0  $DEFAULT: 0.0 $DESCRIPTION: "purity"
+  float purity;           // $MIN:  0.0  $MAX: 1.0  $DEFAULT: 0.0 $DESCRIPTION: "recover purity"
 } dt_iop_sigmoid_params_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void **new_params,
@@ -237,7 +237,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.red_rotation = 4.f * DEG_TO_RAD;
   p.green_rotation = 1.5f * DEG_TO_RAD;
   p.blue_rotation = -5.f * DEG_TO_RAD;
-  p.purity = 0.05f;
+  p.purity = 0.5f;
   dt_gui_presets_add_generic(_("smooth"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
@@ -340,9 +340,11 @@ static void calculate_adjusted_primaries(const dt_iop_sigmoid_data_t *const modu
   dt_make_transposed_matrices_from_primaries_and_whitepoint(custom_primaries, pipe_work_profile->whitepoint, custom_to_XYZ);
   dt_colormatrix_mul(pipe_to_rendering, custom_to_XYZ, pipe_work_profile->matrix_out_transposed);
 
-  const float scaling_out = 1.f - module_data->purity;
   for(size_t i = 0; i < 3; i++)
-    dt_rotate_and_scale_primary(pipe_work_profile, scaling_out, module_data->rotation[i], i, custom_primaries[i]);
+  {
+    const float scaling = 1.f - module_data->purity * module_data->inset[i];
+    dt_rotate_and_scale_primary(pipe_work_profile, scaling, module_data->rotation[i], i, custom_primaries[i]);
+  }
 
   dt_make_transposed_matrices_from_primaries_and_whitepoint(custom_primaries, pipe_work_profile->whitepoint, custom_to_XYZ);
   dt_colormatrix_t tmp;
@@ -788,9 +790,9 @@ void gui_init(dt_iop_module_t *self)
 
   slider = dt_bauhaus_slider_from_params(sect, "purity");
   dt_bauhaus_slider_set_format(slider, "%");
-  dt_bauhaus_slider_set_digits(slider, 1);
+  dt_bauhaus_slider_set_digits(slider, 0);
   dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, -0.2f, 0.2f);
+  gtk_widget_set_tooltip_text(slider, _("recover some of the original purity after the inset"));
 
   // display luminance section
   dt_gui_new_collapsible_section
