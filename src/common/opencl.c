@@ -2614,35 +2614,33 @@ static gboolean _opencl_build_program(const int dev,
     {
       if(cl->dev[dev].devid == devices[i])
       {
+        char dup[PATH_MAX] = { 0 };
+        g_strlcpy(dup, binname, sizeof(dup));
+        char *bname = basename(dup);
 
         // save opencl compiled binary as md5sum-named file
-        char link_dest[PATH_MAX] = { 0 };
-        snprintf(link_dest, sizeof(link_dest), "%s" G_DIR_SEPARATOR_S "%s",
+        char filename[PATH_MAX] = { 0 };
+#if defined(_WIN32)
+        snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "%s.%s",
+                 cachedir, bname, md5sum);
+#else
+        snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "%s",
                  cachedir, md5sum);
-        FILE *f = g_fopen(link_dest, "wb");
+#endif //defined(_WIN32)
+        FILE *f = g_fopen(filename, "wb");
         if(!f) goto ret;
         size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
         if(bytes_written != binary_sizes[i]) goto ret;
         fclose(f);
 
+#if !defined(_WIN32)
         // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
         char cwd[PATH_MAX] = { 0 };
         if(!getcwd(cwd, sizeof(cwd))) goto ret;
         if(chdir(cachedir) != 0) goto ret;
-        char dup[PATH_MAX] = { 0 };
-        g_strlcpy(dup, binname, sizeof(dup));
-        char *bname = basename(dup);
-#if defined(_WIN32)
-        //CreateSymbolicLink in Windows requires admin privileges, which we don't want/need
-        //store has using a simple filerename
-        char finalfilename[PATH_MAX] = { 0 };
-        snprintf(finalfilename, sizeof(finalfilename), "%s" G_DIR_SEPARATOR_S "%s.%s",
-                 cachedir, bname, md5sum);
-        rename(link_dest, finalfilename);
-#else
         if(symlink(md5sum, bname) != 0) goto ret;
-#endif //!defined(_WIN32)
         if(chdir(cwd) != 0) goto ret;
+#endif //!defined(_WIN32)
       }
     }
     err = CL_SUCCESS; // all writings done without an error
