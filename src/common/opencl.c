@@ -833,18 +833,15 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "   ASYNC PIXELPIPE:          %s\n", cl->dev[dev].asyncmode ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
                "   PINNED MEMORY TRANSFER:   %s\n", cl->dev[dev].pinned_memory ? "YES" : "NO");
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   HEADROOM:                 %s\n", resrc->tunehead ? "USED" : "NO");
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   HEADROOM:                 %iMb\n", cl->dev[dev].headroom);
+  if(resrc->tunehead)
+    dt_print_nts(DT_DEBUG_OPENCL,
+               "   USE HEADROOM:             %iMb\n", cl->dev[dev].headroom);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   AVOID ATOMICS:            %s\n", cl->dev[dev].avoid_atomics ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MICRO NAP:                %i\n", cl->dev[dev].micro_nap);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   ROUNDUP WIDTH:            %i\n", cl->dev[dev].clroundup_wd);
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
+               "   ROUNDUP WIDTH & HEIGHT    %ix%i\n", cl->dev[dev].clroundup_wd, cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1169,6 +1166,7 @@ void dt_opencl_init(
   cl->dlocl = dt_dlopencl_init(library);
   if(cl->dlocl == NULL)
   {
+    logerror = "no working opencl library found";
     dt_print_nts(DT_DEBUG_OPENCL,
                  "[opencl_init] no working opencl library found."
                  " Continue with opencl disabled\n");
@@ -1314,6 +1312,7 @@ void dt_opencl_init(
   {
     if(devices)
       free(devices);
+    logerror = "no OpenCL devices found";
     goto finally;
   }
 
@@ -1356,6 +1355,7 @@ void dt_opencl_init(
   }
   else
   {
+    logerror = "no suitable OpenCL devices found";
     dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no suitable devices found.\n");
   }
 
