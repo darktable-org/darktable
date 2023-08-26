@@ -40,8 +40,10 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 
-//#include <gtk/gtk.h>
 #include <stdlib.h>
+
+// uncomment the following line to test auto-vectorized code on a system which supports SSE
+//#undef __SSE2__
 
 // these are not in a state to be useful. but they look nice. too bad i couldn't map the enhanced mode with
 // negative values to the wheels :(
@@ -401,6 +403,7 @@ static void _process_legacy(const dt_aligned_pixel_t in,
   }
 }
 
+#ifndef __SSE2__
 static void _apply_lgg(dt_aligned_pixel_t rgb,
                        const dt_aligned_pixel_t lift,
                        const dt_aligned_pixel_t gamma_inv,
@@ -418,45 +421,23 @@ static void _apply_lgg(dt_aligned_pixel_t rgb,
   dt_vector_max(rgb, rgb, zero);	// clip away negatives
   dt_vector_powf(rgb, gamma_inv, rgb);
 }
+#endif
 
-static void _process_lgg_curveonly(const dt_aligned_pixel_t in,
-                                   dt_aligned_pixel_t out,
-                                   const size_t npixels,
-                                   const dt_aligned_pixel_t lift,
-                                   const dt_aligned_pixel_t gamma_inv,
-                                   const dt_aligned_pixel_t gain)
-{
-  // fully neutral settings, only apply the curves
-  for(size_t k = 0; k < npixels; k++)
-  {
-    // transform the pixel to ProphotoRGB:
-    // Lab -> XYZ -> RGB, return Y as luma
-    dt_aligned_pixel_t rgb;
-    (void)dt_Lab_to_prophotorgb(in + 4*k, rgb);
-    _apply_lgg(rgb, lift, gamma_inv, gain);
-    // transform the result back to Lab
-    // ProphotoRGB -> XYZ -> Lab
-    dt_aligned_pixel_t res;
-    dt_prophotorgb_to_Lab(rgb, res);
-    copy_pixel_nontemporal(out + 4*k, res);
-  }
-}
-
-#ifdef __SSE2__
-static void _process_lgg_sse(const dt_aligned_pixel_t in,
-                             dt_aligned_pixel_t out,
-                             const size_t npixels,
-                             const dt_aligned_pixel_t lift_,
-                             const dt_aligned_pixel_t gamma_inv_,
-                             const dt_aligned_pixel_t gain_,
-                             const float grey,
-                             const float saturation,
-                             const float saturation_out,
-                             const dt_aligned_pixel_t contrast_power)
+static void _process_lgg(const dt_aligned_pixel_t in,
+                         dt_aligned_pixel_t out,
+                         const size_t npixels,
+                         const dt_aligned_pixel_t lift_,
+                         const dt_aligned_pixel_t gamma_inv_,
+                         const dt_aligned_pixel_t gain_,
+                         const float grey,
+                         const float saturation,
+                         const float saturation_out,
+                         const dt_aligned_pixel_t contrast_power)
 {
   const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
   const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
   const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
+#ifdef __SSE2__
   const __m128 mm_zero = _mm_setzero_ps();
   const __m128 mm_one = _mm_set1_ps(1.0);
   const __m128 gamma_inv_RGB = _mm_set1_ps(1.0f/2.2f);
@@ -510,34 +491,23 @@ static void _process_lgg_sse(const dt_aligned_pixel_t in,
     // XYZ -> Lab
     _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(XYZ));
   }
-}
-#endif
-
-static void _process_lgg(const dt_aligned_pixel_t in,
-                         dt_aligned_pixel_t out,
-                         const size_t npixels,
-                         const dt_aligned_pixel_t lift,
-                         const dt_aligned_pixel_t gamma_inv,
-                         const dt_aligned_pixel_t gain,
-                         const float grey,
-                         const float saturation,
-                         const float saturation_out,
-                         const dt_aligned_pixel_t contrast_power)
-{
-#ifdef __SSE2__
-  if(darktable.codepath.SSE2)
-  {
-    _process_lgg_sse(in, out, npixels, lift, gamma_inv, gain, grey, saturation,
-                     saturation_out, contrast_power);
-    return;
-  }
-#endif
-  const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
-  const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
-  const int run_contrast = fabsf(contrast_power[0] - 1.0f) > 1e-6;
+#else
   if(!run_saturation && !run_saturation_out && !run_contrast)
   {
-    _process_lgg_curveonly(in, out, npixels, lift, gamma_inv, gain);
+    // fully neutral settings, only apply the curves
+    for(size_t k = 0; k < npixels; k++)
+    {
+      // transform the pixel to ProphotoRGB:
+      // Lab -> XYZ -> RGB, return Y as luma
+      dt_aligned_pixel_t rgb;
+      (void)dt_Lab_to_prophotorgb(in + 4*k, rgb);
+      _apply_lgg(rgb, lift_, gamma_inv_, gain_);
+      // transform the result back to Lab
+      // ProphotoRGB -> XYZ -> Lab
+      dt_aligned_pixel_t res;
+      dt_prophotorgb_to_Lab(rgb, res);
+      copy_pixel_nontemporal(out + 4*k, res);
+    }
     return;
   }
 
@@ -558,7 +528,7 @@ static void _process_lgg(const dt_aligned_pixel_t in,
       for_each_channel(c)
         rgb[c] = luma + saturation4[c] * (rgb[c] - luma);
     }
-    _apply_lgg(rgb, lift, gamma_inv, gain);
+    _apply_lgg(rgb, lift_, gamma_inv_, gain_);
     // main saturation output
     if(run_saturation_out)
     {
@@ -578,76 +548,8 @@ static void _process_lgg(const dt_aligned_pixel_t in,
     dt_prophotorgb_to_Lab(rgb, res);
     copy_pixel_nontemporal(out + 4*k, res);
   }
+#endif /* __SSE2__ */
 }
-
-#ifdef __SSE2__
-static void _process_sop_sse(const dt_aligned_pixel_t in,
-                             dt_aligned_pixel_t out,
-                             const size_t npixels,
-                             const dt_aligned_pixel_t lift_,
-                             const dt_aligned_pixel_t gamma_,
-                             const dt_aligned_pixel_t gain_,
-                             const float grey,
-                             const float saturation,
-                             const float saturation_out,
-                             const float contrast_amt,
-                             const dt_aligned_pixel_t contrast_power)
-{
-  const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
-  const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
-  const int run_contrast = fabsf(contrast_amt - 1.0f) > 1e-6;
-  const __m128 mm_zero = _mm_setzero_ps();
-  const __m128 lift = _mm_load_ps(lift_);
-  const __m128 gamma = _mm_load_ps(gamma_);
-  const __m128 gain = _mm_load_ps(gain_);
-  const __m128 contrast = _mm_load_ps(contrast_power);
-  for(size_t k = 0; k < npixels; k++)
-  {
-        // transform the pixel to sRGB:
-        // Lab -> XYZ
-        __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in + 4*k));
-        // XYZ -> sRGB
-        __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
-
-        __m128 luma;
-
-        // adjust main saturation
-        if(run_saturation)
-        {
-          luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
-          rgb = luma + saturation * (rgb - luma);
-        }
-
-        // slope offset
-        rgb = rgb * gain + lift;
-
-        //power
-        rgb = _mm_max_ps(rgb, mm_zero);
-        rgb = _mm_pow_ps(rgb, gamma);
-
-        // adjust main saturation output
-        if(run_saturation_out)
-        {
-          XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-          luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
-          rgb = luma + saturation_out * (rgb - luma);
-        }
-
-        // fulcrum contrast
-        if(run_contrast)
-        {
-          rgb = _mm_max_ps(rgb, mm_zero);
-          rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
-        }
-
-        // transform the result back to Lab
-        // sRGB -> XYZ
-        XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-        // XYZ -> Lab
-        _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(XYZ));
-  }
-}
-#endif
 
 static void _process_sop(const dt_aligned_pixel_t in,
                          dt_aligned_pixel_t out,
@@ -658,20 +560,64 @@ static void _process_sop(const dt_aligned_pixel_t in,
                          const float grey,
                          const float saturation,
                          const float saturation_out,
-                         const float contrast,
+                         const float contrast_amt,
                          const dt_aligned_pixel_t contrast_power)
 {
-#ifdef __SSE2__
-  if(darktable.codepath.SSE2)
-  {
-    _process_sop_sse(in, out, npixels, lift, gamma, gain, grey, saturation,
-                     saturation_out, contrast, contrast_power);
-    return;
-  }
-#endif
   const int run_saturation = fabsf(saturation - 1.0f) > 1e-6;
   const int run_saturation_out = fabsf(saturation_out - 1.0f) > 1e-6;
-  const int run_contrast = fabsf(contrast - 1.0f) > 1e-6;
+  const int run_contrast = fabsf(contrast_amt - 1.0f) > 1e-6;
+#ifdef __SSE2__
+  const __m128 mm_zero = _mm_setzero_ps();
+  const __m128 lift4 = _mm_load_ps(lift);
+  const __m128 gamma4 = _mm_load_ps(gamma);
+  const __m128 gain4 = _mm_load_ps(gain);
+  const __m128 contrast = _mm_load_ps(contrast_power);
+  for(size_t k = 0; k < npixels; k++)
+  {
+    // transform the pixel to sRGB:
+    // Lab -> XYZ
+    __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in + 4*k));
+    // XYZ -> sRGB
+    __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
+
+    __m128 luma;
+
+    // adjust main saturation
+    if(run_saturation)
+    {
+      luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+      rgb = luma + saturation * (rgb - luma);
+    }
+
+    // slope offset
+    rgb = rgb * gain4 + lift4;
+
+    //power
+    rgb = _mm_max_ps(rgb, mm_zero);
+    rgb = _mm_pow_ps(rgb, gamma4);
+
+    // adjust main saturation output
+    if(run_saturation_out)
+    {
+      XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+      luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
+      rgb = luma + saturation_out * (rgb - luma);
+    }
+
+    // fulcrum contrast
+    if(run_contrast)
+    {
+      rgb = _mm_max_ps(rgb, mm_zero);
+      rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
+    }
+
+    // transform the result back to Lab
+    // sRGB -> XYZ
+    XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
+    // XYZ -> Lab
+    _mm_stream_ps(out + 4*k, dt_XYZ_to_Lab_sse2(XYZ));
+  }
+#else
   if(!run_saturation && !run_saturation_out && !run_contrast)
   {
     // fully neutral settings, only apply the curves
@@ -730,6 +676,7 @@ static void _process_sop(const dt_aligned_pixel_t in,
     dt_prophotorgb_to_Lab(rgb , res);
     copy_pixel_nontemporal(out + 4*k, res);
   }
+#endif /* __SSE2__ */
 }
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
