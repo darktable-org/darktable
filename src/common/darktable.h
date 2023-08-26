@@ -303,7 +303,6 @@ typedef enum dt_debug_thread_t
 
 typedef struct dt_codepath_t
 {
-  unsigned int SSE2 : 1;
   unsigned int _no_intrinsics : 1;
 } dt_codepath_t;
 
