@@ -24,7 +24,6 @@ FILE(GLOB SOURCE_FILES
   "common/curve_tools.c"
   "common/splines.cpp"
   "common/curl_tools.c"
-  "common/cpuid.c"
   "common/darktable.c"
   "common/database.c"
   "common/datetime.c"
