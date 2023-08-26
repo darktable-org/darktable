@@ -786,9 +786,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);                        \
   gtk_widget_set_tooltip_text(slider, rotation_tooltip); 
 
-  setup_color_combo(red, 1.0f, 0.0f, 0.0f, _("red primary inset"), _("red primary rotation"));
-  setup_color_combo(green, 0.0f, 1.0f, 0.0f, _("green primary inset"), _("green primary rotation"));
-  setup_color_combo(blue, 0.0f, 0.0f, 1.0f, _("blue primary inset"), _("blue primary rotation"));
+  const float desaturation = 0.2f;
+  setup_color_combo(red, 1.f - desaturation, desaturation, desaturation, _("red primary inset"), _("red primary rotation"));
+  setup_color_combo(green, desaturation, 1.f - desaturation, desaturation, _("green primary inset"), _("green primary rotation"));
+  setup_color_combo(blue, desaturation, desaturation, 1.f - desaturation, _("blue primary inset"), _("blue primary rotation"));
 
   slider = dt_bauhaus_slider_from_params(sect, "purity");
   dt_bauhaus_slider_set_format(slider, "%");
