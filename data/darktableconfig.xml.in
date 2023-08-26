@@ -331,21 +331,21 @@
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_intelropenclhdgraphics</name>
     <type>bool</type>
-    <default>true</default>
+    <default>${DEFCONFIG_NONAPPLE}</default>
     <shortdescription>Intel HD</shortdescription>
     <longdescription>Intel(R) OpenCL HD Graphics (vendor provided)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_nvidiacuda</name>
     <type>bool</type>
-    <default>true</default>
+    <default>${DEFCONFIG_NONAPPLE}</default>
     <shortdescription>Nvidia Cuda</shortdescription>
     <longdescription>Nvidia cuda based OpenCL (vendor provided)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_amdacceleratedparallelprocessing</name>
     <type>bool</type>
-    <default>true</default>
+    <default>${DEFCONFIG_NONAPPLE}</default>
     <shortdescription>AMD ROCm</shortdescription>
     <longdescription>AMD Accelerated Parallel Processing (vendor provided)</longdescription>
   </dtconfig>
@@ -359,7 +359,7 @@
   <dtconfig prefs="processing" section="platform" capability="apple" restart="true">
     <name>clplatform_apple</name>
     <type>bool</type>
-    <default>true</default>
+    <default>${DEFCONFIG_APPLE}</default>
     <shortdescription>Apple</shortdescription>
     <longdescription>Apple OpenCL (vendor provided)</longdescription>
   </dtconfig>
