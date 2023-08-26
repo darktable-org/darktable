@@ -2973,8 +2973,7 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
 
 void *dt_opencl_copy_host_to_device(const int devid,
                                     void *host,
-                                    const int
-                                    width,
+                                    const int width,
                                     const int height,
                                     const int bpp)
 {
@@ -3112,8 +3111,7 @@ void *dt_opencl_alloc_device(const int devid,
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device] could not alloc img buffer on device %d: %s\n",
-             devid,
-             cl_errstr(err));
+             devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
@@ -3155,8 +3153,8 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid,
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_use_host_pointer]"
-             " could not alloc img buffer on device %d: %s\n", devid,
-             cl_errstr(err));
+             " could not allocate imgage on device %d: %s\n",
+             devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
@@ -3178,8 +3176,7 @@ void *dt_opencl_alloc_device_buffer(const int devid, const size_t size)
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_buffer] could not alloc buffer on device %d: %s\n",
-             devid,
-             cl_errstr(err));
+             devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
@@ -3201,9 +3198,8 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
      flags, size, NULL, &err);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n",
-             devid,
-             err);
+             "[opencl alloc_device_buffer] could not allocate buffer on device %d: %s\n",
+             devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
@@ -3211,7 +3207,7 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
   return buf;
 }
 
-size_t dt_opencl_get_mem_object_size(cl_mem mem)
+size_t dt_opencl_get_mem_object_size(const cl_mem mem)
 {
   size_t size;
   if(mem == NULL) return 0;
@@ -3222,7 +3218,7 @@ size_t dt_opencl_get_mem_object_size(cl_mem mem)
   return (err == CL_SUCCESS) ? size : 0;
 }
 
-int dt_opencl_get_mem_context_id(cl_mem mem)
+int dt_opencl_get_mem_context_id(const cl_mem mem)
 {
   cl_context context;
   if(mem == NULL) return -1;
@@ -3241,7 +3237,7 @@ int dt_opencl_get_mem_context_id(cl_mem mem)
   return -1;
 }
 
-int dt_opencl_get_image_width(cl_mem mem)
+int dt_opencl_get_image_width(const cl_mem mem)
 {
   size_t size;
   if(mem == NULL) return 0;
@@ -3253,7 +3249,7 @@ int dt_opencl_get_image_width(cl_mem mem)
   return (err == CL_SUCCESS) ? (int)size : 0;
 }
 
-int dt_opencl_get_image_height(cl_mem mem)
+int dt_opencl_get_image_height(const cl_mem mem)
 {
   size_t size;
   if(mem == NULL) return 0;
@@ -3265,7 +3261,7 @@ int dt_opencl_get_image_height(cl_mem mem)
   return (err == CL_SUCCESS) ? (int)size : 0;
 }
 
-int dt_opencl_get_image_element_size(cl_mem mem)
+int dt_opencl_get_image_element_size(const cl_mem mem)
 {
   size_t size;
   if(mem == NULL) return 0;
@@ -3302,7 +3298,7 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   }
 }
 
-void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action)
+void dt_opencl_memory_statistics(int devid, const cl_mem mem, const dt_opencl_memory_t action)
 {
   if(!((darktable.unmuted & DT_DEBUG_MEMORY) && (darktable.unmuted & DT_DEBUG_OPENCL)))
     return;
