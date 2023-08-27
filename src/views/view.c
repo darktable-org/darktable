@@ -1733,7 +1733,7 @@ void dt_view_paint_surface(cairo_t *cr,
 
   cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
 
-  const double back_scale = (buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale) * (1<<closeup);
+  const double back_scale = (buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale) * (1<<closeup) / ppd;
 
   if(matching && (back_scale * processed_width < maxw  || offset_x != zoom_x
                || back_scale * processed_height < maxh || offset_y != zoom_y))
@@ -1752,16 +1752,14 @@ void dt_view_paint_surface(cairo_t *cr,
   dt_pthread_mutex_unlock(mutex);
 
   cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
-  cairo_surface_set_device_scale(surface, ppd, ppd);
-  cairo_translate(cr, (offset_x - zoom_x) * dev->pipe->processed_width * buf_scale - 0.5 * processed_width / ppd,
-                      (offset_y - zoom_y) * dev->pipe->processed_height * buf_scale - 0.5 * processed_height / ppd);
+  cairo_translate(cr, (offset_x - zoom_x) * dev->pipe->processed_width * buf_scale - 0.5 * processed_width,
+                      (offset_y - zoom_y) * dev->pipe->processed_height * buf_scale - 0.5 * processed_height);
   cairo_set_source_surface(cr, surface, 0, 0);
   cairo_paint(cr);
 
   if(darktable.gui->show_focus_peaking
     && window != DT_WINDOW_SLIDESHOW)
   {
-    cairo_scale(cr, 1. / ppd, 1. / ppd);
     dt_focuspeaking(cr, processed_width, processed_height,
                     cairo_image_surface_get_data(surface));
   }
