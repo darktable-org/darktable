@@ -294,6 +294,43 @@ static inline float sqf(const float x)
 
 
 #ifdef _OPENMP
+#pragma omp declare simd aligned(p:16)
+#endif
+static inline float median9f(const float *p)
+{
+  float p1 = MIN(p[1], p[2]);
+  float p2 = MAX(p[1], p[2]);
+  float p4 = MIN(p[4], p[5]);
+  float p5 = MAX(p[4], p[5]);
+  float p7 = MIN(p[7], p[8]);
+  float p8 = MAX(p[7], p[8]);
+  float p0 = MIN(p[0], p1);
+  float p1a = MAX(p[0], p1);
+  float p3 = MIN(p[3], p4);
+  float p4a = MAX(p[3], p4);
+  float p6 = MIN(p[6], p7);
+  float p7a = MAX(p[6], p7);
+  p1 = MIN(p1a, p2);
+  p2 = MAX(p1a, p2);
+  p4 = MIN(p4a, p5);
+  p5 = MAX(p4a, p5);
+  p7 = MIN(p7a, p8);
+  p8 = MAX(p7a, p8);
+  p3 = MAX(p0,p3);
+  p5 = MIN(p5, p8);
+  p7a = MAX(p4, p7);
+  p4 = MIN(p4, p7);
+  p6 = MAX(p3, p6);
+  p4 = MAX(p1, p4);
+  p2 = MIN(p2, p5);
+  p4a = MIN(p4, p7a);
+  p4 = MIN(p4a, p2);
+  p2 = MAX(p4a, p2);
+  p4 = MAX(p6, p4);
+  return MIN(p2,p4);
+}
+
+#ifdef _OPENMP
 #pragma omp declare simd aligned(vector:16)
 #endif
 static inline float euclidean_norm(const dt_aligned_pixel_t vector)

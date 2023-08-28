@@ -104,49 +104,6 @@ static inline float _median3f(float x0, float x1, float x2)
   return fmaxf(fminf(x0,x1), fminf(x2, fmaxf(x0,x1)));
 }
 
-static inline float _median9f(float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8)
-{
-  float tmp;
-  tmp = fminf(a1, a2);
-  a2  = fmaxf(a1, a2);
-  a1  = tmp;
-  tmp = fminf(a4, a5);
-  a5  = fmaxf(a4, a5);
-  a4  = tmp;
-  tmp = fminf(a7, a8);
-  a8  = fmaxf(a7, a8);
-  a7  = tmp;
-  tmp = fminf(a0, a1);
-  a1  = fmaxf(a0, a1);
-  a0  = tmp;
-  tmp = fminf(a3, a4);
-  a4  = fmaxf(a3, a4);
-  a3  = tmp;
-  tmp = fminf(a6, a7);
-  a7  = fmaxf(a6, a7);
-  a6  = tmp;
-  tmp = fminf(a1, a2);
-  a2  = fmaxf(a1, a2);
-  a1  = tmp;
-  tmp = fminf(a4, a5);
-  a5  = fminf(a4, a5);
-  a4  = tmp;
-  tmp = fminf(a7, a8);
-  a8  = fmaxf(a7, a8);
-  a3  = fmaxf(a0, a3);
-  a5  = fminf(a5, a8);
-  a7  = fmaxf(a4, tmp);
-  tmp = fminf(a4, tmp);
-  a6  = fmaxf(a3, a6);
-  a4  = fmaxf(a1, tmp);
-  a2  = fminf(a2, a5);
-  a4  = fminf(a4, a7);
-  tmp = fminf(a4, a2);
-  a2  = fmaxf(a4, a2);
-  a4  = fmaxf(a6, tmp);
-  return fminf(a4, a2);
-}
-
 static inline float _calc_gamma(float val, float *table)
 {
   if(table == NULL) return val;
@@ -438,15 +395,16 @@ static void lmmse_demosaic(
                 float *colc = qix[c] + rr * DT_LMMSE_TILESIZE + cc;
                 float *col1 = qix[1] + rr * DT_LMMSE_TILESIZE + cc;
                 // Assign 3x3 differential color values
-                corr[0] = _median9f(colc[-w1-1] - col1[-w1-1],
-                                   colc[-w1  ] - col1[-w1  ],
-                                   colc[-w1+1] - col1[-w1+1],
-                                   colc[   -1] - col1[   -1],
-                                   colc[    0] - col1[    0],
-                                   colc[    1] - col1[    1],
-                                   colc[ w1-1] - col1[ w1-1],
-                                   colc[ w1  ] - col1[ w1  ],
-                                   colc[ w1+1] - col1[ w1+1]);
+                const float p[9] = {colc[-w1-1] - col1[-w1-1],
+                                    colc[-w1  ] - col1[-w1  ],
+                                    colc[-w1+1] - col1[-w1+1],
+                                    colc[   -1] - col1[   -1],
+                                    colc[    0] - col1[    0],
+                                    colc[    1] - col1[    1],
+                                    colc[ w1-1] - col1[ w1-1],
+                                    colc[ w1  ] - col1[ w1  ],
+                                    colc[ w1+1] - col1[ w1+1]};
+                corr[0] = median9f(p);
               }
             }
           }
