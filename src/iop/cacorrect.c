@@ -375,7 +375,7 @@ void process(
   for(size_t it = 0; it < iterations && processpasstwo; it++)
   {
 
-#ifdef _OPENMP
+#if defined(_OPENMP) && !defined(__APPLE__)
 #pragma omp parallel default(none) \
   dt_omp_firstprivate(in, out, height, width, filters, processpasstwo, hblsz, vblsz, \
                       blockwt, blockshifts, blockvar, Gtmp, RawDataTmp, caautostrength, \
