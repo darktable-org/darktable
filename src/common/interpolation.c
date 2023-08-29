@@ -622,14 +622,14 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
  * Pixel interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
 
-static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation *itor,
-                                                   const float *in,
-                                                   float *out,
-                                                   const float x,
-                                                   const float y,
-                                                   const int width,
-                                                   const int height,
-                                                   const size_t linestride)
+void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
+                                      const float *in,
+                                      float *out,
+                                      const float x,
+                                      const float y,
+                                      const int width,
+                                      const int height,
+                                      const int linestride)
 {
   assert(itor->width < (MAX_HALF_FILTER_WIDTH + 1));
 
@@ -732,124 +732,6 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
     for_each_channel(c,aligned(out))
       out[c] = 0.0f;
   }
-}
-
-#if defined(__SSE2__)
-static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *itor,
-                                                 const float *in,
-                                                 float *out,
-                                                 const float x,
-                                                 const float y,
-                                                 const int width,
-                                                 const int height,
-                                                 const int linestride)
-{
-  assert(itor->width < (MAX_HALF_FILTER_WIDTH + 1));
-
-  // Quite a bit of space for kernels
-  float kernelh[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
-  float kernelv[MAX_KERNEL_REQ] __attribute__((aligned(SSE_ALIGNMENT)));
-
-  // Compute both horizontal and vertical kernels
-  float normh = compute_upsampling_kernel(itor, kernelh, NULL, x);
-  float normv = compute_upsampling_kernel(itor, kernelv, NULL, y);
-
-  // Precompute the inverse of the filter norm for later use
-  const __m128 oonorm = _mm_set_ps1(1.f / (normh * normv));
-
-  /* Now 2 cases, the pixel + filter width goes outside the image
-   * in that case we have to use index clipping to keep all reads
-   * in the input image (slow path) or we are sure it won't fall
-   * outside and can do more simple code */
-  int ix = (int)x;
-  int iy = (int)y;
-
-  if(ix >= (itor->width - 1) && iy >= (itor->width - 1) && ix < (width - itor->width)
-     && iy < (height - itor->width))
-  {
-    // Inside image boundary case
-
-    // Go to top left pixel
-    in = (float *)in + linestride * iy + ix * 4;
-    in = in - (itor->width - 1) * (4 + linestride);
-
-    // Apply the kernel
-    __m128 pixel = _mm_setzero_ps();
-    for(int i = 0; i < 2 * itor->width; i++)
-    {
-      __m128 h = _mm_setzero_ps();
-      for(int j = 0; j < 2 * itor->width; j++)
-      {
-        h = h + _mm_set1_ps(kernelh[j]) * *((__m128 *)&in[j * 4]);
-      }
-      pixel = pixel + _mm_set1_ps(kernelv[i]) * h;
-      in += linestride;
-    }
-
-    *(__m128 *)out = pixel * oonorm;
-  }
-  else if(ix >= 0 && iy >= 0 && ix < width && iy < height)
-  {
-    // At least a valid coordinate
-
-    // Point to the upper left pixel index wise
-    iy -= itor->width - 1;
-    ix -= itor->width - 1;
-
-    static const enum border_mode bordermode = INTERPOLATION_BORDER_MODE;
-    assert(bordermode != BORDER_CLAMP); // XXX in clamp mode, norms would be wrong
-
-    int xtap_first;
-    int xtap_last;
-    prepare_tap_boundaries(&xtap_first, &xtap_last,
-                           bordermode, 2 * itor->width, ix, width);
-
-    int ytap_first;
-    int ytap_last;
-    prepare_tap_boundaries(&ytap_first, &ytap_last,
-                           bordermode, 2 * itor->width, iy, height);
-
-    // Apply the kernel
-    __m128 pixel = _mm_setzero_ps();
-    for(ssize_t i = ytap_first; i < ytap_last; i++)
-    {
-      ssize_t clip_y = clip(iy + i, 0, height - 1, bordermode);
-      __m128 h = _mm_setzero_ps();
-      for(ssize_t j = xtap_first; j < xtap_last; j++)
-      {
-        const ssize_t clip_x = clip(ix + j, 0, width - 1, bordermode);
-        const float *ipixel = in + clip_y * linestride + clip_x * 4;
-        h = h + _mm_set1_ps(kernelh[j]) * *((__m128 *)ipixel);
-      }
-      pixel = pixel + _mm_set1_ps(kernelv[i]) * h;
-    }
-
-    *(__m128 *)out = pixel * oonorm;
-  }
-  else
-  {
-    *(__m128 *)out = _mm_set_ps1(0.0f);
-  }
-}
-#endif
-
-void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
-                                      const float *in,
-                                      float *out,
-                                      const float x,
-                                      const float y,
-                                      const int width,
-                                      const int height,
-                                      const int linestride)
-{
-#if defined(__SSE2__)
-  if(darktable.codepath.SSE2)
-    return dt_interpolation_compute_pixel4c_sse(itor, in, out, x, y,
-                                                width, height, linestride);
-  else
-#endif
-    return dt_interpolation_compute_pixel4c_plain(itor, in, out, x, y,
-                                                  width, height, linestride);
 }
 
 /* --------------------------------------------------------------------------
