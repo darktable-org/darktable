@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-22 21:09-0300\n"
-"PO-Revision-Date: 2023-08-22 21:23-0300\n"
+"POT-Creation-Date: 2023-08-29 10:12-0300\n"
+"PO-Revision-Date: 2023-08-29 10:50-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -97,7 +97,7 @@ msgid "on import"
 msgstr "ao importar"
 
 #: ../build/bin/conf_gen.h:357 ../build/bin/conf_gen.h:1184
-#: ../build/bin/conf_gen.h:1200 ../build/bin/conf_gen.h:3220
+#: ../build/bin/conf_gen.h:1200 ../build/bin/conf_gen.h:3214
 #: ../build/bin/preferences_gen.h:4135 ../build/bin/preferences_gen.h:4230
 #: ../build/bin/preferences_gen.h:5150 ../build/bin/preferences_gen.h:5204
 #: ../build/bin/preferences_gen.h:6942
@@ -567,7 +567,7 @@ msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2493 ../build/bin/conf_gen.h:3223
+#: ../build/bin/conf_gen.h:2493 ../build/bin/conf_gen.h:3217
 #: ../build/bin/preferences_gen.h:5165 ../build/bin/preferences_gen.h:6594
 #: ../build/bin/preferences_gen.h:6630
 msgctxt "preferences"
@@ -767,11 +767,11 @@ msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "relativo à exibição (legado)"
 
-#: ../build/bin/conf_gen.h:3150
+#: ../build/bin/conf_gen.h:3144
 msgid "camera time zone"
 msgstr "fuso horário da câmera"
 
-#: ../build/bin/conf_gen.h:3151
+#: ../build/bin/conf_gen.h:3145
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -779,62 +779,62 @@ msgstr ""
 "a maioria das câmeras não armazena a fuso horário no EXIF. indique o fuso "
 "horário correto para que os dados GPX possam ser processados corretamente"
 
-#: ../build/bin/conf_gen.h:3162
+#: ../build/bin/conf_gen.h:3156
 msgctxt "preferences"
 msgid "no color"
 msgstr "sem cor"
 
-#: ../build/bin/conf_gen.h:3163
+#: ../build/bin/conf_gen.h:3157
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "cor do iluminante"
 
-#: ../build/bin/conf_gen.h:3164
+#: ../build/bin/conf_gen.h:3158
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "emulação do efeito"
 
-#: ../build/bin/conf_gen.h:3210
+#: ../build/bin/conf_gen.h:3204
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
 
-#: ../build/bin/conf_gen.h:3211
+#: ../build/bin/conf_gen.h:3205
 msgctxt "preferences"
 msgid "tabs"
 msgstr "abas"
 
-#: ../build/bin/conf_gen.h:3212
+#: ../build/bin/conf_gen.h:3206
 msgctxt "preferences"
 msgid "columns"
 msgstr "colunas"
 
-#: ../build/bin/conf_gen.h:3221 ../build/bin/preferences_gen.h:5155
+#: ../build/bin/conf_gen.h:3215 ../build/bin/preferences_gen.h:5155
 msgctxt "preferences"
 msgid "active"
 msgstr "ativo"
 
-#: ../build/bin/conf_gen.h:3222 ../build/bin/preferences_gen.h:5160
+#: ../build/bin/conf_gen.h:3216 ../build/bin/preferences_gen.h:5160
 msgctxt "preferences"
 msgid "dim"
 msgstr "atenuar"
 
-#: ../build/bin/conf_gen.h:3224 ../build/bin/preferences_gen.h:5170
+#: ../build/bin/conf_gen.h:3218 ../build/bin/preferences_gen.h:5170
 msgctxt "preferences"
 msgid "fade"
 msgstr "esmaecer"
 
-#: ../build/bin/conf_gen.h:3225 ../build/bin/preferences_gen.h:5175
+#: ../build/bin/conf_gen.h:3219 ../build/bin/preferences_gen.h:5175
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/bin/conf_gen.h:3226 ../build/bin/preferences_gen.h:5180
+#: ../build/bin/conf_gen.h:3220 ../build/bin/preferences_gen.h:5180
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suavizar"
 
-#: ../build/bin/conf_gen.h:3227 ../build/bin/preferences_gen.h:5185
+#: ../build/bin/conf_gen.h:3221 ../build/bin/preferences_gen.h:5185
 msgctxt "preferences"
 msgid "glide"
 msgstr "deslizar"
@@ -3068,7 +3068,7 @@ msgstr "croma"
 #: ../src/develop/blend_gui.c:2323 ../src/develop/blend_gui.c:2357
 #: ../src/develop/blend_gui.c:2419 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4513 ../src/iop/channelmixerrgb.c:4628
-#: ../src/iop/colorbalance.c:2070 ../src/iop/colorize.c:350
+#: ../src/iop/colorbalance.c:2017 ../src/iop/colorize.c:350
 #: ../src/iop/colorreconstruction.c:1265 ../src/iop/colorzones.c:2442
 msgid "hue"
 msgstr "matiz"
@@ -3096,7 +3096,7 @@ msgstr "decaimento de realces"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:569
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
-#: ../src/iop/bilat.c:486 ../src/iop/colorbalance.c:2127
+#: ../src/iop/bilat.c:486 ../src/iop/colorbalance.c:2074
 #: ../src/iop/negadoctor.c:942 ../src/iop/shadhi.c:711
 #: ../src/iop/splittoning.c:510
 msgid "shadows"
@@ -3110,7 +3110,7 @@ msgstr "sombras"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:561
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:180
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:313
-#: ../src/iop/bilat.c:480 ../src/iop/colorbalance.c:2129
+#: ../src/iop/bilat.c:480 ../src/iop/colorbalance.c:2076
 #: ../src/iop/monochrome.c:588 ../src/iop/shadhi.c:712
 #: ../src/iop/splittoning.c:517
 msgid "highlights"
@@ -3129,7 +3129,7 @@ msgstr "croma global"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:565
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:168
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
-#: ../src/iop/colorbalance.c:2128
+#: ../src/iop/colorbalance.c:2075
 msgid "mid-tones"
 msgstr "meios-tons"
 
@@ -3169,8 +3169,8 @@ msgstr "pivô (fulcrum) de contraste de cinza"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:64
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:137
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:636 ../src/iop/bilat.c:475
-#: ../src/iop/colisa.c:306 ../src/iop/colorbalance.c:1975
-#: ../src/iop/colorbalance.c:1981 ../src/iop/filmic.c:1577
+#: ../src/iop/colisa.c:306 ../src/iop/colorbalance.c:1922
+#: ../src/iop/colorbalance.c:1928 ../src/iop/filmic.c:1577
 #: ../src/iop/filmicrgb.c:4614 ../src/iop/lowpass.c:609
 msgid "contrast"
 msgstr "contraste"
@@ -3983,7 +3983,7 @@ msgstr "densidade"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:2318 ../src/iop/basicadj.c:653
 #: ../src/iop/channelmixer.c:642 ../src/iop/colisa.c:308
-#: ../src/iop/colorbalance.c:2087 ../src/iop/colorbalancergb.c:2013
+#: ../src/iop/colorbalance.c:2034 ../src/iop/colorbalancergb.c:2013
 #: ../src/iop/colorchecker.c:1497 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:277 ../src/iop/colorize.c:363
 #: ../src/iop/lowpass.c:611 ../src/iop/soften.c:375 ../src/iop/velvia.c:75
@@ -4162,7 +4162,7 @@ msgstr "correções"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/develop/blend_gui.c:3538 ../src/iop/bilat.c:445
-#: ../src/iop/colorbalance.c:1937 ../src/iop/denoiseprofile.c:3858
+#: ../src/iop/colorbalance.c:1884 ../src/iop/denoiseprofile.c:3858
 #: ../src/iop/exposure.c:1179 ../src/iop/levels.c:706
 #: ../src/iop/profile_gamma.c:693 ../src/libs/copy_history.c:399
 #: ../src/libs/export.c:1378 ../src/libs/image.c:597
@@ -5886,40 +5886,40 @@ msgstr "erro imprimindo `%s' em `%s'"
 msgid "printing `%s' on `%s'"
 msgstr "imprimindo `%s' em `%s'"
 
-#: ../src/common/darktable.c:251
+#: ../src/common/darktable.c:250
 #, c-format
 msgid "found strange path `%s'"
 msgstr "caminho estranho encontrado `%s'"
 
-#: ../src/common/darktable.c:266
+#: ../src/common/darktable.c:265
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erro carregando pasta `%s'"
 
-#: ../src/common/darktable.c:290
+#: ../src/common/darktable.c:289
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "arquivo `%s' é de formato desconhecido!"
 
-#: ../src/common/darktable.c:303 ../src/control/jobs/control_jobs.c:2121
+#: ../src/common/darktable.c:302 ../src/control/jobs/control_jobs.c:2121
 #: ../src/control/jobs/control_jobs.c:2180
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
 
-#: ../src/common/darktable.c:1540
+#: ../src/common/darktable.c:1503
 msgid "configuration information"
 msgstr "informações de configuração"
 
-#: ../src/common/darktable.c:1542 ../src/libs/import.c:1976
+#: ../src/common/darktable.c:1505 ../src/libs/import.c:1976
 msgid "show this information again"
 msgstr "mostrar esta informação novamente"
 
-#: ../src/common/darktable.c:1542
+#: ../src/common/darktable.c:1505
 msgid "understood"
 msgstr "entendido"
 
-#: ../src/common/darktable.c:1999
+#: ../src/common/darktable.c:1962
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5927,12 +5927,12 @@ msgstr ""
 "O interpolador RCD foi definido como padrão ao invés do PPG porque tem "
 "melhor desempenho e qualidade."
 
-#: ../src/common/darktable.c:2001
+#: ../src/common/darktable.c:1964
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "veja preferências/sala escura/interpolação cromática para zoom na sala escura"
 
-#: ../src/common/darktable.c:2007
+#: ../src/common/darktable.c:1970
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5940,7 +5940,7 @@ msgstr ""
 "a interface com o usuário e os mecanismos internos para ajuste fino de "
 "desempenho do darktable mudaram."
 
-#: ../src/common/darktable.c:2009
+#: ../src/common/darktable.c:1972
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5948,15 +5948,15 @@ msgstr ""
 "você não encontrará mais headroom e amigos, ao invés disso em preferências/"
 "processamento use:"
 
-#: ../src/common/darktable.c:2011
+#: ../src/common/darktable.c:1974
 msgid "1) darktable resources"
 msgstr "1) recursos do darktable"
 
-#: ../src/common/darktable.c:2013
+#: ../src/common/darktable.c:1976
 msgid "2) tune OpenCL performance"
 msgstr "2) ajustar desempenho do OpenCL"
 
-#: ../src/common/darktable.c:2020
+#: ../src/common/darktable.c:1983
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -5964,7 +5964,7 @@ msgstr ""
 "alguns valores de configuração globais relevantes para o desempenho de "
 "OpenCL não são mais usados."
 
-#: ../src/common/darktable.c:2022
+#: ../src/common/darktable.c:1985
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
@@ -5972,7 +5972,7 @@ msgstr ""
 "ao invés disso você encontrará dados 'por dispositivo' em "
 "'cl_device_v4_canonical-name'. o conteúdo é:"
 
-#: ../src/common/darktable.c:2024 ../src/common/darktable.c:2043
+#: ../src/common/darktable.c:1987 ../src/common/darktable.c:2006
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5980,18 +5980,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 
-#: ../src/common/darktable.c:2026 ../src/common/darktable.c:2045
+#: ../src/common/darktable.c:1989 ../src/common/darktable.c:2008
 msgid "you may tune as before except 'magic'"
 msgstr "você pode ajustar como antes exceto por 'magic'"
 
-#: ../src/common/darktable.c:2032
+#: ../src/common/darktable.c:1995
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Suas configurações de compilador OpenCL para todos os dispositivos foram "
 "redefinidas para o padrão."
 
-#: ../src/common/darktable.c:2039
+#: ../src/common/darktable.c:2002
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -5999,14 +5999,14 @@ msgstr ""
 "Os dados de parâmetros globais OpenCL 'por dispositivo' foram recriados com "
 "nome atualizado."
 
-#: ../src/common/darktable.c:2041
+#: ../src/common/darktable.c:2004
 msgid ""
 "you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
 msgstr ""
 "você encontrará dados 'por dispositivo' em 'cl_device_v5_canonical-name'. o "
 "conteúdo é:"
 
-#: ../src/common/darktable.c:2047
+#: ../src/common/darktable.c:2010
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -8540,7 +8540,7 @@ msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo `%s' versão incompatível: %d != %d"
 
 #: ../src/develop/develop.c:2954
-msgid "module duplicate, can't move new instance after the base one\n"
+msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "duplicação de módulos, não é possível mover a nova instância para depois da "
 "instância base\n"
@@ -10806,7 +10806,7 @@ msgid "vertically"
 msgstr "verticalmente"
 
 #: ../src/gui/guides.c:715 ../src/iop/ashift.c:6327 ../src/iop/clipping.c:2142
-#: ../src/iop/colorbalance.c:1945
+#: ../src/iop/colorbalance.c:1892
 msgid "both"
 msgstr "ambos"
 
@@ -12091,7 +12091,7 @@ msgstr "enviar como e-mail"
 msgid "images exported from darktable"
 msgstr "imagens exportadas do darktable"
 
-#: ../src/imageio/storage/email.c:306
+#: ../src/imageio/storage/email.c:305
 msgid "could not launch email client!"
 msgstr "não é possível iniciar o programa de email!"
 
@@ -12269,7 +12269,7 @@ msgstr "rotaciona ou distorce a perspectiva automaticamente"
 
 #: ../src/iop/ashift.c:131 ../src/iop/channelmixer.c:139
 #: ../src/iop/channelmixerrgb.c:232 ../src/iop/clipping.c:364
-#: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:185
+#: ../src/iop/colorbalance.c:163 ../src/iop/colorbalancergb.c:185
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:77
 #: ../src/iop/crop.c:135 ../src/iop/lut3d.c:142
 msgid "corrective or creative"
@@ -12524,7 +12524,7 @@ msgid "corrective and creative"
 msgstr "corretivo e criativo"
 
 #: ../src/iop/atrous.c:135 ../src/iop/atrous.c:137
-#: ../src/iop/colorbalance.c:162
+#: ../src/iop/colorbalance.c:164
 msgid "linear, Lab, scene-referred"
 msgstr "linear, Lab, relativo à cena"
 
@@ -12809,7 +12809,7 @@ msgid "linear, RGB, display-referred"
 msgstr "linear, RGB, relativo à exibição"
 
 #: ../src/iop/basecurve.c:393 ../src/iop/basicadj.c:175
-#: ../src/iop/colorbalance.c:163 ../src/iop/colorbalancergb.c:187
+#: ../src/iop/colorbalance.c:165 ../src/iop/colorbalancergb.c:187
 #: ../src/iop/dither.c:121 ../src/iop/filmicrgb.c:354
 #: ../src/iop/graduatednd.c:148 ../src/iop/negadoctor.c:148
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgbcurve.c:147
@@ -13373,15 +13373,15 @@ msgstr "linear, raw, relativo à cena"
 msgid "linear, raw"
 msgstr "linear, raw"
 
-#: ../src/iop/cacorrect.c:1465
+#: ../src/iop/cacorrect.c:1436
 msgid "iteration runs, default is twice"
 msgstr "quantidade de iterações, o padrão são duas"
 
-#: ../src/iop/cacorrect.c:1468
+#: ../src/iop/cacorrect.c:1439
 msgid "activate colorshift correction for blue & red channels"
 msgstr "ativa correção de desvio de cor para canais azul e vermelho"
 
-#: ../src/iop/cacorrect.c:1475
+#: ../src/iop/cacorrect.c:1446
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for Bayer raw files"
@@ -14489,221 +14489,221 @@ msgstr "ajusta a aparência da imagem"
 msgid "color saturation adjustment"
 msgstr "ajusta a saturação de cor"
 
-#: ../src/iop/colorbalance.c:150
+#: ../src/iop/colorbalance.c:152
 msgid "color balance"
 msgstr "balanço de cor"
 
-#: ../src/iop/colorbalance.c:155
+#: ../src/iop/colorbalance.c:157
 msgid "lift gamma gain|cdl|color grading|contrast|saturation|hue"
 msgstr ""
 "elevação de ganho de gama|cdl|gradação de cores|contraste|saturação|matiz"
 
-#: ../src/iop/colorbalance.c:160
+#: ../src/iop/colorbalance.c:162
 msgid "shift colors selectively by luminance range"
 msgstr "deslocar cores seletivamente por faixa de luminância"
 
-#: ../src/iop/colorbalance.c:164
+#: ../src/iop/colorbalance.c:166
 msgid "non-linear, Lab, scene-referred"
 msgstr "não-linear, Lab, relativo à cena"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/colorbalance.c:302
+#: ../src/iop/colorbalance.c:304
 msgid "split-toning teal-orange (2nd instance)"
 msgstr "gradação de cor azul-petróleo/laranja (2ª instância)"
 
-#: ../src/iop/colorbalance.c:305
+#: ../src/iop/colorbalance.c:307
 msgid "split-toning teal-orange (1st instance)"
 msgstr "gradação de cor azul-petróleo/laranja (1ª instância)"
 
-#: ../src/iop/colorbalance.c:309
+#: ../src/iop/colorbalance.c:311
 msgid "generic film"
 msgstr "filme genérico"
 
-#: ../src/iop/colorbalance.c:313
+#: ../src/iop/colorbalance.c:315
 msgid "similar to Kodak Portra"
 msgstr "similar à Kodak Portra"
 
-#: ../src/iop/colorbalance.c:317
+#: ../src/iop/colorbalance.c:319
 msgid "similar to Kodak Ektar"
 msgstr "similar à Kodak Ektar"
 
-#: ../src/iop/colorbalance.c:321
+#: ../src/iop/colorbalance.c:323
 msgid "similar to Kodachrome"
 msgstr "similar à Kodachrome"
 
-#: ../src/iop/colorbalance.c:1017
+#: ../src/iop/colorbalance.c:964
 msgid "optimize luma from patches"
 msgstr "otimizar luma dos patches"
 
-#: ../src/iop/colorbalance.c:1019 ../src/iop/colorbalance.c:2138
+#: ../src/iop/colorbalance.c:966 ../src/iop/colorbalance.c:2085
 msgid "optimize luma"
 msgstr "otimizar luma"
 
-#: ../src/iop/colorbalance.c:1023
+#: ../src/iop/colorbalance.c:970
 msgid "neutralize colors from patches"
 msgstr "neutralizar cores dos patches"
 
-#: ../src/iop/colorbalance.c:1025 ../src/iop/colorbalance.c:2144
+#: ../src/iop/colorbalance.c:972 ../src/iop/colorbalance.c:2091
 msgid "neutralize colors"
 msgstr "neutralizar cores"
 
-#: ../src/iop/colorbalance.c:1811
+#: ../src/iop/colorbalance.c:1758
 msgctxt "color"
 msgid "offset"
 msgstr "deslocamento"
 
-#: ../src/iop/colorbalance.c:1811
+#: ../src/iop/colorbalance.c:1758
 msgctxt "color"
 msgid "power"
 msgstr "potência"
 
-#: ../src/iop/colorbalance.c:1811
+#: ../src/iop/colorbalance.c:1758
 msgctxt "color"
 msgid "slope"
 msgstr "inclinação"
 
-#: ../src/iop/colorbalance.c:1812
+#: ../src/iop/colorbalance.c:1759
 msgctxt "color"
 msgid "lift"
 msgstr "levantar"
 
-#: ../src/iop/colorbalance.c:1812
+#: ../src/iop/colorbalance.c:1759
 msgctxt "color"
 msgid "gamma"
 msgstr "gama"
 
-#: ../src/iop/colorbalance.c:1812
+#: ../src/iop/colorbalance.c:1759
 msgctxt "color"
 msgid "gain"
 msgstr "ganho"
 
-#: ../src/iop/colorbalance.c:1815
+#: ../src/iop/colorbalance.c:1762
 msgctxt "section"
 msgid "shadows: lift / offset"
 msgstr "sombras: elevação / deslocamento"
 
-#: ../src/iop/colorbalance.c:1816
+#: ../src/iop/colorbalance.c:1763
 msgctxt "section"
 msgid "mid-tones: gamma / power"
 msgstr "meios-tons: gama / potência"
 
-#: ../src/iop/colorbalance.c:1817
+#: ../src/iop/colorbalance.c:1764
 msgctxt "section"
 msgid "highlights: gain / slope"
 msgstr "realces: ganho / inclinação"
 
-#: ../src/iop/colorbalance.c:1841
+#: ../src/iop/colorbalance.c:1788
 msgid "shadows / mid-tones / highlights"
 msgstr "sombras / meios-tons / realces"
 
-#: ../src/iop/colorbalance.c:1938 ../src/iop/colorbalance.c:1947
+#: ../src/iop/colorbalance.c:1885 ../src/iop/colorbalance.c:1894
 msgid "color-grading mapping method"
 msgstr "método de gradação para mapeamento de cor"
 
-#: ../src/iop/colorbalance.c:1942
+#: ../src/iop/colorbalance.c:1889
 msgid "color control sliders"
 msgstr "controles de cor"
 
-#: ../src/iop/colorbalance.c:1943 ../src/libs/colorpicker.c:51
+#: ../src/iop/colorbalance.c:1890 ../src/libs/colorpicker.c:51
 msgid "HSL"
 msgstr "HSL"
 
-#: ../src/iop/colorbalance.c:1944
+#: ../src/iop/colorbalance.c:1891
 msgid "RGBL"
 msgstr "RGBL"
 
-#: ../src/iop/colorbalance.c:1956
+#: ../src/iop/colorbalance.c:1903
 msgctxt "section"
 msgid "master"
 msgstr "mestre"
 
-#: ../src/iop/colorbalance.c:1962
+#: ../src/iop/colorbalance.c:1909
 msgid "saturation correction before the color balance"
 msgstr "correção de saturação antes do balanço de cor"
 
-#: ../src/iop/colorbalance.c:1968
+#: ../src/iop/colorbalance.c:1915
 msgid "saturation correction after the color balance"
 msgstr "correção de saturação depois do balanço de cor"
 
-#: ../src/iop/colorbalance.c:1973
+#: ../src/iop/colorbalance.c:1920
 msgid "adjust to match a neutral tone"
 msgstr "ajustar para casar com tom neutro"
 
 #. is set in _configure_slider_blocks
-#: ../src/iop/colorbalance.c:2031
+#: ../src/iop/colorbalance.c:1978
 msgid "click to cycle layout"
 msgstr "clique para alternar pelas disposições"
 
-#: ../src/iop/colorbalance.c:2065
+#: ../src/iop/colorbalance.c:2012
 msgid "factor"
 msgstr "fator"
 
-#: ../src/iop/colorbalance.c:2079
+#: ../src/iop/colorbalance.c:2026
 msgid "select the hue"
 msgstr "seleciona a matiz"
 
-#: ../src/iop/colorbalance.c:2091
+#: ../src/iop/colorbalance.c:2038
 msgid "select the saturation"
 msgstr "seleciona a saturação"
 
-#: ../src/iop/colorbalance.c:2110
+#: ../src/iop/colorbalance.c:2057
 msgid "factor of lift/offset"
 msgstr "fator de elevação/deslocamento"
 
-#: ../src/iop/colorbalance.c:2111
+#: ../src/iop/colorbalance.c:2058
 msgid "factor of red for lift/offset"
 msgstr "fator de vermelho para levante/deslocamento"
 
-#: ../src/iop/colorbalance.c:2112
+#: ../src/iop/colorbalance.c:2059
 msgid "factor of green for lift/offset"
 msgstr "fator de verde para levante/deslocamento"
 
-#: ../src/iop/colorbalance.c:2113
+#: ../src/iop/colorbalance.c:2060
 msgid "factor of blue for lift/offset"
 msgstr "fator de azul para levante/deslocamento"
 
-#: ../src/iop/colorbalance.c:2116
+#: ../src/iop/colorbalance.c:2063
 msgid "factor of gamma/power"
 msgstr "fator de gama/potência"
 
-#: ../src/iop/colorbalance.c:2117
+#: ../src/iop/colorbalance.c:2064
 msgid "factor of red for gamma/power"
 msgstr "fator de vermelho para gama/potência"
 
-#: ../src/iop/colorbalance.c:2118
+#: ../src/iop/colorbalance.c:2065
 msgid "factor of green for gamma/power"
 msgstr "fator de verde para gama/potência"
 
-#: ../src/iop/colorbalance.c:2119
+#: ../src/iop/colorbalance.c:2066
 msgid "factor of blue for gamma/power"
 msgstr "fator de azul para gama/potência"
 
-#: ../src/iop/colorbalance.c:2122
+#: ../src/iop/colorbalance.c:2069
 msgid "factor of gain/slope"
 msgstr "fator de ganho/inclinação"
 
-#: ../src/iop/colorbalance.c:2123
+#: ../src/iop/colorbalance.c:2070
 msgid "factor of red for gain/slope"
 msgstr "fator de vermelho para ganho/inclinação"
 
-#: ../src/iop/colorbalance.c:2124
+#: ../src/iop/colorbalance.c:2071
 msgid "factor of green for gain/slope"
 msgstr "fator de verde para ganho/inclinação"
 
-#: ../src/iop/colorbalance.c:2125
+#: ../src/iop/colorbalance.c:2072
 msgid "factor of blue for gain/slope"
 msgstr "fator de azul para ganho/inclinação"
 
-#: ../src/iop/colorbalance.c:2134
+#: ../src/iop/colorbalance.c:2081
 msgctxt "section"
 msgid "auto optimizers"
 msgstr "otimizadores automáticos"
 
-#: ../src/iop/colorbalance.c:2139
+#: ../src/iop/colorbalance.c:2086
 msgid "fit the whole histogram and center the average luma"
 msgstr "ajusta todo o histograma e centraliza o luma médio"
 
-#: ../src/iop/colorbalance.c:2145
+#: ../src/iop/colorbalance.c:2092
 msgid "optimize the RGB curves to remove color casts"
 msgstr "otimiza curvas RGB para remover desvios de cor"
 
@@ -15234,24 +15234,24 @@ msgstr ""
 "não consegui extrair matriz do espaço de cores `%s', será substituída pelo "
 "RGB Rec2020!"
 
-#: ../src/iop/colorin.c:1464
+#: ../src/iop/colorin.c:1372
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "`%s' matriz de cor não encontrada!"
 
-#: ../src/iop/colorin.c:1503
+#: ../src/iop/colorin.c:1411
 msgid "input profile could not be generated!"
 msgstr "perfil de entrada não pode ser gerado!"
 
-#: ../src/iop/colorin.c:1600
+#: ../src/iop/colorin.c:1508
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "perfil de entrada não suportado foi substituído por RGB Rec709 linear!"
 
-#: ../src/iop/colorin.c:1884
+#: ../src/iop/colorin.c:1792
 msgid "external ICC profiles"
 msgstr "perfis ICC externos"
 
-#: ../src/iop/colorin.c:1929
+#: ../src/iop/colorin.c:1837
 #, c-format
 msgid ""
 "embedded ICC profile properties:\n"
@@ -15273,19 +15273,19 @@ msgstr ""
 "modelo: <b>%s</b>\n"
 "copyright: <b>%s</b>\n"
 
-#: ../src/iop/colorin.c:2124
+#: ../src/iop/colorin.c:2032
 msgid "input profile"
 msgstr "perfil de entrada"
 
-#: ../src/iop/colorin.c:2128
+#: ../src/iop/colorin.c:2036
 msgid "working profile"
 msgstr "perfil de trabalho"
 
-#: ../src/iop/colorin.c:2137
+#: ../src/iop/colorin.c:2045
 msgid "working ICC profiles"
 msgstr "perfil de trabalho ICC"
 
-#: ../src/iop/colorin.c:2149
+#: ../src/iop/colorin.c:2057
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "delimita valores Lab para tonalidades do espaço de cores RGB"
 
@@ -16955,7 +16955,7 @@ msgstr "balanço"
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
-"between inpainting a smooth color gradient,\n"
+"inpainting a smooth color gradient\n"
 "or trying to recover the textured details.\n"
 "0% is an equal mix of both.\n"
 "increase if at least one RGB channel is not clipped.\n"
@@ -16972,7 +16972,7 @@ msgstr ""
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
-"between blooming highlights like film does,\n"
+"blooming highlights like film does\n"
 "or trying to recover sharp details.\n"
 "0% is an equal mix of both.\n"
 "increase if you want more details.\n"
@@ -16989,7 +16989,7 @@ msgstr ""
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
-"between recovering monochromatic highlights,\n"
+"recovering monochromatic highlights\n"
 "or trying to recover colorful highlights.\n"
 "0% is an equal mix of both.\n"
 "increase if you want more color.\n"
