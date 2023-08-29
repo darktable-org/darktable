@@ -41,7 +41,6 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/action.h"
-#include "common/cpuid.h"
 #include "common/file_location.h"
 #include "common/film.h"
 #include "common/grealpath.h"
@@ -310,37 +309,14 @@ int dt_load_from_string(const gchar *input,
 
 static void dt_codepaths_init()
 {
-#ifdef HAVE_BUILTIN_CPU_SUPPORTS
-  __builtin_cpu_init();
-#endif
+  // we no longer do explicit runtime selection of code paths, so initialize to "none"
+  // (there are still functions where the compiler creates runtime selection due to "target_clones"
+  // directives, but those are not affected by this code)
 
   memset(&(darktable.codepath), 0, sizeof(darktable.codepath));
 
-  // first, enable whatever codepath this CPU supports
-  {
-#ifdef HAVE_BUILTIN_CPU_SUPPORTS
-    darktable.codepath.SSE2 = (__builtin_cpu_supports("sse")
-                               && __builtin_cpu_supports("sse2"));
-#else
-    dt_cpu_flags_t flags = dt_detect_cpu_features();
-    darktable.codepath.SSE2 = ((flags & (CPU_FLAG_SSE)) && (flags & (CPU_FLAG_SSE2)));
-#endif
-  }
-
-  // second, apply overrides from conf
-  // NOTE: all intrinsics sets can only be overridden to OFF
-  if(!dt_conf_get_bool("codepaths/sse2")) darktable.codepath.SSE2 = 0;
-
-  // last: do we have any intrinsics sets enabled?
-  darktable.codepath._no_intrinsics = !(darktable.codepath.SSE2);
-
-#if defined(__SSE__)
-  if(darktable.codepath._no_intrinsics)
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
-  }
-#endif
+  // do we have any intrinsics sets enabled? (nope)
+  darktable.codepath._no_intrinsics = 1;
 }
 
 static inline size_t _get_total_memory()
@@ -543,15 +519,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_set_signal_handlers();
 
-  gboolean sse2_supported = FALSE;
-#ifdef HAVE_BUILTIN_CPU_SUPPORTS
-  // NOTE: _may_i_use_cpu_feature() looks better, but only available in ICC
-  __builtin_cpu_init();
-  sse2_supported = __builtin_cpu_supports("sse2");
-#else
-  sse2_supported = dt_detect_cpu_features() & CPU_FLAG_SSE2;
-#endif
-
 #ifdef M_MMAP_THRESHOLD
   mallopt(M_MMAP_THRESHOLD, 128 * 1024); /* use mmap() for large allocations */
 #endif
@@ -563,10 +530,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   memset(&darktable, 0, sizeof(darktable_t));
 
   darktable.start_wtime = start_wtime;
-  if(!sse2_supported)
-    dt_print
-      (DT_DEBUG_ALWAYS,
-       "[dt_init] SSE2 is unavailable, some functions will be noticeably slower.\n");
 
   darktable.progname = argv[0];
 
@@ -649,9 +612,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  normal build\n"
 #endif
 #if defined(__SSE2__) && defined(__SSE__)
-               "  SSE2 optimized codepath enabled\n"
+               "  SSE2 optimizations enabled\n"
 #else
-               "  SSE2 optimized codepath disabled\n"
+               "  SSE2 optimizations unavailable\n"
 #endif
 #ifdef _OPENMP
                "  OpenMP support enabled\n"

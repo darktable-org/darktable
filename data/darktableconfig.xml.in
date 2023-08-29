@@ -3399,13 +3399,6 @@
     <longdescription>if more images are display in expose mode, zooming will be deactivated</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>codepaths/sse2</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>enable usage of SSE2-optimized codepaths</shortdescription>
-    <longdescription></longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>codepaths/openmp_simd</name>
     <type>bool</type>
     <default>false</default>
