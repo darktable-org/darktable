@@ -231,24 +231,6 @@ static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev,
   return hist_mod;
 }
 
-// returns the first history item with corresponding module->op
-static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev,
-                                                    const dt_iop_module_t *module)
-{
-  dt_dev_history_item_t *hist_mod = NULL;
-  for(GList *history = dev->history; history; history = g_list_next(history))
-  {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-
-    if(dt_iop_module_is(hist->module->so, module->op))
-    {
-      hist_mod = hist;
-      break;
-    }
-  }
-  return hist_mod;
-}
-
 // returns the module on modules_list that is equal to module
 // used to check if module exists on the list
 static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list,
@@ -397,26 +379,6 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       // we will replace this module
       modules_used = g_list_append(modules_used, mod_dest);
       mod_replace = mod_dest;
-    }
-  }
-
-  if(module_added && mod_replace == NULL)
-  {
-    // we haven't found a module to replace, so we will create a new instance
-    // but if there's an un-used instance on dev->iop we will use that.
-
-    if(_search_history_by_op(dev_dest, mod_src) == NULL)
-    {
-      // there should be only one instance of this iop (since is un-used)
-      mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
-      if(mod_replace == NULL)
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[dt_history_merge_module_into_history]"
-                 " can't find base instance module %s\n",
-                 mod_src->op);
-        module_added = FALSE;
-      }
     }
   }
 
