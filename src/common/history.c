@@ -231,24 +231,6 @@ static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev,
   return hist_mod;
 }
 
-// returns the first history item with corresponding module->op
-static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev,
-                                                    const dt_iop_module_t *module)
-{
-  dt_dev_history_item_t *hist_mod = NULL;
-  for(GList *history = dev->history; history; history = g_list_next(history))
-  {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-
-    if(dt_iop_module_is(hist->module->so, module->op))
-    {
-      hist_mod = hist;
-      break;
-    }
-  }
-  return hist_mod;
-}
-
 // returns the module on modules_list that is equal to module
 // used to check if module exists on the list
 static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list,
@@ -400,26 +382,6 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     }
   }
 
-  if(module_added && mod_replace == NULL)
-  {
-    // we haven't found a module to replace, so we will create a new instance
-    // but if there's an un-used instance on dev->iop we will use that.
-
-    if(_search_history_by_op(dev_dest, mod_src) == NULL)
-    {
-      // there should be only one instance of this iop (since is un-used)
-      mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
-      if(mod_replace == NULL)
-      {
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[dt_history_merge_module_into_history]"
-                 " can't find base instance module %s\n",
-                 mod_src->op);
-        module_added = FALSE;
-      }
-    }
-  }
-
   if(module_added)
   {
     // if we are creating a new instance, create a new module
@@ -430,6 +392,9 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
 
       module = dt_dev_module_duplicate_ext(dev_dest, base, FALSE);
       dt_ioppr_resync_modules_order(dev_dest);
+
+      // and record this module as we don't want to reuse it later
+      modules_used = g_list_append(modules_used, module);
 
       if(!module)
       {
@@ -445,6 +410,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     }
 
     module->enabled = mod_src->enabled;
+    module->multi_priority = mod_src->multi_priority;
 
     if(!module->multi_name_hand_edited)
     {
@@ -591,6 +557,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
 static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
                                                        const dt_imgid_t dest_imgid,
                                                        GList *ops,
+                                                       const gboolean copy_iop_order,
                                                        const gboolean copy_full)
 {
   GList *modules_used = NULL;
@@ -691,7 +658,8 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   autoinit_list = g_list_reverse(autoinit_list);
 
   // update iop-order list to have entries for the new modules
-  dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
+  if(!copy_iop_order)
+    dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
 
   GList *ai = autoinit_list;
 
@@ -705,7 +673,8 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   }
 
   // update iop-order list to have entries for the new modules
-  dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
+  if(!copy_iop_order)
+    dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
 
   if(darktable.unmuted & DT_DEBUG_IOPORDER)
     dt_ioppr_check_iop_order(dev_dest, dest_imgid,
@@ -727,6 +696,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
 static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgid,
                                                            const dt_imgid_t dest_imgid,
                                                            GList *ops,
+                                                           const gboolean copy_iop_order,
                                                            const gboolean copy_full)
 {
   gboolean ret_val = FALSE;
@@ -889,7 +859,8 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
   else
   {
     // since the history and masks where deleted we can do a merge
-    ret_val = _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_full);
+    ret_val = _history_copy_and_paste_on_image_merge
+      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
   }
 
   return ret_val;
@@ -922,9 +893,11 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
   hist->imgid = dest_imgid;
   dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
 
+  GList *iop_list = NULL;
+
   if(copy_iop_order)
   {
-    GList *iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+    iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
 
     // but we also want to keep the multi-instance on the destination if merge is active
     if(merge)
@@ -932,20 +905,28 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
       GList *dest_iop_list = dt_ioppr_get_iop_order_list(dest_imgid, FALSE);
       GList *mi_iop_list = dt_ioppr_extract_multi_instances_list(dest_iop_list);
 
-      if(mi_iop_list) dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi_iop_list);
+      if(mi_iop_list)
+        dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi_iop_list);
 
       g_list_free_full(dest_iop_list, g_free);
       g_list_free_full(mi_iop_list, g_free);
     }
     dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
-    g_list_free_full(iop_list, g_free);
   }
 
   gboolean ret_val = FALSE;
   if(merge)
-    ret_val = _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_full);
+    ret_val = _history_copy_and_paste_on_image_merge
+      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
   else
-    ret_val = _history_copy_and_paste_on_image_overwrite(imgid, dest_imgid, ops, copy_full);
+    ret_val = _history_copy_and_paste_on_image_overwrite
+      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
+
+  if(iop_list)
+  {
+    dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
+    g_list_free_full(iop_list, g_free);
+  }
 
   dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
