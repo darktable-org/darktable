@@ -1620,9 +1620,37 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   
 
   // variables to hold vertical and horizontal width of all thumbnails after their final placement
-  unsigned int total_width = 0;
-  unsigned int total_height = 0;
+  unsigned int planned_total_width = total_slot_width;
+  unsigned int planned_total_height = max_thumb_height;
 
+  const float screen_aspect_r = table->view_width / (float)table->view_height;
+  int row_cnt = 1;
+  int row_cnt_tmp = 1;
+
+  float deviation = _absmul(planned_total_width / (float)planned_total_height, screen_aspect_r);
+  float deviation_tmp = deviation;
+
+  do {
+    row_cnt = row_cnt_tmp;
+    deviation = deviation_tmp;
+    planned_total_width = total_slot_width / (float) row_cnt;
+    planned_total_height = row_cnt * max_slot_heigth;
+
+    if(planned_total_width / (float)planned_total_height > screen_aspect_r)
+      row_cnt_tmp = row_cnt + 1;
+    else
+      row_cnt_tmp = row_cnt - 1;
+
+    if(row_cnt_tmp == 0 || row_cnt_tmp > slot_counter)
+      break;
+
+    float planned_total_width_tmp = total_slot_width / (float) row_cnt_tmp;
+    int planned_total_height_tmp = row_cnt_tmp * max_slot_heigth;
+
+    deviation_tmp = _absmul(planned_total_width_tmp / (float)planned_total_height_tmp, screen_aspect_r);
+
+  } while (deviation_tmp < deviation);
+  /*
   // estimate a good start value for number of rows and columns to use in thumbnail placement by taking the square root
   //  of the number of thumbnails. E.g. 9 thumbnails: probably 3x3. Prefer wide configuration e.g. 8 thumbnails: 3x2
   int thumbs_per_row = 0;
@@ -1714,7 +1742,9 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
   // Now we have a good estimation how many thumbnails SHOULD fit in each row and column.
   // Actual placement might differ
-
+  */
+  int total_height = 0;
+  int total_width = 0;
 
   // create a nested list to hold all thumbnails in their final placement in rows
   GList *rows = g_list_append(NULL, NULL);
@@ -1722,8 +1752,8 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     int row_y = 0;
     int thumb_x = 0;
     int row_heigth = 0;
-    const int row_width_limit = total_slot_width / slot_counter * thumbs_per_row;
-    int remaining_slot_width = total_slot_width;
+    const int row_width_limit = planned_total_width;
+    //int remaining_slot_width = total_slot_width;
 
     // work with one slot at a time
     for(GList *slot_iter = slots; slot_iter; slot_iter = g_list_next(slot_iter))
@@ -1751,6 +1781,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       // if slot would fit within the 20% buffer zone, we check if its width is about the same as the buffer zone
       //  if yes, we only place the slot here if it stops the next row from overflowing
       //  otherwise there is no good reason to squeze it in and the slot will be placed in the next row instead
+      /*
       if(thumb_x + slot_max_thumb_width > row_width_limit && thumb_x + slot_max_thumb_width <= row_width_limit + avg_slot_width * 0.6)
       {
         if(slot_max_thumb_width < 0.6 * avg_slot_width)
@@ -1760,7 +1791,8 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
             create_new_row = FALSE;
         }
       }
-      else if(thumb_x + slot_max_thumb_width > row_width_limit + avg_slot_width * 0.6)
+      */
+      if(thumb_x + 0.4 * slot_max_thumb_width > row_width_limit)
       {
         create_new_row = TRUE;
         // if this is the last image and we are about to place it in a new row,
@@ -1809,7 +1841,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       total_height = MAX(total_height, thumb_y);        // update total height of all thumbs combined as we fill column by column with thumbnails
       thumb_x += slot_max_thumb_width + spacing;
       total_width = MAX(total_width, thumb_x);          // update total width of all thumbs combined as we fill column by column with thumbnails
-      remaining_slot_width -= (slot_max_thumb_width + spacing);
+      //remaining_slot_width -= (slot_max_thumb_width + spacing);
     }
     g_list_free(slots);
     slots = NULL;
