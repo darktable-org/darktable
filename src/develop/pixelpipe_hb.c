@@ -2664,10 +2664,12 @@ restart:
   dt_iop_buffer_dsc_t _out_format = { 0 };
   dt_iop_buffer_dsc_t *out_format = &_out_format;
 
+#ifdef HAVE_OPENCL
   if(pipe->devid >= 0)
     dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe starting CL", pipe, NULL, &roi, &roi, "device=%i (%s)\n",
       pipe->devid, darktable.opencl->dev[pipe->devid].cname);
   else
+#endif
     dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe starting on CPU", pipe, NULL, &roi, &roi, "\n");
 
   // run pixelpipe recursively and get error status
