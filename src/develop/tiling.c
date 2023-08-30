@@ -87,7 +87,7 @@ static inline int _align_close(int n, int a)
   return n + shift;
 }
 
-/* 
+/*
   _maximum_number_tiles is the assumed maximum sane number of tiles
   if during tiling this number is exceeded darktable assumes that tiling is not possible and falls back
   to untiled processing - with all system memory limits taking full effect.
@@ -1684,13 +1684,13 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = FALSE;
-  const gboolean pinning_error = (use_pinned_memory == FALSE) && dt_opencl_use_pinned_memory(devid);
+  const gboolean pinning_error = !use_pinned_memory && dt_opencl_use_pinned_memory(devid);
   dt_print(DT_DEBUG_TILING | DT_DEBUG_OPENCL,
            "[default_process_tiling_opencl_ptp] [%s] couldn't run process_cl() for "
            "module '%s%s' in tiling mode:%s %s\n",
            dt_dev_pixelpipe_type_to_str(piece->pipe->type), self->op, dt_iop_get_instance_id(self),
            (pinning_error) ? " pinning problem" : "", cl_errstr(err));
-  if(pinning_error) darktable.opencl->dev[devid].runtime_error |= DT_OPENCL_TUNE_PINNED;
+  if(pinning_error) darktable.opencl->dev[devid].pinned_error = TRUE;
   return FALSE;
 }
 
@@ -2154,7 +2154,7 @@ error:
            dt_dev_pixelpipe_type_to_str(piece->pipe->type),
            self->op, dt_iop_get_instance_id(self),
            (pinning_error) ? " pinning problem" : "", cl_errstr(err));
-  if(pinning_error) darktable.opencl->dev[devid].runtime_error |= DT_OPENCL_TUNE_PINNED;
+  if(pinning_error) darktable.opencl->dev[devid].pinned_error = TRUE;
   return FALSE;
 }
 

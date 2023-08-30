@@ -256,11 +256,11 @@ static const char *nvidia_gpus[] = {
 };
 #endif
 
-int dt_nvidia_gpu_supports_sm_20(const char *model)
+gboolean dt_nvidia_gpu_supports_sm_20(const char *model)
 {
 #ifdef __APPLE__
   // on Mac OSX the OpenCL driver does not seem to support inline asm - even with recent NVIDIA GPUs
-  return 0;
+  return FALSE;
 #else
   int i = 0;
   while(nvidia_gpus[2 * i] != NULL)
@@ -268,12 +268,12 @@ int dt_nvidia_gpu_supports_sm_20(const char *model)
     if(!strcasecmp(model, nvidia_gpus[2 * i]))
     {
       if(nvidia_gpus[2 * i + 1][0] >= '2') return 1;
-      return 0;
+      return FALSE;
     }
     i++;
   }
   // if we don't know the device, it's probably too new and all good.
-  return 1;
+  return TRUE;
 #endif
 }
 // clang-format off

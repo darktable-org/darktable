@@ -51,17 +51,6 @@
 
 static const char *_opencl_get_vendor_by_id(unsigned int id);
 
-static float _opencl_benchmark_gpu(const int devid,
-                                   const size_t width,
-                                   const size_t height,
-                                   const int count,
-                                   const float sigma);
-
-static float _opencl_benchmark_cpu(const size_t width,
-                                   const size_t height,
-                                   const int count,
-                                   const float sigma);
-
 static gboolean _opencl_load_program(const int dev,
                                      const int prog,
                                      const char *programname,
@@ -242,7 +231,7 @@ const char *cl_errstr(cl_int error)
 static inline void _check_clmem_err(const int devid, const cl_int err)
 {
   if((err == CL_MEM_OBJECT_ALLOCATION_FAILURE) || (err == CL_OUT_OF_RESOURCES))
-  darktable.opencl->dev[devid].runtime_error |= DT_OPENCL_TUNE_MEMSIZE;
+  darktable.opencl->dev[devid].clmem_error |= TRUE;
 }
 
 static inline gboolean _cl_running(void)
@@ -331,7 +320,7 @@ error:
 gboolean dt_opencl_avoid_atomics(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  return (!_cldev_running(devid)) ? FALSE : (cl->dev[devid].avoid_atomics ? TRUE : FALSE);
+  return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].avoid_atomics;
 }
 
 int dt_opencl_micro_nap(const int devid)
@@ -343,8 +332,7 @@ int dt_opencl_micro_nap(const int devid)
 gboolean dt_opencl_use_pinned_memory(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!_cldev_running(devid)) return FALSE;
-  return (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED);
+  return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].pinned_memory;
 }
 
 void dt_opencl_write_device_config(const int devid)
@@ -354,16 +342,16 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %f %.3f",
-    (cl->dev[devid].avoid_atomics) ? 1 : 0,
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %.3f %.3f",
+    cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
-    cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
+    cl->dev[devid].pinned_memory,
     cl->dev[devid].clroundup_wd,
     cl->dev[devid].clroundup_ht,
     cl->dev[devid].event_handles,
-    (cl->dev[devid].asyncmode) ? 1 : 0,
-    (cl->dev[devid].disabled) ? 1 : 0,
-    cl->dev[devid].benchmark,
+    cl->dev[devid].asyncmode,
+    cl->dev[devid].disabled,
+    0.0f, // dummy for now as we don't have the benching any more
     cl->dev[devid].advantage);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
@@ -373,7 +361,7 @@ void dt_opencl_write_device_config(const int devid)
   // specific but also depend on the devid to support systems with two
   // similar cards.
   g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
-  g_snprintf(dat, 510, "%i", cl->dev[devid].forced_headroom);
+  g_snprintf(dat, 510, "%i", cl->dev[devid].headroom);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -400,11 +388,11 @@ gboolean dt_opencl_read_device_config(const int devid)
     int event_handles;
     int asyncmode;
     int disabled;
-    float benchmark;
+    float dummy; // unused
     float advantage;
     sscanf(dat, "%i %i %i %i %i %i %i %i %f %f",
            &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht,
-           &event_handles, &asyncmode, &disabled, &benchmark, &advantage);
+           &event_handles, &asyncmode, &disabled, &dummy, &advantage);
 
     // some rudimentary safety checking if string seems to be ok
     safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513);
@@ -419,7 +407,6 @@ gboolean dt_opencl_read_device_config(const int devid)
       cldid->event_handles = event_handles;
       cldid->asyncmode = asyncmode;
       cldid->disabled = disabled;
-      cldid->benchmark = benchmark;
       cldid->advantage = advantage;
     }
     else // if there is something wrong with the found conf key reset to defaults
@@ -430,8 +417,6 @@ gboolean dt_opencl_read_device_config(const int devid)
   }
   // do some safety housekeeping
 
-  cldid->avoid_atomics = cldid->avoid_atomics ? TRUE : FALSE;
-  cldid->pinned_memory &= (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED);
   if((cldid->micro_nap < 0) || (cldid->micro_nap > 1000000))
     cldid->micro_nap = 250;
   if((cldid->clroundup_wd < 2) || (cldid->clroundup_wd > 512))
@@ -440,11 +425,12 @@ gboolean dt_opencl_read_device_config(const int devid)
     cldid->clroundup_ht = 16;
   if(cldid->event_handles < 0)
     cldid->event_handles = 0x40000000;
-  cldid->benchmark = fminf(1e6, fmaxf(0.0f, cl->dev[devid].benchmark));
 
   cldid->use_events = cldid->event_handles ? TRUE : FALSE;
   cldid->asyncmode =  cldid->asyncmode ? TRUE : FALSE;
   cldid->disabled = cldid->disabled ? TRUE : FALSE;
+  cldid->avoid_atomics = cldid->avoid_atomics ? TRUE : FALSE;
+  cldid->pinned_memory = cldid->pinned_memory ? TRUE : FALSE;
 
   cldid->advantage = fmaxf(0.0f, cldid->advantage);
 
@@ -454,24 +440,15 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
-    int forced_headroom;
-    sscanf(dat, "%i", &forced_headroom);
-    if(forced_headroom > 0) cldid->forced_headroom = forced_headroom;
+    int headroom;
+    sscanf(dat, "%i", &headroom);
+    if(headroom > 0) cldid->headroom = headroom;
   }
   else // this is used if updating to 4.0 or fresh installs; see
        // commenting _opencl_get_unused_device_mem()
-    cl->dev[devid].forced_headroom = 400;
+    cldid->headroom = DT_OPENCL_DEFAULT_HEADROOM;
   dt_opencl_write_device_config(devid);
   return !existing_device || !safety_ok;
-}
-
-static float dt_opencl_device_perfgain(const int devid)
-{
-  dt_opencl_t *cl = darktable.opencl;
-  const float tcpu = cl->cpubenchmark;
-  const float tgpu = cl->dev[devid].benchmark;
-  if((tcpu < 1e-8) || (tgpu < 1e-8)) return 1.0f;
-  return (tcpu / tgpu);
 }
 
 // returns 0 if all ok or an error if we failed to init this device
@@ -499,7 +476,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].totallost = 0;
   cl->dev[dev].summary = CL_COMPLETE;
   cl->dev[dev].used_global_mem = 0;
-  cl->dev[dev].nvidia_sm_20 = 0;
+  cl->dev[dev].nvidia_sm_20 = FALSE;
   cl->dev[dev].vendor = NULL;
   cl->dev[dev].fullname = NULL;
   cl->dev[dev].cname = NULL;
@@ -508,20 +485,20 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].peak_memory = 0;
   cl->dev[dev].used_available = 0;
   // setting sane/conservative defaults at first
-  cl->dev[dev].avoid_atomics = 0;
+  cl->dev[dev].avoid_atomics = FALSE;
   cl->dev[dev].micro_nap = 250;
-  cl->dev[dev].pinned_memory = DT_OPENCL_PINNING_OFF;
+  cl->dev[dev].pinned_memory = FALSE;
+  cl->dev[dev].pinned_error = FALSE;
+  cl->dev[dev].clmem_error = FALSE;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
-  cl->dev[dev].benchmark = 0.0f;
   cl->dev[dev].advantage = 0.0f;
   cl->dev[dev].use_events = TRUE;
   cl->dev[dev].event_handles = 128;
   cl->dev[dev].asyncmode = FALSE;
   cl->dev[dev].disabled = FALSE;
-  cl->dev[dev].forced_headroom = 0;
-  cl->dev[dev].tuneactive = DT_OPENCL_TUNE_NOTHING;
-  cl->dev[dev].runtime_error = DT_OPENCL_TUNE_NOTHING;
+  cl->dev[dev].headroom = 0;
+  cl->dev[dev].tunehead = FALSE;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *device_name = NULL;
@@ -852,37 +829,25 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   }
 
   dt_sys_resources_t *resrc = &darktable.dtresources;
-  const gboolean pinning = (cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_ON)
-    || (resrc->tunemode & DT_OPENCL_TUNE_PINNED);
-  const gboolean tuning = resrc->tunemode & DT_OPENCL_TUNE_MEMSIZE;
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   ASYNC PIXELPIPE:          %s\n",
-               (cl->dev[dev].asyncmode) ? "YES" : "NO");
+               "   ASYNC PIXELPIPE:          %s\n", cl->dev[dev].asyncmode ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   PINNED MEMORY TRANSFER:   %s\n", pinning ? "WANTED" : "NO");
+               "   PINNED MEMORY TRANSFER:   %s\n", cl->dev[dev].pinned_memory ? "YES" : "NO");
+  if(resrc->tunehead)
+    dt_print_nts(DT_DEBUG_OPENCL,
+               "   USE HEADROOM:             %iMb\n", cl->dev[dev].headroom);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   MEMORY TUNING:            %s\n", tuning ? "WANTED" : "NO");
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   FORCED HEADROOM:          %i\n", cl->dev[dev].forced_headroom);
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   AVOID ATOMICS:            %s\n",
-               (cl->dev[dev].avoid_atomics) ? "YES" : "NO");
+               "   AVOID ATOMICS:            %s\n", cl->dev[dev].avoid_atomics ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
                "   MICRO NAP:                %i\n", cl->dev[dev].micro_nap);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   ROUNDUP WIDTH:            %i\n", cl->dev[dev].clroundup_wd);
-  dt_print_nts(DT_DEBUG_OPENCL,
-               "   ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
+               "   ROUNDUP WIDTH & HEIGHT    %ix%i\n", cl->dev[dev].clroundup_wd, cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
-  if(cl->dev[dev].benchmark > 0.0f)
-    dt_print_nts(DT_DEBUG_OPENCL,
-                 "   PERFORMANCE:              %.3f\n", dt_opencl_device_perfgain(dev));
   dt_print_nts(DT_DEBUG_OPENCL,
                "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL,
-               "   DEFAULT DEVICE:           %s\n",
-               (type & CL_DEVICE_TYPE_DEFAULT) ? "YES" : "NO");
+               "   DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "YES" : "NO");
 
   if(cl->dev[dev].disabled)
   {
@@ -1171,13 +1136,6 @@ void dt_opencl_init(
   char *platform_name = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
   char *platform_vendor = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
 
-  cl->cpubenchmark = dt_conf_get_float("dt_cpubenchmark");
-  if(cl->cpubenchmark <= 0.0f)
-  {
-    cl->cpubenchmark = _opencl_benchmark_cpu(1024, 1024, 5, 100.0f);
-    dt_conf_set_float("dt_cpubenchmark", cl->cpubenchmark);
-  }
-
   if(exclude_opencl)
   {
     dt_print_nts(DT_DEBUG_OPENCL,
@@ -1208,6 +1166,7 @@ void dt_opencl_init(
   cl->dlocl = dt_dlopencl_init(library);
   if(cl->dlocl == NULL)
   {
+    logerror = "no working opencl library found";
     dt_print_nts(DT_DEBUG_OPENCL,
                  "[opencl_init] no working opencl library found."
                  " Continue with opencl disabled\n");
@@ -1353,6 +1312,7 @@ void dt_opencl_init(
   {
     if(devices)
       free(devices);
+    logerror = "no OpenCL devices found";
     goto finally;
   }
 
@@ -1395,6 +1355,7 @@ void dt_opencl_init(
   }
   else
   {
+    logerror = "no suitable OpenCL devices found";
     dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no suitable devices found.\n");
   }
 
@@ -1419,16 +1380,6 @@ finally:
     cl->colorspaces = dt_colorspaces_init_cl_global();
     cl->guided_filter = dt_guided_filter_init_cl_global();
 
-    // make sure all active cl devices have a benchmark result
-    for(int n = 0; n < cl->num_devs; n++)
-    {
-      if((cl->dev[n].benchmark <= 0.0f) && (cl->dev[n].disabled == FALSE))
-      {
-        cl->dev[n].benchmark = _opencl_benchmark_gpu(n, 1024, 1024, 5, 100.0f);
-        dt_opencl_write_device_config(n);
-      }
-    }
-
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
     const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
@@ -1442,65 +1393,11 @@ finally:
     if(newcheck && !manually)
     {
       dt_conf_set_string("opencl_checksum", checksum);
-
-      // get minima and maxima of performance data of all active devices
-      const float tcpu = cl->cpubenchmark;
-      float tgpumin = FLT_MAX;
-      float tgpumax = -FLT_MAX;
-      for(int n = 0; n < cl->num_devs; n++)
-      {
-        if((cl->dev[n].benchmark > 0.0f) && (cl->dev[n].disabled == FALSE))
-        {
-          tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
-          tgpumax = fmaxf(cl->dev[n].benchmark, tgpumax);
-        }
-      }
-
-      if(tcpu < tgpumin / 3.0f)
-      {
-        // de-activate opencl for darktable in case the cpu is three
-        // times faster than the fastest GPU.  FIXME the problem here
-        // is that the benchmark might not reflect real-world
-        // performance.  user can always manually overrule this later.
-        cl->enabled = FALSE;
-        dt_conf_set_bool("opencl", FALSE);
-        dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] due to a slow GPU the opencl flag has been"
-                     " set to OFF.\n");
-        dt_control_log(_("due to a slow GPU hardware acceleration using OpenCL"
-                         " has been deactivated"));
-      }
-      else if((cl->num_devs >= 2) && ((tgpumax / tgpumin) < 1.1f))
-      {
-        // set scheduling profile to "multiple GPUs" if more than one
-        // device has been found and they are equally fast
-        dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
-        dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] set scheduling profile for multiple GPUs.\n");
-        dt_control_log(_("multiple GPUs detected - OpenCL scheduling profile"
-                         " has been set accordingly"));
-      }
-      else if((tcpu >= 2.0f * tgpumin) && (cl->num_devs == 1))
-      {
-        // set scheduling profile to "very fast GPU" if fastest GPU is
-        // at least 2 times better than CPU and there is just one
-        // device We might want a better benchmark but even with the
-        // current result (underestimates real world performance) this
-        // is safe.
-        dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
-        dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] set scheduling profile for very fast GPU.\n");
-        dt_control_log(_("very fast GPU detected - OpenCL scheduling profile"
-                         " has been set accordingly"));
-      }
-      else
-      {
-        // set scheduling profile to "default"
-        dt_conf_set_string("opencl_scheduling_profile", "default");
-        dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] set scheduling profile to default.\n");
-        dt_control_log(_("OpenCL scheduling profile set to default"));
-      }
+      // set scheduling profile to "default"
+      dt_conf_set_string("opencl_scheduling_profile", "default");
+      dt_print(DT_DEBUG_OPENCL,
+                     "[opencl_init] set scheduling profile to default, setup has changed.\n");
+        dt_control_log(_("OpenCL scheduling profile set to default, setup has changed"));
     }
     // apply config settings for scheduling profile: sets device
     // priorities and pixelpipe synchronization timeout
@@ -1579,7 +1476,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
                      " peak memory usage %zu bytes (%.1f MB)%s\n",
                      cl->dev[i].fullname, i, cl->dev[i].peak_memory,
                      (float)cl->dev[i].peak_memory/(1024*1024),
-                     (cl->dev[i].runtime_error & DT_OPENCL_TUNE_MEMSIZE)
+                     cl->dev[i].clmem_error
                        ? ", clmem runtime problem"
                        : "");
       }
@@ -1598,7 +1495,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
                        (cl->dev[i].maxeventslot > 1024)
                          ? "\n *** Warning, slots > 1024"
                          : "",
-                       (cl->dev[i].runtime_error & DT_OPENCL_TUNE_MEMSIZE)
+                       cl->dev[i].clmem_error
                          ? ", clmem runtime problem"
                          : "");
         }
@@ -1661,161 +1558,6 @@ static const char *_opencl_get_vendor_by_id(unsigned int id)
   }
 
   return vendor;
-}
-
-// FIXME this benchmark simply doesn't reflect the power of a cl
-// device in a meaningful way resulting in:
-// - the config setting for very-fast GPU often misses a proper setting
-// - at the moment we can't use a cpu vs gpu performance ratio to decide
-//   if tiled-gpu might be worse than untiled-cpu
-static float _opencl_benchmark_gpu(const int devid,
-                                   const size_t width,
-                                   const size_t height,
-                                   const int count,
-                                   const float sigma)
-{
-  const int bpp = 4 * sizeof(float);
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
-  cl_mem dev_mem = NULL;
-  float *buf = NULL;
-  dt_gaussian_cl_t *g = NULL;
-
-  const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
-  const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
-  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
-
-  buf = dt_alloc_align(64, width * height * bpp);
-  if(buf == NULL) goto error;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, tea_states, width) \
-  shared(buf)
-#endif
-  for(size_t j = 0; j < height; j++)
-  {
-    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
-    tea_state[0] = j + dt_get_thread_num();
-    size_t index = j * 4 * width;
-    for(int i = 0; i < 4 * width; i++)
-    {
-      encrypt_tea(tea_state);
-      buf[index + i] = 100.0f * tpdf(tea_state[0]);
-    }
-  }
-
-  // start timer
-  double start = dt_get_wtime();
-
-  // allocate dev_mem buffer
-  dev_mem = dt_opencl_alloc_device_use_host_pointer(devid, width, height,
-                                                    bpp, width*bpp, buf);
-  if(dev_mem == NULL) goto error;
-
-  // prepare gaussian filter
-  g = dt_gaussian_init_cl(devid, width, height, 4, Labmax, Labmin, sigma, 0);
-  if(!g) goto error;
-
-  // gaussian blur
-  for(int n = 0; n < count; n++)
-  {
-    err = dt_gaussian_blur_cl(g, dev_mem, dev_mem);
-    if(err != CL_SUCCESS) goto error;
-  }
-
-  // cleanup gaussian filter
-  dt_gaussian_free_cl(g);
-  g = NULL;
-
-  // copy dev_mem -> buf
-  err = dt_opencl_copy_device_to_host(devid, buf, dev_mem, width, height, bpp);
-  if(err != CL_SUCCESS) goto error;
-
-  // free dev_mem
-  dt_opencl_release_mem_object(dev_mem);
-
-  // end timer
-  double end = dt_get_wtime();
-
-  dt_free_align(buf);
-  free_tea_states(tea_states);
-  return (end - start);
-
-error:
-  dt_gaussian_free_cl(g);
-  dt_free_align(buf);
-  free_tea_states(tea_states);
-  dt_opencl_release_mem_object(dev_mem);
-  return FLT_MAX;
-}
-
-static float _opencl_benchmark_cpu(
-        const size_t width,
-        const size_t height,
-        const int count,
-        const float sigma)
-{
-  const int bpp = 4 * sizeof(float);
-  float *buf = NULL;
-  dt_gaussian_t *g = NULL;
-
-  const float Labmax[] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
-  const float Labmin[] = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
-  const size_t nthreads = dt_get_num_threads();
-  unsigned int *const tea_states = alloc_tea_states(nthreads);
-
-  buf = dt_alloc_align(64, width * height * bpp);
-  if(buf == NULL) goto error;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) num_threads(nthreads)    \
-  dt_omp_firstprivate(height, width, tea_states) \
-  shared(buf)
-#endif
-  for(size_t j = 0; j < height; j++)
-  {
-    const size_t threadnum = dt_get_thread_num();
-    unsigned int *tea_state = get_tea_state(tea_states,threadnum);
-    tea_state[0] = j + threadnum;
-    size_t index = j * 4 * width;
-    for(int i = 0; i < 4 * width; i++)
-    {
-      encrypt_tea(tea_state);
-      buf[index + i] = 100.0f * tpdf(tea_state[0]);
-    }
-  }
-
-  // start timer
-  double start = dt_get_wtime();
-
-  // prepare gaussian filter
-  g = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, 0);
-  if(!g) goto error;
-
-  // gaussian blur
-  for(int n = 0; n < count; n++)
-  {
-    dt_gaussian_blur(g, buf, buf);
-  }
-
-  // cleanup gaussian filter
-  dt_gaussian_free(g);
-  g = NULL;
-
-  // end timer
-  double end = dt_get_wtime();
-
-  dt_free_align(buf);
-  free_tea_states(tea_states);
-  return (end - start);
-
-error:
-  dt_gaussian_free(g);
-  dt_free_align(buf);
-  free_tea_states(tea_states);
-  return FLT_MAX;
 }
 
 gboolean dt_opencl_finish(const int devid)
@@ -2684,7 +2426,7 @@ static gboolean _check_kernel(const int dev, const int kernel)
 
   if(!cl->inited || dev < 0) return FALSE;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return FALSE;
-  
+
   if(cl->dev[dev].kernel_used[kernel]) return TRUE;
 
   const int prog = cl->program_saved[kernel];
@@ -2788,7 +2530,7 @@ int dt_opencl_set_kernel_arg(
         const void *arg)
 {
   if(!_check_kernel(dev, kernel)) return -1;
-  
+
   dt_opencl_t *cl = darktable.opencl;
   return (cl->dlocl->symbols->dt_clSetKernelArg)
     (cl->dev[dev].kernel[kernel], num, size, arg);
@@ -3229,8 +2971,7 @@ void *dt_opencl_copy_host_to_device_constant(const int devid,
 
 void *dt_opencl_copy_host_to_device(const int devid,
                                     void *host,
-                                    const int
-                                    width,
+                                    const int width,
                                     const int height,
                                     const int bpp)
 {
@@ -3368,8 +3109,7 @@ void *dt_opencl_alloc_device(const int devid,
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device] could not alloc img buffer on device %d: %s\n",
-             devid,
-             cl_errstr(err));
+             devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
@@ -3411,8 +3151,8 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid,
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_use_host_pointer]"
-             " could not alloc img buffer on device %d: %s\n", devid,
-             cl_errstr(err));
+             " could not allocate imgage on device %d: %s\n",
+             devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
@@ -3434,8 +3174,7 @@ void *dt_opencl_alloc_device_buffer(const int devid, const size_t size)
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_buffer] could not alloc buffer on device %d: %s\n",
-             devid,
-             cl_errstr(err));
+             devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
@@ -3457,9 +3196,8 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
      flags, size, NULL, &err);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n",
-             devid,
-             err);
+             "[opencl alloc_device_buffer] could not allocate buffer on device %d: %s\n",
+             devid, cl_errstr(err));
 
   _check_clmem_err(devid, err);
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
@@ -3467,7 +3205,7 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid,
   return buf;
 }
 
-size_t dt_opencl_get_mem_object_size(cl_mem mem)
+size_t dt_opencl_get_mem_object_size(const cl_mem mem)
 {
   size_t size;
   if(mem == NULL) return 0;
@@ -3478,7 +3216,7 @@ size_t dt_opencl_get_mem_object_size(cl_mem mem)
   return (err == CL_SUCCESS) ? size : 0;
 }
 
-int dt_opencl_get_mem_context_id(cl_mem mem)
+int dt_opencl_get_mem_context_id(const cl_mem mem)
 {
   cl_context context;
   if(mem == NULL) return -1;
@@ -3497,7 +3235,7 @@ int dt_opencl_get_mem_context_id(cl_mem mem)
   return -1;
 }
 
-int dt_opencl_get_image_width(cl_mem mem)
+int dt_opencl_get_image_width(const cl_mem mem)
 {
   size_t size;
   if(mem == NULL) return 0;
@@ -3509,7 +3247,7 @@ int dt_opencl_get_image_width(cl_mem mem)
   return (err == CL_SUCCESS) ? (int)size : 0;
 }
 
-int dt_opencl_get_image_height(cl_mem mem)
+int dt_opencl_get_image_height(const cl_mem mem)
 {
   size_t size;
   if(mem == NULL) return 0;
@@ -3521,7 +3259,7 @@ int dt_opencl_get_image_height(cl_mem mem)
   return (err == CL_SUCCESS) ? (int)size : 0;
 }
 
-int dt_opencl_get_image_element_size(cl_mem mem)
+int dt_opencl_get_image_element_size(const cl_mem mem)
 {
   size_t size;
   if(mem == NULL) return 0;
@@ -3558,7 +3296,7 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   }
 }
 
-void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action)
+void dt_opencl_memory_statistics(int devid, const cl_mem mem, const dt_opencl_memory_t action)
 {
   if(!((darktable.unmuted & DT_DEBUG_MEMORY) && (darktable.unmuted & DT_DEBUG_OPENCL)))
     return;
@@ -3603,28 +3341,16 @@ void dt_opencl_check_tuning(const int devid)
   if(!_cldev_running(devid)) return;
 
   static int oldlevel = -999;
-  static int oldtuned = -999;
+  static int oldtunehead = -999;
 
-  const dt_opencl_tunemode_t tunemode = res->tunemode;
-  cl->dev[devid].tuneactive = tunemode & DT_OPENCL_TUNE_MEMSIZE;
+  const gboolean tunehead = res->tunehead;
+  const int level = res->level;
 
-  const dt_opencl_pinmode_t pinmode = cl->dev[devid].pinned_memory;
-  const gboolean safe_clmemsize =
-    cl->dev[devid].max_global_mem <
-    (size_t) (darktable.dtresources.total_memory / 16lu / cl->num_devs);
-  const gboolean want_pinned = (pinmode & DT_OPENCL_PINNING_ON)
-    || (tunemode & DT_OPENCL_TUNE_PINNED);
+  cl->dev[devid].tunehead = tunehead;
 
-  if(((pinmode & DT_OPENCL_PINNING_DISABLED) == 0)
-       && ((cl->dev[devid].runtime_error & DT_OPENCL_TUNE_PINNED) == 0)
-       && want_pinned
-       && safe_clmemsize)
-    cl->dev[devid].tuneactive |= DT_OPENCL_TUNE_PINNED;
-
-  int level = res->level;
-  const gboolean info = ((oldlevel != level) || (oldtuned != tunemode));
+  const gboolean info = ((oldlevel != level) || (oldtunehead != tunehead));
   oldlevel = level;
-  oldtuned = tunemode;
+  oldtunehead = tunehead;
 
   if(level < 0)
   {
@@ -3633,22 +3359,22 @@ void dt_opencl_check_tuning(const int devid)
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
                "[dt_opencl_check_tuning] reference mode %i,"
                " use %luMB (pinning=%s) on device `%s' id=%i\n",
-               level, cl->dev[devid].used_available / 1024lu / 1024lu,
-               (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED) ? "ON" : "OFF",
+               level,
+               cl->dev[devid].used_available / 1024lu / 1024lu,
+               cl->dev[devid].pinned_memory ? "ON" : "OFF",
                cl->dev[devid].fullname, devid);
     return;
   }
 
   const size_t allmem = cl->dev[devid].max_global_mem;
-  if(cl->dev[devid].tuneactive & DT_OPENCL_TUNE_MEMSIZE)
+  if(cl->dev[devid].tunehead)
   {
-    const int headroom = (cl->dev[devid].forced_headroom)
-      ? cl->dev[devid].forced_headroom
-      : 400;
+    const int headroom = (cl->dev[devid].headroom)
+      ? cl->dev[devid].headroom
+      : DT_OPENCL_DEFAULT_HEADROOM;
 
     const int reserved_mb =
-      MAX(1, headroom) + ((cl->dev[devid].runtime_error & DT_OPENCL_TUNE_MEMSIZE)
-                          ? 400 : 0);
+      MAX(1, headroom) + (cl->dev[devid].clmem_error ? 400 : 0);
     const int global_mb = cl->dev[devid].max_global_mem / 1024lu / 1024lu;
     cl->dev[devid].used_available = (size_t)
       (MAX(0, global_mb - reserved_mb)) * 1024ul * 1024ul;
@@ -3664,10 +3390,10 @@ void dt_opencl_check_tuning(const int devid)
 
   if(info)
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-       "[dt_opencl_check_tuning] use %luMB (tunemem=%s, pinning=%s) on device `%s' id=%i\n",
+       "[dt_opencl_check_tuning] use %luMB (headroom=%s, pinning=%s) on device `%s' id=%i\n",
        cl->dev[devid].used_available / 1024lu / 1024lu,
-       (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_MEMSIZE) ? "ON" : "OFF",
-       (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED)  ? "ON" : "OFF",
+       cl->dev[devid].tunehead ? "ON" : "OFF",
+       cl->dev[devid].pinned_memory  ? "ON" : "OFF",
        cl->dev[devid].fullname, devid);
 }
 
@@ -3790,22 +3516,6 @@ static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
     profile = OPENCL_PROFILE_VERYFAST_GPU;
 
   return profile;
-}
-
-int dt_opencl_get_tuning_mode(void)
-{
-  int res = DT_OPENCL_TUNE_NOTHING;
-  const char *pstr = dt_conf_get_string_const("opencl_tuning_mode");
-  if(pstr)
-  {
-    if(!strcmp(pstr, "memory size"))
-      res = DT_OPENCL_TUNE_MEMSIZE;
-    else if(!strcmp(pstr, "memory transfer"))
-      res = DT_OPENCL_TUNE_PINNED;
-    else if(!strcmp(pstr, "memory size and transfer"))
-      res = DT_OPENCL_TUNE_MEMSIZE | DT_OPENCL_TUNE_PINNED;
-  }
-  return res;
 }
 
 /** set opencl specific synchronization timeout */
