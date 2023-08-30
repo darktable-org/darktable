@@ -89,7 +89,7 @@ improvements and enhancements:
 - A set of changes done on OpenCL support:
 
   - Removed the benchmarking code from opencl as it didn't produce valid
-    results on todays computers.
+    results on today's computers.
 
   - Removed the preference option to select pinned memory transfer. Can
     be selected on a per device basis
