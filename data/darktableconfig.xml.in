@@ -322,18 +322,11 @@
     <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems:\n - 'default': GPU processes full and CPU processes preview pipe (adaptable by config parameters),\n - 'multiple GPUs': process both pixelpipes in parallel on two different GPUs,\n - 'very fast GPU': process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
-    <name>opencl_tuning_mode</name>
-    <type>
-      <enum>
-        <option>nothing</option>
-        <option>memory size</option>
-        <option>memory transfer</option>
-        <option>memory size and transfer</option>
-      </enum>
-    </type>
-    <default>nothing</default>
-    <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>allows runtime tuning of OpenCL devices:\n - 'memory size': uses a fixed headroom (400MB as default),\n - 'memory transfer': tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
+    <name>opencl_tune_headroom</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>use all device memory</shortdescription>
+    <longdescription>if enabled darktable will use all device memory except a safety margin (headroom, default is 600Mb)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
