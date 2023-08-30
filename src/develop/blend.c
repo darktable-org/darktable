@@ -791,7 +791,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   }
   const int iwidth  = p->scharr.roi.width;
   const int iheight = p->scharr.roi.height;
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+  dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on GPU",
        piece->pipe, self, roi_in, roi_out, "\n");
 

@@ -1129,7 +1129,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         crkernel = gd->kernel_clip_rotate_lanczos3;
         break;
       default:
-        return FALSE;
+        return err;
     }
 
     int roi[2] = { roi_in->x, roi_in->y };
@@ -1160,14 +1160,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi), CLARG(roo), CLARG(roi_in->scale), CLARG(roi_out->scale),
       CLARG(d->flip), CLARG(t), CLARG(k), CLARG(m), CLARG(k_space), CLARG(ka), CLARG(maa), CLARG(mbb));
     err = dt_opencl_enqueue_kernel_2d(devid, crkernel, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
 
-  return TRUE;
-
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_clipping] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

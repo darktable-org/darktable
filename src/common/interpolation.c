@@ -1438,23 +1438,14 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
                             CLLOCAL(hmaxtaps * sizeof(int)),
                             CLLOCAL(vblocksize * 4 * sizeof(float)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_hindex);
-  dt_opencl_release_mem_object(dev_hlength);
-  dt_opencl_release_mem_object(dev_hkernel);
-  dt_opencl_release_mem_object(dev_hmeta);
-  dt_opencl_release_mem_object(dev_vindex);
-  dt_opencl_release_mem_object(dev_vlength);
-  dt_opencl_release_mem_object(dev_vkernel);
-  dt_opencl_release_mem_object(dev_vmeta);
-  dt_free_align(hlength);
-  dt_free_align(vlength);
-
-  _show_2_times(&start, &mid, "resample_cl");
-  return CL_SUCCESS;
 
 error:
+  if(err == CL_SUCCESS)
+    _show_2_times(&start, &mid, "resample_cl");
+  else
+    dt_print_pipe(DT_DEBUG_OPENCL, "interpolation_resample_cl", NULL, NULL, roi_in, roi_out,
+      "Error: %s\n", cl_errstr(err));
+
   dt_opencl_release_mem_object(dev_hindex);
   dt_opencl_release_mem_object(dev_hlength);
   dt_opencl_release_mem_object(dev_hkernel);
@@ -1465,8 +1456,6 @@ error:
   dt_opencl_release_mem_object(dev_vmeta);
   dt_free_align(hlength);
   dt_free_align(vlength);
-  dt_print_pipe(DT_DEBUG_OPENCL, "interpolation_resample_cl", NULL, NULL, roi_in, roi_out,
-      "Error: %s\n", cl_errstr(err));
   return err;
 }
 

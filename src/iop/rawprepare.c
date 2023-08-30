@@ -515,7 +515,7 @@ int process_cl(
   const int devid = piece->pipe->devid;
   cl_mem dev_sub = NULL;
   cl_mem dev_div = NULL;
-  cl_mem dev_gainmap[4] = {0};
+  cl_mem dev_gainmap[4] = {NULL};
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   int kernel = -1;
@@ -558,10 +558,10 @@ int process_cl(
   const int csy = _compute_proper_crop(piece, roi_in, d->top);
 
   dev_sub = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->sub);
-  if(dev_sub == NULL) goto error;
+  if(dev_sub == NULL) goto finish;
 
   dev_div = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->div);
-  if(dev_div == NULL) goto error;
+  if(dev_div == NULL) goto finish;
 
   const int width = roi_out->width;
   const int height = roi_out->height;
@@ -579,10 +579,10 @@ int process_cl(
     for(int i = 0; i < 4; i++)
     {
       dev_gainmap[i] = dt_opencl_alloc_device(devid, map_size[0], map_size[1], sizeof(float));
-      if(dev_gainmap[i] == NULL) goto error;
+      if(dev_gainmap[i] == NULL) goto finish;
       err = dt_opencl_write_host_to_device(devid, d->gainmaps[i]->map_gain, dev_gainmap[i],
                                            map_size[0], map_size[1], sizeof(float));
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto finish;
     }
 
     dt_opencl_set_kernel_args
@@ -591,12 +591,17 @@ int process_cl(
        CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-  if(err != CL_SUCCESS) goto error;
+  if(err != CL_SUCCESS) goto finish;
 
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
-  for(int i = 0; i < 4; i++) dt_opencl_release_mem_object(dev_gainmap[i]);
-
+  dev_sub = NULL;
+  dev_div = NULL;
+  for(int i = 0; i < 4; i++)
+  {
+    dt_opencl_release_mem_object(dev_gainmap[i]);
+    dev_gainmap[i] = NULL;
+  }
   if(piece->pipe->dsc.filters)
   {
     piece->pipe->dsc.filters =
@@ -607,18 +612,14 @@ int process_cl(
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 
   if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-  {
     err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_in, FALSE);
-    if(err != CL_SUCCESS) goto error;
-  }
-  return TRUE;
 
-error:
+finish:
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
-  for(int i = 0; i < 4; i++) dt_opencl_release_mem_object(dev_gainmap[i]);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  for(int i = 0; i < 4; i++)
+    dt_opencl_release_mem_object(dev_gainmap[i]);
+  return err;
 }
 #endif
 

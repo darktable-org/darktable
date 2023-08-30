@@ -357,15 +357,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(autoscale_ab), CLARG(unbound_ab), CLARG(dev_coeffs_L), CLARG(dev_coeffs_ab), CLARG(low_approximation),
     CLARG(preserve_colors), CLARG(dev_profile_info), CLARG(dev_profile_lut));
 
-  if(err != CL_SUCCESS) goto error;
-  dt_opencl_release_mem_object(dev_L);
-  dt_opencl_release_mem_object(dev_a);
-  dt_opencl_release_mem_object(dev_b);
-  dt_opencl_release_mem_object(dev_coeffs_L);
-  dt_opencl_release_mem_object(dev_coeffs_ab);
-  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  return TRUE;
-
 error:
   dt_opencl_release_mem_object(dev_L);
   dt_opencl_release_mem_object(dev_a);
@@ -373,8 +364,7 @@ error:
   dt_opencl_release_mem_object(dev_coeffs_L);
   dt_opencl_release_mem_object(dev_coeffs_ab);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 /*

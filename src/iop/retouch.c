@@ -4886,9 +4886,6 @@ int process_cl(struct dt_iop_module_t *self,
                                   sizeof(float) * ch * roi_rt->width * roi_rt->height);
   if(in_retouch == NULL)
   {
-    dt_print(DT_DEBUG_OPENCL,
-             "[retouch process_cl] error allocating memory for wavelet"
-             " decompose on device %d\n", devid);
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -4924,9 +4921,6 @@ int process_cl(struct dt_iop_module_t *self,
                          roi_in->scale / piece->iscale);
   if(dwt_p == NULL)
   {
-    dt_print(DT_DEBUG_OPENCL,
-             "[retouch process_cl] error initializing wavelet"
-             " decompose on device %d\n", devid);
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -5029,13 +5023,9 @@ int process_cl(struct dt_iop_module_t *self,
 cleanup:
   if(dwt_p) dt_dwt_free_cl(dwt_p);
 
-  if(in_retouch) dt_opencl_release_mem_object(in_retouch);
+  dt_opencl_release_mem_object(in_retouch);
 
-  if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_retouch] couldn't enqueue kernel! %s\n", cl_errstr(err));
-
-  return (err == CL_SUCCESS) ? TRUE : FALSE;
+  return err;
 }
 #endif
 

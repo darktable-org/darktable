@@ -1619,7 +1619,7 @@ int process_cl(struct dt_iop_module_t *module,
     size_t dest[]   = { 0, 0, 0 };
     size_t extent[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, src, dest, extent);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS) return err;
   }
 
   // 2. build the distortion map
@@ -1629,21 +1629,14 @@ int process_cl(struct dt_iop_module_t *module,
                                roi_out, &map_extent, FALSE, &map);
 
   if(map == NULL)
-    return TRUE;
+    return CL_SUCCESS;
 
   // 3. apply the map
   if(map_extent.width != 0 && map_extent.height != 0)
     err = _apply_global_distortion_map_cl(module, piece, dev_in,
                                           dev_out, roi_in, roi_out, map, &map_extent);
   dt_free_align((void *) map);
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_liquify] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 
 #endif

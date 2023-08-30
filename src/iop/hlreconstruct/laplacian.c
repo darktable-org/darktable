@@ -920,8 +920,6 @@ error:
   if(LF_even) dt_opencl_release_mem_object(LF_even);
   if(LF_odd) dt_opencl_release_mem_object(LF_odd);
   if(HF) dt_opencl_release_mem_object(HF);
-
-  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return err;
 }
 

@@ -562,19 +562,10 @@ int process_cl(struct dt_iop_module_t *self,
                                          CLARG(width), CLARG(height),
                                          CLARG(num_patches),
                                          CLARG(dev_params));
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_params);
-  free(params);
-  return TRUE;
-
 error:
   free(params);
   dt_opencl_release_mem_object(dev_params);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorchecker] couldn't enqueue kernel! %s\n",
-           cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

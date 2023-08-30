@@ -1445,10 +1445,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
     dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 256, 256 * 6,
                                                     sizeof(float));
     if(dev_profile_lut == NULL)
-    {
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
   }
   else
   {
@@ -1457,10 +1454,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
     dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6,
                                                     sizeof(float));
     if(dev_profile_lut == NULL)
-    {
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto cleanup;
-    }
   }
 
 cleanup:
@@ -1528,7 +1522,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
 
   const size_t ch = 4;
   float *src_buffer = NULL;
-  int in_place = (dev_img_in == dev_img_out);
+  const gboolean in_place = (dev_img_in == dev_img_out);
 
   int kernel_transform = 0;
   cl_mem dev_tmp = NULL;
@@ -1650,8 +1644,6 @@ gboolean dt_ioppr_transform_image_colorspace_cl
 
     err = dt_opencl_write_host_to_device(devid, src_buffer, dev_img_out,
                                          width, height, ch * sizeof(float));
-    if(err != CL_SUCCESS)
-      goto cleanup;
   }
 
 cleanup:
@@ -1659,18 +1651,15 @@ cleanup:
     dt_print(DT_DEBUG_OPENCL,
              "[dt_ioppr_transform_image_colorspace_cl] had error: %s\n", cl_errstr(err));
 
-  if(src_buffer)
-    dt_free_align(src_buffer);
+  dt_free_align(src_buffer);
   if(dev_tmp && in_place)
     dt_opencl_release_mem_object(dev_tmp);
-  if(dev_profile_info)
-    dt_opencl_release_mem_object(dev_profile_info);
-  if(dev_lut)
-    dt_opencl_release_mem_object(dev_lut);
+  dt_opencl_release_mem_object(dev_profile_info);
+  dt_opencl_release_mem_object(dev_lut);
   if(lut_cl)
     free(lut_cl);
 
-  return (err == CL_SUCCESS) ? TRUE : FALSE;
+  return (err == CL_SUCCESS);
 }
 
 gboolean dt_ioppr_transform_image_colorspace_rgb_cl
@@ -1854,8 +1843,6 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
 
     err = dt_opencl_write_host_to_device(devid, src_buffer_out, dev_img_out,
                                          width, height, ch * sizeof(float));
-    if(err != CL_SUCCESS)
-      goto cleanup;
   }
 
 cleanup:
@@ -1863,30 +1850,20 @@ cleanup:
     dt_print(DT_DEBUG_OPENCL,
              "[dt_ioppr_transform_image_colorspace_rgb_cl] had error: %s\n", cl_errstr(err));
 
-  if(src_buffer_in)
-    dt_free_align(src_buffer_in);
-  if(src_buffer_out)
-    dt_free_align(src_buffer_out);
-  if(dev_tmp && in_place)
-    dt_opencl_release_mem_object(dev_tmp);
+  dt_free_align(src_buffer_in);
+  dt_free_align(src_buffer_out);
 
-  if(dev_profile_info_from)
-    dt_opencl_release_mem_object(dev_profile_info_from);
-  if(dev_lut_from)
-    dt_opencl_release_mem_object(dev_lut_from);
-  if(lut_from_cl)
-    free(lut_from_cl);
-
-  if(dev_profile_info_to)
-    dt_opencl_release_mem_object(dev_profile_info_to);
-  if(dev_lut_to)
-    dt_opencl_release_mem_object(dev_lut_to);
-  if(lut_to_cl)
-    free(lut_to_cl);
-
+  dt_opencl_release_mem_object(dev_profile_info_from);
+  dt_opencl_release_mem_object(dev_lut_from);
+  dt_opencl_release_mem_object(dev_profile_info_to);
+  dt_opencl_release_mem_object(dev_lut_to);
   dt_opencl_release_mem_object(matrix_cl);
 
-  return (err == CL_SUCCESS) ? TRUE : FALSE;
+  if(dev_tmp && in_place) dt_opencl_release_mem_object(dev_tmp);
+  if(lut_from_cl) free(lut_from_cl);
+  if(lut_to_cl) free(lut_to_cl);
+
+  return (err == CL_SUCCESS);
 }
 #endif
 

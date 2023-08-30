@@ -1856,8 +1856,8 @@ static gboolean _dev_pixelpipe_process_rec(
               for(int i = 0; i < 100; i++)
               {
                 if(success)
-                  success = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
-                                               &roi_in, roi_out);
+                  success = (module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
+                                               &roi_in, roi_out)) >= CL_SUCCESS;
               }
               if(success)
               {
@@ -1885,8 +1885,16 @@ static gboolean _dev_pixelpipe_process_rec(
             dt_opencl_dump_pipe_pfm(module->op, pipe->devid, cl_mem_input,
                                     TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
-          success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
+          const int err = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
                                               &roi_in, roi_out);
+          success_opencl = err >= CL_SUCCESS;
+
+          if(!success_opencl)
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "Error: process_CL", piece->pipe, module, &roi_in, roi_out,
+              "device=%i (%s), %s\n",
+              pipe->devid, darktable.opencl->dev[pipe->devid].cname, cl_errstr(err));
+
           if(success_opencl && pfm_dump)
             dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
                                     FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
@@ -1979,10 +1987,9 @@ static gboolean _dev_pixelpipe_process_rec(
         if(cl_mem_input != NULL)
         {
           /* copy back to CPU buffer, then clean unneeded buffer */
-          const cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
+          if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
                                                            roi_in.width, roi_in.height,
-                                                           in_bpp);
-          if(err != CL_SUCCESS)
+                                                           in_bpp) != CL_SUCCESS)
           {
             dt_print_pipe(DT_DEBUG_OPENCL,
               "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
@@ -2030,8 +2037,16 @@ static gboolean _dev_pixelpipe_process_rec(
            meaningful messages in case of error */
         if(success_opencl)
         {
-          success_opencl = module->process_tiling_cl(module, piece, input, *output,
+          const int err = module->process_tiling_cl(module, piece, input, *output,
                                                      &roi_in, roi_out, in_bpp);
+          success_opencl = err >= CL_SUCCESS;
+
+          if(!success_opencl)
+            dt_print_pipe(DT_DEBUG_OPENCL,
+              "Error: process_tiling_CL", piece->pipe, module, &roi_in, roi_out,
+              "device=%i (%s), %s\n",
+              pipe->devid, darktable.opencl->dev[pipe->devid].cname, cl_errstr(err));
+
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU
                              | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU);
@@ -2147,11 +2162,11 @@ static gboolean _dev_pixelpipe_process_rec(
           if(cl_mem_input != NULL)
           {
             /* copy input to host memory, so we can find it in cache */
-            const cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input,
-                                                             cl_mem_input,
-                                                             roi_in.width,
-                                                             roi_in.height, in_bpp);
-            if(err != CL_SUCCESS)
+            if(dt_opencl_copy_device_to_host(pipe->devid, input,
+                                             cl_mem_input,
+                                             roi_in.width,
+                                             roi_in.height,
+                                             in_bpp) != CL_SUCCESS)
             {
               important_cl = FALSE;
               dt_print_pipe(DT_DEBUG_OPENCL,
@@ -2162,7 +2177,7 @@ static gboolean _dev_pixelpipe_process_rec(
             }
             else
             {
-              dt_print_pipe(DT_DEBUG_OPENCL,
+              dt_print_pipe(DT_DEBUG_PIPE,
                 "pixelpipe process CL", pipe, module, &roi_in, roi_out, "cl input data to host\n");
               /* success: cache line is valid now, so we will not need
                  to invalidate it later */
@@ -2209,10 +2224,9 @@ static gboolean _dev_pixelpipe_process_rec(
           /* copy back to host memory, then clean no longer needed opencl buffer.
              important info: in order to make this possible, opencl modules must
              not spoil their input buffer, even in case of errors. */
-          const cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
-                                                           roi_in.width, roi_in.height,
-                                                           in_bpp);
-          if(err != CL_SUCCESS)
+          if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
+                                           roi_in.width, roi_in.height,
+                                           in_bpp) != CL_SUCCESS)
           {
             dt_print_pipe(DT_DEBUG_OPENCL,
               "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
@@ -2247,11 +2261,9 @@ static gboolean _dev_pixelpipe_process_rec(
       /* cleanup unneeded opencl buffer, and copy back to CPU buffer */
       if(cl_mem_input != NULL)
       {
-        const cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
-                                                         roi_in.width, roi_in.height,
-                                                         in_bpp);
-
-        if(err != CL_SUCCESS)
+        if(dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input,
+                                         roi_in.width, roi_in.height,
+                                         in_bpp) != CL_SUCCESS)
         {
           dt_print_pipe(DT_DEBUG_OPENCL,
             "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
@@ -2652,9 +2664,12 @@ restart:
   dt_iop_buffer_dsc_t _out_format = { 0 };
   dt_iop_buffer_dsc_t *out_format = &_out_format;
 
+#ifdef HAVE_OPENCL
   if(pipe->devid >= 0)
-    dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe starting CL", pipe, NULL, &roi, &roi, "device=%i\n", pipe->devid);
+    dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe starting CL", pipe, NULL, &roi, &roi, "device=%i (%s)\n",
+      pipe->devid, darktable.opencl->dev[pipe->devid].cname);
   else
+#endif
     dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe starting on CPU", pipe, NULL, &roi, &roi, "\n");
 
   // run pixelpipe recursively and get error status

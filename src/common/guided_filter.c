@@ -55,20 +55,20 @@ typedef struct color_image
 } color_image;
 
 // allocate space for n-component image of size width x height
-static inline color_image new_color_image(int width, int height, int ch)
+static inline color_image _new_color_image(int width, int height, int ch)
 {
   return (color_image){ dt_alloc_align_float((size_t)width * height * ch), width, height, ch };
 }
 
 // free space for n-component image
-static inline void free_color_image(color_image *img_p)
+static inline void _free_color_image(color_image *img_p)
 {
   dt_free_align(img_p->data);
   img_p->data = NULL;
 }
 
 // get a pointer to pixel number 'i' within the image
-static inline float *get_color_pixel(color_image img, size_t i)
+static inline float *_get_color_pixel(color_image img, size_t i)
 {
   return img.data + i * img.stride;
 }
@@ -82,8 +82,15 @@ static inline float *get_color_pixel(color_image img, size_t i)
 //    6 variance (R-R, R-G, R-B, G-G, G-B, B-B)
 // for computational efficiency, we'll pack them into a four-channel image and a 9-channel image
 // image instead of running 13 separate box filters: guide+input, R/G/B/R-R/R-G/R-B/G-G/G-B/B-B.
-static void guided_filter_tiling(color_image imgg, gray_image img, gray_image img_out, tile target, const int w,
-                                 const float eps, const float guide_weight, const float min, const float max)
+static void _guided_filter_tiling(color_image imgg,
+                                  gray_image img,
+                                  gray_image img_out,
+                                  tile target,
+                                  const int w,
+                                  const float eps,
+                                  const float guide_weight,
+                                  const float min,
+                                  const float max)
 {
   const tile source = { max_i(target.left - 2 * w, 0), min_i(target.right + 2 * w, imgg.width),
                         max_i(target.lower - 2 * w, 0), min_i(target.upper + 2 * w, imgg.height) };
@@ -105,8 +112,8 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
 #define VAR_GG 6
 #define VAR_BB 8
 #define VAR_GB 7
-  color_image mean = new_color_image(width, height, 4);
-  color_image variance = new_color_image(width, height, 9);
+  color_image mean = _new_color_image(width, height, 4);
+  color_image variance = _new_color_image(width, height, 9);
   const size_t img_dimen = mean.width;
   size_t img_bak_sz;
   float *img_bak = dt_alloc_perthread_float(9*img_dimen, &img_bak_sz);
@@ -122,7 +129,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     for(int i_imgg = source.left; i_imgg < source.right; i_imgg++)
     {
       size_t i = i_imgg - source.left;
-      const float *pixel_ = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
+      const float *pixel_ = _get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
       dt_aligned_pixel_t pixel =
         { pixel_[0] * guide_weight, pixel_[1] * guide_weight, pixel_[2] * guide_weight, pixel_[3] * guide_weight };
       const float input = img.data[i_imgg + (size_t)j_imgg * img.width];
@@ -160,12 +167,12 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
 #endif
   for(size_t i = 0; i < size; i++)
   {
-    const float *meanpx = get_color_pixel(mean, i);
+    const float *meanpx = _get_color_pixel(mean, i);
     const float inp_mean = meanpx[INP_MEAN];
     const float guide_r = meanpx[GUIDE_MEAN_R];
     const float guide_g = meanpx[GUIDE_MEAN_G];
     const float guide_b = meanpx[GUIDE_MEAN_B];
-    float *const varpx = get_color_pixel(variance, i);
+    float *const varpx = _get_color_pixel(variance, i);
     // solve linear system of equations of size 3x3 via Cramer's rule
     // symmetric coefficient matrix
     const float Sigma_0_0 = varpx[VAR_RR] - (guide_r * guide_r) + eps;
@@ -203,7 +210,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
       a_r_ = 0.f;
       a_g_ = 0.f;
       a_b_ = 0.f;
-      b_ = get_color_pixel(mean, i)[INP_MEAN];
+      b_ = _get_color_pixel(mean, i)[INP_MEAN];
     }
     // now data of imgg_mean_? is no longer needed, we can safely overwrite aliasing arrays
     a_b.data[4*i+A_RED] = a_r_;
@@ -211,7 +218,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     a_b.data[4*i+A_BLUE] = a_b_;
     a_b.data[4*i+B] = b_;
   }
-  free_color_image(&variance);
+  _free_color_image(&variance);
 
   dt_box_mean(a_b.data, a_b.height, a_b.width, a_b.stride|BOXFILTER_KAHAN_SUM, w, 1);
 
@@ -229,17 +236,17 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     size_t k = (target.left - source.left) + (size_t)(j_imgg - source.lower) * width;
     for(int i_imgg = target.left; i_imgg < target.right; i_imgg++, k++, l++)
     {
-      const float *pixel = get_color_pixel(imgg, l);
-      const float *px_ab = get_color_pixel(a_b, k);
+      const float *pixel = _get_color_pixel(imgg, l);
+      const float *px_ab = _get_color_pixel(a_b, k);
       float res = guide_weight * (px_ab[A_RED] * pixel[0] + px_ab[A_GREEN] * pixel[1] + px_ab[A_BLUE] * pixel[2]);
       res += px_ab[B];
       img_out.data[i_imgg + (size_t)j_imgg * imgg.width] = CLAMP(res, min, max);
     }
   }
-  free_color_image(&mean);
+  _free_color_image(&mean);
 }
 
-static int compute_tile_height(const int height, const int w)
+static int _compute_tile_height(const int height, const int w)
 {
   int tile_h = max_i(3 * w, GF_TILE_SIZE);
 #if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
@@ -264,7 +271,7 @@ static int compute_tile_height(const int height, const int w)
   return tile_h;
 }
 
-static int compute_tile_width(const int width, const int w)
+static int _compute_tile_width(const int width, const int w)
 {
   int tile_w = max_i(3 * w, GF_TILE_SIZE);
 #if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
@@ -289,12 +296,17 @@ static int compute_tile_width(const int width, const int w)
   return tile_w;
 }
 
-void guided_filter(const float *const guide, const float *const in, float *const out, const int width,
-                   const int height, const int ch,
-                   const int w,              // window size
-                   const float sqrt_eps,     // regularization parameter
-                   const float guide_weight, // to balance the amplitudes in the guiding image and the input image
-                   const float min, const float max)
+void guided_filter(const float *const guide,
+                    const float *const in,
+                    float *const out,
+                    const int width,
+                    const int height,
+                    const int ch,
+                    const int w,              // window size
+                    const float sqrt_eps,     // regularization parameter
+                    const float guide_weight, // to balance the amplitudes in the guiding image and the input image
+                    const float min,
+                    const float max)
 {
   assert(ch >= 3);
   assert(w >= 1);
@@ -302,8 +314,8 @@ void guided_filter(const float *const guide, const float *const in, float *const
   color_image img_guide = (color_image){ (float *)guide, width, height, ch };
   gray_image img_in = (gray_image){ (float *)in, width, height };
   gray_image img_out = (gray_image){ out, width, height };
-  const int tile_width = compute_tile_width(width,w);
-  const int tile_height = compute_tile_height(height,w);
+  const int tile_width = _compute_tile_width(width,w);
+  const int tile_height = _compute_tile_height(height,w);
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
 
   for(int j = 0; j < height; j += tile_height)
@@ -311,7 +323,7 @@ void guided_filter(const float *const guide, const float *const in, float *const
     for(int i = 0; i < width; i += tile_width)
     {
       tile target = { i, min_i(i + tile_width, width), j, min_i(j + tile_height, height) };
-      guided_filter_tiling(img_guide, img_in, img_out, target, w, eps, guide_weight, min, max);
+      _guided_filter_tiling(img_guide, img_in, img_out, target, w, eps, guide_weight, min, max);
     }
   }
 }
@@ -351,8 +363,14 @@ void dt_guided_filter_free_cl_global(dt_guided_filter_cl_global_t *g)
 }
 
 
-static int cl_split_rgb(const int devid, const int width, const int height, cl_mem guide, cl_mem imgg_r,
-                        cl_mem imgg_g, cl_mem imgg_b, const float guide_weight)
+static int _cl_split_rgb(const int devid,
+                          const int width,
+                          const int height,
+                          cl_mem guide,
+                          cl_mem imgg_r,
+                          cl_mem imgg_g,
+                          cl_mem imgg_b,
+                          const float guide_weight)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_split_rgb;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
@@ -360,8 +378,13 @@ static int cl_split_rgb(const int devid, const int width, const int height, cl_m
 }
 
 
-static int cl_box_mean(const int devid, const int width, const int height, const int w, cl_mem in, cl_mem out,
-                       cl_mem temp)
+static int _cl_box_mean(const int devid,
+                        const int width,
+                        const int height,
+                        const int w,
+                        cl_mem in,
+                        cl_mem out,
+                        cl_mem temp)
 {
   const int kernel_x = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_x;
   dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width), CLARG(height), CLARG(in), CLARG(temp), CLARG(w));
@@ -376,8 +399,14 @@ static int cl_box_mean(const int devid, const int width, const int height, const
 }
 
 
-static int cl_covariances(const int devid, const int width, const int height, cl_mem guide, cl_mem in,
-                          cl_mem cov_imgg_img_r, cl_mem cov_imgg_img_g, cl_mem cov_imgg_img_b,
+static int _cl_covariances(const int devid,
+                          const int width,
+                          const int height,
+                          cl_mem guide,
+                          cl_mem in,
+                          cl_mem cov_imgg_img_r,
+                          cl_mem cov_imgg_img_g,
+                          cl_mem cov_imgg_img_b,
                           const float guide_weight)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_guided_filter_covariances;
@@ -387,9 +416,17 @@ static int cl_covariances(const int devid, const int width, const int height, cl
 }
 
 
-static int cl_variances(const int devid, const int width, const int height, cl_mem guide, cl_mem var_imgg_rr,
-                        cl_mem var_imgg_rg, cl_mem var_imgg_rb, cl_mem var_imgg_gg, cl_mem var_imgg_gb,
-                        cl_mem var_imgg_bb, const float guide_weight)
+static int _cl_variances(const int devid,
+                          const int width,
+                          const int height,
+                          cl_mem guide,
+                          cl_mem var_imgg_rr,
+                          cl_mem var_imgg_rg,
+                          cl_mem var_imgg_rb,
+                          cl_mem var_imgg_gg,
+                          cl_mem var_imgg_gb,
+                          cl_mem var_imgg_bb,
+                          const float guide_weight)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_guided_filter_variances;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
@@ -398,8 +435,14 @@ static int cl_variances(const int devid, const int width, const int height, cl_m
 }
 
 
-static int cl_update_covariance(const int devid, const int width, const int height, cl_mem in, cl_mem out,
-                                cl_mem a, cl_mem b, float eps)
+static int _cl_update_covariance(const int devid,
+                                  const int width,
+                                  const int height,
+                                  cl_mem in,
+                                  cl_mem out,
+                                  cl_mem a,
+                                  cl_mem b,
+                                  float eps)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_update_covariance;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
@@ -407,11 +450,26 @@ static int cl_update_covariance(const int devid, const int width, const int heig
 }
 
 
-static int cl_solve(const int devid, const int width, const int height, cl_mem img_mean, cl_mem imgg_mean_r,
-                    cl_mem imgg_mean_g, cl_mem imgg_mean_b, cl_mem cov_imgg_img_r, cl_mem cov_imgg_img_g,
-                    cl_mem cov_imgg_img_b, cl_mem var_imgg_rr, cl_mem var_imgg_rg, cl_mem var_imgg_rb,
-                    cl_mem var_imgg_gg, cl_mem var_imgg_gb, cl_mem var_imgg_bb, cl_mem a_r, cl_mem a_g, cl_mem a_b,
-                    cl_mem b)
+static int _cl_solve(const int devid,
+                      const int width,
+                      const int height,
+                      cl_mem img_mean,
+                      cl_mem imgg_mean_r,
+                      cl_mem imgg_mean_g,
+                      cl_mem imgg_mean_b,
+                      cl_mem cov_imgg_img_r,
+                      cl_mem cov_imgg_img_g,
+                      cl_mem cov_imgg_img_b,
+                      cl_mem var_imgg_rr,
+                      cl_mem var_imgg_rg,
+                      cl_mem var_imgg_rb,
+                      cl_mem var_imgg_gg,
+                      cl_mem var_imgg_gb,
+                      cl_mem var_imgg_bb,
+                      cl_mem a_r,
+                      cl_mem a_g,
+                      cl_mem a_b,
+                      cl_mem b)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_solve;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
@@ -422,9 +480,18 @@ static int cl_solve(const int devid, const int width, const int height, cl_mem i
 }
 
 
-static int cl_generate_result(const int devid, const int width, const int height, cl_mem guide, cl_mem a_r,
-                              cl_mem a_g, cl_mem a_b, cl_mem b, cl_mem out, const float guide_weight,
-                              const float min, const float max)
+static int _cl_generate_result(const int devid,
+                                const int width,
+                                const int height,
+                                cl_mem guide,
+                                cl_mem a_r,
+                                cl_mem a_g,
+                                cl_mem a_b,
+                                cl_mem b,
+                                cl_mem out,
+                                const float guide_weight,
+                                const float min,
+                                const float max)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_generate_result;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
@@ -433,13 +500,19 @@ static int cl_generate_result(const int devid, const int width, const int height
 }
 
 
-static int guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width, const int height,
-                                 const int ch,
-                                 const int w,              // window size
-                                 const float sqrt_eps,     // regularization parameter
-                                 const float guide_weight, // to balance the amplitudes in the guiding image and
+static int _guided_filter_cl_impl(int devid,
+                                  cl_mem guide,
+                                  cl_mem in,
+                                  cl_mem out,
+                                  const int width,
+                                  const int height,
+                                  const int ch,
+                                  const int w,              // window size
+                                  const float sqrt_eps,     // regularization parameter
+                                  const float guide_weight, // to balance the amplitudes in the guiding image and
                                                            // the input// image
-                                 const float min, const float max)
+                                  const float min,
+                                  const float max)
 {
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
 
@@ -463,7 +536,7 @@ static int guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out,
   void *a_b = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   void *b = temp2;
 
-  int err = CL_SUCCESS;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(temp1 == NULL || temp2 == NULL ||                                                        //
      imgg_mean_r == NULL || imgg_mean_g == NULL || imgg_mean_b == NULL || img_mean == NULL || //
      cov_imgg_img_r == NULL || cov_imgg_img_g == NULL || cov_imgg_img_b == NULL ||            //
@@ -471,86 +544,83 @@ static int guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out,
      var_imgg_rg == NULL || var_imgg_rb == NULL || var_imgg_gb == NULL ||                     //
      a_r == NULL || a_g == NULL || a_b == NULL)
   {
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
   }
 
-  err = cl_split_rgb(devid, width, height, guide, imgg_mean_r, imgg_mean_g, imgg_mean_b, guide_weight);
+  err = _cl_split_rgb(devid, width, height, guide, imgg_mean_r, imgg_mean_g, imgg_mean_b, guide_weight);
   if(err != CL_SUCCESS) goto error;
 
-  err = cl_box_mean(devid, width, height, w, in, img_mean, temp1);
+  err = _cl_box_mean(devid, width, height, w, in, img_mean, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, imgg_mean_r, imgg_mean_r, temp1);
+  err = _cl_box_mean(devid, width, height, w, imgg_mean_r, imgg_mean_r, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, imgg_mean_g, imgg_mean_g, temp1);
+  err = _cl_box_mean(devid, width, height, w, imgg_mean_g, imgg_mean_g, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, imgg_mean_b, imgg_mean_b, temp1);
+  err = _cl_box_mean(devid, width, height, w, imgg_mean_b, imgg_mean_b, temp1);
   if(err != CL_SUCCESS) goto error;
 
-  err = cl_covariances(devid, width, height, guide, in, cov_imgg_img_r, cov_imgg_img_g, cov_imgg_img_b,
+  err = _cl_covariances(devid, width, height, guide, in, cov_imgg_img_r, cov_imgg_img_g, cov_imgg_img_b,
                        guide_weight);
   if(err != CL_SUCCESS) goto error;
 
-  err = cl_variances(devid, width, height, guide, var_imgg_rr, var_imgg_rg, var_imgg_rb, var_imgg_gg, var_imgg_gb,
+  err = _cl_variances(devid, width, height, guide, var_imgg_rr, var_imgg_rg, var_imgg_rb, var_imgg_gg, var_imgg_gb,
                      var_imgg_bb, guide_weight);
   if(err != CL_SUCCESS) goto error;
 
-  err = cl_box_mean(devid, width, height, w, cov_imgg_img_r, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, cov_imgg_img_r, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, cov_imgg_img_r, imgg_mean_r, img_mean, 0.f);
+  err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_r, imgg_mean_r, img_mean, 0.f);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, cov_imgg_img_g, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, cov_imgg_img_g, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, cov_imgg_img_g, imgg_mean_g, img_mean, 0.f);
+  err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_g, imgg_mean_g, img_mean, 0.f);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, cov_imgg_img_b, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, cov_imgg_img_b, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, cov_imgg_img_b, imgg_mean_b, img_mean, 0.f);
+  err = _cl_update_covariance(devid, width, height, temp2, cov_imgg_img_b, imgg_mean_b, img_mean, 0.f);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, var_imgg_rr, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, var_imgg_rr, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, var_imgg_rr, imgg_mean_r, imgg_mean_r, eps);
+  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rr, imgg_mean_r, imgg_mean_r, eps);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, var_imgg_rg, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, var_imgg_rg, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, var_imgg_rg, imgg_mean_r, imgg_mean_g, 0.f);
+  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rg, imgg_mean_r, imgg_mean_g, 0.f);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, var_imgg_rb, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, var_imgg_rb, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, var_imgg_rb, imgg_mean_r, imgg_mean_b, 0.f);
+  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_rb, imgg_mean_r, imgg_mean_b, 0.f);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, var_imgg_gg, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, var_imgg_gg, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, var_imgg_gg, imgg_mean_g, imgg_mean_g, eps);
+  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_gg, imgg_mean_g, imgg_mean_g, eps);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, var_imgg_gb, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, var_imgg_gb, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, var_imgg_gb, imgg_mean_g, imgg_mean_b, 0.f);
+  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_gb, imgg_mean_g, imgg_mean_b, 0.f);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, var_imgg_bb, temp2, temp1);
+  err = _cl_box_mean(devid, width, height, w, var_imgg_bb, temp2, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_update_covariance(devid, width, height, temp2, var_imgg_bb, imgg_mean_b, imgg_mean_b, eps);
+  err = _cl_update_covariance(devid, width, height, temp2, var_imgg_bb, imgg_mean_b, imgg_mean_b, eps);
   if(err != CL_SUCCESS) goto error;
 
-  err = cl_solve(devid, width, height, img_mean, imgg_mean_r, imgg_mean_g, imgg_mean_b, cov_imgg_img_r,
+  err = _cl_solve(devid, width, height, img_mean, imgg_mean_r, imgg_mean_g, imgg_mean_b, cov_imgg_img_r,
                  cov_imgg_img_g, cov_imgg_img_b, var_imgg_rr, var_imgg_rg, var_imgg_rb, var_imgg_gg, var_imgg_gb,
                  var_imgg_bb, a_r, a_g, a_b, b);
   if(err != CL_SUCCESS) goto error;
 
-  err = cl_box_mean(devid, width, height, w, a_r, a_r, temp1);
+  err = _cl_box_mean(devid, width, height, w, a_r, a_r, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, a_g, a_g, temp1);
+  err = _cl_box_mean(devid, width, height, w, a_g, a_g, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, a_b, a_b, temp1);
+  err = _cl_box_mean(devid, width, height, w, a_b, a_b, temp1);
   if(err != CL_SUCCESS) goto error;
-  err = cl_box_mean(devid, width, height, w, b, b, temp1);
+  err = _cl_box_mean(devid, width, height, w, b, b, temp1);
   if(err != CL_SUCCESS) goto error;
 
-  err = cl_generate_result(devid, width, height, guide, a_r, a_g, a_b, b, out, guide_weight, min, max);
+  err = _cl_generate_result(devid, width, height, guide, a_r, a_g, a_b, b, out, guide_weight, min, max);
 
 error:
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[guided filter] unknown error: %d\n", err);
-
   dt_opencl_release_mem_object(a_r);
   dt_opencl_release_mem_object(a_g);
   dt_opencl_release_mem_object(a_b);
@@ -569,46 +639,63 @@ error:
   dt_opencl_release_mem_object(imgg_mean_b);
   dt_opencl_release_mem_object(temp1);
   dt_opencl_release_mem_object(temp2);
-
   return err;
 }
 
 
-static void guided_filter_cl_fallback(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width,
-                                      const int height, const int ch,
+static int _guided_filter_cl_fallback(int devid,
+                                      cl_mem guide,
+                                      cl_mem in,
+                                      cl_mem out,
+                                      const int width,
+                                      const int height,
+                                      const int ch,
                                       const int w,              // window size
                                       const float sqrt_eps,     // regularization parameter
                                       const float guide_weight, // to balance the amplitudes in the guiding image
                                                                 // and the input// image
-                                      const float min, const float max)
+                                      const float min,
+                                      const float max)
 {
   // fall-back implementation: copy data from device memory to host memory and perform filter
   // by CPU until there is a proper OpenCL implementation
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   float *guide_host = dt_alloc_align(64, sizeof(*guide_host) * width * height * ch);
   float *in_host = dt_alloc_align(64, sizeof(*in_host) * width * height);
   float *out_host = dt_alloc_align(64, sizeof(*out_host) * width * height);
-  int err;
+
+  if(!guide_host || !in_host || !out_host)
+    goto error;
+
   err = dt_opencl_read_host_from_device(devid, guide_host, guide, width, height, ch * sizeof(float));
   if(err != CL_SUCCESS) goto error;
   err = dt_opencl_read_host_from_device(devid, in_host, in, width, height, sizeof(float));
   if(err != CL_SUCCESS) goto error;
+
   guided_filter(guide_host, in_host, out_host, width, height, ch, w, sqrt_eps, guide_weight, min, max);
   err = dt_opencl_write_host_to_device(devid, out_host, out, width, height, sizeof(float));
-  if(err != CL_SUCCESS) goto error;
+
 error:
   dt_free_align(guide_host);
   dt_free_align(in_host);
   dt_free_align(out_host);
+  return err;
 }
 
 
-void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width, const int height,
+void guided_filter_cl(int devid,
+                      cl_mem guide,
+                      cl_mem in,
+                      cl_mem out,
+                      const int width,
+                      const int height,
                       const int ch,
                       const int w,              // window size
                       const float sqrt_eps,     // regularization parameter
                       const float guide_weight, // to balance the amplitudes in the guiding image and the input
                                                 // image
-                      const float min, const float max)
+                      const float min,
+                      const float max)
 {
   assert(ch >= 3);
   assert(w >= 1);
@@ -616,13 +703,18 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
   // estimate required memory for OpenCL code path with a safety factor of 1.25
   const gboolean fits = dt_opencl_image_fits_device(devid, width, height, sizeof(float), 18.0f * 1.25f, 0);
 
-  int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_int err =  DT_OPENCL_DEFAULT_ERROR;
   if(fits)
-    err = guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
+  {
+    err = _guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
+    if(err != CL_SUCCESS)
+      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl error %s\n", cl_errstr(err));
+  }
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[guided filter] fall back to cpu implementation due to insufficient gpu memory\n");
-    guided_filter_cl_fallback(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
+    err = _guided_filter_cl_fallback(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
+    if(err != CL_SUCCESS)
+      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl cpu fallback error %s\n", cl_errstr(err));
   }
 }
 
