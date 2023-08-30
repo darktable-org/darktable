@@ -2569,7 +2569,7 @@ int process_cl(struct dt_iop_module_t *self,
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_show_mask, sizes);
       dt_opencl_release_mem_object(mask);
       dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-      return TRUE;
+      return err;
     }
   }
 
@@ -2671,7 +2671,7 @@ int process_cl(struct dt_iop_module_t *self,
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(export_input_matrix_cl);
   dt_opencl_release_mem_object(export_output_matrix_cl);
-  return TRUE;
+  return CL_SUCCESS;
 
 error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
@@ -2685,8 +2685,7 @@ error:
   dt_opencl_release_mem_object(export_input_matrix_cl);
   dt_opencl_release_mem_object(export_output_matrix_cl);
   dt_opencl_release_mem_object(clipped);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_filmicrgb] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

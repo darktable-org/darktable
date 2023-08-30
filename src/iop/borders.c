@@ -719,13 +719,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // copy original input from dev_in -> dev_out as starting point
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_borders] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

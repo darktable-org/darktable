@@ -513,7 +513,7 @@ int process_cl(struct dt_iop_module_t *self,
 
         dt_opencl_release_mem_object(dev_clips);
         dt_opencl_release_mem_object(dev_xtrans);
-        return TRUE;
+        return CL_SUCCESS;
       }
     }
   }
@@ -601,15 +601,12 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   dt_opencl_release_mem_object(dev_xtrans);
-  return TRUE;
+  return CL_SUCCESS;
 
   error:
   dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
-  dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_PIPE,
-    "opencl_highlights error", piece->pipe, self, roi_in, roi_out,
-    "error: %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

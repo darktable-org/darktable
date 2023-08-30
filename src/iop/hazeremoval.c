@@ -222,7 +222,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   if(old_version == 1 && new_version == 2)
   {
     //FIXME: copy from old version and add compatibility flag
-    
+
   }
   return 0;
 }
@@ -830,7 +830,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(trans_map);
   dt_opencl_release_mem_object(trans_map_filtered);
 
-  return TRUE;
+  return CL_SUCCESS;
 }
 #endif
 

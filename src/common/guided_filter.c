@@ -463,7 +463,7 @@ static int guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out,
   void *a_b = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   void *b = temp2;
 
-  int err = CL_SUCCESS;
+  int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(temp1 == NULL || temp2 == NULL ||                                                        //
      imgg_mean_r == NULL || imgg_mean_g == NULL || imgg_mean_b == NULL || img_mean == NULL || //
      cov_imgg_img_r == NULL || cov_imgg_img_g == NULL || cov_imgg_img_b == NULL ||            //
@@ -471,7 +471,6 @@ static int guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out,
      var_imgg_rg == NULL || var_imgg_rb == NULL || var_imgg_gb == NULL ||                     //
      a_r == NULL || a_g == NULL || a_b == NULL)
   {
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
   }
 
@@ -549,7 +548,7 @@ static int guided_filter_cl_impl(int devid, cl_mem guide, cl_mem in, cl_mem out,
   err = cl_generate_result(devid, width, height, guide, a_r, a_g, a_b, b, out, guide_weight, min, max);
 
 error:
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[guided filter] unknown error: %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[guided filter] error: %s\n", cl_errstr(err));
 
   dt_opencl_release_mem_object(a_r);
   dt_opencl_release_mem_object(a_g);
@@ -587,14 +586,17 @@ static void guided_filter_cl_fallback(int devid, cl_mem guide, cl_mem in, cl_mem
   float *guide_host = dt_alloc_align(64, sizeof(*guide_host) * width * height * ch);
   float *in_host = dt_alloc_align(64, sizeof(*in_host) * width * height);
   float *out_host = dt_alloc_align(64, sizeof(*out_host) * width * height);
-  int err;
-  err = dt_opencl_read_host_from_device(devid, guide_host, guide, width, height, ch * sizeof(float));
+
+  if(!guide_host || !in_host || !out_host)
+    goto error;
+
+  cl_int err = dt_opencl_read_host_from_device(devid, guide_host, guide, width, height, ch * sizeof(float));
   if(err != CL_SUCCESS) goto error;
   err = dt_opencl_read_host_from_device(devid, in_host, in, width, height, sizeof(float));
   if(err != CL_SUCCESS) goto error;
   guided_filter(guide_host, in_host, out_host, width, height, ch, w, sqrt_eps, guide_weight, min, max);
   err = dt_opencl_write_host_to_device(devid, out_host, out, width, height, sizeof(float));
-  if(err != CL_SUCCESS) goto error;
+
 error:
   dt_free_align(guide_host);
   dt_free_align(in_host);

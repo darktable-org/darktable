@@ -810,7 +810,7 @@ int process_cl(
      demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR )
   {
     if(!process_default_cl(self, piece, dev_in, dev_out, roi_in, roi_out, demosaicing_method))
-      return FALSE;
+      return DT_OPENCL_PROCESS_CL;
   }
   else if((demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_RCD)
   {
@@ -822,19 +822,19 @@ int process_cl(
     else
     {
      if(!process_rcd_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE))
-       return FALSE;
+       return DT_OPENCL_PROCESS_CL;
     }
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
   {
     if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, FALSE))
-      return FALSE;
+      return DT_OPENCL_PROCESS_CL;
   }
   else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
     !(qual_flags & DT_DEMOSAIC_FULL_SCALE))
   {
     if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR))
-      return FALSE;
+      return DT_OPENCL_PROCESS_CL;
   }
   else if(((demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN ) ||
           ((demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3))
@@ -847,13 +847,13 @@ int process_cl(
     else
     {
       if(!process_markesteijn_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE))
-        return FALSE;
+        return DT_OPENCL_PROCESS_CL;
     }
   }
   else
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method %d not yet supported by opencl code\n", demosaicing_method);
-    return FALSE;
+    return DT_OPENCL_PROCESS_CL;
   }
 
   if(!dual)
@@ -884,7 +884,7 @@ int process_cl(
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
 
-  return retval;
+  return retval ? CL_SUCCESS : DT_OPENCL_PROCESS_CL;
 }
 #endif
 

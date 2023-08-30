@@ -225,14 +225,9 @@ int process_cl(struct dt_iop_module_t *self,
     err = dt_bilateral_blur_cl(b);
     if(err != CL_SUCCESS) goto error;
     err = dt_bilateral_slice_cl(b, dev_in, dev_out, d->detail);
-    if(err != CL_SUCCESS) goto error;
-    dt_bilateral_free_cl(b);
-    return TRUE;
 error:
     dt_bilateral_free_cl(b);
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_bilateral] couldn't enqueue kernel! %s\n", cl_errstr(err));
-    return FALSE;
+    return err;
   }
   else // mode == s_mode_local_laplacian
   {
@@ -242,10 +237,10 @@ error:
     if(!b) goto error_ll;
     if(dt_local_laplacian_cl(b, dev_in, dev_out) != CL_SUCCESS) goto error_ll;
     dt_local_laplacian_free_cl(b);
-    return TRUE;
+    return CL_SUCCESS;
 error_ll:
     dt_local_laplacian_free_cl(b);
-    return FALSE;
+    return CL_INVALID_KERNEL;
   }
 }
 #endif

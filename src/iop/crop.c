@@ -393,15 +393,8 @@ int process_cl(struct dt_iop_module_t *self,
 {
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { roi_out->width, roi_out->height, 1 };
-  cl_int err = dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
+  return dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
                                             origin, origin, region);
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_crop] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 

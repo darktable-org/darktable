@@ -1410,22 +1410,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(contrast), CLARG(process_saturation_vibrance), CLARG(saturation), CLARG(vibrance), CLARG(process_hlcompr),
     CLARG(hlcomp), CLARG(hlrange), CLARG(middle_grey), CLARG(inv_middle_grey), CLARG(dev_profile_info),
     CLARG(dev_profile_lut), CLARG(use_work_profile));
-  if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error %i enqueue kernel\n", err);
-    goto cleanup;
-  }
 
 cleanup:
-  if(dev_gamma) dt_opencl_release_mem_object(dev_gamma);
-  if(dev_contrast) dt_opencl_release_mem_object(dev_contrast);
+  dt_opencl_release_mem_object(dev_gamma);
+  dt_opencl_release_mem_object(dev_contrast);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
 
-  if(src_buffer) dt_free_align(src_buffer);
-
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_basicadj] couldn't enqueue kernel! %s\n", cl_errstr(err));
-
-  return (err == CL_SUCCESS) ? TRUE : FALSE;
+  dt_free_align(src_buffer);
+  return err;
 }
 #endif
 
