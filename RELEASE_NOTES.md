@@ -138,6 +138,7 @@ improvements and enhancements:
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
 - Samsung Expert RAW DNGs
+- Sony downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
 
 ### Suspended Support
 
