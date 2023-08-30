@@ -141,7 +141,7 @@ static void _local_copy_widget_init(dt_lib_filtering_rule_t *rule, const dt_coll
   local_copy->combo = dt_bauhaus_combobox_new_full(
       DT_ACTION(self), N_("rules"), N_("local copy"), _("local copied state filter"), 0,
       (GtkCallback)_local_copy_changed, local_copy, _local_copy_names);
-  DT_BAUHAUS_WIDGET(local_copy->combo)->show_label = FALSE;
+  dt_bauhaus_widget_hide_label(local_copy->combo);
 
   if(top)
     gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), local_copy->combo, TRUE, TRUE, 0);

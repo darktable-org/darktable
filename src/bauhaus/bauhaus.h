@@ -136,7 +136,7 @@ typedef union dt_bauhaus_data_t
 typedef struct dt_bauhaus_widget_t DtBauhausWidget;
 typedef struct dt_bauhaus_widget_class_t DtBauhausWidgetClass;
 
-typedef void (*dt_bauhaus_quad_paint_f)(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+typedef DTGTKCairoPaintIconFunc dt_bauhaus_quad_paint_f;
 
 // our new widget and its private members, inheriting from drawing area:
 typedef struct dt_bauhaus_widget_t
@@ -206,14 +206,13 @@ typedef struct dt_bauhaus_t
   // time when the popup window was opened. this is sortof a hack to
   // detect `double clicks between windows' to reset the combobox.
   guint32 opentime;
-  // pointer position when popup window is closed
-  float end_mouse_x, end_mouse_y;
-  // used to determine whether the user crossed the line already.
-  int change_active;
+  // used to determine whether the user crossed the line or made a change already.
+  gboolean change_active;
   float mouse_line_distance;
   // key input buffer
   char keys[DT_BAUHAUS_MAX_TEXT];
   int keys_cnt;
+  int unique_match;
   // our custom signals
   guint signals[DT_BAUHAUS_LAST_SIGNAL];
 
@@ -238,7 +237,7 @@ typedef struct dt_bauhaus_t
   int cursor_blink_counter;
 
   // colors for sliders and comboboxes
-  GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border, color_fill;
+  GdkRGBA color_fg, color_fg_hover, color_fg_insensitive, color_bg, color_border, indicator_border, color_fill;
 
   // colors for graphs
   GdkRGBA graph_bg, graph_exterior, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram;
@@ -247,7 +246,6 @@ typedef struct dt_bauhaus_t
 } dt_bauhaus_t;
 
 #define DT_BAUHAUS_SPACE 0
-
 
 void dt_bauhaus_init();
 void dt_bauhaus_cleanup();
@@ -263,6 +261,7 @@ void dt_bauhaus_widget_set_section(GtkWidget *w, const gboolean is_section);
 // set the label text:
 dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
 const char* dt_bauhaus_widget_get_label(GtkWidget *w);
+void dt_bauhaus_widget_hide_label(GtkWidget *w);
 // attach a custom painted quad to the space at the right side (overwriting the default icon if any):
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags, void *paint_data);
 // make this quad a toggle button:
@@ -287,7 +286,6 @@ GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, fl
                                             float defval, int digits);
 GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, float min, float max,
                                                          float step, float defval, int digits, int feedback);
-
 GtkWidget *dt_bauhaus_slider_from_widget(struct dt_bauhaus_widget_t* widget, dt_iop_module_t *self, float min, float max,
                                          float step, float defval, int digits, int feedback);
 GtkWidget *dt_bauhaus_slider_new_action(dt_action_t *self, float min, float max, float step,
@@ -330,7 +328,7 @@ void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, 
 void dt_bauhaus_slider_set_log_curve(GtkWidget *widget);
 
 // combobox:
-void dt_bauhaus_combobox_from_widget(struct dt_bauhaus_widget_t* widget,dt_iop_module_t *self);
+GtkWidget *dt_bauhaus_combobox_from_widget(struct dt_bauhaus_widget_t* widget, dt_iop_module_t *self);
 GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self);
 GtkWidget *dt_bauhaus_combobox_new_action(dt_action_t *self);
 GtkWidget *dt_bauhaus_combobox_new_full(dt_action_t *action, const char *section, const char *label, const char *tip,

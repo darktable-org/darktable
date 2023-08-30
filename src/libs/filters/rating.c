@@ -199,7 +199,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   DT_BAUHAUS_COMBOBOX_NEW_FULL(rating_legacy->comparator, self, N_("rules"), N_("comparator"),
                                _("filter by images rating"), 3, _rating_legacy_changed, rating_legacy, "<", "≤",
                                "=", "≥", ">", "≠");
-  DT_BAUHAUS_WIDGET(rating_legacy->comparator)->show_label = FALSE;
+  dt_bauhaus_widget_hide_label(rating_legacy->comparator);
   gtk_widget_set_halign(rating_legacy->comparator, GTK_ALIGN_START);
   gtk_widget_set_no_show_all(rating_legacy->comparator, TRUE);
   dt_gui_add_class(rating_legacy->comparator, "dt_transparent_background");
@@ -210,7 +210,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   DT_BAUHAUS_COMBOBOX_NEW_FULL(rating_legacy->stars, self, N_("rules"), N_("ratings"), _("filter by images rating"), 0,
                                _rating_legacy_changed, rating_legacy, N_("all"), N_("unstarred only"), "★", "★ ★",
                                "★ ★ ★", "★ ★ ★ ★", "★ ★ ★ ★ ★", N_("rejected only"), N_("all except rejected"));
-  DT_BAUHAUS_WIDGET(rating_legacy->stars)->show_label = FALSE;
+  dt_bauhaus_widget_hide_label(rating_legacy->stars);
   // we increase the left padding of the 5 star entry to be sure it's visible with the comparator on top
   // we do that here to not cause trouble with shortcuts
   dt_bauhaus_combobox_set_entry_label(rating_legacy->stars, 6, "           ★ ★ ★ ★ ★");
