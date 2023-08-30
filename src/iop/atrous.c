@@ -5,8 +5,7 @@
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
+    (at your option) any later version
     darktable is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -479,24 +478,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     (devid, gd->kernel_addbuffers, 0, CLARG(dev_out), CLARG(dev_buf1));
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_addbuffers, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
-
-  dt_opencl_release_mem_object(dev_filter);
-  dt_opencl_release_mem_object(dev_tmp);
-  dt_opencl_release_mem_object(dev_tmp2);
-  dt_opencl_release_mem_object(dev_detail);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_filter);
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_tmp2);
   dt_opencl_release_mem_object(dev_detail);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_atrous] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 
 #else // ======== old, memory-hungry implementation ========================================================
@@ -624,22 +612,13 @@ int process_cl(struct dt_iop_module_t *self,
 
   dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
-  dt_opencl_release_mem_object(dev_filter);
-  dt_opencl_release_mem_object(dev_tmp);
-  for(int k = 0; k < max_scale; k++)
-    dt_opencl_release_mem_object(dev_detail[k]);
-  free(dev_detail);
-  return TRUE;
-
 error:
   dt_opencl_release_mem_object(dev_filter);
   dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_atrous] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif // USE_NEW_CL
 

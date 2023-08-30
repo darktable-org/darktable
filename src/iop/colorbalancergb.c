@@ -1111,6 +1111,9 @@ int process_cl(struct dt_iop_module_t *self,
     = { cosf(d->hue_angle), -sinf(d->hue_angle), sinf(d->hue_angle), cosf(d->hue_angle) };
   hue_rotation_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), hue_rotation_matrix);
 
+  if(input_matrix_cl == NULL || output_matrix_cl == NULL || gamut_LUT == NULL || hue_rotation_matrix_cl == NULL)
+    goto error;
+
   dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_rgb, 0, CLARG(dev_in), CLARG(dev_out),
     CLARG(width), CLARG(height), CLARG(dev_profile_info), CLARG(input_matrix_cl), CLARG(output_matrix_cl),
     CLARG(gamut_LUT), CLARG(d->shadows_weight), CLARG(d->highlights_weight), CLARG(d->midtones_weight),
@@ -1122,24 +1125,14 @@ int process_cl(struct dt_iop_module_t *self,
     CLARG(d->saturation_formula), CLARG(hue_rotation_matrix_cl));
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_rgb, sizes);
-  if(err != CL_SUCCESS) goto error;
 
-  // cleanup and exit on success
+error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(gamut_LUT);
   dt_opencl_release_mem_object(hue_rotation_matrix_cl);
-  return TRUE;
-
-error:
-  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
-  if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
-  if(gamut_LUT) dt_opencl_release_mem_object(gamut_LUT);
-  if(hue_rotation_matrix_cl) dt_opencl_release_mem_object(hue_rotation_matrix_cl);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalancergb] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 
 void init_global(dt_iop_module_so_t *module)

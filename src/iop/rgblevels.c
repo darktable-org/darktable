@@ -1525,21 +1525,18 @@ int process_cl(dt_iop_module_t *self,
   dev_lutr = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
   if(dev_lutr == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 1\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
   dev_lutg = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
   if(dev_lutg == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 2\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
   dev_lutb = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if(dev_lutb == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 3\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1548,7 +1545,6 @@ int process_cl(dt_iop_module_t *self,
     (devid, sizeof(float) * 3 * 3, (float *)d->params.levels);
   if(dev_levels == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 4\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1557,7 +1553,6 @@ int process_cl(dt_iop_module_t *self,
     (devid, sizeof(float) * 3, (float *)d->inv_gamma);
   if(dev_inv_gamma == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rgblevels process_cl] error allocating memory 5\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1574,29 +1569,18 @@ int process_cl(dt_iop_module_t *self,
      CLARG(dev_lutr), CLARG(dev_lutg), CLARG(dev_lutb),
      CLARG(dev_levels), CLARG(dev_inv_gamma), CLARG(dev_profile_info),
      CLARG(dev_profile_lut), CLARG(use_work_profile));
-  if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[rgblevels process_cl] error %i enqueue kernel\n", err);
-    goto cleanup;
-  }
 
 cleanup:
-  if(dev_lutr) dt_opencl_release_mem_object(dev_lutr);
-  if(dev_lutg) dt_opencl_release_mem_object(dev_lutg);
-  if(dev_lutb) dt_opencl_release_mem_object(dev_lutb);
-  if(dev_levels) dt_opencl_release_mem_object(dev_levels);
-  if(dev_inv_gamma) dt_opencl_release_mem_object(dev_inv_gamma);
+  dt_opencl_release_mem_object(dev_lutr);
+  dt_opencl_release_mem_object(dev_lutg);
+  dt_opencl_release_mem_object(dev_lutb);
+  dt_opencl_release_mem_object(dev_levels);
+  dt_opencl_release_mem_object(dev_inv_gamma);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl,
                                      &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
 
-  if(src_buffer) dt_free_align(src_buffer);
-
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL,
-                                 "[opencl_rgblevels] couldn't enqueue kernel! %s\n",
-                                 cl_errstr(err));
-
-  return (err == CL_SUCCESS) ? TRUE : FALSE;
+  dt_free_align(src_buffer);
+  return err;
 }
 #endif
 

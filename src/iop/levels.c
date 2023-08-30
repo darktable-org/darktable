@@ -466,16 +466,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_levels, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_lut), CLARG(d->levels[0]),
     CLARG(d->levels[2]), CLARG(d->in_inv_gamma));
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_lut);
-
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

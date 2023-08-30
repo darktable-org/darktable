@@ -225,20 +225,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if(err != CL_SUCCESS) goto error;
   }
   else
   {
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_velvia, width, height,
       CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(strength), CLARG(bias));
-    if(err != CL_SUCCESS) goto error;
   }
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_velvia] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

@@ -255,19 +255,10 @@ int process_cl(struct dt_iop_module_t *self,
   const float offset[4] = { 0.0f, data->a_offset, data->b_offset, 0.0f };
   const int unbound = data->unbound;
 
-  const cl_int err =
-    dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
                                      CLARG(dev_in), CLARG(dev_out),
                                      CLARG(width), CLARG(height),
                                      CLARG(scale), CLARG(offset), CLARG(unbound));
-
-  if(err != CL_SUCCESS) goto error;
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorcontrast] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 

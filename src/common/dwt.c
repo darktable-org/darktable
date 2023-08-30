@@ -893,18 +893,16 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   }
 
 cleanup:
-  if(layers) dt_opencl_release_mem_object(layers);
-  if(merged_layers) dt_opencl_release_mem_object(merged_layers);
-  if(temp) dt_opencl_release_mem_object(temp);
-  if(buffer[1]) dt_opencl_release_mem_object(buffer[1]);
+  dt_opencl_release_mem_object(layers);
+  dt_opencl_release_mem_object(merged_layers);
+  dt_opencl_release_mem_object(temp);
+  dt_opencl_release_mem_object(buffer[1]);
 
   return err;
 }
 
 cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
 {
-  cl_int err = CL_SUCCESS;
-
   // this is a zoom scale, not a wavelet scale
   if(p->preview_scale <= 0.f) p->preview_scale = 1.f;
 
@@ -929,9 +927,7 @@ cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
   }
 
   // call the actual decompose
-  err = dwt_wavelet_decompose_cl(p->image, p, layer_func);
-
-  return err;
+  return dwt_wavelet_decompose_cl(p->image, p, layer_func);
 }
 
 #endif

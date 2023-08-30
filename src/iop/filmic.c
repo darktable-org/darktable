@@ -591,16 +591,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range),
     CLARG(grey), CLARG(dev_table), CLARG(diff_table), CLARG(contrast), CLARG(power), CLARG(preserve_color),
     CLARG(saturation));
-  if(err != CL_SUCCESS) goto error;
-  dt_opencl_release_mem_object(dev_table);
-  dt_opencl_release_mem_object(diff_table);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_table);
   dt_opencl_release_mem_object(diff_table);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_filmic] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

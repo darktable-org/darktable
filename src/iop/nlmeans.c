@@ -183,10 +183,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
   if(dev_U2 == NULL)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't allocate GPU buffer\n");
-    return FALSE;
-  }
+     return DT_OPENCL_SYSMEM_ALLOCATION;
 
   const dt_nlmeans_param_t params =
   {
@@ -217,10 +214,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   // clean up and check whether all kernels ran successfully
   dt_opencl_release_mem_object(dev_U2);
-  if(err == CL_SUCCESS)
-    return TRUE;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 
 #else // old code
   const int width = roi_in->width;
@@ -337,24 +331,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_args(devid, gd->kernel_nlmeans_finish, 0, CLARG(dev_in), CLARG(dev_U2), CLARG(dev_out),
     CLARG(width), CLARG(height), CLARG(weight));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_finish, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_U2);
-  for(int k = 0; k < NUM_BUCKETS; k++)
-  {
-    dt_opencl_release_mem_object(buckets[k]);
-  }
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_U2);
   for(int k = 0; k < NUM_BUCKETS; k++)
-  {
-    dt_opencl_release_mem_object(buckets[k]);
-  }
+     dt_opencl_release_mem_object(buckets[k]);
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 #endif /* USE_NEW_IMPL_CL */
 }
 #endif

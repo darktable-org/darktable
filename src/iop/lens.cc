@@ -1341,7 +1341,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
   {
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
     if(err != CL_SUCCESS) goto error;
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   switch(interpolation->id)
@@ -1359,7 +1359,7 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
       ldkernel = gd->kernel_lens_distort_lanczos3;
       break;
     default:
-      return FALSE;
+      return DT_OPENCL_PROCESS_CL;
   }
 
   tmpbuf = (float *)dt_alloc_align(64, tmpbuflen);
@@ -1521,20 +1521,12 @@ static int _process_cl_lf(struct dt_iop_module_t *self,
     }
   }
 
-  dt_opencl_release_mem_object(dev_tmpbuf);
-  dt_opencl_release_mem_object(dev_tmp);
-  if(tmpbuf != NULL) dt_free_align(tmpbuf);
-  if(modifier != NULL) delete modifier;
-  return TRUE;
-
 error:
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_tmpbuf);
-  if(tmpbuf != NULL) dt_free_align(tmpbuf);
+  dt_free_align(tmpbuf);
   if(modifier != NULL) delete modifier;
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_lens] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

@@ -523,8 +523,6 @@ int process_cl(struct dt_iop_module_t *self,
                                            CLARG(white_target), CLARG(paper_exp),
                                            CLARG(film_fog), CLARG(contrast_power),
                                            CLARG(skew_power), CLARG(hue_preservation));
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
   }
   else
   {
@@ -536,13 +534,8 @@ int process_cl(struct dt_iop_module_t *self,
                                            CLARG(white_target), CLARG(black_target), CLARG(paper_exp),
                                            CLARG(film_fog), CLARG(contrast_power),
                                            CLARG(skew_power));
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
   }
-
-  error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_sigmoid] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif //HAVE_OPENCL
 

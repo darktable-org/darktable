@@ -3740,7 +3740,7 @@ int process_cl(struct dt_iop_module_t *self,
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   float ihomograph[3][3];
@@ -3794,16 +3794,10 @@ int process_cl(struct dt_iop_module_t *self,
      CLARG(iwidth), CLARG(iheight), CLARRAY(2, iroi),
      CLARRAY(2, oroi),
      CLARG(in_scale), CLARG(out_scale), CLARRAY(2, clip), CLARG(dev_homo));
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_homo);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_homo);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_ashift] couldn't enqueue kernel! %s\n",
-           cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

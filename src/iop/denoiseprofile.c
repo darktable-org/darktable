@@ -2259,7 +2259,6 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
                               CLARG(dev_out), CLARG(width), CLARG(height),
                               CLARG(aa), CLARG(sigma2));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
   else
   {
@@ -2269,27 +2268,16 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
                               CLARG(dev_out), CLARG(width), CLARG(height),
                               CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish_v2, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
 
+ error:
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
     dt_opencl_release_mem_object(buckets[k]);
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  return TRUE;
-
-error:
-  for(int k = 0; k < NUM_BUCKETS; k++)
-  {
-    dt_opencl_release_mem_object(buckets[k]);
-  }
-  dt_opencl_release_mem_object(dev_U2);
-  dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 #endif /* USE_NEW_IMPL_CL */
 }
 
@@ -2352,7 +2340,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
     free(dev_detail);
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   dt_opencl_local_buffer_t flocopt
@@ -2747,16 +2735,6 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
 
   dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
-  dt_opencl_release_mem_object(dev_r);
-  dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_tmp);
-  dt_opencl_release_mem_object(dev_filter);
-  for(int k = 0; k < max_scale; k++)
-    dt_opencl_release_mem_object(dev_detail[k]);
-  free(dev_detail);
-  dt_free_align(sumsum);
-  return TRUE;
-
 error:
   dt_opencl_release_mem_object(dev_r);
   dt_opencl_release_mem_object(dev_m);
@@ -2766,10 +2744,7 @@ error:
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
   dt_free_align(sumsum);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_denoiseprofile] couldn't enqueue kernel! %s, devid %d\n",
-           cl_errstr(err), devid);
-  return FALSE;
+  return err;
 }
 
 int process_cl(struct dt_iop_module_t *self,
@@ -2793,7 +2768,7 @@ int process_cl(struct dt_iop_module_t *self,
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_denoiseprofile] compute variance not yet supported by opencl code\n");
-    return FALSE;
+    return DT_OPENCL_PROCESS_CL;
   }
 }
 #endif // HAVE_OPENCL

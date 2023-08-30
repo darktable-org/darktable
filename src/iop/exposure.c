@@ -518,12 +518,8 @@ int process_cl(struct dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 
-  return TRUE;
-
 error:
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_exposure] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
