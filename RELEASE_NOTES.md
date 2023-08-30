@@ -115,7 +115,7 @@ improvements and enhancements:
 
 ### Optional
 
-- ???
+- Bump libavif to 0.9.2
 
 ## RawSpeed changes
 
