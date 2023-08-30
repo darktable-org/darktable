@@ -86,6 +86,18 @@ improvements and enhancements:
 
 - Add linear ProPhoto RGB as possible LUT color-space.
 
+- A set of changes done on OpenCL support:
+
+  - Removed the benchmarking code from opencl as it didn't produce valid
+    results on todays computers.
+
+  - Removed the preference option to select pinned memory transfer. Can
+    be selected on a per device basis
+
+  - Usage of "headroom" is selectable in preferences, the default has
+    been increased to 600Mb as more systems use graphics memory
+    nowadays.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
