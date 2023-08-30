@@ -1882,7 +1882,8 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     else
       sort->sort = dt_bauhaus_combobox_new(NULL);
     dt_action_t *ac = dt_bauhaus_widget_set_label(sort->sort, NULL, _("sort order"));
-    DT_BAUHAUS_WIDGET(sort->sort)->show_label = FALSE;
+    dt_bauhaus_widget_hide_label(sort->sort);
+    dt_bauhaus_combobox_mute_scrolling(sort->sort);
     gtk_widget_set_tooltip_text(sort->sort, _("determine the sort order of shown images"));
     g_signal_connect(G_OBJECT(sort->sort), "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
     gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);

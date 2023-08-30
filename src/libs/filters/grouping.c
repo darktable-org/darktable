@@ -168,7 +168,7 @@ static void _grouping_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                _("select the type of grouped image to filter"), 0, _grouping_changed,
                                grouping, N_("all images"), N_("ungrouped images"), N_("grouped images"),
                                N_("group leaders"), N_("group followers"));
-  DT_BAUHAUS_WIDGET(grouping->combo)->show_label = FALSE;
+  dt_bauhaus_widget_hide_label(grouping->combo);
 
   if(top)
     gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), grouping->combo, TRUE, TRUE, 0);
