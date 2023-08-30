@@ -833,11 +833,18 @@ void dt_gui_gtk_quit()
 
 gboolean dt_gui_quit_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-  if(dt_view_lighttable_preview_state(darktable.view_manager))
-    dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE);
-  else
+  // if we are in lighttable preview mode, then just exit preview instead of closing dt
+  if(!darktable.view_manager)
     dt_control_quit();
-
+  else
+  {
+    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    if(cv && g_strcmp0(cv->module_name, "lighttable") == 0
+       && dt_view_lighttable_preview_state(darktable.view_manager))
+      dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE);
+    else
+      dt_control_quit();
+  }
   return TRUE;
 }
 
