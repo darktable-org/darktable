@@ -690,7 +690,7 @@ int process_cl(struct dt_iop_module_t *self,
     size_t region[] = { roi_in->width, roi_in->height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmat);
@@ -713,16 +713,6 @@ int process_cl(struct dt_iop_module_t *self,
                                          CLARG(dev_m), CLARG(dev_l), CLARG(dev_r),
                                          CLARG(dev_g), CLARG(dev_b),
                                          CLARG(blue_mapping), CLARG(dev_coeffs));
-  if(err != CL_SUCCESS) goto error;
-  dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_l);
-  dt_opencl_release_mem_object(dev_r);
-  dt_opencl_release_mem_object(dev_g);
-  dt_opencl_release_mem_object(dev_b);
-  dt_opencl_release_mem_object(dev_coeffs);
-
-  return TRUE;
-
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_l);
@@ -730,9 +720,7 @@ error:
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorin] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

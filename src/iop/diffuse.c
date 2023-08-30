@@ -1650,7 +1650,7 @@ int process_cl(struct dt_iop_module_t *self,
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    return err == CL_SUCCESS;
+    return err;
   }
 
   size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
@@ -1738,29 +1738,17 @@ int process_cl(struct dt_iop_module_t *self,
     err = wavelets_process_cl(devid, temp_in, temp_out, mask, sizes,
                               width, height, data, gd, final_radius,
                               scale, scales, has_mask, HF, LF_odd, LF_even);
-    if(err != CL_SUCCESS) goto error;
   }
 
-  // cleanup and exit on success
-  dt_opencl_release_mem_object(mask);
+error:
   dt_opencl_release_mem_object(temp1);
   dt_opencl_release_mem_object(temp2);
+  dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(LF_even);
   dt_opencl_release_mem_object(LF_odd);
-  for(int s = 0; s < scales; s++) dt_opencl_release_mem_object(HF[s]);
-  return TRUE;
-
-error:
-  if(temp1) dt_opencl_release_mem_object(temp1);
-  if(temp2) dt_opencl_release_mem_object(temp2);
-  if(mask) dt_opencl_release_mem_object(mask);
-  if(LF_even) dt_opencl_release_mem_object(LF_even);
-  if(LF_odd) dt_opencl_release_mem_object(LF_odd);
-  for(int s = 0; s < scales; s++) if(HF[s]) dt_opencl_release_mem_object(HF[s]);
-
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_diffuse] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  for(int s = 0; s < scales; s++)
+    dt_opencl_release_mem_object(HF[s]);
+  return err;
 }
 
 void init_global(dt_iop_module_so_t *module)

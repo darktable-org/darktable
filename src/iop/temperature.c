@@ -671,9 +671,6 @@ int process_cl(struct dt_iop_module_t *self,
     CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto error;
 
-  dt_opencl_release_mem_object(dev_coeffs);
-  dt_opencl_release_mem_object(dev_xtrans);
-
   piece->pipe->dsc.temperature.enabled = TRUE;
   for(int k = 0; k < 4; k++)
   {
@@ -682,14 +679,11 @@ int process_cl(struct dt_iop_module_t *self,
       d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
     self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
   }
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_xtrans);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_white_balance] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

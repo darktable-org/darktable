@@ -238,8 +238,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range), CLARG(grey));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma_log, sizes);
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
   }
   else if(d->mode == PROFILEGAMMA_GAMMA)
   {
@@ -253,21 +251,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       CLARG(height), CLARG(dev_table), CLARG(dev_coeffs));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma, sizes);
-    if(err != CL_SUCCESS)
-    {
-      dt_opencl_release_mem_object(dev_table);
-      dt_opencl_release_mem_object(dev_coeffs);
-      goto error;
-    }
-
-    dt_opencl_release_mem_object(dev_table);
-    dt_opencl_release_mem_object(dev_coeffs);
-    return TRUE;
   }
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_profilegamma] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  dt_opencl_release_mem_object(dev_table);
+  dt_opencl_release_mem_object(dev_coeffs);
+  return err;
 }
 #endif
 

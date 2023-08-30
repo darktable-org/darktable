@@ -281,16 +281,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_monochrome, width, height,
     CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->a), CLARG(d->b),
     CLARG(sigma2), CLARG(d->highlights));
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_tmp);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_tmp);
-  dt_bilateral_free_cl(b);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_monochrome] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  if(b) dt_bilateral_free_cl(b);
+  return err;
 }
 #endif
 

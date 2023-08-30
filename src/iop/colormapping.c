@@ -704,24 +704,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_mapping, width, height,
       CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(data->n), CLARG(dev_target_mean),
       CLARG(dev_source_mean), CLARG(dev_var_ratio), CLARG(dev_mapio));
-    if(err != CL_SUCCESS) goto error;
-
-    dt_opencl_release_mem_object(dev_tmp);
-    dt_opencl_release_mem_object(dev_target_hist);
-    dt_opencl_release_mem_object(dev_source_ihist);
-    dt_opencl_release_mem_object(dev_target_mean);
-    dt_opencl_release_mem_object(dev_source_mean);
-    dt_opencl_release_mem_object(dev_var_ratio);
-    dt_opencl_release_mem_object(dev_mapio);
-    return TRUE;
   }
   else
   {
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
   }
 
 error:
@@ -733,8 +721,7 @@ error:
   dt_opencl_release_mem_object(dev_source_mean);
   dt_opencl_release_mem_object(dev_var_ratio);
   dt_opencl_release_mem_object(dev_mapio);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colormapping] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

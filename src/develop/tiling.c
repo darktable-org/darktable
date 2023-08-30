@@ -1549,9 +1549,12 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
 
       /* get input and output buffers */
       input = dt_opencl_alloc_device(devid, wd, ht, in_bpp);
-      if(input == NULL) goto error;
       output = dt_opencl_alloc_device(devid, wd, ht, out_bpp);
-      if(output == NULL) goto error;
+      if(output == NULL || input == NULL)
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        goto error;
+      }
 
       if(use_pinned_memory)
       {
@@ -1587,12 +1590,10 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process_cl of module */
-
-      if(!self->process_cl(self, piece, input, output, &iroi, &oroi))
-      {
-        err = DT_OPENCL_PROCESS_CL;
+      err = self->process_cl(self, piece, input, output, &iroi, &oroi);
+      if(err < CL_SUCCESS)
         goto error;
-      }
+
       /* aggregate resulting processed_maximum */
       /* TODO: check if there really can be differences between tiles and take
                appropriate action (calculate minimum, maximum, average, ...?) */
@@ -1672,7 +1673,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = FALSE;
-  return TRUE;
+  return CL_SUCCESS;
 
 error:
   /* copy back stored processed_maximum */
@@ -1690,10 +1691,10 @@ error:
            "module '%s%s' in tiling mode:%s %s\n",
            dt_dev_pixelpipe_type_to_str(piece->pipe->type), self->op, dt_iop_get_instance_id(self),
            (pinning_error) ? " pinning problem" : "", cl_errstr(err));
-  if(pinning_error) darktable.opencl->dev[devid].pinned_error = TRUE;
-  return FALSE;
-}
 
+  if(pinning_error) darktable.opencl->dev[devid].pinned_error = TRUE;
+  return err;
+}
 
 /* more elaborate tiling algorithm for roi_in != roi_out: slower than the ptp variant,
    more tiles and larger overlap */
@@ -2030,10 +2031,12 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
 
       /* get opencl input and output buffers */
       input = dt_opencl_alloc_device(devid, iroi_full.width, iroi_full.height, in_bpp);
-      if(input == NULL) goto error;
-
       output = dt_opencl_alloc_device(devid, oroi_full.width, oroi_full.height, out_bpp);
-      if(output == NULL) goto error;
+      if(output == NULL || input == NULL)
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        goto error;
+      }
 
       if(use_pinned_memory)
       {
@@ -2068,11 +2071,10 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process_cl of module */
-      if(!self->process_cl(self, piece, input, output, &iroi_full, &oroi_full))
-      {
-        err = DT_OPENCL_PROCESS_CL;
+      err = self->process_cl(self, piece, input, output, &iroi_full, &oroi_full);
+      if(err< CL_SUCCESS)
         goto error;
-      }
+
       /* aggregate resulting processed_maximum */
       /* TODO: check if there really can be differences between tiles and take
                appropriate action (calculate minimum, maximum, average, ...?) */
@@ -2135,7 +2137,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = FALSE;
-  return TRUE;
+  return CL_SUCCESS;
 
 error:
   /* copy back stored processed_maximum */
@@ -2154,10 +2156,10 @@ error:
            dt_dev_pixelpipe_type_to_str(piece->pipe->type),
            self->op, dt_iop_get_instance_id(self),
            (pinning_error) ? " pinning problem" : "", cl_errstr(err));
-  if(pinning_error) darktable.opencl->dev[devid].pinned_error = TRUE;
-  return FALSE;
-}
 
+  if(pinning_error) darktable.opencl->dev[devid].pinned_error = TRUE;
+  return err;
+}
 
 
 /* if a module does not implement process_tiling_cl() by itself, this function is called instead.
@@ -2178,7 +2180,7 @@ int default_process_tiling_cl(struct dt_iop_module_t *self, struct dt_dev_pixelp
                               const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out, const int in_bpp)
 {
-  return FALSE;
+  return -1;
 }
 #endif
 

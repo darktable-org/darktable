@@ -828,7 +828,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         CLARG(grey));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance, sizes);
       if(err != CL_SUCCESS) goto error;
-      return TRUE;
+      return CL_SUCCESS;
 
       break;
     }
@@ -856,7 +856,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         CLARG(grey), CLARG(saturation_out));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_lgg, sizes);
       if(err != CL_SUCCESS) goto error;
-      return TRUE;
+      return CL_SUCCESS;
 
       break;
     }
@@ -884,15 +884,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         CLARG(grey), CLARG(saturation_out));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_cdl, sizes);
       if(err != CL_SUCCESS) goto error;
-      return TRUE;
+      return CL_SUCCESS;
 
       break;
     }
   }
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalance] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

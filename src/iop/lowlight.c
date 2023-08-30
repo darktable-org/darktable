@@ -211,19 +211,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
   dev_m = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
-  if(dev_m == NULL) goto error;
+  if(dev_m == NULL) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lowlight, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(XYZ_sw), CLARG(dev_m));
-  if(err != CL_SUCCESS) goto error;
 
+finish:
   dt_opencl_release_mem_object(dev_m);
-  return TRUE;
-
-error:
-  dt_opencl_release_mem_object(dev_m);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_lowlight] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

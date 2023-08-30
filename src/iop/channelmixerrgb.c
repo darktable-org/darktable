@@ -2306,16 +2306,15 @@ int process_cl(struct dt_iop_module_t *self,
 
   size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
-  cl_mem input_matrix_cl = NULL;
-  cl_mem output_matrix_cl = NULL;
-
-  input_matrix_cl = dt_opencl_copy_host_to_device_constant
+  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant
     (devid, 12 * sizeof(float), (float*)work_profile->matrix_in);
-  output_matrix_cl = dt_opencl_copy_host_to_device_constant
+  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant
     (devid, 12 * sizeof(float), (float*)work_profile->matrix_out);
   cl_mem MIX_cl = dt_opencl_copy_host_to_device_constant
     (devid, 12 * sizeof(float), d->MIX);
 
+  if(input_matrix_cl == NULL || output_matrix_cl == NULL || MIX_cl == NULL)
+    goto error;
   // select the right kernel for the current LMS space
   int kernel = gd->kernel_channelmixer_rgb_rgb;
 
@@ -2357,23 +2356,15 @@ int process_cl(struct dt_iop_module_t *self,
      CLARG(MIX_cl), CLARG(d->illuminant), CLARG(d->saturation),
      CLARG(d->lightness), CLARG(d->grey),
      CLARG(d->p), CLARG(d->gamut), CLARG(d->clip), CLARG(d->apply_grey),
-    CLARG(d->version));
+     CLARG(d->version));
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-  if(err != CL_SUCCESS) goto error;
 
+error:
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(MIX_cl);
-  return TRUE;
-
-error:
-  if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
-  if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
-  if(MIX_cl) dt_opencl_release_mem_object(MIX_cl);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_channelmixerrgb] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 
 void init_global(dt_iop_module_so_t *module)

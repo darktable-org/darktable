@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -189,7 +189,10 @@ DEFAULT(void, process_tiling, struct dt_iop_module_t *self, struct dt_dev_pixelp
                               const struct dt_iop_roi_t *const roi_out, const int bpp);
 
 #ifdef HAVE_OPENCL
-/** the opencl equivalent of process(). */
+/** the opencl equivalent of process().
+ *   Both process_xx_cl() functions return a CL error code with CL_SUCCESS signalling ok.
+ *   Please note: until 4.4 this int was in fact used as a gboolean with TRUE set if the function worked fine.
+*/
 OPTIONAL(int, process_cl, struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
                           cl_mem dev_out, const struct dt_iop_roi_t *const roi_in,
                           const struct dt_iop_roi_t *const roi_out);
