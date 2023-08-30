@@ -84,6 +84,8 @@ improvements and enhancements:
 - Always show the full uncropped image with cropping rectangle as a
   marker while working in liquify and retouch modules.
 
+- Add linear ProPhoto RGB as possible LUT color-space.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -98,6 +100,10 @@ improvements and enhancements:
 - Fix focus distance detection for Nikon Z mount lens corrections.
 
 - Fixed wrong cropping of sensor data for sraw dng files.
+
+- Apply the Lr color matrix only when importing a genuine Lr XMP.
+
+- Fix a crash when increasing the number of recent collections.
 
 ## Lua
 
