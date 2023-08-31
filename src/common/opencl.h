@@ -138,7 +138,7 @@ typedef struct dt_opencl_device_t
   size_t peak_memory;
   size_t used_available;
   // flags if we want headroom mode
-  gboolean tunehead; 
+  gboolean tunehead;
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
@@ -156,6 +156,9 @@ typedef struct dt_opencl_device_t
   // also pinned mem transfer requires slightly more video ram plus system memory.
   // If TRUE in the device-specific conf pinned transfer is enabled
   gboolean pinned_memory;
+
+  // keep track of devices using unified memory so we can adopt runtime code
+  gboolean unified_memory;
 
   // flags reporting cl runtime error conditions
   gboolean pinned_error;
@@ -187,7 +190,7 @@ typedef struct dt_opencl_device_t
   // Some devices are known to be unused by other apps so they can use all memory.
   int headroom;
 
-  float advantage;  
+  float advantage;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
