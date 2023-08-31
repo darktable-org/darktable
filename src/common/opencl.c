@@ -488,6 +488,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].avoid_atomics = FALSE;
   cl->dev[dev].micro_nap = 250;
   cl->dev[dev].pinned_memory = FALSE;
+  cl->dev[dev].unified_memory = FALSE;
   cl->dev[dev].pinned_error = FALSE;
   cl->dev[dev].clmem_error = FALSE;
   cl->dev[dev].clroundup_wd = 16;
@@ -527,6 +528,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl_uint vendor_id = 0;
   cl_bool little_endian = 0;
   cl_platform_id platform_id = 0;
+  cl_bool unified_memory = 0;
 
   char *dtcache = calloc(PATH_MAX, sizeof(char));
   char *cachedir = calloc(PATH_MAX, sizeof(char));
@@ -682,6 +684,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                                            &(cl->dev[dev].max_mem_alloc), NULL);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_ENDIAN_LITTLE,
                                            sizeof(cl_bool), &little_endian, NULL);
+  // FIXME This test is deprecated for post 1.2 versions so if we do some cl version bump
+  // we would want to use CL_DEVICE_SVM_CAPABILITIES instead
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_HOST_UNIFIED_MEMORY,
+                                           sizeof(cl_bool), &unified_memory, NULL);
+  cl->dev[dev].unified_memory = unified_memory ? TRUE : FALSE;
 
   if(!strncasecmp(vendor, "NVIDIA", 6))
   {
@@ -699,10 +706,11 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   dt_print_nts(DT_DEBUG_OPENCL, "   DRIVER VERSION:           %s\n", driverversion);
   dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE VERSION:           %s%s\n", deviceversion,
      cl->dev[dev].nvidia_sm_20 ? ", SM_20 SUPPORT" : "");
-  dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE_TYPE:              %s%s%s\n",
+  dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE_TYPE:              %s%s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
       ((type & CL_DEVICE_TYPE_GPU) == CL_DEVICE_TYPE_GPU) ? "GPU" : "",
-      (type & CL_DEVICE_TYPE_ACCELERATOR)                 ? ", Accelerator" : "" );
+      (type & CL_DEVICE_TYPE_ACCELERATOR)                 ? ", Accelerator" : "",
+      unified_memory ? ", unified mem" : ", dedicated mem" );
 
   if(is_cpu_device && newdevice)
   {
