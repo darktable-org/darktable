@@ -157,11 +157,18 @@ install(FILES wb_presets.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable
 # Transform darktableconfig.xml into darktablerc
 #
 
+set(DEFCONFIG_APPLE "false")
+set(DEFCONFIG_NONAPPLE "true")
 set(DEFCONFIG_OPENCL "true")
+
 if(APPLE)
   # OpenCL support on OS X isn't stable enough to enable it by default
   set(DEFCONFIG_OPENCL "false")
+  set(DEFCONFIG_APPLE "true")
+  set(DEFCONFIG_NONAPPLE "false")
 endif(APPLE)
+
+
 set(DEFCONFIG_AUDIOPLAYER "aplay")
 if(APPLE)
   # OS X doesn't have aplay, but afplay should do
