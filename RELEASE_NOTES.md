@@ -92,11 +92,13 @@ improvements and enhancements:
     results on today's computers.
 
   - Removed the preference option to select pinned memory transfer. Can
-    be selected on a per device basis
+    be selected on a per device basis.
 
   - Usage of "headroom" is selectable in preferences, the default has
     been increased to 600Mb as more systems use graphics memory
     nowadays.
+
+  - Introduce selection of wanted OpenCL drivers in preferences.
 
 ## Bug Fixes
 
