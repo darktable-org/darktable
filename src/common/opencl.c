@@ -1143,6 +1143,7 @@ void dt_opencl_init(
 
   char *platform_name = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
   char *platform_vendor = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
+  char *platform_key = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
 
   if(exclude_opencl)
   {
@@ -1226,15 +1227,41 @@ void dt_opencl_init(
     // get the number of GPU devices available to the platforms the
     // other common option is CL_DEVICE_TYPE_GPU/CPU (but the latter
     // doesn't work with the nvidia drivers)
+
+    const cl_int errn = (cl->dlocl->symbols->dt_clGetPlatformInfo)
+        (platform, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platform_name, NULL);
+    const cl_int errv = (cl->dlocl->symbols->dt_clGetPlatformInfo)
+        (platform, CL_PLATFORM_VENDOR, DT_OPENCL_CBUFFSIZE, platform_vendor, NULL);
+
+    gboolean valid_platform = FALSE;
+    if(errn == CL_SUCCESS)
+    {
+      snprintf(platform_key, DT_OPENCL_CBUFFSIZE, "%s", "clplatform_");
+      const int len = MIN(strlen(platform_name), DT_OPENCL_CBUFFSIZE);
+      int j = strlen(platform_key);
+      // remove non-alphanumeric chars from platform name
+      for(int i = 0; i < len; i++)
+        if(isalnum(platform_name[i])) platform_key[j++] = tolower(platform_name[i]);
+      platform_key[j] = 0;
+
+      if(dt_conf_key_exists(platform_key))
+        valid_platform = dt_conf_get_bool(platform_key);
+      else
+        valid_platform = dt_conf_get_bool("clplatform_other");
+    }
+
     err = (cl->dlocl->symbols->dt_clGetDeviceIDs)
       (platform, CL_DEVICE_TYPE_ALL, 0, NULL, &(all_num_devices[n]));
-    if(err != CL_SUCCESS)
+
+    if(err != CL_SUCCESS || !valid_platform)
     {
-      cl_int errv = (cl->dlocl->symbols->dt_clGetPlatformInfo)
-        (platform, CL_PLATFORM_VENDOR, DT_OPENCL_CBUFFSIZE, platform_vendor, NULL);
-      cl_int errn = (cl->dlocl->symbols->dt_clGetPlatformInfo)
-        (platform, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platform_name, NULL);
-      if((errn == CL_SUCCESS) && (errv == CL_SUCCESS))
+      if(!valid_platform)
+      {
+        dt_print_nts(DT_DEBUG_OPENCL,
+          "[check platform] platform '%s' with key '%s' is NOT active\n",
+          platform_name, platform_key);
+      }
+      else if((errn == CL_SUCCESS) && (errv == CL_SUCCESS))
         dt_print_nts(DT_DEBUG_OPENCL,
                      "[opencl_init] no devices found for %s (vendor) - %s (name)\n",
                      platform_vendor, platform_name);
@@ -1256,7 +1283,8 @@ void dt_opencl_init(
       {
         all_num_devices[n] = 0;
         dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] could not get profile: %s\n", cl_errstr(err));
+                     "[opencl_init] could not get profile for platform '%s': %s\n",
+                     platform_name, cl_errstr(err));
       }
       else
       {
@@ -1264,7 +1292,8 @@ void dt_opencl_init(
         {
           all_num_devices[n] = 0;
           dt_print_nts(DT_DEBUG_OPENCL,
-                       "[opencl_init] platform %i is not FULL_PROFILE\n", n);
+                       "[opencl_init] platform '%s' is not FULL_PROFILE\n",
+                       platform_name);
         }
       }
     }
@@ -1442,6 +1471,7 @@ finally:
   free(all_platforms);
   free(platform_name);
   free(platform_vendor);
+  free(platform_key);
 
   if(locale)
   {
@@ -1573,7 +1603,7 @@ gboolean dt_opencl_finish(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return FALSE;
 
-  cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
+  const cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
 
   // take the opportunity to release some event handles, but without printing
   // summary statistics
@@ -1616,13 +1646,12 @@ static int _take_from_list(int *list, int value)
 static int _device_by_cname(const char *name)
 {
   dt_opencl_t *cl = darktable.opencl;
-  int devs = cl->num_devs;
   char tmp[2048] = { 0 };
   int result = -1;
 
   _ascii_str_canonical(name, tmp, sizeof(tmp));
 
-  for(int i = 0; i < devs; i++)
+  for(int i = 0; i < cl->num_devs; i++)
   {
     if(!strcmp(tmp, cl->dev[i].cname))
     {
@@ -1705,7 +1734,7 @@ static void _opencl_priority_parse(dt_opencl_t *cl,
                                    int *priority_list,
                                    int *mandatory)
 {
-  int devs = cl->num_devs;
+  const int devs = cl->num_devs;
   int count = 0;
   int *full = malloc(sizeof(int) * (devs + 1));
   int mnd = 0;
@@ -1873,7 +1902,7 @@ int dt_opencl_lock_device(const int pipetype)
 
   dt_pthread_mutex_lock(&cl->lock);
 
-  size_t prio_size = sizeof(int) * (cl->num_devs + 1);
+  const size_t prio_size = sizeof(int) * (cl->num_devs + 1);
   int *priority = (int *)malloc(prio_size);
   int mandatory;
 
@@ -1922,7 +1951,7 @@ int dt_opencl_lock_device(const int pipetype)
       {
         if(!dt_pthread_mutex_BAD_trylock(&cl->dev[*prio].lock))
         {
-          int devid = *prio;
+          const int devid = *prio;
           free(priority);
           return devid;
         }
@@ -1976,7 +2005,7 @@ static FILE *fopen_stat(const char *filename, struct stat *st)
              "[opencl_fopen_stat] could not open file `%s'!\n", filename);
     return NULL;
   }
-  int fd = fileno(f);
+  const int fd = fileno(f);
   if(fstat(fd, st) < 0)
   {
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
@@ -2014,7 +2043,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
       continue;
     }
 
-    size_t filesize = filestat.st_size;
+    const size_t filesize = filestat.st_size;
     char *file = (char *)malloc(filesize);
 
     if(!file)
@@ -2026,7 +2055,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
       continue;
     }
 
-    size_t rd = fread(file, sizeof(char), filesize, f);
+    const size_t rd = fread(file, sizeof(char), filesize, f);
     fclose(f);
 
     if(rd != filesize)
@@ -2082,7 +2111,7 @@ static gboolean _opencl_load_program(
   FILE *f = fopen_stat(filename, &filestat);
   if(!f) return FALSE;
 
-  size_t filesize = filestat.st_size;
+  const size_t filesize = filestat.st_size;
   char *file = (char *)malloc(filesize + 2048);
   size_t rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
@@ -2552,7 +2581,7 @@ static int _opencl_set_kernel_args(const int dev,
   static struct { const size_t marker; const size_t size; const void *ptr; }
     test = { CLWRAP(0, 0) };
 
-  int err = CL_SUCCESS;
+  cl_int err = CL_SUCCESS;
   do
   {
     size_t marker = va_arg(ap, size_t);

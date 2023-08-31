@@ -1517,6 +1517,17 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
 
+#if defined(WIN32)
+  dt_capabilities_add("windows");
+  dt_capabilities_add("nonapple");
+#elif defined(__APPLE__)
+  dt_capabilities_add("apple");
+#else
+  dt_capabilities_add("linux");
+  dt_capabilities_add("nonapple");
+#endif
+
+
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
 
