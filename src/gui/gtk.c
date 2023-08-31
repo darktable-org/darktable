@@ -3548,14 +3548,16 @@ static void _collapse_button_changed(GtkDarktableToggleButton *widget, gpointer 
   dt_conf_set_bool(cs->confname, active);
 }
 
-static void _collapse_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
+static gboolean _collapse_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
-  if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
+  if(e->button != 1) return FALSE;
 
   dt_gui_collapsible_section_t *cs = (dt_gui_collapsible_section_t *)user_data;
 
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cs->toggle));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), !active);
+
+  return TRUE;
 }
 
 void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs)
@@ -3612,7 +3614,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   g_signal_connect(G_OBJECT(cs->toggle), "toggled",
                    G_CALLBACK(_collapse_button_changed), cs);
 
-  g_signal_connect(G_OBJECT(header_evb), "button-release-event",
+  g_signal_connect(G_OBJECT(header_evb), "button-press-event",
                    G_CALLBACK(_collapse_expander_click), cs);
 }
 
