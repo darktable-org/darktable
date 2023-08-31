@@ -179,6 +179,8 @@ void dt_view_set_selection(const dt_imgid_t imgid,
                            const int value);
 /** toggle selection of given image. */
 void dt_view_toggle_selection(const dt_imgid_t imgid);
+/** get the type of the currently active view in darktable.view_manager. */
+dt_view_type_flags_t dt_view_get_current(void);
 
 /**
  * holds all relevant data needed to manage the view

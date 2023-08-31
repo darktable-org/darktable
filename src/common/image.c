@@ -982,9 +982,8 @@ dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid)
 void dt_image_flip(const dt_imgid_t imgid, const int32_t cw)
 {
   // this is light table only:
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(darktable.develop->image_storage.id == imgid
-     && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+     && dt_view_get_current() == DT_VIEW_DARKROOM)
     return;
 
   dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
