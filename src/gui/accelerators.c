@@ -1136,8 +1136,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
       description = g_markup_escape_text(_(element_name), -1);
   }
 
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  const dt_view_type_flags_t current_view = cv ? cv->view(cv) : DT_VIEW_NONE;
+  const dt_view_type_flags_t current_view = dt_view_get_current();
   int num_shortcuts = 0;
   for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
       !g_sequence_iter_is_end(iter);
@@ -1397,13 +1396,9 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
 
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
   *s = *shortcut;
-  dt_view_type_flags_t real_views = s->views = _find_views(s->action);
+  const dt_view_type_flags_t real_views = s->views = _find_views(s->action);
 
-  const dt_view_t *vw = NULL;
-  if(darktable.view_manager)
-    vw = dt_view_manager_get_current_view(darktable.view_manager);
-
-  dt_view_type_flags_t view = vw && vw->view ? vw->view(vw) : DT_VIEW_LIGHTTABLE;
+  const dt_view_type_flags_t view = dt_view_get_current();
 
   guint replaced_direction = 0;
 
@@ -1989,8 +1984,7 @@ static gboolean _view_key_pressed(GtkWidget *widget, GdkEventKey *event, gpointe
 
 static void _add_shortcuts_to_tree()
 {
-  const dt_view_t *vw = dt_view_manager_get_current_view(darktable.view_manager);
-  dt_view_type_flags_t view = vw && vw->view ? vw->view(vw) : DT_VIEW_LIGHTTABLE;
+  const dt_view_type_flags_t view = dt_view_get_current();
 
   for(dt_shortcut_category_t i = 0; i < DT_SHORTCUT_CATEGORY_LAST; i++)
     gtk_tree_store_insert_with_values(_shortcuts_store, NULL, NULL, -1, 0, GINT_TO_POINTER(i), -1);

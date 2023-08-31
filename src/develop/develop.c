@@ -3623,10 +3623,8 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev,
 
 void dt_dev_undo_start_record(dt_develop_t *dev)
 {
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-
   /* record current history state : before change (needed for undo) */
-  if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  if(dev->gui_attached && dt_view_get_current() == DT_VIEW_DARKROOM)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
                                   DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
 
@@ -3635,10 +3633,8 @@ void dt_dev_undo_start_record(dt_develop_t *dev)
 
 void dt_dev_undo_end_record(dt_develop_t *dev)
 {
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-
   /* record current history state : after change (needed for undo) */
-  if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  if(dev->gui_attached && dt_view_get_current() == DT_VIEW_DARKROOM)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 }
 

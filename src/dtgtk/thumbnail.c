@@ -601,9 +601,8 @@ static gboolean _event_image_draw(GtkWidget *widget,
 
   // if we have a rgbbuf but the thumb is not anymore the darkroom main one
   dt_develop_t *dev = darktable.develop;
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
   if(thumb->img_surf_preview
-     && (v->view(v) != DT_VIEW_DARKROOM
+     && (dt_view_get_current() != DT_VIEW_DARKROOM
          || !dev->preview_pipe->output_backbuf
          || dev->preview_pipe->output_imgid != thumb->imgid))
   {
@@ -628,7 +627,7 @@ static gboolean _event_image_draw(GtkWidget *widget,
     _thumb_set_image_area(thumb, IMG_TO_FIT);
     gtk_widget_get_size_request(thumb->w_image_box, &image_w, &image_h);
 
-    if(v->view(v) == DT_VIEW_DARKROOM
+    if(dt_view_get_current() == DT_VIEW_DARKROOM
        && dev->preview_pipe->output_imgid == thumb->imgid
        && dev->preview_pipe->output_backbuf)
     {
@@ -1182,8 +1181,7 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!gtk_widget_is_visible(thumb->w_main)) return;
 
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  if(v->view(v) == DT_VIEW_DARKROOM
+  if(dt_view_get_current() == DT_VIEW_DARKROOM
      && (thumb->img_surf_preview
          || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
      && darktable.develop->preview_pipe->output_backbuf)

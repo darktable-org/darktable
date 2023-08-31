@@ -1054,6 +1054,16 @@ void dt_view_toggle_selection(const dt_imgid_t imgid)
   }
 }
 
+dt_view_type_flags_t dt_view_get_current(void)
+{
+  if(!darktable.view_manager) return DT_VIEW_LIGHTTABLE;
+
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(!cv || ! cv->view) return DT_VIEW_LIGHTTABLE;
+
+  return cv->view(cv);
+}
+
 /**
  * \brief Reset filter
  */
@@ -1754,7 +1764,7 @@ void dt_view_paint_surface(cairo_t *cr,
   cairo_translate(cr, (offset_x - zoom_x) * dev->pipe->processed_width * buf_scale - 0.5 * processed_width,
                       (offset_y - zoom_y) * dev->pipe->processed_height * buf_scale - 0.5 * processed_height);
   cairo_set_source_surface(cr, surface, 0, 0);
-  cairo_pattern_set_filter(cairo_get_source(cr), 
+  cairo_pattern_set_filter(cairo_get_source(cr),
                            zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
   cairo_paint(cr);
 

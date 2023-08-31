@@ -885,8 +885,7 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
   dt_lock_image_pair(imgid, dest_imgid);
 
   // be sure the current history is written before pasting some other history data
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
     dt_dev_write_history(darktable.develop);
 
   dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
@@ -1916,10 +1915,7 @@ gboolean dt_history_paste_on_list(const GList *list, const gboolean undo)
 
   // In darkroom and if there is a copy of the iop-order we need to rebuild the pipe
   // to take into account the possible new order of modules.
-
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-
-  if(cv->view(cv) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
   }
@@ -1971,10 +1967,7 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
   // In darkroom and if there is a copy of the iop-order we need to
   // rebuild the pipe to take into account the possible new order of
   // modules.
-
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-
-  if(cv->view(cv) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     dt_dev_pixelpipe_rebuild(darktable.develop);
   }

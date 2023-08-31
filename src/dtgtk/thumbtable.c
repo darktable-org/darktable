@@ -1735,8 +1735,7 @@ static void _dt_collection_changed_callback(gpointer instance,
     if(dt_is_valid_imgid(old_hover) && dt_is_valid_imgid(next))
     {
       // except for darkroom when mouse is not in filmstrip (the active image primes)
-      const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-      if(table->mouse_inside || v->view(v) != DT_VIEW_DARKROOM)
+      if(table->mouse_inside || dt_view_get_current() != DT_VIEW_DARKROOM)
       {
         in_list = FALSE;
         gboolean in_list_next = FALSE;

@@ -468,8 +468,7 @@ void gui_update(dt_lib_module_t *self)
 
   if(!dt_is_valid_imgid(mouse_over_id))
   {
-     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    if(cv->view(cv) == DT_VIEW_DARKROOM)
+    if(dt_view_get_current() == DT_VIEW_DARKROOM)
     {
        mouse_over_id = darktable.develop->image_storage.id;
     }

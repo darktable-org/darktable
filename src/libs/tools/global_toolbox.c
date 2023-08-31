@@ -185,13 +185,13 @@ static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
   gboolean show = FALSE;
 
   // thumbnails part
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  const dt_view_type_flags_t cv = dt_view_get_current();
   gboolean thumbs_state;
-  if(g_strcmp0(cv->module_name, "slideshow") == 0)
+  if(cv == DT_VIEW_SLIDESHOW)
   {
     thumbs_state = FALSE;
   }
-  else if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  else if(cv == DT_VIEW_LIGHTTABLE)
   {
     if(dt_view_lighttable_preview_state(darktable.view_manager)
        || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
@@ -265,7 +265,7 @@ static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
   }
 
   // and we do the same for culling/preview if needed
-  if(g_strcmp0(cv->module_name, "lighttable") == 0
+  if(cv == DT_VIEW_LIGHTTABLE
      && (dt_view_lighttable_preview_state(darktable.view_manager)
          || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING))
   {

@@ -289,8 +289,7 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
     dt_colorlabels_toggle_label_on_list(imgs, element ? element - 1 : 5, TRUE);
 
     // if we are in darkroom we show a message as there might be no other indication
-    const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-    if(v->view(v) == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
+    if(dt_view_get_current() == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
     {
       // we verify that the image is the active one
       const int id = GPOINTER_TO_INT(imgs->data);
