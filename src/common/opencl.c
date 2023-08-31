@@ -1237,7 +1237,7 @@ void dt_opencl_init(
     if(errn == CL_SUCCESS)
     {
       snprintf(platform_key, DT_OPENCL_CBUFFSIZE, "%s", "clplatform_");
-      int len = MIN(strlen(platform_name), DT_OPENCL_CBUFFSIZE);
+      const int len = MIN(strlen(platform_name), DT_OPENCL_CBUFFSIZE);
       int j = strlen(platform_key);
       // remove non-alphanumeric chars from platform name
       for(int i = 0; i < len; i++)
@@ -1603,7 +1603,7 @@ gboolean dt_opencl_finish(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return FALSE;
 
-  cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
+  const cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
 
   // take the opportunity to release some event handles, but without printing
   // summary statistics
@@ -1646,13 +1646,12 @@ static int _take_from_list(int *list, int value)
 static int _device_by_cname(const char *name)
 {
   dt_opencl_t *cl = darktable.opencl;
-  int devs = cl->num_devs;
   char tmp[2048] = { 0 };
   int result = -1;
 
   _ascii_str_canonical(name, tmp, sizeof(tmp));
 
-  for(int i = 0; i < devs; i++)
+  for(int i = 0; i < cl->num_devs; i++)
   {
     if(!strcmp(tmp, cl->dev[i].cname))
     {
@@ -1735,7 +1734,7 @@ static void _opencl_priority_parse(dt_opencl_t *cl,
                                    int *priority_list,
                                    int *mandatory)
 {
-  int devs = cl->num_devs;
+  const int devs = cl->num_devs;
   int count = 0;
   int *full = malloc(sizeof(int) * (devs + 1));
   int mnd = 0;
@@ -1903,7 +1902,7 @@ int dt_opencl_lock_device(const int pipetype)
 
   dt_pthread_mutex_lock(&cl->lock);
 
-  size_t prio_size = sizeof(int) * (cl->num_devs + 1);
+  const size_t prio_size = sizeof(int) * (cl->num_devs + 1);
   int *priority = (int *)malloc(prio_size);
   int mandatory;
 
@@ -1952,7 +1951,7 @@ int dt_opencl_lock_device(const int pipetype)
       {
         if(!dt_pthread_mutex_BAD_trylock(&cl->dev[*prio].lock))
         {
-          int devid = *prio;
+          const int devid = *prio;
           free(priority);
           return devid;
         }
@@ -2006,7 +2005,7 @@ static FILE *fopen_stat(const char *filename, struct stat *st)
              "[opencl_fopen_stat] could not open file `%s'!\n", filename);
     return NULL;
   }
-  int fd = fileno(f);
+  const int fd = fileno(f);
   if(fstat(fd, st) < 0)
   {
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
@@ -2044,7 +2043,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
       continue;
     }
 
-    size_t filesize = filestat.st_size;
+    const size_t filesize = filestat.st_size;
     char *file = (char *)malloc(filesize);
 
     if(!file)
@@ -2056,7 +2055,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
       continue;
     }
 
-    size_t rd = fread(file, sizeof(char), filesize, f);
+    const size_t rd = fread(file, sizeof(char), filesize, f);
     fclose(f);
 
     if(rd != filesize)
@@ -2112,7 +2111,7 @@ static gboolean _opencl_load_program(
   FILE *f = fopen_stat(filename, &filestat);
   if(!f) return FALSE;
 
-  size_t filesize = filestat.st_size;
+  const size_t filesize = filestat.st_size;
   char *file = (char *)malloc(filesize + 2048);
   size_t rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
@@ -2582,7 +2581,7 @@ static int _opencl_set_kernel_args(const int dev,
   static struct { const size_t marker; const size_t size; const void *ptr; }
     test = { CLWRAP(0, 0) };
 
-  int err = CL_SUCCESS;
+  cl_int err = CL_SUCCESS;
   do
   {
     size_t marker = va_arg(ap, size_t);
