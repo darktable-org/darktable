@@ -115,8 +115,7 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
     return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
   else
     return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;

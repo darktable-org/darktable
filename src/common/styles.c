@@ -96,10 +96,9 @@ void dt_style_item_free(gpointer data)
 
 static void _apply_style_shortcut_callback(dt_action_t *action)
 {
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
-  if(v->view(v) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     dt_styles_apply_to_dev(action->label, imgid);
@@ -645,8 +644,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
   /* write current history changes so nothing gets lost,
      do that only in the darkroom as there is nothing to be saved
      when in the lighttable (and it would write over current history stack) */
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
+  if(dt_view_get_current() == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
   const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
   const gboolean is_overwrite = (mode == DT_STYLE_HISTORY_OVERWRITE);
@@ -702,8 +700,7 @@ void dt_multiple_styles_apply_to_list(GList *styles,
   /* write current history changes so nothing gets lost,
      do that only in the darkroom as there is nothing to be saved
      when in the lighttable (and it would write over current history stack) */
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
     dt_dev_write_history(darktable.develop);
 
   if(!styles && !list)
