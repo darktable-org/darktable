@@ -1143,6 +1143,7 @@ void dt_opencl_init(
 
   char *platform_name = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
   char *platform_vendor = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
+  char *platform_key = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
 
   if(exclude_opencl)
   {
@@ -1226,15 +1227,41 @@ void dt_opencl_init(
     // get the number of GPU devices available to the platforms the
     // other common option is CL_DEVICE_TYPE_GPU/CPU (but the latter
     // doesn't work with the nvidia drivers)
+
+    const cl_int errn = (cl->dlocl->symbols->dt_clGetPlatformInfo)
+        (platform, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platform_name, NULL);
+    const cl_int errv = (cl->dlocl->symbols->dt_clGetPlatformInfo)
+        (platform, CL_PLATFORM_VENDOR, DT_OPENCL_CBUFFSIZE, platform_vendor, NULL);
+
+    gboolean valid_platform = FALSE;
+    if(errn == CL_SUCCESS)
+    {
+      snprintf(platform_key, DT_OPENCL_CBUFFSIZE, "%s", "clplatform_");
+      int len = MIN(strlen(platform_name), DT_OPENCL_CBUFFSIZE);
+      int j = strlen(platform_key);
+      // remove non-alphanumeric chars from platform name
+      for(int i = 0; i < len; i++)
+        if(isalnum(platform_name[i])) platform_key[j++] = tolower(platform_name[i]);
+      platform_key[j] = 0;
+
+      if(dt_conf_key_exists(platform_key))
+        valid_platform = dt_conf_get_bool(platform_key);
+      else
+        valid_platform = dt_conf_get_bool("clplatform_other");
+    }
+
     err = (cl->dlocl->symbols->dt_clGetDeviceIDs)
       (platform, CL_DEVICE_TYPE_ALL, 0, NULL, &(all_num_devices[n]));
-    if(err != CL_SUCCESS)
+
+    if(err != CL_SUCCESS || !valid_platform)
     {
-      cl_int errv = (cl->dlocl->symbols->dt_clGetPlatformInfo)
-        (platform, CL_PLATFORM_VENDOR, DT_OPENCL_CBUFFSIZE, platform_vendor, NULL);
-      cl_int errn = (cl->dlocl->symbols->dt_clGetPlatformInfo)
-        (platform, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platform_name, NULL);
-      if((errn == CL_SUCCESS) && (errv == CL_SUCCESS))
+      if(!valid_platform)
+      {
+        dt_print_nts(DT_DEBUG_OPENCL,
+          "[check platform] platform '%s' with key '%s' is NOT active\n",
+          platform_name, platform_key);
+      }
+      else if((errn == CL_SUCCESS) && (errv == CL_SUCCESS))
         dt_print_nts(DT_DEBUG_OPENCL,
                      "[opencl_init] no devices found for %s (vendor) - %s (name)\n",
                      platform_vendor, platform_name);
@@ -1256,7 +1283,8 @@ void dt_opencl_init(
       {
         all_num_devices[n] = 0;
         dt_print_nts(DT_DEBUG_OPENCL,
-                     "[opencl_init] could not get profile: %s\n", cl_errstr(err));
+                     "[opencl_init] could not get profile for platform '%s': %s\n",
+                     platform_name, cl_errstr(err));
       }
       else
       {
@@ -1264,7 +1292,8 @@ void dt_opencl_init(
         {
           all_num_devices[n] = 0;
           dt_print_nts(DT_DEBUG_OPENCL,
-                       "[opencl_init] platform %i is not FULL_PROFILE\n", n);
+                       "[opencl_init] platform '%s' is not FULL_PROFILE\n",
+                       platform_name);
         }
       }
     }
@@ -1442,6 +1471,7 @@ finally:
   free(all_platforms);
   free(platform_name);
   free(platform_vendor);
+  free(platform_key);
 
   if(locale)
   {
