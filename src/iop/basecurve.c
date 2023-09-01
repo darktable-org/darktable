@@ -126,6 +126,7 @@ int legacy_params(dt_iop_module_t *self,
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
 
+    *new_params = n;
     *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
     *new_version = 6;
     return 0;
@@ -150,6 +151,10 @@ int legacy_params(dt_iop_module_t *self,
     n->exposure_stops = 1;
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
+    *new_version = 6;
     return 0;
   }
   if(old_version == 3)
@@ -174,6 +179,7 @@ int legacy_params(dt_iop_module_t *self,
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
 
+    *new_params = n;
     *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
     *new_version = 6;
     return 0;
@@ -200,6 +206,7 @@ int legacy_params(dt_iop_module_t *self,
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
 
+    *new_params = n;
     *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
     *new_version = 6;
     return 0;
@@ -224,6 +231,7 @@ int legacy_params(dt_iop_module_t *self,
     memcpy(n, o, sizeof(dt_iop_basecurve_params_v5_t));
     n->preserve_colors = DT_RGB_NORM_NONE;
 
+    *new_params = n;
     *new_params_size = sizeof(dt_iop_basecurve_params_v6_t);
     *new_version = 6;
     return 0;
