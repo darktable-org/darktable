@@ -1028,6 +1028,22 @@ static const char* _get_axis_name(int pos)
   return AXIS_NAMES[pos];
 }
 
+#ifdef MAC_INTEGRATION
+static void _osx_menu_callback(GtkosxApplication *OSXapp, gpointer user_data)
+{
+  dt_ctl_switch_mode_to((const char*) user_data);
+}
+
+static void _osx_add_menu_item(GtkWidget* menu, const char* label, gpointer mode)
+{
+  GtkWidget *mi = gtk_menu_item_new_with_label(label);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), mi);
+  gtk_widget_show(mi);
+  g_signal_connect(G_OBJECT(mi), "activate",
+                   G_CALLBACK(_osx_menu_callback), mode);
+}
+#endif
+
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
   /* lets zero mem */
@@ -1064,9 +1080,49 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
       OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); // needed for default entries to show up
 #else
   GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
-  gtkosx_application_set_menu_bar(
-      OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); // needed for default entries to show up
 
+  // View menu
+  GtkWidget *view_root_menu = gtk_menu_item_new_with_label(_("Views"));
+  gtk_widget_show(view_root_menu);
+
+  GtkWidget *view_menu = gtk_menu_new();
+  _osx_add_menu_item(view_menu, _("lighttable"), "lighttable");
+  _osx_add_menu_item(view_menu, _("darkroom"), "darkroom");
+  _osx_add_menu_item(view_menu, _("slideshow"), "slideshow");
+#ifdef HAVE_MAP
+  _osx_add_menu_item(view_menu, _("map"), "map");
+#endif
+  _osx_add_menu_item(view_menu, C_("view", "print"), "print");
+#ifdef HAVE_GPHOTO2
+  _osx_add_menu_item(view_menu, _("tethering"), "tethering");
+#endif
+
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM (view_root_menu), view_menu);
+
+  // Help menu
+  GtkWidget *help_root_menu = gtk_menu_item_new_with_label("Help");
+  gtk_widget_show(help_root_menu);
+
+  GtkWidget *help_menu = gtk_menu_new();
+  GtkWidget *help_mi1 = gtk_menu_item_new_with_label("darktable manual");
+  gtk_menu_shell_append(GTK_MENU_SHELL (help_menu), help_mi1);
+  gtk_widget_show(help_mi1);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM (help_root_menu), help_menu);
+  g_signal_connect(G_OBJECT(help_mi1), "activate",
+                   G_CALLBACK(dt_gui_show_help), help_mi1);
+
+  
+
+
+  // build the menu bar
+  GtkWidget *menu_bar = gtk_menu_bar_new();
+  gtk_widget_show(menu_bar);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu_bar), view_root_menu);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu_bar), help_root_menu);
+
+  gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(menu_bar)); 
+
+  // Now the application menu (first item)
   // GTK translates the item with index 0 automatically so no need to localize.
   // Furthermore, the application name (darktable) is automatically appended.
   GtkWidget *mi_about = gtk_menu_item_new_with_label ("About");
