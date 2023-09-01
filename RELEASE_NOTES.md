@@ -100,6 +100,9 @@ improvements and enhancements:
 
   - Introduce selection of wanted OpenCL drivers in preferences.
 
+- Add Display P3 built-in color profile for input, output, display,
+  working and soft-proofing.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
