@@ -246,6 +246,10 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
       color_encoding.primaries = JXL_PRIMARIES_P3;
       color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
       break;
+    case DT_COLORSPACE_DISPLAY_P3:
+      color_encoding.primaries = JXL_PRIMARIES_P3;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
+      break;
     default:
       write_color_natively = FALSE;
       break;
