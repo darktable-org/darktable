@@ -375,7 +375,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>other platforms</shortdescription>
-    <longdescription>if set, all unspecified platforms are accepted. Only do this if no vendor driver is available</longdescription>
+    <longdescription>if set, all unspecified platforms are accepted. only do this if no vendor driver is available</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
