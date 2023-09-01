@@ -330,6 +330,11 @@ int write_image(struct dt_imageio_module_data_t *data,
       image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
       image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
       break;
+    case DT_COLORSPACE_DISPLAY_P3:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
+      break;
     default:
       break;
   }

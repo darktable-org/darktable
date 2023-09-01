@@ -671,6 +671,19 @@ static cmsHPROFILE dt_colorspaces_create_hlg_p3_rgb_profile(void)
   return profile;
 }
 
+static cmsHPROFILE dt_colorspaces_create_display_p3_rgb_profile(void)
+{
+  cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
+
+  cmsHPROFILE profile = _create_lcms_profile("Display P3 RGB", "Display P3 RGB",
+                                             &D65xyY, &P3_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
 static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
@@ -1295,6 +1308,11 @@ dt_colorspaces_t *dt_colorspaces_init()
                                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_DISPLAY_P3, dt_colorspaces_create_display_p3_rgb_profile(),
+                                     _("Display P3 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
      res->profiles, _create_profile(DT_COLORSPACE_PROPHOTO_RGB, dt_colorspaces_create_linear_prophoto_rgb_profile(),
                                     _("linear ProPhoto RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                     ++work_pos, ++display2_pos));
@@ -1530,6 +1548,8 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
        return _("PQ P3");
      case DT_COLORSPACE_HLG_P3:
        return _("HLG P3");
+     case DT_COLORSPACE_DISPLAY_P3:
+       return _("Display P3");
      case DT_COLORSPACE_LAST:
        break;
   }
@@ -1988,6 +2008,21 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type(const dt_colorsp
           }
 
           break; /* HLG P3 */
+
+        /* Display P3 */
+        case DT_CICP_TRANSFER_CHARACTERISTICS_SRGB:
+
+          switch(cicp->matrix_coefficients)
+          {
+            case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
+            case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
+            case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
+              return DT_COLORSPACE_DISPLAY_P3;
+            default:
+              break;
+          }
+
+          break; /* Display P3 */
 
         default:
           break;
