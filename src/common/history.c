@@ -207,7 +207,8 @@ gboolean dt_history_load_and_apply_on_list(gchar *filename,
   for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(l->data);
-    if(dt_history_load_and_apply(imgid, filename, 1)) res = TRUE;
+    if(dt_history_load_and_apply(imgid, filename, TRUE))
+      res = TRUE;
   }
   dt_undo_end_group(darktable.undo);
   return res;
