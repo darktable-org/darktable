@@ -160,7 +160,7 @@ static void _module_order_widget_init(dt_lib_filtering_rule_t *rule, const dt_co
   module_order->combo = dt_bauhaus_combobox_new_full(
       DT_ACTION(self), N_("rules"), N_("module order"), _("filter images based on their module order"), 0,
       (GtkCallback)_module_order_changed, module_order, (const char **)_module_order_names);
-  DT_BAUHAUS_WIDGET(module_order->combo)->show_label = FALSE;
+  dt_bauhaus_widget_hide_label(module_order->combo);
 
   if(top)
     gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), module_order->combo, TRUE, TRUE, 0);

@@ -114,9 +114,11 @@ static void _lib_navigation_control_redraw_callback(gpointer instance,
                          ? g_strdup(_("small"))
                          : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
   ++darktable.gui->reset;
-  dt_bauhaus_combobox_set(d->zoom, -1);
   if(!dt_bauhaus_combobox_set_from_text(d->zoom, zoomline))
+  {
     dt_bauhaus_combobox_set_text(d->zoom, zoomline);
+    dt_bauhaus_combobox_set(d->zoom, -1);
+  }
   --darktable.gui->reset;
   g_free(zoomline);
 
@@ -203,7 +205,7 @@ void gui_init(dt_lib_module_t *self)
                        GDK_KEY_2, GDK_MOD1_MASK);
 
   dt_bauhaus_combobox_set_editable(d->zoom, TRUE);
-  DT_BAUHAUS_WIDGET(d->zoom)->show_label = FALSE;
+  dt_bauhaus_widget_hide_label(d->zoom);
   gtk_widget_set_halign(d->zoom, GTK_ALIGN_END);
   gtk_widget_set_valign(d->zoom, GTK_ALIGN_END);
   gtk_widget_set_name(d->zoom, "nav-zoom");
