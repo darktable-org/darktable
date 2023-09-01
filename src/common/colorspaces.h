@@ -228,40 +228,61 @@ cmsHPROFILE dt_colorspaces_create_vendor_profile(const char *makermodel);
 cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
 
 /** return the work profile as set in colorin */
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const dt_imgid_t imgid);
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile
+  (const dt_imgid_t imgid);
 
-/** return the output profile as set in colorout, taking export override into account if passed in. */
-const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const dt_imgid_t imgid,
-                                                                        dt_colorspaces_color_profile_type_t over_type,
-                                                                        const char *over_filename);
+/** return the output profile as set in colorout, taking export
+ * override into account if passed in. */
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile
+  (const dt_imgid_t imgid,
+   dt_colorspaces_color_profile_type_t over_type,
+   const char *over_filename);
 
-/** return an rgb lcms2 profile from data. if data points to a grayscale profile a new rgb profile is created
- * that has the same TRC, black and white point and rec709 primaries. */
-cmsHPROFILE dt_colorspaces_get_rgb_profile_from_mem(uint8_t *data, uint32_t size);
+/** return an rgb lcms2 profile from data. if data points to a
+ * grayscale profile a new rgb profile is created that has the same
+ * TRC, black and white point and rec709 primaries. */
+cmsHPROFILE dt_colorspaces_get_rgb_profile_from_mem(uint8_t *data,
+                                                    const uint32_t size);
 
 /** free the resources of a profile created with the functions above. */
 void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */
-int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
-                                                 float *lutb, const int lutsize);
+int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof,
+                                                 dt_colormatrix_t matrix,
+                                                 float *lutr,
+                                                 float *lutg,
+                                                 float *lutb,
+                                                 const int lutsize);
 
-/** extracts tonecurves and color matrix prof to XYZ from a given output profile, returns 0 on success. */
-int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
-                                                  float *lutb, const int lutsize);
+/** extracts tonecurves and color matrix prof to XYZ from a given
+ * output profile, returns 0 on success. */
+int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof,
+                                                  dt_colormatrix_t matrix,
+                                                  float *lutr,
+                                                  float *lutg,
+                                                  float *lutb,
+                                                  const int lutsize);
 
 /** wrapper to get the name from a color profile. this tries to handle character encodings. */
-void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char *country, char *name,
-                                     size_t len);
+void dt_colorspaces_get_profile_name(cmsHPROFILE p,
+                                     const char *language,
+                                     const char *country,
+                                     char *name,
+                                     const size_t len);
 
 /** get a nice printable name. */
-const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type, const char *filename);
+const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
+                                    const char *filename);
 
 /** common functions to change between colorspaces, used in iop modules */
 //void rgb2hsl(const dt_aligned_pixel_t rgb, float *h, float *s, float *l);
 //void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l);
-static inline void rgb2hsl(const dt_aligned_pixel_t rgb, float *h, float *s, float *l)
+static inline void rgb2hsl(const dt_aligned_pixel_t rgb,
+                           float *h,
+                           float *s,
+                           float *l)
 {
   const float r = rgb[0], g = rgb[1], b = rgb[2];
   const float pmax = fmaxf(r, fmax(g, b));
@@ -296,7 +317,8 @@ static inline void rgb2hsl(const dt_aligned_pixel_t rgb, float *h, float *s, flo
 static inline float hue2rgb(float m1, float m2, float hue)
 {
   // compute the value for one of the RGB channels from the hue angle.
-  // If 1 <= angle < 3, return m2; if 4 <= angle <= 6, return m1; otherwise, linearly interpolate between m1 and m2.
+  // If 1 <= angle < 3, return m2; if 4 <= angle <= 6, return m1;
+  // otherwise, linearly interpolate between m1 and m2.
   if(hue < 1.0f)
     return (m1 + (m2 - m1) * hue);
   else if(hue < 3.0f)
@@ -326,21 +348,26 @@ static inline void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l)
 
 
 /** trigger updating the display profile from the system settings (x atom, colord, ...) */
-void dt_colorspaces_set_display_profile(const dt_colorspaces_color_profile_type_t profile_type);
+void dt_colorspaces_set_display_profile
+  (const dt_colorspaces_color_profile_type_t profile_type);
 
 /** get the profile described by type & filename.
  *  this doesn't support image specifics like embedded profiles or camera matrices */
 const dt_colorspaces_color_profile_t *
-dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char *filename,
-                           dt_colorspaces_profile_direction_t direction);
+dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type,
+                           const char *filename,
+                           const dt_colorspaces_profile_direction_t direction);
 
 /** check whether filename is the same profil as fullname, this is taking into account that
  *  fullname is always the fullpathname to the profile and filename may be a full pathname
  *  or just a base name */
-gboolean  dt_colorspaces_is_profile_equal(const char *fullname, const char *filename);
+gboolean  dt_colorspaces_is_profile_equal(const char *fullname,
+                                          const char *filename);
 
 /** try to infer profile type from CICP */
-dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type(const dt_colorspaces_cicp_t *cicp, const char *filename);
+dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
+  (const dt_colorspaces_cicp_t *cicp,
+   const char *filename);
 
 /** update the display transforms of srgb and adobergb to the display profile.
  * make sure that darktable.color_profiles->xprofile_lock is held when calling this! */
@@ -349,19 +376,35 @@ void dt_colorspaces_update_display_transforms();
 void dt_colorspaces_update_display2_transforms();
 
 /** Calculate CAM->XYZ, XYZ->CAM matrices **/
-int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3], float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4]);
+int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3],
+                                           float in_XYZ_to_CAM[9],
+                                           double XYZ_to_CAM[4][3],
+                                           double CAM_to_XYZ[3][4]);
 
 /** Calculate CAM->RGB, RGB->CAM matrices and default WB multipliers */
-int dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3], double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], const float *embedded_matrix, double mul[4]);
+int dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
+                                           double RGB_to_CAM[4][3],
+                                           double CAM_to_RGB[3][4],
+                                           const float *embedded_matrix,
+                                           double mul[4]);
 
 /** Applies CYGM WB coeffs to an image that's already been converted to RGB by dt_colorspaces_cygm_to_rgb */
-void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int num, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], dt_aligned_pixel_t coeffs);
+void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out,
+                                             const float *in,
+                                             const int num,
+                                             double RGB_to_CAM[4][3],
+                                             double CAM_to_RGB[3][4],
+                                             const dt_aligned_pixel_t coeffs);
 
 /** convert CYGM buffer to RGB */
-void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4]);
+void dt_colorspaces_cygm_to_rgb(float *out,
+                                const int num,
+                                const double CAM_to_RGB[3][4]);
 
 /** convert RGB buffer to CYGM */
-void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3]);
+void dt_colorspaces_rgb_to_cygm(float *out,
+                                const int num,
+                                const double RGB_to_CAM[4][3]);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
