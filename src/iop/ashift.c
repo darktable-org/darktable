@@ -6020,6 +6020,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
+      _gui_update_structure_states(self, NULL);
+      _do_clean_structure(self, p, TRUE);
       _commit_crop_box(p, g);
     }
   }
