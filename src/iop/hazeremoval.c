@@ -214,20 +214,6 @@ void gui_cleanup(dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-#if 0 //TODO: implement after module version bump to accommodate quickselect fix
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
-{
-  if(new_version <= old_version) return 1;
-  if(old_version == 1 && new_version == 2)
-  {
-    //FIXME: copy from old version and add compatibility flag
-
-  }
-  return 0;
-}
-#endif
-
 //----------------------------------------------------------------------
 // module local functions and structures required by process function
 //----------------------------------------------------------------------
@@ -839,4 +825,3 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
