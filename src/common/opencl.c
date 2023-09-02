@@ -342,7 +342,7 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %.3f %.3f",
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %.3f %.3f %.3f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
@@ -352,7 +352,8 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].asyncmode,
     cl->dev[devid].disabled,
     0.0f, // dummy for now as we don't have the benching any more
-    cl->dev[devid].advantage);
+    cl->dev[devid].advantage,
+    cl->dev[devid].unified_fraction);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
            "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -390,9 +391,10 @@ gboolean dt_opencl_read_device_config(const int devid)
     int disabled;
     float dummy; // unused
     float advantage;
-    sscanf(dat, "%i %i %i %i %i %i %i %i %f %f",
+    float unified_fraction;
+    sscanf(dat, "%i %i %i %i %i %i %i %i %f %f %f",
            &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht,
-           &event_handles, &asyncmode, &disabled, &dummy, &advantage);
+           &event_handles, &asyncmode, &disabled, &dummy, &advantage, &unified_fraction);
 
     // some rudimentary safety checking if string seems to be ok
     safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513);
@@ -408,6 +410,7 @@ gboolean dt_opencl_read_device_config(const int devid)
       cldid->asyncmode = asyncmode;
       cldid->disabled = disabled;
       cldid->advantage = advantage;
+      cldid->unified_fraction = unified_fraction;
     }
     else // if there is something wrong with the found conf key reset to defaults
     {
@@ -416,7 +419,8 @@ gboolean dt_opencl_read_device_config(const int devid)
     }
   }
   // do some safety housekeeping
-
+  if((cldid->unified_fraction < 0.05f) || (cldid->unified_fraction > 0.5f))
+    cldid->unified_fraction = 0.25f;
   if((cldid->micro_nap < 0) || (cldid->micro_nap > 1000000))
     cldid->micro_nap = 250;
   if((cldid->clroundup_wd < 2) || (cldid->clroundup_wd > 512))
@@ -485,6 +489,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].peak_memory = 0;
   cl->dev[dev].used_available = 0;
   // setting sane/conservative defaults at first
+  cl->dev[dev].unified_fraction = 0.25f;
   cl->dev[dev].avoid_atomics = FALSE;
   cl->dev[dev].micro_nap = 250;
   cl->dev[dev].pinned_memory = FALSE;
@@ -1445,6 +1450,24 @@ finally:
     // priorities and pixelpipe synchronization timeout
     dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
     dt_opencl_apply_scheduling_profile(profile);
+
+    // let's keep track on unified memory devices
+    size_t unified_sysmem = 0;
+    for(int i = 0; i < cl->num_devs; i++)
+    {
+      if(cl->dev[i].unified_memory)
+      {
+        const size_t reserved = MIN(cl->dev[i].max_global_mem,
+          darktable.dtresources.total_memory * cl->dev[i].unified_fraction);
+        cl->dev[i].max_global_mem = reserved;
+        dt_print_nts(DT_DEBUG_OPENCL,
+               "   UNIFIED MEM SIZE:         %.0f MB reserved for '%s'\n",
+               (double)reserved / 1024.0 / 1024.0,
+               cl->dev[i].cname);
+        unified_sysmem = MAX(unified_sysmem, reserved);
+      }
+    }
+    darktable.dtresources.total_memory -= unified_sysmem;
   }
   else // initialization failed
   {
