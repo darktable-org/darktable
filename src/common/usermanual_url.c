@@ -26,6 +26,7 @@ typedef struct _help_url
 
 dt_help_url urls_db[] =
 {
+  {"document_root",              "/"},
   {"ratings",                    "lighttable/digital-asset-management/star-color/#star-ratings"},
   {"layout_filemanager",         "lighttable/lighttable-modes/filemanager/"},
   {"layout_zoomable",            "lighttable/lighttable-modes/zoomable-lighttable/"},
