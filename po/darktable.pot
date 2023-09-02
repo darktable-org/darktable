@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-02 09:47+0200\n"
+"POT-Creation-Date: 2023-09-02 18:51+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -860,7 +860,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:5594 ../build/bin/preferences_gen.h:6670
 #: ../build/bin/preferences_gen.h:7222 ../build/bin/preferences_gen.h:7599
 #: ../build/bin/preferences_gen.h:8423 ../src/gui/accelerators.c:2890
-#: ../src/gui/gtk.c:2576 ../src/gui/preferences.c:421
+#: ../src/gui/gtk.c:2690 ../src/gui/preferences.c:421
 #: ../src/gui/preferences.c:876 ../src/libs/modulegroups.c:3889
 msgid "?"
 msgstr ""
@@ -2507,7 +2507,7 @@ msgstr ""
 #: ../src/common/collection.c:1507 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:333 ../src/develop/blend_gui.c:2338
 #: ../src/develop/blend_gui.c:2386 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:3133 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
+#: ../src/gui/gtk.c:3232 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4663 ../src/iop/colorzones.c:2499
 #: ../src/iop/temperature.c:1946 ../src/iop/temperature.c:2141
@@ -2520,7 +2520,7 @@ msgstr ""
 #: ../src/common/collection.c:1511 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:335 ../src/develop/blend_gui.c:2344
 #: ../src/develop/blend_gui.c:2392 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:3134 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
+#: ../src/gui/gtk.c:3233 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
 #: ../src/iop/channelmixerrgb.c:4664 ../src/iop/colorzones.c:2502
 #: ../src/iop/temperature.c:1930 ../src/iop/temperature.c:1948
@@ -2533,7 +2533,7 @@ msgstr ""
 #: ../src/common/collection.c:1513 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:336 ../src/develop/blend_gui.c:2350
 #: ../src/develop/blend_gui.c:2398 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:3135 ../src/iop/bilateral.cc:366
+#: ../src/gui/gtk.c:3234 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
 #: ../src/iop/channelmixerrgb.c:4665 ../src/iop/colorzones.c:2504
 #: ../src/iop/temperature.c:1950 ../src/iop/temperature.c:2143
@@ -2781,7 +2781,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
 #: ../build/lib/darktable/plugins/introspection_crop.c:61
 #: ../build/lib/darktable/plugins/introspection_crop.c:134
-#: ../src/gui/gtk.c:1140 ../src/iop/atrous.c:1636
+#: ../src/gui/gtk.c:1254 ../src/iop/atrous.c:1636
 msgid "left"
 msgstr ""
 
@@ -2789,7 +2789,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1154
+#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1268
 msgid "top"
 msgstr ""
 
@@ -2797,7 +2797,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
 #: ../build/lib/darktable/plugins/introspection_crop.c:73
 #: ../build/lib/darktable/plugins/introspection_crop.c:142
-#: ../src/gui/gtk.c:1147 ../src/iop/atrous.c:1635
+#: ../src/gui/gtk.c:1261 ../src/iop/atrous.c:1635
 msgid "right"
 msgstr ""
 
@@ -2805,7 +2805,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:1161
+#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:1275
 msgid "bottom"
 msgstr ""
 
@@ -4037,7 +4037,7 @@ msgstr ""
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:532
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2526
-#: ../src/gui/accelerators.c:2606 ../src/gui/gtk.c:1200 ../src/gui/gtk.c:3132
+#: ../src/gui/accelerators.c:2606 ../src/gui/gtk.c:1314 ../src/gui/gtk.c:3231
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3736
 #: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3066
 #: ../src/libs/filtering.c:1459 ../src/libs/filters/colors.c:157
@@ -5739,14 +5739,15 @@ msgstr ""
 
 #: ../src/common/darktable.c:1990
 msgid ""
-"instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
+"instead you will find 'per device' data in 'cl_device_v5_canonical-name'. "
 "content is:"
 msgstr ""
 
 #: ../src/common/darktable.c:1992 ../src/common/darktable.c:2011
+#: ../src/common/darktable.c:2026
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
-"'eventhandles' 'async' 'disable' 'magic'"
+"'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 msgstr ""
 
 #: ../src/common/darktable.c:1994 ../src/common/darktable.c:2013
@@ -5764,7 +5765,7 @@ msgid ""
 "updated name."
 msgstr ""
 
-#: ../src/common/darktable.c:2009
+#: ../src/common/darktable.c:2009 ../src/common/darktable.c:2024
 msgid ""
 "you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
 msgstr ""
@@ -5773,6 +5774,12 @@ msgstr ""
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
+msgstr ""
+
+#: ../src/common/darktable.c:2022
+msgid ""
+"OpenCL 'per device' config data have been automatically extended by 'unified-"
+"rate'."
 msgstr ""
 
 #: ../src/common/database.c:2756
@@ -6287,18 +6294,18 @@ msgstr ""
 msgid "noiseprofile file `%s' is not valid"
 msgstr ""
 
-#: ../src/common/opencl.c:1410
+#: ../src/common/opencl.c:1415
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
 "%s"
 msgstr ""
 
-#: ../src/common/opencl.c:1442
+#: ../src/common/opencl.c:1447
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 
-#: ../src/common/opencl.c:2252
+#: ../src/common/opencl.c:2275
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr ""
@@ -8263,7 +8270,7 @@ msgid "instance"
 msgstr ""
 
 #: ../src/develop/imageop.c:3734 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3005 ../src/gui/gtk.c:3052
+#: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3104 ../src/gui/gtk.c:3151
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
 #: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1630
 #: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3885
@@ -9075,12 +9082,12 @@ msgid "popup"
 msgstr ""
 
 #: ../src/gui/accelerators.c:138 ../src/gui/accelerators.c:171
-#: ../src/gui/gtk.c:3050 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3149 ../src/views/lighttable.c:760
 msgid "next"
 msgstr ""
 
 #: ../src/gui/accelerators.c:139 ../src/gui/accelerators.c:170
-#: ../src/gui/gtk.c:3051 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3150 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr ""
 
@@ -9115,7 +9122,7 @@ msgstr ""
 msgid "right-on"
 msgstr ""
 
-#: ../src/gui/accelerators.c:163 ../src/gui/gtk.c:3049
+#: ../src/gui/accelerators.c:163 ../src/gui/gtk.c:3148
 msgid "activate"
 msgstr ""
 
@@ -9670,172 +9677,223 @@ msgstr ""
 msgid "%s assigned to %s"
 msgstr ""
 
-#: ../src/gui/gtk.c:172 ../src/views/darkroom.c:4474
+#: ../src/gui/gtk.c:174 ../src/views/darkroom.c:4474
 msgid "darktable - darkroom preview"
 msgstr ""
 
-#: ../src/gui/gtk.c:183
+#: ../src/gui/gtk.c:185
 msgid "tooltips off"
 msgstr ""
 
-#: ../src/gui/gtk.c:185
+#: ../src/gui/gtk.c:187
 msgid "tooltips on"
 msgstr ""
 
-#: ../src/gui/gtk.c:190
+#: ../src/gui/gtk.c:192
 msgid ""
 "tooltip visibility can only be toggled if compositing is enabled in your "
 "window manager"
 msgstr ""
 
-#: ../src/gui/gtk.c:815
+#: ../src/gui/gtk.c:817
 msgid "closing darktable..."
 msgstr ""
 
-#: ../src/gui/gtk.c:1134
-msgid "panels"
+#: ../src/gui/gtk.c:1044
+msgid "url opened in web browser"
 msgstr ""
 
-#: ../src/gui/gtk.c:1182
-msgid "switch views"
+#: ../src/gui/gtk.c:1048
+msgid "error while opening url in web browser"
 msgstr ""
 
-#: ../src/gui/gtk.c:1183 ../src/views/tethering.c:102
+#. View menu
+#: ../src/gui/gtk.c:1116
+msgctxt "menu"
+msgid "Views"
+msgstr ""
+
+#: ../src/gui/gtk.c:1120
+msgctxt "menu"
+msgid "lighttable"
+msgstr ""
+
+#: ../src/gui/gtk.c:1121
+msgctxt "menu"
+msgid "darkroom"
+msgstr ""
+
+#: ../src/gui/gtk.c:1127
+msgctxt "menu"
+msgid "slideshow"
+msgstr ""
+
+#: ../src/gui/gtk.c:1129
+msgctxt "menu"
+msgid "map"
+msgstr ""
+
+#: ../src/gui/gtk.c:1131
+msgctxt "menu"
+msgid "print"
+msgstr ""
+
+#: ../src/gui/gtk.c:1133
+msgctxt "menu"
 msgid "tethering"
 msgstr ""
 
-#: ../src/gui/gtk.c:1184 ../src/gui/preferences.c:531
+#: ../src/gui/gtk.c:1143
+msgctxt "menu"
+msgid "darktable Manual"
+msgstr ""
+
+#: ../src/gui/gtk.c:1150
+msgctxt "menu"
+msgid "darktable Homepage"
+msgstr ""
+
+#: ../src/gui/gtk.c:1174
+msgctxt "menu"
+msgid "Preferences"
+msgstr ""
+
+#: ../src/gui/gtk.c:1248
+msgid "panels"
+msgstr ""
+
+#: ../src/gui/gtk.c:1296
+msgid "switch views"
+msgstr ""
+
+#: ../src/gui/gtk.c:1297 ../src/views/tethering.c:102
+msgid "tethering"
+msgstr ""
+
+#: ../src/gui/gtk.c:1298 ../src/gui/preferences.c:531
 #: ../src/gui/preferences.c:542 ../src/libs/tools/lighttable.c:66
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
 msgstr ""
 
-#: ../src/gui/gtk.c:1185 ../src/gui/preferences.c:532
+#: ../src/gui/gtk.c:1299 ../src/gui/preferences.c:532
 #: ../src/gui/preferences.c:542 ../src/views/darkroom.c:94
 msgid "darkroom"
 msgstr ""
 
-#: ../src/gui/gtk.c:1186 ../src/views/map.c:197
+#: ../src/gui/gtk.c:1300 ../src/views/map.c:197
 msgid "map"
 msgstr ""
 
-#: ../src/gui/gtk.c:1187 ../src/views/slideshow.c:389
+#: ../src/gui/gtk.c:1301 ../src/views/slideshow.c:389
 msgid "slideshow"
 msgstr ""
 
 #. Print button
-#: ../src/gui/gtk.c:1188 ../src/libs/print_settings.c:2885
+#: ../src/gui/gtk.c:1302 ../src/libs/print_settings.c:2885
 msgid "print"
 msgstr ""
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1194
+#: ../src/gui/gtk.c:1308
 msgid "quit"
 msgstr ""
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
-#: ../src/gui/gtk.c:1197
+#: ../src/gui/gtk.c:1311
 msgid "fullscreen"
 msgstr ""
 
-#: ../src/gui/gtk.c:1201
+#: ../src/gui/gtk.c:1315
 msgid "collapsing controls"
 msgstr ""
 
 #. specific top/bottom toggles
-#: ../src/gui/gtk.c:1203
+#: ../src/gui/gtk.c:1317
 msgid "header"
 msgstr ""
 
-#: ../src/gui/gtk.c:1204
+#: ../src/gui/gtk.c:1318
 msgid "filmstrip and timeline"
 msgstr ""
 
-#: ../src/gui/gtk.c:1205
+#: ../src/gui/gtk.c:1319
 msgid "top toolbar"
 msgstr ""
 
-#: ../src/gui/gtk.c:1206
+#: ../src/gui/gtk.c:1320
 msgid "bottom toolbar"
 msgstr ""
 
-#: ../src/gui/gtk.c:1207
+#: ../src/gui/gtk.c:1321
 msgid "all top"
 msgstr ""
 
-#: ../src/gui/gtk.c:1208
+#: ../src/gui/gtk.c:1322
 msgid "all bottom"
 msgstr ""
 
-#: ../src/gui/gtk.c:1210
+#: ../src/gui/gtk.c:1324
 msgid "toggle tooltip visibility"
 msgstr ""
 
-#: ../src/gui/gtk.c:1211
+#: ../src/gui/gtk.c:1325
 msgid "reinitialise input devices"
 msgstr ""
 
-#: ../src/gui/gtk.c:1249
+#: ../src/gui/gtk.c:1363
 msgid "toggle focus-peaking mode"
 msgstr ""
 
 #. toggle focus peaking everywhere
-#: ../src/gui/gtk.c:1254
+#: ../src/gui/gtk.c:1368
 msgid "toggle focus peaking"
 msgstr ""
 
-#: ../src/gui/gtk.c:1590 ../src/gui/gtk.c:3139 ../src/gui/gtk.c:3144
-#: ../src/gui/gtk.c:3149 ../src/gui/gtk.c:3154
+#: ../src/gui/gtk.c:1704 ../src/gui/gtk.c:3238 ../src/gui/gtk.c:3243
+#: ../src/gui/gtk.c:3248 ../src/gui/gtk.c:3253
 msgid "tabs"
 msgstr ""
 
-#: ../src/gui/gtk.c:2531
+#: ../src/gui/gtk.c:2645
 msgid "_yes"
 msgstr ""
 
-#: ../src/gui/gtk.c:2532
+#: ../src/gui/gtk.c:2646
 msgid "_no"
 msgstr ""
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:2643
+#: ../src/gui/gtk.c:2756
 msgid "access the online user manual?"
 msgstr ""
 
-#: ../src/gui/gtk.c:2644
+#: ../src/gui/gtk.c:2757
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr ""
 
-#: ../src/gui/gtk.c:2713
-msgid "help url opened in web browser"
-msgstr ""
-
-#: ../src/gui/gtk.c:2717
-msgid "error while opening help url in web browser"
-msgstr ""
-
-#: ../src/gui/gtk.c:2728
+#: ../src/gui/gtk.c:2827
 msgid "there is no help available for this element"
 msgstr ""
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:2748 ../src/libs/metadata_view.c:751
+#: ../src/gui/gtk.c:2847 ../src/libs/metadata_view.c:751
 #, c-format
 msgid "%.1f"
 msgstr ""
 
-#: ../src/gui/gtk.c:2750
+#: ../src/gui/gtk.c:2849
 #, c-format
 msgid "Sans %s"
 msgstr ""
 
-#: ../src/gui/gtk.c:3044
+#: ../src/gui/gtk.c:3143
 msgid "does not contain pages"
 msgstr ""
 
-#: ../src/gui/gtk.c:3263
+#: ../src/gui/gtk.c:3362
 #, c-format
 msgid "never show more than %d lines"
 msgstr ""
@@ -18942,7 +19000,7 @@ msgstr ""
 
 #: ../src/libs/collect.c:2900 ../src/libs/filtering.c:900
 #: ../src/libs/filtering.c:967 ../src/libs/filtering.c:1602
-#: ../src/libs/filtering.c:1897 ../src/libs/tools/darktable.c:65
+#: ../src/libs/filtering.c:1897 ../src/libs/tools/darktable.c:61
 msgid "darktable"
 msgstr ""
 
@@ -22345,27 +22403,6 @@ msgstr ""
 
 #: ../src/libs/tools/colorlabels.c:87
 msgid "toggle color label of selected images"
-msgstr ""
-
-#: ../src/libs/tools/darktable.c:284
-#, c-format
-msgid "copyright (c) the authors 2009-%s"
-msgstr ""
-
-#: ../src/libs/tools/darktable.c:288
-msgid "organize and develop images from digital cameras"
-msgstr ""
-
-#: ../src/libs/tools/darktable.c:300
-msgid "all those of you that made previous releases possible"
-msgstr ""
-
-#: ../src/libs/tools/darktable.c:305
-msgid "and..."
-msgstr ""
-
-#: ../src/libs/tools/darktable.c:307
-msgid "translator-credits"
 msgstr ""
 
 #: ../src/libs/tools/filmstrip.c:45
