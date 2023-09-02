@@ -1028,20 +1028,53 @@ static const char* _get_axis_name(int pos)
   return AXIS_NAMES[pos];
 }
 
-#ifdef MAC_INTEGRATION
-static void _osx_menu_callback(GtkosxApplication *OSXapp, gpointer user_data)
+void dt_open_url(const char* url)
 {
-  dt_ctl_switch_mode_to((const char*) user_data);
+  GError *error = NULL;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+// TODO: call the web browser directly so that file:// style base for local installs works
+  const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win), 
+                                                      url, 
+                                                      gtk_get_current_event_time(), 
+                                                      &error);
+
+  if(uri_success)
+  {
+    dt_control_log(_("url opened in web browser"));
+  }
+  else
+  {
+    dt_control_log(_("error while opening url in web browser"));
+    if(error != NULL) // uri_success being FALSE should guarantee that
+    {
+      fprintf (stderr, "unable to read file: %s\n", error->message);
+      g_error_free (error);
+    }
+  }
 }
 
-static void _osx_add_menu_item(GtkWidget* menu, const char* label, gpointer mode)
+static void _open_url(GtkWidget *widget, gpointer url)
+{
+  dt_open_url((const char *) url);
+}
+
+
+#ifdef MAC_INTEGRATION
+static void _osx_ctl_switch_mode_to(GtkWidget *mi, gpointer mode)
+{
+  dt_ctl_switch_mode_to((const char*) mode);
+}
+
+static void _osx_add_view_menu_item(GtkWidget* menu, const char* label, gpointer mode)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(label);
   gtk_menu_shell_append(GTK_MENU_SHELL (menu), mi);
   gtk_widget_show(mi);
   g_signal_connect(G_OBJECT(mi), "activate",
-                   G_CALLBACK(_osx_menu_callback), mode);
+                   G_CALLBACK(_osx_ctl_switch_mode_to), mode);
 }
+
 #endif
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
@@ -1082,19 +1115,24 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
 
   // View menu
-  GtkWidget *view_root_menu = gtk_menu_item_new_with_label(_("Views"));
+  GtkWidget *view_root_menu = gtk_menu_item_new_with_label(C_("menu", "Views"));
   gtk_widget_show(view_root_menu);
 
   GtkWidget *view_menu = gtk_menu_new();
-  _osx_add_menu_item(view_menu, _("lighttable"), "lighttable");
-  _osx_add_menu_item(view_menu, _("darkroom"), "darkroom");
-  _osx_add_menu_item(view_menu, _("slideshow"), "slideshow");
+  _osx_add_view_menu_item(view_menu, C_("menu", "lighttable"), "lighttable");
+  _osx_add_view_menu_item(view_menu, C_("menu", "darkroom"), "darkroom");
+
+  GtkWidget *sep = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (view_menu), sep);
+  gtk_widget_show(sep);
+  
+  _osx_add_view_menu_item(view_menu, C_("menu", "slideshow"), "slideshow");
 #ifdef HAVE_MAP
-  _osx_add_menu_item(view_menu, _("map"), "map");
+  _osx_add_view_menu_item(view_menu, C_("menu", "map"), "map");
 #endif
-  _osx_add_menu_item(view_menu, C_("view", "print"), "print");
+  _osx_add_view_menu_item(view_menu, C_("menu", "print"), "print");
 #ifdef HAVE_GPHOTO2
-  _osx_add_menu_item(view_menu, _("tethering"), "tethering");
+  _osx_add_view_menu_item(view_menu, C_("menu", "tethering"), "tethering");
 #endif
 
   gtk_menu_item_set_submenu(GTK_MENU_ITEM (view_root_menu), view_menu);
@@ -1104,36 +1142,43 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtk_widget_show(help_root_menu);
 
   GtkWidget *help_menu = gtk_menu_new();
-  GtkWidget *help_mi1 = gtk_menu_item_new_with_label("darktable manual");
-  gtk_menu_shell_append(GTK_MENU_SHELL (help_menu), help_mi1);
-  gtk_widget_show(help_mi1);
+  GtkWidget *help_manual = gtk_menu_item_new_with_label(C_("menu", "darktable Manual"));
+  gtk_menu_shell_append(GTK_MENU_SHELL (help_menu), help_manual);
+  gtk_widget_show(help_manual);
+  dt_gui_add_help_link(help_manual, "document_root");
+  g_signal_connect(G_OBJECT(help_manual), "activate",
+                   G_CALLBACK(dt_gui_show_help), help_manual);
+
+  GtkWidget *help_home = gtk_menu_item_new_with_label(C_("menu", "darktable Homepage"));
+  gtk_menu_shell_append(GTK_MENU_SHELL (help_menu), help_home);
+  gtk_widget_show(help_home);
+  g_signal_connect(G_OBJECT(help_home), "activate",
+                   G_CALLBACK(_open_url), "https://www.darktable.org");
+
   gtk_menu_item_set_submenu(GTK_MENU_ITEM (help_root_menu), help_menu);
-  g_signal_connect(G_OBJECT(help_mi1), "activate",
-                   G_CALLBACK(dt_gui_show_help), help_mi1);
-
   
-
-
   // build the menu bar
   GtkWidget *menu_bar = gtk_menu_bar_new();
   gtk_widget_show(menu_bar);
-  gtk_menu_shell_append(GTK_MENU_SHELL (menu_bar), view_root_menu);
-  gtk_menu_shell_append(GTK_MENU_SHELL (menu_bar), help_root_menu);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), view_root_menu);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_root_menu);
 
   gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(menu_bar)); 
 
   // Now the application menu (first item)
-  // GTK translates the item with index 0 automatically so no need to localize.
+  // GTK automatically translates the item with index 0 so no need to localize.
   // Furthermore, the application name (darktable) is automatically appended.
   GtkWidget *mi_about = gtk_menu_item_new_with_label ("About");
   g_signal_connect(G_OBJECT(mi_about), "activate",
                    G_CALLBACK(darktable_show_about_dialog), NULL);
   gtkosx_application_insert_app_menu_item(OSXApp, mi_about, 0);
 
-  GtkWidget *mi_prefs = gtk_menu_item_new_with_label (_("preferences"));
+  GtkWidget *mi_prefs = gtk_menu_item_new_with_label (C_("menu", "Preferences"));
   g_signal_connect(G_OBJECT(mi_prefs), "activate",
                    G_CALLBACK(dt_gui_preferences_show), NULL);
   gtkosx_application_insert_app_menu_item(OSXApp, mi_prefs, 1);
+
+  gtkosx_application_set_help_menu(OSXApp, GTK_MENU_ITEM(help_root_menu));
 
 #endif
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(_osx_quit_callback), NULL);
@@ -2676,7 +2721,6 @@ void dt_gui_show_help(GtkWidget *widget)
   gchar *help_url = dt_gui_get_help_url(widget);
   if(help_url && *help_url)
   {
-    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
     char *base_url = _get_base_url();
 
@@ -2725,7 +2769,6 @@ void dt_gui_show_help(GtkWidget *widget)
     if(base_url)
     {
       char *lang = "en";
-      GError *error = NULL;
 
       // array of languages the usermanual supports.
       // NULL MUST remain the last element of the array
@@ -2775,23 +2818,10 @@ void dt_gui_show_help(GtkWidget *widget)
 
       char *url = g_build_path("/", base_url, supported_languages[lang_index], help_url, NULL);
 
-      // TODO: call the web browser directly so that file:// style base for local installs works
-      const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), &error);
+      dt_open_url(url);
+
       g_free(base_url);
       g_free(url);
-      if(uri_success)
-      {
-        dt_control_log(_("help url opened in web browser"));
-      }
-      else
-      {
-        dt_control_log(_("error while opening help url in web browser"));
-        if(error != NULL) // uri_success being FALSE should guarantee that
-        {
-          fprintf (stderr, "unable to read file: %s\n", error->message);
-          g_error_free (error);
-        }
-      }
     }
   }
   else
