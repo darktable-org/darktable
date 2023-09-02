@@ -159,6 +159,8 @@ typedef struct dt_opencl_device_t
 
   // keep track of devices using unified memory so we can adopt runtime code
   gboolean unified_memory;
+  // fraction of system memory allowed for a device in percent
+  float unified_fraction;
 
   // flags reporting cl runtime error conditions
   gboolean pinned_error;

@@ -1987,9 +1987,9 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("some global config parameters relevant for OpenCL performance are not used any longer."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("instead you will find 'per device' data in 'cl_device_v4_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("instead you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
-    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
@@ -2001,14 +2001,14 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
-  if(old < 14)
+  else if(old < 14)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("OpenCL global config parameters 'per device' data has been recreated with an updated name."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
-    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
@@ -2016,6 +2016,16 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
+  else if(old < 15)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL 'per device' config data have been automatically extended by 'unified-rate'."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
   #undef INFO_HEADER
 }
 
