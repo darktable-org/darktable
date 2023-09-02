@@ -1054,12 +1054,6 @@ void dt_open_url(const char* url)
   }
 }
 
-static void _open_url(GtkWidget *widget, gpointer url)
-{
-  dt_open_url((const char *) url);
-}
-
-
 #ifdef MAC_INTEGRATION
 static void _osx_ctl_switch_mode_to(GtkWidget *mi, gpointer mode)
 {
@@ -1075,6 +1069,10 @@ static void _osx_add_view_menu_item(GtkWidget* menu, const char* label, gpointer
                    G_CALLBACK(_osx_ctl_switch_mode_to), mode);
 }
 
+static void _open_url(GtkWidget *widget, gpointer url)
+{
+  dt_open_url((const char *) url);
+}
 #endif
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
