@@ -153,16 +153,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_matrix == NULL)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_primaries] couldn't allocate memory!\n");
-    return FALSE;
+    return DT_OPENCL_DEFAULT_ERROR;
   }
 
   cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_primaries, width, height, CLARG(dev_in),
                                                 CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_matrix));
-  if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_primaries] couldn't enqueue kernel! %s\n", cl_errstr(err));
-
   dt_opencl_release_mem_object(dev_matrix);
-  return err == CL_SUCCESS;
+  return err;
 }
 #endif
 
