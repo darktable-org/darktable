@@ -220,10 +220,11 @@ typedef struct _filter_t
 #include "libs/filters/grouping.c"
 #include "libs/filters/history.c"
 #include "libs/filters/iso.c"
+#include "libs/filters/lens.c"
 #include "libs/filters/local_copy.c"
 #include "libs/filters/module_order.c"
-#include "libs/filters/rating_range.c"
 #include "libs/filters/rating.c"
+#include "libs/filters/rating_range.c"
 #include "libs/filters/ratio.c"
 #include "libs/filters/search.c"
 
@@ -246,7 +247,8 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
         { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
         { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
-        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update } };
+        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
+        { DT_COLLECTION_PROP_LENS, _lens_widget_init, _lens_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
