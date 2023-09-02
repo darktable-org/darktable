@@ -24551,7 +24551,7 @@ msgstr "Arbre"
 
 #: ../src/libs/tagging.c:3259
 msgid "toggle list with / without suggestion"
-msgstr "Basculer les suggestions"
+msgstr "Afficher la liste avec / sans les suggestions"
 
 #: ../src/libs/tagging.c:3259
 msgid "suggestion"
