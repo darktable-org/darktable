@@ -1746,7 +1746,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_LENS: // lens
-      query = g_strdup_printf("(lens LIKE '%%%s%%')", escaped_text);
+      if(!g_strcmp0(escaped_text, "UNSET"))
+      {
+        query = g_strdup("((lens IS NULL) OR (TRIM(lens)='') OR (UPPER(TRIM(lens))='N/A'))");
+      }
+      else
+        query = g_strdup_printf("(lens LIKE '%%%s%%')", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
