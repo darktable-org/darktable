@@ -473,8 +473,6 @@ int process_cl(struct dt_iop_module_t *self,
 
   const uint32_t filters = piece->pipe->dsc.filters;
   const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
@@ -497,23 +495,22 @@ int process_cl(struct dt_iop_module_t *self,
                            mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
 
         dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
-        if(dev_clips == NULL) goto error;
+        if(dev_clips == NULL) goto finish;
 
         dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
-        if(dev_xtrans == NULL) goto error;
+        if(dev_xtrans == NULL) goto finish;
 
         size_t sizes[] = { ROUNDUPDWD(roi_out->width, devid), ROUNDUPDHT(roi_out->height, devid), 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 0, CLARG(dev_in), CLARG(dev_out),
-          CLARG(roi_out->width), CLARG(roi_out->height), CLARG(roi_in->width), CLARG(roi_in->height),
-          CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters), CLARG(dev_xtrans),
+        dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 0,
+          CLARG(dev_in), CLARG(dev_out),
+          CLARG(roi_out->width), CLARG(roi_out->height),
+          CLARG(roi_in->width), CLARG(roi_in->height),
+          CLARG(roi_out->x), CLARG(roi_out->y),
+          CLARG(filters), CLARG(dev_xtrans),
           CLARG(dev_clips));
 
         err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
-        if(err != CL_SUCCESS) goto error;
-
-        dt_opencl_release_mem_object(dev_clips);
-        dt_opencl_release_mem_object(dev_xtrans);
-        return CL_SUCCESS;
+        goto finish;
       }
     }
   }
@@ -525,22 +522,23 @@ int process_cl(struct dt_iop_module_t *self,
   if(!filters)
   {
     // non-raw images use dedicated kernel which just clips
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_4f_clip, width, height,
-      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->mode), CLARG(clip));
-    if(err != CL_SUCCESS) goto error;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_4f_clip, roi_in->width, roi_in->height,
+      CLARG(dev_in), CLARG(dev_out),
+      CLARG(roi_in->width), CLARG(roi_in->height),
+      CLARG(d->mode), CLARG(clip));
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)
   {
     err = process_opposed_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
-    if(err != CL_SUCCESS) goto error;
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters != 9u)
   {
     // bayer sensor raws with LCH mode
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_lch_bayer, width, height,
-      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_lch_bayer, roi_in->width, roi_in->height,
+      CLARG(dev_in), CLARG(dev_out),
+      CLARG(roi_in->width), CLARG(roi_in->height),
+      CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
       CLARG(filters));
-    if(err != CL_SUCCESS) goto error;
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
   {
@@ -562,16 +560,17 @@ int process_cl(struct dt_iop_module_t *self,
 
     dev_xtrans
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
-    if(dev_xtrans == NULL) goto error;
+    if(dev_xtrans == NULL) goto finish;
 
-    size_t sizes[] = { ROUNDUP(width, blocksizex), ROUNDUP(height, blocksizey), 1 };
+    size_t sizes[] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey), 1 };
     size_t local[] = { blocksizex, blocksizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_1f_lch_xtrans, 0, CLARG(dev_in), CLARG(dev_out),
-      CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans),
+    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_1f_lch_xtrans, 0,
+      CLARG(dev_in), CLARG(dev_out),
+      CLARG(roi_in->width), CLARG(roi_in->height),
+      CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
+      CLARG(dev_xtrans),
       CLLOCAL(sizeof(float) * (blocksizex + 4) * (blocksizey + 4)));
-
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local);
-    if(err != CL_SUCCESS) goto error;
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN)
   {
@@ -579,19 +578,19 @@ int process_cl(struct dt_iop_module_t *self,
                                         0.995f * d->clip * piece->pipe->dsc.processed_maximum[1],
                                         0.995f * d->clip * piece->pipe->dsc.processed_maximum[2], clip };
     err = process_laplacian_bayer_cl(self, piece, dev_in, dev_out, roi_in, roi_out, clips);
-    if(err != CL_SUCCESS) goto error;
   }
   else // (d->mode == DT_IOP_HIGHLIGHTS_CLIP)
   {
     // raw images with clip mode (both bayer and xtrans)
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_clip, width, height,
-      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_clip, roi_in->width, roi_in->height,
+      CLARG(dev_in), CLARG(dev_out),
+      CLARG(roi_in->width), CLARG(roi_in->height),
+      CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
       CLARG(filters));
-    if(err != CL_SUCCESS) goto error;
   }
 
   // update processed maximum
-  if((d->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
+  if((err == CL_SUCCESS) && (d->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
   {
     // The guided laplacian and opposed are the modes that keeps signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
@@ -600,10 +599,7 @@ int process_cl(struct dt_iop_module_t *self,
     for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
   }
 
-  dt_opencl_release_mem_object(dev_xtrans);
-  return CL_SUCCESS;
-
-  error:
+  finish:
   dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
   return err;
@@ -988,7 +984,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 
   const gboolean use_laplacian = bayer && p->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
-  const gboolean use_segmentation = (p->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
+  const gboolean use_segmentation = p->mode == DT_IOP_HIGHLIGHTS_SEGMENTS;
   const gboolean use_recovery = use_segmentation && (p->recovery != DT_RECOVERY_MODE_OFF);
 
   gtk_widget_set_visible(g->noise_level, use_laplacian || use_recovery);

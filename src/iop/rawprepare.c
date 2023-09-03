@@ -591,34 +591,27 @@ int process_cl(
        CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-  if(err != CL_SUCCESS) goto finish;
-
-  dt_opencl_release_mem_object(dev_sub);
-  dt_opencl_release_mem_object(dev_div);
-  dev_sub = NULL;
-  dev_div = NULL;
-  for(int i = 0; i < 4; i++)
-  {
-    dt_opencl_release_mem_object(dev_gainmap[i]);
-    dev_gainmap[i] = NULL;
-  }
-  if(piece->pipe->dsc.filters)
-  {
-    piece->pipe->dsc.filters =
-      dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
-    _adjust_xtrans_filters(piece->pipe, csx, csy);
-  }
-
-  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
-
-  if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-    err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_in, FALSE);
 
 finish:
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
+
   for(int i = 0; i < 4; i++)
     dt_opencl_release_mem_object(dev_gainmap[i]);
+
+  if(err == CL_SUCCESS)
+  {
+    if(piece->pipe->dsc.filters)
+    {
+      piece->pipe->dsc.filters =
+        dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
+      _adjust_xtrans_filters(piece->pipe, csx, csy);
+    }
+    for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
+    if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
+      err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_in, FALSE);
+  }
+
   return err;
 }
 #endif

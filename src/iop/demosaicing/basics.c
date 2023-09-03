@@ -324,16 +324,13 @@ static int color_smoothing_cl(
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
-    if(err != CL_SUCCESS) goto error;
   }
-
-  dt_opencl_release_mem_object(dev_tmp);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_color_smoothing] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_color_smoothing] problem '%s'\n", cl_errstr(err));
+  return err;
 }
 
 static int green_equilibration_cl(
@@ -479,19 +476,14 @@ static int green_equilibration_cl(
     if(err != CL_SUCCESS) goto error;
   }
 
-  dt_opencl_release_mem_object(dev_tmp);
-  dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_r);
-  dt_free_align(sumsum);
-  return TRUE;
-
 error:
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
   dt_free_align(sumsum);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_green_equilibration] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_green_equilibration] problem  '%s'\n", cl_errstr(err));
+  return err;
 }
 
 static int process_default_cl(
@@ -530,8 +522,8 @@ static int process_default_cl(
       dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
       if(dev_green_eq == NULL) goto error;
 
-      if(!green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in))
-        goto error;
+      err = green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in);
+      if(err != CL_SUCCESS) goto error;
 
       dev_in = dev_green_eq;
     }
@@ -645,7 +637,6 @@ static int process_default_cl(
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");
       // scale aux buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
-      if(err != CL_SUCCESS) goto error;
     }
   }
   else
@@ -654,52 +645,32 @@ static int process_default_cl(
     {
       // sample image:
       const int zero = 0;
-      cl_mem dev_pix = dev_in;
-      const int width = roi_out->width;
-      const int height = roi_out->height;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, width, height,
-        CLARG(dev_pix), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, roi_out->width, roi_out->height,
+        CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
         CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
-      if(err != CL_SUCCESS) goto error;
     }
     else
     {
       // sample half-size image:
       const int zero = 0;
-      cl_mem dev_pix = dev_in;
-      const int width = roi_out->width;
-      const int height = roi_out->height;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, width, height,
-        CLARG(dev_pix), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
+        CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
         CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
-      if(err != CL_SUCCESS) goto error;
     }
   }
-
-  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
-  if(dev_med != dev_in) dt_opencl_release_mem_object(dev_med);
-  dt_opencl_release_mem_object(dev_green_eq);
-  dt_opencl_release_mem_object(dev_tmp);
-  dev_aux = dev_green_eq = dev_tmp = dev_med = NULL;
-
-  // color smoothing
-  if(data->color_smoothing)
-  {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
-      goto error;
-  }
-
-  return TRUE;
 
 error:
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   if(dev_med != dev_in) dt_opencl_release_mem_object(dev_med);
   dt_opencl_release_mem_object(dev_green_eq);
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+
+  if(data->color_smoothing && err == CL_SUCCESS)
+    err = color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] basic kernel problem '%s'\n", cl_errstr(err));
+  return err;
 }
 
 #endif
