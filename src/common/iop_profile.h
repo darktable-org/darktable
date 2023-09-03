@@ -22,6 +22,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
 #include "common/file_location.h"
+#include "common/dttypes.h"
 #include "develop/imageop.h"
 
 #ifdef HAVE_CONFIG_H
@@ -53,6 +54,8 @@ typedef struct dt_iop_order_iccprofile_info_t
   float grey;
   dt_colormatrix_t matrix_in_transposed;  // same as matrix_in, but stored such as to permit vectorization
   dt_colormatrix_t matrix_out_transposed; // same as matrix_out, but stored such as to permit vectorization
+  float primaries[3][2];
+  float whitepoint[2];
 } dt_iop_order_iccprofile_info_t;
 
 /** must be called before using profile_info, default lutsize = 0 */

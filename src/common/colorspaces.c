@@ -16,10 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/colorspaces_inline_conversions.h"
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/dttypes.h"
 #include "common/file_location.h"
 #include "common/math.h"
 #include "common/matrices.h"
@@ -29,6 +31,7 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 
+#include <lcms2.h>
 #include <strings.h>
 
 #ifdef USE_COLORDGTK
@@ -2546,6 +2549,58 @@ void dt_colorspaces_rgb_to_cygm(float *out,
     for(int c = 0; c < 4; c++)
       in[c] = o[c];
   }
+}
+
+void cmsCIEXYZ_to_xy(const cmsCIEXYZ *const cmsXYZ, float xy[2])
+{
+  dt_aligned_pixel_t XYZ = { cmsXYZ->X, cmsXYZ->Y, cmsXYZ->Z, 0.f };
+  dt_aligned_pixel_t xyY;
+  dt_XYZ_to_xyY(XYZ, xyY);
+  xy[0] = xyY[0];
+  xy[1] = xyY[1];
+}
+
+gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE prof, float primaries[3][2],
+                                                                  float whitepoint[2])
+{
+  cmsCIEXYZ *red_color = cmsReadTag(prof, cmsSigRedColorantTag);
+  cmsCIEXYZ *green_color = cmsReadTag(prof, cmsSigGreenColorantTag);
+  cmsCIEXYZ *blue_color = cmsReadTag(prof, cmsSigBlueColorantTag);
+  cmsCIEXYZ *white_color = cmsReadTag(prof, cmsSigMediaWhitePointTag);
+
+  if(!red_color || !green_color || !blue_color || !white_color) return FALSE;
+
+  cmsCIEXYZ_to_xy(red_color, primaries[0]);
+  cmsCIEXYZ_to_xy(green_color, primaries[1]);
+  cmsCIEXYZ_to_xy(blue_color, primaries[2]);
+  cmsCIEXYZ_to_xy(white_color, whitepoint);
+
+  return TRUE;
+}
+
+void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float primaries[3][2],
+                                                               const float whitepoint[2],
+                                                               dt_colormatrix_t RGB_to_XYZ_transposed)
+{
+  // http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+  dt_colormatrix_t primaries_matrix = { { 0.f } };
+  for(size_t i = 0; i < 3; i++)
+  {
+    // N.B. compared to linked equations, our matrix is transposed
+    primaries_matrix[i][0] = primaries[i][0] / primaries[i][1];
+    primaries_matrix[i][1] = 1.f;
+    primaries_matrix[i][2] = (1.f - primaries[i][0] - primaries[i][1]) / primaries[i][1];
+  }
+
+  dt_colormatrix_t primaries_inverse = { { 0.f } };
+  mat3SSEinv(primaries_inverse, primaries_matrix);
+  dt_aligned_pixel_t scale;
+  const dt_aligned_pixel_t XYZ_white
+      = { whitepoint[0] / whitepoint[1], 1.f, (1.f - whitepoint[0] - whitepoint[1]) / whitepoint[1] };
+  dt_apply_transposed_color_matrix(XYZ_white, primaries_inverse, scale);
+
+  for(size_t i = 0; i < 3; i++)
+    for(size_t j = 0; j < 3; j++) RGB_to_XYZ_transposed[i][j] = scale[i] * primaries_matrix[i][j];
 }
 
 // clang-format off
