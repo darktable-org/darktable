@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-02 18:51+0200\n"
+"POT-Creation-Date: 2023-09-03 22:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -861,7 +861,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:7222 ../build/bin/preferences_gen.h:7599
 #: ../build/bin/preferences_gen.h:8423 ../src/gui/accelerators.c:2890
 #: ../src/gui/gtk.c:2690 ../src/gui/preferences.c:421
-#: ../src/gui/preferences.c:876 ../src/libs/modulegroups.c:3889
+#: ../src/gui/preferences.c:876 ../src/libs/modulegroups.c:3891
 msgid "?"
 msgstr ""
 
@@ -3008,26 +3008,26 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
-#: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1697
+#: ../src/common/colorspaces.c:1410 ../src/common/colorspaces.c:1700
 #: ../src/libs/print_settings.c:1356
 msgid "sRGB"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
-#: ../src/common/colorspaces.c:1418 ../src/common/colorspaces.c:1699
+#: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1702
 #: ../src/libs/print_settings.c:1363
 msgid "Adobe RGB (compatible)"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:306
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
-#: ../src/common/colorspaces.c:1425 ../src/common/colorspaces.c:1701
+#: ../src/common/colorspaces.c:1428 ../src/common/colorspaces.c:1704
 msgid "linear Rec709 RGB"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:307
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:206
-#: ../src/common/colorspaces.c:1439 ../src/common/colorspaces.c:1703
+#: ../src/common/colorspaces.c:1442 ../src/common/colorspaces.c:1706
 msgid "linear Rec2020 RGB"
 msgstr ""
 
@@ -4070,7 +4070,7 @@ msgid "only vignetting"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:542
-#: ../src/libs/modulegroups.c:2300
+#: ../src/libs/modulegroups.c:2302
 msgid "correct"
 msgstr ""
 
@@ -4180,7 +4180,7 @@ msgid "gamma Rec709 RGB"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:207
-#: ../src/common/colorspaces.c:1483 ../src/common/colorspaces.c:1737
+#: ../src/common/colorspaces.c:1486 ../src/common/colorspaces.c:1740
 msgid "linear ProPhoto RGB"
 msgstr ""
 
@@ -4235,6 +4235,48 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:262
 #: ../src/iop/negadoctor.c:416
 msgid "color film"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:75
+#: ../build/lib/darktable/plugins/introspection_primaries.c:160
+#: ../src/iop/primaries.c:384
+msgid "tint hue"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:81
+#: ../build/lib/darktable/plugins/introspection_primaries.c:164
+#: ../src/iop/primaries.c:391
+msgid "tint purity"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:87
+#: ../build/lib/darktable/plugins/introspection_primaries.c:168
+msgid "red hue"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:93
+#: ../build/lib/darktable/plugins/introspection_primaries.c:172
+msgid "red purity"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:99
+#: ../build/lib/darktable/plugins/introspection_primaries.c:176
+msgid "green hue"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:105
+#: ../build/lib/darktable/plugins/introspection_primaries.c:180
+msgid "green purity"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:111
+#: ../build/lib/darktable/plugins/introspection_primaries.c:184
+msgid "blue hue"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:117
+#: ../build/lib/darktable/plugins/introspection_primaries.c:188
+msgid "blue purity"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:85
@@ -4370,7 +4412,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
 #: ../src/gui/presets.c:59 ../src/iop/watermark.c:1346
 #: ../src/libs/colorpicker.c:320 ../src/libs/image.c:612
-#: ../src/libs/modulegroups.c:2299
+#: ../src/libs/modulegroups.c:2301
 msgid "color"
 msgstr ""
 
@@ -5522,125 +5564,125 @@ msgstr ""
 msgid "clear"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1374 ../src/common/colorspaces.c:1731
+#: ../src/common/colorspaces.c:1377 ../src/common/colorspaces.c:1734
 msgid "work profile"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1379 ../src/common/colorspaces.c:1727
+#: ../src/common/colorspaces.c:1382 ../src/common/colorspaces.c:1730
 #: ../src/iop/colorout.c:900
 msgid "export profile"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1384 ../src/common/colorspaces.c:1729
+#: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1732
 #: ../src/views/darkroom.c:2495
 msgid "softproof profile"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1394 ../src/common/colorspaces.c:1711
+#: ../src/common/colorspaces.c:1397 ../src/common/colorspaces.c:1714
 msgid "system display profile"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1399 ../src/common/colorspaces.c:1733
+#: ../src/common/colorspaces.c:1402 ../src/common/colorspaces.c:1736
 msgid "system display profile (second window)"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1412
+#: ../src/common/colorspaces.c:1415
 msgid "sRGB (web-safe)"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1432 ../src/common/colorspaces.c:1735
+#: ../src/common/colorspaces.c:1435 ../src/common/colorspaces.c:1738
 msgid "Rec709 RGB"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1447
+#: ../src/common/colorspaces.c:1450
 msgid "PQ Rec2020 RGB"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1455
+#: ../src/common/colorspaces.c:1458
 msgid "HLG Rec2020 RGB"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1462
+#: ../src/common/colorspaces.c:1465
 msgid "PQ P3 RGB"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1468
+#: ../src/common/colorspaces.c:1471
 msgid "HLG P3 RGB"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1475
+#: ../src/common/colorspaces.c:1478
 msgid "Display P3 RGB"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1490 ../src/common/colorspaces.c:1705
+#: ../src/common/colorspaces.c:1493 ../src/common/colorspaces.c:1708
 msgid "linear XYZ"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1497 ../src/common/colorspaces.c:1707
+#: ../src/common/colorspaces.c:1500 ../src/common/colorspaces.c:1710
 #: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2008
 #: ../src/libs/colorpicker.c:51 ../src/libs/colorpicker.c:293
 msgid "Lab"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1505 ../src/common/colorspaces.c:1709
+#: ../src/common/colorspaces.c:1508 ../src/common/colorspaces.c:1712
 msgid "linear infrared BGR"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1510
+#: ../src/common/colorspaces.c:1513
 msgid "BRG (for testing)"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1616
+#: ../src/common/colorspaces.c:1619
 #, c-format
 msgid ""
 "profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1713
+#: ../src/common/colorspaces.c:1716
 msgid "embedded ICC profile"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1715
+#: ../src/common/colorspaces.c:1718
 msgid "embedded matrix"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1717
+#: ../src/common/colorspaces.c:1720
 msgid "standard color matrix"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1719
+#: ../src/common/colorspaces.c:1722
 msgid "enhanced color matrix"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1721
+#: ../src/common/colorspaces.c:1724
 msgid "vendor color matrix"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1723
+#: ../src/common/colorspaces.c:1726
 msgid "alternate color matrix"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1725
+#: ../src/common/colorspaces.c:1728
 msgid "BRG (experimental)"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1739
+#: ../src/common/colorspaces.c:1742
 msgid "PQ Rec2020"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1741
+#: ../src/common/colorspaces.c:1744
 msgid "HLG Rec2020"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1743
+#: ../src/common/colorspaces.c:1746
 msgid "PQ P3"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1745
+#: ../src/common/colorspaces.c:1748
 msgid "HLG P3"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1747
+#: ../src/common/colorspaces.c:1750
 msgid "Display P3"
 msgstr ""
 
@@ -5822,7 +5864,7 @@ msgstr ""
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1702
 #: ../src/libs/metadata.c:467 ../src/libs/metadata.c:737
 #: ../src/libs/metadata_view.c:1205 ../src/libs/recentcollect.c:227
-#: ../src/libs/modulegroups.c:3467 ../src/libs/styles.c:438
+#: ../src/libs/modulegroups.c:3469 ../src/libs/styles.c:438
 #: ../src/libs/styles.c:621 ../src/libs/tagging.c:1483
 #: ../src/libs/tagging.c:1571 ../src/libs/tagging.c:1652
 #: ../src/libs/tagging.c:1782 ../src/libs/tagging.c:2056
@@ -6232,7 +6274,7 @@ msgstr ""
 msgid "v3.0 JPEG"
 msgstr ""
 
-#: ../src/common/iop_profile.c:1205
+#: ../src/common/iop_profile.c:1207
 #, c-format
 msgid ""
 "darktable loads %s from\n"
@@ -8163,7 +8205,7 @@ msgid "delete"
 msgstr ""
 
 #: ../src/develop/imageop.c:1063 ../src/develop/imageop.c:3725
-#: ../src/libs/modulegroups.c:3467 ../src/libs/modulegroups.c:3818
+#: ../src/libs/modulegroups.c:3469 ../src/libs/modulegroups.c:3820
 msgid "rename"
 msgstr ""
 
@@ -8246,14 +8288,14 @@ msgstr ""
 msgid "show"
 msgstr ""
 
-#: ../src/develop/imageop.c:3723 ../src/libs/modulegroups.c:3313
-#: ../src/libs/modulegroups.c:3439 ../src/libs/modulegroups.c:3820
+#: ../src/develop/imageop.c:3723 ../src/libs/modulegroups.c:3315
+#: ../src/libs/modulegroups.c:3441 ../src/libs/modulegroups.c:3822
 #: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr ""
 
 #: ../src/develop/imageop.c:3726 ../src/libs/duplicate.c:405
-#: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3816
+#: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3818
 msgid "duplicate"
 msgstr ""
 
@@ -8273,7 +8315,7 @@ msgstr ""
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3104 ../src/gui/gtk.c:3151
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
 #: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1630
-#: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3885
+#: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3887
 msgid "reset"
 msgstr ""
 
@@ -10565,12 +10607,12 @@ msgid "preset `%s' is write-protected, can't delete!"
 msgstr ""
 
 #: ../src/gui/presets.c:157 ../src/gui/presets.c:461 ../src/libs/lib.c:238
-#: ../src/libs/modulegroups.c:3704
+#: ../src/libs/modulegroups.c:3706
 msgid "delete preset?"
 msgstr ""
 
 #: ../src/gui/presets.c:158 ../src/gui/presets.c:462 ../src/libs/lib.c:239
-#: ../src/libs/modulegroups.c:3705
+#: ../src/libs/modulegroups.c:3707
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr ""
@@ -10770,8 +10812,8 @@ msgstr ""
 msgid "scene-referred default"
 msgstr ""
 
-#: ../src/gui/presets.c:1393 ../src/libs/modulegroups.c:3784
-#: ../src/libs/modulegroups.c:3793
+#: ../src/gui/presets.c:1393 ../src/libs/modulegroups.c:3786
+#: ../src/libs/modulegroups.c:3795
 msgid "manage module layouts"
 msgstr ""
 
@@ -17226,6 +17268,34 @@ msgstr ""
 msgid "module overexposed failed in color conversion"
 msgstr ""
 
+#: ../src/iop/primaries.c:74
+msgid "rgb primaries"
+msgstr ""
+
+#: ../src/iop/primaries.c:373
+msgid "red primary hue"
+msgstr ""
+
+#: ../src/iop/primaries.c:374
+msgid "red primary purity"
+msgstr ""
+
+#: ../src/iop/primaries.c:375
+msgid "green primary hue"
+msgstr ""
+
+#: ../src/iop/primaries.c:376
+msgid "green primary purity"
+msgstr ""
+
+#: ../src/iop/primaries.c:377
+msgid "blue primary hue"
+msgstr ""
+
+#: ../src/iop/primaries.c:378
+msgid "blue primary purity"
+msgstr ""
+
 #: ../src/iop/profile_gamma.c:96
 msgid "unbreak input profile"
 msgstr ""
@@ -20338,7 +20408,7 @@ msgstr ""
 msgid "physically delete from disk immediately"
 msgstr ""
 
-#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3814
+#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3816
 #: ../src/libs/styles.c:876
 msgid "remove"
 msgstr ""
@@ -21292,7 +21362,7 @@ msgstr ""
 msgid "recent collections settings"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:42 ../src/libs/modulegroups.c:1751
+#: ../src/libs/modulegroups.c:42 ../src/libs/modulegroups.c:1753
 msgid "workflow: scene-referred"
 msgstr ""
 
@@ -21311,7 +21381,7 @@ msgstr ""
 #. FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
 #. respond later to image changed signal
 #: ../src/libs/modulegroups.c:307 ../src/libs/modulegroups.c:319
-#: ../src/libs/modulegroups.c:2409 ../src/libs/modulegroups.c:2411
+#: ../src/libs/modulegroups.c:2411 ../src/libs/modulegroups.c:2413
 msgid "on-off"
 msgstr ""
 
@@ -21330,9 +21400,9 @@ msgstr ""
 msgid "go to the full version of the %s module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1538 ../src/libs/modulegroups.c:1623
-#: ../src/libs/modulegroups.c:1659 ../src/libs/modulegroups.c:1709
-#: ../src/libs/modulegroups.c:1799
+#: ../src/libs/modulegroups.c:1538 ../src/libs/modulegroups.c:1624
+#: ../src/libs/modulegroups.c:1660 ../src/libs/modulegroups.c:1710
+#: ../src/libs/modulegroups.c:1801
 msgctxt "modulegroup"
 msgid "base"
 msgstr ""
@@ -21342,303 +21412,303 @@ msgctxt "modulegroup"
 msgid "tone"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1566 ../src/libs/modulegroups.c:1673
-#: ../src/libs/modulegroups.c:1723
+#: ../src/libs/modulegroups.c:1566 ../src/libs/modulegroups.c:1674
+#: ../src/libs/modulegroups.c:1724
 msgctxt "modulegroup"
 msgid "color"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1581 ../src/libs/modulegroups.c:1681
-#: ../src/libs/modulegroups.c:1728
+#: ../src/libs/modulegroups.c:1582 ../src/libs/modulegroups.c:1682
+#: ../src/libs/modulegroups.c:1730
 msgctxt "modulegroup"
 msgid "correct"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1599 ../src/libs/modulegroups.c:1693
-#: ../src/libs/modulegroups.c:1740 ../src/libs/modulegroups.c:2303
+#: ../src/libs/modulegroups.c:1600 ../src/libs/modulegroups.c:1694
+#: ../src/libs/modulegroups.c:1742 ../src/libs/modulegroups.c:2305
 msgctxt "modulegroup"
 msgid "effect"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1617
+#: ../src/libs/modulegroups.c:1618
 msgid "modules: all"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1638
+#: ../src/libs/modulegroups.c:1639
 msgctxt "modulegroup"
 msgid "grading"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1646 ../src/libs/modulegroups.c:2307
+#: ../src/libs/modulegroups.c:1647 ../src/libs/modulegroups.c:2309
 msgctxt "modulegroup"
 msgid "effects"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1654
+#: ../src/libs/modulegroups.c:1655
 msgid "workflow: beginner"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1703
+#: ../src/libs/modulegroups.c:1704
 msgid "workflow: display-referred"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1755
+#: ../src/libs/modulegroups.c:1757
 msgid "search only"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1761 ../src/libs/modulegroups.c:2072
-#: ../src/libs/modulegroups.c:2581
+#: ../src/libs/modulegroups.c:1763 ../src/libs/modulegroups.c:2074
+#: ../src/libs/modulegroups.c:2583
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1774
+#: ../src/libs/modulegroups.c:1776
 msgid "previous config"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1775
+#: ../src/libs/modulegroups.c:1777
 msgid "previous layout"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1779
+#: ../src/libs/modulegroups.c:1781
 msgid "previous config with new layout"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1939 ../src/libs/modulegroups.c:2454
-#: ../src/libs/modulegroups.c:2466
+#: ../src/libs/modulegroups.c:1941 ../src/libs/modulegroups.c:2456
+#: ../src/libs/modulegroups.c:2468
 msgid "remove this widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2089 ../src/libs/modulegroups.c:2329
+#: ../src/libs/modulegroups.c:2091 ../src/libs/modulegroups.c:2331
 msgid "remove this module"
 msgstr ""
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2298
+#: ../src/libs/modulegroups.c:2300
 msgid "base"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2301
+#: ../src/libs/modulegroups.c:2303
 msgid "tone"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2304
+#: ../src/libs/modulegroups.c:2306
 msgid "technical"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2305
+#: ../src/libs/modulegroups.c:2307
 msgid "grading"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2311 ../src/libs/modulegroups.c:2319
+#: ../src/libs/modulegroups.c:2313 ../src/libs/modulegroups.c:2321
 msgid "add this module"
 msgstr ""
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2341 ../src/libs/modulegroups.c:2541
+#: ../src/libs/modulegroups.c:2343 ../src/libs/modulegroups.c:2543
 msgid "all available modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2349
+#: ../src/libs/modulegroups.c:2351
 msgid "add module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2354
+#: ../src/libs/modulegroups.c:2356
 msgid "remove module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2460
+#: ../src/libs/modulegroups.c:2462
 msgid "header needed for other widgets"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2476 ../src/libs/modulegroups.c:2483
+#: ../src/libs/modulegroups.c:2478 ../src/libs/modulegroups.c:2485
 msgid "add this widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2496
+#: ../src/libs/modulegroups.c:2498
 msgid "currently invisible"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2525
+#: ../src/libs/modulegroups.c:2527
 msgid "add widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2530
+#: ../src/libs/modulegroups.c:2532
 msgid "remove widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2635
+#: ../src/libs/modulegroups.c:2637
 msgid "show all history modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2638 ../src/libs/modulegroups.c:3837
+#: ../src/libs/modulegroups.c:2640 ../src/libs/modulegroups.c:3839
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2729 ../src/libs/modulegroups.c:2821
+#: ../src/libs/modulegroups.c:2731 ../src/libs/modulegroups.c:2823
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes that can't be corrected and alternative modules that correct them.\n"
 "they will be removed for new edits in the next release."
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2780 ../src/libs/modulegroups.c:2781
+#: ../src/libs/modulegroups.c:2782 ../src/libs/modulegroups.c:2783
 msgid "quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2791
+#: ../src/libs/modulegroups.c:2793
 msgid "show only active modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2792
+#: ../src/libs/modulegroups.c:2794
 msgid "active modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2797
+#: ../src/libs/modulegroups.c:2799
 msgid ""
 "presets\n"
 "ctrl+click to manage"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2803
+#: ../src/libs/modulegroups.c:2805
 msgid "search modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2804
+#: ../src/libs/modulegroups.c:2806
 msgid "search modules by name or tag"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2814
+#: ../src/libs/modulegroups.c:2816
 msgid "clear text"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3054
+#: ../src/libs/modulegroups.c:3056
 msgid "basic icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3064
+#: ../src/libs/modulegroups.c:3066
 msgid "active icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3074
+#: ../src/libs/modulegroups.c:3076
 msgid "color icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3084
+#: ../src/libs/modulegroups.c:3086
 msgid "correct icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3094
+#: ../src/libs/modulegroups.c:3096
 msgid "effect icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3104
+#: ../src/libs/modulegroups.c:3106
 msgid "favorites icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3114
+#: ../src/libs/modulegroups.c:3116
 msgid "tone icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3124
+#: ../src/libs/modulegroups.c:3126
 msgid "grading icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3134
+#: ../src/libs/modulegroups.c:3136
 msgid "technical icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3167
+#: ../src/libs/modulegroups.c:3169
 msgid "quick access panel widgets"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3169
+#: ../src/libs/modulegroups.c:3171
 msgid "quick access"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3189
+#: ../src/libs/modulegroups.c:3191
 msgid "add widget to the quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3221
+#: ../src/libs/modulegroups.c:3223
 msgid "group icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3230
+#: ../src/libs/modulegroups.c:3232
 msgid "group name"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3241
+#: ../src/libs/modulegroups.c:3243
 msgid "remove group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3267
+#: ../src/libs/modulegroups.c:3269
 msgid "move group to the left"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3275
+#: ../src/libs/modulegroups.c:3277
 msgid "add module to the group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3286
+#: ../src/libs/modulegroups.c:3288
 msgid "move group to the right"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3466
+#: ../src/libs/modulegroups.c:3468
 msgid "rename preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3473
+#: ../src/libs/modulegroups.c:3475
 msgid "new preset name:"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3474
+#: ../src/libs/modulegroups.c:3476
 msgid "a preset with this name already exists!"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3807
+#: ../src/libs/modulegroups.c:3809
 msgid "preset: "
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3814
+#: ../src/libs/modulegroups.c:3816
 msgid "remove the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3816
+#: ../src/libs/modulegroups.c:3818
 msgid "duplicate the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3818
+#: ../src/libs/modulegroups.c:3820
 msgid "rename the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3820
+#: ../src/libs/modulegroups.c:3822
 msgid "create a new empty preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3828
+#: ../src/libs/modulegroups.c:3830
 msgid "show search line"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3831
+#: ../src/libs/modulegroups.c:3833
 msgid "show quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3834
+#: ../src/libs/modulegroups.c:3836
 msgid "show all history modules in active group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3846
+#: ../src/libs/modulegroups.c:3848
 msgid "auto-apply this preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3861
+#: ../src/libs/modulegroups.c:3863
 msgid "module groups"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3878
+#: ../src/libs/modulegroups.c:3880
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
