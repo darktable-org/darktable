@@ -1126,8 +1126,10 @@ colorchecker (read_only image2d_t in, write_only image2d_t out, const int width,
 }
 
 kernel void
-primaries(read_only image2d_t in, write_only image2d_t out,
-          const int width, const int height,
+primaries(read_only image2d_t in,
+          write_only image2d_t out,
+          const int width,
+          const int height,
           constant const float *const matrix)
 {
   const int x = get_global_id(0);
