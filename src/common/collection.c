@@ -1430,6 +1430,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
   char *escaped_text = sqlite3_mprintf("%q", text);
   const unsigned int escaped_length = strlen(escaped_text);
   gchar *query = NULL;
+  gchar **elems = NULL;
 
   switch(property)
   {
@@ -1653,28 +1654,37 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
-      // if its undefined
-      if(!g_strcmp0(escaped_text, "UNSET"))
+      query = g_strdup("((1=0) ");
+      // handle the possibility of multiple values
+      elems = g_strsplit(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
       {
-        query = g_strdup("((TRIM(maker)='') AND (TRIM(model)=''))");
-        break;
+        // if its undefined
+        if(!g_strcmp0(elems[i], "UNSET"))
+        {
+          query = dt_util_dstrcat(query, " OR ((TRIM(maker)='') AND (TRIM(model)=''))");
+        }
+        else
+        {
+          // Start query with a false statement to avoid special casing the first condition
+          query = dt_util_dstrcat(query, " OR ((1=0)");
+          GList *lists = NULL;
+          dt_collection_get_makermodels(elems[i], NULL, &lists);
+          for(GList *element = lists; element; element = g_list_next(element))
+          {
+            GList *tuple = element->data;
+            char *clause = sqlite3_mprintf(" OR (maker = '%q' AND model = '%q')", tuple->data, tuple->next->data);
+            query = dt_util_dstrcat(query, "%s", clause);
+            sqlite3_free(clause);
+            g_free(tuple->data);
+            g_free(tuple->next->data);
+            g_list_free(tuple);
+          }
+          g_list_free(lists);
+          query = dt_util_dstrcat(query, ")");
+        }
       }
-      // Start query with a false statement to avoid special casing the first condition
-      query = g_strdup_printf("((1=0)");
-      GList *lists = NULL;
-      dt_collection_get_makermodels(text, NULL, &lists);
-      for(GList *element = lists; element; element = g_list_next(element))
-      {
-        GList *tuple = element->data;
-        char *clause = sqlite3_mprintf(" OR (maker = '%q' AND model = '%q')",
-                                       tuple->data, tuple->next->data);
-        query = dt_util_dstrcat(query, "%s", clause);
-        sqlite3_free(clause);
-        g_free(tuple->data);
-        g_free(tuple->next->data);
-        g_list_free(tuple);
-      }
-      g_list_free(lists);
+      g_strfreev(elems);
       query = dt_util_dstrcat(query, ")");
       break;
 
@@ -1752,12 +1762,20 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_LENS: // lens
-      if(!g_strcmp0(escaped_text, "UNSET"))
+      query = g_strdup("((1=0) ");
+      // handle the possibility of multiple values
+      elems = g_strsplit(escaped_text, ",", -1);
+      for(int i = 0; i < g_strv_length(elems); i++)
       {
-        query = g_strdup("((lens IS NULL) OR (TRIM(lens)='') OR (UPPER(TRIM(lens))='N/A'))");
+        if(!g_strcmp0(elems[i], "UNSET"))
+        {
+          query = dt_util_dstrcat(query, " OR ((lens IS NULL) OR (TRIM(lens)='') OR (UPPER(TRIM(lens))='N/A'))");
+        }
+        else
+          query = dt_util_dstrcat(query, " OR (lens LIKE '%%%s%%')", elems[i]);
       }
-      else
-        query = g_strdup_printf("(lens LIKE '%%%s%%')", escaped_text);
+      g_strfreev(elems);
+      query = dt_util_dstrcat(query, ")");
       break;
 
     case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
@@ -1867,7 +1885,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_FILENAME: // filename
     {
       gchar *subquery = NULL;
-      gchar **elems = g_strsplit(escaped_text, "/", -1);
+      elems = g_strsplit(escaped_text, "/", -1);
       if(g_strv_length(elems) > 0)
       {
         // the main part
