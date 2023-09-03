@@ -1653,6 +1653,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
+      // if its undefined
+      if(!g_strcmp0(escaped_text, "UNSET"))
+      {
+        query = g_strdup("((TRIM(maker)='') AND (TRIM(model)=''))");
+        break;
+      }
       // Start query with a false statement to avoid special casing the first condition
       query = g_strdup_printf("((1=0)");
       GList *lists = NULL;
