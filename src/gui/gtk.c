@@ -1136,7 +1136,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtk_menu_item_set_submenu(GTK_MENU_ITEM (view_root_menu), view_menu);
 
   // Help menu
-  GtkWidget *help_root_menu = gtk_menu_item_new_with_label("Help");
+  GtkWidget *help_root_menu = gtk_menu_item_new_with_label(C_("menu", "Help"));
   gtk_widget_show(help_root_menu);
 
   GtkWidget *help_menu = gtk_menu_new();
