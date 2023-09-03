@@ -406,6 +406,14 @@ void dt_colorspaces_rgb_to_cygm(float *out,
                                 const int num,
                                 const double RGB_to_CAM[4][3]);
 
+gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE prof, float primaries[3][2],
+                                                                  float whitepoint[2]);
+
+/** Calculate RGB <-> XYZ matrices from the given primaries and whitepoint */
+void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float primaries[3][2],
+                                                               const float whitepoint[2],
+                                                               dt_colormatrix_t RGB_to_XYZ_transposed);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

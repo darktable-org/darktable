@@ -790,6 +790,8 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
     {
       transpose_3xSSE(profile_info->matrix_in, profile_info->matrix_in_transposed);
       transpose_3xSSE(profile_info->matrix_out, profile_info->matrix_out_transposed);
+      dt_colorspaces_get_primaries_and_whitepoint_from_profile(rgb_profile, profile_info->primaries,
+                                                               profile_info->whitepoint);
     }
     else
     {
