@@ -57,8 +57,10 @@ typedef struct dt_iop_primaries_params_t
 
 typedef struct dt_iop_primaries_gui_data_t
 {
-  GtkWidget *achromatic_tint_hue, *achromatic_tint_purity, *red_hue, *red_purity, *green_hue, *green_purity,
-      *blue_hue, *blue_purity;
+  GtkWidget *achromatic_tint_hue, *achromatic_tint_purity;
+  GtkWidget *red_hue, *red_purity;
+  GtkWidget *green_hue, *green_purity;
+  GtkWidget *blue_hue, *blue_purity;
   const dt_iop_order_iccprofile_info_t *painted_work_profile, *painted_display_profile;
 } dt_iop_primaries_gui_data_t;
 
@@ -82,41 +84,54 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
                                             dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-static void _calculate_adjustment_matrix(const dt_iop_primaries_params_t *const params,
-                                         const dt_iop_order_iccprofile_info_t *const pipe_work_profile,
-                                         dt_colormatrix_t matrix)
+static void _calculate_adjustment_matrix
+  (const dt_iop_primaries_params_t *const params,
+   const dt_iop_order_iccprofile_info_t *const pipe_work_profile,
+   dt_colormatrix_t matrix)
 {
   float custom_primaries[3][2];
-  const float scaling[3] = { params->red_purity, params->green_purity, params->blue_purity };
+  const float scaling[3] = { params->red_purity,
+                             params->green_purity,
+                             params->blue_purity };
   const float rotation[3] = { params->red_hue, params->green_hue, params->blue_hue };
   for(size_t i = 0; i < 3; i++)
-    dt_rotate_and_scale_primary(pipe_work_profile, scaling[i], rotation[i], i, custom_primaries[i]);
+    dt_rotate_and_scale_primary(pipe_work_profile,
+                                scaling[i], rotation[i], i, custom_primaries[i]);
 
   float whitepoint[2];
-  dt_rotate_and_scale_primary(pipe_work_profile, params->achromatic_tint_purity, params->achromatic_tint_hue, 0,
+  dt_rotate_and_scale_primary(pipe_work_profile, params->achromatic_tint_purity,
+                              params->achromatic_tint_hue, 0,
                               whitepoint);
 
   dt_colormatrix_t RGB_TO_XYZ;
-  dt_make_transposed_matrices_from_primaries_and_whitepoint(custom_primaries, whitepoint, RGB_TO_XYZ);
+  dt_make_transposed_matrices_from_primaries_and_whitepoint(custom_primaries,
+                                                            whitepoint, RGB_TO_XYZ);
   dt_colormatrix_mul(matrix, RGB_TO_XYZ, pipe_work_profile->matrix_out_transposed);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_primaries_params_t *params = (dt_iop_primaries_params_t *)piece->data;
 
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, ivoid, ovoid, roi_in,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
+                                        piece->colors, ivoid, ovoid, roi_in,
                                         roi_out))
     return;
 
-  const dt_iop_order_iccprofile_info_t *pipe_work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *pipe_work_profile =
+    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   dt_colormatrix_t matrix;
   _calculate_adjustment_matrix(params, pipe_work_profile, matrix);
 
@@ -134,8 +149,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_primaries_params_t *params = (dt_iop_primaries_params_t *)piece->data;
   dt_iop_primaries_global_data_t *gd = (dt_iop_primaries_global_data_t *)self->global_data;
@@ -144,7 +163,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const dt_iop_order_iccprofile_info_t *pipe_work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *pipe_work_profile =
+    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   dt_colormatrix_t transposed_matrix, matrix;
   _calculate_adjustment_matrix(params, pipe_work_profile, transposed_matrix);
   transpose_3xSSE(transposed_matrix, matrix);
@@ -156,22 +176,28 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return DT_OPENCL_DEFAULT_ERROR;
   }
 
-  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_primaries, width, height, CLARG(dev_in),
-                                                CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_matrix));
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_primaries,
+                                                width, height, CLARG(dev_in),
+                                                CLARG(dev_out), CLARG(width), CLARG(height),
+                                                CLARG(dev_matrix));
   dt_opencl_release_mem_object(dev_matrix);
   return err;
 }
 #endif
 
-static void _rotated_primary_to_display_RGB(const dt_iop_order_iccprofile_info_t *work_profile,
-                                            const dt_iop_order_iccprofile_info_t *display_profile,
-                                            const dt_iop_order_iccprofile_info_t *sRGB_profile,
-                                            const size_t primary_index, const float angle, const float desaturate,
-                                            dt_aligned_pixel_t display_RGB)
+static void _rotated_primary_to_display_RGB
+  (const dt_iop_order_iccprofile_info_t *work_profile,
+   const dt_iop_order_iccprofile_info_t *display_profile,
+   const dt_iop_order_iccprofile_info_t *sRGB_profile,
+   const size_t primary_index,
+   const float angle,
+   const float desaturate,
+   dt_aligned_pixel_t display_RGB)
 {
   dt_aligned_pixel_t xyY = { 0.f }, XYZ, RGB;
   dt_rotate_and_scale_primary(work_profile, 1.f, angle, primary_index, xyY);
-  // Luminance doesn't matter - it will change in the normalization in the end of the function.
+  // Luminance doesn't matter - it will change in the normalization in
+  // the end of the function.
   xyY[2] = 1.f;
   dt_xyY_to_XYZ(xyY, XYZ);
   dt_apply_transposed_color_matrix(XYZ, sRGB_profile->matrix_out_transposed, RGB);
@@ -193,11 +219,13 @@ static void _rotated_primary_to_display_RGB(const dt_iop_order_iccprofile_info_t
 }
 
 static void _apply_trc_if_nonlinear(const dt_iop_order_iccprofile_info_t *display_profile,
-                                    const dt_aligned_pixel_t linear_RGB, dt_aligned_pixel_t RGB)
+                                    const dt_aligned_pixel_t linear_RGB,
+                                    dt_aligned_pixel_t RGB)
 {
   // Apply tone response curve if any
   if(display_profile->nonlinearlut)
-    dt_ioppr_apply_trc(linear_RGB, RGB, display_profile->lut_out, display_profile->unbounded_coeffs_out,
+    dt_ioppr_apply_trc(linear_RGB, RGB, display_profile->lut_out,
+                       display_profile->unbounded_coeffs_out,
                        display_profile->lutsize);
   else
     copy_pixel(RGB, linear_RGB);
@@ -205,7 +233,8 @@ static void _apply_trc_if_nonlinear(const dt_iop_order_iccprofile_info_t *displa
 
 static void _paint_hue_slider(const dt_iop_order_iccprofile_info_t *work_profile,
                               const dt_iop_order_iccprofile_info_t *display_profile,
-                              const dt_iop_order_iccprofile_info_t *sRGB_profile, const size_t primary_index,
+                              const dt_iop_order_iccprofile_info_t *sRGB_profile,
+                              const size_t primary_index,
                               GtkWidget *slider)
 {
   const float hard_min = dt_bauhaus_slider_get_hard_min(slider);
@@ -216,7 +245,8 @@ static void _paint_hue_slider(const dt_iop_order_iccprofile_info_t *work_profile
     const float stop = (float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1);
     const float angle = hard_min + stop * range;
     dt_aligned_pixel_t linear_RGB, RGB;
-    _rotated_primary_to_display_RGB(work_profile, display_profile, sRGB_profile, primary_index, angle, 0.4f,
+    _rotated_primary_to_display_RGB(work_profile, display_profile,
+                                    sRGB_profile, primary_index, angle, 0.4f,
                                     linear_RGB);
     _apply_trc_if_nonlinear(display_profile, linear_RGB, RGB);
     dt_bauhaus_slider_set_stop(slider, stop, RGB[0], RGB[1], RGB[2]);
@@ -226,12 +256,15 @@ static void _paint_hue_slider(const dt_iop_order_iccprofile_info_t *work_profile
 
 static void _paint_purity_slider(const dt_iop_order_iccprofile_info_t *work_profile,
                                  const dt_iop_order_iccprofile_info_t *display_profile,
-                                 const dt_iop_order_iccprofile_info_t *sRGB_profile, const size_t primary_index,
-                                 GtkWidget *hue_slider, GtkWidget *purity_slider)
+                                 const dt_iop_order_iccprofile_info_t *sRGB_profile,
+                                 const size_t primary_index,
+                                 GtkWidget *hue_slider,
+                                 GtkWidget *purity_slider)
 {
   const float angle = dt_bauhaus_slider_get(hue_slider);
   dt_aligned_pixel_t linear_RGB, RGB;
-  _rotated_primary_to_display_RGB(work_profile, display_profile, sRGB_profile, primary_index, angle, 0.4f,
+  _rotated_primary_to_display_RGB(work_profile, display_profile, sRGB_profile,
+                                  primary_index, angle, 0.4f,
                                   linear_RGB);
   const float luminance = scalar_product(linear_RGB, display_profile->matrix_in[1]);
   _apply_trc_if_nonlinear(display_profile, linear_RGB, RGB);
@@ -246,16 +279,22 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   dt_iop_primaries_gui_data_t *g = (dt_iop_primaries_gui_data_t *)self->gui_data;
 
-  const dt_iop_order_iccprofile_info_t *work_profile
-      = dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
-  const dt_iop_order_iccprofile_info_t *display_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
-  if(!work_profile || !display_profile) return; // couldn't fetch profiles, can't paint the sliders
+  const dt_iop_order_iccprofile_info_t *work_profile =
+    dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
+  const dt_iop_order_iccprofile_info_t *display_profile =
+    dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
+  if(!work_profile || !display_profile) return; // couldn't fetch
+                                                // profiles, can't
+                                                // paint the sliders
 
-  const gboolean repaint_all_sliders
-      = !w || work_profile != g->painted_work_profile || display_profile != g->painted_display_profile;
+  const gboolean repaint_all_sliders =
+    !w
+    || work_profile != g->painted_work_profile
+    || display_profile != g->painted_display_profile;
 
-  const dt_iop_order_iccprofile_info_t *sRGB_profile
-      = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
+  const dt_iop_order_iccprofile_info_t *sRGB_profile =
+    dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "",
+                                      DT_INTENT_RELATIVE_COLORIMETRIC);
 
   if(repaint_all_sliders)
   {
@@ -263,36 +302,46 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     _paint_hue_slider(work_profile, display_profile, sRGB_profile, 1, g->green_hue);
     _paint_hue_slider(work_profile, display_profile, sRGB_profile, 2, g->blue_hue);
     // Achromatic tint angle is anchored at the red primary
-    _paint_hue_slider(work_profile, display_profile, sRGB_profile, 0, g->achromatic_tint_hue);
+    _paint_hue_slider(work_profile, display_profile, sRGB_profile, 0,
+                      g->achromatic_tint_hue);
 
     g->painted_work_profile = work_profile;
     g->painted_display_profile = display_profile;
   }
 
   if(repaint_all_sliders || w == g->red_hue)
-    _paint_purity_slider(work_profile, display_profile, sRGB_profile, 0, g->red_hue, g->red_purity);
+    _paint_purity_slider(work_profile, display_profile, sRGB_profile,
+                         0, g->red_hue, g->red_purity);
   if(repaint_all_sliders || w == g->green_hue)
-    _paint_purity_slider(work_profile, display_profile, sRGB_profile, 1, g->green_hue, g->green_purity);
+    _paint_purity_slider(work_profile, display_profile, sRGB_profile,
+                         1, g->green_hue, g->green_purity);
   if(repaint_all_sliders || w == g->blue_hue)
-    _paint_purity_slider(work_profile, display_profile, sRGB_profile, 2, g->blue_hue, g->blue_purity);
+    _paint_purity_slider(work_profile, display_profile, sRGB_profile,
+                         2, g->blue_hue, g->blue_purity);
   if(repaint_all_sliders || w == g->achromatic_tint_hue)
-    _paint_purity_slider(work_profile, display_profile, sRGB_profile, 0, g->achromatic_tint_hue,
+    _paint_purity_slider(work_profile, display_profile, sRGB_profile,
+                         0, g->achromatic_tint_hue,
                          g->achromatic_tint_purity);
 }
 
-static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+static void _signal_profile_user_changed(gpointer instance,
+                                         const uint8_t profile_type,
+                                         gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gui_changed(self, NULL, NULL);
 }
 
-static void _signal_profile_changed(gpointer instance, gpointer user_data)
+static void _signal_profile_changed(gpointer instance,
+                                    gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gui_changed(self, NULL, NULL);
 }
 
-static GtkWidget *_setup_hue_slider(dt_iop_module_t *self, const char *param_name, const char *tooltip)
+static GtkWidget *_setup_hue_slider(dt_iop_module_t *self,
+                                    const char *param_name,
+                                    const char *tooltip)
 {
   GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
   dt_bauhaus_slider_set_format(slider, "°");
@@ -303,7 +352,9 @@ static GtkWidget *_setup_hue_slider(dt_iop_module_t *self, const char *param_nam
   return slider;
 }
 
-static GtkWidget *_setup_purity_slider(dt_iop_module_t *self, const char *param_name, const char *tooltip)
+static GtkWidget *_setup_purity_slider(dt_iop_module_t *self,
+                                       const char *param_name,
+                                       const char *tooltip)
 {
   GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
   dt_bauhaus_slider_set_format(slider, "%");
@@ -352,8 +403,10 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_user_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_signal_profile_user_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_signal_profile_changed), self);
 
   IOP_GUI_FREE;
 }
@@ -361,8 +414,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_primaries_global_data_t *gd
-      = (dt_iop_primaries_global_data_t *)malloc(sizeof(dt_iop_primaries_global_data_t));
+  dt_iop_primaries_global_data_t *gd =
+    (dt_iop_primaries_global_data_t *)malloc(sizeof(dt_iop_primaries_global_data_t));
   module->data = gd;
   gd->kernel_primaries = dt_opencl_create_kernel(program, "primaries");
 }
