@@ -123,13 +123,17 @@ void _lens_tree_update_visibility(GtkWidget *w, _widgets_lens_t *lens)
 static gboolean _lens_select_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   GtkTreeSelection *sel = (GtkTreeSelection *)data;
-  gchar *elems = (gchar *)g_object_get_data(G_OBJECT(sel), "elems");
+  gchar **elems = (gchar **)g_object_get_data(G_OBJECT(sel), "elems");
   gchar *str = NULL;
   gtk_tree_model_get(model, iter, TREE_COL_PATH, &str, -1);
 
-  if(!g_strcmp0(str, elems))
+  for(int i = 0; i < g_strv_length(elems); i++)
   {
-    gtk_tree_selection_select_path(sel, path);
+    if(!g_strcmp0(str, elems[i]))
+    {
+      gtk_tree_selection_select_path(sel, path);
+      break;
+    }
   }
 
   return FALSE;
@@ -146,12 +150,13 @@ static void _lens_update_selection(_widgets_lens_t *lens)
   lens->internal_change++;
   gtk_tree_selection_unselect_all(sel);
 
+
   if(g_strcmp0(txt, ""))
   {
-    gchar *txt2 = g_strdup(txt);
-    g_object_set_data(G_OBJECT(sel), "elems", txt2);
+    gchar **elems = g_strsplit(txt, ",", -1);
+    g_object_set_data(G_OBJECT(sel), "elems", elems);
     gtk_tree_model_foreach(gtk_tree_view_get_model(GTK_TREE_VIEW(lens->name_tree)), _lens_select_func, sel);
-    g_free(txt2);
+    g_strfreev(elems);
   }
   lens->internal_change--;
 }
