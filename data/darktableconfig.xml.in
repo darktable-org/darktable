@@ -326,7 +326,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>use all device memory</shortdescription>
-    <longdescription>if enabled darktable will use all device memory except a safety margin (headroom, default is 600Mb)</longdescription>
+    <longdescription>if enabled darktable will use all device memory except a safety margin (headroom, default is 600MB)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_intelropenclhdgraphics</name>
