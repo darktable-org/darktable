@@ -685,15 +685,21 @@ static int process_rcd_cl(
     dev_tmp = NULL;
 
     cfa = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(cfa == NULL) goto error;
     VH_dir = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(VH_dir == NULL) goto error;
     PQ_dir = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(PQ_dir == NULL) goto error;
     VP_diff = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(VP_diff== NULL) goto error;
     HQ_diff = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(HQ_diff == NULL) goto error;
     rgb0 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(rgb0 == NULL) goto error;
     rgb1 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
+    if(rgb1 == NULL) goto error;
     rgb2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
-    if(rgb2 == NULL || cfa == NULL || VH_dir == NULL || PQ_dir == NULL || VP_diff == NULL || HQ_diff == NULL || rgb0 == NULL || rgb1 == NULL)
-      goto error;
+    if(rgb2 == NULL) goto error;
 
     {
       // populate data
