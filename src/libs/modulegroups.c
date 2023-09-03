@@ -1575,6 +1575,7 @@ void init_presets(dt_lib_module_t *self)
   AM("lut3d");
   AM("monochrome");
   AM("profile");
+  AM("primaries");
   AM("gamma");
   AM("velvia");
 
@@ -1724,6 +1725,7 @@ void init_presets(dt_lib_module_t *self)
   AM("channelmixerrgb");
   AM("colorbalancergb");
   AM("colorzones");
+  AM("primaries");
 
   SMG(C_("modulegroup", "correct"), "correct");
   AM("cacorrect");
