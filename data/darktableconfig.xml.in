@@ -354,7 +354,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>RustiCL</shortdescription>
-    <longdescription>RustiCL Mesa OpenCL, still unstable. If you want to use this, you should disable the vendor driver</longdescription>
+    <longdescription>RustiCL Mesa OpenCL, still unstable. if you want to use this, you should disable the vendor driver</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="apple" restart="true">
     <name>clplatform_apple</name>
