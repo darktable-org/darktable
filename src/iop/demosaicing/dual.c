@@ -147,7 +147,7 @@ gboolean dual_demosaic_cl(
   dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(dev_blurmat);
-  return (err == CL_SUCCESS);
+  return err;
 }
 #endif
 
