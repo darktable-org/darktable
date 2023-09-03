@@ -339,8 +339,8 @@
     <name>clplatform_nvidiacuda</name>
     <type>bool</type>
     <default>${DEFCONFIG_NONAPPLE}</default>
-    <shortdescription>Nvidia Cuda</shortdescription>
-    <longdescription>Nvidia cuda based OpenCL (vendor provided)</longdescription>
+    <shortdescription>Nvidia CUDA</shortdescription>
+    <longdescription>Nvidia CUDA based OpenCL (vendor provided)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_amdacceleratedparallelprocessing</name>
