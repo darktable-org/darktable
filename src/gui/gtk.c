@@ -1034,9 +1034,9 @@ void dt_open_url(const char* url)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
 // TODO: call the web browser directly so that file:// style base for local installs works
-  const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win), 
-                                                      url, 
-                                                      gtk_get_current_event_time(), 
+  const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win),
+                                                      url,
+                                                      gtk_get_current_event_time(),
                                                       &error);
 
   if(uri_success)
@@ -1123,7 +1123,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   GtkWidget *sep = gtk_separator_menu_item_new();
   gtk_menu_shell_append(GTK_MENU_SHELL (view_menu), sep);
   gtk_widget_show(sep);
-  
+
   _osx_add_view_menu_item(view_menu, C_("menu", "slideshow"), "slideshow");
 #ifdef HAVE_MAP
   _osx_add_view_menu_item(view_menu, C_("menu", "map"), "map");
@@ -1154,14 +1154,14 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                    G_CALLBACK(_open_url), "https://www.darktable.org");
 
   gtk_menu_item_set_submenu(GTK_MENU_ITEM (help_root_menu), help_menu);
-  
+
   // build the menu bar
   GtkWidget *menu_bar = gtk_menu_bar_new();
   gtk_widget_show(menu_bar);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), view_root_menu);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_root_menu);
 
-  gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(menu_bar)); 
+  gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(menu_bar));
 
   // Now the application menu (first item)
   // GTK automatically translates the item with index 0 so no need to localize.
@@ -2004,7 +2004,10 @@ void dt_ui_panel_set_size(dt_ui_t *ui, const dt_ui_panel_t p, int s)
 
   if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
   {
-    gtk_widget_set_size_request(ui->panels[p], s, -1);
+    if(p == DT_UI_PANEL_BOTTOM)
+      gtk_widget_set_size_request(ui->panels[p], -1, s);
+    else
+      gtk_widget_set_size_request(ui->panels[p], s, -1);
     key = _panels_get_panel_path(p, "_size");
     dt_conf_set_int(key, s);
     g_free(key);
@@ -2150,29 +2153,23 @@ static gboolean _panel_handle_motion_callback(GtkWidget *w, GdkEventMotion *e, g
   {
     gint sx = gtk_widget_get_allocated_width(widget), sy = gtk_widget_get_allocated_height(widget);
 
-    // conf entry to store the new size
-    gchar *key = NULL;
     if(strcmp(gtk_widget_get_name(w), "panel-handle-right") == 0)
     {
       sx += darktable.gui->widgets.panel_handle_x - e->x;
-      key = _panels_get_panel_path(DT_UI_PANEL_RIGHT, "_size");
+      dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_RIGHT, sx);
     }
     else if(strcmp(gtk_widget_get_name(w), "panel-handle-left") == 0)
     {
       sx -= darktable.gui->widgets.panel_handle_x - e->x;
-      key = _panels_get_panel_path(DT_UI_PANEL_LEFT, "_size");
+      dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_LEFT, sx);
     }
     else if(strcmp(gtk_widget_get_name(w), "panel-handle-bottom") == 0)
     {
       sx = CLAMP((sy + darktable.gui->widgets.panel_handle_y - e->y), dt_conf_get_int("min_panel_height"),
                  dt_conf_get_int("max_panel_height"));
-      key = _panels_get_panel_path(DT_UI_PANEL_BOTTOM, "_size");
+      dt_ui_panel_set_size(darktable.gui->ui, DT_UI_PANEL_BOTTOM, sx);
       gtk_widget_set_size_request(widget, -1, sx);
     }
-
-    // we store and apply the new value
-    dt_conf_set_int(key, sx);
-    g_free(key);
 
     gtk_widget_queue_resize(widget);
     return TRUE;
