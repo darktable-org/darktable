@@ -800,7 +800,7 @@ int process_cl(
 
   const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && !run_fast);
   const int devid = piece->pipe->devid;
-  gboolean retval = FALSE;
+  int err = DT_OPENCL_DEFAULT_ERROR;
 
   if(dual)
     high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
@@ -809,45 +809,45 @@ int process_cl(
      demosaicing_method == DT_IOP_DEMOSAIC_PPG ||
      demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR )
   {
-    if(!process_default_cl(self, piece, dev_in, dev_out, roi_in, roi_out, demosaicing_method))
-      return DT_OPENCL_PROCESS_CL;
+    err = process_default_cl(self, piece, dev_in, dev_out, roi_in, roi_out, demosaicing_method);
+    if(err != CL_SUCCESS) return err;
   }
   else if((demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_RCD)
   {
     if(dual)
     {
-      if(!process_rcd_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE))
-        goto finish;
+      err = process_rcd_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE);
+      if(err != CL_SUCCESS) goto finish;
     }
     else
     {
-     if(!process_rcd_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE))
-       return DT_OPENCL_PROCESS_CL;
+      err = process_rcd_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE);
+      if(err != CL_SUCCESS) return err;
     }
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
   {
-    if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, FALSE))
-      return DT_OPENCL_PROCESS_CL;
+    err = process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, FALSE);
+    if(err != CL_SUCCESS) return err;
   }
   else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
     !(qual_flags & DT_DEMOSAIC_FULL_SCALE))
   {
-    if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR))
-      return DT_OPENCL_PROCESS_CL;
+    err = process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR);
+    if(err != CL_SUCCESS) return err;
   }
   else if(((demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN ) ||
           ((demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3))
   {
     if(dual)
     {
-      if(!process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE))
-        goto finish;
+      err = process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE);
+      if(err != CL_SUCCESS) goto finish;
     }
     else
     {
-      if(!process_markesteijn_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE))
-        return DT_OPENCL_PROCESS_CL;
+      err = process_markesteijn_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE);
+      if(err != CL_SUCCESS) return err;
     }
   }
   else
@@ -856,35 +856,29 @@ int process_cl(
     return DT_OPENCL_PROCESS_CL;
   }
 
-  if(!dual)
-  {
-    retval = TRUE;
-    goto finish;
-  }
+  if(!dual) goto finish;
 
   low_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
   if(low_image == NULL) goto finish;
 
-  if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE))
+  err = process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE);
+  if(err == CL_SUCCESS)
   {
-    if(!color_smoothing_cl(self, piece, low_image, low_image, roi_in, 2))
-    {
-      retval = FALSE;
-      goto finish;
-    }
-    retval = dual_demosaic_cl(self, piece, high_image, low_image, high_image, roi_in, showmask);
+    err = color_smoothing_cl(self, piece, low_image, low_image, roi_in, 2);
+    if(err != CL_SUCCESS) goto finish;
+    err = dual_demosaic_cl(self, piece, high_image, low_image, high_image, roi_in, showmask);
   }
+
   dt_opencl_release_mem_object(low_image);
   low_image = NULL;
 
-  if(dt_iop_clip_and_zoom_roi_cl(devid, dev_out, high_image, roi_out, roi_in) == CL_SUCCESS)
-    retval = TRUE;
+  err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, high_image, roi_out, roi_in);
 
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
 
-  return retval ? CL_SUCCESS : DT_OPENCL_PROCESS_CL;
+  return err;
 }
 #endif
 

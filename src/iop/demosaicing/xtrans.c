@@ -2172,8 +2172,8 @@ static int process_markesteijn_cl(
       if(err != CL_SUCCESS) goto error;
 
       // VNG processing
-      if(!process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, &roi, smooth, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR))
-        goto error;
+      err = process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, &roi, smooth, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR);
+      if(err != CL_SUCCESS) goto error;
 
       // adjust for "good" part, dropping linear border where possible
       iorigin[0] += edges[n][4];
@@ -2226,12 +2226,9 @@ static int process_markesteijn_cl(
 
   // color smoothing
   if(data->color_smoothing)
-  {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
-      goto error;
-  }
+    err = color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
 
-  return TRUE;
+  return err;
 
 error:
   if(dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
@@ -2252,8 +2249,8 @@ error:
   dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_edge_in);
   dt_opencl_release_mem_object(dev_edge_out);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue process_markesteijn_cl kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn problem '%s'\n", cl_errstr(err));
+  return err;
 }
 
 #endif
