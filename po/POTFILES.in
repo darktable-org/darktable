@@ -160,6 +160,7 @@ src/dtgtk/thumbnail.c
 src/dtgtk/thumbnail_btn.c
 src/dtgtk/thumbtable.c
 src/generate-cache/main.c
+src/gui/about.c
 src/gui/accelerators.c
 src/gui/gtk.c
 src/gui/gtkentry.c
