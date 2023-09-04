@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-03 22:13+0200\n"
-"PO-Revision-Date: 2023-09-03 22:17+0200\n"
+"POT-Creation-Date: 2023-09-04 07:52+0200\n"
+"PO-Revision-Date: 2023-09-04 07:54+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4538,13 +4538,13 @@ msgstr "Film couleur"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:75
 #: ../build/lib/darktable/plugins/introspection_primaries.c:160
-#: ../src/iop/primaries.c:384
+#: ../src/iop/primaries.c:393
 msgid "tint hue"
 msgstr "Teinte couleur"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:81
 #: ../build/lib/darktable/plugins/introspection_primaries.c:164
-#: ../src/iop/primaries.c:391
+#: ../src/iop/primaries.c:400
 msgid "tint purity"
 msgstr "Pureté de la teinte"
 
@@ -12542,7 +12542,7 @@ msgstr "Tourne l’image ou déforme la perspective"
 #: ../src/iop/channelmixerrgb.c:232 ../src/iop/clipping.c:364
 #: ../src/iop/colorbalance.c:163 ../src/iop/colorbalancergb.c:185
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:77
-#: ../src/iop/crop.c:135 ../src/iop/lut3d.c:142
+#: ../src/iop/crop.c:135 ../src/iop/lut3d.c:142 ../src/iop/primaries.c:80
 msgid "corrective or creative"
 msgstr "Correctif ou créatif"
 
@@ -12557,11 +12557,11 @@ msgstr "Correctif ou créatif"
 #: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:132 ../src/iop/exposure.c:134
 #: ../src/iop/flip.c:111 ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:259 ../src/iop/lens.cc:261
-#: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/retouch.c:210
-#: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:102
-#: ../src/iop/splittoning.c:106 ../src/iop/splittoning.c:108
-#: ../src/iop/spots.c:70 ../src/iop/spots.c:72 ../src/iop/toneequal.c:325
-#: ../src/iop/velvia.c:99 ../src/iop/velvia.c:101
+#: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/primaries.c:81
+#: ../src/iop/primaries.c:83 ../src/iop/retouch.c:210 ../src/iop/retouch.c:212
+#: ../src/iop/sigmoid.c:102 ../src/iop/splittoning.c:106
+#: ../src/iop/splittoning.c:108 ../src/iop/spots.c:70 ../src/iop/spots.c:72
+#: ../src/iop/toneequal.c:325 ../src/iop/velvia.c:99 ../src/iop/velvia.c:101
 msgid "linear, RGB, scene-referred"
 msgstr "Relatif à la scène, linéaire, RVB"
 
@@ -13336,8 +13336,8 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:104 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:781
-#: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:133 ../src/iop/soften.c:105
-#: ../src/iop/splittoning.c:107 ../src/iop/velvia.c:100
+#: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:133 ../src/iop/primaries.c:82
+#: ../src/iop/soften.c:105 ../src/iop/splittoning.c:107 ../src/iop/velvia.c:100
 msgid "linear, RGB"
 msgstr "Linéaire, RVB"
 
@@ -18936,27 +18936,31 @@ msgstr "Le module sur-exposition a échoué dans la conversion des couleurs"
 msgid "rgb primaries"
 msgstr "Primaires RVB"
 
-#: ../src/iop/primaries.c:373
+#: ../src/iop/primaries.c:79
+msgid "adjustment of the RGB color primaries for color grading"
+msgstr "Ajustement des couleurs primaires RVB pour la graduation de couleur"
+
+#: ../src/iop/primaries.c:382
 msgid "red primary hue"
 msgstr "Teinte du rouge primaire"
 
-#: ../src/iop/primaries.c:374
+#: ../src/iop/primaries.c:383
 msgid "red primary purity"
 msgstr "Pureté du rouge primaire"
 
-#: ../src/iop/primaries.c:375
+#: ../src/iop/primaries.c:384
 msgid "green primary hue"
 msgstr "Teinte du vert primaire"
 
-#: ../src/iop/primaries.c:376
+#: ../src/iop/primaries.c:385
 msgid "green primary purity"
 msgstr "Pureté du vert primaire"
 
-#: ../src/iop/primaries.c:377
+#: ../src/iop/primaries.c:386
 msgid "blue primary hue"
 msgstr "Teinte du bleu primaire"
 
-#: ../src/iop/primaries.c:378
+#: ../src/iop/primaries.c:387
 msgid "blue primary purity"
 msgstr "Pureté du bleu primaire"
 
