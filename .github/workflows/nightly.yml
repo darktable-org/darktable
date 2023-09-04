@@ -107,7 +107,7 @@ jobs:
             libopenexr-dev \
             x11proto-dev \
             libxfixes-dev;
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ env.BRANCH }}
           submodules: true
@@ -219,7 +219,7 @@ jobs:
           update: false
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -295,7 +295,7 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
