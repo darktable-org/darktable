@@ -205,7 +205,7 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
 
 cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem out, const float detail)
 {
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   cl_mem tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, sizeof(float) * 4);
   if(tmp == NULL) goto error;
 
