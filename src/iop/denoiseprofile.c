@@ -1988,12 +1988,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
   // allocate a buffer for a preconditioned copy of the image
   const int devid = piece->pipe->devid;
   cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-  if(dev_tmp == NULL)
-  {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_denoiseprofile] couldn't allocate GPU buffer\n");
-    return FALSE;
-  }
+  if(dev_tmp == NULL) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]),
@@ -2019,7 +2014,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
 
   // allocate a buffer to receive the denoised image
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
-  if(dev_U2 == NULL) err = DT_OPENCL_DEFAULT_ERROR;
+  if(dev_U2 == NULL) err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   if(err == CL_SUCCESS)
   {
@@ -2067,17 +2062,13 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  if(err == CL_SUCCESS)
-    return TRUE;
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 
 #else
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const float scale = fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
@@ -2375,7 +2366,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
     goto error;
 
   const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
-
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * bufsize);
   if(dev_m == NULL) goto error;
 
@@ -2483,25 +2474,18 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
   }
   else
   {
-    cl_mem dev_Y0U0V0 = NULL;
-    dev_Y0U0V0 = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toY0U0V0);
-    if(dev_Y0U0V0 != NULL)
-    {
-      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0,
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    cl_mem dev_Y0U0V0 = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toY0U0V0);
+    if(dev_Y0U0V0 == NULL) goto error;
+
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0,
                                 0, CLARG(dev_in),
                                 CLARG(dev_out), CLARG(width), CLARG(height),
                                 CLARG(aa), CLARG(p), CLARG(bb), CLARG(dev_Y0U0V0));
-      err = dt_opencl_enqueue_kernel_2d(devid,
-                                        gd->kernel_denoiseprofile_precondition_Y0U0V0,
-                                        sizes);
-      dt_opencl_release_mem_object(dev_Y0U0V0);
-      if(err != CL_SUCCESS) goto error;
-    }
-    else
-    {
-      dt_opencl_release_mem_object(dev_Y0U0V0);
-      goto error;
-    }
+    err = dt_opencl_enqueue_kernel_2d(devid,
+                                      gd->kernel_denoiseprofile_precondition_Y0U0V0,
+                                      sizes);
+    dt_opencl_release_mem_object(dev_Y0U0V0);
   }
 
   dev_buf1 = dev_out;
@@ -2709,28 +2693,21 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
   }
   else
   {
-    cl_mem dev_RGB = NULL;
-    dev_RGB = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toRGB);
-    if(dev_RGB != NULL)
-    {
-      const float bias = d->bias - 0.5 * logf(scale);
-      dt_opencl_set_kernel_args(devid,
-                                gd->kernel_denoiseprofile_backtransform_Y0U0V0, 0,
-                                CLARG(dev_tmp),
-                                CLARG(dev_out), CLARG(width), CLARG(height),
-                                CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb),
-        CLARG(dev_RGB));
-      err = dt_opencl_enqueue_kernel_2d(devid,
+    cl_mem dev_RGB = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toRGB);
+    if(dev_RGB == NULL) goto error;
+
+    const float bias = d->bias - 0.5 * logf(scale);
+    dt_opencl_set_kernel_args(devid,
+                              gd->kernel_denoiseprofile_backtransform_Y0U0V0, 0,
+                              CLARG(dev_tmp),
+                              CLARG(dev_out), CLARG(width), CLARG(height),
+                              CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb),
+                              CLARG(dev_RGB));
+    err = dt_opencl_enqueue_kernel_2d(devid,
                                         gd->kernel_denoiseprofile_backtransform_Y0U0V0,
                                         sizes);
-      dt_opencl_release_mem_object(dev_RGB);
-      if(err != CL_SUCCESS) goto error;
-    }
-    else
-    {
-      dt_opencl_release_mem_object(dev_RGB);
-      goto error;
-    }
+    dt_opencl_release_mem_object(dev_RGB);
+    if(err != CL_SUCCESS) goto error;
   }
 
   dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
