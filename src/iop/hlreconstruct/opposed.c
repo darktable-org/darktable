@@ -469,7 +469,7 @@ static cl_int process_opposed_cl(
 
   dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f};
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   cl_mem dev_chrominance = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_clips = NULL;
@@ -527,6 +527,7 @@ static cl_int process_opposed_cl(
             CLARG(msize), CLARG(mwidth), CLARG(mheight));
     if(err != CL_SUCCESS) goto error;
 
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
     const size_t accusize = sizeof(float) * 6 * iheight;
     dev_accu = dt_opencl_alloc_device_buffer(devid, accusize);
     if(dev_accu == NULL) goto error;
@@ -581,6 +582,7 @@ static cl_int process_opposed_cl(
     }
   }
 
+  err = DT_OPENCL_SYSMEM_ALLOCATION;
   dev_chrominance = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), chrominance);
   if(dev_chrominance == NULL) goto error;
 
@@ -593,21 +595,8 @@ static cl_int process_opposed_cl(
           CLARG(dev_clips),
           CLARG(dev_chrominance),
           CLARG(fastcopymode));
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_clips);
-  dt_opencl_release_mem_object(dev_xtrans);
-  dt_opencl_release_mem_object(dev_chrominance);
-  dt_opencl_release_mem_object(dev_inmask);
-  dt_opencl_release_mem_object(dev_outmask);
-  dt_opencl_release_mem_object(dev_accu);
-  dt_free_align(claccu);
-  return CL_SUCCESS;
 
   error:
-  // just in case the last error was generated via a copy function
-  if(err == CL_SUCCESS) err = DT_OPENCL_DEFAULT_ERROR;
-
   dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
   dt_opencl_release_mem_object(dev_chrominance);

@@ -3086,22 +3086,21 @@ gboolean dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
     hash = ((hash << 5) + hash) ^ str[i];
   p->scharr.hash = hash;
 
-  dt_opencl_release_mem_object(out);
-  dt_opencl_release_mem_object(tmp);
   dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CL", p, NULL, roi_in, NULL, "\n");
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
     dt_dump_pfm("scharr_cl", mask, width, height, sizeof(float), "detail");
 
-  return FALSE;
-
   error:
-  dt_print_pipe(DT_DEBUG_ALWAYS,
+  if(err != CL_SUCCESS)
+  {
+    dt_print_pipe(DT_DEBUG_ALWAYS,
            "write scharr mask CL", p, NULL, roi_in, NULL,
            "couldn't write scharr mask: %s\n", cl_errstr(err));
+    dt_dev_clear_scharr_mask(p);
+  }
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  dt_dev_clear_scharr_mask(p);
-  return TRUE;
+  return err;
 }
 #endif
 

@@ -622,7 +622,8 @@ static int process_rcd_cl(
     {
       dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
       if(dev_green_eq == NULL) goto error;
-      if(!green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in)) goto error;
+      err = green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in);
+      if(err != CL_SUCCESS) goto error;
       dev_in = dev_green_eq;
     }
 
@@ -690,7 +691,7 @@ static int process_rcd_cl(
     PQ_dir = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(PQ_dir == NULL) goto error;
     VP_diff = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
-    if(VP_diff == NULL) goto error;
+    if(VP_diff== NULL) goto error;
     HQ_diff = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(HQ_diff == NULL) goto error;
     rgb0 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
@@ -794,7 +795,6 @@ static int process_rcd_cl(
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi_cl", piece->pipe, self, roi_in, roi_out, "\n");
       // scale aux buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
-      if(err != CL_SUCCESS) goto error;
     }
   }
   else
@@ -808,7 +808,6 @@ static int process_rcd_cl(
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, width, height,
       CLARG(dev_pix), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
       CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
-    if(err != CL_SUCCESS) goto error;
   }
 
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
@@ -816,12 +815,7 @@ static int process_rcd_cl(
 
   // color smoothing
   if((data->color_smoothing) && smooth)
-  {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
-      goto error;
-  }
-
-  return TRUE;
+    err = color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
 
 error:
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
@@ -835,9 +829,10 @@ error:
   dt_opencl_release_mem_object(PQ_dir);
   dt_opencl_release_mem_object(VP_diff);
   dt_opencl_release_mem_object(HQ_diff);
-  dev_aux = dev_green_eq = dev_tmp = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] rcd couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] rcd problem '%s'\n", cl_errstr(err));
+  return err;
 }
 
 #endif

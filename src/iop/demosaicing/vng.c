@@ -668,41 +668,6 @@ static int process_vng_cl(
     }
   }
 
-  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
-  dev_aux = NULL;
-
-  dt_opencl_release_mem_object(dev_tmp);
-  dev_tmp = NULL;
-
-  dt_opencl_release_mem_object(dev_xtrans);
-  dev_xtrans = NULL;
-
-  dt_opencl_release_mem_object(dev_lookup);
-  dev_lookup = NULL;
-
-  free(lookup);
-
-  dt_opencl_release_mem_object(dev_code);
-  dev_code = NULL;
-
-  dt_opencl_release_mem_object(dev_ips);
-  dev_ips = NULL;
-
-  dt_opencl_release_mem_object(dev_green_eq);
-  dev_green_eq = NULL;
-
-  free(ips);
-  ips = NULL;
-
-  // color smoothing
-  if((data->color_smoothing) && smooth)
-  {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
-      goto error;
-  }
-
-  return TRUE;
-
 error:
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_tmp);
@@ -713,8 +678,12 @@ error:
   dt_opencl_release_mem_object(dev_ips);
   dt_opencl_release_mem_object(dev_green_eq);
   free(ips);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  if(data->color_smoothing && smooth)
+    err =color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] vng problem '%s'\n", cl_errstr(err));
+  return err;
 }
 
 #endif
