@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-02 18:51+0200\n"
-"PO-Revision-Date: 2023-09-02 21:12+0300\n"
+"POT-Creation-Date: 2023-09-04 09:52+0200\n"
+"PO-Revision-Date: 2023-09-04 19:43+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -878,7 +878,7 @@ msgstr "This setting has been modified"
 #: ../build/bin/preferences_gen.h:7222 ../build/bin/preferences_gen.h:7599
 #: ../build/bin/preferences_gen.h:8423 ../src/gui/accelerators.c:2890
 #: ../src/gui/gtk.c:2690 ../src/gui/preferences.c:421
-#: ../src/gui/preferences.c:876 ../src/libs/modulegroups.c:3889
+#: ../src/gui/preferences.c:876 ../src/libs/modulegroups.c:3891
 msgid "?"
 msgstr "?"
 
@@ -1614,10 +1614,10 @@ msgstr "Use all device memory"
 #: ../build/bin/preferences_gen.h:6341
 msgid ""
 "if enabled darktable will use all device memory except a safety margin "
-"(headroom, default is 600Mb)"
+"(headroom, default is 600MB)"
 msgstr ""
 "If enabled Darktable will use all device memory except a safety margin "
-"(headroom, default is 600Mb)"
+"(headroom, default is 600MB)"
 
 #: ../build/bin/preferences_gen.h:6357
 msgid "OpenCL drivers"
@@ -1634,11 +1634,11 @@ msgstr ""
 "Intel(R) OpenCL HD Graphics and Intel(R) OpenCL Graphics (vendor provided)"
 
 #: ../build/bin/preferences_gen.h:6419
-msgid "Nvidia Cuda"
+msgid "Nvidia CUDA"
 msgstr "Nvidia CUDA"
 
 #: ../build/bin/preferences_gen.h:6433
-msgid "Nvidia cuda based OpenCL (vendor provided)"
+msgid "Nvidia CUDA based OpenCL (vendor provided)"
 msgstr "Nvidia CUDA based OpenCL (vendor provided)"
 
 #: ../build/bin/preferences_gen.h:6461
@@ -1655,7 +1655,7 @@ msgstr "RustiCL"
 
 #: ../build/bin/preferences_gen.h:6517
 msgid ""
-"RustiCL Mesa OpenCL, still unstable. If you want to use this, you should "
+"RustiCL Mesa OpenCL, still unstable. if you want to use this, you should "
 "disable the vendor driver"
 msgstr ""
 "RustiCL Mesa OpenCL, still unstable. If you want to use this, you should "
@@ -3235,26 +3235,26 @@ msgstr "Gamut clipping"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
-#: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1697
+#: ../src/common/colorspaces.c:1410 ../src/common/colorspaces.c:1700
 #: ../src/libs/print_settings.c:1356
 msgid "sRGB"
 msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
-#: ../src/common/colorspaces.c:1418 ../src/common/colorspaces.c:1699
+#: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1702
 #: ../src/libs/print_settings.c:1363
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:306
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
-#: ../src/common/colorspaces.c:1425 ../src/common/colorspaces.c:1701
+#: ../src/common/colorspaces.c:1428 ../src/common/colorspaces.c:1704
 msgid "linear Rec709 RGB"
 msgstr "Linear Rec709 RGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:307
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:206
-#: ../src/common/colorspaces.c:1439 ../src/common/colorspaces.c:1703
+#: ../src/common/colorspaces.c:1442 ../src/common/colorspaces.c:1706
 msgid "linear Rec2020 RGB"
 msgstr "Linear Rec2020 RGB"
 
@@ -4297,7 +4297,7 @@ msgid "only vignetting"
 msgstr "Only vignetting"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:542
-#: ../src/libs/modulegroups.c:2300
+#: ../src/libs/modulegroups.c:2302
 msgid "correct"
 msgstr "Correct"
 
@@ -4407,7 +4407,7 @@ msgid "gamma Rec709 RGB"
 msgstr "Gamma Rec709 RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:207
-#: ../src/common/colorspaces.c:1483 ../src/common/colorspaces.c:1737
+#: ../src/common/colorspaces.c:1486 ../src/common/colorspaces.c:1740
 msgid "linear ProPhoto RGB"
 msgstr "Linear ProPhoto RGB"
 
@@ -4463,6 +4463,48 @@ msgstr "Black and white film"
 #: ../src/iop/negadoctor.c:416
 msgid "color film"
 msgstr "Color film"
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:75
+#: ../build/lib/darktable/plugins/introspection_primaries.c:160
+#: ../src/iop/primaries.c:393
+msgid "tint hue"
+msgstr "Tint hue"
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:81
+#: ../build/lib/darktable/plugins/introspection_primaries.c:164
+#: ../src/iop/primaries.c:400
+msgid "tint purity"
+msgstr "Tint purity"
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:87
+#: ../build/lib/darktable/plugins/introspection_primaries.c:168
+msgid "red hue"
+msgstr "Red hue"
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:93
+#: ../build/lib/darktable/plugins/introspection_primaries.c:172
+msgid "red purity"
+msgstr "Red purity"
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:99
+#: ../build/lib/darktable/plugins/introspection_primaries.c:176
+msgid "green hue"
+msgstr "Green hue"
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:105
+#: ../build/lib/darktable/plugins/introspection_primaries.c:180
+msgid "green purity"
+msgstr "Green purity"
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:111
+#: ../build/lib/darktable/plugins/introspection_primaries.c:184
+msgid "blue hue"
+msgstr "Blue hue"
+
+#: ../build/lib/darktable/plugins/introspection_primaries.c:117
+#: ../build/lib/darktable/plugins/introspection_primaries.c:188
+msgid "blue purity"
+msgstr "Blue purity"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:85
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:158
@@ -4523,7 +4565,7 @@ msgstr "Black level"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:106
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:179
-#: ../src/iop/rawprepare.c:963
+#: ../src/iop/rawprepare.c:956
 msgid "white point"
 msgstr "White point"
 
@@ -4597,7 +4639,7 @@ msgstr "Erase"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
 #: ../src/gui/presets.c:59 ../src/iop/watermark.c:1346
 #: ../src/libs/colorpicker.c:320 ../src/libs/image.c:612
-#: ../src/libs/modulegroups.c:2299
+#: ../src/libs/modulegroups.c:2301
 msgid "color"
 msgstr "Color"
 
@@ -4920,23 +4962,23 @@ msgstr "Marker width"
 msgid "marker height"
 msgstr "Marker height"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:6
+#: ../build/bin/tools/darktable_authors.h:6
 msgid "developers"
 msgstr "Developers"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:11
+#: ../build/bin/tools/darktable_authors.h:11
 msgid "translators"
 msgstr "Translators"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:16
+#: ../build/bin/tools/darktable_authors.h:16
 msgid "contributors"
 msgstr "Contributors"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:21
+#: ../build/bin/tools/darktable_authors.h:21
 msgid "rawspeed contributors"
 msgstr "Rawspeed contributors"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:26
+#: ../build/bin/tools/darktable_authors.h:26
 msgid "integration contributors"
 msgstr "Integration contributors"
 
@@ -5772,126 +5814,126 @@ msgstr "All colorlabels removed"
 msgid "clear"
 msgstr "Clear"
 
-#: ../src/common/colorspaces.c:1374 ../src/common/colorspaces.c:1731
+#: ../src/common/colorspaces.c:1377 ../src/common/colorspaces.c:1734
 msgid "work profile"
 msgstr "Work profile"
 
-#: ../src/common/colorspaces.c:1379 ../src/common/colorspaces.c:1727
+#: ../src/common/colorspaces.c:1382 ../src/common/colorspaces.c:1730
 #: ../src/iop/colorout.c:900
 msgid "export profile"
 msgstr "Export profile"
 
-#: ../src/common/colorspaces.c:1384 ../src/common/colorspaces.c:1729
+#: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1732
 #: ../src/views/darkroom.c:2495
 msgid "softproof profile"
 msgstr "Softproof profile"
 
-#: ../src/common/colorspaces.c:1394 ../src/common/colorspaces.c:1711
+#: ../src/common/colorspaces.c:1397 ../src/common/colorspaces.c:1714
 msgid "system display profile"
 msgstr "System display profile"
 
-#: ../src/common/colorspaces.c:1399 ../src/common/colorspaces.c:1733
+#: ../src/common/colorspaces.c:1402 ../src/common/colorspaces.c:1736
 msgid "system display profile (second window)"
 msgstr "System display profile (second window)"
 
-#: ../src/common/colorspaces.c:1412
+#: ../src/common/colorspaces.c:1415
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-safe)"
 
-#: ../src/common/colorspaces.c:1432 ../src/common/colorspaces.c:1735
+#: ../src/common/colorspaces.c:1435 ../src/common/colorspaces.c:1738
 msgid "Rec709 RGB"
 msgstr "Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1447
+#: ../src/common/colorspaces.c:1450
 msgid "PQ Rec2020 RGB"
 msgstr "PQ Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1455
+#: ../src/common/colorspaces.c:1458
 msgid "HLG Rec2020 RGB"
 msgstr "HLG Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1462
+#: ../src/common/colorspaces.c:1465
 msgid "PQ P3 RGB"
 msgstr "PQ P3 RGB"
 
-#: ../src/common/colorspaces.c:1468
+#: ../src/common/colorspaces.c:1471
 msgid "HLG P3 RGB"
 msgstr "HLG P3 RGB"
 
-#: ../src/common/colorspaces.c:1475
+#: ../src/common/colorspaces.c:1478
 msgid "Display P3 RGB"
 msgstr "Display P3 RGB"
 
-#: ../src/common/colorspaces.c:1490 ../src/common/colorspaces.c:1705
+#: ../src/common/colorspaces.c:1493 ../src/common/colorspaces.c:1708
 msgid "linear XYZ"
 msgstr "Linear XYZ"
 
-#: ../src/common/colorspaces.c:1497 ../src/common/colorspaces.c:1707
+#: ../src/common/colorspaces.c:1500 ../src/common/colorspaces.c:1710
 #: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2008
 #: ../src/libs/colorpicker.c:51 ../src/libs/colorpicker.c:293
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1505 ../src/common/colorspaces.c:1709
+#: ../src/common/colorspaces.c:1508 ../src/common/colorspaces.c:1712
 msgid "linear infrared BGR"
 msgstr "Linear infrared BGR"
 
-#: ../src/common/colorspaces.c:1510
+#: ../src/common/colorspaces.c:1513
 msgid "BRG (for testing)"
 msgstr "BRG (for testing)"
 
-#: ../src/common/colorspaces.c:1616
+#: ../src/common/colorspaces.c:1619
 #, c-format
 msgid ""
 "profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
 msgstr ""
 "Profile `%s' not usable as histogram profile. It has been replaced by sRGB!"
 
-#: ../src/common/colorspaces.c:1713
+#: ../src/common/colorspaces.c:1716
 msgid "embedded ICC profile"
 msgstr "Embedded ICC profile"
 
-#: ../src/common/colorspaces.c:1715
+#: ../src/common/colorspaces.c:1718
 msgid "embedded matrix"
 msgstr "Embedded matrix"
 
-#: ../src/common/colorspaces.c:1717
+#: ../src/common/colorspaces.c:1720
 msgid "standard color matrix"
 msgstr "Standard color matrix"
 
-#: ../src/common/colorspaces.c:1719
+#: ../src/common/colorspaces.c:1722
 msgid "enhanced color matrix"
 msgstr "Enhanced color matrix"
 
-#: ../src/common/colorspaces.c:1721
+#: ../src/common/colorspaces.c:1724
 msgid "vendor color matrix"
 msgstr "Vendor color matrix"
 
-#: ../src/common/colorspaces.c:1723
+#: ../src/common/colorspaces.c:1726
 msgid "alternate color matrix"
 msgstr "Alternate color matrix"
 
-#: ../src/common/colorspaces.c:1725
+#: ../src/common/colorspaces.c:1728
 msgid "BRG (experimental)"
 msgstr "BRG (experimental)"
 
-#: ../src/common/colorspaces.c:1739
+#: ../src/common/colorspaces.c:1742
 msgid "PQ Rec2020"
 msgstr "PQ Rec2020"
 
-#: ../src/common/colorspaces.c:1741
+#: ../src/common/colorspaces.c:1744
 msgid "HLG Rec2020"
 msgstr "HLG Rec2020"
 
-#: ../src/common/colorspaces.c:1743
+#: ../src/common/colorspaces.c:1746
 msgid "PQ P3"
 msgstr "PQ P3"
 
-#: ../src/common/colorspaces.c:1745
+#: ../src/common/colorspaces.c:1748
 msgid "HLG P3"
 msgstr "HLG P3"
 
-#: ../src/common/colorspaces.c:1747
+#: ../src/common/colorspaces.c:1750
 msgid "Display P3"
 msgstr "Display P3"
 
@@ -6119,7 +6161,7 @@ msgstr "Error starting Darktable"
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1702
 #: ../src/libs/metadata.c:467 ../src/libs/metadata.c:737
 #: ../src/libs/metadata_view.c:1205 ../src/libs/recentcollect.c:227
-#: ../src/libs/modulegroups.c:3467 ../src/libs/styles.c:438
+#: ../src/libs/modulegroups.c:3469 ../src/libs/styles.c:438
 #: ../src/libs/styles.c:621 ../src/libs/tagging.c:1483
 #: ../src/libs/tagging.c:1571 ../src/libs/tagging.c:1652
 #: ../src/libs/tagging.c:1782 ../src/libs/tagging.c:2056
@@ -6577,7 +6619,7 @@ msgstr "V3.0 RAW"
 msgid "v3.0 JPEG"
 msgstr "V3.0 JPEG"
 
-#: ../src/common/iop_profile.c:1205
+#: ../src/common/iop_profile.c:1207
 #, c-format
 msgid ""
 "darktable loads %s from\n"
@@ -8577,7 +8619,7 @@ msgid "delete"
 msgstr "Delete"
 
 #: ../src/develop/imageop.c:1063 ../src/develop/imageop.c:3725
-#: ../src/libs/modulegroups.c:3467 ../src/libs/modulegroups.c:3818
+#: ../src/libs/modulegroups.c:3469 ../src/libs/modulegroups.c:3820
 msgid "rename"
 msgstr "Rename"
 
@@ -8670,14 +8712,14 @@ msgstr ""
 msgid "show"
 msgstr "Show"
 
-#: ../src/develop/imageop.c:3723 ../src/libs/modulegroups.c:3313
-#: ../src/libs/modulegroups.c:3439 ../src/libs/modulegroups.c:3820
+#: ../src/develop/imageop.c:3723 ../src/libs/modulegroups.c:3315
+#: ../src/libs/modulegroups.c:3441 ../src/libs/modulegroups.c:3822
 #: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr "New"
 
 #: ../src/develop/imageop.c:3726 ../src/libs/duplicate.c:405
-#: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3816
+#: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3818
 msgid "duplicate"
 msgstr "Duplicate"
 
@@ -8697,7 +8739,7 @@ msgstr "Instance"
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3104 ../src/gui/gtk.c:3151
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
 #: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1630
-#: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3885
+#: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3887
 msgid "reset"
 msgstr "Reset"
 
@@ -9479,6 +9521,27 @@ msgstr "Error: ensure that min_mip <= max_mip\n"
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr "Creating complete Lighttable thumbnail cache\n"
+
+#: ../src/gui/about.c:34
+#, c-format
+msgid "copyright (c) the authors 2009-%s"
+msgstr "Copyright (c) the authors 2009-%s"
+
+#: ../src/gui/about.c:38
+msgid "organize and develop images from digital cameras"
+msgstr "Organize and develop images from digital cameras"
+
+#: ../src/gui/about.c:50
+msgid "all those of you that made previous releases possible"
+msgstr "All those of you that made previous releases possible"
+
+#: ../src/gui/about.c:55
+msgid "and..."
+msgstr "And..."
+
+#: ../src/gui/about.c:57
+msgid "translator-credits"
+msgstr "Victor Forsiuk <vvforce@gmail.com>"
 
 #: ../src/gui/accelerators.c:72
 msgid "in active view"
@@ -10305,6 +10368,12 @@ msgstr "Print"
 msgctxt "menu"
 msgid "tethering"
 msgstr "Tethering"
+
+#. Help menu
+#: ../src/gui/gtk.c:1139
+msgctxt "menu"
+msgid "Help"
+msgstr "Help"
 
 #: ../src/gui/gtk.c:1143
 msgctxt "menu"
@@ -11154,12 +11223,12 @@ msgid "preset `%s' is write-protected, can't delete!"
 msgstr "Preset `%s' is write-protected, can't delete!"
 
 #: ../src/gui/presets.c:157 ../src/gui/presets.c:461 ../src/libs/lib.c:238
-#: ../src/libs/modulegroups.c:3704
+#: ../src/libs/modulegroups.c:3706
 msgid "delete preset?"
 msgstr "Delete preset?"
 
 #: ../src/gui/presets.c:158 ../src/gui/presets.c:462 ../src/libs/lib.c:239
-#: ../src/libs/modulegroups.c:3705
+#: ../src/libs/modulegroups.c:3707
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "Do you really want to delete the preset `%s'?"
@@ -11369,8 +11438,8 @@ msgstr "Display-referred default"
 msgid "scene-referred default"
 msgstr "Scene-referred default"
 
-#: ../src/gui/presets.c:1393 ../src/libs/modulegroups.c:3784
-#: ../src/libs/modulegroups.c:3793
+#: ../src/gui/presets.c:1393 ../src/libs/modulegroups.c:3786
+#: ../src/libs/modulegroups.c:3795
 msgid "manage module layouts"
 msgstr "Manage module layouts"
 
@@ -12305,7 +12374,7 @@ msgstr "Rotate or distort perspective"
 #: ../src/iop/channelmixerrgb.c:232 ../src/iop/clipping.c:364
 #: ../src/iop/colorbalance.c:163 ../src/iop/colorbalancergb.c:185
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:77
-#: ../src/iop/crop.c:135 ../src/iop/lut3d.c:142
+#: ../src/iop/crop.c:135 ../src/iop/lut3d.c:142 ../src/iop/primaries.c:80
 msgid "corrective or creative"
 msgstr "Corrective or creative"
 
@@ -12320,11 +12389,11 @@ msgstr "Corrective or creative"
 #: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:132 ../src/iop/exposure.c:134
 #: ../src/iop/flip.c:111 ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:259 ../src/iop/lens.cc:261
-#: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/retouch.c:210
-#: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:102
-#: ../src/iop/splittoning.c:106 ../src/iop/splittoning.c:108
-#: ../src/iop/spots.c:70 ../src/iop/spots.c:72 ../src/iop/toneequal.c:325
-#: ../src/iop/velvia.c:99 ../src/iop/velvia.c:101
+#: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/primaries.c:81
+#: ../src/iop/primaries.c:83 ../src/iop/retouch.c:210 ../src/iop/retouch.c:212
+#: ../src/iop/sigmoid.c:102 ../src/iop/splittoning.c:106
+#: ../src/iop/splittoning.c:108 ../src/iop/spots.c:70 ../src/iop/spots.c:72
+#: ../src/iop/toneequal.c:325 ../src/iop/velvia.c:99 ../src/iop/velvia.c:101
 msgid "linear, RGB, scene-referred"
 msgstr "Linear, RGB, scene-referred"
 
@@ -13081,8 +13150,8 @@ msgstr "Apply edge-aware surface blur to denoise or smoothen textures"
 
 #: ../src/iop/bilateral.cc:104 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:781
-#: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:133 ../src/iop/soften.c:105
-#: ../src/iop/splittoning.c:107 ../src/iop/velvia.c:100
+#: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:133 ../src/iop/primaries.c:82
+#: ../src/iop/soften.c:105 ../src/iop/splittoning.c:107 ../src/iop/velvia.c:100
 msgid "linear, RGB"
 msgstr "Linear, RGB"
 
@@ -15491,8 +15560,8 @@ msgstr "If and how to give precedence to specific replacement colors"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "The hue tone which should be given precedence over other hue tones"
 
-#: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1324
-#: ../src/iop/highlights.c:1218
+#: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1318
+#: ../src/iop/highlights.c:1216
 msgid "not applicable"
 msgstr "Not applicable"
 
@@ -15701,12 +15770,12 @@ msgstr "Demosaic"
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr "Reconstruct full RGB pixels from a sensor color filter array reading"
 
-#: ../src/iop/demosaic.c:1133
+#: ../src/iop/demosaic.c:1127
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' color matrix not found for 4bayer image!"
 
-#: ../src/iop/demosaic.c:1285
+#: ../src/iop/demosaic.c:1279
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -15716,23 +15785,23 @@ msgstr ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
 "LMMSE is suited best for high ISO images.\n"
+"Dual demosaicers double processing time."
+
+#: ../src/iop/demosaic.c:1283
+msgid ""
+"X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
+"chroma are slow.\n"
+"dual demosaicers double processing time."
+msgstr ""
+"X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
+"chroma are slow.\n"
 "Dual demosaicers double processing time."
 
 #: ../src/iop/demosaic.c:1289
-msgid ""
-"X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
-"chroma are slow.\n"
-"dual demosaicers double processing time."
-msgstr ""
-"X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
-"chroma are slow.\n"
-"Dual demosaicers double processing time."
-
-#: ../src/iop/demosaic.c:1295
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Quad Bayer sensor demosaicing methods."
 
-#: ../src/iop/demosaic.c:1299
+#: ../src/iop/demosaic.c:1293
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -15742,7 +15811,7 @@ msgstr ""
 "Set to 0.0 to switch off\n"
 "Set to 1.0 to ignore edges"
 
-#: ../src/iop/demosaic.c:1304
+#: ../src/iop/demosaic.c:1298
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -15754,7 +15823,7 @@ msgstr ""
 "Set to 1.0 for flat content\n"
 "Toggle to visualize the mask"
 
-#: ../src/iop/demosaic.c:1312
+#: ../src/iop/demosaic.c:1306
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -15762,15 +15831,15 @@ msgstr ""
 "LMMSE refinement steps. The median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1309
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "How many color smoothing median steps after demosaicing"
 
-#: ../src/iop/demosaic.c:1318
+#: ../src/iop/demosaic.c:1312
 msgid "green channels matching method"
 msgstr "Green channels matching method"
 
-#: ../src/iop/demosaic.c:1325
+#: ../src/iop/demosaic.c:1319
 msgid "demosaicing is only used for color raw images"
 msgstr "Demosaicing is only used for color raw images"
 
@@ -17413,7 +17482,7 @@ msgstr "Avoid magenta highlights and try to recover highlights colors"
 msgid "reconstruction, raw"
 msgstr "Reconstruction, raw"
 
-#: ../src/iop/highlights.c:987
+#: ../src/iop/highlights.c:985
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -17421,11 +17490,11 @@ msgstr ""
 "Highlights: mode not available for this type of image. Falling back to "
 "inpaint opposed."
 
-#: ../src/iop/highlights.c:1151
+#: ../src/iop/highlights.c:1149
 msgid "highlight reconstruction method"
 msgstr "Highlight reconstruction method"
 
-#: ../src/iop/highlights.c:1156
+#: ../src/iop/highlights.c:1154
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -17441,7 +17510,7 @@ msgstr ""
 "'segmentation' modes,\n"
 "especially if camera white point is incorrect."
 
-#: ../src/iop/highlights.c:1167
+#: ../src/iop/highlights.c:1165
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -17449,7 +17518,7 @@ msgstr ""
 "Combine closely related clipped segments by morphological operations.\n"
 "The mask button shows the exact positions of resulting segment borders."
 
-#: ../src/iop/highlights.c:1175
+#: ../src/iop/highlights.c:1173
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -17461,7 +17530,7 @@ msgstr ""
 "opposed means inpainting.\n"
 "The mask button shows segments that are considered to have a good candidate."
 
-#: ../src/iop/highlights.c:1186
+#: ../src/iop/highlights.c:1184
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -17481,7 +17550,7 @@ msgstr ""
 "The flat modes ignore narrow unclipped structures (like powerlines) to keep "
 "highlights rebuilt and avoid gradients."
 
-#: ../src/iop/highlights.c:1192
+#: ../src/iop/highlights.c:1190
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -17491,7 +17560,7 @@ msgstr ""
 "The mask buttons shows the effect that is added to already reconstructed "
 "data."
 
-#: ../src/iop/highlights.c:1202
+#: ../src/iop/highlights.c:1200
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17499,7 +17568,7 @@ msgstr ""
 "Add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. Useful at high ISO."
 
-#: ../src/iop/highlights.c:1206
+#: ../src/iop/highlights.c:1204
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17507,7 +17576,7 @@ msgstr ""
 "Increase if magenta highlights don't get fully corrected\n"
 "Each new iteration brings a performance penalty."
 
-#: ../src/iop/highlights.c:1211
+#: ../src/iop/highlights.c:1209
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17515,7 +17584,7 @@ msgstr ""
 "Increase if magenta highlights don't get fully corrected.\n"
 "This may produce non-smooth boundaries between valid and clipped regions."
 
-#: ../src/iop/highlights.c:1215
+#: ../src/iop/highlights.c:1213
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17523,7 +17592,7 @@ msgstr ""
 "Increase to correct larger clipped areas.\n"
 "Large values bring huge performance penalties"
 
-#: ../src/iop/highlights.c:1219
+#: ../src/iop/highlights.c:1217
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "This module only works with non-monochrome RAW and sRAW"
 
@@ -18576,6 +18645,38 @@ msgstr "Module overexposed failed in buffer allocation"
 msgid "module overexposed failed in color conversion"
 msgstr "Module overexposed failed in color conversion"
 
+#: ../src/iop/primaries.c:74
+msgid "rgb primaries"
+msgstr "RGB primaries"
+
+#: ../src/iop/primaries.c:79
+msgid "adjustment of the RGB color primaries for color grading"
+msgstr "Adjustment of the RGB color primaries for color grading"
+
+#: ../src/iop/primaries.c:382
+msgid "red primary hue"
+msgstr "Red primary hue"
+
+#: ../src/iop/primaries.c:383
+msgid "red primary purity"
+msgstr "Red primary purity"
+
+#: ../src/iop/primaries.c:384
+msgid "green primary hue"
+msgstr "Green primary hue"
+
+#: ../src/iop/primaries.c:385
+msgid "green primary purity"
+msgstr "Green primary purity"
+
+#: ../src/iop/primaries.c:386
+msgid "blue primary hue"
+msgstr "Blue primary hue"
+
+#: ../src/iop/primaries.c:387
+msgid "blue primary purity"
+msgstr "Blue primary purity"
+
 #: ../src/iop/profile_gamma.c:96
 msgid "unbreak input profile"
 msgstr "Unbreak input profile"
@@ -18694,58 +18795,58 @@ msgstr ""
 msgid "passthrough"
 msgstr "Passthrough"
 
-#: ../src/iop/rawprepare.c:672
+#: ../src/iop/rawprepare.c:665
 msgid "invalid crop parameters"
 msgstr "Invalid crop parameters"
 
-#: ../src/iop/rawprepare.c:673
+#: ../src/iop/rawprepare.c:666
 msgid ""
 "please reset to defaults, update your preset or set to something correct"
 msgstr ""
 "Please reset to defaults, update your preset or set to something correct"
 
-#: ../src/iop/rawprepare.c:939
+#: ../src/iop/rawprepare.c:932
 msgid "black level 0"
 msgstr "Black level 0"
 
-#: ../src/iop/rawprepare.c:940
+#: ../src/iop/rawprepare.c:933
 msgid "black level 1"
 msgstr "Black level 1"
 
-#: ../src/iop/rawprepare.c:941
+#: ../src/iop/rawprepare.c:934
 msgid "black level 2"
 msgstr "Black level 2"
 
-#: ../src/iop/rawprepare.c:942
+#: ../src/iop/rawprepare.c:935
 msgid "black level 3"
 msgstr "Black level 3"
 
-#: ../src/iop/rawprepare.c:969
+#: ../src/iop/rawprepare.c:962
 msgid "raw flat field correction to compensate for lens shading"
 msgstr "Raw flat field correction to compensate for lens shading"
 
-#: ../src/iop/rawprepare.c:974
+#: ../src/iop/rawprepare.c:967
 msgctxt "section"
 msgid "crop"
 msgstr "Crop"
 
-#: ../src/iop/rawprepare.c:977
+#: ../src/iop/rawprepare.c:970
 msgid "crop left border"
 msgstr "Crop left border"
 
-#: ../src/iop/rawprepare.c:981
+#: ../src/iop/rawprepare.c:974
 msgid "crop top border"
 msgstr "Crop top border"
 
-#: ../src/iop/rawprepare.c:985
+#: ../src/iop/rawprepare.c:978
 msgid "crop right border"
 msgstr "Crop right border"
 
-#: ../src/iop/rawprepare.c:989
+#: ../src/iop/rawprepare.c:982
 msgid "crop bottom border"
 msgstr "Crop bottom border"
 
-#: ../src/iop/rawprepare.c:998
+#: ../src/iop/rawprepare.c:991
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -21966,7 +22067,7 @@ msgstr "Physically delete from disk (using trash if possible)"
 msgid "physically delete from disk immediately"
 msgstr "Physically delete from disk immediately"
 
-#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3814
+#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3816
 #: ../src/libs/styles.c:876
 msgid "remove"
 msgstr "Remove"
@@ -22974,7 +23075,7 @@ msgstr " but not "
 msgid "recent collections settings"
 msgstr "Recent collections settings"
 
-#: ../src/libs/modulegroups.c:42 ../src/libs/modulegroups.c:1751
+#: ../src/libs/modulegroups.c:42 ../src/libs/modulegroups.c:1753
 msgid "workflow: scene-referred"
 msgstr "Workflow: scene-referred"
 
@@ -22993,7 +23094,7 @@ msgstr "Modulegroups"
 #. FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
 #. respond later to image changed signal
 #: ../src/libs/modulegroups.c:307 ../src/libs/modulegroups.c:319
-#: ../src/libs/modulegroups.c:2409 ../src/libs/modulegroups.c:2411
+#: ../src/libs/modulegroups.c:2411 ../src/libs/modulegroups.c:2413
 msgid "on-off"
 msgstr "On-off"
 
@@ -23014,9 +23115,9 @@ msgstr "(some features may only be available in the full module interface)"
 msgid "go to the full version of the %s module"
 msgstr "Go to the full version of the %s module"
 
-#: ../src/libs/modulegroups.c:1538 ../src/libs/modulegroups.c:1623
-#: ../src/libs/modulegroups.c:1659 ../src/libs/modulegroups.c:1709
-#: ../src/libs/modulegroups.c:1799
+#: ../src/libs/modulegroups.c:1538 ../src/libs/modulegroups.c:1624
+#: ../src/libs/modulegroups.c:1660 ../src/libs/modulegroups.c:1710
+#: ../src/libs/modulegroups.c:1801
 msgctxt "modulegroup"
 msgid "base"
 msgstr "Base"
@@ -23026,136 +23127,136 @@ msgctxt "modulegroup"
 msgid "tone"
 msgstr "Tone"
 
-#: ../src/libs/modulegroups.c:1566 ../src/libs/modulegroups.c:1673
-#: ../src/libs/modulegroups.c:1723
+#: ../src/libs/modulegroups.c:1566 ../src/libs/modulegroups.c:1674
+#: ../src/libs/modulegroups.c:1724
 msgctxt "modulegroup"
 msgid "color"
 msgstr "Color"
 
-#: ../src/libs/modulegroups.c:1581 ../src/libs/modulegroups.c:1681
-#: ../src/libs/modulegroups.c:1728
+#: ../src/libs/modulegroups.c:1582 ../src/libs/modulegroups.c:1682
+#: ../src/libs/modulegroups.c:1730
 msgctxt "modulegroup"
 msgid "correct"
 msgstr "Correct"
 
-#: ../src/libs/modulegroups.c:1599 ../src/libs/modulegroups.c:1693
-#: ../src/libs/modulegroups.c:1740 ../src/libs/modulegroups.c:2303
+#: ../src/libs/modulegroups.c:1600 ../src/libs/modulegroups.c:1694
+#: ../src/libs/modulegroups.c:1742 ../src/libs/modulegroups.c:2305
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "Effect"
 
-#: ../src/libs/modulegroups.c:1617
+#: ../src/libs/modulegroups.c:1618
 msgid "modules: all"
 msgstr "Modules: all"
 
-#: ../src/libs/modulegroups.c:1638
+#: ../src/libs/modulegroups.c:1639
 msgctxt "modulegroup"
 msgid "grading"
 msgstr "Grading"
 
-#: ../src/libs/modulegroups.c:1646 ../src/libs/modulegroups.c:2307
+#: ../src/libs/modulegroups.c:1647 ../src/libs/modulegroups.c:2309
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "Effects"
 
-#: ../src/libs/modulegroups.c:1654
+#: ../src/libs/modulegroups.c:1655
 msgid "workflow: beginner"
 msgstr "Workflow: beginner"
 
-#: ../src/libs/modulegroups.c:1703
+#: ../src/libs/modulegroups.c:1704
 msgid "workflow: display-referred"
 msgstr "Workflow: display-referred"
 
-#: ../src/libs/modulegroups.c:1755
+#: ../src/libs/modulegroups.c:1757
 msgid "search only"
 msgstr "Search only"
 
-#: ../src/libs/modulegroups.c:1761 ../src/libs/modulegroups.c:2072
-#: ../src/libs/modulegroups.c:2581
+#: ../src/libs/modulegroups.c:1763 ../src/libs/modulegroups.c:2074
+#: ../src/libs/modulegroups.c:2583
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "Deprecated"
 
-#: ../src/libs/modulegroups.c:1774
+#: ../src/libs/modulegroups.c:1776
 msgid "previous config"
 msgstr "Previous config"
 
-#: ../src/libs/modulegroups.c:1775
+#: ../src/libs/modulegroups.c:1777
 msgid "previous layout"
 msgstr "Previous layout"
 
-#: ../src/libs/modulegroups.c:1779
+#: ../src/libs/modulegroups.c:1781
 msgid "previous config with new layout"
 msgstr "Previous config with new layout"
 
-#: ../src/libs/modulegroups.c:1939 ../src/libs/modulegroups.c:2454
-#: ../src/libs/modulegroups.c:2466
+#: ../src/libs/modulegroups.c:1941 ../src/libs/modulegroups.c:2456
+#: ../src/libs/modulegroups.c:2468
 msgid "remove this widget"
 msgstr "Remove this widget"
 
-#: ../src/libs/modulegroups.c:2089 ../src/libs/modulegroups.c:2329
+#: ../src/libs/modulegroups.c:2091 ../src/libs/modulegroups.c:2331
 msgid "remove this module"
 msgstr "Remove this module"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2298
+#: ../src/libs/modulegroups.c:2300
 msgid "base"
 msgstr "Base"
 
-#: ../src/libs/modulegroups.c:2301
+#: ../src/libs/modulegroups.c:2303
 msgid "tone"
 msgstr "Tone"
 
-#: ../src/libs/modulegroups.c:2304
+#: ../src/libs/modulegroups.c:2306
 msgid "technical"
 msgstr "Technical"
 
-#: ../src/libs/modulegroups.c:2305
+#: ../src/libs/modulegroups.c:2307
 msgid "grading"
 msgstr "Grading"
 
-#: ../src/libs/modulegroups.c:2311 ../src/libs/modulegroups.c:2319
+#: ../src/libs/modulegroups.c:2313 ../src/libs/modulegroups.c:2321
 msgid "add this module"
 msgstr "Add this module"
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2341 ../src/libs/modulegroups.c:2541
+#: ../src/libs/modulegroups.c:2343 ../src/libs/modulegroups.c:2543
 msgid "all available modules"
 msgstr "All available modules"
 
-#: ../src/libs/modulegroups.c:2349
+#: ../src/libs/modulegroups.c:2351
 msgid "add module"
 msgstr "Add module"
 
-#: ../src/libs/modulegroups.c:2354
+#: ../src/libs/modulegroups.c:2356
 msgid "remove module"
 msgstr "Remove module"
 
-#: ../src/libs/modulegroups.c:2460
+#: ../src/libs/modulegroups.c:2462
 msgid "header needed for other widgets"
 msgstr "Header needed for other widgets"
 
-#: ../src/libs/modulegroups.c:2476 ../src/libs/modulegroups.c:2483
+#: ../src/libs/modulegroups.c:2478 ../src/libs/modulegroups.c:2485
 msgid "add this widget"
 msgstr "Add this widget"
 
-#: ../src/libs/modulegroups.c:2496
+#: ../src/libs/modulegroups.c:2498
 msgid "currently invisible"
 msgstr "Currently invisible"
 
-#: ../src/libs/modulegroups.c:2525
+#: ../src/libs/modulegroups.c:2527
 msgid "add widget"
 msgstr "Add widget"
 
-#: ../src/libs/modulegroups.c:2530
+#: ../src/libs/modulegroups.c:2532
 msgid "remove widget"
 msgstr "Remove widget"
 
-#: ../src/libs/modulegroups.c:2635
+#: ../src/libs/modulegroups.c:2637
 msgid "show all history modules"
 msgstr "Show all history modules"
 
-#: ../src/libs/modulegroups.c:2638 ../src/libs/modulegroups.c:3837
+#: ../src/libs/modulegroups.c:2640 ../src/libs/modulegroups.c:3839
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
@@ -23163,7 +23264,7 @@ msgstr ""
 "Show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 
-#: ../src/libs/modulegroups.c:2729 ../src/libs/modulegroups.c:2821
+#: ../src/libs/modulegroups.c:2731 ../src/libs/modulegroups.c:2823
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes that can't be corrected and alternative modules that correct them.\n"
@@ -23174,19 +23275,19 @@ msgstr ""
 "them.\n"
 "They will be removed for new edits in the next release."
 
-#: ../src/libs/modulegroups.c:2780 ../src/libs/modulegroups.c:2781
+#: ../src/libs/modulegroups.c:2782 ../src/libs/modulegroups.c:2783
 msgid "quick access panel"
 msgstr "Quick access panel"
 
-#: ../src/libs/modulegroups.c:2791
+#: ../src/libs/modulegroups.c:2793
 msgid "show only active modules"
 msgstr "Show only active modules"
 
-#: ../src/libs/modulegroups.c:2792
+#: ../src/libs/modulegroups.c:2794
 msgid "active modules"
 msgstr "Active modules"
 
-#: ../src/libs/modulegroups.c:2797
+#: ../src/libs/modulegroups.c:2799
 msgid ""
 "presets\n"
 "ctrl+click to manage"
@@ -23194,143 +23295,143 @@ msgstr ""
 "Presets\n"
 "Ctrl+click to manage"
 
-#: ../src/libs/modulegroups.c:2803
+#: ../src/libs/modulegroups.c:2805
 msgid "search modules"
 msgstr "Search modules"
 
-#: ../src/libs/modulegroups.c:2804
+#: ../src/libs/modulegroups.c:2806
 msgid "search modules by name or tag"
 msgstr "Search modules by name or tag"
 
-#: ../src/libs/modulegroups.c:2814
+#: ../src/libs/modulegroups.c:2816
 msgid "clear text"
 msgstr "Clear text"
 
-#: ../src/libs/modulegroups.c:3054
+#: ../src/libs/modulegroups.c:3056
 msgid "basic icon"
 msgstr "Basic icon"
 
-#: ../src/libs/modulegroups.c:3064
+#: ../src/libs/modulegroups.c:3066
 msgid "active icon"
 msgstr "Active icon"
 
-#: ../src/libs/modulegroups.c:3074
+#: ../src/libs/modulegroups.c:3076
 msgid "color icon"
 msgstr "Color icon"
 
-#: ../src/libs/modulegroups.c:3084
+#: ../src/libs/modulegroups.c:3086
 msgid "correct icon"
 msgstr "Correct icon"
 
-#: ../src/libs/modulegroups.c:3094
+#: ../src/libs/modulegroups.c:3096
 msgid "effect icon"
 msgstr "Effect icon"
 
-#: ../src/libs/modulegroups.c:3104
+#: ../src/libs/modulegroups.c:3106
 msgid "favorites icon"
 msgstr "Favorites icon"
 
-#: ../src/libs/modulegroups.c:3114
+#: ../src/libs/modulegroups.c:3116
 msgid "tone icon"
 msgstr "Tone icon"
 
-#: ../src/libs/modulegroups.c:3124
+#: ../src/libs/modulegroups.c:3126
 msgid "grading icon"
 msgstr "Grading icon"
 
-#: ../src/libs/modulegroups.c:3134
+#: ../src/libs/modulegroups.c:3136
 msgid "technical icon"
 msgstr "Technical icon"
 
-#: ../src/libs/modulegroups.c:3167
+#: ../src/libs/modulegroups.c:3169
 msgid "quick access panel widgets"
 msgstr "Quick access panel widgets"
 
-#: ../src/libs/modulegroups.c:3169
+#: ../src/libs/modulegroups.c:3171
 msgid "quick access"
 msgstr "Quick access"
 
-#: ../src/libs/modulegroups.c:3189
+#: ../src/libs/modulegroups.c:3191
 msgid "add widget to the quick access panel"
 msgstr "Add widget to the quick access panel"
 
-#: ../src/libs/modulegroups.c:3221
+#: ../src/libs/modulegroups.c:3223
 msgid "group icon"
 msgstr "Group icon"
 
-#: ../src/libs/modulegroups.c:3230
+#: ../src/libs/modulegroups.c:3232
 msgid "group name"
 msgstr "Group name"
 
-#: ../src/libs/modulegroups.c:3241
+#: ../src/libs/modulegroups.c:3243
 msgid "remove group"
 msgstr "Remove group"
 
-#: ../src/libs/modulegroups.c:3267
+#: ../src/libs/modulegroups.c:3269
 msgid "move group to the left"
 msgstr "Move group to the left"
 
-#: ../src/libs/modulegroups.c:3275
+#: ../src/libs/modulegroups.c:3277
 msgid "add module to the group"
 msgstr "Add module to the group"
 
-#: ../src/libs/modulegroups.c:3286
+#: ../src/libs/modulegroups.c:3288
 msgid "move group to the right"
 msgstr "Move group to the right"
 
-#: ../src/libs/modulegroups.c:3466
+#: ../src/libs/modulegroups.c:3468
 msgid "rename preset"
 msgstr "Rename preset"
 
-#: ../src/libs/modulegroups.c:3473
+#: ../src/libs/modulegroups.c:3475
 msgid "new preset name:"
 msgstr "New preset name:"
 
-#: ../src/libs/modulegroups.c:3474
+#: ../src/libs/modulegroups.c:3476
 msgid "a preset with this name already exists!"
 msgstr "A preset with this name already exists!"
 
-#: ../src/libs/modulegroups.c:3807
+#: ../src/libs/modulegroups.c:3809
 msgid "preset: "
 msgstr "Preset: "
 
-#: ../src/libs/modulegroups.c:3814
+#: ../src/libs/modulegroups.c:3816
 msgid "remove the preset"
 msgstr "Remove the preset"
 
-#: ../src/libs/modulegroups.c:3816
+#: ../src/libs/modulegroups.c:3818
 msgid "duplicate the preset"
 msgstr "Duplicate the preset"
 
-#: ../src/libs/modulegroups.c:3818
+#: ../src/libs/modulegroups.c:3820
 msgid "rename the preset"
 msgstr "Rename the preset"
 
-#: ../src/libs/modulegroups.c:3820
+#: ../src/libs/modulegroups.c:3822
 msgid "create a new empty preset"
 msgstr "Create a new empty preset"
 
-#: ../src/libs/modulegroups.c:3828
+#: ../src/libs/modulegroups.c:3830
 msgid "show search line"
 msgstr "Show search line"
 
-#: ../src/libs/modulegroups.c:3831
+#: ../src/libs/modulegroups.c:3833
 msgid "show quick access panel"
 msgstr "Show quick access panel"
 
-#: ../src/libs/modulegroups.c:3834
+#: ../src/libs/modulegroups.c:3836
 msgid "show all history modules in active group"
 msgstr "Show all history modules in active group"
 
-#: ../src/libs/modulegroups.c:3846
+#: ../src/libs/modulegroups.c:3848
 msgid "auto-apply this preset"
 msgstr "Auto-apply this preset"
 
-#: ../src/libs/modulegroups.c:3861
+#: ../src/libs/modulegroups.c:3863
 msgid "module groups"
 msgstr "Module groups"
 
-#: ../src/libs/modulegroups.c:3878
+#: ../src/libs/modulegroups.c:3880
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
@@ -25253,22 +25354,6 @@ msgstr "Switch to a classic window which will stay open after key release"
 msgid "mouse actions"
 msgstr "Mouse actions"
 
-#, c-format
-#~ msgid "copyright (c) the authors 2009-%s"
-#~ msgstr "Copyright (c) the authors 2009-%s"
-
-#~ msgid "organize and develop images from digital cameras"
-#~ msgstr "Organize and develop images from digital cameras"
-
-#~ msgid "all those of you that made previous releases possible"
-#~ msgstr "All those of you that made previous releases possible"
-
-#~ msgid "and..."
-#~ msgstr "And..."
-
-#~ msgid "translator-credits"
-#~ msgstr "Victor Forsiuk <vvforce@gmail.com>"
-
 #~ msgctxt "preferences"
 #~ msgid "nothing"
 #~ msgstr "Nothing"
@@ -25430,9 +25515,6 @@ msgstr "Mouse actions"
 
 #~ msgid "rgb colors"
 #~ msgstr "RGB colors"
-
-#~ msgid "rgb parade"
-#~ msgstr "RGB parade"
 
 #~ msgid "rotate 90 degrees ccw"
 #~ msgstr "Rotate 90 degrees ccw"
@@ -25625,9 +25707,6 @@ msgstr "Mouse actions"
 
 #~ msgid "lift chroma"
 #~ msgstr "Lift chroma"
-
-#~ msgid "lift hue"
-#~ msgstr "Lift hue"
 
 #~ msgid "power luminance"
 #~ msgstr "Power luminance"
