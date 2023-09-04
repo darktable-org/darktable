@@ -1599,7 +1599,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
       float stack_heigth_factor = 
-        (max_slot_heigth - spacing * (g_list_length(slot) - 1)) / (float)slot_heigth;
+        (max_slot_heigth) / (float)slot_heigth;
       
       if(number_of_slots == 2)
       {
@@ -1853,17 +1853,16 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       total_width = MAX(total_width, thumb_x);          // update total width of all thumbs combined as we fill column by column with thumbnails
       //remaining_slot_width -= (slot_max_thumb_width + spacing);
     }
+    total_width -= spacing;
     g_list_free(slots);
     slots = NULL;
   }
+  total_height -= spacing;
 
   rows = g_list_first(rows); // rows points at the last element of the
                              // constructed list, so move it back to
                              // the start
 
-  // once we placed all images, we can remove the space at the right and the bottom
-  total_width -= spacing;
-  total_height -= spacing;
 
   // loop through all thumbnails to apply offsets for final positioning
   // loop through rows
@@ -1891,12 +1890,13 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
-        row_width = MAX(row_width, thumb->x + thumb->width);
+        row_width = MAX(row_width, thumb->x + thumb->width + spacing);
         slot_heigth += thumb->height + spacing;
       }
       slot_heigth -= spacing;
       row_heigth = MAX(row_heigth, slot_heigth);
     }
+    row_width -= spacing;
     xoff = (total_width - row_width) / 2;
 
     // loop through all slots and thumbs again to apply offset
@@ -1931,12 +1931,12 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   }
   g_list_free(rows);
 
-  float factor = (float)(table->view_width - 1) / total_width;
-  if(factor * total_height > table->view_height - 1)
-    factor = (float)(table->view_height - 1) / total_height;
+  float factor = (table->view_width) / (float)total_width;
+  if(factor * total_height > table->view_height)
+    factor = (table->view_height) / (float)total_height;
 
-  const int xoff = (table->view_width - (float)total_width * factor) / 2;
-  const int yoff = (table->view_height - (float)total_height * factor) / 2;
+  const int xoff = (table->view_width - total_width * factor) / 2;
+  const int yoff = (table->view_height - total_height * factor) / 2;
 
   // scale everything to match the size of your screen
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -1946,6 +1946,10 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     thumb->height = thumb->height * factor;
     thumb->x      = thumb->x * factor + xoff;
     thumb->y      = thumb->y * factor + yoff;
+
+    dt_print(DT_DEBUG_ALWAYS,
+      "[culling_placement] thumb_id=%d, x=%d, y=%d, width=%d, heigth=%d - table_width=%d, table_height=%d\n",
+      thumb->imgid, thumb->x, thumb->y, thumb->width, thumb->height, table->view_width, table->view_height);
   }
 
   // we save the current first id
