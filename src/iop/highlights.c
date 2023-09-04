@@ -196,7 +196,9 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
                                             dt_dev_pixelpipe_t *pipe,
                                             dt_dev_pixelpipe_iop_t *piece)
 {
-  return IOP_CS_RAW;
+  // This module might possible work in RAW or RGB (e.g. for TIFF files) color space
+  // depending on the input but will not change it.
+  return (piece && piece->dsc_in.cst != IOP_CS_RAW) ? IOP_CS_RGB : IOP_CS_RAW;
 }
 
 int legacy_params(dt_iop_module_t *self,
@@ -1025,8 +1027,8 @@ void gui_update(struct dt_iop_module_t *self)
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   // enable this per default if raw or sraw if not real monochrome
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
-  self->hide_enable_button = !(self->default_enabled);
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "notapplicable");
+  self->hide_enable_button = monochrome;
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "notapplicable");
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
@@ -1042,12 +1044,12 @@ void reload_defaults(dt_iop_module_t *self)
   if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id)) return;
 
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
-  // enable this per default if raw or sraw if not true monochrome
+  // enable this per default if raw or sraw if not real monochrome
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
-  self->hide_enable_button = !(self->default_enabled);
+  self->hide_enable_button = monochrome;
 
   if(self->widget)
-    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "notapplicable");
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "notapplicable");
 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
