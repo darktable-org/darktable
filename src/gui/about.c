@@ -31,14 +31,15 @@ void darktable_show_about_dialog()
 #endif
   gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), darktable_package_version);
-  char *copyright = g_strdup_printf(_("copyright (c) the authors 2009-%s"), darktable_last_commit_year);
+  char *copyright = g_strdup_printf(_("copyright (c) the authors 2009-%s"),
+                                    darktable_last_commit_year);
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), copyright);
   g_free(copyright);
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
                                 _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://www.darktable.org/");
   gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "website");
-  dt_logo_season_t season = dt_util_get_logo_season();
+  const dt_logo_season_t season = dt_util_get_logo_season();
   char *icon;
   if(season != DT_LOGO_SEASON_NONE)
     icon = g_strdup_printf("darktable-%d", (int)season);
@@ -51,12 +52,14 @@ void darktable_show_about_dialog()
 
 #include "tools/darktable_authors.h"
 
-  const char *final[] = {str, NULL };
+  const char *final[] = { str, NULL };
   gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _("and..."), final);
 
-  gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
+  gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog),
+                                          _("translator-credits"));
 
-  gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),
+                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 }
