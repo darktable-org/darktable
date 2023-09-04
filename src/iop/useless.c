@@ -116,6 +116,24 @@ const char *name()
   return _("silly example");
 }
 
+// a routine returning the description of the module. this is
+// displayed when the mouse is over the module's header.
+const char **description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description
+    (self,
+     // first line is the general description for the module
+     _("adjustment of the RGB color primaries for color grading"),
+     // the goal:
+     _("corrective or creative"),
+     // the input:
+     _("linear, RGB, scene-referred"),
+     // the internal working:
+     _("linear, RGB"),
+     // the output:
+     _("linear, RGB, scene-referred"));
+}
+
 // some additional flags (self explanatory i think):
 int flags()
 {
