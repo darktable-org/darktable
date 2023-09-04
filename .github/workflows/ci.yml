@@ -141,7 +141,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           path: src
@@ -253,7 +253,7 @@ jobs:
           update: false
       - run: git config --global core.autocrlf input
         shell: bash
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           path: src
@@ -310,7 +310,7 @@ jobs:
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           path: src
