@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-04 08:05+0200\n"
+"POT-Creation-Date: 2023-09-04 09:52+0200\n"
 "PO-Revision-Date: 2023-09-04 08:07+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -5034,23 +5034,23 @@ msgstr "Largeur filigrane"
 msgid "marker height"
 msgstr "Hauteur filigrane"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:6
+#: ../build/bin/tools/darktable_authors.h:6
 msgid "developers"
 msgstr "Développeurs"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:11
+#: ../build/bin/tools/darktable_authors.h:11
 msgid "translators"
 msgstr "Traducteurs"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:16
+#: ../build/bin/tools/darktable_authors.h:16
 msgid "contributors"
 msgstr "Contributeurs"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:21
+#: ../build/bin/tools/darktable_authors.h:21
 msgid "rawspeed contributors"
 msgstr "Contributeurs rawspeed"
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:26
+#: ../build/bin/tools/darktable_authors.h:26
 msgid "integration contributors"
 msgstr "Contributeurs intégration"
 
@@ -9684,6 +9684,34 @@ msgstr "Erreur : s’assurer que « min_mip » ≤ « max_mip »\n"
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr ""
 "Création de toutes les miniatures pour le cache de la table lumineuse\n"
+
+#: ../src/gui/about.c:34
+#, c-format
+msgid "copyright (c) the authors 2009-%s"
+msgstr "Copyright © les auteurs 2009-%s"
+
+#: ../src/gui/about.c:38
+msgid "organize and develop images from digital cameras"
+msgstr "Organiser et développer les images d’un boîtier numérique"
+
+#: ../src/gui/about.c:50
+msgid "all those of you that made previous releases possible"
+msgstr "tous ceux qui ont participé aux versions précédentes"
+
+#: ../src/gui/about.c:55
+msgid "and..."
+msgstr "et…"
+
+#: ../src/gui/about.c:57
+msgid "translator-credits"
+msgstr ""
+"Pascal Obry\n"
+"\n"
+"Versions précédentes :\n"
+"Nicolas Auffray\n"
+"Olivier Tribout\n"
+"Sébastien Delcoigne\n"
+"Nicolas Carlier"
 
 #: ../src/gui/accelerators.c:72
 msgid "in active view"
@@ -25775,29 +25803,6 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1550
 msgid "mouse actions"
 msgstr "Actions de la souris"
-
-#, c-format
-#~ msgid "copyright (c) the authors 2009-%s"
-#~ msgstr "Copyright © les auteurs 2009-%s"
-
-#~ msgid "organize and develop images from digital cameras"
-#~ msgstr "Organiser et développer les images d’un boîtier numérique"
-
-#~ msgid "all those of you that made previous releases possible"
-#~ msgstr "tous ceux qui ont participé aux versions précédentes"
-
-#~ msgid "and..."
-#~ msgstr "et…"
-
-#~ msgid "translator-credits"
-#~ msgstr ""
-#~ "Pascal Obry\n"
-#~ "\n"
-#~ "Versions précédentes :\n"
-#~ "Nicolas Auffray\n"
-#~ "Olivier Tribout\n"
-#~ "Sébastien Delcoigne\n"
-#~ "Nicolas Carlier"
 
 #~ msgctxt "preferences"
 #~ msgid "nothing"
