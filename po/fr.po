@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-04 07:52+0200\n"
-"PO-Revision-Date: 2023-09-04 07:54+0200\n"
+"POT-Creation-Date: 2023-09-04 08:05+0200\n"
+"PO-Revision-Date: 2023-09-04 08:07+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1649,7 +1649,7 @@ msgstr "Utiliser toute la mémoire du périphérique"
 #: ../build/bin/preferences_gen.h:6341
 msgid ""
 "if enabled darktable will use all device memory except a safety margin "
-"(headroom, default is 600Mb)"
+"(headroom, default is 600MB)"
 msgstr ""
 "Si activé, darktable utilisera toute la mémoire du périphérique sauf une "
 "marge de sécurité (headroom, par défaut 600Mo)"
@@ -1670,12 +1670,12 @@ msgstr ""
 "constructeur)"
 
 #: ../build/bin/preferences_gen.h:6419
-msgid "Nvidia Cuda"
-msgstr "Nvidia Cuda"
+msgid "Nvidia CUDA"
+msgstr "Nvidia CUDA"
 
 #: ../build/bin/preferences_gen.h:6433
-msgid "Nvidia cuda based OpenCL (vendor provided)"
-msgstr "Nvidia OpenCL avec Cuda (fourni par constructeur)"
+msgid "Nvidia CUDA based OpenCL (vendor provided)"
+msgstr "Nvidia OpenCL avec CUDA (fourni par constructeur)"
 
 #: ../build/bin/preferences_gen.h:6461
 msgid "AMD ROCm"
@@ -1691,7 +1691,7 @@ msgstr "RustiCL"
 
 #: ../build/bin/preferences_gen.h:6517
 msgid ""
-"RustiCL Mesa OpenCL, still unstable. If you want to use this, you should "
+"RustiCL Mesa OpenCL, still unstable. if you want to use this, you should "
 "disable the vendor driver"
 msgstr ""
 "RustiCL OpenCL sur Mesa, encore instable. Si vous souhaitez utiliser ce "
@@ -4637,7 +4637,7 @@ msgstr "Niveau de noir"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:106
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:179
-#: ../src/iop/rawprepare.c:963
+#: ../src/iop/rawprepare.c:956
 msgid "white point"
 msgstr "Point blanc"
 
@@ -10532,6 +10532,12 @@ msgctxt "menu"
 msgid "tethering"
 msgstr "Capture"
 
+#. Help menu
+#: ../src/gui/gtk.c:1139
+msgctxt "menu"
+msgid "Help"
+msgstr "Aide"
+
 #: ../src/gui/gtk.c:1143
 msgctxt "menu"
 msgid "darktable Manual"
@@ -15784,8 +15790,8 @@ msgstr "Priorité à des couleurs de remplacement spécifiques"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
-#: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1324
-#: ../src/iop/highlights.c:1218
+#: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1318
+#: ../src/iop/highlights.c:1216
 msgid "not applicable"
 msgstr "Non applicable"
 
@@ -16001,12 +16007,12 @@ msgstr ""
 "Reconstruit des pixels RVB complets\n"
 "à partir de la lecture d’un capteur à grille de filtres colorés."
 
-#: ../src/iop/demosaic.c:1133
+#: ../src/iop/demosaic.c:1127
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Matrice de couleurs « %s » non trouvée pour une image de Bayer"
 
-#: ../src/iop/demosaic.c:1285
+#: ../src/iop/demosaic.c:1279
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -16019,7 +16025,7 @@ msgstr ""
 " • LMMSE est adapté aux images à haut ISO\n"
 "Un double dématriçage double le temps de traitement."
 
-#: ../src/iop/demosaic.c:1289
+#: ../src/iop/demosaic.c:1283
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -16029,11 +16035,11 @@ msgstr ""
 "Markesteijn 3 passes et chroma domaine fréquentiel sont lents.\n"
 "Un double dématriçage double le temps de traitement."
 
-#: ../src/iop/demosaic.c:1295
+#: ../src/iop/demosaic.c:1289
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Méthode de dématriçage pour les capteurs de Bayer."
 
-#: ../src/iop/demosaic.c:1299
+#: ../src/iop/demosaic.c:1293
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -16042,7 +16048,7 @@ msgstr ""
 "Seuil pour une passe médiane supplémentaire.\n"
 "Indiquer « 0.0 » pour désactiver, « 1.0 » pour ignorer les bords."
 
-#: ../src/iop/demosaic.c:1304
+#: ../src/iop/demosaic.c:1298
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -16054,7 +16060,7 @@ msgstr ""
 "pour favoriser\n"
 "les basses fréquences (aplats)."
 
-#: ../src/iop/demosaic.c:1312
+#: ../src/iop/demosaic.c:1306
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -16063,15 +16069,15 @@ msgstr ""
 "Le pas « Médian » fait la moyenne de la sortie, le pas « Raffinement »\n"
 "ajoute un nouveau calcul des canaux rouges et bleus."
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1309
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:1318
+#: ../src/iop/demosaic.c:1312
 msgid "green channels matching method"
 msgstr "Méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:1325
+#: ../src/iop/demosaic.c:1319
 msgid "demosaicing is only used for color raw images"
 msgstr "« Dématriçage » est uniquement utilisé pour les images RAW"
 
@@ -17736,7 +17742,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "Reconstruire, RAW"
 
-#: ../src/iop/highlights.c:987
+#: ../src/iop/highlights.c:985
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -17744,11 +17750,11 @@ msgstr ""
 "Reconstruction des hautes lumières : mode non disponible pour ce type "
 "d’image. Repli sur « Peinture opposée »."
 
-#: ../src/iop/highlights.c:1151
+#: ../src/iop/highlights.c:1149
 msgid "highlight reconstruction method"
 msgstr "Méthode de reconstruction des hautes lumières"
 
-#: ../src/iop/highlights.c:1156
+#: ../src/iop/highlights.c:1154
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -17763,7 +17769,7 @@ msgstr ""
 "« Laplaciens guidés », « Peinture opposée » et « Par segmentation »,\n"
 "surtout si le point blanc du boîtier est incorrect."
 
-#: ../src/iop/highlights.c:1167
+#: ../src/iop/highlights.c:1165
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -17772,7 +17778,7 @@ msgstr ""
 "L’icône « masque » montre les positions exactes des bords des segments "
 "résultants."
 
-#: ../src/iop/highlights.c:1175
+#: ../src/iop/highlights.c:1173
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -17785,7 +17791,7 @@ msgstr ""
 "L’icône « masque » montre les segments qui sont considérés comme bon "
 "candidats."
 
-#: ../src/iop/highlights.c:1186
+#: ../src/iop/highlights.c:1184
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -17809,7 +17815,7 @@ msgstr ""
 "reconstruites\n"
 "et éviter les dégradés."
 
-#: ../src/iop/highlights.c:1192
+#: ../src/iop/highlights.c:1190
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -17819,7 +17825,7 @@ msgstr ""
 "photosites tronqués.\n"
 "L’icône « masque » montre l’effet ajouté au données déjà reconstruites."
 
-#: ../src/iop/highlights.c:1202
+#: ../src/iop/highlights.c:1200
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17827,7 +17833,7 @@ msgstr ""
 "Ajoute du bruit pour fusionner visuellement les zones reconstruites\n"
 "dans le reste de l’image bruitées. Utile pour les hauts ISO."
 
-#: ../src/iop/highlights.c:1206
+#: ../src/iop/highlights.c:1204
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17835,7 +17841,7 @@ msgstr ""
 "Augmenter si le magenta des hautes lumières n’est pas complètement corrigé.\n"
 "Chaque nouvelle itération ajoute une pénalité de temps."
 
-#: ../src/iop/highlights.c:1211
+#: ../src/iop/highlights.c:1209
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17844,7 +17850,7 @@ msgstr ""
 "Cela peut produire des délimitations tranchées entre les régions valides et "
 "tronquées."
 
-#: ../src/iop/highlights.c:1215
+#: ../src/iop/highlights.c:1213
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17852,7 +17858,7 @@ msgstr ""
 "Augmenter pour corriger les larges zones tronquées.\n"
 "Les grandes valeurs pénalisent fortement les performances."
 
-#: ../src/iop/highlights.c:1219
+#: ../src/iop/highlights.c:1217
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "Ce module ne fonctionne que pour les RAW et sRAW non monochrome"
 
@@ -19084,59 +19090,59 @@ msgstr ""
 msgid "passthrough"
 msgstr "Passer"
 
-#: ../src/iop/rawprepare.c:672
+#: ../src/iop/rawprepare.c:665
 msgid "invalid crop parameters"
 msgstr "Paramètres de recadrage invalides"
 
-#: ../src/iop/rawprepare.c:673
+#: ../src/iop/rawprepare.c:666
 msgid ""
 "please reset to defaults, update your preset or set to something correct"
 msgstr ""
 "Merci de réinitialiser, de mettre à jour les préréglages ou de définir des "
 "valeurs correctes"
 
-#: ../src/iop/rawprepare.c:939
+#: ../src/iop/rawprepare.c:932
 msgid "black level 0"
 msgstr "Niveau de noir 0"
 
-#: ../src/iop/rawprepare.c:940
+#: ../src/iop/rawprepare.c:933
 msgid "black level 1"
 msgstr "Niveau de noir 1"
 
-#: ../src/iop/rawprepare.c:941
+#: ../src/iop/rawprepare.c:934
 msgid "black level 2"
 msgstr "Niveau de noir 2"
 
-#: ../src/iop/rawprepare.c:942
+#: ../src/iop/rawprepare.c:935
 msgid "black level 3"
 msgstr "Niveau de noir 3"
 
-#: ../src/iop/rawprepare.c:969
+#: ../src/iop/rawprepare.c:962
 msgid "raw flat field correction to compensate for lens shading"
 msgstr "Correction de non-uniformité pour compenser les ombrages des objectifs"
 
-#: ../src/iop/rawprepare.c:974
+#: ../src/iop/rawprepare.c:967
 msgctxt "section"
 msgid "crop"
 msgstr "Recadrer"
 
-#: ../src/iop/rawprepare.c:977
+#: ../src/iop/rawprepare.c:970
 msgid "crop left border"
 msgstr "Rogner depuis le bord gauche"
 
-#: ../src/iop/rawprepare.c:981
+#: ../src/iop/rawprepare.c:974
 msgid "crop top border"
 msgstr "Rogner depuis le bord haut"
 
-#: ../src/iop/rawprepare.c:985
+#: ../src/iop/rawprepare.c:978
 msgid "crop right border"
 msgstr "Rogner depuis le bord droit"
 
-#: ../src/iop/rawprepare.c:989
+#: ../src/iop/rawprepare.c:982
 msgid "crop bottom border"
 msgstr "Rogner depuis le bord bas"
 
-#: ../src/iop/rawprepare.c:998
+#: ../src/iop/rawprepare.c:991
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
