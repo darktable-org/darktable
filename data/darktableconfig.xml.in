@@ -326,7 +326,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>use all device memory</shortdescription>
-    <longdescription>if enabled darktable will use all device memory except a safety margin (headroom, default is 600Mb)</longdescription>
+    <longdescription>if enabled darktable will use all device memory except a safety margin (headroom, default is 600MB)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_intelropenclhdgraphics</name>
@@ -339,8 +339,8 @@
     <name>clplatform_nvidiacuda</name>
     <type>bool</type>
     <default>${DEFCONFIG_NONAPPLE}</default>
-    <shortdescription>Nvidia Cuda</shortdescription>
-    <longdescription>Nvidia cuda based OpenCL (vendor provided)</longdescription>
+    <shortdescription>Nvidia CUDA</shortdescription>
+    <longdescription>Nvidia CUDA based OpenCL (vendor provided)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_amdacceleratedparallelprocessing</name>
@@ -354,7 +354,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>RustiCL</shortdescription>
-    <longdescription>RustiCL Mesa OpenCL, still unstable. If you want to use this, you should disable the vendor driver</longdescription>
+    <longdescription>RustiCL Mesa OpenCL, still unstable. if you want to use this, you should disable the vendor driver</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="apple" restart="true">
     <name>clplatform_apple</name>
