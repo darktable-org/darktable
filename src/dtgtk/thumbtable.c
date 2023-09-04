@@ -668,7 +668,7 @@ static gboolean _move(dt_thumbtable_t *table,
       }
       table->realign_top_try = 0;
 
-      dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+      const dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
       if(table->thumbs_per_row == 1 && posy < 0 && g_list_is_singleton(table->list))
       {
         // special case for zoom == 1 as we don't want any space under
@@ -693,9 +693,9 @@ static gboolean _move(dt_thumbtable_t *table,
       if(posx == 0) return FALSE;
 
       // we stop when first or last rowid image is fully shown
-      dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
-      dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-      int middle = (table->view_width - table->thumb_size) / 2;
+      const dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+      const dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+      const int middle = (table->view_width - table->thumb_size) / 2;
       posx = CLAMP(posx, middle - last->x, middle - first->x);
     }
     else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
@@ -753,7 +753,7 @@ static gboolean _move(dt_thumbtable_t *table,
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+    const dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
     table->offset = first->rowid;
     table->offset_imgid = first->imgid;
   }
@@ -859,7 +859,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table,
 
   // we update all the values
   // chained dereference is dangerous, but there was a check above in the code
-  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
+  const dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
   dt_conf_set_int("plugins/lighttable/collect/history_pos0", table->offset);
