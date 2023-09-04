@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-04 08:05+0200\n"
+"POT-Creation-Date: 2023-09-04 09:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4735,23 +4735,23 @@ msgstr ""
 msgid "marker height"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:6
+#: ../build/bin/tools/darktable_authors.h:6
 msgid "developers"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:11
+#: ../build/bin/tools/darktable_authors.h:11
 msgid "translators"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:16
+#: ../build/bin/tools/darktable_authors.h:16
 msgid "contributors"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:21
+#: ../build/bin/tools/darktable_authors.h:21
 msgid "rawspeed contributors"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:26
+#: ../build/bin/tools/darktable_authors.h:26
 msgid "integration contributors"
 msgstr ""
 
@@ -9018,6 +9018,27 @@ msgstr ""
 #: ../src/generate-cache/main.c:253
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
+msgstr ""
+
+#: ../src/gui/about.c:34
+#, c-format
+msgid "copyright (c) the authors 2009-%s"
+msgstr ""
+
+#: ../src/gui/about.c:38
+msgid "organize and develop images from digital cameras"
+msgstr ""
+
+#: ../src/gui/about.c:50
+msgid "all those of you that made previous releases possible"
+msgstr ""
+
+#: ../src/gui/about.c:55
+msgid "and..."
+msgstr ""
+
+#: ../src/gui/about.c:57
+msgid "translator-credits"
 msgstr ""
 
 #: ../src/gui/accelerators.c:72
