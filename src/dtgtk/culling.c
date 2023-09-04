@@ -1560,6 +1560,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     }
   }
   slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
+  const int number_of_slots = g_list_length(slots);
 
 
   // finished assigning thumbnails to slots
@@ -1600,8 +1601,17 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       float stack_heigth_factor = 
         (max_slot_heigth - spacing * (g_list_length(slot) - 1)) / (float)slot_heigth;
       
-      // limit scaling so that width does not increase to more than twice the average thumbnail width
-      stack_heigth_factor = MIN(stack_heigth_factor, 2 * avg_thumb_width / (float)thumb->width);
+      if(number_of_slots == 2)
+      {
+        // limit scaling factor to 20% if only two images are displayed so that slight differences are corrected
+        // but portrait and landscape orientation are displayed at similar sizes 
+        stack_heigth_factor = MIN(stack_heigth_factor, 1.2);
+      }
+      else
+      {
+        // limit scaling so that width does not increase to more than twice the average thumbnail width
+        stack_heigth_factor = MIN(stack_heigth_factor, 2 * avg_thumb_width / (float)thumb->width);
+      }
       thumb->height *= stack_heigth_factor;
       thumb->width *= stack_heigth_factor;
 
