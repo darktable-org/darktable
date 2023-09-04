@@ -103,6 +103,8 @@ improvements and enhancements:
 - Add Display P3 built-in color profile for input, output, display,
   working and soft-proofing.
 
+- The highlights module is now made available for all non-raw files.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
