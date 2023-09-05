@@ -5972,8 +5972,8 @@ msgstr ""
 
 #: ../src/common/darktable.c:2026
 msgid ""
-"you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
-msgstr "data 'na zařízení' najdete v 'cl_device_v5_canonical-name'. obsah je:"
+"you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
+msgstr "data 'na zařízení' najdete v 'cldevice_v5_canonical-name'. obsah je:"
 
 #: ../src/common/darktable.c:2032
 msgid ""

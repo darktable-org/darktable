@@ -6099,11 +6099,11 @@ msgstr ""
 
 #: ../src/common/darktable.c:1990
 msgid ""
-"instead you will find 'per device' data in 'cl_device_v5_canonical-name'. "
+"instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
 msgstr ""
 "Замість цього ви знайдете окремі дані для пристроїв у "
-"'cl_device_v5_canonical-name'. Зміст:"
+"'cldevice_v5_canonical-name'. Зміст:"
 
 #: ../src/common/darktable.c:1992 ../src/common/darktable.c:2011
 #: ../src/common/darktable.c:2026
@@ -6135,9 +6135,9 @@ msgstr ""
 
 #: ../src/common/darktable.c:2009 ../src/common/darktable.c:2024
 msgid ""
-"you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
+"you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
-"Ви знайдете окремі дані для пристроїв у 'cl_device_v5_canonical-name'. Зміст:"
+"Ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-name'. Зміст:"
 
 #: ../src/common/darktable.c:2015
 msgid ""
