@@ -35,6 +35,12 @@ if(Gphoto2_PKGCONF_FOUND)
   set(Gphoto2_VERSION_STRING "${Gphoto2_PKGCONF_VERSION}")
 endif()
 
+# Detect libgphoto2_port version
+libfind_pkg_check_modules(Gphoto2_PORT_PKGCONF libgphoto2_port)
+if(Gphoto2_PORT_PKGCONF_FOUND)
+  set(Gphoto2_PORT_VERSION_STRING "${Gphoto2_PORT_PKGCONF_VERSION}")
+endif()
+
 # handle the QUIETLY and REQUIRED arguments and set Gphoto2_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
