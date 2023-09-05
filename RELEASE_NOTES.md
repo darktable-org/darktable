@@ -105,6 +105,11 @@ improvements and enhancements:
 
 - The highlights module is now made available for all non-raw files.
 
+- The speed of scrolling through the filmstrip can be increased by
+  holding <kbd>shift</kbd>; you will move by half of the visible
+  images at a time. Holding <kbd>ctrl</kbd> while scrolling changes
+  the number of images shown ("zooms") and thereby the shift speed.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
