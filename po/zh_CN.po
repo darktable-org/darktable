@@ -5821,9 +5821,9 @@ msgstr "按设备设置 OpenCL 全局配置的选项名称在此版本更新后�
 
 #: ../src/common/darktable.c:2010
 msgid ""
-"you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
+"you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
-"请使用“cl_device_v5_canonical-name”中的“per device”数据替代。其内容是："
+"请使用“cldevice_v5_canonical-name”中的“per device”数据替代。其内容是："
 
 #: ../src/common/darktable.c:2016
 msgid ""

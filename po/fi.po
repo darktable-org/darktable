@@ -5974,9 +5974,9 @@ msgstr ""
 
 #: ../src/common/darktable.c:2010
 msgid ""
-"you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
+"you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
-"Niiden sijaan löydät 'per device' tiedot 'cl_device_v5_canonical-name' "
+"Niiden sijaan löydät 'per device' tiedot 'cldevice_v5_canonical-name' "
 "paikasta. Sisältö on:"
 
 #: ../src/common/darktable.c:2016

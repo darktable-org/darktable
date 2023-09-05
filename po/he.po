@@ -5868,8 +5868,8 @@ msgstr ""
 
 #: ../src/common/darktable.c:2010
 msgid ""
-"you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
-msgstr "תמצא נתונים 'per device' ב 'cl_device_v5_canonical-name'. התוכן הוא:"
+"you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
+msgstr "תמצא נתונים 'per device' ב 'cldevice_v5_canonical-name'. התוכן הוא:"
 
 #: ../src/common/darktable.c:2016
 msgid ""

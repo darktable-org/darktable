@@ -5914,8 +5914,8 @@ msgstr "OpenCL 整體參數「每個設備」的設定已經依更新的名稱�
 
 #: ../src/common/darktable.c:2024
 msgid ""
-"you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
-msgstr "可以在「cl_device_v5_canonical-name」中找到「per device」數據如下："
+"you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
+msgstr "可以在「cldevice_v5_canonical-name」中找到「per device」數據如下："
 
 #: ../src/common/darktable.c:2030
 msgid ""

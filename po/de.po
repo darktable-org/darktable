@@ -5598,8 +5598,8 @@ msgid "some global config parameters relevant for OpenCL performance are not use
 msgstr "einige für OpenCL Leistung relevante globale Konfigurationsparameter werden nicht mehr verwendet."
 
 #: ../src/common/darktable.c:1990
-msgid "instead you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
-msgstr "Stattdessen stehen die gerätespezifischen Daten in „cl_device_v5_canonical-name“. Inhalte sind:"
+msgid "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
+msgstr "Stattdessen stehen die gerätespezifischen Daten in „cldevice_v5_canonical-name“. Inhalte sind:"
 
 #: ../src/common/darktable.c:1992 ../src/common/darktable.c:2011 ../src/common/darktable.c:2026
 #| msgid ""
@@ -5624,8 +5624,8 @@ msgid "OpenCL global config parameters 'per device' data has been recreated with
 msgstr "Die globalen OpenCL-Konfigurationsparameter „per device“ wurden mit einem aktualisierten Namen neu erstellt"
 
 #: ../src/common/darktable.c:2009 ../src/common/darktable.c:2024
-msgid "you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"
-msgstr "Die „per device“-Daten befinden sich in „cl_device_v5_canonical-name“. Inhalt ist:"
+msgid "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
+msgstr "Die „per device“-Daten befinden sich in „cldevice_v5_canonical-name“. Inhalt ist:"
 
 #: ../src/common/darktable.c:2015
 msgid "If you're using device names in 'opencl_device_priority' you should update them to the new names."
