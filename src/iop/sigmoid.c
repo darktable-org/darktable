@@ -100,9 +100,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     // Copy the common part of the params struct
     dt_iop_sigmoid_params_v2_t *n =
-      (dt_iop_sigmoid_params_v2_t *)malloc(sizeof(dt_iop_sigmoid_params_v2_t));
-
-    memset(n, 0, sizeof(dt_iop_sigmoid_params_v2_t));
+      (dt_iop_sigmoid_params_v2_t *)calloc(1, sizeof(dt_iop_sigmoid_params_v2_t));
     memcpy(n, old_params, sizeof(dt_iop_sigmoid_params_v1_t));
 
     *new_params = n;
@@ -316,9 +314,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   module_data->rotation[2] = params->blue_rotation;
 }
 
-static void calculate_adjusted_primaries(const dt_iop_sigmoid_data_t *const module_data,
-                                         const dt_iop_order_iccprofile_info_t *const pipe_work_profile,
-                                         dt_colormatrix_t pipe_to_rendering, dt_colormatrix_t rendering_to_pipe)
+static void _calculate_adjusted_primaries(const dt_iop_sigmoid_data_t *const module_data,
+                                          const dt_iop_order_iccprofile_info_t *const pipe_work_profile,
+                                          dt_colormatrix_t pipe_to_rendering,
+                                          dt_colormatrix_t rendering_to_pipe)
 {
   // Make adjusted primaries for generating the inset matrix
   //
@@ -563,7 +562,7 @@ void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *
 
   const dt_iop_order_iccprofile_info_t *pipe_work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   dt_colormatrix_t pipe_to_rendering, rendering_to_pipe;
-  calculate_adjusted_primaries(module_data, pipe_work_profile, pipe_to_rendering, rendering_to_pipe);
+  _calculate_adjusted_primaries(module_data, pipe_work_profile, pipe_to_rendering, rendering_to_pipe);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -645,7 +644,7 @@ int process_cl(struct dt_iop_module_t *self,
 
   const dt_iop_order_iccprofile_info_t *pipe_work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   dt_colormatrix_t pipe_to_rendering_transposed, rendering_to_pipe_transposed, pipe_to_rendering, rendering_to_pipe;
-  calculate_adjusted_primaries(d, pipe_work_profile, pipe_to_rendering_transposed, rendering_to_pipe_transposed);
+  _calculate_adjusted_primaries(d, pipe_work_profile, pipe_to_rendering_transposed, rendering_to_pipe_transposed);
   transpose_3xSSE(pipe_to_rendering_transposed, pipe_to_rendering);
   transpose_3xSSE(rendering_to_pipe_transposed, rendering_to_pipe);
   cl_mem dev_pipe_to_rendering = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe_to_rendering), pipe_to_rendering);
@@ -770,7 +769,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = GTK_WIDGET(g->primaries_section.container);
   dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("primaries"));
 
-#define setup_color_combo(color, r, g, b, inset_tooltip, rotation_tooltip) \
+#define SETUP_COLOR_COMBO(color, r, g, b, inset_tooltip, rotation_tooltip) \
   slider = dt_bauhaus_slider_from_params(sect, #color "_inset");           \
   dt_bauhaus_slider_set_format(slider, "%");                               \
   dt_bauhaus_slider_set_digits(slider, 1);                                 \
@@ -787,9 +786,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(slider, rotation_tooltip); 
 
   const float desaturation = 0.2f;
-  setup_color_combo(red, 1.f - desaturation, desaturation, desaturation, _("red primary inset"), _("red primary rotation"));
-  setup_color_combo(green, desaturation, 1.f - desaturation, desaturation, _("green primary inset"), _("green primary rotation"));
-  setup_color_combo(blue, desaturation, desaturation, 1.f - desaturation, _("blue primary inset"), _("blue primary rotation"));
+  SETUP_COLOR_COMBO(red, 1.f - desaturation, desaturation, desaturation, _("red primary inset"), _("red primary rotation"));
+  SETUP_COLOR_COMBO(green, desaturation, 1.f - desaturation, desaturation, _("green primary inset"), _("green primary rotation"));
+  SETUP_COLOR_COMBO(blue, desaturation, desaturation, 1.f - desaturation, _("blue primary inset"), _("blue primary rotation"));
+#undef SETUP_COLOR_COMBO
 
   slider = dt_bauhaus_slider_from_params(sect, "purity");
   dt_bauhaus_slider_set_format(slider, "%");
