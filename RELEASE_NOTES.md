@@ -129,6 +129,9 @@ improvements and enhancements:
 
 - Fix a crash when increasing the number of recent collections.
 
+- Fix crash when clicking & dragging the feather line on the path
+  mask.
+
 ## Lua
 
 ### API Version
