@@ -1660,99 +1660,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     deviation_tmp = _absmul(planned_total_width_tmp / (float)planned_total_height_tmp, screen_aspect_r);
 
   } while (deviation_tmp < deviation);
-  /*
-  // estimate a good start value for number of rows and columns to use in thumbnail placement by taking the square root
-  //  of the number of thumbnails. E.g. 9 thumbnails: probably 3x3. Prefer wide configuration e.g. 8 thumbnails: 3x2
-  int thumbs_per_row = 0;
-  int thumbs_per_row_new = 0;
-  int thumbs_per_col = 0;
-  int thumbs_per_col_new = 0;
-
-  thumbs_per_row = thumbs_per_row_new = ceil(sqrt(slot_counter));
-  thumbs_per_col = thumbs_per_col_new = (slot_counter  + thumbs_per_row - 1) / thumbs_per_row;
-
-  const float screen_aspect_r = table->view_width / (float)table->view_height;
-  float thumb_placement_ratio = 0.0f;
-  float thumb_placement_ratio_new = 0.0f;
-  thumb_placement_ratio = thumb_placement_ratio_new = thumbs_per_row / (float)thumbs_per_col;
-
-  // increase and decrease number of thumbs per row and calculate how the resulting ratio of placed thumbnails
-  //  compares to the ratio of the available screen space. Ideally both aspect ratios are equal.
-  //  Iterate until the best configuration has been found.
-  //  Note: The average thumbnail aspect ratio from the previous step is not equal to the actual thumbnail ratio
-  //        since it does not take into account thumbnail rotation or thumbs with different aspect ratios.
-  //        That means we are just doing an approximation here.
-  float old_deviation = 1.0f;
-  float new_deviation = 1.0f;
-  float punishment_weight = 1.0f;
-  float new_punishment_weight = 1.0f;
-  float old_deviation_punished = 1.0f;
-  float new_deviation_punished = 1.0f;
-
-  do
-  {
-    thumbs_per_row = thumbs_per_row_new;
-    thumbs_per_col = thumbs_per_col_new;
-    thumb_placement_ratio = thumb_placement_ratio_new;
-
-    // if the ratio of placed thumbnails is bigger than the screen aspect ratio (they take too much horizontal space)
-    //  reduce number of images per row by 1 and vice versa.
-    if(thumb_placement_ratio * avg_slot_aspect_r > screen_aspect_r)
-    {
-      thumbs_per_row_new = thumbs_per_row - 1;
-    }
-    else
-    {
-      thumbs_per_row_new = thumbs_per_row + 1;
-    }
-
-    if(thumbs_per_row_new == 0) break;
-
-    // update column cound and placement ratio
-    thumbs_per_col_new = (slot_counter  + thumbs_per_row_new - 1) / thumbs_per_row_new;
-    thumb_placement_ratio_new = thumbs_per_row_new / (float)thumbs_per_col_new;
-
-    // calculate old and new deviation between screen ratio and ratio of placed thumbnails
-    // 1.0 means that screen and placement ratio are equal (perfect match)
-    // the further away from 1.0 we get, the worse. There are not negative values.
-    old_deviation = _absmul(thumb_placement_ratio * avg_slot_aspect_r, screen_aspect_r);
-    new_deviation = _absmul(thumb_placement_ratio_new * avg_slot_aspect_r, screen_aspect_r);
-
-    // Punish old and new configuration for not-full last rows (if they have any)
-    //  E.g. we could place 4 images in a 2x2 or 3x2 configuration, but in 3x2 there will be only 1 image in the last row
-    //  even though there is room for 3. So we punish the placement ratio of the 3x2 configuration for the 2 empty slots by
-    //  multiplying it with (1 + free_spots_row/total_spots/row) = (1 + 2/3) = 1.66
-    //  this prefers a configurations with well filled rows unless it is a lot better to place one image alone in a row.
-    punishment_weight =
-        (1 +
-          (thumbs_per_row - ((slot_counter - 1) % thumbs_per_row + 1)) /
-            (float)thumbs_per_row);
-    new_punishment_weight =
-        (1 + (thumbs_per_row_new - ((slot_counter - 1) % thumbs_per_row_new + 1)) /
-            (float)thumbs_per_row_new);
-
-    // if all thumbs are placed in a single row or column, the weight from above formula will be 1.0 (= no punishment)
-    //  this can cause the algorithm to be biased towards single row/column configurations - so we add some punishment manually
-    if(thumbs_per_col == 1 || thumbs_per_row == 1)
-      punishment_weight = 1.5;
-    if(thumbs_per_col_new == 1 || thumbs_per_row_new == 1)
-      new_punishment_weight = 1.5;
-
-    // apply weight factor
-    old_deviation_punished = old_deviation * punishment_weight;
-    new_deviation_punished = new_deviation * new_punishment_weight;
-
-    // try to improve as long as row-count bigger than 0
-    //  AND row-count lower or equal total number of thumbs
-    //  AND the resulting deviation from a perfect placement is lower than before
-    //  --> stop when we make negative progress
-  } while(thumbs_per_row > 0
-          && thumbs_per_row <= slot_counter
-          && new_deviation_punished < old_deviation_punished);
-
-  // Now we have a good estimation how many thumbnails SHOULD fit in each row and column.
-  // Actual placement might differ
-  */
+  
   int total_height = 0;
   int total_width = 0;
 
@@ -1763,7 +1671,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     int thumb_x = 0;
     int row_heigth = 0;
     const int row_width_limit = planned_total_width;
-    //int remaining_slot_width = total_slot_width;
 
     // work with one slot at a time
     for(GList *slot_iter = slots; slot_iter; slot_iter = g_list_next(slot_iter))
@@ -1788,25 +1695,13 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       //  we allow for 20% thumbnail width tolerance to account for the influence of images with mixed aspect ratios in the math
       gboolean create_new_row = FALSE;
 
-      // if slot would fit within the 20% buffer zone, we check if its width is about the same as the buffer zone
-      //  if yes, we only place the slot here if it stops the next row from overflowing
-      //  otherwise there is no good reason to squeze it in and the slot will be placed in the next row instead
-      /*
-      if(thumb_x + slot_max_thumb_width > row_width_limit && thumb_x + slot_max_thumb_width <= row_width_limit + avg_slot_width * 0.6)
-      {
-        if(slot_max_thumb_width < 0.6 * avg_slot_width)
-        {
-          // if the remaining slots will only fit into the next row if slot is squezed into the current row, do it 
-          if(remaining_slot_width - slot_max_thumb_width - spacing <= row_width_limit && remaining_slot_width > row_width_limit)
-            create_new_row = FALSE;
-        }
-      }
-      */
+      // if the row limit is exceeded by more than 60% of a slot place it in the next row
+      //  unless this is the last thumbnail and squeezing it into the current row results
+      //  in a better placement ratio than opening a new row.
       if(thumb_x + 0.4 * slot_max_thumb_width > row_width_limit)
       {
         create_new_row = TRUE;
-        // if this is the last image and we are about to place it in a new row,
-        //  check if the aspect ratio of thumbnail placement is better if we keep the thumbnail in the current row
+
         if(!slot_iter->next)
         {
           const float ratio_same_row = _absmul(
@@ -1851,7 +1746,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       total_height = MAX(total_height, thumb_y);        // update total height of all thumbs combined as we fill column by column with thumbnails
       thumb_x += slot_max_thumb_width + spacing;
       total_width = MAX(total_width, thumb_x);          // update total width of all thumbs combined as we fill column by column with thumbnails
-      //remaining_slot_width -= (slot_max_thumb_width + spacing);
     }
     total_width -= spacing;
     g_list_free(slots);
