@@ -1,4 +1,4 @@
-# Version 2.3
+# Version 2.4
 # Public Domain, originally written by Lasse Kärkkäinen <tronic>
 # Maintained at https://github.com/Tronic/cmake-modules
 # Please send your improvements as pull requests on Github.
@@ -22,15 +22,6 @@ macro (libfind_pkg_check_modules)
   find_package(PkgConfig QUIET)
   if (PKG_CONFIG_FOUND)
     pkg_check_modules(${ARGN} QUIET)
-  endif()
-endmacro()
-
-# A simple wrapper to make pkg-config searches a bit easier.
-# Works the same as CMake's internal pkg_check_modules but is always quiet.
-macro (libfind_pkg_search_module)
-  find_package(PkgConfig QUIET)
-  if (PKG_CONFIG_FOUND)
-    pkg_search_module(${ARGN} QUIET)
   endif()
 endmacro()
 
@@ -138,24 +129,39 @@ function (libfind_process PREFIX)
 
   # Process deps to add to
   foreach (i ${PREFIX} ${${PREFIX}_DEPENDENCIES})
-    if (DEFINED ${i}_INCLUDE_OPTS OR DEFINED ${i}_LIBRARY_OPTS)
+    if (DEFINED ${i}_INCLUDE_OPTS)
       # The package seems to export option lists that we can use, woohoo!
       list(APPEND includeopts ${${i}_INCLUDE_OPTS})
-      list(APPEND libraryopts ${${i}_LIBRARY_OPTS})
     else()
-      # If plural forms don't exist or they equal singular forms
-      if ((NOT DEFINED ${i}_INCLUDE_DIRS AND NOT DEFINED ${i}_LIBRARIES) OR
-          (${i}_INCLUDE_DIR STREQUAL ${i}_INCLUDE_DIRS AND ${i}_LIBRARY STREQUAL ${i}_LIBRARIES))
+      if (DEFINED ${i}_INCLUDE_DIR)
         # Singular forms can be used
-        if (DEFINED ${i}_INCLUDE_DIR)
-          list(APPEND includeopts ${i}_INCLUDE_DIR)
-        endif()
-        if (DEFINED ${i}_LIBRARY)
-          list(APPEND libraryopts ${i}_LIBRARY)
-        endif()
+        list(APPEND includeopts ${i}_INCLUDE_DIR)
       else()
-        # Oh no, we don't know the option names
-        message(FATAL_ERROR "We couldn't determine config variable names for ${i} includes and libs. Aieeh!")
+        if (DEFINED ${i}_INCLUDE_DIRS)
+          # Plural forms can be used
+          list(APPEND includeopts ${i}_INCLUDE_DIRS)
+        else()
+          # Oh no, we don't know the option names
+          message(FATAL_ERROR "We couldn't determine config variable names for ${i} includes. Aieeh!")
+        endif()
+      endif()
+    endif()
+
+    if (DEFINED ${i}_LIBRARY_OPTS)
+      # The package seems to export option lists that we can use, woohoo!
+      list(APPEND includeopts ${${i}_LIBRARY_OPTS})
+    else()
+      if (DEFINED ${i}_LIBRARY)
+        # Singular forms can be used
+        list(APPEND includeopts ${i}_LIBRARY)
+      else()
+        if (DEFINED ${i}_LIBRARIES)
+          # Plural forms can be used
+          list(APPEND includeopts ${i}_LIBRARIES)
+        else()
+          # Oh no, we don't know the option names
+          message(FATAL_ERROR "We couldn't determine config variable names for ${i} libraries. Aieeh!")
+        endif()
       endif()
     endif()
   endforeach()
