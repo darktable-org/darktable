@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/darktable.h"
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
@@ -1041,11 +1042,11 @@ void dt_open_url(const char* url)
 
   if(uri_success)
   {
-    dt_control_log(_("url opened in web browser"));
+    dt_control_log(_("URL opened in web browser"));
   }
   else
   {
-    dt_control_log(_("error while opening url in web browser"));
+    dt_control_log(_("error while opening URL in web browser"));
     if(error != NULL) // uri_success being FALSE should guarantee that
     {
       fprintf (stderr, "unable to read file: %s\n", error->message);
