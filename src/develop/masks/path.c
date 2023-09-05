@@ -2187,7 +2187,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module,
   int near = 0;
   float dist = 0;
   _path_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
-  gui->seg_selected = near;
+  gui->seg_selected = dist < sqf(as) ? near : -1;
 
   // no segment selected, set form or source selection
   if(near < 0)
