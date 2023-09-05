@@ -1049,7 +1049,7 @@ void dt_open_url(const char* url)
     dt_control_log(_("error while opening URL in web browser"));
     if(error != NULL) // uri_success being FALSE should guarantee that
     {
-      fprintf (stderr, "unable to read file: %s\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "unable to read file: %s\n", error->message);
       g_error_free(error);
     }
   }
