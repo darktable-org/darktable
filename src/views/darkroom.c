@@ -3841,6 +3841,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   // module
   if(dev->gui_module && dev->gui_module->scrolled
      && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev)
      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     handled = dev->gui_module->scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
