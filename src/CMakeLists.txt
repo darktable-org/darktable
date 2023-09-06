@@ -932,6 +932,7 @@ set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERAT
 add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
+add_dependencies(lib_darktable generate_authors_h)
 
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES MACOSX_RPATH TRUE)
