@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/darktable.h"
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
@@ -718,8 +719,8 @@ static gboolean _scrollbar_changed(GtkWidget *widget, gpointer user_data)
   GtkAdjustment *adjustment_x = gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar));
   GtkAdjustment *adjustment_y = gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.vscrollbar));
 
-  const gdouble value_x = gtk_adjustment_get_value (adjustment_x);
-  const gdouble value_y = gtk_adjustment_get_value (adjustment_y);
+  const gdouble value_x = gtk_adjustment_get_value(adjustment_x);
+  const gdouble value_y = gtk_adjustment_get_value(adjustment_y);
 
   dt_view_manager_scrollbar_changed(darktable.view_manager, value_x, value_y);
 
@@ -960,7 +961,7 @@ static gboolean _button_pressed(GtkWidget *w, GdkEventButton *event, gpointer us
 
   if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
   {
-    gdk_event_get_axis ((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
+    gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
   }
   dt_control_button_pressed(event->x, event->y, pressure, event->button, event->type, event->state & 0xf);
   gtk_widget_grab_focus(w);
@@ -982,7 +983,7 @@ static gboolean _mouse_moved(GtkWidget *w, GdkEventMotion *event, dt_gui_gtk_t *
 
   if(device && gdk_device_get_source(device) == GDK_SOURCE_PEN)
   {
-    gdk_event_get_axis ((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
+    gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
     gui->have_pen_pressure = pressure != 1.0;
   }
   dt_control_mouse_moved(event->x, event->y, pressure, event->state & 0xf);
@@ -1041,15 +1042,15 @@ void dt_open_url(const char* url)
 
   if(uri_success)
   {
-    dt_control_log(_("url opened in web browser"));
+    dt_control_log(_("URL opened in web browser"));
   }
   else
   {
-    dt_control_log(_("error while opening url in web browser"));
+    dt_control_log(_("error while opening URL in web browser"));
     if(error != NULL) // uri_success being FALSE should guarantee that
     {
-      fprintf (stderr, "unable to read file: %s\n", error->message);
-      g_error_free (error);
+      dt_print(DT_DEBUG_ALWAYS, "unable to read file: %s\n", error->message);
+      g_error_free(error);
     }
   }
 }
@@ -1166,12 +1167,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Now the application menu (first item)
   // GTK automatically translates the item with index 0 so no need to localize.
   // Furthermore, the application name (darktable) is automatically appended.
-  GtkWidget *mi_about = gtk_menu_item_new_with_label ("About");
+  GtkWidget *mi_about = gtk_menu_item_new_with_label("About");
   g_signal_connect(G_OBJECT(mi_about), "activate",
                    G_CALLBACK(darktable_show_about_dialog), NULL);
   gtkosx_application_insert_app_menu_item(OSXApp, mi_about, 0);
 
-  GtkWidget *mi_prefs = gtk_menu_item_new_with_label (C_("menu", "Preferences"));
+  GtkWidget *mi_prefs = gtk_menu_item_new_with_label(C_("menu", "Preferences"));
   g_signal_connect(G_OBJECT(mi_prefs), "activate",
                    G_CALLBACK(dt_gui_preferences_show), NULL);
   gtkosx_application_insert_app_menu_item(OSXApp, mi_prefs, 1);
