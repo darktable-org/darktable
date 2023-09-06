@@ -287,7 +287,13 @@ int write_image(struct dt_imageio_module_data_t *data,
   /*
    * Set these in advance so any upcoming RGB -> YUV use the proper
    * coefficients.
+   * 
+   * If possible, we want libavif to save the color encoding in its own format,
+   * rather than embedding the ICC profile, which is possible.
+   * If we are unable to find the required color encoding data we will just
+   * fallback to providing an ICC blob (and hope we can at least do that!).
    */
+  gboolean have_nclx = TRUE;
   switch(cp->type)
   {
     case DT_COLORSPACE_SRGB:
@@ -336,25 +342,29 @@ int write_image(struct dt_imageio_module_data_t *data,
       image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
       break;
     default:
+      have_nclx = FALSE;
       break;
   }
 
   dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]\n", dt_colorspaces_get_name(cp->type, filename));
 
-  /* Compliant AVIF readers should prefer ICC profiles, so always try to include it */
-  uint32_t icc_profile_len;
-  cmsSaveProfileToMem(cp->profile, NULL, &icc_profile_len);
-  if(icc_profile_len > 0)
+  if(!have_nclx)
   {
-    icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
-    if(icc_profile_data == NULL)
+    /* If we didn't manage to write the color encoding natively we need to fallback to ICC */
+    uint32_t icc_profile_len;
+    cmsSaveProfileToMem(cp->profile, NULL, &icc_profile_len);
+    if(icc_profile_len > 0)
     {
-      dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate %u bytes for ICC profile\n", icc_profile_len);
-      rc = 1;
-      goto out;
+      icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
+      if(icc_profile_data == NULL)
+      {
+        dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate %u bytes for ICC profile\n", icc_profile_len);
+        rc = 1;
+        goto out;
+      }
+      cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
+      avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
     }
-    cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
-    avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
   }
 
   /*
