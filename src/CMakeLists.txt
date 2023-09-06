@@ -932,6 +932,7 @@ set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERAT
 add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
+add_dependencies(lib_darktable generate_authors_h)
 
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES MACOSX_RPATH TRUE)
@@ -1045,6 +1046,9 @@ if(USE_LIBRAW AND NOT (DONT_USE_INTERNAL_LIBRAW AND libraw_FOUND))
   target_link_libraries(lib_darktable PRIVATE libraw::libraw)
 endif()
 
+#
+# generate the authors file
+#
 add_custom_command(
   DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h

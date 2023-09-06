@@ -56,7 +56,6 @@ add_library(ioporder MODULE "ioporder.c")
 add_library(viewswitcher MODULE "tools/viewswitcher.c")
 
 add_library(darktable_label MODULE "tools/darktable.c")
-add_dependencies(darktable_label generate_authors_h)
 
 add_library(colorlabels MODULE "tools/colorlabels.c")
 add_library(ratings MODULE "tools/ratings.c")
