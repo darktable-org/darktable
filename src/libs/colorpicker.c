@@ -401,14 +401,12 @@ static gboolean _sample_enter_callback(GtkWidget *widget,
                                        GdkEvent *event,
                                        dt_colorpicker_sample_t *sample)
 {
-  if(darktable.lib->proxy.colorpicker.picker_proxy)
-  {
-    darktable.lib->proxy.colorpicker.selected_sample = sample;
-    if(darktable.lib->proxy.colorpicker.display_samples)
-      dt_dev_invalidate_all(darktable.develop);
+  darktable.lib->proxy.colorpicker.selected_sample = sample;
 
-    dt_control_queue_redraw_center();
-  }
+  if(darktable.lib->proxy.colorpicker.display_samples)
+    dt_dev_invalidate_all(darktable.develop);
+
+  dt_control_queue_redraw_center();
 
   return FALSE;
 }
