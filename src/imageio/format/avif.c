@@ -763,7 +763,7 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_avif_gui_t *gui =
       (dt_imageio_avif_gui_t *)malloc(sizeof(dt_imageio_avif_gui_t));
-  const uint32_t bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bit_depth");
+  const uint32_t bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bpp");
   const enum avif_color_mode_e color_mode = dt_conf_get_int("plugins/imageio/format/avif/color_mode");
   const enum avif_tiling_e tiling = !dt_conf_get_bool("plugins/imageio/format/avif/tiling");
   const enum avif_compression_type_e compression_type = dt_conf_get_int("plugins/imageio/format/avif/compression_type");
@@ -901,21 +901,28 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_avif_gui_t *gui = (dt_imageio_avif_gui_t *)self->gui_data;
 
+  const uint32_t bit_depth = dt_confgen_get_int("plugins/imageio/format/avif/bpp", DT_DEFAULT);
   const enum avif_color_mode_e color_mode = dt_confgen_get_int("plugins/imageio/format/avif/color_mode", DT_DEFAULT);
   const enum avif_tiling_e tiling = !dt_confgen_get_bool("plugins/imageio/format/avif/tiling", DT_DEFAULT);
   const enum avif_compression_type_e compression_type = dt_confgen_get_int("plugins/imageio/format/avif/compression_type", DT_DEFAULT);
   const uint32_t quality = dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT);
 
-  dt_bauhaus_combobox_set(gui->bit_depth, 0); //8bpp
+  size_t idx = 0;
+  for(size_t i = 0; avif_bit_depth[i].name != NULL; ++i)
+  {
+    if(avif_bit_depth[i].bit_depth == bit_depth)
+    {
+      idx = i;
+      break;
+    }
+  }
+  dt_bauhaus_combobox_set(gui->bit_depth, idx);
   dt_bauhaus_combobox_set(gui->color_mode, color_mode);
   dt_bauhaus_combobox_set(gui->tiling, tiling);
   dt_bauhaus_combobox_set(gui->compression_type, compression_type);
   dt_bauhaus_slider_set(gui->quality, quality);
-
-  compression_type_changed(GTK_WIDGET(gui->compression_type), self);
-  quality_changed(GTK_WIDGET(gui->quality), self);
-  bit_depth_changed(GTK_WIDGET(gui->bit_depth), self);
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
