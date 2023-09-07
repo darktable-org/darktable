@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-09-04 07:47-0300\n"
-"PO-Revision-Date: 2023-09-04 07:55-0300\n"
+"PO-Revision-Date: 2023-09-07 15:24-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -4507,16 +4507,14 @@ msgstr "filme colorido"
 #: ../build/lib/darktable/plugins/introspection_primaries.c:75
 #: ../build/lib/darktable/plugins/introspection_primaries.c:160
 #: ../src/iop/primaries.c:393
-#, fuzzy
 msgid "tint hue"
-msgstr "elevação de matiz"
+msgstr "matiz"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:81
 #: ../build/lib/darktable/plugins/introspection_primaries.c:164
 #: ../src/iop/primaries.c:400
-#, fuzzy
 msgid "tint purity"
-msgstr "linearidade"
+msgstr "pureza da matiz"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:87
 #: ../build/lib/darktable/plugins/introspection_primaries.c:168
@@ -18786,13 +18784,12 @@ msgid "module overexposed failed in color conversion"
 msgstr "módulo superexposição falhou na conversão de cores"
 
 #: ../src/iop/primaries.c:74
-#, fuzzy
 msgid "rgb primaries"
-msgstr "de ajuda"
+msgstr "primárias RGB"
 
 #: ../src/iop/primaries.c:79
 msgid "adjustment of the RGB color primaries for color grading"
-msgstr ""
+msgstr "ajuste das cores primárias RGB para grading de cores"
 
 #: ../src/iop/primaries.c:382
 msgid "red primary hue"
