@@ -930,7 +930,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
            "%s" G_DIR_SEPARATOR_S "programs.conf", kerneldir);
 
   char *escapedkerneldir = NULL;
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !(defined(__linux__) && defined(__aarch64__))
   escapedkerneldir = g_strdup_printf("\"%s\"", kerneldir);
 #else
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
