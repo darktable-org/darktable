@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-08 19:32+0200\n"
-"PO-Revision-Date: 2023-09-08 19:33+0200\n"
+"POT-Creation-Date: 2023-09-08 19:36+0200\n"
+"PO-Revision-Date: 2023-09-08 19:37+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1659,14 +1659,13 @@ msgid "OpenCL drivers"
 msgstr "Pilotes OpenCL"
 
 #: ../build/bin/preferences_gen.h:6377
-msgid "Intel HD"
-msgstr "Intel HD"
+msgid "Intel GPU"
+msgstr "Intel GPU"
 
 #: ../build/bin/preferences_gen.h:6391
-msgid ""
-"Intel(R) OpenCL HD Graphics and Intel(R) OpenCL Graphics (vendor provided)"
+msgid "Intel(R) OpenCL Graphics for all supported platforms (vendor provided)"
 msgstr ""
-"Intel(R) OpenCL HD Graphics et Intel(R) OpenCL Graphics (fourni par "
+"Intel(R) OpenCL Graphics pour toutes les plateformes supportées (fourni par "
 "constructeur)"
 
 #: ../build/bin/preferences_gen.h:6419
@@ -6808,7 +6807,7 @@ msgstr "Distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Le profil de gestion du bruit « %s » n’est pas valide"
 
-#: ../src/common/opencl.c:1415
+#: ../src/common/opencl.c:1418
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -6817,13 +6816,13 @@ msgstr ""
 "Problème d'initialisation OpenCL :\n"
 "%s"
 
-#: ../src/common/opencl.c:1447
+#: ../src/common/opencl.c:1450
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "Profil de planification d’OpenCL par défaut positionné, l'environnement a "
 "changé"
 
-#: ../src/common/opencl.c:2275
+#: ../src/common/opencl.c:2278
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "Compilation du programme OpenCL « %s » pour « %s »"
