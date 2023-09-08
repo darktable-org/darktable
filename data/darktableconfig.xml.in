@@ -252,7 +252,7 @@
       </enum>
     </type>
     <default>on import</default>
-    <shortdescription>write sidecar file for each image</shortdescription>
+    <shortdescription>create sidecar file for each image</shortdescription>
     <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written:\n - 'never'\n - 'on import': immediately after importing the image\n - 'after edit': after any user change on the image.</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="XMP">

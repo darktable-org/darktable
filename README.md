@@ -354,7 +354,7 @@ To use a test version of darktable without damaging your regular/stable version'
 /opt/darktable-test/bin/darktable --configdir "~/.config/darktable-test"
 ```
 
-and ensure that you set the option "write sidecar file for each image" to "never" in preferences -> storage -> XMP. This way,
+and ensure that you set the option "create sidecar file for each image" to "never" in preferences -> storage -> XMP. This way,
 your regular/stable version will save its configuration files in `~/.config/darktable`, as usual,
 the test/unstable one will save in `~/.config/darktable-test`, and the two versions will not produce database conflicts.
 
