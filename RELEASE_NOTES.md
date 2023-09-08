@@ -110,6 +110,12 @@ improvements and enhancements:
   images at a time. Holding <kbd>ctrl</kbd> while scrolling changes
   the number of images shown ("zooms") and thereby the shift speed.
 
+- Exported AVIF files no longer embed a superfluous ICC profile if the
+  color profile can be encoded as CICP.
+
+- Exported PNG files now include a CICP encoded color profile in
+  addition to ICC if possible.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
