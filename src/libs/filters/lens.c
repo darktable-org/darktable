@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,8 @@ static void _lens_synchronise(_widgets_lens_t *source)
   }
 }
 
-static void _lens_changed(GtkWidget *widget, gpointer user_data)
+static void _lens_changed(GtkWidget *widget,
+                          gpointer user_data)
 {
   _widgets_lens_t *lens = (_widgets_lens_t *)user_data;
   if(lens->rule->manual_widget_set) return;
@@ -57,7 +58,9 @@ static void _lens_changed(GtkWidget *widget, gpointer user_data)
   _lens_synchronise(lens);
 }
 
-static gboolean _lens_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
+static gboolean _lens_focus_out(GtkWidget *entry,
+                                GdkEventFocus *event,
+                                gpointer user_data)
 {
   _widgets_lens_t *lens = (_widgets_lens_t *)user_data;
   if(lens->rule->cleaning) return FALSE;
@@ -115,12 +118,16 @@ void _lens_tree_update(_widgets_lens_t *lens)
   lens->tree_ok = TRUE;
 }
 
-void _lens_tree_update_visibility(GtkWidget *w, _widgets_lens_t *lens)
+void _lens_tree_update_visibility(GtkWidget *w,
+                                  _widgets_lens_t *lens)
 {
   if(!lens->tree_ok) _lens_tree_update(lens);
 }
 
-static gboolean _lens_select_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+static gboolean _lens_select_func(GtkTreeModel *model,
+                                  GtkTreePath *path,
+                                  GtkTreeIter *iter,
+                                  gpointer data)
 {
   GtkTreeSelection *sel = (GtkTreeSelection *)data;
   gchar **elems = (gchar **)g_object_get_data(G_OBJECT(sel), "elems");
@@ -150,7 +157,6 @@ static void _lens_update_selection(_widgets_lens_t *lens)
   lens->internal_change++;
   gtk_tree_selection_unselect_all(sel);
 
-
   if(g_strcmp0(txt, ""))
   {
     gchar **elems = g_strsplit(txt, ",", -1);
@@ -161,7 +167,9 @@ static void _lens_update_selection(_widgets_lens_t *lens)
   lens->internal_change--;
 }
 
-static gboolean _lens_press(GtkWidget *w, GdkEventButton *e, _widgets_lens_t *lens)
+static gboolean _lens_press(GtkWidget *w,
+                            GdkEventButton *e,
+                            _widgets_lens_t *lens)
 {
   if(e->button == 3)
   {
@@ -198,20 +206,24 @@ static gboolean _lens_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static void _lens_popup_closed(GtkWidget *w, _widgets_lens_t *lens)
+static void _lens_popup_closed(GtkWidget *w,
+                               _widgets_lens_t *lens)
 {
   // we validate the corresponding entry
   gtk_widget_activate(gtk_popover_get_default_widget(GTK_POPOVER(w)));
 }
 
-static void _lens_tree_row_activated(GtkTreeView *self, GtkTreePath *path, GtkTreeViewColumn *column,
+static void _lens_tree_row_activated(GtkTreeView *self,
+                                     GtkTreePath *path,
+                                     GtkTreeViewColumn *column,
                                      _widgets_lens_t *lens)
 {
   // as the selection as already been updated on first click, we just close the popup
   gtk_widget_hide(lens->pop);
 }
 
-static void _lens_tree_selection_change(GtkTreeSelection *sel, _widgets_lens_t *lens)
+static void _lens_tree_selection_change(GtkTreeSelection *sel,
+                                        _widgets_lens_t *lens)
 {
   if(!lens || lens->internal_change) return;
   GtkTreeModel *model = gtk_tree_view_get_model(gtk_tree_selection_get_tree_view(sel));
@@ -237,13 +249,17 @@ static void _lens_tree_selection_change(GtkTreeSelection *sel, _widgets_lens_t *
   g_free(txt);
 }
 
-static void _lens_ok_clicked(GtkWidget *w, _widgets_lens_t *lens)
+static void _lens_ok_clicked(GtkWidget *w,
+                             _widgets_lens_t *lens)
 {
   gtk_widget_hide(lens->pop);
 }
 
-void _lens_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
-                           GtkTreeIter *iter, gpointer data)
+void _lens_tree_count_func(GtkTreeViewColumn *col,
+                           GtkCellRenderer *renderer,
+                           GtkTreeModel *model,
+                           GtkTreeIter *iter,
+                           gpointer data)
 {
   gchar *name;
   guint count;
@@ -265,8 +281,11 @@ void _lens_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, Gt
   g_free(name);
 }
 
-static void _lens_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                              const gchar *text, dt_lib_module_t *self, const gboolean top)
+static void _lens_widget_init(dt_lib_filtering_rule_t *rule,
+                              const dt_collection_properties_t prop,
+                              const gchar *text,
+                              dt_lib_module_t *self,
+                              const gboolean top)
 {
   _widgets_lens_t *lens = (_widgets_lens_t *)g_malloc0(sizeof(_widgets_lens_t));
   lens->rule = rule;

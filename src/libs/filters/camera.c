@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,8 @@ static void _camera_synchronise(_widgets_camera_t *source)
   }
 }
 
-static void _camera_changed(GtkWidget *widget, gpointer user_data)
+static void _camera_changed(GtkWidget *widget,
+                            gpointer user_data)
 {
   _widgets_camera_t *camera = (_widgets_camera_t *)user_data;
   if(camera->rule->manual_widget_set) return;
@@ -57,7 +58,9 @@ static void _camera_changed(GtkWidget *widget, gpointer user_data)
   _camera_synchronise(camera);
 }
 
-static gboolean _camera_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
+static gboolean _camera_focus_out(GtkWidget *entry,
+                                  GdkEventFocus *event,
+                                  gpointer user_data)
 {
   _widgets_camera_t *camera = (_widgets_camera_t *)user_data;
   if(camera->rule->cleaning) return FALSE;
@@ -118,12 +121,16 @@ void _camera_tree_update(_widgets_camera_t *camera)
   camera->tree_ok = TRUE;
 }
 
-void _camera_tree_update_visibility(GtkWidget *w, _widgets_camera_t *camera)
+void _camera_tree_update_visibility(GtkWidget *w,
+                                    _widgets_camera_t *camera)
 {
   if(!camera->tree_ok) _camera_tree_update(camera);
 }
 
-static gboolean _camera_select_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+static gboolean _camera_select_func(GtkTreeModel *model,
+                                    GtkTreePath *path,
+                                    GtkTreeIter *iter,
+                                    gpointer data)
 {
   GtkTreeSelection *sel = (GtkTreeSelection *)data;
   gchar **elems = (gchar **)g_object_get_data(G_OBJECT(sel), "elems");
@@ -163,7 +170,9 @@ static void _camera_update_selection(_widgets_camera_t *camera)
   camera->internal_change--;
 }
 
-static gboolean _camera_press(GtkWidget *w, GdkEventButton *e, _widgets_camera_t *camera)
+static gboolean _camera_press(GtkWidget *w,
+                              GdkEventButton *e,
+                              _widgets_camera_t *camera)
 {
   if(e->button == 3)
   {
@@ -200,20 +209,24 @@ static gboolean _camera_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static void _camera_popup_closed(GtkWidget *w, _widgets_camera_t *camera)
+static void _camera_popup_closed(GtkWidget *w,
+                                 _widgets_camera_t *camera)
 {
   // we validate the corresponding entry
   gtk_widget_activate(gtk_popover_get_default_widget(GTK_POPOVER(w)));
 }
 
-static void _camera_tree_row_activated(GtkTreeView *self, GtkTreePath *path, GtkTreeViewColumn *column,
+static void _camera_tree_row_activated(GtkTreeView *self,
+                                       GtkTreePath *path,
+                                       GtkTreeViewColumn *column,
                                        _widgets_camera_t *camera)
 {
   // as the selection as already been updated on first click, we just close the popup
   gtk_widget_hide(camera->pop);
 }
 
-static void _camera_tree_selection_change(GtkTreeSelection *sel, _widgets_camera_t *camera)
+static void _camera_tree_selection_change(GtkTreeSelection *sel,
+                                          _widgets_camera_t *camera)
 {
   if(!camera || camera->internal_change) return;
   GtkTreeModel *model = gtk_tree_view_get_model(gtk_tree_selection_get_tree_view(sel));
@@ -239,13 +252,17 @@ static void _camera_tree_selection_change(GtkTreeSelection *sel, _widgets_camera
   g_free(txt);
 }
 
-static void _camera_ok_clicked(GtkWidget *w, _widgets_camera_t *camera)
+static void _camera_ok_clicked(GtkWidget *w,
+                               _widgets_camera_t *camera)
 {
   gtk_widget_hide(camera->pop);
 }
 
-void _camera_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
-                             GtkTreeIter *iter, gpointer data)
+void _camera_tree_count_func(GtkTreeViewColumn *col,
+                             GtkCellRenderer *renderer,
+                             GtkTreeModel *model,
+                             GtkTreeIter *iter,
+                             gpointer data)
 {
   gchar *name;
   guint count;
@@ -267,8 +284,11 @@ void _camera_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, 
   g_free(name);
 }
 
-static void _camera_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self, const gboolean top)
+static void _camera_widget_init(dt_lib_filtering_rule_t *rule,
+                                const dt_collection_properties_t prop,
+                                const gchar *text,
+                                dt_lib_module_t *self,
+                                const gboolean top)
 {
   _widgets_camera_t *camera = (_widgets_camera_t *)g_malloc0(sizeof(_widgets_camera_t));
   camera->rule = rule;
