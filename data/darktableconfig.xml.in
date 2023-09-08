@@ -332,8 +332,8 @@
     <name>clplatform_intelropenclhdgraphics</name>
     <type>bool</type>
     <default>${DEFCONFIG_NONAPPLE}</default>
-    <shortdescription>Intel HD</shortdescription>
-    <longdescription>Intel(R) OpenCL HD Graphics and Intel(R) OpenCL Graphics (vendor provided)</longdescription>
+    <shortdescription>Intel GPU</shortdescription>
+    <longdescription>Intel(R) OpenCL Graphics for all supported platforms (vendor provided)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_nvidiacuda</name>

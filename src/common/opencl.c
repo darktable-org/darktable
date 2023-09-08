@@ -1254,7 +1254,10 @@ void dt_opencl_init(
       /* In some cases it is safe to assume platform aliases instead of adding
           an additional conf key or falling back to clplatform_other
       */
-      else if(strcmp(platform_key, "clplatform_intelropenclgraphics") == 0)
+      else if((strcmp(platform_key, "clplatform_intelropenclgraphics") == 0)
+           || (strcmp(platform_key, "clplatform_intelropencluhdgraphics") == 0)
+           || (strcmp(platform_key, "clplatform_intelropenclirisgraphics") == 0)
+           || (strcmp(platform_key, "clplatform_intelropenclirisprographics") == 0))
         valid_platform = dt_conf_get_bool("clplatform_intelropenclhdgraphics");
       else
         valid_platform = dt_conf_get_bool("clplatform_other");
