@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-08 19:32+0200\n"
+"POT-Creation-Date: 2023-09-08 19:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1491,12 +1491,11 @@ msgid "OpenCL drivers"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:6377
-msgid "Intel HD"
+msgid "Intel GPU"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:6391
-msgid ""
-"Intel(R) OpenCL HD Graphics and Intel(R) OpenCL Graphics (vendor provided)"
+msgid "Intel(R) OpenCL Graphics for all supported platforms (vendor provided)"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:6419
@@ -6336,18 +6335,18 @@ msgstr ""
 msgid "noiseprofile file `%s' is not valid"
 msgstr ""
 
-#: ../src/common/opencl.c:1415
+#: ../src/common/opencl.c:1418
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
 "%s"
 msgstr ""
 
-#: ../src/common/opencl.c:1447
+#: ../src/common/opencl.c:1450
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 
-#: ../src/common/opencl.c:2275
+#: ../src/common/opencl.c:2278
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr ""
