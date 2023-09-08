@@ -114,7 +114,8 @@ static dt_imgid_t _get_image_at_rank(const int rank)
   return id;
 }
 
-static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d, const dt_imgid_t imgid)
+static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d,
+                                               const dt_imgid_t imgid)
 {
   dt_slideshow_slot_t slt = -1;
 
@@ -182,13 +183,15 @@ static void _requeue_job(dt_slideshow_t *d)
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, _process_job_create(d));
 }
 
-static void _set_delay(dt_slideshow_t *d, int value)
+static void _set_delay(dt_slideshow_t *d,
+                       int value)
 {
   d->delay = CLAMP(d->delay + value, 1, 60);
   dt_conf_set_int("slideshow_delay", d->delay);
 }
 
-static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
+static int _process_image(dt_slideshow_t *d,
+                          dt_slideshow_slot_t slot)
 {
   dt_pthread_mutex_lock(&d->lock);
   d->exporting++;
@@ -216,18 +219,15 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   dt_pthread_mutex_lock(&d->lock);
 
   // original slot for this image
-
   dt_slideshow_slot_t slt = slot;
 
   // check if we have not moved the slideshow forward or backward, if the
   // slot is not the same, check for a possible new slot for this image.
-
   if(d->buf[slt].imgid != imgid)
     slt = _get_slot_for_image(d, imgid);
 
   // also ensure that the screen has not been resized, otherwise we discard
   // the image. it will get regenerated in another later job.
-
   if(slt != -1
      && d->width == s_width
      && d->height == s_height)
@@ -249,7 +249,8 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   return 0;
 }
 
-static gboolean _is_slot_waiting(dt_slideshow_t *d, dt_slideshow_slot_t slot)
+static gboolean _is_slot_waiting(dt_slideshow_t *d,
+                                 dt_slideshow_slot_t slot)
 {
   return d->buf[slot].invalidated
          && d->buf[slot].buf == NULL
@@ -322,12 +323,14 @@ static dt_job_t *_process_job_create(dt_slideshow_t *d)
 {
   dt_job_t *job = dt_control_job_create(&_process_job_run, "process slideshow image");
   if(!job) return NULL;
+
   dt_control_job_set_params(job, d, NULL);
   return job;
 }
 
 // state machine stepping
-static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
+static void _step_state(dt_slideshow_t *d,
+                        dt_slideshow_event_t event)
 {
   dt_pthread_mutex_lock(&d->lock);
 
@@ -383,7 +386,6 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 }
 
 // callbacks for a view module:
-
 const char *name(const dt_view_t *self)
 {
   return _("slideshow");
@@ -465,7 +467,8 @@ void enter(dt_view_t *self)
   if(dt_is_valid_imgid(imgid))
   {
     sqlite3_stmt *stmt;
-    gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+    gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d",
+                                   imgid);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -529,7 +532,12 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_unlock(&d->lock);
 }
 
-void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+void expose(dt_view_t *self,
+            cairo_t *cr,
+            int32_t width,
+            int32_t height,
+            int32_t pointerx,
+            int32_t pointery)
 {
   // draw front buffer.
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
@@ -547,7 +555,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   // redraw even if the current displayed image is imgid as we want the
   // "working..." label to be cleared.
-
   if(slot->buf && dt_is_valid_imgid(imgid) && !slot->invalidated)
   {
     cairo_paint(cr);
@@ -596,7 +603,11 @@ static gboolean _hide_mouse(gpointer user_data)
 }
 
 
-void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
+void mouse_moved(dt_view_t *self,
+                 double x,
+                 double y,
+                 double pressure,
+                 int which)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
 
@@ -606,13 +617,23 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 }
 
 
-int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
+int button_released(dt_view_t *self,
+                    double x,
+                    double y,
+                    int which,
+                    uint32_t state)
 {
   return 0;
 }
 
 
-int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self,
+                   double x,
+                   double y,
+                   double pressure,
+                   int which,
+                   int type,
+                   uint32_t state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
 
@@ -645,14 +666,20 @@ static void _slow_down_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, 1);
-  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+  dt_control_log(ngettext("slideshow delay set to %d second",
+                          "slideshow delay set to %d seconds",
+                          d->delay),
+                 d->delay);
 }
 
 static void _speed_up_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, -1);
-  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+  dt_control_log(ngettext("slideshow delay set to %d second",
+                          "slideshow delay set to %d seconds",
+                          d->delay),
+                 d->delay);
 }
 
 static void _step_back_callback(dt_action_t *action)
@@ -703,6 +730,7 @@ GSList *mouse_actions(const dt_view_t *self)
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("go to previous image"));
   return lm;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
