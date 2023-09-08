@@ -287,7 +287,13 @@ int write_image(struct dt_imageio_module_data_t *data,
   /*
    * Set these in advance so any upcoming RGB -> YUV use the proper
    * coefficients.
+   * 
+   * If possible, we want libavif to save the color encoding in its own format,
+   * rather than embedding the ICC profile, which is possible.
+   * If we are unable to find the required color encoding data we will just
+   * fallback to providing an ICC blob (and hope we can at least do that!).
    */
+  gboolean have_nclx = TRUE;
   switch(cp->type)
   {
     case DT_COLORSPACE_SRGB:
@@ -336,25 +342,29 @@ int write_image(struct dt_imageio_module_data_t *data,
       image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
       break;
     default:
+      have_nclx = FALSE;
       break;
   }
 
   dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]\n", dt_colorspaces_get_name(cp->type, filename));
 
-  /* Compliant AVIF readers should prefer ICC profiles, so always try to include it */
-  uint32_t icc_profile_len;
-  cmsSaveProfileToMem(cp->profile, NULL, &icc_profile_len);
-  if(icc_profile_len > 0)
+  if(!have_nclx)
   {
-    icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
-    if(icc_profile_data == NULL)
+    /* If we didn't manage to write the color encoding natively we need to fallback to ICC */
+    uint32_t icc_profile_len;
+    cmsSaveProfileToMem(cp->profile, NULL, &icc_profile_len);
+    if(icc_profile_len > 0)
     {
-      dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate %u bytes for ICC profile\n", icc_profile_len);
-      rc = 1;
-      goto out;
+      icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
+      if(icc_profile_data == NULL)
+      {
+        dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate %u bytes for ICC profile\n", icc_profile_len);
+        rc = 1;
+        goto out;
+      }
+      cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
+      avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
     }
-    cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
-    avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
   }
 
   /*
@@ -753,7 +763,7 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_avif_gui_t *gui =
       (dt_imageio_avif_gui_t *)malloc(sizeof(dt_imageio_avif_gui_t));
-  const uint32_t bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bit_depth");
+  const uint32_t bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bpp");
   const enum avif_color_mode_e color_mode = dt_conf_get_int("plugins/imageio/format/avif/color_mode");
   const enum avif_tiling_e tiling = !dt_conf_get_bool("plugins/imageio/format/avif/tiling");
   const enum avif_compression_type_e compression_type = dt_conf_get_int("plugins/imageio/format/avif/compression_type");
@@ -891,21 +901,28 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_avif_gui_t *gui = (dt_imageio_avif_gui_t *)self->gui_data;
 
+  const uint32_t bit_depth = dt_confgen_get_int("plugins/imageio/format/avif/bpp", DT_DEFAULT);
   const enum avif_color_mode_e color_mode = dt_confgen_get_int("plugins/imageio/format/avif/color_mode", DT_DEFAULT);
   const enum avif_tiling_e tiling = !dt_confgen_get_bool("plugins/imageio/format/avif/tiling", DT_DEFAULT);
   const enum avif_compression_type_e compression_type = dt_confgen_get_int("plugins/imageio/format/avif/compression_type", DT_DEFAULT);
   const uint32_t quality = dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT);
 
-  dt_bauhaus_combobox_set(gui->bit_depth, 0); //8bpp
+  size_t idx = 0;
+  for(size_t i = 0; avif_bit_depth[i].name != NULL; ++i)
+  {
+    if(avif_bit_depth[i].bit_depth == bit_depth)
+    {
+      idx = i;
+      break;
+    }
+  }
+  dt_bauhaus_combobox_set(gui->bit_depth, idx);
   dt_bauhaus_combobox_set(gui->color_mode, color_mode);
   dt_bauhaus_combobox_set(gui->tiling, tiling);
   dt_bauhaus_combobox_set(gui->compression_type, compression_type);
   dt_bauhaus_slider_set(gui->quality, quality);
-
-  compression_type_changed(GTK_WIDGET(gui->compression_type), self);
-  quality_changed(GTK_WIDGET(gui->quality), self);
-  bit_depth_changed(GTK_WIDGET(gui->bit_depth), self);
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
