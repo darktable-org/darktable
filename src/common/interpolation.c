@@ -92,9 +92,9 @@ static void _show_2_times(const dt_times_t *start,
  * @param length length of line
  */
 static inline ssize_t _clip(ssize_t i,
-                       const ssize_t min,
-                       const ssize_t max,
-                       enum border_mode mode)
+                            const ssize_t min,
+                            const ssize_t max,
+                            enum border_mode mode)
 {
   switch(mode)
   {
@@ -148,11 +148,11 @@ static inline ssize_t _clip(ssize_t i,
 }
 
 static inline void _prepare_tap_boundaries(int *tap_first,
-                                          int *tap_last,
-                                          const enum border_mode mode,
-                                          const int filterwidth,
-                                          const int t,
-                                          const int max)
+                                           int *tap_last,
+                                           const enum border_mode mode,
+                                           const int filterwidth,
+                                           const int t,
+                                           const int max)
 {
   /* Check lower bound pixel index and skip as many pixels as necessary to
    * fall into range */
@@ -179,10 +179,10 @@ static inline void _prepare_tap_boundaries(int *tap_first,
  * ------------------------------------------------------------------------*/
 
 static float _maketaps_bilinear(float *taps,
-                               const size_t num_taps,
-                               const float  width,
-                               const float first_tap,
-                               const float interval)
+                                const size_t num_taps,
+                                const float  width,
+                                const float first_tap,
+                                const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   dt_aligned_pixel_t iter;
@@ -211,10 +211,10 @@ static float _maketaps_bilinear(float *taps,
  * ------------------------------------------------------------------------*/
 
 static float _maketaps_bicubic(float *taps,
-                              const size_t num_taps,
-                              const float  width,
-                              const float first_tap,
-                              const float interval)
+                               const size_t num_taps,
+                               const float  width,
+                               const float first_tap,
+                               const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   static const dt_aligned_pixel_t half = { .5f, .5f, .5f, .5f };
@@ -323,10 +323,10 @@ lanczos(const float width, const float t)
  * range check.  */
 
 static float _maketaps_lanczos(float *taps,
-                              const size_t num_taps,
-                              const float width,
-                              const float first_tap,
-                              const float interval)
+                               const size_t num_taps,
+                               const float width,
+                               const float first_tap,
+                               const float interval)
 {
   static const dt_aligned_pixel_t bootstrap = { 0.0f, 1.0f, 2.0f, 3.0f };
   dt_aligned_pixel_t iter;
@@ -433,9 +433,9 @@ static const struct dt_interpolation dt_interpolator[] = {
  * ------------------------------------------------------------------------*/
 
 static inline float _compute_upsampling_kernel(const struct dt_interpolation *itor,
-                                              float *kernel,
-                                              int *first,
-                                              float t)
+                                               float *kernel,
+                                               int *first,
+                                               float t)
 {
   // find first pixel contributing to the filter's kernel.  We need
   // floorf() because a simple cast to int truncates toward zero,
@@ -468,12 +468,12 @@ static inline float _compute_upsampling_kernel(const struct dt_interpolation *it
  * @param outoinratio [in] "out samples" over "in samples" ratio
  * @param xout [in] Output coordinate */
 static inline void _compute_downsampling_kernel(const struct dt_interpolation *itor,
-                                               int *taps,
-                                               int *first,
-                                               float *kernel,
-                                               float *norm,
-                                               const float outoinratio,
-                                               const int xout)
+                                                int *taps,
+                                                int *first,
+                                                float *kernel,
+                                                float *norm,
+                                                const float outoinratio,
+                                                const int xout)
 {
   // Keep this at hand
   const float w = (float)itor->width;
@@ -836,15 +836,15 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
  * @return FALSE for success, TRUE for failure
  */
 static gboolean _prepare_resampling_plan(const struct dt_interpolation *itor,
-                                   const int in,
-                                   const int in_x0,
-                                   const int out,
-                                   const int out_x0,
-                                   const float scale,
-                                   int **plength,
-                                   float **pkernel,
-                                   int **pindex,
-                                   int **pmeta)
+                                         const int in,
+                                         const int in_x0,
+                                         const int out,
+                                         const int out_x0,
+                                         const float scale,
+                                         int **plength,
+                                         float **pkernel,
+                                         int **pindex,
+                                         int **pmeta)
 {
   // Safe return values
   *plength = NULL;
@@ -1019,13 +1019,13 @@ static gboolean _prepare_resampling_plan(const struct dt_interpolation *itor,
   return FALSE;
 }
 
-static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
-                                            float *out,
-                                            const dt_iop_roi_t *const roi_out,
-                                            const int32_t out_stride,
-                                            const float *const in,
-                                            const dt_iop_roi_t *const roi_in,
-                                            const int32_t in_stride)
+static void _interpolation_resample_plain(const struct dt_interpolation *itor,
+                                          float *out,
+                                          const dt_iop_roi_t *const roi_out,
+                                          const int32_t out_stride,
+                                          const float *const in,
+                                          const dt_iop_roi_t *const roi_in,
+                                          const int32_t in_stride)
 {
   int *hindex = NULL;
   int *hlength = NULL;
@@ -1188,8 +1188,8 @@ void dt_interpolation_resample(const struct dt_interpolation *itor,
     return;
   }
 
-  return dt_interpolation_resample_plain(itor, out, roi_out, out_stride, in,
-                                         roi_in, in_stride);
+  return _interpolation_resample_plain(itor, out, roi_out, out_stride, in,
+                                       roi_in, in_stride);
 }
 
 /** Applies resampling (re-scaling) on a specific region-of-interest
@@ -1450,13 +1450,13 @@ int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor,
 }
 #endif
 
-static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *itor,
-                                               float *out,
-                                               const dt_iop_roi_t *const roi_out,
-                                               const int32_t out_stride,
-                                               const float *const in,
-                                               const dt_iop_roi_t *const roi_in,
-                                               const int32_t in_stride)
+static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor,
+                                             float *out,
+                                             const dt_iop_roi_t *const roi_out,
+                                             const int32_t out_stride,
+                                             const float *const in,
+                                             const dt_iop_roi_t *const roi_in,
+                                             const int32_t in_stride)
 {
   int *hindex = NULL;
   int *hlength = NULL;
@@ -1598,8 +1598,8 @@ void dt_interpolation_resample_1c(const struct dt_interpolation *itor,
                                   const dt_iop_roi_t *const roi_in,
                                   const int32_t in_stride)
 {
-  return dt_interpolation_resample_1c_plain(itor, out, roi_out, out_stride,
-                                            in, roi_in, in_stride);
+  return _interpolation_resample_1c_plain(itor, out, roi_out, out_stride,
+                                          in, roi_in, in_stride);
 }
 
 /** Applies resampling (re-scaling) on a specific region-of-interest of an image. The input
