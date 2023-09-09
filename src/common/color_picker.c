@@ -301,7 +301,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
         // legitimately negative
         // FIXME: this blurs whole image even when just a bit is sampled in the
         // case of CPU path
-        blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
+        blur_2D_Bspline(pixel, denoised, tempbuf, padded_size, roi->width, roi->height, 1, FALSE);
         dt_free_align(tempbuf);
         source = denoised;
       }
