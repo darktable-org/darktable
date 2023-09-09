@@ -22,10 +22,10 @@
 #include "common/dwt.h"
 #include "develop/openmp_maths.h"
 
-// uncomment the following to use nontemporal writes in the decomposition
+// Define the following as TRUE to use nontemporal writes in the decomposition
 // on a 32-core Threadripper, nt writes are 8% slower wiith one thread,
 // break even at 8 threads, and are 8% faster with 32 and 64 threads
-//#define USE_NONTEMPORAL
+#define USE_NONTEMPORAL FALSE
 
 // B spline filter
 #define BSPLINE_FSIZE 5
@@ -150,6 +150,7 @@ static inline void _bspline_horizontal(const float *const restrict temp, float *
 static inline void blur_2D_Bspline(const float *const restrict in,
                                    float *const restrict out,
                                    float *const restrict tempbuf,
+                                   const size_t padded_size,
                                    const size_t width,
                                    const size_t height,
                                    const int mult,
@@ -158,13 +159,13 @@ static inline void blur_2D_Bspline(const float *const restrict in,
   // À-trous B-spline interpolation/blur shifted by mult
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, tempbuf, width, height, mult, clip_negatives) \
+    dt_omp_firstprivate(in, out, tempbuf, width, height, mult, clip_negatives, padded_size) \
     schedule(static)
   #endif
   for(size_t row = 0; row < height; row++)
   {
     // get a thread-private one-row temporary buffer
-    float *const temp = tempbuf + 4 * width * dt_get_thread_num();
+    float *restrict const temp = dt_get_perthread(tempbuf, padded_size);
     // interleave the order in which we process the rows so that we minimize cache misses
     const size_t i = dwt_interleave_rows(row, height, mult);
     // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
@@ -181,9 +182,10 @@ static inline void blur_2D_Bspline(const float *const restrict in,
 #endif
     }
   }
+#if USE_NONTEMPORAL
   dt_omploop_sfence();  // ensure that nontemporal writes complete before we attempt to read the output
+#endif
 }
-
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in, HF, LF:64) aligned(tempbuf:16)
@@ -191,8 +193,11 @@ static inline void blur_2D_Bspline(const float *const restrict in,
 inline static void decompose_2D_Bspline(const float *const in,
                                         float *const HF,
                                         float *const restrict LF,
-                                        const size_t width, const size_t height, const int mult,
-                                        float *const tempbuf, size_t padded_size)
+                                        const size_t width,
+                                        const size_t height,
+                                        const int mult,
+                                        float *const tempbuf,
+                                        const size_t padded_size)
 {
   // Blur and compute the decimated wavelet at once
 #ifdef _OPENMP
@@ -227,10 +232,10 @@ inline static void decompose_2D_Bspline(const float *const in,
 #endif
     }
   }
+#if USE_NONTEMPORAL
   dt_omploop_sfence();  // ensure that nontemporal writes complete before we attempt to read the output
+#endif
 }
-
-#undef USE_NONTEMPORAL
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
