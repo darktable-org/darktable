@@ -18954,7 +18954,7 @@ msgstr "Anpassung der Farbreinheit Rot"
 
 #: ../src/iop/primaries.c:384
 msgid "green primary hue"
-msgstr "Anpassung Grün hin zu türkis oder gelb"
+msgstr "Anpassung Grün hin zu cyan oder gelb"
 
 #: ../src/iop/primaries.c:385
 msgid "green primary purity"
@@ -18962,7 +18962,7 @@ msgstr "Anpassung der Farbreinheit Grün"
 
 #: ../src/iop/primaries.c:386
 msgid "blue primary hue"
-msgstr "Anpassung Blau hin zu türkis oder magenta"
+msgstr "Anpassung Blau hin zu magenta oder cyan"
 
 #: ../src/iop/primaries.c:387
 msgid "blue primary purity"
