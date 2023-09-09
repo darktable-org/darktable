@@ -167,10 +167,10 @@ int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in, const 
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   cl_int err = dt_interpolation_resample_roi_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
-  if(err == DT_OPENCL_PROCESS_CL)
+  if(err == CL_INVALID_WORK_GROUP_SIZE)
   {
     // We ran into a "vertical number of taps exceeds the vertical workgroupsize" problem
-    // Instead of redoing the whole thing later we do an internal fallback to cpu here 
+    // Instead of redoing the whole thing later we do an internal fallback to cpu here
     float *in = dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4);
     float *out = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
     if(out && in)
@@ -182,11 +182,16 @@ int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in, const 
         dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in, 0, 0);
         err = dt_opencl_write_host_to_device
               (devid, out, dev_out, roi_out->width, roi_out->height, 4 * sizeof(float));
-        if(err == CL_SUCCESS)
-          dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
-            "did fast cpu fallback\n");
       }
+
     }
+    if(err == CL_SUCCESS)
+      dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
+          "did fast cpu fallback\n");
+    else
+      dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
+          "fast cpu fallback failing: %s\n", cl_errstr(err));
+
     dt_free_align(in);
     dt_free_align(out);
   }
