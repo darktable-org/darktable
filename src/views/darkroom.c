@@ -3508,10 +3508,11 @@ int button_pressed(dt_view_t *self,
   x -= tb;
   y -= tb;
 
-  if(darktable.develop->darkroom_skip_mouse_events && type == GDK_BUTTON_PRESS)
+  if(darktable.develop->darkroom_skip_mouse_events)
   {
     if(which == 1)
     {
+      if(type == GDK_2BUTTON_PRESS) return 0;
       dt_control_change_cursor(GDK_HAND1);
       return 1;
     }
