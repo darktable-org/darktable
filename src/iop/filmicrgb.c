@@ -1719,7 +1719,7 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original,
   const int user_desat = (saturation < 0.f);
 
   chroma_final = (filmic_brightens && filmic_resat)
-                      ? (chroma_original + chroma_final) / 2.f // force original lower sat if brightening
+                  ? (chroma_original + chroma_final) / 2.f // force original lower sat if brightening
                   : ((user_resat && filmic_desat) || user_desat)
                       ? chroma_final + delta_chroma // allow resaturation only if filmic desaturated, allow desat anytime
                       : chroma_final;
@@ -2660,7 +2660,6 @@ int process_cl(struct dt_iop_module_t *self,
       CLARG(export_output_matrix_cl));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_split, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
   else
   {
@@ -2674,16 +2673,7 @@ int process_cl(struct dt_iop_module_t *self,
       CLARG(export_output_matrix_cl), CLARG(norm_min), CLARG(norm_max));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_chroma, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
-
-  dt_opencl_release_mem_object(reconstructed);
-  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  dt_opencl_release_mem_object(input_matrix_cl);
-  dt_opencl_release_mem_object(output_matrix_cl);
-  dt_opencl_release_mem_object(export_input_matrix_cl);
-  dt_opencl_release_mem_object(export_output_matrix_cl);
-  return CL_SUCCESS;
 
 error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
@@ -2691,11 +2681,11 @@ error:
   dt_opencl_release_mem_object(inpainted);
   dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(ratios);
-  dt_opencl_release_mem_object(norms);
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(export_input_matrix_cl);
   dt_opencl_release_mem_object(export_output_matrix_cl);
+  dt_opencl_release_mem_object(norms);
   dt_opencl_release_mem_object(clipped);
   return err;
 }
