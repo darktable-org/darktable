@@ -656,6 +656,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
                               G_FILE_ATTRIBUTE_STANDARD_NAME ","
                               G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
                               G_FILE_ATTRIBUTE_TIME_MODIFIED ","
+                              G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN ","
                               G_FILE_ATTRIBUTE_STANDARD_TYPE,
                               G_FILE_QUERY_INFO_NONE, NULL, &error);
 
