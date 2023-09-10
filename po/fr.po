@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-08 19:36+0200\n"
-"PO-Revision-Date: 2023-09-08 19:37+0200\n"
+"POT-Creation-Date: 2023-09-10 19:37+0200\n"
+"PO-Revision-Date: 2023-09-10 19:39+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1904,22 +1904,22 @@ msgid "XMP"
 msgstr "XMP"
 
 #: ../build/bin/preferences_gen.h:7383
-msgid "write sidecar file for each image"
-msgstr "Écrire un fichier XMP redondant pour chaque image"
+msgid "create sidecar files"
+msgstr "Créer les fichiers XMP"
 
 #: ../build/bin/preferences_gen.h:7426
 msgid ""
 "the sidecar files hold information about all your development steps to allow "
 "flawless re-importing of image files.\n"
 "\n"
-"depending on the selected mode sidecar files will be written:\n"
+"depending on the selected mode sidecar files will be created:\n"
 " - 'never'\n"
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image."
 msgstr ""
 "Les fichiers XMP contiennent les informations sur l’ensemble des étapes\n"
 "de développement pour permettre de réimporter parfaitement les images.\n"
-"En fonction du mode sélectionné, les fichiers XMP sont écrits :\n"
+"En fonction du mode sélectionné, les fichiers XMP sont créés :\n"
 " • Jamais\n"
 " • À l’importation – immédiatement après l’importation de l’image\n"
 " • Après édition – après toute modification de l’image"
@@ -3269,7 +3269,7 @@ msgstr "Pivot du gris contrasté"
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:636 ../src/iop/bilat.c:468
 #: ../src/iop/colisa.c:298 ../src/iop/colorbalance.c:1921
 #: ../src/iop/colorbalance.c:1927 ../src/iop/filmic.c:1572
-#: ../src/iop/filmicrgb.c:4613 ../src/iop/lowpass.c:599
+#: ../src/iop/filmicrgb.c:4615 ../src/iop/lowpass.c:599
 msgid "contrast"
 msgstr "Contraste"
 
@@ -3898,7 +3898,7 @@ msgstr "Dureté"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:302
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:483
-#: ../src/iop/filmic.c:1610 ../src/iop/filmicrgb.c:4791
+#: ../src/iop/filmic.c:1610 ../src/iop/filmicrgb.c:4793
 msgid "extreme luminance saturation"
 msgstr "Saturation des luminances extrêmes"
 
@@ -8102,17 +8102,17 @@ msgid "uniformly"
 msgstr "Uniforme"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2748
-#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2651
+#: ../src/develop/blend_gui.c:3440 ../src/develop/imageop.c:2650
 msgid "drawn mask"
 msgstr "Masque dessiné"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2520
-#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2653
+#: ../src/develop/blend_gui.c:3451 ../src/develop/imageop.c:2652
 msgid "parametric mask"
 msgstr "Masque paramétrique"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:2958
-#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2655
+#: ../src/develop/blend_gui.c:3478 ../src/develop/imageop.c:2654
 msgid "raster mask"
 msgstr "Masque raster"
 
@@ -8159,12 +8159,12 @@ msgid "on"
 msgstr "Activé(e)"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2779
+#: ../src/develop/imageop.c:2778
 msgid "input"
 msgstr "Entrée"
 
 #: ../src/develop/blend_gui.c:984 ../src/develop/blend_gui.c:2598
-#: ../src/develop/imageop.c:2779
+#: ../src/develop/imageop.c:2778
 msgid "output"
 msgstr "Sortie"
 
@@ -8417,8 +8417,8 @@ msgstr ""
 #: ../src/iop/basicadj.c:629 ../src/iop/colorbalancergb.c:2177
 #: ../src/iop/exposure.c:1138 ../src/iop/exposure.c:1153
 #: ../src/iop/filmic.c:1527 ../src/iop/filmic.c:1540 ../src/iop/filmic.c:1582
-#: ../src/iop/filmicrgb.c:4502 ../src/iop/filmicrgb.c:4513
-#: ../src/iop/filmicrgb.c:4547 ../src/iop/filmicrgb.c:4557
+#: ../src/iop/filmicrgb.c:4504 ../src/iop/filmicrgb.c:4515
+#: ../src/iop/filmicrgb.c:4549 ../src/iop/filmicrgb.c:4559
 #: ../src/iop/graduatednd.c:1106 ../src/iop/negadoctor.c:1030
 #: ../src/iop/profile_gamma.c:657 ../src/iop/profile_gamma.c:663
 #: ../src/iop/relight.c:258 ../src/iop/soften.c:373 ../src/iop/toneequal.c:3349
@@ -8749,70 +8749,70 @@ msgid "duplicate instance"
 msgstr "Cloner l’instance"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:1044 ../src/develop/imageop.c:3721
+#: ../src/develop/imageop.c:1044 ../src/develop/imageop.c:3720
 #: ../src/libs/masks.c:1170
 msgid "move up"
 msgstr "Monter"
 
-#: ../src/develop/imageop.c:1050 ../src/develop/imageop.c:3722
+#: ../src/develop/imageop.c:1050 ../src/develop/imageop.c:3721
 #: ../src/libs/masks.c:1175
 msgid "move down"
 msgstr "Descendre"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1056 ../src/develop/imageop.c:3724
+#: ../src/develop/imageop.c:1056 ../src/develop/imageop.c:3723
 #: ../src/gui/accelerators.c:173 ../src/gui/presets.c:562
 #: ../src/libs/image.c:285 ../src/libs/image.c:480 ../src/libs/tagging.c:1483
 #: ../src/libs/tagging.c:1571
 msgid "delete"
 msgstr "Supprimer"
 
-#: ../src/develop/imageop.c:1063 ../src/develop/imageop.c:3725
+#: ../src/develop/imageop.c:1063 ../src/develop/imageop.c:3724
 #: ../src/libs/modulegroups.c:3469 ../src/libs/modulegroups.c:3820
 msgid "rename"
 msgstr "Renommer"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2943
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2942
 #, c-format
 msgid "'%s' is switched on"
 msgstr "« %s » est activé"
 
-#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2943
+#: ../src/develop/imageop.c:1130 ../src/develop/imageop.c:2942
 #, c-format
 msgid "'%s' is switched off"
 msgstr "« %s » est désactivé"
 
-#: ../src/develop/imageop.c:2645
+#: ../src/develop/imageop.c:2644
 msgid "unknown mask"
 msgstr "Masque inconnu"
 
-#: ../src/develop/imageop.c:2649
+#: ../src/develop/imageop.c:2648
 msgid "drawn + parametric mask"
 msgstr "Masques dessiné et paramétrique"
 
-#: ../src/develop/imageop.c:2658
+#: ../src/develop/imageop.c:2657
 #, c-format
 msgid "this module has a `%s'"
 msgstr "Ce module a un « %s »"
 
-#: ../src/develop/imageop.c:2663
+#: ../src/develop/imageop.c:2662
 #, c-format
 msgid "taken from module %s"
 msgstr "Récupéré depuis le module « %s »"
 
-#: ../src/develop/imageop.c:2668
+#: ../src/develop/imageop.c:2667
 msgid "click to display (module must be activated first)"
 msgstr "Cliquer pour afficher (le module doit être activé)"
 
-#: ../src/develop/imageop.c:2779
+#: ../src/develop/imageop.c:2778
 msgid "purpose"
 msgstr "Objectif"
 
-#: ../src/develop/imageop.c:2779
+#: ../src/develop/imageop.c:2778
 msgid "process"
 msgstr "Traitement"
 
-#: ../src/develop/imageop.c:2899
+#: ../src/develop/imageop.c:2898
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8820,7 +8820,7 @@ msgstr ""
 "Instances multiples,\n"
 "clic droit pour créer une nouvelle instance."
 
-#: ../src/develop/imageop.c:2914
+#: ../src/develop/imageop.c:2913
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8828,7 +8828,7 @@ msgstr ""
 "Réinitialiser les paramètres,\n"
 "Ctrl+clic pour réappliquer les préréglages automatiques."
 
-#: ../src/develop/imageop.c:2926
+#: ../src/develop/imageop.c:2925
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8836,15 +8836,15 @@ msgstr ""
 "Préréglages,\n"
 "clic droit pour appliquer sur une nouvelle instance."
 
-#: ../src/develop/imageop.c:3176 ../src/develop/imageop.c:3198
+#: ../src/develop/imageop.c:3175 ../src/develop/imageop.c:3197
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3602
+#: ../src/develop/imageop.c:3601
 msgid "unsupported input"
 msgstr "Entrée non supportée"
 
-#: ../src/develop/imageop.c:3603
+#: ../src/develop/imageop.c:3602
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8855,36 +8855,36 @@ msgstr ""
 "dans le pipeline où le format de données\n"
 "ne satisfait pas les prérequis."
 
-#: ../src/develop/imageop.c:3720 ../src/develop/imageop.c:3730
+#: ../src/develop/imageop.c:3719 ../src/develop/imageop.c:3729
 #: ../src/gui/accelerators.c:169 ../src/libs/lib.c:1415
 msgid "show"
 msgstr "Afficher"
 
-#: ../src/develop/imageop.c:3723 ../src/libs/modulegroups.c:3315
+#: ../src/develop/imageop.c:3722 ../src/libs/modulegroups.c:3315
 #: ../src/libs/modulegroups.c:3441 ../src/libs/modulegroups.c:3822
 #: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr "Nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:3726 ../src/libs/duplicate.c:405
+#: ../src/develop/imageop.c:3725 ../src/libs/duplicate.c:405
 #: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3818
 msgid "duplicate"
 msgstr "Cloner"
 
-#: ../src/develop/imageop.c:3731
+#: ../src/develop/imageop.c:3730
 msgid "enable"
 msgstr "Activer"
 
-#: ../src/develop/imageop.c:3732 ../src/gui/accelerators.c:185
+#: ../src/develop/imageop.c:3731 ../src/gui/accelerators.c:185
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:3733 ../src/gui/accelerators.c:2784
+#: ../src/develop/imageop.c:3732 ../src/gui/accelerators.c:2784
 msgid "instance"
 msgstr "Instance"
 
-#: ../src/develop/imageop.c:3734 ../src/gui/accelerators.c:130
+#: ../src/develop/imageop.c:3733 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3102 ../src/gui/gtk.c:3149
 #: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
 #: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1626
@@ -8893,12 +8893,12 @@ msgid "reset"
 msgstr "Réinitialiser"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3735 ../src/gui/preferences.c:798
+#: ../src/develop/imageop.c:3734 ../src/gui/preferences.c:798
 #: ../src/libs/lib.c:1417
 msgid "presets"
 msgstr "Préréglages"
 
-#: ../src/develop/imageop.c:3755
+#: ../src/develop/imageop.c:3754
 msgid "processing module"
 msgstr "Module de traitement"
 
@@ -9506,7 +9506,7 @@ msgstr "Images groupées"
 msgid "fit"
 msgstr "Ajusté"
 
-#: ../src/dtgtk/thumbtable.c:1029 ../src/views/slideshow.c:421
+#: ../src/dtgtk/thumbtable.c:1029 ../src/views/slideshow.c:424
 msgid "there are no images in this collection"
 msgstr "Il n’y a pas d’images dans cette collection"
 
@@ -10491,7 +10491,7 @@ msgstr "« %s » n’est pas assigné"
 msgid "%s assigned to %s"
 msgstr "« %s » est assigné à « %s »"
 
-#: ../src/gui/gtk.c:175 ../src/views/darkroom.c:4474
+#: ../src/gui/gtk.c:175 ../src/views/darkroom.c:4475
 msgid "darktable - darkroom preview"
 msgstr "darktable - prévisualisation en chambre noire"
 
@@ -10607,7 +10607,7 @@ msgstr "Chambre noire"
 msgid "map"
 msgstr "Carte"
 
-#: ../src/gui/gtk.c:1302 ../src/views/slideshow.c:389
+#: ../src/gui/gtk.c:1302 ../src/views/slideshow.c:392
 msgid "slideshow"
 msgstr "Diaporama"
 
@@ -11627,8 +11627,8 @@ msgstr "Relatif à l’affichage"
 #: ../src/gui/presets.c:1201 ../src/iop/channelmixerrgb.c:395
 #: ../src/iop/channelmixerrgb.c:399 ../src/iop/channelmixerrgb.c:402
 #: ../src/iop/exposure.c:319 ../src/iop/exposure.c:323
-#: ../src/iop/exposure.c:326 ../src/iop/filmicrgb.c:3309
-#: ../src/iop/filmicrgb.c:3313 ../src/iop/filmicrgb.c:3316
+#: ../src/iop/exposure.c:326 ../src/iop/filmicrgb.c:3311
+#: ../src/iop/filmicrgb.c:3315 ../src/iop/filmicrgb.c:3318
 #: ../src/iop/sigmoid.c:135 ../src/iop/sigmoid.c:139 ../src/iop/sigmoid.c:142
 msgid "scene-referred default"
 msgstr "Défaut pour « relatif à la scène »"
@@ -12996,7 +12996,7 @@ msgstr ""
 
 #: ../src/iop/atrous.c:1818 ../src/iop/colorbalancergb.c:2145
 #: ../src/iop/colorzones.c:2732 ../src/iop/denoiseprofile.c:3747
-#: ../src/iop/filmicrgb.c:4469 ../src/iop/lowlight.c:821
+#: ../src/iop/filmicrgb.c:4471 ../src/iop/lowlight.c:821
 #: ../src/iop/rawdenoise.c:935 ../src/iop/toneequal.c:3394
 msgid "graph"
 msgstr "Graphique"
@@ -14199,7 +14199,7 @@ msgstr ""
 "c : \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4448 ../src/iop/clipping.c:2129
-#: ../src/iop/colorbalancergb.c:1960 ../src/iop/filmicrgb.c:4481
+#: ../src/iop/colorbalancergb.c:1960 ../src/iop/filmicrgb.c:4483
 #: ../src/iop/negadoctor.c:848 ../src/iop/toneequal.c:3342
 #: ../src/libs/image.c:460 ../src/views/lighttable.c:1258
 msgid "page"
@@ -16896,7 +16896,7 @@ msgstr ""
 "Ajuster pour correspondre à la luminance moyenne du sujet.\n"
 "Sauf pour les scènes sombres, cette valeur devrait être proche de 18 %."
 
-#: ../src/iop/filmic.c:1528 ../src/iop/filmicrgb.c:4504
+#: ../src/iop/filmic.c:1528 ../src/iop/filmicrgb.c:4506
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -16906,7 +16906,7 @@ msgstr ""
 "C’est la valeur que donnerait un posemètre sur la scène.\n"
 "Ajuster pour éviter de tronquer les hautes lumières."
 
-#: ../src/iop/filmic.c:1541 ../src/iop/filmicrgb.c:4515
+#: ../src/iop/filmic.c:1541 ../src/iop/filmicrgb.c:4517
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -16926,7 +16926,7 @@ msgstr ""
 "Élargir ou rétrécir la plage dynamique calculée.\n"
 "Ceci est utile avec l’utilisation des « Niveaux automatiques »."
 
-#: ../src/iop/filmic.c:1559 ../src/iop/filmicrgb.c:4529
+#: ../src/iop/filmic.c:1559 ../src/iop/filmicrgb.c:4531
 #: ../src/iop/profile_gamma.c:673
 msgid "auto tune levels"
 msgstr "Niveaux automatiques"
@@ -16948,7 +16948,7 @@ msgctxt "section"
 msgid "filmic S curve"
 msgstr "Courbe filmique en S"
 
-#: ../src/iop/filmic.c:1574 ../src/iop/filmicrgb.c:4616
+#: ../src/iop/filmic.c:1574 ../src/iop/filmicrgb.c:4618
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -16957,7 +16957,7 @@ msgstr ""
 "touche principalement les tons moyens"
 
 #. geotagging
-#: ../src/iop/filmic.c:1581 ../src/iop/filmicrgb.c:4625
+#: ../src/iop/filmic.c:1581 ../src/iop/filmicrgb.c:4627
 #: ../src/libs/metadata_view.c:161
 msgid "latitude"
 msgstr "Latitude"
@@ -16976,7 +16976,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "Balance ombres/hautes lumières"
 
-#: ../src/iop/filmic.c:1594 ../src/iop/filmicrgb.c:4636
+#: ../src/iop/filmic.c:1594 ../src/iop/filmicrgb.c:4638
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -17059,7 +17059,7 @@ msgctxt "section"
 msgid "destination/display"
 msgstr "Destination / Affichage"
 
-#: ../src/iop/filmic.c:1664 ../src/iop/filmicrgb.c:4655
+#: ../src/iop/filmic.c:1664 ../src/iop/filmicrgb.c:4657
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -17067,7 +17067,7 @@ msgstr ""
 "Luminance du noir pur de sortie, devrait être à 0 %\n"
 "sauf pour obtenir des tons fades."
 
-#: ../src/iop/filmic.c:1673 ../src/iop/filmicrgb.c:4662
+#: ../src/iop/filmic.c:1673 ../src/iop/filmicrgb.c:4664
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -17075,7 +17075,7 @@ msgstr ""
 "Valeur du gris moyen de la cible de sortie ou de l’espace de couleur.\n"
 "Ne jamais modifier sauf en connaissance de cause."
 
-#: ../src/iop/filmic.c:1682 ../src/iop/filmicrgb.c:4669
+#: ../src/iop/filmic.c:1682 ../src/iop/filmicrgb.c:4671
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -17116,7 +17116,7 @@ msgstr ""
 "scène\n"
 "pour affichage sur écran SDR et tirages sur papier"
 
-#: ../src/iop/filmicrgb.c:1366
+#: ../src/iop/filmicrgb.c:1365
 msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
@@ -17124,73 +17124,73 @@ msgstr ""
 "Le reconstruction des hautes lumières de filmique n’a pas assez de mémoire, "
 "vérifier les paramètres de la RAM"
 
-#: ../src/iop/filmicrgb.c:2357
+#: ../src/iop/filmicrgb.c:2369
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "Le reconstruction des hautes lumières de « Filmique RVB » n’a pas assez de "
 "mémoire GPU"
 
-#: ../src/iop/filmicrgb.c:2475
+#: ../src/iop/filmicrgb.c:2487
 msgid "filmic works only on RGB input"
 msgstr "« Filmique RVB » ne marche qu’avec une entrée RVB"
 
-#: ../src/iop/filmicrgb.c:3546
+#: ../src/iop/filmicrgb.c:3548
 msgid "look only"
 msgstr "Look uniquement"
 
-#: ../src/iop/filmicrgb.c:3548
+#: ../src/iop/filmicrgb.c:3550
 msgid "look + mapping (lin)"
 msgstr "Look + mappage (lin)"
 
-#: ../src/iop/filmicrgb.c:3550
+#: ../src/iop/filmicrgb.c:3552
 msgid "look + mapping (log)"
 msgstr "Look + mappage (log)"
 
-#: ../src/iop/filmicrgb.c:3552
+#: ../src/iop/filmicrgb.c:3554
 msgid "dynamic range mapping"
 msgstr "Mappage de plage dynamique"
 
-#: ../src/iop/filmicrgb.c:3919
+#: ../src/iop/filmicrgb.c:3921
 #, c-format
 msgid "(%.0f %%)"
 msgstr "(%.0f %%)"
 
-#: ../src/iop/filmicrgb.c:3935
+#: ../src/iop/filmicrgb.c:3937
 #, no-c-format
 msgid "% display"
 msgstr "% Affichage"
 
-#: ../src/iop/filmicrgb.c:3947
+#: ../src/iop/filmicrgb.c:3949
 msgid "EV scene"
 msgstr "IL scène"
 
-#: ../src/iop/filmicrgb.c:3951
+#: ../src/iop/filmicrgb.c:3953
 #, no-c-format
 msgid "% camera"
 msgstr "% Boîtier"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3987 ../src/iop/filmicrgb.c:4649
+#: ../src/iop/filmicrgb.c:3989 ../src/iop/filmicrgb.c:4651
 msgid "display"
 msgstr "Affichage"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3996
+#: ../src/iop/filmicrgb.c:3998
 msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:4005 ../src/iop/filmicrgb.c:4484
+#: ../src/iop/filmicrgb.c:4007 ../src/iop/filmicrgb.c:4486
 msgid "scene"
 msgstr "Scène"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:4014
+#: ../src/iop/filmicrgb.c:4016
 msgid "(EV)"
 msgstr "(IL)"
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:4426
+#: ../src/iop/filmicrgb.c:4428
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -17200,11 +17200,11 @@ msgstr ""
 "La courbe claire représente le mappage des tonalités,\n"
 "la courbe sombre représente la désaturation."
 
-#: ../src/iop/filmicrgb.c:4432
+#: ../src/iop/filmicrgb.c:4434
 msgid "toggle axis labels and values display"
 msgstr "Basculer les légendes des axes"
 
-#: ../src/iop/filmicrgb.c:4436
+#: ../src/iop/filmicrgb.c:4438
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -17216,7 +17216,7 @@ msgstr ""
 " • Clic droit pour la vue précédente\n"
 " • Double clic pour réinitialiser la vue"
 
-#: ../src/iop/filmicrgb.c:4493
+#: ../src/iop/filmicrgb.c:4495
 #, no-c-format
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
@@ -17227,7 +17227,7 @@ msgstr ""
 "La valeur entrée sera réglée pour correspondre à 18.45 %,\n"
 "Diminuer pour augmenter la luminosité globale."
 
-#: ../src/iop/filmicrgb.c:4523
+#: ../src/iop/filmicrgb.c:4525
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -17235,7 +17235,7 @@ msgstr ""
 "Élargir ou rétrécir la plage dynamique calculée.\n"
 "Ceci est utile pour donner une marge de sécurité aux luminances extrêmes."
 
-#: ../src/iop/filmicrgb.c:4530
+#: ../src/iop/filmicrgb.c:4532
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -17252,16 +17252,16 @@ msgstr ""
 "S’assurer de bien comprendre l’analyse avant de l’utiliser."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4539
+#: ../src/iop/filmicrgb.c:4541
 msgid "reconstruct"
 msgstr "Reconstruire"
 
-#: ../src/iop/filmicrgb.c:4541
+#: ../src/iop/filmicrgb.c:4543
 msgctxt "section"
 msgid "highlights clipping"
 msgstr "Hautes lumières tronquées"
 
-#: ../src/iop/filmicrgb.c:4549
+#: ../src/iop/filmicrgb.c:4551
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -17275,7 +17275,7 @@ msgstr ""
 "0 IL signifie que le seuil est le même que le point blanc de la scène.\n"
 "Diminuer pour inclure plus de zones, augmenter pour en exclure plus."
 
-#: ../src/iop/filmicrgb.c:4559
+#: ../src/iop/filmicrgb.c:4561
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -17286,16 +17286,16 @@ msgstr ""
 "Diminuer pour une transition plus tranchée et dure,\n"
 "augmenter pour une transition plus douce et floutée."
 
-#: ../src/iop/filmicrgb.c:4565 ../src/iop/filmicrgb.c:4566
+#: ../src/iop/filmicrgb.c:4567 ../src/iop/filmicrgb.c:4568
 msgid "display highlight reconstruction mask"
 msgstr "Afficher le masque de reconstruction"
 
-#: ../src/iop/filmicrgb.c:4573
+#: ../src/iop/filmicrgb.c:4575
 msgctxt "section"
 msgid "balance"
 msgstr "Répartition"
 
-#: ../src/iop/filmicrgb.c:4580
+#: ../src/iop/filmicrgb.c:4582
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -17312,7 +17312,7 @@ msgstr ""
 "n’est pas tronqué, diminuer si tous les canaux RVB sont tronqués sur une "
 "large zone."
 
-#: ../src/iop/filmicrgb.c:4591
+#: ../src/iop/filmicrgb.c:4593
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -17328,7 +17328,7 @@ msgstr ""
 "0 % est une moyenne équilibrée des deux. Augmenter pour plus de détails,\n"
 "diminuer pour plus de flou."
 
-#: ../src/iop/filmicrgb.c:4603
+#: ../src/iop/filmicrgb.c:4605
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -17345,11 +17345,11 @@ msgstr ""
 "diminuer pour éviter les hautes lumières magentas ou hors gamut."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4611
+#: ../src/iop/filmicrgb.c:4613
 msgid "look"
 msgstr "Look"
 
-#: ../src/iop/filmicrgb.c:4621
+#: ../src/iop/filmicrgb.c:4623
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -17360,7 +17360,7 @@ msgstr ""
 "compressées,\n"
 "diminuer pour contenir les hautes lumières."
 
-#: ../src/iop/filmicrgb.c:4629
+#: ../src/iop/filmicrgb.c:4631
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -17374,7 +17374,7 @@ msgstr ""
 "latitude.\n"
 "Ce réglage n’a pas d’effet sur les tons moyens."
 
-#: ../src/iop/filmicrgb.c:4644 ../src/iop/filmicrgb.c:4792
+#: ../src/iop/filmicrgb.c:4646 ../src/iop/filmicrgb.c:4794
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -17385,11 +17385,11 @@ msgstr ""
 "Augmenter si les ombres et/ou les hautes lumières sont sous-saturées."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4673
+#: ../src/iop/filmicrgb.c:4675
 msgid "options"
 msgstr "Options"
 
-#: ../src/iop/filmicrgb.c:4678
+#: ../src/iop/filmicrgb.c:4680
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -17399,7 +17399,7 @@ msgstr ""
 " • V4 est la nouvelle méthode de désaturation basée sur la pureté du spectre "
 "de la lumière."
 
-#: ../src/iop/filmicrgb.c:4682
+#: ../src/iop/filmicrgb.c:4684
 msgid ""
 "ensure the original colors are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -17409,7 +17409,7 @@ msgstr ""
 "Peut renforcer les aberrations chromatiques et le bruit chromatique,\n"
 "il est nécessaire de s’assurer qu’ils sont correctement corrigés auparavant."
 
-#: ../src/iop/filmicrgb.c:4691
+#: ../src/iop/filmicrgb.c:4693
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -17419,7 +17419,7 @@ msgstr ""
 " • Dur pour une compression tonale plus importante\n"
 " • Doux pour une compression tonale plus faible"
 
-#: ../src/iop/filmicrgb.c:4696
+#: ../src/iop/filmicrgb.c:4698
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -17429,7 +17429,7 @@ msgstr ""
 " • Dur pour une compression tonale plus importante\n"
 " • Doux pour une compression tonale plus faible"
 
-#: ../src/iop/filmicrgb.c:4703
+#: ../src/iop/filmicrgb.c:4705
 #, no-c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -17442,7 +17442,7 @@ msgstr ""
 "« Exposition ».\n"
 "Désactiver pour utiliser un gris moyen standard de 18.45 %."
 
-#: ../src/iop/filmicrgb.c:4710
+#: ../src/iop/filmicrgb.c:4712
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -17454,7 +17454,7 @@ msgstr ""
 "Cela ne modifie pas le gris moyen et améliore les réglages rapides.\n"
 "Désactiver pour contrôler manuellement."
 
-#: ../src/iop/filmicrgb.c:4716
+#: ../src/iop/filmicrgb.c:4718
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighborhood.\n"
@@ -17468,7 +17468,7 @@ msgstr ""
 "aussi\n"
 "dans les cas difficiles de hautes lumières magentas."
 
-#: ../src/iop/filmicrgb.c:4723
+#: ../src/iop/filmicrgb.c:4725
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -17479,7 +17479,7 @@ msgstr ""
 "Cela évite des hautes lumières lisses quand l’image est un peu bruitée,\n"
 "les hautes lumières se fondent alors mieux avec le reste de l’image."
 
-#: ../src/iop/filmicrgb.c:4730
+#: ../src/iop/filmicrgb.c:4732
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern."
@@ -17487,11 +17487,11 @@ msgstr ""
 "Sélectionner la distribution statistique du bruit,\n"
 "pour ressembler au bruit naturel du capteur."
 
-#: ../src/iop/filmicrgb.c:4798
+#: ../src/iop/filmicrgb.c:4800
 msgid "mid-tones saturation"
 msgstr "Saturation des tons moyens"
 
-#: ../src/iop/filmicrgb.c:4799
+#: ../src/iop/filmicrgb.c:4801
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -17501,11 +17501,11 @@ msgstr ""
 "plus particulièrement aux luminances moyennes.\n"
 "Augmenter si les tons moyens sont sous-saturés."
 
-#: ../src/iop/filmicrgb.c:4805
+#: ../src/iop/filmicrgb.c:4807
 msgid "highlights saturation mix"
 msgstr "Saturation des hautes lumières"
 
-#: ../src/iop/filmicrgb.c:4806
+#: ../src/iop/filmicrgb.c:4808
 msgid ""
 "positive values ensure saturation is kept unchanged over the whole range.\n"
 "negative values bleach highlights at constant hue and luminance.\n"
@@ -25503,51 +25503,51 @@ msgstr "Refaire"
 msgid "change keyboard shortcut slider precision"
 msgstr "Changer la précision des raccourcis clavier des réglettes"
 
-#: ../src/views/darkroom.c:3923
+#: ../src/views/darkroom.c:3924
 msgid "keyboard shortcut slider precision: fine"
 msgstr "Précision des raccourcis clavier des réglettes : fine"
 
-#: ../src/views/darkroom.c:3925
+#: ../src/views/darkroom.c:3926
 msgid "keyboard shortcut slider precision: normal"
 msgstr "Précision des raccourcis clavier des réglettes : standard"
 
-#: ../src/views/darkroom.c:3927
+#: ../src/views/darkroom.c:3928
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "Précision des raccourcis clavier des réglettes : grossière"
 
-#: ../src/views/darkroom.c:3943
+#: ../src/views/darkroom.c:3944
 msgid "switch to lighttable"
 msgstr "Passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3944 ../src/views/lighttable.c:882
+#: ../src/views/darkroom.c:3945 ../src/views/lighttable.c:882
 msgid "zoom in the image"
 msgstr "Zoom dans l’image"
 
-#: ../src/views/darkroom.c:3945
+#: ../src/views/darkroom.c:3946
 msgid "unbounded zoom in the image"
 msgstr "Zoom sans limites dans l’image"
 
-#: ../src/views/darkroom.c:3946
+#: ../src/views/darkroom.c:3947
 msgid "zoom to 100% 200% and back"
 msgstr "Zoom à 100 % et 200 % en cyclant"
 
-#: ../src/views/darkroom.c:3947 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3948 ../src/views/lighttable.c:885
 msgid "pan a zoomed image"
 msgstr "Déplacer ou zoomer l’image"
 
-#: ../src/views/darkroom.c:3949 ../src/views/lighttable.c:927
+#: ../src/views/darkroom.c:3950 ../src/views/lighttable.c:927
 msgid "[modules] expand module without closing others"
 msgstr "[modules] Déplie le module sans replier les autres"
 
-#: ../src/views/darkroom.c:3950 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:3951 ../src/views/lighttable.c:928
 msgid "[modules] expand module and close others"
 msgstr "[modules] Déplie le module et replie les autres"
 
-#: ../src/views/darkroom.c:3952
+#: ../src/views/darkroom.c:3953
 msgid "[modules] rename module"
 msgstr "[modules] Renommer le module"
 
-#: ../src/views/darkroom.c:3954
+#: ../src/views/darkroom.c:3955
 msgid "[modules] change module position in pipe"
 msgstr "[modules] Change la position du module dans le flux"
 
@@ -25692,60 +25692,60 @@ msgctxt "view"
 msgid "print"
 msgstr "Impression"
 
-#: ../src/views/slideshow.c:353
+#: ../src/views/slideshow.c:357
 msgid "end of images"
 msgstr "Fin des images"
 
-#: ../src/views/slideshow.c:374
+#: ../src/views/slideshow.c:378
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "Fin des images, appuyez sur une touche pour revenir à la table lumineuse."
 
-#: ../src/views/slideshow.c:504
+#: ../src/views/slideshow.c:511
 msgid "waiting to start slideshow"
 msgstr "Le diaporama est prêt à être lancé"
 
-#: ../src/views/slideshow.c:640 ../src/views/slideshow.c:661
-#: ../src/views/slideshow.c:669
+#: ../src/views/slideshow.c:668 ../src/views/slideshow.c:695
+#: ../src/views/slideshow.c:703
 msgid "slideshow paused"
 msgstr "Diaporama en pause"
 
-#: ../src/views/slideshow.c:648 ../src/views/slideshow.c:655
+#: ../src/views/slideshow.c:676 ../src/views/slideshow.c:686
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "Temporisation du diaporama ajustée à %d seconde"
 msgstr[1] "Temporisation du diaporama ajustée à %d secondes"
 
-#: ../src/views/slideshow.c:684
+#: ../src/views/slideshow.c:718
 msgid "start and stop"
 msgstr "Marche et arrêt"
 
-#: ../src/views/slideshow.c:685
+#: ../src/views/slideshow.c:720
 msgid "exit slideshow"
 msgstr "Quitter le diaporama"
 
-#: ../src/views/slideshow.c:688
+#: ../src/views/slideshow.c:724
 msgid "slow down"
 msgstr "Ralentir"
 
-#: ../src/views/slideshow.c:691
+#: ../src/views/slideshow.c:728
 msgid "speed up"
 msgstr "Accélérer"
 
-#: ../src/views/slideshow.c:695
+#: ../src/views/slideshow.c:733
 msgid "step forward"
 msgstr "Image suivante"
 
-#: ../src/views/slideshow.c:696
+#: ../src/views/slideshow.c:735
 msgid "step back"
 msgstr "Image précédente"
 
-#: ../src/views/slideshow.c:702
+#: ../src/views/slideshow.c:743
 msgid "go to next image"
 msgstr "Passe au fichier suivant"
 
-#: ../src/views/slideshow.c:703
+#: ../src/views/slideshow.c:745
 msgid "go to previous image"
 msgstr "Passer à l’image précédente"
 
@@ -25802,6 +25802,9 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1550
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#~ msgid "write sidecar file for each image"
+#~ msgstr "Écrire un fichier XMP redondant pour chaque image"
 
 #~ msgctxt "preferences"
 #~ msgid "nothing"
