@@ -2198,12 +2198,13 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
 
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
-  dt_iop_module_t *out_focus_module = darktable.develop->gui_module;
+  dt_develop_t *dev = darktable.develop;
+  dt_iop_module_t *out_focus_module = dev->gui_module;
 
   if(darktable.gui->reset || (out_focus_module == module)) return;
 
-  darktable.develop->gui_module = module;
-  darktable.develop->focus_hash = TRUE;
+  dev->gui_module = module;
+  dev->focus_hash = TRUE;
 
   /* lets lose the focus of previous focus module*/
   if(out_focus_module)
@@ -2215,12 +2216,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(out_focus_module),
                                GTK_STATE_FLAG_NORMAL, TRUE);
-
-    if(out_focus_module->operation_tags_filter())
-    {
-      dt_dev_invalidate_all(darktable.develop);
-      dt_dev_pixelpipe_rebuild(darktable.develop);
-    }
 
     dt_iop_connect_accels_multi(out_focus_module->so);
 
@@ -2247,12 +2242,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module),
                                GTK_STATE_FLAG_SELECTED, TRUE);
 
-    if(module->operation_tags_filter())
-    {
-      dt_dev_invalidate_all(darktable.develop);
-      dt_dev_pixelpipe_rebuild(darktable.develop);
-    }
-
     dt_iop_connect_accels_multi(module->so);
 
     if(module->gui_focus)
@@ -2263,7 +2252,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     // we also add the focus css class
     GtkWidget *iop_w =
-      gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
+      gtk_widget_get_parent(dt_iop_gui_get_pluginui(dev->gui_module));
     dt_gui_add_class(iop_w, "dt_module_focus");
 
     // update last preset name to get the update preset entry
@@ -2278,6 +2267,16 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   if(darktable.view_manager->accels_window.window
      && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
+
+  if((out_focus_module && out_focus_module->operation_tags_filter())
+     || (module && module->operation_tags_filter()))
+  {
+    dt_dev_invalidate_all(dev);
+    dt_dev_pixelpipe_rebuild(dev);
+    // don't use previous image as overlay
+    if(dev->pipe) dev->pipe->backbuf_zoom_x = 1000;
+    if(dev->preview2_pipe) dev->preview2_pipe->backbuf_zoom_x = 1000;
+  }
 
   // update guides button state
   dt_guides_update_button_state();
