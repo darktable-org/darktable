@@ -288,13 +288,11 @@ static void _lib_lighttable_key_accel_toggle_culling_dynamic_mode(dt_action_t *a
   dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
-  // if we are already in any culling layout, we return to the base layout
-  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING &&
-     d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED &&
-     d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
-    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
-  else
+  // if we are already in culling dynamic layout, we return to the base layout
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     _lib_lighttable_set_layout(self, d->base_layout);
+  else
+    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
 
   dt_control_queue_redraw_center();
 }
