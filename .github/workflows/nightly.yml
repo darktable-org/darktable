@@ -356,7 +356,7 @@ jobs:
       # We need write permission to update the nightly tag
       contents: write
     runs-on: ubuntu-latest
-    needs: [AppImage, Windows]
+    needs: [AppImage, Windows, macOS]
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
