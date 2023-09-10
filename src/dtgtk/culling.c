@@ -1562,7 +1562,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
   const int number_of_slots = g_list_length(slots);
 
-
   // finished assigning thumbnails to slots
   // we also know max slot height, so we can now scale all slots to this heigth
   // and then calculate average slot heigth and width
@@ -1587,7 +1586,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       slot_thumb_iter;
       slot_thumb_iter = g_list_next(slot_thumb_iter))
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+      const dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
       slot_heigth += thumb->height + spacing;
     }
     slot_heigth -= spacing;
@@ -1627,7 +1626,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     avg_slot_width += (scaled_slot_width - avg_slot_width) / (float)thumb_counter;
   }
   total_slot_width -= spacing;
-  
 
   // variables to hold vertical and horizontal width of all thumbnails after their final placement
   unsigned int planned_total_width = total_slot_width;
@@ -1654,8 +1652,8 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     if(row_cnt_tmp == 0 || row_cnt_tmp > slot_counter)
       break;
 
-    float planned_total_width_tmp = total_slot_width / (float) row_cnt_tmp;
-    int planned_total_height_tmp = row_cnt_tmp * max_slot_heigth;
+    const float planned_total_width_tmp = total_slot_width / (float) row_cnt_tmp;
+    const int planned_total_height_tmp = row_cnt_tmp * max_slot_heigth;
 
     deviation_tmp = _absmul(planned_total_width_tmp / (float)planned_total_height_tmp, screen_aspect_r);
 
@@ -1684,7 +1682,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
           slot_thumb_iter;
           slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        const dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
         slot_max_thumb_width = MAX(slot_max_thumb_width, thumb->width);
         slot_total_heigth = slot_total_heigth + thumb->height + spacing;
       }
@@ -1783,7 +1781,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         slot_thumb_iter;
         slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        const dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
         row_width = MAX(row_width, thumb->x + thumb->width + spacing);
         slot_heigth += thumb->height + spacing;
       }
@@ -1806,7 +1804,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         slot_thumb_iter;
         slot_thumb_iter = g_list_next(slot_thumb_iter))
       {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
+        const dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
         slot_heigth += thumb->height + spacing;
       }
       slot_heigth -= spacing;
