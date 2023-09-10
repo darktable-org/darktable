@@ -303,11 +303,11 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
+          # brew upgrade || true        # No need for a very time-consuming upgrade of ALL packages
+          brew upgrade gd               # See https://github.com/Homebrew/homebrew-core/issues/141766
           brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
-          export HOMEBREW_NO_INSTALL_CLEANUP=1
           brew bundle --verbose || true
           # handle keg-only libs
           brew link --force libomp
