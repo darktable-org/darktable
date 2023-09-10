@@ -63,7 +63,7 @@
 // the total runtime of V3, V4 and V5 by 10%) but the fast approximate
 // expf() differs by enough to push several integration tests above
 // the permissible threshold.
-//#define USE_FAST_EXPF
+#define USE_FAST_EXPF FALSE
 
 #define INVERSE_SQRT_3 0.5773502691896258f
 #define SAFETY_MARGIN 0.01f
@@ -372,9 +372,9 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-#ifdef USE_FAST_EXPF
+#if USE_FAST_EXPF
 // replace calls to expf() with calls to dt_fast_expf()
-#define expf dt_fast_expf
+  #define expf dt_fast_expf
 #endif
 
 inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
@@ -1334,8 +1334,7 @@ static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *
   return CLAMP(scales, 1, MAX_NUM_SCALES);
 }
 
-
-static inline gint reconstruct_highlights(const float *const restrict in,
+static inline gboolean reconstruct_highlights(const float *const restrict in,
                                           const float *const restrict mask,
                                           float *const restrict reconstructed,
                                           const dt_iop_filmicrgb_reconstruction_type_t variant,
@@ -1344,7 +1343,7 @@ static inline gint reconstruct_highlights(const float *const restrict in,
                                           const dt_iop_roi_t *const roi_in,
                                           const dt_iop_roi_t *const roi_out)
 {
-  gint success = TRUE;
+  gboolean success = TRUE;
 
   // wavelets scales
   const int scales = get_scales(roi_in, piece);
@@ -1391,52 +1390,65 @@ static inline gint reconstruct_highlights(const float *const restrict in,
   {
     const float *restrict detail;       // buffer containing this scale's input
     float *restrict LF;                 // output buffer for the current scale
-    float *restrict HF_RGB_temp;        // temp buffer for HF_RBG terms before blurring
+    float *restrict HF;                 // temp buffer for HF_RBG terms before blurring
 
     // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
     if(s == 0)
     {
       detail = in;
       LF = LF_odd;
-      HF_RGB_temp = LF_even;
+      HF = LF_even;
     }
     else if(s % 2 != 0)
     {
       detail = LF_odd;
       LF = LF_even;
-      HF_RGB_temp = LF_odd;
+      HF = LF_odd;
     }
     else
     {
       detail = LF_even;
       LF = LF_odd;
-      HF_RGB_temp = LF_even;
+      HF = LF_even;
     }
 
     const int mult = 1 << s; // fancy-pants C notation for 2^s with integer type, don't be afraid
 
-    // Compute wavelets - split data into high- and low-frequency scales
-    float *texture = HF_RGB_temp;
-    decompose_2D_Bspline(detail, HF_RGB_temp, LF, roi_out->width, roi_out->height, mult, temp, padded_size);
+    // Compute wavelets low-frequency scales
+    blur_2D_Bspline(detail, LF, temp, padded_size, roi_out->width, roi_out->height, mult, TRUE); // clip negatives
+
+    // Compute wavelets high-frequency scales and save the minimum of texture over the RGB channels in HF
+    const size_t pts = roi_out->height * roi_out->width;
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(pts, HF, LF, detail)   \
+  schedule(simd:static) \
+  aligned(HF, LF, detail : 64)
+#endif
+    for(size_t k = 0; k < pts; k++)
+    {
+      for_each_channel(c)
+        HF[4*k + c] = detail[4*k + c] - LF[4*k + c];
+    }
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes
-    blur_2D_Bspline(HF_RGB_temp, HF_RGB, temp, roi_out->width, roi_out->height, 1, TRUE); // clip negatives
+    blur_2D_Bspline(HF, HF_RGB, temp, padded_size, roi_out->width, roi_out->height, 1, TRUE); // clip negatives
     // FIXME: HF have legitimate negatives, so clipping them is wrong, but compatibility…
 
     // Reconstruct clipped parts
     if(variant == DT_FILMIC_RECONSTRUCT_RGB)
-      wavelets_reconstruct_RGB(HF_RGB, LF, texture, mask, reconstructed, roi_out->width, roi_out->height,
+      wavelets_reconstruct_RGB(HF_RGB, LF, HF, mask, reconstructed, roi_out->width, roi_out->height,
                                gamma, gamma_comp, beta, beta_comp, delta, s, scales);
     else if(variant == DT_FILMIC_RECONSTRUCT_RATIOS)
-      wavelets_reconstruct_ratios(HF_RGB, LF, texture, mask, reconstructed, roi_out->width, roi_out->height,
+      wavelets_reconstruct_ratios(HF_RGB, LF, HF, mask, reconstructed, roi_out->width, roi_out->height,
                                gamma, gamma_comp, beta, beta_comp, delta, s, scales);
   }
 
 error:
-  if(temp) dt_free_align(temp);
-  if(LF_even) dt_free_align(LF_even);
-  if(LF_odd) dt_free_align(LF_odd);
-  if(HF_RGB) dt_free_align(HF_RGB);
+  dt_free_align(temp);
+  dt_free_align(LF_even);
+  dt_free_align(LF_odd);
+  dt_free_align(HF_RGB);
   return success;
 }
 
@@ -1707,7 +1719,7 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original,
   const int user_desat = (saturation < 0.f);
 
   chroma_final = (filmic_brightens && filmic_resat)
-                      ? (chroma_original + chroma_final) / 2.f // force original lower sat if brightening
+                  ? (chroma_original + chroma_final) / 2.f // force original lower sat if brightening
                   : ((user_resat && filmic_desat) || user_desat)
                       ? chroma_final + delta_chroma // allow resaturation only if filmic desaturated, allow desat anytime
                       : chroma_final;
@@ -2219,7 +2231,7 @@ void process(dt_iop_module_t *self,
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
 
   // build a mask of clipped pixels
-  const int recover_highlights = data->enable_highlight_reconstruction
+  const gboolean recover_highlights = data->enable_highlight_reconstruction
     && mask_clipped_pixels(in, mask, data->normalize, data->reconstruct_feather, roi_out->width, roi_out->height);
 
   // display mask and exit
@@ -2245,8 +2257,8 @@ void process(dt_iop_module_t *self,
   {
     // init the blown areas with noise to create particles
     float *const restrict inpainted =  dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
-    gint success_1 = FALSE;
-    gint success_2 = TRUE;
+    gboolean success_1 = FALSE;
+    gboolean success_2 = TRUE;
     if(inpainted)
     {
       inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold,
@@ -2278,14 +2290,14 @@ void process(dt_iop_module_t *self,
         }
       }
 
-      if(norms) dt_free_align(norms);
-      if(ratios) dt_free_align(ratios);
+      dt_free_align(norms);
+      dt_free_align(ratios);
     }
 
     if(success_1 && success_2) in = reconstructed; // use reconstructed buffer as tonemapping input
   }
 
-  if(mask) dt_free_align(mask);
+  dt_free_align(mask);
 
   const float white_display = powf(data->spline.y[4], data->output_power);
   const float black_display = powf(data->spline.y[0], data->output_power);
@@ -2325,7 +2337,7 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  if(reconstructed) dt_free_align(reconstructed);
+  dt_free_align(reconstructed);
 }
 
 #ifdef HAVE_OPENCL
@@ -2648,7 +2660,6 @@ int process_cl(struct dt_iop_module_t *self,
       CLARG(export_output_matrix_cl));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_split, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
   else
   {
@@ -2662,16 +2673,7 @@ int process_cl(struct dt_iop_module_t *self,
       CLARG(export_output_matrix_cl), CLARG(norm_min), CLARG(norm_max));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_chroma, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
-
-  dt_opencl_release_mem_object(reconstructed);
-  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  dt_opencl_release_mem_object(input_matrix_cl);
-  dt_opencl_release_mem_object(output_matrix_cl);
-  dt_opencl_release_mem_object(export_input_matrix_cl);
-  dt_opencl_release_mem_object(export_output_matrix_cl);
-  return CL_SUCCESS;
 
 error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
@@ -2679,11 +2681,11 @@ error:
   dt_opencl_release_mem_object(inpainted);
   dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(ratios);
-  dt_opencl_release_mem_object(norms);
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(export_input_matrix_cl);
   dt_opencl_release_mem_object(export_output_matrix_cl);
+  dt_opencl_release_mem_object(norms);
   dt_opencl_release_mem_object(clipped);
   return err;
 }
