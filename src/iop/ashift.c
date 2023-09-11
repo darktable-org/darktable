@@ -4183,6 +4183,10 @@ void gui_post_expose(struct dt_iop_module_t *self,
   const int closeup = dt_control_get_dev_closeup();
   const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
+  const gboolean dimmed = dt_iop_color_picker_is_visible(dev);
+  const double lwidth = (dimmed ? 0.5 : 1.0) / zoom_scale;
+  const double fillc = dimmed ? 0.9 : 0.2;
+
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
   if(g->buf && self->enabled && gui_has_focus(self))
@@ -4255,7 +4259,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
     cairo_clip(cr);
 
     // mask parts of image outside of clipping area in dark grey
-    cairo_set_source_rgba(cr, .2, .2, .2, .8);
+    cairo_set_source_rgba(cr, fillc, fillc, fillc, 1.0 - fillc);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_translate(cr, width / 2.0, height / 2.0);
@@ -4271,7 +4275,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
 
     // draw white outline around clipping area
     dt_draw_set_color_overlay(cr, TRUE, 1.0);
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
+    cairo_set_line_width(cr, 2.0 *lwidth);
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
     cairo_line_to(cr, C[2][0], C[2][1]);
@@ -4303,13 +4307,13 @@ void gui_post_expose(struct dt_iop_module_t *self,
       const double size_line = base_size / 5.0f;
       const double size_arrow = base_size / 25.0f;
 
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
+      cairo_set_line_width(cr, 2.0 * lwidth);
       dt_draw_set_color_overlay(cr, TRUE, 1.0);
       cairo_arc (cr, xpos, ypos, size_circle, 0, 2.0 * M_PI);
       cairo_stroke(cr);
       cairo_fill(cr);
 
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
+      cairo_set_line_width(cr, 2.0 * lwidth);
       dt_draw_set_color_overlay(cr, TRUE, 1.0);
 
       // horizontal line
@@ -4353,7 +4357,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
     cairo_translate(cr, width / 2.0, height / 2.0);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) * lwidth);
     dt_draw_set_color_overlay(cr, FALSE, 1.0);
 
     float pzx, pzy;
@@ -4499,9 +4503,9 @@ void gui_post_expose(struct dt_iop_module_t *self,
       continue;
     // is the near flag set? -> draw line a bit thicker
     if(g->points_idx[n].near)
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) * lwidth);
     else
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) / zoom_scale);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) * lwidth);
 
     // the color of this line
     const float *color = line_colors[g->points_idx[n].color];
@@ -4544,9 +4548,9 @@ void gui_post_expose(struct dt_iop_module_t *self,
          && g->lines[i / 2].type != ASHIFT_LINE_VERTICAL_SELECTED)
         continue;
       if(g->draw_near_point == i)
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) / zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) * lwidth);
       else
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) * lwidth);
       cairo_arc(cr,
                 g->draw_points[i * 2],
                 g->draw_points[i * 2 + 1],
@@ -4596,7 +4600,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
     cairo_arc(cr, pzx * wd, pzy * ht, g->near_delta, 0, 2.0 * M_PI);
 
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
+    cairo_set_line_width(cr, 1.0 * lwidth);
     cairo_set_dash(cr, dashed, len, 0);
     cairo_stroke_preserve(cr);
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
