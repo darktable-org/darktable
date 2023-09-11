@@ -1547,7 +1547,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       if(slot_heigth + spacing + thumb->height < max_thumb_height)
       {
         slot_iter->data = g_list_append(slot, thumb);
-        max_slot_heigth = 
+        max_slot_heigth =
           MAX(max_slot_heigth, slot_heigth + spacing + thumb->height);
         break;
       }
@@ -1597,13 +1597,13 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       slot_thumb_iter = g_list_next(slot_thumb_iter))
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)slot_thumb_iter->data;
-      float stack_heigth_factor = 
+      float stack_heigth_factor =
         (max_slot_heigth) / (float)slot_heigth;
-      
+
       if(number_of_slots == 2)
       {
         // limit scaling factor to 20% if only two images are displayed so that slight differences are corrected
-        // but portrait and landscape orientation are displayed at similar sizes 
+        // but portrait and landscape orientation are displayed at similar sizes
         stack_heigth_factor = MIN(stack_heigth_factor, 1.2);
       }
       else
@@ -1658,7 +1658,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     deviation_tmp = _absmul(planned_total_width_tmp / (float)planned_total_height_tmp, screen_aspect_r);
 
   } while (deviation_tmp < deviation);
-  
+
   int total_height = 0;
   int total_width = 0;
 
@@ -1839,9 +1839,11 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     thumb->x      = thumb->x * factor + xoff;
     thumb->y      = thumb->y * factor + yoff;
 
-    dt_print(DT_DEBUG_ALWAYS,
-      "[culling_placement] thumb_id=%d, x=%d, y=%d, width=%d, heigth=%d - table_width=%d, table_height=%d\n",
-      thumb->imgid, thumb->x, thumb->y, thumb->width, thumb->height, table->view_width, table->view_height);
+    dt_print(DT_DEBUG_LIGHTTABLE,
+      "[culling_placement] thumb_id=%d, x=%d, y=%d, width=%d, heigth=%d"
+             " - table_width=%d, table_height=%d\n",
+             thumb->imgid, thumb->x, thumb->y, thumb->width, thumb->height,
+             table->view_width, table->view_height);
   }
 
   // we save the current first id
