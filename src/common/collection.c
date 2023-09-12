@@ -206,13 +206,20 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
   // clang-format off
   *selq_pre = dt_util_dstrcat
     (*selq_pre,
-     "SELECT DISTINCT mi.id FROM (SELECT"
-     "  id, group_id, film_id, filename, datetime_taken, "
-     "  flags, version, %s position, aspect_ratio,"
-     "  maker, model, lens, aperture, exposure, focal_length,"
-     "  iso, import_timestamp, change_timestamp,"
-     "  export_timestamp, print_timestamp"
-     "  FROM main.images AS mi %s%s WHERE ",
+     "SELECT DISTINCT mi.id"
+     "  FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
+     "               flags, version, %s position, aspect_ratio,"
+     "               mk.name AS maker, md.name AS model, ln.name AS lens,"
+     "               aperture, exposure, focal_length,"
+     "               iso, import_timestamp, change_timestamp,"
+     "               export_timestamp, print_timestamp"
+     "        FROM main.images AS mi,"
+     "             main.makers AS mk, main.models AS md, main.lens AS ln "
+     "        %s%s"
+     "        WHERE mi.maker_id = mk.id"
+     "          AND mi.model_id = md.id"
+     "          AND mi.lens_id = ln.id"
+     "          AND ",
      tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
      tagid ? " LEFT JOIN main.tagged_images AS ti"
      "                ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -431,13 +438,20 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format off
     selq_pre = dt_util_dstrcat
       (selq_pre,
-       "SELECT DISTINCT mi.id FROM (SELECT"
-       "  id, group_id, film_id, filename, datetime_taken, "
-       "  flags, version, %s position, aspect_ratio,"
-       "  maker, model, lens, aperture, exposure, focal_length,"
-       "  iso, import_timestamp, change_timestamp,"
-       "  export_timestamp, print_timestamp"
-       "  FROM main.images AS mi %s%s ) AS mi ",
+       "SELECT DISTINCT mi.id"
+       " FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
+       "              flags, version, %s position, aspect_ratio,"
+       "              mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "              aperture, exposure, focal_length,"
+       "              iso, import_timestamp, change_timestamp,"
+       "              export_timestamp, print_timestamp"
+       "       FROM main.images AS mi,"
+       "            main.makers AS mk, main.models AS md, main.lens AS ln "
+       "       %s%s"
+       "       WHERE mi.maker_id = mk.id"
+       "         AND mi.model_id = md.id"
+       "         AND mi.lens_id = ln.id"
+       "     ) AS mi ",
        tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
        tagid ? " LEFT JOIN main.tagged_images AS ti"
        "                ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -452,13 +466,20 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format off
     selq_pre = dt_util_dstrcat
       (selq_pre,
-       "SELECT DISTINCT mi.id FROM (SELECT"
-       "  id, group_id, film_id, filename, datetime_taken, "
-       "  flags, version, %s position, aspect_ratio,"
-       "  maker, model, lens, aperture, exposure, focal_length,"
-       "  iso, import_timestamp, change_timestamp,"
-       "  export_timestamp, print_timestamp"
-       "  FROM main.images AS mi %s%s ) AS mi WHERE ",
+       "SELECT DISTINCT mi.id"
+       " FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
+       "              flags, version, %s position, aspect_ratio,"
+       "              mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "              aperture, exposure, focal_length,"
+       "              iso, import_timestamp, change_timestamp,"
+       "              export_timestamp, print_timestamp"
+       "       FROM main.images AS mi, main.makers AS mk,"
+       "            main.models AS md, main.lens AS ln "
+       "       %s%s"
+       "       WHERE mi.maker_id = mk.id"
+       "         AND mi.model_id = md.id"
+       "         AND mi.lens_id = ln.id"
+       "      ) AS mi WHERE ",
        tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
        tagid ? " LEFT JOIN main.tagged_images AS ti"
        "                ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -1341,9 +1362,14 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
       needle[strlen(needle) - 1] = '\0';
   }
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT maker, model FROM main.images GROUP BY maker, model",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT mk.name AS maker, md.name AS model"
+     "  FROM main.images AS mi, main.makers AS mk, main.models AS md"
+     "  WHERE mi.maker_id = mk.id"
+     "    AND mi.model_id = md.id"
+     "  GROUP BY maker, model",
+     -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
@@ -2035,12 +2061,17 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         if(g_strcmp0(escaped_text, "%%") != 0)
           query = g_strdup_printf
             ("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
-             " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
-             "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
-             " UNION SELECT id FROM main.images"
-             "   WHERE (filename LIKE '%s' OR maker LIKE '%s' OR model LIKE '%s')"
-             " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
-             "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
+             " UNION SELECT imgid AS id"
+             "         FROM main.tagged_images AS ti, data.tags AS t"
+             "         WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
+             " UNION SELECT miu.id"
+             "         FROM main.images AS miu, main.makers AS mk, main.models AS md"
+             "         WHERE miu.maker_id = mk.id"
+             "           AND miu.model_id = md.id"
+             "           AND (filename LIKE '%s' OR mk.name LIKE '%s' OR md.name LIKE '%s')"
+             " UNION SELECT i.id"
+             "         FROM main.images AS i, main.film_rolls AS fr"
+             "         WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
              escaped_text, escaped_text, escaped_text,
              escaped_text, escaped_text, escaped_text, escaped_text );
         // clang-format on
