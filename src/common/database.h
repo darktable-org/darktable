@@ -27,7 +27,9 @@ extern "C" {
 struct dt_database_t;
 
 /** allocates and initializes database */
-struct dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui);
+struct dt_database_t *dt_database_init(const char *alternative,
+                                       const gboolean load_data,
+                                       const gboolean has_gui);
 /** closes down database and frees memory */
 void dt_database_destroy(const struct dt_database_t *);
 /** get handle */
@@ -36,7 +38,8 @@ struct sqlite3 *dt_database_get(const struct dt_database_t *);
 const gchar *dt_database_get_path(const struct dt_database_t *db);
 /** test if database was already locked by another instance */
 gboolean dt_database_get_lock_acquired(const struct dt_database_t *db);
-/** show an error popup. this has to be postponed until after we tried using dbus to reach another instance */
+/** show an error popup. this has to be postponed until after we tried
+ * using dbus to reach another instance */
 void dt_database_show_error(const struct dt_database_t *db);
 /** perform pre-db-close optimizations (always call when quiting darktable) */
 void dt_database_optimize(const struct dt_database_t *);

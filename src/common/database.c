@@ -2485,11 +2485,16 @@ static void _create_library_schema(dt_database_t *db)
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id, id)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id, filename)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_filename_index ON images (filename, version)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.image_position_index ON images (position)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id, id)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id, filename)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_filename_index ON images (filename, version)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.image_position_index ON images (position)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken)",
+               NULL, NULL, NULL);
 
   ////////////////////////////// selected_images
   sqlite3_exec(db->handle, "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
