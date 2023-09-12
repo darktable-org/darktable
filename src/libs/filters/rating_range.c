@@ -33,9 +33,12 @@ static gboolean _rating_range_update(dt_lib_filtering_rule_t *rule)
   // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
-             " COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s"
+             " COUNT(*) AS count, mk.name AS maker, md.name AS model, ln.name AS lens"
+             " FROM main.images AS mi, main.makers AS mk, main.models AS md, main.lens AS ln"
+             " WHERE mi.maker_id = mk.id"
+             "   AND mi.model_id = md.id"
+             "   AND mi.lens_id = ln.id"
+             "   AND %s"
              " GROUP BY rating"
              " ORDER BY rating",
              rule->lib->last_where_ext);

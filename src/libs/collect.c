@@ -1697,8 +1697,14 @@ static void list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_CAMERA:; // camera
         int index = 0;
         // clang-format off
-        gchar *makermodel_query = g_strdup_printf("SELECT maker, model, COUNT(*) AS count "
-                                                  "FROM main.images AS mi WHERE %s GROUP BY maker, model", where_ext);
+        gchar *makermodel_query = g_strdup_printf
+          ("SELECT mk.name AS maker, md.name AS model, COUNT(*) AS count"
+           "  FROM main.images AS mi, main.makers AS mk, main.models AS md"
+           "  WHERE mi.maker_id = mk.id"
+           "    AND mi.model_id = md.id"
+           "    AND %s "
+           "  GROUP BY maker, model"
+           "  ORDER BY maker, model", where_ext);
         // clang-format on
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1795,11 +1801,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_LENS: // lens
         // clang-format off
         g_snprintf(query, sizeof(query),
-                   "SELECT lens, 1, COUNT(*) AS count"
-                   " FROM main.images AS mi"
-                   " WHERE %s"
-                   " GROUP BY lens"
-                   " ORDER BY lens", where_ext);
+                   "SELECT ln.name AS lens, 1, COUNT(*) AS count"
+                   "  FROM main.images AS mi, main.lens AS ln"
+                   "  WHERE mi.lens_id = ln.id"
+                   "    AND %s"
+                   "  GROUP BY lens"
+                   "  ORDER BY lens", where_ext);
         // clang-format on
         break;
 
@@ -1935,7 +1942,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
         break;
 
       default:
-        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        if(property >= DT_COLLECTION_PROP_METADATA
+           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
         {
           const int keyid = dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
           const char *name = (gchar *)dt_metadata_get_name(keyid);

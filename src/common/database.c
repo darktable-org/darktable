@@ -49,7 +49,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 38
+#define CURRENT_DATABASE_VERSION_LIBRARY 39
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -88,6 +88,11 @@ static void _database_delete_mipmaps_files();
     failing_query = b;                                                                                       \
     goto end;                                                                                                \
   }
+
+int32_t dt_database_last_insert_rowid(const dt_database_t *db)
+{
+  return (int32_t)sqlite3_last_insert_rowid(db->handle);
+}
 
 /* migrate from the legacy db format (with the 'settings' blob) to the first version this system knows */
 static gboolean _migrate_schema(dt_database_t *db, int version)
@@ -2166,6 +2171,142 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "[init] can't set multi_name_hand_edited column\n");
     new_version = 38;
   }
+  else if(version == 38)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // create new tables
+    TRY_EXEC("CREATE TABLE main.makers"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+             "[init] can't create makers table\n");
+    TRY_EXEC("CREATE TABLE main.models"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+             "[init] can't create models table\n");
+    TRY_EXEC("CREATE TABLE main.lens"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+             "[init] can't create lens table\n");
+    TRY_EXEC("CREATE TABLE cameras"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR,"
+             "  alias VARCHAR)",
+             "[init] can't create cameras table");
+
+    // create new indexes
+    TRY_EXEC("CREATE INDEX makers_name ON makers (name)",
+             "[init] can't create makers_name\n");
+    TRY_EXEC("CREATE INDEX model_name ON models (name)",
+             "[init] can't create makers_name\n");
+    TRY_EXEC("CREATE INDEX lens_name ON lens (name)",
+             "[init] can't create makers_name\n");
+
+    // populate new tables
+    TRY_EXEC("INSERT INTO main.makers (name)"
+             " SELECT DISTINCT maker FROM main.images",
+             "[init] can't populate makers table\n");
+    TRY_EXEC("INSERT INTO main.models (name)"
+             " SELECT DISTINCT model FROM main.images",
+             "[init] can't populate models table\n");
+    TRY_EXEC("INSERT INTO main.lens (name)"
+             " SELECT DISTINCT lens FROM main.images",
+             "[init] can't populate lens table\n");
+
+    // add new columns for main.images
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN maker_id INTEGER default 0",
+             "[init] can't add maker_id column\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN model_id INTEGER default 0",
+             "[init] can't add model_id column\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN lens_id INTEGER default 0",
+             "[init] can't add lens_id column\n");
+
+    // update main images columns
+    TRY_EXEC("UPDATE main.images"
+             " SET maker_id = (SELECT id FROM main.makers WHERE name = maker)",
+             "[init] can't populate maker_id column\n");
+    TRY_EXEC("UPDATE main.images"
+             " SET model_id = (SELECT id FROM main.models WHERE name = model)",
+             "[init] can't populate model_id column\n");
+    TRY_EXEC("UPDATE main.images"
+             " SET lens_id = (SELECT id FROM main.lens WHERE name = lens)",
+             "[init] can't populate lens_id column\n");
+
+#if 0
+    // drop old columns (only supported starting with 3.35)
+    TRY_EXEC("ALTER TABLE main.images DROP COLUMN maker",
+             "[init] can't drop maker column\n");
+    TRY_EXEC("ALTER TABLE main.images DROP COLUMN model",
+             "[init] can't drop model column\n");
+    TRY_EXEC("ALTER TABLE main.images DROP COLUMN lens",
+             "[init] can't drop lens column\n");
+#endif
+
+    TRY_EXEC("CREATE TABLE images_new (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, "
+             "film_id INTEGER, "
+             "width INTEGER, height INTEGER, filename VARCHAR, "
+             "maker_id INTEGER, model_id INTEGER, lens_id INTEGER, "
+             "exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
+             "focus_distance REAL, datetime_taken INTEGER, flags INTEGER, "
+             "output_width INTEGER, output_height INTEGER, crop REAL, "
+             "raw_parameters INTEGER, raw_denoise_threshold REAL, "
+             "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
+             "license VARCHAR, sha1sum CHAR(40), "
+             "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
+             "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
+             "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
+             "aspect_ratio REAL, exposure_bias REAL, "
+             "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+             "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+             "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
+             "[init] can't create new table images");
+
+    TRY_EXEC("INSERT INTO images_new"
+             " SELECT id, group_id, film_id, width, height, filename, maker_id, model_id, lens_id,"
+             "        exposure, aperture, iso, focal_length,"
+             "        focus_distance, datetime_taken, flags,"
+             "        output_width, output_height, crop,"
+             "        raw_parameters, raw_denoise_threshold,"
+             "        raw_auto_bright_threshold, raw_black, raw_maximum,"
+             "        license, sha1sum,"
+             "        orientation, histogram, lightmap, longitude,"
+             "        latitude, altitude, color_matrix, colorspace, version,"
+             "        max_version, write_timestamp, history_end, position,"
+             "        aspect_ratio, exposure_bias,"
+             "        import_timestamp, change_timestamp, export_timestamp, print_timestamp"
+             "  FROM images",
+             "[init] can't populate new images table\n");
+
+    TRY_EXEC("DROP TABLE images",
+             "[init] can't drop table images_old\n");
+
+    TRY_EXEC("ALTER TABLE images_new RENAME TO images",
+             "[init] can't rename images\n");
+
+    // recreate the indexes
+    TRY_EXEC("CREATE INDEX image_position_index ON images (position)",
+             "[init] can't add image_position_index\n");
+    TRY_EXEC("CREATE INDEX images_filename_index ON images (filename, version)",
+             "[init] can't recreate images_filename_index\n");
+    TRY_EXEC("CREATE INDEX images_film_id_index ON images (film_id, filename)",
+             "[init] can't recreate images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX images_group_id_index ON images (group_id, id)",
+             "[init] can't recreate images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX images_latlong_index ON images (latitude DESC, longitude DESC)",
+             "[init] can't add images_latlong_index\n");
+    TRY_EXEC("CREATE INDEX images_datetime_taken ON images (datetime_taken)",
+             "[init] can't create images_datetime_taken\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 39;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2465,12 +2606,31 @@ static void _create_library_schema(dt_database_t *db)
                "folder VARCHAR(1024) NOT NULL)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
+  ////////////////////////////// maker
+  sqlite3_exec(db->handle,
+               "CREATE TABLE main.makers"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  ////////////////////////////// model
+  sqlite3_exec(db->handle,
+               "CREATE TABLE main.models"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  ////////////////////////////// lens
+  sqlite3_exec(db->handle,
+               "CREATE TABLE main.lens"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
   ////////////////////////////// images
   sqlite3_exec(
       db->handle,
       "CREATE TABLE main.images (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
-      "width INTEGER, height INTEGER, filename VARCHAR, maker VARCHAR, model VARCHAR, "
-      "lens VARCHAR, exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
+      "width INTEGER, height INTEGER, filename VARCHAR, "
+      "maker_id INTEGER, model_id INTEGER, lens_id INTEGER, "
+      "exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
       "focus_distance REAL, datetime_taken INTEGER, flags INTEGER, "
       "output_width INTEGER, output_height INTEGER, crop REAL, "
       "raw_parameters INTEGER, raw_denoise_threshold REAL, "
@@ -2482,6 +2642,9 @@ static void _create_library_schema(dt_database_t *db)
       "aspect_ratio REAL, exposure_bias REAL, "
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
       "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+      "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
       NULL, NULL, NULL);

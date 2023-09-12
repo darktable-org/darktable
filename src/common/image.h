@@ -580,6 +580,12 @@ char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
                                              const gboolean logmsg);
 void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
 
+/**   insert the new maker/model/lens if it does not exists.
+      returns the corresponding id for the maker/model/lens */
+int32_t dt_image_get_camera_maker_id(const char *name);
+int32_t dt_image_get_camera_model_id(const char *name);
+int32_t dt_image_get_camera_lens_id(const char *name);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

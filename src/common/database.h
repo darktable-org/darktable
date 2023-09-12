@@ -19,6 +19,7 @@
 #pragma once
 
 #include <glib.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +58,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db);
 /** get possibly the freshest snapshot to restore */
 gchar *dt_database_get_most_recent_snap(const char* db_filename);
 
-
+int32_t dt_database_last_insert_rowid(const struct dt_database_t *);
 // nested transactions support
 
 void dt_database_start_transaction(const struct dt_database_t *db);
@@ -73,4 +74,3 @@ void dt_database_rollback_transaction(const struct dt_database_t *db);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
