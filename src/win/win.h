@@ -6,10 +6,12 @@
 #include <windows.h>
 #include <psapi.h>
 
-// ugly hack to make our code work. windows.h has some terrible includes which define these things
-// that clash with our variable names. Including them can be omitted when adding
+// ugly hack to make our code work. windows.h has some terrible
+// includes which define these things that clash with our variable
+// names. Including them can be omitted when adding
 // #define WIN32_LEAN_AND_MEAN
-// before including windows.h, but then we will miss some defines needed for libraries like libjpeg.
+// before including windows.h, but then we will miss some defines
+// needed for libraries like libjpeg.
 #undef near
 #undef grp2
 #undef interface
@@ -22,4 +24,3 @@
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -196,7 +196,8 @@ void dt_collection_memory_update()
   g_free(ins_query);
 }
 
-static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, char **selq_pre)
+static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
+                                             char **selq_pre)
 {
   const uint32_t tagid = collection->tagid;
   char tag[16] = { 0 };
@@ -213,7 +214,8 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, 
      "  export_timestamp, print_timestamp"
      "  FROM main.images AS mi %s%s WHERE ",
      tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-     tagid ? " LEFT JOIN main.tagged_images AS ti ON ti.imgid = mi.id AND ti.tagid = " : "",
+     tagid ? " LEFT JOIN main.tagged_images AS ti"
+     "                ON ti.imgid = mi.id AND ti.tagid = " : "",
      tagid ? tag : "");
   // clang-format on
 }
@@ -437,7 +439,8 @@ int dt_collection_update(const dt_collection_t *collection)
        "  export_timestamp, print_timestamp"
        "  FROM main.images AS mi %s%s ) AS mi ",
        tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-       tagid ? " LEFT JOIN main.tagged_images AS ti ON ti.imgid = mi.id AND ti.tagid = " : "",
+       tagid ? " LEFT JOIN main.tagged_images AS ti"
+       "                ON ti.imgid = mi.id AND ti.tagid = " : "",
        tagid ? tag : "");
     // clang-format on
   }
@@ -457,7 +460,8 @@ int dt_collection_update(const dt_collection_t *collection)
        "  export_timestamp, print_timestamp"
        "  FROM main.images AS mi %s%s ) AS mi WHERE ",
        tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-       tagid ? " LEFT JOIN main.tagged_images AS ti ON ti.imgid = mi.id AND ti.tagid = " : "",
+       tagid ? " LEFT JOIN main.tagged_images AS ti"
+       "                ON ti.imgid = mi.id AND ti.tagid = " : "",
        tagid ? tag : "");
     // clang-format on
   }
@@ -1630,7 +1634,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       for(GList *element = lists; element; element = g_list_next(element))
       {
         GList *tuple = element->data;
-        char *clause = sqlite3_mprintf(" OR (maker = '%q' AND model = '%q')", tuple->data, tuple->next->data);
+        char *clause = sqlite3_mprintf(" OR (maker = '%q' AND model = '%q')",
+                                       tuple->data, tuple->next->data);
         query = dt_util_dstrcat(query, "%s", clause);
         sqlite3_free(clause);
         g_free(tuple->data);
@@ -2479,7 +2484,7 @@ void dt_collection_update_query(const dt_collection_t *collection,
     }
     else
       query_parts[i + num_rules] = g_strdup("");
-      
+
     g_free(text);
   }
 

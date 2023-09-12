@@ -1825,7 +1825,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
   img->group_id = group_id;
 
   // read dttags and exif for database queries!
-  if(dt_exif_read(img, normalized_filename)) img->exif_inited = FALSE;
+  if(dt_exif_read(img, normalized_filename))
+    img->exif_inited = FALSE;
   char dtfilename[PATH_MAX] = { 0 };
   g_strlcpy(dtfilename, normalized_filename, sizeof(dtfilename));
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
@@ -1915,7 +1916,8 @@ dt_imgid_t dt_image_get_id_full_path(const gchar *filename)
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dir, -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, file, -1, SQLITE_STATIC);
-  if(sqlite3_step(stmt) == SQLITE_ROW) id=sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    id=sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   g_free(dir);
   g_free(file);
@@ -1933,7 +1935,8 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_TRANSIENT);
-  if(sqlite3_step(stmt) == SQLITE_ROW) id=sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    id=sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   return id;
 }
