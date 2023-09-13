@@ -111,10 +111,14 @@ improvements and enhancements:
   the number of images shown ("zooms") and thereby the shift speed.
 
 - Exported AVIF files no longer embed a superfluous ICC profile if the
-  color profile can be encoded as CICP.
+  color profile can be encoded as CICP (Coding-independent code
+  points).
 
-- Exported PNG files now include a CICP encoded color profile in
-  addition to ICC if possible.
+- Exported PNG files now include a CICP (Coding-independent code
+  points) encoded color profile in addition to ICC if possible.
+
+- Improved scaling and placement of images in culling view to make
+  better use of available screen space.
 
 ## Bug Fixes
 
