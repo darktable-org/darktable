@@ -1348,7 +1348,8 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
 {
   sqlite3_stmt *stmt;
   gchar *needle = NULL;
-  gboolean wildcard = FALSE;
+  gboolean wildcard_start = FALSE;
+  gboolean wildcard_end = FALSE;
 
   GHashTable *names = NULL;
   if(sanitized)
@@ -1357,9 +1358,16 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
   if(filter && filter[0] != '\0')
   {
     needle = g_utf8_strdown(filter, -1);
-    wildcard = (needle && needle[strlen(needle) - 1] == '%') ? TRUE : FALSE;
-    if(wildcard)
+    wildcard_start = g_str_has_prefix(needle, "%");
+    wildcard_end = g_str_has_suffix(needle, "%");
+    if(wildcard_end)
       needle[strlen(needle) - 1] = '\0';
+    if(wildcard_start)
+    {
+      gchar *txt_tmp = g_utf8_substring(needle, 1, -1);
+      g_free(needle);
+      needle = txt_tmp;
+    }
   }
 
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -1378,8 +1386,11 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
     gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
     gchar *haystack = g_utf8_strdown(makermodel, -1);
-    if(!needle || (wildcard && g_strrstr(haystack, needle) != NULL)
-                || (!wildcard && !g_strcmp0(haystack, needle)))
+    if(!needle
+       || (wildcard_start && wildcard_end && g_strrstr(haystack, needle) != NULL)
+       || (wildcard_start && g_str_has_suffix(haystack, needle))
+       || (wildcard_end && g_str_has_prefix(haystack, needle))
+       || (!wildcard_start && !wildcard_end && !g_strcmp0(haystack, needle)))
     {
       if(exif)
       {
@@ -1423,6 +1434,24 @@ gchar *dt_collection_get_makermodel(const char *exif_maker, const char *exif_mod
   // Create the makermodel by concatenation
   gchar *makermodel = g_strdup_printf("%s %s", maker, model);
   return makermodel;
+}
+
+static gchar *_add_wildcards(const gchar *text)
+{
+  gchar *cam1 = NULL;
+  gchar *cam2 = NULL;
+  if(g_str_has_prefix(text, "\""))
+    cam1 = g_utf8_substring(text, 1, -1);
+  else
+    cam1 = g_strdup_printf("%%%s", text);
+
+  if g_str_has_suffix(cam1, "\""))
+    cam2 = g_utf8_substring(cam1, 0, strlen(cam1)-1);
+  else
+    cam2 = g_strdup_printf("%s%%", cam1);
+
+  g_free(cam1);
+  return cam2;
 }
 
 static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
@@ -1669,7 +1698,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // Start query with a false statement to avoid special casing the first condition
           query = dt_util_dstrcat(query, " OR ((1=0)");
           GList *lists = NULL;
-          dt_collection_get_makermodels(elems[i], NULL, &lists);
+          gchar *cam = _add_wildcards(elems[i]);
+          dt_collection_get_makermodels(cam, NULL, &lists);
           for(GList *element = lists; element; element = g_list_next(element))
           {
             GList *tuple = element->data;
@@ -1681,6 +1711,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             g_list_free(tuple);
           }
           g_list_free(lists);
+          g_free(cam);
           query = dt_util_dstrcat(query, ")");
         }
       }

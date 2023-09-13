@@ -96,6 +96,7 @@ void _camera_tree_update(_widgets_camera_t *camera)
     const int count = sqlite3_column_int(stmt, 2);
 
     gchar *value = dt_collection_get_makermodel(exif_maker, exif_model);
+    gchar *value_path = g_strdup_printf("\"%s\"", value);
 
     if(!value || !g_strcmp0(g_strstrip(value), ""))
     {
@@ -105,9 +106,10 @@ void _camera_tree_update(_widgets_camera_t *camera)
     {
       gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
       gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, value, TREE_COL_TOOLTIP, value,
-                         TREE_COL_PATH, value, TREE_COL_COUNT, count, -1);
+                         TREE_COL_PATH, value_path, TREE_COL_COUNT, count, -1);
     }
     g_free(value);
+    g_free(value_path);
   }
   sqlite3_finalize(stmt);
 

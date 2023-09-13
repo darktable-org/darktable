@@ -1718,15 +1718,17 @@ static void list_view(dt_lib_collect_rule_t *dr)
           const int count = sqlite3_column_int(stmt, 2);
 
           gchar *value =  dt_collection_get_makermodel(exif_maker, exif_model);
+          gchar *value_path = g_strdup_printf("\"%s\"", value);
 
           gtk_list_store_append(GTK_LIST_STORE(model), &iter);
           gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, value,
                              DT_LIB_COLLECT_COL_ID, index, DT_LIB_COLLECT_COL_TOOLTIP, value,
-                             DT_LIB_COLLECT_COL_PATH, value, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
+                             DT_LIB_COLLECT_COL_PATH, value_path, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                              DT_LIB_COLLECT_COL_COUNT, count,
                              -1);
 
           g_free(value);
+          g_free(value_path);
           index++;
         }
         g_free(makermodel_query);
