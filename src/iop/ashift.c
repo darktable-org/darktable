@@ -3233,7 +3233,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
 }
 
 // helper function to clean structural data
-static int _do_clean_structure(dt_iop_module_t *module,
+static gboolean _do_clean_structure(dt_iop_module_t *module,
                                dt_iop_ashift_params_t *p,
                                const gboolean save_drawn)
 {
@@ -3257,7 +3257,7 @@ static int _do_clean_structure(dt_iop_module_t *module,
 }
 
 // helper function to start analysis for structural data and report about errors
-static int _do_get_structure_auto(dt_iop_module_t *module,
+static gboolean _do_get_structure_auto(dt_iop_module_t *module,
                                   dt_iop_ashift_params_t *p,
                                   const dt_iop_ashift_enhance_t enhance)
 {
@@ -3937,14 +3937,14 @@ static uint64_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
 // update color information in points_idx if lines have changed in
 // terms of type (but not in terms of number or position)
 
-static int update_colors(struct dt_iop_module_t *self,
+static gboolean _update_colors(struct dt_iop_module_t *self,
                          dt_iop_ashift_points_idx_t *points_idx,
                          const int points_lines_count)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   // is the display flipped relative to the original image?
-  const int isflipped = g->isflipped;
+  const gboolean isflipped = g->isflipped;
 
   // go through all lines
   for(int n = 0; n < points_lines_count; n++)
@@ -3970,7 +3970,7 @@ static int update_colors(struct dt_iop_module_t *self,
 }
 
 // get all the points to display lines in the gui
-static int get_points(struct dt_iop_module_t *self,
+static gboolean _get_points(struct dt_iop_module_t *self,
                       const dt_iop_ashift_line_t *lines,
                       const int lines_count,
                       const int lines_version,
@@ -4124,7 +4124,7 @@ error:
 }
 
 // does this gui have focus?
-static int gui_has_focus(struct dt_iop_module_t *self)
+static gboolean _gui_has_focus(struct dt_iop_module_t *self)
 {
   return (self->dev->gui_module == self
           && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS);
@@ -4189,7 +4189,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
-  if(g->buf && self->enabled && gui_has_focus(self))
+  if(g->buf && self->enabled && _gui_has_focus(self))
   {
     // roi data of the preview pipe input buffer
 
@@ -4428,7 +4428,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
   if(g->fitting) return;
 
   // no structural data or visibility switched off? -> stop here
-  if(g->lines == NULL || !gui_has_focus(self)) return;
+  if(g->lines == NULL || !_gui_has_focus(self)) return;
 
   // get hash value that changes if distortions from here to the end
   // of the pixelpipe changed
@@ -4450,7 +4450,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
     g->draw_points = NULL;
     g->points_lines_count = 0;
 
-    if(!get_points(self, g->lines, g->lines_count, g->lines_version,
+    if(!_get_points(self, g->lines, g->lines_count, g->lines_version,
                    &g->points, &g->draw_points, &g->points_idx,
                    &g->points_lines_count, pr_d))
       return;
@@ -4466,7 +4466,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
       g->points_idx[n].type = g->lines[n].type;
 
     // coordinates of lines are unchanged -> we only need to update colors
-    if(!update_colors(self, g->points_idx, g->points_lines_count))
+    if(!_update_colors(self, g->points_idx, g->points_lines_count))
       return;
 
     g->points_version = g->lines_version;
@@ -5795,7 +5795,7 @@ void commit_params(struct dt_iop_module_t *self,
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
 
-  if(gui_has_focus(self)
+  if(_gui_has_focus(self)
      || dt_isnan(p->cl)
      || dt_isnan(p->cr)
      || dt_isnan(p->ct)
@@ -6024,9 +6024,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
+      _commit_crop_box(p, g);
       _gui_update_structure_states(self, NULL);
       _do_clean_structure(self, p, TRUE);
-      _commit_crop_box(p, g);
     }
   }
 }
