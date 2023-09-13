@@ -1445,7 +1445,7 @@ static gchar *_add_wildcards(const gchar *text)
   else
     cam1 = g_strdup_printf("%%%s", text);
 
-  if g_str_has_suffix(cam1, "\""))
+  if(g_str_has_suffix(cam1, "\""))
     cam2 = g_utf8_substring(cam1, 0, strlen(cam1)-1);
   else
     cam2 = g_strdup_printf("%s%%", cam1);
@@ -1803,7 +1803,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           query = dt_util_dstrcat(query, " OR ((lens IS NULL) OR (TRIM(lens)='') OR (UPPER(TRIM(lens))='N/A'))");
         }
         else
-          query = dt_util_dstrcat(query, " OR (lens LIKE '%%%s%%')", elems[i]);
+        {
+          gchar *lens = _add_wildcards(elems[i]);
+          query = dt_util_dstrcat(query, " OR (lens LIKE '%s')", lens);
+          g_free(lens);
+        }
+
       }
       g_strfreev(elems);
       query = dt_util_dstrcat(query, ")");

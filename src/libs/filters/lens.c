@@ -101,9 +101,11 @@ void _lens_tree_update(_widgets_lens_t *lens)
     }
     else
     {
+      gchar *value_path = g_strdup_printf("\"%s\"", name);
       gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
       gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, name, TREE_COL_TOOLTIP, name,
-                         TREE_COL_PATH, name, TREE_COL_COUNT, count, -1);
+                         TREE_COL_PATH, value_path, TREE_COL_COUNT, count, -1);
+      g_free(value_path);
     }
   }
   sqlite3_finalize(stmt);
