@@ -73,7 +73,7 @@ static void _widget_get_preferred_height(GtkWidget *widget, gint *minimum_height
 static void _combobox_set(dt_bauhaus_widget_t *w, const int pos, const gboolean mute);
 static void _slider_set_normalized(dt_bauhaus_widget_t *w, float pos);
 
-static void bauhaus_request_focus(dt_bauhaus_widget_t *w)
+static void _request_focus(dt_bauhaus_widget_t *w)
 {
   if(w->module && w->module->type == DT_ACTION_TYPE_IOP_INSTANCE)
       dt_iop_request_focus((dt_iop_module_t *)w->module);
@@ -484,25 +484,29 @@ static gboolean _popup_button_press(GtkWidget *widget, GdkEventButton *event, gp
     return TRUE;
   }
 
+  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
+
   if(event->button == 1)
   {
     // only accept left mouse click
-    gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
+    gtk_widget_set_state_flags(GTK_WIDGET(w),
                                GTK_STATE_FLAG_FOCUSED, FALSE);
 
-    if(darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX
+    if(w->type == DT_BAUHAUS_COMBOBOX
        && !dt_gui_long_click(event->time, darktable.bauhaus->opentime))
     {
       // counts as double click, reset:
-      dt_bauhaus_widget_reset(GTK_WIDGET(darktable.bauhaus->current));
+      if(!(dt_modifier_is(event->state, GDK_CONTROL_MASK) && w->field
+          && dt_gui_presets_autoapply_for_module((dt_iop_module_t *)w->module, GTK_WIDGET(w))))
+        dt_bauhaus_widget_reset(GTK_WIDGET(w));
     }
 
     darktable.bauhaus->change_active = TRUE;
     event->state |= GDK_BUTTON1_MASK;
     _popup_motion_notify(widget, (GdkEventMotion*)event, user_data);
   }
-  else if(event->button == 2 && darktable.bauhaus->current->type == DT_BAUHAUS_SLIDER)
-    _slider_zoom_range(darktable.bauhaus->current, 0);
+  else if(event->button == 2 && w->type == DT_BAUHAUS_SLIDER)
+    _slider_zoom_range(w, 0);
   else
     _popup_reject();
 
@@ -569,6 +573,7 @@ static void _widget_finalize(GObject *widget)
     free(d->text);
   }
   g_free(w->section);
+  g_free(w->tooltip);
 
   G_OBJECT_CLASS(dt_bh_parent_class)->finalize(widget);
 }
@@ -978,6 +983,26 @@ void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget,
   w->quad_paint_data = paint_data;
 }
 
+void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *widget, const gchar *text)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(!w) return;
+
+  g_free(w->tooltip);
+  w->tooltip = g_strdup(text);
+}
+
+gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget, dt_action_element_t element)
+{
+  gchar *tooltip = DT_IS_BAUHAUS_WIDGET(widget)
+                   && element == DT_ACTION_ELEMENT_BUTTON
+                 ? DT_BAUHAUS_WIDGET(widget)->tooltip : NULL;
+  if(!(tooltip))
+    return gtk_widget_get_tooltip_markup(widget);
+
+  return g_markup_escape_text(tooltip, -1);
+}
+
 void dt_bauhaus_widget_set_field(GtkWidget *widget,
                                  gpointer field,
                                  const dt_introspection_type_t field_type)
@@ -1032,15 +1057,33 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
     dt_gui_remove_class(label, "changed");
 }
 
-void dt_bauhaus_update_module(dt_iop_module_t *self)
+void dt_bauhaus_update_from_field(dt_iop_module_t *module,
+                                  GtkWidget *widget,
+                                  gpointer params,
+                                  gpointer blend_params)
 {
-  GtkWidget *n = NULL;
-  for(GSList *w = self->widget_list_bh; w; w = w->next)
+  GtkWidget *notebook = NULL;
+  for(GSList *w = widget ? &(GSList){} : module->widget_list_bh; w; w = w->next)
   {
     dt_action_target_t *at = w->data;
-    GtkWidget *widget = at->target;
+    if(at) widget = at->target;
     dt_bauhaus_widget_t *bhw = DT_BAUHAUS_WIDGET(widget);
     if(!bhw) continue;
+
+    gpointer field = bhw->field;
+
+    if(params)
+    {
+      int offset = field - module->params;
+      if(offset >= 0 && offset < module->params_size)
+        field = params + offset;
+      else
+      {
+        offset = field - (gpointer)module->blend_params;
+        if(offset >= 0 && offset < sizeof(dt_develop_blend_params_t) && blend_params)
+          field = blend_params + offset;
+      }
+    }
 
     switch(bhw->type)
     {
@@ -1048,51 +1091,52 @@ void dt_bauhaus_update_module(dt_iop_module_t *self)
         switch(bhw->field_type)
         {
           case DT_INTROSPECTION_TYPE_FLOAT:
-            dt_bauhaus_slider_set(widget, *(float *)bhw->field);
+            dt_bauhaus_slider_set(widget, *(float *)field);
             break;
           case DT_INTROSPECTION_TYPE_INT:
-            dt_bauhaus_slider_set(widget, *(int *)bhw->field);
+            dt_bauhaus_slider_set(widget, *(int *)field);
             break;
           case DT_INTROSPECTION_TYPE_USHORT:
-            dt_bauhaus_slider_set(widget, *(unsigned short *)bhw->field);
+            dt_bauhaus_slider_set(widget, *(unsigned short *)field);
             break;
           default:
             dt_print(DT_DEBUG_ALWAYS,
-                     "[dt_bauhaus_update_module] unsupported slider data type\n");
+                     "[dt_bauhaus_update_from_field] unsupported slider data type\n");
         }
         break;
       case DT_BAUHAUS_COMBOBOX:
         switch(bhw->field_type)
         {
           case DT_INTROSPECTION_TYPE_ENUM:
-            dt_bauhaus_combobox_set_from_value(widget, *(int *)bhw->field);
+            dt_bauhaus_combobox_set_from_value(widget, *(int *)field);
             break;
           case DT_INTROSPECTION_TYPE_INT:
-            dt_bauhaus_combobox_set(widget, *(int *)bhw->field);
+            dt_bauhaus_combobox_set(widget, *(int *)field);
             break;
           case DT_INTROSPECTION_TYPE_UINT:
-            dt_bauhaus_combobox_set(widget, *(unsigned int *)bhw->field);
+            dt_bauhaus_combobox_set(widget, *(unsigned int *)field);
             break;
           case DT_INTROSPECTION_TYPE_BOOL:
-            dt_bauhaus_combobox_set(widget, *(gboolean *)bhw->field);
+            dt_bauhaus_combobox_set(widget, *(gboolean *)field);
             break;
           default:
             dt_print(DT_DEBUG_ALWAYS,
-                     "[dt_bauhaus_update_module] unsupported combo data type\n");
+                     "[dt_bauhaus_update_from_field] unsupported combo data type\n");
         }
         break;
       default:
         dt_print(DT_DEBUG_ALWAYS
-                 , "[dt_bauhaus_update_module] invalid bauhaus widget type encountered\n");
+                 , "[dt_bauhaus_update_from_field] invalid bauhaus widget type encountered\n");
     }
 
-    if(!n && (n = gtk_widget_get_parent(widget))
-       && (n = gtk_widget_get_parent(n)) && !GTK_IS_NOTEBOOK(n))
-      n = NULL;
+    // if gui->reset then notebook tab highlights were not yet changed
+    if(!notebook && darktable.gui->reset && (notebook = gtk_widget_get_parent(widget))
+       && (notebook = gtk_widget_get_parent(notebook)) && !GTK_IS_NOTEBOOK(notebook))
+      notebook = NULL;
   }
 
-  if(n)
-    gtk_container_foreach(GTK_CONTAINER(n),
+  if(notebook)
+    gtk_container_foreach(GTK_CONTAINER(notebook),
                           _highlight_changed_notebook_tab, NULL);
 }
 
@@ -2585,7 +2629,7 @@ static void _popup_show(GtkWidget *widget)
   darktable.bauhaus->mouse_line_distance = 0.0f;
   _stop_cursor();
 
-  bauhaus_request_focus(w);
+  _request_focus(w);
 
   gtk_widget_realize(darktable.bauhaus->popup_window);
 
@@ -2779,7 +2823,7 @@ static gboolean _widget_scroll(GtkWidget *widget,
     if(delta_y == 0) return TRUE;
 
     dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-    bauhaus_request_focus(w);
+    _request_focus(w);
 
     if(w->type == DT_BAUHAUS_SLIDER)
     {
@@ -2816,7 +2860,7 @@ static gboolean _widget_key_press(GtkWidget *widget, GdkEventKey *event)
       if(w->type == DT_BAUHAUS_COMBOBOX) delta *= -1;
     case GDK_KEY_Left:
     case GDK_KEY_KP_Left:
-      bauhaus_request_focus(w);
+      _request_focus(w);
 
       if(w->type == DT_BAUHAUS_SLIDER)
         _slider_add_step(widget, delta, event->state, FALSE);
@@ -3231,13 +3275,13 @@ static gboolean _widget_button_press(GtkWidget *widget,
                                      GdkEventButton *event)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-  bauhaus_request_focus(w);
+  _request_focus(w);
   gtk_widget_grab_focus(widget);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int w3 = allocation.width - w->margin.left - w->padding.left
-    - w->margin.right - w->padding.right;
+                                  - w->margin.right - w->padding.right;
   const double ex = event->x - w->margin.left - w->padding.left;
   const double ey = event->y - w->margin.top - w->padding.top;
 
@@ -3250,8 +3294,9 @@ static gboolean _widget_button_press(GtkWidget *widget,
   else if(event->button == 1
           && event->type == GDK_2BUTTON_PRESS)
   {
-    // reset to default.
-    dt_bauhaus_widget_reset(widget);
+    if(!(dt_modifier_is(event->state, GDK_CONTROL_MASK) && w->field
+         && dt_gui_presets_autoapply_for_module((dt_iop_module_t *)w->module, widget)))
+      dt_bauhaus_widget_reset(widget); // reset to default.
     // never called for combo, as we popup the other window under your cursor before.
     // (except in weird corner cases where the popup is under the -1st entry
     _popup_hide();

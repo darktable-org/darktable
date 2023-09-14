@@ -560,8 +560,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   GtkWidget *dialog = gtk_dialog_new_with_buttons
     (title, g->parent, GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
      _("_export..."), GTK_RESPONSE_YES,
-     _("delete"), GTK_RESPONSE_REJECT, 
-     _("_cancel"), GTK_RESPONSE_CANCEL, 
+     _("delete"), GTK_RESPONSE_REJECT,
+     _("_cancel"), GTK_RESPONSE_CANCEL,
      _("_ok"), GTK_RESPONSE_OK, NULL);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "preset_dialog");
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
@@ -1168,8 +1168,10 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module,
   g_free(name);
 }
 
-gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
+gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget *widget)
 {
+  if(!module || module->actions != DT_ACTION_TYPE_IOP_INSTANCE) return FALSE;
+
   dt_image_t *image = &module->dev->image_storage;
 
   const gboolean is_display_referred = dt_is_display_referred();
@@ -1179,7 +1181,7 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
   char query[2024];
   // clang-format off
   snprintf(query, sizeof(query),
-     "SELECT name"
+     "SELECT name, op_params, blendop_params"
      " FROM data.presets"
      " WHERE operation = ?1"
      "        AND ((autoapply=1"
@@ -1234,8 +1236,20 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
   gboolean applied = FALSE;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const char *name = (const char *)sqlite3_column_text(stmt, 0);
-    dt_gui_presets_apply_preset(name, module);
+    if(widget)
+    {
+      dt_iop_params_t *params = (dt_iop_params_t *)sqlite3_column_blob(stmt, 1);
+      dt_develop_blend_params_t *blend_params = (dt_iop_params_t *)sqlite3_column_blob(stmt, 2);
+      if(sqlite3_column_bytes(stmt, 1) == module->params_size
+         && sqlite3_column_bytes(stmt, 2) == sizeof(dt_develop_blend_params_t))
+        dt_bauhaus_update_from_field(module, widget, params, blend_params);
+    }
+    else
+    {
+      const char *name = (const char *)sqlite3_column_text(stmt, 0);
+      dt_gui_presets_apply_preset(name, module);
+    }
+
     applied = TRUE;
   }
   sqlite3_finalize(stmt);

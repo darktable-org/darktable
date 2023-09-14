@@ -287,7 +287,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   /*
    * Set these in advance so any upcoming RGB -> YUV use the proper
    * coefficients.
-   * 
+   *
    * If possible, we want libavif to save the color encoding in its own format,
    * rather than embedding the ICC profile, which is possible.
    * If we are unable to find the required color encoding data we will just
@@ -855,7 +855,6 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT), /* default */
                                                   0); /* digits */
   dt_bauhaus_widget_set_label(gui->quality,  NULL, N_("quality"));
-  dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT));
   dt_bauhaus_slider_set_format(gui->quality, "%");
 
   gtk_widget_set_tooltip_text(gui->quality,

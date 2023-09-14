@@ -159,7 +159,7 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);
 void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, const int direction);
 
 /** apply any auto presets that are appropriate for the current module **/
-gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
+gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget *widget);
 
 void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
                                          dt_iop_module_t *module,
