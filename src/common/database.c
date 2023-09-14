@@ -94,7 +94,8 @@ int32_t dt_database_last_insert_rowid(const dt_database_t *db)
   return (int32_t)sqlite3_last_insert_rowid(db->handle);
 }
 
-/* migrate from the legacy db format (with the 'settings' blob) to the first version this system knows */
+/* migrate from the legacy db format (with the 'settings' blob) to the
+   first version this system knows */
 static gboolean _migrate_schema(dt_database_t *db, int version)
 {
   gboolean all_ok = TRUE;
@@ -2311,7 +2312,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
   // write the new version to db
-  sqlite3_prepare_v2(db->handle, "INSERT OR REPLACE INTO main.db_info (key, value) VALUES ('version', ?1)", -1, &stmt,
+  sqlite3_prepare_v2(db->handle,
+                     "INSERT OR REPLACE"
+                     " INTO main.db_info (key, value)"
+                     " VALUES ('version', ?1)", -1, &stmt,
                      NULL);
   sqlite3_bind_int(stmt, 1, new_version);
   sqlite3_step(stmt);
@@ -2535,7 +2539,10 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
   // write the new version to db
   // clang-format off¨
-  sqlite3_prepare_v2(db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)", -1, &stmt,
+  sqlite3_prepare_v2(db->handle,
+                     "INSERT OR REPLACE"
+                     " INTO data.db_info (key, value)"
+                     " VALUES ('version', ?1)", -1, &stmt,
                      NULL);
   // clang-format on
   sqlite3_bind_int(stmt, 1, new_version);
@@ -2559,7 +2566,8 @@ static gboolean _upgrade_library_schema(dt_database_t *db, int version)
   {
     const int new_version = _upgrade_library_schema_step(db, version);
     if(new_version == version)
-      return FALSE; // we don't know how to upgrade this db. probably a bug in _upgrade_library_schema_step
+      return FALSE; // we don't know how to upgrade this db. probably
+                    // a bug in _upgrade_library_schema_step
     else
       version = new_version;
   }
@@ -2587,10 +2595,12 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_stmt *stmt;
   ////////////////////////////// db_info
   // clang-format off
-  sqlite3_exec(db->handle, "CREATE TABLE main.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
-               NULL, NULL);
-  sqlite3_prepare_v2(
-      db->handle, "INSERT OR REPLACE INTO main.db_info (key, value) VALUES ('version', ?1)", -1, &stmt, NULL);
+  sqlite3_exec
+    (db->handle, "CREATE TABLE main.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)",
+     NULL, NULL, NULL);
+  sqlite3_prepare_v2
+    (db->handle, "INSERT OR REPLACE INTO main.db_info (key, value) VALUES ('version', ?1)",
+     -1, &stmt, NULL);
   // clang-format on
   sqlite3_bind_int(stmt, 1, CURRENT_DATABASE_VERSION_LIBRARY);
   sqlite3_step(stmt);
@@ -2648,19 +2658,26 @@ static void _create_library_schema(dt_database_t *db)
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id, id)",
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.images_group_id_index ON images (group_id, id)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id, filename)",
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.images_film_id_index ON images (film_id, filename)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_filename_index ON images (filename, version)",
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.images_filename_index ON images (filename, version)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.image_position_index ON images (position)",
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.image_position_index ON images (position)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken)",
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken)",
                NULL, NULL, NULL);
 
   ////////////////////////////// selected_images
-  sqlite3_exec(db->handle, "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+               "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)",
+               NULL, NULL, NULL);
   ////////////////////////////// history
   sqlite3_exec(
       db->handle,
@@ -2721,10 +2738,12 @@ static void _create_data_schema(dt_database_t *db)
   sqlite3_stmt *stmt;
   // clang-format off
   ////////////////////////////// db_info
-  sqlite3_exec(db->handle, "CREATE TABLE data.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
-               NULL, NULL);
-  sqlite3_prepare_v2(
-        db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)", -1, &stmt, NULL);
+  sqlite3_exec
+    (db->handle, "CREATE TABLE data.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)",
+     NULL, NULL, NULL);
+  sqlite3_prepare_v2
+    (db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)",
+     -1, &stmt, NULL);
   sqlite3_bind_int(stmt, 1, CURRENT_DATABASE_VERSION_DATA);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -3403,7 +3422,9 @@ start:
   else
   {
     gchar* data_status = _get_pragma_string_val(db->handle, "data.quick_check");
-    rc = sqlite3_prepare_v2(db->handle, "select value from data.db_info where key = 'version'", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(db->handle,
+                            "SELECT value FROM data.db_info WHERE key = 'version'",
+                            -1, &stmt, NULL);
     if(!g_strcmp0(data_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
     {
       g_free(data_status); // status is OK and we don't need to care :)
@@ -3587,7 +3608,9 @@ start:
   gchar* libdb_status = _get_pragma_string_val(db->handle, "main.quick_check");
   // next we are looking at the library database
   // does the db contain the new 'db_info' table?
-  rc = sqlite3_prepare_v2(db->handle, "select value from main.db_info where key = 'version'", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db->handle,
+                          "SELECT value FROM main.db_info WHERE key = 'version'",
+                          -1, &stmt, NULL);
   if(!g_strcmp0(libdb_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
     g_free(libdb_status);//it's ok :)
@@ -3768,15 +3791,15 @@ start:
   {
     // does it contain the legacy 'settings' table?
     sqlite3_finalize(stmt);
-    rc = sqlite3_prepare_v2(db->handle, "select settings from main.settings", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(db->handle, "SELECT settings FROM main.settings", -1, &stmt, NULL);
     if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
     {
       // the old blob had the version as an int in the first place
       const void *set = sqlite3_column_blob(stmt, 0);
       const int db_version = *(int *)set;
       sqlite3_finalize(stmt);
-      if(!_migrate_schema(db, db_version)) // bring the legacy layout to the first one known to our upgrade
-                                           // path ...
+      if(!_migrate_schema(db, db_version)) // bring the legacy layout to the first one known
+                                           // to our upgrade path ...
       {
         // we couldn't migrate the db for some reason. bail out.
         dt_print(DT_DEBUG_ALWAYS,
@@ -3811,7 +3834,7 @@ start:
   dt_legacy_presets_create(db);
 
   // drop table settings -- we don't want old versions of dt to drop our tables
-  sqlite3_exec(db->handle, "drop table main.settings", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "DROP TABLE main.settings", NULL, NULL, NULL);
 
   // take care of potential bad data in the db.
   _sanitize_db(db);
