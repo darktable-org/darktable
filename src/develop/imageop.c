@@ -2101,7 +2101,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   {
     if(module->gui_data)
     {
-      dt_bauhaus_update_module(module);
+      dt_bauhaus_update_from_field(module, NULL, NULL, NULL);
 
       if(module->params && module->gui_update)
       {
@@ -2145,7 +2145,7 @@ static void _gui_reset_callback(GtkButton *button,
   // If Ctrl was not pressed, or no auto-presets were applied, reset the module parameters
   if(!(event
        && dt_modifier_is(event->state, GDK_CONTROL_MASK))
-     || !dt_gui_presets_autoapply_for_module(module))
+     || !dt_gui_presets_autoapply_for_module(module, NULL))
   {
     // if a drawn mask is set, remove it from the list
     if(dt_is_valid_maskid(module->blend_params->mask_id))

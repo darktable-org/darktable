@@ -992,7 +992,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
   int show_element = 0;
   dt_shortcut_t lua_shortcut = { .speed = 1.0 };
 
-  gchar *original_markup = gtk_widget_get_tooltip_markup(widget);
+  gchar *original_markup = dt_bauhaus_widget_get_tooltip_markup(widget, darktable.control->element);
   gchar *preset_name = g_object_get_data(G_OBJECT(widget), "dt-preset-name");
   const gchar *widget_name = gtk_widget_get_name(widget);
 
