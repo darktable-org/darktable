@@ -2309,6 +2309,39 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE INDEX images_datetime_taken ON images (datetime_taken)",
              "[init] can't create images_datetime_taken\n");
 
+    // Some triggers to remove possible dangling refs in makers/models/lens/cameras
+    TRY_EXEC("CREATE TRIGGER remove_makers AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM makers"
+             "    WHERE id = OLD.maker_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE maker_id = OLD.maker_id);"
+             " END",
+             "[init] can't create trigger remove_makers\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_models AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM models"
+             "    WHERE id = OLD.model_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE model_id = OLD.model_id);"
+             " END",
+             "[init] can't create trigger remove_models\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_lens AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM lens"
+             "    WHERE id = OLD.lens_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE lens_id = OLD.lens_id);"
+             " END",
+             "[init] can't create trigger remove_lens\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_cameras AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM cameras"
+             "    WHERE id = OLD.camera_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE camera_id = OLD.camera_id);"
+             " END",
+             "[init] can't create trigger remove_cameras\n");
+
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
@@ -2744,6 +2777,47 @@ static void _create_library_schema(dt_database_t *db)
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_value ON meta_data (value)", NULL, NULL, NULL);
+
+  // Some triggers to remove possible dangling refs in makers/models/lens/cameras
+  sqlite3_exec
+    (db->handle,
+     "CREATE TRIGGER remove_makers AFTER DELETE ON images"
+     " BEGIN"
+     "  DELETE FROM makers"
+     "    WHERE id = OLD.maker_id"
+     "      AND NOT EXISTS (SELECT 1 FROM images WHERE maker_id = OLD.maker_id);"
+     " END",
+     NULL, NULL, NULL);
+
+  sqlite3_exec
+    (db->handle,
+     "CREATE TRIGGER remove_models AFTER DELETE ON images"
+     " BEGIN"
+     "  DELETE FROM models"
+     "    WHERE id = OLD.model_id"
+     "      AND NOT EXISTS (SELECT 1 FROM images WHERE model_id = OLD.model_id);"
+     " END",
+     NULL, NULL, NULL);
+
+  sqlite3_exec
+    (db->handle,
+     "CREATE TRIGGER remove_lens AFTER DELETE ON images"
+     " BEGIN"
+     "  DELETE FROM lens"
+     "    WHERE id = OLD.lens_id"
+     "      AND NOT EXISTS (SELECT 1 FROM images WHERE lens_id = OLD.lens_id);"
+     " END",
+     NULL, NULL, NULL);
+
+  sqlite3_exec
+    (db->handle,
+     "CREATE TRIGGER remove_cameras AFTER DELETE ON images"
+     " BEGIN"
+     "  DELETE FROM cameras"
+     "    WHERE id = OLD.camera_id"
+     "      AND NOT EXISTS (SELECT 1 FROM images WHERE camera_id = OLD.camera_id);"
+     " END",
+     NULL, NULL, NULL);
   // clang-format on
 }
 
