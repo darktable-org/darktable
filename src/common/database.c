@@ -2194,15 +2194,17 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
              "  name VARCHAR,"
              "  alias VARCHAR)",
-             "[init] can't create cameras table");
+             "[init] can't create cameras table\n");
 
     // create new indexes
     TRY_EXEC("CREATE INDEX makers_name ON makers (name)",
              "[init] can't create makers_name\n");
     TRY_EXEC("CREATE INDEX model_name ON models (name)",
-             "[init] can't create makers_name\n");
+             "[init] can't create model_name\n");
     TRY_EXEC("CREATE INDEX lens_name ON lens (name)",
-             "[init] can't create makers_name\n");
+             "[init] can't create lens_name\n");
+    TRY_EXEC("CREATE INDEX camera_name ON cameras (name)",
+             "[init] can't create camera_name\n");
 
     // populate new tables
     TRY_EXEC("INSERT INTO main.makers (name)"
@@ -2222,6 +2224,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "[init] can't add model_id column\n");
     TRY_EXEC("ALTER TABLE main.images ADD COLUMN lens_id INTEGER default 0",
              "[init] can't add lens_id column\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN camera_id INTEGER default 0",
+             "[init] can't add camera_id column\n");
 
     // update main images columns
     TRY_EXEC("UPDATE main.images"
@@ -2247,7 +2251,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE images_new (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, "
              "film_id INTEGER, "
              "width INTEGER, height INTEGER, filename VARCHAR, "
-             "maker_id INTEGER, model_id INTEGER, lens_id INTEGER, "
+             "maker_id INTEGER, model_id INTEGER, lens_id INTEGER, camera_id INTEGER,"
              "exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
              "focus_distance REAL, datetime_taken INTEGER, flags INTEGER, "
              "output_width INTEGER, output_height INTEGER, crop REAL, "
@@ -2263,12 +2267,14 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
              "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
              "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(camera_id) REFERENCES cameras(id) ON DELETE CASCADE ON UPDATE CASCADE, "
              "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
              "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
              "[init] can't create new table images");
 
     TRY_EXEC("INSERT INTO images_new"
-             " SELECT id, group_id, film_id, width, height, filename, maker_id, model_id, lens_id,"
+             " SELECT id, group_id, film_id, width, height, filename,"
+             "        maker_id, model_id, lens_id, camera_id,"
              "        exposure, aperture, iso, focal_length,"
              "        focus_distance, datetime_taken, flags,"
              "        output_width, output_height, crop,"
@@ -2634,27 +2640,36 @@ static void _create_library_schema(dt_database_t *db)
                " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                "  name VARCHAR)",
                NULL, NULL, NULL);
+  ////////////////////////////// cameras
+  sqlite3_exec(db->handle,
+               "CREATE TABLE cameras"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR,"
+               "  alias VARCHAR)",
+               NULL, NULL, NULL);
   ////////////////////////////// images
   sqlite3_exec(
       db->handle,
-      "CREATE TABLE main.images (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
-      "width INTEGER, height INTEGER, filename VARCHAR, "
-      "maker_id INTEGER, model_id INTEGER, lens_id INTEGER, "
-      "exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
-      "focus_distance REAL, datetime_taken INTEGER, flags INTEGER, "
-      "output_width INTEGER, output_height INTEGER, crop REAL, "
-      "raw_parameters INTEGER, raw_denoise_threshold REAL, "
-      "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
-      "license VARCHAR, sha1sum CHAR(40), "
-      "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
-      "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
-      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
-      "aspect_ratio REAL, exposure_bias REAL, "
-      "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
-      "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+      "CREATE TABLE main.images"
+      " (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER,"
+      "  width INTEGER, height INTEGER, filename VARCHAR,"
+      "  maker_id INTEGER, model_id INTEGER, lens_id INTEGER, camera_id INTEGER,"
+      "  exposure REAL, aperture REAL, iso REAL, focal_length REAL,"
+      "  focus_distance REAL, datetime_taken INTEGER, flags INTEGER,"
+      "  output_width INTEGER, output_height INTEGER, crop REAL,"
+      "  raw_parameters INTEGER, raw_denoise_threshold REAL,"
+      "  raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER,"
+      "  license VARCHAR, sha1sum CHAR(40),"
+      "  orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL,"
+      "  latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER,"
+      "  version INTEGER, max_version INTEGER, write_timestamp INTEGER,"
+      "  history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL,"
+      "  import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+      "  export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
       "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(camera_id) REFERENCES cameras(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
       NULL, NULL, NULL);
@@ -3149,6 +3164,44 @@ static gboolean _lock_databases(dt_database_t *db)
     return FALSE;
   }
   return TRUE;
+}
+
+static gboolean _upgrade_camera_table(const dt_database_t *db)
+{
+  gboolean res = TRUE;
+  sqlite3_stmt *stmt;
+  sqlite3_stmt *innerstmt;
+
+  sqlite3_prepare_v2(db->handle,
+                     "SELECT mi.id, mk.name, md.name"
+                     " FROM main.images AS mi, main.makers AS mk, main.models AS md"
+                     " WHERE mi.maker_id = mk.id"
+                     "   AND mi.model_id = md.id",
+                     -1, &stmt, NULL);
+
+  sqlite3_prepare_v2(db->handle,
+                     "UPDATE main.images SET camera_id = ?1 WHERE id = ?2",
+                     -1, &innerstmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+    const char *maker = (const char *)sqlite3_column_text(stmt, 1);
+    const char *model = (const char *)sqlite3_column_text(stmt, 2);
+
+    const int32_t camera_id = dt_image_get_camera_id(maker, model);
+
+    sqlite3_bind_int(innerstmt, 1, camera_id);
+    sqlite3_bind_int(innerstmt, 2, imgid);
+    sqlite3_step(innerstmt);
+    sqlite3_reset(innerstmt);
+    sqlite3_clear_bindings(innerstmt);
+  }
+
+  sqlite3_finalize(stmt);
+  sqlite3_finalize(innerstmt);
+
+  return res;
 }
 
 void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
@@ -3859,6 +3912,44 @@ error:
   g_free(dbname);
 
   return db;
+}
+
+void dt_upgrade_maker_model(const dt_database_t *db)
+{
+  sqlite3_stmt *stmt;
+
+  // check if updating the camera table is needed (done for each new darktable version)
+
+  sqlite3_prepare_v2(db->handle,
+                     "SELECT value"
+                     " FROM main.db_info"
+                     " WHERE key = 'dt_version'",
+                     -1, &stmt, NULL);
+  char *dt_version = NULL;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_version = (char *)sqlite3_column_text(stmt, 0);
+  }
+
+  if(!dt_version || !strcmp(dt_version, darktable_package_version))
+  {
+    _upgrade_camera_table(db);
+
+    sqlite3_finalize(stmt);
+
+    sqlite3_prepare_v2(db->handle,
+                       "INSERT OR REPLACE"
+                       " INTO main.db_info (key, value)"
+                       " VALUES ('dt_version', ?1)",
+                       -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, darktable_package_version, -1, SQLITE_TRANSIENT);
+    if(sqlite3_step(stmt) != SQLITE_DONE)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[init] can't insert/update new dt_version\n");
+    }
+  }
+
+  sqlite3_finalize(stmt);
 }
 
 void dt_database_destroy(const dt_database_t *db)

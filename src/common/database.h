@@ -65,6 +65,8 @@ void dt_database_start_transaction(const struct dt_database_t *db);
 void dt_database_release_transaction(const struct dt_database_t *db);
 void dt_database_rollback_transaction(const struct dt_database_t *db);
 
+void dt_upgrade_maker_model(const struct dt_database_t *db);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

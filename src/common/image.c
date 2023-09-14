@@ -3115,6 +3115,53 @@ int32_t dt_image_get_camera_lens_id(const char *name)
   return _image_get_set_camera_id("lens", name);
 }
 
+int32_t dt_image_get_camera_id(const char *maker, const char *model)
+{
+  sqlite3_stmt *stmt;
+
+  char n_maker[1024] = { 0 };
+  char n_model[1024] = { 0 };
+  char n_alias[1024] = { 0 };
+
+  dt_rawspeed_lookup_makermodel(maker, model,
+                                n_maker, sizeof(n_maker),
+                                n_model, sizeof(n_model),
+                                n_alias, sizeof(n_alias));
+
+  char *query = g_strdup_printf("SELECT id"
+                                "  FROM main.cameras"
+                                "  WHERE name = '%s %s'",
+                                n_maker, n_model);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query, -1, &stmt, NULL);
+
+  int32_t id = -1;
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+  }
+  else
+  {
+    g_free(query);
+    query = g_strdup_printf("INSERT"
+                            "  INTO main.cameras (name, alias)"
+                            "  VALUES ('%s %s', '%s')",
+                            n_maker, n_model,
+                            n_alias);
+
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                          query, NULL, NULL, NULL);
+    id = dt_database_last_insert_rowid(darktable.db);
+  }
+
+  g_free(query);
+  sqlite3_finalize(stmt);
+
+  return id;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

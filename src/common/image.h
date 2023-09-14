@@ -585,6 +585,7 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
 int32_t dt_image_get_camera_maker_id(const char *name);
 int32_t dt_image_get_camera_model_id(const char *name);
 int32_t dt_image_get_camera_lens_id(const char *name);
+int32_t dt_image_get_camera_id(const char *maker, const char *model);
 
 #ifdef __cplusplus
 } // extern "C"
