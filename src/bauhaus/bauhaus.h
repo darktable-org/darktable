@@ -160,6 +160,8 @@ typedef struct dt_bauhaus_widget_t
   gboolean show_extended_label;
   // callback function to draw the quad icon
   dt_bauhaus_quad_paint_f quad_paint;
+  // tooltip to show when mouse is over the quad section
+  gchar *tooltip;
   // minimal modifiers for paint function.
   int quad_paint_flags;
   // data for the paint callback
@@ -272,13 +274,16 @@ void dt_bauhaus_widget_set_quad_active(GtkWidget *w, int active);
 int dt_bauhaus_widget_get_quad_active(GtkWidget *w);
 // set quad visibility:
 void dt_bauhaus_widget_set_quad_visibility(GtkWidget *w, const gboolean visible);
+// set a tooltip for the quad button:
+void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *w, const gchar *text);
+// get the tooltip for widget or quad button:
+gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget, dt_action_element_t element);
 // set pointer to iop params field:
 void dt_bauhaus_widget_set_field(GtkWidget *w, gpointer field, dt_introspection_type_t field_type);
+// update one bauhaus widget or all widgets in a module from the provided (blend)params
+void dt_bauhaus_update_from_field(dt_iop_module_t *module, GtkWidget *w, gpointer params, gpointer blend_params);
 // reset widget to default value
 void dt_bauhaus_widget_reset(GtkWidget *widget);
-
-// update all bauhaus widgets in an iop module from their params fields
-void dt_bauhaus_update_module(dt_iop_module_t *self);
 
 // slider:
 GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self);
