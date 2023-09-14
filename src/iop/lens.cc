@@ -202,6 +202,8 @@ typedef struct dt_iop_lens_global_data_t
   int kernel_lens_distort_lanczos3;
   int kernel_lens_vignette;
   int kernel_lens_man_vignette;
+  int kernel_md_vignette;
+  int kernel_md_correct;
   lfDatabase *db;
 } dt_iop_lens_global_data_t;
 
@@ -2722,7 +2724,7 @@ static void _process_md(struct dt_iop_module_t *self,
           _interpolate_linear_spline(d->knots_vig, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
 
         for_each_channel(c)
-          buf[idx + c] /= (sf != 0.0f) ? sf : 1.0f;
+          buf[idx + c] /= fmaxf(1e-4, sf);
       }
     }
   }
@@ -2745,24 +2747,17 @@ static void _process_md(struct dt_iop_module_t *self,
       const float cy = (roi_out->y + y - h2) * inv_scale_md;
 
       const float radius = r*sqrtf(cx*cx + cy*cy);
-      for_three_channels(c)
+
+      for_each_channel(c)
       {
+        // use green data for alpha channel
+        const int plane = (c == 3) ? 1 : c;
         const float dr =
-          _interpolate_linear_spline(d->knots_dist, d->cor_rgb[c], d->nc, radius);
+          _interpolate_linear_spline(d->knots_dist, d->cor_rgb[plane], d->nc, radius);
         const float xs = dr*cx + w2 - roi_in->x;
         const float ys = dr*cy + h2 - roi_in->y;
         out[odx+c] = dt_interpolation_compute_sample
           (interpolation, buf + c, xs, ys, roi_in->width,
-           roi_in->height, 4, 4*roi_in->width);
-      }
-      // use green data for alpha channel
-      {
-        const float dr =
-          _interpolate_linear_spline(d->knots_dist, d->cor_rgb[1], d->nc, radius);
-        const float xs = dr*cx + w2 - roi_in->x;
-        const float ys = dr*cy + h2 - roi_in->y;
-        out[odx+3] = dt_interpolation_compute_sample
-          (interpolation, buf + 3, xs, ys, roi_in->width,
            roi_in->height, 4, 4*roi_in->width);
       }
     }
@@ -2771,6 +2766,83 @@ static void _process_md(struct dt_iop_module_t *self,
   if(!backbuf)
     dt_free_align(buf);
 }
+
+#ifdef HAVE_OPENCL
+static int _process_cl_md(struct dt_iop_module_t *self,
+                          dt_dev_pixelpipe_iop_t *piece,
+                          cl_mem dev_in,
+                          cl_mem dev_out,
+                          const dt_iop_roi_t *const roi_in,
+                          const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
+
+  const int devid = piece->pipe->devid;
+
+  if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t oregion[] = { (size_t)roi_out->width, (size_t)roi_out->height, 1 };
+    return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, oregion);
+  }
+
+  const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
+  const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
+  const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
+  const int knots = d->nc;
+
+  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const int itor_width = itor->width;
+
+  cl_mem data = dev_in;
+  cl_mem knots_dist = NULL;
+  cl_mem cor_rgb = NULL;
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
+
+  // Correct vignetting
+  if(d->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    data = (cl_mem)dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+    if(data == NULL) goto error;
+
+    cl_mem knots_vig = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(d->knots_vig), &d->knots_vig);
+    cl_mem vig = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(d->vig), &d->vig);
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_md_vignette, roi_in->width, roi_in->height,
+          CLARG(dev_in), CLARG(data),
+          CLARG(knots_vig), CLARG(vig),
+          CLARG(roi_in->width), CLARG(roi_in->height),
+          CLARG(w2), CLARG(h2), CLARG(r),
+          CLARG(roi_in->x), CLARG(roi_in->y),
+          CLARG(knots));
+
+    dt_opencl_release_mem_object(knots_vig);
+    dt_opencl_release_mem_object(vig);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  knots_dist = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(d->knots_dist), &d->knots_dist);
+  cor_rgb = (cl_mem)dt_opencl_copy_host_to_device_constant(devid, sizeof(d->cor_rgb), &d->cor_rgb);
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_md_correct, roi_out->width, roi_out->height,
+          CLARG(data), CLARG(dev_out),
+          CLARG(knots_dist), CLARG(cor_rgb),
+          CLARG(roi_out->width), CLARG(roi_out->height),
+          CLARG(roi_in->width), CLARG(roi_in->height),
+          CLARG(w2), CLARG(h2), CLARG(r), CLARG(d->scale_md),
+          CLARG(roi_in->x), CLARG(roi_in->y),
+          CLARG(roi_out->x), CLARG(roi_out->y),
+          CLARG(knots), CLARG(itor->id), CLARG(itor_width));
+
+error:
+  if(data != dev_in) dt_opencl_release_mem_object(data);
+  dt_opencl_release_mem_object(knots_dist);
+  dt_opencl_release_mem_object(cor_rgb);
+  return err;
+}
+#endif
 
 static void _modify_roi_in_md(struct dt_iop_module_t *self,
                               struct dt_dev_pixelpipe_iop_t *piece,
@@ -2878,7 +2950,10 @@ void process(dt_iop_module_t *self,
   if(correction)
   {
     data = dt_alloc_align_float((size_t) 4 * roi_in->width * roi_in->height);
-    _preprocess_vignette(self, piece, (float *)ivoid, data, roi_in, mask);
+    if(data)
+      _preprocess_vignette(self, piece, (float *)ivoid, data, roi_in, mask);
+    else
+      data = (float *)ivoid;
   }
 
   if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
@@ -2909,7 +2984,7 @@ cl_int _preprocess_vignette_cl(struct dt_iop_module_t *self,
   _init_vignette_spline(d);
 
   cl_mem dev_spline = (cl_mem)dt_opencl_copy_host_to_device_constant(piece->pipe->devid, sizeof(d->vigspline), d->vigspline);
-  if(dev_spline == NULL) return DT_OPENCL_SYSMEM_ALLOCATION;
+  if(dev_spline == NULL) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const float w2 = 0.5f * roi->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi->scale * piece->buf_in.height;
@@ -2952,12 +3027,23 @@ int process_cl(struct dt_iop_module_t *self,
   {
     data = (cl_mem)dt_opencl_alloc_device(piece->pipe->devid, roi_in->width, roi_in->height, 4 * sizeof(float));
     err = _preprocess_vignette_cl(self, piece, dev_in, data, roi_in, mask);
+    if(err != CL_SUCCESS)
+    {
+      dt_opencl_release_mem_object(data);
+      data = dev_in;
+    }
   }
 
-  if(err == CL_SUCCESS)
+  if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
+  {
     err = _process_cl_lf(self, piece, data, dev_out, roi_in, roi_out);
+  }
+  else
+  {
+    err = _process_cl_md(self, piece, data, dev_out, roi_in, roi_out);
+  }
 
-  if((data != dev_in) && data)
+  if(data != dev_in)
     dt_opencl_release_mem_object(data);
   return err;
 }
@@ -3103,8 +3189,7 @@ void commit_params(struct dt_iop_module_t *self,
 
   const gboolean use_lensfun = d->method == DT_IOP_LENS_METHOD_LENSFUN;
 
-  // no OpenCL for LENS_METHOD_EMBEDDED_METADATA or manual vignette correction
-  piece->process_cl_ready = use_lensfun;
+  piece->process_cl_ready = TRUE;
 
   if(use_lensfun)
   {
@@ -3157,6 +3242,10 @@ void init_global(dt_iop_module_so_t *module)
     dt_opencl_create_kernel(program, "lens_vignette");
   gd->kernel_lens_man_vignette =
     dt_opencl_create_kernel(program, "lens_man_vignette");
+  gd->kernel_md_vignette =
+    dt_opencl_create_kernel(program, "md_vignette");
+  gd->kernel_md_correct =
+    dt_opencl_create_kernel(program, "md_lens_correction");
 
   lfDatabase *dt_iop_lensfun_db = new lfDatabase;
   gd->db = (lfDatabase *)dt_iop_lensfun_db;
@@ -3394,6 +3483,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos3);
   dt_opencl_free_kernel(gd->kernel_lens_vignette);
   dt_opencl_free_kernel(gd->kernel_lens_man_vignette);
+  dt_opencl_free_kernel(gd->kernel_md_vignette);
+  dt_opencl_free_kernel(gd->kernel_md_correct);
   free(module->data);
   module->data = NULL;
 }
