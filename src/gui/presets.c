@@ -848,34 +848,18 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_entry_set_text(GTK_ENTRY(g->iso_min), "0");
     gtk_entry_set_placeholder_text(GTK_ENTRY(g->iso_max), _("∞"));
 
-    float val = 0;
-    int k = 0;
-    for(; k < dt_gui_presets_exposure_value_cnt
-          && val > dt_gui_presets_exposure_value[k]; k++)
-      ;
-    dt_bauhaus_combobox_set(g->exposure_min, k);
-    val = 100000000;
-    for(k = 0; k < dt_gui_presets_exposure_value_cnt
-          && val > dt_gui_presets_exposure_value[k]; k++)
-      ;
-    dt_bauhaus_combobox_set(g->exposure_max, k);
-    val = 0;
-    for(k = 0; k < dt_gui_presets_aperture_value_cnt
-          && val > dt_gui_presets_aperture_value[k]; k++)
-      ;
-    dt_bauhaus_combobox_set(g->aperture_min, k);
-    val = 100000000;
-    for(k = 0; k < dt_gui_presets_aperture_value_cnt
-          && val > dt_gui_presets_aperture_value[k]; k++)
-      ;
-    dt_bauhaus_combobox_set(g->aperture_max, k);
+    dt_bauhaus_combobox_set(g->exposure_min, 0);
+    dt_bauhaus_combobox_set(g->exposure_max, dt_gui_presets_exposure_value_cnt-1);
+    dt_bauhaus_combobox_set(g->aperture_min, 0);
+    dt_bauhaus_combobox_set(g->aperture_max, dt_gui_presets_aperture_value_cnt-1);
+
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), 1000);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoinit), FALSE);
 
-    for(k = 0; k < 5; k++)
+    for(int k = 0; k < 5; k++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
   }
   sqlite3_finalize(stmt);
