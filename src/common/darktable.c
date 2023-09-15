@@ -1231,6 +1231,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  dt_upgrade_maker_model(darktable.db);
+
   // init darktable tags table
   dt_set_darktable_tags();
 
