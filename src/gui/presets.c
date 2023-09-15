@@ -50,10 +50,11 @@ const char *dt_gui_presets_exposure_value_str[]
 
 const int dt_gui_presets_aperture_value_cnt = 19;
 const float dt_gui_presets_aperture_value[]
-    = { 0, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 5.6, 8.0, 11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
+    = { 0,     1.0,  1.4,  1.8,  2.0,  2.4,  2.8,  4.0,   5.6,
+        8.0,  11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
 const char *dt_gui_presets_aperture_value_str[]
-    = { "f/0",  "f/0.5", "f/0.7", "f/1.0", "f/1.4", "f/2",  "f/2.8", "f/4",   "f/5.6", "f/8",
-        "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
+    = { "f/0", "f/1.0", "f/1.4", "f/1.8", "f/2",  "f/2.4", "f/2.8", "f/4",   "f/5.6",
+        "f/8", "f/11",  "f/16",  "f/22",  "f/32", "f/45",  "f/64",  "f/90",  "f/128", "f/+" };
 
 // format string and corresponding flag stored into the database
 static const char *_gui_presets_format_value_str[5]
