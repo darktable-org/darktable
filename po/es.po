@@ -5794,7 +5794,7 @@ msgstr " RGB Rec. 2020 HLG"
 
 #: ../src/common/colorspaces.c:1289
 msgid "PQ P3 RGB"
-msgstr "PQ P3 RGB"
+msgstr "RGB P3 PQ"
 
 #: ../src/common/colorspaces.c:1294
 msgid "HLG P3 RGB"
@@ -14488,7 +14488,7 @@ msgstr ""
 
 #: ../src/iop/colorbalance.c:160
 msgid "shift colors selectively by luminance range"
-msgstr "desplazar colores selectivamente por rango de luminancia"
+msgstr "Realiza una transición de colores por rango de luminancia de manera selectiva"
 
 #: ../src/iop/colorbalance.c:164
 msgid "non-linear, Lab, scene-referred"
@@ -16521,7 +16521,7 @@ msgid ""
 "the exposure compensation and can be used to define a target."
 msgstr ""
 "La opción «corrección» ajusta automáticamente la exposición\n"
-"de tal manera que la luminosidad de entrada coincida con en el destino.\n"
+"de tal manera que la luminosidad de entrada coincida con la del destino.\n"
 "La opción «medición» simplemente presenta cómo un color de entrada es "
 "adaptado por el TAC\n"
 "y que pueda utilizarse para un muestreo de objetivo."
