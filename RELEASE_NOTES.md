@@ -143,6 +143,8 @@ changes (where available).
 - Fix crash when clicking & dragging the feather line on the path
   mask.
 
+- Fixed crash when applying CMYK soft-proof ICC profile.
+
 ## Lua
 
 ### API Version
