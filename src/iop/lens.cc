@@ -72,7 +72,8 @@ DT_MODULE_INTROSPECTION(10, dt_iop_lens_params_t)
 typedef enum dt_iop_lens_method_t
 {
   DT_IOP_LENS_METHOD_EMBEDDED_METADATA = 0, // $DESCRIPTION: "embedded metadata"
-  DT_IOP_LENS_METHOD_LENSFUN = 1 // $DESCRIPTION: "Lensfun database"
+  DT_IOP_LENS_METHOD_LENSFUN = 1, // $DESCRIPTION: "Lensfun database"
+  DT_IOP_LENS_METHOD_ONLYVIGNETTE = 2 // $DESCRIPTION: "only manual vignette"
 } dt_iop_lens_method_t;
 
 typedef enum dt_iop_lens_modify_flag_t
@@ -187,6 +188,7 @@ typedef struct dt_iop_lens_gui_data_t
   GtkWidget *v_strength, *v_radius, *v_steepness;
   dt_gui_collapsible_section_t fine_tune, vignette;
   GtkLabel *message;
+  GtkBox *hbox1;
   int corrections_done;
   gboolean lensfun_trouble;
   gboolean vig_masking;
@@ -2545,6 +2547,22 @@ static void _commit_params_md(dt_iop_module_t *self,
   }
 }
 
+static void _commit_params_vig(dt_iop_module_t *self,
+                              dt_iop_lens_params_t *p,
+                              dt_dev_pixelpipe_t *pipe,
+                              dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+
+  if(self->dev->gui_attached && g
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  {
+    dt_iop_gui_enter_critical_section(self);
+    g->corrections_done = 0;
+    dt_iop_gui_leave_critical_section(self);
+  }
+}
+
 static void _tiling_callback_md(struct dt_iop_module_t *self,
                                 struct dt_dev_pixelpipe_iop_t *piece,
                                 const dt_iop_roi_t *roi_in,
@@ -2553,6 +2571,20 @@ static void _tiling_callback_md(struct dt_iop_module_t *self,
 {
   tiling->factor = 4.5f; // in + out + tmp + tmpbuf
   tiling->maxbuf = 1.5f;
+  tiling->overhead = 0;
+  tiling->overlap = 4;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
+
+static void _tiling_callback_vg(struct dt_iop_module_t *self,
+                                struct dt_dev_pixelpipe_iop_t *piece,
+                                const dt_iop_roi_t *roi_in,
+                                const dt_iop_roi_t *roi_out,
+                                struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.0f;
+  tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 4;
   tiling->xalign = 1;
@@ -2925,6 +2957,14 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   roi_in->height = (int)fminf(orig_h - roi_in->y, yM - roi_in->y + interpolation->width);
 }
 
+static void _modify_roi_in_vg(struct dt_iop_module_t *self,
+                              struct dt_dev_pixelpipe_iop_t *piece,
+                              const dt_iop_roi_t *const roi_out,
+                              dt_iop_roi_t *roi_in)
+{
+  *roi_in = *roi_out;
+}
+
 /* embedded metadata processing end */
 
 #ifdef __GNUC__
@@ -2960,10 +3000,12 @@ void process(dt_iop_module_t *self,
   {
     _process_lf(self, piece, data, ovoid, roi_in, roi_out);
   }
-  else
+  else if(d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     _process_md(self, piece, data, ovoid, roi_in, roi_out, correction);
   }
+  else
+    dt_iop_copy_image_roi((float *)ovoid, data, 4, roi_in, roi_out);
 
   if(data != (float *)ivoid)
     dt_free_align(data);
@@ -3038,9 +3080,15 @@ int process_cl(struct dt_iop_module_t *self,
   {
     err = _process_cl_lf(self, piece, data, dev_out, roi_in, roi_out);
   }
-  else
+  else if(d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     err = _process_cl_md(self, piece, data, dev_out, roi_in, roi_out);
+  }
+  else
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { (size_t)roi_in->width, (size_t)roi_in->height, 1 };
+    err = dt_opencl_enqueue_copy_image(piece->pipe->devid, data, dev_out, origin, origin, region);
   }
 
   if(data != dev_in)
@@ -3061,10 +3109,12 @@ void tiling_callback(struct dt_iop_module_t *self,
   {
     _tiling_callback_lf(self, piece, roi_in, roi_out, tiling);
   }
-  else
+  else if(d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     _tiling_callback_md(self, piece, roi_in, roi_out, tiling);
   }
+  else
+    _tiling_callback_vg(self, piece, roi_in, roi_out, tiling);
 }
 
 int distort_transform(dt_iop_module_t *self,
@@ -3078,10 +3128,11 @@ int distort_transform(dt_iop_module_t *self,
   {
     return _distort_transform_lf(self, piece, points, points_count);
   }
-  else
+  else if(d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     return _distort_transform_md(self, piece, points, points_count);
   }
+  return 0;
 }
 
 int distort_backtransform(dt_iop_module_t *self,
@@ -3095,10 +3146,11 @@ int distort_backtransform(dt_iop_module_t *self,
   {
     return _distort_backtransform_lf(self, piece, points, points_count);
   }
-  else
+  else if(d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     return _distort_backtransform_md(self, piece, points, points_count);
   }
+  return 0;
 }
 
 void distort_mask(struct dt_iop_module_t *self,
@@ -3114,10 +3166,12 @@ void distort_mask(struct dt_iop_module_t *self,
   {
     _distort_mask_lf(self, piece, in, out, roi_in, roi_out);
   }
-  else
+  else if(d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     _distort_mask_md(self, piece, in, out, roi_in, roi_out);
   }
+  else
+    dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 void modify_roi_in(struct dt_iop_module_t *self,
@@ -3131,10 +3185,12 @@ void modify_roi_in(struct dt_iop_module_t *self,
   {
     _modify_roi_in_lf(self, piece, roi_out, roi_in);
   }
-  else
+  else if(d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     _modify_roi_in_md(self, piece, roi_out, roi_in);
   }
+  else
+    _modify_roi_in_vg(self, piece, roi_out, roi_in);
 }
 
 // _get_method returns the method to use based on the provided
@@ -3153,6 +3209,7 @@ const dt_iop_lens_method_t _get_method(struct dt_iop_module_t *self,
     method = DT_IOP_LENS_METHOD_LENSFUN;
   }
 
+  // FIXME: do we want to fallback to vignette only?
   return method;
 }
 
@@ -3187,18 +3244,18 @@ void commit_params(struct dt_iop_module_t *self,
   d->v_radius = p->v_radius;
   d->v_steepness = p->v_steepness;
 
-  const gboolean use_lensfun = d->method == DT_IOP_LENS_METHOD_LENSFUN;
-
   piece->process_cl_ready = TRUE;
 
-  if(use_lensfun)
+  if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
     _commit_params_lf(self, p, pipe, piece);
   }
-  else
+  else if(d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     _commit_params_md(self, p, pipe, piece);
   }
+  else
+   _commit_params_vig(self, p, pipe, piece);
 }
 
 void init_pipe(struct dt_iop_module_t *self,
@@ -4171,9 +4228,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
-  // enable methods selector combobox only if more than 1 methods are available
-  gtk_widget_set_sensitive(g->methods_selector, _have_embedded_metadata(self) > 0);
-
   if(p->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
     gtk_stack_set_visible_child_name(GTK_STACK(g->methods), "lensfun");
@@ -4194,7 +4248,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_widget_set_visible(g->tca_b, p->tca_override && !raw_monochrome);
 
   }
-  else
+  else if(p->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA)
   {
     gtk_stack_set_visible_child_name(GTK_STACK(g->methods), "metadata");
 
@@ -4225,6 +4279,15 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
   }
+  else
+  {
+    gtk_stack_set_visible_child_name(GTK_STACK(g->methods), "onlyvig");
+    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->message), FALSE);
+  }
+  const gboolean onlyvig = p->method == DT_IOP_LENS_METHOD_ONLYVIGNETTE;
+  gtk_widget_set_visible(GTK_WIDGET(g->modflags), !onlyvig);
+  gtk_widget_set_visible(GTK_WIDGET(g->hbox1), !onlyvig);
 
   // set modified if user did modify something with some widget
   // (excluding the method selector)
@@ -4368,6 +4431,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->tca_b, 5);
   gtk_widget_set_tooltip_text(g->tca_b, _("transversal chromatic aberration blue"));
 
+  /* empty correction mode widget */
+  GtkWidget *only_vig = self->widget =
+    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
   /* embedded metadata widgets */
   GtkWidget *box_md = self->widget =
     gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -4422,31 +4489,35 @@ void gui_init(struct dt_iop_module_t *self)
 
   // selector for correction method
   g->methods_selector = dt_bauhaus_combobox_from_params(self, "method");
+  gtk_widget_set_tooltip_text(g->methods_selector, _("select a correction mode either based on\n"
+                                                     " a) data and algorithms provided by the lensfun project\n"
+                                                     " b) embedded metadata provided by the camera or software vendor\n"));
 
   // selector for correction type (modflags): one or more out of
   // distortion, TCA, vignetting
   g->modflags = dt_bauhaus_combobox_from_params(self, "modify_flags");
   gtk_widget_set_tooltip_text(g->modflags, _("which corrections to apply"));
 
+  // message box to inform user what corrections have been done. this
+  // is useful as depending on lensfuns profile only some of the lens
+  // flaws can be corrected
+  g->hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkWidget *label = gtk_label_new(_("corrections done: "));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_tooltip_text(label, _("which corrections have actually been done"));
+  gtk_box_pack_start(GTK_BOX(g->hbox1), label, FALSE, FALSE, 0);
+  g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_label_set_ellipsize(GTK_LABEL(g->message), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->message), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox1), TRUE, TRUE, 0);
+
   g->methods = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->methods), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->methods, TRUE, TRUE, 0);
 
-  // message box to inform user what corrections have been done. this
-  // is useful as depending on lensfuns profile only some of the lens
-  // flaws can be corrected
-  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkWidget *label = gtk_label_new(_("corrections done: "));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_tooltip_text(label, _("which corrections have actually been done"));
-  gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
-  g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
-  gtk_label_set_ellipsize(GTK_LABEL(g->message), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
-
   gtk_stack_add_named(GTK_STACK(g->methods), box_lf, "lensfun");
   gtk_stack_add_named(GTK_STACK(g->methods), box_md, "metadata");
+  gtk_stack_add_named(GTK_STACK(g->methods), only_vig, "onlyvig");
 
   // widget for extra manual vignette correction, FIXME manual reference
   dt_gui_new_collapsible_section
@@ -4462,6 +4533,8 @@ void gui_init(struct dt_iop_module_t *self)
   sect_mod.section = (gchar *)N_("vignette");
 
   g->v_strength = dt_bauhaus_slider_from_params(sect, "v_strength");
+  gtk_widget_set_tooltip_text(g->v_strength,
+      _("amount of the applied optical vignetting correction"));
   dt_bauhaus_slider_set_format(g->v_strength, "%");
   dt_bauhaus_slider_set_digits(g->v_strength, 1);
   dt_bauhaus_widget_set_quad_paint(g->v_strength, dtgtk_cairo_paint_showmask, 0, NULL);
@@ -4470,10 +4543,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->v_strength), "quad-pressed", G_CALLBACK(_visualize_callback), self);
 
   g->v_radius = dt_bauhaus_slider_from_params(sect, "v_radius");
+  gtk_widget_set_tooltip_text(g->v_radius,
+      _("radius of uncorrected centre"));
   dt_bauhaus_slider_set_format(g->v_radius, "%");
   dt_bauhaus_slider_set_digits(g->v_radius, 1);
 
   g->v_steepness = dt_bauhaus_slider_from_params(sect, "v_steepness");
+  gtk_widget_set_tooltip_text(g->v_steepness,
+      _("steepness of the correction effect outside of radius"));
   dt_bauhaus_slider_set_format(g->v_steepness, "%");
   dt_bauhaus_slider_set_digits(g->v_steepness, 1);
 
