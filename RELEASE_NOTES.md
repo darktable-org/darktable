@@ -55,6 +55,8 @@ changes (where available).
   start. Now the UI comes up and reports progress in toast
   messages. Until OpenCL is fully available processing will be slower.
 
+- Implemented OpenCL code for embedded lens corrections.
+
 ## Other Changes
 
 - Hotpixels module now also supports monochrome images.
