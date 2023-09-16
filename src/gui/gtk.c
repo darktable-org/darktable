@@ -2522,7 +2522,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
 
   if(no_text)
   {
-    button = gtk_button_new_with_label(no_text);
+    button = gtk_button_new_with_mnemonic(no_text);
     result.button_no = button;
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
@@ -2530,7 +2530,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
 
   if(yes_text)
   {
-    button = gtk_button_new_with_label(yes_text);
+    button = gtk_button_new_with_mnemonic(yes_text);
     result.button_yes = button;
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
