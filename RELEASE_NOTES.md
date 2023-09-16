@@ -57,6 +57,11 @@ changes (where available).
 
 - Implemented OpenCL code for embedded lens corrections.
 
+- When panning or zooming, a low resolution placeholder used to be
+  shown until the image was fully recalculated. Now the part of the
+  previous high quality preview that is still visible is moved or
+  resized and only the edges are temporarily shown in low quality.
+
 ## Other Changes
 
 - Hotpixels module now also supports monochrome images.
@@ -74,6 +79,8 @@ changes (where available).
 
 - Rastermasks are visualized the same way as other masks in the module
   header and via the mask visualize button.
+
+- Improved dual demosaicing mask visualizing and performance.
 
 - A manually controlled vignette correction has been added tot the
   lens module.
@@ -123,6 +130,19 @@ changes (where available).
   to have the color-picker activated. This enhanced behavior comes
   handy when doing color grading for example.
 
+- A function dt_bauhaus_widget_set_quad_tooltip was added that allows
+  setting a separate tooltip for the button linked to a slider or
+  dropdown (commonly color pickers).
+
+- Holding the ctrl key while double clicking a slider or combo, which
+  normally resets it to its default value, instead restores the
+  auto-applied preset for processing modules (if a preset is marked as
+  such).
+
+- When multiple mask shapes are combined, in the popup menu for a
+  shape a tick mark is shown in front of the active combine mode,
+  which can be easier to read than the icon in front of the shape.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
@@ -146,6 +166,11 @@ changes (where available).
   mask.
 
 - Fixed crash when applying CMYK soft-proof ICC profile.
+
+- The white borders for ISO 12464 color assessment (toggled with
+  CTRL+B) are now correctly sized and placed at all zoom levels and
+  don't flash when switching between low and high quality preview,
+  both in the center view and secondary preview window.
 
 ## Lua
 
