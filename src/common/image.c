@@ -1993,7 +1993,6 @@ void dt_image_init(dt_image_t *img)
   memset(img->camera_model, 0, sizeof(img->camera_model));
   memset(img->camera_alias, 0, sizeof(img->camera_alias));
   memset(img->camera_makermodel, 0, sizeof(img->camera_makermodel));
-  memset(img->camera_legacy_makermodel, 0, sizeof(img->camera_legacy_makermodel));
   memset(img->filename, 0, sizeof(img->filename));
   g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
   img->exif_crop = 1.0;
