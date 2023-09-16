@@ -1718,11 +1718,24 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
 
 /* kernel for clip&rotate: bicubic interpolation */
 __kernel void
-clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-            const int in_width, const int in_height,
-            const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
-            const int flip, const float2 t, const float2 k, const float4 mat,
-            const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
+clip_rotate_bicubic(read_only image2d_t in,
+                    write_only image2d_t out,
+                    const int width,
+                    const int height,
+                    const int in_width,
+                    const int in_height,
+                    const int2 roi_in,
+                    const float2 roi_out,
+                    const float scale_in,
+                    const float scale_out,
+                    const int flip,
+                    const float2 t,
+                    const float2 k,
+                    const float4 mat,
+                    const float4 k_space,
+                    const float2 ka,
+                    const float4 ma,
+                    const float2 mb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1962,8 +1975,15 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
 
 /* kernels for the lens plugin: bicubic interpolation */
 kernel void
-lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                      const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+lens_distort_bicubic (read_only image2d_t in,
+                      write_only image2d_t out,
+                      const int width,
+                      const int height,
+                      const int iwidth,
+                      const int iheight,
+                      const int roi_in_x,
+                      const int roi_in_y,
+                      global float *pi,
                       const int do_nan_checks)
 {
   const int x = get_global_id(0);
@@ -2100,9 +2120,16 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
 
 /* kernels for the lens plugin: lanczos2 interpolation */
 kernel void
-lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                      const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
-                      const int do_nan_checks)
+lens_distort_lanczos2 (read_only image2d_t in,
+                       write_only image2d_t out,
+                       const int width,
+                       const int height,
+                       const int iwidth,
+                       const int iheight,
+                       const int roi_in_x,
+                       const int roi_in_y,
+                       global float *pi,
+                       const int do_nan_checks)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2422,9 +2449,18 @@ ashift_bilinear(read_only image2d_t in, write_only image2d_t out, const int widt
 
 /* kernel for the ashift module: bicubic interpolation */
 kernel void
-ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out,
-                const float in_scale, const float out_scale, const float2 clip, global float *homograph)
+ashift_bicubic (read_only image2d_t in,
+                write_only image2d_t out,
+                const int width,
+                const int height,
+                const int iwidth,
+                const int iheight,
+                const int2 roi_in,
+                const int2 roi_out,
+                const float in_scale,
+                const float out_scale,
+                const float2 clip,
+                global float *homograph)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2487,9 +2523,18 @@ ashift_bicubic (read_only image2d_t in, write_only image2d_t out, const int widt
 
 /* kernel for the ashift module: lanczos2 interpolation */
 kernel void
-ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out,
-                const float in_scale, const float out_scale, const float2 clip, global float *homograph)
+ashift_lanczos2(read_only image2d_t in,
+                write_only image2d_t out,
+                const int width,
+                const int height,
+                const int iwidth,
+                const int iheight,
+                const int2 roi_in,
+                const int2 roi_out,
+                const float in_scale,
+                const float out_scale,
+                const float2 clip,
+                global float *homograph)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2552,9 +2597,18 @@ ashift_lanczos2(read_only image2d_t in, write_only image2d_t out, const int widt
 
 /* kernels for the ashift module: lanczos3 interpolation */
 kernel void
-ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int iwidth, const int iheight, const int2 roi_in, const int2 roi_out,
-                const float in_scale, const float out_scale, const float2 clip, global float *homograph)
+ashift_lanczos3(read_only image2d_t in,
+                write_only image2d_t out,
+                const int width,
+                const int height,
+                const int iwidth,
+                const int iheight,
+                const int2 roi_in,
+                const int2 roi_out,
+                const float in_scale,
+                const float out_scale,
+                const float2 clip,
+                global float *homograph)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2609,12 +2663,15 @@ ashift_lanczos3(read_only image2d_t in, write_only image2d_t out, const int widt
     weight += w;
   }
 
-  pixel = (tx >= 0 && ty >= 0 && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
+  pixel = (tx >= 0 && ty >= 0
+           && tx < iwidth && ty < iheight) ? pixel/weight : (float4)0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-float _calc_vignette_spline(const float radius, global float *spline, const int splinesize)
+float _calc_vignette_spline(const float radius,
+                            global float *spline,
+                            const int splinesize)
 {
   if(radius >= 1.0f) return spline[splinesize-1];
 
@@ -2628,8 +2685,8 @@ float _calc_vignette_spline(const float radius, global float *spline, const int 
 
 float _interpolate_linear_spline(global float *xi,
                                  global float *yi,
-                                  const int ni,
-                                  const float x)
+                                 const int ni,
+                                 const float x)
 {
   if(x < xi[0]) return yi[0];
   for(int i = 1; i < ni; i++)
@@ -2643,19 +2700,18 @@ float _interpolate_linear_spline(global float *xi,
   return yi[ni - 1];
 }
 
-kernel void md_vignette(
-            read_only image2d_t in,
-            write_only image2d_t out,
-            global float *knots_vig,
-            global float *vig,
-            const int width,
-            const int height,
-            const float w2,
-            const float h2,
-            const float r,
-            const int roix,
-            const int roiy,
-            const int knots)
+kernel void md_vignette(read_only image2d_t in,
+                        write_only image2d_t out,
+                        global float *knots_vig,
+                        global float *vig,
+                        const int width,
+                        const int height,
+                        const float w2,
+                        const float h2,
+                        const float r,
+                        const int roix,
+                        const int roiy,
+                        const int knots)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2673,20 +2729,19 @@ kernel void md_vignette(
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-kernel void lens_man_vignette(
-            read_only image2d_t in,
-            write_only image2d_t out,
-            global float *spline,
-            const int width,
-            const int height,
-            const float w2,
-            const float h2,
-            const int roix,
-            const int roiy,
-            const float inv_maxr,
-            const float intensity,
-            const int splinesize,
-            const int vigmask)
+kernel void lens_man_vignette(read_only image2d_t in,
+                              write_only image2d_t out,
+                              global float *spline,
+                              const int width,
+                              const int height,
+                              const float w2,
+                              const float h2,
+                              const int roix,
+                              const int roiy,
+                              const float inv_maxr,
+                              const float intensity,
+                              const int splinesize,
+                              const int vigmask)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2705,7 +2760,11 @@ kernel void lens_man_vignette(
 }
 
 kernel void
-lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float4 *pi)
+lens_vignette (read_only image2d_t in,
+               write_only image2d_t out,
+               const int width,
+               const int height,
+               global float4 *pi)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2747,10 +2806,10 @@ float maketaps_bilinear(float *taps,
 }
 
 float maketaps_bicubic(float *taps,
-                        const int num_taps,
-                        const float width,
-                        const float first_tap,
-                        const float interval)
+                       const int num_taps,
+                       const float width,
+                       const float first_tap,
+                       const float interval)
 {
   float iter[4];
   float vt[4];
@@ -2825,10 +2884,10 @@ void vector_sin(const float *arg, float *sine)
 }
 
 float maketaps_lanczos(float *taps,
-                        const int num_taps,
-                        const float width,
-                        const float first_tap,
-                        const float interval)
+                       const int num_taps,
+                       const float width,
+                       const float first_tap,
+                       const float interval)
 {
   float iter[4];
   float vt[4];
@@ -2900,11 +2959,10 @@ float compute_upsampling_taps(const int itor_mode,
     return maketaps_bilinear(taps, 2*itor_width, (float)itor_width, t, -1.0f);
 }
 
-static inline float get_image_channel(
-            read_only image2d_t in,
-            const int x,
-            const int y,
-            const int c)
+static inline float get_image_channel(read_only image2d_t in,
+                                      const int x,
+                                      const int y,
+                                      const int c)
 {
   float4 pixel = read_imagef(in, samplerA, (int2)(x, y));
   if(c == 0)
@@ -2920,15 +2978,14 @@ static inline float get_image_channel(
 // Keep in sync with defines in interpolation
 #define MAX_HALF_FILTER_WIDTH 3
 #define MAX_KERNEL_REQ ((2 * (MAX_HALF_FILTER_WIDTH) + 3) & (~3))
-float interpolation_compute_sample(
-            read_only image2d_t in,
-            const int itor_mode,
-            const int itor_width,
-            const float x,
-            const float y,
-            const int width,
-            const int height,
-            const int plane)
+float interpolation_compute_sample(read_only image2d_t in,
+                                   const int itor_mode,
+                                   const int itor_width,
+                                   const float x,
+                                   const float y,
+                                   const int width,
+                                   const int height,
+                                   const int plane)
 {
   float kernelh[MAX_KERNEL_REQ];
   float kernelv[MAX_KERNEL_REQ];
@@ -2966,26 +3023,25 @@ float interpolation_compute_sample(
 #undef MAX_HALF_FILTER_WIDTH
 
 #define MAXKNOTS 16
-kernel void md_lens_correction(
-            read_only image2d_t in,
-            write_only image2d_t out,
-            global float *knots_dist,
-            global float *cor_rgb,
-            const int owidth,
-            const int oheight,
-            const int iwidth,
-            const int iheight,
-            const float w2,
-            const float h2,
-            const float r,
-            const float scale,
-            const int roix,
-            const int roiy,
-            const int roox,
-            const int rooy,
-            const int knots,
-            const int itor_mode,
-            const int itor_width)
+kernel void md_lens_correction(read_only image2d_t in,
+                               write_only image2d_t out,
+                               global float *knots_dist,
+                               global float *cor_rgb,
+                               const int owidth,
+                               const int oheight,
+                               const int iwidth,
+                               const int iheight,
+                               const float w2,
+                               const float h2,
+                               const float r,
+                               const float scale,
+                               const int roix,
+                               const int roiy,
+                               const int roox,
+                               const int rooy,
+                               const int knots,
+                               const int itor_mode,
+                               const int itor_width)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2999,10 +3055,12 @@ kernel void md_lens_correction(
   for(int c = 0; c < 4; c++)
   {
     const int plane = (c == 3) ? 1 : c;
-    const float dr = _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
+    const float dr =
+      _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
     const float xs = dr*cx + w2 - roix;
     const float ys = dr*cy + h2 - roiy;
-    output[c] = interpolation_compute_sample(in, itor_mode, itor_width, xs, ys, iwidth, iheight, c);
+    output[c] = interpolation_compute_sample(in, itor_mode, itor_width,
+                                             xs, ys, iwidth, iheight, c);
   }
 
   float4 pixel = {output[0], output[1], output[2], output[3]};
@@ -3013,7 +3071,11 @@ kernel void md_lens_correction(
 
 /* kernel for flip */
 __kernel void
-flip(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int orientation)
+flip(read_only image2d_t in,
+     write_only image2d_t out,
+     const int width,
+     const int height,
+     const int orientation)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3062,14 +3124,13 @@ envelope(const float L)
 
 /* kernel for monochrome */
 kernel void
-monochrome_filter(
-    read_only image2d_t in,
-    write_only image2d_t out,
-    const int width,
-    const int height,
-    const float a,
-    const float b,
-    const float size)
+monochrome_filter(read_only image2d_t in,
+                  write_only image2d_t out,
+                  const int width,
+                  const int height,
+                  const float a,
+                  const float b,
+                  const float size)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3083,16 +3144,15 @@ monochrome_filter(
 }
 
 kernel void
-monochrome(
-    read_only image2d_t in,
-    read_only image2d_t base,
-    write_only image2d_t out,
-    const int width,
-    const int height,
-    const float a,
-    const float b,
-    const float size,
-    float highlights)
+monochrome(read_only image2d_t in,
+           read_only image2d_t base,
+           write_only image2d_t out,
+           const int width,
+           const int height,
+           const float a,
+           const float b,
+           const float size,
+           float highlights)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3113,8 +3173,14 @@ monochrome(
 
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
-colorout (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-          global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+colorout (read_only image2d_t in,
+          write_only image2d_t out,
+          const int width,
+          const int height,
+          global float *mat,
+          read_only image2d_t lutr,
+          read_only image2d_t lutg,
+          read_only image2d_t lutb,
           global const float (*const a)[3])
 {
   const int x = get_global_id(0);
@@ -3142,8 +3208,14 @@ colorout (read_only image2d_t in, write_only image2d_t out, const int width, con
 
 /* kernel for the levels plugin */
 kernel void
-levels (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-        read_only image2d_t lut, const float in_low, const float in_high, const float in_inv_gamma)
+levels (read_only image2d_t in,
+        write_only image2d_t out,
+        const int width,
+        const int height,
+        read_only image2d_t lut,
+        const float in_low,
+        const float in_high,
+        const float in_inv_gamma)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3193,8 +3265,14 @@ enum
 
 
 kernel void
-colorzones_v3 (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
-            read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b)
+colorzones_v3 (read_only image2d_t in,
+               write_only image2d_t out,
+               const int width,
+               const int height,
+               const int channel,
+               read_only image2d_t table_L,
+               read_only image2d_t table_a,
+               read_only image2d_t table_b)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3241,8 +3319,14 @@ colorzones_v3 (read_only image2d_t in, write_only image2d_t out, const int width
 }
 
 kernel void
-colorzones (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
-            read_only image2d_t table_L, read_only image2d_t table_C, read_only image2d_t table_h)
+colorzones (read_only image2d_t in,
+            write_only image2d_t out,
+            const int width,
+            const int height,
+            const int channel,
+            read_only image2d_t table_L,
+            read_only image2d_t table_C,
+            read_only image2d_t table_h)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3284,8 +3368,13 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
 
 /* kernel for the zonesystem plugin */
 kernel void
-zonesystem (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int size,
-            global float *zonemap_offset, global float *zonemap_scale)
+zonesystem (read_only image2d_t in,
+            write_only image2d_t out,
+            const int width,
+            const int height,
+            const int size,
+            global float *zonemap_offset,
+            global float *zonemap_scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3308,7 +3397,12 @@ zonesystem (read_only image2d_t in, write_only image2d_t out, const int width, c
 
 /* kernel to fill an image with a color (for the borders plugin). */
 kernel void
-borders_fill (write_only image2d_t out, const int left, const int top, const int width, const int height, const float4 color)
+borders_fill (write_only image2d_t out,
+              const int left,
+              const int top,
+              const int width,
+              const int height,
+              const float4 color)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3330,10 +3424,19 @@ typedef enum dt_clipping_preview_mode_t
 } dt_clipping_preview_mode_t;
 
 kernel void
-overexposed (read_only image2d_t in, write_only image2d_t out, read_only image2d_t tmp, const int width, const int height,
-             const float lower, const float upper, const float4 lower_color, const float4 upper_color,
+overexposed (read_only image2d_t in,
+             write_only image2d_t out,
+             read_only image2d_t tmp,
+             const int width,
+             const int height,
+             const float lower,
+             const float upper,
+             const float4 lower_color,
+             const float4 upper_color,
              constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
-            read_only image2d_t lut, const int use_work_profile, dt_clipping_preview_mode_t mode)
+             read_only image2d_t lut,
+             const int use_work_profile,
+             dt_clipping_preview_mode_t mode)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3413,12 +3516,18 @@ overexposed (read_only image2d_t in, write_only image2d_t out, read_only image2d
 
 /* kernel for the rawoverexposed plugin. */
 kernel void
-rawoverexposed_mark_cfa (
-        read_only image2d_t in, write_only image2d_t out, global float *pi,
-        const int width, const int height,
-        read_only image2d_t raw, const int raw_width, const int raw_height,
-        const unsigned int filters, global const unsigned char (*const xtrans)[6],
-        global unsigned int *threshold, global float *colors)
+rawoverexposed_mark_cfa (read_only image2d_t in,
+                         write_only image2d_t out,
+                         global float *pi,
+                         const int width,
+                         const int height,
+                         read_only image2d_t raw,
+                         const int raw_width,
+                         const int raw_height,
+                         const unsigned int filters,
+                         global const unsigned char (*const xtrans)[6],
+                         global unsigned int *threshold,
+                         global float *colors)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3435,7 +3544,9 @@ rawoverexposed_mark_cfa (
 
   const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
 
-  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
+  const int c = (filters == 9u)
+    ? FCxtrans(raw_y, raw_x, xtrans)
+    : FC(raw_y, raw_x, filters);
 
   if(raw_pixel < threshold[c]) return;
 
@@ -3452,12 +3563,18 @@ rawoverexposed_mark_cfa (
 }
 
 kernel void
-rawoverexposed_mark_solid (
-        read_only image2d_t in, write_only image2d_t out, global float *pi,
-        const int width, const int height,
-        read_only image2d_t raw, const int raw_width, const int raw_height,
-        const unsigned int filters, global const unsigned char (*const xtrans)[6],
-        global unsigned int *threshold, const float4 solid_color)
+rawoverexposed_mark_solid (read_only image2d_t in,
+                           write_only image2d_t out,
+                           global float *pi,
+                           const int width,
+                           const int height,
+                           read_only image2d_t raw,
+                           const int raw_width,
+                           const int raw_height,
+                           const unsigned int filters,
+                           global const unsigned char (*const xtrans)[6],
+                           global unsigned int *threshold,
+                           const float4 solid_color)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3474,7 +3591,9 @@ rawoverexposed_mark_solid (
 
   const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
 
-  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
+  const int c = (filters == 9u)
+    ? FCxtrans(raw_y, raw_x, xtrans)
+    : FC(raw_y, raw_x, filters);
 
   if(raw_pixel < threshold[c]) return;
 
@@ -3487,12 +3606,17 @@ rawoverexposed_mark_solid (
 }
 
 kernel void
-rawoverexposed_falsecolor (
-        read_only image2d_t in, write_only image2d_t out, global float *pi,
-        const int width, const int height,
-        read_only image2d_t raw, const int raw_width, const int raw_height,
-        const unsigned int filters, global const unsigned char (*const xtrans)[6],
-        global unsigned int *threshold)
+rawoverexposed_falsecolor (read_only image2d_t in,
+                           write_only image2d_t out,
+                           global float *pi,
+                           const int width,
+                           const int height,
+                           read_only image2d_t raw,
+                           const int raw_width,
+                           const int raw_height,
+                           const unsigned int filters,
+                           global const unsigned char (*const xtrans)[6],
+                           global unsigned int *threshold)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3509,7 +3633,9 @@ rawoverexposed_falsecolor (
 
   const uint raw_pixel = read_imageui(raw, sampleri, (int2)(raw_x, raw_y)).x;
 
-  const int c = (filters == 9u) ? FCxtrans(raw_y, raw_x, xtrans) : FC(raw_y, raw_x, filters);
+  const int c = (filters == 9u)
+    ? FCxtrans(raw_y, raw_x, xtrans)
+    : FC(raw_y, raw_x, filters);
 
   if(raw_pixel < threshold[c]) return;
 
@@ -3527,8 +3653,12 @@ rawoverexposed_falsecolor (
 
 /* kernel for the lowlight plugin. */
 kernel void
-lowlight (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-          const float4 XYZ_sw, read_only image2d_t lut)
+lowlight (read_only image2d_t in,
+          write_only image2d_t out,
+          const int width,
+          const int height,
+          const float4 XYZ_sw,
+          read_only image2d_t lut)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3573,8 +3703,15 @@ lowlight (read_only image2d_t in, write_only image2d_t out, const int width, con
 
 /* kernel for the contrast lightness saturation module */
 kernel void
-colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation,
-        read_only image2d_t ctable, constant float *ca, read_only image2d_t ltable, constant float *la)
+colisa (read_only image2d_t in,
+        write_only image2d_t out,
+        unsigned int width,
+        unsigned int height,
+        const float saturation,
+        read_only image2d_t ctable,
+        constant float *ca,
+        read_only image2d_t ltable,
+        constant float *la)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -3596,8 +3733,12 @@ colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, un
 /* kernel for the unbreak input profile module - gamma version */
 
 kernel void
-profilegamma (read_only image2d_t in, write_only image2d_t out, int width, int height,
-        read_only image2d_t table, constant float *ta)
+profilegamma (read_only image2d_t in,
+              write_only image2d_t out,
+              int width,
+              int height,
+              read_only image2d_t table,
+              constant float *ta)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -3617,7 +3758,13 @@ profilegamma (read_only image2d_t in, write_only image2d_t out, int width, int h
 
 /* kernel for the unbreak input profile module - log version */
 kernel void
-profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, int height, const float dynamic_range, const float shadows_range, const float grey)
+profilegamma_log (read_only image2d_t in,
+                  write_only image2d_t out,
+                  int width,
+                  int height,
+                  const float dynamic_range,
+                  const float shadows_range,
+                  const float grey)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -3642,13 +3789,22 @@ profilegamma_log (read_only image2d_t in, write_only image2d_t out, int width, i
 
 /* kernel for the interpolation resample helper */
 kernel void
-interpolation_resample (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                        const global int *hmeta, const global int *vmeta,
-                        const global int *hlength, const global int *vlength,
-                        const global int *hindex, const global int *vindex,
-                        const global float *hkernel, const global float *vkernel,
-                        const int htaps, const int vtaps,
-                        local float *lkernel, local int *lindex,
+interpolation_resample (read_only image2d_t in,
+                        write_only image2d_t out,
+                        const int width,
+                        const int height,
+                        const global int *hmeta,
+                        const global int *vmeta,
+                        const global int *hlength,
+                        const global int *vlength,
+                        const global int *hindex,
+                        const global int *vindex,
+                        const global float *hkernel,
+                        const global float *vkernel,
+                        const int htaps,
+                        const int vtaps,
+                        local float *lkernel,
+                        local int *lindex,
                         local float4 *buffer)
 {
   const int x = get_global_id(0);
