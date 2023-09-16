@@ -83,7 +83,7 @@ void _lens_tree_update(_widgets_lens_t *lens)
              "SELECT ln.name AS lens, COUNT(*) AS count"
              " FROM main.images AS mi, main.lens AS ln"
              " WHERE mi.lens_id = ln.id AND %s"
-             " GROUP BY mi.lens_id"
+             " GROUP BY lens"
              " ORDER BY lens",
              d->last_where_ext);
   // clang-format on
