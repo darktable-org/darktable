@@ -44,7 +44,7 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *layout_culling_dynamic;
   GtkWidget *layout_preview;
   dt_lighttable_layout_t layout, base_layout;
-  GtkWidget *zoom_box;
+  GtkWidget *zoom_grid;
   int current_zoom;
   gboolean fullpreview;
   gboolean fullpreview_focus;
@@ -126,10 +126,8 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
     active = d->layout_culling_restricted;
 
-  children = gtk_container_get_children(GTK_CONTAINER(d->zoom_box));
-  for(GList *l = children; l; l = g_list_delete_link(l, l))
   {
-    GtkWidget *w = (GtkWidget *)l->data;
+    GtkWidget *w = (GtkWidget *) gtk_grid_get_child_at(GTK_GRID(d->zoom_grid), 3, 1);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (w == active));
   }
 
@@ -490,17 +488,17 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_preview, TRUE, TRUE, 0);
 
-  // create the box for zoom widgets
-  d->zoom_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(d->zoom_box, "lighttable-zoom-box");
-  gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_box, TRUE, TRUE, 0);
+  // create the grid for zoom widgets
+  d->zoom_grid = gtk_grid_new();
+  gtk_widget_set_name(d->zoom_grid, "lighttable-zoom-grid");
+  gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_grid, TRUE, TRUE, 0);
 
   /* create horizontal zoom slider */
   d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, DT_LIGHTTABLE_MAX_ZOOM, 1);
   gtk_widget_set_size_request(GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
   gtk_range_set_increments(GTK_RANGE(d->zoom), 1, 1);
-  gtk_box_pack_start(GTK_BOX(d->zoom_box), d->zoom, TRUE, TRUE, 0);
+  gtk_grid_attach(GTK_GRID(d->zoom_grid), d->zoom, 1, 1, 1, 1);
 
   /* manual entry of the zoom level */
   d->zoom_entry = gtk_entry_new();
@@ -508,8 +506,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_max_length(GTK_ENTRY(d->zoom_entry), 2);
   gtk_entry_set_width_chars(GTK_ENTRY(d->zoom_entry), 3);
   gtk_entry_set_max_width_chars(GTK_ENTRY(d->zoom_entry), 3);
-  gtk_box_pack_start(GTK_BOX(d->zoom_box), d->zoom_entry, TRUE, TRUE, 0);
-  _lib_lighttable_update_btn(self);
+  gtk_grid_attach(GTK_GRID(d->zoom_grid), d->zoom_entry, 2, 1, 1, 1);
 
   g_signal_connect(G_OBJECT(d->zoom), "value-changed", G_CALLBACK(_lib_lighttable_zoom_slider_changed), self);
   g_signal_connect(d->zoom_entry, "key-press-event", G_CALLBACK(_lib_lighttable_zoom_entry_changed), self);
@@ -528,7 +525,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(d->layout_culling_restricted, dt_get_help_url("layout_filemanager"));
   g_signal_connect(G_OBJECT(d->layout_culling_restricted), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
-  gtk_box_pack_start(GTK_BOX(d->zoom_box), d->layout_culling_restricted, TRUE, TRUE, 0);
+  gtk_grid_attach(GTK_GRID(d->zoom_grid), d->layout_culling_restricted, 3, 1, 1, 1);
 
   //gtk_widget_set_sensitive(d->layout_culling_restricted, (d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED));
   gtk_widget_set_visible(d->layout_culling_restricted, (d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED));
