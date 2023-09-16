@@ -3093,14 +3093,14 @@ void dt_database_show_error(const dt_database_t *db)
     // clang-format on
 
     gboolean delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
-                                        label_text, _("cancel"), _("delete database lock files"));
+                                        label_text, _("_cancel"), _("_delete database lock files"));
 
     if(delete_lockfiles)
     {
       gboolean really_delete_lockfiles =
         dt_gui_show_standalone_yes_no_dialog
         (_("are you sure?"),
-         _("\ndo you really want to delete the lock files?\n"), _("no"), _("yes"));
+         _("\ndo you really want to delete the lock files?\n"), _("_no"), _("_yes"));
       if(really_delete_lockfiles)
       {
         int status = 0;
@@ -3118,14 +3118,14 @@ void dt_database_show_error(const dt_database_t *db)
         if(status==0)
           dt_gui_show_standalone_yes_no_dialog(_("done"),
                                         _("\nsuccessfully deleted the lock files.\nyou can now restart darktable\n"),
-                                        _("ok"), NULL);
+                                        _("_ok"), NULL);
         else
           dt_gui_show_standalone_yes_no_dialog
             (_("error"), g_markup_printf_escaped(
               _("\nat least one file could not be removed.\n"
                 "you may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>\n"
                 "in folder <a href=\"file:///%s\">%s</a>.\n"), lck_dirname, lck_dirname),
-             _("ok"), NULL);
+             _("_ok"), NULL);
       }
     }
 
@@ -3340,7 +3340,7 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 
   gboolean shall_we_update_the_db =
     dt_gui_show_standalone_yes_no_dialog(_("darktable - schema migration"), label_text,
-                                         _("close darktable"), _("upgrade database"));
+                                         _("_close darktable"), _("_upgrade database"));
 
   g_free(label_text);
 
@@ -3661,12 +3661,9 @@ start:
         dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
                                             NULL,
                                             dflags,
-                                            _("close darktable"),
-                                            GTK_RESPONSE_CLOSE,
-                                            _("attempt restore"),
-                                            GTK_RESPONSE_ACCEPT,
-                                            _("delete database"),
-                                            GTK_RESPONSE_REJECT,
+                                            _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                            _("_attempt restore"), GTK_RESPONSE_ACCEPT,
+                                            _("_delete database"), GTK_RESPONSE_REJECT,
                                             NULL);
         gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
         label_options = _("do you want to close darktable now to manually restore\n"
@@ -3679,10 +3676,8 @@ start:
         dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
                                             NULL,
                                             dflags,
-                                            _("close darktable"),
-                                            GTK_RESPONSE_CLOSE,
-                                            _("delete database"),
-                                            GTK_RESPONSE_REJECT,
+                                            _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                            _("_delete database"), GTK_RESPONSE_REJECT,
                                             NULL);
         gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
         label_options = _("do you want to close darktable now to manually restore\n"
@@ -3848,12 +3843,9 @@ start:
       dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
                                           NULL,
                                           dflags,
-                                          _("close darktable"),
-                                          GTK_RESPONSE_CLOSE,
-                                          _("attempt restore"),
-                                          GTK_RESPONSE_ACCEPT,
-                                          _("delete database"),
-                                          GTK_RESPONSE_REJECT,
+                                          _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                          _("_attempt restore"), GTK_RESPONSE_ACCEPT,
+                                          _("_delete database"), GTK_RESPONSE_REJECT,
                                           NULL);
       gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
       label_options = _("do you want to close darktable now to manually restore\n"
@@ -3866,10 +3858,8 @@ start:
       dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
                                           NULL,
                                           dflags,
-                                          _("close darktable"),
-                                          GTK_RESPONSE_CLOSE,
-                                          _("delete database"),
-                                          GTK_RESPONSE_REJECT,
+                                          _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                          _("_delete database"), GTK_RESPONSE_REJECT,
                                           NULL);
       gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
       label_options = _("do you want to close darktable now to manually restore\n"

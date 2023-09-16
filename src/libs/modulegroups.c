@@ -3400,33 +3400,30 @@ static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
   d->editor_reset = FALSE;
 }
 
-static void _manage_editor_preset_name_verify(GtkWidget *tb, dt_lib_module_t *self)
+static void _manage_editor_preset_name_verify(GtkWidget *tb,
+                                              gpointer params[])
 {
-  GList *names = (GList *)g_object_get_data(G_OBJECT(tb), "existing_names");
-  GtkWidget *lb = (GtkWidget *)g_object_get_data(G_OBJECT(tb), "existing_label");
-  GtkWidget *bt_ok = (GtkWidget *)g_object_get_data(G_OBJECT(tb), "ok_btn");
+  GtkDialog *dialog = params[0];
+  GList *names = params[1];
+  GtkWidget *warning_label = params[2];
+
   const gchar *txt = gtk_entry_get_text(GTK_ENTRY(tb));
+  gboolean good = *txt;
 
   // we don't want empty name
-  if(!g_strcmp0(txt, ""))
+  if(good)
   {
-    gtk_widget_set_visible(lb, TRUE);
-    gtk_widget_set_sensitive(bt_ok, FALSE);
-    return;
-  }
-
-  for(const GList *l = names; l; l = g_list_next(l))
-  {
-    gchar *tx = (gchar *)l->data;
-    if(!g_strcmp0(tx, txt))
+    for(const GList *l = names; l; l = g_list_next(l))
     {
-      gtk_widget_set_visible(lb, TRUE);
-      gtk_widget_set_sensitive(bt_ok, FALSE);
-      return;
+      if(!g_strcmp0(l->data, txt))
+      {
+        good = FALSE;
+        break;
+      }
     }
   }
-  gtk_widget_set_visible(lb, FALSE);
-  gtk_widget_set_sensitive(bt_ok, TRUE);
+  gtk_widget_set_visible(warning_label, !good);
+  gtk_dialog_set_response_sensitive(dialog, GTK_RESPONSE_OK, good);
 }
 
 static void _manage_editor_preset_action(GtkWidget *btn, dt_lib_module_t *self)
@@ -3464,26 +3461,26 @@ static void _manage_editor_preset_action(GtkWidget *btn, dt_lib_module_t *self)
   sqlite3_finalize(stmt);
 
   gint res = GTK_RESPONSE_OK;
-  GtkWidget *dialog
-      = gtk_dialog_new_with_buttons(_("rename preset"), GTK_WINDOW(d->dialog), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    _("cancel"), GTK_RESPONSE_CANCEL, _("rename"), GTK_RESPONSE_OK, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("rename preset"), GTK_WINDOW(d->dialog),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_CANCEL,
+                                                  _("_rename"), GTK_RESPONSE_OK, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  GtkWidget *bt_ok = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   gtk_box_pack_start(GTK_BOX(content_area), gtk_label_new(_("new preset name:")), FALSE, TRUE, 0);
   GtkWidget *lb = gtk_label_new(_("a preset with this name already exists!"));
   GtkWidget *tb = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(tb), new_name);
-  g_object_set_data(G_OBJECT(tb), "existing_names", names);
-  g_object_set_data(G_OBJECT(tb), "existing_label", lb);
-  g_object_set_data(G_OBJECT(tb), "ok_btn", bt_ok);
-  g_signal_connect(G_OBJECT(tb), "changed", G_CALLBACK(_manage_editor_preset_name_verify), self);
+  gtk_entry_set_activates_default(GTK_ENTRY(tb), TRUE);
+  gtk_entry_set_width_chars(GTK_ENTRY(tb), 10 + g_utf8_strlen(gtk_window_get_title(GTK_WINDOW(dialog)), -1));
+  gpointer verify_params[] = {dialog, names, lb};
+  g_signal_connect(G_OBJECT(tb), "changed", G_CALLBACK(_manage_editor_preset_name_verify), verify_params);
   gtk_box_pack_start(GTK_BOX(content_area), tb, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(content_area), lb, FALSE, TRUE, 0);
   gtk_widget_show_all(content_area);
-  _manage_editor_preset_name_verify(tb, self);
+  gtk_entry_set_text(GTK_ENTRY(tb), new_name);
   res = gtk_dialog_run(GTK_DIALOG(dialog));
 
   g_free(new_name);

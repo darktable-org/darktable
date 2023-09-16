@@ -558,14 +558,14 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   char title[1024];
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"),
            g->original_name, g->module_name);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons
-    (title, g->parent, GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-     _("_export..."), GTK_RESPONSE_YES,
-     _("delete"), GTK_RESPONSE_REJECT,
-     _("_cancel"), GTK_RESPONSE_CANCEL,
-     _("_ok"), GTK_RESPONSE_OK, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(title, g->parent,
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+                                                  _("_export..."), GTK_RESPONSE_YES,
+                                                  _("_delete"), GTK_RESPONSE_REJECT,
+                                                  _("_cancel"), GTK_RESPONSE_CANCEL,
+                                                  _("_ok"), GTK_RESPONSE_OK, NULL);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "preset_dialog");
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 
   g->dialog = dialog;
 
@@ -579,6 +579,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
 
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, g->original_name);
+  gtk_entry_set_width_chars(g->name, 10 + g_utf8_strlen(title, -1));
   if(allow_name_change)
     gtk_entry_set_activates_default(g->name, TRUE);
   else

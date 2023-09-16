@@ -104,27 +104,12 @@ static void _add_selected_metadata(GtkTreeView *view, dt_lib_export_metadata_t *
 }
 
 // choice of a metadata tag
-static gboolean _click_on_metadata_list(GtkWidget *view, GdkEventButton *event, dt_lib_export_metadata_t *d)
+static void _metadata_activated(GtkTreeView *tree_view,
+                                GtkTreePath *path,
+                                GtkTreeViewColumn *column,
+                                dt_lib_export_metadata_t *d)
 {
-  if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
-  {
-
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-    GtkTreePath *path = NULL;
-    // Get tree path for row that was clicked
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
-    {
-      gtk_tree_selection_select_path(selection, path);
-      if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
-      {
-        _add_selected_metadata(GTK_TREE_VIEW(view), d);
-        gtk_tree_path_free(path);
-        return TRUE;
-      }
-    }
-    gtk_tree_path_free(path);
-  }
-  return FALSE;
+  _add_selected_metadata(tree_view, d);
 }
 
 // routine to set individual visibility flag
@@ -160,24 +145,26 @@ static void _tag_name_changed(GtkEntry *entry, dt_lib_export_metadata_t *d)
 // dialog to add metadata tag into the formula list
 static void _add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *d)
 {
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("select tag"), GTK_WINDOW(d->dialog), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("add"), GTK_RESPONSE_ACCEPT, _("done"), GTK_RESPONSE_NONE, NULL);
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("select tag"), GTK_WINDOW(d->dialog),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_add"), GTK_RESPONSE_ACCEPT,
+                                                  _("_done"), GTK_RESPONSE_NONE, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
+  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(300));
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
   gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-  gtk_container_add(GTK_CONTAINER(area), vbox);
+  gtk_box_pack_start(GTK_BOX(area), vbox, TRUE, TRUE, 0);
 
   GtkWidget *entry = gtk_entry_new();
   d->sel_entry = entry;
   gtk_entry_set_text(GTK_ENTRY(entry), "");
   gtk_widget_set_tooltip_text(entry, _("list filter"));
-  gtk_box_pack_start(GTK_BOX(vbox), entry, TRUE, TRUE, 0);
+  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(_tag_name_changed), d);
 
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(300));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(vbox), w, TRUE, TRUE, 0);
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -219,7 +206,7 @@ static void _add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t 
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, model);
   g_object_unref(model);
-  g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_metadata_list), (gpointer)d);
+  g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(_metadata_activated), d);
 
   #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
@@ -284,18 +271,20 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   dt_lib_export_metadata_t *d = calloc(1, sizeof(dt_lib_export_metadata_t));
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("edit metadata exportation"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_ACCEPT, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("edit metadata exportation"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "export_dialog");
 
   d->dialog = dialog;
-  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
 
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
+  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(500), -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_container_add(GTK_CONTAINER(area), hbox);
+  gtk_box_pack_start(GTK_BOX(area), hbox, TRUE, TRUE, 0);
 
   // general info
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -364,7 +353,6 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
 
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(450), DT_PIXEL_APPLY_DPI(100));
   gtk_widget_set_hexpand(w, TRUE);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(vbox), w, TRUE, TRUE, 0);

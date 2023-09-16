@@ -51,7 +51,7 @@
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
 /* GTK Buttons and tabs */
-@define-color button_bg @grey_55;
+@define-color button_bg shade(@grey_55,0.95);
 @define-color button_hover_bg @grey_70;
 @define-color button_hover_fg @grey_30;
 

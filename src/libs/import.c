@@ -1699,11 +1699,12 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-  d->from.dialog = gtk_dialog_new_with_buttons
-    ( _(_import_text[d->import_case]), NULL, GTK_DIALOG_MODAL,
-      _("cancel"), GTK_RESPONSE_CANCEL,
-      _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
-      NULL);
+  d->from.dialog = gtk_dialog_new_with_buttons(_(_import_text[d->import_case]), NULL,
+                                               GTK_DIALOG_MODAL,
+                                               _("_cancel"), GTK_RESPONSE_CANCEL,
+                                               _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
+                                               NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(d->from.dialog), "import_dialog");
 
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1808,6 +1809,9 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   {
     gtk_widget_show_all(d->from.dialog);
   }
+
+  // make sure no buttons focused, so default button is marked
+  gtk_window_set_focus(GTK_WINDOW(d->from.dialog), NULL);
 }
 
 static void _import_set_collection(const char *dirname)
@@ -1975,7 +1979,7 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
                "\nfurther information can be found in the darktable manual."
                "\n\ninspect darktable preferences -> import."
                "\ncheck and possibly correct the 'base directory naming pattern'"),
-            _("show this information again"), _("understood & done"));
+            _("_show this information again"), _("_understood & done"));
       if(understood)
         dt_conf_set_bool("setup_import_directory", TRUE);
       else
