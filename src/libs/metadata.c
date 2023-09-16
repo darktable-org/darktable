@@ -461,10 +461,12 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
                                   dt_lib_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons
-    (_("metadata settings"), GTK_WINDOW(win),
-     GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_YES,
-     _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_ACCEPT, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_default"), GTK_RESPONSE_YES,
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "metadata_preferences");
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -519,6 +521,9 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
     (_("visible"), renderer,
      "active", DT_METADATA_PREF_COL_VISIBLE, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+  GtkTreePath *first = gtk_tree_path_new_first ();
+  gtk_tree_view_set_cursor(GTK_TREE_VIEW(view), first, column, FALSE);
+  gtk_tree_path_free(first);
   GtkWidget *header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header,
                 _("tick if the corresponding metadata is of interest for you"

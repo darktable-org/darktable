@@ -806,9 +806,10 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(
-            _("GPX file track segments"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-            _("done"), GTK_RESPONSE_CANCEL, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("GPX file track segments"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_done"), GTK_RESPONSE_CANCEL, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
 
   gchar *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
   struct dt_gpx_t *gpx = dt_gpx_new(filedir);
