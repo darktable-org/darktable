@@ -143,6 +143,9 @@ changes (where available).
   shape a tick mark is shown in front of the active combine mode,
   which can be easier to read than the icon in front of the shape.
 
+- Added mnemonics to dialog box buttons and marked default buttons so
+  pressing Enter will trigger them and close the dialog.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
