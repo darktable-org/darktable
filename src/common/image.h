@@ -259,7 +259,6 @@ typedef struct dt_image_t
   char camera_model[64];
   char camera_alias[64];
   char camera_makermodel[128];
-  char camera_legacy_makermodel[128];
   gboolean camera_missing_sample;
 
   char filename[DT_MAX_FILENAME_LEN];
