@@ -1698,13 +1698,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
         int index = 0;
         // clang-format off
         gchar *makermodel_query = g_strdup_printf
-          ("SELECT mk.name AS maker, md.name AS model, COUNT(*) AS count"
-           "  FROM main.images AS mi, main.makers AS mk, main.models AS md"
-           "  WHERE mi.maker_id = mk.id"
-           "    AND mi.model_id = md.id"
+          ("SELECT cm.name AS camera, COUNT(*) AS count"
+           "  FROM main.images AS mi, main.cameras AS cm"
+           "  WHERE mi.camera_id = cm.id"
            "    AND %s "
-           "  GROUP BY maker, model"
-           "  ORDER BY maker, model", where_ext);
+           "  GROUP BY camera"
+           "  ORDER BY camera", where_ext);
         // clang-format on
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1713,11 +1712,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          const char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
-          const char *exif_model = (char *)sqlite3_column_text(stmt, 1);
-          const int count = sqlite3_column_int(stmt, 2);
-
-          gchar *value =  dt_collection_get_makermodel(exif_maker, exif_model);
+          gchar *value = (char *)sqlite3_column_text(stmt, 0);
+          const int count = sqlite3_column_int(stmt, 1);
           gchar *value_path = g_strdup_printf("\"%s\"", value);
 
           gtk_list_store_append(GTK_LIST_STORE(model), &iter);
@@ -1727,7 +1723,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
                              DT_LIB_COLLECT_COL_COUNT, count,
                              -1);
 
-          g_free(value);
           g_free(value_path);
           index++;
         }

@@ -80,10 +80,10 @@ void _camera_tree_update(_widgets_camera_t *camera)
 
   // clang-format off
   g_snprintf(query, sizeof(query),
-             "SELECT maker, model, COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s"
-             " GROUP BY maker, model",
+             "SELECT cm.name, COUNT(*) AS count"
+             " FROM main.images AS mi, main.cameras AS cm"
+             " WHERE mi.camera_id = cm.id AND %s"
+             " GROUP BY mi.camera_id",
              d->last_where_ext);
   // clang-format on
   sqlite3_stmt *stmt;
@@ -91,11 +91,8 @@ void _camera_tree_update(_widgets_camera_t *camera)
   int unset = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
-    const char *exif_model = (char *)sqlite3_column_text(stmt, 1);
-    const int count = sqlite3_column_int(stmt, 2);
-
-    gchar *value = dt_collection_get_makermodel(exif_maker, exif_model);
+    gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
     gchar *value_path = g_strdup_printf("\"%s\"", value);
 
     if(!value || !g_strcmp0(g_strstrip(value), ""))
@@ -108,7 +105,6 @@ void _camera_tree_update(_widgets_camera_t *camera)
       gtk_list_store_set(GTK_LIST_STORE(name_model), &iter, TREE_COL_TEXT, value, TREE_COL_TOOLTIP, value,
                          TREE_COL_PATH, value_path, TREE_COL_COUNT, count, -1);
     }
-    g_free(value);
     g_free(value_path);
   }
   sqlite3_finalize(stmt);

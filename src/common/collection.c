@@ -210,15 +210,16 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
      "  FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
      "               flags, version, %s position, aspect_ratio,"
      "               mk.name AS maker, md.name AS model, ln.name AS lens,"
-     "               aperture, exposure, focal_length,"
+     "               cm.name AS camera, aperture, exposure, focal_length,"
      "               iso, import_timestamp, change_timestamp,"
      "               export_timestamp, print_timestamp"
-     "        FROM main.images AS mi,"
+     "        FROM main.images AS mi, main.cameras AS cm,"
      "             main.makers AS mk, main.models AS md, main.lens AS ln "
      "        %s%s"
      "        WHERE mi.maker_id = mk.id"
      "          AND mi.model_id = md.id"
      "          AND mi.lens_id = ln.id"
+     "          AND mi.camera_id = cm.id"
      "          AND ",
      tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
      tagid ? " LEFT JOIN main.tagged_images AS ti"
@@ -440,17 +441,18 @@ int dt_collection_update(const dt_collection_t *collection)
       (selq_pre,
        "SELECT DISTINCT mi.id"
        " FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
-       "              flags, version, %s position, aspect_ratio,"
+       "              flags, version, %s position, aspect_ratio, cm.name AS camera,"
        "              mk.name AS maker, md.name AS model, ln.name AS lens,"
        "              aperture, exposure, focal_length,"
        "              iso, import_timestamp, change_timestamp,"
        "              export_timestamp, print_timestamp"
-       "       FROM main.images AS mi,"
+       "       FROM main.images AS mi, main.cameras AS cm,"
        "            main.makers AS mk, main.models AS md, main.lens AS ln "
        "       %s%s"
        "       WHERE mi.maker_id = mk.id"
        "         AND mi.model_id = md.id"
        "         AND mi.lens_id = ln.id"
+       "         AND mi.camera_id = cm.id"
        "     ) AS mi ",
        tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
        tagid ? " LEFT JOIN main.tagged_images AS ti"
@@ -468,17 +470,18 @@ int dt_collection_update(const dt_collection_t *collection)
       (selq_pre,
        "SELECT DISTINCT mi.id"
        " FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
-       "              flags, version, %s position, aspect_ratio,"
+       "              flags, version, %s position, aspect_ratio, cm.name AS camera,"
        "              mk.name AS maker, md.name AS model, ln.name AS lens,"
        "              aperture, exposure, focal_length,"
        "              iso, import_timestamp, change_timestamp,"
        "              export_timestamp, print_timestamp"
-       "       FROM main.images AS mi, main.makers AS mk,"
+       "       FROM main.images AS mi, main.makers AS mk, main.cameras AS cm,"
        "            main.models AS md, main.lens AS ln "
        "       %s%s"
        "       WHERE mi.maker_id = mk.id"
        "         AND mi.model_id = md.id"
        "         AND mi.lens_id = ln.id"
+       "         AND mi.camera_id = cm.id"
        "      ) AS mi WHERE ",
        tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
        tagid ? " LEFT JOIN main.tagged_images AS ti"
@@ -1691,28 +1694,13 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // if its undefined
         if(!g_strcmp0(elems[i], "UNSET"))
         {
-          query = dt_util_dstrcat(query, " OR ((TRIM(maker)='') AND (TRIM(model)=''))");
+          query = dt_util_dstrcat(query, " OR (camera IS NULL OR TRIM(camera)='')");
         }
         else
         {
-          // Start query with a false statement to avoid special casing the first condition
-          query = dt_util_dstrcat(query, " OR ((1=0)");
-          GList *lists = NULL;
           gchar *cam = _add_wildcards(elems[i]);
-          dt_collection_get_makermodels(cam, NULL, &lists);
-          for(GList *element = lists; element; element = g_list_next(element))
-          {
-            GList *tuple = element->data;
-            char *clause = sqlite3_mprintf(" OR (maker = '%q' AND model = '%q')", tuple->data, tuple->next->data);
-            query = dt_util_dstrcat(query, "%s", clause);
-            sqlite3_free(clause);
-            g_free(tuple->data);
-            g_free(tuple->next->data);
-            g_list_free(tuple);
-          }
-          g_list_free(lists);
+          query = dt_util_dstrcat(query, " OR camera LIKE '%s'", cam);
           g_free(cam);
-          query = dt_util_dstrcat(query, ")");
         }
       }
       g_strfreev(elems);
