@@ -309,7 +309,7 @@ kernel void highlights_false_color(
   float oval = 0.0f;
 
   if((irow >= 0) && (icol >= 0) && (icol < iwidth) && (irow < iheight))
-  { 
+  {
     const float ival = read_imagef(in, sampleri, (int2)(icol, irow)).x;
     const int c = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
     oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
@@ -2626,10 +2626,57 @@ float _calc_vignette_spline(const float radius, global float *spline, const int 
   return p0 + (spline[i+1] - p0) * frac;
 }
 
+float _interpolate_linear_spline(global float *xi,
+                                 global float *yi,
+                                  const int ni,
+                                  const float x)
+{
+  if(x < xi[0]) return yi[0];
+  for(int i = 1; i < ni; i++)
+  {
+    if(x >= xi[i - 1] && x <= xi[i])
+    {
+      const float dydx = (yi[i] - yi[i - 1]) / (xi[i] - xi[i - 1]);
+      return yi[i - 1] + (x - xi[i - 1]) * dydx;
+    }
+  }
+  return yi[ni - 1];
+}
+
+kernel void md_vignette(
+            read_only image2d_t in,
+            write_only image2d_t out,
+            global float *knots_vig,
+            global float *vig,
+            const int width,
+            const int height,
+            const float w2,
+            const float h2,
+            const float r,
+            const int roix,
+            const int roiy,
+            const int knots)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float cx = ((float)(roix + x) - w2);
+  const float cy = ((float)(roiy + y) - h2);
+  const float4 spline =
+    _interpolate_linear_spline(knots_vig, vig, knots, r * sqrt(cx*cx + cy*cy));
+
+  float4 pixel  = read_imagef(in, sampleri, (int2)(x, y));
+  pixel /= fmax(1e-4, spline);
+  pixel.w = fmax(0.0f, pixel.w);
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
 kernel void lens_man_vignette(
             read_only image2d_t in,
             write_only image2d_t out,
-            global float *spline,            
+            global float *spline,
             const int width,
             const int height,
             const float w2,
@@ -2649,8 +2696,8 @@ kernel void lens_man_vignette(
   const float dy = ((float)(roiy + y) - h2);
   const float radius = sqrt(dx*dx + dy*dy) * inv_maxr;
   const float4 val = intensity * _calc_vignette_spline(radius, spline, splinesize);
-  
-  float4 pixel  = read_imagef(in, sampleri, (int2)(x, y));
+
+  float4 pixel  = read_imagef(in, samplerA, (int2)(x, y));
   pixel *= (1.0f + val);
   pixel.w = (vigmask) ? val.w : pixel.y;
 
@@ -2673,6 +2720,295 @@ lens_vignette (read_only image2d_t in, write_only image2d_t out, const int width
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+float maketaps_bilinear(float *taps,
+                        const int num_taps,
+                        const float width,
+                        const float first_tap,
+                        const float interval)
+{
+  float iter[4];
+  float vt[4];
+  for(int c = 0; c < 4; c++)
+    iter[c] = 4.0f * interval;
+  for(int c = 0; c < 4; c++)
+    vt[c] = first_tap + (float)c * interval;
+
+  const int runs = (num_taps + 3) / 4;
+
+  for(int i = 0; i < runs; i++)
+  {
+    for(int c = 0; c < 4; c++)
+      taps[4*i + c] = 1.0f - (vt[c] < 0.0f ? -vt[c] : vt[c]);
+    // prepare next iteration
+    for(int c = 0; c < 4; c++)
+      vt[c] += iter[c];
+  }
+  return 1.0f; //kernel norm is 1.0f by construction
+}
+
+float maketaps_bicubic(float *taps,
+                        const int num_taps,
+                        const float width,
+                        const float first_tap,
+                        const float interval)
+{
+  float iter[4];
+  float vt[4];
+  for(int c = 0; c < 4; c++)
+    iter[c] = 4.0f * interval;
+  for(int c = 0; c < 4; c++)
+    vt[c] = first_tap + (float)c * interval;
+
+  const int runs = (num_taps + 3) / 4;
+
+  for(int i = 0; i < runs; i++)
+  {
+    // compute and store the values for the current four taps
+    float vt_abs[4];
+    float t2[4];   // tap-squared
+    for(int c = 0; c < 4; c++)
+    {
+      vt_abs[c] = vt[c] < 0.0f ? -vt[c] : vt[c];
+      t2[c] = vt[c] * vt[c];
+    }
+    float t5[4];
+    float mt2_add_t5_sub_8[4];
+    for(int c = 0; c < 4; c++)
+    {
+      t5[c] = 5.0f * vt_abs[c];
+      mt2_add_t5_sub_8[c] = t5[c] - 8.0f - t2[c];
+    }
+    float b[4];
+    float r12[4];
+    for(int c = 0; c < 4; c++)
+    {
+      b[c] = vt_abs[c] * mt2_add_t5_sub_8[c] + 4.0f;
+      r12[c] = b[c] * 0.5f; // the value for 1 < t < 2
+    }
+    float t23[4];
+    float e[4];
+    float r01[4];
+    for(int c = 0; c < 4; c++)
+    {
+      t23[c] = 3.0f * t2[c] - t5[c];
+      e[c] = t23[c] * vt_abs[c] + 2.0f;
+      r01[c] = e[c] * 0.5f;
+    }
+    // combine the values depending on whether abs(tap) is less than one or not
+    for(int c = 0; c < 4; c++)
+    {
+      taps[4*i + c] = vt_abs[c] <= 1.0f ? r01[c] : r12[c];
+    }
+    // prepare next iteration
+    for(int c = 0; c < 4; c++)
+      vt[c] += iter[c];
+  }
+  return 1.0f; //kernel norm is 1.0f by construction
+}
+
+void vector_sin(const float *arg, float *sine)
+{
+  const float a = 4.0f / (M_PI_F * M_PI_F);
+  float abs_arg[4];
+  for(int c = 0; c < 4; c++)
+    abs_arg[c] = (arg[c] < 0.0f) ? -arg[c] : arg[c];
+
+  float scaled[4];
+  for(int c = 0; c < 4; c++)
+    scaled[c] = a * arg[c] * (M_PI_F - abs_arg[c]);
+
+  float abs_scaled[4];
+  for(int c = 0; c < 4; c++)
+    abs_scaled[c] = (scaled[c] < 0.0f) ? -scaled[c] : scaled[c];
+  for(int c = 0; c < 4; c++)
+    sine[c] = scaled[c] * (0.225f * (abs_scaled[c] - 1.0f) + 1.0f);
+}
+
+float maketaps_lanczos(float *taps,
+                        const int num_taps,
+                        const float width,
+                        const float first_tap,
+                        const float interval)
+{
+  float iter[4];
+  float vt[4];
+  for(int c = 0; c < 4; c++)
+    iter[c] = 4.0f * interval;
+  for(int c = 0; c < 4; c++)
+    vt[c] = first_tap + (float)c * interval;
+  float vw[4];
+  for(int c = 0; c < 4; c++)
+    vw[c] = width;
+
+  const int runs = (num_taps + 3) / 4;
+
+  for(int i = 0; i < runs; i++)
+  {
+    float r[4];
+    float sign[4];
+    for(int c = 0; c < 4; c++)
+    {
+      const int a = (int)vt[c];
+      r[c] = vt[c] - (float)a;
+      sign[c] = (a & 1) ? -1.0f : 1.0f;
+    }
+    float sine_arg1[4];
+    float sine_arg2[4];
+    for(int c = 0; c < 4; c++)
+    {
+      sine_arg1[c] = M_PI_F * r[c];
+      sine_arg2[c] = M_PI_F * vt[c] / vw[c];
+    }
+    float sine1[4];
+    float sine2[4];
+    vector_sin(sine_arg1, sine1);
+    vector_sin(sine_arg2, sine2);
+    float num[4];
+    float denom[4];
+    for(int c = 0; c < 4; c++)
+    {
+      num[c] = (vw[c] * sign[c] * sine1[c] * sine2[c]) + 1e-9f;
+      denom[c] = (M_PI_F*M_PI_F * vt[c] * vt[c]) + 1e-9f;
+    }
+    for(int c = 0; c < 4; c++)
+    {
+      taps[4*i + c] = num[c] / denom[c];
+    }
+    // prepare next iteration
+    for(int c = 0; c < 4; c++)
+      vt[c] += iter[c];
+  }
+  float norm = 0.0f;
+  for(int i = 0; i < num_taps; i++)
+    norm += taps[i];
+  return norm;
+}
+
+float compute_upsampling_taps(const int itor_mode,
+                              const int itor_width,
+                              float *taps,
+                              float tt)
+{
+  const int f = (int)floor(tt) - itor_width + 1;
+  const float t = tt - (float)f;
+
+  if(itor_mode == 1)
+    return maketaps_bicubic(taps, 2*itor_width, (float)itor_width, t, -1.0f);
+  else if(itor_mode == 2)
+    return maketaps_lanczos(taps, 2*itor_width, (float)itor_width, t, -1.0f);
+  else
+    return maketaps_bilinear(taps, 2*itor_width, (float)itor_width, t, -1.0f);
+}
+
+static inline float get_image_channel(
+            read_only image2d_t in,
+            const int x,
+            const int y,
+            const int c)
+{
+  float4 pixel = read_imagef(in, samplerA, (int2)(x, y));
+  if(c == 0)
+    return pixel.x;
+  else if(c == 1)
+    return pixel.y;
+  else if(c == 2)
+    return pixel.z;
+
+  return pixel.w;
+}
+
+// Keep in sync with defines in interpolation
+#define MAX_HALF_FILTER_WIDTH 3
+#define MAX_KERNEL_REQ ((2 * (MAX_HALF_FILTER_WIDTH) + 3) & (~3))
+float interpolation_compute_sample(
+            read_only image2d_t in,
+            const int itor_mode,
+            const int itor_width,
+            const float x,
+            const float y,
+            const int width,
+            const int height,
+            const int plane)
+{
+  float kernelh[MAX_KERNEL_REQ];
+  float kernelv[MAX_KERNEL_REQ];
+
+  // Compute both horizontal and vertical kernels
+  float normh = compute_upsampling_taps(itor_mode, itor_width, kernelh, x);
+  float normv = compute_upsampling_taps(itor_mode, itor_width, kernelv, y);
+
+  int ix = (int)x;
+  int iy = (int)y;
+  if(ix >= 0 && iy >= 0 && ix < width && iy < height)
+  {
+    iy -= itor_width - 1;
+    ix -= itor_width - 1;
+
+    const int tap_last = 2 * itor_width;
+    // Apply the kernel
+    float s = 0.0f;
+    for(int i = 0; i < tap_last; i++)
+    {
+      const int clip_y = min(max(iy + i, 0), height - 1);
+      float h = 0.0f;
+      for(int j = 0; j < tap_last; j++)
+      {
+        const int clip_x = min(max(ix + j, 0), width - 1);
+        h += kernelh[j] * get_image_channel(in, clip_x, clip_y, plane);
+      }
+      s += kernelv[i] * h;
+    }
+    return s / (normh * normv);
+  }
+  return 0.0f;
+}
+#undef MAX_KERNEL_REQ
+#undef MAX_HALF_FILTER_WIDTH
+
+#define MAXKNOTS 16
+kernel void md_lens_correction(
+            read_only image2d_t in,
+            write_only image2d_t out,
+            global float *knots_dist,
+            global float *cor_rgb,
+            const int owidth,
+            const int oheight,
+            const int iwidth,
+            const int iheight,
+            const float w2,
+            const float h2,
+            const float r,
+            const float scale,
+            const int roix,
+            const int roiy,
+            const int roox,
+            const int rooy,
+            const int knots,
+            const int itor_mode,
+            const int itor_width)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= owidth || y >= oheight) return;
+
+  const float cx = ((float)(roox + x) - w2) / scale;
+  const float cy = ((float)(rooy + y) - h2) / scale;
+  const float radius = r * sqrt(cx*cx + cy*cy);
+
+  float output[4];
+  for(int c = 0; c < 4; c++)
+  {
+    const int plane = (c == 3) ? 1 : c;
+    const float dr = _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
+    const float xs = dr*cx + w2 - roix;
+    const float ys = dr*cy + h2 - roiy;
+    output[c] = interpolation_compute_sample(in, itor_mode, itor_width, xs, ys, iwidth, iheight, c);
+  }
+
+  float4 pixel = {output[0], output[1], output[2], output[3]};
+  write_imagef(out, (int2)(x, y), pixel);
+}
+#undef MAXKNOTS
 
 
 /* kernel for flip */
