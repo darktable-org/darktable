@@ -80,10 +80,10 @@ void _lens_tree_update(_widgets_lens_t *lens)
 
   // clang-format off
   g_snprintf(query, sizeof(query),
-             "SELECT lens AS fn, COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s"
-             " GROUP BY fn"
+             "SELECT ln.name AS lens, COUNT(*) AS count"
+             " FROM main.images AS mi, main.lens AS ln"
+             " WHERE mi.lens_id = ln.id AND %s"
+             " GROUP BY mi.lens_id"
              " ORDER BY lens",
              d->last_where_ext);
   // clang-format on
