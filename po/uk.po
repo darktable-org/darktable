@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-10 19:37+0200\n"
-"PO-Revision-Date: 2023-09-10 20:52+0300\n"
+"POT-Creation-Date: 2023-09-16 11:53+0200\n"
+"PO-Revision-Date: 2023-09-16 14:33+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1395,11 +1395,11 @@ msgstr "Кореневий каталог LUT 3D"
 
 #: ../build/bin/preferences_gen.h:5803 ../src/control/jobs/control_jobs.c:1691
 #: ../src/control/jobs/control_jobs.c:1745 ../src/gui/preferences.c:1081
-#: ../src/gui/presets.c:419 ../src/imageio/storage/disk.c:197
+#: ../src/gui/presets.c:420 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/disk.c:261 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/gallery.c:213 ../src/imageio/storage/latex.c:145
-#: ../src/imageio/storage/latex.c:199 ../src/libs/import.c:1506
-#: ../src/libs/import.c:1610 ../src/libs/import.c:1664 ../src/libs/styles.c:391
+#: ../src/imageio/storage/latex.c:199 ../src/libs/import.c:1508
+#: ../src/libs/import.c:1612 ../src/libs/import.c:1666 ../src/libs/styles.c:391
 #: ../src/lua/preferences.c:668
 msgid "select directory"
 msgstr "Виберіть каталог"
@@ -1848,7 +1848,7 @@ msgstr ""
 "Ця зовнішня програма використовується для відтворення аудіо-файлів,\n"
 "які деякі камери можуть записувати, щоб зберігати нотатки до зображень."
 
-#: ../build/bin/preferences_gen.h:7235 ../src/control/crawler.c:724
+#: ../build/bin/preferences_gen.h:7235 ../src/control/crawler.c:717
 msgid "database"
 msgstr "База даних"
 
@@ -1897,7 +1897,7 @@ msgstr ""
 "Майте на увазі, що знімки займають трохи місця, а для успішного відновлення "
 "вам потрібен лише найновіший."
 
-#: ../build/bin/preferences_gen.h:7363 ../src/control/crawler.c:723
+#: ../build/bin/preferences_gen.h:7363 ../src/control/crawler.c:716
 msgid "XMP"
 msgstr "XMP"
 
@@ -2375,8 +2375,8 @@ msgstr "Корекція по діагоналі"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:714 ../src/gui/preferences.c:844
-#: ../src/gui/presets.c:718 ../src/libs/camera.c:550
+#: ../src/common/collection.c:739 ../src/gui/preferences.c:844
+#: ../src/gui/presets.c:719 ../src/libs/camera.c:550
 #: ../src/libs/metadata_view.c:145
 msgid "focal length"
 msgstr "Фокусна відстань"
@@ -2399,7 +2399,7 @@ msgstr "Регулювання співвідношення сторін"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:4219
+#: ../src/iop/lens.cc:4373
 msgid "lens model"
 msgstr "Модель об'єктива"
 
@@ -2427,7 +2427,7 @@ msgstr "Уточнена"
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3421 ../src/gui/accelerators.c:148
 #: ../src/gui/accelerators.c:158 ../src/gui/accelerators.c:245
-#: ../src/imageio/format/avif.c:819 ../src/imageio/format/j2k.c:682
+#: ../src/imageio/format/avif.c:819 ../src/imageio/format/j2k.c:681
 #: ../src/libs/live_view.c:361 ../src/libs/masks.c:113
 msgid "off"
 msgstr "Вимкнено"
@@ -2472,14 +2472,14 @@ msgstr "Метод збереження кольорів"
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:262
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:249
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:153
-#: ../build/lib/darktable/plugins/introspection_lens.cc:531
+#: ../build/lib/darktable/plugins/introspection_lens.cc:533
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2214
-#: ../src/iop/channelmixerrgb.c:4721 ../src/iop/clipping.c:1942
+#: ../src/iop/channelmixerrgb.c:4727 ../src/iop/clipping.c:1942
 #: ../src/iop/clipping.c:2135 ../src/iop/clipping.c:2150
-#: ../src/iop/retouch.c:507 ../src/libs/collect.c:1907
+#: ../src/iop/retouch.c:507 ../src/libs/collect.c:1914
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1101
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:132
 #: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2835
@@ -2609,7 +2609,7 @@ msgstr "Лінійність"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:136
 #: ../build/lib/darktable/plugins/introspection_watermark.c:265
-#: ../src/iop/ashift.c:6150 ../src/libs/masks.c:108
+#: ../src/iop/ashift.c:6154 ../src/libs/masks.c:108
 msgid "rotation"
 msgstr "Обертання"
 
@@ -2633,8 +2633,8 @@ msgid "offset"
 msgstr "Зміщення"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:712 ../src/gui/preferences.c:828
-#: ../src/gui/presets.c:660 ../src/libs/metadata_view.c:141
+#: ../src/common/collection.c:737 ../src/gui/preferences.c:828
+#: ../src/gui/presets.c:661 ../src/libs/metadata_view.c:141
 msgid "lens"
 msgstr "Об'єктив"
 
@@ -2652,7 +2652,7 @@ msgstr "Гауссівський"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:112
 #: ../build/lib/darktable/plugins/introspection_borders.c:253
-#: ../src/common/collection.c:722 ../src/libs/filtering.c:59
+#: ../src/common/collection.c:747 ../src/libs/filtering.c:59
 msgid "aspect ratio"
 msgstr "Співвідношення сторін"
 
@@ -2689,7 +2689,7 @@ msgid "frame line offset"
 msgstr "Зміщення лінії рамки"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:327
-#: ../src/gui/preferences.c:849 ../src/iop/ashift.c:6329
+#: ../src/gui/preferences.c:849 ../src/iop/ashift.c:6333
 #: ../src/iop/basicadj.c:661 ../src/iop/flip.c:472 ../src/iop/flip.c:474
 #: ../src/iop/levels.c:657 ../src/iop/rgblevels.c:1110
 msgid "auto"
@@ -2753,8 +2753,8 @@ msgstr "Направляючий канал"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
-#: ../build/lib/darktable/plugins/introspection_lens.cc:339
-#: ../build/lib/darktable/plugins/introspection_lens.cc:500
+#: ../build/lib/darktable/plugins/introspection_lens.cc:340
+#: ../build/lib/darktable/plugins/introspection_lens.cc:501
 #: ../src/iop/atrous.c:1636 ../src/iop/bilateral.cc:352 ../src/iop/clahe.c:337
 #: ../src/iop/dither.c:762 ../src/iop/lowpass.c:597 ../src/iop/shadhi.c:710
 #: ../src/iop/sharpen.c:435
@@ -2765,8 +2765,8 @@ msgstr "Радіус"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:136
 #: ../build/lib/darktable/plugins/introspection_highlights.c:137
 #: ../build/lib/darktable/plugins/introspection_highlights.c:240
-#: ../build/lib/darktable/plugins/introspection_lens.cc:333
-#: ../build/lib/darktable/plugins/introspection_lens.cc:496
+#: ../build/lib/darktable/plugins/introspection_lens.cc:334
+#: ../build/lib/darktable/plugins/introspection_lens.cc:497
 #: ../src/iop/bloom.c:372 ../src/iop/denoiseprofile.c:3822
 #: ../src/iop/grain.c:602 ../src/iop/hazeremoval.c:203
 #: ../src/iop/hotpixels.c:467 ../src/iop/nlmeans.c:463 ../src/iop/velvia.c:288
@@ -2784,40 +2784,40 @@ msgid "very large chromatic aberration"
 msgstr "Дуже велика хроматична аберація"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1507 ../src/common/color_vocabulary.c:232
+#: ../src/common/collection.c:1537 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:333 ../src/develop/blend_gui.c:2338
 #: ../src/develop/blend_gui.c:2386 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:3230 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:356
 #: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:647
-#: ../src/iop/channelmixerrgb.c:4663 ../src/iop/colorzones.c:2499
+#: ../src/iop/channelmixerrgb.c:4669 ../src/iop/colorzones.c:2499
 #: ../src/iop/temperature.c:1946 ../src/iop/temperature.c:2141
-#: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:260
+#: ../src/libs/collect.c:1797 ../src/libs/filters/colors.c:260
 #: ../src/libs/histogram.c:2391
 msgid "red"
 msgstr "червоний"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1511 ../src/common/color_vocabulary.c:277
+#: ../src/common/collection.c:1541 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:335 ../src/develop/blend_gui.c:2344
 #: ../src/develop/blend_gui.c:2392 ../src/develop/lightroom.c:838
 #: ../src/gui/gtk.c:3231 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:361
 #: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:653
-#: ../src/iop/channelmixerrgb.c:4664 ../src/iop/colorzones.c:2502
+#: ../src/iop/channelmixerrgb.c:4670 ../src/iop/colorzones.c:2502
 #: ../src/iop/temperature.c:1930 ../src/iop/temperature.c:1948
-#: ../src/iop/temperature.c:2142 ../src/libs/collect.c:1791
+#: ../src/iop/temperature.c:2142 ../src/libs/collect.c:1797
 #: ../src/libs/filters/colors.c:262 ../src/libs/histogram.c:2383
 msgid "green"
 msgstr "зелений"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1513 ../src/common/color_vocabulary.c:324
+#: ../src/common/collection.c:1543 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:336 ../src/develop/blend_gui.c:2350
 #: ../src/develop/blend_gui.c:2398 ../src/develop/lightroom.c:840
 #: ../src/gui/gtk.c:3232 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:639 ../src/iop/channelmixer.c:659
-#: ../src/iop/channelmixerrgb.c:4665 ../src/iop/colorzones.c:2504
+#: ../src/iop/channelmixerrgb.c:4671 ../src/iop/colorzones.c:2504
 #: ../src/iop/temperature.c:1950 ../src/iop/temperature.c:2143
-#: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:263
+#: ../src/libs/collect.c:1797 ../src/libs/filters/colors.c:263
 #: ../src/libs/histogram.c:2375
 msgid "blue"
 msgstr "синій"
@@ -3126,8 +3126,8 @@ msgstr "Підйом, гамма, підсилення (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2364 ../src/develop/blend_gui.c:2412
-#: ../src/iop/atrous.c:1801 ../src/iop/channelmixerrgb.c:4511
-#: ../src/iop/channelmixerrgb.c:4627 ../src/iop/colorbalancergb.c:1982
+#: ../src/iop/atrous.c:1801 ../src/iop/channelmixerrgb.c:4517
+#: ../src/iop/channelmixerrgb.c:4633 ../src/iop/colorbalancergb.c:1982
 #: ../src/iop/colorzones.c:2645 ../src/iop/nlmeans.c:471
 msgid "chroma"
 msgstr "Кольоровість"
@@ -3150,7 +3150,7 @@ msgstr "Кольоровість"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:2323 ../src/develop/blend_gui.c:2357
 #: ../src/develop/blend_gui.c:2419 ../src/iop/channelmixer.c:634
-#: ../src/iop/channelmixerrgb.c:4504 ../src/iop/channelmixerrgb.c:4619
+#: ../src/iop/channelmixerrgb.c:4510 ../src/iop/channelmixerrgb.c:4625
 #: ../src/iop/colorbalance.c:2016 ../src/iop/colorize.c:343
 #: ../src/iop/colorreconstruction.c:1261 ../src/iop/colorzones.c:2646
 msgid "hue"
@@ -3345,7 +3345,7 @@ msgid "range extent"
 msgstr "Вимір яскравості"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4723
+#: ../src/iop/channelmixerrgb.c:4729
 msgid "saturated colors"
 msgstr "Насичені кольори"
 
@@ -3370,7 +3370,7 @@ msgstr "Режим обробки"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2302 ../src/iop/channelmixer.c:636
-#: ../src/iop/channelmixerrgb.c:4610 ../src/iop/colorchecker.c:1453
+#: ../src/iop/channelmixerrgb.c:4616 ../src/iop/colorchecker.c:1453
 #: ../src/iop/colorize.c:362 ../src/iop/colorzones.c:2644
 #: ../src/iop/exposure.c:1257
 msgid "lightness"
@@ -3532,7 +3532,7 @@ msgstr "Маркестейн, 3 проходи + VNG"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1526 ../src/libs/collect.c:1745
+#: ../src/common/collection.c:1556 ../src/libs/collect.c:1751
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "Без змін"
@@ -3610,7 +3610,7 @@ msgstr "Оновити профільоване перетворення"
 #.
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:801 ../src/libs/colorpicker.c:661
+#: ../src/imageio/format/avif.c:801 ../src/libs/colorpicker.c:659
 msgid "color mode"
 msgstr "Колірний режим"
 
@@ -3952,7 +3952,7 @@ msgstr "Увімкнути реконструкцію переекспонова
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/database.c:2785 ../src/common/variables.c:705
+#: ../src/common/database.c:3103 ../src/common/variables.c:705
 #: ../src/develop/imageop_gui.c:209 ../src/imageio/format/pdf.c:636
 #: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1296
 #: ../src/libs/export.c:1305 ../src/libs/export.c:1314
@@ -4070,7 +4070,7 @@ msgstr "Щільність"
 #: ../src/iop/colorchecker.c:1488 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:268 ../src/iop/colorize.c:356
 #: ../src/iop/lowpass.c:601 ../src/iop/soften.c:368 ../src/iop/velvia.c:75
-#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:997
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1000
 msgid "saturation"
 msgstr "Насиченість"
 
@@ -4089,7 +4089,7 @@ msgstr "Зміщення середніх тонів"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:143
 #: ../build/lib/darktable/plugins/introspection_highlights.c:244
-#: ../src/views/darkroom.c:2359
+#: ../src/views/darkroom.c:2356
 msgid "clipping threshold"
 msgstr "Поріг кліппінгу"
 
@@ -4225,21 +4225,21 @@ msgstr "Позначити виправлені пікселі"
 msgid "detect by 3 neighbors"
 msgstr "Виявляти за 3 сусідніми"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:189
-#: ../build/lib/darktable/plugins/introspection_lens.cc:400
+#: ../build/lib/darktable/plugins/introspection_lens.cc:190
+#: ../build/lib/darktable/plugins/introspection_lens.cc:401
 msgid "correction method"
 msgstr "Метод корекції"
 
 #. Page CORRECTIONS
-#: ../build/lib/darktable/plugins/introspection_lens.cc:195
-#: ../build/lib/darktable/plugins/introspection_lens.cc:404
+#: ../build/lib/darktable/plugins/introspection_lens.cc:196
+#: ../build/lib/darktable/plugins/introspection_lens.cc:405
 #: ../src/iop/negadoctor.c:919
 msgid "corrections"
 msgstr "Корекції"
 
 #. mode choice
-#: ../build/lib/darktable/plugins/introspection_lens.cc:201
-#: ../build/lib/darktable/plugins/introspection_lens.cc:408
+#: ../build/lib/darktable/plugins/introspection_lens.cc:202
+#: ../build/lib/darktable/plugins/introspection_lens.cc:409
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:128
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:219
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
@@ -4250,143 +4250,147 @@ msgstr "Корекції"
 #: ../src/iop/profile_gamma.c:682 ../src/libs/copy_history.c:399
 #: ../src/libs/export.c:1376 ../src/libs/image.c:597
 #: ../src/libs/print_settings.c:2875 ../src/libs/styles.c:846
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2337
 msgid "mode"
 msgstr "Режим"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:237
-#: ../build/lib/darktable/plugins/introspection_lens.cc:432
-#: ../src/iop/lens.cc:4255
+#: ../build/lib/darktable/plugins/introspection_lens.cc:238
+#: ../build/lib/darktable/plugins/introspection_lens.cc:433
+#: ../src/iop/lens.cc:4409
 msgid "target geometry"
 msgstr "Цільова геометрія"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:267
-#: ../build/lib/darktable/plugins/introspection_lens.cc:452
+#: ../build/lib/darktable/plugins/introspection_lens.cc:268
+#: ../build/lib/darktable/plugins/introspection_lens.cc:453
 msgid "TCA overwrite"
 msgstr "Ручне регулювання поперечних ХА"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:273
-#: ../build/lib/darktable/plugins/introspection_lens.cc:297
-#: ../build/lib/darktable/plugins/introspection_lens.cc:456
-#: ../build/lib/darktable/plugins/introspection_lens.cc:472
+#: ../build/lib/darktable/plugins/introspection_lens.cc:274
+#: ../build/lib/darktable/plugins/introspection_lens.cc:298
+#: ../build/lib/darktable/plugins/introspection_lens.cc:457
+#: ../build/lib/darktable/plugins/introspection_lens.cc:473
 msgid "TCA red"
 msgstr "Поперечні ХА - червона"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:279
-#: ../build/lib/darktable/plugins/introspection_lens.cc:303
-#: ../build/lib/darktable/plugins/introspection_lens.cc:460
-#: ../build/lib/darktable/plugins/introspection_lens.cc:476
+#: ../build/lib/darktable/plugins/introspection_lens.cc:280
+#: ../build/lib/darktable/plugins/introspection_lens.cc:304
+#: ../build/lib/darktable/plugins/introspection_lens.cc:461
+#: ../build/lib/darktable/plugins/introspection_lens.cc:477
 msgid "TCA blue"
 msgstr "Поперечні ХА - синя"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:285
-#: ../build/lib/darktable/plugins/introspection_lens.cc:464
+#: ../build/lib/darktable/plugins/introspection_lens.cc:286
+#: ../build/lib/darktable/plugins/introspection_lens.cc:465
 msgid "distortion"
 msgstr "Дисторсія"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:291
-#: ../build/lib/darktable/plugins/introspection_lens.cc:468
+#: ../build/lib/darktable/plugins/introspection_lens.cc:292
+#: ../build/lib/darktable/plugins/introspection_lens.cc:469
 #: ../src/iop/vignette.c:114
 msgid "vignetting"
 msgstr "Віньєтування"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:309
-#: ../build/lib/darktable/plugins/introspection_lens.cc:480
+#: ../build/lib/darktable/plugins/introspection_lens.cc:310
+#: ../build/lib/darktable/plugins/introspection_lens.cc:481
 msgid "scale fine-tune"
 msgstr "Точне регулювання масштабування"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:321
-#: ../build/lib/darktable/plugins/introspection_lens.cc:488
+#: ../build/lib/darktable/plugins/introspection_lens.cc:322
+#: ../build/lib/darktable/plugins/introspection_lens.cc:489
 msgid "image scale"
 msgstr "Масштаб зображення"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:345
-#: ../build/lib/darktable/plugins/introspection_lens.cc:504
+#: ../build/lib/darktable/plugins/introspection_lens.cc:346
+#: ../build/lib/darktable/plugins/introspection_lens.cc:505
 msgid "steepness"
 msgstr "Крутизна"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:526
+#: ../build/lib/darktable/plugins/introspection_lens.cc:527
 msgid "embedded metadata"
 msgstr "Вбудовані метадані"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:527
+#: ../build/lib/darktable/plugins/introspection_lens.cc:528
 msgid "Lensfun database"
 msgstr "База даних Lensfun"
 
+#: ../build/lib/darktable/plugins/introspection_lens.cc:529
+msgid "only manual vignette"
+msgstr "Лише ручна корекція віньєтування"
+
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../build/lib/darktable/plugins/introspection_lens.cc:532
+#: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2526
 #: ../src/gui/accelerators.c:2606 ../src/gui/gtk.c:1315 ../src/gui/gtk.c:3229
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3713
-#: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3066
+#: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3074
 #: ../src/libs/filtering.c:1459 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/rating.c:211
 msgid "all"
 msgstr "Всі"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:533
+#: ../build/lib/darktable/plugins/introspection_lens.cc:535
 msgid "distortion & TCA"
 msgstr "Дисторсія і поперечні ХА"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:534
+#: ../build/lib/darktable/plugins/introspection_lens.cc:536
 msgid "distortion & vignetting"
 msgstr "Дисторсія і віньєтування"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:535
+#: ../build/lib/darktable/plugins/introspection_lens.cc:537
 msgid "TCA & vignetting"
 msgstr "Поперечні ХА і віньєтування"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:536
+#: ../build/lib/darktable/plugins/introspection_lens.cc:538
 msgid "only distortion"
 msgstr "Лише дисторсія"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:537
+#: ../build/lib/darktable/plugins/introspection_lens.cc:539
 msgid "only TCA"
 msgstr "Лише поперечні ХА"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:538
+#: ../build/lib/darktable/plugins/introspection_lens.cc:540
 msgid "only vignetting"
 msgstr "Лише віньєтування"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:542
+#: ../build/lib/darktable/plugins/introspection_lens.cc:544
 #: ../src/libs/modulegroups.c:2302
 msgid "correct"
 msgstr "Коригувати"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:543
+#: ../build/lib/darktable/plugins/introspection_lens.cc:545
 msgid "distort"
 msgstr "Деформувати"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:548
+#: ../build/lib/darktable/plugins/introspection_lens.cc:550
 msgid "rectilinear"
 msgstr "Прямолінійна"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:549
+#: ../build/lib/darktable/plugins/introspection_lens.cc:551
 msgid "fisheye"
 msgstr "Риб'яче око (fisheye)"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:550
+#: ../build/lib/darktable/plugins/introspection_lens.cc:552
 msgid "panoramic"
 msgstr "Панорамна"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:551
+#: ../build/lib/darktable/plugins/introspection_lens.cc:553
 msgid "equirectangular"
 msgstr "Еквідистантна"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:552
+#: ../build/lib/darktable/plugins/introspection_lens.cc:554
 msgid "orthographic"
 msgstr "Ортографічна"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:553
+#: ../build/lib/darktable/plugins/introspection_lens.cc:555
 msgid "stereographic"
 msgstr "Стереографічна"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:554
+#: ../build/lib/darktable/plugins/introspection_lens.cc:556
 msgid "equisolid angle"
 msgstr "Еквітілесний кут"
 
-#: ../build/lib/darktable/plugins/introspection_lens.cc:555
+#: ../build/lib/darktable/plugins/introspection_lens.cc:557
 msgid "Thoby fisheye"
 msgstr "Thoby fisheye"
 
@@ -4396,8 +4400,8 @@ msgstr "Анульовано"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2235 ../src/views/darkroom.c:2629
-#: ../src/views/darkroom.c:2632 ../src/views/lighttable.c:765
+#: ../src/views/darkroom.c:2232 ../src/views/darkroom.c:2626
+#: ../src/views/darkroom.c:2629 ../src/views/lighttable.c:765
 #: ../src/views/lighttable.c:774 ../src/views/lighttable.c:1246
 #: ../src/views/lighttable.c:1250 ../src/views/lighttable.c:1254
 #: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1262
@@ -4634,8 +4638,8 @@ msgstr "Вбудована GainMap"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:720 ../src/gui/preferences.c:836
-#: ../src/gui/presets.c:684 ../src/iop/basicadj.c:627 ../src/iop/exposure.c:122
+#: ../src/common/collection.c:745 ../src/gui/preferences.c:836
+#: ../src/gui/presets.c:685 ../src/iop/basicadj.c:627 ../src/iop/exposure.c:122
 #: ../src/iop/exposure.c:1135 ../src/libs/metadata_view.c:143
 msgid "exposure"
 msgstr "Експозиція"
@@ -4647,9 +4651,9 @@ msgstr "Режим заливки"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
-#: ../src/iop/basicadj.c:649 ../src/iop/channelmixerrgb.c:4671
+#: ../src/iop/basicadj.c:649 ../src/iop/channelmixerrgb.c:4677
 #: ../src/iop/colisa.c:299 ../src/iop/lowpass.c:600 ../src/iop/soften.c:372
-#: ../src/iop/vignette.c:996 ../src/libs/history.c:963
+#: ../src/iop/vignette.c:999 ../src/libs/history.c:963
 msgid "brightness"
 msgstr "Яскравість"
 
@@ -4690,7 +4694,7 @@ msgid "erase"
 msgstr "Стирати"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1346
+#: ../src/gui/presets.c:60 ../src/iop/watermark.c:1346
 #: ../src/libs/colorpicker.c:320 ../src/libs/image.c:612
 #: ../src/libs/modulegroups.c:2301
 msgid "color"
@@ -4930,7 +4934,7 @@ msgstr "Співвідношення ширина/висота"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:146
 #: ../build/lib/darktable/plugins/introspection_vignette.c:237
-#: ../src/iop/vignette.c:1004
+#: ../src/iop/vignette.c:1007
 msgid "shape"
 msgstr "Фігура"
 
@@ -5098,69 +5102,69 @@ msgstr "Показ зображень на мапі"
 msgid "Print your images"
 msgstr "Друк зображень"
 
-#: ../src/bauhaus/bauhaus.c:766 ../src/bauhaus/bauhaus.c:3817
+#: ../src/bauhaus/bauhaus.c:845 ../src/bauhaus/bauhaus.c:3957
 msgid "sliders"
 msgstr "повзунки"
 
-#: ../src/bauhaus/bauhaus.c:768 ../src/bauhaus/bauhaus.c:3822
+#: ../src/bauhaus/bauhaus.c:847 ../src/bauhaus/bauhaus.c:3962
 msgid "dropdowns"
 msgstr "спадні меню"
 
-#: ../src/bauhaus/bauhaus.c:770 ../src/bauhaus/bauhaus.c:3827
+#: ../src/bauhaus/bauhaus.c:849 ../src/bauhaus/bauhaus.c:3967
 msgid "buttons"
 msgstr "кнопки"
 
-#: ../src/bauhaus/bauhaus.c:3483
+#: ../src/bauhaus/bauhaus.c:3623
 msgid "button on"
 msgstr "кнопка on"
 
-#: ../src/bauhaus/bauhaus.c:3483
+#: ../src/bauhaus/bauhaus.c:3623
 msgid "button off"
 msgstr "кнопка off"
 
-#: ../src/bauhaus/bauhaus.c:3484
+#: ../src/bauhaus/bauhaus.c:3624
 msgid "button pressed"
 msgstr "кнопку натиснуто"
 
-#: ../src/bauhaus/bauhaus.c:3722
+#: ../src/bauhaus/bauhaus.c:3862
 msgid "not that many sliders"
 msgstr "немає стільки повзунків"
 
-#: ../src/bauhaus/bauhaus.c:3736
+#: ../src/bauhaus/bauhaus.c:3876
 msgid "not that many dropdowns"
 msgstr "немає стільки спадних меню"
 
-#: ../src/bauhaus/bauhaus.c:3755
+#: ../src/bauhaus/bauhaus.c:3895
 msgid "not that many buttons"
 msgstr "немає стільки кнопок"
 
-#: ../src/bauhaus/bauhaus.c:3760 ../src/gui/accelerators.c:389
+#: ../src/bauhaus/bauhaus.c:3900 ../src/gui/accelerators.c:389
 msgid "value"
 msgstr "Значення"
 
-#: ../src/bauhaus/bauhaus.c:3761 ../src/bauhaus/bauhaus.c:3767
+#: ../src/bauhaus/bauhaus.c:3901 ../src/bauhaus/bauhaus.c:3907
 #: ../src/gui/accelerators.c:368
 msgid "button"
 msgstr "Кнопка"
 
-#: ../src/bauhaus/bauhaus.c:3762
+#: ../src/bauhaus/bauhaus.c:3902
 msgid "force"
 msgstr "Необмежено"
 
-#: ../src/bauhaus/bauhaus.c:3763 ../src/libs/navigation.c:189
+#: ../src/bauhaus/bauhaus.c:3903 ../src/libs/navigation.c:189
 #: ../src/libs/navigation.c:201
 msgid "zoom"
 msgstr "Масштаб"
 
-#: ../src/bauhaus/bauhaus.c:3766
+#: ../src/bauhaus/bauhaus.c:3906
 msgid "selection"
 msgstr "Вибір"
 
-#: ../src/bauhaus/bauhaus.c:3806
+#: ../src/bauhaus/bauhaus.c:3946
 msgid "slider"
 msgstr "Повзунок"
 
-#: ../src/bauhaus/bauhaus.c:3811
+#: ../src/bauhaus/bauhaus.c:3951
 msgid "dropdown"
 msgstr "Спадне меню"
 
@@ -5169,13 +5173,13 @@ msgstr "Спадне меню"
 #: ../src/gui/accelerators.c:2514 ../src/gui/accelerators.c:2566
 #: ../src/gui/accelerators.c:2594 ../src/gui/accelerators.c:2654
 #: ../src/gui/hist_dialog.c:226 ../src/gui/preferences.c:1043
-#: ../src/gui/preferences.c:1082 ../src/gui/presets.c:420
-#: ../src/gui/presets.c:563 ../src/gui/styles_dialog.c:519
+#: ../src/gui/preferences.c:1082 ../src/gui/presets.c:421
+#: ../src/gui/presets.c:564 ../src/gui/styles_dialog.c:519
 #: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:150
 #: ../src/imageio/storage/latex.c:146 ../src/iop/lut3d.c:1560
 #: ../src/libs/collect.c:408 ../src/libs/copy_history.c:115
-#: ../src/libs/geotagging.c:928 ../src/libs/import.c:1506
-#: ../src/libs/import.c:1610 ../src/libs/styles.c:392 ../src/libs/styles.c:527
+#: ../src/libs/geotagging.c:928 ../src/libs/import.c:1508
+#: ../src/libs/import.c:1612 ../src/libs/styles.c:392 ../src/libs/styles.c:527
 #: ../src/libs/tagging.c:2488 ../src/libs/tagging.c:2524
 msgid "_cancel"
 msgstr "_Скасувати"
@@ -5366,58 +5370,58 @@ msgstr ""
 "Камеру `%s' на порту `%s' потрібно перемонтувати\n"
 "Переконайтеся, що вона дозволяє доступ і не змонтована іншою програмою"
 
-#: ../src/common/collection.c:673
+#: ../src/common/collection.c:698
 msgid "too much time to update aspect ratio for the collection"
 msgstr "Занадто довго йде оновлення співвідношення сторін зображень в колекції"
 
-#: ../src/common/collection.c:688
+#: ../src/common/collection.c:713
 msgid "film roll"
 msgstr "Плівка"
 
-#: ../src/common/collection.c:690
+#: ../src/common/collection.c:715
 msgid "folder"
 msgstr "Каталог"
 
-#: ../src/common/collection.c:692
+#: ../src/common/collection.c:717
 msgid "camera"
 msgstr "Камера"
 
-#: ../src/common/collection.c:694 ../src/libs/export_metadata.c:189
+#: ../src/common/collection.c:719 ../src/libs/export_metadata.c:189
 #: ../src/libs/tagging.c:3280
 msgid "tag"
 msgstr "Тег"
 
-#: ../src/common/collection.c:696
+#: ../src/common/collection.c:721
 msgid "capture date"
 msgstr "Дата зйомки"
 
-#: ../src/common/collection.c:698 ../src/libs/filtering.c:61
+#: ../src/common/collection.c:723 ../src/libs/filtering.c:61
 msgid "capture time"
 msgstr "Час зйомки"
 
-#: ../src/common/collection.c:700 ../src/libs/filtering.c:62
+#: ../src/common/collection.c:725 ../src/libs/filtering.c:62
 msgid "import time"
 msgstr "Час імпорту"
 
-#: ../src/common/collection.c:702 ../src/libs/filtering.c:63
+#: ../src/common/collection.c:727 ../src/libs/filtering.c:63
 msgid "modification time"
 msgstr "Час останньої зміни"
 
-#: ../src/common/collection.c:704 ../src/libs/filtering.c:64
+#: ../src/common/collection.c:729 ../src/libs/filtering.c:64
 msgid "export time"
 msgstr "Час останнього експорту"
 
-#: ../src/common/collection.c:706 ../src/libs/filtering.c:65
+#: ../src/common/collection.c:731 ../src/libs/filtering.c:65
 msgid "print time"
 msgstr "Час останнього друку"
 
-#: ../src/common/collection.c:708 ../src/libs/collect.c:3222
+#: ../src/common/collection.c:733 ../src/libs/collect.c:3230
 #: ../src/libs/filtering.c:2164 ../src/libs/filtering.c:2184
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:92
 msgid "history"
 msgstr "Історія"
 
-#: ../src/common/collection.c:710 ../src/common/colorlabels.c:341
+#: ../src/common/collection.c:735 ../src/common/colorlabels.c:341
 #: ../src/develop/lightroom.c:1552 ../src/dtgtk/thumbnail.c:1558
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:93
@@ -5425,134 +5429,134 @@ msgid "color label"
 msgstr "Кольорова позначка"
 
 #. iso
-#: ../src/common/collection.c:716 ../src/gui/preferences.c:832
-#: ../src/gui/presets.c:666 ../src/libs/camera.c:558
+#: ../src/common/collection.c:741 ../src/gui/preferences.c:832
+#: ../src/gui/presets.c:667 ../src/libs/camera.c:558
 #: ../src/libs/metadata_view.c:149
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:718 ../src/gui/preferences.c:840
-#: ../src/gui/presets.c:701 ../src/libs/camera.c:545 ../src/libs/camera.c:547
+#: ../src/common/collection.c:743 ../src/gui/preferences.c:840
+#: ../src/gui/presets.c:702 ../src/libs/camera.c:545 ../src/libs/camera.c:547
 #: ../src/libs/metadata_view.c:142
 msgid "aperture"
 msgstr "Діафрагма"
 
-#: ../src/common/collection.c:724 ../src/libs/filtering.c:57
+#: ../src/common/collection.c:749 ../src/libs/filtering.c:57
 #: ../src/libs/filters/filename.c:364 ../src/libs/metadata_view.c:128
 msgid "filename"
 msgstr "Файл"
 
-#: ../src/common/collection.c:726 ../src/develop/lightroom.c:1543
+#: ../src/common/collection.c:751 ../src/develop/lightroom.c:1543
 #: ../src/libs/geotagging.c:141
 msgid "geotagging"
 msgstr "Геотегування"
 
-#: ../src/common/collection.c:728 ../src/libs/filters/grouping.c:167
+#: ../src/common/collection.c:753 ../src/libs/filters/grouping.c:167
 #: ../src/libs/tools/global_toolbox.c:394
 msgid "grouping"
 msgstr "Групування"
 
-#: ../src/common/collection.c:730 ../src/dtgtk/thumbnail.c:1573
+#: ../src/common/collection.c:755 ../src/dtgtk/thumbnail.c:1573
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:131
 #: ../src/libs/metadata_view.c:340
 msgid "local copy"
 msgstr "Локальна копія"
 
-#: ../src/common/collection.c:732 ../src/gui/preferences.c:808
+#: ../src/common/collection.c:757 ../src/gui/preferences.c:808
 msgid "module"
 msgstr "Модуль"
 
-#: ../src/common/collection.c:734 ../src/gui/hist_dialog.c:346
+#: ../src/common/collection.c:759 ../src/gui/hist_dialog.c:346
 #: ../src/gui/styles_dialog.c:722 ../src/gui/styles_dialog.c:771
 #: ../src/libs/filters/module_order.c:161 ../src/libs/ioporder.c:39
 msgid "module order"
 msgstr "Порядок модулів"
 
-#: ../src/common/collection.c:736
+#: ../src/common/collection.c:761
 msgid "range rating"
 msgstr "Діапазон рейтингів"
 
-#: ../src/common/collection.c:738 ../src/common/ratings.c:321
+#: ../src/common/collection.c:763 ../src/common/ratings.c:321
 #: ../src/develop/lightroom.c:1527 ../src/libs/filtering.c:67
 #: ../src/libs/tools/ratings.c:110
 msgid "rating"
 msgstr "Рейтинг"
 
-#: ../src/common/collection.c:740
+#: ../src/common/collection.c:765
 msgid "search"
 msgstr "Пошук"
 
-#: ../src/common/collection.c:1509 ../src/common/colorlabels.c:334
+#: ../src/common/collection.c:1539 ../src/common/colorlabels.c:334
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2501 ../src/iop/temperature.c:1936
-#: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:261
+#: ../src/libs/collect.c:1797 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "Жовтий"
 
-#: ../src/common/collection.c:1515 ../src/common/color_vocabulary.c:339
+#: ../src/common/collection.c:1545 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:337 ../src/iop/colorzones.c:2505
-#: ../src/libs/collect.c:1791 ../src/libs/filters/colors.c:264
+#: ../src/libs/collect.c:1797 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "Пурпурний"
 
-#: ../src/common/collection.c:1532 ../src/libs/collect.c:1745
+#: ../src/common/collection.c:1562 ../src/libs/collect.c:1751
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "Тільки автозастосовані зміни"
 
-#: ../src/common/collection.c:1536 ../src/libs/collect.c:1745
+#: ../src/common/collection.c:1566 ../src/libs/collect.c:1751
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "Зі змінами"
 
-#: ../src/common/collection.c:1553 ../src/common/collection.c:1649
+#: ../src/common/collection.c:1583 ../src/common/collection.c:1680
 #: ../src/libs/collect.c:1166 ../src/libs/collect.c:1330
 #: ../src/libs/collect.c:1354 ../src/libs/collect.c:1473
-#: ../src/libs/collect.c:2432
+#: ../src/libs/collect.c:2440
 msgid "not tagged"
 msgstr "Без тегу"
 
-#: ../src/common/collection.c:1554 ../src/libs/collect.c:1354
+#: ../src/common/collection.c:1584 ../src/libs/collect.c:1354
 #: ../src/libs/map_locations.c:742
 msgid "tagged"
 msgstr "З тегом"
 
-#: ../src/common/collection.c:1555
+#: ../src/common/collection.c:1585
 msgid "tagged*"
 msgstr "З тегом*"
 
 #. local copy
-#: ../src/common/collection.c:1588 ../src/libs/collect.c:1759
+#: ../src/common/collection.c:1618 ../src/libs/collect.c:1765
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "Немає локальної копії"
 
-#: ../src/common/collection.c:1592 ../src/libs/collect.c:1759
+#: ../src/common/collection.c:1622 ../src/libs/collect.c:1765
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "Є локальна копія"
 
-#: ../src/common/collection.c:1974 ../src/libs/collect.c:1879
+#: ../src/common/collection.c:2005 ../src/libs/collect.c:1886
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr "Лідери груп"
 
-#: ../src/common/collection.c:1978 ../src/libs/collect.c:1879
+#: ../src/common/collection.c:2009 ../src/libs/collect.c:1886
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr "Члени груп"
 
-#: ../src/common/collection.c:2126 ../src/libs/collect.c:1959
+#: ../src/common/collection.c:2162 ../src/libs/collect.c:1967
 msgid "not defined"
 msgstr "Не визначено"
 
-#: ../src/common/collection.c:2573
+#: ../src/common/collection.c:2609
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 msgstr "<b>%d</b> зображення (#<b>%d</b>) вибрано з <b>%d</b>"
 
-#: ../src/common/collection.c:2580
+#: ../src/common/collection.c:2616
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
@@ -5562,7 +5566,7 @@ msgstr[2] "<b>%d</b> зображень вибрано з <b>%d</b>"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2332
 #: ../src/develop/blend_gui.c:2380 ../src/gui/guides.c:729
-#: ../src/iop/channelmixerrgb.c:4674 ../src/iop/levels.c:687
+#: ../src/iop/channelmixerrgb.c:4680 ../src/iop/levels.c:687
 #: ../src/iop/rgblevels.c:974 ../src/iop/rgblevels.c:1088
 msgid "gray"
 msgstr "Сірий"
@@ -5879,7 +5883,7 @@ msgid "export profile"
 msgstr "Профіль експорту"
 
 #: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1732
-#: ../src/views/darkroom.c:2495
+#: ../src/views/darkroom.c:2492
 msgid "softproof profile"
 msgstr "Профіль екранної кольоропроби"
 
@@ -6038,19 +6042,19 @@ msgstr "Файл `%s' має невідомий формат!"
 msgid "error loading file `%s'"
 msgstr "Помилка завантаження файлу `%s'"
 
-#: ../src/common/darktable.c:1503
+#: ../src/common/darktable.c:1523
 msgid "configuration information"
 msgstr "Інформація щодо налаштування"
 
-#: ../src/common/darktable.c:1505 ../src/libs/import.c:1976
+#: ../src/common/darktable.c:1525 ../src/libs/import.c:1978
 msgid "show this information again"
 msgstr "Показати це наступного разу"
 
-#: ../src/common/darktable.c:1505
+#: ../src/common/darktable.c:1525
 msgid "understood"
 msgstr "Зрозуміло"
 
-#: ../src/common/darktable.c:1967
+#: ../src/common/darktable.c:1987
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6058,13 +6062,13 @@ msgstr ""
 "Метод демозаїкізації RCD було встановлено за замовчуванням замість PPG через "
 "кращу якість та продуктивність."
 
-#: ../src/common/darktable.c:1969
+#: ../src/common/darktable.c:1989
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "Щодо демозаїкізації масштабованих зображень в режимі темної кімнати "
 "перегляньте відповідний параметр в \"Налаштування > Темна кімната\""
 
-#: ../src/common/darktable.c:1975
+#: ../src/common/darktable.c:1995
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6072,7 +6076,7 @@ msgstr ""
 "Інтерфейс користувача та базові внутрішні елементи для налаштування "
 "продуктивності darktable змінилися."
 
-#: ../src/common/darktable.c:1977
+#: ../src/common/darktable.c:1997
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6080,15 +6084,15 @@ msgstr ""
 "Ви більше не знайдете старих параметрів, замість цього \"в Налаштування > "
 "Обробка\" використовуйте:"
 
-#: ../src/common/darktable.c:1979
+#: ../src/common/darktable.c:1999
 msgid "1) darktable resources"
 msgstr "1) рівень ресурсів для darktable"
 
-#: ../src/common/darktable.c:1981
+#: ../src/common/darktable.c:2001
 msgid "2) tune OpenCL performance"
 msgstr "2) налаштування продуктивності OpenCL"
 
-#: ../src/common/darktable.c:1988
+#: ../src/common/darktable.c:2008
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6096,7 +6100,7 @@ msgstr ""
 "Деякі глобальні параметри конфігурації, що мають відношення до "
 "продуктивності OpenCL, більше не використовуються."
 
-#: ../src/common/darktable.c:1990
+#: ../src/common/darktable.c:2010
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6104,8 +6108,8 @@ msgstr ""
 "Замість цього ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-"
 "name'. Зміст:"
 
-#: ../src/common/darktable.c:1992 ../src/common/darktable.c:2011
-#: ../src/common/darktable.c:2026
+#: ../src/common/darktable.c:2012 ../src/common/darktable.c:2031
+#: ../src/common/darktable.c:2046
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6113,18 +6117,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:1994 ../src/common/darktable.c:2013
+#: ../src/common/darktable.c:2014 ../src/common/darktable.c:2033
 msgid "you may tune as before except 'magic'"
 msgstr "Ви можете регулювати ці параметри, як і раніше, за винятком 'magic'"
 
-#: ../src/common/darktable.c:2000
+#: ../src/common/darktable.c:2020
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Налаштування компілятора OpenCL для всіх пристроїв були скинуті до значень "
 "за замовчуванням."
 
-#: ../src/common/darktable.c:2007
+#: ../src/common/darktable.c:2027
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6132,13 +6136,13 @@ msgstr ""
 "Дані параметрів глобальної конфігурації OpenCL 'для окремих пристроїв' було "
 "відтворено з оновленою назвою."
 
-#: ../src/common/darktable.c:2009 ../src/common/darktable.c:2024
+#: ../src/common/darktable.c:2029 ../src/common/darktable.c:2044
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "Ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-name'. Зміст:"
 
-#: ../src/common/darktable.c:2015
+#: ../src/common/darktable.c:2035
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -6146,7 +6150,7 @@ msgstr ""
 "Якщо ви використовуєте імена пристроїв у 'opencl_device_priority', вам слід "
 "оновити їх до нових імен."
 
-#: ../src/common/darktable.c:2022
+#: ../src/common/darktable.c:2042
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "rate'."
@@ -6154,7 +6158,7 @@ msgstr ""
 "Конфігураційні дані OpenCL для окремих пристроїв автоматично розширено "
 "додаванням 'unified-rate'."
 
-#: ../src/common/database.c:2756
+#: ../src/common/database.c:3074
 #, c-format
 msgid ""
 "\n"
@@ -6213,12 +6217,12 @@ msgstr ""
 "даних.</i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:2777
+#: ../src/common/database.c:3095
 msgid "error starting darktable"
 msgstr "Помилка запуску darktable"
 
-#: ../src/common/database.c:2778 ../src/libs/collect.c:2915
-#: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1702
+#: ../src/common/database.c:3096 ../src/libs/collect.c:2923
+#: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1704
 #: ../src/libs/metadata.c:467 ../src/libs/metadata.c:737
 #: ../src/libs/metadata_view.c:1205 ../src/libs/recentcollect.c:227
 #: ../src/libs/modulegroups.c:3469 ../src/libs/styles.c:438
@@ -6229,15 +6233,15 @@ msgstr "Помилка запуску darktable"
 msgid "cancel"
 msgstr "Скасувати"
 
-#: ../src/common/database.c:2778
+#: ../src/common/database.c:3096
 msgid "delete database lock files"
 msgstr "Видалити файли блокування бази даних"
 
-#: ../src/common/database.c:2784
+#: ../src/common/database.c:3102
 msgid "are you sure?"
 msgstr "Ви впевнені?"
 
-#: ../src/common/database.c:2785
+#: ../src/common/database.c:3103
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6245,7 +6249,7 @@ msgstr ""
 "\n"
 "Ви дійсно хочете видалити файли блокування?\n"
 
-#: ../src/common/database.c:2785 ../src/common/variables.c:703
+#: ../src/common/database.c:3103 ../src/common/variables.c:703
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/pdf.c:636
 #: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1296
 #: ../src/libs/export.c:1305 ../src/libs/export.c:1314
@@ -6253,12 +6257,12 @@ msgstr ""
 msgid "yes"
 msgstr "Так"
 
-#: ../src/common/database.c:2801 ../src/libs/export_metadata.c:164
+#: ../src/common/database.c:3119 ../src/libs/export_metadata.c:164
 #: ../src/libs/geotagging.c:811
 msgid "done"
 msgstr "Зроблено"
 
-#: ../src/common/database.c:2802
+#: ../src/common/database.c:3120
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6269,16 +6273,16 @@ msgstr ""
 "Тепер ви можете перезапустити darktable\n"
 
 #. the button to close the popup
-#: ../src/common/database.c:2803 ../src/common/database.c:2810
+#: ../src/common/database.c:3121 ../src/common/database.c:3128
 #: ../src/libs/filters/filename.c:452
 msgid "ok"
 msgstr "OK"
 
-#: ../src/common/database.c:2806
+#: ../src/common/database.c:3124
 msgid "error"
 msgstr "Помилка"
 
-#: ../src/common/database.c:2807
+#: ../src/common/database.c:3125
 #, c-format
 msgid ""
 "\n"
@@ -6293,7 +6297,7 @@ msgstr ""
 "db.lock</i>\n"
 "в каталозі <a href=\"file:///%s\">%s</a>.\n"
 
-#: ../src/common/database.c:2924
+#: ../src/common/database.c:3242
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6302,18 +6306,18 @@ msgstr ""
 "Файл блокування бази даних містить pid, який, здається, є живим у вашій "
 "системі: %d"
 
-#: ../src/common/database.c:2931
+#: ../src/common/database.c:3249
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "Файл блокування бази даних здається порожнім"
 
-#: ../src/common/database.c:2941
+#: ../src/common/database.c:3259
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "Помилка відкриття файлу блокування бази даних для читання: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2978
+#: ../src/common/database.c:3334
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6332,21 +6336,21 @@ msgstr ""
 "\n"
 "Хочете продовжити чи вийти зараз, щоб зробити резервну копію?\n"
 
-#: ../src/common/database.c:2986
+#: ../src/common/database.c:3342
 msgid "darktable - schema migration"
 msgstr "darktable - міграція схеми бази даних"
 
-#: ../src/common/database.c:2987 ../src/common/database.c:3306
-#: ../src/common/database.c:3324 ../src/common/database.c:3491
-#: ../src/common/database.c:3509
+#: ../src/common/database.c:3343 ../src/common/database.c:3664
+#: ../src/common/database.c:3682 ../src/common/database.c:3851
+#: ../src/common/database.c:3869
 msgid "close darktable"
 msgstr "Закрити darktable"
 
-#: ../src/common/database.c:2987
+#: ../src/common/database.c:3343
 msgid "upgrade database"
 msgstr "Оновити базу даних"
 
-#: ../src/common/database.c:3286 ../src/common/database.c:3471
+#: ../src/common/database.c:3644 ../src/common/database.c:3831
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6355,21 +6359,21 @@ msgstr ""
 "Повідомлення quick_check:\n"
 "%s \n"
 
-#: ../src/common/database.c:3303 ../src/common/database.c:3321
-#: ../src/common/database.c:3488 ../src/common/database.c:3506
+#: ../src/common/database.c:3661 ../src/common/database.c:3679
+#: ../src/common/database.c:3848 ../src/common/database.c:3866
 msgid "darktable - error opening database"
 msgstr "darktable - помилка відкриття бази даних"
 
-#: ../src/common/database.c:3308 ../src/common/database.c:3493
+#: ../src/common/database.c:3666 ../src/common/database.c:3853
 msgid "attempt restore"
 msgstr "Спробувати відновити"
 
-#: ../src/common/database.c:3310 ../src/common/database.c:3326
-#: ../src/common/database.c:3495 ../src/common/database.c:3511
+#: ../src/common/database.c:3668 ../src/common/database.c:3684
+#: ../src/common/database.c:3855 ../src/common/database.c:3871
 msgid "delete database"
 msgstr "Видалити базу даних"
 
-#: ../src/common/database.c:3314 ../src/common/database.c:3499
+#: ../src/common/database.c:3672 ../src/common/database.c:3859
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6381,7 +6385,7 @@ msgstr ""
 "з останнього знімка бази або видалити пошкоджену базу даних\n"
 "і почати з новою?"
 
-#: ../src/common/database.c:3330 ../src/common/database.c:3515
+#: ../src/common/database.c:3688 ../src/common/database.c:3875
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -6391,7 +6395,7 @@ msgstr ""
 "базу даних із резервної копії чи видалити пошкоджену базу даних\n"
 "і почати з новою?"
 
-#: ../src/common/database.c:3337 ../src/common/database.c:3520
+#: ../src/common/database.c:3695 ../src/common/database.c:3880
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -6448,7 +6452,7 @@ msgstr[2] "Видалити порожній каталог?"
 
 #: ../src/common/film.c:371 ../src/gui/preferences.c:816
 #: ../src/gui/styles_dialog.c:548 ../src/libs/geotagging.c:829
-#: ../src/libs/import.c:1551
+#: ../src/libs/import.c:1553
 msgid "name"
 msgstr "Ім'я"
 
@@ -6499,49 +6503,49 @@ msgstr[0] "Дату/час повторно застосовано для %d з�
 msgstr[1] "Дату/час повторно застосовано для %d зображень"
 msgstr[2] "Дату/час повторно застосовано для %d зображень"
 
-#: ../src/common/image.c:2187
+#: ../src/common/image.c:2192
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Не вдається отримати доступ до локальної копії `%s'"
 
-#: ../src/common/image.c:2194
+#: ../src/common/image.c:2199
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Не вдається записати локальну копію `%s'"
 
-#: ../src/common/image.c:2201
+#: ../src/common/image.c:2206
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Помилка переміщення локальної копії `%s' -> `%s'"
 
-#: ../src/common/image.c:2218
+#: ../src/common/image.c:2223
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Помилка переміщення `%s': файл не знайдено"
 
-#: ../src/common/image.c:2228
+#: ../src/common/image.c:2233
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Помилка переміщення `%s' -> `%s': файл існує"
 
-#: ../src/common/image.c:2232
+#: ../src/common/image.c:2237
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Помилка переміщення `%s' -> `%s'"
 
-#: ../src/common/image.c:2561
+#: ../src/common/image.c:2568
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "Неможливо створити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2575
+#: ../src/common/image.c:2582
 msgid "cannot create local copy."
 msgstr "Неможливо створити локальну копію."
 
-#: ../src/common/image.c:2655 ../src/control/jobs/control_jobs.c:777
+#: ../src/common/image.c:2662 ../src/control/jobs/control_jobs.c:777
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "Неможливо видалити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2820
+#: ../src/common/image.c:2827
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -6549,11 +6553,11 @@ msgstr[0] "%d локальну копію синхронізовано"
 msgstr[1] "%d локальні копії синхронізовано"
 msgstr[2] "%d локальних копій синхронізовано"
 
-#: ../src/common/image.c:3021
+#: ../src/common/image.c:3028
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ПОПЕРЕДЖЕННЯ</b>: відсутні зразки зображень із цієї моделі камери!"
 
-#: ../src/common/image.c:3022
+#: ../src/common/image.c:3029
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6561,7 +6565,7 @@ msgstr ""
 "Вам слід надати такі зразки, завантаживши їх на сайт <a href='https://raw."
 "pixls.us/'>https://raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3023
+#: ../src/common/image.c:3030
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6570,7 +6574,7 @@ msgstr ""
 "для `%s' `%s'\n"
 "у якомога більшій кількості форматів/варіантів стиснення/глибин кольору"
 
-#: ../src/common/image.c:3026
+#: ../src/common/image.c:3033
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "інакше <b>RAW з цієї камери не буде читатися</b> у наступній версії "
@@ -6774,7 +6778,7 @@ msgstr ""
 msgid "building OpenCL program %s for %s"
 msgstr "Компіляція програми OpenCL %s для %s"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:3858
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:4006
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:81
 msgid "mm"
 msgstr "мм"
@@ -6864,23 +6868,23 @@ msgstr "знизити рейтинг"
 msgid "zero"
 msgstr "нуль"
 
-#: ../src/common/ratings.c:312 ../src/libs/filters/rating_range.c:277
+#: ../src/common/ratings.c:312 ../src/libs/filters/rating_range.c:280
 msgid "one"
 msgstr "один"
 
-#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:278
+#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:281
 msgid "two"
 msgstr "два"
 
-#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:279
+#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:282
 msgid "three"
 msgstr "три"
 
-#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:280
+#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:283
 msgid "four"
 msgstr "чотири"
 
-#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:281
+#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:284
 msgid "five"
 msgstr "п'ять"
 
@@ -7083,7 +7087,7 @@ msgstr "Вечірнє сонце"
 msgid "underwater"
 msgstr "Під водою"
 
-#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2400
+#: ../src/common/wb_presets.c:74 ../src/views/darkroom.c:2397
 msgid "black & white"
 msgstr "Чорно-білий"
 
@@ -7104,7 +7108,7 @@ msgid "auto WB"
 msgstr "Автоматичний ББ"
 
 #: ../src/control/control.c:66 ../src/gui/accelerators.c:156
-#: ../src/views/darkroom.c:2115
+#: ../src/views/darkroom.c:2112
 msgid "hold"
 msgstr "Утримання"
 
@@ -7175,13 +7179,13 @@ msgstr "Показати вікно прискорювачів"
 msgid "working..."
 msgstr "Операція виконується..."
 
-#: ../src/control/crawler.c:425
+#: ../src/control/crawler.c:418
 #, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
 msgstr "ПОМИЛКА: %s НЕ синхронізовано XMP → DB"
 
-#: ../src/control/crawler.c:426 ../src/control/crawler.c:492
-#: ../src/control/crawler.c:561
+#: ../src/control/crawler.c:419 ../src/control/crawler.c:485
+#: ../src/control/crawler.c:554
 msgid ""
 "ERROR: cannot write the database. the destination may be full, offline or "
 "read-only."
@@ -7189,18 +7193,18 @@ msgstr ""
 "ПОМИЛКА: не вдалося записати до бази даних. Місце призначення може бути "
 "заповненим, не підключеним або доступним лише для читання."
 
-#: ../src/control/crawler.c:433
+#: ../src/control/crawler.c:426
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
 msgstr "УСПІШНО: %s синхронізовано XMP → DB"
 
-#: ../src/control/crawler.c:455
+#: ../src/control/crawler.c:448
 #, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
 msgstr "ПОМИЛКА: %s НЕ синхронізовано DB → XMP"
 
-#: ../src/control/crawler.c:457 ../src/control/crawler.c:516
-#: ../src/control/crawler.c:582
+#: ../src/control/crawler.c:450 ../src/control/crawler.c:509
+#: ../src/control/crawler.c:575
 #, c-format
 msgid ""
 "ERROR: cannot write %s \n"
@@ -7210,129 +7214,129 @@ msgstr ""
 "Місце призначення може бути заповненим, не підключеним або доступним лише "
 "для читання."
 
-#: ../src/control/crawler.c:463
+#: ../src/control/crawler.c:456
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
 msgstr "УСПІШНО: %s синхронізовано DB → XMP"
 
-#: ../src/control/crawler.c:489
+#: ../src/control/crawler.c:482
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
 msgstr "ПОМИЛКА: %s НЕ синхронізовано в напрямку новіше (XMP) → старіше (DB)"
 
-#: ../src/control/crawler.c:499
+#: ../src/control/crawler.c:492
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
 msgstr "УСПІШНО: %s синхронізовано в напрямку новіше (XMP) → старіше (DB)"
 
-#: ../src/control/crawler.c:513
+#: ../src/control/crawler.c:506
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
 msgstr "ПОМИЛКА: %s НЕ синхронізовано в напрямку новіше (DB) → старіше (XMP)"
 
-#: ../src/control/crawler.c:521
+#: ../src/control/crawler.c:514
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
 msgstr "УСПІШНО: %s синхронізовано в напрямку новіше (DB) → старіше (XMP)"
 
-#: ../src/control/crawler.c:530 ../src/control/crawler.c:598
+#: ../src/control/crawler.c:523 ../src/control/crawler.c:591
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
 msgstr "ВИНЯТОК: %s має невідповідні позначки часу"
 
-#: ../src/control/crawler.c:558
+#: ../src/control/crawler.c:551
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
 msgstr "ПОМИЛКА: %s НЕ синхронізовано в напрямку старіше (XMP) → новіше (DB)"
 
-#: ../src/control/crawler.c:567
+#: ../src/control/crawler.c:560
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
 msgstr "УСПІШНО: %s синхронізовано в напрямку старіше (XMP) → новіше (DB)"
 
-#: ../src/control/crawler.c:579
+#: ../src/control/crawler.c:572
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
 msgstr "ПОМИЛКА: %s НЕ синхронізовано в напрямку старіше (DB) → новіше (XMP)"
 
-#: ../src/control/crawler.c:588
+#: ../src/control/crawler.c:581
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
 msgstr "УСПІШНО: %s синхронізовано в напрямку старіше (DB) → новіше (XMP)"
 
-#: ../src/control/crawler.c:670
+#: ../src/control/crawler.c:663
 #, c-format
 msgid "%id %02dh %02dm %02ds"
 msgstr "%iд %02dгод %02dхв %02dс"
 
-#: ../src/control/crawler.c:740 ../src/imageio/storage/disk.c:250
+#: ../src/control/crawler.c:733 ../src/imageio/storage/disk.c:250
 #: ../src/imageio/storage/gallery.c:202 ../src/imageio/storage/latex.c:190
 #: ../src/imageio/storage/latex.c:208
 msgid "path"
 msgstr "Шлях"
 
-#: ../src/control/crawler.c:749
+#: ../src/control/crawler.c:742
 msgid "XMP timestamp"
 msgstr "Позначка часу файлу XMP"
 
-#: ../src/control/crawler.c:754
+#: ../src/control/crawler.c:747
 msgid "database timestamp"
 msgstr "Позначка часу бази даних"
 
-#: ../src/control/crawler.c:759
+#: ../src/control/crawler.c:752
 msgid "newest"
 msgstr "Новіше"
 
-#: ../src/control/crawler.c:765
+#: ../src/control/crawler.c:758
 msgid "time difference"
 msgstr "Різниця в часі"
 
-#: ../src/control/crawler.c:777
+#: ../src/control/crawler.c:770
 msgid "updated XMP sidecar files found"
 msgstr "Знайдено оновлений XMP файл"
 
-#: ../src/control/crawler.c:778
+#: ../src/control/crawler.c:771
 msgid "_close"
 msgstr "_Закрити"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:793 ../src/dtgtk/thumbtable.c:2565
-#: ../src/libs/import.c:1722 ../src/libs/select.c:135
+#: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2565
+#: ../src/libs/import.c:1724 ../src/libs/select.c:135
 msgid "select all"
 msgstr "Вибрати всі"
 
-#: ../src/control/crawler.c:794 ../src/dtgtk/thumbtable.c:2567
-#: ../src/libs/import.c:1726 ../src/libs/select.c:139
+#: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2567
+#: ../src/libs/import.c:1728 ../src/libs/select.c:139
 msgid "select none"
 msgstr "Скасувати вибір"
 
-#: ../src/control/crawler.c:795 ../src/dtgtk/thumbtable.c:2569
+#: ../src/control/crawler.c:788 ../src/dtgtk/thumbtable.c:2569
 #: ../src/libs/select.c:143
 msgid "invert selection"
 msgstr "Інвертувати вибір"
 
-#: ../src/control/crawler.c:807
+#: ../src/control/crawler.c:800
 msgid "on the selection:"
 msgstr "Для вибраного:"
 
-#: ../src/control/crawler.c:808
+#: ../src/control/crawler.c:801
 msgid "keep the XMP edit"
 msgstr "Зберегти редагування з XMP"
 
-#: ../src/control/crawler.c:809
+#: ../src/control/crawler.c:802
 msgid "keep the database edit"
 msgstr "Зберегти редагування з бази даних"
 
-#: ../src/control/crawler.c:810
+#: ../src/control/crawler.c:803
 msgid "keep the newest edit"
 msgstr "Зберегти найновіше редагування"
 
-#: ../src/control/crawler.c:811
+#: ../src/control/crawler.c:804
 msgid "keep the oldest edit"
 msgstr "Зберегти найстаріше редагування"
 
-#: ../src/control/crawler.c:836
+#: ../src/control/crawler.c:829
 msgid "synchronization log"
 msgstr "Журнал синхронізації"
 
@@ -7583,7 +7587,7 @@ msgstr "Немає зображень для експорту"
 msgid "exporting %d / %d to %s"
 msgstr "Експорт %d / %d до %s"
 
-#: ../src/control/jobs/control_jobs.c:1451 ../src/views/darkroom.c:761
+#: ../src/control/jobs/control_jobs.c:1451 ../src/views/darkroom.c:758
 #: ../src/views/print.c:369
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -8061,7 +8065,7 @@ msgctxt "blendoperation"
 msgid "reverse"
 msgstr "Зворотна"
 
-#: ../src/develop/blend_gui.c:140 ../src/imageio/format/webp.c:444
+#: ../src/develop/blend_gui.c:140 ../src/imageio/format/webp.c:443
 #: ../src/libs/metadata.c:466 ../src/libs/metadata_view.c:1204
 msgid "default"
 msgstr "Замовчування"
@@ -8228,7 +8232,7 @@ msgid "sliders for gray value"
 msgstr "Повзунки для значення сірого"
 
 #: ../src/develop/blend_gui.c:2333 ../src/develop/blend_gui.c:2381
-#: ../src/iop/channelmixerrgb.c:4663 ../src/iop/denoiseprofile.c:3714
+#: ../src/iop/channelmixerrgb.c:4669 ../src/iop/denoiseprofile.c:3714
 #: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1361
 #: ../src/iop/rgblevels.c:1048 ../src/libs/filters/colors.c:137
 msgid "R"
@@ -8239,7 +8243,7 @@ msgid "sliders for red channel"
 msgstr "Повзунки для каналу червоного"
 
 #: ../src/develop/blend_gui.c:2339 ../src/develop/blend_gui.c:2387
-#: ../src/iop/channelmixerrgb.c:4664 ../src/iop/denoiseprofile.c:3715
+#: ../src/iop/channelmixerrgb.c:4670 ../src/iop/denoiseprofile.c:3715
 #: ../src/iop/rawdenoise.c:911 ../src/iop/rgbcurve.c:1362
 #: ../src/iop/rgblevels.c:1049 ../src/libs/filters/colors.c:143
 msgid "G"
@@ -8250,7 +8254,7 @@ msgid "sliders for green channel"
 msgstr "Повзунки для каналу зеленого"
 
 #: ../src/develop/blend_gui.c:2345 ../src/develop/blend_gui.c:2393
-#: ../src/iop/channelmixerrgb.c:4665 ../src/iop/denoiseprofile.c:3716
+#: ../src/iop/channelmixerrgb.c:4671 ../src/iop/denoiseprofile.c:3716
 #: ../src/iop/rawdenoise.c:912 ../src/iop/rgbcurve.c:1363
 #: ../src/iop/rgblevels.c:1050 ../src/libs/filters/colors.c:146
 msgid "B"
@@ -8394,7 +8398,7 @@ msgstr ""
 #: ../src/iop/filmic.c:1527 ../src/iop/filmic.c:1540 ../src/iop/filmic.c:1582
 #: ../src/iop/filmicrgb.c:4504 ../src/iop/filmicrgb.c:4515
 #: ../src/iop/filmicrgb.c:4549 ../src/iop/filmicrgb.c:4559
-#: ../src/iop/graduatednd.c:1106 ../src/iop/negadoctor.c:1030
+#: ../src/iop/graduatednd.c:1109 ../src/iop/negadoctor.c:1030
 #: ../src/iop/profile_gamma.c:657 ../src/iop/profile_gamma.c:663
 #: ../src/iop/relight.c:258 ../src/iop/soften.c:373 ../src/iop/toneequal.c:3349
 #: ../src/iop/toneequal.c:3352 ../src/iop/toneequal.c:3355
@@ -8402,7 +8406,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3364 ../src/iop/toneequal.c:3367
 #: ../src/iop/toneequal.c:3370 ../src/iop/toneequal.c:3373
 #: ../src/iop/toneequal.c:3495 ../src/iop/toneequal.c:3504
-#: ../src/iop/toneequal.c:3517 ../src/views/darkroom.c:2406
+#: ../src/iop/toneequal.c:3517 ../src/views/darkroom.c:2403
 msgid " EV"
 msgstr " EV"
 
@@ -8725,7 +8729,7 @@ msgstr "Опустити"
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/imageop.c:1056 ../src/develop/imageop.c:3723
-#: ../src/gui/accelerators.c:173 ../src/gui/presets.c:562
+#: ../src/gui/accelerators.c:173 ../src/gui/presets.c:563
 #: ../src/libs/image.c:285 ../src/libs/image.c:480 ../src/libs/tagging.c:1483
 #: ../src/libs/tagging.c:1571
 msgid "delete"
@@ -9375,7 +9379,7 @@ msgid "min"
 msgstr "Мін"
 
 #: ../src/dtgtk/range.c:630 ../src/dtgtk/range.c:1780 ../src/dtgtk/range.c:1831
-#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:282
+#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:285
 msgid "max"
 msgstr "Макс"
 
@@ -9464,8 +9468,8 @@ msgid "grouped images"
 msgstr "Згруповані зображення"
 
 #: ../src/dtgtk/thumbnail.c:819 ../src/dtgtk/thumbnail.c:1633
-#: ../src/iop/ashift.c:6229 ../src/iop/ashift.c:6318 ../src/iop/ashift.c:6320
-#: ../src/iop/ashift.c:6322 ../src/libs/navigation.c:110
+#: ../src/iop/ashift.c:6233 ../src/iop/ashift.c:6322 ../src/iop/ashift.c:6324
+#: ../src/iop/ashift.c:6326 ../src/libs/navigation.c:110
 #: ../src/libs/navigation.c:192
 msgid "fit"
 msgstr "Підгонка"
@@ -9692,19 +9696,19 @@ msgstr "Прокрутка"
 msgid "pan"
 msgstr "Панорамування"
 
-#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5888
-#: ../src/iop/ashift.c:5890 ../src/iop/ashift.c:5995 ../src/iop/ashift.c:5997
-#: ../src/iop/ashift.c:6321 ../src/iop/clipping.c:1944
+#: ../src/gui/accelerators.c:98 ../src/iop/ashift.c:5892
+#: ../src/iop/ashift.c:5894 ../src/iop/ashift.c:5999 ../src/iop/ashift.c:6001
+#: ../src/iop/ashift.c:6325 ../src/iop/clipping.c:1944
 #: ../src/iop/clipping.c:2136 ../src/iop/clipping.c:2152
-#: ../src/views/darkroom.c:2629 ../src/views/lighttable.c:1250
+#: ../src/views/darkroom.c:2626 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "Горизонтально"
 
-#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5888
-#: ../src/iop/ashift.c:5890 ../src/iop/ashift.c:5995 ../src/iop/ashift.c:5997
-#: ../src/iop/ashift.c:6319 ../src/iop/clipping.c:1943
+#: ../src/gui/accelerators.c:99 ../src/iop/ashift.c:5892
+#: ../src/iop/ashift.c:5894 ../src/iop/ashift.c:5999 ../src/iop/ashift.c:6001
+#: ../src/iop/ashift.c:6323 ../src/iop/clipping.c:1943
 #: ../src/iop/clipping.c:2137 ../src/iop/clipping.c:2151
-#: ../src/views/darkroom.c:2632 ../src/views/lighttable.c:1254
+#: ../src/views/darkroom.c:2629 ../src/views/lighttable.c:1254
 msgid "vertical"
 msgstr "Вертикально"
 
@@ -9786,9 +9790,9 @@ msgid "first"
 msgstr "Перший"
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:159
-#: ../src/gui/accelerators.c:356 ../src/libs/filters/rating_range.c:268
-#: ../src/libs/tagging.c:3118 ../src/views/darkroom.c:2322
-#: ../src/views/darkroom.c:2372 ../src/views/darkroom.c:2601
+#: ../src/gui/accelerators.c:356 ../src/libs/filters/rating_range.c:271
+#: ../src/libs/tagging.c:3118 ../src/views/darkroom.c:2319
+#: ../src/views/darkroom.c:2369 ../src/views/darkroom.c:2598
 msgid "toggle"
 msgstr "Перемикач"
 
@@ -10219,7 +10223,7 @@ msgid "export shortcuts"
 msgstr "Експортувати прискорювачі"
 
 #: ../src/gui/accelerators.c:2515 ../src/gui/accelerators.c:2595
-#: ../src/gui/hist_dialog.c:227 ../src/gui/presets.c:564
+#: ../src/gui/hist_dialog.c:227 ../src/gui/presets.c:565
 msgid "_ok"
 msgstr "_OK"
 
@@ -11023,7 +11027,7 @@ msgid "global guide overlay settings"
 msgstr "Глобальні налаштування накладання напрямних"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2601
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2598
 msgid "guide lines"
 msgstr "Напрямні"
 
@@ -11043,7 +11047,7 @@ msgstr "Горизонтально"
 msgid "vertically"
 msgstr "Вертикально"
 
-#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6323 ../src/iop/clipping.c:2138
+#: ../src/gui/guides.c:715 ../src/iop/ashift.c:6327 ../src/iop/clipping.c:2138
 #: ../src/iop/colorbalance.c:1891
 msgid "both"
 msgstr "Обидва"
@@ -11274,12 +11278,12 @@ msgid "darktable needs to be restarted for settings to take effect"
 msgstr "darktable потрібно перезапустити, щоб налаштування набрали чинності"
 
 #. exif
-#: ../src/gui/preferences.c:820 ../src/gui/presets.c:644
+#: ../src/gui/preferences.c:820 ../src/gui/presets.c:645
 #: ../src/libs/metadata_view.c:139
 msgid "model"
 msgstr "Модель"
 
-#: ../src/gui/preferences.c:824 ../src/gui/presets.c:652
+#: ../src/gui/preferences.c:824 ../src/gui/presets.c:653
 #: ../src/libs/metadata_view.c:140
 msgid "maker"
 msgstr "Виробник"
@@ -11317,7 +11321,7 @@ msgstr "Виберіть пресет(и) для імпорту"
 
 #: ../src/gui/preferences.c:1043 ../src/libs/collect.c:408
 #: ../src/libs/copy_history.c:115 ../src/libs/geotagging.c:929
-#: ../src/libs/import.c:1506 ../src/libs/import.c:1610 ../src/libs/styles.c:527
+#: ../src/libs/import.c:1508 ../src/libs/import.c:1612 ../src/libs/styles.c:527
 msgid "_open"
 msgstr "_Відкрити"
 
@@ -11331,34 +11335,34 @@ msgstr "Файли пресетів darktable"
 msgid "all files"
 msgstr "Всі файли"
 
-#: ../src/gui/presets.c:59
+#: ../src/gui/presets.c:60
 msgid "non-raw"
 msgstr "Не-raw"
 
-#: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:336
+#: ../src/gui/presets.c:60 ../src/libs/metadata_view.c:336
 msgid "raw"
 msgstr "raw"
 
-#: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:337
+#: ../src/gui/presets.c:60 ../src/libs/metadata_view.c:337
 msgid "HDR"
 msgstr "HDR"
 
-#: ../src/gui/presets.c:59 ../src/iop/monochrome.c:77 ../src/libs/image.c:608
+#: ../src/gui/presets.c:60 ../src/iop/monochrome.c:77 ../src/libs/image.c:608
 #: ../src/libs/metadata_view.c:343
 msgid "monochrome"
 msgstr "Монохром"
 
-#: ../src/gui/presets.c:151
+#: ../src/gui/presets.c:152
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
 msgstr "Пресет `%s' захищено від запису, не вдається видалити!"
 
-#: ../src/gui/presets.c:157 ../src/gui/presets.c:461 ../src/libs/lib.c:238
+#: ../src/gui/presets.c:158 ../src/gui/presets.c:462 ../src/libs/lib.c:238
 #: ../src/libs/modulegroups.c:3706
 msgid "delete preset?"
 msgstr "Видалити пресет?"
 
-#: ../src/gui/presets.c:158 ../src/gui/presets.c:462 ../src/libs/lib.c:239
+#: ../src/gui/presets.c:159 ../src/gui/presets.c:463 ../src/libs/lib.c:239
 #: ../src/libs/modulegroups.c:3707
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
@@ -11370,25 +11374,25 @@ msgstr "Ви дійсно хочете видалити пресет `%s'?"
 #. clang-format on
 #. create a shortcut for the new entry
 #. then show edit dialog
-#: ../src/gui/presets.c:200 ../src/gui/presets.c:1035 ../src/gui/presets.c:1038
-#: ../src/gui/presets.c:1041 ../src/libs/lib.c:188 ../src/libs/lib.c:205
+#: ../src/gui/presets.c:201 ../src/gui/presets.c:1036 ../src/gui/presets.c:1039
+#: ../src/gui/presets.c:1042 ../src/libs/lib.c:188 ../src/libs/lib.c:205
 #: ../src/libs/lib.c:213 ../src/libs/lib.c:216
 msgid "new preset"
 msgstr "Новий пресет"
 
-#: ../src/gui/presets.c:207
+#: ../src/gui/presets.c:208
 msgid "please give preset a name"
 msgstr "Будь ласка, дайте пресету ім'я"
 
-#: ../src/gui/presets.c:212
+#: ../src/gui/presets.c:213
 msgid "unnamed preset"
 msgstr "Пресет без імені"
 
-#: ../src/gui/presets.c:241
+#: ../src/gui/presets.c:242
 msgid "overwrite preset?"
 msgstr "Перезаписати пресет?"
 
-#: ../src/gui/presets.c:242
+#: ../src/gui/presets.c:243
 #, c-format
 msgid ""
 "preset `%s' already exists.\n"
@@ -11397,38 +11401,38 @@ msgstr ""
 "Пресет `%s' вже існує.\n"
 "Хочете перезаписати?"
 
-#: ../src/gui/presets.c:420 ../src/imageio/storage/disk.c:198
+#: ../src/gui/presets.c:421 ../src/imageio/storage/disk.c:198
 #: ../src/imageio/storage/gallery.c:150 ../src/imageio/storage/latex.c:146
 msgid "_select as output destination"
 msgstr "_Вибрати як каталог для експорту"
 
-#: ../src/gui/presets.c:429
+#: ../src/gui/presets.c:430
 #, c-format
 msgid "preset %s was successfully exported"
 msgstr "Пресет %s було успішно експортовано"
 
-#: ../src/gui/presets.c:557
+#: ../src/gui/presets.c:558
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "Редагувати `%s' для модуля `%s'"
 
-#: ../src/gui/presets.c:561
+#: ../src/gui/presets.c:562
 msgid "_export..."
 msgstr "_Експортувати..."
 
-#: ../src/gui/presets.c:585
+#: ../src/gui/presets.c:586
 msgid "name of the preset"
 msgstr "Ім'я пресету"
 
-#: ../src/gui/presets.c:594
+#: ../src/gui/presets.c:595
 msgid "description or further information"
 msgstr "Опис або подальша інформація"
 
-#: ../src/gui/presets.c:598
+#: ../src/gui/presets.c:599
 msgid "reset all module parameters to their default values"
 msgstr "Скинути всі параметри модуля до значень за замовчуванням"
 
-#: ../src/gui/presets.c:601
+#: ../src/gui/presets.c:602
 msgid ""
 "the parameters will be reset to their default values, which may be "
 "automatically set based on image metadata"
@@ -11436,15 +11440,15 @@ msgstr ""
 "Параметри буде скинуто до значень за замовчуванням, які можуть бути "
 "автоматично встановлені на основі метаданих зображення"
 
-#: ../src/gui/presets.c:607
+#: ../src/gui/presets.c:608
 msgid "auto apply this preset to matching images"
 msgstr "Автоматично застосувати цей пресет до відповідних зображень"
 
-#: ../src/gui/presets.c:611
+#: ../src/gui/presets.c:612
 msgid "only show this preset for matching images"
 msgstr "Показувати цей пресет лише для відповідних зображень"
 
-#: ../src/gui/presets.c:613
+#: ../src/gui/presets.c:614
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -11452,29 +11456,29 @@ msgstr ""
 "Будьте дуже обережні з цією опцією. Це може бути останній раз, коли ви "
 "бачите ваш пресет."
 
-#: ../src/gui/presets.c:643
+#: ../src/gui/presets.c:644
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr ""
 "Шаблон, який відповідає моделі камери (символ % відповідає будь-якому тексту)"
 
-#: ../src/gui/presets.c:651
+#: ../src/gui/presets.c:652
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr ""
 "Шаблон, який відповідає виробнику (символ % відповідає будь-якому тексту)"
 
-#: ../src/gui/presets.c:659
+#: ../src/gui/presets.c:660
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr ""
 "Шаблон, який відповідає об'єктиву (символ % відповідає будь-якому тексту)"
 
-#: ../src/gui/presets.c:669
+#: ../src/gui/presets.c:670
 msgid "minimum ISO value"
 msgstr "Мінімальне значення ISO"
 
-#: ../src/gui/presets.c:675
+#: ../src/gui/presets.c:676
 msgid ""
 "maximum ISO value\n"
 "if left blank, it is equivalent to no upper limit"
@@ -11482,71 +11486,71 @@ msgstr ""
 "Максимальне значення ISO\n"
 "Порожнє поле означає, що верхня межа відсутня"
 
-#: ../src/gui/presets.c:688
+#: ../src/gui/presets.c:689
 msgid "minimum exposure time"
 msgstr "Мінімальний час експозиції"
 
-#: ../src/gui/presets.c:689
+#: ../src/gui/presets.c:690
 msgid "maximum exposure time"
 msgstr "Максимальний час експозиції"
 
-#: ../src/gui/presets.c:705
+#: ../src/gui/presets.c:706
 msgid "minimum aperture value"
 msgstr "Мінімальне значення діафрагми"
 
-#: ../src/gui/presets.c:706
+#: ../src/gui/presets.c:707
 msgid "maximum aperture value"
 msgstr "Максимальне значення діафрагми"
 
-#: ../src/gui/presets.c:724
+#: ../src/gui/presets.c:725
 msgid "minimum focal length"
 msgstr "Мінімальна фокусна відстань"
 
-#: ../src/gui/presets.c:725
+#: ../src/gui/presets.c:726
 msgid "maximum focal length"
 msgstr "Максимальна фокусна відстань"
 
 #. raw/hdr/ldr/mono/color
-#: ../src/gui/presets.c:733
+#: ../src/gui/presets.c:734
 msgid "format"
 msgstr "Формат"
 
-#: ../src/gui/presets.c:738
+#: ../src/gui/presets.c:739
 msgid "select image types you want this preset to be available for"
 msgstr ""
 "Виберіть типи зображень, для яких ви хочете зробити доступним цей пресет"
 
-#: ../src/gui/presets.c:751 ../src/libs/filtering.c:1201
+#: ../src/gui/presets.c:752 ../src/libs/filtering.c:1201
 msgid "and"
 msgstr "і"
 
-#: ../src/gui/presets.c:795 ../src/gui/presets.c:847
+#: ../src/gui/presets.c:796 ../src/gui/presets.c:848
 msgid "∞"
 msgstr "∞"
 
-#: ../src/gui/presets.c:979
+#: ../src/gui/presets.c:980
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
 msgstr "Пресет `%s' захищено від запису! Не вдається його змінити!"
 
-#: ../src/gui/presets.c:1003 ../src/libs/lib.c:158
+#: ../src/gui/presets.c:1004 ../src/libs/lib.c:158
 msgid "update preset?"
 msgstr "Оновити пресет?"
 
-#: ../src/gui/presets.c:1004 ../src/libs/lib.c:159
+#: ../src/gui/presets.c:1005 ../src/libs/lib.c:159
 #, c-format
 msgid "do you really want to update the preset `%s'?"
 msgstr "Ви дійсно хочете оновити пресет `%s'?"
 
-#: ../src/gui/presets.c:1133
+#: ../src/gui/presets.c:1134
 msgid "(first)"
 msgstr "(перший)"
 
-#: ../src/gui/presets.c:1133
+#: ../src/gui/presets.c:1134
 msgid "(last)"
 msgstr "(останній)"
 
-#: ../src/gui/presets.c:1165
+#: ../src/gui/presets.c:1166
 #, c-format
 msgid ""
 "preset %s\n"
@@ -11555,16 +11559,16 @@ msgstr ""
 "Пресет %s\n"
 "%s"
 
-#: ../src/gui/presets.c:1166
+#: ../src/gui/presets.c:1167
 msgid "no presets"
 msgstr "Немає пресетів"
 
-#: ../src/gui/presets.c:1199 ../src/iop/basecurve.c:575
+#: ../src/gui/presets.c:1202 ../src/iop/basecurve.c:575
 #: ../src/iop/basecurve.c:579 ../src/iop/basecurve.c:582
 msgid "display-referred default"
 msgstr "Замовчування процесу \"на основі відображення\""
 
-#: ../src/gui/presets.c:1201 ../src/iop/channelmixerrgb.c:395
+#: ../src/gui/presets.c:1204 ../src/iop/channelmixerrgb.c:395
 #: ../src/iop/channelmixerrgb.c:399 ../src/iop/channelmixerrgb.c:402
 #: ../src/iop/exposure.c:319 ../src/iop/exposure.c:323
 #: ../src/iop/exposure.c:326 ../src/iop/filmicrgb.c:3311
@@ -11573,40 +11577,40 @@ msgstr "Замовчування процесу \"на основі відобр
 msgid "scene-referred default"
 msgstr "Замовчування процесу \"на основі сцен\""
 
-#: ../src/gui/presets.c:1393 ../src/libs/modulegroups.c:3786
+#: ../src/gui/presets.c:1408 ../src/libs/modulegroups.c:3786
 #: ../src/libs/modulegroups.c:3795
 msgid "manage module layouts"
 msgstr "Керування розкладкою модулів"
 
-#: ../src/gui/presets.c:1402
+#: ../src/gui/presets.c:1417
 msgid "manage quick presets"
 msgstr "Керування швидкими пресетами"
 
-#: ../src/gui/presets.c:1586
+#: ../src/gui/presets.c:1601
 msgid "manage quick presets list..."
 msgstr "Список швидких пресетів..."
 
-#: ../src/gui/presets.c:1727
+#: ../src/gui/presets.c:1742
 msgid "(default)"
 msgstr "(за замовчуванням)"
 
-#: ../src/gui/presets.c:1754
+#: ../src/gui/presets.c:1769
 msgid "disabled: wrong module version"
 msgstr "Вимкнено: неправильна версія модуля"
 
-#: ../src/gui/presets.c:1776 ../src/libs/lib.c:551
+#: ../src/gui/presets.c:1791 ../src/libs/lib.c:551
 msgid "edit this preset.."
 msgstr "Редагувати цей пресет..."
 
-#: ../src/gui/presets.c:1781 ../src/libs/lib.c:555
+#: ../src/gui/presets.c:1796 ../src/libs/lib.c:555
 msgid "delete this preset"
 msgstr "Видалити цей пресет"
 
-#: ../src/gui/presets.c:1788 ../src/libs/lib.c:563
+#: ../src/gui/presets.c:1803 ../src/libs/lib.c:563
 msgid "store new preset.."
 msgstr "Зберегти новий пресет..."
 
-#: ../src/gui/presets.c:1796 ../src/libs/lib.c:576
+#: ../src/gui/presets.c:1811 ../src/libs/lib.c:576
 msgid "update preset"
 msgstr "Оновити пресет"
 
@@ -11777,7 +11781,7 @@ msgstr "Тип стиснення для зображення"
 msgid "quality"
 msgstr "Якість"
 
-#: ../src/imageio/format/avif.c:862
+#: ../src/imageio/format/avif.c:861
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -11882,19 +11886,19 @@ msgstr "DWAB"
 msgid "JPEG 2000 (12-bit)"
 msgstr "JPEG 2000 (12 біт)"
 
-#: ../src/imageio/format/j2k.c:680
+#: ../src/imageio/format/j2k.c:679
 msgid "DCP mode"
 msgstr "режим DCP"
 
-#: ../src/imageio/format/j2k.c:683
+#: ../src/imageio/format/j2k.c:682
 msgid "Cinema2K, 24FPS"
 msgstr "Cinema2K, 24FPS"
 
-#: ../src/imageio/format/j2k.c:684
+#: ../src/imageio/format/j2k.c:683
 msgid "Cinema2K, 48FPS"
 msgstr "Cinema2K, 48FPS"
 
-#: ../src/imageio/format/j2k.c:685
+#: ../src/imageio/format/j2k.c:684
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24FPS"
 
@@ -12195,7 +12199,7 @@ msgstr "З втратами"
 msgid "lossless"
 msgstr "Без втрат"
 
-#: ../src/imageio/format/webp.c:428
+#: ../src/imageio/format/webp.c:427
 msgid ""
 "for lossy, 0 gives the smallest size and 100 the best quality.\n"
 "for lossless, 0 is the fastest but gives larger files compared\n"
@@ -12207,11 +12211,11 @@ msgstr ""
 "порівнянні\n"
 "з найповільнішим значенням 100."
 
-#: ../src/imageio/format/webp.c:438
+#: ../src/imageio/format/webp.c:437
 msgid "image hint"
 msgstr "Підказка типу зображення"
 
-#: ../src/imageio/format/webp.c:439
+#: ../src/imageio/format/webp.c:438
 msgid ""
 "image characteristics hint for the underlying encoder.\n"
 "picture: digital picture, like portrait, inner shot\n"
@@ -12223,15 +12227,15 @@ msgstr ""
 "photo: фотографія просто неба, з природним освітленням\n"
 "graphic: зображення з дискретними тонами (графіки тощо)"
 
-#: ../src/imageio/format/webp.c:444
+#: ../src/imageio/format/webp.c:443
 msgid "picture"
 msgstr "picture"
 
-#: ../src/imageio/format/webp.c:444
+#: ../src/imageio/format/webp.c:443
 msgid "photo"
 msgstr "photo"
 
-#: ../src/imageio/format/webp.c:444
+#: ../src/imageio/format/webp.c:443
 msgid "graphic"
 msgstr "graphic"
 
@@ -12529,7 +12533,7 @@ msgstr "коригуюче чи креативне"
 #: ../src/iop/denoiseprofile.c:782 ../src/iop/diffuse.c:146
 #: ../src/iop/diffuse.c:148 ../src/iop/exposure.c:132 ../src/iop/exposure.c:134
 #: ../src/iop/flip.c:111 ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
-#: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:259 ../src/iop/lens.cc:261
+#: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:263 ../src/iop/lens.cc:265
 #: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/primaries.c:81
 #: ../src/iop/primaries.c:83 ../src/iop/retouch.c:210 ../src/iop/retouch.c:212
 #: ../src/iop/sigmoid.c:102 ../src/iop/splittoning.c:106
@@ -12572,37 +12576,37 @@ msgstr ""
 msgid "automatic correction failed, please correct manually"
 msgstr "Не вдалося виконати автоматичне виправлення. виправте вручну"
 
-#: ../src/iop/ashift.c:5132
+#: ../src/iop/ashift.c:5136
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "Максимальна кількість ліній, яку можна зберегти в параметрах: %d"
 
-#: ../src/iop/ashift.c:5237
+#: ../src/iop/ashift.c:5241
 #, c-format
 msgid "rotation adjusted by %3.1f° to %3.1f°"
 msgstr "Обертання скориговано на %3.1f° до %3.1f°"
 
-#: ../src/iop/ashift.c:5888 ../src/iop/ashift.c:5890 ../src/iop/ashift.c:5995
-#: ../src/iop/ashift.c:5997
+#: ../src/iop/ashift.c:5892 ../src/iop/ashift.c:5894 ../src/iop/ashift.c:5999
+#: ../src/iop/ashift.c:6001
 #, c-format
 msgid "lens shift (%s)"
 msgstr "Зміщення об'єктива (%s)"
 
-#: ../src/iop/ashift.c:6163
+#: ../src/iop/ashift.c:6167
 msgid "manual perspective"
 msgstr "Ручна підгонка"
 
-#: ../src/iop/ashift.c:6208
+#: ../src/iop/ashift.c:6212
 msgctxt "section"
 msgid "perspective"
 msgstr "Перспектива"
 
-#: ../src/iop/ashift.c:6215 ../src/iop/ashift.c:6324 ../src/iop/ashift.c:6326
-#: ../src/iop/ashift.c:6328
+#: ../src/iop/ashift.c:6219 ../src/iop/ashift.c:6328 ../src/iop/ashift.c:6330
+#: ../src/iop/ashift.c:6332
 msgid "structure"
 msgstr "Структура"
 
-#: ../src/iop/ashift.c:6250
+#: ../src/iop/ashift.c:6254
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -12612,19 +12616,19 @@ msgstr ""
 "Клікніть правою кнопкою миші та перетягніть, щоб визначити горизонтальну або "
 "вертикальну лінію шляхом малювання на зображенні"
 
-#: ../src/iop/ashift.c:6253 ../src/iop/ashift.c:6255
+#: ../src/iop/ashift.c:6257 ../src/iop/ashift.c:6259
 msgid "apply lens shift correction in one direction"
 msgstr "Застосувати корекцію зміщення об'єктива в одному напрямку"
 
-#: ../src/iop/ashift.c:6257
+#: ../src/iop/ashift.c:6261
 msgid "shear the image along one diagonal"
 msgstr "Корекція зображення вздовж однієї з діагоналей"
 
-#: ../src/iop/ashift.c:6258 ../src/iop/clipping.c:2159
+#: ../src/iop/ashift.c:6262 ../src/iop/clipping.c:2159
 msgid "automatically crop to avoid black edges"
 msgstr "Автоматично обрізати, щоб уникнути чорних країв"
 
-#: ../src/iop/ashift.c:6259
+#: ../src/iop/ashift.c:6263
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -12632,13 +12636,13 @@ msgstr ""
 "Модель об'єктива для корекції перспективи: загальна або залежна від фокусної "
 "відстані"
 
-#: ../src/iop/ashift.c:6262
+#: ../src/iop/ashift.c:6266
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "Фокусна відстань об'єктива, значення за замовчуванням установлюється з даних "
 "EXIF, якщо є"
 
-#: ../src/iop/ashift.c:6265
+#: ../src/iop/ashift.c:6269
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
@@ -12646,7 +12650,7 @@ msgstr ""
 "Кроп-фактор сенсора камери, значення за замовчуванням установлюється з даних "
 "EXIF, якщо є. Часто потрібне ручне встановлення"
 
-#: ../src/iop/ashift.c:6269
+#: ../src/iop/ashift.c:6273
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -12654,13 +12658,13 @@ msgstr ""
 "Рівень залежності корекції від об'єктива, встановлюйте на максимум для "
 "повної залежності від об'єктива, встановлюйте на нуль для загального випадку"
 
-#: ../src/iop/ashift.c:6273
+#: ../src/iop/ashift.c:6277
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Регулювати співвідношення сторін зображення за допомогою горизонтального та "
 "вертикального масштабування"
 
-#: ../src/iop/ashift.c:6275
+#: ../src/iop/ashift.c:6279
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12670,7 +12674,7 @@ msgstr ""
 "Ctrl+клік - лише обертання\n"
 "Shift+клік - лише зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6279
+#: ../src/iop/ashift.c:6283
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -12680,7 +12684,7 @@ msgstr ""
 "Ctrl+клік - лише обертання\n"
 "Shift+клік - лише зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6283
+#: ../src/iop/ashift.c:6287
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions, "
 "fitting rotation, lens shift in both directions, and shear\n"
@@ -12694,7 +12698,7 @@ msgstr ""
 "Shift+клік - лише зміщення об'єктива\n"
 "Ctrl+Shift+клік - лише обертання та зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6290
+#: ../src/iop/ashift.c:6294
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -12706,43 +12710,43 @@ msgstr ""
 "Shift+клік для додаткового покращення деталей\n"
 "Ctrl+Shift+клік для поєднання обох методів"
 
-#: ../src/iop/ashift.c:6295
+#: ../src/iop/ashift.c:6299
 msgid "manually define perspective rectangle"
 msgstr "Вручну визначити прямокутник перспективи"
 
-#: ../src/iop/ashift.c:6296
+#: ../src/iop/ashift.c:6300
 msgid "manually draw structure lines"
 msgstr "Вручну намалювати лінії структури"
 
-#: ../src/iop/ashift.c:6325
+#: ../src/iop/ashift.c:6329
 msgid "rectangle"
 msgstr "Прямокутник"
 
-#: ../src/iop/ashift.c:6327
+#: ../src/iop/ashift.c:6331
 msgid "lines"
 msgstr "Лінії"
 
-#: ../src/iop/ashift.c:6361 ../src/iop/clipping.c:3385
+#: ../src/iop/ashift.c:6365 ../src/iop/clipping.c:3385
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] визначити/повернути горизонт"
 
-#: ../src/iop/ashift.c:6364
+#: ../src/iop/ashift.c:6368
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s на сегменті] вибрати сегмент"
 
-#: ../src/iop/ashift.c:6368
+#: ../src/iop/ashift.c:6372
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s на сегменті] скасувати вибір сегмента"
 
-#: ../src/iop/ashift.c:6372
+#: ../src/iop/ashift.c:6376
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] вибрати усі сегменти із зони"
 
-#: ../src/iop/ashift.c:6376
+#: ../src/iop/ashift.c:6380
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] скасувати вибір усіх сегментів із зони"
@@ -13036,7 +13040,7 @@ msgstr ""
 #: ../src/iop/defringe.c:82 ../src/iop/denoiseprofile.c:779
 #: ../src/iop/flip.c:110 ../src/iop/hazeremoval.c:112
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:75
-#: ../src/iop/invert.c:136 ../src/iop/lens.cc:258 ../src/iop/nlmeans.c:89
+#: ../src/iop/invert.c:136 ../src/iop/lens.cc:262 ../src/iop/nlmeans.c:89
 #: ../src/iop/profile_gamma.c:102 ../src/iop/rawdenoise.c:144
 #: ../src/iop/retouch.c:209 ../src/iop/sharpen.c:96 ../src/iop/spots.c:69
 #: ../src/iop/temperature.c:225
@@ -14052,12 +14056,12 @@ msgstr "Автовизначення балансу білого заверше�
 msgid "channelmixerrgb works only on RGB input"
 msgstr "channelmixerrgb (калібрування кольору) працює лише з RGB входом"
 
-#: ../src/iop/channelmixerrgb.c:3675
+#: ../src/iop/channelmixerrgb.c:3681
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT: %.0f K (денне світло)"
 
-#: ../src/iop/channelmixerrgb.c:3678
+#: ../src/iop/channelmixerrgb.c:3684
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -14067,12 +14071,12 @@ msgstr ""
 "Цей освітлювач можна точно змоделювати за спектром денного світла,\n"
 "тому його температура є релевантною та значущою з D-освітлювачем."
 
-#: ../src/iop/channelmixerrgb.c:3684
+#: ../src/iop/channelmixerrgb.c:3690
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT: %.0f K (чорне тіло)"
 
-#: ../src/iop/channelmixerrgb.c:3687
+#: ../src/iop/channelmixerrgb.c:3693
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -14083,12 +14087,12 @@ msgstr ""
 "тому його температура є релевантною та значущою з планківським "
 "випромінювачем."
 
-#: ../src/iop/channelmixerrgb.c:3693
+#: ../src/iop/channelmixerrgb.c:3699
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT: %.0f K (недійсна)"
 
-#: ../src/iop/channelmixerrgb.c:3696
+#: ../src/iop/channelmixerrgb.c:3702
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -14102,12 +14106,12 @@ msgstr ""
 "тому його температура не є релевантною та значущою і вам потрібно "
 "використовувати спеціальний освітлювач."
 
-#: ../src/iop/channelmixerrgb.c:3705
+#: ../src/iop/channelmixerrgb.c:3711
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT: невизначена"
 
-#: ../src/iop/channelmixerrgb.c:3708
+#: ../src/iop/channelmixerrgb.c:3714
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -14116,16 +14120,16 @@ msgstr ""
 "Неможливо обчислити взагалі, тому вам потрібно використовувати спеціальний "
 "освітлювач."
 
-#: ../src/iop/channelmixerrgb.c:4021
+#: ../src/iop/channelmixerrgb.c:4027
 msgid "white balance successfully extracted from raw image"
 msgstr "Баланс білого успішно отримано з raw зображення"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:4027
+#: ../src/iop/channelmixerrgb.c:4033
 msgid "auto-detection of white balance started…"
 msgstr "Розпочато автоматичне виявлення балансу білого..."
 
-#: ../src/iop/channelmixerrgb.c:4132
+#: ../src/iop/channelmixerrgb.c:4138
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
@@ -14134,7 +14138,7 @@ msgstr ""
 "нормалізацію буде вимкнено."
 
 #. Write report in GUI
-#: ../src/iop/channelmixerrgb.c:4180
+#: ../src/iop/channelmixerrgb.c:4186
 #, c-format
 msgid ""
 "L: \t%.1f %%\n"
@@ -14145,7 +14149,7 @@ msgstr ""
 "h: \t%.1f °\n"
 "c: \t%.1f"
 
-#: ../src/iop/channelmixerrgb.c:4448 ../src/iop/clipping.c:2129
+#: ../src/iop/channelmixerrgb.c:4454 ../src/iop/clipping.c:2129
 #: ../src/iop/colorbalancergb.c:1960 ../src/iop/filmicrgb.c:4483
 #: ../src/iop/negadoctor.c:848 ../src/iop/toneequal.c:3342
 #: ../src/libs/image.c:460 ../src/views/lighttable.c:1258
@@ -14153,21 +14157,21 @@ msgid "page"
 msgstr "Сторінка"
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:4451
+#: ../src/iop/channelmixerrgb.c:4457
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:4452
+#: ../src/iop/channelmixerrgb.c:4458
 msgid "chromatic adaptation transform"
 msgstr ""
 "Перетворення хроматичної адаптації\n"
 "\"chromatic adaptation transform\" - CAT"
 
-#: ../src/iop/channelmixerrgb.c:4454
+#: ../src/iop/channelmixerrgb.c:4460
 msgid "adaptation"
 msgstr "Адаптація"
 
-#: ../src/iop/channelmixerrgb.c:4457
+#: ../src/iop/channelmixerrgb.c:4463
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -14187,7 +14191,7 @@ msgstr ""
 "• XYZ - це просте масштабування в просторі XYZ. не рекомендується.\n"
 "• Немає - вимикає будь-яку адаптацію і використовує робочий RGB конвеєра."
 
-#: ../src/iop/channelmixerrgb.c:4477
+#: ../src/iop/channelmixerrgb.c:4483
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -14195,27 +14199,27 @@ msgstr ""
 "Це колір джерела світла до хроматичної адаптації.\n"
 "Цей колір адаптацією перетвориться на чисто білий."
 
-#: ../src/iop/channelmixerrgb.c:4485
+#: ../src/iop/channelmixerrgb.c:4491
 msgid "picker"
 msgstr "Піпетка"
 
-#: ../src/iop/channelmixerrgb.c:4487 ../src/iop/temperature.c:2058
+#: ../src/iop/channelmixerrgb.c:4493 ../src/iop/temperature.c:2058
 msgid "set white balance to detected from area"
 msgstr "Встановити баланс білого на виявлений з області зображення"
 
-#: ../src/iop/channelmixerrgb.c:4491 ../src/iop/negadoctor.c:972
+#: ../src/iop/channelmixerrgb.c:4497 ../src/iop/negadoctor.c:972
 msgid "illuminant"
 msgstr "Освітлювач"
 
-#: ../src/iop/channelmixerrgb.c:4497 ../src/iop/temperature.c:2119
+#: ../src/iop/channelmixerrgb.c:4503 ../src/iop/temperature.c:2119
 msgid "temperature"
 msgstr "Температура"
 
-#: ../src/iop/channelmixerrgb.c:4528
+#: ../src/iop/channelmixerrgb.c:4534
 msgid "spot color mapping"
 msgstr "Відображення кольору області зображення"
 
-#: ../src/iop/channelmixerrgb.c:4534
+#: ../src/iop/channelmixerrgb.c:4540
 msgid ""
 "define a target chromaticity (hue and chroma) for a particular region of the "
 "image (the control sample), which you then match against the same target "
@@ -14229,17 +14233,17 @@ msgstr ""
 "важливою частиною вашого об’єкта, так і нерухомою та рівномірно освітленою "
 "поверхнею в серії зображень."
 
-#: ../src/iop/channelmixerrgb.c:4541 ../src/iop/channelmixerrgb.c:4556
-#: ../src/iop/channelmixerrgb.c:4610 ../src/iop/channelmixerrgb.c:4619
-#: ../src/iop/channelmixerrgb.c:4627
+#: ../src/iop/channelmixerrgb.c:4547 ../src/iop/channelmixerrgb.c:4562
+#: ../src/iop/channelmixerrgb.c:4616 ../src/iop/channelmixerrgb.c:4625
+#: ../src/iop/channelmixerrgb.c:4633
 msgid "mapping"
 msgstr "Відображення"
 
-#: ../src/iop/channelmixerrgb.c:4541 ../src/iop/exposure.c:1206
+#: ../src/iop/channelmixerrgb.c:4547 ../src/iop/exposure.c:1206
 msgid "spot mode"
 msgstr "Режим області зображення"
 
-#: ../src/iop/channelmixerrgb.c:4542
+#: ../src/iop/channelmixerrgb.c:4548
 msgid ""
 "\"correction\" automatically adjust the illuminant\n"
 "such that the input color is mapped to the target.\n"
@@ -14251,19 +14255,19 @@ msgstr ""
 "\"Вимірювання\" просто показує, як вхідний колір відображається CAT\n"
 "і може використовуватися для вибірки цілі."
 
-#: ../src/iop/channelmixerrgb.c:4547 ../src/iop/exposure.c:1212
+#: ../src/iop/channelmixerrgb.c:4553 ../src/iop/exposure.c:1212
 msgid "correction"
 msgstr "Корекція"
 
-#: ../src/iop/channelmixerrgb.c:4548 ../src/iop/exposure.c:1213
+#: ../src/iop/channelmixerrgb.c:4554 ../src/iop/exposure.c:1213
 msgid "measure"
 msgstr "Вимірювання"
 
-#: ../src/iop/channelmixerrgb.c:4554
+#: ../src/iop/channelmixerrgb.c:4560
 msgid "take channel mixing into account"
 msgstr "Врахувати змішування каналів"
 
-#: ../src/iop/channelmixerrgb.c:4561
+#: ../src/iop/channelmixerrgb.c:4567
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
@@ -14271,16 +14275,16 @@ msgstr ""
 "Обчислити ціль, беручи до уваги змішування каналів.\n"
 "Якщо вимкнено, розглядається лише CAT."
 
-#: ../src/iop/channelmixerrgb.c:4573 ../src/iop/exposure.c:1220
+#: ../src/iop/channelmixerrgb.c:4579 ../src/iop/exposure.c:1220
 msgctxt "section"
 msgid "input"
 msgstr "На вході"
 
-#: ../src/iop/channelmixerrgb.c:4580 ../src/iop/exposure.c:1228
+#: ../src/iop/channelmixerrgb.c:4586 ../src/iop/exposure.c:1228
 msgid "the input color that should be mapped to the target"
 msgstr "Вхідний колір, який має бути відображений на цільовий"
 
-#: ../src/iop/channelmixerrgb.c:4586
+#: ../src/iop/channelmixerrgb.c:4592
 msgid ""
 "L: \tN/A\n"
 "h: \tN/A\n"
@@ -14290,114 +14294,114 @@ msgstr ""
 "h: \tN/A\n"
 "c: \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4589 ../src/iop/exposure.c:1236
+#: ../src/iop/channelmixerrgb.c:4595 ../src/iop/exposure.c:1236
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "Ці координати LCh обчислюються з координат CIE Lab 1976"
 
-#: ../src/iop/channelmixerrgb.c:4597 ../src/iop/exposure.c:1243
+#: ../src/iop/channelmixerrgb.c:4603 ../src/iop/exposure.c:1243
 msgctxt "section"
 msgid "target"
 msgstr "Ціль"
 
-#: ../src/iop/channelmixerrgb.c:4604
+#: ../src/iop/channelmixerrgb.c:4610
 msgid "the desired target color after mapping"
 msgstr "Бажаний цільовий колір після відображення"
 
-#: ../src/iop/channelmixerrgb.c:4643
+#: ../src/iop/channelmixerrgb.c:4649
 msgid "input R"
 msgstr "Вхідний R"
 
-#: ../src/iop/channelmixerrgb.c:4648
+#: ../src/iop/channelmixerrgb.c:4654
 msgid "input G"
 msgstr "Вхідний G"
 
-#: ../src/iop/channelmixerrgb.c:4653
+#: ../src/iop/channelmixerrgb.c:4659
 msgid "input B"
 msgstr "Вхідний B"
 
-#: ../src/iop/channelmixerrgb.c:4663
+#: ../src/iop/channelmixerrgb.c:4669
 msgid "output R"
 msgstr "Вихідний R"
 
-#: ../src/iop/channelmixerrgb.c:4664
+#: ../src/iop/channelmixerrgb.c:4670
 msgid "output G"
 msgstr "Вихідний G"
 
-#: ../src/iop/channelmixerrgb.c:4665
+#: ../src/iop/channelmixerrgb.c:4671
 msgid "output B"
 msgstr "Вихідний B"
 
-#: ../src/iop/channelmixerrgb.c:4667
+#: ../src/iop/channelmixerrgb.c:4673
 msgid "colorfulness"
 msgstr "Барвистість"
 
-#: ../src/iop/channelmixerrgb.c:4667
+#: ../src/iop/channelmixerrgb.c:4673
 msgid "output colorfulness"
 msgstr "Вихідна барвистість"
 
-#: ../src/iop/channelmixerrgb.c:4671
+#: ../src/iop/channelmixerrgb.c:4677
 msgid "output brightness"
 msgstr "Вихідна яскравість"
 
-#: ../src/iop/channelmixerrgb.c:4674
+#: ../src/iop/channelmixerrgb.c:4680
 msgid "output gray"
 msgstr "Вихідний сірий"
 
-#: ../src/iop/channelmixerrgb.c:4689
+#: ../src/iop/channelmixerrgb.c:4695
 msgid "calibrate with a color checker"
 msgstr "Калібрувати за допомогою мішені"
 
-#: ../src/iop/channelmixerrgb.c:4694
+#: ../src/iop/channelmixerrgb.c:4700
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "Використати кольорову мішень для автовстановлення CAT і каналів"
 
-#: ../src/iop/channelmixerrgb.c:4701 ../src/iop/channelmixerrgb.c:4714
-#: ../src/iop/channelmixerrgb.c:4732 ../src/iop/channelmixerrgb.c:4750
-#: ../src/iop/channelmixerrgb.c:4759 ../src/iop/channelmixerrgb.c:4767
+#: ../src/iop/channelmixerrgb.c:4707 ../src/iop/channelmixerrgb.c:4720
+#: ../src/iop/channelmixerrgb.c:4738 ../src/iop/channelmixerrgb.c:4756
+#: ../src/iop/channelmixerrgb.c:4765 ../src/iop/channelmixerrgb.c:4773
 msgid "calibrate"
 msgstr "Калібрування"
 
-#: ../src/iop/channelmixerrgb.c:4701
+#: ../src/iop/channelmixerrgb.c:4707
 msgid "chart"
 msgstr "Мішень"
 
-#: ../src/iop/channelmixerrgb.c:4702
+#: ../src/iop/channelmixerrgb.c:4708
 msgid "choose the vendor and the type of your chart"
 msgstr "Виберіть виробника та тип вашої мішені"
 
-#: ../src/iop/channelmixerrgb.c:4704
+#: ../src/iop/channelmixerrgb.c:4710
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pre-2014"
 
-#: ../src/iop/channelmixerrgb.c:4705
+#: ../src/iop/channelmixerrgb.c:4711
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post-2014"
 
-#: ../src/iop/channelmixerrgb.c:4706
+#: ../src/iop/channelmixerrgb.c:4712
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 pre-2018"
 
-#: ../src/iop/channelmixerrgb.c:4707
+#: ../src/iop/channelmixerrgb.c:4713
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 post-2018"
 
-#: ../src/iop/channelmixerrgb.c:4708
+#: ../src/iop/channelmixerrgb.c:4714
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 pre-2018"
 
-#: ../src/iop/channelmixerrgb.c:4709
+#: ../src/iop/channelmixerrgb.c:4715
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 post-2018"
 
-#: ../src/iop/channelmixerrgb.c:4710
+#: ../src/iop/channelmixerrgb.c:4716
 msgid "Datacolor SpyderCheckr Photo"
 msgstr "Datacolor SpyderCheckr Photo"
 
-#: ../src/iop/channelmixerrgb.c:4714
+#: ../src/iop/channelmixerrgb.c:4720
 msgid "optimize for"
 msgstr "Ціль оптимізації"
 
-#: ../src/iop/channelmixerrgb.c:4715
+#: ../src/iop/channelmixerrgb.c:4721
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -14412,35 +14416,35 @@ msgstr ""
 "Немає - компроміс між ними\n"
 "Інші варіанти задають особливу поведінку для захисту деяких відтінків"
 
-#: ../src/iop/channelmixerrgb.c:4722
+#: ../src/iop/channelmixerrgb.c:4728
 msgid "neutral colors"
 msgstr "Нейтральні кольори"
 
-#: ../src/iop/channelmixerrgb.c:4724
+#: ../src/iop/channelmixerrgb.c:4730
 msgid "skin and soil colors"
 msgstr "Кольори шкіри та грунту"
 
-#: ../src/iop/channelmixerrgb.c:4725
+#: ../src/iop/channelmixerrgb.c:4731
 msgid "foliage colors"
 msgstr "Кольори листя"
 
-#: ../src/iop/channelmixerrgb.c:4726
+#: ../src/iop/channelmixerrgb.c:4732
 msgid "sky and water colors"
 msgstr "Кольори неба та води"
 
-#: ../src/iop/channelmixerrgb.c:4727
+#: ../src/iop/channelmixerrgb.c:4733
 msgid "average delta E"
 msgstr "Середня ΔE*"
 
-#: ../src/iop/channelmixerrgb.c:4728
+#: ../src/iop/channelmixerrgb.c:4734
 msgid "maximum delta E"
 msgstr "Максимальна ΔE*"
 
-#: ../src/iop/channelmixerrgb.c:4732
+#: ../src/iop/channelmixerrgb.c:4738
 msgid "patch scale"
 msgstr "Масштаб зразків"
 
-#: ../src/iop/channelmixerrgb.c:4735
+#: ../src/iop/channelmixerrgb.c:4741
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -14450,31 +14454,31 @@ msgstr ""
 "Корисно, коли корекція перспективи є неакуратною або\n"
 "рамка зразків відкидає тіні по краях зразків."
 
-#: ../src/iop/channelmixerrgb.c:4745
+#: ../src/iop/channelmixerrgb.c:4751
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "Для ΔE* використовується формула CIE 2000"
 
-#: ../src/iop/channelmixerrgb.c:4750
+#: ../src/iop/channelmixerrgb.c:4756
 msgid "accept"
 msgstr "Прийняти"
 
-#: ../src/iop/channelmixerrgb.c:4756
+#: ../src/iop/channelmixerrgb.c:4762
 msgid "accept the computed profile and set it in the module"
 msgstr "Прийняти обчислений профіль і встановити його в модулі"
 
-#: ../src/iop/channelmixerrgb.c:4759
+#: ../src/iop/channelmixerrgb.c:4765
 msgid "recompute"
 msgstr "Переобчислення"
 
-#: ../src/iop/channelmixerrgb.c:4763
+#: ../src/iop/channelmixerrgb.c:4769
 msgid "recompute the profile"
 msgstr "Перерахувати профіль"
 
-#: ../src/iop/channelmixerrgb.c:4767
+#: ../src/iop/channelmixerrgb.c:4773
 msgid "validate"
 msgstr "Валідація"
 
-#: ../src/iop/channelmixerrgb.c:4771
+#: ../src/iop/channelmixerrgb.c:4777
 msgid "check the output delta E"
 msgstr "Перевірити вихідну ΔE*"
 
@@ -14727,12 +14731,12 @@ msgstr ""
 "<b>Випрямлення</b>: перетягування правою кнопкою, <b>Фіксація змін</b>: "
 "подвійний клік"
 
-#: ../src/iop/clipping.c:3382 ../src/iop/crop.c:1799
+#: ../src/iop/clipping.c:3382 ../src/iop/crop.c:1800
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s на краях] обрізати"
 
-#: ../src/iop/clipping.c:3384 ../src/iop/crop.c:1801
+#: ../src/iop/clipping.c:3384 ../src/iop/crop.c:1802
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s на краях] обрізати зі збереженням співвідношення сторін"
@@ -15670,26 +15674,26 @@ msgstr "Метод візуалізації"
 
 #: ../src/iop/colorout.c:887 ../src/libs/export.c:1358
 #: ../src/libs/print_settings.c:2475 ../src/libs/print_settings.c:2824
-#: ../src/views/darkroom.c:2471 ../src/views/lighttable.c:1176
+#: ../src/views/darkroom.c:2468 ../src/views/lighttable.c:1176
 msgid "perceptual"
 msgstr "Перцепційний"
 
 #: ../src/iop/colorout.c:888 ../src/libs/export.c:1359
 #: ../src/libs/print_settings.c:2476 ../src/libs/print_settings.c:2825
-#: ../src/views/darkroom.c:2472 ../src/views/lighttable.c:1177
+#: ../src/views/darkroom.c:2469 ../src/views/lighttable.c:1177
 msgid "relative colorimetric"
 msgstr "Відносний колориметричний"
 
 #: ../src/iop/colorout.c:889 ../src/libs/export.c:1360
 #: ../src/libs/print_settings.c:2477 ../src/libs/print_settings.c:2826
-#: ../src/views/darkroom.c:2473 ../src/views/lighttable.c:1178
+#: ../src/views/darkroom.c:2470 ../src/views/lighttable.c:1178
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Насиченість"
 
 #: ../src/iop/colorout.c:890 ../src/libs/export.c:1361
 #: ../src/libs/print_settings.c:2478 ../src/libs/print_settings.c:2827
-#: ../src/views/darkroom.c:2474 ../src/views/lighttable.c:1179
+#: ../src/views/darkroom.c:2471 ../src/views/lighttable.c:1179
 msgid "absolute colorimetric"
 msgstr "Абсолютний колориметричний"
 
@@ -15751,7 +15755,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Тон відтінку, якому слід надавати перевагу над іншими відтінками"
 
 #: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1318
-#: ../src/iop/highlights.c:1216
+#: ../src/iop/highlights.c:1222
 msgid "not applicable"
 msgstr "Не застосовується"
 
@@ -15899,13 +15903,13 @@ msgstr "reframe|distortion"
 msgid "change the framing"
 msgstr "Змінити кадрування"
 
-#: ../src/iop/crop.c:1670
+#: ../src/iop/crop.c:1671
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>Зміна розміру</b>: перетягування, <b>Зберегти співвідношення сторін</b>: "
 "Shift+перетягування"
 
-#: ../src/iop/crop.c:1679
+#: ../src/iop/crop.c:1680
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -16945,7 +16949,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1624 ../src/libs/export.c:1339
 #: ../src/libs/print_settings.c:2473 ../src/libs/print_settings.c:2820
-#: ../src/views/darkroom.c:2477 ../src/views/lighttable.c:1182
+#: ../src/views/darkroom.c:2474 ../src/views/lighttable.c:1182
 msgid "intent"
 msgstr "Метод"
 
@@ -17600,11 +17604,11 @@ msgstr "Градієнтний фільтр"
 msgid "simulate an optical graduated neutral density filter"
 msgstr "Імітувати оптичний градуйований фільтр нейтральної щільності"
 
-#: ../src/iop/graduatednd.c:1107
+#: ../src/iop/graduatednd.c:1110
 msgid "the density in EV for the filter"
 msgstr "Щільність фільтра в EV"
 
-#: ../src/iop/graduatednd.c:1112
+#: ../src/iop/graduatednd.c:1115
 #, no-c-format
 msgid ""
 "hardness of graduation:\n"
@@ -17613,34 +17617,34 @@ msgstr ""
 "Жорсткість градієнтного переходу:\n"
 "0% = м'який, 100% = жорсткий"
 
-#: ../src/iop/graduatednd.c:1116
+#: ../src/iop/graduatednd.c:1119
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "Обертання фільтра, між -180° і 180°"
 
-#: ../src/iop/graduatednd.c:1129
+#: ../src/iop/graduatednd.c:1132
 msgid "select the hue tone of filter"
 msgstr "Виберіть відтінок фільтра"
 
-#: ../src/iop/graduatednd.c:1135
+#: ../src/iop/graduatednd.c:1138
 msgid "select the saturation of filter"
 msgstr "Виберіть насиченість фільтра"
 
-#: ../src/iop/graduatednd.c:1146
+#: ../src/iop/graduatednd.c:1149
 #, c-format
 msgid "[%s on nodes] change line rotation"
 msgstr "[%s на вузлах] змінити кут повороту лінії"
 
-#: ../src/iop/graduatednd.c:1147
+#: ../src/iop/graduatednd.c:1150
 #, c-format
 msgid "[%s on line] move line"
 msgstr "[%s на лінії] перемістити лінію"
 
-#: ../src/iop/graduatednd.c:1149
+#: ../src/iop/graduatednd.c:1152
 #, c-format
 msgid "[%s on line] change density"
 msgstr "[%s на лінії] змінити щільність"
 
-#: ../src/iop/graduatednd.c:1151
+#: ../src/iop/graduatednd.c:1154
 #, c-format
 msgid "[%s on line] change hardness"
 msgstr "[%s на лінії] змінити жорсткість"
@@ -17723,41 +17727,38 @@ msgstr "метод відновлення переекспонованих ді�
 #: ../src/iop/highlights.c:1154
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
-"highlights\n"
-"the mask icon shows the clipped areas.\n"
+"highlights.\n"
 "you might use this for tuning 'laplacian', 'inpaint opposed' or "
 "'segmentation' modes,\n"
 "especially if camera white point is incorrect."
 msgstr ""
 "Ручне регулювання порогу обрізання для боротьби з маджентою в пересвітлених "
 "ділянках.\n"
-"Піктограма маски показує обрізані області.\n"
-"Ви можете використовувати це для регулювання в режимах 'лапласіанів', "
-"'домальовування протилежного'\n"
-"або 'сегментації', особливо якщо точка білого камери неправильна."
+"Ви можете використовувати це для регулювання в режимах 'Лапласіанів', "
+"'Домальовування протилежного'\n"
+"або 'Сегментації', особливо якщо точка білого камери неправильна."
 
-#: ../src/iop/highlights.c:1165
+#: ../src/iop/highlights.c:1168
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
-"the mask button shows the exact positions of resulting segment borders."
+"this often leads to improved color reconstruction for tiny segments before "
+"dark background."
 msgstr ""
 "Об’єднати тісно пов’язані пересвітлені сегменти за допомогою морфологічних "
 "операцій.\n"
-"Кнопка маски показує точне положення меж отриманого сегмента."
+"Це часто призводить до покращеної реконструкції кольорів для крихітних "
+"сегментів перед темним тлом."
 
-#: ../src/iop/highlights.c:1173
+#: ../src/iop/highlights.c:1178
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
-"opposed means inpainting.\n"
-"the mask button shows segments that are considered to have a good candidate."
+"opposed means inpainting."
 msgstr ""
-"Виберіть домальовування після аналізу сегментації.\n"
 "Збільште для надання переваги знайденим у аналізі кандидатам, зменште для "
-"домальовування протилежного.\n"
-"Кнопка маски показує сегменти, які вважаються хорошими кандидатами."
+"домальовування протилежного."
 
-#: ../src/iop/highlights.c:1184
+#: ../src/iop/highlights.c:1190
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -17778,7 +17779,7 @@ msgstr ""
 "електропередач), щоб зберегти пересвітлене реконструйованим і уникнути "
 "градієнтів."
 
-#: ../src/iop/highlights.c:1190
+#: ../src/iop/highlights.c:1196
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -17787,7 +17788,7 @@ msgstr ""
 "Встановити силу реконструкції в областях, де всі фотопікселі пересвітлені.\n"
 "Кнопки маски показують ефект, який додається до вже реконструйованих даних."
 
-#: ../src/iop/highlights.c:1200
+#: ../src/iop/highlights.c:1206
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17795,7 +17796,7 @@ msgstr ""
 "Додати шум, щоб візуально змішати реконструйовані області\n"
 "з рештою шумного зображення. корисно при високих ISO."
 
-#: ../src/iop/highlights.c:1204
+#: ../src/iop/highlights.c:1210
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17803,7 +17804,7 @@ msgstr ""
 "Збільште, якщо маджентові ділянки не повністю виправлені\n"
 "кожна нова ітерація призводить до зниження продуктивності."
 
-#: ../src/iop/highlights.c:1209
+#: ../src/iop/highlights.c:1215
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17811,7 +17812,7 @@ msgstr ""
 "Збільште, якщо маджентові ділянки не повністю виправлені\n"
 "Це може створити негладкі межі між дійсними та обрізаними областями."
 
-#: ../src/iop/highlights.c:1213
+#: ../src/iop/highlights.c:1219
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17819,7 +17820,7 @@ msgstr ""
 "Збільште, щоб виправити більші переекспоновані ділянки.\n"
 "великі значення призводять до значного зниження продуктивності"
 
-#: ../src/iop/highlights.c:1217
+#: ../src/iop/highlights.c:1223
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "Цей модуль працює лише з немонохромними RAW та sRAW"
 
@@ -17924,23 +17925,23 @@ msgstr "Вибрати колір матеріалу фотоплівки із �
 msgid "select color of film material"
 msgstr "Вибір кольору матеріалу фотоплівки"
 
-#: ../src/iop/lens.cc:247
+#: ../src/iop/lens.cc:251
 msgid "lens correction"
 msgstr "Корекція оптики"
 
-#: ../src/iop/lens.cc:252
+#: ../src/iop/lens.cc:256
 msgid "vignette|chromatic aberrations|distortion"
 msgstr "vignette|chromatic aberrations|distortion"
 
-#: ../src/iop/lens.cc:257
+#: ../src/iop/lens.cc:261
 msgid "correct lenses optical flaws"
 msgstr "Виправити оптичні недоліки лінз"
 
-#: ../src/iop/lens.cc:260
+#: ../src/iop/lens.cc:264
 msgid "geometric and reconstruction, RGB"
 msgstr "геометрична і відновлювальна, RGB"
 
-#: ../src/iop/lens.cc:3560
+#: ../src/iop/lens.cc:3708
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -17953,7 +17954,7 @@ msgstr ""
 "Байонет:\t\t%s\n"
 "Кроп-фактор:\t%.1f"
 
-#: ../src/iop/lens.cc:3813
+#: ../src/iop/lens.cc:3961
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -17972,31 +17973,31 @@ msgstr ""
 "Тип:\t\t%s\n"
 "Байонети:\t%s"
 
-#: ../src/iop/lens.cc:3859
+#: ../src/iop/lens.cc:4007
 msgid "focal length (mm)"
 msgstr "Фокусна відстань (мм)"
 
-#: ../src/iop/lens.cc:3885
+#: ../src/iop/lens.cc:4033
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:3886
+#: ../src/iop/lens.cc:4034
 msgid "f-number (aperture)"
 msgstr "f-номер (діафрагма)"
 
-#: ../src/iop/lens.cc:3902
+#: ../src/iop/lens.cc:4050
 msgid "d"
 msgstr "відстань"
 
-#: ../src/iop/lens.cc:3903
+#: ../src/iop/lens.cc:4051
 msgid "distance to subject"
 msgstr "Відстань до об'єкта"
 
-#: ../src/iop/lens.cc:4064
+#: ../src/iop/lens.cc:4212
 msgid "camera/lens not found"
 msgstr "Камеру/об'єктив не знайдено"
 
-#: ../src/iop/lens.cc:4065
+#: ../src/iop/lens.cc:4213
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your Lensfun database is up-to-date\n"
@@ -18006,45 +18007,45 @@ msgstr ""
 "Ви також можете перевірити, чи ваша база даних Lensfun оновлена\n"
 "за допомогою lensfun-update-data"
 
-#: ../src/iop/lens.cc:4204
+#: ../src/iop/lens.cc:4358
 msgid "camera model"
 msgstr "Модель камери"
 
-#: ../src/iop/lens.cc:4209
+#: ../src/iop/lens.cc:4363
 msgid "find camera"
 msgstr "Знайти камеру"
 
-#: ../src/iop/lens.cc:4224
+#: ../src/iop/lens.cc:4378
 msgid "find lens"
 msgstr "Знайти об'єктив"
 
 #. scale
-#: ../src/iop/lens.cc:4258 ../src/iop/vignette.c:994
+#: ../src/iop/lens.cc:4412 ../src/iop/vignette.c:997
 #: ../src/iop/watermark.c:1372 ../src/libs/export.c:1264
 msgid "scale"
 msgstr "Масштаб"
 
-#: ../src/iop/lens.cc:4263
+#: ../src/iop/lens.cc:4417
 msgid "auto scale"
 msgstr "Автоматичне масштабування"
 
-#: ../src/iop/lens.cc:4267
+#: ../src/iop/lens.cc:4423
 msgid "correct distortions or apply them"
 msgstr "Коригувати деформації об'єктива чи застосувати їх"
 
-#: ../src/iop/lens.cc:4274
+#: ../src/iop/lens.cc:4430
 msgid "transversal chromatic aberration red"
 msgstr "Поперечні ХА - червоний"
 
-#: ../src/iop/lens.cc:4278
+#: ../src/iop/lens.cc:4434
 msgid "transversal chromatic aberration blue"
 msgstr "Поперечні ХА - синій"
 
-#: ../src/iop/lens.cc:4284
+#: ../src/iop/lens.cc:4444
 msgid "use latest algorithm"
 msgstr "Використовувати найновіший алгоритм"
 
-#: ../src/iop/lens.cc:4286
+#: ../src/iop/lens.cc:4446
 msgid ""
 "you're using an old version of the algorithm.\n"
 "once enabled, you won't be able to\n"
@@ -18054,58 +18055,81 @@ msgstr ""
 "Після ввімкнення ви не зможете\n"
 "повернутися до старого алгоритму."
 
-#: ../src/iop/lens.cc:4296
+#: ../src/iop/lens.cc:4456
 msgid "fine-tuning"
 msgstr "Тонке регулювання"
 
 #. DT_IOP_SECTION_FOR_PARAMS doesn't work in C++ so create section module manually
-#: ../src/iop/lens.cc:4301
+#: ../src/iop/lens.cc:4461
 msgid "fine-tune"
 msgstr "Тонке регулювання"
 
-#: ../src/iop/lens.cc:4307
+#: ../src/iop/lens.cc:4467
 msgid "tune the warp and chromatic aberration correction"
 msgstr "Підкоригувати викривлення та корекцію хроматичної аберації"
 
-#: ../src/iop/lens.cc:4311
+#: ../src/iop/lens.cc:4471
 msgid "tune the vignette correction"
 msgstr "Підкоригувати виправлення віньєтування"
 
-#: ../src/iop/lens.cc:4315
+#: ../src/iop/lens.cc:4475
 msgid "tune the TCA red correction"
 msgstr "Підкоригувати виправлення червоної ХА"
 
-#: ../src/iop/lens.cc:4319
+#: ../src/iop/lens.cc:4479
 msgid "tune the TCA blue correction"
 msgstr "Підкоригувати виправлення синьої ХА"
 
-#: ../src/iop/lens.cc:4326
+#: ../src/iop/lens.cc:4486
 msgid "image scaling"
 msgstr "Масштабування зображення"
 
-#: ../src/iop/lens.cc:4338
+#: ../src/iop/lens.cc:4496
+msgid ""
+"select a correction mode either based on\n"
+" a) data and algorithms provided by the lensfun project\n"
+" b) embedded metadata provided by the camera or software vendor\n"
+msgstr ""
+"Виберіть режим корекції на основі\n"
+"  а) даних та алгоритмів, наданих проектом Lensfun\n"
+"  b) вбудованих метаданих, наданих вендором камери чи програмного "
+"забезпечення\n"
+
+#: ../src/iop/lens.cc:4503
 msgid "which corrections to apply"
 msgstr "Які коригування застосовувати"
 
-#: ../src/iop/lens.cc:4348
+#: ../src/iop/lens.cc:4509
 msgid "corrections done: "
 msgstr "Скориговано: "
 
-#: ../src/iop/lens.cc:4350
+#: ../src/iop/lens.cc:4511
 msgid "which corrections have actually been done"
 msgstr "Які коригування було застосовано"
 
-#: ../src/iop/lens.cc:4364
+#: ../src/iop/lens.cc:4530
 msgid "manual vignette correction"
 msgstr "Ручна корекція віньєтування"
 
-#: ../src/iop/lens.cc:4368
+#: ../src/iop/lens.cc:4534
 msgid "additional manually controlled optical vignetting correction"
 msgstr "Додаткова корекція оптичного віньєтування з ручним керуванням"
 
-#: ../src/iop/lens.cc:4371
+#: ../src/iop/lens.cc:4537
 msgid "vignette"
 msgstr "Віньєтування"
+
+#: ../src/iop/lens.cc:4541
+msgid "amount of the applied optical vignetting correction"
+msgstr "Обсяг застосованої корекції оптичного віньєтування"
+
+#: ../src/iop/lens.cc:4553
+msgid "radius of uncorrected centre"
+msgstr "Радіус невиправленого центру"
+
+#: ../src/iop/lens.cc:4559
+msgid "steepness of the correction effect outside of radius"
+msgstr "Крутизна ефекту корекції за межами радіуса"
 
 #: ../src/iop/levels.c:112
 msgid "this module is deprecated. please use the RGB levels module instead."
@@ -18175,11 +18199,11 @@ msgstr "Пластика"
 msgid "distort parts of the image"
 msgstr "Деформації частин зображення"
 
-#: ../src/iop/liquify.c:2931
+#: ../src/iop/liquify.c:2932
 msgid "click to edit nodes"
 msgstr "Натисніть, щоб редагувати вузли"
 
-#: ../src/iop/liquify.c:3634
+#: ../src/iop/liquify.c:3635
 msgid ""
 "<b>add point</b>: click and drag\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -18189,7 +18213,7 @@ msgstr ""
 "<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
-#: ../src/iop/liquify.c:3637
+#: ../src/iop/liquify.c:3638
 msgid ""
 "<b>add line</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -18199,7 +18223,7 @@ msgstr ""
 "<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
-#: ../src/iop/liquify.c:3640
+#: ../src/iop/liquify.c:3641
 msgid ""
 "<b>add curve</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -18209,7 +18233,7 @@ msgstr ""
 "<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
-#: ../src/iop/liquify.c:3691
+#: ../src/iop/liquify.c:3692
 msgid ""
 "use a tool to add warps\n"
 "<b>remove a warp</b>: right-click"
@@ -18217,16 +18241,16 @@ msgstr ""
 "Використовуйте інструмент для додавання деформацій\n"
 "<b>Видалити деформацію</b>: права кнопка миші"
 
-#: ../src/iop/liquify.c:3694
+#: ../src/iop/liquify.c:3695
 msgid "warps|nodes count:"
 msgstr "Деформацій | Вузлів: "
 
-#: ../src/iop/liquify.c:3703
+#: ../src/iop/liquify.c:3704
 msgid "edit, add and delete nodes"
 msgstr "Редагувати, додавати і видаляти вузли"
 
-#: ../src/iop/liquify.c:3708 ../src/iop/liquify.c:3714
-#: ../src/iop/liquify.c:3720 ../src/iop/retouch.c:2465
+#: ../src/iop/liquify.c:3709 ../src/iop/liquify.c:3715
+#: ../src/iop/liquify.c:3721 ../src/iop/retouch.c:2465
 #: ../src/iop/retouch.c:2471 ../src/iop/retouch.c:2476
 #: ../src/iop/retouch.c:2481 ../src/iop/spots.c:885 ../src/iop/spots.c:890
 #: ../src/iop/spots.c:895 ../src/libs/masks.c:1836 ../src/libs/masks.c:1845
@@ -18234,31 +18258,31 @@ msgstr "Редагувати, додавати і видаляти вузли"
 msgid "shapes"
 msgstr "Фігури"
 
-#: ../src/iop/liquify.c:3709
+#: ../src/iop/liquify.c:3710
 msgid "draw curves"
 msgstr "Додати криві"
 
-#: ../src/iop/liquify.c:3709
+#: ../src/iop/liquify.c:3710
 msgid "draw multiple curves"
 msgstr "Додати кілька кривих"
 
-#: ../src/iop/liquify.c:3715
+#: ../src/iop/liquify.c:3716
 msgid "draw lines"
 msgstr "Додати лінії"
 
-#: ../src/iop/liquify.c:3715
+#: ../src/iop/liquify.c:3716
 msgid "draw multiple lines"
 msgstr "Додати кілька ліній"
 
-#: ../src/iop/liquify.c:3721
+#: ../src/iop/liquify.c:3722
 msgid "draw points"
 msgstr "Додати точку"
 
-#: ../src/iop/liquify.c:3721
+#: ../src/iop/liquify.c:3722
 msgid "draw multiple points"
 msgstr "Додати кілька точок"
 
-#: ../src/iop/liquify.c:3727
+#: ../src/iop/liquify.c:3728
 msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
@@ -18266,7 +18290,7 @@ msgstr ""
 "<b>Додати вузол</b>: Ctrl+клік - <b>Видалити контур</b>: правий клік\n"
 "<b>Перемкнути лінія/крива</b>: Ctrl+Alt+клік"
 
-#: ../src/iop/liquify.c:3730
+#: ../src/iop/liquify.c:3731
 msgid ""
 "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
@@ -18277,23 +18301,23 @@ msgstr ""
 "<b>Автозгладжування, виступи, згладжування, симетричність</b>: Ctrl+клік - "
 "<b>Прибрати</b>: клік правою кнопкою"
 
-#: ../src/iop/liquify.c:3734 ../src/iop/liquify.c:3736
+#: ../src/iop/liquify.c:3735 ../src/iop/liquify.c:3737
 msgid "<b>shape of path</b>: drag"
 msgstr "<b>Зміна форми контуру</b>: перетягування"
 
-#: ../src/iop/liquify.c:3738
+#: ../src/iop/liquify.c:3739
 msgid "<b>radius</b>: drag"
 msgstr "<b>Радіус</b>: перетягування"
 
-#: ../src/iop/liquify.c:3740
+#: ../src/iop/liquify.c:3741
 msgid "<b>hardness (center)</b>: drag"
 msgstr "<b>Регулювання жорсткості (центр)</b>: перетягування"
 
-#: ../src/iop/liquify.c:3742
+#: ../src/iop/liquify.c:3743
 msgid "<b>hardness (feather)</b>: drag"
 msgstr "<b>Регулювання жорсткості (розтушовка)</b>: перетягування"
 
-#: ../src/iop/liquify.c:3744
+#: ../src/iop/liquify.c:3745
 msgid ""
 "<b>strength</b>: drag\n"
 "<b>linear, grow, and shrink</b>: ctrl+click"
@@ -18873,9 +18897,9 @@ msgstr "Наскільки згладжувати кольори"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:71 ../src/views/darkroom.c:2372
-#: ../src/views/darkroom.c:2390 ../src/views/darkroom.c:2397
-#: ../src/views/darkroom.c:2407 ../src/views/darkroom.c:2424
+#: ../src/iop/overexposed.c:71 ../src/views/darkroom.c:2369
+#: ../src/views/darkroom.c:2387 ../src/views/darkroom.c:2394
+#: ../src/views/darkroom.c:2404 ../src/views/darkroom.c:2421
 msgid "overexposed"
 msgstr "Переекспоноване"
 
@@ -19015,9 +19039,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2322
-#: ../src/views/darkroom.c:2340 ../src/views/darkroom.c:2346
-#: ../src/views/darkroom.c:2359
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2319
+#: ../src/views/darkroom.c:2337 ../src/views/darkroom.c:2343
+#: ../src/views/darkroom.c:2356
 msgid "raw overexposed"
 msgstr "Переекспоноване в raw"
 
@@ -20000,7 +20024,7 @@ msgid "tonecurve for b channel"
 msgstr "Тонова крива для каналу b"
 
 #: ../src/iop/tonecurve.c:1165 ../src/iop/watermark.c:1353
-#: ../src/libs/colorpicker.c:677
+#: ../src/libs/colorpicker.c:675
 msgid "pick color"
 msgstr "Вибрати колір"
 
@@ -20391,44 +20415,44 @@ msgstr "Кількість резонансу"
 msgid "simulate a lens fall-off close to edges"
 msgstr "Імітувати затемнення об'єктива ближче до країв"
 
-#: ../src/iop/vignette.c:966
+#: ../src/iop/vignette.c:969
 msgid "lomo"
 msgstr "Ломо"
 
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1003
 msgctxt "section"
 msgid "position / form"
 msgstr "Позиція / форма"
 
-#: ../src/iop/vignette.c:1007
+#: ../src/iop/vignette.c:1010
 msgid "dithering"
 msgstr "Дизеринг"
 
-#: ../src/iop/vignette.c:1018
+#: ../src/iop/vignette.c:1021
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "Радіальний масштаб початку затемнення віньєтки"
 
-#: ../src/iop/vignette.c:1019
+#: ../src/iop/vignette.c:1022
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "Радіальний масштаб кінця затемнення віньєтки"
 
-#: ../src/iop/vignette.c:1020
+#: ../src/iop/vignette.c:1023
 msgid "strength of effect on brightness"
 msgstr "Сила впливу на яскравість"
 
-#: ../src/iop/vignette.c:1021
+#: ../src/iop/vignette.c:1024
 msgid "strength of effect on saturation"
 msgstr "Сила впливу на насиченість"
 
-#: ../src/iop/vignette.c:1022
+#: ../src/iop/vignette.c:1025
 msgid "horizontal offset of center of the effect"
 msgstr "Горизонтальне зміщення центра ефекту"
 
-#: ../src/iop/vignette.c:1023
+#: ../src/iop/vignette.c:1026
 msgid "vertical offset of center of the effect"
 msgstr "Вертикальне зміщення центра ефекту"
 
-#: ../src/iop/vignette.c:1024
+#: ../src/iop/vignette.c:1027
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -20440,33 +20464,33 @@ msgstr ""
 "1 створює коло або еліпс\n"
 "2 створює ромб"
 
-#: ../src/iop/vignette.c:1026
+#: ../src/iop/vignette.c:1029
 msgid "enable to have the ratio automatically follow the image size"
 msgstr ""
 "Увімкніть, щоб співвідношення сторін автоматично відповідало розміру "
 "зображення"
 
-#: ../src/iop/vignette.c:1027
+#: ../src/iop/vignette.c:1030
 msgid "width-to-height ratio"
 msgstr "Співвідношення ширина-висота"
 
-#: ../src/iop/vignette.c:1028
+#: ../src/iop/vignette.c:1031
 msgid "add some level of random noise to prevent banding"
 msgstr "Додати деякий рівень випадкового шуму, щоб запобігти бандингу"
 
-#: ../src/iop/vignette.c:1035
+#: ../src/iop/vignette.c:1038
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s на вузлі] змінити розмір віньєтки/розтушовки"
 
-#: ../src/iop/vignette.c:1037
+#: ../src/iop/vignette.c:1040
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
 "[%s на вузлі] змінити розмір віньєтки/розтушовки зі збереженням "
 "співвідношення сторін"
 
-#: ../src/iop/vignette.c:1039
+#: ../src/iop/vignette.c:1042
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s на центрі] перемістити віньєтку"
@@ -20766,11 +20790,11 @@ msgstr "Видалити..."
 msgid "uncategorized"
 msgstr "Без категорії"
 
-#: ../src/libs/collect.c:2138
+#: ../src/libs/collect.c:2146
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "Використовуйте <, <=, >, >=, <>, =, [;] як оператори"
 
-#: ../src/libs/collect.c:2142
+#: ../src/libs/collect.c:2150
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
@@ -20780,7 +20804,7 @@ msgstr ""
 "рейтинг в зірках: 0-5\n"
 "відхилені зображення: -1"
 
-#: ../src/libs/collect.c:2149
+#: ../src/libs/collect.c:2157
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
@@ -20788,12 +20812,12 @@ msgstr ""
 "Використовуйте <, <=, >, >=, <>, =, [;] як оператори\n"
 "Вказуйте дати в форматі: YYYY:MM:DD hh:mm:ss.sss (лише рік є обов'язковим)"
 
-#: ../src/libs/collect.c:2156
+#: ../src/libs/collect.c:2164
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "Використовуйте `%' для вибору всього і `,' для розділення значень"
 
-#: ../src/libs/collect.c:2162
+#: ../src/libs/collect.c:2170
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -20806,7 +20830,7 @@ msgstr ""
 "Shift+клік - включити лише поточну ієрархію (без суфікса)\n"
 "Ctrl+клік - включити лише підієрархії (суфікс `|%')"
 
-#: ../src/libs/collect.c:2174
+#: ../src/libs/collect.c:2182
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -20819,7 +20843,7 @@ msgstr ""
 "Shift+клік - включити лише поточне місце (без суфікса)\n"
 "Ctrl+клік - включити лише вкладені місця (суфікс `|%')"
 
-#: ../src/libs/collect.c:2186
+#: ../src/libs/collect.c:2194
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -20832,52 +20856,52 @@ msgstr ""
 "Shift+клік - включити лише поточну папку (без суфікса)\n"
 "Ctrl+клік - включити лише підпапки (суфікс `|%')"
 
-#: ../src/libs/collect.c:2197
+#: ../src/libs/collect.c:2205
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "Використовуйте `%' для вибору всього"
 
-#: ../src/libs/collect.c:2263 ../src/libs/collect.c:2277
-#: ../src/libs/collect.c:2800
+#: ../src/libs/collect.c:2271 ../src/libs/collect.c:2285
+#: ../src/libs/collect.c:2808
 msgid "clear this rule"
 msgstr "Очистити це правило"
 
-#: ../src/libs/collect.c:2267
+#: ../src/libs/collect.c:2275
 msgid "clear this rule or add new rules"
 msgstr "Очистити це правило чи додати нові правила"
 
-#: ../src/libs/collect.c:2806
+#: ../src/libs/collect.c:2814
 msgid "narrow down search"
 msgstr "Фільтр типу 'І' (звузити пошук)"
 
-#: ../src/libs/collect.c:2811
+#: ../src/libs/collect.c:2819
 msgid "add more images"
 msgstr "Фільтр типу 'АБО' (додати до колекції)"
 
-#: ../src/libs/collect.c:2816
+#: ../src/libs/collect.c:2824
 msgid "exclude images"
 msgstr "Фільтр типу 'КРІМ' (виключити з колекції)"
 
-#: ../src/libs/collect.c:2823
+#: ../src/libs/collect.c:2831
 msgid "change to: and"
 msgstr "Змінити на 'І'"
 
-#: ../src/libs/collect.c:2828
+#: ../src/libs/collect.c:2836
 msgid "change to: or"
 msgstr "Змінити на 'АБО'"
 
-#: ../src/libs/collect.c:2833
+#: ../src/libs/collect.c:2841
 msgid "change to: except"
 msgstr "Змінити на 'КРІМ'"
 
 #. the different categories
-#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:857
+#: ../src/libs/collect.c:2867 ../src/libs/filtering.c:857
 #: ../src/libs/filtering.c:924 ../src/libs/filtering.c:1558
 #: ../src/libs/filtering.c:1891
 msgid "files"
 msgstr "Файли"
 
-#: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:312
+#: ../src/libs/collect.c:2872 ../src/libs/export_metadata.c:312
 #: ../src/libs/filtering.c:862 ../src/libs/filtering.c:929
 #: ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1895
 #: ../src/libs/image.c:464 ../src/libs/image.c:574 ../src/libs/image.c:582
@@ -20885,27 +20909,27 @@ msgstr "Файли"
 msgid "metadata"
 msgstr "Метадані"
 
-#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:883
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:883
 #: ../src/libs/filtering.c:950 ../src/libs/filtering.c:1893
 msgid "times"
 msgstr "Позначки часу"
 
-#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:891
+#: ../src/libs/collect.c:2899 ../src/libs/filtering.c:891
 #: ../src/libs/filtering.c:958 ../src/libs/filtering.c:1590
 msgid "capture details"
 msgstr "Деталі зйомки"
 
-#: ../src/libs/collect.c:2900 ../src/libs/filtering.c:900
+#: ../src/libs/collect.c:2908 ../src/libs/filtering.c:900
 #: ../src/libs/filtering.c:967 ../src/libs/filtering.c:1602
 #: ../src/libs/filtering.c:1897 ../src/libs/tools/darktable.c:61
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2913
+#: ../src/libs/collect.c:2921
 msgid "collections settings"
 msgstr "Налаштування колекцій зображень"
 
-#: ../src/libs/collect.c:2916 ../src/libs/export_metadata.c:288
+#: ../src/libs/collect.c:2924 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:467 ../src/libs/metadata_view.c:1205
 #: ../src/libs/recentcollect.c:228 ../src/libs/tagging.c:1652
 #: ../src/libs/tagging.c:1782 ../src/libs/tagging.c:2056
@@ -20913,30 +20937,30 @@ msgstr "Налаштування колекцій зображень"
 msgid "save"
 msgstr "Зберегти"
 
-#: ../src/libs/collect.c:2936 ../src/libs/export.c:1126
+#: ../src/libs/collect.c:2944 ../src/libs/export.c:1126
 #: ../src/libs/metadata.c:615 ../src/libs/metadata_view.c:1317
 #: ../src/libs/recentcollect.c:293 ../src/libs/tagging.c:3493
 msgid "preferences..."
 msgstr "Уподобання..."
 
-#: ../src/libs/collect.c:3041 ../src/libs/filtering.c:1432
+#: ../src/libs/collect.c:3049 ../src/libs/filtering.c:1432
 msgid "AND"
 msgstr "ТА"
 
-#: ../src/libs/collect.c:3046 ../src/libs/filtering.c:1437
+#: ../src/libs/collect.c:3054 ../src/libs/filtering.c:1437
 msgid "OR"
 msgstr "АБО"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3051 ../src/libs/filtering.c:1442
+#: ../src/libs/collect.c:3059 ../src/libs/filtering.c:1442
 msgid "BUT NOT"
 msgstr "АЛЕ НЕ"
 
-#: ../src/libs/collect.c:3223 ../src/libs/filtering.c:2165
+#: ../src/libs/collect.c:3231 ../src/libs/filtering.c:2165
 msgid "revert to a previous set of rules"
 msgstr "Повернутися до попереднього набору правил"
 
-#: ../src/libs/collect.c:3280
+#: ../src/libs/collect.c:3288
 msgid "jump back to previous collection"
 msgstr "Назад до попередньої колекції"
 
@@ -20960,7 +20984,7 @@ msgstr "Середнє"
 msgid "color picker"
 msgstr "Піпетка кольору"
 
-#: ../src/libs/colorpicker.c:515
+#: ../src/libs/colorpicker.c:513
 msgid ""
 "hover to highlight sample on canvas,\n"
 "click to lock sample,\n"
@@ -20970,23 +20994,23 @@ msgstr ""
 "Клік - фіксує колір зразка\n"
 "Правий клік - завантажує область зразка в активну піпетку кольору"
 
-#: ../src/libs/colorpicker.c:628 ../src/libs/colorpicker.c:695
+#: ../src/libs/colorpicker.c:626 ../src/libs/colorpicker.c:693
 msgid "click to (un)hide large color patch"
 msgstr "Натискання перемикає відображення великого зразка"
 
-#: ../src/libs/colorpicker.c:651
+#: ../src/libs/colorpicker.c:649
 msgid "statistic"
 msgstr "Статистика"
 
-#: ../src/libs/colorpicker.c:652
+#: ../src/libs/colorpicker.c:650
 msgid "select which statistic to show"
 msgstr "Виберіть, яку статистику показувати"
 
-#: ../src/libs/colorpicker.c:662
+#: ../src/libs/colorpicker.c:660
 msgid "select which color mode to use"
 msgstr "Виберіть, який колірний режим використовувати"
 
-#: ../src/libs/colorpicker.c:673
+#: ../src/libs/colorpicker.c:671
 msgid ""
 "turn on color picker\n"
 "ctrl+click or right-click to select an area"
@@ -20994,21 +21018,21 @@ msgstr ""
 "Увімкнути піпетку кольору\n"
 "Ctrl+клік або клік правою кнопкою - вибрати область"
 
-#: ../src/libs/colorpicker.c:724
+#: ../src/libs/colorpicker.c:722
 msgid "add sample"
 msgstr "Додати зразок"
 
 #. Adding the live samples section
-#: ../src/libs/colorpicker.c:729
+#: ../src/libs/colorpicker.c:727
 msgctxt "section"
 msgid "live samples"
 msgstr "Живі зразки"
 
-#: ../src/libs/colorpicker.c:740
+#: ../src/libs/colorpicker.c:738
 msgid "display samples on image/vectorscope"
 msgstr "Показувати зразки на зображенні/вектороскопі"
 
-#: ../src/libs/colorpicker.c:751
+#: ../src/libs/colorpicker.c:749
 msgid "restrict scope to selection"
 msgstr "Гістограма лише для вибраних зразків"
 
@@ -21741,7 +21765,7 @@ msgstr ""
 #: ../src/libs/filters/grouping.c:167 ../src/libs/filters/history.c:153
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/filters/module_order.c:161
 #: ../src/libs/filters/rating.c:199 ../src/libs/filters/rating.c:210
-#: ../src/libs/filters/rating_range.c:325
+#: ../src/libs/filters/rating_range.c:328
 msgid "rules"
 msgstr "правила"
 
@@ -21813,8 +21837,8 @@ msgstr "Виберіть тип групування зображення для
 #. predefined selections
 #: ../src/libs/filters/grouping.c:169 ../src/libs/filters/history.c:38
 #: ../src/libs/filters/local_copy.c:38 ../src/libs/filters/module_order.c:155
-#: ../src/libs/filters/rating_range.c:56 ../src/libs/filters/rating_range.c:72
-#: ../src/libs/filters/rating_range.c:109 ../src/libs/filters/ratio.c:68
+#: ../src/libs/filters/rating_range.c:59 ../src/libs/filters/rating_range.c:75
+#: ../src/libs/filters/rating_range.c:112 ../src/libs/filters/ratio.c:68
 #: ../src/libs/filters/ratio.c:81
 msgid "all images"
 msgstr "Всі зображення"
@@ -21848,49 +21872,50 @@ msgstr "Рейтинги"
 msgid "unstarred only"
 msgstr "Тільки без зірок"
 
-#: ../src/libs/filters/rating.c:212 ../src/libs/filters/rating_range.c:60
-#: ../src/libs/filters/rating_range.c:75
+#: ../src/libs/filters/rating.c:212 ../src/libs/filters/rating_range.c:63
+#: ../src/libs/filters/rating_range.c:78
 msgid "rejected only"
 msgstr "Тільки відхилені"
 
-#: ../src/libs/filters/rating.c:212 ../src/libs/filters/rating_range.c:58
-#: ../src/libs/filters/rating_range.c:73 ../src/libs/filters/rating_range.c:138
+#: ../src/libs/filters/rating.c:212 ../src/libs/filters/rating_range.c:61
+#: ../src/libs/filters/rating_range.c:76 ../src/libs/filters/rating_range.c:141
 msgid "all except rejected"
 msgstr "Всі, крім відхилених"
 
-#: ../src/libs/filters/rating_range.c:61 ../src/libs/filters/rating_range.c:76
+#: ../src/libs/filters/rating_range.c:64 ../src/libs/filters/rating_range.c:79
 msgid "not rated only"
 msgstr "Тільки без рейтингу"
 
-#: ../src/libs/filters/rating_range.c:99 ../src/libs/filters/rating_range.c:126
-#: ../src/libs/filters/rating_range.c:131
-#: ../src/libs/filters/rating_range.c:275
+#: ../src/libs/filters/rating_range.c:102
+#: ../src/libs/filters/rating_range.c:129
+#: ../src/libs/filters/rating_range.c:134
+#: ../src/libs/filters/rating_range.c:278
 msgid "rejected"
 msgstr "Відхилені"
 
-#: ../src/libs/filters/rating_range.c:101
-#: ../src/libs/filters/rating_range.c:126
-#: ../src/libs/filters/rating_range.c:276
+#: ../src/libs/filters/rating_range.c:104
+#: ../src/libs/filters/rating_range.c:129
+#: ../src/libs/filters/rating_range.c:279
 msgid "not rated"
 msgstr "Без рейтингу"
 
-#: ../src/libs/filters/rating_range.c:117
+#: ../src/libs/filters/rating_range.c:120
 msgid "only"
 msgstr "тільки"
 
-#: ../src/libs/filters/rating_range.c:269
+#: ../src/libs/filters/rating_range.c:272
 msgid "better"
 msgstr "покращити"
 
-#: ../src/libs/filters/rating_range.c:270
+#: ../src/libs/filters/rating_range.c:273
 msgid "worse"
 msgstr "погіршити"
 
-#: ../src/libs/filters/rating_range.c:271
+#: ../src/libs/filters/rating_range.c:274
 msgid "cap"
 msgstr "обмежити"
 
-#: ../src/libs/filters/rating_range.c:286
+#: ../src/libs/filters/rating_range.c:289
 msgid "rating filter"
 msgstr "Фільтр по рейтингу"
 
@@ -21971,7 +21996,7 @@ msgid "open GPX file"
 msgstr "Відкрити файл GPX"
 
 #: ../src/libs/geotagging.c:927 ../src/libs/tools/lighttable.c:330
-#: ../src/libs/tools/lighttable.c:399 ../src/views/darkroom.c:2185
+#: ../src/libs/tools/lighttable.c:399 ../src/views/darkroom.c:2182
 msgid "preview"
 msgstr "Попередній перегляд"
 
@@ -22513,7 +22538,7 @@ msgstr "Зробити дублікат нередагованого зобра�
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "Пристрій \"%s\" приєднано до порту \"%s\"."
 
-#: ../src/libs/import.c:273 ../src/libs/import.c:334 ../src/libs/import.c:1692
+#: ../src/libs/import.c:273 ../src/libs/import.c:334 ../src/libs/import.c:1694
 msgid "copy & import from camera"
 msgstr "Копіювати й імпортувати з камери"
 
@@ -22543,7 +22568,7 @@ msgstr "Дистанційне керування та імпорт для ці�
 msgid "mount camera"
 msgstr "Змонтувати камеру"
 
-#: ../src/libs/import.c:747
+#: ../src/libs/import.c:749
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
@@ -22551,25 +22576,25 @@ msgstr[0] "вибрано %d зображення з %d"
 msgstr[1] "вибрано %d зображення з %d"
 msgstr[2] "вибрано %d зображень з %d"
 
-#: ../src/libs/import.c:1039
+#: ../src/libs/import.c:1041
 msgid "you can't delete the selected place"
 msgstr "Ви не можете видалити вибране місце"
 
-#: ../src/libs/import.c:1153
+#: ../src/libs/import.c:1155
 msgid "choose the root of the folder tree below"
 msgstr "Виберіть корінь дерева папок нижче"
 
-#: ../src/libs/import.c:1156
+#: ../src/libs/import.c:1158
 msgid "places"
 msgstr "Місця"
 
-#: ../src/libs/import.c:1162
+#: ../src/libs/import.c:1164
 msgid "restore all default places you have removed by right-click"
 msgstr ""
 "Відновити всі місця за замовчуванням, які ви видалили, клікнувши правою "
 "кнопкою миші"
 
-#: ../src/libs/import.c:1167
+#: ../src/libs/import.c:1169
 msgid ""
 "add a custom place\n"
 "\n"
@@ -22579,71 +22604,71 @@ msgstr ""
 "\n"
 "Клікніть правою кнопкою миші на місці, щоб видалити його"
 
-#: ../src/libs/import.c:1174
+#: ../src/libs/import.c:1176
 msgid "you can add custom places using the plus icon"
 msgstr "Ви можете додати власні місця за допомогою значка з плюсом"
 
-#: ../src/libs/import.c:1199
+#: ../src/libs/import.c:1201
 msgid "select a folder to see the content"
 msgstr "Виберіть каталог, щоб переглянути його вміст"
 
-#: ../src/libs/import.c:1202
+#: ../src/libs/import.c:1204
 msgid "folders"
 msgstr "Каталоги"
 
-#: ../src/libs/import.c:1272
+#: ../src/libs/import.c:1274
 msgid "home"
 msgstr "Домівка"
 
-#: ../src/libs/import.c:1284
+#: ../src/libs/import.c:1286
 msgid "pictures"
 msgstr "Зображення"
 
-#: ../src/libs/import.c:1548
+#: ../src/libs/import.c:1550
 msgid "mark already imported pictures"
 msgstr "Позначає вже імпортовані зображення"
 
-#: ../src/libs/import.c:1562
+#: ../src/libs/import.c:1564
 msgid "modified"
 msgstr "Змінено"
 
-#: ../src/libs/import.c:1567
+#: ../src/libs/import.c:1569
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr "'дата/час зміни файлу', може відрізнятись від 'дата/час із Exif'"
 
-#: ../src/libs/import.c:1579
+#: ../src/libs/import.c:1581
 msgid "show/hide thumbnails"
 msgstr "Показати/приховати мініатюри"
 
-#: ../src/libs/import.c:1649
+#: ../src/libs/import.c:1651
 msgid "naming rules"
 msgstr "Правила іменування"
 
-#: ../src/libs/import.c:1690
+#: ../src/libs/import.c:1692
 msgid "add to library"
 msgstr "Додати до бібліотеки"
 
-#: ../src/libs/import.c:1691
+#: ../src/libs/import.c:1693
 msgid "copy & import"
 msgstr "Копіювати й імпортувати"
 
-#: ../src/libs/import.c:1730
+#: ../src/libs/import.c:1732
 msgid "select new"
 msgstr "Вибрати нові"
 
-#: ../src/libs/import.c:1773
+#: ../src/libs/import.c:1775
 msgid "please wait while prefetching the list of images from camera..."
 msgstr "Зачекайте, поки попередньо отримується список зображень з камери..."
 
-#: ../src/libs/import.c:1907
+#: ../src/libs/import.c:1909
 msgid "invalid override date/time format"
 msgstr "Недійсний формат замінної дати чи часу"
 
-#: ../src/libs/import.c:1971
+#: ../src/libs/import.c:1973
 msgid "import base directory"
 msgstr "Базовий каталог імпорту"
 
-#: ../src/libs/import.c:1972
+#: ../src/libs/import.c:1974
 msgid ""
 "before copying images to the darktable base directory make sure it is "
 "defined as you prefer.\n"
@@ -22659,23 +22684,23 @@ msgstr ""
 "Перевірте налаштування darktable -> Імпорт.\n"
 "Перевірте та, можливо, виправте \"Шаблон іменування базового каталогу\""
 
-#: ../src/libs/import.c:1976
+#: ../src/libs/import.c:1978
 msgid "understood & done"
 msgstr "Зрозуміло"
 
-#: ../src/libs/import.c:2042
+#: ../src/libs/import.c:2044
 msgid "add to library..."
 msgstr "Додати до бібліотеки..."
 
-#: ../src/libs/import.c:2043
+#: ../src/libs/import.c:2045
 msgid "add existing images to the library"
 msgstr "Додати існуючі зображення до бібліотеки"
 
-#: ../src/libs/import.c:2049
+#: ../src/libs/import.c:2051
 msgid "copy & import..."
 msgstr "Копіювати й імпортувати..."
 
-#: ../src/libs/import.c:2050
+#: ../src/libs/import.c:2052
 msgid ""
 "copy and optionally rename images before adding them to the library\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -22686,7 +22711,7 @@ msgstr ""
 "Каталог призначення та правило перейменування зображень задаються шаблонами."
 
 #. collapsible section
-#: ../src/libs/import.c:2073
+#: ../src/libs/import.c:2075
 msgid "parameters"
 msgstr "Параметри"
 
@@ -25024,56 +25049,56 @@ msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "Завантажується `%s' ..."
 
-#: ../src/views/darkroom.c:703 ../src/views/darkroom.c:2449
+#: ../src/views/darkroom.c:700 ../src/views/darkroom.c:2446
 msgid "gamut check"
 msgstr "Перевірка охоплення"
 
-#: ../src/views/darkroom.c:703
+#: ../src/views/darkroom.c:700
 msgid "soft proof"
 msgstr "Екранна кольоропроба"
 
 #. fail :(
-#: ../src/views/darkroom.c:748 ../src/views/print.c:356
+#: ../src/views/darkroom.c:745 ../src/views/print.c:356
 msgid "no image to open!"
 msgstr "Немає зображення для відкриття!"
 
-#: ../src/views/darkroom.c:1284
+#: ../src/views/darkroom.c:1281
 msgid "no user-defined presets for favorite modules were found"
 msgstr "Не знайдено визначених користувачем пресетів для улюблених модулів"
 
-#: ../src/views/darkroom.c:1429
+#: ../src/views/darkroom.c:1426
 msgid "no styles have been created yet"
 msgstr "Ще не створено стилів"
 
-#: ../src/views/darkroom.c:2284 ../src/views/darkroom.c:2285
+#: ../src/views/darkroom.c:2281 ../src/views/darkroom.c:2282
 msgid "quick access to presets"
 msgstr "Швидкий доступ до пресетів"
 
-#: ../src/views/darkroom.c:2293
+#: ../src/views/darkroom.c:2290
 msgid "quick access to styles"
 msgstr "Швидкий доступ до стилів"
 
-#: ../src/views/darkroom.c:2295
+#: ../src/views/darkroom.c:2292
 msgid "quick access for applying any of your styles"
 msgstr "Швидкий доступ до застосування стилів"
 
-#: ../src/views/darkroom.c:2301
+#: ../src/views/darkroom.c:2298
 msgid "second window"
 msgstr "Друге вікно"
 
-#: ../src/views/darkroom.c:2304
+#: ../src/views/darkroom.c:2301
 msgid "display a second darkroom image window"
 msgstr "Відкрити друге вікно перегляду зображення з темної кімнати"
 
-#: ../src/views/darkroom.c:2309
+#: ../src/views/darkroom.c:2306
 msgid "color assessment"
 msgstr "Оцінка кольорів"
 
-#: ../src/views/darkroom.c:2312
+#: ../src/views/darkroom.c:2309
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "Перемкнути умови оцінки кольору ISO 12646"
 
-#: ../src/views/darkroom.c:2325
+#: ../src/views/darkroom.c:2322
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -25081,27 +25106,27 @@ msgstr ""
 "Перемкнути індикацію переекспозиції в raw\n"
 "Права кнопка миші - опції"
 
-#: ../src/views/darkroom.c:2341
+#: ../src/views/darkroom.c:2338
 msgid "select how to mark the clipped pixels"
 msgstr "Виберіть спосіб позначення переекспонованих пікселів"
 
-#: ../src/views/darkroom.c:2343
+#: ../src/views/darkroom.c:2340
 msgid "mark with CFA color"
 msgstr "Позначити кольором обрізаного каналу"
 
-#: ../src/views/darkroom.c:2343
+#: ../src/views/darkroom.c:2340
 msgid "mark with solid color"
 msgstr "Позначити суцільним кольором"
 
-#: ../src/views/darkroom.c:2343
+#: ../src/views/darkroom.c:2340
 msgid "false color"
 msgstr "Псевдоколір"
 
-#: ../src/views/darkroom.c:2346 ../src/views/darkroom.c:2397
+#: ../src/views/darkroom.c:2343 ../src/views/darkroom.c:2394
 msgid "color scheme"
 msgstr "Колірна схема"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2344
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -25109,27 +25134,27 @@ msgstr ""
 "Виберіть суцільний колір для позначення переекспозиції\n"
 "Буде використовуватися лише в режимі позначення суцільним кольором"
 
-#: ../src/views/darkroom.c:2350
+#: ../src/views/darkroom.c:2347
 msgctxt "solidcolor"
 msgid "red"
 msgstr "Червоний"
 
-#: ../src/views/darkroom.c:2351
+#: ../src/views/darkroom.c:2348
 msgctxt "solidcolor"
 msgid "green"
 msgstr "Зелений"
 
-#: ../src/views/darkroom.c:2352
+#: ../src/views/darkroom.c:2349
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "Синій"
 
-#: ../src/views/darkroom.c:2353
+#: ../src/views/darkroom.c:2350
 msgctxt "solidcolor"
 msgid "black"
 msgstr "Чорний"
 
-#: ../src/views/darkroom.c:2361
+#: ../src/views/darkroom.c:2358
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -25139,7 +25164,7 @@ msgstr ""
 "1.0 - рівень білого\n"
 "0.0 - рівень чорного"
 
-#: ../src/views/darkroom.c:2375
+#: ../src/views/darkroom.c:2372
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -25147,11 +25172,11 @@ msgstr ""
 "Перемкнути індикацію кліппінгу\n"
 "Права кнопка миші - опції"
 
-#: ../src/views/darkroom.c:2390
+#: ../src/views/darkroom.c:2387
 msgid "clipping preview mode"
 msgstr "Показ кліппінгу"
 
-#: ../src/views/darkroom.c:2391
+#: ../src/views/darkroom.c:2388
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -25159,39 +25184,39 @@ msgstr ""
 "Виберіть метрику, для якої хочете бачити попередній перегляд\n"
 "Повне охоплення - це поєднання всіх інших режимів"
 
-#: ../src/views/darkroom.c:2393
+#: ../src/views/darkroom.c:2390
 msgid "full gamut"
 msgstr "Повне охоплення"
 
-#: ../src/views/darkroom.c:2393
+#: ../src/views/darkroom.c:2390
 msgid "any RGB channel"
 msgstr "Будь-який канал RGB"
 
-#: ../src/views/darkroom.c:2393
+#: ../src/views/darkroom.c:2390
 msgid "luminance only"
 msgstr "Лише яскравість"
 
-#: ../src/views/darkroom.c:2393
+#: ../src/views/darkroom.c:2390
 msgid "saturation only"
 msgstr "Лише насиченість"
 
-#: ../src/views/darkroom.c:2398
+#: ../src/views/darkroom.c:2395
 msgid "select colors to indicate clipping"
 msgstr "Виберіть кольори для позначення кліппінгу"
 
-#: ../src/views/darkroom.c:2400
+#: ../src/views/darkroom.c:2397
 msgid "red & blue"
 msgstr "червоний і синій"
 
-#: ../src/views/darkroom.c:2400
+#: ../src/views/darkroom.c:2397
 msgid "purple & green"
 msgstr "пурпурний і зелений"
 
-#: ../src/views/darkroom.c:2407
+#: ../src/views/darkroom.c:2404
 msgid "lower threshold"
 msgstr "Нижній поріг"
 
-#: ../src/views/darkroom.c:2408
+#: ../src/views/darkroom.c:2405
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -25211,11 +25236,11 @@ msgstr ""
 "типові кольорові глянцеві відбитки дають чорний колір на -8.00 EV,\n"
 "типові чорно-білі глянцеві відбитки дають чорний колір на -9.00 EV."
 
-#: ../src/views/darkroom.c:2424
+#: ../src/views/darkroom.c:2421
 msgid "upper threshold"
 msgstr "Верхній поріг"
 
-#: ../src/views/darkroom.c:2426
+#: ../src/views/darkroom.c:2423
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -25224,11 +25249,11 @@ msgstr ""
 "Поріг кліппінгу для точки білого.\n"
 "100% - це пікова яскравість носія."
 
-#: ../src/views/darkroom.c:2438
+#: ../src/views/darkroom.c:2435
 msgid "softproof"
 msgstr "Екранна кольоропроба"
 
-#: ../src/views/darkroom.c:2441
+#: ../src/views/darkroom.c:2438
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -25236,7 +25261,7 @@ msgstr ""
 "Перемкнути екранну кольоропробу\n"
 "Права кнопка миші - опції профілів"
 
-#: ../src/views/darkroom.c:2452
+#: ../src/views/darkroom.c:2449
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -25244,46 +25269,46 @@ msgstr ""
 "Перемкнути перевірку охоплення\n"
 "Права кнопка миші - опції профілів"
 
-#: ../src/views/darkroom.c:2477 ../src/views/darkroom.c:2479
-#: ../src/views/darkroom.c:2493 ../src/views/darkroom.c:2494
-#: ../src/views/darkroom.c:2495 ../src/views/darkroom.c:2496
+#: ../src/views/darkroom.c:2474 ../src/views/darkroom.c:2476
+#: ../src/views/darkroom.c:2490 ../src/views/darkroom.c:2491
+#: ../src/views/darkroom.c:2492 ../src/views/darkroom.c:2493
 #: ../src/views/lighttable.c:1182 ../src/views/lighttable.c:1184
 msgid "profiles"
 msgstr "Профілі"
 
-#: ../src/views/darkroom.c:2479 ../src/views/lighttable.c:1184
+#: ../src/views/darkroom.c:2476 ../src/views/lighttable.c:1184
 msgid "preview intent"
 msgstr "Метод попереднього перегляду"
 
-#: ../src/views/darkroom.c:2493 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2490 ../src/views/lighttable.c:1188
 msgid "display profile"
 msgstr "Профіль відображення"
 
-#: ../src/views/darkroom.c:2494 ../src/views/lighttable.c:1191
+#: ../src/views/darkroom.c:2491 ../src/views/lighttable.c:1191
 msgid "preview display profile"
 msgstr "Профіль попереднього перегляду"
 
-#: ../src/views/darkroom.c:2496
+#: ../src/views/darkroom.c:2493
 msgid "histogram profile"
 msgstr "Профіль гістограми"
 
-#: ../src/views/darkroom.c:2558 ../src/views/lighttable.c:1225
+#: ../src/views/darkroom.c:2555 ../src/views/lighttable.c:1225
 msgid "display ICC profiles"
 msgstr "ICC профілі дисплея"
 
-#: ../src/views/darkroom.c:2562 ../src/views/lighttable.c:1229
+#: ../src/views/darkroom.c:2559 ../src/views/lighttable.c:1229
 msgid "preview display ICC profiles"
 msgstr "ICC профілі попереднього перегляду"
 
-#: ../src/views/darkroom.c:2566
+#: ../src/views/darkroom.c:2563
 msgid "softproof ICC profiles"
 msgstr "ICC профілі екранної кольоропроби"
 
-#: ../src/views/darkroom.c:2570
+#: ../src/views/darkroom.c:2567
 msgid "histogram and color picker ICC profiles"
 msgstr "ICC профілі гістограми та піпетки кольорів"
 
-#: ../src/views/darkroom.c:2604
+#: ../src/views/darkroom.c:2601
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -25292,89 +25317,89 @@ msgstr ""
 "Клікніть правою кнопкою миші, щоб переглянути опції напрямних"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2621
+#: ../src/views/darkroom.c:2618
 msgid "full preview"
 msgstr "Попередній перегляд на все вікно"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2625
+#: ../src/views/darkroom.c:2622
 msgid "force pan/zoom/rotate with mouse"
 msgstr "Миша керує панорамуванням/масштабуванням/обертанням"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2637
+#: ../src/views/darkroom.c:2634
 msgid "zoom close-up"
 msgstr "Масштабування: масштаб 100% (і 200%)"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2640 ../src/views/lighttable.c:1283
+#: ../src/views/darkroom.c:2637 ../src/views/lighttable.c:1283
 msgid "zoom in"
 msgstr "Масштабування: збільшити"
 
-#: ../src/views/darkroom.c:2641 ../src/views/lighttable.c:1285
+#: ../src/views/darkroom.c:2638 ../src/views/lighttable.c:1285
 msgid "zoom out"
 msgstr "Масштабування: зменшити"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2644
+#: ../src/views/darkroom.c:2641
 msgid "image forward"
 msgstr "Наступне зображення"
 
-#: ../src/views/darkroom.c:2645
+#: ../src/views/darkroom.c:2642
 msgid "image back"
 msgstr "Попереднє зображення"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2648
+#: ../src/views/darkroom.c:2645
 msgid "cycle overlay colors"
 msgstr "Колір допоміжних ліній на зображенні"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2651
+#: ../src/views/darkroom.c:2648
 msgid "show drawn masks"
 msgstr "Показати намальовані маски"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2654
+#: ../src/views/darkroom.c:2651
 msgid "increase brush size"
 msgstr "Збільшити розмір пензля"
 
-#: ../src/views/darkroom.c:2655
+#: ../src/views/darkroom.c:2652
 msgid "decrease brush size"
 msgstr "Зменшити розмір пензля"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2658
+#: ../src/views/darkroom.c:2655
 msgid "increase brush hardness"
 msgstr "Збільшити жорсткість пензля"
 
-#: ../src/views/darkroom.c:2659
+#: ../src/views/darkroom.c:2656
 msgid "decrease brush hardness"
 msgstr "Зменшити жорсткість пензля"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2662
+#: ../src/views/darkroom.c:2659
 msgid "increase brush opacity"
 msgstr "Збільшити непрозорість пензля"
 
-#: ../src/views/darkroom.c:2663
+#: ../src/views/darkroom.c:2660
 msgid "decrease brush opacity"
 msgstr "Зменшити непрозорість пензля"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2666 ../src/views/lighttable.c:1275
+#: ../src/views/darkroom.c:2663 ../src/views/lighttable.c:1275
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "Скасувати"
 
-#: ../src/views/darkroom.c:2667 ../src/views/lighttable.c:1276
+#: ../src/views/darkroom.c:2664 ../src/views/lighttable.c:1276
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "Повторити"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2670
+#: ../src/views/darkroom.c:2667
 msgid "change keyboard shortcut slider precision"
 msgstr "Змінити точність керування повзунками з клавіатури"
 
