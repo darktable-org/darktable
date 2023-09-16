@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-16 11:53+0200\n"
+"POT-Creation-Date: 2023-09-16 18:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -861,7 +861,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:7222 ../build/bin/preferences_gen.h:7599
 #: ../build/bin/preferences_gen.h:8423 ../src/gui/accelerators.c:2890
 #: ../src/gui/gtk.c:2688 ../src/gui/preferences.c:421
-#: ../src/gui/preferences.c:876 ../src/libs/modulegroups.c:3891
+#: ../src/gui/preferences.c:876 ../src/libs/modulegroups.c:3888
 msgid "?"
 msgstr ""
 
@@ -1297,7 +1297,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5803 ../src/control/jobs/control_jobs.c:1691
 #: ../src/control/jobs/control_jobs.c:1745 ../src/gui/preferences.c:1081
-#: ../src/gui/presets.c:420 ../src/imageio/storage/disk.c:197
+#: ../src/gui/presets.c:421 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/disk.c:261 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/gallery.c:213 ../src/imageio/storage/latex.c:145
 #: ../src/imageio/storage/latex.c:199 ../src/libs/import.c:1508
@@ -1837,7 +1837,7 @@ msgstr ""
 
 #. tags
 #: ../build/bin/preferences_gen.h:8017 ../src/develop/lightroom.c:1518
-#: ../src/gui/import_metadata.c:476 ../src/libs/export_metadata.c:333
+#: ../src/gui/import_metadata.c:476 ../src/libs/export_metadata.c:322
 #: ../src/libs/image.c:558 ../src/libs/metadata_view.c:166
 msgid "tags"
 msgstr ""
@@ -2095,7 +2095,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
 #: ../src/common/collection.c:739 ../src/gui/preferences.c:844
-#: ../src/gui/presets.c:719 ../src/libs/camera.c:550
+#: ../src/gui/presets.c:721 ../src/libs/camera.c:550
 #: ../src/libs/metadata_view.c:145
 msgid "focal length"
 msgstr ""
@@ -2353,7 +2353,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
 #: ../src/common/collection.c:737 ../src/gui/preferences.c:828
-#: ../src/gui/presets.c:661 ../src/libs/metadata_view.c:141
+#: ../src/gui/presets.c:663 ../src/libs/metadata_view.c:141
 msgid "lens"
 msgstr ""
 
@@ -3671,11 +3671,10 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/database.c:3103 ../src/common/variables.c:705
-#: ../src/develop/imageop_gui.c:209 ../src/imageio/format/pdf.c:636
-#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1296
-#: ../src/libs/export.c:1305 ../src/libs/export.c:1314
-#: ../src/libs/metadata_view.c:673
+#: ../src/common/variables.c:705 ../src/develop/imageop_gui.c:209
+#: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
+#: ../src/libs/export.c:1296 ../src/libs/export.c:1305
+#: ../src/libs/export.c:1314 ../src/libs/metadata_view.c:673
 msgid "no"
 msgstr ""
 
@@ -3968,7 +3967,7 @@ msgstr ""
 #: ../src/iop/exposure.c:1175 ../src/iop/levels.c:700
 #: ../src/iop/profile_gamma.c:682 ../src/libs/copy_history.c:399
 #: ../src/libs/export.c:1376 ../src/libs/image.c:597
-#: ../src/libs/print_settings.c:2875 ../src/libs/styles.c:846
+#: ../src/libs/print_settings.c:2875 ../src/libs/styles.c:850
 #: ../src/views/darkroom.c:2337
 msgid "mode"
 msgstr ""
@@ -4042,7 +4041,7 @@ msgstr ""
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2526
 #: ../src/gui/accelerators.c:2606 ../src/gui/gtk.c:1315 ../src/gui/gtk.c:3229
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3713
-#: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3074
+#: ../src/iop/rawdenoise.c:909 ../src/libs/collect.c:3075
 #: ../src/libs/filtering.c:1459 ../src/libs/filters/colors.c:157
 #: ../src/libs/filters/colors.c:265 ../src/libs/filters/rating.c:211
 msgid "all"
@@ -4358,7 +4357,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
 #: ../src/common/collection.c:745 ../src/gui/preferences.c:836
-#: ../src/gui/presets.c:685 ../src/iop/basicadj.c:627 ../src/iop/exposure.c:122
+#: ../src/gui/presets.c:687 ../src/iop/basicadj.c:627 ../src/iop/exposure.c:122
 #: ../src/iop/exposure.c:1135 ../src/libs/metadata_view.c:143
 msgid "exposure"
 msgstr ""
@@ -4413,7 +4412,7 @@ msgid "erase"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:60 ../src/iop/watermark.c:1346
+#: ../src/gui/presets.c:61 ../src/iop/watermark.c:1346
 #: ../src/libs/colorpicker.c:320 ../src/libs/image.c:612
 #: ../src/libs/modulegroups.c:2301
 msgid "color"
@@ -4880,24 +4879,38 @@ msgstr ""
 msgid "dropdown"
 msgstr ""
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1692
+#: ../src/chart/main.c:504 ../src/common/database.c:3096
+#: ../src/control/jobs/control_jobs.c:1692
 #: ../src/control/jobs/control_jobs.c:1746 ../src/gui/accelerators.c:2437
 #: ../src/gui/accelerators.c:2514 ../src/gui/accelerators.c:2566
 #: ../src/gui/accelerators.c:2594 ../src/gui/accelerators.c:2654
 #: ../src/gui/hist_dialog.c:226 ../src/gui/preferences.c:1043
-#: ../src/gui/preferences.c:1082 ../src/gui/presets.c:421
-#: ../src/gui/presets.c:564 ../src/gui/styles_dialog.c:519
+#: ../src/gui/preferences.c:1082 ../src/gui/presets.c:422
+#: ../src/gui/presets.c:565 ../src/gui/styles_dialog.c:526
 #: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:150
 #: ../src/imageio/storage/latex.c:146 ../src/iop/lut3d.c:1560
-#: ../src/libs/collect.c:408 ../src/libs/copy_history.c:115
-#: ../src/libs/geotagging.c:928 ../src/libs/import.c:1508
-#: ../src/libs/import.c:1612 ../src/libs/styles.c:392 ../src/libs/styles.c:527
-#: ../src/libs/tagging.c:2488 ../src/libs/tagging.c:2524
+#: ../src/libs/collect.c:408 ../src/libs/collect.c:2923
+#: ../src/libs/copy_history.c:115 ../src/libs/export_metadata.c:276
+#: ../src/libs/geotagging.c:929 ../src/libs/import.c:1508
+#: ../src/libs/import.c:1612 ../src/libs/import.c:1704
+#: ../src/libs/metadata.c:467 ../src/libs/metadata_view.c:1206
+#: ../src/libs/recentcollect.c:228 ../src/libs/modulegroups.c:3466
+#: ../src/libs/styles.c:392 ../src/libs/styles.c:439 ../src/libs/styles.c:529
+#: ../src/libs/styles.c:624 ../src/libs/tagging.c:1484
+#: ../src/libs/tagging.c:1575 ../src/libs/tagging.c:1666
+#: ../src/libs/tagging.c:1802 ../src/libs/tagging.c:2081
+#: ../src/libs/tagging.c:2516 ../src/libs/tagging.c:2552
+#: ../src/libs/tagging.c:3498
 msgid "_cancel"
 msgstr ""
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1082
-#: ../src/gui/styles_dialog.c:520 ../src/libs/styles.c:392
+#: ../src/gui/styles_dialog.c:527 ../src/libs/collect.c:2924
+#: ../src/libs/export_metadata.c:277 ../src/libs/metadata.c:468
+#: ../src/libs/metadata_view.c:1207 ../src/libs/recentcollect.c:229
+#: ../src/libs/styles.c:392 ../src/libs/tagging.c:1667
+#: ../src/libs/tagging.c:1803 ../src/libs/tagging.c:2082
+#: ../src/libs/tagging.c:3499
 msgid "_save"
 msgstr ""
 
@@ -5081,8 +5094,8 @@ msgstr ""
 msgid "camera"
 msgstr ""
 
-#: ../src/common/collection.c:719 ../src/libs/export_metadata.c:189
-#: ../src/libs/tagging.c:3280
+#: ../src/common/collection.c:719 ../src/libs/export_metadata.c:176
+#: ../src/libs/tagging.c:3308
 msgid "tag"
 msgstr ""
 
@@ -5110,7 +5123,7 @@ msgstr ""
 msgid "print time"
 msgstr ""
 
-#: ../src/common/collection.c:733 ../src/libs/collect.c:3230
+#: ../src/common/collection.c:733 ../src/libs/collect.c:3231
 #: ../src/libs/filtering.c:2164 ../src/libs/filtering.c:2184
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:92
 msgid "history"
@@ -5125,14 +5138,14 @@ msgstr ""
 
 #. iso
 #: ../src/common/collection.c:741 ../src/gui/preferences.c:832
-#: ../src/gui/presets.c:667 ../src/libs/camera.c:558
+#: ../src/gui/presets.c:669 ../src/libs/camera.c:558
 #: ../src/libs/metadata_view.c:149
 msgid "ISO"
 msgstr ""
 
 #. aperture
 #: ../src/common/collection.c:743 ../src/gui/preferences.c:840
-#: ../src/gui/presets.c:702 ../src/libs/camera.c:545 ../src/libs/camera.c:547
+#: ../src/gui/presets.c:704 ../src/libs/camera.c:545 ../src/libs/camera.c:547
 #: ../src/libs/metadata_view.c:142
 msgid "aperture"
 msgstr ""
@@ -5163,7 +5176,7 @@ msgid "module"
 msgstr ""
 
 #: ../src/common/collection.c:759 ../src/gui/hist_dialog.c:346
-#: ../src/gui/styles_dialog.c:722 ../src/gui/styles_dialog.c:771
+#: ../src/gui/styles_dialog.c:734 ../src/gui/styles_dialog.c:783
 #: ../src/libs/filters/module_order.c:161 ../src/libs/ioporder.c:39
 msgid "module order"
 msgstr ""
@@ -5738,12 +5751,12 @@ msgstr ""
 msgid "configuration information"
 msgstr ""
 
-#: ../src/common/darktable.c:1525 ../src/libs/import.c:1978
-msgid "show this information again"
+#: ../src/common/darktable.c:1525 ../src/libs/import.c:1982
+msgid "_show this information again"
 msgstr ""
 
 #: ../src/common/darktable.c:1525
-msgid "understood"
+msgid "_understood"
 msgstr ""
 
 #: ../src/common/darktable.c:1987
@@ -5863,20 +5876,8 @@ msgstr ""
 msgid "error starting darktable"
 msgstr ""
 
-#: ../src/common/database.c:3096 ../src/libs/collect.c:2923
-#: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1704
-#: ../src/libs/metadata.c:467 ../src/libs/metadata.c:737
-#: ../src/libs/metadata_view.c:1205 ../src/libs/recentcollect.c:227
-#: ../src/libs/modulegroups.c:3469 ../src/libs/styles.c:438
-#: ../src/libs/styles.c:621 ../src/libs/tagging.c:1483
-#: ../src/libs/tagging.c:1571 ../src/libs/tagging.c:1652
-#: ../src/libs/tagging.c:1782 ../src/libs/tagging.c:2056
-#: ../src/libs/tagging.c:3470
-msgid "cancel"
-msgstr ""
-
 #: ../src/common/database.c:3096
-msgid "delete database lock files"
+msgid "_delete database lock files"
 msgstr ""
 
 #: ../src/common/database.c:3102
@@ -5889,16 +5890,15 @@ msgid ""
 "do you really want to delete the lock files?\n"
 msgstr ""
 
-#: ../src/common/database.c:3103 ../src/common/variables.c:703
-#: ../src/develop/imageop_gui.c:210 ../src/imageio/format/pdf.c:636
-#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1296
-#: ../src/libs/export.c:1305 ../src/libs/export.c:1314
-#: ../src/libs/metadata_view.c:673
-msgid "yes"
+#: ../src/common/database.c:3103 ../src/gui/gtk.c:2644
+msgid "_no"
 msgstr ""
 
-#: ../src/common/database.c:3119 ../src/libs/export_metadata.c:164
-#: ../src/libs/geotagging.c:811
+#: ../src/common/database.c:3103 ../src/gui/gtk.c:2643
+msgid "_yes"
+msgstr ""
+
+#: ../src/common/database.c:3119
 msgid "done"
 msgstr ""
 
@@ -5909,10 +5909,10 @@ msgid ""
 "you can now restart darktable\n"
 msgstr ""
 
-#. the button to close the popup
 #: ../src/common/database.c:3121 ../src/common/database.c:3128
-#: ../src/libs/filters/filename.c:452
-msgid "ok"
+#: ../src/gui/accelerators.c:2515 ../src/gui/accelerators.c:2595
+#: ../src/gui/hist_dialog.c:227 ../src/gui/presets.c:566
+msgid "_ok"
 msgstr ""
 
 #: ../src/common/database.c:3124
@@ -5964,37 +5964,37 @@ msgid "darktable - schema migration"
 msgstr ""
 
 #: ../src/common/database.c:3343 ../src/common/database.c:3664
-#: ../src/common/database.c:3682 ../src/common/database.c:3851
-#: ../src/common/database.c:3869
-msgid "close darktable"
+#: ../src/common/database.c:3679 ../src/common/database.c:3846
+#: ../src/common/database.c:3861
+msgid "_close darktable"
 msgstr ""
 
 #: ../src/common/database.c:3343
-msgid "upgrade database"
+msgid "_upgrade database"
 msgstr ""
 
-#: ../src/common/database.c:3644 ../src/common/database.c:3831
+#: ../src/common/database.c:3644 ../src/common/database.c:3826
 #, c-format
 msgid ""
 "quick_check said:\n"
 "%s \n"
 msgstr ""
 
-#: ../src/common/database.c:3661 ../src/common/database.c:3679
-#: ../src/common/database.c:3848 ../src/common/database.c:3866
+#: ../src/common/database.c:3661 ../src/common/database.c:3676
+#: ../src/common/database.c:3843 ../src/common/database.c:3858
 msgid "darktable - error opening database"
 msgstr ""
 
-#: ../src/common/database.c:3666 ../src/common/database.c:3853
-msgid "attempt restore"
+#: ../src/common/database.c:3665 ../src/common/database.c:3847
+msgid "_attempt restore"
 msgstr ""
 
-#: ../src/common/database.c:3668 ../src/common/database.c:3684
-#: ../src/common/database.c:3855 ../src/common/database.c:3871
-msgid "delete database"
+#: ../src/common/database.c:3666 ../src/common/database.c:3680
+#: ../src/common/database.c:3848 ../src/common/database.c:3862
+msgid "_delete database"
 msgstr ""
 
-#: ../src/common/database.c:3672 ../src/common/database.c:3859
+#: ../src/common/database.c:3669 ../src/common/database.c:3851
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6002,14 +6002,14 @@ msgid ""
 "and start with a new one?"
 msgstr ""
 
-#: ../src/common/database.c:3688 ../src/common/database.c:3875
+#: ../src/common/database.c:3683 ../src/common/database.c:3865
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
 
-#: ../src/common/database.c:3695 ../src/common/database.c:3880
+#: ../src/common/database.c:3690 ../src/common/database.c:3870
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -6053,7 +6053,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: ../src/common/film.c:371 ../src/gui/preferences.c:816
-#: ../src/gui/styles_dialog.c:548 ../src/libs/geotagging.c:829
+#: ../src/gui/styles_dialog.c:556 ../src/libs/geotagging.c:830
 #: ../src/libs/import.c:1553
 msgid "name"
 msgstr ""
@@ -6303,7 +6303,7 @@ msgstr ""
 msgid "title"
 msgstr ""
 
-#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:552
+#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:563
 #: ../src/libs/filtering.c:70
 msgid "description"
 msgstr ""
@@ -6545,6 +6545,13 @@ msgstr ""
 
 #: ../src/common/utility.c:557 ../src/libs/metadata_view.c:891
 msgid "m"
+msgstr ""
+
+#: ../src/common/variables.c:703 ../src/develop/imageop_gui.c:210
+#: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
+#: ../src/libs/export.c:1296 ../src/libs/export.c:1305
+#: ../src/libs/export.c:1314 ../src/libs/metadata_view.c:673
+msgid "yes"
 msgstr ""
 
 #. Column 1 - "make" of the camera.
@@ -6869,12 +6876,12 @@ msgstr ""
 #. setup selection accelerators
 #. action-box
 #: ../src/control/crawler.c:786 ../src/dtgtk/thumbtable.c:2565
-#: ../src/libs/import.c:1724 ../src/libs/select.c:135
+#: ../src/libs/import.c:1725 ../src/libs/select.c:135
 msgid "select all"
 msgstr ""
 
 #: ../src/control/crawler.c:787 ../src/dtgtk/thumbtable.c:2567
-#: ../src/libs/import.c:1728 ../src/libs/select.c:139
+#: ../src/libs/import.c:1729 ../src/libs/select.c:139
 msgid "select none"
 msgstr ""
 
@@ -7032,7 +7039,8 @@ msgstr ""
 msgid "_remove from library"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:884
+#: ../src/control/jobs/control_jobs.c:884 ../src/libs/styles.c:440
+#: ../src/libs/styles.c:625
 msgid "_skip"
 msgstr ""
 
@@ -7577,7 +7585,6 @@ msgid "reverse"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:140 ../src/imageio/format/webp.c:443
-#: ../src/libs/metadata.c:466 ../src/libs/metadata_view.c:1204
 msgid "default"
 msgstr ""
 
@@ -8201,14 +8208,13 @@ msgstr ""
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/imageop.c:1056 ../src/develop/imageop.c:3723
-#: ../src/gui/accelerators.c:173 ../src/gui/presets.c:563
-#: ../src/libs/image.c:285 ../src/libs/image.c:480 ../src/libs/tagging.c:1483
-#: ../src/libs/tagging.c:1571
+#: ../src/gui/accelerators.c:173 ../src/libs/image.c:285
+#: ../src/libs/image.c:480
 msgid "delete"
 msgstr ""
 
 #: ../src/develop/imageop.c:1063 ../src/develop/imageop.c:3724
-#: ../src/libs/modulegroups.c:3469 ../src/libs/modulegroups.c:3820
+#: ../src/libs/modulegroups.c:3817
 msgid "rename"
 msgstr ""
 
@@ -8292,13 +8298,13 @@ msgid "show"
 msgstr ""
 
 #: ../src/develop/imageop.c:3722 ../src/libs/modulegroups.c:3315
-#: ../src/libs/modulegroups.c:3441 ../src/libs/modulegroups.c:3822
-#: ../src/libs/tagging.c:3247
+#: ../src/libs/modulegroups.c:3438 ../src/libs/modulegroups.c:3819
+#: ../src/libs/tagging.c:3275
 msgid "new"
 msgstr ""
 
 #: ../src/develop/imageop.c:3725 ../src/libs/duplicate.c:405
-#: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3818
+#: ../src/libs/image.c:495 ../src/libs/modulegroups.c:3815
 msgid "duplicate"
 msgstr ""
 
@@ -8316,9 +8322,9 @@ msgstr ""
 
 #: ../src/develop/imageop.c:3733 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:140 ../src/gui/gtk.c:3102 ../src/gui/gtk.c:3149
-#: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:603
-#: ../src/gui/styles_dialog.c:625 ../src/iop/atrous.c:1626
-#: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3887
+#: ../src/gui/hist_dialog.c:270 ../src/gui/styles_dialog.c:615
+#: ../src/gui/styles_dialog.c:637 ../src/iop/atrous.c:1626
+#: ../src/libs/lib.c:1416 ../src/libs/modulegroups.c:3884
 msgid "reset"
 msgstr ""
 
@@ -8791,7 +8797,7 @@ msgid "date type"
 msgstr ""
 
 #. the date section
-#: ../src/dtgtk/range.c:955 ../src/libs/geotagging.c:1504
+#: ../src/dtgtk/range.c:955 ../src/libs/geotagging.c:1505
 msgid "date"
 msgstr ""
 
@@ -8814,7 +8820,7 @@ msgid "days: "
 msgstr ""
 
 #. the time section
-#: ../src/dtgtk/range.c:1001 ../src/libs/geotagging.c:1504
+#: ../src/dtgtk/range.c:1001 ../src/libs/geotagging.c:1505
 msgid "time"
 msgstr ""
 
@@ -8833,7 +8839,7 @@ msgstr ""
 
 #. apply button
 #: ../src/dtgtk/range.c:1058 ../src/gui/accelerators.c:180
-#: ../src/libs/metadata.c:735 ../src/libs/styles.c:897
+#: ../src/libs/metadata.c:740 ../src/libs/styles.c:901
 msgid "apply"
 msgstr ""
 
@@ -9125,7 +9131,7 @@ msgid "altgr"
 msgstr ""
 
 #: ../src/gui/accelerators.c:127 ../src/gui/accelerators.c:174
-#: ../src/libs/tagging.c:1781
+#: ../src/libs/tagging.c:1800
 msgid "edit"
 msgstr ""
 
@@ -9167,7 +9173,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:159
 #: ../src/gui/accelerators.c:356 ../src/libs/filters/rating_range.c:271
-#: ../src/libs/tagging.c:3118 ../src/views/darkroom.c:2319
+#: ../src/libs/tagging.c:3146 ../src/views/darkroom.c:2319
 #: ../src/views/darkroom.c:2369 ../src/views/darkroom.c:2598
 msgid "toggle"
 msgstr ""
@@ -9204,7 +9210,7 @@ msgstr ""
 msgid "store"
 msgstr ""
 
-#: ../src/gui/accelerators.c:175 ../src/gui/styles_dialog.c:639
+#: ../src/gui/accelerators.c:175 ../src/gui/styles_dialog.c:651
 msgid "update"
 msgstr ""
 
@@ -9558,11 +9564,6 @@ msgstr ""
 msgid "export shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2515 ../src/gui/accelerators.c:2595
-#: ../src/gui/hist_dialog.c:227 ../src/gui/presets.c:565
-msgid "_ok"
-msgstr ""
-
 #: ../src/gui/accelerators.c:2520
 msgid ""
 "export all shortcuts to a file\n"
@@ -9581,7 +9582,7 @@ msgstr ""
 msgid "select file to export"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2566 ../src/libs/tagging.c:2524
+#: ../src/gui/accelerators.c:2566 ../src/libs/tagging.c:2552
 msgid "_export"
 msgstr ""
 
@@ -9611,7 +9612,7 @@ msgstr ""
 msgid "select file to import"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2654 ../src/libs/tagging.c:2488
+#: ../src/gui/accelerators.c:2654 ../src/libs/tagging.c:2516
 msgid "_import"
 msgstr ""
 
@@ -9654,7 +9655,7 @@ msgid ""
 msgstr ""
 
 #: ../src/gui/accelerators.c:2849 ../src/gui/guides.c:719
-#: ../src/libs/export_metadata.c:192
+#: ../src/libs/export_metadata.c:179
 msgid "type"
 msgstr ""
 
@@ -9680,8 +9681,8 @@ msgstr ""
 msgid "restore default shortcuts or previous state"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2901 ../src/libs/styles.c:883
-#: ../src/libs/tagging.c:3250
+#: ../src/gui/accelerators.c:2901 ../src/libs/styles.c:887
+#: ../src/libs/tagging.c:3278
 msgid "import..."
 msgstr ""
 
@@ -9689,8 +9690,8 @@ msgstr ""
 msgid "fully or partially import shortcuts from file"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2906 ../src/libs/styles.c:890
-#: ../src/libs/tagging.c:3253
+#: ../src/gui/accelerators.c:2906 ../src/libs/styles.c:894
+#: ../src/libs/tagging.c:3281
 msgid "export..."
 msgstr ""
 
@@ -9925,14 +9926,6 @@ msgstr ""
 #: ../src/gui/gtk.c:1705 ../src/gui/gtk.c:3236 ../src/gui/gtk.c:3241
 #: ../src/gui/gtk.c:3246 ../src/gui/gtk.c:3251
 msgid "tabs"
-msgstr ""
-
-#: ../src/gui/gtk.c:2643
-msgid "_yes"
-msgstr ""
-
-#: ../src/gui/gtk.c:2644
-msgid "_no"
 msgstr ""
 
 #. ask the user if darktable.org may be accessed
@@ -10398,26 +10391,26 @@ msgstr ""
 msgid "select parts to paste"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:224 ../src/gui/styles_dialog.c:517
+#: ../src/gui/hist_dialog.c:224 ../src/gui/styles_dialog.c:524
 msgid "select _all"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:225 ../src/gui/styles_dialog.c:518
+#: ../src/gui/hist_dialog.c:225 ../src/gui/styles_dialog.c:525
 msgid "select _none"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:261 ../src/gui/styles_dialog.c:593
-#: ../src/gui/styles_dialog.c:615
+#: ../src/gui/hist_dialog.c:261 ../src/gui/styles_dialog.c:605
+#: ../src/gui/styles_dialog.c:627
 msgid "include"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:289 ../src/gui/styles_dialog.c:669
-#: ../src/gui/styles_dialog.c:675
+#: ../src/gui/hist_dialog.c:289 ../src/gui/styles_dialog.c:681
+#: ../src/gui/styles_dialog.c:687
 msgid "item"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:295 ../src/gui/styles_dialog.c:682
-#: ../src/gui/styles_dialog.c:691
+#: ../src/gui/hist_dialog.c:295 ../src/gui/styles_dialog.c:694
+#: ../src/gui/styles_dialog.c:703
 msgid "mask"
 msgstr ""
 
@@ -10559,12 +10552,12 @@ msgid "darktable needs to be restarted for settings to take effect"
 msgstr ""
 
 #. exif
-#: ../src/gui/preferences.c:820 ../src/gui/presets.c:645
+#: ../src/gui/preferences.c:820 ../src/gui/presets.c:647
 #: ../src/libs/metadata_view.c:139
 msgid "model"
 msgstr ""
 
-#: ../src/gui/preferences.c:824 ../src/gui/presets.c:653
+#: ../src/gui/preferences.c:824 ../src/gui/presets.c:655
 #: ../src/libs/metadata_view.c:140
 msgid "maker"
 msgstr ""
@@ -10599,8 +10592,8 @@ msgid "select preset(s) to import"
 msgstr ""
 
 #: ../src/gui/preferences.c:1043 ../src/libs/collect.c:408
-#: ../src/libs/copy_history.c:115 ../src/libs/geotagging.c:929
-#: ../src/libs/import.c:1508 ../src/libs/import.c:1612 ../src/libs/styles.c:527
+#: ../src/libs/copy_history.c:115 ../src/libs/geotagging.c:930
+#: ../src/libs/import.c:1508 ../src/libs/import.c:1612 ../src/libs/styles.c:529
 msgid "_open"
 msgstr ""
 
@@ -10609,40 +10602,40 @@ msgid "darktable preset files"
 msgstr ""
 
 #: ../src/gui/preferences.c:1057 ../src/iop/lut3d.c:1591
-#: ../src/libs/copy_history.c:154 ../src/libs/geotagging.c:945
-#: ../src/libs/styles.c:541
+#: ../src/libs/copy_history.c:154 ../src/libs/geotagging.c:946
+#: ../src/libs/styles.c:543
 msgid "all files"
 msgstr ""
 
-#: ../src/gui/presets.c:60
+#: ../src/gui/presets.c:61
 msgid "non-raw"
 msgstr ""
 
-#: ../src/gui/presets.c:60 ../src/libs/metadata_view.c:336
+#: ../src/gui/presets.c:61 ../src/libs/metadata_view.c:336
 msgid "raw"
 msgstr ""
 
-#: ../src/gui/presets.c:60 ../src/libs/metadata_view.c:337
+#: ../src/gui/presets.c:61 ../src/libs/metadata_view.c:337
 msgid "HDR"
 msgstr ""
 
-#: ../src/gui/presets.c:60 ../src/iop/monochrome.c:77 ../src/libs/image.c:608
+#: ../src/gui/presets.c:61 ../src/iop/monochrome.c:77 ../src/libs/image.c:608
 #: ../src/libs/metadata_view.c:343
 msgid "monochrome"
 msgstr ""
 
-#: ../src/gui/presets.c:152
+#: ../src/gui/presets.c:153
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
 msgstr ""
 
-#: ../src/gui/presets.c:158 ../src/gui/presets.c:462 ../src/libs/lib.c:238
-#: ../src/libs/modulegroups.c:3706
+#: ../src/gui/presets.c:159 ../src/gui/presets.c:463 ../src/libs/lib.c:238
+#: ../src/libs/modulegroups.c:3703
 msgid "delete preset?"
 msgstr ""
 
-#: ../src/gui/presets.c:159 ../src/gui/presets.c:463 ../src/libs/lib.c:239
-#: ../src/libs/modulegroups.c:3707
+#: ../src/gui/presets.c:160 ../src/gui/presets.c:464 ../src/libs/lib.c:239
+#: ../src/libs/modulegroups.c:3704
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr ""
@@ -10653,187 +10646,192 @@ msgstr ""
 #. clang-format on
 #. create a shortcut for the new entry
 #. then show edit dialog
-#: ../src/gui/presets.c:201 ../src/gui/presets.c:1036 ../src/gui/presets.c:1039
-#: ../src/gui/presets.c:1042 ../src/libs/lib.c:188 ../src/libs/lib.c:205
+#: ../src/gui/presets.c:202 ../src/gui/presets.c:1022 ../src/gui/presets.c:1025
+#: ../src/gui/presets.c:1028 ../src/libs/lib.c:188 ../src/libs/lib.c:205
 #: ../src/libs/lib.c:213 ../src/libs/lib.c:216
 msgid "new preset"
 msgstr ""
 
-#: ../src/gui/presets.c:208
+#: ../src/gui/presets.c:209
 msgid "please give preset a name"
 msgstr ""
 
-#: ../src/gui/presets.c:213
+#: ../src/gui/presets.c:214
 msgid "unnamed preset"
 msgstr ""
 
-#: ../src/gui/presets.c:242
+#: ../src/gui/presets.c:243
 msgid "overwrite preset?"
 msgstr ""
 
-#: ../src/gui/presets.c:243
+#: ../src/gui/presets.c:244
 #, c-format
 msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
 
-#: ../src/gui/presets.c:421 ../src/imageio/storage/disk.c:198
+#: ../src/gui/presets.c:422 ../src/imageio/storage/disk.c:198
 #: ../src/imageio/storage/gallery.c:150 ../src/imageio/storage/latex.c:146
 msgid "_select as output destination"
 msgstr ""
 
-#: ../src/gui/presets.c:430
+#: ../src/gui/presets.c:431
 #, c-format
 msgid "preset %s was successfully exported"
 msgstr ""
 
-#: ../src/gui/presets.c:558
+#: ../src/gui/presets.c:559
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr ""
 
-#: ../src/gui/presets.c:562
+#: ../src/gui/presets.c:563
 msgid "_export..."
 msgstr ""
 
-#: ../src/gui/presets.c:586
+#: ../src/gui/presets.c:564 ../src/libs/tagging.c:1485
+#: ../src/libs/tagging.c:1576
+msgid "_delete"
+msgstr ""
+
+#: ../src/gui/presets.c:588
 msgid "name of the preset"
 msgstr ""
 
-#: ../src/gui/presets.c:595
+#: ../src/gui/presets.c:597
 msgid "description or further information"
 msgstr ""
 
-#: ../src/gui/presets.c:599
+#: ../src/gui/presets.c:601
 msgid "reset all module parameters to their default values"
 msgstr ""
 
-#: ../src/gui/presets.c:602
+#: ../src/gui/presets.c:604
 msgid ""
 "the parameters will be reset to their default values, which may be "
 "automatically set based on image metadata"
 msgstr ""
 
-#: ../src/gui/presets.c:608
+#: ../src/gui/presets.c:610
 msgid "auto apply this preset to matching images"
 msgstr ""
 
-#: ../src/gui/presets.c:612
+#: ../src/gui/presets.c:614
 msgid "only show this preset for matching images"
 msgstr ""
 
-#: ../src/gui/presets.c:614
+#: ../src/gui/presets.c:616
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
 msgstr ""
 
-#: ../src/gui/presets.c:644
+#: ../src/gui/presets.c:646
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/presets.c:652
+#: ../src/gui/presets.c:654
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/presets.c:660
+#: ../src/gui/presets.c:662
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/presets.c:670
+#: ../src/gui/presets.c:672
 msgid "minimum ISO value"
 msgstr ""
 
-#: ../src/gui/presets.c:676
+#: ../src/gui/presets.c:678
 msgid ""
 "maximum ISO value\n"
 "if left blank, it is equivalent to no upper limit"
 msgstr ""
 
-#: ../src/gui/presets.c:689
+#: ../src/gui/presets.c:691
 msgid "minimum exposure time"
 msgstr ""
 
-#: ../src/gui/presets.c:690
+#: ../src/gui/presets.c:692
 msgid "maximum exposure time"
 msgstr ""
 
-#: ../src/gui/presets.c:706
+#: ../src/gui/presets.c:708
 msgid "minimum aperture value"
 msgstr ""
 
-#: ../src/gui/presets.c:707
+#: ../src/gui/presets.c:709
 msgid "maximum aperture value"
 msgstr ""
 
-#: ../src/gui/presets.c:725
+#: ../src/gui/presets.c:727
 msgid "minimum focal length"
 msgstr ""
 
-#: ../src/gui/presets.c:726
+#: ../src/gui/presets.c:728
 msgid "maximum focal length"
 msgstr ""
 
 #. raw/hdr/ldr/mono/color
-#: ../src/gui/presets.c:734
+#: ../src/gui/presets.c:736
 msgid "format"
 msgstr ""
 
-#: ../src/gui/presets.c:739
+#: ../src/gui/presets.c:741
 msgid "select image types you want this preset to be available for"
 msgstr ""
 
-#: ../src/gui/presets.c:752 ../src/libs/filtering.c:1201
+#: ../src/gui/presets.c:754 ../src/libs/filtering.c:1201
 msgid "and"
 msgstr ""
 
-#: ../src/gui/presets.c:796 ../src/gui/presets.c:848
+#: ../src/gui/presets.c:798 ../src/gui/presets.c:850
 msgid "∞"
 msgstr ""
 
-#: ../src/gui/presets.c:980
+#: ../src/gui/presets.c:966
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
 msgstr ""
 
-#: ../src/gui/presets.c:1004 ../src/libs/lib.c:158
+#: ../src/gui/presets.c:990 ../src/libs/lib.c:158
 msgid "update preset?"
 msgstr ""
 
-#: ../src/gui/presets.c:1005 ../src/libs/lib.c:159
+#: ../src/gui/presets.c:991 ../src/libs/lib.c:159
 #, c-format
 msgid "do you really want to update the preset `%s'?"
 msgstr ""
 
-#: ../src/gui/presets.c:1134
+#: ../src/gui/presets.c:1120
 msgid "(first)"
 msgstr ""
 
-#: ../src/gui/presets.c:1134
+#: ../src/gui/presets.c:1120
 msgid "(last)"
 msgstr ""
 
-#: ../src/gui/presets.c:1166
+#: ../src/gui/presets.c:1152
 #, c-format
 msgid ""
 "preset %s\n"
 "%s"
 msgstr ""
 
-#: ../src/gui/presets.c:1167
+#: ../src/gui/presets.c:1153
 msgid "no presets"
 msgstr ""
 
-#: ../src/gui/presets.c:1202 ../src/iop/basecurve.c:575
+#: ../src/gui/presets.c:1188 ../src/iop/basecurve.c:575
 #: ../src/iop/basecurve.c:579 ../src/iop/basecurve.c:582
 msgid "display-referred default"
 msgstr ""
 
-#: ../src/gui/presets.c:1204 ../src/iop/channelmixerrgb.c:395
+#: ../src/gui/presets.c:1190 ../src/iop/channelmixerrgb.c:395
 #: ../src/iop/channelmixerrgb.c:399 ../src/iop/channelmixerrgb.c:402
 #: ../src/iop/exposure.c:319 ../src/iop/exposure.c:323
 #: ../src/iop/exposure.c:326 ../src/iop/filmicrgb.c:3311
@@ -10842,45 +10840,45 @@ msgstr ""
 msgid "scene-referred default"
 msgstr ""
 
-#: ../src/gui/presets.c:1408 ../src/libs/modulegroups.c:3786
-#: ../src/libs/modulegroups.c:3795
+#: ../src/gui/presets.c:1394 ../src/libs/modulegroups.c:3783
+#: ../src/libs/modulegroups.c:3792
 msgid "manage module layouts"
 msgstr ""
 
-#: ../src/gui/presets.c:1417
+#: ../src/gui/presets.c:1403
 msgid "manage quick presets"
 msgstr ""
 
-#: ../src/gui/presets.c:1601
+#: ../src/gui/presets.c:1587
 msgid "manage quick presets list..."
 msgstr ""
 
-#: ../src/gui/presets.c:1742
+#: ../src/gui/presets.c:1728
 msgid "(default)"
 msgstr ""
 
-#: ../src/gui/presets.c:1769
+#: ../src/gui/presets.c:1755
 msgid "disabled: wrong module version"
 msgstr ""
 
-#: ../src/gui/presets.c:1791 ../src/libs/lib.c:551
+#: ../src/gui/presets.c:1777 ../src/libs/lib.c:551
 msgid "edit this preset.."
 msgstr ""
 
-#: ../src/gui/presets.c:1796 ../src/libs/lib.c:555
+#: ../src/gui/presets.c:1782 ../src/libs/lib.c:555
 msgid "delete this preset"
 msgstr ""
 
-#: ../src/gui/presets.c:1803 ../src/libs/lib.c:563
+#: ../src/gui/presets.c:1789 ../src/libs/lib.c:563
 msgid "store new preset.."
 msgstr ""
 
-#: ../src/gui/presets.c:1811 ../src/libs/lib.c:576
+#: ../src/gui/presets.c:1797 ../src/libs/lib.c:576
 msgid "update preset"
 msgstr ""
 
 #: ../src/gui/styles_dialog.c:221 ../src/libs/styles.c:437
-#: ../src/libs/styles.c:620
+#: ../src/libs/styles.c:622
 msgid "overwrite style?"
 msgstr ""
 
@@ -10904,35 +10902,35 @@ msgstr ""
 msgid "style %s was successfully saved"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:505
+#: ../src/gui/styles_dialog.c:512
 msgid "edit style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:506
+#: ../src/gui/styles_dialog.c:513
 msgid "duplicate style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:507
+#: ../src/gui/styles_dialog.c:514
 msgid "creates a duplicate of the style before applying changes"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:511
+#: ../src/gui/styles_dialog.c:518
 msgid "create new style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:549
+#: ../src/gui/styles_dialog.c:557
 msgid "enter a name for the new style"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:554
+#: ../src/gui/styles_dialog.c:565
 msgid "enter a description for the new style, this description is searchable"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:593
+#: ../src/gui/styles_dialog.c:605
 msgid "keep"
 msgstr ""
 
-#: ../src/gui/styles_dialog.c:820
+#: ../src/gui/styles_dialog.c:832
 msgid "can't create style out of unaltered image"
 msgstr ""
 
@@ -11478,7 +11476,7 @@ msgstr ""
 #. DT_COPY_HISTORY_APPEND
 #: ../src/imageio/storage/disk.c:269 ../src/imageio/storage/piwigo.c:1111
 #: ../src/libs/copy_history.c:404 ../src/libs/image.c:601
-#: ../src/libs/styles.c:440 ../src/libs/styles.c:623 ../src/libs/styles.c:850
+#: ../src/libs/styles.c:854
 msgid "overwrite"
 msgstr ""
 
@@ -11487,7 +11485,6 @@ msgid "overwrite if changed"
 msgstr ""
 
 #: ../src/imageio/storage/disk.c:271 ../src/imageio/storage/piwigo.c:1109
-#: ../src/libs/styles.c:439 ../src/libs/styles.c:622
 msgid "skip"
 msgstr ""
 
@@ -16272,7 +16269,7 @@ msgstr ""
 #: ../src/iop/highlights.c:1178
 msgid ""
 "select inpainting after segmentation analysis.\n"
-"increase to favour candidates found in segmentation analysis, decrease for "
+"increase to favor candidates found in segmentation analysis, decrease for "
 "opposed means inpainting."
 msgstr ""
 
@@ -19102,11 +19099,11 @@ msgstr ""
 msgid "files"
 msgstr ""
 
-#: ../src/libs/collect.c:2872 ../src/libs/export_metadata.c:312
+#: ../src/libs/collect.c:2872 ../src/libs/export_metadata.c:301
 #: ../src/libs/filtering.c:862 ../src/libs/filtering.c:929
 #: ../src/libs/filtering.c:1566 ../src/libs/filtering.c:1895
 #: ../src/libs/image.c:464 ../src/libs/image.c:574 ../src/libs/image.c:582
-#: ../src/libs/metadata.c:512 ../src/libs/metadata_view.c:1237
+#: ../src/libs/metadata.c:514 ../src/libs/metadata_view.c:1240
 msgid "metadata"
 msgstr ""
 
@@ -19130,38 +19127,30 @@ msgstr ""
 msgid "collections settings"
 msgstr ""
 
-#: ../src/libs/collect.c:2924 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:467 ../src/libs/metadata_view.c:1205
-#: ../src/libs/recentcollect.c:228 ../src/libs/tagging.c:1652
-#: ../src/libs/tagging.c:1782 ../src/libs/tagging.c:2056
-#: ../src/libs/tagging.c:3471
-msgid "save"
-msgstr ""
-
-#: ../src/libs/collect.c:2944 ../src/libs/export.c:1126
-#: ../src/libs/metadata.c:615 ../src/libs/metadata_view.c:1317
-#: ../src/libs/recentcollect.c:293 ../src/libs/tagging.c:3493
+#: ../src/libs/collect.c:2945 ../src/libs/export.c:1126
+#: ../src/libs/metadata.c:620 ../src/libs/metadata_view.c:1323
+#: ../src/libs/recentcollect.c:295 ../src/libs/tagging.c:3522
 msgid "preferences..."
 msgstr ""
 
-#: ../src/libs/collect.c:3049 ../src/libs/filtering.c:1432
+#: ../src/libs/collect.c:3050 ../src/libs/filtering.c:1432
 msgid "AND"
 msgstr ""
 
-#: ../src/libs/collect.c:3054 ../src/libs/filtering.c:1437
+#: ../src/libs/collect.c:3055 ../src/libs/filtering.c:1437
 msgid "OR"
 msgstr ""
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3059 ../src/libs/filtering.c:1442
+#: ../src/libs/collect.c:3060 ../src/libs/filtering.c:1442
 msgid "BUT NOT"
 msgstr ""
 
-#: ../src/libs/collect.c:3231 ../src/libs/filtering.c:2165
+#: ../src/libs/collect.c:3232 ../src/libs/filtering.c:2165
 msgid "revert to a previous set of rules"
 msgstr ""
 
-#: ../src/libs/collect.c:3288
+#: ../src/libs/collect.c:3289
 msgid "jump back to previous collection"
 msgstr ""
 
@@ -19315,11 +19304,11 @@ msgid ""
 "all selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:400 ../src/libs/styles.c:847
+#: ../src/libs/copy_history.c:400 ../src/libs/styles.c:851
 msgid "how to handle existing history"
 msgstr ""
 
-#: ../src/libs/copy_history.c:403 ../src/libs/styles.c:850
+#: ../src/libs/copy_history.c:403 ../src/libs/styles.c:854
 msgid "append"
 msgstr ""
 
@@ -19528,49 +19517,53 @@ msgstr ""
 msgid "export with current settings"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:163
+#: ../src/libs/export_metadata.c:148
 msgid "select tag"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:164
-msgid "add"
+#: ../src/libs/export_metadata.c:150
+msgid "_add"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:175
+#: ../src/libs/export_metadata.c:151 ../src/libs/geotagging.c:811
+msgid "_done"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:162
 msgid "list filter"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:186
+#: ../src/libs/export_metadata.c:173
 msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:287
+#: ../src/libs/export_metadata.c:274
 msgid "edit metadata exportation"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:304
+#: ../src/libs/export_metadata.c:293
 msgid "general settings"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:309
+#: ../src/libs/export_metadata.c:298
 msgid "EXIF data"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:310
+#: ../src/libs/export_metadata.c:299
 msgid "export EXIF metadata"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:313
+#: ../src/libs/export_metadata.c:302
 msgid "export darktable XMP metadata (from metadata editor module)"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:323
+#: ../src/libs/export_metadata.c:312
 msgid "only embedded"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:324
+#: ../src/libs/export_metadata.c:313
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
@@ -19580,75 +19573,75 @@ msgid ""
 "calculated metadata instead"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:330 ../src/libs/image.c:566
+#: ../src/libs/export_metadata.c:319 ../src/libs/image.c:566
 msgid "geo tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:331
+#: ../src/libs/export_metadata.c:320
 msgid "export geo tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:334
+#: ../src/libs/export_metadata.c:323
 msgid "export tags (to Xmp.dc.Subject)"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:342
+#: ../src/libs/export_metadata.c:331
 msgid "private tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:343
+#: ../src/libs/export_metadata.c:332
 msgid "export private tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:345
+#: ../src/libs/export_metadata.c:334
 msgid "synonyms"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:346
+#: ../src/libs/export_metadata.c:335
 msgid "export tags synonyms"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:348
+#: ../src/libs/export_metadata.c:337
 msgid "omit hierarchy"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:349
+#: ../src/libs/export_metadata.c:338
 msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:352
+#: ../src/libs/export_metadata.c:341
 msgid "hierarchical tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:353
+#: ../src/libs/export_metadata.c:342
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:355
+#: ../src/libs/export_metadata.c:344
 msgid "develop history"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:356
+#: ../src/libs/export_metadata.c:345
 msgid ""
 "export darktable development data (recovery purpose in case of loss of "
 "database or XMP file)"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:363
+#: ../src/libs/export_metadata.c:352
 msgid "per metadata settings"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:376
+#: ../src/libs/export_metadata.c:364
 msgid "redefined tag"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:382
+#: ../src/libs/export_metadata.c:370
 msgid "formula"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:385
+#: ../src/libs/export_metadata.c:373
 msgid ""
 "list of calculated metadata\n"
 "click on '+' button to select and add new metadata\n"
@@ -19662,11 +19655,11 @@ msgid ""
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:442
+#: ../src/libs/export_metadata.c:430
 msgid "add an output metadata tag"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:447
+#: ../src/libs/export_metadata.c:435
 msgid "delete metadata tag"
 msgstr ""
 
@@ -19930,6 +19923,11 @@ msgid ""
 "ctrl+click to select multiple values"
 msgstr ""
 
+#. the button to close the popup
+#: ../src/libs/filters/filename.c:452
+msgid "ok"
+msgstr ""
+
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
 msgid "ungrouped images"
 msgstr ""
@@ -20050,7 +20048,7 @@ msgstr ""
 msgid "apply offset and geo-location"
 msgstr ""
 
-#: ../src/libs/geotagging.c:369 ../src/libs/geotagging.c:1913
+#: ../src/libs/geotagging.c:369 ../src/libs/geotagging.c:1914
 msgid "apply geo-location"
 msgstr ""
 
@@ -20060,112 +20058,112 @@ msgid ""
 "double operation: two ctrl-z to undo"
 msgstr ""
 
-#: ../src/libs/geotagging.c:373 ../src/libs/geotagging.c:1914
+#: ../src/libs/geotagging.c:373 ../src/libs/geotagging.c:1915
 msgid "apply geo-location to matching images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:810
+#: ../src/libs/geotagging.c:809
 msgid "GPX file track segments"
 msgstr ""
 
-#: ../src/libs/geotagging.c:830 ../src/libs/geotagging.c:1872
+#: ../src/libs/geotagging.c:831 ../src/libs/geotagging.c:1873
 msgid "start time"
 msgstr ""
 
-#: ../src/libs/geotagging.c:831
+#: ../src/libs/geotagging.c:832
 msgid "end time"
 msgstr ""
 
-#: ../src/libs/geotagging.c:832 ../src/libs/geotagging.c:1874
+#: ../src/libs/geotagging.c:833 ../src/libs/geotagging.c:1875
 msgid "points"
 msgstr ""
 
-#: ../src/libs/geotagging.c:833 ../src/libs/geotagging.c:1876
+#: ../src/libs/geotagging.c:834 ../src/libs/geotagging.c:1877
 #: ../src/libs/image.c:463
 msgid "images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:926
+#: ../src/libs/geotagging.c:927
 msgid "open GPX file"
 msgstr ""
 
-#: ../src/libs/geotagging.c:927 ../src/libs/tools/lighttable.c:330
+#: ../src/libs/geotagging.c:928 ../src/libs/tools/lighttable.c:330
 #: ../src/libs/tools/lighttable.c:399 ../src/views/darkroom.c:2182
 msgid "preview"
 msgstr ""
 
-#: ../src/libs/geotagging.c:940
+#: ../src/libs/geotagging.c:941
 msgid "GPS data exchange format"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1742
+#: ../src/libs/geotagging.c:1743
 msgid "date/time"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1743
+#: ../src/libs/geotagging.c:1744
 msgid ""
 "enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "key in the new numbers or scroll over the cell"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1747
+#: ../src/libs/geotagging.c:1748
 msgid "original date/time"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1751
+#: ../src/libs/geotagging.c:1752
 msgid "lock date/time offset value to apply it onto another selection"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1755
+#: ../src/libs/geotagging.c:1756
 msgid "date/time offset"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1756
+#: ../src/libs/geotagging.c:1757
 msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
 msgstr ""
 
 #. apply
-#: ../src/libs/geotagging.c:1760
+#: ../src/libs/geotagging.c:1761
 msgid "apply offset"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1761
+#: ../src/libs/geotagging.c:1762
 msgid "apply offset to selected images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1764
+#: ../src/libs/geotagging.c:1765
 msgid "apply date/time"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1765
+#: ../src/libs/geotagging.c:1766
 msgid "apply the same date/time to selected images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1775
+#: ../src/libs/geotagging.c:1776
 msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
 "press enter to confirm, so that the asterisk * disappears"
 msgstr ""
 
 #. gpx
-#: ../src/libs/geotagging.c:1818
+#: ../src/libs/geotagging.c:1819
 msgid "apply GPX track file..."
 msgstr ""
 
-#: ../src/libs/geotagging.c:1819
+#: ../src/libs/geotagging.c:1820
 msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1830
+#: ../src/libs/geotagging.c:1831
 msgctxt "section"
 msgid "GPX file"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1837
+#: ../src/libs/geotagging.c:1838
 msgid "select a GPX track file..."
 msgstr ""
 
-#: ../src/libs/geotagging.c:1854
+#: ../src/libs/geotagging.c:1855
 msgid ""
 "list of track segments in the GPX file, for each segment:\n"
 "- the start date/time in local time (LT)\n"
@@ -20175,23 +20173,23 @@ msgid ""
 "- more detailed time information hovering the row"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1893
+#: ../src/libs/geotagging.c:1894
 msgid "preview images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1898
+#: ../src/libs/geotagging.c:1899
 msgid "show on map matching images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1901
+#: ../src/libs/geotagging.c:1902
 msgid "select images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1902
+#: ../src/libs/geotagging.c:1903
 msgid "select matching images"
 msgstr ""
 
-#: ../src/libs/geotagging.c:1910
+#: ../src/libs/geotagging.c:1911
 msgid "number of matching images versus selected images"
 msgstr ""
 
@@ -20461,8 +20459,8 @@ msgstr ""
 msgid "physically delete from disk immediately"
 msgstr ""
 
-#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3816
-#: ../src/libs/styles.c:876
+#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3813
+#: ../src/libs/styles.c:880
 msgid "remove"
 msgstr ""
 
@@ -20717,23 +20715,23 @@ msgstr ""
 msgid "copy & import"
 msgstr ""
 
-#: ../src/libs/import.c:1732
+#: ../src/libs/import.c:1733
 msgid "select new"
 msgstr ""
 
-#: ../src/libs/import.c:1775
+#: ../src/libs/import.c:1776
 msgid "please wait while prefetching the list of images from camera..."
 msgstr ""
 
-#: ../src/libs/import.c:1909
+#: ../src/libs/import.c:1913
 msgid "invalid override date/time format"
 msgstr ""
 
-#: ../src/libs/import.c:1973
+#: ../src/libs/import.c:1977
 msgid "import base directory"
 msgstr ""
 
-#: ../src/libs/import.c:1974
+#: ../src/libs/import.c:1978
 msgid ""
 "before copying images to the darktable base directory make sure it is "
 "defined as you prefer.\n"
@@ -20743,23 +20741,23 @@ msgid ""
 "check and possibly correct the 'base directory naming pattern'"
 msgstr ""
 
-#: ../src/libs/import.c:1978
-msgid "understood & done"
+#: ../src/libs/import.c:1982
+msgid "_understood & done"
 msgstr ""
 
-#: ../src/libs/import.c:2044
+#: ../src/libs/import.c:2048
 msgid "add to library..."
 msgstr ""
 
-#: ../src/libs/import.c:2045
+#: ../src/libs/import.c:2049
 msgid "add existing images to the library"
 msgstr ""
 
-#: ../src/libs/import.c:2051
+#: ../src/libs/import.c:2055
 msgid "copy & import..."
 msgstr ""
 
-#: ../src/libs/import.c:2052
+#: ../src/libs/import.c:2056
 msgid ""
 "copy and optionally rename images before adding them to the library\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -20767,7 +20765,7 @@ msgid ""
 msgstr ""
 
 #. collapsible section
-#: ../src/libs/import.c:2075
+#: ../src/libs/import.c:2079
 msgid "parameters"
 msgstr ""
 
@@ -21150,32 +21148,36 @@ msgstr ""
 msgid "metadata editor"
 msgstr ""
 
-#: ../src/libs/metadata.c:465 ../src/libs/metadata_view.c:1203
+#: ../src/libs/metadata.c:464 ../src/libs/metadata_view.c:1203
 msgid "metadata settings"
 msgstr ""
 
-#: ../src/libs/metadata.c:519 ../src/libs/metadata_view.c:1248
+#: ../src/libs/metadata.c:466 ../src/libs/metadata_view.c:1205
+msgid "_default"
+msgstr ""
+
+#: ../src/libs/metadata.c:521 ../src/libs/metadata_view.c:1251
 msgid "visible"
 msgstr ""
 
-#: ../src/libs/metadata.c:524
+#: ../src/libs/metadata.c:529
 msgid ""
 "tick if the corresponding metadata is of interest for you\n"
 "it will be visible from metadata editor, collection and import module\n"
 "it will be also exported"
 msgstr ""
 
-#: ../src/libs/metadata.c:529 ../src/libs/tagging.c:1682
-#: ../src/libs/tagging.c:1826
+#: ../src/libs/metadata.c:534 ../src/libs/tagging.c:1701
+#: ../src/libs/tagging.c:1850
 msgid "private"
 msgstr ""
 
-#: ../src/libs/metadata.c:534
+#: ../src/libs/metadata.c:539
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 
-#: ../src/libs/metadata.c:691
+#: ../src/libs/metadata.c:696
 msgid ""
 "metadata text\n"
 "ctrl+enter inserts a new line (caution, may not be compatible with standard "
@@ -21185,64 +21187,68 @@ msgid ""
 "escape to exit the popup window"
 msgstr ""
 
-#: ../src/libs/metadata.c:736
+#: ../src/libs/metadata.c:741
 msgid "write metadata for selected images"
 msgstr ""
 
-#: ../src/libs/metadata.c:738
+#: ../src/libs/metadata.c:742
+msgid "cancel"
+msgstr ""
+
+#: ../src/libs/metadata.c:743
 msgid "ignore changed metadata"
 msgstr ""
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:793
+#: ../src/libs/metadata.c:798
 msgid "CC BY"
 msgstr ""
 
-#: ../src/libs/metadata.c:794
+#: ../src/libs/metadata.c:799
 msgid "Creative Commons Attribution (CC BY)"
 msgstr ""
 
-#: ../src/libs/metadata.c:795
+#: ../src/libs/metadata.c:800
 msgid "CC BY-SA"
 msgstr ""
 
-#: ../src/libs/metadata.c:796
+#: ../src/libs/metadata.c:801
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr ""
 
-#: ../src/libs/metadata.c:797
+#: ../src/libs/metadata.c:802
 msgid "CC BY-ND"
 msgstr ""
 
-#: ../src/libs/metadata.c:798
+#: ../src/libs/metadata.c:803
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr ""
 
-#: ../src/libs/metadata.c:799
+#: ../src/libs/metadata.c:804
 msgid "CC BY-NC"
 msgstr ""
 
-#: ../src/libs/metadata.c:800
+#: ../src/libs/metadata.c:805
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr ""
 
-#: ../src/libs/metadata.c:801
+#: ../src/libs/metadata.c:806
 msgid "CC BY-NC-SA"
 msgstr ""
 
-#: ../src/libs/metadata.c:802
+#: ../src/libs/metadata.c:807
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr ""
 
-#: ../src/libs/metadata.c:803
+#: ../src/libs/metadata.c:808
 msgid "CC BY-NC-ND"
 msgstr ""
 
-#: ../src/libs/metadata.c:804
+#: ../src/libs/metadata.c:809
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr ""
 
-#: ../src/libs/metadata.c:805 ../src/libs/metadata.c:806
+#: ../src/libs/metadata.c:810 ../src/libs/metadata.c:811
 msgid "all rights reserved"
 msgstr ""
 
@@ -21383,14 +21389,14 @@ msgstr ""
 msgid "%.2f m"
 msgstr ""
 
-#: ../src/libs/metadata_view.c:1243
+#: ../src/libs/metadata_view.c:1246
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
 "if different settings are needed, use presets"
 msgstr ""
 
-#: ../src/libs/metadata_view.c:1401
+#: ../src/libs/metadata_view.c:1407
 msgid "jump to film roll"
 msgstr ""
 
@@ -21594,7 +21600,7 @@ msgstr ""
 msgid "show all history modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2640 ../src/libs/modulegroups.c:3839
+#: ../src/libs/modulegroups.c:2640 ../src/libs/modulegroups.c:3836
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
@@ -21709,59 +21715,63 @@ msgstr ""
 msgid "move group to the right"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3468
+#: ../src/libs/modulegroups.c:3464
 msgid "rename preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3475
+#: ../src/libs/modulegroups.c:3467
+msgid "_rename"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:3473
 msgid "new preset name:"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3476
+#: ../src/libs/modulegroups.c:3474
 msgid "a preset with this name already exists!"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3809
+#: ../src/libs/modulegroups.c:3806
 msgid "preset: "
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3816
+#: ../src/libs/modulegroups.c:3813
 msgid "remove the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3818
+#: ../src/libs/modulegroups.c:3815
 msgid "duplicate the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3820
+#: ../src/libs/modulegroups.c:3817
 msgid "rename the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3822
+#: ../src/libs/modulegroups.c:3819
 msgid "create a new empty preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3830
+#: ../src/libs/modulegroups.c:3827
 msgid "show search line"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3833
+#: ../src/libs/modulegroups.c:3830
 msgid "show quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3836
+#: ../src/libs/modulegroups.c:3833
 msgid "show all history modules in active group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3848
+#: ../src/libs/modulegroups.c:3845
 msgid "auto-apply this preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3863
+#: ../src/libs/modulegroups.c:3860
 msgid "module groups"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3880
+#: ../src/libs/modulegroups.c:3877
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
@@ -22130,77 +22140,81 @@ msgid_plural "do you really want to remove %d styles?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libs/styles.c:444 ../src/libs/styles.c:627
+#: ../src/libs/styles.c:441 ../src/libs/styles.c:626
+msgid "_overwrite"
+msgstr ""
+
+#: ../src/libs/styles.c:446 ../src/libs/styles.c:631
 #, c-format
 msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite existing style?\n"
 msgstr ""
 
-#: ../src/libs/styles.c:446 ../src/libs/styles.c:629
+#: ../src/libs/styles.c:448 ../src/libs/styles.c:633
 msgid "apply this option to all existing styles"
 msgstr ""
 
-#: ../src/libs/styles.c:509
+#: ../src/libs/styles.c:511
 #, c-format
 msgid "style %s was successfully exported"
 msgstr ""
 
-#: ../src/libs/styles.c:526
+#: ../src/libs/styles.c:528
 msgid "select style"
 msgstr ""
 
-#: ../src/libs/styles.c:536
+#: ../src/libs/styles.c:538
 msgid "darktable style files"
 msgstr ""
 
-#: ../src/libs/styles.c:815
+#: ../src/libs/styles.c:819
 msgid ""
 "available styles,\n"
 "double-click to apply"
 msgstr ""
 
-#: ../src/libs/styles.c:824 ../src/libs/styles.c:825
+#: ../src/libs/styles.c:828 ../src/libs/styles.c:829
 msgid "filter style names"
 msgstr ""
 
-#: ../src/libs/styles.c:837
+#: ../src/libs/styles.c:841
 msgid "create duplicate"
 msgstr ""
 
-#: ../src/libs/styles.c:844
+#: ../src/libs/styles.c:848
 msgid "creates a duplicate of the image before applying style"
 msgstr ""
 
-#: ../src/libs/styles.c:862
+#: ../src/libs/styles.c:866
 msgid "create..."
 msgstr ""
 
-#: ../src/libs/styles.c:864
+#: ../src/libs/styles.c:868
 msgid "create styles from history stack of selected images"
 msgstr ""
 
-#: ../src/libs/styles.c:869 ../src/libs/tagging.c:2251
+#: ../src/libs/styles.c:873 ../src/libs/tagging.c:2279
 msgid "edit..."
 msgstr ""
 
-#: ../src/libs/styles.c:871
+#: ../src/libs/styles.c:875
 msgid "edit the selected styles in list above"
 msgstr ""
 
-#: ../src/libs/styles.c:878
+#: ../src/libs/styles.c:882
 msgid "removes the selected styles in list above"
 msgstr ""
 
-#: ../src/libs/styles.c:885
+#: ../src/libs/styles.c:889
 msgid "import styles from a style files"
 msgstr ""
 
-#: ../src/libs/styles.c:892
+#: ../src/libs/styles.c:896
 msgid "export the selected styles into a style files"
 msgstr ""
 
-#: ../src/libs/styles.c:899
+#: ../src/libs/styles.c:903
 msgid "apply the selected styles in list above to selected images"
 msgstr ""
 
@@ -22212,7 +22226,7 @@ msgstr ""
 msgid "attach tag to all"
 msgstr ""
 
-#: ../src/libs/tagging.c:1262 ../src/libs/tagging.c:2224
+#: ../src/libs/tagging.c:1262 ../src/libs/tagging.c:2252
 msgid "detach tag"
 msgstr ""
 
@@ -22220,13 +22234,13 @@ msgstr ""
 msgid "delete tag?"
 msgstr ""
 
-#: ../src/libs/tagging.c:1489 ../src/libs/tagging.c:1577
-#: ../src/libs/tagging.c:1788 ../src/libs/tagging.c:2062
+#: ../src/libs/tagging.c:1492 ../src/libs/tagging.c:1583
+#: ../src/libs/tagging.c:1810 ../src/libs/tagging.c:2089
 #, c-format
 msgid "selected: %s"
 msgstr ""
 
-#: ../src/libs/tagging.c:1496
+#: ../src/libs/tagging.c:1499
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -22237,172 +22251,172 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libs/tagging.c:1530
+#: ../src/libs/tagging.c:1533
 #, c-format
 msgid "tag %s removed"
 msgstr ""
 
-#: ../src/libs/tagging.c:1570
+#: ../src/libs/tagging.c:1573
 msgid "delete node?"
 msgstr ""
 
-#: ../src/libs/tagging.c:1584
+#: ../src/libs/tagging.c:1590
 #, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libs/tagging.c:1589 ../src/libs/tagging.c:1800
-#: ../src/libs/tagging.c:2074
+#: ../src/libs/tagging.c:1595 ../src/libs/tagging.c:1822
+#: ../src/libs/tagging.c:2101
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libs/tagging.c:1615
+#: ../src/libs/tagging.c:1621
 #, c-format
 msgid "%d tags removed"
 msgstr ""
 
-#: ../src/libs/tagging.c:1651
+#: ../src/libs/tagging.c:1664
 msgid "create tag"
 msgstr ""
 
-#: ../src/libs/tagging.c:1661 ../src/libs/tagging.c:1808
+#: ../src/libs/tagging.c:1677 ../src/libs/tagging.c:1830
 msgid "name: "
 msgstr ""
 
-#: ../src/libs/tagging.c:1673
+#: ../src/libs/tagging.c:1692
 #, c-format
 msgid "add to: \"%s\" "
 msgstr ""
 
-#: ../src/libs/tagging.c:1679 ../src/libs/tagging.c:1823
+#: ../src/libs/tagging.c:1698 ../src/libs/tagging.c:1847
 msgid "category"
 msgstr ""
 
-#: ../src/libs/tagging.c:1688 ../src/libs/tagging.c:1832
+#: ../src/libs/tagging.c:1707 ../src/libs/tagging.c:1856
 msgid "synonyms: "
 msgstr ""
 
-#: ../src/libs/tagging.c:1705 ../src/libs/tagging.c:1854
-#: ../src/libs/tagging.c:2096
+#: ../src/libs/tagging.c:1724 ../src/libs/tagging.c:1878
+#: ../src/libs/tagging.c:2124
 msgid "empty tag is not allowed, aborting"
 msgstr ""
 
-#: ../src/libs/tagging.c:1716
+#: ../src/libs/tagging.c:1735
 msgid "tag name already exists. aborting."
 msgstr ""
 
-#: ../src/libs/tagging.c:1795 ../src/libs/tagging.c:2069
+#: ../src/libs/tagging.c:1817 ../src/libs/tagging.c:2096
 #, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libs/tagging.c:1856
+#: ../src/libs/tagging.c:1880
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
 msgstr ""
 
-#: ../src/libs/tagging.c:1895 ../src/libs/tagging.c:2003
+#: ../src/libs/tagging.c:1919 ../src/libs/tagging.c:2027
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr ""
 
-#: ../src/libs/tagging.c:2055
+#: ../src/libs/tagging.c:2079
 msgid "change path"
 msgstr ""
 
-#: ../src/libs/tagging.c:2098
+#: ../src/libs/tagging.c:2126
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr ""
 
-#: ../src/libs/tagging.c:2194
+#: ../src/libs/tagging.c:2222
 #, c-format
 msgid "tag %s created"
 msgstr ""
 
-#: ../src/libs/tagging.c:2220
+#: ../src/libs/tagging.c:2248
 msgid "attach tag"
 msgstr ""
 
-#: ../src/libs/tagging.c:2233
+#: ../src/libs/tagging.c:2261
 msgid "create tag..."
 msgstr ""
 
-#: ../src/libs/tagging.c:2239
+#: ../src/libs/tagging.c:2267
 msgid "delete tag"
 msgstr ""
 
-#: ../src/libs/tagging.c:2246
+#: ../src/libs/tagging.c:2274
 msgid "delete node"
 msgstr ""
 
-#: ../src/libs/tagging.c:2259
+#: ../src/libs/tagging.c:2287
 msgid "change path..."
 msgstr ""
 
-#: ../src/libs/tagging.c:2269
+#: ../src/libs/tagging.c:2297
 msgid "set as a tag"
 msgstr ""
 
-#: ../src/libs/tagging.c:2280
+#: ../src/libs/tagging.c:2308
 msgid "copy to entry"
 msgstr ""
 
-#: ../src/libs/tagging.c:2297
+#: ../src/libs/tagging.c:2325
 msgid "go to tag collection"
 msgstr ""
 
-#: ../src/libs/tagging.c:2303
+#: ../src/libs/tagging.c:2331
 msgid "go back to work"
 msgstr ""
 
-#: ../src/libs/tagging.c:2460
+#: ../src/libs/tagging.c:2488
 #, c-format
 msgid "%s"
 msgstr ""
 
-#: ../src/libs/tagging.c:2461
+#: ../src/libs/tagging.c:2489
 msgid "(private)"
 msgstr ""
 
-#: ../src/libs/tagging.c:2487
+#: ../src/libs/tagging.c:2515
 msgid "select a keyword file"
 msgstr ""
 
-#: ../src/libs/tagging.c:2500
+#: ../src/libs/tagging.c:2528
 msgid "error importing tags"
 msgstr ""
 
-#: ../src/libs/tagging.c:2502
+#: ../src/libs/tagging.c:2530
 #, c-format
 msgid "%zd tags imported"
 msgstr ""
 
-#: ../src/libs/tagging.c:2523
+#: ../src/libs/tagging.c:2551
 msgid "select file to export to"
 msgstr ""
 
-#: ../src/libs/tagging.c:2537
+#: ../src/libs/tagging.c:2565
 msgid "error exporting tags"
 msgstr ""
 
-#: ../src/libs/tagging.c:2539
+#: ../src/libs/tagging.c:2567
 #, c-format
 msgid "%zd tags exported"
 msgstr ""
 
-#: ../src/libs/tagging.c:2963
+#: ../src/libs/tagging.c:2991
 msgid "drop to root"
 msgstr ""
 
-#: ../src/libs/tagging.c:3099
+#: ../src/libs/tagging.c:3127
 msgid ""
 "attached tags\n"
 "press Delete or double-click to detach\n"
@@ -22410,47 +22424,47 @@ msgid ""
 "Tab to give the focus to entry"
 msgstr ""
 
-#: ../src/libs/tagging.c:3110
+#: ../src/libs/tagging.c:3138
 msgid "attach"
 msgstr ""
 
-#: ../src/libs/tagging.c:3111
+#: ../src/libs/tagging.c:3139
 msgid "attach tag to all selected images"
 msgstr ""
 
-#: ../src/libs/tagging.c:3114
+#: ../src/libs/tagging.c:3142
 msgid "detach"
 msgstr ""
 
-#: ../src/libs/tagging.c:3115
+#: ../src/libs/tagging.c:3143
 msgid "detach tag from all selected images"
 msgstr ""
 
-#: ../src/libs/tagging.c:3128
+#: ../src/libs/tagging.c:3156
 msgid "toggle list with / without hierarchy"
 msgstr ""
 
-#: ../src/libs/tagging.c:3128
+#: ../src/libs/tagging.c:3156
 msgid "hide"
 msgstr ""
 
-#: ../src/libs/tagging.c:3130
+#: ../src/libs/tagging.c:3158
 msgid "toggle sort by name or by count"
 msgstr ""
 
-#: ../src/libs/tagging.c:3130
+#: ../src/libs/tagging.c:3158
 msgid "sort"
 msgstr ""
 
-#: ../src/libs/tagging.c:3132
+#: ../src/libs/tagging.c:3160
 msgid "toggle show or not darktable tags"
 msgstr ""
 
-#: ../src/libs/tagging.c:3132
+#: ../src/libs/tagging.c:3160
 msgid "dttags"
 msgstr ""
 
-#: ../src/libs/tagging.c:3148
+#: ../src/libs/tagging.c:3176
 msgid ""
 "enter tag name\n"
 "press Enter to create a new tag and attach it on selected images\n"
@@ -22458,11 +22472,11 @@ msgid ""
 "press shift+Tab to select the first attached user tag"
 msgstr ""
 
-#: ../src/libs/tagging.c:3159 ../src/libs/tagging.c:3165
+#: ../src/libs/tagging.c:3187 ../src/libs/tagging.c:3193
 msgid "clear entry"
 msgstr ""
 
-#: ../src/libs/tagging.c:3212
+#: ../src/libs/tagging.c:3240
 msgid ""
 "tag dictionary,\n"
 "Enter or double-click to attach selected tag on selected images\n"
@@ -22472,46 +22486,46 @@ msgid ""
 "shift+Tab to give the focus to entry"
 msgstr ""
 
-#: ../src/libs/tagging.c:3247
+#: ../src/libs/tagging.c:3275
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
 
-#: ../src/libs/tagging.c:3250
+#: ../src/libs/tagging.c:3278
 msgid "import tags from a Lightroom keyword file"
 msgstr ""
 
-#: ../src/libs/tagging.c:3253
+#: ../src/libs/tagging.c:3281
 msgid "export all tags to a Lightroom keyword file"
 msgstr ""
 
-#: ../src/libs/tagging.c:3257
+#: ../src/libs/tagging.c:3285
 msgid "toggle list / tree view"
 msgstr ""
 
-#: ../src/libs/tagging.c:3257
+#: ../src/libs/tagging.c:3285
 msgid "tree"
 msgstr ""
 
-#: ../src/libs/tagging.c:3259
+#: ../src/libs/tagging.c:3287
 msgid "toggle list with / without suggestion"
 msgstr ""
 
-#: ../src/libs/tagging.c:3259
+#: ../src/libs/tagging.c:3287
 msgid "suggestion"
 msgstr ""
 
-#: ../src/libs/tagging.c:3281
+#: ../src/libs/tagging.c:3309
 msgid "redo last tag"
 msgstr ""
 
-#: ../src/libs/tagging.c:3364
+#: ../src/libs/tagging.c:3392
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 
-#: ../src/libs/tagging.c:3468
+#: ../src/libs/tagging.c:3496
 msgid "tagging settings"
 msgstr ""
 
