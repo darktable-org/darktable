@@ -50,10 +50,11 @@ const char *dt_gui_presets_exposure_value_str[]
 
 const int dt_gui_presets_aperture_value_cnt = 19;
 const float dt_gui_presets_aperture_value[]
-    = { 0, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 5.6, 8.0, 11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
+    = { 0,     1.0,  1.4,  1.8,  2.0,  2.4,  2.8,  4.0,   5.6,
+        8.0,  11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
 const char *dt_gui_presets_aperture_value_str[]
-    = { "f/0",  "f/0.5", "f/0.7", "f/1.0", "f/1.4", "f/2",  "f/2.8", "f/4",   "f/5.6", "f/8",
-        "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
+    = { "f/0", "f/1.0", "f/1.4", "f/1.8", "f/2",  "f/2.4", "f/2.8", "f/4",   "f/5.6",
+        "f/8", "f/11",  "f/16",  "f/22",  "f/32", "f/45",  "f/64",  "f/90",  "f/128", "f/+" };
 
 // format string and corresponding flag stored into the database
 static const char *_gui_presets_format_value_str[5]
@@ -847,34 +848,18 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_entry_set_text(GTK_ENTRY(g->iso_min), "0");
     gtk_entry_set_placeholder_text(GTK_ENTRY(g->iso_max), _("∞"));
 
-    float val = 0;
-    int k = 0;
-    for(; k < dt_gui_presets_exposure_value_cnt
-          && val > dt_gui_presets_exposure_value[k]; k++)
-      ;
-    dt_bauhaus_combobox_set(g->exposure_min, k);
-    val = 100000000;
-    for(k = 0; k < dt_gui_presets_exposure_value_cnt
-          && val > dt_gui_presets_exposure_value[k]; k++)
-      ;
-    dt_bauhaus_combobox_set(g->exposure_max, k);
-    val = 0;
-    for(k = 0; k < dt_gui_presets_aperture_value_cnt
-          && val > dt_gui_presets_aperture_value[k]; k++)
-      ;
-    dt_bauhaus_combobox_set(g->aperture_min, k);
-    val = 100000000;
-    for(k = 0; k < dt_gui_presets_aperture_value_cnt
-          && val > dt_gui_presets_aperture_value[k]; k++)
-      ;
-    dt_bauhaus_combobox_set(g->aperture_max, k);
+    dt_bauhaus_combobox_set(g->exposure_min, 0);
+    dt_bauhaus_combobox_set(g->exposure_max, dt_gui_presets_exposure_value_cnt-1);
+    dt_bauhaus_combobox_set(g->aperture_min, 0);
+    dt_bauhaus_combobox_set(g->aperture_max, dt_gui_presets_aperture_value_cnt-1);
+
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), 1000);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoinit), FALSE);
 
-    for(k = 0; k < 5; k++)
+    for(int k = 0; k < 5; k++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
   }
   sqlite3_finalize(stmt);
