@@ -207,22 +207,22 @@ static const struct
 } loaders_info[LOADER_COUNT] =
 {
   { N_("unknown"),         '.'}, // EMPTY_FIELD
-  { N_("tiff"),            't'},
-  { N_("png"),             'p'},
-  { N_("j2k"),             'J'},
-  { N_("jpeg"),            'j'},
-  { N_("exr"),             'e'},
-  { N_("rgbe"),            'R'},
-  { N_("pfm"),             'P'},
+  { N_("TIFF"),            't'},
+  { N_("PNG"),             'p'},
+  { N_("JPEG 2000"),       'J'},
+  { N_("JPEG"),            'j'},
+  { N_("EXR"),             'e'},
+  { N_("RGBE"),            'R'},
+  { N_("PFM"),             'P'},
   { N_("GraphicsMagick"),  'g'},
-  { N_("rawspeed"),        'r'},
-  { N_("netpnm"),          'n'},
-  { N_("avif"),            'a'},
+  { N_("RawSpeed"),        'r'},
+  { N_("Netpbm"),          'n'},
+  { N_("AVIF"),            'a'},
   { N_("ImageMagick"),     'i'},
-  { N_("heif"),            'h'},
-  { N_("libraw"),          'l'},
-  { N_("webp"),            'w'},
-  { N_("jpeg xl"),         'L'},
+  { N_("HEIF"),            'h'},
+  { N_("LibRaw"),          'l'},
+  { N_("WebP"),            'w'},
+  { N_("JPEG XL"),         'L'},
   { N_("QOI"),             'q'}
 };
 
