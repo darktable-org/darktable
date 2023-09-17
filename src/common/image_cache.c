@@ -41,7 +41,7 @@ void dt_image_cache_allocate(void *data,
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT id, group_id, film_id, width, height, filename,"
+      "SELECT mi.id, group_id, film_id, width, height, filename,"
       "       (SELECT name FROM main.makers AS mk WHERE maker_id = mk.id),"
       "       (SELECT name FROM main.models AS md WHERE model_id = md.id),"
       "       (SELECT name FROM main.lens   AS ln WHERE lens_id  = ln.id),"
@@ -50,9 +50,9 @@ void dt_image_cache_allocate(void *data,
       "       longitude, latitude, altitude, color_matrix, colorspace, version,"
       "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
       "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
-      "       output_width, output_height"
-      "  FROM main.images"
-      "  WHERE id = ?1",
+      "       output_width, output_height, cm.maker, cm.model, cm.alias"
+      "  FROM main.images AS mi, main.cameras AS cm"
+      "  WHERE mi.id = ?1 AND cm.id = mi.camera_id",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
@@ -129,6 +129,15 @@ void dt_image_cache_allocate(void *data,
     img->final_width = sqlite3_column_int(stmt, 33);
     img->final_height = sqlite3_column_int(stmt, 34);
 
+    // normalized camera names
+    str = (char *)sqlite3_column_text(stmt, 35);
+    if(str) g_strlcpy(img->camera_maker, str, sizeof(img->camera_maker));
+    char *str2 = (char *)sqlite3_column_text(stmt, 36);
+    if(str2) g_strlcpy(img->camera_model, str2, sizeof(img->camera_model));
+    g_snprintf(img->camera_makermodel, sizeof(img->camera_makermodel), "%s %s", str, str2);
+    str = (char *)sqlite3_column_text(stmt, 37);
+    if(str) g_strlcpy(img->camera_alias, str, sizeof(img->camera_alias));
+
     // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
     {
@@ -170,7 +179,6 @@ void dt_image_cache_allocate(void *data,
   img->cache_entry = entry; // init backref
   // could downgrade lock write->read on entry->lock if we were using
   // concurrencykit..
-  dt_image_refresh_makermodel(img);
 }
 
 void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
