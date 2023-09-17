@@ -46,6 +46,11 @@ changes (where available).
   every 10 seconds by default. The interval can be changed via the
   preferences or fully disabled if the interval is set to 0.
 
+- New module, _rgb primaries_, can be used for delicate color corrections
+  as well as creative color grading. It moves the red, green and blue
+  primary colors around based on "hue" and "purity" parameters set by the
+  user. The underlying pixel operation is the same as channel mixing.
+
 ## Performance Improvements
 
 One of the major highlights of this release is the number of performance
