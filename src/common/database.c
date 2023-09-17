@@ -2725,18 +2725,30 @@ static void _create_library_schema(dt_database_t *db)
                " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                "  name VARCHAR)",
                NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX makers_name ON makers (name)",
+     NULL, NULL, NULL);
   ////////////////////////////// model
   sqlite3_exec(db->handle,
                "CREATE TABLE main.models"
                " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                "  name VARCHAR)",
                NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX models_name ON models (name)",
+     NULL, NULL, NULL);
   ////////////////////////////// lens
   sqlite3_exec(db->handle,
                "CREATE TABLE main.lens"
                " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                "  name VARCHAR)",
                NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX lens_name ON lens (name)",
+     NULL, NULL, NULL);
   ////////////////////////////// cameras
   sqlite3_exec(db->handle,
                "CREATE TABLE cameras"
