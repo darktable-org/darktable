@@ -210,7 +210,7 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
      "  FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
      "               flags, version, %s position, aspect_ratio,"
      "               mk.name AS maker, md.name AS model, ln.name AS lens,"
-     "               cm.name AS camera, aperture, exposure, focal_length,"
+     "               cm.maker || ' ' || cm.model AS camera, aperture, exposure, focal_length,"
      "               iso, import_timestamp, change_timestamp,"
      "               export_timestamp, print_timestamp"
      "        FROM main.images AS mi, main.cameras AS cm,"
@@ -441,7 +441,8 @@ int dt_collection_update(const dt_collection_t *collection)
       (selq_pre,
        "SELECT DISTINCT mi.id"
        " FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
-       "              flags, version, %s position, aspect_ratio, cm.name AS camera,"
+       "              flags, version, %s position, aspect_ratio,"
+       "              cm.maker || ' ' || cm.model AS camera,"
        "              mk.name AS maker, md.name AS model, ln.name AS lens,"
        "              aperture, exposure, focal_length,"
        "              iso, import_timestamp, change_timestamp,"
@@ -470,7 +471,8 @@ int dt_collection_update(const dt_collection_t *collection)
       (selq_pre,
        "SELECT DISTINCT mi.id"
        " FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
-       "              flags, version, %s position, aspect_ratio, cm.name AS camera,"
+       "              flags, version, %s position, aspect_ratio,"
+       "              cm.maker || ' ' || cm.model AS camera,"
        "              mk.name AS maker, md.name AS model, ln.name AS lens,"
        "              aperture, exposure, focal_length,"
        "              iso, import_timestamp, change_timestamp,"
