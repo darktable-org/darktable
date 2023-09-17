@@ -4037,7 +4037,7 @@ void dt_upgrade_maker_model(const dt_database_t *db)
     dt_version = (char *)sqlite3_column_text(stmt, 0);
   }
 
-  if(!dt_version || !strcmp(dt_version, darktable_package_version))
+  if(!dt_version || strcmp(dt_version, darktable_package_version))
   {
     _upgrade_camera_table(db);
 
