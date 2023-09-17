@@ -49,7 +49,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 39
+#define CURRENT_DATABASE_VERSION_LIBRARY 40
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2366,6 +2366,51 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 39;
   }
+  else if(version == 39)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("DROP TABLE cameras",
+             "[init] can't drop cameras table\n");
+
+    TRY_EXEC("CREATE TABLE cameras"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  maker VARCHAR, model VARCHAR,"
+             "  alias VARCHAR)",
+             "[init] can't create cameras table\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX camera_name ON cameras (maker, model, alias)",
+             "[init] can't create camera_name\n");
+
+    // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
+    TRY_EXEC("DROP VIEW v_images",
+             "[init] can't drop v_image view\n");
+
+    TRY_EXEC
+      ("CREATE VIEW v_images AS"
+       " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "        cm.maker || \" \" || cm.model AS normalized_camera, "
+       "        cm.alias AS camera_alias,"
+       "        exposure, aperture, iso,"
+       "        datetime(datetime_taken/1000000"
+       "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+       "        fr.folder AS folders, filename"
+       " FROM images AS mi,"
+       "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+       " WHERE mi.maker_id = mk.id"
+       "   AND mi.model_id = md.id"
+       "   AND mi.lens_id = ln.id"
+       "   AND mi.camera_id = cm.id"
+       "   AND mi.film_id = fr.id"
+       " ORDER BY normalized_camera, folders",
+       "[init] can't create view v_images\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 40;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2680,25 +2725,41 @@ static void _create_library_schema(dt_database_t *db)
                " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                "  name VARCHAR)",
                NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX makers_name ON makers (name)",
+     NULL, NULL, NULL);
   ////////////////////////////// model
   sqlite3_exec(db->handle,
                "CREATE TABLE main.models"
                " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                "  name VARCHAR)",
                NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX models_name ON models (name)",
+     NULL, NULL, NULL);
   ////////////////////////////// lens
   sqlite3_exec(db->handle,
                "CREATE TABLE main.lens"
                " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                "  name VARCHAR)",
                NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX lens_name ON lens (name)",
+     NULL, NULL, NULL);
   ////////////////////////////// cameras
   sqlite3_exec(db->handle,
                "CREATE TABLE cameras"
                " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-               "  name VARCHAR,"
+               "  maker VARCHAR, model VARCHAR,"
                "  alias VARCHAR)",
                NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE UNIQUE INDEX cameras_name ON cameras (maker, model, alias)",
+     NULL, NULL, NULL);
   ////////////////////////////// images
   sqlite3_exec(
       db->handle,
@@ -4037,7 +4098,7 @@ void dt_upgrade_maker_model(const dt_database_t *db)
     dt_version = (char *)sqlite3_column_text(stmt, 0);
   }
 
-  if(!dt_version || !strcmp(dt_version, darktable_package_version))
+  if(!dt_version || strcmp(dt_version, darktable_package_version))
   {
     _upgrade_camera_table(db);
 

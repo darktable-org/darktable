@@ -3130,7 +3130,8 @@ int32_t dt_image_get_camera_id(const char *maker, const char *model)
 
   char *query = g_strdup_printf("SELECT id"
                                 "  FROM main.cameras"
-                                "  WHERE name = '%s %s'",
+                                "  WHERE maker = '%s'"
+                                "    AND model = '%s'",
                                 n_maker, n_model);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -3146,8 +3147,8 @@ int32_t dt_image_get_camera_id(const char *maker, const char *model)
   {
     g_free(query);
     query = g_strdup_printf("INSERT"
-                            "  INTO main.cameras (name, alias)"
-                            "  VALUES ('%s %s', '%s')",
+                            "  INTO main.cameras (maker, model, alias)"
+                            "  VALUES ('%s', '%s', '%s')",
                             n_maker, n_model,
                             n_alias);
 
