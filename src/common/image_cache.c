@@ -51,8 +51,9 @@ void dt_image_cache_allocate(void *data,
       "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
       "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
       "       output_width, output_height, cm.maker, cm.model, cm.alias"
-      "  FROM main.images AS mi, main.cameras AS cm"
-      "  WHERE mi.id = ?1 AND cm.id = mi.camera_id",
+      "  FROM main.images AS mi"
+      "       LEFT JOIN main.cameras AS cm ON cm.id = mi.camera_id"
+      "  WHERE mi.id = ?1",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
