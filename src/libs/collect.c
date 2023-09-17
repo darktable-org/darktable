@@ -1698,7 +1698,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         int index = 0;
         // clang-format off
         gchar *makermodel_query = g_strdup_printf
-          ("SELECT cm.name AS camera, COUNT(*) AS count"
+          ("SELECT cm.maker || ' ' || cm.model AS camera, COUNT(*) AS count"
            "  FROM main.images AS mi, main.cameras AS cm"
            "  WHERE mi.camera_id = cm.id"
            "    AND %s "
