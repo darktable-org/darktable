@@ -33,7 +33,7 @@ static gboolean _rating_range_update(dt_lib_filtering_rule_t *rule)
   // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
-             " COUNT(*) AS count, mk.name AS maker, md.name AS model, ln.name AS lens, cm.name AS camera"
+             " COUNT(*) AS count, mk.name AS maker, md.name AS model, ln.name AS lens, cm.maker || ' ' || cm.model AS camera"
              " FROM main.images AS mi, main.makers AS mk, main.models AS md, main.lens AS ln, main.cameras AS cm"
              " WHERE mi.maker_id = mk.id"
              "   AND mi.model_id = md.id"
