@@ -748,7 +748,7 @@ void *get_params(dt_imageio_module_format_t *self)
 #endif
   d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
   d->compresslevel = dt_conf_get_int("plugins/imageio/format/tiff/compresslevel");
-  d->shortfile = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
+  d->shortfile = dt_conf_get_bool("plugins/imageio/format/tiff/shortfile");
 
   return d;
 }
@@ -832,7 +832,7 @@ static void pixelformat_combobox_changed(GtkWidget *widget, gpointer user_data)
 static void shortfile_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
   const int mode = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_int("plugins/imageio/format/tiff/shortfile", mode);
+  dt_conf_set_bool("plugins/imageio/format/tiff/shortfile", mode);
 }
 
 static void compress_combobox_changed(GtkWidget *widget, dt_imageio_tiff_gui_t *gui)
@@ -874,7 +874,7 @@ void gui_init(dt_imageio_module_format_t *self)
 #endif
   const int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
   const int compresslevel = dt_conf_get_int("plugins/imageio/format/tiff/compresslevel");
-  const int shortmode = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
+  const int shortmode = dt_conf_get_bool("plugins/imageio/format/tiff/shortfile");
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -927,7 +927,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                _("saving as grayscale will reduce the size for black & white images"), shortmode,
                                shortfile_combobox_changed, self, N_("no"), N_("yes"));
   dt_bauhaus_combobox_set_default(gui->shortfiles,
-                                  dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
+                                  dt_confgen_get_bool("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->shortfiles, TRUE, TRUE, 0);
 }
 
@@ -951,7 +951,7 @@ void gui_reset(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_set(gui->compress, dt_confgen_get_int("plugins/imageio/format/tiff/compress", DT_DEFAULT));
   dt_bauhaus_slider_set(gui->compresslevel,
                         dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_DEFAULT));
-  dt_bauhaus_combobox_set(gui->shortfiles, dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
+  dt_bauhaus_combobox_set(gui->shortfiles, dt_confgen_get_bool("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
 }
 
 int flags(dt_imageio_module_data_t *data)
