@@ -81,10 +81,13 @@ void dt_film_set_query(const int32_t id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    dt_conf_set_string("plugins/lighttable/collect/string0", (gchar *)sqlite3_column_text(stmt, 1));
+    dt_conf_set_string("plugins/lighttable/collect/string0",
+                       (gchar *)sqlite3_column_text(stmt, 1));
   }
   sqlite3_finalize(stmt);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_NEW_QUERY,
+                             DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 int32_t dt_film_get_id(const char *folder)
@@ -124,7 +127,9 @@ int dt_film_open2(dt_film_t *film)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* fill out the film dirname */
-    g_strlcpy(film->dirname, (gchar *)sqlite3_column_text(stmt, 1), sizeof(film->dirname));
+    g_strlcpy(film->dirname,
+              (gchar *)sqlite3_column_text(stmt, 1),
+              sizeof(film->dirname));
     sqlite3_finalize(stmt);
 
     // clang-format off
@@ -235,10 +240,11 @@ int dt_film_new(dt_film_t *film, const char *directory)
     // create a new filmroll
     /* insert a new film roll into database */
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.film_rolls (id, access_timestamp, folder)"
-                                "  VALUES (NULL, strftime('%s', 'now'), ?1)",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "INSERT INTO main.film_rolls (id, access_timestamp, folder)"
+       "  VALUES (NULL, strftime('%s', 'now'), ?1)",
+       -1, &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, film->dirname, -1, SQLITE_STATIC);
     const int rc = sqlite3_step(stmt);
@@ -274,7 +280,9 @@ int dt_film_new(dt_film_t *film, const char *directory)
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film->id);
     if(sqlite3_step(stmt) != SQLITE_ROW)
-      g_strlcpy(film->dirname, (const char *)sqlite3_column_text(stmt, 0), sizeof(film->dirname));
+      g_strlcpy(film->dirname,
+                (const char *)sqlite3_column_text(stmt, 0),
+                sizeof(film->dirname));
     sqlite3_finalize(stmt);
   }
 #endif
@@ -307,7 +315,8 @@ int dt_film_import(const char *dirname)
     return 0;
   }
 
-  // when called without job system running the import will be done synchronously and destroy the film object
+  // when called without job system running the import will be done
+  // synchronously and destroy the film object
   const int filmid = film->id;
 
   /* at last put import film job on queue */
@@ -324,7 +333,8 @@ int dt_film_import(const char *dirname)
   }
 
   // deselect all
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
   // launch import job
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));
@@ -340,16 +350,18 @@ static gboolean ask_and_delete(gpointer user_data)
   GtkWidget *dialog;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-  dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                                  GTK_BUTTONS_YES_NO,
-                                  ngettext("do you want to remove this empty directory?",
-                                           "do you want to remove these empty directories?", n_empty_dirs));
+  dialog = gtk_message_dialog_new
+    (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+     GTK_BUTTONS_YES_NO,
+     ngettext("do you want to remove this empty directory?",
+              "do you want to remove these empty directories?", n_empty_dirs));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
 
   gtk_window_set_title(GTK_WINDOW(dialog),
-                       ngettext("remove empty directory?", "remove empty directories?", n_empty_dirs));
+                       ngettext("remove empty directory?",
+                                "remove empty directories?", n_empty_dirs));
 
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -400,7 +412,7 @@ void dt_film_remove_empty()
   gboolean raise_signal = FALSE;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id,folder"
+                              "SELECT id, folder"
                               " FROM main.film_rolls AS B"
                               " WHERE (SELECT COUNT(*)"
                               "        FROM main.images AS A"
@@ -421,12 +433,15 @@ void dt_film_remove_empty()
 
     if(dt_util_is_dir_empty(folder))
     {
-      if(ask_before_rmdir) empty_dirs = g_list_prepend(empty_dirs, g_strdup(folder));
-      else rmdir(folder);
+      if(ask_before_rmdir)
+        empty_dirs = g_list_prepend(empty_dirs, g_strdup(folder));
+      else
+        rmdir(folder);
     }
   }
   sqlite3_finalize(stmt);
-  if(raise_signal) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED);
+  if(raise_signal) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
+                                                 DT_SIGNAL_FILMROLLS_REMOVED);
 
   // dispatch asking for deletion (and subsequent deletion) to the gui thread
   if(empty_dirs)
@@ -474,7 +489,8 @@ void dt_film_remove(const int id)
 
   if(!remove_ok)
   {
-    dt_control_log(_("cannot remove film roll having local copies with non accessible originals"));
+    dt_control_log(_("cannot remove film roll having local copies with"
+                     " non accessible originals"));
     return;
   }
 
@@ -561,4 +577,3 @@ void dt_film_set_folder_status()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
