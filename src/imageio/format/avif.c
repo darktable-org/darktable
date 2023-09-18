@@ -798,16 +798,15 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Color mode combo box
    */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("color mode"),
-                               _("saving as grayscale will reduce the size for black & white images"),
-                               color_mode, color_mode_changed, self,
-                               N_("RGB colors"), N_("grayscale"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("b&w as grayscale"),
+                               _("saving as grayscale will reduce the size for black & white images"), color_mode,
+                               color_mode_changed, self, N_("no"), N_("yes"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     gui->color_mode,
-                     TRUE,
-                     TRUE,
-                     0);
+  dt_bauhaus_combobox_set_default(gui->color_mode,
+                                  dt_confgen_get_int("plugins/imageio/format/avif/color_mode", DT_DEFAULT));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->color_mode, TRUE, TRUE, 0);
+
   /*
    * Tiling combo box
    */
