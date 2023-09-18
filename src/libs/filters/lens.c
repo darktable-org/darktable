@@ -185,6 +185,11 @@ static gboolean _lens_press(GtkWidget *w,
     gtk_widget_show_all(lens->pop);
     return TRUE;
   }
+  else if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  {
+    gtk_entry_set_text(GTK_ENTRY(lens->name), "");
+    _lens_changed(w, lens);
+  }
   return FALSE;
 }
 
