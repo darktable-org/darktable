@@ -3122,10 +3122,10 @@ int32_t dt_image_get_camera_id(const char *maker, const char *model)
   char n_model[1024] = { 0 };
   char n_alias[1024] = { 0 };
 
-  dt_rawspeed_lookup_makermodel(maker, model,
-                                n_maker, sizeof(n_maker),
-                                n_model, sizeof(n_model),
-                                n_alias, sizeof(n_alias));
+  dt_imageio_lookup_makermodel(maker, model,
+                               n_maker, sizeof(n_maker),
+                               n_model, sizeof(n_model),
+                               n_alias, sizeof(n_alias));
 
   char *query = g_strdup_printf("SELECT id"
                                 "  FROM main.cameras"
