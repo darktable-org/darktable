@@ -42,9 +42,7 @@ void dt_image_cache_allocate(void *data,
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT mi.id, group_id, film_id, width, height, filename,"
-      "       (SELECT name FROM main.makers AS mk WHERE maker_id = mk.id),"
-      "       (SELECT name FROM main.models AS md WHERE model_id = md.id),"
-      "       (SELECT name FROM main.lens   AS ln WHERE lens_id  = ln.id),"
+      "       mk.name, md.name, ln.name,"
       "       exposure, aperture, iso, focal_length, datetime_taken, flags,"
       "       crop, orientation, focus_distance, raw_parameters,"
       "       longitude, latitude, altitude, color_matrix, colorspace, version,"
@@ -53,6 +51,9 @@ void dt_image_cache_allocate(void *data,
       "       output_width, output_height, cm.maker, cm.model, cm.alias"
       "  FROM main.images AS mi"
       "       LEFT JOIN main.cameras AS cm ON cm.id = mi.camera_id"
+      "       LEFT JOIN main.makers AS mk ON mk.id = mi.maker_id"
+      "       LEFT JOIN main.models AS md ON md.id = mi.model_id"
+      "       LEFT JOIN main.lens AS ln ON ln.id = mi.lens_id"
       "  WHERE mi.id = ?1",
       -1, &stmt, NULL);
   // clang-format on
