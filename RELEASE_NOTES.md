@@ -151,6 +151,9 @@ changes (where available).
 - Added mnemonics to dialog box buttons and marked default buttons so
   pressing Enter will trigger them and close the dialog.
 
+- Extract more OpenEXR 3.2.0 attributes for image information if
+  present.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
