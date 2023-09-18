@@ -277,9 +277,10 @@ int dt_collection_update(const dt_collection_t *collection)
         * representative image.
         * The *2+CASE statement are to break ties, so that when id < group_id, it's
         * weighted a little higher than when id > group_id. */
-       "id IN (SELECT id FROM "
-       "(SELECT id, MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) "
-       "FROM main.images WHERE %s GROUP BY group_id)))",
+       "mi.id IN (SELECT id FROM "
+       "(SELECT id,"
+       "        MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END)"
+       " FROM main.images WHERE %s GROUP BY group_id)))",
        darktable.gui->expanded_group_id, wq_no_group);
     // clang-format on
 
@@ -354,11 +355,13 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
-    selq_post = dt_util_dstrcat(selq_post, ") AS mi"
-                                " JOIN (SELECT id AS film_rolls_id, folder"
-                                "       FROM main.film_rolls) ON film_id = film_rolls_id"
-                                " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
-                                DT_METADATA_XMP_DC_TITLE);
+    selq_post = dt_util_dstrcat
+      (selq_post,
+       ") AS mi"
+       " JOIN (SELECT id AS film_rolls_id, folder"
+       "       FROM main.film_rolls) ON film_id = film_rolls_id"
+       " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
+       DT_METADATA_XMP_DC_TITLE);
     // clang-format on
   }
   /* PATH and DESCRIPTION */
@@ -385,7 +388,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format off
     selq_post = dt_util_dstrcat
       (selq_post,
-       ") AS mi LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
+       ") AS mi LEFT OUTER JOIN main.meta_data AS m"
+       "          ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
        DT_METADATA_XMP_DC_TITLE, DT_METADATA_XMP_DC_DESCRIPTION);
     // clang-format on
   }
@@ -395,8 +399,9 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
-    selq_post = dt_util_dstrcat(selq_post, ") AS mi"
-                                " LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
+    selq_post = dt_util_dstrcat
+      (selq_post, ") AS mi"
+       " LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
     // clang-format on
   }
   /* only PATH */
@@ -431,7 +436,9 @@ int dt_collection_update(const dt_collection_t *collection)
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
     selq_post = dt_util_dstrcat
-      (selq_post, ") AS mi LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d ",
+      (selq_post,
+       ") AS mi LEFT OUTER JOIN main.meta_data AS m"
+       "          ON mi.id = m.id AND m.key = %d ",
        DT_METADATA_XMP_DC_DESCRIPTION);
     // clang-format on
   }
@@ -1456,7 +1463,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
         // clang-format off
         query = g_strdup_printf
-          ("(id IN (SELECT imgid FROM main.color_labels WHERE color IS NOT NULL))");
+          ("(mi.id IN (SELECT imgid FROM main.color_labels WHERE color IS NOT NULL))");
         // clang-format on
       else
       {
@@ -1472,7 +1479,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             if(colors_set)
               // clang-format off
               query = g_strdup_printf
-                ("(id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                ("(mi.id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
                  "  FROM main.color_labels GROUP BY imgid)"
                  "  WHERE ((mask & %d) = %d) AND (mask & %d = 0)))",
                  colors_set, colors_set, colors_unset);
@@ -1480,7 +1487,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             else if(colors_unset)
               // clang-format off
               query = g_strdup_printf
-                ("(NOT id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                ("(NOT mi.id IN (SELECT id"
+                 "               FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
                  "  FROM main.color_labels GROUP BY imgid)"
                  "  WHERE ((mask & %d) <> 0)))",
                  colors_unset);
@@ -1491,7 +1499,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             if(!colors_unset)
               // clang-format off
               query = g_strdup_printf
-                ("(id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                ("(mi.id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
                  "  FROM main.color_labels GROUP BY imgid)"
                  "  WHERE ((mask & %d) <> 0)))",
                  colors_set);
@@ -1499,7 +1507,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             else
               // clang-format off
               query = g_strdup_printf
-                ("((id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                ("((mi.id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
                  "  FROM main.color_labels GROUP BY imgid)"
                  "  WHERE ((mask & %d) <> 0))"
                  " OR id NOT IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
@@ -1524,7 +1532,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             color = 4;
           // clang-format off
           query = g_strdup_printf
-            ("(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
+            ("(mi.id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
           // clang-format on
         }
       }
@@ -1540,15 +1548,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       else if(!g_strcmp0(escaped_text, _("auto applied")) || !g_strcmp0(escaped_text, "$AUTO_APPLIED"))
       {
-        query = g_strdup("(id IN (SELECT imgid FROM main.history_hash WHERE current_hash == auto_hash))");
+        query = g_strdup("(mi.id IN (SELECT imgid"
+                         "           FROM main.history_hash"
+                         "           WHERE current_hash == auto_hash))");
       }
       else if(!g_strcmp0(escaped_text, _("altered")) || !g_strcmp0(escaped_text, "$ALTERED"))
       {
         // clang-format off
-        query = g_strdup("(id IN (SELECT imgid "
-                                  "FROM main.history_hash "
-                                  "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
-                                  "AND (auto_hash IS NULL OR current_hash != auto_hash) ))");
+        query = g_strdup
+          ("(mi.id IN (SELECT imgid "
+           "           FROM main.history_hash "
+           "           WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
+           "             AND (auto_hash IS NULL OR current_hash != auto_hash) ))");
         // clang-format on
       }
       else // by default, we select all the images
@@ -1575,18 +1586,19 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
         if(not_tagged || all_tagged)
           // clang-format off
-          query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images "
-                                  "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
+          query = g_strdup_printf
+            ("(mi.id %s IN (SELECT id AS imgid FROM main.images "
+             "              WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
                                   all_tagged ? "" : "not");
           // clang-format on
         else
           // clang-format off
-          query = g_strdup_printf("(id IN (SELECT id AS imgid FROM main.images "
-                                         "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))"
-                                         "AND id %s IN (SELECT imgid FROM main.tagged_images AS ti"
-                                         "  JOIN data.tags AS t"
-                                         "  ON t.id = ti.tagid"
-                                         "     AND %s)) ",
+          query = g_strdup_printf
+            ("(mi.id IN (SELECT id AS imgid FROM main.images "
+             "           WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))"
+             "             AND id %s IN (SELECT imgid FROM main.tagged_images AS ti"
+             "           JOIN data.tags AS t ON t.id = ti.tagid"
+             "           AND %s)) ",
                                   no_location ? "not" : "",
                                   name_clause);
           // clang-format on
@@ -1594,11 +1606,13 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
-      if(!g_strcmp0(escaped_text, _("not copied locally")) || !g_strcmp0(escaped_text, "$NO_LOCAL_COPY"))
+      if(!g_strcmp0(escaped_text, _("not copied locally"))
+         || !g_strcmp0(escaped_text, "$NO_LOCAL_COPY"))
       {
         query = g_strdup_printf("(flags & %d = 0) ", DT_IMAGE_LOCAL_COPY);
       }
-      else if(!g_strcmp0(escaped_text, _("copied locally")) || !g_strcmp0(escaped_text, "$LOCAL_COPY"))
+      else if(!g_strcmp0(escaped_text, _("copied locally"))
+              || !g_strcmp0(escaped_text, "$LOCAL_COPY"))
       {
         query = g_strdup_printf("(flags & %d) ", DT_IMAGE_LOCAL_COPY);
       }
@@ -1662,8 +1676,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(!strcmp(escaped_text, _("not tagged")))
       {
         // clang-format off
-        query = g_strdup_printf("(id NOT IN (SELECT DISTINCT imgid FROM main.tagged_images "
-                                            "WHERE tagid NOT IN memory.darktable_tags))");
+        query = g_strdup_printf
+          ("(mi.id NOT IN (SELECT DISTINCT imgid FROM main.tagged_images "
+           "               WHERE tagid NOT IN memory.darktable_tags))");
         // clang-format on
       }
       else if(is_insensitive)
@@ -1675,8 +1690,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           escaped_text[escaped_length-1] = '\0';
           // clang-format off
           query = g_strdup_printf
-            ("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
-             "(SELECT id FROM data.tags WHERE name LIKE '%s' OR name LIKE '%s|%%')))",
+            ("(mi.id IN (SELECT imgid FROM main.tagged_images"
+             "           WHERE tagid IN (SELECT id FROM data.tags"
+             "                           WHERE name LIKE '%s' OR name LIKE '%s|%%')))",
              escaped_text, escaped_text);
           // clang-format on
         }
@@ -1685,8 +1701,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // default
           // clang-format off
           query = g_strdup_printf
-            ("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
-             "(SELECT id FROM data.tags WHERE name LIKE '%s')))",
+            ("(mi.id IN (SELECT imgid FROM main.tagged_images"
+             "           WHERE tagid IN (SELECT id FROM data.tags WHERE name LIKE '%s')))",
              escaped_text);
           // clang-format on
         }
@@ -1701,10 +1717,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           escaped_text[escaped_length-1] = '\0';
           // clang-format off
           query = g_strdup_printf
-            ("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
-             "(SELECT id FROM data.tags "
-             "WHERE name = '%s'"
-             "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|')))",
+            ("(mi.id IN (SELECT imgid FROM main.tagged_images"
+             "           WHERE tagid IN (SELECT id FROM data.tags "
+             "                           WHERE name = '%s'"
+             "                            OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|')))",
              escaped_text, escaped_text, escaped_text);
           // clang-format on
         }
@@ -1714,8 +1730,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           escaped_text[escaped_length-1] = '\0';
           // clang-format off
           query = g_strdup_printf
-            ("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
-             "(SELECT id FROM data.tags WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s')))",
+            ("(mi.id IN (SELECT imgid FROM main.tagged_images"
+             "           WHERE tagid IN (SELECT id FROM data.tags"
+             "                           WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s')))",
              escaped_text, escaped_text);
           // clang-format on
         }
@@ -1724,8 +1741,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // default
           // clang-format off
           query = g_strdup_printf
-            ("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
-             "(SELECT id FROM data.tags WHERE name = '%s')))",
+            ("(mi.id IN (SELECT imgid FROM main.tagged_images"
+             "           WHERE tagid IN (SELECT id FROM data.tags"
+             "                           WHERE name = '%s')))",
              escaped_text);
           // clang-format on
         }
@@ -2039,10 +2057,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_MODULE: // dev module
       {
         // clang-format off
-        query = g_strdup_printf("(id IN (SELECT imgid AS id FROM main.history AS h "
-                                "        JOIN memory.darktable_iop_names AS m"
-                                "          ON m.operation = h.operation "
-                                "        WHERE h.enabled = 1 AND m.name LIKE '%s'))",
+        query = g_strdup_printf("(mi.id IN (SELECT imgid AS id FROM main.history AS h "
+                                "           JOIN memory.darktable_iop_names AS m"
+                                "             ON m.operation = h.operation "
+                                "           WHERE h.enabled = 1 AND m.name LIKE '%s'))",
                                 escaped_text);
         // clang-format on
       }
@@ -2064,9 +2082,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         }
         if(i < DT_IOP_ORDER_LAST)
           // clang-format off
-          query = g_strdup_printf("(id IN (SELECT imgid"
-                                  "        FROM main.module_order"
-                                  "        WHERE version = %d))", i);
+          query = g_strdup_printf("(mi.id IN (SELECT imgid"
+                                  "           FROM main.module_order"
+                                  "           WHERE version = %d))", i);
           // clang-format on
         else
           // clang-format off
@@ -2080,7 +2098,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // clang-format off
         if(g_strcmp0(escaped_text, "%%") != 0)
           query = g_strdup_printf
-            ("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
+            ("(mi.id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
              " UNION SELECT imgid AS id"
              "         FROM main.tagged_images AS ti, data.tags AS t"
              "         WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
@@ -2186,13 +2204,13 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           if(strcmp(escaped_text, _("not defined")) != 0)
             // clang-format off
             query = g_strdup_printf
-              ("(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-               "        LIKE '%%%s%%'))", keyid, escaped_text);
+              ("(mi.id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
+               "           LIKE '%%%s%%'))", keyid, escaped_text);
             // clang-format on
           else
             // clang-format off
             query = g_strdup_printf
-              ("(id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
+              ("(mi.id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
                keyid);
             // clang-format off
         }
