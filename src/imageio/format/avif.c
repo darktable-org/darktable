@@ -346,6 +346,9 @@ int write_image(struct dt_imageio_module_data_t *data,
       break;
   }
 
+  if(format == AVIF_PIXEL_FORMAT_YUV444 && d->compression_type == AVIF_COMP_LOSSLESS)
+    image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
+
   dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]\n", dt_colorspaces_get_name(cp->type, filename));
 
   if(!have_nclx)
@@ -483,18 +486,24 @@ int write_image(struct dt_imageio_module_data_t *data,
       /* It isn't recommend to use the extremities */
       encoder->speed = AVIF_SPEED_SLOWEST + 1;
 
+#if AVIF_VERSION >= 1000000
+      encoder->quality = AVIF_QUALITY_LOSSLESS;
+#else
       encoder->minQuantizer = AVIF_QUANTIZER_LOSSLESS;
       encoder->maxQuantizer = AVIF_QUANTIZER_LOSSLESS;
-
+#endif
       break;
+
     case AVIF_COMP_LOSSY:
       encoder->speed = AVIF_SPEED_DEFAULT;
 
-      encoder->maxQuantizer = 100 - d->quality;
-      encoder->maxQuantizer = CLAMP(encoder->maxQuantizer, 0, 63);
-
-      encoder->minQuantizer = 64 - d->quality;
-      encoder->minQuantizer = CLAMP(encoder->minQuantizer, 0, 63);
+#if AVIF_VERSION >= 1000000
+      encoder->quality = d->quality;
+#else
+      const int quantizer = ((100 - d->quality) * AVIF_QUANTIZER_WORST_QUALITY + 50) / 100;
+      encoder->minQuantizer = CLAMP(quantizer - 5, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
+      encoder->maxQuantizer = CLAMP(quantizer + 5, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
+#endif
       break;
   }
 
@@ -626,7 +635,7 @@ void *get_params(dt_imageio_module_format_t *self)
   if(d->bit_depth != 10 && d->bit_depth != 12)
     d->bit_depth = 8;
 
-  d->color_mode = dt_conf_get_int("plugins/imageio/format/avif/color_mode");
+  d->color_mode = dt_conf_get_bool("plugins/imageio/format/avif/color_mode");
   d->compression_type = dt_conf_get_int("plugins/imageio/format/avif/compression_type");
 
   switch(d->compression_type)
@@ -636,10 +645,6 @@ void *get_params(dt_imageio_module_format_t *self)
       break;
     case AVIF_COMP_LOSSY:
       d->quality = dt_conf_get_int("plugins/imageio/format/avif/quality");
-      if(d->quality > 100)
-      {
-        d->quality = 100;
-      }
       break;
   }
 
@@ -732,7 +737,7 @@ static void color_mode_changed(GtkWidget *widget, gpointer user_data)
 {
   const enum avif_color_mode_e color_mode = dt_bauhaus_combobox_get(widget);
 
-  dt_conf_set_int("plugins/imageio/format/avif/color_mode", color_mode);
+  dt_conf_set_bool("plugins/imageio/format/avif/color_mode", color_mode);
 }
 
 static void tiling_changed(GtkWidget *widget, gpointer user_data)
@@ -764,7 +769,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_avif_gui_t *gui =
       (dt_imageio_avif_gui_t *)malloc(sizeof(dt_imageio_avif_gui_t));
   const uint32_t bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bpp");
-  const enum avif_color_mode_e color_mode = dt_conf_get_int("plugins/imageio/format/avif/color_mode");
+  const enum avif_color_mode_e color_mode = dt_conf_get_bool("plugins/imageio/format/avif/color_mode");
   const enum avif_tiling_e tiling = !dt_conf_get_bool("plugins/imageio/format/avif/tiling");
   const enum avif_compression_type_e compression_type = dt_conf_get_int("plugins/imageio/format/avif/compression_type");
   const uint32_t quality = dt_conf_get_int("plugins/imageio/format/avif/quality");
@@ -798,16 +803,15 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Color mode combo box
    */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("color mode"),
-                               _("saving as grayscale will reduce the size for black & white images"),
-                               color_mode, color_mode_changed, self,
-                               N_("RGB colors"), N_("grayscale"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("b&w as grayscale"),
+                               _("saving as grayscale will reduce the size for black & white images"), color_mode,
+                               color_mode_changed, self, N_("no"), N_("yes"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     gui->color_mode,
-                     TRUE,
-                     TRUE,
-                     0);
+  dt_bauhaus_combobox_set_default(gui->color_mode,
+                                  dt_confgen_get_bool("plugins/imageio/format/avif/color_mode", DT_DEFAULT));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->color_mode, TRUE, TRUE, 0);
+
   /*
    * Tiling combo box
    */
@@ -829,7 +833,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gui->compression_type = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(gui->compression_type,
                               NULL,
-                              N_("compression type"));
+                              N_("compression"));
   dt_bauhaus_combobox_add(gui->compression_type,
                           _(avif_get_compression_string(AVIF_COMP_LOSSLESS)));
   dt_bauhaus_combobox_add(gui->compression_type,
@@ -838,6 +842,9 @@ void gui_init(dt_imageio_module_format_t *self)
 
   gtk_widget_set_tooltip_text(gui->compression_type,
           _("the compression for the image"));
+
+  dt_bauhaus_combobox_set_default(gui->compression_type,
+                                  dt_confgen_get_int("plugins/imageio/format/avif/compression_type", DT_DEFAULT));
 
   gtk_box_pack_start(GTK_BOX(self->widget),
                      gui->compression_type,
@@ -855,23 +862,20 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT), /* default */
                                                   0); /* digits */
   dt_bauhaus_widget_set_label(gui->quality,  NULL, N_("quality"));
-  dt_bauhaus_slider_set_format(gui->quality, "%");
 
   gtk_widget_set_tooltip_text(gui->quality,
           _("the quality of an image, less quality means fewer details.\n"
             "\n"
-            "the following applies only to lossy setting\n"
+            "the following applies only to lossy setting.\n"
             "\n"
-            "pixelformat based on quality:\n"
+            "pixel format based on quality:\n"
             "\n"
-            "    91% - 100% -> YUV444\n"
-            "    81% -  90% -> YUV422\n"
-            "     5% -  80% -> YUV420\n"));
+            "    91 - 100 -> YUV444\n"
+            "    81 -  90 -> YUV422\n"
+            "     5 -  80 -> YUV420\n"));
 
-  if(quality > 0 && quality <= 100)
-  {
-      dt_bauhaus_slider_set(gui->quality, quality);
-  }
+  dt_bauhaus_slider_set(gui->quality, quality);
+
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
 
   gtk_widget_set_visible(gui->quality, compression_type != AVIF_COMP_LOSSLESS);
@@ -901,7 +905,7 @@ void gui_reset(dt_imageio_module_format_t *self)
   dt_imageio_avif_gui_t *gui = (dt_imageio_avif_gui_t *)self->gui_data;
 
   const uint32_t bit_depth = dt_confgen_get_int("plugins/imageio/format/avif/bpp", DT_DEFAULT);
-  const enum avif_color_mode_e color_mode = dt_confgen_get_int("plugins/imageio/format/avif/color_mode", DT_DEFAULT);
+  const enum avif_color_mode_e color_mode = dt_confgen_get_bool("plugins/imageio/format/avif/color_mode", DT_DEFAULT);
   const enum avif_tiling_e tiling = !dt_confgen_get_bool("plugins/imageio/format/avif/tiling", DT_DEFAULT);
   const enum avif_compression_type_e compression_type = dt_confgen_get_int("plugins/imageio/format/avif/compression_type", DT_DEFAULT);
   const uint32_t quality = dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT);
