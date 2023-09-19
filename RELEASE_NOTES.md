@@ -156,6 +156,9 @@ changes (where available).
 
 - Add lens and cameras filters to the filtering module.
 
+- AVIF export changes: no conversion to YUV for lossless, update
+  quantizer selection logic and make lossy default.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
