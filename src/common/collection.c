@@ -1385,7 +1385,7 @@ static gchar *_add_wildcards(const gchar *text)
   gchar *cam1 = NULL;
   gchar *cam2 = NULL;
   if(g_str_has_prefix(text, "\""))
-    cam1 = g_utf8_substring(text, 1, -1);
+    cam1 = g_utf8_substring(text, 1, strlen(text));
   else
     cam1 = g_strdup_printf("%%%s", text);
 
