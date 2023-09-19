@@ -1044,7 +1044,7 @@
   <dtconfig>
     <name>ui_last/import_last_folder_descending</name>
     <type>bool</type>
-    <default>FALSE</default>
+    <default>false</default>
     <shortdescription>folders display order in folder pane</shortdescription>
     <longdescription/>
   </dtconfig>
@@ -2627,8 +2627,8 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/shortfile</name>
-    <type min="0" max="1">int</type>
-    <default>0</default>
+    <type>bool</type>
+    <default>false</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2737,8 +2737,8 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/avif/color_mode</name>
-    <type min="0">int</type>
-    <default>0</default>
+    <type>bool</type>
+    <default>false</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2751,15 +2751,15 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/avif/compression_type</name>
-    <type min="0">int</type>
-    <default>0</default>
+    <type min="0" max="1">int</type>
+    <default>1</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/avif/quality</name>
-    <type min="5" max="100">int</type>
-    <default>92</default>
+    <type min="0" max="100">int</type>
+    <default>90</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
