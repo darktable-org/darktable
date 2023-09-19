@@ -346,6 +346,9 @@ int write_image(struct dt_imageio_module_data_t *data,
       break;
   }
 
+  if(format == AVIF_PIXEL_FORMAT_YUV444 && d->compression_type == AVIF_COMP_LOSSLESS)
+    image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
+
   dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]\n", dt_colorspaces_get_name(cp->type, filename));
 
   if(!have_nclx)
