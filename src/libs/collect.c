@@ -512,14 +512,16 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll_path, -1);
 
     /* Clean selected images, and add to the table those which are going to be deleted */
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                          "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
     // clang-format off
-    fullq = g_strdup_printf("INSERT INTO main.selected_images"
-                            " SELECT id"
-                            " FROM main.images"
-                            " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
-                            filmroll_path);
+    fullq = g_strdup_printf
+      ("INSERT INTO main.selected_images"
+       " SELECT id"
+       " FROM main.images"
+       " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
+       filmroll_path);
     // clang-format on
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
     g_free(filmroll_path);
@@ -1047,8 +1049,9 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
         int id = -1;
         // Check if this path also matches a filmroll
         gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &pth, -1);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "SELECT id FROM main.film_rolls WHERE folder LIKE ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2
+          (dt_database_get(darktable.db),
+           "SELECT id FROM main.film_rolls WHERE folder LIKE ?1", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, pth, -1, SQLITE_TRANSIENT);
         if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
         sqlite3_finalize(stmt);
