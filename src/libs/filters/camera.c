@@ -185,6 +185,11 @@ static gboolean _camera_press(GtkWidget *w,
     gtk_widget_show_all(camera->pop);
     return TRUE;
   }
+  else if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  {
+    gtk_entry_set_text(GTK_ENTRY(camera->name), "");
+    _camera_changed(w, camera);
+  }
   return FALSE;
 }
 
