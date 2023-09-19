@@ -500,11 +500,9 @@ int write_image(struct dt_imageio_module_data_t *data,
 #if AVIF_VERSION >= 1000000
       encoder->quality = d->quality;
 #else
-      encoder->maxQuantizer = 100 - d->quality;
-      encoder->maxQuantizer = CLAMP(encoder->maxQuantizer, 0, 63);
-
-      encoder->minQuantizer = 64 - d->quality;
-      encoder->minQuantizer = CLAMP(encoder->minQuantizer, 0, 63);
+      const int quantizer = ((100 - d->quality) * AVIF_QUANTIZER_WORST_QUALITY + 50) / 100;
+      encoder->minQuantizer = CLAMP(quantizer - 5, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
+      encoder->maxQuantizer = CLAMP(quantizer + 5, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
 #endif
       break;
   }
