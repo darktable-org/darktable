@@ -1587,14 +1587,14 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         if(not_tagged || all_tagged)
           // clang-format off
           query = g_strdup_printf
-            ("(mi.id %s IN (SELECT id AS imgid FROM main.images "
+            ("(mi.id %s IN (SELECT id AS imgid FROM main.images"
              "              WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
                                   all_tagged ? "" : "not");
           // clang-format on
         else
           // clang-format off
           query = g_strdup_printf
-            ("(mi.id IN (SELECT id AS imgid FROM main.images "
+            ("(mi.id IN (SELECT id AS imgid FROM main.images"
              "           WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))"
              "             AND id %s IN (SELECT imgid FROM main.tagged_images AS ti"
              "           JOIN data.tags AS t ON t.id = ti.tagid"
