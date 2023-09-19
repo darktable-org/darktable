@@ -154,6 +154,8 @@ changes (where available).
 - Extract more OpenEXR 3.2.0 attributes for image information if
   present.
 
+- Add lens and cameras filters to the filtering module.
+
 ## Bug Fixes
 
 - Fixes OpenCL platform checking which could lead to a freeze of
