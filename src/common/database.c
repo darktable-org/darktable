@@ -2384,7 +2384,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
     TRY_EXEC("DROP VIEW v_images",
-             "[init] can't drop v_image view\n");
+             "[init] can't drop v_images view\n");
 
     TRY_EXEC
       ("CREATE VIEW v_images AS"
