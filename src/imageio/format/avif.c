@@ -486,18 +486,26 @@ int write_image(struct dt_imageio_module_data_t *data,
       /* It isn't recommend to use the extremities */
       encoder->speed = AVIF_SPEED_SLOWEST + 1;
 
+#if AVIF_VERSION >= 1000000
+      encoder->quality = AVIF_QUALITY_LOSSLESS;
+#else
       encoder->minQuantizer = AVIF_QUANTIZER_LOSSLESS;
       encoder->maxQuantizer = AVIF_QUANTIZER_LOSSLESS;
-
+#endif
       break;
+
     case AVIF_COMP_LOSSY:
       encoder->speed = AVIF_SPEED_DEFAULT;
 
+#if AVIF_VERSION >= 1000000
+      encoder->quality = d->quality;
+#else
       encoder->maxQuantizer = 100 - d->quality;
       encoder->maxQuantizer = CLAMP(encoder->maxQuantizer, 0, 63);
 
       encoder->minQuantizer = 64 - d->quality;
       encoder->minQuantizer = CLAMP(encoder->minQuantizer, 0, 63);
+#endif
       break;
   }
 
