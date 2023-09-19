@@ -81,6 +81,7 @@ typedef enum _preset_save_type_t
   _PRESET_FILTERS = 1 << 0,
   _PRESET_SORT = 1 << 1,
   _PRESET_ERASE_TOPBAR = 1 << 2,
+  _PRESET_TOPBAR = 1 << 3,
   _PRESET_ALL = _PRESET_FILTERS | _PRESET_SORT | _PRESET_ERASE_TOPBAR
 } _preset_save_type_t;
 
@@ -133,6 +134,7 @@ typedef struct dt_lib_filtering_t
 
   GtkWidget *rules_box;
   GtkWidget *rules_sw;
+  GtkWidget *topbar_popup;
 
   _widgets_sort_t sort[DT_COLLECTION_MAX_RULES];
   int nb_sort;
@@ -398,6 +400,26 @@ static void _filtering_reset(const _preset_save_type_t reset)
       }
     }
     dt_conf_set_int("plugins/lighttable/filtering/num_rules", nb_rules - nb_removed);
+  }
+  else if(reset & _PRESET_TOPBAR)
+  {
+    // let's reset only topbar filters
+    const int nb_rules
+        = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
+    for(int i = 0; i < nb_rules; i++)
+    {
+      char confname[200] = { 0 };
+      // read the topbar state
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
+      if(dt_conf_get_int(confname))
+      {
+        // we "just" reset the filter
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
+        dt_conf_set_int(confname, 0);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
+        dt_conf_set_string(confname, "");
+      }
+    }
   }
 
   if(reset & _PRESET_SORT)
@@ -1007,6 +1029,39 @@ static void _event_rule_append(GtkWidget *widget, gpointer user_data)
   _rule_show_popup(widget, NULL, (dt_lib_module_t *)user_data);
 }
 
+static void _topbar_reset(dt_lib_module_t *self)
+{
+  _filtering_reset(_PRESET_TOPBAR);
+
+  _filters_gui_update(self);
+
+  dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
+}
+
+static gboolean _topbar_reset_press(GtkWidget *w,
+                                    GdkEventButton *e,
+                                    dt_lib_module_t *self)
+{
+  //reset the filters
+  _topbar_reset(self);
+  //close the popup
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  gtk_widget_destroy(d->topbar_popup);
+
+  return FALSE;
+}
+
+static gboolean _topbar_label_press(GtkWidget *w,
+                                    GdkEventButton *e,
+                                    dt_lib_module_t *self)
+{
+  //reset on double-click
+  if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+    _topbar_reset(self);
+  return FALSE;
+}
+
 static void _topbar_update(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
@@ -1036,9 +1091,12 @@ static void _topbar_update(dt_lib_module_t *self)
       // we add the filter label if it's the first filter
       if(nb == 0)
       {
+        GtkWidget *evtb = gtk_event_box_new();
         GtkWidget *label = gtk_label_new(C_("quickfilter", "filter"));
-        gtk_box_pack_start(GTK_BOX(fbox), label, TRUE, TRUE, 0);
-        gtk_widget_show(label);
+        gtk_container_add(GTK_CONTAINER(evtb), label);
+        g_signal_connect(G_OBJECT(evtb), "button-press-event", G_CALLBACK(_topbar_label_press), self);
+        gtk_box_pack_start(GTK_BOX(fbox), evtb, TRUE, TRUE, 0);
+        gtk_widget_show_all(evtb);
       }
       gtk_box_pack_start(GTK_BOX(fbox), d->rule[i].w_special_box_top, FALSE, TRUE, 0);
       gtk_widget_show_all(d->rule[i].w_special_box_top);
@@ -1690,22 +1748,23 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
 
   // initialize the popover
-  GtkWidget *pop = gtk_popover_new(bt);
-  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
+  d->topbar_popup = gtk_popover_new(bt);
+  g_object_set(G_OBJECT(d->topbar_popup), "transitions-enabled", FALSE, NULL);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(pop), vbox);
+  gtk_container_add(GTK_CONTAINER(d->topbar_popup), vbox);
 
   // fill the popover with all pinned rules
+  GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *lb = gtk_label_new(_("shown filters"));
   dt_gui_add_class(lb, "dt_section_label");
-  gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox2), lb, TRUE, TRUE, 0);
 
   for(int i = 0; i < d->nb_rules; i++)
   {
     if(d->rule[i].topbar)
     {
-      gtk_box_pack_start(GTK_BOX(vbox), _topbar_menu_new_rule(&d->rule[i], self), TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(vbox2), _topbar_menu_new_rule(&d->rule[i], self), TRUE, TRUE, 0);
     }
   }
 
@@ -1715,7 +1774,17 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   dt_bauhaus_widget_set_label(nr, NULL, _("new filter"));
   _topbar_populate_rules_combo(nr, d);
   g_signal_connect(G_OBJECT(nr), "value-changed", G_CALLBACK(_topbar_rule_add), self);
-  gtk_box_pack_end(GTK_BOX(vbox), nr, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(vbox2), nr, TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(vbox), vbox2, TRUE, TRUE, 0);
+  // the actions part of the popover
+  lb = gtk_label_new(_("actions"));
+  dt_gui_add_class(lb, "dt_section_label");
+  gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
+  GtkWidget *btr = gtk_button_new_with_label(_("reset quickfilters"));
+  dt_gui_add_class(btr, "dt_transparent_background");
+  g_signal_connect(G_OBJECT(btr), "button-press-event", G_CALLBACK(_topbar_reset_press), self);
+  gtk_box_pack_start(GTK_BOX(vbox), btr, TRUE, TRUE, 0);
 
   // show the popover
   GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
@@ -1730,9 +1799,9 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   if(pointer_widget && bt != pointer_widget)
     gtk_widget_translate_coordinates(pointer_widget, bt, x, y, &rect.x, &rect.y);
 
-  gtk_popover_set_pointing_to(GTK_POPOVER(pop), &rect);
+  gtk_popover_set_pointing_to(GTK_POPOVER(d->topbar_popup), &rect);
 
-  gtk_widget_show_all(pop);
+  gtk_widget_show_all(d->topbar_popup);
 }
 
 // save a sort rule inside the conf
