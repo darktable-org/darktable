@@ -636,10 +636,6 @@ void *get_params(dt_imageio_module_format_t *self)
       break;
     case AVIF_COMP_LOSSY:
       d->quality = dt_conf_get_int("plugins/imageio/format/avif/quality");
-      if(d->quality > 100)
-      {
-        d->quality = 100;
-      }
       break;
   }
 
@@ -828,7 +824,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gui->compression_type = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(gui->compression_type,
                               NULL,
-                              N_("compression type"));
+                              N_("compression"));
   dt_bauhaus_combobox_add(gui->compression_type,
                           _(avif_get_compression_string(AVIF_COMP_LOSSLESS)));
   dt_bauhaus_combobox_add(gui->compression_type,
@@ -837,6 +833,9 @@ void gui_init(dt_imageio_module_format_t *self)
 
   gtk_widget_set_tooltip_text(gui->compression_type,
           _("the compression for the image"));
+
+  dt_bauhaus_combobox_set_default(gui->compression_type,
+                                  dt_confgen_get_int("plugins/imageio/format/avif/compression_type", DT_DEFAULT));
 
   gtk_box_pack_start(GTK_BOX(self->widget),
                      gui->compression_type,
@@ -854,23 +853,20 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT), /* default */
                                                   0); /* digits */
   dt_bauhaus_widget_set_label(gui->quality,  NULL, N_("quality"));
-  dt_bauhaus_slider_set_format(gui->quality, "%");
 
   gtk_widget_set_tooltip_text(gui->quality,
           _("the quality of an image, less quality means fewer details.\n"
             "\n"
-            "the following applies only to lossy setting\n"
+            "the following applies only to lossy setting.\n"
             "\n"
-            "pixelformat based on quality:\n"
+            "pixel format based on quality:\n"
             "\n"
-            "    91% - 100% -> YUV444\n"
-            "    81% -  90% -> YUV422\n"
-            "     5% -  80% -> YUV420\n"));
+            "    91 - 100 -> YUV444\n"
+            "    81 -  90 -> YUV422\n"
+            "     5 -  80 -> YUV420\n"));
 
-  if(quality > 0 && quality <= 100)
-  {
-      dt_bauhaus_slider_set(gui->quality, quality);
-  }
+  dt_bauhaus_slider_set(gui->quality, quality);
+
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
 
   gtk_widget_set_visible(gui->quality, compression_type != AVIF_COMP_LOSSLESS);
