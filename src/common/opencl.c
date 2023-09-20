@@ -1169,7 +1169,7 @@ void dt_opencl_init(
   cl->dlocl = dt_dlopencl_init(library);
   if(cl->dlocl == NULL)
   {
-    logerror = "no working opencl library found";
+    logerror = _("no working opencl library found");
     dt_print(DT_DEBUG_OPENCL,
                  "[opencl_init] no working opencl '%s' library found."
                  " Continue with opencl disabled\n",
@@ -1188,12 +1188,12 @@ void dt_opencl_init(
   all_num_devices = malloc(sizeof(cl_uint) * DT_OPENCL_MAX_PLATFORMS);
 
   cl_uint num_platforms = 0;
-  logerror =  "platform detection failed. some possible reasons:\n"
+  logerror= _("platform detection failed. some possible reasons:\n"
               "  - OpenCL ICD (ocl-icd) missing,\n"
               "  - previous OpenCL errors leading to blocked devices,\n"
               "  - power management problems,\n"
               "  - buggy drivers,\n"
-              "  - no OpenCL driver installed.";
+              "  - no OpenCL driver installed.");
 
   cl_int err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(0, NULL, &num_platforms);
   if((err != CL_SUCCESS) || (num_platforms == 0))
@@ -1278,7 +1278,7 @@ void dt_opencl_init(
       {
         dt_print(DT_DEBUG_OPENCL,
                      "[opencl_init] no devices found for unknown platform\n");
-        logerror = "no devices found for unknown platform";
+        logerror = _("no devices found for unknown platform");
       }
       all_num_devices[n] = 0;
     }
@@ -1323,7 +1323,7 @@ void dt_opencl_init(
       cl->dev = NULL;
       free(devices);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not allocate memory for device resources\n");
-      logerror = "not enough memory for OpenCL devices";
+      logerror = _("not enough memory for OpenCL devices");
       goto finally;
     }
   }
@@ -1358,7 +1358,7 @@ void dt_opencl_init(
   {
     if(devices)
       free(devices);
-    logerror = "no OpenCL devices found";
+    logerror = _("no OpenCL devices found");
     goto finally;
   }
 
@@ -1401,7 +1401,7 @@ void dt_opencl_init(
   }
   else
   {
-    logerror = "no suitable OpenCL devices found";
+    logerror = _("no suitable OpenCL devices found");
     dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] no suitable devices found.\n");
   }
 

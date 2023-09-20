@@ -3177,7 +3177,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     if(!_add_blendmode_combo(bd->blend_modes_combo, blend_mode, blend_mode))
     {
       // should never happen: unknown blend mode
-      dt_control_log("unknown blend mode '%d' in module '%s'", blend_mode, module->op);
+      dt_control_log(_("unknown blend mode '%d' in module '%s'"), blend_mode, module->op);
       module->blend_params->blend_mode = DEVELOP_BLEND_NORMAL2;
       blend_mode = DEVELOP_BLEND_NORMAL2;
     }
