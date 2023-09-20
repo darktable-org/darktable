@@ -2492,7 +2492,7 @@ int dt_opencl_create_kernel(const int prog, const char *name)
   if(k >= DT_OPENCL_MAX_KERNELS)
   {
     dt_print(DT_DEBUG_OPENCL,
-              "[opencl_create_kernel] too many kernels! can't create kernel `%s'\n",
+             "[opencl_create_kernel] too many kernels! can't create kernel `%s'\n",
               name);
     return -1;
   }
