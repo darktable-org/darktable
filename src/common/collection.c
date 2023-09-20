@@ -441,33 +441,8 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   else
   {
-    const uint32_t tagid = collection->tagid;
-    char tag[16] = { 0 };
-    snprintf(tag, sizeof(tag), "%u", tagid);
-    // clang-format off
-    selq_pre = dt_util_dstrcat
-      (selq_pre,
-       "SELECT DISTINCT mi.id"
-       " FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
-       "              flags, version, %s position, aspect_ratio,"
-       "              cm.maker || ' ' || cm.model AS camera,"
-       "              mk.name AS maker, md.name AS model, ln.name AS lens,"
-       "              aperture, exposure, focal_length,"
-       "              iso, import_timestamp, change_timestamp,"
-       "              export_timestamp, print_timestamp"
-       "       FROM main.images AS mi, main.makers AS mk, main.cameras AS cm,"
-       "            main.models AS md, main.lens AS ln "
-       "       %s%s"
-       "       WHERE mi.maker_id = mk.id"
-       "         AND mi.model_id = md.id"
-       "         AND mi.lens_id = ln.id"
-       "         AND mi.camera_id = cm.id"
-       "      ) AS mi WHERE ",
-       tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-       tagid ? " LEFT JOIN main.tagged_images AS ti"
-       "                ON ti.imgid = mi.id AND ti.tagid = " : "",
-       tagid ? tag : "");
-    // clang-format on
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
+    selq_pre = dt_util_dstrcat(selq_pre, "1=1) AS mi WHERE ");
   }
 
 
