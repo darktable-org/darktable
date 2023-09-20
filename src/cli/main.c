@@ -59,6 +59,8 @@
 // Make sure it's OK to limit output extension length
 #define DT_MAX_OUTPUT_EXT_LENGTH 5
 
+// TODO: To add version
+
 static void usage(const char *progname)
 {
   fprintf(stderr, "usage: %s [<input file or dir>] [<XMP file>] <output destination> [options] [--core <darktable options>]\n", progname);
