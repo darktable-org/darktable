@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-20 08:40+0200\n"
-"PO-Revision-Date: 2023-09-20 08:53+0200\n"
+"POT-Creation-Date: 2023-09-20 19:05+0200\n"
+"PO-Revision-Date: 2023-09-20 19:25+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6801,6 +6801,42 @@ msgstr "Distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Le profil de gestion du bruit « %s » n’est pas valide"
 
+#: ../src/common/opencl.c:1172
+msgid "no working OpenCL library found"
+msgstr "pas de bibliothèque OpenCL fonctionnelle trouvée"
+
+#: ../src/common/opencl.c:1191
+msgid ""
+"platform detection failed. some possible reasons:\n"
+"  - OpenCL ICD (ocl-icd) missing,\n"
+"  - previous OpenCL errors leading to blocked devices,\n"
+"  - power management problems,\n"
+"  - buggy drivers,\n"
+"  - no OpenCL driver installed."
+msgstr ""
+"Détection de la plateforme impossible. Quelques raisons possibles :\n"
+" • OpenCL ICD (ocl-icd) manquant,\n"
+" • Périphériques bloqués après une erreur OpenCL survenue précédemment,\n"
+" • Problème de gestion de l'alimentation,\n"
+" • Pilotes bugués,\n"
+" • Aucun pilote OpenCL installé."
+
+#: ../src/common/opencl.c:1281
+msgid "no devices found for unknown platform"
+msgstr "Pas de périphérique trouvé pour la plateforme non connue"
+
+#: ../src/common/opencl.c:1326
+msgid "not enough memory for OpenCL devices"
+msgstr "Pas assez de mémoire pour les périphériques OpenCL"
+
+#: ../src/common/opencl.c:1361
+msgid "no OpenCL devices found"
+msgstr "Aucun périphérique OpenCL trouvé"
+
+#: ../src/common/opencl.c:1404
+msgid "no suitable OpenCL devices found"
+msgstr "Aucun périphérique OpenCL adéquat trouvé"
+
 #: ../src/common/opencl.c:1425
 #, c-format
 msgid ""
@@ -7413,6 +7449,10 @@ msgstr[1] "%d/%d importés vers « %s »"
 #: ../src/control/jobs/camera_jobs.c:298
 msgid "starting to import images from camera"
 msgstr "Début de l’importation d’images depuis le boîtier"
+
+#: ../src/control/jobs/camera_jobs.c:302
+msgid "failed to import images from camera."
+msgstr "Erreur lors de l'importation d'images depuis l'appareil photo."
 
 #: ../src/control/jobs/camera_jobs.c:309
 #, c-format
@@ -8563,6 +8603,12 @@ msgstr "Normaux & arithmétiques"
 #: ../src/develop/blend_gui.c:3176
 msgid "deprecated"
 msgstr "Déprécié"
+
+#. should never happen: unknown blend mode
+#: ../src/develop/blend_gui.c:3180
+#, c-format
+msgid "unknown blend mode '%d' in module '%s'"
+msgstr "Mode de fusion « %d » non reconnu dans le module « %s »"
 
 #: ../src/develop/blend_gui.c:3489
 msgid "blending options"
@@ -10501,6 +10547,10 @@ msgstr "« %s » n’est pas assigné"
 #, c-format
 msgid "%s assigned to %s"
 msgstr "« %s » est assigné à « %s »"
+
+#: ../src/gui/accelerators.c:4167
+msgid "short key press resets stuck keys"
+msgstr "Une pression courte réinitialise les touches bloquées"
 
 #: ../src/gui/gtk.c:175 ../src/views/darkroom.c:4476
 msgid "darktable - darkroom preview"
@@ -15785,7 +15835,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
 #: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1318
-#: ../src/iop/highlights.c:1222
+#: ../src/iop/highlights.c:1223
 msgid "not applicable"
 msgstr "Non applicable"
 
@@ -17762,6 +17812,16 @@ msgstr ""
 "« Peinture opposée » et « Par segmentation » surtout si le point blanc du "
 "boîtier est incorrect."
 
+#: ../src/iop/highlights.c:1158
+msgid ""
+"visualize clipped highlights in a false color representation.\n"
+"the effective clipping level also depends on the reconstruction method."
+msgstr ""
+"Visualise les hautes lumières tronquées avec une représentation en fausse "
+"couleur.\n"
+"Le niveau de troncature effectif dépend aussi de la méthode de "
+"reconstruction."
+
 #: ../src/iop/highlights.c:1168
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
@@ -17771,6 +17831,11 @@ msgstr ""
 "Combiner des segments écrêtés proches par des opérations morphologiques.\n"
 "Cela améliore souvent la reconstruction des couleurs pour les petits "
 "segments avant un arrière plan sombre."
+
+#: ../src/iop/highlights.c:1171
+msgid "visualize the combined segments in a false color representation."
+msgstr ""
+"Visualise les segments combinés avec une représentation en fausse couleur."
 
 #: ../src/iop/highlights.c:1178
 msgid ""
@@ -17782,6 +17847,14 @@ msgstr ""
 "Augmenter pour favoriser les candidats trouvés dans l’analyse de "
 "segmentation,\n"
 "diminuer pour une effet opposé."
+
+#: ../src/iop/highlights.c:1181
+msgid ""
+"visualize segments that are considered to have a good candidate in a false "
+"color representation."
+msgstr ""
+"Visualise les segments considérés comme bons candidats avec une "
+"représentation en fausse couleur."
 
 #: ../src/iop/highlights.c:1190
 msgid ""
@@ -17808,16 +17881,16 @@ msgstr ""
 "et éviter les dégradés."
 
 #: ../src/iop/highlights.c:1196
-msgid ""
-"set strength of rebuilding in regions with all photosites clipped.\n"
-"the mask buttons shows the effect that is added to already reconstructed "
-"data."
+msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr ""
-"Définit la force de reconstruction dans les régions ayant tous les "
-"photosites tronqués.\n"
-"L’icône « masque » montre l’effet ajouté au données déjà reconstruites."
+"Défini la force de reconstruction pour les régions avec tous les photosites "
+"tronqués."
 
-#: ../src/iop/highlights.c:1206
+#: ../src/iop/highlights.c:1198
+msgid "show the effect that is added to already reconstructed data."
+msgstr "Montre l'effet qui est ajouté aux données déjà reconstruites."
+
+#: ../src/iop/highlights.c:1207
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17825,7 +17898,7 @@ msgstr ""
 "Ajoute du bruit pour fusionner visuellement les zones reconstruites\n"
 "dans le reste de l’image bruitées. Utile pour les hauts ISO."
 
-#: ../src/iop/highlights.c:1210
+#: ../src/iop/highlights.c:1211
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17833,7 +17906,7 @@ msgstr ""
 "Augmenter si le magenta des hautes lumières n’est pas complètement corrigé.\n"
 "Chaque nouvelle itération ajoute une pénalité de temps."
 
-#: ../src/iop/highlights.c:1215
+#: ../src/iop/highlights.c:1216
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17842,7 +17915,7 @@ msgstr ""
 "Cela peut produire des délimitations tranchées entre les régions valides et "
 "tronquées."
 
-#: ../src/iop/highlights.c:1219
+#: ../src/iop/highlights.c:1220
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17850,7 +17923,7 @@ msgstr ""
 "Augmenter pour corriger les larges zones tronquées.\n"
 "Les grandes valeurs pénalisent fortement les performances."
 
-#: ../src/iop/highlights.c:1223
+#: ../src/iop/highlights.c:1224
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "Ce module ne fonctionne que pour les RAW et sRAW non monochrome"
 
@@ -18058,6 +18131,12 @@ msgstr "Échelle"
 msgid "auto scale"
 msgstr "Échelle automatique"
 
+#: ../src/iop/lens.cc:4419
+msgid "automatic scale to available image size due to lensfun data"
+msgstr ""
+"Échelle automatique en fonction de la taille de l'image après l'application "
+"des données lensfun"
+
 #: ../src/iop/lens.cc:4423
 msgid "correct distortions or apply them"
 msgstr "Corrige ou applique des distorsions"
@@ -18113,6 +18192,10 @@ msgstr "Ajuste la correction du bleu de l'AC"
 msgid "image scaling"
 msgstr "Mise l'échelle de l'image"
 
+#: ../src/iop/lens.cc:4488
+msgid "automatic scale to available image size"
+msgstr "Échelle automatique en fonction de la taille de l'image possible"
+
 #: ../src/iop/lens.cc:4496
 msgid ""
 "select a correction mode either based on\n"
@@ -18151,6 +18234,10 @@ msgstr "Vignetage"
 #: ../src/iop/lens.cc:4541
 msgid "amount of the applied optical vignetting correction"
 msgstr "Quantité de la correction de la vignette appliquée"
+
+#: ../src/iop/lens.cc:4543
+msgid "show applied optical vignette correction mask"
+msgstr "Montre le masque de correction de la vignette optique appliquée"
 
 #: ../src/iop/lens.cc:4553
 msgid "radius of uncorrected centre"
@@ -21230,6 +21317,14 @@ msgstr "Créer un clone ayant le même historique"
 #: ../src/libs/export.c:160 ../src/libs/export.c:1398
 msgid "export"
 msgstr "Exporter"
+
+#: ../src/libs/export.c:306
+msgid "invalid format for export selected"
+msgstr "Format invalide pour l'export sélectionné"
+
+#: ../src/libs/export.c:311
+msgid "invalid storage for export selected"
+msgstr "Stockage invalide pour l'export sélectionné"
 
 #: ../src/libs/export.c:322
 msgid "export to disk"
@@ -25818,6 +25913,15 @@ msgid "mouse actions"
 msgstr "Actions de la souris"
 
 #~ msgid ""
+#~ "set strength of rebuilding in regions with all photosites clipped.\n"
+#~ "the mask buttons shows the effect that is added to already reconstructed "
+#~ "data."
+#~ msgstr ""
+#~ "Définit la force de reconstruction dans les régions ayant tous les "
+#~ "photosites tronqués.\n"
+#~ "L’icône « masque » montre l’effet ajouté au données déjà reconstruites."
+
+#~ msgid ""
 #~ "darktable discovered problems with your OpenCL setup; disabling OpenCL "
 #~ "for this session!"
 #~ msgstr ""
@@ -26641,12 +26745,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "recovery"
 #~ msgstr "Récupération"
-
-#~ msgid ""
-#~ "set strength of reconstruction in regions with all photosites clipped"
-#~ msgstr ""
-#~ "Défini la force de reconstruction pour les régions avec tous les canaux "
-#~ "tronqués"
 
 #~ msgctxt "preferences"
 #~ msgid "on startup"
@@ -28746,9 +28844,6 @@ msgstr "Actions de la souris"
 #~ msgid "insensitive"
 #~ msgstr "Insensible"
 
-#~ msgid "export selected"
-#~ msgstr "Exporter sélection"
-
 #~ msgid "modify the spatial size of an images group on the map"
 #~ msgstr "Modifie l’étendue spatiale d’un groupe d’images sur la carte"
 
@@ -30273,9 +30368,6 @@ msgstr "Actions de la souris"
 #~ msgctxt "accel"
 #~ msgid "scan for devices"
 #~ msgstr "Rechercher un appareil"
-
-#~ msgid "no supported devices found"
-#~ msgstr "Aucun appareil supporté n’a été détecté"
 
 #~ msgid "scan for newly attached devices"
 #~ msgstr "Recherche des appareils branchés récemment"
