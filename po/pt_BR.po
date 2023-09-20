@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-20 09:11-0300\n"
-"PO-Revision-Date: 2023-09-20 09:16-0300\n"
+"POT-Creation-Date: 2023-09-20 17:15-0300\n"
+"PO-Revision-Date: 2023-09-21 23:03-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -6745,7 +6745,43 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:1425
+#: ../src/common/opencl.c:1173
+msgid "no working OpenCL library found"
+msgstr "nenhuma biblioteca OpenCL funcional encontrada"
+
+#: ../src/common/opencl.c:1193
+msgid ""
+"platform detection failed. some possible reasons:\n"
+"  - OpenCL ICD (ocl-icd) missing,\n"
+"  - previous OpenCL errors leading to blocked devices,\n"
+"  - power management problems,\n"
+"  - buggy drivers,\n"
+"  - no OpenCL driver installed."
+msgstr ""
+"a detecção de plataforma falhou. algumas razões possíveis:\n"
+"  - OpenCL ICD (ocl-icd) faltando,\n"
+"  - erros OpenCL anteriores levando a dispositivos bloqueados\n"
+"  - problemas de gerenciamento de energia,\n"
+"  - drivers com bugs,\n"
+"  - nenhum driver OpenCL instalado."
+
+#: ../src/common/opencl.c:1285
+msgid "no devices found for unknown platform"
+msgstr "nenhum dispositivo encontrado para plataforma desconhecida"
+
+#: ../src/common/opencl.c:1331
+msgid "not enough memory for OpenCL devices"
+msgstr "não há memória suficiente para dispositivos OpenCL"
+
+#: ../src/common/opencl.c:1366
+msgid "no OpenCL devices found"
+msgstr "nenhum dispositivo OpenCL encontrado"
+
+#: ../src/common/opencl.c:1409
+msgid "no suitable OpenCL devices found"
+msgstr "nenhum dispositivo OpenCL adequado encontrado"
+
+#: ../src/common/opencl.c:1430
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -6754,12 +6790,12 @@ msgstr ""
 "problema ao inicializar o OpenCL:\n"
 "%s"
 
-#: ../src/common/opencl.c:1457
+#: ../src/common/opencl.c:1462
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "perfil de escalonamento OpenCL ajustado para padrão, a configuração mudou"
 
-#: ../src/common/opencl.c:2285
+#: ../src/common/opencl.c:2290
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "construindo programa OpenCL %s para %s"
@@ -7354,6 +7390,10 @@ msgstr[1] "%d/%d importadas para %s"
 #: ../src/control/jobs/camera_jobs.c:298
 msgid "starting to import images from camera"
 msgstr "começando a importar imagens da câmera"
+
+#: ../src/control/jobs/camera_jobs.c:302
+msgid "failed to import images from camera."
+msgstr "não foi possível importar imagens da câmera"
 
 #: ../src/control/jobs/camera_jobs.c:309
 #, c-format
@@ -8496,6 +8536,12 @@ msgstr "normal & aritmético"
 msgid "deprecated"
 msgstr "descontinuados/obsoletos"
 
+#. should never happen: unknown blend mode
+#: ../src/develop/blend_gui.c:3180
+#, c-format
+msgid "unknown blend mode '%d' in module '%s'"
+msgstr "modo de mesclagem '%d' desconhecido no módulo '%s'"
+
 #: ../src/develop/blend_gui.c:3489
 msgid "blending options"
 msgstr "opções de mesclagem"
@@ -9204,11 +9250,16 @@ msgid ""
 "events,\n"
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
-"Erros de OpenCL encontrados; desabilitando o OpenCL para esta seção! prováveis problemas:\n"
-"  - o OpenCL não conseguiu recursos devido a configuração de preferências. por favor tente com os valores padrão,\n"
-"  - driver com bugs para algum dispositivo. por favor execute o darktable com `-d opencl' para identificar,\n"
-"  - alguns drivers (para dispositivos pequenos ou antivos) não suportam o número apropriado de eventos,\n"
-"  - configuração de espaço muito pequeno com 'use toda a memória do dispositivo'."
+"Erros de OpenCL encontrados; desabilitando o OpenCL para esta seção! "
+"prováveis problemas:\n"
+"  - o OpenCL não conseguiu recursos devido a configuração de preferências. "
+"por favor tente com os valores padrão,\n"
+"  - driver com bugs para algum dispositivo. por favor execute o darktable "
+"com `-d opencl' para identificar,\n"
+"  - alguns drivers (para dispositivos pequenos ou antivos) não suportam o "
+"número apropriado de eventos,\n"
+"  - configuração de espaço muito pequeno com 'use toda a memória do "
+"dispositivo'."
 
 #: ../src/develop/pixelpipe_hb.c:2864
 #, c-format
@@ -10395,6 +10446,10 @@ msgstr "%s não associado"
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
+
+#: ../src/gui/accelerators.c:4167
+msgid "short key press resets stuck keys"
+msgstr ""
 
 #: ../src/gui/gtk.c:175 ../src/views/darkroom.c:4476
 msgid "darktable - darkroom preview"
@@ -15648,7 +15703,7 @@ msgstr ""
 "tom de matiz ao qual deve ser dada precedência sobre outros tons de matiz"
 
 #: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1318
-#: ../src/iop/highlights.c:1222
+#: ../src/iop/highlights.c:1223
 msgid "not applicable"
 msgstr "não aplicável"
 
@@ -17609,6 +17664,14 @@ msgstr ""
 "segmentação',\n"
 "especialmente se o ponto branco da câmera estiver incorreto."
 
+#: ../src/iop/highlights.c:1158
+msgid ""
+"visualize clipped highlights in a false color representation.\n"
+"the effective clipping level also depends on the reconstruction method."
+msgstr ""
+"visualizar realces recortados em uma representação de cor falsa.\n"
+"o nível efetivo de recorte também depende do método de reconstrução."
+
 #: ../src/iop/highlights.c:1168
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
@@ -17620,17 +17683,26 @@ msgstr ""
 "isto frequentemente leva a melhoria da reconstrução de cor para segmentos "
 "muito pequenos contra fundo escuro."
 
+#: ../src/iop/highlights.c:1171
+msgid "visualize the combined segments in a false color representation."
+msgstr "visualizar os segmentos combinados em uma representação com cor falsa."
+
 #: ../src/iop/highlights.c:1178
-#, fuzzy
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
 "opposed means inpainting."
 msgstr ""
 "selecione a reconstrução depois da análise de segmentos.\n"
-"aumente para favorecer candidatos encontrados na análise de segmentação, "
-"diminua para reconstrução por média oposta.\n"
-"o botão de máscara mostra os segmentos que se considera terem bom candidato."
+"aumente para favorecer candidatos encontrados na análise de segmentação, diminua para reconstrução por média oposta."
+
+#: ../src/iop/highlights.c:1181
+msgid ""
+"visualize segments that are considered to have a good candidate in a false "
+"color representation."
+msgstr ""
+"visualizar os segmentos considerados como tendo bom candidato em uma "
+"representação com cor falsa."
 
 #: ../src/iop/highlights.c:1190
 msgid ""
@@ -17653,16 +17725,14 @@ msgstr ""
 "reconstruidos e evitar gradientes."
 
 #: ../src/iop/highlights.c:1196
-msgid ""
-"set strength of rebuilding in regions with all photosites clipped.\n"
-"the mask buttons shows the effect that is added to already reconstructed "
-"data."
-msgstr ""
-"define a força da reconstrução em regiões com todos os canais truncados.\n"
-"os botões de máscara mostram o efeito que é adicionado aos dados já "
-"reconstruídos."
+msgid "set strength of rebuilding in regions with all photosites clipped."
+msgstr "dfine a força da reconstrução em regiões com todos os canais truncados."
 
-#: ../src/iop/highlights.c:1206
+#: ../src/iop/highlights.c:1198
+msgid "show the effect that is added to already reconstructed data."
+msgstr "mostrar o efeito que é adicionado aos dados já reconstruídos."
+
+#: ../src/iop/highlights.c:1207
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17670,7 +17740,7 @@ msgstr ""
 "adiciona ruído para mesclar visualmente as áreas reconstruídas no resto da "
 "imagem ruidosa. útil com ISO alto."
 
-#: ../src/iop/highlights.c:1210
+#: ../src/iop/highlights.c:1211
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17678,7 +17748,7 @@ msgstr ""
 "aumente se os realces magenta não forem corretamente corrigidos.\n"
 "cada nova iteração tem uma nova penalidade de desempenho."
 
-#: ../src/iop/highlights.c:1215
+#: ../src/iop/highlights.c:1216
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17686,7 +17756,7 @@ msgstr ""
 "aumente se os realces magenta não forem completamente corrigidos.\n"
 "isto pode produzir fronteiras não suaves entre regiões válidas e recortadas."
 
-#: ../src/iop/highlights.c:1219
+#: ../src/iop/highlights.c:1220
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17694,7 +17764,7 @@ msgstr ""
 "aumente para corrigir áreas recortadas maiores.\n"
 "valores altos trazem grandes penalidades de desempenho"
 
-#: ../src/iop/highlights.c:1223
+#: ../src/iop/highlights.c:1224
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "Este módulo somente funciona com RAW e sRAW monotromáticos"
 
@@ -17904,6 +17974,12 @@ msgstr "escala"
 msgid "auto scale"
 msgstr "escalonamento automático"
 
+#: ../src/iop/lens.cc:4419
+msgid "automatic scale to available image size due to lensfun data"
+msgstr ""
+"mudar automaticamente a escala para o tamanho de imagem disponível de acordo "
+"com dados lensfun"
+
 #: ../src/iop/lens.cc:4423
 msgid "correct distortions or apply them"
 msgstr "corrige ou aplica distorções"
@@ -17959,6 +18035,10 @@ msgstr "ajusta a correção dde TCA azul"
 msgid "image scaling"
 msgstr "mudança de escala da imagem"
 
+#: ../src/iop/lens.cc:4488
+msgid "automatic scale to available image size"
+msgstr "mudar automaticamente a escala para o tamanho de imagem disponível"
+
 #: ../src/iop/lens.cc:4496
 msgid ""
 "select a correction mode either based on\n"
@@ -17996,6 +18076,10 @@ msgstr "vinheta"
 #: ../src/iop/lens.cc:4541
 msgid "amount of the applied optical vignetting correction"
 msgstr "quantidade aplicada de correção vinheta óptica"
+
+#: ../src/iop/lens.cc:4543
+msgid "show applied optical vignette correction mask"
+msgstr "mostrar máscara aplicada de correção vinheta óptica"
 
 #: ../src/iop/lens.cc:4553
 msgid "radius of uncorrected centre"
@@ -21019,6 +21103,14 @@ msgstr "cria uma duplicata da imagem com o mesmo histórico"
 #: ../src/libs/export.c:160 ../src/libs/export.c:1398
 msgid "export"
 msgstr "exportar"
+
+#: ../src/libs/export.c:306
+msgid "invalid format for export selected"
+msgstr "formato inválido selecionado para exportação"
+
+#: ../src/libs/export.c:311
+msgid "invalid storage for export selected"
+msgstr "armazenamento inválido selecionado para exportação"
 
 #: ../src/libs/export.c:322
 msgid "export to disk"
@@ -25573,6 +25665,15 @@ msgid "mouse actions"
 msgstr "ações com mouse"
 
 #~ msgid ""
+#~ "set strength of rebuilding in regions with all photosites clipped.\n"
+#~ "the mask buttons shows the effect that is added to already reconstructed "
+#~ "data."
+#~ msgstr ""
+#~ "define a força da reconstrução em regiões com todos os canais truncados.\n"
+#~ "os botões de máscara mostram o efeito que é adicionado aos dados já "
+#~ "reconstruídos."
+
+#~ msgid ""
 #~ "darktable discovered problems with your OpenCL setup; disabling OpenCL "
 #~ "for this session!"
 #~ msgstr ""
@@ -26301,11 +26402,6 @@ msgstr "ações com mouse"
 
 #~ msgid "xcf"
 #~ msgstr "xcf"
-
-#~ msgid ""
-#~ "set strength of reconstruction in regions with all photosites clipped"
-#~ msgstr ""
-#~ "dfine a força da reconstrução em regiões com todos os canais truncados"
 
 #~ msgctxt "preferences"
 #~ msgid "on startup"
