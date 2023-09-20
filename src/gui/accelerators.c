@@ -4164,7 +4164,7 @@ static void _delay_for_double_triple(guint time, guint is_key)
   else if(break_stuck && !_sc.button)
   {
     _ungrab_grab_widget();
-    dt_control_log("short key press resets stuck keys");
+    dt_control_log(_("short key press resets stuck keys"));
     return;
   }
   else if((is_key ? _sc.press : _sc.click) & DT_SHORTCUT_TRIPLE)
