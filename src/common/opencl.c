@@ -1169,7 +1169,7 @@ void dt_opencl_init(
   cl->dlocl = dt_dlopencl_init(library);
   if(cl->dlocl == NULL)
   {
-    logerror = _("no working opencl library found");
+    logerror = _("no working OpenCL library found");
     dt_print(DT_DEBUG_OPENCL,
                  "[opencl_init] no working opencl '%s' library found."
                  " Continue with opencl disabled\n",
