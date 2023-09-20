@@ -372,6 +372,7 @@ try_again:
       fail = TRUE;
       goto failed;
     }
+
     // make sure the outpur directory is writeable
     if(g_access(output_dir, W_OK | X_OK) != 0)
     {
@@ -423,7 +424,8 @@ try_again:
     }
 
     // conflict handling option: overwrite if newer
-    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED)
+    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED &&
+       g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       // get the image data
       const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -445,6 +447,7 @@ try_again:
       }
     }
   } // end of critical block
+
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(fail) return 1;
 
