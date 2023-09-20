@@ -1155,12 +1155,13 @@ void dt_opencl_init(
   if(exclude_opencl)
   {
     dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] opencl disabled due to explicit user request\n");
+             "[opencl_init] opencl disabled due to explicit user request\n");
     goto finally;
   }
 
   if(!opencl_requested)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl disabled via darktable preferences\n");
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_init] opencl disabled via darktable preferences\n");
 
   // look for explicit definition of opencl_runtime library in preferences
   const char *library = dt_conf_get_string_const("opencl_library");
@@ -1171,17 +1172,18 @@ void dt_opencl_init(
   {
     logerror = _("no working OpenCL library found");
     dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] no working opencl '%s' library found."
-                 " Continue with opencl disabled\n",
-                 (strlen(library) == 0) ? "default path" : library);
+             "[opencl_init] no working opencl '%s' library found."
+             " Continue with opencl disabled\n",
+             (strlen(library) == 0) ? "default path" : library);
     goto finally;
   }
   else
   {
     dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] opencl library '%s' found on your system and loaded, preference '%s'\n",
-                 cl->dlocl->library,
-                 (strlen(library) == 0) ? "default path" : library);
+             "[opencl_init] opencl library '%s' found on your system and loaded,"
+             " preference '%s'\n",
+             cl->dlocl->library,
+             (strlen(library) == 0) ? "default path" : library);
   }
 
   all_platforms = malloc(sizeof(cl_platform_id) * DT_OPENCL_MAX_PLATFORMS);
@@ -1199,7 +1201,8 @@ void dt_opencl_init(
   if((err != CL_SUCCESS) || (num_platforms == 0))
   {
     dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] %i platforms detected, error: %s\n", num_platforms, cl_errstr(err));
+             "[opencl_init] %i platforms detected, error: %s\n",
+             num_platforms, cl_errstr(err));
     goto finally;
   }
 
@@ -1209,7 +1212,7 @@ void dt_opencl_init(
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_init] could not get platforms IDs: %s\n", cl_errstr(err));
+             "[opencl_init] could not get platforms IDs: %s\n", cl_errstr(err));
     goto finally;
   }
   if(num_platforms == 0)
@@ -1219,8 +1222,9 @@ void dt_opencl_init(
   }
 
   logerror = NULL;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d platform%s\n", num_platforms,
-           num_platforms > 1 ? "s" : "");
+  dt_print(DT_DEBUG_OPENCL,
+           "[opencl_init] found %d platform%s\n",
+           num_platforms, num_platforms > 1 ? "s" : "");
 
   for(int n = 0; n < num_platforms; n++)
   {
@@ -1267,17 +1271,17 @@ void dt_opencl_init(
       if(!valid_platform)
       {
         dt_print(DT_DEBUG_OPENCL,
-          "[check platform] platform '%s' with key '%s' is NOT active\n",
-          platform_name, platform_key);
+                 "[check platform] platform '%s' with key '%s' is NOT active\n",
+                 platform_name, platform_key);
       }
       else if((errn == CL_SUCCESS) && (errv == CL_SUCCESS))
         dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_init] no devices found for %s (vendor) - %s (name)\n",
-                     platform_vendor, platform_name);
+                 "[opencl_init] no devices found for %s (vendor) - %s (name)\n",
+                 platform_vendor, platform_name);
       else
       {
         dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_init] no devices found for unknown platform\n");
+                 "[opencl_init] no devices found for unknown platform\n");
         logerror = _("no devices found for unknown platform");
       }
       all_num_devices[n] = 0;
@@ -1292,8 +1296,8 @@ void dt_opencl_init(
       {
         all_num_devices[n] = 0;
         dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_init] could not get profile for platform '%s': %s\n",
-                     platform_name, cl_errstr(err));
+                 "[opencl_init] could not get profile for platform '%s': %s\n",
+                 platform_name, cl_errstr(err));
       }
       else
       {
@@ -1301,8 +1305,8 @@ void dt_opencl_init(
         {
           all_num_devices[n] = 0;
           dt_print(DT_DEBUG_OPENCL,
-                       "[opencl_init] platform '%s' is not FULL_PROFILE\n",
-                       platform_name);
+                   "[opencl_init] platform '%s' is not FULL_PROFILE\n",
+                   platform_name);
         }
       }
     }
@@ -1322,7 +1326,8 @@ void dt_opencl_init(
       free(cl->dev);
       cl->dev = NULL;
       free(devices);
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not allocate memory for device resources\n");
+      dt_print(DT_DEBUG_OPENCL,
+               "[opencl_init] could not allocate memory for device resources\n");
       logerror = _("not enough memory for OpenCL devices");
       goto finally;
     }
@@ -1343,8 +1348,8 @@ void dt_opencl_init(
       {
         num_devices -= all_num_devices[n];
         dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_init] could not get devices list: %s\n",
-                     cl_errstr(err));
+                 "[opencl_init] could not get devices list: %s\n",
+                 cl_errstr(err));
       }
       devs += all_num_devices[n];
     }
@@ -1407,8 +1412,8 @@ void dt_opencl_init(
 
 finally:
   dt_print(DT_DEBUG_OPENCL,
-               "[opencl_init] FINALLY: opencl is %sAVAILABLE and %sENABLED.\n",
-               cl->inited ? "" : "NOT ", cl->enabled ? "" : "NOT ");
+           "[opencl_init] FINALLY: opencl is %sAVAILABLE and %sENABLED.\n",
+           cl->inited ? "" : "NOT ", cl->enabled ? "" : "NOT ");
   if(cl->inited && cl->enabled)
   {
     // report some global settings if up & running
@@ -1453,8 +1458,8 @@ finally:
       // set scheduling profile to "default"
       dt_conf_set_string("opencl_scheduling_profile", "default");
       dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_init] set scheduling profile to default, setup has changed.\n");
-        dt_control_log(_("OpenCL scheduling profile set to default, setup has changed"));
+               "[opencl_init] set scheduling profile to default, setup has changed.\n");
+      dt_control_log(_("OpenCL scheduling profile set to default, setup has changed"));
     }
     // apply config settings for scheduling profile: sets device
     // priorities and pixelpipe synchronization timeout
@@ -2519,8 +2524,8 @@ static gboolean _check_kernel(const int dev, const int kernel)
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-                "[opencl_create_kernel] could not create kernel `%s'! (%s)\n",
-                cl->name_saved[kernel], cl_errstr(err));
+               "[opencl_create_kernel] could not create kernel `%s'! (%s)\n",
+               cl->name_saved[kernel], cl_errstr(err));
       cl->dev[dev].kernel_used[kernel] = 0;
       cl->name_saved[kernel] = NULL; // don't try again
       dt_pthread_mutex_unlock(&cl->lock);
@@ -3393,7 +3398,7 @@ void dt_opencl_memory_statistics(int devid, const cl_mem mem, const dt_opencl_me
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
     dt_print(DT_DEBUG_OPENCL,
-              "[opencl memory] device %d: %zu bytes (%.1f MB) in use\n",
+             "[opencl memory] device %d: %zu bytes (%.1f MB) in use\n",
              devid, darktable.opencl->dev[devid].memory_in_use,
              (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
@@ -3465,11 +3470,12 @@ void dt_opencl_check_tuning(const int devid)
 
   if(info)
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-       "[dt_opencl_check_tuning] use %luMB (headroom=%s, pinning=%s) on device `%s' id=%i\n",
-       cl->dev[devid].used_available / 1024lu / 1024lu,
-       cl->dev[devid].tunehead ? "ON" : "OFF",
-       cl->dev[devid].pinned_memory  ? "ON" : "OFF",
-       cl->dev[devid].fullname, devid);
+             "[dt_opencl_check_tuning] use %luMB (headroom=%s, pinning=%s)"
+             " on device `%s' id=%i\n",
+             cl->dev[devid].used_available / 1024lu / 1024lu,
+             cl->dev[devid].tunehead ? "ON" : "OFF",
+             cl->dev[devid].pinned_memory  ? "ON" : "OFF",
+             cl->dev[devid].fullname, devid);
 }
 
 cl_ulong dt_opencl_get_device_available(const int devid)
