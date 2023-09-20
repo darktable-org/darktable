@@ -30,8 +30,7 @@ typedef enum dt_collection_query_t
   COLLECTION_QUERY_SIMPLE             = 0,      // a query with only select and where statement
   COLLECTION_QUERY_USE_SORT           = 1 << 0, // if query should include order by statement
   COLLECTION_QUERY_USE_LIMIT          = 1 << 1, // if query should include "limit ?1,?2" part
-  COLLECTION_QUERY_USE_WHERE_EXT      = 1 << 2, // if query should include extended where part
-  COLLECTION_QUERY_USE_ONLY_WHERE_EXT = 1 << 3  // if query should only use extended where part
+  COLLECTION_QUERY_USE_WHERE_EXT      = 1 << 2  // if query should include extended where part
 } dt_collection_query_t;
 #define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT | COLLECTION_QUERY_USE_LIMIT)
 

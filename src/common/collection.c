@@ -236,30 +236,27 @@ int dt_collection_update(const dt_collection_t *collection)
   wq = wq_no_group = sq = selq_pre = selq_post = query = query_no_group = NULL;
 
   /* build where part */
-  gchar *where_ext = dt_collection_get_extended_where(collection, -1);
-  if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
+
+  int and_term = and_operator_initial();
+
+  /* add default filters */
+  if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
   {
-    int and_term = and_operator_initial();
-
-    /* add default filters */
-    if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
-    {
-      wq = g_strdup_printf("%s (film_id = %u)",
-                           and_operator(&and_term), collection->params.film_id);
-    }
-    // DON'T SELECT IMAGES MARKED TO BE DELETED.
-    wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
-                         and_operator(&and_term), DT_IMAGE_REMOVE,
-                         DT_IMAGE_REMOVE);
-
-    /* add where ext if wanted */
-    if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
-      wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
+    wq = g_strdup_printf("%s (film_id = %u)",
+                          and_operator(&and_term), collection->params.film_id);
   }
-  else
-    wq = g_strdup(where_ext);
+  // DON'T SELECT IMAGES MARKED TO BE DELETED.
+  wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
+                        and_operator(&and_term), DT_IMAGE_REMOVE,
+                        DT_IMAGE_REMOVE);
 
-  g_free(where_ext);
+  /* add where ext if wanted */
+  if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
+  {
+    gchar *where_ext = dt_collection_get_extended_where(collection, -1);
+    wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
+    g_free(where_ext);
+  }
 
   wq_no_group = g_strdup(wq);
 
@@ -442,36 +439,6 @@ int dt_collection_update(const dt_collection_t *collection)
        DT_METADATA_XMP_DC_DESCRIPTION);
     // clang-format on
   }
-  else if(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
-  {
-    const uint32_t tagid = collection->tagid;
-    char tag[16] = { 0 };
-    snprintf(tag, sizeof(tag), "%u", tagid);
-    // clang-format off
-    selq_pre = dt_util_dstrcat
-      (selq_pre,
-       "SELECT DISTINCT mi.id"
-       " FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
-       "              flags, version, %s position, aspect_ratio,"
-       "              cm.maker || ' ' || cm.model AS camera,"
-       "              mk.name AS maker, md.name AS model, ln.name AS lens,"
-       "              aperture, exposure, focal_length,"
-       "              iso, import_timestamp, change_timestamp,"
-       "              export_timestamp, print_timestamp"
-       "       FROM main.images AS mi, main.cameras AS cm,"
-       "            main.makers AS mk, main.models AS md, main.lens AS ln "
-       "       %s%s"
-       "       WHERE mi.maker_id = mk.id"
-       "         AND mi.model_id = md.id"
-       "         AND mi.lens_id = ln.id"
-       "         AND mi.camera_id = cm.id"
-       "     ) AS mi ",
-       tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-       tagid ? " LEFT JOIN main.tagged_images AS ti"
-       "                ON ti.imgid = mi.id AND ti.tagid = " : "",
-       tagid ? tag : "");
-    // clang-format on
-  }
   else
   {
     const uint32_t tagid = collection->tagid;
@@ -505,8 +472,7 @@ int dt_collection_update(const dt_collection_t *collection)
 
 
   /* build sort order part */
-  if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
   {
     sq = dt_collection_get_sort_query(collection);
   }
@@ -999,19 +965,10 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection,
   gchar *count_query = NULL;
 
   gchar *fq = g_strstr_len(query, strlen(query), "FROM");
-  if((collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-  {
-    gchar *where_ext = dt_collection_get_extended_where(collection, -1);
-    count_query = g_strdup_printf("SELECT COUNT(DISTINCT main.images.id)"
-                                  " FROM main.images AS mi %s", where_ext);
-    g_free(where_ext);
-  }
-  else
-    count_query = g_strdup_printf("SELECT COUNT(DISTINCT mi.id) %s", fq);
+  count_query = g_strdup_printf("SELECT COUNT(DISTINCT mi.id) %s", fq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
-  if((collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
-     && !(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
+  if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
   {
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
