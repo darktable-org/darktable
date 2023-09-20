@@ -50,7 +50,7 @@ typedef enum dt_disk_onconflict_actions_t
 {
   DT_EXPORT_ONCONFLICT_UNIQUEFILENAME = 0,
   DT_EXPORT_ONCONFLICT_OVERWRITE = 1,
-  DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED = 2,
+  DT_EXPORT_ONCONFLICT_OVERWRITE_IF_MODIFIED = 2,
   DT_EXPORT_ONCONFLICT_SKIP = 3
 } dt_disk_onconflict_actions_t;
 
@@ -144,7 +144,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
   {
     DT_EXPORT_ONCONFLICT_UNIQUEFILENAME_V4 = 0,
     DT_EXPORT_ONCONFLICT_OVERWRITE_V4 = 1,
-    DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED_V4 = 2,
+    DT_EXPORT_ONCONFLICT_OVERWRITE_IF_MODIFIED_V4 = 2,
     DT_EXPORT_ONCONFLICT_SKIP_V4 = 3
   } dt_disk_onconflict_actions_v4_t;
 
@@ -267,7 +267,7 @@ void gui_init(dt_imageio_module_storage_t *self)
                                onsave_action_toggle_callback, self,
                                N_("create unique filename"),
                                N_("overwrite"),
-                               N_("overwrite if changed"),
+                               N_("overwrite if modified"),
                                N_("skip"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
 }
@@ -424,7 +424,7 @@ try_again:
     }
 
     // conflict handling option: overwrite if newer
-    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED &&
+    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_MODIFIED &&
        g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       // get the image data
