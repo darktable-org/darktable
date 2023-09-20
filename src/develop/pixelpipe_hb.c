@@ -1742,7 +1742,7 @@ static gboolean _dev_pixelpipe_process_rec(
             {
               dt_print_pipe(DT_DEBUG_OPENCL,
                 "pixelpipe process CL", pipe, module, &roi_in, roi_out, "%s\n",
-                  "couldn't copy image to opencl device");
+                  "couldn't copy image to OpenCL device");
               success_opencl = FALSE;
             }
           }
@@ -2683,9 +2683,10 @@ restart:
                           ? (dt_opencl_events_flush(pipe->devid, TRUE) != 0)
                           : FALSE;
 
-  // Check if we had opencl errors ....  remark: opencl errors can
-  // come in two ways: pipe->opencl_error is TRUE (and err is TRUE) OR
-  // oclerr is TRUE
+  // Check if we had opencl errors,
+  // remark: opencl errors can come in two ways:
+  // processed pipe->opencl_error checked via 'err'
+  // OpenCL events so oclerr is TRUE
 
   if(oclerr || (err && pipe->opencl_error))
   {
@@ -2699,7 +2700,7 @@ restart:
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
     darktable.opencl->error_count++; // increase error count
-    if(darktable.opencl->error_count >= DT_OPENCL_MAX_ERRORS)
+    if(darktable.opencl->error_count == DT_OPENCL_MAX_ERRORS)
     {
       // too frequent opencl errors encountered: this is a clear sign
       // of a broken setup. give up on opencl during this session.
@@ -2708,8 +2709,12 @@ restart:
                "[opencl] frequent opencl errors encountered; disabling"
                " opencl for this session!\n");
       dt_control_log
-        (_("darktable discovered problems with your OpenCL setup;"
-           " disabling OpenCL for this session!"));
+        (_("OpenCL errors encountered; disabling OpenCL for this session!"
+           " likely problems:\n"
+           "  - OpenCL out of resources due to preference settings. please try with defaults,\n"
+           "  - buggy driver for some devive. please run darktable with `-d opencl' to identify,\n"
+           "  - some drivers (for small or old devices) don't support proper number of events,\n"
+           "  - too small headroom settings while using 'use all device memory'."));
       // also remove "opencl" from capabilities so that the preference entry is greyed out
       dt_capabilities_remove("opencl");
     }

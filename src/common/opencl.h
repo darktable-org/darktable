@@ -481,22 +481,12 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid);
 int dt_opencl_dev_roundup_width(int size, const int devid);
 int dt_opencl_dev_roundup_height(int size, const int devid);
 
-/** get next free slot in eventlist and manage size of eventlist */
-cl_event *dt_opencl_events_get_slot(const int devid, const char *tag);
-
 /** reset eventlist to empty state */
 void dt_opencl_events_reset(const int devid);
-
-/** Wait for events in eventlist to terminate -> this is a blocking synchronization point
-    Does not flush eventlist */
-void dt_opencl_events_wait_for(const int devid);
 
 /** Wait for events in eventlist to terminate, check for return status of events and
     report summary success info (CL_COMPLETE or last error code) */
 cl_int dt_opencl_events_flush(const int devid, const gboolean reset);
-
-/** display OpenCL profiling information. If summary is not 0, try to generate summarized info for kernels */
-void dt_opencl_events_profiling(const int devid, const int aggregated);
 
 /** utility function to calculate optimal work group dimensions for a given kernel */
 int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_local_buffer_t *factors);
@@ -620,22 +610,12 @@ static inline size_t dt_opencl_get_device_memalloc(const int devid)
 static inline void dt_opencl_release_mem_object(void *mem)
 {
 }
-static inline void *dt_opencl_events_get_slot(const int devid, const char *tag)
-{
-  return NULL;
-}
 static inline void dt_opencl_events_reset(const int devid)
-{
-}
-static inline void dt_opencl_events_wait_for(const int devid)
 {
 }
 static inline int dt_opencl_events_flush(const int devid, const gboolean reset)
 {
   return 0;
-}
-static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
-{
 }
 
 #ifdef __cplusplus
