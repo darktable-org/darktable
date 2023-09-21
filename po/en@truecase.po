@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-20 08:40+0200\n"
-"PO-Revision-Date: 2023-09-20 14:30+0300\n"
+"POT-Creation-Date: 2023-09-20 19:05+0200\n"
+"PO-Revision-Date: 2023-09-20 21:11+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -6685,6 +6685,42 @@ msgstr "Generic poissonian"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Noiseprofile file `%s' is not valid"
 
+#: ../src/common/opencl.c:1172
+msgid "no working OpenCL library found"
+msgstr "No working OpenCL library found"
+
+#: ../src/common/opencl.c:1191
+msgid ""
+"platform detection failed. some possible reasons:\n"
+"  - OpenCL ICD (ocl-icd) missing,\n"
+"  - previous OpenCL errors leading to blocked devices,\n"
+"  - power management problems,\n"
+"  - buggy drivers,\n"
+"  - no OpenCL driver installed."
+msgstr ""
+"Platform detection failed. Some possible reasons:\n"
+"  - OpenCL ICD (ocl-icd) missing,\n"
+"  - previous OpenCL errors leading to blocked devices,\n"
+"  - power management problems,\n"
+"  - buggy drivers,\n"
+"  - no OpenCL driver installed."
+
+#: ../src/common/opencl.c:1281
+msgid "no devices found for unknown platform"
+msgstr "No devices found for unknown platform"
+
+#: ../src/common/opencl.c:1326
+msgid "not enough memory for OpenCL devices"
+msgstr "Not enough memory for OpenCL devices"
+
+#: ../src/common/opencl.c:1361
+msgid "no OpenCL devices found"
+msgstr "No OpenCL devices found"
+
+#: ../src/common/opencl.c:1404
+msgid "no suitable OpenCL devices found"
+msgstr "No suitable OpenCL devices found"
+
 #: ../src/common/opencl.c:1425
 #, c-format
 msgid ""
@@ -7293,6 +7329,10 @@ msgstr[1] "%d/%d imported to %s"
 #: ../src/control/jobs/camera_jobs.c:298
 msgid "starting to import images from camera"
 msgstr "Starting to import images from camera"
+
+#: ../src/control/jobs/camera_jobs.c:302
+msgid "failed to import images from camera."
+msgstr "Failed to import images from camera."
 
 #: ../src/control/jobs/camera_jobs.c:309
 #, c-format
@@ -8429,6 +8469,12 @@ msgstr "Normal & arithmetic"
 #: ../src/develop/blend_gui.c:3176
 msgid "deprecated"
 msgstr "Deprecated"
+
+#. should never happen: unknown blend mode
+#: ../src/develop/blend_gui.c:3180
+#, c-format
+msgid "unknown blend mode '%d' in module '%s'"
+msgstr "Unknown blend mode '%d' in module '%s'"
 
 #: ../src/develop/blend_gui.c:3489
 msgid "blending options"
@@ -10316,6 +10362,10 @@ msgstr "%s not assigned"
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s assigned to %s"
+
+#: ../src/gui/accelerators.c:4167
+msgid "short key press resets stuck keys"
+msgstr "Short key press resets stuck keys"
 
 #: ../src/gui/gtk.c:175 ../src/views/darkroom.c:4476
 msgid "darktable - darkroom preview"
@@ -15531,7 +15581,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "The hue tone which should be given precedence over other hue tones"
 
 #: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1318
-#: ../src/iop/highlights.c:1222
+#: ../src/iop/highlights.c:1223
 msgid "not applicable"
 msgstr "Not applicable"
 
@@ -17478,6 +17528,14 @@ msgstr ""
 "'Segmentation' modes,\n"
 "especially if camera white point is incorrect."
 
+#: ../src/iop/highlights.c:1158
+msgid ""
+"visualize clipped highlights in a false color representation.\n"
+"the effective clipping level also depends on the reconstruction method."
+msgstr ""
+"Visualize clipped highlights in a false color representation.\n"
+"The effective clipping level also depends on the reconstruction method."
+
 #: ../src/iop/highlights.c:1168
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
@@ -17488,6 +17546,10 @@ msgstr ""
 "This often leads to improved color reconstruction for tiny segments before "
 "dark background."
 
+#: ../src/iop/highlights.c:1171
+msgid "visualize the combined segments in a false color representation."
+msgstr "Visualize the combined segments in a false color representation."
+
 #: ../src/iop/highlights.c:1178
 msgid ""
 "select inpainting after segmentation analysis.\n"
@@ -17497,6 +17559,14 @@ msgstr ""
 "Select inpainting after segmentation analysis.\n"
 "Increase to favor candidates found in segmentation analysis, decrease for "
 "opposed means inpainting."
+
+#: ../src/iop/highlights.c:1181
+msgid ""
+"visualize segments that are considered to have a good candidate in a false "
+"color representation."
+msgstr ""
+"Visualize segments that are considered to have a good candidate in a false "
+"color representation."
 
 #: ../src/iop/highlights.c:1190
 msgid ""
@@ -17519,16 +17589,14 @@ msgstr ""
 "highlights rebuilt and avoid gradients."
 
 #: ../src/iop/highlights.c:1196
-msgid ""
-"set strength of rebuilding in regions with all photosites clipped.\n"
-"the mask buttons shows the effect that is added to already reconstructed "
-"data."
-msgstr ""
-"Set strength of rebuilding in regions with all photosites clipped.\n"
-"The mask buttons shows the effect that is added to already reconstructed "
-"data."
+msgid "set strength of rebuilding in regions with all photosites clipped."
+msgstr "Set strength of rebuilding in regions with all photosites clipped."
 
-#: ../src/iop/highlights.c:1206
+#: ../src/iop/highlights.c:1198
+msgid "show the effect that is added to already reconstructed data."
+msgstr "Show the effect that is added to already reconstructed data."
+
+#: ../src/iop/highlights.c:1207
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17536,7 +17604,7 @@ msgstr ""
 "Add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. Useful at high ISO."
 
-#: ../src/iop/highlights.c:1210
+#: ../src/iop/highlights.c:1211
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17544,7 +17612,7 @@ msgstr ""
 "Increase if magenta highlights don't get fully corrected\n"
 "Each new iteration brings a performance penalty."
 
-#: ../src/iop/highlights.c:1215
+#: ../src/iop/highlights.c:1216
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17552,7 +17620,7 @@ msgstr ""
 "Increase if magenta highlights don't get fully corrected.\n"
 "This may produce non-smooth boundaries between valid and clipped regions."
 
-#: ../src/iop/highlights.c:1219
+#: ../src/iop/highlights.c:1220
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17560,7 +17628,7 @@ msgstr ""
 "Increase to correct larger clipped areas.\n"
 "Large values bring huge performance penalties"
 
-#: ../src/iop/highlights.c:1223
+#: ../src/iop/highlights.c:1224
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "This module only works with non-monochrome RAW and sRAW"
 
@@ -17766,6 +17834,10 @@ msgstr "Scale"
 msgid "auto scale"
 msgstr "Auto scale"
 
+#: ../src/iop/lens.cc:4419
+msgid "automatic scale to available image size due to lensfun data"
+msgstr "Automatic scale to available image size due to Lensfun data"
+
 #: ../src/iop/lens.cc:4423
 msgid "correct distortions or apply them"
 msgstr "Correct distortions or apply them"
@@ -17821,6 +17893,10 @@ msgstr "Tune the TCA blue correction"
 msgid "image scaling"
 msgstr "Image scaling"
 
+#: ../src/iop/lens.cc:4488
+msgid "automatic scale to available image size"
+msgstr "Automatic scale to available image size"
+
 #: ../src/iop/lens.cc:4496
 msgid ""
 "select a correction mode either based on\n"
@@ -17858,6 +17934,10 @@ msgstr "Vignette"
 #: ../src/iop/lens.cc:4541
 msgid "amount of the applied optical vignetting correction"
 msgstr "Amount of the applied optical vignetting correction"
+
+#: ../src/iop/lens.cc:4543
+msgid "show applied optical vignette correction mask"
+msgstr "Show applied optical vignette correction mask"
 
 #: ../src/iop/lens.cc:4553
 msgid "radius of uncorrected centre"
@@ -20848,6 +20928,14 @@ msgstr "Create a duplicate of the image with same history stack"
 #: ../src/libs/export.c:160 ../src/libs/export.c:1398
 msgid "export"
 msgstr "Export"
+
+#: ../src/libs/export.c:306
+msgid "invalid format for export selected"
+msgstr "Invalid format for export selected"
+
+#: ../src/libs/export.c:311
+msgid "invalid storage for export selected"
+msgstr "Invalid storage for export selected"
 
 #: ../src/libs/export.c:322
 msgid "export to disk"
