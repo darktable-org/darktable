@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-20 08:40+0200\n"
-"PO-Revision-Date: 2023-09-20 14:30+0300\n"
+"POT-Creation-Date: 2023-09-20 19:05+0200\n"
+"PO-Revision-Date: 2023-09-21 15:21+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -6757,6 +6757,42 @@ msgstr "загальний пуассонівський"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Файл профілю шуму `%s' недійсний"
 
+#: ../src/common/opencl.c:1172
+msgid "no working OpenCL library found"
+msgstr "Не знайдено робочої бібліотеки OpenCL"
+
+#: ../src/common/opencl.c:1191
+msgid ""
+"platform detection failed. some possible reasons:\n"
+"  - OpenCL ICD (ocl-icd) missing,\n"
+"  - previous OpenCL errors leading to blocked devices,\n"
+"  - power management problems,\n"
+"  - buggy drivers,\n"
+"  - no OpenCL driver installed."
+msgstr ""
+"Не вдалося виявити платформу. Деякі можливі причини:\n"
+"   - OpenCL ICD (ocl-icd) відсутній,\n"
+"   - попередні помилки OpenCL, що призводять до блокування пристроїв,\n"
+"   - проблеми з керуванням живленням,\n"
+"   - помилки в драйверах,\n"
+"   - драйвер OpenCL не встановлено."
+
+#: ../src/common/opencl.c:1281
+msgid "no devices found for unknown platform"
+msgstr "Не знайдено пристроїв для невідомої платформи"
+
+#: ../src/common/opencl.c:1326
+msgid "not enough memory for OpenCL devices"
+msgstr "Недостатньо пам'яті для пристроїв OpenCL"
+
+#: ../src/common/opencl.c:1361
+msgid "no OpenCL devices found"
+msgstr "Пристроїв OpenCL не знайдено"
+
+#: ../src/common/opencl.c:1404
+msgid "no suitable OpenCL devices found"
+msgstr "Відповідних пристроїв OpenCL не знайдено"
+
 #: ../src/common/opencl.c:1425
 #, c-format
 msgid ""
@@ -7373,6 +7409,10 @@ msgstr[2] "%d/%d імпортовано в %s"
 #: ../src/control/jobs/camera_jobs.c:298
 msgid "starting to import images from camera"
 msgstr "Початок імпортування зображень з камери"
+
+#: ../src/control/jobs/camera_jobs.c:302
+msgid "failed to import images from camera."
+msgstr "Не вдалося імпортувати зображення з камери."
 
 #: ../src/control/jobs/camera_jobs.c:309
 #, c-format
@@ -8545,6 +8585,12 @@ msgstr "Нормальні та арифметичні"
 #: ../src/develop/blend_gui.c:3176
 msgid "deprecated"
 msgstr "Застарілі"
+
+#. should never happen: unknown blend mode
+#: ../src/develop/blend_gui.c:3180
+#, c-format
+msgid "unknown blend mode '%d' in module '%s'"
+msgstr "Невідомий режим змішування '%d' у модулі '%s'"
 
 #: ../src/develop/blend_gui.c:3489
 msgid "blending options"
@@ -10443,6 +10489,10 @@ msgstr "%s не призначено"
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s призначено на %s"
+
+#: ../src/gui/accelerators.c:4167
+msgid "short key press resets stuck keys"
+msgstr "Коротке натискання клавіші скидає застряглі клавіші"
 
 #: ../src/gui/gtk.c:175 ../src/views/darkroom.c:4476
 msgid "darktable - darkroom preview"
@@ -15724,7 +15774,7 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Тон відтінку, якому слід надавати перевагу над іншими відтінками"
 
 #: ../src/iop/colorreconstruction.c:1282 ../src/iop/demosaic.c:1318
-#: ../src/iop/highlights.c:1222
+#: ../src/iop/highlights.c:1223
 msgid "not applicable"
 msgstr "Не застосовується"
 
@@ -17707,6 +17757,14 @@ msgstr ""
 "'Домальовування протилежного'\n"
 "або 'Сегментації', особливо якщо точка білого камери неправильна."
 
+#: ../src/iop/highlights.c:1158
+msgid ""
+"visualize clipped highlights in a false color representation.\n"
+"the effective clipping level also depends on the reconstruction method."
+msgstr ""
+"Візуалізувати обрізані ділянки в спеціальному кольорі.\n"
+"Ефективний рівень кліппінгу також залежить від методу реконструкції."
+
 #: ../src/iop/highlights.c:1168
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
@@ -17718,6 +17776,10 @@ msgstr ""
 "Це часто призводить до покращеної реконструкції кольорів для крихітних "
 "сегментів перед темним тлом."
 
+#: ../src/iop/highlights.c:1171
+msgid "visualize the combined segments in a false color representation."
+msgstr "Візуалізувати об'єднані сегменти в спеціальному кольорі."
+
 #: ../src/iop/highlights.c:1178
 msgid ""
 "select inpainting after segmentation analysis.\n"
@@ -17726,6 +17788,14 @@ msgid ""
 msgstr ""
 "Збільште для надання переваги знайденим у аналізі сегментації кандидатам, "
 "зменште для домальовування протилежного."
+
+#: ../src/iop/highlights.c:1181
+msgid ""
+"visualize segments that are considered to have a good candidate in a false "
+"color representation."
+msgstr ""
+"Візуалізувати сегменти, які вважаються такими, що мають хороші пікселі-"
+"кандидати, в спеціальному кольорі."
 
 #: ../src/iop/highlights.c:1190
 msgid ""
@@ -17749,15 +17819,15 @@ msgstr ""
 "градієнтів."
 
 #: ../src/iop/highlights.c:1196
-msgid ""
-"set strength of rebuilding in regions with all photosites clipped.\n"
-"the mask buttons shows the effect that is added to already reconstructed "
-"data."
+msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr ""
-"Встановити силу реконструкції в областях, де всі фотопікселі пересвітлені.\n"
-"Кнопки маски показують ефект, який додається до вже реконструйованих даних."
+"Установити силу реконструкції в областях, де всі фотопікселі пересвітлені."
 
-#: ../src/iop/highlights.c:1206
+#: ../src/iop/highlights.c:1198
+msgid "show the effect that is added to already reconstructed data."
+msgstr "Показати ефект, який додається до вже реконструйованих даних."
+
+#: ../src/iop/highlights.c:1207
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17765,7 +17835,7 @@ msgstr ""
 "Додати шум, щоб візуально змішати реконструйовані області\n"
 "з рештою шумного зображення. корисно при високих ISO."
 
-#: ../src/iop/highlights.c:1210
+#: ../src/iop/highlights.c:1211
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17773,7 +17843,7 @@ msgstr ""
 "Збільште, якщо маджентові ділянки не повністю виправлені\n"
 "кожна нова ітерація призводить до зниження продуктивності."
 
-#: ../src/iop/highlights.c:1215
+#: ../src/iop/highlights.c:1216
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17781,7 +17851,7 @@ msgstr ""
 "Збільште, якщо маджентові ділянки не повністю виправлені\n"
 "Це може створити негладкі межі між дійсними та обрізаними областями."
 
-#: ../src/iop/highlights.c:1219
+#: ../src/iop/highlights.c:1220
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17789,7 +17859,7 @@ msgstr ""
 "Збільште, щоб виправити більші переекспоновані ділянки.\n"
 "великі значення призводять до значного зниження продуктивності"
 
-#: ../src/iop/highlights.c:1223
+#: ../src/iop/highlights.c:1224
 msgid "this module only works with non-monochrome RAW and sRAW"
 msgstr "Цей модуль працює лише з немонохромними RAW та sRAW"
 
@@ -17998,6 +18068,11 @@ msgstr "Масштаб"
 msgid "auto scale"
 msgstr "Автоматичне масштабування"
 
+#: ../src/iop/lens.cc:4419
+msgid "automatic scale to available image size due to lensfun data"
+msgstr ""
+"Автоматичне масштабування до доступного розміру зображення за даними Lensfun"
+
 #: ../src/iop/lens.cc:4423
 msgid "correct distortions or apply them"
 msgstr "Коригувати деформації об'єктива чи застосувати їх"
@@ -18053,6 +18128,10 @@ msgstr "Підкоригувати виправлення синьої ХА"
 msgid "image scaling"
 msgstr "Масштабування зображення"
 
+#: ../src/iop/lens.cc:4488
+msgid "automatic scale to available image size"
+msgstr "Автоматичне масштабування до доступного розміру зображення"
+
 #: ../src/iop/lens.cc:4496
 msgid ""
 "select a correction mode either based on\n"
@@ -18091,6 +18170,10 @@ msgstr "Віньєтування"
 #: ../src/iop/lens.cc:4541
 msgid "amount of the applied optical vignetting correction"
 msgstr "Обсяг застосованої корекції оптичного віньєтування"
+
+#: ../src/iop/lens.cc:4543
+msgid "show applied optical vignette correction mask"
+msgstr "Показати застосовану маску корекції оптичного віньєтування"
 
 #: ../src/iop/lens.cc:4553
 msgid "radius of uncorrected centre"
@@ -21129,6 +21212,14 @@ msgstr "Створити дублікат зображення з тією ж і
 #: ../src/libs/export.c:160 ../src/libs/export.c:1398
 msgid "export"
 msgstr "Експорт"
+
+#: ../src/libs/export.c:306
+msgid "invalid format for export selected"
+msgstr "Вибрано недійсний формат для експорту"
+
+#: ../src/libs/export.c:311
+msgid "invalid storage for export selected"
+msgstr "Вибрано недійсний тип збереження для експорту"
 
 #: ../src/libs/export.c:322
 msgid "export to disk"
@@ -25702,6 +25793,16 @@ msgid "mouse actions"
 msgstr "Дії за допомогою миші"
 
 #~ msgid ""
+#~ "set strength of rebuilding in regions with all photosites clipped.\n"
+#~ "the mask buttons shows the effect that is added to already reconstructed "
+#~ "data."
+#~ msgstr ""
+#~ "Встановити силу реконструкції в областях, де всі фотопікселі "
+#~ "пересвітлені.\n"
+#~ "Кнопки маски показують ефект, який додається до вже реконструйованих "
+#~ "даних."
+
+#~ msgid ""
 #~ "darktable discovered problems with your OpenCL setup; disabling OpenCL "
 #~ "for this session!"
 #~ msgstr ""
@@ -26417,11 +26518,6 @@ msgstr "Дії за допомогою миші"
 
 #~ msgid "recovery"
 #~ msgstr "відновлення"
-
-#~ msgid ""
-#~ "set strength of reconstruction in regions with all photosites clipped"
-#~ msgstr ""
-#~ "встановити силу реконструкції в областях, де всі фотопікселі пересвітлені"
 
 #~ msgctxt "preferences"
 #~ msgid "on startup"
@@ -28348,9 +28444,6 @@ msgstr "Дії за допомогою миші"
 #~ msgstr ""
 #~ "вставити частини історії змін\n"
 #~ "у всі вибрані зображення"
-
-#~ msgid "export selected"
-#~ msgstr "експорт вибраного"
 
 #~ msgctxt "accel"
 #~ msgid "import image"
