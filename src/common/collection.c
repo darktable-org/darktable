@@ -296,145 +296,61 @@ int dt_collection_update(const dt_collection_t *collection)
   params->sorts[dt_conf_get_int("plugins/lighttable/filtering/lastsort")] = TRUE;
 
   /* build select part includes where */
-  /* COLOR and PATH */
-  if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
-     && collection->params.sorts[DT_COLLECTION_SORT_PATH]
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  _dt_collection_set_selq_pre_sort(collection, &selq_pre);
+  gchar *join = NULL;
+  if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
   {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post,
-       ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
-       " JOIN (SELECT id AS film_rolls_id, folder"
-       "       FROM main.film_rolls) ON film_id = film_rolls_id");
-    // clang-format on
+    // some sort orders require to join tables to the query
+    if(collection->params.sorts[DT_COLLECTION_SORT_COLOR])
+    {
+      join = dt_util_dstrcat
+        (join, " LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
+    }
+    if(collection->params.sorts[DT_COLLECTION_SORT_PATH])
+    {
+      // clang-format off
+      join = dt_util_dstrcat
+        (join, " JOIN (SELECT id AS film_rolls_id, folder"
+               "       FROM main.film_rolls) ON film_id = film_rolls_id");
+      // clang-format on
+    }
+    if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+       && collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
+    {
+      // clang-format off
+      join = dt_util_dstrcat
+        (join,
+        " LEFT OUTER JOIN main.meta_data AS m"
+        "   ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
+        DT_METADATA_XMP_DC_TITLE, DT_METADATA_XMP_DC_DESCRIPTION);
+      // clang-format on
+    }
+    else
+    {
+      if(collection->params.sorts[DT_COLLECTION_SORT_TITLE])
+      {
+        join = dt_util_dstrcat
+          (join,
+          " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
+          DT_METADATA_XMP_DC_TITLE);
+      }
+      if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
+      {
+        join = dt_util_dstrcat
+          (join,
+          " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
+          DT_METADATA_XMP_DC_DESCRIPTION);
+      }
+    }
   }
-  /* COLOR and TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
-          && collection->params.sorts[DT_COLLECTION_SORT_TITLE]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+
+  if(join)
   {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post,
-       ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
-       " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
-       DT_METADATA_XMP_DC_TITLE);
-    // clang-format on
-  }
-  /* COLOR and DESCRIPTION */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
-          && collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-  {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post,
-       ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
-       " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d ",
-       DT_METADATA_XMP_DC_DESCRIPTION);
-    // clang-format on
-  }
-  /* PATH and TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
-          && collection->params.sorts[DT_COLLECTION_SORT_PATH]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-  {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post,
-       ") AS mi"
-       " JOIN (SELECT id AS film_rolls_id, folder"
-       "       FROM main.film_rolls) ON film_id = film_rolls_id"
-       " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
-       DT_METADATA_XMP_DC_TITLE);
-    // clang-format on
-  }
-  /* PATH and DESCRIPTION */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION]
-          && collection->params.sorts[DT_COLLECTION_SORT_PATH]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-  {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post,
-       ") AS mi JOIN (SELECT id AS film_rolls_id, folder"
-       "              FROM main.film_rolls) ON film_id = film_rolls_id"
-       " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
-       DT_METADATA_XMP_DC_DESCRIPTION);
-    // clang-format on
-  }
-  /* TITLE and DESCRIPTION */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
-          && collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-  {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post,
-       ") AS mi LEFT OUTER JOIN main.meta_data AS m"
-       "          ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
-       DT_METADATA_XMP_DC_TITLE, DT_METADATA_XMP_DC_DESCRIPTION);
-    // clang-format on
-  }
-  /* only COLOR */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-  {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post, ") AS mi"
-       " LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
-    // clang-format on
-  }
-  /* only PATH */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_PATH]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-  {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post,
-       ") AS mi JOIN (SELECT id AS film_rolls_id, folder"
-       "              FROM main.film_rolls)"
-       "          ON film_id = film_rolls_id");
-    // clang-format on
-  }
-  /* only TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-  {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat(selq_post, ") AS mi"
-                                " LEFT OUTER JOIN main.meta_data AS m"
-                                "              ON mi.id = m.id AND m.key = %d ",
-                                DT_METADATA_XMP_DC_TITLE);
-    // clang-format on
-  }
-  /* only DESCRIPTION */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION]
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-  {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-    // clang-format off
-    selq_post = dt_util_dstrcat
-      (selq_post,
-       ") AS mi LEFT OUTER JOIN main.meta_data AS m"
-       "          ON mi.id = m.id AND m.key = %d ",
-       DT_METADATA_XMP_DC_DESCRIPTION);
-    // clang-format on
+    selq_post = dt_util_dstrcat(selq_post, ") AS mi%s", join);
+    g_free(join);
   }
   else
   {
-    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_pre = dt_util_dstrcat(selq_pre, "1=1) AS mi WHERE ");
   }
 
