@@ -247,6 +247,8 @@ void dt_dev_process_preview(dt_develop_t *dev)
 
 void dt_dev_process_preview2(dt_develop_t *dev)
 {
+  if(!dev->gui_attached) return;
+  if(!(dev->second_window.widget && GTK_IS_WIDGET(dev->second_window.widget))) return;
   const int err = dt_control_add_job_res(darktable.control,
                                          dt_dev_process_preview2_job_create(dev),
                                          DT_CTL_WORKER_ZOOM_2);

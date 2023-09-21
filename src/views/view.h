@@ -641,10 +641,7 @@ void dt_view_paint_surface(cairo_t *cr,
                            cairo_surface_t *surface,
                            const size_t processed_width,
                            const size_t processed_height,
-                           const dt_window_t window,
-                           const float buf_scale,
-                           const double offset_x,
-                           const double offset_y);
+                           const dt_window_t window);
 
 typedef uint64_t dt_view_context_t;
 
