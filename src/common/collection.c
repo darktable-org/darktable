@@ -209,19 +209,12 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
      "SELECT DISTINCT mi.id"
      "  FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
      "               flags, version, %s position, aspect_ratio,"
-     "               mk.name AS maker, md.name AS model, ln.name AS lens,"
-     "               cm.maker || ' ' || cm.model AS camera,"
      "               aperture, exposure, focal_length,"
      "               iso, import_timestamp, change_timestamp,"
      "               export_timestamp, print_timestamp"
-     "        FROM main.images AS mi, main.cameras AS cm,"
-     "             main.makers AS mk, main.models AS md, main.lens AS ln "
+     "        FROM main.images AS mi"
      "        %s%s"
-     "        WHERE mi.maker_id = mk.id"
-     "          AND mi.model_id = md.id"
-     "          AND mi.lens_id = ln.id"
-     "          AND mi.camera_id = cm.id"
-     "          AND ",
+     "        WHERE ",
      tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
      tagid ? " LEFT JOIN main.tagged_images AS ti"
      "                ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -1587,12 +1580,17 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // if its undefined
         if(!g_strcmp0(elems[i], "UNSET"))
         {
-          query = dt_util_dstrcat(query, " OR (camera IS NULL OR TRIM(camera)='')");
+          // clang-format off
+          query = dt_util_dstrcat(query, " OR camera_id IN (SELECT id"
+                                         "                  FROM main.cameras"
+                                         "                  WHERE (maker IS NULL AND model IS NULL)"
+                                         "                     OR (TRIM(maker)='' AND TRIM(model)=''))");
+          // clang-format on
         }
         else
         {
           gchar *cam = _add_wildcards(elems[i]);
-          query = dt_util_dstrcat(query, " OR camera LIKE '%s'", cam);
+          query = dt_util_dstrcat(query, " OR camera_id IN (SELECT id FROM main.cameras WHERE maker || ' ' || model LIKE '%s')", cam);
           g_free(cam);
         }
       }
@@ -1693,12 +1691,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           query = dt_util_dstrcat
             (query,
-             " OR ((lens IS NULL) OR (TRIM(lens)='') OR (UPPER(TRIM(lens))='N/A'))");
+             " OR lens_id IN (SELECT id FROM main.lens WHERE name IS NULL OR TRIM(name)='' OR UPPER(TRIM(name))='N/A')");
         }
         else
         {
           gchar *lens = _add_wildcards(elems[i]);
-          query = dt_util_dstrcat(query, " OR (lens LIKE '%s')", lens);
+          query = dt_util_dstrcat(query, " OR lens_id IN (SELECT id FROM main.lens WHERE name LIKE '%s')", lens);
           g_free(lens);
         }
 
