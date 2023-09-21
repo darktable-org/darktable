@@ -1741,6 +1741,8 @@ void dt_view_paint_surface(cairo_t *cr,
 
   cairo_scale(cr, zoom_scale, zoom_scale);
 
+  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+
   const double back_scale = (buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale) * (1<<closeup) / ppd;
 
   if(matching && (back_scale * processed_width < maxw  || offset_x != zoom_x
@@ -1752,7 +1754,6 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_surface_t *preview = dt_view_create_surface(dev->preview_pipe->output_backbuf, wd, ht);
 
     cairo_set_source_surface(cr, preview, -0.5 * wd - zoom_x * wd, - 0.5 * ht - zoom_y * ht - 0.5);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_paint(cr);
 
     cairo_surface_destroy(preview);
@@ -1764,8 +1765,6 @@ void dt_view_paint_surface(cairo_t *cr,
   cairo_translate(cr, (offset_x - zoom_x) * dev->pipe->processed_width * buf_scale - 0.5 * processed_width,
                       (offset_y - zoom_y) * dev->pipe->processed_height * buf_scale - 0.5 * processed_height);
   cairo_set_source_surface(cr, surface, 0, 0);
-  cairo_pattern_set_filter(cairo_get_source(cr),
-                           zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
   cairo_paint(cr);
 
   if(darktable.gui->show_focus_peaking
