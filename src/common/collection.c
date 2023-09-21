@@ -1144,6 +1144,42 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, int limit)
   return dt_collection_get(collection, limit, TRUE);
 }
 
+/* splits an input string into a text part and an optional operator part.
+   operator can be "=".
+
+   text and operator are returned as pointers to null terminated strings in g_mallocated
+   memory (to be g_free'd after use) - or NULL if no match is found.
+*/
+void dt_collection_split_operator_text(const gchar *input,
+                                         char **textstring,
+                                         char **operator)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+
+  *textstring = *operator = NULL;
+
+  // and we test the classic comparison operators
+  regex = g_regex_new("^\\s*(=)?(.*)$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  int match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count == 3)
+  {
+    *operator= g_match_info_fetch(match_info, 1);
+    *textstring = g_match_info_fetch(match_info, 2);
+
+    if(*operator && strcmp(*operator, "") == 0)
+    {
+      g_free(*operator);
+      *operator= NULL;
+    }
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+}
+
 /* splits an input string into a number part and an optional operator part.
    number can be a decimal integer or rational numerical item.
    operator can be any of "=", "<", ">", "<=", ">=" and "<>".
@@ -2199,20 +2235,38 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         if(property >= DT_COLLECTION_PROP_METADATA
            && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
         {
+          gchar *operator, *textstring;
+          dt_collection_split_operator_text(escaped_text, &textstring, &operator);
+
           const int keyid =
             dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
-          if(strcmp(escaped_text, _("not defined")) != 0)
+        
+          if(strcmp(escaped_text, _("not defined")) != 0){
+              if(operator && textstring){
+                // clang-format off
+                query = g_strdup_printf
+                  ("(mi.id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
+                   "        %s '%s'))", keyid, operator, textstring);
+                // clang-format on  
+              }
+              else{
+                // clang-format off
+                query = g_strdup_printf
+                  ("(mi.id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
+                   "        LIKE '%%%s%%'))", keyid, escaped_text);
+                // clang-format on
+              }
+            }
+          else{
             // clang-format off
             query = g_strdup_printf
-              ("(mi.id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
-               "           LIKE '%%%s%%'))", keyid, escaped_text);
+            ("(mi.id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
+             keyid);
             // clang-format on
-          else
-            // clang-format off
-            query = g_strdup_printf
-              ("(mi.id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
-               keyid);
-            // clang-format off
+          }
+          
+          g_free(operator);
+          g_free(textstring);
         }
       }
       break;
