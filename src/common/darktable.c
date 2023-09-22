@@ -138,7 +138,7 @@ static int usage(const char *argv0)
   printf("This is free software: you are free to change and redistribute it.\n");
   printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
 
-  printf("Usage:\n\ndarktable [OPTION] [IMAGE FILE | IMAGE FOLDER]\n\n");  
+  printf("Usage:\n\ndarktable [OPTIONS] [IMAGE_FILE | IMAGE_FOLDER]\n\n");  
   
   printf("Options:\n\n");
 

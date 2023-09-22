@@ -35,6 +35,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/points.h"
+#include "config.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
@@ -61,14 +62,20 @@
 
 static void usage(const char *progname)
 {
-  fprintf(stderr, "darktable %s\n\n", darktable_package_version);
-  fprintf(stderr, "Copyright (c) 2012-%s johannes hanika and others.\n", darktable_last_commit_year);
+  fprintf(stderr, "darktable %s\n",darktable_package_version);
+  fprintf(stderr, "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n",darktable_last_commit_year);
   fprintf(stderr, "<https://www.darktable.org>\n");
-  fprintf(stderr, "darktable is an open source photography workflow application and non-destructive raw developer - a virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images, enhance them and export them to local or remote storage.\n\n");
-  fprintf(stderr, "darktable comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.  See the GNU General Public Licence for details.\n\n");
-  fprintf(stderr, "Usage:\n\n %s [<input file or dir>] [<XMP file>] <output destination> [options] [--core <darktable options>]\n", progname);
-  fprintf(stderr, "\n");
-  fprintf(stderr, "options:\n");
+  fprintf(stderr, "darktable is an open source photography workflow application and\n");
+  fprintf(stderr, "non-destructive raw developer for photographers.\n");
+  fprintf(stderr, "GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n");
+  fprintf(stderr, "This is free software: you are free to change and redistribute it.\n");
+  fprintf(stderr, "There is NO WARRANTY, to the extent permitted by law.\n\n");
+
+  fprintf(stderr, "Usage:\n\n  darktable-cli [IMAGE_FILE | IMAGE_FOLDER]\n");
+  fprintf(stderr, "                          [XMP_FILE] DIR [OPTIONS]\n");
+  fprintf(stderr, "                          [--core DARKTABLE_OPTIONS]\n\n");
+  
+  fprintf(stderr, "Options:\n");
   fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
   fprintf(stderr, "   --height <max height> default: 0 = full resolution\n");
   fprintf(stderr, "   --bpp <bpp>, unsupported\n");
@@ -91,6 +98,8 @@ static void usage(const char *progname)
   fprintf(stderr, "   --verbose\n");
   fprintf(stderr, "   --help,-h [option]\n");
   fprintf(stderr, "   --version\n");
+
+  // FS TODO: to add instructions for DARKTABLE_OPTIONS
 }
 
 static void icc_types()
@@ -230,11 +239,12 @@ int main(int argc, char *arg[])
         }
         exit(1);
       }
-      else if(!strcmp(arg[k], "--version"))
-      {
-        printf("this is darktable-cli %s\ncopyright (c) 2012-%s johannes hanika, tobias ellinghaus\n",
-               darktable_package_version, darktable_last_commit_year);
-        exit(0);
+      else if(!strcmp(arg[k], "--version") || !strcmp(arg[k], "-v"))
+      {     
+          printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n",darktable_package_version, darktable_last_commit_year);
+          printf("See %s for detailed documentation.\n", PACKAGE_DOCS);
+          printf("See %s for bug reports.\n",PACKAGE_BUGREPORT);              
+          exit(0);
       }
       else if(!strcmp(arg[k], "--width") && argc > k + 1)
       {
