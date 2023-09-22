@@ -922,6 +922,8 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
