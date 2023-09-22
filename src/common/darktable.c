@@ -121,49 +121,161 @@ static int usage(const char *argv0)
   char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
 #endif
   // clang-format off
-  printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
-  printf("\n");
-  printf("options:\n");
-  printf("\n");
-  printf("  --cachedir <user cache directory>\n");
-  printf("  --conf <key>=<value>\n");
-  printf("  --configdir <user config directory>\n");
-  printf("  -d {act_on,cache,camctl,camsupport,control,dev,imageio,\n");
-  printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
-  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe,expose\n");
-  printf("      all,common (-d dev,imageio,masks,opencl,params,pipe)}\n");
-  printf("  --d-signal <signal> \n");
-  printf("  --d-signal-act <all,raise,connect,disconnect");
+
+// Rewriting this following GNU Standards for Command Line Interfaces and other best practices
+// ref. https://www.gnu.org/prep/standards/standards.html#Command_002dLine-Interfaces
+// ref. https://clig.dev/#introduction
+//
+// Trying to keep the length of the text within 80 columns
+// Using 2-4 spaces for the indentation of the inline help
+
+  printf("darktable %s\n",darktable_package_version);
+  printf("Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n",darktable_last_commit_year);
+  printf("<https://www.darktable.org>\n");
+  printf("darktable is an open source photography workflow application and\n");
+  printf("non-destructive raw developer for photographers.\n");
+  printf("GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n");
+  printf("This is free software: you are free to change and redistribute it.\n");
+  printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
+
+  printf("Usage:\n\ndarktable [OPTION] [IMAGE FILE | IMAGE FOLDER]\n\n");  
+  
+  printf("Options:\n\n");
+
+  printf("--cachedir DIR\n");
+  printf("    darktable keeps a cache of image thumbnails for fast image preview\n");
+  printf("    and precompiled OpenCL binaries for fast startup. By default the\n");
+  printf("    cache is located in $HOME/.cache/darktable/.\n");
+  printf("    Multiple thumbnail caches may exist in parallel, one for each\n");
+  printf("    library file.\n\n");
+
+  printf("--conf KEY=VALUE\n");
+  printf("    Temporarily overwrite individual settings on the command line with\n");
+  printf("    this option - these settings will not be stored in darktablerc\n");
+  printf("    on exit.\n\n");
+
+  printf("--configdir DIR\n");
+  printf("    Where darktable stores user-specific configuration.\n");
+  printf("    The default location is $HOME/.config/darktable/\n\n");
+
+  printf("--datadir DIR\n");
+  printf("    Define the directory where darktable finds its runtime data.\n");
+  printf("    The default location depends on your installation.\n");
+  printf("    Typical locations are /opt/darktable/share/darktable/ \n");
+  printf("    and /usr/share/darktable/\n\n");
+
+  printf("--library FILE\n");
+  printf("    darktable keeps image information in an sqlite database for fast\n");
+  printf("    access. The default location of that database file is file name\n");
+  printf("    library.db in the directory specified by --configdir or defaulted\n");
+  printf("    to $HOME/.config/darktable/ . Use this option to provide an\n");
+  printf("    alternative location (e.g. if you want to do some experiments\n");
+  printf("    without compromising your original library.db). If the database\n");
+  printf("    file does not exist, darktable creates it for you.\n");
+  printf("    You may also provide :memory: as the library file, in which case\n");
+  printf("    the database is kept in system memory - all changes are discarded\n");
+  printf("    when darktable terminates.\n");
+  printf("    Whenever darktable starts, it will lock the library to the current\n");
+  printf("    user. It does this by writing the current process identifier (PID)\n");
+  printf("    into a lock file FILE.lock next to the library specified.\n");
+  printf("    If darktable finds an existing lock file for the library, it will\n");
+  printf("    terminate immediately.\n\n");
+
+  printf("--localedir DIR\n");
+  printf("    Define where darktable can find its language-specific text\n");
+  printf("    strings. The default location depends on your installation.\n");
+  printf("    Typical locations are /opt/darktable/share/locale/\n");
+  printf("    and /usr/share/locale/\n\n");
+
+#ifdef USE_LUA
+  printf("--luacmd COMMAND\n");
+  printf("    A string containing lua commands to execute after lua\n");
+  printf("    initialization. These commands will be run after your “luarc”\n");
+  printf("    file. If lua is not compiled-in, this option will be accepted\n");
+  printf("    but won't do anything.\n\n");
+#endif
+
+  printf("--moduledir DIR\n");
+  printf("    darktable has a modular structure and organizes its modules as\n");
+  printf("    shared libraries for loading at runtime.\n");
+  printf("    This option tells darktable where to look for its shared libraries.\n");
+  printf("    The default location depends on your installation.\n");
+  printf("    Typical locations are /opt/darktable/lib64/darktable/\n");
+  printf("    and /usr/lib64/darktable/\n\n");
+
+  printf("--noiseprofiles FILE\n");
+  printf("    Provide a json file that contains camera-specific noise profiles.\n");
+  printf("    The default location depends on your installation.\n");
+  printf("    Typical locations are /opt/darktable/share/darktable/noiseprofile.json\n");
+  printf("    and /usr/share/darktable/noiseprofile.json\n\n");
+
+  printf("-t, --threads NUM\n");
+  printf("    Limit number of openmp threads to use in openmp parallel sections\n\n");
+
+  printf("--tmpdir DIR\n");
+  printf("    Define where darktable should store its temporary files.\n");
+  printf("    If this option is not supplied darktable uses the system default.\n\n");
+
+  printf("--version\n");
+  printf("    Print darktable version number\n\n");
+
+  printf("-h, --help\n");
+  printf("    Show this help (-h works with no other options)\n\n");
+
+  printf("Debugging:\n\n");
+
+  printf("--bench-module MODULE_A,MODULE_B\n");
+
+#ifdef HAVE_OPENCL
+  printf("--disable-opencl\n");
+  printf("    Prevent darktable from initializing the OpenCL subsystem.\n\n");
+#endif
+
+  printf("--disable-pipecache\n");
+  printf("--dump-pfm MODULE_A,MODULE_B\n");
+  printf("--dump-pipe MODULE_A,MODULE_B\n");
+  printf("--dumpdir DIR\n");
+  
+  printf("-d SIGNAL\n");
+  printf("    Enable debug output to the terminal. Valid signals are:\n\n");
+  printf("    all, act_on, cache,camctl, camsupport, control, demosaic, dev,\n");
+  printf("    fswatch, imageio, input, ioporder, lighttable, lua, masks, memory,\n");
+  printf("    nan, opencl, params, perf, print, pwstorage, signal, sql, tiling,\n");
+  printf("    undo, verbose\n\n");
+
+  printf("    There are several subsystems of darktable and each of them can be\n");
+  printf("    debugged separately. You can use this option multiple times if you\n");
+  printf("    want to debug more than one subsystem.\n\n");
+
+  printf("    E.g. darktable -d opencl -d camctl -d perf\n\n");
+
+  printf("    You can debug all of them at once with '-d all'.\n");
+  printf("    Some debug options 'like -d opencl' can also provide more verbose\n");
+  printf("    output, which can be invoked with the additional option '-d verbose'.\n");
+  printf("    The verbose option must be explicitly provided, even when using -d all.\n\n");
+
+  printf("--d-signal SIGNAL\n");
+  printf("    if -d signal or -d all is specified, specify the signal to debug\n");
+  printf("    using this option. Specify ALL to debug all signals or specify\n");
+  printf("    signal using it's full name. Can be used multiple times.\n\n");
+  
+  printf("--d-signal-act SIGNAL_ACT\n\n");
+  printf("    Valid SIGNAL_ACT are:\n");
+  printf("    all, raise, connect, disconnect");
   // clang-format on
 #ifdef DT_HAVE_SIGNAL_TRACE
-  printf(",print-trace");
+  printf(", print-trace");
 #endif
-  printf(">\n");
-  printf("  --datadir <data directory>\n");
-#ifdef HAVE_OPENCL
-  printf("  --disable-opencl\n");
-#endif
-  printf("  --disable-pipecache\n");
-  printf("  --dump-pfm <modulea,moduleb>\n");
-  printf("  --dump-pipe <modulea,moduleb>\n");
-  printf("  --bench-module <modulea,moduleb>\n");
-  printf("  --dumpdir <directory to hold dumped files>\n");
-  printf("  --library <library file>\n");
-  printf("  --localedir <locale directory>\n");
-#ifdef USE_LUA
-  printf("  --luacmd <lua command>\n");
-#endif
-  printf("  --moduledir <module directory>\n");
-  printf("  --noiseprofiles <noiseprofiles json file>\n");
-  printf("  --threads <num> | -t <num> openmp threads>\n");
-  printf("  --tmpdir <tmp directory>\n");
-  printf("  --version\n");
-  printf("  --help -h");
+  printf("\n\n");
+
+  printf("    If -d signal or -d all is specified, specify the signal action\n");
+  printf("    to debug using this option.\n");
+
 #ifdef _WIN32
   printf(", /?\n");
   printf("\n");
-  printf("  note: debug log and output will be written to this file:\n");
-  printf("        %s\n", logfile);
+  printf("Debug log and output will be written to this file:\n");
+  printf("    %s\n", logfile);
 #else
   printf("\n");
 #endif
@@ -171,6 +283,9 @@ static int usage(const char *argv0)
 #ifdef _WIN32
   g_free(logfile);
 #endif
+
+  printf("See %s for more detailed documentation.\n", PACKAGE_DOCS);
+  printf("See %s for bug reports.\n", PACKAGE_BUGREPORT);
 
   return 1;
 }
@@ -516,14 +631,15 @@ static char *_get_version_string(void)
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH) "\n";
 #endif
-  char *version = g_strdup_printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n"
-               "%s\n\ncompile options:\n"
-               "  bit depth is %zu bit\n"
-               "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
+               "Compile options:\n"
+               "  bit depth is %zu bit\n%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
+               "See %s for detailed documentation.\n"
+               "See %s for bug reports.\n",
                darktable_package_string,
                darktable_last_commit_year,
-               PACKAGE_BUGREPORT,
                CHAR_BIT * sizeof(void *),
+
 #ifdef _DEBUG
                "  debug build\n",
 #else
@@ -620,8 +736,9 @@ static char *_get_version_string(void)
 #else
                "  WebP support disabled\n",
 #endif
-
-      "");
+             
+               PACKAGE_DOCS,
+               PACKAGE_BUGREPORT);
 
   return version;
 }

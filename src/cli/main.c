@@ -59,11 +59,14 @@
 // Make sure it's OK to limit output extension length
 #define DT_MAX_OUTPUT_EXT_LENGTH 5
 
-// TODO: To add version
-
 static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s [<input file or dir>] [<XMP file>] <output destination> [options] [--core <darktable options>]\n", progname);
+  fprintf(stderr, "darktable %s\n\n", darktable_package_version);
+  fprintf(stderr, "Copyright (c) 2012-%s johannes hanika and others.\n", darktable_last_commit_year);
+  fprintf(stderr, "<https://www.darktable.org>\n");
+  fprintf(stderr, "darktable is an open source photography workflow application and non-destructive raw developer - a virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images, enhance them and export them to local or remote storage.\n\n");
+  fprintf(stderr, "darktable comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.  See the GNU General Public Licence for details.\n\n");
+  fprintf(stderr, "Usage:\n\n %s [<input file or dir>] [<XMP file>] <output destination> [options] [--core <darktable options>]\n", progname);
   fprintf(stderr, "\n");
   fprintf(stderr, "options:\n");
   fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
