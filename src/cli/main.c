@@ -62,42 +62,42 @@
 
 static void usage(const char *progname)
 {
-  fprintf(stderr, "darktable %s\n",darktable_package_version);
-  fprintf(stderr, "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n",darktable_last_commit_year);
-  fprintf(stderr, "<https://www.darktable.org>\n");
-  fprintf(stderr, "darktable is an open source photography workflow application and\n");
-  fprintf(stderr, "non-destructive raw developer for photographers.\n");
-  fprintf(stderr, "GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n");
-  fprintf(stderr, "This is free software: you are free to change and redistribute it.\n");
-  fprintf(stderr, "There is NO WARRANTY, to the extent permitted by law.\n\n");
-
-  fprintf(stderr, "Usage:\n\n  darktable-cli [IMAGE_FILE | IMAGE_FOLDER]\n");
-  fprintf(stderr, "                          [XMP_FILE] DIR [OPTIONS]\n");
-  fprintf(stderr, "                          [--core DARKTABLE_OPTIONS]\n\n");
-  
-  fprintf(stderr, "Options:\n");
-  fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
-  fprintf(stderr, "   --height <max height> default: 0 = full resolution\n");
-  fprintf(stderr, "   --bpp <bpp>, unsupported\n");
-  fprintf(stderr, "   --hq <0|1|false|true> default: true\n");
-  fprintf(stderr, "   --upscale <0|1|false|true>, default: false\n");
-  fprintf(stderr, "   --export_masks <0|1|false|true>, default: false\n");
-  fprintf(stderr, "   --style <style name>\n");
-  fprintf(stderr, "   --style-overwrite\n");
-  fprintf(stderr, "   --apply-custom-presets <0|1|false|true>, default: true\n");
-  fprintf(stderr, "                          disable for multiple instances\n");
-  fprintf(stderr, "   --out-ext <extension>, default from output destination or '.jpg'\n");
-  fprintf(stderr, "                          if specified, takes preference over output\n");
-  fprintf(stderr, "   --import <file or dir> specify input file or dir, can be used'\n");
-  fprintf(stderr, "                          multiple times instead of input file\n");
-  fprintf(stderr, "   --icc-type <type> specify icc type, default to NONE\n");
-  fprintf(stderr, "                     use --help icc-type for list of supported types\n");
-  fprintf(stderr, "   --icc-file <file> specify icc filename, default to NONE\n");
-  fprintf(stderr, "   --icc-intent <intent> specify icc intent, default to LAST\n");
-  fprintf(stderr, "                     use --help icc-intent for list of supported intents\n");
-  fprintf(stderr, "   --verbose\n");
-  fprintf(stderr, "   --help,-h [option]\n");
-  fprintf(stderr, "   --version\n");
+fprintf(stderr, "darktable %s\n"
+                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
+                "<https://www.darktable.org>\n"
+                "darktable is an open source photography workflow application and\n"
+                "non-destructive raw developer for photographers.\n"
+                "GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
+                "This is free software: you are free to change and redistribute it.\n"
+                "There is NO WARRANTY, to the extent permitted by law.\n\n"
+                "Usage:\n\n  darktable-cli [IMAGE_FILE | IMAGE_FOLDER]\n"
+                "                          [XMP_FILE] DIR [OPTIONS]\n"
+                "                          [--core DARKTABLE_OPTIONS]\n\n"
+                "Options:\n"
+                "   --width <max width> default: 0 = full resolution\n"
+                "   --height <max height> default: 0 = full resolution\n"
+                "   --bpp <bpp>, unsupported\n"
+                "   --hq <0|1|false|true> default: true\n"
+                "   --upscale <0|1|false|true>, default: false\n"
+                "   --export_masks <0|1|false|true>, default: false\n"
+                "   --style <style name>\n"
+                "   --style-overwrite\n"
+                "   --apply-custom-presets <0|1|false|true>, default: true\n"
+                "                          disable for multiple instances\n"
+                "   --out-ext <extension>, default from output destination or '.jpg'\n"
+                "                          if specified, takes preference over output\n"
+                "   --import <file or dir> specify input file or dir, can be used'\n"
+                "                          multiple times instead of input file\n"
+                "   --icc-type <type> specify icc type, default to NONE\n"
+                "                     use --help icc-type for list of supported types\n"
+                "   --icc-file <file> specify icc filename, default to NONE\n"
+                "   --icc-intent <intent> specify icc intent, default to LAST\n"
+                "                     use --help icc-intent for list of supported intents\n"
+                "   --verbose\n"
+                "   --help,-h [option]\n"
+                "   --version\n", 
+                darktable_package_version,
+                darktable_last_commit_year);
 
   // FS TODO: to add instructions for DARKTABLE_OPTIONS
 }
