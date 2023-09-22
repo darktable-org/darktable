@@ -270,7 +270,7 @@ int dt_collection_update(const dt_collection_t *collection)
        "mi.id IN (SELECT id FROM "
        "(SELECT id,"
        "        MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END)"
-       " FROM main.images WHERE %s GROUP BY group_id)))",
+       " FROM main.images AS mi WHERE %s GROUP BY group_id)))",
        darktable.gui->expanded_group_id, wq_no_group);
     // clang-format on
 
