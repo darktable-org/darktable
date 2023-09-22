@@ -17,22 +17,23 @@
 */
 
 #ifdef HAVE_LIBRAW
-#include "common/darktable.h"
-#include "common/math.h"
-#include "imageio_common.h"
-#include "imageio_gm.h"
-#include "develop/develop.h"
-#include "common/exif.h"
 #include "common/colorspaces.h"
+#include "common/darktable.h"
+#include "common/exif.h"
+#include "common/math.h"
 #include "control/conf.h"
-
-#include <memory.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <strings.h>
-#include <assert.h>
+#include "control/control.h"
+#include "develop/develop.h"
+#include "imageio_common.h"
+#include "imageio_libraw.h"
 
 #include <libraw/libraw.h>
+
+#include <assert.h>
+#include <inttypes.h>
+#include <memory.h>
+#include <stdio.h>
+#include <strings.h>
 
 
 typedef struct model_map
@@ -251,6 +252,25 @@ static gboolean _supported_image(const gchar *filename)
   return FALSE;
 }
 
+void _check_libraw_missing_support(const struct dt_image_t *img)
+{
+  char lr_mk[64], lr_md[64], lr_al[64];
+  if(!dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model, lr_mk, sizeof(lr_mk), lr_md, sizeof(lr_md),
+                                  lr_al, sizeof(lr_al)))
+  {
+    const char *T1 = _("<span foreground='red'><b>WARNING</b></span>: camera is not fully supported!");
+    char *T2 = g_strdup_printf(_("Colors for `%s' could be misrepresented,\n"
+                                 "and edits might not be compatible with future versions."),
+                               img->exif_model);
+
+    char *msg = g_strconcat("<big>", T1, "\n\n", T2, "</big>", NULL);
+    g_free(T2);
+
+    dt_control_log(msg, (char *)NULL);
+    g_free(msg);
+  }
+}
+
 gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
                                      char *mk, int mk_len, char *md, int md_len,
                                      char *al, int al_len)
@@ -301,6 +321,14 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
     dt_print(DT_DEBUG_ALWAYS, "[libraw_open] detected unsupported image `%s'\n", img->filename);
     goto error;
   }
+
+  // If the support detection method above failed (e.g. LibRaw matches color
+  // matrix on a model substring), let's also check our internal LibRaw lookup
+  // table for Canon CR3s only.
+  gchar *ext = g_strrstr(filename, ".");
+  if(!ext) goto error;
+  ext++;
+  if(!g_ascii_strncasecmp("cr3", ext, 3)) _check_libraw_missing_support(img);
 
   // Copy white level (all linear_max[] equal single SpecularWhiteLevel for CR3, we can skip min or mean)
   img->raw_white_point = raw->rawdata.color.linear_max[0] ? raw->rawdata.color.linear_max[0] :raw->rawdata.color.maximum;
