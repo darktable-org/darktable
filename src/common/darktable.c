@@ -216,7 +216,7 @@ static int usage(const char *argv0)
   printf("    Define where darktable should store its temporary files.\n");
   printf("    If this option is not supplied darktable uses the system default.\n\n");
 
-  printf("--version\n");
+  printf("-v, --version\n");
   printf("    Print darktable version number\n\n");
 
   printf("-h, --help\n");
@@ -232,27 +232,32 @@ static int usage(const char *argv0)
 #endif
 
   printf("--disable-pipecache\n");
+  printf("    Disable the pixelpipe cache. This option allows only\n");
+  printf("    two cachelines per pipe, and should be used for debugging\n");
+  printf("    purposes only.");
   printf("--dump-pfm MODULE_A,MODULE_B\n");
   printf("--dump-pipe MODULE_A,MODULE_B\n");
   printf("--dumpdir DIR\n");
   
   printf("-d SIGNAL\n");
   printf("    Enable debug output to the terminal. Valid signals are:\n\n");
-  printf("    all, act_on, cache,camctl, camsupport, control, demosaic, dev,\n");
+  printf("    act_on, cache, camctl, camsupport, control, demosaic, dev,\n");
   printf("    fswatch, imageio, input, ioporder, lighttable, lua, masks, memory,\n");
   printf("    nan, opencl, params, perf, print, pwstorage, signal, sql, tiling,\n");
   printf("    undo, verbose\n\n");
 
+  printf("    all     -> to debug all signals\n");
+  printf("    common  -> to debug dev, imageio, masks, opencl, params, pipe\n");
+  printf("    verbose -> when combined with debug options like '-d opencl'\n");
+  printf("               provides more detailed output. To activate verbosity,\n");
+  printf("               use the additional option '-d verbose'\n");
+  printf("               even when using '-d all'.\n\n");
+  
   printf("    There are several subsystems of darktable and each of them can be\n");
   printf("    debugged separately. You can use this option multiple times if you\n");
   printf("    want to debug more than one subsystem.\n\n");
 
   printf("    E.g. darktable -d opencl -d camctl -d perf\n\n");
-
-  printf("    You can debug all of them at once with '-d all'.\n");
-  printf("    Some debug options 'like -d opencl' can also provide more verbose\n");
-  printf("    output, which can be invoked with the additional option '-d verbose'.\n");
-  printf("    The verbose option must be explicitly provided, even when using -d all.\n\n");
 
   printf("--d-signal SIGNAL\n");
   printf("    if -d signal or -d all is specified, specify the signal to debug\n");
@@ -831,7 +836,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       {
         return usage(argv[0]);
       }
-      else if(!strcmp(argv[k], "--version"))
+
+      else if(!strcmp(argv[k], "--version") || !strcmp(argv[k], "-v"))
       {
         char *theversion = _get_version_string();
         printf("%s", theversion);
