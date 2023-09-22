@@ -914,7 +914,9 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
      "UPDATE main.images"
      " SET history_end = (SELECT MAX(num) + 1"
      "                    FROM main.history "
-     "                    WHERE imgid = ?1) WHERE id = ?1", -1, &stmt, NULL);
+     "                    WHERE imgid = ?1)"
+     " WHERE id = ?1",
+     -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
