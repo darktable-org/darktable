@@ -214,8 +214,7 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
      "               iso, import_timestamp, change_timestamp,"
      "               export_timestamp, print_timestamp"
      "        FROM main.images AS mi"
-     "        %s%s"
-     "        WHERE ",
+     "        %s%s",
      tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
      tagid ? " LEFT JOIN main.tagged_images AS ti"
      "                ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -347,12 +346,13 @@ int dt_collection_update(const dt_collection_t *collection)
 
   if(join)
   {
+    selq_pre = dt_util_dstrcat(selq_pre, " WHERE ");
     selq_post = dt_util_dstrcat(selq_post, ") AS mi%s", join);
     g_free(join);
   }
   else
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "1=1) AS mi WHERE ");
+    selq_pre = dt_util_dstrcat(selq_pre, ") AS mi WHERE ");
   }
 
 
@@ -478,7 +478,7 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
   else
   {
     // WHERE part is composed by (COLLECT) AND (FILTERING)
-    // first, the COLLECT PART (never empty, use 1=1 in this case)
+    // first, the COLLECT PART (can be empty)
     complete_string = g_strdup("");
     const int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"),
                                1, 10);
@@ -490,8 +490,7 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
     }
     if(g_strcmp0(rules_txt, ""))
       complete_string = dt_util_dstrcat(complete_string, "(%s)", rules_txt);
-    else
-      complete_string = dt_util_dstrcat(complete_string, "1=1");
+
     g_free(rules_txt);
 
     // and now the FILTERING part (can be empty)
@@ -505,7 +504,10 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
     }
 
     if(g_strcmp0(rules_txt, ""))
-      complete_string = dt_util_dstrcat(complete_string, " AND (%s)", rules_txt);
+    {
+      if(g_strcmp0(complete_string, "")) complete_string = dt_util_dstrcat(complete_string, " AND ");
+      complete_string = dt_util_dstrcat(complete_string, "(%s)", rules_txt);
+    }
     g_free(rules_txt);
   }
 
@@ -1489,7 +1491,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
-      query = g_strdup("((1=0) ");
+      query = g_strdup("(");
       // handle the possibility of multiple values
       elems = g_strsplit(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
@@ -1498,16 +1500,19 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         if(!g_strcmp0(elems[i], "UNSET"))
         {
           // clang-format off
-          query = dt_util_dstrcat(query, " OR camera_id IN (SELECT id"
-                                         "                  FROM main.cameras"
-                                         "                  WHERE (maker IS NULL AND model IS NULL)"
-                                         "                     OR (TRIM(maker)='' AND TRIM(model)=''))");
+          query = dt_util_dstrcat(query, "%scamera_id IN (SELECT id"
+                                         "                FROM main.cameras"
+                                         "                WHERE (maker IS NULL AND model IS NULL)"
+                                         "                   OR (TRIM(maker)='' AND TRIM(model)=''))",
+                                         i>0?" OR ":"");
           // clang-format on
         }
         else
         {
           gchar *cam = _add_wildcards(elems[i]);
-          query = dt_util_dstrcat(query, " OR camera_id IN (SELECT id FROM main.cameras WHERE maker || ' ' || model LIKE '%s')", cam);
+          query = dt_util_dstrcat(query,
+                                  "%scamera_id IN (SELECT id FROM main.cameras WHERE maker || ' ' || model LIKE '%s')",
+                                  i>0?" OR ":"", cam);
           g_free(cam);
         }
       }
@@ -1599,7 +1604,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_LENS: // lens
-      query = g_strdup("((1=0) ");
+      query = g_strdup("(");
       // handle the possibility of multiple values
       elems = g_strsplit(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
@@ -1608,12 +1613,15 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           query = dt_util_dstrcat
             (query,
-             " OR lens_id IN (SELECT id FROM main.lens WHERE name IS NULL OR TRIM(name)='' OR UPPER(TRIM(name))='N/A')");
+             "%slens_id IN (SELECT id FROM main.lens WHERE name IS NULL OR TRIM(name)='' OR UPPER(TRIM(name))='N/A')",
+             i>0?" OR ":"");
         }
         else
         {
           gchar *lens = _add_wildcards(elems[i]);
-          query = dt_util_dstrcat(query, " OR lens_id IN (SELECT id FROM main.lens WHERE name LIKE '%s')", lens);
+          query = dt_util_dstrcat(query,
+                                  "%slens_id IN (SELECT id FROM main.lens WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", lens);
           g_free(lens);
         }
 
@@ -2248,6 +2256,47 @@ void dt_collection_deserialize(const char *buf, const gboolean filtering)
                              DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
+static void _get_query_part(const dt_collection_properties_t property,
+                            const gchar *text,
+                            const int mode,
+                            const gboolean off,
+                            int *nb,
+                            char **query_part)
+{
+  char *conj[] = { "AND", "OR", "AND NOT" };
+  if(off)
+  {
+    *query_part = g_strdup("");
+  }
+  else if(!text || text[0] == '\0')
+  {
+    if(mode == 1) // for OR show all
+    {
+      if(*nb == 0)
+        *query_part = g_strdup(" 1=1");
+      else
+        *query_part = g_strdup(" OR 1=1");
+      (*nb)++;
+    }
+    else
+      *query_part = g_strdup("");
+  }
+  else
+  {
+    gchar *query = get_query_string(property, text);
+
+    if(*nb == 0 && mode == 2)
+      *query_part = g_strdup_printf(" 1=1 AND NOT %s", query);
+    else if(*nb == 0)
+      *query_part = g_strdup_printf(" %s", query);
+    else
+      *query_part = g_strdup_printf(" %s %s", conj[mode], query);
+
+    g_free(query);
+    (*nb)++;
+  }
+}
+
 void dt_collection_update_query(const dt_collection_t *collection,
                                 const dt_collection_change_t query_change,
                                 const dt_collection_properties_t changed_property,
@@ -2335,7 +2384,6 @@ void dt_collection_update_query(const dt_collection_t *collection,
   const int _n_f = dt_conf_get_int("plugins/lighttable/filtering/num_rules");
   const int num_rules = CLAMP(_n_r, 1, 10);
   const int num_filters = MIN(_n_f, 10);
-  char *conj[] = { "AND", "OR", "AND NOT" };
 
   gchar **query_parts = g_new(gchar *, num_rules + num_filters + 1);
   query_parts[num_rules + num_filters] = NULL;
@@ -2351,33 +2399,8 @@ void dt_collection_update_query(const dt_collection_t *collection,
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
 
-    if(!text || text[0] == '\0')
-    {
-      if(mode == 1) // for OR show all
-      {
-        if(nb == 0)
-          query_parts[i] = g_strdup(" 1=1");
-        else
-          query_parts[i] = g_strdup(" OR 1=1");
-        nb++;
-      }
-      else
-        query_parts[i] = g_strdup("");
-    }
-    else
-    {
-      gchar *query = get_query_string(property, text);
+    _get_query_part(property, text, mode, FALSE, &nb, &query_parts[i]);
 
-      if(nb == 0 && mode == 2)
-        query_parts[i] = g_strdup_printf(" 1=1 AND NOT %s", query);
-      else if(nb == 0)
-        query_parts[i] = g_strdup_printf(" %s", query);
-      else
-        query_parts[i] = g_strdup_printf(" %s %s", conj[mode], query);
-
-      g_free(query);
-      nb++;
-    }
     g_free(text);
   }
 
@@ -2394,25 +2417,7 @@ void dt_collection_update_query(const dt_collection_t *collection,
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
     const int off = dt_conf_get_int(confname);
 
-    if(!off)
-    {
-      gchar *query;
-
-      if(!text || text[0] == '\0')
-        query = g_strdup("1=1");
-      else
-        query = get_query_string(property, text);
-
-      if(nb == 0)
-        query_parts[i + num_rules] = g_strdup_printf(" %s", query);
-      else
-        query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
-
-      g_free(query);
-      nb++;
-    }
-    else
-      query_parts[i + num_rules] = g_strdup("");
+    _get_query_part(property, text, mode, off, &nb, &query_parts[i + num_rules]);
 
     g_free(text);
   }
