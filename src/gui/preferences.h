@@ -26,21 +26,18 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const guint c
                                    const guint line, const gboolean swap);
 GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key, const guint col,
                                   const guint line);
-GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key, const guint col,
-                                   const guint line);
+GtkWidget *dt_gui_preferences_enum(dt_action_t *action, const char *key);
 GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key, const guint col,
                                      const guint line);
 
 // update widget with current preference
 void dt_gui_preferences_bool_update(GtkWidget *widget);
 void dt_gui_preferences_int_update(GtkWidget *widget);
-void dt_gui_preferences_enum_update(GtkWidget *widget);
 void dt_gui_preferences_string_update(GtkWidget *widget);
 
 // reset widget to default value
 void dt_gui_preferences_bool_reset(GtkWidget *widget);
 void dt_gui_preferences_int_reset(GtkWidget *widget);
-void dt_gui_preferences_enum_reset(GtkWidget *widget);
 void dt_gui_preferences_string_reset(GtkWidget *widget);
 
 // clang-format off

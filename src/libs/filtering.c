@@ -2231,10 +2231,10 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  GtkWidget *btn = dt_action_button_new(self, _("new rule"), G_CALLBACK(_event_rule_append), self,
+  GtkWidget *btn = dt_action_button_new(self, N_("new rule"), G_CALLBACK(_event_rule_append), self,
                                         _("append new rule to collect images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("history"), G_CALLBACK(_event_history_show), self,
+  btn = dt_action_button_new(self, N_("history"), G_CALLBACK(_event_history_show), self,
                              _("revert to a previous set of rules"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
@@ -2251,10 +2251,10 @@ void gui_init(dt_lib_module_t *self)
   bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("new sort"), G_CALLBACK(_sort_show_add_popup), self,
+  btn = dt_action_button_new(self, N_("new sort"), G_CALLBACK(_sort_show_add_popup), self,
                              _("append new sort to order images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("history"), G_CALLBACK(_sort_history_show), self,
+  btn = dt_action_button_new(self, N_("history"), G_CALLBACK(_sort_history_show), self,
                              _("revert to a previous set of sort orders"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
