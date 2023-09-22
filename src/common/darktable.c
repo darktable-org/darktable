@@ -129,153 +129,150 @@ static int usage(const char *argv0)
 // Trying to keep the length of the text within 80 columns
 // Using 2-4 spaces for the indentation of the inline help
 
-  printf("darktable %s\n",darktable_package_version);
-  printf("Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n",darktable_last_commit_year);
-  printf("<https://www.darktable.org>\n");
-  printf("darktable is an open source photography workflow application and\n");
-  printf("non-destructive raw developer for photographers.\n");
-  printf("GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n");
-  printf("This is free software: you are free to change and redistribute it.\n");
-  printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
+  printf("darktable %s\n"
+         "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
+         "<https://www.darktable.org>\n"
+         "darktable is an open source photography workflow application and\n"
+         "non-destructive raw developer for photographers.\n"
+         "GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
+         "This is free software: you are free to change and redistribute it.\n"
+         "There is NO WARRANTY, to the extent permitted by law.\n\n"
+         ,darktable_package_version, darktable_last_commit_year);
 
-  printf("Usage:\n\ndarktable [OPTIONS] [IMAGE_FILE | IMAGE_FOLDER]\n\n");  
-  
-  printf("Options:\n\n");
-
-  printf("--cachedir DIR\n");
-  printf("    darktable keeps a cache of image thumbnails for fast image preview\n");
-  printf("    and precompiled OpenCL binaries for fast startup. By default the\n");
-  printf("    cache is located in $HOME/.cache/darktable/.\n");
-  printf("    Multiple thumbnail caches may exist in parallel, one for each\n");
-  printf("    library file.\n\n");
-
-  printf("--conf KEY=VALUE\n");
-  printf("    Temporarily overwrite individual settings on the command line with\n");
-  printf("    this option - these settings will not be stored in darktablerc\n");
-  printf("    on exit.\n\n");
-
-  printf("--configdir DIR\n");
-  printf("    Where darktable stores user-specific configuration.\n");
-  printf("    The default location is $HOME/.config/darktable/\n\n");
-
-  printf("--datadir DIR\n");
-  printf("    Define the directory where darktable finds its runtime data.\n");
-  printf("    The default location depends on your installation.\n");
-  printf("    Typical locations are /opt/darktable/share/darktable/ \n");
-  printf("    and /usr/share/darktable/\n\n");
-
-  printf("--library FILE\n");
-  printf("    darktable keeps image information in an sqlite database for fast\n");
-  printf("    access. The default location of that database file is file name\n");
-  printf("    library.db in the directory specified by --configdir or defaulted\n");
-  printf("    to $HOME/.config/darktable/ . Use this option to provide an\n");
-  printf("    alternative location (e.g. if you want to do some experiments\n");
-  printf("    without compromising your original library.db). If the database\n");
-  printf("    file does not exist, darktable creates it for you.\n");
-  printf("    You may also provide :memory: as the library file, in which case\n");
-  printf("    the database is kept in system memory - all changes are discarded\n");
-  printf("    when darktable terminates.\n");
-  printf("    Whenever darktable starts, it will lock the library to the current\n");
-  printf("    user. It does this by writing the current process identifier (PID)\n");
-  printf("    into a lock file FILE.lock next to the library specified.\n");
-  printf("    If darktable finds an existing lock file for the library, it will\n");
-  printf("    terminate immediately.\n\n");
-
-  printf("--localedir DIR\n");
-  printf("    Define where darktable can find its language-specific text\n");
-  printf("    strings. The default location depends on your installation.\n");
-  printf("    Typical locations are /opt/darktable/share/locale/\n");
-  printf("    and /usr/share/locale/\n\n");
-
+  printf("Usage:\n\ndarktable [OPTIONS] [IMAGE_FILE | IMAGE_FOLDER]\n"
+         "\n"  
+         "Options:\n\n"
+         "--cachedir DIR\n"
+         "    darktable keeps a cache of image thumbnails for fast image preview\n"
+         "    and precompiled OpenCL binaries for fast startup. By default the\n"
+         "    cache is located in $HOME/.cache/darktable/.\n"
+         "    Multiple thumbnail caches may exist in parallel, one for each\n"
+         "    library file.\n"
+         "\n"  
+         "--conf KEY=VALUE\n"
+         "    Temporarily overwrite individual settings on the command line with\n"
+         "    this option - these settings will not be stored in darktablerc\n"
+         "    on exit.\n"
+         "\n"
+         "--configdir DIR\n"
+         "    Where darktable stores user-specific configuration.\n"
+         "    The default location is $HOME/.config/darktable/\n"
+         "\n"
+         "--datadir DIR\n"
+         "    Define the directory where darktable finds its runtime data.\n"
+         "    The default location depends on your installation.\n"
+         "    Typical locations are /opt/darktable/share/darktable/ \n"
+         "    and /usr/share/darktable/\n"
+         "\n"
+         "--library FILE\n"
+         "    Specifies an alternate location for darktable's image information database,\n"
+         "    which is stored in an SQLite file by default (library.db) in the directory\n"
+         "    specified by --configdir or $HOME/.config/darktable/. You can use this\n"
+         "    option for experimentation without affecting your original library.db.\n"
+         "    If the specified database file doesn't exist, darktable will create it.\n"
+         "\n"
+         "    When darktable starts, it locks the library to the current user by writing\n"
+         "    the process identifier (PID) to a lock file named FILE.lock next to the\n"
+         "    specified library. If a lock file already exists, darktable will exit.\n"
+         "\n"
+         "    :memory: -> Use this option to keep the database in system memory,\n"
+         "                    discarding changes on darktable termination.\n"
+         "\n"
+         "--localedir DIR\n"
+         "    Define where darktable can find its language-specific text\n"
+         "    strings. The default location depends on your installation.\n"
+         "    Typical locations are /opt/darktable/share/locale/\n"
+         "    and /usr/share/locale/\n"
+         "\n"
 #ifdef USE_LUA
-  printf("--luacmd COMMAND\n");
-  printf("    A string containing lua commands to execute after lua\n");
-  printf("    initialization. These commands will be run after your “luarc”\n");
-  printf("    file. If lua is not compiled-in, this option will be accepted\n");
-  printf("    but won't do anything.\n\n");
+         "--luacmd COMMAND\n"
+         "    A string containing lua commands to execute after lua\n"
+         "    initialization. These commands will be run after your “luarc”\n"
+         "    file. If lua is not compiled-in, this option will be accepted\n"
+         "    but won't do anything.\n"
+         "\n"
 #endif
-
-  printf("--moduledir DIR\n");
-  printf("    darktable has a modular structure and organizes its modules as\n");
-  printf("    shared libraries for loading at runtime.\n");
-  printf("    This option tells darktable where to look for its shared libraries.\n");
-  printf("    The default location depends on your installation.\n");
-  printf("    Typical locations are /opt/darktable/lib64/darktable/\n");
-  printf("    and /usr/lib64/darktable/\n\n");
-
-  printf("--noiseprofiles FILE\n");
-  printf("    Provide a json file that contains camera-specific noise profiles.\n");
-  printf("    The default location depends on your installation.\n");
-  printf("    Typical locations are /opt/darktable/share/darktable/noiseprofile.json\n");
-  printf("    and /usr/share/darktable/noiseprofile.json\n\n");
-
-  printf("-t, --threads NUM\n");
-  printf("    Limit number of openmp threads to use in openmp parallel sections\n\n");
-
-  printf("--tmpdir DIR\n");
-  printf("    Define where darktable should store its temporary files.\n");
-  printf("    If this option is not supplied darktable uses the system default.\n\n");
-
-  printf("-v, --version\n");
-  printf("    Print darktable version number\n\n");
-
-  printf("-h, --help\n");
-  printf("    Show this help (-h works with no other options)\n\n");
-
-  printf("Debugging:\n\n");
-
-  printf("--bench-module MODULE_A,MODULE_B\n");
-
+         "--moduledir DIR\n"
+         "    darktable has a modular structure and organizes its modules as\n"
+         "    shared libraries for loading at runtime.\n"
+         "    This option tells darktable where to look for its shared libraries.\n"
+         "    The default location depends on your installation.\n"
+         "    Typical locations are /opt/darktable/lib64/darktable/\n"
+         "    and /usr/lib64/darktable/\n"
+         "\n"
+         "--noiseprofiles FILE\n"
+         "    Provide a json file that contains camera-specific noise profiles.\n"
+         "    The default location depends on your installation.\n"
+         "    Typical locations are /opt/darktable/share/darktable/noiseprofile.json\n"
+         "    and /usr/share/darktable/noiseprofile.json\n"
+         "\n"
+         "-t, --threads NUM\n"
+         "    Limit number of openmp threads to use in openmp parallel sections\n"
+         "\n"
+         "--tmpdir DIR\n"
+         "    Define where darktable should store its temporary files.\n"
+         "    If this option is not supplied darktable uses the system default.\n"
+         "\n"
+         "-v, --version\n"
+         "    Print darktable version number\n"
+         "\n"
+         "-h, --help\n"
+         "    Show this help (-h works with no other options)\n"
+         "\n"
+         "Debugging:\n\n"
+         "--bench-module MODULE_A,MODULE_B\n"
+         "\n"
 #ifdef HAVE_OPENCL
-  printf("--disable-opencl\n");
-  printf("    Prevent darktable from initializing the OpenCL subsystem.\n\n");
+         "--disable-opencl\n"
+         "    Prevent darktable from initializing the OpenCL subsystem.\n"
+         "\n"
 #endif
-
-  printf("--disable-pipecache\n");
-  printf("    Disable the pixelpipe cache. This option allows only\n");
-  printf("    two cachelines per pipe, and should be used for debugging\n");
-  printf("    purposes only.");
-  printf("--dump-pfm MODULE_A,MODULE_B\n");
-  printf("--dump-pipe MODULE_A,MODULE_B\n");
-  printf("--dumpdir DIR\n");
-  
-  printf("-d SIGNAL\n");
-  printf("    Enable debug output to the terminal. Valid signals are:\n\n");
-  printf("    act_on, cache, camctl, camsupport, control, demosaic, dev,\n");
-  printf("    fswatch, imageio, input, ioporder, lighttable, lua, masks, memory,\n");
-  printf("    nan, opencl, params, perf, print, pwstorage, signal, sql, tiling,\n");
-  printf("    undo, verbose\n\n");
-
-  printf("    all     -> to debug all signals\n");
-  printf("    common  -> to debug dev, imageio, masks, opencl, params, pipe\n");
-  printf("    verbose -> when combined with debug options like '-d opencl'\n");
-  printf("               provides more detailed output. To activate verbosity,\n");
-  printf("               use the additional option '-d verbose'\n");
-  printf("               even when using '-d all'.\n\n");
-  
-  printf("    There are several subsystems of darktable and each of them can be\n");
-  printf("    debugged separately. You can use this option multiple times if you\n");
-  printf("    want to debug more than one subsystem.\n\n");
-
-  printf("    E.g. darktable -d opencl -d camctl -d perf\n\n");
-
-  printf("--d-signal SIGNAL\n");
-  printf("    if -d signal or -d all is specified, specify the signal to debug\n");
-  printf("    using this option. Specify ALL to debug all signals or specify\n");
-  printf("    signal using it's full name. Can be used multiple times.\n\n");
-  
-  printf("--d-signal-act SIGNAL_ACT\n\n");
-  printf("    Valid SIGNAL_ACT are:\n");
-  printf("    all, raise, connect, disconnect");
-  // clang-format on
+         "--disable-pipecache\n"
+         "    Disable the pixelpipe cache. This option allows only\n"
+         "    two cachelines per pipe, and should be used for debugging\n"
+         "    purposes only."
+         "\n"
+         "--dump-pfm MODULE_A,MODULE_B\n"
+         "\n"         
+         "--dump-pipe MODULE_A,MODULE_B\n"
+         "\n"         
+         "--dumpdir DIR\n"
+         "\n"
+         "-d SIGNAL\n"
+         "    Enable debug output to the terminal. Valid signals are:\n\n"
+         "    act_on, cache, camctl, camsupport, control, demosaic, dev,\n"
+         "    fswatch, imageio, input, ioporder, lighttable, lua, masks, memory,\n"
+         "    nan, opencl, params, perf, print, pwstorage, signal, sql, tiling,\n"
+         "    undo, verbose\n"
+         "\n"
+         "    all     -> to debug all signals\n"
+         "    common  -> to debug dev, imageio, masks, opencl, params, pipe\n"
+         "    verbose -> when combined with debug options like '-d opencl'\n"
+         "               provides more detailed output. To activate verbosity,\n"
+         "               use the additional option '-d verbose'\n"
+         "               even when using '-d all'.\n"
+         "\n"
+         "    There are several subsystems of darktable and each of them can be\n"
+         "    debugged separately. You can use this option multiple times if you\n"
+         "    want to debug more than one subsystem.\n"
+         "\n"
+         "    E.g. darktable -d opencl -d camctl -d perf\n"
+         "\n"
+         "--d-signal SIGNAL\n"
+         "    if -d signal or -d all is specified, specify the signal to debug\n"
+         "    using this option. Specify ALL to debug all signals or specify\n"
+         "    signal using it's full name. Can be used multiple times.\n"
+         "\n"
+         "--d-signal-act SIGNAL_ACT\n"
+         "\n"
+         "    Valid SIGNAL_ACT are:\n"
+         "    all, raise, connect, disconnect"
 #ifdef DT_HAVE_SIGNAL_TRACE
-  printf(", print-trace");
+         ", print-trace\n"
 #endif
-  printf("\n\n");
-
-  printf("    If -d signal or -d all is specified, specify the signal action\n");
-  printf("    to debug using this option.\n");
-
+         "\n"
+         "    If -d signal or -d all is specified, specify the signal action\n"
+         "    to debug using this option.\n");
 #ifdef _WIN32
   printf(", /?\n");
   printf("\n");
@@ -285,16 +282,19 @@ static int usage(const char *argv0)
   printf("\n");
 #endif
 
+  printf("See %s for more detailed documentation.\n"
+         "See %s for bug reports.\n", 
+         PACKAGE_DOCS, 
+         PACKAGE_BUGREPORT);
+
 #ifdef _WIN32
   g_free(logfile);
 #endif
 
-  printf("See %s for more detailed documentation.\n", PACKAGE_DOCS);
-  printf("See %s for bug reports.\n", PACKAGE_BUGREPORT);
-
   return 1;
 }
 
+// clang-format on
 gboolean dt_is_dev_version()
 {
   // a dev version as an odd number after the first dot
