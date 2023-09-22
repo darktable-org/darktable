@@ -559,7 +559,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
     // clang-format off
     gchar *query = g_strdup_printf(
        "SELECT id"
-       " FROM main.images"
+       " FROM main.images AS mi"
        " WHERE %s AND (aspect_ratio=0.0 OR aspect_ratio IS NULL)", where_ext);
     // clang-format on
 
