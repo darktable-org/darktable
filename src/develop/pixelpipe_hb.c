@@ -2710,7 +2710,7 @@ restart:
                " opencl for this session!\n");
       dt_control_log
         (_("OpenCL errors encountered; disabling OpenCL for this session!"
-           " likely problems:\n"
+           " some possible causes:\n"
            "  - OpenCL out of resources due to preference settings. please try with defaults,\n"
            "  - buggy driver for some device. please run darktable with `-d opencl' to identify,\n"
            "  - some drivers (for small or old devices) don't support proper number of events,\n"
