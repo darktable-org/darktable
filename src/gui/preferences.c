@@ -134,7 +134,7 @@ static void reload_ui_last_theme(void)
 
 static void theme_callback(GtkWidget *widget, gpointer user_data)
 {
-  const int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  const int selected = dt_bauhaus_combobox_get(widget);
   gchar *theme = g_list_nth(darktable.themes, selected)->data;
   gchar *i = g_strrstr(theme, ".");
   if(i) *i = '\0';
@@ -230,7 +230,7 @@ static void usercss_dialog_callback(GtkDialog *dialog, gint response_id, gpointe
 
 static void language_callback(GtkWidget *widget, gpointer user_data)
 {
-  int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  int selected = dt_bauhaus_combobox_get(widget);
   dt_l10n_language_t *language = (dt_l10n_language_t *)g_list_nth_data(darktable.l10n->languages, selected);
   if(darktable.l10n->sys_default == selected)
   {
@@ -249,7 +249,7 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), darktable.l10n->sys_default);
+    dt_bauhaus_combobox_set(widget, darktable.l10n->sys_default);
     return TRUE;
   }
   return FALSE;
@@ -276,16 +276,17 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
-  GtkWidget *widget = gtk_combo_box_text_new();
+  GtkWidget *widget = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_combobox_set_selected_text_align(widget, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
 
   for(GList *iter = darktable.l10n->languages; iter; iter = g_list_next(iter))
   {
     const char *name = dt_l10n_get_name(iter->data);
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), name);
+    dt_bauhaus_combobox_add_aligned(widget, name, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
   }
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), darktable.l10n->selected);
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(language_callback), 0);
+  dt_bauhaus_combobox_set(widget, darktable.l10n->selected);
+  g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(language_callback), 0);
   gtk_widget_set_tooltip_text(labelev,  _("double-click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
   gtk_widget_set_tooltip_text(widget, _("set the language of the user interface. the system default is marked with an * (needs a restart)"));
@@ -299,7 +300,9 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
 
   label = gtk_label_new(_("theme"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  widget = gtk_combo_box_text_new();
+  widget = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_combobox_set_selected_text_align(widget, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
@@ -316,15 +319,15 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
     // remove extension
     gchar *i = g_strrstr(name, ".");
     if(i) *i = '\0';
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), name);
+    dt_bauhaus_combobox_add_aligned(widget, name, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     if(!g_strcmp0(name, theme_name)) selected = k;
     k++;
   }
   g_free(theme_name);
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected);
+  dt_bauhaus_combobox_set(widget, selected);
 
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
+  g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
   //Font size check and spin buttons
@@ -527,15 +530,14 @@ void dt_gui_preferences_show()
 
   //setup tabs
   init_tab_general(_preferences_dialog, stack, tweak_widgets);
-  init_tab_import(_preferences_dialog, stack, N_("import"));
-  init_tab_lighttable(_preferences_dialog, stack, N_("lighttable"));
-  init_tab_darkroom(_preferences_dialog, stack, N_("darkroom"));
-  init_tab_processing(_preferences_dialog, stack, N_("processing"));
-  init_tab_security(_preferences_dialog, stack, N_("security"));
-  init_tab_storage(_preferences_dialog, stack, N_("storage"));
-  init_tab_misc(_preferences_dialog, stack, N_("miscellaneous"));
+  init_tab_generated(_preferences_dialog, stack);
   init_tab_accels(stack);
   init_tab_presets(stack);
+#ifdef USE_LUA
+  GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
+#endif
+
+  gtk_widget_show_all(_preferences_dialog);
 
   //open in the appropriate tab if currently in darkroom or lighttable view
   const gchar *current_view = darktable.view_manager->current_view->name(darktable.view_manager->current_view);
@@ -544,10 +546,6 @@ void dt_gui_preferences_show()
     gtk_stack_set_visible_child(GTK_STACK(stack), gtk_stack_get_child_by_name(GTK_STACK(stack), current_view));
   }
 
-#ifdef USE_LUA
-  GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
-#endif
-  gtk_widget_show_all(_preferences_dialog);
   (void)gtk_dialog_run(GTK_DIALOG(_preferences_dialog));
 
 #ifdef USE_LUA
@@ -1248,114 +1246,42 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key, const guint co
 static void
 _gui_preferences_enum_callback(GtkWidget *widget, gpointer data)
 {
-  GtkTreeIter iter;
-  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter))
-  {
-    gchar *s = NULL;
-    gtk_tree_model_get(gtk_combo_box_get_model(GTK_COMBO_BOX(widget)), &iter, 0, &s, -1);
-    dt_conf_set_string((char *)data, s);
-    g_free(s);
-  }
+  const gchar *index = dt_bauhaus_combobox_get_data(widget);
+  gchar *s = g_strndup(index, strchr(index, ']') - index);
+  dt_conf_set_string(data, s);
+  g_free(s);
 }
 
-void _gui_preferences_enum_set(GtkWidget *widget, const char *str)
+GtkWidget *dt_gui_preferences_enum(dt_action_t *action, const char *key)
 {
-  GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
-  GtkTreeIter iter;
-  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
-  gint i = 0;
-  gboolean found = FALSE;
-  while(valid)
-  {
-    char *value;
-    gtk_tree_model_get(model, &iter, 0, &value, -1);
-    if(!g_strcmp0(value, str))
-    {
-      g_free(value);
-      found = TRUE;
-      break;
-    }
-    i++;
-    g_free(value);
-    valid = gtk_tree_model_iter_next(model, &iter);
-  }
-  if(found)
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), i);
-}
+  GtkWidget *w = dt_bauhaus_combobox_new_action(action);
+  dt_bauhaus_combobox_alignment_t align = action ? DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT
+                                                 : DT_BAUHAUS_COMBOBOX_ALIGN_LEFT;
+  dt_bauhaus_combobox_set_selected_text_align(w, align);
+  if(action) gtk_widget_set_tooltip_text(w, dt_confgen_get_tooltip(key));
 
-void dt_gui_preferences_enum_reset(GtkWidget *widget)
-{
-  const char *key = gtk_widget_get_name(widget);
-  const char *str = dt_confgen_get(key, DT_DEFAULT);
-  _gui_preferences_enum_set(widget, str);
-}
-
-static gboolean
-_gui_preferences_enum_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
-{
-  if(event->type == GDK_2BUTTON_PRESS)
-  {
-    dt_gui_preferences_enum_reset(widget);
-    return TRUE;
-  }
-  return FALSE;
-}
-
-void dt_gui_preferences_enum_update(GtkWidget *widget)
-{
-  const char *key = gtk_widget_get_name(widget);
-  char *str = dt_conf_get_string(key);
-  _gui_preferences_enum_set(widget, str);
-  g_free(str);
-}
-
-GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key, const guint col,
-                                   const guint line)
-{
-  GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
-  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
-  GtkWidget *labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), w_label);
-
-  GtkTreeIter iter;
-  GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-  gchar *str = dt_conf_get_string(key);
   const char *values = dt_confgen_get(key, DT_VALUES);
+  const char *defstr = dt_confgen_get(key, DT_DEFAULT);
+  const char *str = dt_conf_get_string_const(key);
   gint i = 0;
-  gint pos = -1;
-  GList *vals = dt_util_str_to_glist("][", values);
-  for(GList *val = vals; val; val = g_list_next(val))
+  while(values && *values++ == '[' && *values)
   {
-    char *item = (char *)val->data;
-    // remove remaining [ or ]
-    if(item[0] == '[') item++;
-    else if(item[strlen(item) - 1] == ']') item[strlen(item) - 1] = '\0';
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, item, 1, g_dpgettext2(NULL, "preferences", item), -1);
-    if(pos == -1 && !g_strcmp0(str, item))
-    {
-      pos = i;
-    }
+    gchar *end_marker = strchr(values, ']');
+    if(!end_marker) break;
+    char *item = g_strndup(values, end_marker - values);
+
+    dt_bauhaus_combobox_add_full(w, g_dpgettext2(NULL, "preferences", item),
+                                 align, (gpointer)values, NULL, TRUE);
+
+    if(!g_strcmp0(defstr, item)) dt_bauhaus_combobox_set_default(w, GPOINTER_TO_INT(values));
+    if(!g_strcmp0(str, item)) dt_bauhaus_combobox_set(w, i);
+
+    g_free(item);
+    values = end_marker + 1;
     i++;
   }
-  g_list_free_full(vals, g_free);
-  g_free(str);
 
-  GtkWidget *w = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
-  gtk_widget_set_name(w, key);
-  gtk_widget_set_hexpand(w, FALSE);
-  g_object_unref(store);
-  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  gtk_cell_renderer_set_padding(renderer, 0, 0);
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(w), renderer, TRUE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(w), renderer, "text", 1, NULL);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(w), pos);
-
-  gtk_grid_attach(GTK_GRID(grid), labelev, col, line, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), w, col + 1, line, 1, 1);
-  g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_gui_preferences_enum_callback), (gpointer)key);
-  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_enum_reset), (gpointer)w);
+  g_signal_connect(G_OBJECT(w), "value-changed", G_CALLBACK(_gui_preferences_enum_callback), (gpointer)key);
   return w;
 }
 

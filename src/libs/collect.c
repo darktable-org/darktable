@@ -3228,7 +3228,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->history_box, TRUE, TRUE, 0);
   // dummy widget just to ensure alignment of history button  with those in filtering lib
   gtk_box_pack_start(GTK_BOX(d->history_box), gtk_drawing_area_new(), TRUE, TRUE, 0);
-  GtkWidget *btn = dt_action_button_new(self, _("history"), G_CALLBACK(_history_show), self,
+  GtkWidget *btn = dt_action_button_new(self, N_("history"), G_CALLBACK(_history_show), self,
                                         _("revert to a previous set of rules"), GDK_KEY_k, GDK_CONTROL_MASK);
   gtk_box_pack_start(GTK_BOX(d->history_box), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(d->history_box);

@@ -1,6 +1,39 @@
 <?xml version="1.0"?>
 <!DOCTYPE dtconfiglist SYSTEM "darktableconfig.dtd">
 <dtconfiglist>
+  <dttab name="import" title="import">
+    <section name="session" title="session options"/>
+  </dttab>
+  <dttab name="lighttable" title="lighttable">
+    <section title="general"/>
+    <section name="thumbs" title="thumbnails"/>
+  </dttab>
+  <dttab name="darkroom" title="darkroom">
+    <section title="general"/>
+    <section name="modules" title="modules"/>
+  </dttab>
+  <dttab name="processing" title="processing">
+    <section name="general" title="image processing"/>
+    <section name="cpugpu" title="CPU / memory"/>
+    <section name="opencl" title="OpenCL"/>
+    <section name="platform" title="OpenCL drivers"/>
+  </dttab>
+  <dttab name="security" title="security">
+    <section title="general"/>
+    <section name="other" title="other"/>
+  </dttab>
+  <dttab name="storage" title="storage">
+    <section name="database" title="database"/>
+    <section name="XMP" title="XMP"/>
+  </dttab>
+  <dttab name="misc" title="miscellaneous">
+    <section name="interface" title="interface"/>
+    <section name="tags" title="tags"/>
+    <section name="accel" title="shortcuts with multiple instances"/>
+    <section name="geoloc" title="map / geolocalization view"/>
+    <section name="slideshow" title="slideshow view"/>
+  </dttab>
+
   <dtconfig>
     <name>themes/usercss</name>
     <type>bool</type>
@@ -152,7 +185,7 @@
     <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
-  <dtconfig prefs="otherviews" section="slideshow">
+  <dtconfig prefs="misc" section="slideshow">
     <name>slideshow_delay</name>
     <type>int</type>
     <default>5</default>
@@ -2041,7 +2074,7 @@
     <shortdescription>max polygon points</shortdescription>
     <longdescription>limit the number of points imported with polygon in find location module</longdescription>
   </dtconfig>
-  <dtconfig prefs="otherviews" section="geoloc">
+  <dtconfig prefs="misc" section="geoloc">
     <name>plugins/lighttable/metadata_view/pretty_location</name>
     <type>bool</type>
     <default>true</default>

@@ -1100,8 +1100,13 @@ treeview header label
   margin-right: 1.75em;
 }
 
-#preferences-notebook combobox,
-#preferences-notebook spinbutton,
+#preference_non_default
+{
+  font-weight: bolder;
+  margin: 0.07em;
+  min-width: 1em;
+}
+
 #preset-controls entry,
 #shortcut-controls entry
 {
@@ -1767,6 +1772,7 @@ treeview *:active
   color: @field_active_fg;
 }
 
+#preferences-box .dt_bauhaus,
 treeview check:selected
 {
   background-color: @button_bg;
