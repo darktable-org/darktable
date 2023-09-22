@@ -2713,7 +2713,7 @@ restart:
            " some possible causes:\n"
            "  - OpenCL out of resources due to preference settings. please try with defaults,\n"
            "  - buggy driver for some device. please run darktable with `-d opencl' to identify,\n"
-           "  - some drivers (for small or old devices) don't support proper number of events,\n"
+           "  - some drivers don't support needed number of events,\n"
            "  - too small headroom settings while using 'use all device memory'."));
       // also remove "opencl" from capabilities so that the preference entry is greyed out
       dt_capabilities_remove("opencl");
