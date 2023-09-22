@@ -16,6 +16,17 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
+#include <sys/types.h>
+
+typedef struct dt_metal_device_t
+{
+   u_int64_t deviceId;
+} dt_metal_device_t;
+
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

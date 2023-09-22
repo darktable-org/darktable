@@ -66,6 +66,7 @@
 #ifdef __APPLE__
 #include <mach/mach.h>
 #include <sys/sysctl.h>
+#include <osx/dt_metal.h>
 #endif
 
 #if defined(__DragonFly__) || defined(__FreeBSD__)
@@ -439,6 +440,9 @@ typedef struct darktable_t
   struct dt_points_t *points;
   struct dt_imageio_t *imageio;
   struct dt_opencl_t *opencl;
+
+  struct dt_metal_device_t *metal_device;
+
   struct dt_dbus_t *dbus;
   struct dt_undo_t *undo;
   struct dt_colorspaces_t *color_profiles;
