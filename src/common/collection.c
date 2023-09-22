@@ -207,7 +207,8 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
   *selq_pre = dt_util_dstrcat
     (*selq_pre,
      "SELECT DISTINCT mi.id"
-     "  FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken, "
+     "  FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken,"
+     "               camera_id, lens_id,"
      "               flags, version, %s position, aspect_ratio,"
      "               aperture, exposure, focal_length,"
      "               iso, import_timestamp, change_timestamp,"
