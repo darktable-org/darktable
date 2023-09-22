@@ -1210,7 +1210,7 @@ static void _dev_add_history_item(dt_develop_t *dev,
   dt_tag_new("darktable|changed", &tagid);
   const gboolean tag_change = dt_tag_attach(tagid, imgid, FALSE, FALSE);
 
-  /* register export timestamp in cache */
+  /* register change timestamp in cache */
   dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
 
   // invalidate buffers and force redraw of darkroom
