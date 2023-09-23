@@ -214,7 +214,8 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
      "               iso, import_timestamp, change_timestamp,"
      "               export_timestamp, print_timestamp"
      "        FROM main.images AS mi"
-     "        %s%s",
+     "        %s%s"
+     "        WHERE ",
      tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
      tagid ? " LEFT JOIN main.tagged_images AS ti"
      "                ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -297,20 +298,21 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* build select part includes where */
   _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-  gchar *join = NULL;
+  selq_post = g_strdup(") AS mi");
+
   if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
   {
     // some sort orders require to join tables to the query
     if(collection->params.sorts[DT_COLLECTION_SORT_COLOR])
     {
-      join = dt_util_dstrcat
-        (join, " LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
+      selq_post = dt_util_dstrcat
+        (selq_post, " LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
     }
     if(collection->params.sorts[DT_COLLECTION_SORT_PATH])
     {
       // clang-format off
-      join = dt_util_dstrcat
-        (join, " JOIN (SELECT id AS film_rolls_id, folder"
+      selq_post = dt_util_dstrcat
+        (selq_post, " JOIN (SELECT id AS film_rolls_id, folder"
                "       FROM main.film_rolls) ON film_id = film_rolls_id");
       // clang-format on
     }
@@ -318,8 +320,8 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
     {
       // clang-format off
-      join = dt_util_dstrcat
-        (join,
+      selq_post = dt_util_dstrcat
+        (selq_post,
         " LEFT OUTER JOIN main.meta_data AS m"
         "   ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
         DT_METADATA_XMP_DC_TITLE, DT_METADATA_XMP_DC_DESCRIPTION);
@@ -329,32 +331,20 @@ int dt_collection_update(const dt_collection_t *collection)
     {
       if(collection->params.sorts[DT_COLLECTION_SORT_TITLE])
       {
-        join = dt_util_dstrcat
-          (join,
+        selq_post = dt_util_dstrcat
+          (selq_post,
           " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
           DT_METADATA_XMP_DC_TITLE);
       }
       if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
       {
-        join = dt_util_dstrcat
-          (join,
+        selq_post = dt_util_dstrcat
+          (selq_post,
           " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
           DT_METADATA_XMP_DC_DESCRIPTION);
       }
     }
   }
-
-  if(join)
-  {
-    selq_pre = dt_util_dstrcat(selq_pre, " WHERE ");
-    selq_post = dt_util_dstrcat(selq_post, ") AS mi%s", join);
-    g_free(join);
-  }
-  else
-  {
-    selq_pre = dt_util_dstrcat(selq_pre, ") AS mi WHERE ");
-  }
-
 
   /* build sort order part */
   if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
@@ -365,12 +355,12 @@ int dt_collection_update(const dt_collection_t *collection)
   /* store the new query */
   query
       = dt_util_dstrcat(query, "%s%s%s %s%s",
-                        selq_pre, wq, selq_post ? selq_post : "", sq ? sq : "",
+                        selq_pre, wq, selq_post, sq ? sq : "",
                         (collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
                         ? " " LIMIT_QUERY : "");
   query_no_group
-      = dt_util_dstrcat(query_no_group, "%s%s%s %s%s", selq_pre, wq_no_group,
-                        selq_post ? selq_post : "", sq ? sq : "",
+      = dt_util_dstrcat(query_no_group, "%s%s%s %s%s",
+                        selq_pre, wq_no_group, selq_post, sq ? sq : "",
                         (collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
                         ? " " LIMIT_QUERY : "");
   result = _dt_collection_store(collection, query, query_no_group);
