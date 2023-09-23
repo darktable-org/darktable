@@ -241,7 +241,7 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
   // clang-format off
   *selq_pre = dt_util_dstrcat
     (*selq_pre,
-     "SELECT DISTINCT mi.id"
+     "SELECT DISTINCT sel.id"
      "  FROM (SELECT %s"
      "        FROM main.images AS mi"
      "        %s%s"
@@ -310,7 +310,7 @@ int dt_collection_update(const dt_collection_t *collection)
      * representative image wasn't filtered out.  This is important,
      * because otherwise it may be impossible to collapse the group
      * again. */
-    wq = dt_util_dstrcat(wq, " OR (id = %d)", darktable.gui->expanded_group_id);
+    wq = dt_util_dstrcat(wq, " OR (mi.id = %d)", darktable.gui->expanded_group_id);
   }
 
   // get all the sort items
@@ -329,7 +329,7 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* build select part includes where */
   _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-  selq_post = g_strdup(") AS mi");
+  selq_post = g_strdup(") AS sel");
 
   if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
   {
@@ -337,7 +337,7 @@ int dt_collection_update(const dt_collection_t *collection)
     if(collection->params.sorts[DT_COLLECTION_SORT_COLOR])
     {
       selq_post = dt_util_dstrcat
-        (selq_post, " LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
+        (selq_post, " LEFT OUTER JOIN main.color_labels AS b ON sel.id = b.imgid");
     }
     if(collection->params.sorts[DT_COLLECTION_SORT_PATH])
     {
@@ -351,14 +351,14 @@ int dt_collection_update(const dt_collection_t *collection)
     {
       selq_post = dt_util_dstrcat
         (selq_post,
-        " LEFT OUTER JOIN main.meta_data AS mt ON mi.id = mt.id AND mt.key = %d",
+        " LEFT OUTER JOIN main.meta_data AS mt ON sel.id = mt.id AND mt.key = %d",
         DT_METADATA_XMP_DC_TITLE);
     }
     if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
     {
       selq_post = dt_util_dstrcat
         (selq_post,
-        " LEFT OUTER JOIN main.meta_data AS md ON mi.id = md.id AND md.key = %d",
+        " LEFT OUTER JOIN main.meta_data AS md ON sel.id = md.id AND md.key = %d",
         DT_METADATA_XMP_DC_DESCRIPTION);
     }
   }
@@ -728,7 +728,7 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort,
       break;
 
     case DT_COLLECTION_SORT_ID:
-      sq = g_strdup_printf("mi.id%s", (sortorder) ? " DESC" : "");
+      sq = g_strdup_printf("sel.id%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_COLOR:
@@ -736,7 +736,7 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort,
       break;
 
     case DT_COLLECTION_SORT_GROUP:
-      sq = g_strdup_printf("group_id%s, mi.id-group_id != 0, mi.id",
+      sq = g_strdup_printf("group_id%s, sel.id-group_id != 0, sel.id",
                            (sortorder) ? " DESC" : "");
       break;
 
@@ -769,7 +769,7 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort,
     case DT_COLLECTION_SORT_NONE:
     default: /*fall through for default*/
       // shouldn't happen
-      sq = g_strdup("mi.id");
+      sq = g_strdup("sel.id");
       break;
   }
 
@@ -859,7 +859,7 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection,
   gchar *count_query = NULL;
 
   gchar *fq = g_strstr_len(query, strlen(query), "FROM");
-  count_query = g_strdup_printf("SELECT COUNT(DISTINCT mi.id) %s", fq);
+  count_query = g_strdup_printf("SELECT COUNT(DISTINCT sel.id) %s", fq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
