@@ -644,104 +644,104 @@ char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Ha
                "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
                "See %s for detailed documentation.\n"
                "See %s to report bugs.\n",
-               darktable_package_string,
+               darktable_package_version,
                darktable_last_commit_year,
                CHAR_BIT * sizeof(void *),
 
 #ifdef _DEBUG
                "  Debug                  -> ENABLED\n",
 #else
-               "  Debug                  -> DISABLED\n",
+               "  Debug                  -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #if defined(__SSE2__) && defined(__SSE__)
                "  SSE2 optimizations     -> ENABLED\n",
 #else
-               "  SSE2 optimizations     -> DISABLED\n",
+               "  SSE2 optimizations     -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef _OPENMP
                "  OpenMP                 -> ENABLED\n",
 #else
-               "  OpenMP                 -> DISABLED\n",
+               "  OpenMP                 -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_OPENCL
                "  OpenCL                 -> ENABLED\n",
 #else
-               "  OpenCL                 -> DISABLED\n",
+               "  OpenCL                 -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef USE_LUA
                "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
-               "  Lua                    -> DISABLED - API version", "NOT AVAILABLE",
+               "  Lua                    -> \033[38;5;244mDISABLED\033[0m - API version", "NOT AVAILABLE",
 #endif
 
 #ifdef USE_COLORDGTK
                "  Colord                 -> ENABLED\n",
 #else
-               "  Colord                 -> DISABLED\n",
+               "  Colord                 -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_GPHOTO2
                "  gPhoto2                -> ENABLED\n",
 #else
-               "  gPhoto2                -> DISABLED\n",
+               "  gPhoto2                -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_GMIC
                "  GMIC                   -> ENABLED  - Compressed LUTs supported\n",
 #else
-               "  GMIC                   -> DISABLED - Compressed LUTs NOT be supported\n",
+               "  GMIC                   -> \033[38;5;244mDISABLED\033[0m - Compressed LUTs NOT be supported\n",
 #endif
 
 #ifdef HAVE_GRAPHICSMAGICK
                "  GraphicsMagick         -> ENABLED\n",
 #else
-               "  GraphicsMagick         -> DISABLED\n",
+               "  GraphicsMagick         -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
                "  ImageMagick            -> ENABLED\n",
 #else 
-               "  ImageMagick            -> DISABLED\n",
+               "  ImageMagick            -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_LIBAVIF
                "  libavif                -> ENABLED\n",
 #else
-               "  libavif                -> DISABLED\n",
+               "  libavif                -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_LIBHEIF
                "  libheif                -> ENABLED\n",
 #else
-               "  libheif                -> DISABLED\n",
+               "  libheif                -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_LIBJXL
                "  libjxl                 -> ENABLED\n",
 #else
-               "  libjxl                 -> DISABLED\n",
+               "  libjxl                 -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_OPENJPEG
                "  OpenJPEG               -> ENABLED\n",
 #else
-               "  OpenJPEG               -> DISABLED\n",
+               "  OpenJPEG               -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_OPENEXR
                "  OpenEXR                -> ENABLED\n",
 #else
-               "  OpenEXR                -> DISABLED\n",
+               "  OpenEXR                -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
 
 #ifdef HAVE_WEBP
                "  WebP                   -> ENABLED\n",
 #else
-               "  WebP                   -> DISABLED\n",
+               "  WebP                   -> \033[38;5;244mDISABLED\033[0m\n",
 #endif
              
                PACKAGE_DOCS,
