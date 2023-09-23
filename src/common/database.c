@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 40
+#define CURRENT_DATABASE_VERSION_LIBRARY 41
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2409,6 +2409,12 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
     new_version = 40;
+  }
+  else if(version == 40)
+  {
+    TRY_EXEC("ALTER TABLE main.history_hash ADD COLUMN fullthumb_hash BLOB default NULL",
+             "[init] can't add fullthumb_hash column\n");
+    new_version = 41;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
