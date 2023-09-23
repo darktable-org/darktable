@@ -2389,7 +2389,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC
       ("CREATE VIEW v_images AS"
        " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
-       "        cm.maker || \" \" || cm.model AS normalized_camera, "
+       "        cm.maker || ' ' || cm.model AS normalized_camera, "
        "        cm.alias AS camera_alias,"
        "        exposure, aperture, iso,"
        "        datetime(datetime_taken/1000000"
@@ -2471,7 +2471,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC
       ("CREATE VIEW v_images AS"
        " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
-       "        cm.maker || \" \" || cm.model AS normalized_camera, "
+       "        cm.maker || ' ' || cm.model AS normalized_camera, "
        "        cm.alias AS camera_alias,"
        "        exposure, aperture, iso,"
        "        datetime(datetime_taken/1000000"
