@@ -441,7 +441,7 @@ typedef struct darktable_t
   struct dt_imageio_t *imageio;
   struct dt_opencl_t *opencl;
 
-  struct dt_metal_device_t *metal_device;
+  struct dt_metal_t *metal;
 
   struct dt_dbus_t *dbus;
   struct dt_undo_t *undo;

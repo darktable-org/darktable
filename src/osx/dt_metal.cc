@@ -17,7 +17,6 @@
 */
 
 #include "dt_metal.h"
-#include "common/darktable.h"
 #include "common/file_location.h"
 
 #define NS_PRIVATE_IMPLEMENTATION
@@ -26,68 +25,88 @@
 #include "Metal.hpp"
 
 
-void _dt_metal_get_devices()
+static void _dt_metal_create_library(NS::URL *url, MTL::Device *pDevice)
 {
-  NS::Array *devices = MTL::CopyAllDevices();
-  for(int i = 0; i < devices->count(); i++)
-  {
-    const char* deviceName = ((MTL::Device*) devices->object(i))->name()->utf8String();
+  dt_print(DT_DEBUG_METAL,
+          "[dt_metal_create_library] Create Metal library for device: %s\n",
+          pDevice->name()->utf8String());
 
+  NS::Error *libraryError = NULL;
+  MTL::Library *library = pDevice->newLibrary(url, &libraryError);
+  if (!library)
+  {
     dt_print(DT_DEBUG_METAL,
-             "[dt_metal_get_devices] Device: %s\n",
-             deviceName);
+            "[dt_metal_create_library] Could not create library: %s",
+            libraryError->localizedDescription()->utf8String());
+
+    return;
   }
+
+  dt_print(DT_DEBUG_METAL, "[dt_metal_create_library] Library created\n");
+
+  /*
+  for(int fi = 0; fi < library->functionNames()->count(); fi++) 
+  {
+    const char *functionName = ((NS::String*) library->functionNames()->object(fi))->utf8String();
+    dt_print(DT_DEBUG_METAL, 
+            "[dt_metal_create_library] Function: %s\n",
+            functionName);
+  }
+  */
 }
 
-void _dt_metal_create_library()
+void dt_metal_init(dt_metal_t *metal)
 {
-  // MTL::Device *_pDevice = MTL::CreateSystemDefaultDevice();
+  dt_print(DT_DEBUG_METAL,
+           "[dt_metal_init] Initializing Metal devices\n");
 
+  // get the path to the metal library
   char metallibpath[PATH_MAX] = { 0 };
   dt_loc_get_sharedir(metallibpath, sizeof(metallibpath));
   g_strlcat(metallibpath, "/darktable/metal/darktable.metallib", sizeof(metallibpath));
-  dt_print(DT_DEBUG_METAL, "[dt_metal_init] metallib path: %s\n", metallibpath);
+  
+  dt_print(DT_DEBUG_METAL,
+           "[dt_metal_init] metallib path: %s\n", 
+           metallibpath);
 
   NS::URL *url = NS::URL::fileURLWithPath(NS::String::string(metallibpath,
                                           NS::StringEncoding::UTF8StringEncoding));
 
+  // get all Metal devices
   NS::Array *devices = MTL::CopyAllDevices();
-  for(int i = 0; i < devices->count(); i++)
+  const int num_devices = devices->count();
+
+  if (num_devices)
   {
-    MTL::Device *pDevice = (MTL::Device *) devices->object(i);
+    metal->num_devs = num_devices;
+    metal->dev = (dt_metal_device_t *)malloc(sizeof(dt_metal_device_t) * num_devices);
+
+    for(int i = 0; i < num_devices; i++)
+    {
+      MTL::Device *pDevice = (MTL::Device *) devices->object(i);
+      const char* deviceName = pDevice->name()->utf8String();
+
+      dt_print(DT_DEBUG_METAL,
+              "[dt_metal_init] Device: %s\n",
+              deviceName);
+
+      metal->dev[i].devid = pDevice->registryID();
+      metal->dev[i].device = (void *) pDevice;
+              
+      _dt_metal_create_library(url, pDevice);
+    }
+  }
+
+  dt_print(DT_DEBUG_METAL,
+           "[dt_metal_init] Check:\n");
+
+  for(int i = 0; i < metal->num_devs; i++)
+  {
+    MTL::Device *pDevice = (MTL::Device *) metal->dev[i].device;
+    const char* deviceName = pDevice->name()->utf8String();
 
     dt_print(DT_DEBUG_METAL,
-            "[dt_metal_create_library] Create library for device: %s\n",
-            pDevice->name()->utf8String());
-
-    NS::Error *libraryError = NULL;
-    MTL::Library *library = pDevice->newLibrary(url, &libraryError);
-    if (!library)
-    {
-      dt_print(DT_DEBUG_METAL,
-              "[dt_metal_create_library] Could not create library: %s",
-              libraryError->localizedDescription()->utf8String());
-
-      return;
-    }
-
-    dt_print(DT_DEBUG_METAL, "[dt_metal_create_library] Library created\n");
-
-    for(int fi = 0; fi < library->functionNames()->count(); fi++) 
-    {
-      const char *functionName = ((NS::String*) library->functionNames()->object(fi))->utf8String();
-      dt_print(DT_DEBUG_METAL, 
-              "[dt_metal_create_library] Function: %s\n",
-              functionName);
-    }
-
+            "[dt_metal_init] Device: %s\n",
+            deviceName);
   }
-}
-
-void dt_metal_init()
-{
-  dt_print(DT_DEBUG_METAL, "[dt_metal_init] Initializing Metal devices\n");
-
-  // _dt_metal_get_devices();
-  _dt_metal_create_library();
 }

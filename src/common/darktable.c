@@ -1883,7 +1883,8 @@ int dt_init(int argc,
     dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
 #ifdef __APPLE__
-  dt_metal_init();
+  darktable.metal = (dt_metal_t *)calloc(1, sizeof(dt_metal_t));
+  dt_metal_init(darktable.metal);
 #endif
 
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));

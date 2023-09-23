@@ -18,20 +18,34 @@
 
 #pragma once
 
+#include "common/darktable.h"
 #include <sys/types.h>
-
-typedef struct dt_metal_device_t
-{
-   u_int64_t deviceId;
-} dt_metal_device_t;
-
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void dt_metal_init();
+typedef struct dt_metal_device_t
+{
+  dt_pthread_mutex_t lock;
+  u_int64_t devid;
+  void *device;
+} dt_metal_device_t;
+
+
+/**
+ * main struct, stored in darktable.metal.
+ * holds pointers to all
+ */
+typedef struct dt_metal_t
+{
+  int num_devs;
+  dt_metal_device_t *dev;
+} dt_metal_t;
+
+
+void dt_metal_init(dt_metal_t *metal);
 
 
 #ifdef __cplusplus
