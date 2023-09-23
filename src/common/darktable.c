@@ -651,7 +651,7 @@ char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Ha
 #ifdef _DEBUG
                "  Debug                  -> ENABLED\n",
 #else
-               "  Build                  -> DISABLED\n",
+               "  Debug                  -> DISABLED\n",
 #endif
 
 #if defined(__SSE2__) && defined(__SSE__)
