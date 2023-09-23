@@ -179,7 +179,7 @@ static int usage(const char *argv0)
          "\n"
          "    :memory: -> Use this option as FILE to keep the database in system memory,\n"
          "    discarding changes on darktable termination.\n"
-
+         "\n"
          "--localedir DIR\n"
          "    Define where darktable can find its language-specific text\n"
          "    strings. The default location depends on your installation.\n"
@@ -285,7 +285,7 @@ static int usage(const char *argv0)
 #endif
 
   printf("See %s for more detailed documentation.\n"
-         "See %s for bug reports.\n", 
+         "See %s to report bugs.\n", 
          PACKAGE_DOCS, 
          PACKAGE_BUGREPORT);
 
@@ -640,108 +640,108 @@ static char *_get_version_string(void)
 #endif
 char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
-               "  bit depth is %zu bit\n%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
+               "  Bit depth              -> %zu bit\n"
+               "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
                "See %s for detailed documentation.\n"
-               "See %s for bug reports.\n",
+               "See %s to report bugs.\n",
                darktable_package_string,
                darktable_last_commit_year,
                CHAR_BIT * sizeof(void *),
 
 #ifdef _DEBUG
-               "  debug build\n",
+               "  Debug                  -> ENABLED\n",
 #else
-               "  normal build\n",
+               "  Build                  -> DISABLED\n",
 #endif
 
 #if defined(__SSE2__) && defined(__SSE__)
-               "  SSE2 optimizations enabled\n",
+               "  SSE2 optimizations     -> ENABLED\n",
 #else
-               "  SSE2 optimizations unavailable\n",
+               "  SSE2 optimizations     -> DISABLED\n",
 #endif
 
 #ifdef _OPENMP
-               "  OpenMP support enabled\n",
+               "  OpenMP                 -> ENABLED\n",
 #else
-               "  OpenMP support disabled\n",
+               "  OpenMP                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENCL
-               "  OpenCL support enabled\n",
+               "  OpenCL                 -> ENABLED\n",
 #else
-               "  OpenCL support disabled\n",
+               "  OpenCL                 -> DISABLED\n",
 #endif
 
 #ifdef USE_LUA
-               "  Lua support enabled, API version ",
-               lua_api_version,
+               "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
-               "  Lua support disabled\n", "",
+               "  Lua                    -> DISABLED - API version", "NOT AVAILABLE",
 #endif
 
 #ifdef USE_COLORDGTK
-               "  Colord support enabled\n",
+               "  Colord                 -> ENABLED\n",
 #else
-               "  Colord support disabled\n",
+               "  Colord                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_GPHOTO2
-               "  gPhoto2 support enabled\n",
+               "  gPhoto2                -> ENABLED\n",
 #else
-               "  gPhoto2 support disabled\n",
+               "  gPhoto2                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_GMIC
-               "  G'MIC support enabled (compressed LUTs will be supported)\n",
+               "  GMIC                   -> ENABLED  - Compressed LUTs supported\n",
 #else
-               "  G'MIC support disabled (compressed LUTs will not be supported)\n",
+               "  GMIC                   -> DISABLED - Compressed LUTs NOT be supported\n",
 #endif
 
 #ifdef HAVE_GRAPHICSMAGICK
-               "  GraphicsMagick support enabled\n",
+               "  GraphicsMagick         -> ENABLED\n",
 #else
-               "  GraphicsMagick support disabled\n",
+               "  GraphicsMagick         -> DISABLED\n",
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-               "  ImageMagick support enabled\n",
-#else
-               "  ImageMagick support disabled\n",
+               "  ImageMagick            -> ENABLED\n",
+#else 
+               "  ImageMagick            -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBAVIF
-               "  libavif support enabled\n",
+               "  libavif                -> ENABLED\n",
 #else
-               "  libavif support disabled\n",
+               "  libavif                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBHEIF
-               "  libheif support enabled\n",
+               "  libheif                -> ENABLED\n",
 #else
-               "  libheif support disabled\n",
+               "  libheif                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBJXL
-               "  libjxl support enabled\n",
+               "  libjxl                 -> ENABLED\n",
 #else
-               "  libjxl support disabled\n",
+               "  libjxl                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENJPEG
-               "  OpenJPEG support enabled\n",
+               "  OpenJPEG               -> ENABLED\n",
 #else
-               "  OpenJPEG support disabled\n",
+               "  OpenJPEG               -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENEXR
-               "  OpenEXR support enabled\n",
+               "  OpenEXR                -> ENABLED\n",
 #else
-               "  OpenEXR support disabled\n",
+               "  OpenEXR                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_WEBP
-               "  WebP support enabled\n",
+               "  WebP                   -> ENABLED\n",
 #else
-               "  WebP support disabled\n",
+               "  WebP                   -> DISABLED\n",
 #endif
              
                PACKAGE_DOCS,
