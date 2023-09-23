@@ -316,33 +316,19 @@ int dt_collection_update(const dt_collection_t *collection)
                "       FROM main.film_rolls) ON film_id = film_rolls_id");
       // clang-format on
     }
-    if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
-       && collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
+    if(collection->params.sorts[DT_COLLECTION_SORT_TITLE])
     {
-      // clang-format off
       selq_post = dt_util_dstrcat
         (selq_post,
-        " LEFT OUTER JOIN main.meta_data AS m"
-        "   ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
-        DT_METADATA_XMP_DC_TITLE, DT_METADATA_XMP_DC_DESCRIPTION);
-      // clang-format on
+        " LEFT OUTER JOIN main.meta_data AS mt ON mi.id = mt.id AND mt.key = %d",
+        DT_METADATA_XMP_DC_TITLE);
     }
-    else
+    if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
     {
-      if(collection->params.sorts[DT_COLLECTION_SORT_TITLE])
-      {
-        selq_post = dt_util_dstrcat
-          (selq_post,
-          " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
-          DT_METADATA_XMP_DC_TITLE);
-      }
-      if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
-      {
-        selq_post = dt_util_dstrcat
-          (selq_post,
-          " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
-          DT_METADATA_XMP_DC_DESCRIPTION);
-      }
+      selq_post = dt_util_dstrcat
+        (selq_post,
+        " LEFT OUTER JOIN main.meta_data AS md ON mi.id = md.id AND md.key = %d",
+        DT_METADATA_XMP_DC_DESCRIPTION);
     }
   }
 
@@ -733,11 +719,11 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort,
       break;
 
     case DT_COLLECTION_SORT_TITLE:
-      sq = g_strdup_printf("m.value%s", (sortorder) ? " DESC" : "");
+      sq = g_strdup_printf("mt.value%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_DESCRIPTION:
-      sq = g_strdup_printf("m.value%s", (sortorder) ? " DESC" : "");
+      sq = g_strdup_printf("md.value%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_ASPECT_RATIO:
