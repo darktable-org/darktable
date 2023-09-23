@@ -202,25 +202,56 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
   const uint32_t tagid = collection->tagid;
   char tag[16] = { 0 };
   snprintf(tag, sizeof(tag), "%u", tagid);
+  gboolean tag_join = FALSE;
+
+  // select which fields are needed
+  gchar *fields = g_strdup("mi.id"); // we always want to load the image id
+  // the other needed fields are for the sorting order
+  if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
+  {
+    // we always need filename and version : they are fallback orders in any cases
+    fields = dt_util_dstrcat(fields, ", filename, version");
+    if(collection->params.sorts[DT_COLLECTION_SORT_GROUP])
+      fields = dt_util_dstrcat(fields, ", group_id");
+    if(collection->params.sorts[DT_COLLECTION_SORT_PATH])
+      fields = dt_util_dstrcat(fields, ", film_id");
+    if(collection->params.sorts[DT_COLLECTION_SORT_DATETIME])
+      fields = dt_util_dstrcat(fields, ", datetime_taken");
+    if(collection->params.sorts[DT_COLLECTION_SORT_IMPORT_TIMESTAMP])
+      fields = dt_util_dstrcat(fields, ", import_timestamp");
+    if(collection->params.sorts[DT_COLLECTION_SORT_CHANGE_TIMESTAMP])
+      fields = dt_util_dstrcat(fields, ", change_timestamp");
+    if(collection->params.sorts[DT_COLLECTION_SORT_EXPORT_TIMESTAMP])
+      fields = dt_util_dstrcat(fields, ", export_timestamp");
+    if(collection->params.sorts[DT_COLLECTION_SORT_PRINT_TIMESTAMP])
+      fields = dt_util_dstrcat(fields, ", print_timestamp");
+    if(collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+      fields = dt_util_dstrcat(fields, ", aspect_ratio");
+    if(collection->params.sorts[DT_COLLECTION_SORT_RATING])
+      fields = dt_util_dstrcat(fields, ", flags");
+    if(collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER])
+    {
+      tag_join = (tagid);
+      fields = dt_util_dstrcat(fields,
+                               ", %s position",
+                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "");
+    }
+  }
 
   // clang-format off
   *selq_pre = dt_util_dstrcat
     (*selq_pre,
      "SELECT DISTINCT mi.id"
-     "  FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken,"
-     "               camera_id, lens_id,"
-     "               flags, version, %s position, aspect_ratio,"
-     "               aperture, exposure, focal_length,"
-     "               iso, import_timestamp, change_timestamp,"
-     "               export_timestamp, print_timestamp"
+     "  FROM (SELECT %s"
      "        FROM main.images AS mi"
      "        %s%s"
      "        WHERE ",
-     tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-     tagid ? " LEFT JOIN main.tagged_images AS ti"
+     fields,
+     tag_join ? " LEFT JOIN main.tagged_images AS ti"
      "                ON ti.imgid = mi.id AND ti.tagid = " : "",
-     tagid ? tag : "");
+     tag_join ? tag : "");
   // clang-format on
+  g_free(fields);
 }
 
 int dt_collection_update(const dt_collection_t *collection)
