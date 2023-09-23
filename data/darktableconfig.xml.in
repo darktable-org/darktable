@@ -45,7 +45,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>prefer focused instance</shortdescription>
-    <longdescription>if an instance of the module has focus, apply shortcut to that instance\nnote: blending shortcuts always apply to the focused instance</longdescription>
+    <longdescription>where multiple instances of a module are present, apply shortcuts to the instance that has focus\nif none are focused, the preferences below control rules that are followed (in order) to decide which module instance shortcuts will be applied to.\nnote: blending shortcuts always apply to the focused instance</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="accel">
     <name>accel/prefer_expanded</name>
@@ -106,6 +106,18 @@
     <default>true</default>
     <shortdescription>load default shortcuts at startup</shortdescription>
     <longdescription>load default shortcuts before user settings. switch off to prevent deleted defaults returning</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>accel/show_tab_in_prefs</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show the shortcuts configuration tab in the preferences dialog</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>accel/hide_notice</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>don't show advice in shortcuts dialog</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>bauhaus/scale</name>

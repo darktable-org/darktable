@@ -901,7 +901,8 @@ static void init_tab_presets(GtkWidget *stack)
 
 static void init_tab_accels(GtkWidget *stack)
 {
-  gtk_stack_add_titled(GTK_STACK(stack), dt_shortcuts_prefs(NULL), _("shortcuts"), _("shortcuts"));
+  if(dt_conf_get_bool("accel/show_tab_in_prefs"))
+    gtk_stack_add_titled(GTK_STACK(stack), dt_shortcuts_prefs(NULL), _("shortcuts"), _("shortcuts"));
 }
 
 static void _delete_line_and_empty_parent(GtkTreeModel *model, GtkTreeIter *iter)
