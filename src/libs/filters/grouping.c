@@ -109,7 +109,7 @@ static gboolean _grouping_update(dt_lib_filtering_rule_t *rule)
   g_snprintf(query, sizeof(query),
                    "SELECT gr_count, COUNT(gr_count) "
                    " FROM (SELECT COUNT(*) AS gr_count "
-                   "        FROM main.images "
+                   "        FROM main.images AS mi"
                    "        WHERE %s "
                    "        GROUP BY group_id)"
                    " GROUP BY gr_count "
