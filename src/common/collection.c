@@ -202,25 +202,56 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection,
   const uint32_t tagid = collection->tagid;
   char tag[16] = { 0 };
   snprintf(tag, sizeof(tag), "%u", tagid);
+  gboolean tag_join = FALSE;
+
+  // select which fields are needed
+  gchar *fields = g_strdup("mi.id"); // we always want to load the image id
+  // the other needed fields are for the sorting order
+  if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
+  {
+    // we always need filename and version : they are fallback orders in any cases
+    fields = dt_util_dstrcat(fields, ", filename, version");
+    if(collection->params.sorts[DT_COLLECTION_SORT_GROUP])
+      fields = dt_util_dstrcat(fields, ", group_id");
+    if(collection->params.sorts[DT_COLLECTION_SORT_PATH])
+      fields = dt_util_dstrcat(fields, ", film_id");
+    if(collection->params.sorts[DT_COLLECTION_SORT_DATETIME])
+      fields = dt_util_dstrcat(fields, ", datetime_taken");
+    if(collection->params.sorts[DT_COLLECTION_SORT_IMPORT_TIMESTAMP])
+      fields = dt_util_dstrcat(fields, ", import_timestamp");
+    if(collection->params.sorts[DT_COLLECTION_SORT_CHANGE_TIMESTAMP])
+      fields = dt_util_dstrcat(fields, ", change_timestamp");
+    if(collection->params.sorts[DT_COLLECTION_SORT_EXPORT_TIMESTAMP])
+      fields = dt_util_dstrcat(fields, ", export_timestamp");
+    if(collection->params.sorts[DT_COLLECTION_SORT_PRINT_TIMESTAMP])
+      fields = dt_util_dstrcat(fields, ", print_timestamp");
+    if(collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+      fields = dt_util_dstrcat(fields, ", aspect_ratio");
+    if(collection->params.sorts[DT_COLLECTION_SORT_RATING])
+      fields = dt_util_dstrcat(fields, ", flags");
+    if(collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER])
+    {
+      tag_join = (tagid);
+      fields = dt_util_dstrcat(fields,
+                               ", %s position",
+                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "");
+    }
+  }
 
   // clang-format off
   *selq_pre = dt_util_dstrcat
     (*selq_pre,
-     "SELECT DISTINCT mi.id"
-     "  FROM (SELECT mi.id, group_id, film_id, filename, datetime_taken,"
-     "               camera_id, lens_id,"
-     "               flags, version, %s position, aspect_ratio,"
-     "               aperture, exposure, focal_length,"
-     "               iso, import_timestamp, change_timestamp,"
-     "               export_timestamp, print_timestamp"
+     "SELECT DISTINCT sel.id"
+     "  FROM (SELECT %s"
      "        FROM main.images AS mi"
      "        %s%s"
      "        WHERE ",
-     tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-     tagid ? " LEFT JOIN main.tagged_images AS ti"
+     fields,
+     tag_join ? " LEFT JOIN main.tagged_images AS ti"
      "                ON ti.imgid = mi.id AND ti.tagid = " : "",
-     tagid ? tag : "");
+     tag_join ? tag : "");
   // clang-format on
+  g_free(fields);
 }
 
 int dt_collection_update(const dt_collection_t *collection)
@@ -279,7 +310,7 @@ int dt_collection_update(const dt_collection_t *collection)
      * representative image wasn't filtered out.  This is important,
      * because otherwise it may be impossible to collapse the group
      * again. */
-    wq = dt_util_dstrcat(wq, " OR (id = %d)", darktable.gui->expanded_group_id);
+    wq = dt_util_dstrcat(wq, " OR (mi.id = %d)", darktable.gui->expanded_group_id);
   }
 
   // get all the sort items
@@ -298,63 +329,39 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* build select part includes where */
   _dt_collection_set_selq_pre_sort(collection, &selq_pre);
-  gchar *join = NULL;
+  selq_post = g_strdup(") AS sel");
+
   if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
   {
     // some sort orders require to join tables to the query
     if(collection->params.sorts[DT_COLLECTION_SORT_COLOR])
     {
-      join = dt_util_dstrcat
-        (join, " LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
+      selq_post = dt_util_dstrcat
+        (selq_post, " LEFT OUTER JOIN main.color_labels AS b ON sel.id = b.imgid");
     }
     if(collection->params.sorts[DT_COLLECTION_SORT_PATH])
     {
       // clang-format off
-      join = dt_util_dstrcat
-        (join, " JOIN (SELECT id AS film_rolls_id, folder"
+      selq_post = dt_util_dstrcat
+        (selq_post, " JOIN (SELECT id AS film_rolls_id, folder"
                "       FROM main.film_rolls) ON film_id = film_rolls_id");
       // clang-format on
     }
-    if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
-       && collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
+    if(collection->params.sorts[DT_COLLECTION_SORT_TITLE])
     {
-      // clang-format off
-      join = dt_util_dstrcat
-        (join,
-        " LEFT OUTER JOIN main.meta_data AS m"
-        "   ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
-        DT_METADATA_XMP_DC_TITLE, DT_METADATA_XMP_DC_DESCRIPTION);
-      // clang-format on
+      selq_post = dt_util_dstrcat
+        (selq_post,
+        " LEFT OUTER JOIN main.meta_data AS mt ON sel.id = mt.id AND mt.key = %d",
+        DT_METADATA_XMP_DC_TITLE);
     }
-    else
+    if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
     {
-      if(collection->params.sorts[DT_COLLECTION_SORT_TITLE])
-      {
-        join = dt_util_dstrcat
-          (join,
-          " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
-          DT_METADATA_XMP_DC_TITLE);
-      }
-      if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
-      {
-        join = dt_util_dstrcat
-          (join,
-          " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",
-          DT_METADATA_XMP_DC_DESCRIPTION);
-      }
+      selq_post = dt_util_dstrcat
+        (selq_post,
+        " LEFT OUTER JOIN main.meta_data AS md ON sel.id = md.id AND md.key = %d",
+        DT_METADATA_XMP_DC_DESCRIPTION);
     }
   }
-
-  if(join)
-  {
-    selq_post = dt_util_dstrcat(selq_post, ") AS mi%s", join);
-    g_free(join);
-  }
-  else
-  {
-    selq_pre = dt_util_dstrcat(selq_pre, "1=1) AS mi WHERE ");
-  }
-
 
   /* build sort order part */
   if(collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
@@ -365,12 +372,12 @@ int dt_collection_update(const dt_collection_t *collection)
   /* store the new query */
   query
       = dt_util_dstrcat(query, "%s%s%s %s%s",
-                        selq_pre, wq, selq_post ? selq_post : "", sq ? sq : "",
+                        selq_pre, wq, selq_post, sq ? sq : "",
                         (collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
                         ? " " LIMIT_QUERY : "");
   query_no_group
-      = dt_util_dstrcat(query_no_group, "%s%s%s %s%s", selq_pre, wq_no_group,
-                        selq_post ? selq_post : "", sq ? sq : "",
+      = dt_util_dstrcat(query_no_group, "%s%s%s %s%s",
+                        selq_pre, wq_no_group, selq_post, sq ? sq : "",
                         (collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
                         ? " " LIMIT_QUERY : "");
   result = _dt_collection_store(collection, query, query_no_group);
@@ -478,7 +485,7 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
   else
   {
     // WHERE part is composed by (COLLECT) AND (FILTERING)
-    // first, the COLLECT PART (never empty, use 1=1 in this case)
+    // first, the COLLECT PART (can be empty)
     complete_string = g_strdup("");
     const int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"),
                                1, 10);
@@ -490,8 +497,7 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
     }
     if(g_strcmp0(rules_txt, ""))
       complete_string = dt_util_dstrcat(complete_string, "(%s)", rules_txt);
-    else
-      complete_string = dt_util_dstrcat(complete_string, "1=1");
+
     g_free(rules_txt);
 
     // and now the FILTERING part (can be empty)
@@ -505,7 +511,10 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection,
     }
 
     if(g_strcmp0(rules_txt, ""))
-      complete_string = dt_util_dstrcat(complete_string, " AND (%s)", rules_txt);
+    {
+      if(g_strcmp0(complete_string, "")) complete_string = dt_util_dstrcat(complete_string, " AND ");
+      complete_string = dt_util_dstrcat(complete_string, "(%s)", rules_txt);
+    }
     g_free(rules_txt);
   }
 
@@ -719,7 +728,7 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort,
       break;
 
     case DT_COLLECTION_SORT_ID:
-      sq = g_strdup_printf("mi.id%s", (sortorder) ? " DESC" : "");
+      sq = g_strdup_printf("sel.id%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_COLOR:
@@ -727,7 +736,7 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort,
       break;
 
     case DT_COLLECTION_SORT_GROUP:
-      sq = g_strdup_printf("group_id%s, mi.id-group_id != 0, mi.id",
+      sq = g_strdup_printf("group_id%s, sel.id-group_id != 0, sel.id",
                            (sortorder) ? " DESC" : "");
       break;
 
@@ -741,11 +750,11 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort,
       break;
 
     case DT_COLLECTION_SORT_TITLE:
-      sq = g_strdup_printf("m.value%s", (sortorder) ? " DESC" : "");
+      sq = g_strdup_printf("mt.value%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_DESCRIPTION:
-      sq = g_strdup_printf("m.value%s", (sortorder) ? " DESC" : "");
+      sq = g_strdup_printf("md.value%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_ASPECT_RATIO:
@@ -760,7 +769,7 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort,
     case DT_COLLECTION_SORT_NONE:
     default: /*fall through for default*/
       // shouldn't happen
-      sq = g_strdup("mi.id");
+      sq = g_strdup("sel.id");
       break;
   }
 
@@ -850,7 +859,7 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection,
   gchar *count_query = NULL;
 
   gchar *fq = g_strstr_len(query, strlen(query), "FROM");
-  count_query = g_strdup_printf("SELECT COUNT(DISTINCT mi.id) %s", fq);
+  count_query = g_strdup_printf("SELECT COUNT(DISTINCT sel.id) %s", fq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
@@ -1489,7 +1498,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
-      query = g_strdup("((1=0) ");
+      query = g_strdup("(");
       // handle the possibility of multiple values
       elems = g_strsplit(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
@@ -1498,16 +1507,19 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         if(!g_strcmp0(elems[i], "UNSET"))
         {
           // clang-format off
-          query = dt_util_dstrcat(query, " OR camera_id IN (SELECT id"
-                                         "                  FROM main.cameras"
-                                         "                  WHERE (maker IS NULL AND model IS NULL)"
-                                         "                     OR (TRIM(maker)='' AND TRIM(model)=''))");
+          query = dt_util_dstrcat(query, "%scamera_id IN (SELECT id"
+                                         "                FROM main.cameras"
+                                         "                WHERE (maker IS NULL AND model IS NULL)"
+                                         "                   OR (TRIM(maker)='' AND TRIM(model)=''))",
+                                         i>0?" OR ":"");
           // clang-format on
         }
         else
         {
           gchar *cam = _add_wildcards(elems[i]);
-          query = dt_util_dstrcat(query, " OR camera_id IN (SELECT id FROM main.cameras WHERE maker || ' ' || model LIKE '%s')", cam);
+          query = dt_util_dstrcat(query,
+                                  "%scamera_id IN (SELECT id FROM main.cameras WHERE maker || ' ' || model LIKE '%s')",
+                                  i>0?" OR ":"", cam);
           g_free(cam);
         }
       }
@@ -1599,7 +1611,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_LENS: // lens
-      query = g_strdup("((1=0) ");
+      query = g_strdup("(");
       // handle the possibility of multiple values
       elems = g_strsplit(escaped_text, ",", -1);
       for(int i = 0; i < g_strv_length(elems); i++)
@@ -1608,12 +1620,15 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           query = dt_util_dstrcat
             (query,
-             " OR lens_id IN (SELECT id FROM main.lens WHERE name IS NULL OR TRIM(name)='' OR UPPER(TRIM(name))='N/A')");
+             "%slens_id IN (SELECT id FROM main.lens WHERE name IS NULL OR TRIM(name)='' OR UPPER(TRIM(name))='N/A')",
+             i>0?" OR ":"");
         }
         else
         {
           gchar *lens = _add_wildcards(elems[i]);
-          query = dt_util_dstrcat(query, " OR lens_id IN (SELECT id FROM main.lens WHERE name LIKE '%s')", lens);
+          query = dt_util_dstrcat(query,
+                                  "%slens_id IN (SELECT id FROM main.lens WHERE name LIKE '%s')",
+                                  i>0?" OR ":"", lens);
           g_free(lens);
         }
 
@@ -1865,7 +1880,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_GROUPING: // grouping
       if(!g_strcmp0(escaped_text, "$NO_GROUP"))
       {
-        query = g_strdup("(id = group_id AND "
+        query = g_strdup("(mi.id = group_id AND "
                          "NOT EXISTS(SELECT 1 AS group_count"
                          "           FROM main.images AS gc"
                          "           WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
@@ -1885,15 +1900,15 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       else if(!g_strcmp0(escaped_text, "$FOLLOWER"))
       {
-        query = g_strdup("(id != group_id)");
+        query = g_strdup("(mi.id != group_id)");
       }
       else if(!g_strcmp0(escaped_text, _("group leaders"))) // used in collect.c
       {
-        query = g_strdup("(id = group_id)");
+        query = g_strdup("(mi.id = group_id)");
       }
       else if(!g_strcmp0(escaped_text, _("group followers"))) // used in collect.c
       {
-        query = g_strdup("(id != group_id)");
+        query = g_strdup("(mi.id != group_id)");
       }
       else // by default, we select all the images
       {
@@ -2248,6 +2263,47 @@ void dt_collection_deserialize(const char *buf, const gboolean filtering)
                              DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
+static void _get_query_part(const dt_collection_properties_t property,
+                            const gchar *text,
+                            const int mode,
+                            const gboolean off,
+                            int *nb,
+                            char **query_part)
+{
+  char *conj[] = { "AND", "OR", "AND NOT" };
+  if(off)
+  {
+    *query_part = g_strdup("");
+  }
+  else if(!text || text[0] == '\0')
+  {
+    if(mode == 1) // for OR show all
+    {
+      if(*nb == 0)
+        *query_part = g_strdup(" 1=1");
+      else
+        *query_part = g_strdup(" OR 1=1");
+      (*nb)++;
+    }
+    else
+      *query_part = g_strdup("");
+  }
+  else
+  {
+    gchar *query = get_query_string(property, text);
+
+    if(*nb == 0 && mode == 2)
+      *query_part = g_strdup_printf(" 1=1 AND NOT %s", query);
+    else if(*nb == 0)
+      *query_part = g_strdup_printf(" %s", query);
+    else
+      *query_part = g_strdup_printf(" %s %s", conj[mode], query);
+
+    g_free(query);
+    (*nb)++;
+  }
+}
+
 void dt_collection_update_query(const dt_collection_t *collection,
                                 const dt_collection_change_t query_change,
                                 const dt_collection_properties_t changed_property,
@@ -2335,7 +2391,6 @@ void dt_collection_update_query(const dt_collection_t *collection,
   const int _n_f = dt_conf_get_int("plugins/lighttable/filtering/num_rules");
   const int num_rules = CLAMP(_n_r, 1, 10);
   const int num_filters = MIN(_n_f, 10);
-  char *conj[] = { "AND", "OR", "AND NOT" };
 
   gchar **query_parts = g_new(gchar *, num_rules + num_filters + 1);
   query_parts[num_rules + num_filters] = NULL;
@@ -2351,33 +2406,8 @@ void dt_collection_update_query(const dt_collection_t *collection,
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
 
-    if(!text || text[0] == '\0')
-    {
-      if(mode == 1) // for OR show all
-      {
-        if(nb == 0)
-          query_parts[i] = g_strdup(" 1=1");
-        else
-          query_parts[i] = g_strdup(" OR 1=1");
-        nb++;
-      }
-      else
-        query_parts[i] = g_strdup("");
-    }
-    else
-    {
-      gchar *query = get_query_string(property, text);
+    _get_query_part(property, text, mode, FALSE, &nb, &query_parts[i]);
 
-      if(nb == 0 && mode == 2)
-        query_parts[i] = g_strdup_printf(" 1=1 AND NOT %s", query);
-      else if(nb == 0)
-        query_parts[i] = g_strdup_printf(" %s", query);
-      else
-        query_parts[i] = g_strdup_printf(" %s %s", conj[mode], query);
-
-      g_free(query);
-      nb++;
-    }
     g_free(text);
   }
 
@@ -2394,25 +2424,7 @@ void dt_collection_update_query(const dt_collection_t *collection,
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
     const int off = dt_conf_get_int(confname);
 
-    if(!off)
-    {
-      gchar *query;
-
-      if(!text || text[0] == '\0')
-        query = g_strdup("1=1");
-      else
-        query = get_query_string(property, text);
-
-      if(nb == 0)
-        query_parts[i + num_rules] = g_strdup_printf(" %s", query);
-      else
-        query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
-
-      g_free(query);
-      nb++;
-    }
-    else
-      query_parts[i + num_rules] = g_strdup("");
+    _get_query_part(property, text, mode, off, &nb, &query_parts[i + num_rules]);
 
     g_free(text);
   }
