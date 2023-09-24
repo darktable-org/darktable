@@ -249,7 +249,7 @@ int main(int argc, char *arg[])
       {     
           printf("darktable %s\nCopyright (C) 2012-%s Johannes Hanika and other contributors.\n\n",darktable_package_version, darktable_last_commit_year);
           printf("See %s for detailed documentation.\n", PACKAGE_DOCS);
-          printf("See %s for bug reports.\n",PACKAGE_BUGREPORT);              
+          printf("See %s to report bugs.\n",PACKAGE_BUGREPORT);              
           exit(0);
       }
       else if(!strcmp(arg[k], "--width") && argc > k + 1)
