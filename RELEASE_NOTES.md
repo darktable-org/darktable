@@ -67,6 +67,8 @@ changes (where available).
   previous high quality preview that is still visible is moved or
   resized and only the edges are temporarily shown in low quality.
 
+- Improve by 25% the display of the pictures on the map.
+
 ## Other Changes
 
 - Hotpixels module now also supports monochrome images.
