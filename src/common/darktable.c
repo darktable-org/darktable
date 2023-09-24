@@ -651,97 +651,97 @@ char *version = g_strdup_printf("darktable %s\nCopyright (C) 2012-%s Johannes Ha
 #ifdef _DEBUG
                "  Debug                  -> ENABLED\n",
 #else
-               "  Debug                  -> \033[38;5;244mDISABLED\033[0m\n",
+               "  Debug                  -> DISABLED\n",
 #endif
 
 #if defined(__SSE2__) && defined(__SSE__)
                "  SSE2 optimizations     -> ENABLED\n",
 #else
-               "  SSE2 optimizations     -> \033[38;5;244mDISABLED\033[0m\n",
+               "  SSE2 optimizations     -> DISABLED\n",
 #endif
 
 #ifdef _OPENMP
                "  OpenMP                 -> ENABLED\n",
 #else
-               "  OpenMP                 -> \033[38;5;244mDISABLED\033[0m\n",
+               "  OpenMP                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENCL
                "  OpenCL                 -> ENABLED\n",
 #else
-               "  OpenCL                 -> \033[38;5;244mDISABLED\033[0m\n",
+               "  OpenCL                 -> DISABLED\n",
 #endif
 
 #ifdef USE_LUA
                "  Lua                    -> ENABLED  - API version ", lua_api_version,
 #else
-               "  Lua                    -> \033[38;5;244mDISABLED\033[0m - API version", "NOT AVAILABLE",
+               "  Lua                    -> DISABLED - API version", "NOT AVAILABLE",
 #endif
 
 #ifdef USE_COLORDGTK
                "  Colord                 -> ENABLED\n",
 #else
-               "  Colord                 -> \033[38;5;244mDISABLED\033[0m\n",
+               "  Colord                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_GPHOTO2
                "  gPhoto2                -> ENABLED\n",
 #else
-               "  gPhoto2                -> \033[38;5;244mDISABLED\033[0m\n",
+               "  gPhoto2                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_GMIC
                "  GMIC                   -> ENABLED  - Compressed LUTs supported\n",
 #else
-               "  GMIC                   -> \033[38;5;244mDISABLED\033[0m - Compressed LUTs NOT supported\n",
+               "  GMIC                   -> DISABLED - Compressed LUTs NOT supported\n",
 #endif
 
 #ifdef HAVE_GRAPHICSMAGICK
                "  GraphicsMagick         -> ENABLED\n",
 #else
-               "  GraphicsMagick         -> \033[38;5;244mDISABLED\033[0m\n",
+               "  GraphicsMagick         -> DISABLED\n",
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
                "  ImageMagick            -> ENABLED\n",
 #else 
-               "  ImageMagick            -> \033[38;5;244mDISABLED\033[0m\n",
+               "  ImageMagick            -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBAVIF
                "  libavif                -> ENABLED\n",
 #else
-               "  libavif                -> \033[38;5;244mDISABLED\033[0m\n",
+               "  libavif                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBHEIF
                "  libheif                -> ENABLED\n",
 #else
-               "  libheif                -> \033[38;5;244mDISABLED\033[0m\n",
+               "  libheif                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_LIBJXL
                "  libjxl                 -> ENABLED\n",
 #else
-               "  libjxl                 -> \033[38;5;244mDISABLED\033[0m\n",
+               "  libjxl                 -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENJPEG
                "  OpenJPEG               -> ENABLED\n",
 #else
-               "  OpenJPEG               -> \033[38;5;244mDISABLED\033[0m\n",
+               "  OpenJPEG               -> DISABLED\n",
 #endif
 
 #ifdef HAVE_OPENEXR
                "  OpenEXR                -> ENABLED\n",
 #else
-               "  OpenEXR                -> \033[38;5;244mDISABLED\033[0m\n",
+               "  OpenEXR                -> DISABLED\n",
 #endif
 
 #ifdef HAVE_WEBP
                "  WebP                   -> ENABLED\n",
 #else
-               "  WebP                   -> \033[38;5;244mDISABLED\033[0m\n",
+               "  WebP                   -> DISABLED\n",
 #endif
              
                PACKAGE_DOCS,
