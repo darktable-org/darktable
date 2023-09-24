@@ -2851,10 +2851,8 @@ static void _create_library_schema(dt_database_t *db)
       "  exposure REAL, aperture REAL, iso REAL, focal_length REAL,"
       "  focus_distance REAL, datetime_taken INTEGER, flags INTEGER,"
       "  output_width INTEGER, output_height INTEGER, crop REAL,"
-      "  raw_parameters INTEGER, raw_denoise_threshold REAL,"
-      "  raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER,"
-      "  license VARCHAR, sha1sum CHAR(40),"
-      "  orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL,"
+      "  raw_parameters INTEGER, raw_black INTEGER, raw_maximum INTEGER,"
+      "  orientation INTEGER, longitude REAL,"
       "  latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER,"
       "  version INTEGER, max_version INTEGER, write_timestamp INTEGER,"
       "  history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL,"
@@ -2928,10 +2926,13 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
-               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, "
-               "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
-               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle, "CREATE TABLE main.history_hash"
+     " (imgid INTEGER PRIMARY KEY,"
+     "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB,"
+     "  mipmap_hash BLOB, fullthumb_hash BLOB,"
+     "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
+     NULL, NULL, NULL);
 
   // v34
   sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken COLLATE NOCASE)",
