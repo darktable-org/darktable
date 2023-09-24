@@ -2039,7 +2039,7 @@ void dt_configure_runtime_performance(const int old, char *info)
   else if(old < 15)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
-    g_strlcat(info, _("OpenCL 'per device' config data have been automatically extended by 'unified-rate'."), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL 'per device' config data have been automatically extended by 'unified-fraction'."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
