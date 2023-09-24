@@ -383,7 +383,6 @@ void *get_params(dt_imageio_module_format_t *self)
   // adjust this if more params are stored (subsampling etc)
   dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)calloc(1, sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
-  if(d->quality <= 0 || d->quality > 100) d->quality = 100;
   return d;
 }
 
@@ -475,7 +474,6 @@ void gui_init(dt_imageio_module_format_t *self)
                                                 dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT),
                                                 0);
   dt_bauhaus_widget_set_label(g->quality, NULL, N_("quality"));
-  dt_bauhaus_slider_set_default(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
   dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->quality), "value-changed", G_CALLBACK(quality_changed), NULL);

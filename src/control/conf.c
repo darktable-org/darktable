@@ -301,7 +301,7 @@ float dt_conf_get_and_sanitize_float(const char *name, float min, float max)
 int dt_conf_get_bool(const char *name)
 {
   const char *str = dt_conf_get_var(name);
-  const int val = (str[0] == 'T') || (str[0] == 't');
+  const int val = (str[0] != 'F') && (str[0] != 'f') && (str[0] != '0') && (str[0] != '\0');
   return val;
 }
 

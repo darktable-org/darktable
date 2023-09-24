@@ -649,48 +649,45 @@ void expose(
     _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
                            &samples, TRUE);
   }
-  else
-  {
-    // display mask if we have a current module activated or if the
-    // masks manager module is expanded
-    const gboolean display_masks =
-      (dev->gui_module
+  // display mask if we have a current module activated or if the
+  // masks manager module is expanded
+  const gboolean display_masks =
+    (dev->gui_module
       && dev->gui_module->enabled
       && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
-    if(dev->form_visible && display_masks)
+  if(dev->form_visible && display_masks)
+  {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] masks post expose\n");
+    dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+  }
+
+  // true if anything could be exposed
+  if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
+  {
+    // the cropping.exposer->gui_post_expose needs special care
+    if(expose_full
+      && dev->cropping.exposer
+      && dev->cropping.requester
+      && dev->cropping.exposer->gui_post_expose)
     {
-      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] masks post expose\n");
-      dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] cropper post_expose [%s]\n", dev->cropping.exposer->op);
+      cairo_save(cri);
+      dev->cropping.exposer->gui_post_expose(dev->cropping.exposer, cri,
+                                     width, height, pointerx, pointery);
+      cairo_restore(cri);
     }
 
-    // true if anything could be exposed
-    if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
+    // gui active module
+    if(dev->gui_module->gui_post_expose
+     && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     {
-      // the cropping.exposer->gui_post_expose needs special care
-      if(expose_full
-        && dev->cropping.exposer
-        && dev->cropping.requester
-        && dev->cropping.exposer->gui_post_expose)
-      {
-        dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] cropper post_expose [%s]\n", dev->cropping.exposer->op);
-        cairo_save(cri);
-        dev->cropping.exposer->gui_post_expose(dev->cropping.exposer, cri,
-                                       width, height, pointerx, pointery);
-        cairo_restore(cri);
-      }
-
-      // gui active module
-      if(dev->gui_module->gui_post_expose
-       && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
-      {
-        dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] gui_post_expose [%s]\n", dev->gui_module->op);
-        cairo_save(cri);
-        dev->gui_module->gui_post_expose(dev->gui_module, cri,
-                                       width, height, pointerx, pointery);
-        cairo_restore(cri);
-      }
+      dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] gui_post_expose [%s]\n", dev->gui_module->op);
+      cairo_save(cri);
+      dev->gui_module->gui_post_expose(dev->gui_module, cri,
+                                     width, height, pointerx, pointery);
+      cairo_restore(cri);
     }
   }
 
@@ -3409,12 +3406,15 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   y -= tb;
   // masks
   if(dev->form_visible
-     && !darktable.develop->darkroom_skip_mouse_events)
+     && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev))
     handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
   if(handled) return;
+
   // module
   if(dev->gui_module && dev->gui_module->mouse_moved
      && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev)
      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, pressure, which);
   if(handled) return;
@@ -3508,10 +3508,11 @@ int button_pressed(dt_view_t *self,
   x -= tb;
   y -= tb;
 
-  if(darktable.develop->darkroom_skip_mouse_events && type == GDK_BUTTON_PRESS)
+  if(darktable.develop->darkroom_skip_mouse_events)
   {
     if(which == 1)
     {
+      if(type == GDK_2BUTTON_PRESS) return 0;
       dt_control_change_cursor(GDK_HAND1);
       return 1;
     }
@@ -3840,6 +3841,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   // module
   if(dev->gui_module && dev->gui_module->scrolled
      && !darktable.develop->darkroom_skip_mouse_events
+     && !dt_iop_color_picker_is_visible(dev)
      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     handled = dev->gui_module->scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;

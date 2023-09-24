@@ -3233,7 +3233,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
 }
 
 // helper function to clean structural data
-static int _do_clean_structure(dt_iop_module_t *module,
+static gboolean _do_clean_structure(dt_iop_module_t *module,
                                dt_iop_ashift_params_t *p,
                                const gboolean save_drawn)
 {
@@ -3257,7 +3257,7 @@ static int _do_clean_structure(dt_iop_module_t *module,
 }
 
 // helper function to start analysis for structural data and report about errors
-static int _do_get_structure_auto(dt_iop_module_t *module,
+static gboolean _do_get_structure_auto(dt_iop_module_t *module,
                                   dt_iop_ashift_params_t *p,
                                   const dt_iop_ashift_enhance_t enhance)
 {
@@ -3937,14 +3937,14 @@ static uint64_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
 // update color information in points_idx if lines have changed in
 // terms of type (but not in terms of number or position)
 
-static int update_colors(struct dt_iop_module_t *self,
+static gboolean _update_colors(struct dt_iop_module_t *self,
                          dt_iop_ashift_points_idx_t *points_idx,
                          const int points_lines_count)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   // is the display flipped relative to the original image?
-  const int isflipped = g->isflipped;
+  const gboolean isflipped = g->isflipped;
 
   // go through all lines
   for(int n = 0; n < points_lines_count; n++)
@@ -3970,7 +3970,7 @@ static int update_colors(struct dt_iop_module_t *self,
 }
 
 // get all the points to display lines in the gui
-static int get_points(struct dt_iop_module_t *self,
+static gboolean _get_points(struct dt_iop_module_t *self,
                       const dt_iop_ashift_line_t *lines,
                       const int lines_count,
                       const int lines_version,
@@ -4124,7 +4124,7 @@ error:
 }
 
 // does this gui have focus?
-static int gui_has_focus(struct dt_iop_module_t *self)
+static gboolean _gui_has_focus(struct dt_iop_module_t *self)
 {
   return (self->dev->gui_module == self
           && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS);
@@ -4183,9 +4183,13 @@ void gui_post_expose(struct dt_iop_module_t *self,
   const int closeup = dt_control_get_dev_closeup();
   const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
+  const gboolean dimmed = dt_iop_color_picker_is_visible(dev);
+  const double lwidth = (dimmed ? 0.5 : 1.0) / zoom_scale;
+  const double fillc = dimmed ? 0.9 : 0.2;
+
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
-  if(g->buf && self->enabled && gui_has_focus(self))
+  if(g->buf && self->enabled && _gui_has_focus(self))
   {
     // roi data of the preview pipe input buffer
 
@@ -4255,7 +4259,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
     cairo_clip(cr);
 
     // mask parts of image outside of clipping area in dark grey
-    cairo_set_source_rgba(cr, .2, .2, .2, .8);
+    cairo_set_source_rgba(cr, fillc, fillc, fillc, 1.0 - fillc);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_translate(cr, width / 2.0, height / 2.0);
@@ -4271,7 +4275,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
 
     // draw white outline around clipping area
     dt_draw_set_color_overlay(cr, TRUE, 1.0);
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
+    cairo_set_line_width(cr, 2.0 *lwidth);
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
     cairo_line_to(cr, C[2][0], C[2][1]);
@@ -4303,13 +4307,13 @@ void gui_post_expose(struct dt_iop_module_t *self,
       const double size_line = base_size / 5.0f;
       const double size_arrow = base_size / 25.0f;
 
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
+      cairo_set_line_width(cr, 2.0 * lwidth);
       dt_draw_set_color_overlay(cr, TRUE, 1.0);
       cairo_arc (cr, xpos, ypos, size_circle, 0, 2.0 * M_PI);
       cairo_stroke(cr);
       cairo_fill(cr);
 
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
+      cairo_set_line_width(cr, 2.0 * lwidth);
       dt_draw_set_color_overlay(cr, TRUE, 1.0);
 
       // horizontal line
@@ -4353,7 +4357,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
     cairo_translate(cr, width / 2.0, height / 2.0);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) * lwidth);
     dt_draw_set_color_overlay(cr, FALSE, 1.0);
 
     float pzx, pzy;
@@ -4424,7 +4428,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
   if(g->fitting) return;
 
   // no structural data or visibility switched off? -> stop here
-  if(g->lines == NULL || !gui_has_focus(self)) return;
+  if(g->lines == NULL || !_gui_has_focus(self)) return;
 
   // get hash value that changes if distortions from here to the end
   // of the pixelpipe changed
@@ -4446,7 +4450,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
     g->draw_points = NULL;
     g->points_lines_count = 0;
 
-    if(!get_points(self, g->lines, g->lines_count, g->lines_version,
+    if(!_get_points(self, g->lines, g->lines_count, g->lines_version,
                    &g->points, &g->draw_points, &g->points_idx,
                    &g->points_lines_count, pr_d))
       return;
@@ -4462,7 +4466,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
       g->points_idx[n].type = g->lines[n].type;
 
     // coordinates of lines are unchanged -> we only need to update colors
-    if(!update_colors(self, g->points_idx, g->points_lines_count))
+    if(!_update_colors(self, g->points_idx, g->points_lines_count))
       return;
 
     g->points_version = g->lines_version;
@@ -4499,9 +4503,9 @@ void gui_post_expose(struct dt_iop_module_t *self,
       continue;
     // is the near flag set? -> draw line a bit thicker
     if(g->points_idx[n].near)
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) * lwidth);
     else
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) / zoom_scale);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5) * lwidth);
 
     // the color of this line
     const float *color = line_colors[g->points_idx[n].color];
@@ -4544,9 +4548,9 @@ void gui_post_expose(struct dt_iop_module_t *self,
          && g->lines[i / 2].type != ASHIFT_LINE_VERTICAL_SELECTED)
         continue;
       if(g->draw_near_point == i)
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) / zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) * lwidth);
       else
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) * lwidth);
       cairo_arc(cr,
                 g->draw_points[i * 2],
                 g->draw_points[i * 2 + 1],
@@ -4596,7 +4600,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
     cairo_arc(cr, pzx * wd, pzy * ht, g->near_delta, 0, 2.0 * M_PI);
 
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
+    cairo_set_line_width(cr, 1.0 * lwidth);
     cairo_set_dash(cr, dashed, len, 0);
     cairo_stroke_preserve(cr);
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
@@ -5791,7 +5795,7 @@ void commit_params(struct dt_iop_module_t *self,
   d->orthocorr = (p->mode == ASHIFT_MODE_GENERIC) ? 0.0f : p->orthocorr;
   d->aspect = (p->mode == ASHIFT_MODE_GENERIC) ? 1.0f : p->aspect;
 
-  if(gui_has_focus(self)
+  if(_gui_has_focus(self)
      || dt_isnan(p->cl)
      || dt_isnan(p->cr)
      || dt_isnan(p->ct)
@@ -6020,9 +6024,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
+      _commit_crop_box(p, g);
       _gui_update_structure_states(self, NULL);
       _do_clean_structure(self, p, TRUE);
-      _commit_crop_box(p, g);
     }
   }
 }

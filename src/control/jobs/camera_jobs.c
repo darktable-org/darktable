@@ -299,7 +299,7 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
 
   if(!dt_import_session_ready(params->shared.session))
   {
-    dt_control_log("Failed to import images from camera.");
+    dt_control_log(_("failed to import images from camera."));
     return 1;
   }
 

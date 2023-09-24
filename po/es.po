@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 13:24+0200\n"
-"PO-Revision-Date: 2023-06-14 04:28-0600\n"
+"PO-Revision-Date: 2023-09-13 20:22-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -3224,13 +3224,13 @@ msgstr "Adobe RGB (compatible)"
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:204
 #: ../src/common/colorspaces.c:1265 ../src/common/colorspaces.c:1488
 msgid "linear Rec709 RGB"
-msgstr "RGB lineal Rec. 709"
+msgstr "RGB Rec. 709 lineal"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
 #: ../src/common/colorspaces.c:1274 ../src/common/colorspaces.c:1490
 msgid "linear Rec2020 RGB"
-msgstr "RGB lineal Rec. 2020"
+msgstr "RGB Rec. 2020 lineal"
 
 #: ../build/lib/darktable/plugins/introspection_colorize.c:65
 #: ../build/lib/darktable/plugins/introspection_colorize.c:128
@@ -5794,7 +5794,7 @@ msgstr " RGB Rec. 2020 HLG"
 
 #: ../src/common/colorspaces.c:1289
 msgid "PQ P3 RGB"
-msgstr "PQ P3 RGB"
+msgstr "RGB P3 PQ"
 
 #: ../src/common/colorspaces.c:1294
 msgid "HLG P3 RGB"
@@ -5802,11 +5802,11 @@ msgstr "RGB P3 HLG"
 
 #: ../src/common/colorspaces.c:1299 ../src/common/colorspaces.c:1524
 msgid "linear ProPhoto RGB"
-msgstr "ProPhoto lineal RGB"
+msgstr "ProPhoto RGB lineal"
 
 #: ../src/common/colorspaces.c:1304 ../src/common/colorspaces.c:1492
 msgid "linear XYZ"
-msgstr "lineal XYZ"
+msgstr "XYZ lineal"
 
 #: ../src/common/colorspaces.c:1308 ../src/common/colorspaces.c:1494
 #: ../src/develop/blend_gui.c:144 ../src/develop/blend_gui.c:2000
@@ -5816,7 +5816,7 @@ msgstr "Lab"
 
 #: ../src/common/colorspaces.c:1313 ../src/common/colorspaces.c:1496
 msgid "linear infrared BGR"
-msgstr "BGR lineal infrarrojo"
+msgstr "BGR infrarrojo lineal"
 
 #: ../src/common/colorspaces.c:1317
 msgid "BRG (for testing)"
@@ -9819,7 +9819,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1015
 msgid "shift+alt+scroll to change height"
-msgstr "Para cambiar la altura del visor: Ctrl+Alt+Desplazamiento"
+msgstr "Para cambiar la altura del visor: Mayús+Alt+Desplazamiento"
 
 #: ../src/gui/accelerators.c:1035
 msgid ""
@@ -14488,7 +14488,7 @@ msgstr ""
 
 #: ../src/iop/colorbalance.c:160
 msgid "shift colors selectively by luminance range"
-msgstr "desplazar colores selectivamente por rango de luminancia"
+msgstr "Realiza una transición de colores por rango de luminancia de manera selectiva"
 
 #: ../src/iop/colorbalance.c:164
 msgid "non-linear, Lab, scene-referred"
@@ -15243,8 +15243,8 @@ msgstr "El perfil de entrada no puede ser generado"
 #: ../src/iop/colorin.c:1560
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
-"El perfil de entrada está sin soporte y ha sido reemplazado por RGB lineal "
-"Rec. 709"
+"El perfil de entrada está sin soporte y ha sido reemplazado por RGB Rec. 709 "
+"lineal"
 
 #: ../src/iop/colorin.c:1844
 msgid "external ICC profiles"
@@ -15287,7 +15287,7 @@ msgstr "perfiles ICC de trabajo"
 
 #: ../src/iop/colorin.c:2109
 msgid "confine Lab values to gamut of RGB color space"
-msgstr "limitar los valores Lab al gama del espacio de color RGB"
+msgstr "Limitar los valores Lab a la gama del espacio de color RGB"
 
 #: ../src/iop/colorize.c:84
 msgid "colorize"
@@ -16521,7 +16521,7 @@ msgid ""
 "the exposure compensation and can be used to define a target."
 msgstr ""
 "La opción «corrección» ajusta automáticamente la exposición\n"
-"de tal manera que la luminosidad de entrada coincida con en el destino.\n"
+"de tal manera que la luminosidad de entrada coincida con la del destino.\n"
 "La opción «medición» simplemente presenta cómo un color de entrada es "
 "adaptado por el TAC\n"
 "y que pueda utilizarse para un muestreo de objetivo."
