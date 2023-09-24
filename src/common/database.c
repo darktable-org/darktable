@@ -2935,7 +2935,7 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
-               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, "
+               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, fullthumb_hash BLOB, fullthumb_maxmip INTEGER, "
                "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
                NULL, NULL, NULL);
 
