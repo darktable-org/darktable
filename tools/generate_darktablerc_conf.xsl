@@ -18,6 +18,8 @@
 
 #include "control/conf.h"
 
+#define WRAP_TRANSLATION(text)
+
 static void _insert_default(const char *name, const char *value)
 {
   dt_confgen_value_t *item = (dt_confgen_value_t *)g_hash_table_lookup(darktable.conf->x_confgen, name);
@@ -236,23 +238,25 @@ void dt_confgen_init()
   <xsl:variable name="uui" select="../@ui"/>
 
   <xsl:text>   _insert_shortdescription("</xsl:text><xsl:value-of select="../name" />
+
   <xsl:if test="not($uui)">
     <xsl:text>", "</xsl:text>
   </xsl:if>
   <xsl:if test="$uui = 'yes'">
-    <xsl:text>", _("</xsl:text>
+    <xsl:text>", N_("</xsl:text>
   </xsl:if>
 
   <xsl:value-of select="."/>
 
   <xsl:if test="not($uui)">
-    <xsl:text>");</xsl:text>
+    <xsl:text>");
+</xsl:text>
   </xsl:if>
   <xsl:if test="$uui = 'yes'">
-    <xsl:text>"));</xsl:text>
+    <xsl:text>"));
+</xsl:text>
   </xsl:if>
 
-  <xsl:text>&#xA;</xsl:text>
 </xsl:template>
 
 <xsl:template match="longdescription">
@@ -266,19 +270,20 @@ void dt_confgen_init()
   </xsl:if>
 
   <xsl:if test="$uui = 'yes' and $des != ''">
-    <xsl:text>", _("</xsl:text>
+    <xsl:text>", N_("</xsl:text>
   </xsl:if>
 
   <xsl:value-of select="."/>
 
   <xsl:if test="not($uui) or $des = ''">
-    <xsl:text>");</xsl:text>
+    <xsl:text>");
+</xsl:text>
   </xsl:if>
   <xsl:if test="$uui = 'yes' and $des != ''">
-    <xsl:text>"));</xsl:text>
+    <xsl:text>"));
+</xsl:text>
   </xsl:if>
 
-  <xsl:text>&#xA;</xsl:text>
 </xsl:template>
 
 <xsl:template match="default">
@@ -296,11 +301,9 @@ void dt_confgen_init()
 <xsl:template match="enum" mode="value">
   <xsl:for-each select="option">
     <xsl:if test="number(.) != .">
-      <xsl:text>   const char *</xsl:text>
-      <xsl:value-of select="generate-id(.)" />
-      <xsl:text> = C_("preferences", "</xsl:text>
+      <xsl:text>   WRAP_TRANSLATION(C_("preferences", "</xsl:text>
       <xsl:value-of select="." />
-      <xsl:text>");&#xA;</xsl:text>
+      <xsl:text>"));&#xA;</xsl:text>
     </xsl:if>
   </xsl:for-each>
 </xsl:template>
