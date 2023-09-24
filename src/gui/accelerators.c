@@ -2699,6 +2699,9 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
 
 static void _notice_clicked(GtkWidget *button, gpointer user_data)
 {
+  static int times = 0;
+  if(++times < 3) return;
+
   gtk_widget_hide(button);
   dt_conf_set_bool("accel/hide_notice", TRUE);
 }
@@ -2914,12 +2917,12 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
     button = gtk_button_new_with_label(
       _("the recommended way to assign shortcuts to visual elements is the <b>visual shortcut mapping</b> mode.\n"
         "this is switched on by toggling the <i>\"keyboard\"</i> button next to preferences in the top panel. "
-        "in this mode, clicking on a widget or area will open this dialog with the appropriate selection for advanced configuration.\n"
+        "in this mode, clicking on a widget or area will open this dialog with the appropriate selection for advanced configuration.\n\n"
         "multiple shortcuts can be assigned to the same action. "
         "this is especially useful if it has multiple <i>elements</i>, like the module buttons or the colorpickers attached to sliders. "
         "however, with <i>fallbacks</i> enabled one can use the same simple shortcuts and "
-        "change their <i>element</i> or <i>effect</i> by adding mouse clicks."));
-    gtk_widget_set_tooltip_text(button, _("click to dismiss this notice permanently"));
+        "change their <i>element</i> or <i>effect</i> by adding mouse clicks.\n\n"
+        "<i>click <b> three times </b> to dismiss this notice permanently</i>"));
     gtk_widget_set_hexpand(button, TRUE);
     GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(button)));
     gtk_label_set_use_markup(label, TRUE);
