@@ -4554,7 +4554,7 @@ msgstr "Einfärbung Farbton"
 #: ../build/lib/darktable/plugins/introspection_primaries.c:164
 #: ../src/iop/primaries.c:400
 msgid "tint purity"
-msgstr "Einfärbung Reinheit"
+msgstr "Einfärbung Sättigung"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:87
 #: ../build/lib/darktable/plugins/introspection_primaries.c:168
@@ -4564,7 +4564,7 @@ msgstr "Rot Farbanpassung"
 #: ../build/lib/darktable/plugins/introspection_primaries.c:93
 #: ../build/lib/darktable/plugins/introspection_primaries.c:172
 msgid "red purity"
-msgstr "Rot Farbreinheit"
+msgstr "Rot Sättigung"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:99
 #: ../build/lib/darktable/plugins/introspection_primaries.c:176
@@ -4574,7 +4574,7 @@ msgstr "Grün Farbanpassung"
 #: ../build/lib/darktable/plugins/introspection_primaries.c:105
 #: ../build/lib/darktable/plugins/introspection_primaries.c:180
 msgid "green purity"
-msgstr "Grün Farbreinheit"
+msgstr "Grün Sättigung"
 
 #: ../build/lib/darktable/plugins/introspection_primaries.c:111
 #: ../build/lib/darktable/plugins/introspection_primaries.c:184
@@ -4585,7 +4585,7 @@ msgstr "Blau Farbanpassung"
 #: ../build/lib/darktable/plugins/introspection_primaries.c:117
 #: ../build/lib/darktable/plugins/introspection_primaries.c:188
 msgid "blue purity"
-msgstr "Blau Farbreinheit"
+msgstr "Blau Sättigung"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:85
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:158
@@ -19032,7 +19032,7 @@ msgstr "Anpassung Rot hin zu gelb oder magenta"
 
 #: ../src/iop/primaries.c:383
 msgid "red primary purity"
-msgstr "Anpassung der Farbreinheit Rot"
+msgstr "Anpassung der Sättigung Rot"
 
 #: ../src/iop/primaries.c:384
 msgid "green primary hue"
@@ -19040,7 +19040,7 @@ msgstr "Anpassung Grün hin zu cyan oder gelb"
 
 #: ../src/iop/primaries.c:385
 msgid "green primary purity"
-msgstr "Anpassung der Farbreinheit Grün"
+msgstr "Anpassung der Sättigung Grün"
 
 #: ../src/iop/primaries.c:386
 msgid "blue primary hue"
@@ -19048,7 +19048,7 @@ msgstr "Anpassung Blau hin zu magenta oder cyan"
 
 #: ../src/iop/primaries.c:387
 msgid "blue primary purity"
-msgstr "Anpassung der Farbreinheit Blau"
+msgstr "Anpassung der Sättigung Blau"
 
 #: ../src/iop/profile_gamma.c:96
 msgid "unbreak input profile"
