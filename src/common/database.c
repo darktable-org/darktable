@@ -48,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 43
+#define CURRENT_DATABASE_VERSION_LIBRARY 44
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2497,6 +2497,59 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("ALTER TABLE main.history_hash ADD COLUMN fullthumb_maxmip INTEGER default 0",
              "[init] can't add fullthumb_maxmip column\n");
     new_version = 43;
+  }
+  else if(version == 43)
+  {
+    // add back triggers and indices removed during last images changes.
+
+    // recreate the indexes
+    TRY_EXEC("CREATE INDEX image_position_index ON images (position)",
+             "[init] can't add image_position_index\n");
+    TRY_EXEC("CREATE INDEX images_filename_index ON images (filename, version)",
+             "[init] can't recreate images_filename_index\n");
+    TRY_EXEC("CREATE INDEX images_film_id_index ON images (film_id, filename)",
+             "[init] can't recreate images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX images_group_id_index ON images (group_id, id)",
+             "[init] can't recreate images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX images_latlong_index ON images (latitude DESC, longitude DESC)",
+             "[init] can't add images_latlong_index\n");
+    TRY_EXEC("CREATE INDEX images_datetime_taken ON images (datetime_taken)",
+             "[init] can't create images_datetime_taken\n");
+
+    // Some triggers to remove possible dangling refs in makers/models/lens/cameras
+    TRY_EXEC("CREATE TRIGGER remove_makers AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM makers"
+             "    WHERE id = OLD.maker_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE maker_id = OLD.maker_id);"
+             " END",
+             "[init] can't create trigger remove_makers\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_models AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM models"
+             "    WHERE id = OLD.model_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE model_id = OLD.model_id);"
+             " END",
+             "[init] can't create trigger remove_models\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_lens AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM lens"
+             "    WHERE id = OLD.lens_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE lens_id = OLD.lens_id);"
+             " END",
+             "[init] can't create trigger remove_lens\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_cameras AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM cameras"
+             "    WHERE id = OLD.camera_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE camera_id = OLD.camera_id);"
+             " END",
+             "[init] can't create trigger remove_cameras\n");
+
+    new_version = 44;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
