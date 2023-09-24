@@ -2883,12 +2883,9 @@ static void _dbscan_spread(unsigned int index)
   for(unsigned int i = 0; i < db.spreads->num_members; i++)
   {
     dt_geo_position_t *d = &db.points[db.spreads->index[i]];
-//    if(d->cluster_id < 0) // NOISE or UNCLASSIFIED - but only those are included in the list anyway
-    {
-      db.seeds->index[db.seeds->num_members] = db.spreads->index[i];
-      db.seeds->num_members++;
-      d->cluster_id = db.cluster_id;
-    }
+    db.seeds->index[db.seeds->num_members] = db.spreads->index[i];
+    db.seeds->num_members++;
+    d->cluster_id = db.cluster_id; // only NOISE/UNCLASSIFIED are in the list
   }
 }
 
