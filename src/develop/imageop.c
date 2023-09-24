@@ -2196,6 +2196,17 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
   return TRUE;
 }
 
+static gboolean _iop_any_with_tag(const int optag)
+{
+  for(GList *modules = darktable.develop->iop; modules; modules = g_list_next(modules))
+  {
+    const dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    if(module->enabled && (optag & module->operation_tags()))
+      return TRUE;
+  }
+  return FALSE;
+}
+
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   dt_develop_t *dev = darktable.develop;
@@ -2271,10 +2282,24 @@ void dt_iop_request_focus(dt_iop_module_t *module)
      && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
 
-  if((out_focus_module && out_focus_module->operation_tags_filter())
-     || (module && module->operation_tags_filter()))
+  const int op_filter =
+        (out_focus_module ? out_focus_module->operation_tags_filter() : 0)
+      | (module ? module->operation_tags_filter() : 0);
+  const int op_tags =
+        (out_focus_module ? out_focus_module->operation_tags() : 0)
+      | (module ? module->operation_tags() : 0);
+
+  const gboolean rebuild =
+        (op_tags & IOP_TAG_CROPPING)
+    ||  ((op_filter & IOP_TAG_CROPPING)
+          && _iop_any_with_tag(IOP_TAG_CROPPING))
+    ||  ((op_filter & ~IOP_TAG_CROPPING)
+          && _iop_any_with_tag(op_filter & ~IOP_TAG_CROPPING));
+
+  dt_print(DT_DEBUG_PIPE, "[dt_iop_request_focus] op_tags=%d, op_filter=%d, rebuild pipe: %s\n",
+                  op_tags, op_filter, rebuild ? "yes" : "no");
+  if(rebuild)
   {
-    dt_dev_invalidate_all(dev);
     dt_dev_pixelpipe_rebuild(dev);
     // don't use previous image as overlay
     if(dev->pipe) dev->pipe->backbuf_zoom_x = 1000;
