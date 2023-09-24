@@ -516,12 +516,11 @@ void gui_post_expose(
 
   const float xa = g->xa * wd, xb = g->xb * wd, ya = g->ya * ht, yb = g->yb * ht;
   // the lines
-  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   if(g->selected == 3 || g->dragging == 3)
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0) * lwidth);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0) / zoom_scale);
   else
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) * lwidth);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
 
   cairo_move_to(cr, xa, ya);
@@ -529,16 +528,14 @@ void gui_post_expose(
   cairo_stroke(cr);
 
   if(g->selected == 3 || g->dragging == 3)
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) * lwidth);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
   else
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) * lwidth);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_move_to(cr, xa, ya);
   cairo_line_to(cr, xb, yb);
   cairo_stroke(cr);
 
-  if(dt_iop_color_picker_is_visible(darktable.develop))
-    return;
   // the extremities
   const float pr_d = darktable.develop->preview_downsampling;
   float x1, y1, x2, y2;
@@ -554,7 +551,7 @@ void gui_post_expose(
   cairo_line_to(cr, x1, y1);
   cairo_line_to(cr, x2, y2);
   cairo_close_path(cr);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) * lwidth);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
   if(g->selected == 1 || g->dragging == 1)
     dt_draw_set_color_overlay(cr, TRUE, 1.0);
   else
@@ -576,7 +573,7 @@ void gui_post_expose(
   cairo_line_to(cr, x1, y1);
   cairo_line_to(cr, x2, y2);
   cairo_close_path(cr);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) * lwidth);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
   if(g->selected == 2 || g->dragging == 2)
     dt_draw_set_color_overlay(cr, TRUE, 1.0);
   else

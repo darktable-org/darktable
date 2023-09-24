@@ -38,23 +38,21 @@
 #include <stdlib.h>
 
 
-const int dt_gui_presets_exposure_value_cnt = 22;
+const int dt_gui_presets_exposure_value_cnt = 24;
 const float dt_gui_presets_exposure_value[]
-    = { 0.,     1./8000, 1./4000, 1./2000, 1./1000, 1./500, 1./250,
-        1./125, 1./60,   1./30,   1./15,   1./8,    1./4,   1./2,
-        1,      2,       4,       8,       15,      30,     60,     FLT_MAX };
+    = { 0.,       1. / 8000, 1. / 4000, 1. / 2000, 1. / 1000, 1. / 1000, 1. / 500, 1. / 250,
+        1. / 125, 1. / 60,   1. / 30,   1. / 15,   1. / 15,   1. / 8,    1. / 4,   1. / 2,
+        1,        2,         4,         8,         15,        30,        60,       FLT_MAX };
 const char *dt_gui_presets_exposure_value_str[]
-    = { "0",     "1/8000", "1/4000", "1/2000", "1/1000", "1/500", "1/250",
-        "1/125", "1/60",   "1/30",   "1/15",   "1/8",    "1/4",   "1/2",
-        "1\"",   "2\"",    "4\"",    "8\"",    "15\"",   "30\"",  "60\"",  "+" };
-
+    = { "0",     "1/8000", "1/4000", "1/2000", "1/1000", "1/1000", "1/500", "1/250",
+        "1/125", "1/60",   "1/30",   "1/15",   "1/15",   "1/8",    "1/4",   "1/2",
+        "1\"",   "2\"",    "4\"",    "8\"",    "15\"",   "30\"",   "60\"",  "+" };
 const int dt_gui_presets_aperture_value_cnt = 19;
 const float dt_gui_presets_aperture_value[]
-    = { 0,     1.0,  1.4,  1.8,  2.0,  2.4,  2.8,  4.0,   5.6,
-        8.0,  11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
+    = { 0, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 5.6, 8.0, 11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
 const char *dt_gui_presets_aperture_value_str[]
-    = { "f/0", "f/1.0", "f/1.4", "f/1.8", "f/2",  "f/2.4", "f/2.8", "f/4",   "f/5.6",
-        "f/8", "f/11",  "f/16",  "f/22",  "f/32", "f/45",  "f/64",  "f/90",  "f/128", "f/+" };
+    = { "f/0",  "f/0.5", "f/0.7", "f/1.0", "f/1.4", "f/2",  "f/2.8", "f/4",   "f/5.6", "f/8",
+        "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
 
 // format string and corresponding flag stored into the database
 static const char *_gui_presets_format_value_str[5]
@@ -558,14 +556,14 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   char title[1024];
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"),
            g->original_name, g->module_name);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(title, g->parent,
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                                  _("_export..."), GTK_RESPONSE_YES,
-                                                  _("_delete"), GTK_RESPONSE_REJECT,
-                                                  _("_cancel"), GTK_RESPONSE_CANCEL,
-                                                  _("_ok"), GTK_RESPONSE_OK, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons
+    (title, g->parent, GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+     _("_export..."), GTK_RESPONSE_YES,
+     _("delete"), GTK_RESPONSE_REJECT, 
+     _("_cancel"), GTK_RESPONSE_CANCEL, 
+     _("_ok"), GTK_RESPONSE_OK, NULL);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "preset_dialog");
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
 
   g->dialog = dialog;
 
@@ -579,7 +577,6 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
 
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, g->original_name);
-  gtk_entry_set_width_chars(g->name, 10 + g_utf8_strlen(title, -1));
   if(allow_name_change)
     gtk_entry_set_activates_default(g->name, TRUE);
   else
@@ -849,18 +846,34 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_entry_set_text(GTK_ENTRY(g->iso_min), "0");
     gtk_entry_set_placeholder_text(GTK_ENTRY(g->iso_max), _("∞"));
 
-    dt_bauhaus_combobox_set(g->exposure_min, 0);
-    dt_bauhaus_combobox_set(g->exposure_max, dt_gui_presets_exposure_value_cnt-1);
-    dt_bauhaus_combobox_set(g->aperture_min, 0);
-    dt_bauhaus_combobox_set(g->aperture_max, dt_gui_presets_aperture_value_cnt-1);
-
+    float val = 0;
+    int k = 0;
+    for(; k < dt_gui_presets_exposure_value_cnt
+          && val > dt_gui_presets_exposure_value[k]; k++)
+      ;
+    dt_bauhaus_combobox_set(g->exposure_min, k);
+    val = 100000000;
+    for(k = 0; k < dt_gui_presets_exposure_value_cnt
+          && val > dt_gui_presets_exposure_value[k]; k++)
+      ;
+    dt_bauhaus_combobox_set(g->exposure_max, k);
+    val = 0;
+    for(k = 0; k < dt_gui_presets_aperture_value_cnt
+          && val > dt_gui_presets_aperture_value[k]; k++)
+      ;
+    dt_bauhaus_combobox_set(g->aperture_min, k);
+    val = 100000000;
+    for(k = 0; k < dt_gui_presets_aperture_value_cnt
+          && val > dt_gui_presets_aperture_value[k]; k++)
+      ;
+    dt_bauhaus_combobox_set(g->aperture_max, k);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), 1000);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoinit), FALSE);
 
-    for(int k = 0; k < 5; k++)
+    for(k = 0; k < 5; k++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
   }
   sqlite3_finalize(stmt);
@@ -1154,10 +1167,8 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module,
   g_free(name);
 }
 
-gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget *widget)
+gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
 {
-  if(!module || module->actions != DT_ACTION_TYPE_IOP_INSTANCE) return FALSE;
-
   dt_image_t *image = &module->dev->image_storage;
 
   const gboolean is_display_referred = dt_is_display_referred();
@@ -1167,7 +1178,7 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   char query[2024];
   // clang-format off
   snprintf(query, sizeof(query),
-     "SELECT name, op_params, blendop_params"
+     "SELECT name"
      " FROM data.presets"
      " WHERE operation = ?1"
      "        AND ((autoapply=1"
@@ -1222,20 +1233,8 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   gboolean applied = FALSE;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(widget)
-    {
-      dt_iop_params_t *params = (dt_iop_params_t *)sqlite3_column_blob(stmt, 1);
-      dt_develop_blend_params_t *blend_params = (dt_iop_params_t *)sqlite3_column_blob(stmt, 2);
-      if(sqlite3_column_bytes(stmt, 1) == module->params_size
-         && sqlite3_column_bytes(stmt, 2) == sizeof(dt_develop_blend_params_t))
-        dt_bauhaus_update_from_field(module, widget, params, blend_params);
-    }
-    else
-    {
-      const char *name = (const char *)sqlite3_column_text(stmt, 0);
-      dt_gui_presets_apply_preset(name, module);
-    }
-
+    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    dt_gui_presets_apply_preset(name, module);
     applied = TRUE;
   }
   sqlite3_finalize(stmt);

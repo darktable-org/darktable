@@ -2671,10 +2671,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-  const gboolean showhandle = dt_iop_color_picker_is_visible(darktable.develop) == FALSE;
-  const double lwidth = (showhandle ? 1.0 : 0.5) / zoom_scale;
-
-  cairo_set_line_width(cr, 2.0 * lwidth);
+  cairo_set_line_width(cr, 2.0 / zoom_scale);
   const double origin = 9. / zoom_scale;
   const double destination = 18. / zoom_scale;
 
@@ -2700,22 +2697,19 @@ void gui_post_expose(struct dt_iop_module_t *self,
       cairo_stroke(cr);
     }
 
-    if(showhandle)
-    {
-      // draw outline circle
-      cairo_set_source_rgba(cr, 1., 1., 1., 1.);
-      cairo_arc(cr, g->box[k].x, g->box[k].y, 8. / zoom_scale, 0, 2. * M_PI);
-      cairo_stroke(cr);
+    // draw outline circle
+    cairo_set_source_rgba(cr, 1., 1., 1., 1.);
+    cairo_arc(cr, g->box[k].x, g->box[k].y, 8. / zoom_scale, 0, 2. * M_PI);
+    cairo_stroke(cr);
 
-      // draw black dot
-      cairo_set_source_rgba(cr, 0., 0., 0., 1.);
-      cairo_arc(cr, g->box[k].x, g->box[k].y, 1.5 / zoom_scale, 0, 2. * M_PI);
-      cairo_fill(cr);
-    }
+    // draw black dot
+    cairo_set_source_rgba(cr, 0., 0., 0., 1.);
+    cairo_arc(cr, g->box[k].x, g->box[k].y, 1.5 / zoom_scale, 0, 2. * M_PI);
+    cairo_fill(cr);
   }
 
   // draw symmetry axes
-  cairo_set_line_width(cr, 1.5 * lwidth);
+  cairo_set_line_width(cr, 1.5 / zoom_scale);
   cairo_set_source_rgba(cr, 1., 1., 1., 1.);
   const point_t top_ideal = { 0.5f, 1.f };
   const point_t top = apply_homography(top_ideal, g->homography);
@@ -2793,9 +2787,9 @@ void gui_post_expose(struct dt_iop_module_t *self,
       }
     }
 
-    cairo_set_line_width(cr, 5.0 * lwidth);
+    cairo_set_line_width(cr, 5.0 / zoom_scale);
     cairo_stroke_preserve(cr);
-    cairo_set_line_width(cr, 2.0 * lwidth);
+    cairo_set_line_width(cr, 2.0 / zoom_scale);
     cairo_set_source_rgba(cr, 1., 1., 1., 1.);
     cairo_stroke(cr);
 

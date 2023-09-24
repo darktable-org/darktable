@@ -434,12 +434,10 @@ static void _export_clicked(GtkWidget *w, gpointer user_data)
 
           if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
           {
-            GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win),
-                                                                             GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                                             _("_cancel"), GTK_RESPONSE_CANCEL,
-                                                                             _("_skip"), GTK_RESPONSE_NONE,
-                                                                             _("_overwrite"), GTK_RESPONSE_ACCEPT, NULL);
-            gtk_dialog_set_default_response(GTK_DIALOG(dialog_overwrite_export), GTK_RESPONSE_CANCEL);
+            GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+                _("cancel"), GTK_RESPONSE_CANCEL,
+                _("skip"), GTK_RESPONSE_NONE,
+                _("overwrite"), GTK_RESPONSE_ACCEPT, NULL);
 
             // contents for dialog
             GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
@@ -619,12 +617,10 @@ static void _import_clicked(GtkWidget *w, gpointer user_data)
           // use security check/option
           if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
           {
-            GtkWidget *dialog_overwrite_import = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win),
-                                                                             GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                                             _("_cancel"), GTK_RESPONSE_CANCEL,
-                                                                             _("_skip"), GTK_RESPONSE_NONE,
-                                                                             _("_overwrite"), GTK_RESPONSE_ACCEPT, NULL);
-            gtk_dialog_set_default_response(GTK_DIALOG(dialog_overwrite_import), GTK_RESPONSE_CANCEL);
+            GtkWidget *dialog_overwrite_import = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+                _("cancel"), GTK_RESPONSE_CANCEL,
+                _("skip"), GTK_RESPONSE_NONE,
+                _("overwrite"), GTK_RESPONSE_ACCEPT, NULL);
 
             // contents for dialog
             GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_import));

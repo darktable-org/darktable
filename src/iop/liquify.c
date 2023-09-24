@@ -1731,7 +1731,7 @@ static void set_line_width(cairo_t *cr,
                            dt_liquify_ui_width_enum_t w)
 {
   const double width = get_ui_width(scale, w);
-  cairo_set_line_width(cr, width * (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0));
+  cairo_set_line_width(cr, width);
 }
 
 static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g,
@@ -1855,7 +1855,6 @@ static void _draw_paths(dt_iop_module_t *module,
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  const gboolean showhandle = dt_iop_color_picker_is_visible(darktable.develop) == FALSE;
   // do not display any iterpolated items as slow when:
   //   - we are dragging (pan)
   //   - the button one is pressed
@@ -2021,7 +2020,7 @@ static void _draw_paths(dt_iop_module_t *module,
 
       if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
       {
-        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT1_HANDLE && showhandle &&
+        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT1_HANDLE &&
             !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
         {
           THINLINE; FG_COLOR;
@@ -2029,7 +2028,7 @@ static void _draw_paths(dt_iop_module_t *module,
           cairo_line_to(cr, crealf(data->node.ctrl1), cimagf(data->node.ctrl1));
           cairo_stroke(cr);
         }
-        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT2_HANDLE && showhandle &&
+        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT2_HANDLE &&
             data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
         {
           THINLINE; FG_COLOR;
@@ -2059,7 +2058,7 @@ static void _draw_paths(dt_iop_module_t *module,
 
       const dt_liquify_warp_t *warp  = &data->warp;
 
-      if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT_HANDLE && showhandle)
+      if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT_HANDLE)
       {
         draw_circle(cr, point, 2.0 * cabsf(warp->radius - point));
         THICKLINE; FG_COLOR;
@@ -2077,7 +2076,7 @@ static void _draw_paths(dt_iop_module_t *module,
         cairo_stroke(cr);
       }
 
-      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT1_HANDLE && showhandle)
+      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT1_HANDLE)
       {
         draw_circle(cr, point, 2.0 * cabsf(warp->radius - point) * warp->control1);
         THICKLINE; FG_COLOR;
@@ -2086,7 +2085,7 @@ static void _draw_paths(dt_iop_module_t *module,
         cairo_stroke(cr);
       }
 
-      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT2_HANDLE && showhandle)
+      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT2_HANDLE)
       {
         draw_circle(cr, point, 2.0 * cabsf(warp->radius - point) * warp->control2);
         THICKLINE; FG_COLOR;
@@ -2117,7 +2116,7 @@ static void _draw_paths(dt_iop_module_t *module,
         cairo_stroke(cr);
       }
 
-      if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT_HANDLE && showhandle)
+      if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT_HANDLE)
       {
         cairo_move_to(cr, crealf(point), cimagf(point));
         if(warp->type == DT_LIQUIFY_WARP_TYPE_LINEAR)

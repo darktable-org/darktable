@@ -303,12 +303,12 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 
   if(format_index == -1)
   {
-    dt_control_log(_("invalid format for export selected"));
+    dt_control_log("invalid format for export selected");
     return;
   }
   if(storage_index == -1)
   {
-    dt_control_log(_("invalid storage for export selected"));
+    dt_control_log("invalid storage for export selected");
     return;
   }
 

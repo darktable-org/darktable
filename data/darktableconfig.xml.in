@@ -252,8 +252,8 @@
       </enum>
     </type>
     <default>on import</default>
-    <shortdescription>create sidecar files</shortdescription>
-    <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be created:\n - 'never'\n - 'on import': immediately after importing the image\n - 'after edit': after any user change on the image.</longdescription>
+    <shortdescription>write sidecar file for each image</shortdescription>
+    <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written:\n - 'never'\n - 'on import': immediately after importing the image\n - 'after edit': after any user change on the image.</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="XMP">
     <name>compress_xmp_tags</name>
@@ -1044,7 +1044,7 @@
   <dtconfig>
     <name>ui_last/import_last_folder_descending</name>
     <type>bool</type>
-    <default>false</default>
+    <default>FALSE</default>
     <shortdescription>folders display order in folder pane</shortdescription>
     <longdescription/>
   </dtconfig>
@@ -2627,8 +2627,8 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/shortfile</name>
-    <type>bool</type>
-    <default>false</default>
+    <type min="0" max="1">int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2737,8 +2737,8 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/avif/color_mode</name>
-    <type>bool</type>
-    <default>false</default>
+    <type min="0">int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2751,15 +2751,15 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/avif/compression_type</name>
-    <type min="0" max="1">int</type>
-    <default>1</default>
+    <type min="0">int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/avif/quality</name>
-    <type min="0" max="100">int</type>
-    <default>90</default>
+    <type min="5" max="100">int</type>
+    <default>92</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

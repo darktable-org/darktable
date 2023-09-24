@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,8 +47,7 @@ gboolean _datetime_gdatetime_to_numbers(dt_datetime_t *dt, GDateTime *gdt)
 
 static char *_datetime_append_msec(char *exif, GDateTime *gdt)
 {
-  return g_strdup_printf("%s%s%03d", exif, ".",
-                         (int)(g_date_time_get_microsecond(gdt) * 0.001));
+  return g_strdup_printf("%s%s%03d", exif, ".", (int)(g_date_time_get_microsecond(gdt) * 0.001));
   }
 
 static GTimeSpan _gdatetime_to_gtimespan(GDateTime *gdt)
@@ -68,12 +67,10 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
   {
     char sdt[DT_DATETIME_LENGTH] = DT_DATETIME_ORIGIN;
     int len = strlen(exif);
-    // If TZ data is found in the datetime string we should discard
-    // it.  We will memcpy this string for parsing and we have to know
-    // where to stop so that the TZ tail after shorter XMP date-time
-    // string doesn't damage our parsing buffer.  For possible formats
-    // see
-    // https://developer.adobe.com/xmp/docs/XMPNamespaces/XMPDataTypes/#date
+    // If TZ data is found in the datetime string we should discard it.
+    // We will memcpy this string for parsing and we have to know where to stop so that
+    // the TZ tail after shorter XMP date-time string doesn't damage our parsing buffer.
+    // For possible formats see https://developer.adobe.com/xmp/docs/XMPNamespaces/XMPDataTypes/#date
     if(exif[len-1] == 'Z')
       len--;
     else if(exif[len-3] == '+' || exif[len-3] == '-')
@@ -122,11 +119,8 @@ gboolean dt_datetime_exif_to_numbers_raw(dt_datetime_t *dt, const char *exif)
   return FALSE;
 }
 
-gboolean dt_datetime_gdatetime_to_local(char *local,
-                                        const size_t local_size,
-                                        GDateTime *gdt,
-                                        const gboolean msec,
-                                        const gboolean tz)
+gboolean dt_datetime_gdatetime_to_local(char *local, const size_t local_size,
+                                        GDateTime *gdt, const gboolean msec, const gboolean tz)
 {
   if(!local || !local_size || !gdt) return FALSE;
   local[0] = '\0';
@@ -157,11 +151,8 @@ gboolean dt_datetime_gdatetime_to_local(char *local,
   return FALSE;
 }
 
-gboolean dt_datetime_gtimespan_to_local(char *local,
-                                        const size_t local_size,
-                                        const GTimeSpan gts,
-                                        const gboolean msec,
-                                        const gboolean tz)
+gboolean dt_datetime_gtimespan_to_local(char *local, const size_t local_size,
+                                        const GTimeSpan gts, const gboolean msec, const gboolean tz)
 {
   gboolean res = FALSE;
   if(!local || !local_size) return FALSE;
@@ -175,17 +166,13 @@ gboolean dt_datetime_gtimespan_to_local(char *local,
   return res;
 }
 
-gboolean dt_datetime_img_to_local(char *local,
-                                  const size_t local_size,
-                                  const dt_image_t *img,
-                                  const gboolean msec)
+gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
+                                  const dt_image_t *img, const gboolean msec)
 {
-  return dt_datetime_gtimespan_to_local(local, local_size,
-                                        img->exif_datetime_taken, msec, FALSE);
+  return dt_datetime_gtimespan_to_local(local, local_size, img->exif_datetime_taken, msec, FALSE);
 }
 
-gboolean dt_datetime_unix_to_img(dt_image_t *img,
-                                 const time_t *unix)
+gboolean dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix)
 {
   GDateTime *gdt = g_date_time_new_from_unix_local(*unix);
   if(gdt)
@@ -198,9 +185,7 @@ gboolean dt_datetime_unix_to_img(dt_image_t *img,
   return FALSE;
 }
 
-gboolean dt_datetime_unix_to_exif(char *exif,
-                                  const size_t exif_size,
-                                  const time_t *unix)
+gboolean dt_datetime_unix_to_exif(char *exif, const size_t exif_size, const time_t *unix)
 {
   GDateTime *gdt = g_date_time_new_from_unix_local(*unix);
   if(gdt)
@@ -224,14 +209,13 @@ void dt_datetime_now_to_exif(char *exif)
   }
 }
 
-GTimeSpan dt_datetime_now_to_gtimespan(void)
+GTimeSpan dt_datetime_now_to_gtimespan()
 {
   GDateTime *gdt = g_date_time_new_now_local();
   return _gdatetime_to_gtimespan(gdt);
 }
 
-void dt_datetime_exif_to_img(dt_image_t *img,
-                             const char *exif)
+void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
 {
   if(!exif) return;
   GDateTime *gdt = dt_datetime_exif_to_gdatetime(exif, darktable.utc_tz);
@@ -243,15 +227,12 @@ void dt_datetime_exif_to_img(dt_image_t *img,
   else img->exif_datetime_taken = 0;
 }
 
-gboolean dt_datetime_img_to_exif(char *exif,
-                                 const size_t exif_size,
-                                 const dt_image_t *img)
+gboolean dt_datetime_img_to_exif(char *exif, const size_t exif_size, const dt_image_t *img)
 {
   return dt_datetime_gtimespan_to_exif(exif, exif_size, img->exif_datetime_taken);
 }
 
-GDateTime *dt_datetime_exif_to_gdatetime(const char *exif,
-                                         const GTimeZone *tz)
+GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
 {
   dt_datetime_t dt;
   if(dt_datetime_exif_to_numbers(&dt, exif))
@@ -272,9 +253,7 @@ GDateTime *dt_datetime_exif_to_gdatetime(const char *exif,
   return NULL;
 }
 
-gboolean dt_datetime_gdatetime_to_exif(char *exif,
-                                       const size_t exif_size,
-                                       GDateTime *gdt)
+gboolean dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_size, GDateTime *gdt)
 {
   if(!exif || !exif_size || !gdt) return FALSE;
   exif[0] = '\0';
@@ -295,11 +274,9 @@ gboolean dt_datetime_gdatetime_to_exif(char *exif,
   return FALSE;
 }
 
-GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img,
-                                        const GTimeZone *tz)
+GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz)
 {
-  // GTimeSpan is UTC based. Therefore we have to cheat a little bit
-  // to get image datetime
+  // GTimeSpan is UTC based. Therefore we have to cheat a little bit to get image datetime
   if(!tz) return NULL;
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
   if(gdt)
@@ -316,9 +293,7 @@ GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img,
   return NULL;
 }
 
-gboolean dt_datetime_entry_to_exif(char *exif,
-                                   const size_t exif_size,
-                                   const char *entry)
+gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_size, const char *entry)
 {
   if(!exif || !exif_size) return FALSE;
   exif[0] = '\0';
@@ -345,9 +320,7 @@ gboolean dt_datetime_entry_to_exif(char *exif,
   return FALSE;
 }
 
-gboolean dt_datetime_entry_to_exif_upper_bound(char *exif,
-                                               const size_t exif_size,
-                                               const char *entry)
+gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_size, const char *entry)
 {
   if(!exif || !exif_size) return FALSE;
   exif[0] = '\0';
@@ -400,31 +373,20 @@ gboolean dt_datetime_entry_to_exif_upper_bound(char *exif,
   return FALSE;
 }
 
-void dt_datetime_add_subsec_to_exif(char *exif,
-                                    const size_t exif_size,
-                                    const char*subsec)
+void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_size, const char*subsec)
 {
   if(!exif || exif_size < DT_DATETIME_EXIF_LENGTH + 1) return;
 
-  g_strlcpy(&exif[DT_DATETIME_EXIF_LENGTH - 1], ".000000",
-            exif_size - DT_DATETIME_EXIF_LENGTH + 1);
-  for(int i = 0;
-      i < 6 && subsec[i] != '\0' && (DT_DATETIME_EXIF_LENGTH + i < exif_size - 1);
-      i++)
+  g_strlcpy(&exif[DT_DATETIME_EXIF_LENGTH - 1], ".000000", exif_size - DT_DATETIME_EXIF_LENGTH + 1);
+  for(int i = 0; i < 6 && subsec[i] != '\0' && (DT_DATETIME_EXIF_LENGTH + i < exif_size - 1); i++)
     exif[DT_DATETIME_EXIF_LENGTH + i] = subsec[i];
-
   exif[exif_size - 1] = '\0';
 }
 
-gboolean dt_datetime_gtimespan_to_exif(char *sdt,
-                                       const size_t sdt_size,
-                                       const GTimeSpan gts)
+gboolean dt_datetime_gtimespan_to_exif(char *sdt, const size_t sdt_size, const GTimeSpan gts)
 {
-  if(!sdt || !sdt_size)
-    return FALSE;
-
+  if(!sdt || !sdt_size) return FALSE;
   sdt[0] = '\0';
-
   if(!gts) return FALSE;
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, gts);
   if(gdt)
@@ -449,8 +411,7 @@ GTimeSpan dt_datetime_exif_to_gtimespan(const char *sdt)
   return gts;
 }
 
-gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt,
-                                          const GTimeSpan gts)
+gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan gts)
 {
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, gts);
   if(gdt)
@@ -484,15 +445,12 @@ GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt)
     return 0;
 }
 
-GDateTime *dt_datetime_gdatetime_add_numbers(GDateTime *dte,
-                                             const dt_datetime_t numbers,
-                                             const gboolean add)
+GDateTime *dt_datetime_gdatetime_add_numbers(GDateTime *dte, const dt_datetime_t numbers, const gboolean add)
 {
   const int s = add ? 1 : -1;
 
   GDateTime *dt2 = g_date_time_add_years(dte, s * numbers.year);
   GDateTime *dt = g_date_time_add_months(dt2, s * numbers.month);
-
   g_date_time_unref(dt2);
   dt2 = g_date_time_add_days(dt, s * numbers.day);
   g_date_time_unref(dt);
@@ -505,9 +463,7 @@ GDateTime *dt_datetime_gdatetime_add_numbers(GDateTime *dte,
   return dt;
 }
 
-GTimeSpan dt_datetime_gtimespan_add_numbers(const GTimeSpan dt,
-                                            const dt_datetime_t numbers,
-                                            const gboolean add)
+GTimeSpan dt_datetime_gtimespan_add_numbers(const GTimeSpan dt, const dt_datetime_t numbers, const gboolean add)
 {
   GDateTime *dte = dt_datetime_gtimespan_to_gdatetime(dt);
   GDateTime *dt2 = dt_datetime_gdatetime_add_numbers(dte, numbers, add);
@@ -517,9 +473,7 @@ GTimeSpan dt_datetime_gtimespan_add_numbers(const GTimeSpan dt,
   return ret;
 }
 
-gboolean dt_datetime_exif_add_numbers(const gchar *exif,
-                                      const dt_datetime_t numbers,
-                                      const gboolean add,
+gboolean dt_datetime_exif_add_numbers(const gchar *exif, const dt_datetime_t numbers, const gboolean add,
                                       gchar **result)
 {
   GDateTime *dte = dt_datetime_exif_to_gdatetime(exif, darktable.utc_tz);
@@ -538,3 +492,4 @@ gboolean dt_datetime_exif_add_numbers(const gchar *exif,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
+

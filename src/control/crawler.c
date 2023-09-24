@@ -387,7 +387,14 @@ static void _log_synchronization(dt_control_crawler_gui_t *gui,
                                  gchar *pattern,
                                  gchar *filepath)
 {
-  gchar *message = g_markup_printf_escaped(pattern, filepath ? filepath : "");
+  gchar *message = pattern;
+  gboolean to_free = FALSE;
+
+  if(filepath)
+  {
+    message = g_strdup_printf(pattern, filepath);
+    to_free = TRUE;
+  }
 
   // add a new line in the log TreeView
   GtkTreeIter iter_log;
@@ -397,7 +404,7 @@ static void _log_synchronization(dt_control_crawler_gui_t *gui,
                      0, message,
                      -1);
 
-  g_free(message);
+  if(to_free) g_free(message);
 }
 
 
@@ -827,7 +834,7 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_tree_view_insert_column_with_attributes
     (GTK_TREE_VIEW(gui->log), -1,
      _("synchronization log"), renderer_text,
-     "markup", 0, NULL);
+     "text", 0, NULL);
 
   GtkListStore *store_log = gtk_list_store_new (1, G_TYPE_STRING);
   GtkTreeModel *model_log = GTK_TREE_MODEL(store_log);

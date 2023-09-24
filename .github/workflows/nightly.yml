@@ -303,11 +303,11 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          # brew upgrade || true        # No need for a very time-consuming upgrade of ALL packages
-          brew upgrade gd               # See https://github.com/Homebrew/homebrew-core/issues/141766
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
           brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
           brew bundle --verbose || true
           # handle keg-only libs
           brew link --force libomp
@@ -356,7 +356,7 @@ jobs:
       # We need write permission to update the nightly tag
       contents: write
     runs-on: ubuntu-latest
-    needs: [AppImage, Windows, macOS]
+    needs: [AppImage, Windows]
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3

@@ -114,8 +114,7 @@ static dt_imgid_t _get_image_at_rank(const int rank)
   return id;
 }
 
-static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d,
-                                               const dt_imgid_t imgid)
+static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d, const dt_imgid_t imgid)
 {
   dt_slideshow_slot_t slt = -1;
 
@@ -183,15 +182,13 @@ static void _requeue_job(dt_slideshow_t *d)
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, _process_job_create(d));
 }
 
-static void _set_delay(dt_slideshow_t *d,
-                       const int value)
+static void _set_delay(dt_slideshow_t *d, int value)
 {
   d->delay = CLAMP(d->delay + value, 1, 60);
   dt_conf_set_int("slideshow_delay", d->delay);
 }
 
-static int _process_image(dt_slideshow_t *d,
-                          dt_slideshow_slot_t slot)
+static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 {
   dt_pthread_mutex_lock(&d->lock);
   d->exporting++;
@@ -219,15 +216,18 @@ static int _process_image(dt_slideshow_t *d,
   dt_pthread_mutex_lock(&d->lock);
 
   // original slot for this image
+
   dt_slideshow_slot_t slt = slot;
 
   // check if we have not moved the slideshow forward or backward, if the
   // slot is not the same, check for a possible new slot for this image.
+
   if(d->buf[slt].imgid != imgid)
     slt = _get_slot_for_image(d, imgid);
 
   // also ensure that the screen has not been resized, otherwise we discard
   // the image. it will get regenerated in another later job.
+
   if(slt != -1
      && d->width == s_width
      && d->height == s_height)
@@ -249,8 +249,7 @@ static int _process_image(dt_slideshow_t *d,
   return 0;
 }
 
-static gboolean _is_slot_waiting(const dt_slideshow_t *d,
-                                 const dt_slideshow_slot_t slot)
+static gboolean _is_slot_waiting(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 {
   return d->buf[slot].invalidated
          && d->buf[slot].buf == NULL
@@ -258,7 +257,7 @@ static gboolean _is_slot_waiting(const dt_slideshow_t *d,
          && d->buf[slot].rank >= 0;
 }
 
-static gboolean _is_idle(const dt_slideshow_t *d)
+static gboolean _is_idle(dt_slideshow_t *d)
 {
   gboolean idle = TRUE;
   for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
@@ -270,8 +269,7 @@ static gboolean _auto_advance(gpointer user_data)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)user_data;
   if(!d->auto_advance) return FALSE;
-  if(!_is_idle(d))
-    return TRUE; // never try to advance if still exporting, but call me back again
+  if(!_is_idle(d)) return TRUE; // never try to advance if still exporting, but call me back again
   _step_state(d, S_REQUEST_STEP);
   return FALSE;
 }
@@ -324,14 +322,12 @@ static dt_job_t *_process_job_create(dt_slideshow_t *d)
 {
   dt_job_t *job = dt_control_job_create(&_process_job_run, "process slideshow image");
   if(!job) return NULL;
-
   dt_control_job_set_params(job, d, NULL);
   return job;
 }
 
 // state machine stepping
-static void _step_state(dt_slideshow_t *d,
-                        const dt_slideshow_event_t event)
+static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 {
   dt_pthread_mutex_lock(&d->lock);
 
@@ -387,6 +383,7 @@ static void _step_state(dt_slideshow_t *d,
 }
 
 // callbacks for a view module:
+
 const char *name(const dt_view_t *self)
 {
   return _("slideshow");
@@ -448,8 +445,7 @@ void enter(dt_view_t *self)
   GdkRectangle rect;
 
   GdkDisplay *display = gtk_widget_get_display(window);
-  GdkMonitor *mon = gdk_display_get_monitor_at_window(display,
-                                                      gtk_widget_get_window(window));
+  GdkMonitor *mon = gdk_display_get_monitor_at_window(display, gtk_widget_get_window(window));
   gdk_monitor_get_geometry(mon, &rect);
 
   dt_pthread_mutex_lock(&d->lock);
@@ -469,10 +465,7 @@ void enter(dt_view_t *self)
   if(dt_is_valid_imgid(imgid))
   {
     sqlite3_stmt *stmt;
-    gchar *query = g_strdup_printf("SELECT rowid"
-                                   " FROM memory.collected_images"
-                                   " WHERE imgid=%d",
-                                   imgid);
+    gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -524,8 +517,7 @@ void leave(dt_view_t *self)
   // otherwise we will crash releasing lock and memory.
   while(d->exporting > 0) sleep(1);
 
-  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui),
-                           d->buf[S_CURRENT].rank, FALSE);
+  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), d->buf[S_CURRENT].rank, FALSE);
 
   dt_pthread_mutex_lock(&d->lock);
 
@@ -537,12 +529,7 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_unlock(&d->lock);
 }
 
-void expose(dt_view_t *self,
-            cairo_t *cr,
-            const int32_t width,
-            const int32_t height,
-            const int32_t pointerx,
-            const int32_t pointery)
+void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   // draw front buffer.
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
@@ -560,6 +547,7 @@ void expose(dt_view_t *self,
 
   // redraw even if the current displayed image is imgid as we want the
   // "working..." label to be cleared.
+
   if(slot->buf && dt_is_valid_imgid(imgid) && !slot->invalidated)
   {
     cairo_paint(cr);
@@ -608,39 +596,23 @@ static gboolean _hide_mouse(gpointer user_data)
 }
 
 
-void mouse_moved(dt_view_t *self,
-                 const double x,
-                 const double y,
-                 const double pressure,
-                 const int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
 
-  if(d->mouse_timeout > 0)
-    g_source_remove(d->mouse_timeout);
-  else
-    dt_control_change_cursor(GDK_LEFT_PTR);
+  if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
+  else dt_control_change_cursor(GDK_LEFT_PTR);
   d->mouse_timeout = g_timeout_add_seconds(1, _hide_mouse, self);
 }
 
 
-int button_released(dt_view_t *self,
-                    const double x,
-                    const double y,
-                    const int which,
-                    const uint32_t state)
+int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   return 0;
 }
 
 
-int button_pressed(dt_view_t *self,
-                   const double x,
-                   const double y,
-                   const double pressure,
-                   const int which,
-                   const int type,
-                   const uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
 
@@ -673,20 +645,14 @@ static void _slow_down_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, 1);
-  dt_control_log(ngettext("slideshow delay set to %d second",
-                          "slideshow delay set to %d seconds",
-                          d->delay),
-                 d->delay);
+  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
 }
 
 static void _speed_up_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, -1);
-  dt_control_log(ngettext("slideshow delay set to %d second",
-                          "slideshow delay set to %d seconds",
-                          d->delay),
-                 d->delay);
+  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
 }
 
 static void _step_back_callback(dt_action_t *action)
@@ -715,37 +681,28 @@ static void _exit_callback(dt_action_t *action)
 
 void gui_init(dt_view_t *self)
 {
-  dt_action_register(DT_ACTION(self), N_("start and stop"),
-                     _start_stop_callback, GDK_KEY_space, 0);
-  dt_action_register(DT_ACTION(self), N_("exit slideshow"),
-                     _exit_callback, GDK_KEY_Escape, 0);
+  dt_action_register(DT_ACTION(self), N_("start and stop"), _start_stop_callback, GDK_KEY_space, 0);
+  dt_action_register(DT_ACTION(self), N_("exit slideshow"), _exit_callback, GDK_KEY_Escape, 0);
 
   dt_action_t *ac;
-  ac = dt_action_register(DT_ACTION(self), N_("slow down"),
-                          _slow_down_callback, GDK_KEY_Up, 0);
+  ac = dt_action_register(DT_ACTION(self), N_("slow down"), _slow_down_callback, GDK_KEY_Up, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_KP_Add, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_plus, 0);
-  ac = dt_action_register(DT_ACTION(self), N_("speed up"),
-                          _speed_up_callback, GDK_KEY_Down, 0);
+  ac = dt_action_register(DT_ACTION(self), N_("speed up"), _speed_up_callback, GDK_KEY_Down, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_KP_Subtract, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_minus, 0);
 
-  dt_action_register(DT_ACTION(self), N_("step forward"),
-                     _step_forward_callback, GDK_KEY_Right, 0);
-  dt_action_register(DT_ACTION(self), N_("step back"),
-                     _step_back_callback, GDK_KEY_Left, 0);
+  dt_action_register(DT_ACTION(self), N_("step forward"), _step_forward_callback, GDK_KEY_Right, 0);
+  dt_action_register(DT_ACTION(self), N_("step back"), _step_back_callback, GDK_KEY_Left, 0);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0,
-                                     _("go to next image"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0,
-                                     _("go to previous image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0, _("go to next image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("go to previous image"));
   return lm;
 }
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

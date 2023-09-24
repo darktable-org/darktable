@@ -488,13 +488,6 @@ static gint _g_list_find_module_by_name(gconstpointer a, gconstpointer b)
   return strncmp(((dt_iop_module_t *)a)->op, b, strlen(((dt_iop_module_t *)a)->op));
 }
 
-static void _name_changed(GtkEntry *entry,
-                          GtkDialog *dialog)
-{
-  const gchar *name = gtk_entry_get_text(entry);
-  gtk_dialog_set_response_sensitive(dialog, GTK_RESPONSE_ACCEPT, name && *name);
-}
-
 static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t imgid)
 {
   char title[512];
@@ -521,12 +514,11 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t i
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *dialog = GTK_DIALOG(
       gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  _("select _all"),  GTK_RESPONSE_YES,
+                                   _("select _all"),  GTK_RESPONSE_YES,
                                   _("select _none"), GTK_RESPONSE_NONE,
                                   _("_cancel"), GTK_RESPONSE_REJECT,
-                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL));
+                                 _("_save"), GTK_RESPONSE_ACCEPT, NULL));
   dt_gui_dialog_add_help(dialog, "styles");
-  gtk_dialog_set_default_response(dialog, GTK_RESPONSE_ACCEPT);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
@@ -555,15 +547,11 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, dt_imgid_t i
   sd->name = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(sd->name), _("name"));
   gtk_widget_set_tooltip_text(sd->name, _("enter a name for the new style"));
-  gtk_entry_set_activates_default(GTK_ENTRY(sd->name), TRUE);
-  gtk_dialog_set_response_sensitive(dialog, GTK_RESPONSE_ACCEPT, FALSE);
-  g_signal_connect(sd->name, "changed", G_CALLBACK(_name_changed), dialog);
 
   sd->description = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(sd->description), _("description"));
   gtk_widget_set_tooltip_text(sd->description,
                               _("enter a description for the new style, this description is searchable"));
-  gtk_entry_set_activates_default(GTK_ENTRY(sd->description), TRUE);
 
   /*set values*/
   if(edit && name)

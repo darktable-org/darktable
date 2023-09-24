@@ -30,7 +30,8 @@ typedef enum dt_collection_query_t
   COLLECTION_QUERY_SIMPLE             = 0,      // a query with only select and where statement
   COLLECTION_QUERY_USE_SORT           = 1 << 0, // if query should include order by statement
   COLLECTION_QUERY_USE_LIMIT          = 1 << 1, // if query should include "limit ?1,?2" part
-  COLLECTION_QUERY_USE_WHERE_EXT      = 1 << 2  // if query should include extended where part
+  COLLECTION_QUERY_USE_WHERE_EXT      = 1 << 2, // if query should include extended where part
+  COLLECTION_QUERY_USE_ONLY_WHERE_EXT = 1 << 3  // if query should only use extended where part
 } dt_collection_query_t;
 #define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT | COLLECTION_QUERY_USE_LIMIT)
 
@@ -158,6 +159,11 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone);
 void dt_collection_free(const dt_collection_t *collection);
 /** fetch params for collection for storing. */
 const dt_collection_params_t *dt_collection_params(const dt_collection_t *collection);
+/** get the filtered map between sanitized makermodel and exif maker/model **/
+void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList **exif);
+/** get the sanitized makermodel for exif maker/model **/
+gchar *dt_collection_get_makermodel(const char *exif_maker,
+                                    const char *exif_model);
 /** get the generated query for collection */
 const gchar *dt_collection_get_query(const dt_collection_t *collection);
 /** get the generated query for collection including the images hidden in groups */

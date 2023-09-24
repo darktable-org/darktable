@@ -85,7 +85,7 @@ function reset_exec_path {
         oToolLoader=$(otool -l "$1" 2>/dev/null | grep '@loader_path' | cut -d\( -f1 | sed 's/^[[:blank:]]*path[[:blank:]]*//;s/[[:blank:]]*$//' )
         if [[ "$oToolLoader" == "@loader_path/../lib/darktable" ]]; then
             echo "Resetting loader path for libdarktable.dylib of <$1>"
-            install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$1" || true
+            install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$1"
         fi
     fi
 
@@ -110,14 +110,14 @@ function reset_exec_path {
             echo "Resetting executable path for dependency <$hbDependency> of <$1>"
 
             # Set correct executable path
-            install_name_tool -change "$hbDependency" "@executable_path/../Resources/lib/$dynDepOrigFile" "$1"  || true
+            install_name_tool -change "$hbDependency" "@executable_path/../Resources/lib/$dynDepOrigFile" "$1"
 
             # Check for loader path
             oToolLoader=$(otool -L "$1" 2>/dev/null | grep '@loader_path' | grep $dynDepOrigFile | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' ) || true
             if [[ -n "$oToolLoader" ]]; then
                 echo "Resetting loader path for dependency <$hbDependency> of <$1>"
                 oToolLoaderNew=$(echo $oToolLoader | sed "s#@loader_path/##" | sed "s#../../../../opt/.*##")
-                install_name_tool -change "$oToolLoader" "@loader_path/${oToolLoaderNew}${dynDepOrigFile}" "$1"  || true
+                install_name_tool -change "$oToolLoader" "@loader_path/${oToolLoaderNew}${dynDepOrigFile}" "$1"
             fi
         done
 
@@ -135,7 +135,7 @@ function reset_exec_path {
         echo "Resetting library ID of <$1>"
 
         # Set correct library id
-        install_name_tool -id "@executable_path/../Resources/lib/$libraryOrigFile" "$1"  || true
+        install_name_tool -id "@executable_path/../Resources/lib/$libraryOrigFile" "$1"
     fi
 }
 

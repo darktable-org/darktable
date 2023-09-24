@@ -250,11 +250,6 @@ static gboolean _filename_press(GtkWidget *w, GdkEventButton *e, _widgets_filena
     gtk_widget_show_all(filename->pop);
     return TRUE;
   }
-  else if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
-  {
-    gtk_entry_set_text(GTK_ENTRY(w), "");
-    _filename_changed(w, filename);
-  }
   return FALSE;
 }
 

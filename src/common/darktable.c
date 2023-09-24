@@ -504,128 +504,6 @@ static dt_job_t *_detect_opencl_job_create(gboolean exclude_opencl)
   return job;
 }
 
-static char *_get_version_string(void)
-{
-  char *version = dt_calloc_align(16, PATH_MAX);
-
-#ifdef USE_LUA
-        const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
-                                      STR(LUA_API_VERSION_MAJOR) "."
-                                      STR(LUA_API_VERSION_MINOR) "."
-                                      STR(LUA_API_VERSION_PATCH) "-"
-                                      LUA_API_VERSION_SUFFIX :
-                                      STR(LUA_API_VERSION_MAJOR) "."
-                                      STR(LUA_API_VERSION_MINOR) "."
-                                      STR(LUA_API_VERSION_PATCH) "\n";
-#endif
-  snprintf(version, PATH_MAX, "this is %s\ncopyright (c) 2009-%s johannes hanika\n%s\n\ncompile options:\n"
-               "  bit depth is %zu bit\n%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-               darktable_package_string,
-               darktable_last_commit_year,
-               PACKAGE_BUGREPORT,
-               CHAR_BIT * sizeof(void *),
-#ifdef _DEBUG
-               "  debug build\n",
-#else
-               "  normal build\n",
-#endif
-
-#if defined(__SSE2__) && defined(__SSE__)
-               "  SSE2 optimizations enabled\n",
-#else
-               "  SSE2 optimizations unavailable\n",
-#endif
-
-#ifdef _OPENMP
-               "  OpenMP support enabled\n",
-#else
-               "  OpenMP support disabled\n",
-#endif
-
-#ifdef HAVE_OPENCL
-               "  OpenCL support enabled\n",
-#else
-               "  OpenCL support disabled\n",
-#endif
-
-#ifdef USE_LUA
-               "  Lua support enabled, API version ",
-               lua_api_version,
-#else
-               "  Lua support disabled\n", "",
-#endif
-
-#ifdef USE_COLORDGTK
-               "  Colord support enabled\n",
-#else
-               "  Colord support disabled\n",
-#endif
-
-#ifdef HAVE_GPHOTO2
-               "  gPhoto2 support enabled\n",
-#else
-               "  gPhoto2 support disabled\n",
-#endif
-
-#ifdef HAVE_GMIC
-               "  G'MIC support enabled (compressed LUTs will be supported)\n",
-#else
-               "  G'MIC support disabled (compressed LUTs will not be supported)\n",
-#endif
-
-#ifdef HAVE_GRAPHICSMAGICK
-               "  GraphicsMagick support enabled\n",
-#else
-               "  GraphicsMagick support disabled\n",
-#endif
-
-#ifdef HAVE_IMAGEMAGICK
-               "  ImageMagick support enabled\n",
-#else
-               "  ImageMagick support disabled\n",
-#endif
-
-#ifdef HAVE_LIBAVIF
-               "  libavif support enabled\n",
-#else
-               "  libavif support disabled\n",
-#endif
-
-#ifdef HAVE_LIBHEIF
-               "  libheif support enabled\n",
-#else
-               "  libheif support disabled\n",
-#endif
-
-#ifdef HAVE_LIBJXL
-               "  libjxl support enabled\n",
-#else
-               "  libjxl support disabled\n",
-#endif
-
-#ifdef HAVE_OPENJPEG
-               "  OpenJPEG support enabled\n",
-#else
-               "  OpenJPEG support disabled\n",
-#endif
-
-#ifdef HAVE_OPENEXR
-               "  OpenEXR support enabled\n",
-#else
-               "  OpenEXR support disabled\n",
-#endif
-
-#ifdef HAVE_WEBP
-               "  WebP support enabled\n",
-#else
-               "  WebP support disabled\n",
-#endif
-
-      "");
-
-  return version;
-}
-
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
   double start_wtime = dt_get_wtime();
@@ -716,9 +594,120 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if(!strcmp(argv[k], "--version"))
       {
-        char *theversion = _get_version_string();
-        printf("%s", theversion);
-        dt_free_align(theversion);
+#ifdef USE_LUA
+        const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
+                                      STR(LUA_API_VERSION_MAJOR) "."
+                                      STR(LUA_API_VERSION_MINOR) "."
+                                      STR(LUA_API_VERSION_PATCH) "-"
+                                      LUA_API_VERSION_SUFFIX :
+                                      STR(LUA_API_VERSION_MAJOR) "."
+                                      STR(LUA_API_VERSION_MINOR) "."
+                                      STR(LUA_API_VERSION_PATCH);
+#endif
+        printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
+               "  bit depth is %zu bit\n"
+#ifdef _DEBUG
+               "  debug build\n"
+#else
+               "  normal build\n"
+#endif
+#if defined(__SSE2__) && defined(__SSE__)
+               "  SSE2 optimizations enabled\n"
+#else
+               "  SSE2 optimizations unavailable\n"
+#endif
+#ifdef _OPENMP
+               "  OpenMP support enabled\n"
+#else
+               "  OpenMP support disabled\n"
+#endif
+
+#ifdef HAVE_OPENCL
+               "  OpenCL support enabled\n"
+#else
+               "  OpenCL support disabled\n"
+#endif
+
+#ifdef USE_LUA
+               "  Lua support enabled, API version %s\n"
+#else
+               "  Lua support disabled\n"
+#endif
+
+#ifdef USE_COLORDGTK
+               "  Colord support enabled\n"
+#else
+               "  Colord support disabled\n"
+#endif
+
+#ifdef HAVE_GPHOTO2
+               "  gPhoto2 support enabled\n"
+#else
+               "  gPhoto2 support disabled\n"
+#endif
+
+#ifdef HAVE_GMIC
+               "  G'MIC support enabled (compressed LUTs will be supported)\n"
+#else
+               "  G'MIC support disabled (compressed LUTs will not be supported)\n"
+#endif
+
+#ifdef HAVE_GRAPHICSMAGICK
+               "  GraphicsMagick support enabled\n"
+#else
+               "  GraphicsMagick support disabled\n"
+#endif
+
+#ifdef HAVE_IMAGEMAGICK
+               "  ImageMagick support enabled\n"
+#else
+               "  ImageMagick support disabled\n"
+#endif
+
+#ifdef HAVE_LIBAVIF
+               "  libavif support enabled\n"
+#else
+               "  libavif support disabled\n"
+#endif
+
+#ifdef HAVE_LIBHEIF
+               "  libheif support enabled\n"
+#else
+               "  libheif support disabled\n"
+#endif
+
+#ifdef HAVE_LIBJXL
+               "  libjxl support enabled\n"
+#else
+               "  libjxl support disabled\n"
+#endif
+
+#ifdef HAVE_OPENJPEG
+               "  OpenJPEG support enabled\n"
+#else
+               "  OpenJPEG support disabled\n"
+#endif
+
+#ifdef HAVE_OPENEXR
+               "  OpenEXR support enabled\n"
+#else
+               "  OpenEXR support disabled\n"
+#endif
+
+#ifdef HAVE_WEBP
+               "  WebP support enabled\n"
+#else
+               "  WebP support disabled\n"
+#endif
+               ,
+               darktable_package_string,
+               darktable_last_commit_year,
+               CHAR_BIT * sizeof(void *)
+#if USE_LUA
+                   ,
+               lua_api_version
+#endif
+               );
         return 1;
       }
       else if(!strcmp(argv[k], "--dump-pfm") && argc > k + 1)
@@ -1037,13 +1026,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
   }
 
-  if(darktable.unmuted)
-  {
-    char *theversion = _get_version_string();
-    dt_print_nts(DT_DEBUG_ALWAYS, "%s\n", theversion);
-    dt_free_align(theversion);
-  }
-
   if(darktable.dump_pfm_module || darktable.dump_pfm_pipe)
   {
     if(darktable.tmp_directory == NULL)
@@ -1230,8 +1212,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.\n");
     return 1;
   }
-
-  dt_upgrade_maker_model(darktable.db);
 
   // init darktable tags table
   dt_set_darktable_tags();
@@ -1522,7 +1502,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       not_again = dt_gui_show_standalone_yes_no_dialog
         (_("configuration information"),
          config_info,
-         _("_show this information again"), _("_understood"));
+         _("show this information again"), _("understood"));
 
     if(not_again || (last_configure_version == 0))
       dt_conf_set_int("performance_configuration_version_completed",

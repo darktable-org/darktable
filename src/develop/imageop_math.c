@@ -25,15 +25,8 @@
 #include "develop/imageop.h"         // for dt_iop_roi_t
 #include "imageio/imageio_common.h"          // for FILTERS_ARE_4BAYER
 
-void dt_iop_flip_and_zoom_8(const uint8_t *in,
-                            const int32_t iw,
-                            const int32_t ih,
-                            uint8_t *out,
-                            const int32_t ow,
-                            const int32_t oh,
-                            const dt_image_orientation_t orientation,
-                            uint32_t *width,
-                            uint32_t *height)
+void dt_iop_flip_and_zoom_8(const uint8_t *in, int32_t iw, int32_t ih, uint8_t *out, int32_t ow, int32_t oh,
+                            const dt_image_orientation_t orientation, uint32_t *width, uint32_t *height)
 {
   // init strides:
   const uint32_t iwd = (orientation & ORIENTATION_SWAP_XY) ? ih : iw;
@@ -86,8 +79,7 @@ void dt_iop_flip_and_zoom_8(const uint8_t *in,
       {
         for(int k = 0; k < 3; k++)
           out2[k] = // in3[k];
-              CLAMP(((int32_t)in3[bpp * half_pixel * sj + k]
-                     + (int32_t)in3[bpp * half_pixel * (si + sj) + k]
+              CLAMP(((int32_t)in3[bpp * half_pixel * sj + k] + (int32_t)in3[bpp * half_pixel * (si + sj) + k]
                      + (int32_t)in3[bpp * half_pixel * si + k] + (int32_t)in3[k])
                         / 4,
                     0, 255);
@@ -98,20 +90,9 @@ void dt_iop_flip_and_zoom_8(const uint8_t *in,
   }
 }
 
-void dt_iop_clip_and_zoom_8(const uint8_t *i,
-                            const int32_t ix,
-                            const int32_t iy,
-                            const int32_t iw,
-                            const int32_t ih,
-                            const int32_t ibw,
-                            const int32_t ibh,
-                            uint8_t *o,
-                            const int32_t ox,
-                            const int32_t oy,
-                            const int32_t ow,
-                            const int32_t oh,
-                            const int32_t obw,
-                            const int32_t obh)
+void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw,
+                            int32_t ibh, uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh,
+                            int32_t obw, int32_t obh)
 {
   const float scalex = iw / (float)ow;
   const float scaley = ih / (float)oh;
@@ -150,12 +131,8 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i,
 
 // apply clip and zoom on parts of a supplied full image.
 // roi_in and roi_out define which part to work on.
-void dt_iop_clip_and_zoom(float *out,
-                          const float *const in,
-                          const dt_iop_roi_t *const roi_out,
-                          const dt_iop_roi_t *const roi_in,
-                          const int32_t out_stride,
-                          const int32_t in_stride)
+void dt_iop_clip_and_zoom(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
+                          const dt_iop_roi_t *const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample(itor, out, roi_out, out_stride * 4 * sizeof(float), in, roi_in,
@@ -164,26 +141,19 @@ void dt_iop_clip_and_zoom(float *out,
 
 // apply clip and zoom on the image region supplied in the input buffer.
 // roi_in and roi_out describe which part of the full image this relates to.
-void dt_iop_clip_and_zoom_roi(float *out,
-                              const float *const in,
-                              const dt_iop_roi_t *const roi_out,
-                              const dt_iop_roi_t *const roi_in,
-                              const int32_t out_stride,
+void dt_iop_clip_and_zoom_roi(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
+                              const dt_iop_roi_t *const roi_in, const int32_t out_stride,
                               const int32_t in_stride)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  dt_interpolation_resample_roi(itor, out, roi_out,
-                                out_stride * 4 * sizeof(float), in, roi_in,
+  dt_interpolation_resample_roi(itor, out, roi_out, out_stride * 4 * sizeof(float), in, roi_in,
                                 in_stride * 4 * sizeof(float));
 }
 
 #ifdef HAVE_OPENCL
 // apply clip and zoom on parts of a supplied full image.
 // roi_in and roi_out define which part to work on.
-int dt_iop_clip_and_zoom_cl(int devid,
-                            cl_mem dev_out,
-                            cl_mem dev_in,
-                            const dt_iop_roi_t *const roi_out,
+int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in, const dt_iop_roi_t *const roi_out,
                             const dt_iop_roi_t *const roi_in)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
@@ -192,19 +162,15 @@ int dt_iop_clip_and_zoom_cl(int devid,
 
 // apply clip and zoom on the image region supplied in the input buffer.
 // roi_in and roi_out describe which part of the full image this relates to.
-int dt_iop_clip_and_zoom_roi_cl(int devid,
-                                cl_mem dev_out,
-                                cl_mem dev_in,
-                                const dt_iop_roi_t *const roi_out,
+int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in, const dt_iop_roi_t *const roi_out,
                                 const dt_iop_roi_t *const roi_in)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  cl_int err = dt_interpolation_resample_roi_cl(itor, devid, dev_out,
-                                                roi_out, dev_in, roi_in);
-  if(err == CL_INVALID_WORK_GROUP_SIZE)
+  cl_int err = dt_interpolation_resample_roi_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
+  if(err == DT_OPENCL_PROCESS_CL)
   {
     // We ran into a "vertical number of taps exceeds the vertical workgroupsize" problem
-    // Instead of redoing the whole thing later we do an internal fallback to cpu here
+    // Instead of redoing the whole thing later we do an internal fallback to cpu here 
     float *in = dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4);
     float *out = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
     if(out && in)
@@ -216,16 +182,11 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
         dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in, 0, 0);
         err = dt_opencl_write_host_to_device
               (devid, out, dev_out, roi_out->width, roi_out->height, 4 * sizeof(float));
+        if(err == CL_SUCCESS)
+          dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
+            "did fast cpu fallback\n");
       }
-
     }
-    if(err == CL_SUCCESS)
-      dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
-          "did fast cpu fallback\n");
-    else
-      dt_print_pipe(DT_DEBUG_OPENCL, "clip_and_zoom_roi_cl", NULL, NULL, roi_in, roi_out,
-          "fast cpu fallback failing: %s\n", cl_errstr(err));
-
     dt_free_align(in);
     dt_free_align(out);
   }
@@ -234,13 +195,10 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
 
 #endif
 
-void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out,
-                                           const uint16_t *const in,
-                                           const dt_iop_roi_t *const roi_out,
-                                           const dt_iop_roi_t *const roi_in,
-                                           const int32_t out_stride,
-                                           const int32_t in_stride,
-                                           const uint32_t filters)
+void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out, const uint16_t *const in,
+                                                 const dt_iop_roi_t *const roi_out,
+                                                 const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                 const int32_t in_stride, const uint32_t filters)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -280,15 +238,13 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out,
     uint16_t *outc = out + out_stride * y;
 
     const float fy = (y + roi_out->y) * px_footprint;
-    const int miny = (CLAMPS((int)floorf(fy - px_footprint),
-                             0, roi_in->height-3) & ~1u) + rggby;
+    const int miny = (CLAMPS((int)floorf(fy - px_footprint), 0, roi_in->height-3) & ~1u) + rggby;
     const int maxy = MIN(roi_in->height-1, (int)ceilf(fy + px_footprint));
 
     float fx = roi_out->x * px_footprint;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
-      const int minx = (CLAMPS((int)floorf(fx - px_footprint),
-                               0, roi_in->width-3) & ~1u) + rggbx;
+      const int minx = (CLAMPS((int)floorf(fx - px_footprint), 0, roi_in->width-3) & ~1u) + rggbx;
       const int maxx = MIN(roi_in->width-1, (int)ceilf(fx + px_footprint));
 
       const int c = FC(y, x, filters);
@@ -312,11 +268,9 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out,
 }
 
 void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *const in,
-                                             const dt_iop_roi_t *const roi_out,
-                                             const dt_iop_roi_t *const roi_in,
-                                             const int32_t out_stride,
-                                             const int32_t in_stride,
-                                             const uint32_t filters)
+                                                   const dt_iop_roi_t *const roi_out,
+                                                   const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                   const int32_t in_stride, const uint32_t filters)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -549,13 +503,10 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
   }
 }
 
-void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out,
-                                                     const float *const in,
+void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out, const float *const in,
                                                      const dt_iop_roi_t *const roi_out,
-                                                     const dt_iop_roi_t *const roi_in,
-                                                     const int32_t out_stride,
-                                                     const int32_t in_stride,
-                                                     const uint8_t (*const xtrans)[6])
+                                                     const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                     const int32_t in_stride, const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
 #ifdef _OPENMP
@@ -593,13 +544,11 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out,
   }
 }
 
-void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
-  (float *out,
-   const float *const in,
-   const dt_iop_roi_t *const roi_out,
-   const dt_iop_roi_t *const roi_in,
-   const int32_t out_stride,
-   const int32_t in_stride)
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const float *const in,
+                                                                  const dt_iop_roi_t *const roi_out,
+                                                                  const dt_iop_roi_t *const roi_in,
+                                                                  const int32_t out_stride,
+                                                                  const int32_t in_stride)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -740,11 +689,9 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
 }
 
 void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
-                                               const dt_iop_roi_t *const roi_out,
-                                               const dt_iop_roi_t *const roi_in,
-                                               const int32_t out_stride,
-                                               const int32_t in_stride,
-                                               const uint32_t filters)
+                                                     const dt_iop_roi_t *const roi_out,
+                                                     const dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                                                     const int32_t in_stride, const uint32_t filters)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -861,8 +808,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 
         // lower right 2x2 block
         p[0] = in[maxi + 2 + in_stride * (maxj + 2)];
-        p[1] = in[maxi + 3 + in_stride * (maxj + 2)]
-               + in[maxi + 2 + in_stride * (maxj + 3)];
+        p[1] = in[maxi + 3 + in_stride * (maxj + 2)] + in[maxi + 2 + in_stride * (maxj + 3)];
         p[2] = in[maxi + 3 + in_stride * (maxj + 3)];
         for(int c = 0; c < 3; c++) col[c] += (dx * dy) * p[c];
 
@@ -924,8 +870,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *const in,
                                                        const dt_iop_roi_t *const roi_out,
                                                        const dt_iop_roi_t *const roi_in,
-                                                       const int32_t out_stride,
-                                                       const int32_t in_stride,
+                                                       const int32_t out_stride, const int32_t in_stride,
                                                        const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
@@ -948,24 +893,21 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + 4 * (out_stride * y);
-    const int py = CLAMPS((int)round((y + roi_out->y - 0.5f) * px_footprint),
-                          0, roi_in->height - 3);
+    const int py = CLAMPS((int)round((y + roi_out->y - 0.5f) * px_footprint), 0, roi_in->height - 3);
     const int ymax = MIN(roi_in->height - 3, py + 3 * samples);
 
     for(int x = 0; x < roi_out->width; x++, outc += 4)
     {
       dt_aligned_pixel_t col = { 0.0f };
       int num = 0;
-      const int px = CLAMPS((int)round((x + roi_out->x - 0.5f) * px_footprint),
-                            0, roi_in->width - 3);
+      const int px = CLAMPS((int)round((x + roi_out->x - 0.5f) * px_footprint), 0, roi_in->width - 3);
       const int xmax = MIN(roi_in->width - 3, px + 3 * samples);
       for(int yy = py; yy <= ymax; yy += 3)
         for(int xx = px; xx <= xmax; xx += 3)
         {
           for(int j = 0; j < 3; ++j)
             for(int i = 0; i < 3; ++i)
-              col[FCxtrans(yy + j, xx + i, roi_in, xtrans)]
-                += in[xx + i + in_stride * (yy + j)];
+              col[FCxtrans(yy + j, xx + i, roi_in, xtrans)] += in[xx + i + in_stride * (yy + j)];
           num++;
         }
 
@@ -982,3 +924,4 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
+

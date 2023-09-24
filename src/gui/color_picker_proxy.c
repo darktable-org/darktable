@@ -389,7 +389,6 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
   {
     dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, 0, NULL);
     dt_bauhaus_widget_set_quad_toggle(w, TRUE);
-    dt_bauhaus_widget_set_quad_tooltip(w, _("pick color from image"));
     _init_picker(color_picker, module, flags, w);
     if(init_cst)
       color_picker->picker_cst = cst;

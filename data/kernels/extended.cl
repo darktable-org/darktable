@@ -1137,7 +1137,6 @@ primaries(read_only image2d_t in,
   if(x >= width || y >= height) return;
 
   const float4 ipixel = read_imagef(in, sampleri, (int2)(x, y));
-  float4 opixel = matrix_product_float4(ipixel, matrix);
-  opixel.w = ipixel.w;
+  const float4 opixel = matrix_product_float4(ipixel, matrix);
   write_imagef(out, (int2)(x, y), opixel);
 }

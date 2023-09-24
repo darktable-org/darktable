@@ -19,7 +19,6 @@
 #pragma once
 
 #include <glib.h>
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,9 +27,7 @@ extern "C" {
 struct dt_database_t;
 
 /** allocates and initializes database */
-struct dt_database_t *dt_database_init(const char *alternative,
-                                       const gboolean load_data,
-                                       const gboolean has_gui);
+struct dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui);
 /** closes down database and frees memory */
 void dt_database_destroy(const struct dt_database_t *);
 /** get handle */
@@ -39,8 +36,7 @@ struct sqlite3 *dt_database_get(const struct dt_database_t *);
 const gchar *dt_database_get_path(const struct dt_database_t *db);
 /** test if database was already locked by another instance */
 gboolean dt_database_get_lock_acquired(const struct dt_database_t *db);
-/** show an error popup. this has to be postponed until after we tried
- * using dbus to reach another instance */
+/** show an error popup. this has to be postponed until after we tried using dbus to reach another instance */
 void dt_database_show_error(const struct dt_database_t *db);
 /** perform pre-db-close optimizations (always call when quiting darktable) */
 void dt_database_optimize(const struct dt_database_t *);
@@ -58,14 +54,12 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db);
 /** get possibly the freshest snapshot to restore */
 gchar *dt_database_get_most_recent_snap(const char* db_filename);
 
-int32_t dt_database_last_insert_rowid(const struct dt_database_t *);
+
 // nested transactions support
 
 void dt_database_start_transaction(const struct dt_database_t *db);
 void dt_database_release_transaction(const struct dt_database_t *db);
 void dt_database_rollback_transaction(const struct dt_database_t *db);
-
-void dt_upgrade_maker_model(const struct dt_database_t *db);
 
 #ifdef __cplusplus
 } // extern "C"
@@ -76,3 +70,4 @@ void dt_upgrade_maker_model(const struct dt_database_t *db);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
+

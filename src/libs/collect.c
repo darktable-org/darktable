@@ -512,16 +512,14 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll_path, -1);
 
     /* Clean selected images, and add to the table those which are going to be deleted */
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                          "DELETE FROM main.selected_images", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
     // clang-format off
-    fullq = g_strdup_printf
-      ("INSERT INTO main.selected_images"
-       " SELECT id"
-       " FROM main.images"
-       " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
-       filmroll_path);
+    fullq = g_strdup_printf("INSERT INTO main.selected_images"
+                            " SELECT id"
+                            " FROM main.images"
+                            " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
+                            filmroll_path);
     // clang-format on
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
     g_free(filmroll_path);
@@ -1049,9 +1047,8 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
         int id = -1;
         // Check if this path also matches a filmroll
         gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &pth, -1);
-        DT_DEBUG_SQLITE3_PREPARE_V2
-          (dt_database_get(darktable.db),
-           "SELECT id FROM main.film_rolls WHERE folder LIKE ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "SELECT id FROM main.film_rolls WHERE folder LIKE ?1", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, pth, -1, SQLITE_TRANSIENT);
         if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
         sqlite3_finalize(stmt);
@@ -1700,13 +1697,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_CAMERA:; // camera
         int index = 0;
         // clang-format off
-        gchar *makermodel_query = g_strdup_printf
-          ("SELECT cm.maker || ' ' || cm.model AS camera, COUNT(*) AS count"
-           "  FROM main.images AS mi, main.cameras AS cm"
-           "  WHERE mi.camera_id = cm.id"
-           "    AND %s "
-           "  GROUP BY camera"
-           "  ORDER BY camera", where_ext);
+        gchar *makermodel_query = g_strdup_printf("SELECT maker, model, COUNT(*) AS count "
+                                                  "FROM main.images AS mi WHERE %s GROUP BY maker, model", where_ext);
         // clang-format on
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1715,18 +1707,20 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          gchar *value = (char *)sqlite3_column_text(stmt, 0);
-          const int count = sqlite3_column_int(stmt, 1);
-          gchar *value_path = g_strdup_printf("\"%s\"", value);
+          const char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
+          const char *exif_model = (char *)sqlite3_column_text(stmt, 1);
+          const int count = sqlite3_column_int(stmt, 2);
+
+          gchar *value =  dt_collection_get_makermodel(exif_maker, exif_model);
 
           gtk_list_store_append(GTK_LIST_STORE(model), &iter);
           gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, value,
                              DT_LIB_COLLECT_COL_ID, index, DT_LIB_COLLECT_COL_TOOLTIP, value,
-                             DT_LIB_COLLECT_COL_PATH, value_path, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
+                             DT_LIB_COLLECT_COL_PATH, value, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                              DT_LIB_COLLECT_COL_COUNT, count,
                              -1);
 
-          g_free(value_path);
+          g_free(value);
           index++;
         }
         g_free(makermodel_query);
@@ -1801,12 +1795,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_LENS: // lens
         // clang-format off
         g_snprintf(query, sizeof(query),
-                   "SELECT ln.name AS lens, 1, COUNT(*) AS count"
-                   "  FROM main.images AS mi, main.lens AS ln"
-                   "  WHERE mi.lens_id = ln.id"
-                   "    AND %s"
-                   "  GROUP BY lens"
-                   "  ORDER BY lens", where_ext);
+                   "SELECT lens, 1, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " WHERE %s"
+                   " GROUP BY lens"
+                   " ORDER BY lens", where_ext);
         // clang-format on
         break;
 
@@ -1942,8 +1935,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         break;
 
       default:
-        if(property >= DT_COLLECTION_PROP_METADATA
-           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
         {
           const int keyid = dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
           const char *name = (gchar *)dt_metadata_get_name(keyid);
@@ -2920,9 +2912,8 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("collections settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                  _("_cancel"), GTK_RESPONSE_NONE,
-                                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL);
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+                                                 _("cancel"), GTK_RESPONSE_NONE,
+                                                 _("save"), GTK_RESPONSE_ACCEPT, NULL);
   dt_prefs_init_dialog_collect(dialog);
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
 
