@@ -25,7 +25,7 @@
 #include "Metal.hpp"
 
 
-static void _dt_metal_create_library(NS::URL *url, MTL::Device *pDevice)
+static gboolean _dt_metal_create_library(NS::URL *url, MTL::Device *pDevice)
 {
   dt_print(DT_DEBUG_METAL,
           "[dt_metal_create_library] Create Metal library for device: %s\n",
@@ -39,7 +39,7 @@ static void _dt_metal_create_library(NS::URL *url, MTL::Device *pDevice)
             "[dt_metal_create_library] Could not create library: %s",
             libraryError->localizedDescription()->utf8String());
 
-    return;
+    return FALSE;
   }
 
   dt_print(DT_DEBUG_METAL, "[dt_metal_create_library] Library created\n");
@@ -53,6 +53,8 @@ static void _dt_metal_create_library(NS::URL *url, MTL::Device *pDevice)
             functionName);
   }
   */
+
+  return TRUE;
 }
 
 void dt_metal_init(dt_metal_t *metal)
@@ -79,7 +81,7 @@ void dt_metal_init(dt_metal_t *metal)
   if (num_devices)
   {
     metal->num_devs = num_devices;
-    metal->dev = (dt_metal_device_t *)malloc(sizeof(dt_metal_device_t) * num_devices);
+    metal->dev = (dt_metal_device_t *)calloc(num_devices, sizeof(dt_metal_device_t));
 
     for(int i = 0; i < num_devices; i++)
     {
@@ -90,23 +92,25 @@ void dt_metal_init(dt_metal_t *metal)
               "[dt_metal_init] Device: %s\n",
               deviceName);
 
-      metal->dev[i].devid = pDevice->registryID();
-      metal->dev[i].device = (void *) pDevice;
-              
-      _dt_metal_create_library(url, pDevice);
+      if (_dt_metal_create_library(url, pDevice))
+      {
+        metal->dev[i].devid = pDevice->registryID();
+        metal->dev[i].device = (void *) pDevice;
+      }      
     }
   }
 
-  dt_print(DT_DEBUG_METAL,
-           "[dt_metal_init] Check:\n");
+}
 
+void dt_metal_list_devices(dt_metal_t *metal)
+{
   for(int i = 0; i < metal->num_devs; i++)
   {
     MTL::Device *pDevice = (MTL::Device *) metal->dev[i].device;
     const char* deviceName = pDevice->name()->utf8String();
 
     dt_print(DT_DEBUG_METAL,
-            "[dt_metal_init] Device: %s\n",
+            "[dt_metal_list_devices] Device: %s\n",
             deviceName);
   }
 }

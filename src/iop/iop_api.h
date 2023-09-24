@@ -269,6 +269,10 @@ DEFAULT(void, process_tiling, struct dt_iop_module_t *self,
                               const struct dt_iop_roi_t *const roi_out,
                               const int bpp);
 
+#ifdef __APPLE__
+OPTIONAL(int, process_metal);
+#endif
+
 #ifdef HAVE_OPENCL
 /** the opencl equivalent of process().
  *   Both process_xx_cl() functions return a CL error code with CL_SUCCESS signalling ok.

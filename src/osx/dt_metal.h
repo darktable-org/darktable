@@ -46,6 +46,7 @@ typedef struct dt_metal_t
 
 
 void dt_metal_init(dt_metal_t *metal);
+void dt_metal_list_devices(dt_metal_t *metal);
 
 
 #ifdef __cplusplus
