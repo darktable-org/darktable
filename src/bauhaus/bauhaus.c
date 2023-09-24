@@ -2852,9 +2852,9 @@ static void _popup_show(GtkWidget *widget)
   gtk_window_move(GTK_WINDOW(darktable.bauhaus->popup_window), wx, wy);
   gtk_widget_set_size_request(darktable.bauhaus->popup_window, tmp.width, tmp.height);
   // gtk_window_set_keep_above isn't enough on macOS
-  gtk_window_set_attached_to(GTK_WINDOW(darktable.bauhaus->popup_window),
-                             GTK_WIDGET(darktable.bauhaus->current));
+  gtk_window_set_attached_to(GTK_WINDOW(darktable.bauhaus->popup_window), widget);
   gtk_widget_show_all(darktable.bauhaus->popup_window);
+  gtk_window_set_modal(GTK_WINDOW(darktable.bauhaus->popup_window), TRUE);
   gtk_widget_grab_focus(darktable.bauhaus->popup_area);
 }
 
