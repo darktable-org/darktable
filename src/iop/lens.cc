@@ -4495,7 +4495,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->methods_selector = dt_bauhaus_combobox_from_params(self, "method");
   gtk_widget_set_tooltip_text(g->methods_selector, _("select a correction mode either based on\n"
                                                      " a) data and algorithms provided by the lensfun project\n"
-                                                     " b) embedded metadata provided by the camera or software vendor\n"));
+                                                     " b) embedded metadata provided by the camera or software vendor"));
 
   // selector for correction type (modflags): one or more out of
   // distortion, TCA, vignetting
