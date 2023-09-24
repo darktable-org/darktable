@@ -2936,7 +2936,7 @@ static void _create_library_schema(dt_database_t *db)
     (db->handle, "CREATE TABLE main.history_hash"
      " (imgid INTEGER PRIMARY KEY,"
      "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB,"
-     "  mipmap_hash BLOB, fullthumb_hash BLOB,"
+     "  mipmap_hash BLOB, fullthumb_hash BLOB, fullthumb_maxmip INTEGER,"
      "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
      NULL, NULL, NULL);
 
