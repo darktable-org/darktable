@@ -28,7 +28,6 @@
   </dttab>
   <dttab name="misc" title="miscellaneous">
     <section name="interface" title="interface"/>
-    <section name="tags" title="tags"/>
     <section name="accel" title="shortcuts with multiple instances"/>
     <section name="geoloc" title="map / geolocalization view"/>
     <section name="slideshow" title="slideshow view"/>
@@ -320,7 +319,7 @@
     <shortdescription>save history while developing</shortdescription>
     <longdescription>save history periodically (interval in seconds), if set to zero auto-saving is disabled. auto-saving might be disabled on slow drives.</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="tags">
+  <dtconfig prefs="storage" section="XMP">
     <name>omit_tag_hierarchy</name>
     <type>bool</type>
     <default>false</default>
@@ -2314,6 +2313,19 @@
     <shortdescription>always use LittleCMS 2 to apply output color profile</shortdescription>
     <longdescription>this is slower than the default.</longdescription>
   </dtconfig>
+  <dtconfig prefs="processing" section="general" capability="xatom">
+    <name>ui_last/display_profile_source</name>
+    <type>
+      <enum>
+        <option>all</option>
+        <option>xatom</option>
+        <option capability="colord">colord</option>
+      </enum>
+    </type>
+    <default>all</default>
+    <shortdescription>method to use for getting the display profile</shortdescription>
+    <longdescription>this option allows to force a specific means of getting the current display profile.\nthis is useful when one alternative gives wrong results</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/high_quality_processing</name>
     <type>bool</type>
@@ -3394,19 +3406,6 @@
     <type>string</type>
     <default>darktable-elegant-grey</default>
     <shortdescription>darktable theme</shortdescription>
-  </dtconfig>
-  <dtconfig prefs="misc" section="interface">
-    <name>ui_last/display_profile_source</name>
-    <type>
-      <enum>
-        <option>all</option>
-        <option>xatom</option>
-        <option>colord</option>
-      </enum>
-    </type>
-    <default>all</default>
-    <shortdescription>method to use for getting the display profile</shortdescription>
-    <longdescription>this option allows to force a specific means of getting the current display profile.\nthis is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
   <dtconfig>
     <name>metadata/resolution</name>

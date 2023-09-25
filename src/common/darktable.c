@@ -519,33 +519,33 @@ static char *_get_version_string(void)
   char *version = g_strdup_printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n"
                "%s\n\ncompile options:\n"
                "  bit depth is %zu bit\n"
-               "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+               "%s%s%s",
                darktable_package_string,
                darktable_last_commit_year,
                PACKAGE_BUGREPORT,
                CHAR_BIT * sizeof(void *),
 #ifdef _DEBUG
-               "  debug build\n",
+               "  debug build\n"
 #else
-               "  normal build\n",
+               "  normal build\n"
 #endif
 
 #if defined(__SSE2__) && defined(__SSE__)
-               "  SSE2 optimizations enabled\n",
+               "  SSE2 optimizations enabled\n"
 #else
-               "  SSE2 optimizations unavailable\n",
+               "  SSE2 optimizations unavailable\n"
 #endif
 
 #ifdef _OPENMP
-               "  OpenMP support enabled\n",
+               "  OpenMP support enabled\n"
 #else
-               "  OpenMP support disabled\n",
+               "  OpenMP support disabled\n"
 #endif
 
 #ifdef HAVE_OPENCL
-               "  OpenCL support enabled\n",
+               "  OpenCL support enabled\n"
 #else
-               "  OpenCL support disabled\n",
+               "  OpenCL support disabled\n"
 #endif
 
 #ifdef USE_LUA
@@ -556,72 +556,72 @@ static char *_get_version_string(void)
 #endif
 
 #ifdef USE_COLORDGTK
-               "  Colord support enabled\n",
+               "  Colord support enabled\n"
 #else
-               "  Colord support disabled\n",
+               "  Colord support disabled\n"
 #endif
 
 #ifdef HAVE_GPHOTO2
-               "  gPhoto2 support enabled\n",
+               "  gPhoto2 support enabled\n"
 #else
-               "  gPhoto2 support disabled\n",
+               "  gPhoto2 support disabled\n"
 #endif
 
 #ifdef HAVE_GMIC
-               "  G'MIC support enabled (compressed LUTs will be supported)\n",
+               "  G'MIC support enabled (compressed LUTs will be supported)\n"
 #else
-               "  G'MIC support disabled (compressed LUTs will not be supported)\n",
+               "  G'MIC support disabled (compressed LUTs will not be supported)\n"
 #endif
 
 #ifdef HAVE_GRAPHICSMAGICK
-               "  GraphicsMagick support enabled\n",
+               "  GraphicsMagick support enabled\n"
 #else
-               "  GraphicsMagick support disabled\n",
+               "  GraphicsMagick support disabled\n"
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-               "  ImageMagick support enabled\n",
+               "  ImageMagick support enabled\n"
 #else
-               "  ImageMagick support disabled\n",
+               "  ImageMagick support disabled\n"
 #endif
 
 #ifdef HAVE_LIBAVIF
-               "  libavif support enabled\n",
+               "  libavif support enabled\n"
 #else
-               "  libavif support disabled\n",
+               "  libavif support disabled\n"
 #endif
 
 #ifdef HAVE_LIBHEIF
-               "  libheif support enabled\n",
+               "  libheif support enabled\n"
 #else
-               "  libheif support disabled\n",
+               "  libheif support disabled\n"
 #endif
 
 #ifdef HAVE_LIBJXL
-               "  libjxl support enabled\n",
+               "  libjxl support enabled\n"
 #else
-               "  libjxl support disabled\n",
+               "  libjxl support disabled\n"
 #endif
 
 #ifdef HAVE_OPENJPEG
-               "  OpenJPEG support enabled\n",
+               "  OpenJPEG support enabled\n"
 #else
-               "  OpenJPEG support disabled\n",
+               "  OpenJPEG support disabled\n"
 #endif
 
 #ifdef HAVE_OPENEXR
-               "  OpenEXR support enabled\n",
+               "  OpenEXR support enabled\n"
 #else
-               "  OpenEXR support disabled\n",
+               "  OpenEXR support disabled\n"
 #endif
 
 #ifdef HAVE_WEBP
-               "  WebP support enabled\n",
+               "  WebP support enabled\n"
 #else
-               "  WebP support disabled\n",
+               "  WebP support disabled\n"
 #endif
 
-      "");
+  );
 
   return version;
 }
@@ -1547,6 +1547,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_capabilities_add("nonapple");
 #endif
 
+#ifdef GDK_WINDOWING_X11
+  dt_capabilities_add("xatom");
+#endif
+#ifdef USE_COLORDGTK
+  dt_capabilities_add("colord");
+#endif
 
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
