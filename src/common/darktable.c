@@ -506,8 +506,6 @@ static dt_job_t *_detect_opencl_job_create(gboolean exclude_opencl)
 
 static char *_get_version_string(void)
 {
-  char *version = dt_calloc_align(16, PATH_MAX);
-
 #ifdef USE_LUA
         const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
                                       STR(LUA_API_VERSION_MAJOR) "."
@@ -518,8 +516,10 @@ static char *_get_version_string(void)
                                       STR(LUA_API_VERSION_MINOR) "."
                                       STR(LUA_API_VERSION_PATCH) "\n";
 #endif
-  snprintf(version, PATH_MAX, "this is %s\ncopyright (c) 2009-%s johannes hanika\n%s\n\ncompile options:\n"
-               "  bit depth is %zu bit\n%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+  char *version = g_strdup_printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n"
+               "%s\n\ncompile options:\n"
+               "  bit depth is %zu bit\n"
+               "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
                darktable_package_string,
                darktable_last_commit_year,
                PACKAGE_BUGREPORT,
@@ -718,7 +718,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       {
         char *theversion = _get_version_string();
         printf("%s", theversion);
-        dt_free_align(theversion);
+        g_free(theversion);
         return 1;
       }
       else if(!strcmp(argv[k], "--dump-pfm") && argc > k + 1)
