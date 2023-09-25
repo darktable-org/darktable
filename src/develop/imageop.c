@@ -2296,8 +2296,10 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     ||  ((op_filter & ~IOP_TAG_CROPPING)
           && _iop_any_with_tag(op_filter & ~IOP_TAG_CROPPING));
 
-  dt_print(DT_DEBUG_PIPE, "[dt_iop_request_focus] op_tags=%d, op_filter=%d, rebuild pipe: %s\n",
-                  op_tags, op_filter, rebuild ? "yes" : "no");
+  dt_print(DT_DEBUG_PIPE,
+    "[dt_iop_request_focus] op_tags=%d, op_filter=%d, rebuild: %s, focus in: '%s' out: '%s'\n",
+                  op_tags, op_filter, rebuild ? "yes" : "no",
+                  module ? module->op : "none", out_focus_module ? out_focus_module->op : "none");
   if(rebuild)
   {
     dt_dev_pixelpipe_rebuild(dev);

@@ -152,7 +152,7 @@ int flags()
 
 int operation_tags()
 {
-  return IOP_TAG_DISTORT | IOP_TAG_CROPPING;
+  return IOP_TAG_CROPPING;
 }
 
 int operation_tags_filter()

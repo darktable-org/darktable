@@ -692,7 +692,11 @@ void expose(
   }
 
   if(dev->proxy.rotate)
+  {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] proxy rotate [%s]%s\n",
+      dev->proxy.rotate->op, dev->proxy.rotate->gui_post_expose ? "possible" : "no available function");
     dev->proxy.rotate->gui_post_expose(dev->proxy.rotate, cri, width, height, pointerx, pointery);
+  }
 
   // indicate if we are in gamut check or softproof mode
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
