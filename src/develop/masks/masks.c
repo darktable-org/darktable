@@ -931,10 +931,12 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
       "SELECT imgid, formid, form, name, version, points, points_count, source, num"
       " FROM main.masks_history"
       " WHERE imgid = ?1"
+      "   AND num < ?2"
       " ORDER BY num",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dev->history_end);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
