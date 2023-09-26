@@ -118,15 +118,6 @@ typedef struct dt_iop_crop_data_t
   float cx, cy, cw, ch; // crop window
 } dt_iop_crop_data_t;
 
-int legacy_params(dt_iop_module_t *self,
-                  const void *const old_params,
-                  const int old_version,
-                  void *new_params,
-                  const int new_version)
-{
-  return 0;
-}
-
 const char *name()
 {
   return _("crop");
@@ -156,12 +147,12 @@ int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI
     | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_ALLOW_FAST_PIPE
-    | IOP_FLAGS_GUIDES_SPECIAL_DRAW | IOP_FLAGS_GUIDES_WIDGET;
+    | IOP_FLAGS_GUIDES_SPECIAL_DRAW | IOP_FLAGS_GUIDES_WIDGET | IOP_FLAGS_CROP_EXPOSER;
 }
 
 int operation_tags()
 {
-  return IOP_TAG_DISTORT | IOP_TAG_CLIPPING;
+  return IOP_TAG_DISTORT | IOP_TAG_CROPPING;
 }
 
 int operation_tags_filter()
@@ -170,9 +161,9 @@ int operation_tags_filter()
   return IOP_TAG_DECORATION;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -338,7 +329,7 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -389,7 +380,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
+  dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
 }
 
 #ifdef HAVE_OPENCL
@@ -402,15 +393,8 @@ int process_cl(struct dt_iop_module_t *self,
 {
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { roi_out->width, roi_out->height, 1 };
-  cl_int err = dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
+  return dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out,
                                             origin, origin, region);
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_crop] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 
@@ -1350,8 +1334,15 @@ void gui_post_expose(struct dt_iop_module_t *self,
   dt_develop_t *dev = self->dev;
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
 
-  // we don't do anything if the image is not ready
-  if(!g->preview_ready) return;
+  // is this expose enforced by another module in focus?
+  const gboolean external = dev->cropping.exposer
+                        &&  dev->cropping.requester
+                        && (dev->cropping.exposer != dev->cropping.requester);
+  const gboolean dimmed = dt_iop_color_picker_is_visible(dev) || external;
+
+  // we don't do anything if the image is not ready within crop module
+  // and we don't have visualizing enforced by other modules
+  if(!(g->preview_ready || external)) return;
 
   _aspect_apply(self, GRAB_HORIZONTAL);
 
@@ -1367,16 +1358,19 @@ void gui_post_expose(struct dt_iop_module_t *self,
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-  const double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
-
   // draw cropping window
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
-  if(_set_max_clip(self))
+
+  const double fillc = dimmed ? 0.9 : 0.2;
+  const double dashes = (dimmed ? 0.3 : 0.5) * DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
+  const double effect = dimmed ? 0.6 : 1.0;
+
+  if(_set_max_clip(self) && !dimmed)
   {
-    cairo_set_source_rgba(cr, .2, .2, .2, .8);
+    cairo_set_source_rgba(cr, fillc, fillc, fillc, 1.0 - fillc);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
     cairo_rectangle(cr, g->clip_max_x * wd, g->clip_max_y * ht,
                         g->clip_max_w * wd, g->clip_max_h * ht);
@@ -1384,13 +1378,16 @@ void gui_post_expose(struct dt_iop_module_t *self,
                         g->clip_w * wd, g->clip_h * ht);
     cairo_fill(cr);
   }
+
   if(g->clip_x > .0f || g->clip_y > .0f || g->clip_w < 1.0f || g->clip_h < 1.0f)
   {
-    cairo_set_line_width(cr, dashes / 2.0);
+    cairo_set_line_width(cr, dashes);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
-    dt_draw_set_color_overlay(cr, TRUE, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, effect);
     cairo_stroke(cr);
   }
+
+  if(dimmed) return;
 
   // draw cropping window dimensions if first mouse button is pressed
   if(darktable.control->button_down && darktable.control->button_down_which == 1)

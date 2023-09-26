@@ -140,6 +140,46 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
       if(Imf::hasExpTime(header)) img->exif_exposure = Imf::expTime(header);
       if(Imf::hasAperture(header)) img->exif_aperture = Imf::aperture(header);
       if(Imf::hasIsoSpeed(header)) img->exif_iso = Imf::isoSpeed(header);
+// the OPENEXR_VERSION_HEX macro is broken for 3.2.0 and earlier, must compute directly
+#if(((OPENEXR_VERSION_MAJOR << 24) | (OPENEXR_VERSION_MINOR << 16) | (OPENEXR_VERSION_PATCH << 8)) >= 0x03020000)
+      if(Imf::hasCameraMake(header))
+      {
+        g_strlcpy(img->exif_maker, Imf::cameraMake(header).c_str(), sizeof(img->exif_maker));
+      }
+      if(Imf::hasCameraModel(header))
+      {
+        g_strlcpy(img->exif_model, Imf::cameraModel(header).c_str(), sizeof(img->exif_model));
+      }
+      // Make sure we copy the exif make and model to the correct place if needed
+      dt_image_refresh_makermodel(img);
+
+      if(Imf::hasLensModel(header))
+      {
+        g_strlcpy(img->exif_lens, Imf::lensModel(header).c_str(), sizeof(img->exif_lens));
+
+        if(Imf::hasLensMake(header) && Imf::lensMake(header) == "Canon")
+        {
+          /* Use pretty name for Canon RF & RF-S lenses (as exiftool/exiv2/lensfun) */
+          if(g_str_has_prefix(img->exif_lens, "RF"))
+          {
+            std::string pretty;
+            if(img->exif_lens[2] == '-')
+              pretty = "Canon RF-S " + std::string(&img->exif_lens[4]);
+            else
+              pretty = "Canon RF " + std::string(&img->exif_lens[2]);
+            g_strlcpy(img->exif_lens, pretty.c_str(), sizeof(img->exif_lens));
+          }
+        }
+
+        /* Capitalize Nikon Z-mount lenses properly for UI presentation */
+        if(g_str_has_prefix(img->exif_lens, "NIKKOR"))
+        {
+          for(size_t i = 1; i <= 5; ++i) img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
+        }
+      }
+
+      if(Imf::hasNominalFocalLength(header)) img->exif_focal_length = Imf::nominalFocalLength(header);
+#endif
     }
   }
 

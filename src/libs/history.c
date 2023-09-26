@@ -329,12 +329,12 @@ static dt_dev_history_item_t *_search_history_by_module(GList *history_list,
   return hist_ret;
 }
 
-static int _check_deleted_instances(dt_develop_t *dev,
+static gboolean _check_deleted_instances(dt_develop_t *dev,
                                     GList **_iop_list,
                                     GList *history_list)
 {
   GList *iop_list = *_iop_list;
-  int deleted_module_found = 0;
+  gboolean deleted_module_found = FALSE;
 
   // we will check on dev->iop if there's a module that is not in history
   GList *modules = iop_list;
@@ -342,7 +342,7 @@ static int _check_deleted_instances(dt_develop_t *dev,
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
 
-    int delete_module = 0;
+    gboolean delete_module = FALSE;
 
     // base modules are a special case
     // most base modules won't be in history and must not be deleted
@@ -360,8 +360,8 @@ static int _check_deleted_instances(dt_develop_t *dev,
         if(strcmp(mod_next->op, mod->op) == 0 && mod_next->multi_priority == 0)
         {
           // is the same one, check which one must be deleted
-          const int mod_in_history = _search_history_by_module(history_list, mod) != NULL;
-          const int mod_next_in_history =
+          const gboolean mod_in_history = _search_history_by_module(history_list, mod) != NULL;
+          const gboolean mod_next_in_history =
             _search_history_by_module(history_list, mod_next) != NULL;
 
           // current is in history and next is not, delete next
@@ -369,12 +369,12 @@ static int _check_deleted_instances(dt_develop_t *dev,
           {
             mod = mod_next;
             modules = modules_next;
-            delete_module = 1;
+            delete_module = TRUE;
           }
           // current is not in history and next is, delete current
           else if(!mod_in_history && mod_next_in_history)
           {
-            delete_module = 1;
+            delete_module = TRUE;
           }
           else
           {
@@ -405,7 +405,7 @@ static int _check_deleted_instances(dt_develop_t *dev,
     // if module is not in history we delete it
     if(delete_module)
     {
-      deleted_module_found = 1;
+      deleted_module_found = TRUE;
 
       if(darktable.develop->gui_module == mod) dt_iop_request_focus(NULL);
 
@@ -1169,7 +1169,7 @@ void gui_update(dt_lib_module_t *self)
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 }
 
-static void _lib_history_truncate(gboolean compress)
+static void _lib_history_truncate(const gboolean compress)
 {
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
   if(!dt_is_valid_imgid(imgid)) return;

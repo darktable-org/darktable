@@ -100,7 +100,9 @@ int flags()
   return IOP_FLAGS_DEPRECATED;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -186,7 +188,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 {
   // create part of the pixelpipe
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)malloc(sizeof(dt_iop_equalizer_data_t));
-  dt_iop_equalizer_params_t *default_params = (dt_iop_equalizer_params_t *)self->default_params;
+  const dt_iop_equalizer_params_t *const default_params = (dt_iop_equalizer_params_t *)self->default_params;
   piece->data = (void *)d;
   for(int ch = 0; ch < 3; ch++)
   {

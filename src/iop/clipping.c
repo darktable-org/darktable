@@ -103,14 +103,37 @@ typedef enum _grab_region_t
 /* calculate the aspect ratios for current image */
 static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_applied, int select);
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(new_version <= old_version) return 1;
-  if(new_version != 5) return 1;
+  typedef struct dt_iop_clipping_params_v5_t
+  {
+    float angle;
+    float cx;
+    float cy;
+    float cw;
+    float ch;
+    float k_h, k_v;
+    float kxa;
+    float kya;
+    float kxb;
+    float kyb;
+    float kxc;
+    float kyc;
+    float kxd;
+    float kyd;
+    int k_type, k_sym;
+    int k_apply;
+    gboolean crop_auto;
+    int ratio_n;
+    int ratio_d;
+  } dt_iop_clipping_params_v5_t;
 
-  dt_iop_clipping_params_t *n = (dt_iop_clipping_params_t *)new_params;
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2)
   {
     union {
         float f;
@@ -123,6 +146,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     k.f = o->k_h;
     int is_horizontal;
@@ -155,11 +180,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = 0;
     n->crop_auto = 1;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3)
   {
     // old structure def
     typedef struct old_params_t
@@ -168,6 +198,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -183,11 +215,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = 0;
     n->crop_auto = 1;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4)
   {
     typedef struct old_params_t
     {
@@ -198,6 +235,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } old_params_t;
 
     const old_params_t *o = (old_params_t *)old_params;
+    dt_iop_clipping_params_v5_t *n =
+      (dt_iop_clipping_params_v5_t *)malloc(sizeof(dt_iop_clipping_params_v5_t));
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -208,12 +247,17 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->k_apply = o->k_apply;
     n->crop_auto = o->crop_auto;
 
-    // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no
-    // clipping.
+    // will be computed later, -2 here is used to detect uninitialized
+    // value, -1 is already used for no clipping.
     n->ratio_d = n->ratio_n = -2;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_clipping_params_v5_t);
+    *new_version = 5;
+    return 0;
   }
 
-  return 0;
+  return 1;
 }
 
 typedef struct dt_iop_clipping_gui_data_t
@@ -336,16 +380,18 @@ int flags()
 
 int operation_tags()
 {
-  return IOP_TAG_DISTORT | IOP_TAG_CLIPPING;
+  return IOP_TAG_DISTORT | IOP_TAG_CROPPING;
 }
 
 int operation_tags_filter()
 {
   // switch off watermark, it gets confused.
-  return IOP_TAG_DECORATION | IOP_TAG_CLIPPING;
+  return IOP_TAG_DECORATION | IOP_TAG_CROPPING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -1083,7 +1129,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         crkernel = gd->kernel_clip_rotate_lanczos3;
         break;
       default:
-        return FALSE;
+        return err;
     }
 
     int roi[2] = { roi_in->x, roi_in->y };
@@ -1114,14 +1160,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi), CLARG(roo), CLARG(roi_in->scale), CLARG(roi_out->scale),
       CLARG(d->flip), CLARG(t), CLARG(k), CLARG(m), CLARG(k_space), CLARG(ka), CLARG(maa), CLARG(mbb));
     err = dt_opencl_enqueue_kernel_2d(devid, crkernel, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
 
-  return TRUE;
-
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_clipping] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -3352,4 +3394,3 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,0 +1,10 @@
+master:
+  steps:
+    - trigger_services:
+        project: graphics:darktable:master
+        package: darktable
+  filters:
+    event: push
+    branches:
+      only:
+        - master

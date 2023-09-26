@@ -104,7 +104,9 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -146,21 +148,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(height), CLARG(saturation), CLARG(dev_cm), CLARG(dev_ccoeffs), CLARG(dev_lm), CLARG(dev_lcoeffs));
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colisa, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_lcoeffs);
-  dt_opencl_release_mem_object(dev_lm);
-  dt_opencl_release_mem_object(dev_ccoeffs);
-  dt_opencl_release_mem_object(dev_cm);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_lcoeffs);
   dt_opencl_release_mem_object(dev_lm);
   dt_opencl_release_mem_object(dev_ccoeffs);
   dt_opencl_release_mem_object(dev_cm);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colisa] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 

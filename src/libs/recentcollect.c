@@ -206,7 +206,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   }
 
   current = d->items;
-  for(int k = 0; k < CLAMPS(_conf_get_max_shown_items(), 0, _conf_get_max_saved_items()); k++)
+  for(int k = 0; k < CLAMPS(_conf_get_max_shown_items(), 0, _conf_get_max_saved_items()) && current; k++)
   {
     dt_lib_recentcollect_item_t *item = (dt_lib_recentcollect_item_t *)current->data;
     const gchar *line = gtk_button_get_label(GTK_BUTTON(item->button));
@@ -224,8 +224,10 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   char confname[200];
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("recent collections settings"), GTK_WINDOW(win),
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT, _("cancel"), GTK_RESPONSE_NONE,
-                                                  _("save"), GTK_RESPONSE_ACCEPT, NULL);
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_prefs_init_dialog_recentcollect(dialog);
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
 

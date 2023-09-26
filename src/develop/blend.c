@@ -276,28 +276,20 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
   float *warp_mask = NULL;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->details.data == NULL)
+  if(p->scharr.data == NULL)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on CPU",
        piece->pipe, self, roi_in, roi_out, "no mask data available\n");
     return;
   }
-  const int iwidth  = p->details.roi.width;
-  const int iheight = p->details.roi.height;
-  const int owidth  = roi_out->width;
-  const int oheight = roi_out->height;
+
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on CPU",
        piece->pipe, self, roi_in, roi_out, "\n");
 
-  const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
-
-  lum = dt_alloc_align_float(bufsize);
+  lum = dt_masks_calc_detail_mask(piece, threshold, detail);
   if(!lum) goto error;
-
-  if(dt_masks_calc_detail_mask(&p->details, lum, threshold, detail))
-    goto error;
 
   // here we have the slightly blurred full detail mask available
   warp_mask = dt_dev_distort_detail_mask(p, lum, self);
@@ -306,7 +298,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self,
 
   if(warp_mask == NULL) goto error;
 
-  const size_t msize = (size_t)owidth * oheight;
+  const size_t msize = (size_t)roi_out->width * roi_out->height;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
@@ -486,12 +478,19 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
     return;
   }
 
+  const gboolean valid_request =
+      self->dev->gui_attached
+      && (self == self->dev->gui_module)
+      && (piece->pipe == self->dev->pipe);
+
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
-    (self->dev->gui_attached
-      && (self == self->dev->gui_module)
-      && (piece->pipe == self->dev->pipe)
-      && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
+      valid_request && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL)
+        ? self->request_mask_display
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
+  const dt_dev_pixelpipe_display_mask_t request_raster_display =
+      valid_request && (mask_mode & DEVELOP_MASK_RASTER)
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
@@ -501,10 +500,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
 
   // check if mask should be suppressed temporarily (i.e. just set to global opacity value)
   const gboolean suppress_mask = self->suppress_mask
-                                 && self->dev->gui_attached
-                                 && (self == self->dev->gui_module)
-                                 && (piece->pipe == self->dev->pipe)
-                                 && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
+                                 && valid_request
+                                 && (mask_mode & ~DEVELOP_MASK_ENABLED);
 
   // obtaining the list of mask operations to perform
   _develop_mask_post_processing post_operations[3];
@@ -580,21 +577,17 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   else
   {
     const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
-    dt_print_pipe(DT_DEBUG_PIPE,
-       "blend with form on CPU",
-       piece->pipe, self, roi_in, roi_out, "%s %s\n",
-       dt_iop_colorspace_to_name(cst),
-       inverted ? "inverted" : "");
-    // we blend with a drawn and/or parametric mask
+    gboolean form_ok = FALSE;
 
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
+    // we blend with a drawn and/or parametric mask
     if(form
        && (!(self->flags() & IOP_FLAGS_NO_MASKS))
        && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-      dt_masks_group_render_roi(self, piece, form, roi_out, mask);
+      form_ok = dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
       if(inverted)
       {
@@ -616,6 +609,14 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
+
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend with form on CPU",
+       piece->pipe, self, roi_in, roi_out, "%s%s%s\n",
+       dt_iop_colorspace_to_name(cst),
+       inverted ? ", inverted" : "",
+       form ? ( form_ok ? ", form available and rendered" : ", render problem on form") : ",no form");
+
     _refine_with_detail_mask(self, piece, mask, roi_in, roi_out, d->details);
 
     // get parametric mask (if any) and apply global opacity
@@ -663,7 +664,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
           float *const restrict guide = dt_alloc_align_float(obuffsize * ch);
           if(guide)
           {
-            dt_iop_copy_image_roi(guide, (float *restrict)ivoid, ch, roi_in, roi_out, 0);
+            dt_iop_copy_image_roi(guide, (float *restrict)ivoid, ch, roi_in, roi_out);
             _develop_blend_process_feather(guide, mask, owidth, oheight, ch, guide_weight,
                                            d->feathering_radius,
                                            roi_out->scale / piece->iscale);
@@ -735,13 +736,18 @@ void dt_develop_blend_process(struct dt_iop_module_t *self,
   {
     piece->pipe->mask_display = request_mask_display;
   }
+  else if(request_raster_display
+          & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
+  {
+    piece->pipe->mask_display = request_raster_display;
+  }
 
   // check if we should store the mask for export or use in subsequent modules
   // TODO: should we skip raster masks?
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID))
   {
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
-    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
     dt_print_pipe(DT_DEBUG_PIPE,
        "write raster mask on CPU", piece->pipe, self, roi_in, roi_out, "%s at %p\n",
        new ? "new" : "replaced",
@@ -776,16 +782,16 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->details.data == NULL)
+  if(p->scharr.data == NULL)
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
        "refine_detail_mask on GPU",
        piece->pipe, self, roi_in, roi_out, "no detail data available\n");
     return;
   }
-  const int iwidth  = p->details.roi.width;
-  const int iheight = p->details.roi.height;
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
+  const int iwidth  = p->scharr.roi.width;
+  const int iheight = p->scharr.roi.height;
+  dt_print_pipe(DT_DEBUG_PIPE,
        "refine_detail_mask on GPU",
        piece->pipe, self, roi_in, roi_out, "\n");
 
@@ -796,7 +802,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if((lum == NULL) || (tmp == NULL) || (out == NULL) || (blur == NULL))
     goto error;
 
-  err = dt_opencl_write_host_to_device(devid, p->details.data, tmp,
+  err = dt_opencl_write_host_to_device(devid, p->scharr.data, tmp,
                                        iwidth, iheight, sizeof(float));
   if(err != CL_SUCCESS) goto error;
 
@@ -811,7 +817,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   float blurmat[13];
-  dt_masks_blur_9x9_coeff(blurmat, 2.0f);
+  dt_masks_blur_coeff(blurmat, 2.0f);
   cl_mem dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(blurmat), blurmat);
   if(dev_blurmat != NULL)
   {
@@ -923,26 +929,30 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   // only non-zero if mask_display was set by an _earlier_ module
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
 
+  const gboolean valid_request =
+      self->dev->gui_attached
+      && (self == self->dev->gui_module)
+      && (piece->pipe == self->dev->pipe);
+
   // does user want us to display a specific channel?
-  const dt_dev_pixelpipe_display_mask_t request_mask_display
-      = (self->dev->gui_attached
-         && (self == self->dev->gui_module)
-         && (piece->pipe == self->dev->pipe)
-         && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL))
-            ? self->request_mask_display
-            : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  const dt_dev_pixelpipe_display_mask_t request_mask_display =
+      valid_request && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL)
+        ? self->request_mask_display
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
+
+  const dt_dev_pixelpipe_display_mask_t request_raster_display =
+      valid_request && (mask_mode & DEVELOP_MASK_RASTER)
+        ? self->request_mask_display
+        : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // get channel max values depending on colorspace
   const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
   const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
 
-  // check if mask should be suppressed temporarily (i.e. just set to global
-  // opacity value)
+  // check if mask should be suppressed temporarily (i.e. just set to global opacity value)
   const gboolean suppress_mask = self->suppress_mask
-                                 && self->dev->gui_attached
-                                 && (self == self->dev->gui_module)
-                                 && (piece->pipe == self->dev->pipe)
-                                 && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
+                                 && valid_request
+                                 && (mask_mode & ~DEVELOP_MASK_ENABLED);
 
   // obtaining the list of mask operations to perform
   _develop_mask_post_processing post_operations[3];
@@ -1122,21 +1132,16 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   else
   {
     const gboolean inverted = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS);
-    dt_print_pipe(DT_DEBUG_PIPE,
-       "blend with form CL",
-       piece->pipe, self, roi_in, roi_out, "%s %s\n",
-       dt_iop_colorspace_to_name(cst),
-       inverted ? "inverted" : "");
-    // we blend with a drawn and/or parametric mask
-
+    gboolean form_ok = FALSE;
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
+    // we blend with a drawn and/or parametric mask
     if(form
        && (!(self->flags() & IOP_FLAGS_NO_MASKS))
        && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-      dt_masks_group_render_roi(self, piece, form, roi_out, mask);
+      form_ok = dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
       if(inverted)
       {
@@ -1158,6 +1163,14 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
+
+    dt_print_pipe(DT_DEBUG_PIPE,
+       "blend with form CL",
+       piece->pipe, self, roi_in, roi_out, "%s%s%s\n",
+       dt_iop_colorspace_to_name(cst),
+       inverted ? ", inverted" : "",
+       form ? ( form_ok ? ", form available and rendered" : ", render problem on form") : ",no form");
+
     _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
 
     // write mask from host to device
@@ -1219,7 +1232,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
         cl_mem guide = dev_in;
         if(!rois_equal)
         {
-          dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
+          dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
           if(dev_guide == NULL) goto error;
           guide = dev_guide;
           size_t origin_1[] = { dx, dy, 0 };
@@ -1296,7 +1309,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   }
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
-  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
+  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * ch);
   if(dev_tmp == NULL) goto error;
 
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
@@ -1369,6 +1382,11 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
   {
     piece->pipe->mask_display = request_mask_display;
   }
+  else if(request_raster_display
+          & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
+  {
+    piece->pipe->mask_display = request_raster_display;
+  }
 
 
   // check if we should store the mask for export or use in subsequent modules
@@ -1388,7 +1406,7 @@ gboolean dt_develop_blend_process_cl(struct dt_iop_module_t *self,
       }
     }
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
-    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
     dt_print_pipe(DT_DEBUG_PIPE,
        "write raster mask CL", piece->pipe, self, roi_in, roi_out, "%s at %p\n",
        new ? "new" : "replaced",

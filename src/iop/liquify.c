@@ -308,7 +308,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_GUIDES_WIDGET;
+  return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 int operation_tags()
@@ -316,9 +316,15 @@ int operation_tags()
    return IOP_TAG_DISTORT;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+int operation_tags_filter()
+{
+  // switch off cropping, we want to see the full image.
+  return IOP_TAG_DECORATION | IOP_TAG_CROPPING;
+}
+
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -968,8 +974,7 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
   // circle in quadrants and doing only the inside we have to calculate
   // hypotf only for PI / 16 = 0.196 of the stamp area.
   // We don't do octants to avoid false sharing of cache lines between threads.
-  // doesn't work for OSX see issue #7349
-  #if defined(_OPENMP) && !defined(__APPLE__)
+  #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) \
     dt_omp_firstprivate(iradius, strength, abs_strength, table_size, global_width) \
     dt_omp_sharedconst(center, warp, lookup_table, LOOKUP_OVERSAMPLE, global_map_extent)
@@ -1416,7 +1421,7 @@ void distort_mask(struct dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_out)
 {
   // 1. copy the whole image (we'll change only a small part of it)
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, 1);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
@@ -1449,7 +1454,7 @@ void process(struct dt_iop_module_t *module,
                                         in, out, roi_in, roi_out))
     return;
   // 1. copy the whole image (we'll change only a small part of it)
-  dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, 1);
+  dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out);
 
   // 2. build the distortion map
   cairo_rectangle_int_t map_extent;
@@ -1614,7 +1619,7 @@ int process_cl(struct dt_iop_module_t *module,
     size_t dest[]   = { 0, 0, 0 };
     size_t extent[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, src, dest, extent);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS) return err;
   }
 
   // 2. build the distortion map
@@ -1624,21 +1629,14 @@ int process_cl(struct dt_iop_module_t *module,
                                roi_out, &map_extent, FALSE, &map);
 
   if(map == NULL)
-    return TRUE;
+    return CL_SUCCESS;
 
   // 3. apply the map
   if(map_extent.width != 0 && map_extent.height != 0)
     err = _apply_global_distortion_map_cl(module, piece, dev_in,
                                           dev_out, roi_in, roi_out, map, &map_extent);
   dt_free_align((void *) map);
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_liquify] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 
 #endif
@@ -1733,7 +1731,7 @@ static void set_line_width(cairo_t *cr,
                            dt_liquify_ui_width_enum_t w)
 {
   const double width = get_ui_width(scale, w);
-  cairo_set_line_width(cr, width);
+  cairo_set_line_width(cr, width * (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0));
 }
 
 static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g,
@@ -1857,6 +1855,7 @@ static void _draw_paths(dt_iop_module_t *module,
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
+  const gboolean showhandle = dt_iop_color_picker_is_visible(darktable.develop) == FALSE;
   // do not display any iterpolated items as slow when:
   //   - we are dragging (pan)
   //   - the button one is pressed
@@ -2022,7 +2021,7 @@ static void _draw_paths(dt_iop_module_t *module,
 
       if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
       {
-        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT1_HANDLE &&
+        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT1_HANDLE && showhandle &&
             !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
         {
           THINLINE; FG_COLOR;
@@ -2030,7 +2029,7 @@ static void _draw_paths(dt_iop_module_t *module,
           cairo_line_to(cr, crealf(data->node.ctrl1), cimagf(data->node.ctrl1));
           cairo_stroke(cr);
         }
-        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT2_HANDLE &&
+        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT2_HANDLE && showhandle &&
             data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
         {
           THINLINE; FG_COLOR;
@@ -2060,7 +2059,7 @@ static void _draw_paths(dt_iop_module_t *module,
 
       const dt_liquify_warp_t *warp  = &data->warp;
 
-      if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT_HANDLE)
+      if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT_HANDLE && showhandle)
       {
         draw_circle(cr, point, 2.0 * cabsf(warp->radius - point));
         THICKLINE; FG_COLOR;
@@ -2078,7 +2077,7 @@ static void _draw_paths(dt_iop_module_t *module,
         cairo_stroke(cr);
       }
 
-      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT1_HANDLE)
+      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT1_HANDLE && showhandle)
       {
         draw_circle(cr, point, 2.0 * cabsf(warp->radius - point) * warp->control1);
         THICKLINE; FG_COLOR;
@@ -2087,7 +2086,7 @@ static void _draw_paths(dt_iop_module_t *module,
         cairo_stroke(cr);
       }
 
-      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT2_HANDLE)
+      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT2_HANDLE && showhandle)
       {
         draw_circle(cr, point, 2.0 * cabsf(warp->radius - point) * warp->control2);
         THICKLINE; FG_COLOR;
@@ -2118,7 +2117,7 @@ static void _draw_paths(dt_iop_module_t *module,
         cairo_stroke(cr);
       }
 
-      if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT_HANDLE)
+      if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT_HANDLE && showhandle)
       {
         cairo_move_to(cr, crealf(point), cimagf(point));
         if(warp->type == DT_LIQUIFY_WARP_TYPE_LINEAR)
@@ -2796,14 +2795,15 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module);
 
-void gui_focus(struct dt_iop_module_t *module,
+void gui_focus(struct dt_iop_module_t *self,
                const gboolean in)
 {
   if(!in)
   {
     dt_collection_hint_message(darktable.collection);
-    btn_make_radio_callback(NULL, NULL, module);
+    btn_make_radio_callback(NULL, NULL, self);
   }
+  self->dev->cropping.requester = (in && !darktable.develop->image_loading) ? self : NULL;
 }
 
 static void sync_pipe(struct dt_iop_module_t *module,
@@ -3663,9 +3663,9 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
   return TRUE;
 }
 
-void gui_update(dt_iop_module_t *module)
+void gui_update(dt_iop_module_t *self)
 {
-  update_warp_count(module);
+  update_warp_count(self);
 }
 
 void gui_init(dt_iop_module_t *self)

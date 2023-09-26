@@ -116,7 +116,9 @@ int flags()
          | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -162,10 +164,25 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_profilegamma_params_v2_t
+  {
+    dt_iop_profilegamma_mode_t mode;
+    float linear;
+    float gamma;
+    float dynamic_range;
+    float grey_point;
+    float shadows_range;
+    float security_factor;
+  } dt_iop_profilegamma_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_profilegamma_params_v1_t
     {
@@ -173,15 +190,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float gamma;
     } dt_iop_profilegamma_params_v1_t;
 
-    dt_iop_profilegamma_params_v1_t *o = (dt_iop_profilegamma_params_v1_t *)old_params;
-    dt_iop_profilegamma_params_t *n = (dt_iop_profilegamma_params_t *)new_params;
-    dt_iop_profilegamma_params_t *d = (dt_iop_profilegamma_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_profilegamma_params_v1_t *o =
+      (dt_iop_profilegamma_params_v1_t *)old_params;
+    dt_iop_profilegamma_params_v2_t *n =
+      (dt_iop_profilegamma_params_v2_t *)malloc(sizeof(dt_iop_profilegamma_params_v2_t));
 
     n->linear = o->linear;
     n->gamma = o->gamma;
     n->mode = PROFILEGAMMA_GAMMA;
+    n->dynamic_range = 10.0f;
+    n->grey_point = 18.0f;
+    n->shadows_range = -5.0f;
+    n->security_factor = 0.0f;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_profilegamma_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -214,8 +238,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range), CLARG(grey));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma_log, sizes);
-    if(err != CL_SUCCESS) goto error;
-    return TRUE;
   }
   else if(d->mode == PROFILEGAMMA_GAMMA)
   {
@@ -229,21 +251,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       CLARG(height), CLARG(dev_table), CLARG(dev_coeffs));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma, sizes);
-    if(err != CL_SUCCESS)
-    {
-      dt_opencl_release_mem_object(dev_table);
-      dt_opencl_release_mem_object(dev_coeffs);
-      goto error;
-    }
-
-    dt_opencl_release_mem_object(dev_table);
-    dt_opencl_release_mem_object(dev_coeffs);
-    return TRUE;
   }
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_profilegamma] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  dt_opencl_release_mem_object(dev_table);
+  dt_opencl_release_mem_object(dev_coeffs);
+  return err;
 }
 #endif
 
@@ -460,7 +473,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   if     (picker == g->grey_point)
@@ -677,4 +691,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

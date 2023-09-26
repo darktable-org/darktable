@@ -156,22 +156,19 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
 cl_int dt_bilateral_splat_cl(dt_bilateral_cl_t *b, cl_mem in)
 {
-  cl_int err = -666;
   size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
   size_t local[] = { b->blocksizex, b->blocksizey, 1 };
   dt_opencl_set_kernel_args(b->devid, b->global->kernel_splat, 0, CLARG(in), CLARG(b->dev_grid),
     CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s),
     CLARG(b->sigma_r), CLLOCAL(b->blocksizex * b->blocksizey * sizeof(int)), CLLOCAL(b->blocksizex * b->blocksizey * 8 * sizeof(float)));
-  err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_splat, sizes, local);
-  return err;
+  return dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_splat, sizes, local);
 }
 
 cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
 {
-  cl_int err = -666;
   size_t sizes[3] = { 0, 0, 1 };
 
-  err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
+  cl_int err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
                                                 sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(err != CL_SUCCESS) return err;
 
@@ -203,16 +200,13 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
   sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
   dt_opencl_set_kernel_args(b->devid, b->global->kernel_blur_line_z, 0, CLARG(b->dev_grid_tmp), CLARG(b->dev_grid),
     CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z));
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_blur_line_z, sizes);
-  return err;
+  return dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_blur_line_z, sizes);
 }
 
 cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem out, const float detail)
 {
-  cl_int err = -666;
-  cl_mem tmp = NULL;
-
-  tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, sizeof(float) * 4);
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
+  cl_mem tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, sizeof(float) * 4);
   if(tmp == NULL) goto error;
 
   size_t origin[] = { 0, 0, 0 };
@@ -224,9 +218,6 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
     CLARG(in), CLARG(tmp), CLARG(out), CLARG(b->dev_grid), CLARG(b->width), CLARG(b->height), CLARG(b->size_x),
     CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(detail));
 
-  dt_opencl_release_mem_object(tmp);
-  return err;
-
 error:
   dt_opencl_release_mem_object(tmp);
   return err;
@@ -234,11 +225,9 @@ error:
 
 cl_int dt_bilateral_slice_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem out, const float detail)
 {
-  cl_int err = -666;
-  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_slice, b->width, b->height,
+  return dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_slice, b->width, b->height,
     CLARG(in), CLARG(out), CLARG(b->dev_grid), CLARG(b->width), CLARG(b->height), CLARG(b->size_x),
     CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(detail));
-  return err;
 }
 
 void dt_bilateral_free_cl_global(dt_bilateral_cl_global_t *b)

@@ -150,10 +150,40 @@ typedef enum dt_iop_watermark_base_scale_v2_t
   DT_SCALE_SMALLER_BORDER = 2 // $DESCRIPTION: "smaller border"
 } dt_iop_watermark_base_scale_v2_t;
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 6)
+  typedef struct dt_iop_watermark_params_v6_t
+  {
+    /** opacity value of rendering watermark */
+    float opacity;
+    /** scale value of rendering watermark */
+    float scale;
+    /** Pixel independent xoffset, 0 to 1 */
+    float xoffset;
+    /** Pixel independent yoffset, 0 to 1 */
+    float yoffset;
+    /** Alignment value 0-8 3x3 */
+    int alignment;
+    /** Rotation **/
+    float rotate;
+    dt_iop_watermark_base_scale_t scale_base;
+    dt_iop_watermark_img_scale_t scale_img;
+    dt_iop_watermark_svg_scale_t scale_svg;
+    char filename[64];
+    /* simple text */
+    char text[512];
+    /* text color */
+    float color[3];
+    /* text font */
+    char font[64];
+  } dt_iop_watermark_params_v6_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_watermark_params_v1_t
     {
@@ -170,11 +200,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char filename[64];
     } dt_iop_watermark_params_v1_t;
 
-    dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -187,9 +216,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  else if(old_version == 2 && new_version == 6)
+  else if(old_version == 2)
   {
     typedef struct dt_iop_watermark_params_v2_t
     {
@@ -207,11 +240,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char filename[64];
     } dt_iop_watermark_params_v2_t;
 
-    dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -224,9 +256,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  else if(old_version == 3 && new_version == 6)
+  else if(old_version == 3)
   {
     typedef struct dt_iop_watermark_params_v3_t
     {
@@ -246,11 +282,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char filename[64];
     } dt_iop_watermark_params_v3_t;
 
-    dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -264,9 +299,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->text, "", sizeof(n->text));
     g_strlcpy(n->font, "DejaVu Sans 10", sizeof(n->font));
     n->color[0] = n->color[1] = n->color[2] = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  else if(old_version == 4 && new_version == 6)
+  else if(old_version == 4)
   {
     typedef struct dt_iop_watermark_params_v4_t
     {
@@ -292,11 +331,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char font[64];
     } dt_iop_watermark_params_v4_t;
 
-    dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -312,9 +350,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
-  else if(old_version == 5 && new_version == 6)
+  else if(old_version == 5)
   {
     typedef struct dt_iop_watermark_params_v5_t
     {
@@ -340,11 +382,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char font[64];
     } dt_iop_watermark_params_v5_t;
 
-    dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
-    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
-    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
+    dt_iop_watermark_params_v6_t *n =
+      (dt_iop_watermark_params_v6_t *)
+      malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -360,6 +401,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_watermark_params_v6_t);
+    *new_version = 6;
     return 0;
   }
   return 1;
@@ -395,7 +440,9 @@ int operation_tags()
   return IOP_TAG_DECORATION;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -971,7 +1018,8 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
@@ -1327,20 +1375,20 @@ void gui_init(struct dt_iop_module_t *self)
 
   // legacy scale on drop-down
   g->scale_base = dt_bauhaus_combobox_from_params(self, "scale_base");
-  gtk_widget_set_tooltip_text(g->scale_base, _("scaling is done relative to this object\n"
-                                               "• image: fits marker into whole image\n"
-                                               "• larger border: fits larger marker border to larger image border\n"
-                                               "• smaller border: fits larger marker border to smaller image border\n"
-                                               "• height: fits marker height to image height, e.g. suitable for texts\n"
-                                               "• advanced options: activates two additional drop-down menus"));
+  gtk_widget_set_tooltip_text(g->scale_base, _("choose how to scale the watermark\n"
+                                               "• image: scale watermark relative to whole image\n"
+                                               "• larger border: scale larger watermark border relative to larger image border\n"
+                                               "• smaller border: scale larger watermark border relative to smaller image border\n"
+                                               "• height: scale watermark height to image height\n"
+                                               "• advanced options: choose watermark and image dimensions independently"));
 
   // scale image reference
   g->scale_img = dt_bauhaus_combobox_from_params(self, "scale_img");
-  gtk_widget_set_tooltip_text(g->scale_img, _("reference to which the marker should be scaled to"));
+  gtk_widget_set_tooltip_text(g->scale_img, _("reference image dimension against which to scale the watermark"));
 
   // scale marker reference
   g->scale_svg = dt_bauhaus_combobox_from_params(self, "scale_svg");
-  gtk_widget_set_tooltip_text(g->scale_svg, _("length of the marker which is used as scaling reference"));
+  gtk_widget_set_tooltip_text(g->scale_svg, _("watermark dimension to scale"));
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();

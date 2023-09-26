@@ -36,14 +36,6 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_colorcontrast_params_t)
 
-typedef struct dt_iop_colorcontrast_params1_t
-{
-  float a_steepness;
-  float a_offset;
-  float b_steepness;
-  float b_offset;
-} dt_iop_colorcontrast_params1_t;
-
 typedef struct dt_iop_colorcontrast_params_t
 {
   float a_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "green-magenta contrast"
@@ -110,9 +102,9 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -120,19 +112,42 @@ int default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_colorcontrast_params_v2_t
   {
-    const dt_iop_colorcontrast_params1_t *old = old_params;
-    dt_iop_colorcontrast_params_t *new = new_params;
+    float a_steepness;
+    float a_offset;
+    float b_steepness;
+    float b_offset;
+    int unbound;
+  } dt_iop_colorcontrast_params_v2_t;
 
-    new->a_steepness = old->a_steepness;
-    new->a_offset = old->a_offset;
-    new->b_steepness = old->b_steepness;
-    new->b_offset = old->b_offset;
-    new->unbound = 0;
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_colorcontrast_params_v1_t
+    {
+      float a_steepness;
+      float a_offset;
+      float b_steepness;
+      float b_offset;
+    } dt_iop_colorcontrast_params_v1_t;
+
+    const dt_iop_colorcontrast_params_v1_t *o = old_params;
+    dt_iop_colorcontrast_params_v2_t *n =
+      (dt_iop_colorcontrast_params_v2_t *)malloc(sizeof(dt_iop_colorcontrast_params_v2_t));
+
+    n->a_steepness = o->a_steepness;
+    n->a_offset = o->a_offset;
+    n->b_steepness = o->b_steepness;
+    n->b_offset = o->b_offset;
+    n->unbound = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_colorcontrast_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -240,19 +255,10 @@ int process_cl(struct dt_iop_module_t *self,
   const float offset[4] = { 0.0f, data->a_offset, data->b_offset, 0.0f };
   const int unbound = data->unbound;
 
-  const cl_int err =
-    dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
                                      CLARG(dev_in), CLARG(dev_out),
                                      CLARG(width), CLARG(height),
                                      CLARG(scale), CLARG(offset), CLARG(unbound));
-
-  if(err != CL_SUCCESS) goto error;
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorcontrast] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 

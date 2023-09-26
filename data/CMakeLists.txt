@@ -157,11 +157,18 @@ install(FILES wb_presets.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable
 # Transform darktableconfig.xml into darktablerc
 #
 
+set(DEFCONFIG_APPLE "false")
+set(DEFCONFIG_NONAPPLE "true")
 set(DEFCONFIG_OPENCL "true")
+
 if(APPLE)
   # OpenCL support on OS X isn't stable enough to enable it by default
   set(DEFCONFIG_OPENCL "false")
+  set(DEFCONFIG_APPLE "true")
+  set(DEFCONFIG_NONAPPLE "false")
 endif(APPLE)
+
+
 set(DEFCONFIG_AUDIOPLAYER "aplay")
 if(APPLE)
   # OS X doesn't have aplay, but afplay should do
@@ -230,4 +237,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${CMAKE_INSTAL
 #
 # Install bash completion file. users/packagers can symlink that to /etc/bash_completion.d/
 #
-install(FILES darktable.bash DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+if ((NOT WIN32) OR BUILD_MSYS2_INSTALL)
+  install(FILES darktable.bash DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+endif()

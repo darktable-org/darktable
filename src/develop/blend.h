@@ -518,7 +518,7 @@ void dt_iop_gui_blending_reload_defaults(dt_iop_module_t *module);
 
 gboolean blend_color_picker_apply(dt_iop_module_t *module,
                                   GtkWidget *picker,
-                                  dt_dev_pixelpipe_iop_t *piece);
+                                  dt_dev_pixelpipe_t *pipe);
 
 #ifdef HAVE_OPENCL
 /** apply blend for opencl modules*/

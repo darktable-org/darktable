@@ -1006,13 +1006,9 @@ void *dt_update_cameras_thread(void *ptr)
     g_usleep(250000);  // 1/4 second
     dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
 
-    const dt_view_t *cv = (darktable.view_manager)
-      ? dt_view_manager_get_current_view(darktable.view_manager)
-      : NULL;
-
     if(camctl)
     {
-      if((camctl->import_ui == FALSE) && (cv && (cv->view(cv) == DT_VIEW_LIGHTTABLE)))
+      if(camctl->import_ui == FALSE && dt_view_get_current() == DT_VIEW_LIGHTTABLE)
 //TODO:  && import module is expanded and visible
       {
         camctl->ticker += 1;

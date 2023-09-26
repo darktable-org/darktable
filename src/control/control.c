@@ -478,6 +478,7 @@ static void _dt_ctl_switch_mode_prepare()
   darktable.gui->center_tooltip = 0;
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_set_tooltip_text(widget, "");
+  gtk_widget_grab_focus(widget);
 }
 
 static gboolean _dt_ctl_switch_mode_to(gpointer user_data)

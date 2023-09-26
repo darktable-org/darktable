@@ -92,6 +92,8 @@ enum
   md_exif_exposure,
   md_exif_exposure_bias,
   md_exif_focal_length,
+  md_exif_focal_length_ff,
+  md_exif_crop_factor,
   md_exif_focus_distance,
   md_exif_iso,
   md_exif_datetime,
@@ -141,6 +143,8 @@ static const char *_labels[] = {
   N_("exposure"),
   N_("exposure bias"),
   N_("focal length"),
+  N_("35mm equiv focal length"),
+  N_("crop factor"),
   N_("focus distance"),
   N_("ISO"),
   N_("datetime"),
@@ -464,8 +468,7 @@ void gui_update(dt_lib_module_t *self)
 
   if(!dt_is_valid_imgid(mouse_over_id))
   {
-     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    if(cv->view(cv) == DT_VIEW_DARKROOM)
+    if(dt_view_get_current() == DT_VIEW_DARKROOM)
     {
        mouse_over_id = darktable.develop->image_storage.id;
     }
@@ -519,9 +522,9 @@ void gui_update(dt_lib_module_t *self)
                                          "COUNT(DISTINCT export_timestamp), "
                                          "COUNT(DISTINCT print_timestamp), "
                                          "COUNT(DISTINCT flags), "
-                                         "COUNT(DISTINCT model), "
-                                         "COUNT(DISTINCT maker), "
-                                         "COUNT(DISTINCT lens), "
+                                         "COUNT(DISTINCT model_id), "
+                                         "COUNT(DISTINCT maker_id), "
+                                         "COUNT(DISTINCT lens_id), "
                                          "COUNT(DISTINCT aperture), "
                                          "COUNT(DISTINCT exposure), "
                                          "COUNT(DISTINCT IFNULL(exposure_bias, '')), "
@@ -731,14 +734,22 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_exif_focal_length:
+        (void)g_snprintf(text, sizeof(text), _("%.1f mm"), (double)img->exif_focal_length);
+        _metadata_update_value(md_exif_focal_length, text, self);
+        break;
+
+      case md_exif_focal_length_ff:
         if(img->exif_crop && (img->exif_crop != 1.0f))
-          (void)g_snprintf(text, sizeof(text), _("%.1f mm (%.1f mm FF equiv, crop %.1f)"),
-                           (double)img->exif_focal_length,
-                           (double)img->exif_crop * img->exif_focal_length,
-                           (double)img->exif_crop);
+          (void)g_snprintf(text, sizeof(text), _("%.1f mm"),
+                           (double)img->exif_crop * img->exif_focal_length);
         else
           (void)g_snprintf(text, sizeof(text), _("%.1f mm"), (double)img->exif_focal_length);
-        _metadata_update_value(md_exif_focal_length, text, self);
+        _metadata_update_value(md_exif_focal_length_ff, text, self);
+        break;
+
+      case md_exif_crop_factor:
+        (void)g_snprintf(text, sizeof(text), _("%.1f"), (double)img->exif_crop);
+        _metadata_update_value(md_exif_crop_factor, text, self);
         break;
 
       case md_exif_focus_distance:
@@ -1190,8 +1201,11 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
-                                       GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_YES,
-                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_ACCEPT, NULL);
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_default"), GTK_RESPONSE_YES,
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -1237,6 +1251,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   column = gtk_tree_view_column_new_with_attributes(_("visible"), renderer,
                                                     "active", DT_METADATA_PREF_COL_VISIBLE, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+  GtkTreePath *first = gtk_tree_path_new_first ();
+  gtk_tree_view_set_cursor(GTK_TREE_VIEW(view), first, column, FALSE);
+  gtk_tree_path_free(first);
 
   // drag & drop
   gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);

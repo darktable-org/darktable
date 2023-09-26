@@ -158,9 +158,9 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -168,10 +168,36 @@ int default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_diffuse_params_v2_t
+  {
+    // global parameters
+    int iterations;
+    float sharpness;
+    int radius;
+    float regularization;
+    float variance_threshold;
+
+    float anisotropy_first;
+    float anisotropy_second;
+    float anisotropy_third;
+    float anisotropy_fourth;
+
+    float threshold;
+
+    float first;
+    float second;
+    float third;
+    float fourth;
+
+    // v2
+    int radius_center;
+  } dt_iop_diffuse_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_diffuse_params_v1_t
     {
@@ -195,11 +221,9 @@ int legacy_params(dt_iop_module_t *self,
       float fourth;
     } dt_iop_diffuse_params_v1_t;
 
-    dt_iop_diffuse_params_v1_t *o = (dt_iop_diffuse_params_v1_t *)old_params;
-    dt_iop_diffuse_params_t *n = (dt_iop_diffuse_params_t *)new_params;
-    dt_iop_diffuse_params_t *d = (dt_iop_diffuse_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
+    const dt_iop_diffuse_params_v1_t *o = (dt_iop_diffuse_params_v1_t *)old_params;
+    dt_iop_diffuse_params_v2_t *n =
+      (dt_iop_diffuse_params_v2_t *)malloc(sizeof(dt_iop_diffuse_params_v2_t));
 
     // copy common parameters
     memcpy(n, o, sizeof(dt_iop_diffuse_params_v1_t));
@@ -207,6 +231,9 @@ int legacy_params(dt_iop_module_t *self,
     // init only new parameters
     n->radius_center = 0;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_diffuse_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -1337,7 +1364,7 @@ void process(dt_iop_module_t *self,
   if(fastmode)
   {
     const size_t ch = piece->colors;
-    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
     return;
   }
 
@@ -1362,7 +1389,7 @@ void process(dt_iop_module_t *self,
                                  0, NULL))
   {
     dt_print(DT_DEBUG_ALWAYS,"[diffuse] out of memory, skipping\n");
-    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
@@ -1623,7 +1650,7 @@ int process_cl(struct dt_iop_module_t *self,
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    return err == CL_SUCCESS;
+    return err;
   }
 
   size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
@@ -1711,29 +1738,17 @@ int process_cl(struct dt_iop_module_t *self,
     err = wavelets_process_cl(devid, temp_in, temp_out, mask, sizes,
                               width, height, data, gd, final_radius,
                               scale, scales, has_mask, HF, LF_odd, LF_even);
-    if(err != CL_SUCCESS) goto error;
   }
 
-  // cleanup and exit on success
-  dt_opencl_release_mem_object(mask);
+error:
   dt_opencl_release_mem_object(temp1);
   dt_opencl_release_mem_object(temp2);
+  dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(LF_even);
   dt_opencl_release_mem_object(LF_odd);
-  for(int s = 0; s < scales; s++) dt_opencl_release_mem_object(HF[s]);
-  return TRUE;
-
-error:
-  if(temp1) dt_opencl_release_mem_object(temp1);
-  if(temp2) dt_opencl_release_mem_object(temp2);
-  if(mask) dt_opencl_release_mem_object(mask);
-  if(LF_even) dt_opencl_release_mem_object(LF_even);
-  if(LF_odd) dt_opencl_release_mem_object(LF_odd);
-  for(int s = 0; s < scales; s++) if(HF[s]) dt_opencl_release_mem_object(HF[s]);
-
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_diffuse] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  for(int s = 0; s < scales; s++)
+    dt_opencl_release_mem_object(HF[s]);
+  return err;
 }
 
 void init_global(dt_iop_module_so_t *module)

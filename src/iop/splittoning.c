@@ -91,7 +91,9 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -220,7 +222,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_splittoning_data_t *d = (dt_iop_splittoning_data_t *)piece->data;
   dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
   const int width = roi_out->width;
@@ -233,16 +234,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float highlight_hue = d->highlight_hue;
   const float highlight_saturation = d->highlight_saturation;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_splittoning, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_splittoning, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(compress), CLARG(balance), CLARG(shadow_hue),
     CLARG(shadow_saturation), CLARG(highlight_hue), CLARG(highlight_saturation));
-  if(err != CL_SUCCESS) goto error;
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_splittoning] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
-}
+ }
 #endif
 
 
@@ -365,7 +360,8 @@ static void colorpick_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;

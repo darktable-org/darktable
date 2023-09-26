@@ -61,6 +61,7 @@ build/lib/darktable/plugins/introspection_monochrome.c
 build/lib/darktable/plugins/introspection_negadoctor.c
 build/lib/darktable/plugins/introspection_nlmeans.c
 build/lib/darktable/plugins/introspection_overexposed.c
+build/lib/darktable/plugins/introspection_primaries.c
 build/lib/darktable/plugins/introspection_profile_gamma.c
 build/lib/darktable/plugins/introspection_rawdenoise.c
 build/lib/darktable/plugins/introspection_rawoverexposed.c
@@ -86,7 +87,7 @@ build/lib/darktable/plugins/introspection_vibrance.c
 build/lib/darktable/plugins/introspection_vignette.c
 build/lib/darktable/plugins/introspection_watermark.c
 build/lib/darktable/plugins/introspection_zonesystem.c
-build/lib/darktable/plugins/lighttable/tools/darktable_authors.h
+build/bin/tools/darktable_authors.h
 build/share/darktable/org.darktable.darktable.desktop.in
 data/org.darktable.darktable.appdata.xml.in
 data/org.darktable.darktable.desktop.in
@@ -159,6 +160,7 @@ src/dtgtk/thumbnail.c
 src/dtgtk/thumbnail_btn.c
 src/dtgtk/thumbtable.c
 src/generate-cache/main.c
+src/gui/about.c
 src/gui/accelerators.c
 src/gui/gtk.c
 src/gui/gtkentry.c
@@ -256,6 +258,7 @@ src/iop/monochrome.c
 src/iop/negadoctor.c
 src/iop/nlmeans.c
 src/iop/overexposed.c
+src/iop/primaries.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
 src/iop/rawoverexposed.c

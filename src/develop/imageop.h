@@ -104,7 +104,7 @@ typedef enum dt_iop_tags_t
   IOP_TAG_NONE = 0,
   IOP_TAG_DISTORT = 1 << 0,
   IOP_TAG_DECORATION = 1 << 1,
-  IOP_TAG_CLIPPING = 1 << 2,
+  IOP_TAG_CROPPING = 1 << 2,
 
   // might be some other filters togglable by user?
   // IOP_TAG_SLOW       = 1<<3,
@@ -132,7 +132,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
   IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
-  IOP_FLAGS_GUIDES_WIDGET = 1 << 15       // require the guides widget
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15,      // require the guides widget
+  IOP_FLAGS_CROP_EXPOSER = 1 << 16        // offers crop exposing
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -161,19 +162,6 @@ typedef enum dt_dev_request_colorpick_flags_t
   DT_REQUEST_COLORPICK_OFF = 0,   // off
   DT_REQUEST_COLORPICK_MODULE = 1 // requested by module (should take precedence)
 } dt_dev_request_colorpick_flags_t;
-
-/** colorspace enums, must be in synch with dt_iop_colorspace_type_t
- * in color_conversion.cl */
-typedef enum dt_iop_colorspace_type_t
-{
-  IOP_CS_NONE = -1,
-  IOP_CS_RAW = 0,
-  IOP_CS_LAB = 1,
-  IOP_CS_RGB = 2,
-  IOP_CS_LCH = 3,
-  IOP_CS_HSL = 4,
-  IOP_CS_JZCZHZ = 5,
-} dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
 typedef struct dt_iop_module_so_t
@@ -315,7 +303,7 @@ typedef struct dt_iop_module_t
   GtkWidget *guides_combo;
 
   /** Last user action changed any module parameter via history? */
-  gboolean iopcache_hint;
+  gboolean  write_input_hint;
 
   /** flag in case the module has troubles (bad settings) - if TRUE,
    * show a warning sign next to module label */
@@ -328,9 +316,6 @@ typedef struct dt_iop_module_t
   char multi_name[128]; // user may change this name
   gboolean multi_name_hand_edited;
   GtkWidget *multimenu_button;
-
-  /** delayed-event handling */
-  guint label_recompute_handle;
 
   void (*process_plain)(struct dt_iop_module_t *self,
                         struct dt_dev_pixelpipe_iop_t *piece,
@@ -364,6 +349,13 @@ gboolean dt_iop_load_module(dt_iop_module_t *module,
                        struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_cleanup_module(dt_iop_module_t *module);
+/** migrate legacy params */
+int dt_iop_legacy_params(dt_iop_module_t *module,
+                         const void *const old_params,
+                         const int32_t old_params_size,
+                         const int old_version,
+                         void **new_params,
+                         int new_version);
 /** initialize pipe. */
 void dt_iop_init_pipe(struct dt_iop_module_t *module,
                       struct dt_dev_pixelpipe_t *pipe,
@@ -611,7 +603,7 @@ static inline void copy_pixel_nontemporal(
 
 // after writing data using copy_pixel_nontemporal, it is necessary to
 // ensure that the writes have completed before attempting reads from
-// a different core.  This function produces the required memmory
+// a different core.  This function produces the required memory
 // fence to ensure proper visibility
 static inline void dt_sfence()
 {

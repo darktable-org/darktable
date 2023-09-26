@@ -33,6 +33,7 @@
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
 #define DT_OPENCL_CBUFFSIZE 1024
+#define DT_OPENCL_DEFAULT_HEADROOM 600
 
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
@@ -72,7 +73,7 @@ extern "C" {
 // version for current darktable cl kernels
 // this is reflected in the kernel directory and allows to
 // enforce a new kernel compilation cycle
-#define DT_OPENCL_KERNELS 1
+#define DT_OPENCL_KERNELS 2
 
 typedef enum dt_opencl_memory_t
 {
@@ -97,19 +98,6 @@ typedef struct dt_opencl_eventtag_t
   char tag[DT_OPENCL_EVENTNAMELENGTH];
 } dt_opencl_eventtag_t;
 
-typedef enum dt_opencl_tunemode_t
-{
-  DT_OPENCL_TUNE_NOTHING = 0,
-  DT_OPENCL_TUNE_MEMSIZE = 1,
-  DT_OPENCL_TUNE_PINNED  = 2
-} dt_opencl_tunemode_t;
-
-typedef enum dt_opencl_pinmode_t
-{
-  DT_OPENCL_PINNING_OFF = 0,
-  DT_OPENCL_PINNING_ON = 1,
-  DT_OPENCL_PINNING_DISABLED = 2
-} dt_opencl_pinmode_t;
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -140,26 +128,22 @@ typedef struct dt_opencl_device_t
   int totalsuccess;
   int totallost;
   int maxeventslot;
-  int nvidia_sm_20;
+  gboolean nvidia_sm_20;
   const char *vendor;
   const char *fullname;
   const char *cname;
   const char *options;
   cl_int summary;
-  // the benchmark value must not be changed by the user
-  float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
   size_t used_available;
-  // flags what tuning modes should be used
-  dt_opencl_tunemode_t tuneactive; 
-  // flags detected errors
-  dt_opencl_tunemode_t runtime_error;
+  // flags if we want headroom mode
+  gboolean tunehead;
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
   // they are processed with a bad performance.
-  int avoid_atomics;
+  gboolean avoid_atomics;
 
   // pause OpenCL processing for this number of microseconds from time to time
   int micro_nap;
@@ -169,13 +153,18 @@ typedef struct dt_opencl_device_t
   // this can often be avoided by using indirect transfers via pinned memory,
   // other devices have more efficient direct memory transfer implementations.
   // We can't predict on solid grounds if a device belongs to the first or second group,
-  // also pinned mem transfer requires slightly more video ram plus system memory. 
-  // this holds a bitmask defined by dt_opencl_pinmode_t
-  // the device specific conf key might hold
-  // 0 -> disabled by default; might be switched on by tune for performance
-  // 1 -> enabled by default
-  // 2 -> disabled under all circumstances. This could/should be used if we give away / ship specific keys for buggy systems 
-  dt_opencl_pinmode_t pinned_memory;
+  // also pinned mem transfer requires slightly more video ram plus system memory.
+  // If TRUE in the device-specific conf pinned transfer is enabled
+  gboolean pinned_memory;
+
+  // keep track of devices using unified memory so we can adopt runtime code
+  gboolean unified_memory;
+  // fraction of system memory allowed for a device in percent
+  float unified_fraction;
+
+  // flags reporting cl runtime error conditions
+  gboolean pinned_error;
+  gboolean clmem_error;
 
   // in OpenCL processing round width/height of global work groups to a multiple of these values.
   // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
@@ -200,12 +189,10 @@ typedef struct dt_opencl_device_t
   // also used for blacklisted drivers
   gboolean disabled;
 
-  // Some devices are known to be unused by other apps so there is no need to test for available memory at all.
-  int forced_headroom;
+  // Some devices are known to be unused by other apps so they can use all memory.
+  int headroom;
 
-  // As the benchmarks are not good enough to calculate tiled-gpu vs untiled-cpu we have a parameter exposed
-  // in the cldevice conf key to balance this
-  float advantage;  
+  float advantage;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -240,8 +227,6 @@ typedef struct dt_opencl_t
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
 
-  // we want the cpu benchmark to be available
-  float cpubenchmark;
   // global kernels for blending operations.
   struct dt_blendop_cl_global_t *blendop;
 
@@ -268,6 +253,10 @@ typedef struct dt_opencl_t
 
   // global kernels for guided filter.
   struct dt_guided_filter_cl_global_t *guided_filter;
+
+  // saved kernel info for deferred initialisation
+  int program_saved[DT_OPENCL_MAX_KERNELS];
+  const char *name_saved[DT_OPENCL_MAX_KERNELS];
 } dt_opencl_t;
 
 /** description of memory requirements of local buffer
@@ -298,15 +287,12 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 void dt_opencl_cleanup(dt_opencl_t *cl);
 
 const char *cl_errstr(cl_int error);
+
 /** both finish functions return TRUE in case of success */
 /** cleans up command queue. */
-int dt_opencl_finish(const int devid);
-
+gboolean dt_opencl_finish(const int devid);
 /** cleans up command queue if in synchron mode or while exporting, returns TRUE in case of success */
 gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
-
-/** enqueues a synchronization point. */
-gboolean dt_opencl_enqueue_barrier(const int devid);
 
 /** locks a device for your thread's exclusive use and returns it's id */
 int dt_opencl_lock_device(const int pipetype);
@@ -380,9 +366,6 @@ gboolean dt_opencl_is_enabled(void);
 
 /** disable opencl */
 void dt_opencl_disable(void);
-
-/** get OpenCL tuning mode flags */
-int dt_opencl_get_tuning_mode(void);
 
 /** runtime check for cl system running */
 gboolean dt_opencl_running(void);
@@ -498,22 +481,12 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid);
 int dt_opencl_dev_roundup_width(int size, const int devid);
 int dt_opencl_dev_roundup_height(int size, const int devid);
 
-/** get next free slot in eventlist and manage size of eventlist */
-cl_event *dt_opencl_events_get_slot(const int devid, const char *tag);
-
 /** reset eventlist to empty state */
 void dt_opencl_events_reset(const int devid);
-
-/** Wait for events in eventlist to terminate -> this is a blocking synchronization point
-    Does not flush eventlist */
-void dt_opencl_events_wait_for(const int devid);
 
 /** Wait for events in eventlist to terminate, check for return status of events and
     report summary success info (CL_COMPLETE or last error code) */
 cl_int dt_opencl_events_flush(const int devid, const gboolean reset);
-
-/** display OpenCL profiling information. If summary is not 0, try to generate summarized info for kernels */
-void dt_opencl_events_profiling(const int devid, const int aggregated);
 
 /** utility function to calculate optimal work group dimensions for a given kernel */
 int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_local_buffer_t *factors);
@@ -565,10 +538,6 @@ static inline gboolean dt_opencl_finish_sync_pipe(const int devid, const int pip
 {
   return FALSE;
 }
-static inline gboolean dt_opencl_enqueue_barrier(const int devid)
-{
-  return -1;
-}
 static inline int dt_opencl_lock_device(const int dev)
 {
   return -1;
@@ -613,11 +582,6 @@ static inline gboolean dt_opencl_is_enabled(void)
 static inline void dt_opencl_disable(void)
 {
 }
-/** get OpenCL tuning mode flags */
-static inline int dt_opencl_get_tuning_mode(void)
-{
-  return 0;
-}
 static inline gboolean dt_opencl_running(void)
 {
   return FALSE;
@@ -646,22 +610,12 @@ static inline size_t dt_opencl_get_device_memalloc(const int devid)
 static inline void dt_opencl_release_mem_object(void *mem)
 {
 }
-static inline void *dt_opencl_events_get_slot(const int devid, const char *tag)
-{
-  return NULL;
-}
 static inline void dt_opencl_events_reset(const int devid)
-{
-}
-static inline void dt_opencl_events_wait_for(const int devid)
 {
 }
 static inline int dt_opencl_events_flush(const int devid, const gboolean reset)
 {
   return 0;
-}
-static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
-{
 }
 
 #ifdef __cplusplus

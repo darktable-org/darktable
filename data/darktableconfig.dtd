@@ -1,9 +1,20 @@
-<!ELEMENT dtconfiglist (dtconfig)*>
+<!ELEMENT dtconfiglist (dttab*, dtconfig*)>
+
+<!ELEMENT dttab (section)+>
+<!ATTLIST dttab
+	name ID #REQUIRED
+        title CDATA #REQUIRED
+>
+<!ELEMENT section EMPTY>
+<!ATTLIST section
+	name ID #IMPLIED
+        title CDATA #REQUIRED
+>
+
 <!ELEMENT dtconfig (name,type,default,capability?,shortdescription?,longdescription?)>
 <!ATTLIST dtconfig
-	prefs (import|lighttable|darkroom|otherviews|processing|security|cpugpu|storage|misc) #IMPLIED
-        section
-        (import|session|interface|other|tags|geoloc|slideshow|cpugpu|database|XMP|accel|general|modules|thumbs) #IMPLIED
+	prefs IDREF #IMPLIED
+        section IDREF #IMPLIED
         dialog (collect|recentcollect|import|tagging) #IMPLIED
         ui (yes|no) #IMPLIED
         restart (true|false) #IMPLIED

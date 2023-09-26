@@ -182,58 +182,66 @@ void dt_iop_image_copy(float *const __restrict__ out,
 
 // Copy an image buffer, specifying the regions of interest.  The
 // output RoI may be larger than the input RoI, in which case the
-// result is optionally padded with zeros.  If the output RoI is
+// result is padded with zeros.  If the output RoI is
 // smaller than the input RoI, only a portion of the input buffer will
 // be copied.
 void dt_iop_copy_image_roi(float *const __restrict__ out,
                            const float *const __restrict__ in,
                            const size_t ch,
                            const dt_iop_roi_t *const __restrict__ roi_in,
-                           const dt_iop_roi_t *const __restrict__ roi_out,
-                           const int zero_pad)
+                           const dt_iop_roi_t *const __restrict__ roi_out)
 {
   if(roi_in->width == roi_out->width
      && roi_in->height == roi_out->height)
   {
     // fast path, just copy the entire contents of the buffer
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
+    return;
   }
-  else if(roi_in->width <= roi_out->width
-          && roi_in->height <= roi_out->height)
-  {
-    // output needs padding
-    dt_print(DT_DEBUG_ALWAYS,"copy_image_roi with larger output not yet implemented\n");
-    //TODO
-  }
-  else if(roi_in->width >= roi_out->width
-          && roi_in->height >= roi_out->height)
-  {
-    const int dy = roi_out->y - roi_in->y;
-    const int dx = roi_out->x - roi_in->x;
-    const gboolean inside = (roi_in->width - dx >= roi_out->width)
-                         && (roi_in->height - dy >= roi_out->height);
 
-    if(!inside)
-      dt_print(DT_DEBUG_ALWAYS,"copy_image_roi roi_in does not include roi_out area\n");
+  const int dy = roi_out->y - roi_in->y;
+  const int dx = roi_out->x - roi_in->x;
 
-    const size_t width = sizeof(float) * roi_out->width * ch;
+  // we may copy data per line if data for roi_out are fully available in roi_in
+  if((roi_in->width - dx >= roi_out->width)
+      && (roi_in->height - dy >= roi_out->height))
+  {
+    const size_t lwidth = sizeof(float) * roi_out->width * ch;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, dx, dy, width) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, dx, dy, lwidth) \
   schedule(static)
 #endif
     for(size_t row = 0; row < roi_out->height; row++)
     {
       float *o = out + (size_t)(ch * row * roi_out->width);
       const float *i = in + (size_t)(ch * (roi_in->width * (row + dy) + dx));
-      memcpy(o, i, width);
+      memcpy(o, i, lwidth);
     }
+    return;
   }
-  else
+
+  // the RoI are inconsistant so we do a copy per location and fill by zero if
+  // not available in RoI-in
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(out, in, roi_in, roi_out, dx, dy, ch) \
+  schedule(static) collapse(2)
+#endif
+  for(int row = 0; row < roi_out->height; row++)
   {
-    // inconsistent RoIs!!
-    dt_print(DT_DEBUG_ALWAYS,"copy_image_roi called with inconsistent RoI!\n");
-    //TODO
+    for(int col = 0; col < roi_out->width; col++)
+    {
+      const int irow = row + dy;
+      const int icol = col + dx;
+      const size_t ox = (size_t)ch * (row * roi_out->width + col);
+      const size_t ix = (size_t)ch * (irow * roi_in->width + icol);
+      const gboolean avail = irow >= 0 && irow < roi_in->height
+                          && icol >= 0 && icol < roi_in->width;
+
+      for(int c = 0; c < ch; c++)
+        out[ox+c] = avail ? in[ix+c] : 0.0f;
+    }
   }
 }
 

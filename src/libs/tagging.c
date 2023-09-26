@@ -115,8 +115,7 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
     return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
   else
     return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
@@ -1480,8 +1479,11 @@ static void _pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t
   if(img_count > 0 || dt_conf_get_bool("plugins/lighttable/tagging/ask_before_delete_tag"))
   {
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog = gtk_dialog_new_with_buttons(_("delete tag?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  _("cancel"), GTK_RESPONSE_NONE, _("delete"), GTK_RESPONSE_YES, NULL);
+    GtkWidget *dialog = gtk_dialog_new_with_buttons(_("delete tag?"), GTK_WINDOW(win),
+                                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                    _("_cancel"), GTK_RESPONSE_NONE,
+                                                    _("_delete"), GTK_RESPONSE_YES, NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
     gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
     GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1568,8 +1570,11 @@ static void _pop_menu_dictionary_delete_node(GtkWidget *menuitem, dt_lib_module_
   if(tag_count == 0) return;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons( _("delete node?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                _("cancel"), GTK_RESPONSE_NONE, _("delete"), GTK_RESPONSE_YES, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("delete node?"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_delete"), GTK_RESPONSE_YES, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1629,6 +1634,13 @@ static void _pop_menu_dictionary_delete_node(GtkWidget *menuitem, dt_lib_module_
   g_free(tagname);
 }
 
+static void _name_changed(GtkEntry *entry,
+                          GtkDialog *dialog)
+{
+  const gchar *name = gtk_entry_get_text(entry);
+  gtk_dialog_set_response_sensitive(dialog, GTK_RESPONSE_YES, name && *name);
+}
+
 // create tag allows the user to create a single tag, which can be an element of the hierarchy or not
 static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t *self)
 {
@@ -1649,8 +1661,11 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
         DT_LIB_TAGGING_COL_PATH, &path, DT_LIB_TAGGING_COL_ID, &tagid, -1);
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("create tag"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("create tag"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_save"), GTK_RESPONSE_YES, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1662,6 +1677,9 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
   label = gtk_label_new(_("name: "));
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
   GtkWidget *entry = gtk_entry_new();
+  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog), GTK_RESPONSE_YES, FALSE);
+  g_signal_connect(entry, "changed", G_CALLBACK(_name_changed), dialog);
   gtk_box_pack_end(GTK_BOX(box), entry, TRUE, TRUE, 0);
 
   GtkWidget *category;
@@ -1779,8 +1797,11 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   }
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("edit"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("edit"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_save"), GTK_RESPONSE_YES, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1809,6 +1830,8 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   label = gtk_label_new(_("name: "));
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
   GtkWidget *entry = gtk_entry_new();
+  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+  g_signal_connect(entry, "changed", G_CALLBACK(_name_changed), dialog);
   gtk_entry_set_text(GTK_ENTRY(entry), subtag ? subtag : tagname);
   gtk_box_pack_end(GTK_BOX(box), entry, TRUE, TRUE, 0);
 
@@ -2053,8 +2076,11 @@ static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_
   if(tag_count == 0) return;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("change path"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("change path"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_save"), GTK_RESPONSE_YES, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -2079,6 +2105,7 @@ static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_
   g_free(text);
 
   GtkWidget *entry = gtk_entry_new();
+  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
   gtk_entry_set_text(GTK_ENTRY(entry), tagname);
   gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, TRUE, 0);
 
@@ -3468,9 +3495,10 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("tagging settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                 _("cancel"), GTK_RESPONSE_NONE,
-                                                 _("save"), GTK_RESPONSE_ACCEPT, NULL);
+                                                  _("_cancel"), GTK_RESPONSE_NONE,
+                                                  _("_save"), GTK_RESPONSE_ACCEPT, NULL);
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_prefs_init_dialog_tagging(dialog);
 
 #ifdef GDK_WINDOWING_QUARTZ

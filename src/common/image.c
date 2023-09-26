@@ -914,11 +914,15 @@ void dt_image_set_flip(const dt_imgid_t imgid, const dt_image_orientation_t orie
      "UPDATE main.images"
      " SET history_end = (SELECT MAX(num) + 1"
      "                    FROM main.history "
-     "                    WHERE imgid = ?1) WHERE id = ?1", -1, &stmt, NULL);
+     "                    WHERE imgid = ?1)"
+     " WHERE id = ?1",
+     -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
 
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
@@ -982,9 +986,8 @@ dt_image_orientation_t dt_image_get_orientation(const dt_imgid_t imgid)
 void dt_image_flip(const dt_imgid_t imgid, const int32_t cw)
 {
   // this is light table only:
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(darktable.develop->image_storage.id == imgid
-     && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+     && dt_view_get_current() == DT_VIEW_DARKROOM)
     return;
 
   dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
@@ -1180,20 +1183,20 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "INSERT INTO main.images"
-     "  (id, group_id, film_id, width, height, filename, maker, model, lens, exposure,"
+     "  (id, group_id, film_id, width, height, filename,"
+     "   maker_id, model_id, lens_id, exposure,"
      "   aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
-     "   output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
-     "   raw_auto_bright_threshold, raw_black, raw_maximum,"
-     "   license, sha1sum, orientation, histogram, lightmap,"
-     "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
+     "   output_width, output_height, crop, raw_parameters, raw_black, raw_maximum,"
+     "   orientation, longitude, latitude, altitude, color_matrix,"
+     "   colorspace, version, max_version,"
      "   history_end, position, aspect_ratio, exposure_bias, import_timestamp)"
-     " SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens,"
-     "       exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
-     "       flags, output_width, output_height, crop, raw_parameters,"
-     "       raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum,"
-     "       license, sha1sum, orientation, histogram, lightmap,"
-     "       longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
-     "       aspect_ratio, exposure_bias, import_timestamp"
+     " SELECT NULL, group_id, film_id, width, height, filename,"
+     "        maker_id, model_id, lens_id,"
+     "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
+     "        flags, output_width, output_height, crop, raw_parameters,"
+     "        raw_black, raw_maximum, orientation,"
+     "        longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
+     "        aspect_ratio, exposure_bias, import_timestamp"
      " FROM main.images WHERE id = ?2",
      -1, &stmt, NULL);
   // clang-format on
@@ -1700,9 +1703,9 @@ static uint32_t _image_import_internal(const int32_t film_id,
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
-     "INSERT INTO main.images (id, film_id, filename, license, sha1sum, flags, version, "
+     "INSERT INTO main.images (id, film_id, filename, flags, version, "
      "                         max_version, history_end, position, import_timestamp)"
-     " SELECT NULL, ?1, ?2, '', '', ?3, 0, 0, 0,"
+     " SELECT NULL, ?1, ?2, ?3, 0, 0, 0,"
      "        (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)  + (1 << 32), ?4"
      " FROM images",
      -1, &stmt, NULL);
@@ -1826,7 +1829,8 @@ static uint32_t _image_import_internal(const int32_t film_id,
   img->group_id = group_id;
 
   // read dttags and exif for database queries!
-  if(dt_exif_read(img, normalized_filename)) img->exif_inited = FALSE;
+  if(dt_exif_read(img, normalized_filename))
+    img->exif_inited = FALSE;
   char dtfilename[PATH_MAX] = { 0 };
   g_strlcpy(dtfilename, normalized_filename, sizeof(dtfilename));
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
@@ -1916,7 +1920,8 @@ dt_imgid_t dt_image_get_id_full_path(const gchar *filename)
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dir, -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, file, -1, SQLITE_STATIC);
-  if(sqlite3_step(stmt) == SQLITE_ROW) id=sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    id=sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   g_free(dir);
   g_free(file);
@@ -1934,7 +1939,8 @@ dt_imgid_t dt_image_get_id(const uint32_t film_id, const gchar *filename)
      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_TRANSIENT);
-  if(sqlite3_step(stmt) == SQLITE_ROW) id=sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    id=sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   return id;
 }
@@ -1989,7 +1995,6 @@ void dt_image_init(dt_image_t *img)
   memset(img->camera_model, 0, sizeof(img->camera_model));
   memset(img->camera_alias, 0, sizeof(img->camera_alias));
   memset(img->camera_makermodel, 0, sizeof(img->camera_makermodel));
-  memset(img->camera_legacy_makermodel, 0, sizeof(img->camera_legacy_makermodel));
   memset(img->filename, 0, sizeof(img->filename));
   g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
   img->exif_crop = 1.0;
@@ -2324,19 +2329,19 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
       DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
          "INSERT INTO main.images"
-         "  (id, group_id, film_id, width, height, filename, maker, model, lens, exposure,"
+         "  (id, group_id, film_id, width, height, filename,"
+         "   maker_id, model_id, lens_id, exposure,"
          "   aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
-         "   output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
-         "   raw_auto_bright_threshold, raw_black, raw_maximum,"
-         "   license, sha1sum, orientation, histogram, lightmap,"
+         "   output_width, output_height, crop, raw_parameters,"
+         "   raw_black, raw_maximum, orientation,"
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
          "   position, aspect_ratio, exposure_bias)"
-         " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename, maker, model, lens,"
+         " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename,"
+         "        maker_id, model_id, lens_id,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
-         "        flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
-         "        raw_auto_bright_threshold, raw_black, raw_maximum,"
-         "        license, sha1sum, orientation, histogram, lightmap,"
-         "        longitude, latitude, altitude, color_matrix, colorspace, -1, -1,"
+         "        flags, width, height, crop, raw_parameters, raw_black, raw_maximum,"
+         "        orientation, longitude, latitude, altitude,"
+         "        color_matrix, colorspace, -1, -1,"
          "        ?3, aspect_ratio, exposure_bias"
          " FROM main.images"
          " WHERE id = ?4",
@@ -3052,6 +3057,109 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
     dt_control_log(msg, (char *)NULL);
     g_free(msg);
   }
+}
+
+static int32_t _image_get_set_camera_id(const char *table,
+                                        const char *name)
+{
+  sqlite3_stmt *stmt;
+
+  char *query = g_strdup_printf("SELECT id"
+                                "  FROM main.%s"
+                                "  WHERE name = '%s'",
+                                table,
+                                name);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query, -1, &stmt, NULL);
+
+  int32_t id = -1;
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+  }
+  else
+  {
+    g_free(query);
+    query = g_strdup_printf("INSERT"
+                            "  INTO main.%s (name)"
+                            "  VALUES ('%s')",
+                            table,
+                            name);
+
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                          query, NULL, NULL, NULL);
+    id = dt_database_last_insert_rowid(darktable.db);
+  }
+
+  g_free(query);
+  sqlite3_finalize(stmt);
+
+  return id;
+}
+
+int32_t dt_image_get_camera_maker_id(const char *name)
+{
+  return _image_get_set_camera_id("makers", name);
+}
+
+int32_t dt_image_get_camera_model_id(const char *name)
+{
+  return _image_get_set_camera_id("models", name);
+}
+
+int32_t dt_image_get_camera_lens_id(const char *name)
+{
+  return _image_get_set_camera_id("lens", name);
+}
+
+int32_t dt_image_get_camera_id(const char *maker, const char *model)
+{
+  sqlite3_stmt *stmt;
+
+  char n_maker[1024] = { 0 };
+  char n_model[1024] = { 0 };
+  char n_alias[1024] = { 0 };
+
+  dt_imageio_lookup_makermodel(maker, model,
+                               n_maker, sizeof(n_maker),
+                               n_model, sizeof(n_model),
+                               n_alias, sizeof(n_alias));
+
+  char *query = g_strdup_printf("SELECT id"
+                                "  FROM main.cameras"
+                                "  WHERE maker = '%s'"
+                                "    AND model = '%s'",
+                                n_maker, n_model);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query, -1, &stmt, NULL);
+
+  int32_t id = -1;
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+  }
+  else
+  {
+    g_free(query);
+    query = g_strdup_printf("INSERT"
+                            "  INTO main.cameras (maker, model, alias)"
+                            "  VALUES ('%s', '%s', '%s')",
+                            n_maker, n_model,
+                            n_alias);
+
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                          query, NULL, NULL, NULL);
+    id = dt_database_last_insert_rowid(darktable.db);
+  }
+
+  g_free(query);
+  sqlite3_finalize(stmt);
+
+  return id;
 }
 
 // clang-format off

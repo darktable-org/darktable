@@ -178,8 +178,8 @@ typedef int32_t dt_mask_id_t;
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
-// bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 14
+// bump this number and make sure you have an updated logic in dt_configure_runtime_performance()
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 15
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -296,13 +296,13 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_TILING         = 1 << 23,
   DT_DEBUG_VERBOSE        = 1 << 24,
   DT_DEBUG_PIPE           = 1 << 25,
+  DT_DEBUG_EXPOSE         = 1 << 26,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
 {
-  unsigned int SSE2 : 1;
   unsigned int _no_intrinsics : 1;
 } dt_codepath_t;
 
@@ -314,7 +314,7 @@ typedef struct dt_sys_resources_t
   int *refresource; // for the debug resource modes we use fixed settings
   int group;
   int level;
-  int tunemode;
+  gboolean tunehead;
 } dt_sys_resources_t;
 
 typedef struct darktable_t

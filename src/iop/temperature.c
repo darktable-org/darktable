@@ -123,10 +123,19 @@ typedef struct dt_iop_temperature_preset_data_t
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 2 && new_version == 3)
+  typedef struct dt_iop_temperature_params_v3_t
+  {
+    float red;
+    float green;
+    float blue;
+    float g2;
+  } dt_iop_temperature_params_v3_t;
+
+  if(old_version == 2)
   {
     typedef struct dt_iop_temperature_params_v2_t
     {
@@ -134,14 +143,18 @@ int legacy_params(dt_iop_module_t *self,
       float coeffs[3];
     } dt_iop_temperature_params_v2_t;
 
-    dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
-    dt_iop_temperature_params_t *n = (dt_iop_temperature_params_t *)new_params;
+    const dt_iop_temperature_params_v2_t *o = (dt_iop_temperature_params_v2_t *)old_params;
+    dt_iop_temperature_params_v3_t *n =
+      (dt_iop_temperature_params_v3_t *)malloc(sizeof(dt_iop_temperature_params_v3_t));
 
     n->red = o->coeffs[0];
     n->green = o->coeffs[1];
     n->blue = o->coeffs[2];
     n->g2 = NAN;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_temperature_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -225,9 +238,9 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_UNSAFE_COPY;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   // This module may work in RAW or RGB (e.g. for TIFF files)
   // depending on the input The module does not change the color space
@@ -545,12 +558,13 @@ void process(struct dt_iop_module_t *self,
     for(int j = 0; j < roi_out->height; j++)
     {
       int i = 0;
-      const int alignment = ((4 - (j * width & (4 - 1))) & (4 - 1));
+
+      const int alignment = 3 & (4 - ((j*width) & 3));
       const int offset_j = j + roi_out->y;
 
       // process the unaligned sensels at the start of the row (when
       // width is not a multiple of 4)
-      for( ; i < alignment; i++)
+      for(; i < alignment; i++)
       {
         const size_t p = (size_t)j * width + i;
         out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
@@ -562,16 +576,17 @@ void process(struct dt_iop_module_t *self,
           d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
 
       // process sensels four at a time
-      for(; i < (width & ~3); i += 4)
+      for(; i < width - 4; i += 4)
       {
         const size_t p = (size_t)j * width + i;
         scaled_copy_4wide(out + p,in + p, coeffs);
       }
+
       // process the leftover sensels
-      for(i = width & ~3; i < width; i++)
+      for(; i < width; i++)
       {
         const size_t p = (size_t)j * width + i;
-        out[p] = in[p] * d_coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
+        out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
       }
     }
   }
@@ -656,9 +671,6 @@ int process_cl(struct dt_iop_module_t *self,
     CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto error;
 
-  dt_opencl_release_mem_object(dev_coeffs);
-  dt_opencl_release_mem_object(dev_xtrans);
-
   piece->pipe->dsc.temperature.enabled = TRUE;
   for(int k = 0; k < 4; k++)
   {
@@ -667,14 +679,11 @@ int process_cl(struct dt_iop_module_t *self,
       d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
     self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
   }
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_xtrans);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_white_balance] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -1885,9 +1894,8 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void color_picker_apply(dt_iop_module_t *self,
-                        GtkWidget *picker,
-                        dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   if(darktable.gui->reset) return;
 

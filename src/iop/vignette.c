@@ -61,44 +61,6 @@ typedef struct dt_iop_fvector_2d_t
   float y; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "vertical center"
 } dt_iop_vector_2d_t;
 
-typedef struct dt_iop_vignette_params1_t
-{
-  double scale;         // 0 - 100 Radie
-  double falloff_scale; // 0 - 100 Radie for falloff inner radie of falloff=scale and
-                        // outer=scale+falloff_scale
-  double strength;      // 0 - 1 strength of effect
-  double uniformity;    // 0 - 1 uniformity of center
-  double bsratio;       // -1 - +1 ratio of brightness/saturation effect
-  gboolean invert_falloff;
-  gboolean invert_saturation;
-  dt_iop_dvector_2d_t center; // Center of vignette
-} dt_iop_vignette_params1_t;
-
-typedef struct dt_iop_vignette_params2_t
-{
-  float scale;               // 0 - 100 Inner radius, percent of largest image dimension
-  float falloff_scale;       // 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
-  float brightness;          // -1 - 1 Strength of brightness reduction
-  float saturation;          // -1 - 1 Strength of saturation reduction
-  dt_iop_vector_2d_t center; // Center of vignette
-  gboolean autoratio;        //
-  float whratio;             // 0-1 = width/height ratio, 1-2 = height/width ratio + 1
-  float shape;
-} dt_iop_vignette_params2_t;
-
-typedef struct dt_iop_vignette_params3_t
-{
-  float scale;               // 0 - 100 Inner radius, percent of largest image dimension
-  float falloff_scale;       // 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
-  float brightness;          // -1 - 1 Strength of brightness reduction
-  float saturation;          // -1 - 1 Strength of saturation reduction
-  dt_iop_vector_2d_t center; // Center of vignette
-  gboolean autoratio;        //
-  float whratio;             // 0-1 = width/height ratio, 1-2 = height/width ratio + 1
-  float shape;
-  int dithering; // if and how to perform dithering
-} dt_iop_vignette_params3_t;
-
 typedef struct dt_iop_vignette_params_t
 {
   float scale;               // $MIN: 0.0 $MAX: 200.0 $DEFAULT: 80.0 $DESCRIPTION: "fall-off start" Inner radius, percent of largest image dimension
@@ -112,7 +74,6 @@ typedef struct dt_iop_vignette_params_t
   dt_iop_dither_t dithering; // $DEFAULT: DITHER_OFF if and how to perform dithering
   gboolean unbound;          // $DEFAULT: TRUE whether the values should be clipped
 } dt_iop_vignette_params_t;
-
 
 typedef struct dt_iop_vignette_gui_data_t
 {
@@ -173,18 +134,52 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  typedef struct dt_iop_vignette_params_v4_t
   {
-    const dt_iop_vignette_params1_t *old = old_params;
-    dt_iop_vignette_params_t *new = new_params;
+    float scale;
+    float falloff_scale;
+    float brightness;
+    float saturation;
+    dt_iop_vector_2d_t center;
+    gboolean autoratio;
+    float whratio;
+    float shape;
+    dt_iop_dither_t dithering;
+    gboolean unbound;
+  } dt_iop_vignette_params_v4_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_vignette_params_v1_t
+    {
+      double scale;
+      double falloff_scale;
+
+      double strength;
+      double uniformity;
+      double bsratio;
+      gboolean invert_falloff;
+      gboolean invert_saturation;
+      dt_iop_dvector_2d_t center;
+    } dt_iop_vignette_params_v1_t;
+
+    const dt_iop_vignette_params_v1_t *old = old_params;
+    dt_iop_vignette_params_v4_t *new =
+      (dt_iop_vignette_params_v4_t *)malloc(sizeof(dt_iop_vignette_params_v4_t));
     new->scale = old->scale;
     new->falloff_scale = old->falloff_scale;
     new->brightness = -(1.0 - MAX(old->bsratio, 0.0)) * old->strength / 100.0;
@@ -198,12 +193,29 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->shape = 1.0;
     new->dithering = DITHER_OFF;
     new->unbound = FALSE;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_vignette_params_v4_t);
+    *new_version = 4;
     return 0;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2)
   {
-    const dt_iop_vignette_params2_t *old = old_params;
-    dt_iop_vignette_params_t *new = new_params;
+    typedef struct dt_iop_vignette_params_v2_t
+    {
+      float scale;
+      float falloff_scale;
+      float brightness;
+      float saturation;
+      dt_iop_vector_2d_t center;
+      gboolean autoratio;
+      float whratio;
+    float shape;
+    } dt_iop_vignette_params_v2_t;
+
+    const dt_iop_vignette_params_v2_t *old = old_params;
+    dt_iop_vignette_params_v4_t *new =
+      (dt_iop_vignette_params_v4_t *)malloc(sizeof(dt_iop_vignette_params_v4_t));
     new->scale = old->scale;
     new->falloff_scale = old->falloff_scale;
     new->brightness = old->brightness;
@@ -215,12 +227,30 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->shape = old->shape;
     new->dithering = DITHER_OFF;
     new->unbound = FALSE;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_vignette_params_v4_t);
+    *new_version = 4;
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3)
   {
-    const dt_iop_vignette_params3_t *old = old_params;
-    dt_iop_vignette_params_t *new = new_params;
+    typedef struct dt_iop_vignette_params_v3_t
+    {
+      float scale;
+      float falloff_scale;
+      float brightness;
+      float saturation;
+      dt_iop_vector_2d_t center;
+      gboolean autoratio;
+      float whratio;
+      float shape;
+      int dithering;
+    } dt_iop_vignette_params_v3_t;
+
+    const dt_iop_vignette_params_v3_t *old = old_params;
+    dt_iop_vignette_params_v4_t *new =
+      (dt_iop_vignette_params_v4_t *)malloc(sizeof(dt_iop_vignette_params_v4_t));
     new->scale = old->scale;
     new->falloff_scale = old->falloff_scale;
     new->brightness = old->brightness;
@@ -232,6 +262,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->shape = old->shape;
     new->dithering = old->dithering;
     new->unbound = FALSE;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_vignette_params_v4_t);
+    *new_version = 4;
     return 0;
   }
 
@@ -295,6 +329,8 @@ static void draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int 
   cairo_restore(cr);
   cairo_stroke(cr);
 
+  if(dt_iop_color_picker_is_visible(darktable.develop))
+    return;
   // the handles
   const float radius_sel = DT_PIXEL_APPLY_DPI(6.0) / zoom_scale;
   const float radius_reg = DT_PIXEL_APPLY_DPI(4.0) / zoom_scale;
@@ -413,10 +449,11 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   int grab = get_grab(pzx * wd - vignette_x, pzy * ht - vignette_y, vignette_w, -vignette_h, vignette_fx,
                       -vignette_fy, zoom_scale);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
+  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) * lwidth);
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
   draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) * lwidth);
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
 }
@@ -790,7 +827,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   dt_iop_vignette_global_data_t *gd = (dt_iop_vignette_global_data_t *)self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_out->width;
   const int height = roi_out->height;
@@ -863,17 +899,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float saturation = data->saturation;
   const int unbound = data->unbound;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vignette, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vignette, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(scale), CLARG(roi_center_scaled_f),
     CLARG(expt), CLARG(dscale), CLARG(fscale), CLARG(brightness), CLARG(saturation), CLARG(dither),
     CLARG(unbound));
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_vignette] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 
@@ -1019,4 +1048,3 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

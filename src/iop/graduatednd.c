@@ -160,7 +160,9 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -448,10 +450,8 @@ static inline void _update_saturation_slider_end_color(GtkWidget *slider, float 
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }
 
-void color_picker_apply(
-	dt_iop_module_t *self,
-        GtkWidget *picker,
-        dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
@@ -516,11 +516,12 @@ void gui_post_expose(
 
   const float xa = g->xa * wd, xb = g->xb * wd, ya = g->ya * ht, yb = g->yb * ht;
   // the lines
+  const double lwidth = (dt_iop_color_picker_is_visible(darktable.develop) ? 0.5 : 1.0) / zoom_scale;
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   if(g->selected == 3 || g->dragging == 3)
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0) / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0) * lwidth);
   else
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) * lwidth);
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
 
   cairo_move_to(cr, xa, ya);
@@ -528,14 +529,16 @@ void gui_post_expose(
   cairo_stroke(cr);
 
   if(g->selected == 3 || g->dragging == 3)
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) * lwidth);
   else
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) * lwidth);
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_move_to(cr, xa, ya);
   cairo_line_to(cr, xb, yb);
   cairo_stroke(cr);
 
+  if(dt_iop_color_picker_is_visible(darktable.develop))
+    return;
   // the extremities
   const float pr_d = darktable.develop->preview_downsampling;
   float x1, y1, x2, y2;
@@ -551,7 +554,7 @@ void gui_post_expose(
   cairo_line_to(cr, x1, y1);
   cairo_line_to(cr, x2, y2);
   cairo_close_path(cr);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) * lwidth);
   if(g->selected == 1 || g->dragging == 1)
     dt_draw_set_color_overlay(cr, TRUE, 1.0);
   else
@@ -573,7 +576,7 @@ void gui_post_expose(
   cairo_line_to(cr, x1, y1);
   cairo_line_to(cr, x2, y2);
   cairo_close_path(cr);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) * lwidth);
   if(g->selected == 2 || g->dragging == 2)
     dt_draw_set_color_overlay(cr, TRUE, 1.0);
   else
@@ -927,7 +930,7 @@ void process(struct dt_iop_module_t *self,
         dt_aligned_pixel_t lengths;
         for_four_channels(i)
         {
-          lengths[i] = -length + counts[i] * length_inc;
+          lengths[i] = -(length + counts[i] * length_inc);
           curr_density[i] = _compute_density(-density, lengths[i]);
         }
         for(int i = 0; i < 4; i++)
@@ -939,13 +942,13 @@ void process(struct dt_iop_module_t *self,
           }
           // use streaming writes to eliminate the memory reads from loading cache lines
           copy_pixel_nontemporal(out + 4*(x+i), res);
-          length += 4*length_inc;
         }
+        length += 4*length_inc;
       }
       // handle the left-over pixels
       for(int x = width & ~3; x < width; x++)
       {
-        const float curr_density = _compute_density(density, length);
+        const float curr_density = _compute_density(-density, -length);
         dt_aligned_pixel_t res;	// the compiler will optimize this into a register
         for_each_channel(l, aligned(in : 16))
         {
@@ -974,7 +977,6 @@ int process_cl(struct dt_iop_module_t *self,
   dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
   dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -1011,15 +1013,9 @@ int process_cl(struct dt_iop_module_t *self,
 
   int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARRAY(4, data->color), CLARG(density),
     CLARG(length_base), CLARG(length_inc_x), CLARG(length_inc_y));
-  if(err != CL_SUCCESS) goto error;
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_graduatednd] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 

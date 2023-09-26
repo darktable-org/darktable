@@ -66,61 +66,6 @@ typedef enum dt_iop_shadhi_algo_t
   SHADHI_ALGO_BILATERAL // $DESCRIPTION: "bilateral filter"
 } dt_iop_shadhi_algo_t;
 
-/* legacy version 1 params */
-typedef struct dt_iop_shadhi_params1_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float reserved1;
-  float highlights;
-  float reserved2;
-  float compress;
-} dt_iop_shadhi_params1_t;
-
-/* legacy version 2 params */
-typedef struct dt_iop_shadhi_params2_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float reserved1;
-  float highlights;
-  float reserved2;
-  float compress;
-  float shadows_ccorrect;
-  float highlights_ccorrect;
-} dt_iop_shadhi_params2_t;
-
-typedef struct dt_iop_shadhi_params3_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float reserved1;
-  float highlights;
-  float reserved2;
-  float compress;
-  float shadows_ccorrect;
-  float highlights_ccorrect;
-  unsigned int flags;
-} dt_iop_shadhi_params3_t;
-
-typedef struct dt_iop_shadhi_params4_t
-{
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float whitepoint;
-  float highlights;
-  float reserved2;
-  float compress;
-  float shadows_ccorrect;
-  float highlights_ccorrect;
-  unsigned int flags;
-  float low_approximation;
-} dt_iop_shadhi_params4_t;
-
 typedef struct dt_iop_shadhi_params_t
 {
   dt_gaussian_order_t order; // $DEFAULT: DT_IOP_GAUSSIAN_ZERO
@@ -185,7 +130,9 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -200,13 +147,45 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, Lab, display-referred"));
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 5)
+  typedef struct dt_iop_shadhi_params_v5_t
   {
-    const dt_iop_shadhi_params1_t *old = old_params;
-    dt_iop_shadhi_params_t *new = new_params;
+    dt_gaussian_order_t order;
+    float radius;
+    float shadows;
+    float whitepoint;
+    float highlights;
+    float reserved2;
+    float compress;
+    float shadows_ccorrect;
+    float highlights_ccorrect;
+    unsigned int flags;
+    float low_approximation;
+    dt_iop_shadhi_algo_t shadhi_algo;
+  } dt_iop_shadhi_params_v5_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_shadhi_params_v1_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float shadows;
+      float reserved1;
+      float highlights;
+      float reserved2;
+      float compress;
+    } dt_iop_shadhi_params_v1_t;
+
+    const dt_iop_shadhi_params_v1_t *old = old_params;
+    dt_iop_shadhi_params_v5_t *new =
+      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = 0.5f * old->shadows;
@@ -219,12 +198,30 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->highlights_ccorrect = 0.0f;
     new->low_approximation = 0.01f;
     new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_shadhi_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  else if(old_version == 2 && new_version == 5)
+  else if(old_version == 2)
   {
-    const dt_iop_shadhi_params2_t *old = old_params;
-    dt_iop_shadhi_params_t *new = new_params;
+    typedef struct dt_iop_shadhi_params_v2_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float shadows;
+      float reserved1;
+      float highlights;
+      float reserved2;
+      float compress;
+      float shadows_ccorrect;
+      float highlights_ccorrect;
+    } dt_iop_shadhi_params_v2_t;
+
+    const dt_iop_shadhi_params_v2_t *old = old_params;
+    dt_iop_shadhi_params_v5_t *new =
+      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -237,12 +234,31 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->flags = 0;
     new->low_approximation = 0.01f;
     new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_shadhi_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  else if(old_version == 3 && new_version == 5)
+  else if(old_version == 3)
   {
-    const dt_iop_shadhi_params3_t *old = old_params;
-    dt_iop_shadhi_params_t *new = new_params;
+    typedef struct dt_iop_shadhi_params_v3_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float shadows;
+      float reserved1;
+      float highlights;
+      float reserved2;
+      float compress;
+      float shadows_ccorrect;
+      float highlights_ccorrect;
+      unsigned int flags;
+    } dt_iop_shadhi_params_v3_t;
+
+    const dt_iop_shadhi_params_v3_t *old = old_params;
+    dt_iop_shadhi_params_v5_t *new =
+      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -255,12 +271,32 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->flags = old->flags;
     new->low_approximation = 0.01f;
     new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_shadhi_params_v5_t);
+    *new_version = 5;
     return 0;
   }
-  else if(old_version == 4 && new_version == 5)
+  else if(old_version == 4)
   {
-    const dt_iop_shadhi_params4_t *old = old_params;
-    dt_iop_shadhi_params_t *new = new_params;
+    typedef struct dt_iop_shadhi_params_v4_t
+    {
+      dt_gaussian_order_t order;
+      float radius;
+      float shadows;
+      float whitepoint;
+      float highlights;
+      float reserved2;
+      float compress;
+      float shadows_ccorrect;
+      float highlights_ccorrect;
+      unsigned int flags;
+      float low_approximation;
+    } dt_iop_shadhi_params_v4_t;
+
+    const dt_iop_shadhi_params_v4_t *old = old_params;
+    dt_iop_shadhi_params_v5_t *new =
+      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -273,6 +309,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->flags = old->flags;
     new->low_approximation = old->low_approximation;
     new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_shadhi_params_v5_t);
+    *new_version = 5;
     return 0;
   }
   return 1;
@@ -557,17 +597,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     CLARG(shadows_ccorrect), CLARG(highlights_ccorrect), CLARG(flags), CLARG(unbound_mask), CLARG(low_approximation),
     CLARG(whitepoint));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_shadows_highlights_mix, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_tmp);
-  return TRUE;
 
 error:
   if(g) dt_gaussian_free_cl(g);
   if(b) dt_bilateral_free_cl(b);
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_shadows&highlights] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -695,4 +730,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

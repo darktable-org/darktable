@@ -185,13 +185,13 @@ static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
   gboolean show = FALSE;
 
   // thumbnails part
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  const dt_view_type_flags_t cv = dt_view_get_current();
   gboolean thumbs_state;
-  if(g_strcmp0(cv->module_name, "slideshow") == 0)
+  if(cv == DT_VIEW_SLIDESHOW)
   {
     thumbs_state = FALSE;
   }
-  else if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  else if(cv == DT_VIEW_LIGHTTABLE)
   {
     if(dt_view_lighttable_preview_state(darktable.view_manager)
        || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
@@ -265,7 +265,7 @@ static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
   }
 
   // and we do the same for culling/preview if needed
-  if(g_strcmp0(cv->module_name, "lighttable") == 0
+  if(cv == DT_VIEW_LIGHTTABLE
      && (dt_view_lighttable_preview_state(darktable.view_manager)
          || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING))
   {
@@ -618,26 +618,33 @@ static gboolean _resize_shortcuts_dialog(GtkWidget *widget, GdkEvent *event, gpo
 
 static void _set_mapping_mode_cursor(GtkWidget *widget)
 {
-  GdkCursorType cursor = GDK_DIAMOND_CROSS;
+  GdkDisplay *display = gdk_display_get_default();
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  GdkCursor *cursor = NULL;
 
   if(GTK_IS_EVENT_BOX(widget)) widget = gtk_bin_get_child(GTK_BIN(widget));
 
   if(widget && !strcmp(gtk_widget_get_name(widget), "module-header"))
-    cursor = GDK_BASED_ARROW_DOWN;
+    cursor = gdk_cursor_new_for_display(display, GDK_BASED_ARROW_DOWN);
   else if(dt_action_widget(darktable.control->mapping_widget)
           && darktable.develop)
   {
-    switch(dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE))
-    {
-    case  1: cursor = GDK_SB_UP_ARROW; break;
-    case -1: cursor = GDK_SB_DOWN_ARROW; break;
-    default: cursor = GDK_BOX_SPIRAL;
-    }
-  }
+    guint size = gdk_display_get_default_cursor_size(display);
+    cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size * 1.5, size);
+    cairo_t *cr = cairo_create(surface);
 
-  dt_control_allow_change_cursor();
-  dt_control_change_cursor(cursor);
-  dt_control_forbid_change_cursor();
+    dtgtk_cairo_paint_flags_t flags = dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE);
+    dtgtk_cairo_paint_shortcut(cr, 0, 0, size, size, flags, GINT_TO_POINTER(TRUE));
+    cursor = gdk_cursor_new_from_surface(display, surface, size/2, size/2);
+    cairo_surface_destroy(surface);
+
+    gdk_window_set_cursor(window, NULL); // work around bug where gtk seems to buffer surface cursors
+  }
+  else
+    cursor = gdk_cursor_new_for_display(display, GDK_DIAMOND_CROSS);
+
+  gdk_window_set_cursor(window, cursor);
+  g_object_unref(cursor);
 }
 
 static void _show_shortcuts_prefs(GtkWidget *w)
@@ -654,12 +661,13 @@ static void _show_shortcuts_prefs(GtkWidget *w)
     gtk_window_resize(GTK_WINDOW(shortcuts_dialog), _shortcuts_dialog_posize.w, _shortcuts_dialog_posize.h);
   }
   g_signal_connect(G_OBJECT(shortcuts_dialog), "configure-event", G_CALLBACK(_resize_shortcuts_dialog), NULL);
+  gtk_widget_show_all(shortcuts_dialog); // separately show_all content later, otherwise activates first treeview
 
   //grab the content area of the dialog
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(shortcuts_dialog));
   gtk_box_pack_start(GTK_BOX(content), dt_shortcuts_prefs(w), TRUE, TRUE, 0);
+  gtk_widget_show_all(content);
 
-  gtk_widget_show_all(shortcuts_dialog);
   gtk_dialog_run(GTK_DIALOG(shortcuts_dialog));
   gtk_widget_destroy(shortcuts_dialog);
 }
@@ -762,6 +770,8 @@ static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
   {
+    dt_control_forbid_change_cursor();
+    _set_mapping_mode_cursor(widget);
     gdk_event_handler_set(_main_do_event_keymap, user_data, NULL);
   }
   else

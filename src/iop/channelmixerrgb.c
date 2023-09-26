@@ -245,9 +245,9 @@ int default_group()
   return IOP_GROUP_COLOR;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -255,17 +255,69 @@ int default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_iop_channelmixer_rgb_params_v3_t
   {
+    /* params of v1 and v2 */
+    float red[CHANNEL_SIZE];
+    float green[CHANNEL_SIZE];
+    float blue[CHANNEL_SIZE];
+    float saturation[CHANNEL_SIZE];
+    float lightness[CHANNEL_SIZE];
+    float grey[CHANNEL_SIZE];
+    gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey;
+    dt_illuminant_t illuminant;
+    dt_illuminant_fluo_t illum_fluo;
+    dt_illuminant_led_t illum_led;
+    dt_adaptation_t adaptation;
+    float x, y;
+    float temperature;
+    float gamut;
+    gboolean clip;
+
+    /* params of v3 */
+    dt_iop_channelmixer_rgb_version_t version;
+
+    /* always add new params after this so we can import legacy params with memcpy on the common part of the struct */
+
+  } dt_iop_channelmixer_rgb_params_v3_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_channelmixer_rgb_params_v1_t
+    {
+      float red[CHANNEL_SIZE];
+      float green[CHANNEL_SIZE];
+      float blue[CHANNEL_SIZE];
+      float saturation[CHANNEL_SIZE];
+      float lightness[CHANNEL_SIZE];
+      float grey[CHANNEL_SIZE];
+      gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey;
+      dt_illuminant_t illuminant;
+      dt_illuminant_fluo_t illum_fluo;
+      dt_illuminant_led_t illum_led;
+      dt_adaptation_t adaptation;
+      float x, y;
+      float temperature;
+      float gamut;
+      gboolean clip;
+    } dt_iop_channelmixer_rgb_params_v1_t;
+
+    const dt_iop_channelmixer_rgb_params_v1_t *o =
+      (dt_iop_channelmixer_rgb_params_v1_t *)old_params;
+    dt_iop_channelmixer_rgb_params_v3_t *n =
+      (dt_iop_channelmixer_rgb_params_v3_t *)
+      malloc(sizeof(dt_iop_channelmixer_rgb_params_v3_t));
+
     // V1 and V2 use the same param structure but the normalize_grey
     // param had no effect since commit_params forced normalization no
     // matter what. So we re-import the params and force the param to
     // TRUE to keep edits.
-    memcpy(new_params, old_params, sizeof(dt_iop_channelmixer_rgb_params_t));
-    dt_iop_channelmixer_rgb_params_t *n = (dt_iop_channelmixer_rgb_params_t *)new_params;
+    memcpy(n, o, sizeof(dt_iop_channelmixer_rgb_params_v1_t));
+
     n->normalize_grey = TRUE;
 
     // V2 and V3 use the same param structure but these :
@@ -279,31 +331,39 @@ int legacy_params(dt_iop_module_t *self,
     // say that these params were created with legacy code
     n->version = CHANNELMIXERRGB_V_1;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_channelmixer_rgb_params_v3_t);
+    *new_version = 3;
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2)
   {
     typedef struct dt_iop_channelmixer_rgb_params_v2_t
     {
-      float red[CHANNEL_SIZE];         // $MIN: -2.0 $MAX: 2.0
-      float green[CHANNEL_SIZE];       // $MIN: -2.0 $MAX: 2.0
-      float blue[CHANNEL_SIZE];        // $MIN: -2.0 $MAX: 2.0
-      float saturation[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0
-      float lightness[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0
-      float grey[CHANNEL_SIZE];        // $MIN: 0.0 $MAX: 1.0
-      gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "normalize channels"
-      dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
-      dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
-      dt_illuminant_led_t illum_led;   // $DEFAULT: DT_ILLUMINANT_LED_B5 $DESCRIPTION: "LED source"
-      dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_LINEAR_BRADFORD
-      float x, y;                      // $DEFAULT: 0.333
-      float temperature;               // $MIN: 1667. $MAX: 25000. $DEFAULT: 5003.
-      float gamut;                     // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "gamut compression"
-      gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
+      float red[CHANNEL_SIZE];
+      float green[CHANNEL_SIZE];
+      float blue[CHANNEL_SIZE];
+      float saturation[CHANNEL_SIZE];
+      float lightness[CHANNEL_SIZE];
+      float grey[CHANNEL_SIZE];
+      gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey;
+      dt_illuminant_t illuminant;
+      dt_illuminant_fluo_t illum_fluo;
+      dt_illuminant_led_t illum_led;
+      dt_adaptation_t adaptation;
+      float x, y;
+      float temperature;
+      float gamut;
+      gboolean clip;
     } dt_iop_channelmixer_rgb_params_v2_t;
 
-    memcpy(new_params, old_params, sizeof(dt_iop_channelmixer_rgb_params_v2_t));
-    dt_iop_channelmixer_rgb_params_t *n = (dt_iop_channelmixer_rgb_params_t *)new_params;
+    const dt_iop_channelmixer_rgb_params_v2_t *o =
+      (dt_iop_channelmixer_rgb_params_v2_t *)old_params;
+    dt_iop_channelmixer_rgb_params_v3_t *n =
+      (dt_iop_channelmixer_rgb_params_v3_t *)
+      malloc(sizeof(dt_iop_channelmixer_rgb_params_v3_t));
+
+    memcpy(n, o, sizeof(dt_iop_channelmixer_rgb_params_v2_t));
 
     // swap the saturation parameters for R and B to put them in natural order
     const float R = n->saturation[0];
@@ -314,6 +374,9 @@ int legacy_params(dt_iop_module_t *self,
     // say that these params were created with legacy code
     n->version = CHANNELMIXERRGB_V_1;
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_channelmixer_rgb_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -2073,7 +2136,7 @@ void process(struct dt_iop_module_t *self,
         // anyway
         _auto_detect_WB(in, out, data->illuminant_type, roi_in->width, roi_in->height,
                         ch, RGB_to_XYZ, g->XYZ);
-        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self);
+        dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
         dt_iop_gui_leave_critical_section(self);
       }
 
@@ -2243,16 +2306,15 @@ int process_cl(struct dt_iop_module_t *self,
 
   size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
-  cl_mem input_matrix_cl = NULL;
-  cl_mem output_matrix_cl = NULL;
-
-  input_matrix_cl = dt_opencl_copy_host_to_device_constant
+  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant
     (devid, 12 * sizeof(float), (float*)work_profile->matrix_in);
-  output_matrix_cl = dt_opencl_copy_host_to_device_constant
+  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant
     (devid, 12 * sizeof(float), (float*)work_profile->matrix_out);
   cl_mem MIX_cl = dt_opencl_copy_host_to_device_constant
     (devid, 12 * sizeof(float), d->MIX);
 
+  if(input_matrix_cl == NULL || output_matrix_cl == NULL || MIX_cl == NULL)
+    goto error;
   // select the right kernel for the current LMS space
   int kernel = gd->kernel_channelmixer_rgb_rgb;
 
@@ -2294,23 +2356,15 @@ int process_cl(struct dt_iop_module_t *self,
      CLARG(MIX_cl), CLARG(d->illuminant), CLARG(d->saturation),
      CLARG(d->lightness), CLARG(d->grey),
      CLARG(d->p), CLARG(d->gamut), CLARG(d->clip), CLARG(d->apply_grey),
-    CLARG(d->version));
+     CLARG(d->version));
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-  if(err != CL_SUCCESS) goto error;
 
+error:
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(MIX_cl);
-  return TRUE;
-
-error:
-  if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
-  if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
-  if(MIX_cl) dt_opencl_release_mem_object(MIX_cl);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_channelmixerrgb] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2617,7 +2671,10 @@ void gui_post_expose(struct dt_iop_module_t *self,
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-  cairo_set_line_width(cr, 2.0 / zoom_scale);
+  const gboolean showhandle = dt_iop_color_picker_is_visible(darktable.develop) == FALSE;
+  const double lwidth = (showhandle ? 1.0 : 0.5) / zoom_scale;
+
+  cairo_set_line_width(cr, 2.0 * lwidth);
   const double origin = 9. / zoom_scale;
   const double destination = 18. / zoom_scale;
 
@@ -2643,19 +2700,22 @@ void gui_post_expose(struct dt_iop_module_t *self,
       cairo_stroke(cr);
     }
 
-    // draw outline circle
-    cairo_set_source_rgba(cr, 1., 1., 1., 1.);
-    cairo_arc(cr, g->box[k].x, g->box[k].y, 8. / zoom_scale, 0, 2. * M_PI);
-    cairo_stroke(cr);
+    if(showhandle)
+    {
+      // draw outline circle
+      cairo_set_source_rgba(cr, 1., 1., 1., 1.);
+      cairo_arc(cr, g->box[k].x, g->box[k].y, 8. / zoom_scale, 0, 2. * M_PI);
+      cairo_stroke(cr);
 
-    // draw black dot
-    cairo_set_source_rgba(cr, 0., 0., 0., 1.);
-    cairo_arc(cr, g->box[k].x, g->box[k].y, 1.5 / zoom_scale, 0, 2. * M_PI);
-    cairo_fill(cr);
+      // draw black dot
+      cairo_set_source_rgba(cr, 0., 0., 0., 1.);
+      cairo_arc(cr, g->box[k].x, g->box[k].y, 1.5 / zoom_scale, 0, 2. * M_PI);
+      cairo_fill(cr);
+    }
   }
 
   // draw symmetry axes
-  cairo_set_line_width(cr, 1.5 / zoom_scale);
+  cairo_set_line_width(cr, 1.5 * lwidth);
   cairo_set_source_rgba(cr, 1., 1., 1., 1.);
   const point_t top_ideal = { 0.5f, 1.f };
   const point_t top = apply_homography(top_ideal, g->homography);
@@ -2733,9 +2793,9 @@ void gui_post_expose(struct dt_iop_module_t *self,
       }
     }
 
-    cairo_set_line_width(cr, 5.0 / zoom_scale);
+    cairo_set_line_width(cr, 5.0 * lwidth);
     cairo_stroke_preserve(cr);
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
+    cairo_set_line_width(cr, 2.0 * lwidth);
     cairo_set_source_rgba(cr, 1., 1., 1., 1.);
     cairo_stroke(cr);
 
@@ -4352,10 +4412,10 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 
 void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
-                        dt_dev_pixelpipe_iop_t *piece)
+                        dt_dev_pixelpipe_t *pipe)
 {
   if(darktable.gui->reset) return;
-  _auto_set_illuminant(self, piece->pipe);
+  _auto_set_illuminant(self, pipe);
 }
 
 

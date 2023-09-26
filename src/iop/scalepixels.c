@@ -71,7 +71,9 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -146,7 +148,7 @@ void distort_mask(
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,

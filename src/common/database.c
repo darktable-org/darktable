@@ -34,7 +34,6 @@
 #endif
 #include "control/conf.h"
 #include "control/control.h"
-#include "gui/legacy_presets.h"
 
 #include <gio/gio.h>
 #include <glib.h>
@@ -49,7 +48,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 38
+#define CURRENT_DATABASE_VERSION_LIBRARY 44
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
@@ -89,7 +88,13 @@ static void _database_delete_mipmaps_files();
     goto end;                                                                                                \
   }
 
-/* migrate from the legacy db format (with the 'settings' blob) to the first version this system knows */
+int32_t dt_database_last_insert_rowid(const dt_database_t *db)
+{
+  return (int32_t)sqlite3_last_insert_rowid(db->handle);
+}
+
+/* migrate from the legacy db format (with the 'settings' blob) to the
+   first version this system knows */
 static gboolean _migrate_schema(dt_database_t *db, int version)
 {
   gboolean all_ok = TRUE;
@@ -2166,11 +2171,394 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "[init] can't set multi_name_hand_edited column\n");
     new_version = 38;
   }
+  else if(version == 38)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // create new tables
+    TRY_EXEC("CREATE TABLE main.makers"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+             "[init] can't create makers table\n");
+    TRY_EXEC("CREATE TABLE main.models"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+             "[init] can't create models table\n");
+    TRY_EXEC("CREATE TABLE main.lens"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR)",
+             "[init] can't create lens table\n");
+    TRY_EXEC("CREATE TABLE cameras"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  name VARCHAR,"
+             "  alias VARCHAR)",
+             "[init] can't create cameras table\n");
+
+    // create new indexes
+    TRY_EXEC("CREATE INDEX makers_name ON makers (name)",
+             "[init] can't create makers_name\n");
+    TRY_EXEC("CREATE INDEX model_name ON models (name)",
+             "[init] can't create model_name\n");
+    TRY_EXEC("CREATE INDEX lens_name ON lens (name)",
+             "[init] can't create lens_name\n");
+    TRY_EXEC("CREATE INDEX camera_name ON cameras (name)",
+             "[init] can't create camera_name\n");
+
+    // populate new tables
+    TRY_EXEC("INSERT INTO main.makers (name)"
+             " SELECT DISTINCT maker FROM main.images",
+             "[init] can't populate makers table\n");
+    TRY_EXEC("INSERT INTO main.models (name)"
+             " SELECT DISTINCT model FROM main.images",
+             "[init] can't populate models table\n");
+    TRY_EXEC("INSERT INTO main.lens (name)"
+             " SELECT DISTINCT lens FROM main.images",
+             "[init] can't populate lens table\n");
+
+    // add new columns for main.images
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN maker_id INTEGER default 0",
+             "[init] can't add maker_id column\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN model_id INTEGER default 0",
+             "[init] can't add model_id column\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN lens_id INTEGER default 0",
+             "[init] can't add lens_id column\n");
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN camera_id INTEGER default 0",
+             "[init] can't add camera_id column\n");
+
+    // update main images columns
+    TRY_EXEC("UPDATE main.images"
+             " SET maker_id = (SELECT id FROM main.makers WHERE name = maker)",
+             "[init] can't populate maker_id column\n");
+    TRY_EXEC("UPDATE main.images"
+             " SET model_id = (SELECT id FROM main.models WHERE name = model)",
+             "[init] can't populate model_id column\n");
+    TRY_EXEC("UPDATE main.images"
+             " SET lens_id = (SELECT id FROM main.lens WHERE name = lens)",
+             "[init] can't populate lens_id column\n");
+
+#if 0
+    // drop old columns (only supported starting with 3.35)
+    TRY_EXEC("ALTER TABLE main.images DROP COLUMN maker",
+             "[init] can't drop maker column\n");
+    TRY_EXEC("ALTER TABLE main.images DROP COLUMN model",
+             "[init] can't drop model column\n");
+    TRY_EXEC("ALTER TABLE main.images DROP COLUMN lens",
+             "[init] can't drop lens column\n");
+#endif
+
+    TRY_EXEC("CREATE TABLE images_new (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, "
+             "film_id INTEGER, "
+             "width INTEGER, height INTEGER, filename VARCHAR, "
+             "maker_id INTEGER, model_id INTEGER, lens_id INTEGER, camera_id INTEGER,"
+             "exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
+             "focus_distance REAL, datetime_taken INTEGER, flags INTEGER, "
+             "output_width INTEGER, output_height INTEGER, crop REAL, "
+             "raw_parameters INTEGER, raw_denoise_threshold REAL, "
+             "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
+             "license VARCHAR, sha1sum CHAR(40), "
+             "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
+             "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
+             "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
+             "aspect_ratio REAL, exposure_bias REAL, "
+             "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+             "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+             "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(camera_id) REFERENCES cameras(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
+             "[init] can't create new table images");
+
+    TRY_EXEC("INSERT INTO images_new"
+             " SELECT id, group_id, film_id, width, height, filename,"
+             "        maker_id, model_id, lens_id, camera_id,"
+             "        exposure, aperture, iso, focal_length,"
+             "        focus_distance, datetime_taken, flags,"
+             "        output_width, output_height, crop,"
+             "        raw_parameters, raw_denoise_threshold,"
+             "        raw_auto_bright_threshold, raw_black, raw_maximum,"
+             "        license, sha1sum,"
+             "        orientation, histogram, lightmap, longitude,"
+             "        latitude, altitude, color_matrix, colorspace, version,"
+             "        max_version, write_timestamp, history_end, position,"
+             "        aspect_ratio, exposure_bias,"
+             "        import_timestamp, change_timestamp, export_timestamp, print_timestamp"
+             "  FROM images",
+             "[init] can't populate new images table\n");
+
+    TRY_EXEC("DROP TABLE images",
+             "[init] can't drop table images_old\n");
+
+    TRY_EXEC("ALTER TABLE images_new RENAME TO images",
+             "[init] can't rename images\n");
+
+    // recreate the indexes
+    TRY_EXEC("CREATE INDEX image_position_index ON images (position)",
+             "[init] can't add image_position_index\n");
+    TRY_EXEC("CREATE INDEX images_filename_index ON images (filename, version)",
+             "[init] can't recreate images_filename_index\n");
+    TRY_EXEC("CREATE INDEX images_film_id_index ON images (film_id, filename)",
+             "[init] can't recreate images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX images_group_id_index ON images (group_id, id)",
+             "[init] can't recreate images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX images_latlong_index ON images (latitude DESC, longitude DESC)",
+             "[init] can't add images_latlong_index\n");
+    TRY_EXEC("CREATE INDEX images_datetime_taken ON images (datetime_taken)",
+             "[init] can't create images_datetime_taken\n");
+
+    // Some triggers to remove possible dangling refs in makers/models/lens/cameras
+    TRY_EXEC("CREATE TRIGGER remove_makers AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM makers"
+             "    WHERE id = OLD.maker_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE maker_id = OLD.maker_id);"
+             " END",
+             "[init] can't create trigger remove_makers\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_models AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM models"
+             "    WHERE id = OLD.model_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE model_id = OLD.model_id);"
+             " END",
+             "[init] can't create trigger remove_models\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_lens AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM lens"
+             "    WHERE id = OLD.lens_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE lens_id = OLD.lens_id);"
+             " END",
+             "[init] can't create trigger remove_lens\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_cameras AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM cameras"
+             "    WHERE id = OLD.camera_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE camera_id = OLD.camera_id);"
+             " END",
+             "[init] can't create trigger remove_cameras\n");
+
+    // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
+    TRY_EXEC
+      ("CREATE VIEW v_images AS"
+       " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "        cm.name AS normalized_camera, cm.alias AS camera_alias,"
+       "        exposure, aperture, iso,"
+       "        datetime(datetime_taken/1000000"
+       "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+       "        fr.folder AS folders, filename"
+       " FROM images AS mi,"
+       "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+       " WHERE mi.maker_id = mk.id"
+       "   AND mi.model_id = md.id"
+       "   AND mi.lens_id = ln.id"
+       "   AND mi.camera_id = cm.id"
+       "   AND mi.film_id = fr.id"
+       " ORDER BY normalized_camera, folders",
+       "[init] can't create view v_images\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 39;
+  }
+  else if(version == 39)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("DROP TABLE cameras",
+             "[init] can't drop cameras table\n");
+
+    TRY_EXEC("CREATE TABLE cameras"
+             " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+             "  maker VARCHAR, model VARCHAR,"
+             "  alias VARCHAR)",
+             "[init] can't create cameras table\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX camera_name ON cameras (maker, model, alias)",
+             "[init] can't create camera_name\n");
+
+    // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
+    TRY_EXEC("DROP VIEW v_images",
+             "[init] can't drop v_images view\n");
+
+    TRY_EXEC
+      ("CREATE VIEW v_images AS"
+       " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "        cm.maker || ' ' || cm.model AS normalized_camera, "
+       "        cm.alias AS camera_alias,"
+       "        exposure, aperture, iso,"
+       "        datetime(datetime_taken/1000000"
+       "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+       "        fr.folder AS folders, filename"
+       " FROM images AS mi,"
+       "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+       " WHERE mi.maker_id = mk.id"
+       "   AND mi.model_id = md.id"
+       "   AND mi.lens_id = ln.id"
+       "   AND mi.camera_id = cm.id"
+       "   AND mi.film_id = fr.id"
+       " ORDER BY normalized_camera, folders",
+       "[init] can't create view v_images\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 40;
+  }
+  else if(version == 40)
+  {
+    TRY_EXEC("ALTER TABLE main.history_hash ADD COLUMN fullthumb_hash BLOB default NULL",
+             "[init] can't add fullthumb_hash column\n");
+    new_version = 41;
+  }
+  else if(version == 41)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("CREATE TABLE images_new (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, "
+             "film_id INTEGER, "
+             "width INTEGER, height INTEGER, filename VARCHAR, "
+             "maker_id INTEGER, model_id INTEGER, lens_id INTEGER, camera_id INTEGER,"
+             "exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
+             "focus_distance REAL, datetime_taken INTEGER, flags INTEGER, "
+             "output_width INTEGER, output_height INTEGER, crop REAL, "
+             "raw_parameters INTEGER, raw_black INTEGER, raw_maximum INTEGER, "
+             "orientation INTEGER, longitude REAL, "
+             "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
+             "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
+             "aspect_ratio REAL, exposure_bias REAL, "
+             "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+             "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+             "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(camera_id) REFERENCES cameras(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+             "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
+             "[init] can't create new table images");
+
+    TRY_EXEC("INSERT INTO images_new"
+             " SELECT id, group_id, film_id, width, height, filename,"
+             "        maker_id, model_id, lens_id, camera_id,"
+             "        exposure, aperture, iso, focal_length,"
+             "        focus_distance, datetime_taken, flags,"
+             "        output_width, output_height, crop,"
+             "        raw_parameters, raw_black, raw_maximum,"
+             "        orientation, longitude,"
+             "        latitude, altitude, color_matrix, colorspace, version,"
+             "        max_version, write_timestamp, history_end, position,"
+             "        aspect_ratio, exposure_bias,"
+             "        import_timestamp, change_timestamp, export_timestamp, print_timestamp"
+             "  FROM images",
+             "[init] can't populate new images table\n");
+
+    // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
+    TRY_EXEC("DROP VIEW v_images",
+             "[init] can't drop v_images view\n");
+
+    TRY_EXEC("DROP TABLE images",
+             "[init] can't drop table images_old\n");
+
+    TRY_EXEC("ALTER TABLE images_new RENAME TO images",
+             "[init] can't rename images\n");
+
+    TRY_EXEC
+      ("CREATE VIEW v_images AS"
+       " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+       "        cm.maker || ' ' || cm.model AS normalized_camera, "
+       "        cm.alias AS camera_alias,"
+       "        exposure, aperture, iso,"
+       "        datetime(datetime_taken/1000000"
+       "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+       "        fr.folder AS folders, filename"
+       " FROM images AS mi,"
+       "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+       " WHERE mi.maker_id = mk.id"
+       "   AND mi.model_id = md.id"
+       "   AND mi.lens_id = ln.id"
+       "   AND mi.camera_id = cm.id"
+       "   AND mi.film_id = fr.id"
+       " ORDER BY normalized_camera, folders",
+       "[init] can't create view v_images\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
+    new_version = 42;
+  }
+  else if(version == 42)
+  {
+    TRY_EXEC("ALTER TABLE main.history_hash ADD COLUMN fullthumb_maxmip INTEGER default 0",
+             "[init] can't add fullthumb_maxmip column\n");
+    new_version = 43;
+  }
+  else if(version == 43)
+  {
+    // add back triggers and indices removed during last images changes.
+
+    // recreate the indexes
+    TRY_EXEC("CREATE INDEX image_position_index ON images (position)",
+             "[init] can't add image_position_index\n");
+    TRY_EXEC("CREATE INDEX images_filename_index ON images (filename, version)",
+             "[init] can't recreate images_filename_index\n");
+    TRY_EXEC("CREATE INDEX images_film_id_index ON images (film_id, filename)",
+             "[init] can't recreate images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX images_group_id_index ON images (group_id, id)",
+             "[init] can't recreate images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX images_latlong_index ON images (latitude DESC, longitude DESC)",
+             "[init] can't add images_latlong_index\n");
+    TRY_EXEC("CREATE INDEX images_datetime_taken ON images (datetime_taken)",
+             "[init] can't create images_datetime_taken\n");
+
+    // Some triggers to remove possible dangling refs in makers/models/lens/cameras
+    TRY_EXEC("CREATE TRIGGER remove_makers AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM makers"
+             "    WHERE id = OLD.maker_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE maker_id = OLD.maker_id);"
+             " END",
+             "[init] can't create trigger remove_makers\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_models AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM models"
+             "    WHERE id = OLD.model_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE model_id = OLD.model_id);"
+             " END",
+             "[init] can't create trigger remove_models\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_lens AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM lens"
+             "    WHERE id = OLD.lens_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE lens_id = OLD.lens_id);"
+             " END",
+             "[init] can't create trigger remove_lens\n");
+
+    TRY_EXEC("CREATE TRIGGER remove_cameras AFTER DELETE ON images"
+             " BEGIN"
+             "  DELETE FROM cameras"
+             "    WHERE id = OLD.camera_id"
+             "      AND NOT EXISTS (SELECT 1 FROM images WHERE camera_id = OLD.camera_id);"
+             " END",
+             "[init] can't create trigger remove_cameras\n");
+
+    new_version = 44;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
   // write the new version to db
-  sqlite3_prepare_v2(db->handle, "INSERT OR REPLACE INTO main.db_info (key, value) VALUES ('version', ?1)", -1, &stmt,
+  sqlite3_prepare_v2(db->handle,
+                     "INSERT OR REPLACE"
+                     " INTO main.db_info (key, value)"
+                     " VALUES ('version', ?1)", -1, &stmt,
                      NULL);
   sqlite3_bind_int(stmt, 1, new_version);
   sqlite3_step(stmt);
@@ -2394,7 +2782,10 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
   // write the new version to db
   // clang-format off¨
-  sqlite3_prepare_v2(db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)", -1, &stmt,
+  sqlite3_prepare_v2(db->handle,
+                     "INSERT OR REPLACE"
+                     " INTO data.db_info (key, value)"
+                     " VALUES ('version', ?1)", -1, &stmt,
                      NULL);
   // clang-format on
   sqlite3_bind_int(stmt, 1, new_version);
@@ -2418,7 +2809,8 @@ static gboolean _upgrade_library_schema(dt_database_t *db, int version)
   {
     const int new_version = _upgrade_library_schema_step(db, version);
     if(new_version == version)
-      return FALSE; // we don't know how to upgrade this db. probably a bug in _upgrade_library_schema_step
+      return FALSE; // we don't know how to upgrade this db. probably
+                    // a bug in _upgrade_library_schema_step
     else
       version = new_version;
   }
@@ -2446,10 +2838,12 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_stmt *stmt;
   ////////////////////////////// db_info
   // clang-format off
-  sqlite3_exec(db->handle, "CREATE TABLE main.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
-               NULL, NULL);
-  sqlite3_prepare_v2(
-      db->handle, "INSERT OR REPLACE INTO main.db_info (key, value) VALUES ('version', ?1)", -1, &stmt, NULL);
+  sqlite3_exec
+    (db->handle, "CREATE TABLE main.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)",
+     NULL, NULL, NULL);
+  sqlite3_prepare_v2
+    (db->handle, "INSERT OR REPLACE INTO main.db_info (key, value) VALUES ('version', ?1)",
+     -1, &stmt, NULL);
   // clang-format on
   sqlite3_bind_int(stmt, 1, CURRENT_DATABASE_VERSION_LIBRARY);
   sqlite3_step(stmt);
@@ -2465,34 +2859,91 @@ static void _create_library_schema(dt_database_t *db)
                "folder VARCHAR(1024) NOT NULL)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
+  ////////////////////////////// maker
+  sqlite3_exec(db->handle,
+               "CREATE TABLE main.makers"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX makers_name ON makers (name)",
+     NULL, NULL, NULL);
+  ////////////////////////////// model
+  sqlite3_exec(db->handle,
+               "CREATE TABLE main.models"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX models_name ON models (name)",
+     NULL, NULL, NULL);
+  ////////////////////////////// lens
+  sqlite3_exec(db->handle,
+               "CREATE TABLE main.lens"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  name VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE INDEX lens_name ON lens (name)",
+     NULL, NULL, NULL);
+  ////////////////////////////// cameras
+  sqlite3_exec(db->handle,
+               "CREATE TABLE cameras"
+               " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+               "  maker VARCHAR, model VARCHAR,"
+               "  alias VARCHAR)",
+               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle,
+     "CREATE UNIQUE INDEX cameras_name ON cameras (maker, model, alias)",
+     NULL, NULL, NULL);
   ////////////////////////////// images
   sqlite3_exec(
       db->handle,
-      "CREATE TABLE main.images (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
-      "width INTEGER, height INTEGER, filename VARCHAR, maker VARCHAR, model VARCHAR, "
-      "lens VARCHAR, exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
-      "focus_distance REAL, datetime_taken INTEGER, flags INTEGER, "
-      "output_width INTEGER, output_height INTEGER, crop REAL, "
-      "raw_parameters INTEGER, raw_denoise_threshold REAL, "
-      "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
-      "license VARCHAR, sha1sum CHAR(40), "
-      "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
-      "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
-      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
-      "aspect_ratio REAL, exposure_bias REAL, "
-      "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
-      "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+      "CREATE TABLE main.images"
+      " (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER,"
+      "  width INTEGER, height INTEGER, filename VARCHAR,"
+      "  maker_id INTEGER, model_id INTEGER, lens_id INTEGER, camera_id INTEGER,"
+      "  exposure REAL, aperture REAL, iso REAL, focal_length REAL,"
+      "  focus_distance REAL, datetime_taken INTEGER, flags INTEGER,"
+      "  output_width INTEGER, output_height INTEGER, crop REAL,"
+      "  raw_parameters INTEGER, raw_black INTEGER, raw_maximum INTEGER,"
+      "  orientation INTEGER, longitude REAL,"
+      "  latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER,"
+      "  version INTEGER, max_version INTEGER, write_timestamp INTEGER,"
+      "  history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL,"
+      "  import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+      "  export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+      "FOREIGN KEY(maker_id) REFERENCES makers(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(model_id) REFERENCES models(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(lens_id) REFERENCES lens(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(camera_id) REFERENCES cameras(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
       "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id, id)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id, filename)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_filename_index ON images (filename, version)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.image_position_index ON images (position)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.images_group_id_index ON images (group_id, id)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.images_film_id_index ON images (film_id, filename)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.images_filename_index ON images (filename, version)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.image_position_index ON images (position)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+               "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken)",
+               NULL, NULL, NULL);
 
   ////////////////////////////// selected_images
-  sqlite3_exec(db->handle, "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+               "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)",
+               NULL, NULL, NULL);
   ////////////////////////////// history
   sqlite3_exec(
       db->handle,
@@ -2534,16 +2985,83 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
-               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, "
-               "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
-               NULL, NULL, NULL);
+  sqlite3_exec
+    (db->handle, "CREATE TABLE main.history_hash"
+     " (imgid INTEGER PRIMARY KEY,"
+     "  basic_hash BLOB, auto_hash BLOB, current_hash BLOB,"
+     "  mipmap_hash BLOB, fullthumb_hash BLOB, fullthumb_maxmip INTEGER,"
+     "  FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
+     NULL, NULL, NULL);
 
   // v34
   sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken COLLATE NOCASE)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_value ON meta_data (value)", NULL, NULL, NULL);
+
+  // Some triggers to remove possible dangling refs in makers/models/lens/cameras
+  sqlite3_exec
+    (db->handle,
+     "CREATE TRIGGER remove_makers AFTER DELETE ON images"
+     " BEGIN"
+     "  DELETE FROM makers"
+     "    WHERE id = OLD.maker_id"
+     "      AND NOT EXISTS (SELECT 1 FROM images WHERE maker_id = OLD.maker_id);"
+     " END",
+     NULL, NULL, NULL);
+
+  sqlite3_exec
+    (db->handle,
+     "CREATE TRIGGER remove_models AFTER DELETE ON images"
+     " BEGIN"
+     "  DELETE FROM models"
+     "    WHERE id = OLD.model_id"
+     "      AND NOT EXISTS (SELECT 1 FROM images WHERE model_id = OLD.model_id);"
+     " END",
+     NULL, NULL, NULL);
+
+  sqlite3_exec
+    (db->handle,
+     "CREATE TRIGGER remove_lens AFTER DELETE ON images"
+     " BEGIN"
+     "  DELETE FROM lens"
+     "    WHERE id = OLD.lens_id"
+     "      AND NOT EXISTS (SELECT 1 FROM images WHERE lens_id = OLD.lens_id);"
+     " END",
+     NULL, NULL, NULL);
+
+  sqlite3_exec
+    (db->handle,
+     "CREATE TRIGGER remove_cameras AFTER DELETE ON images"
+     " BEGIN"
+     "  DELETE FROM cameras"
+     "    WHERE id = OLD.camera_id"
+     "      AND NOT EXISTS (SELECT 1 FROM images WHERE camera_id = OLD.camera_id);"
+     " END",
+     NULL, NULL, NULL);
+
+  // Finaly some views to ease walking the data
+
+  // NOTE: datetime_taken is in nano-second since "0001-01-01 00:00:00"
+  sqlite3_exec
+    (db->handle,
+     "CREATE VIEW v_images AS"
+     " SELECT mi.id AS id, mk.name AS maker, md.name AS model, ln.name AS lens,"
+     "        cm.name AS normalized_camera, cm.alias AS camera_alias,"
+     "        exposure, aperture, iso,"
+     "        datetime(datetime_taken/1000000"
+     "                 + unixepoch('0001-01-01 00:00:00'), 'unixepoch') AS datetime,"
+     "        fr.folder AS folders, filename"
+     " FROM images AS mi,"
+     "      makers AS mk, models AS md, lens AS ln, cameras AS cm, film_rolls AS fr"
+     " WHERE mi.maker_id = mk.id"
+     "   AND mi.model_id = md.id"
+     "   AND mi.lens_id = ln.id"
+     "   AND mi.camera_id = cm.id"
+     "   AND mi.film_id = fr.id"
+     " ORDER BY normalized_camera, folders",
+     NULL, NULL, NULL);
+
   // clang-format on
 }
 
@@ -2553,10 +3071,12 @@ static void _create_data_schema(dt_database_t *db)
   sqlite3_stmt *stmt;
   // clang-format off
   ////////////////////////////// db_info
-  sqlite3_exec(db->handle, "CREATE TABLE data.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
-               NULL, NULL);
-  sqlite3_prepare_v2(
-        db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)", -1, &stmt, NULL);
+  sqlite3_exec
+    (db->handle, "CREATE TABLE data.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)",
+     NULL, NULL, NULL);
+  sqlite3_prepare_v2
+    (db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)",
+     -1, &stmt, NULL);
   sqlite3_bind_int(stmt, 1, CURRENT_DATABASE_VERSION_DATA);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -2775,14 +3295,14 @@ void dt_database_show_error(const dt_database_t *db)
     // clang-format on
 
     gboolean delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
-                                        label_text, _("cancel"), _("delete database lock files"));
+                                        label_text, _("_cancel"), _("_delete database lock files"));
 
     if(delete_lockfiles)
     {
       gboolean really_delete_lockfiles =
         dt_gui_show_standalone_yes_no_dialog
         (_("are you sure?"),
-         _("\ndo you really want to delete the lock files?\n"), _("no"), _("yes"));
+         _("\ndo you really want to delete the lock files?\n"), _("_no"), _("_yes"));
       if(really_delete_lockfiles)
       {
         int status = 0;
@@ -2800,14 +3320,14 @@ void dt_database_show_error(const dt_database_t *db)
         if(status==0)
           dt_gui_show_standalone_yes_no_dialog(_("done"),
                                         _("\nsuccessfully deleted the lock files.\nyou can now restart darktable\n"),
-                                        _("ok"), NULL);
+                                        _("_ok"), NULL);
         else
           dt_gui_show_standalone_yes_no_dialog
             (_("error"), g_markup_printf_escaped(
               _("\nat least one file could not be removed.\n"
                 "you may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>\n"
                 "in folder <a href=\"file:///%s\">%s</a>.\n"), lck_dirname, lck_dirname),
-             _("ok"), NULL);
+             _("_ok"), NULL);
       }
     }
 
@@ -2964,6 +3484,44 @@ static gboolean _lock_databases(dt_database_t *db)
   return TRUE;
 }
 
+static gboolean _upgrade_camera_table(const dt_database_t *db)
+{
+  gboolean res = TRUE;
+  sqlite3_stmt *stmt;
+  sqlite3_stmt *innerstmt;
+
+  sqlite3_prepare_v2(db->handle,
+                     "SELECT mi.id, mk.name, md.name"
+                     " FROM main.images AS mi, main.makers AS mk, main.models AS md"
+                     " WHERE mi.maker_id = mk.id"
+                     "   AND mi.model_id = md.id",
+                     -1, &stmt, NULL);
+
+  sqlite3_prepare_v2(db->handle,
+                     "UPDATE main.images SET camera_id = ?1 WHERE id = ?2",
+                     -1, &innerstmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
+    const char *maker = (const char *)sqlite3_column_text(stmt, 1);
+    const char *model = (const char *)sqlite3_column_text(stmt, 2);
+
+    const int32_t camera_id = dt_image_get_camera_id(maker, model);
+
+    sqlite3_bind_int(innerstmt, 1, camera_id);
+    sqlite3_bind_int(innerstmt, 2, imgid);
+    sqlite3_step(innerstmt);
+    sqlite3_reset(innerstmt);
+    sqlite3_clear_bindings(innerstmt);
+  }
+
+  sqlite3_finalize(stmt);
+  sqlite3_finalize(innerstmt);
+
+  return res;
+}
+
 void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 {
   // if there's no gui just leave
@@ -2984,7 +3542,7 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 
   gboolean shall_we_update_the_db =
     dt_gui_show_standalone_yes_no_dialog(_("darktable - schema migration"), label_text,
-                                         _("close darktable"), _("upgrade database"));
+                                         _("_close darktable"), _("_upgrade database"));
 
   g_free(label_text);
 
@@ -3235,7 +3793,9 @@ start:
   else
   {
     gchar* data_status = _get_pragma_string_val(db->handle, "data.quick_check");
-    rc = sqlite3_prepare_v2(db->handle, "select value from data.db_info where key = 'version'", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(db->handle,
+                            "SELECT value FROM data.db_info WHERE key = 'version'",
+                            -1, &stmt, NULL);
     if(!g_strcmp0(data_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
     {
       g_free(data_status); // status is OK and we don't need to care :)
@@ -3303,12 +3863,9 @@ start:
         dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
                                             NULL,
                                             dflags,
-                                            _("close darktable"),
-                                            GTK_RESPONSE_CLOSE,
-                                            _("attempt restore"),
-                                            GTK_RESPONSE_ACCEPT,
-                                            _("delete database"),
-                                            GTK_RESPONSE_REJECT,
+                                            _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                            _("_attempt restore"), GTK_RESPONSE_ACCEPT,
+                                            _("_delete database"), GTK_RESPONSE_REJECT,
                                             NULL);
         gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
         label_options = _("do you want to close darktable now to manually restore\n"
@@ -3321,10 +3878,8 @@ start:
         dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
                                             NULL,
                                             dflags,
-                                            _("close darktable"),
-                                            GTK_RESPONSE_CLOSE,
-                                            _("delete database"),
-                                            GTK_RESPONSE_REJECT,
+                                            _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                            _("_delete database"), GTK_RESPONSE_REJECT,
                                             NULL);
         gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
         label_options = _("do you want to close darktable now to manually restore\n"
@@ -3419,7 +3974,9 @@ start:
   gchar* libdb_status = _get_pragma_string_val(db->handle, "main.quick_check");
   // next we are looking at the library database
   // does the db contain the new 'db_info' table?
-  rc = sqlite3_prepare_v2(db->handle, "select value from main.db_info where key = 'version'", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db->handle,
+                          "SELECT value FROM main.db_info WHERE key = 'version'",
+                          -1, &stmt, NULL);
   if(!g_strcmp0(libdb_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
     g_free(libdb_status);//it's ok :)
@@ -3488,12 +4045,9 @@ start:
       dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
                                           NULL,
                                           dflags,
-                                          _("close darktable"),
-                                          GTK_RESPONSE_CLOSE,
-                                          _("attempt restore"),
-                                          GTK_RESPONSE_ACCEPT,
-                                          _("delete database"),
-                                          GTK_RESPONSE_REJECT,
+                                          _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                          _("_attempt restore"), GTK_RESPONSE_ACCEPT,
+                                          _("_delete database"), GTK_RESPONSE_REJECT,
                                           NULL);
       gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
       label_options = _("do you want to close darktable now to manually restore\n"
@@ -3506,10 +4060,8 @@ start:
       dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
                                           NULL,
                                           dflags,
-                                          _("close darktable"),
-                                          GTK_RESPONSE_CLOSE,
-                                          _("delete database"),
-                                          GTK_RESPONSE_REJECT,
+                                          _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                          _("_delete database"), GTK_RESPONSE_REJECT,
                                           NULL);
       gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
       label_options = _("do you want to close darktable now to manually restore\n"
@@ -3600,15 +4152,15 @@ start:
   {
     // does it contain the legacy 'settings' table?
     sqlite3_finalize(stmt);
-    rc = sqlite3_prepare_v2(db->handle, "select settings from main.settings", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(db->handle, "SELECT settings FROM main.settings", -1, &stmt, NULL);
     if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
     {
       // the old blob had the version as an int in the first place
       const void *set = sqlite3_column_blob(stmt, 0);
       const int db_version = *(int *)set;
       sqlite3_finalize(stmt);
-      if(!_migrate_schema(db, db_version)) // bring the legacy layout to the first one known to our upgrade
-                                           // path ...
+      if(!_migrate_schema(db, db_version)) // bring the legacy layout to the first one known
+                                           // to our upgrade path ...
       {
         // we couldn't migrate the db for some reason. bail out.
         dt_print(DT_DEBUG_ALWAYS,
@@ -3639,11 +4191,8 @@ start:
   // create the in-memory tables
   _create_memory_schema(db);
 
-  // create a table legacy_presets with all the presets from pre-auto-apply-cleanup darktable.
-  dt_legacy_presets_create(db);
-
   // drop table settings -- we don't want old versions of dt to drop our tables
-  sqlite3_exec(db->handle, "drop table main.settings", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "DROP TABLE main.settings", NULL, NULL, NULL);
 
   // take care of potential bad data in the db.
   _sanitize_db(db);
@@ -3668,6 +4217,44 @@ error:
   g_free(dbname);
 
   return db;
+}
+
+void dt_upgrade_maker_model(const dt_database_t *db)
+{
+  sqlite3_stmt *stmt;
+
+  // check if updating the camera table is needed (done for each new darktable version)
+
+  sqlite3_prepare_v2(db->handle,
+                     "SELECT value"
+                     " FROM main.db_info"
+                     " WHERE key = 'dt_version'",
+                     -1, &stmt, NULL);
+  char *dt_version = NULL;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_version = (char *)sqlite3_column_text(stmt, 0);
+  }
+
+  if(!dt_version || strcmp(dt_version, darktable_package_version))
+  {
+    _upgrade_camera_table(db);
+
+    sqlite3_finalize(stmt);
+
+    sqlite3_prepare_v2(db->handle,
+                       "INSERT OR REPLACE"
+                       " INTO main.db_info (key, value)"
+                       " VALUES ('dt_version', ?1)",
+                       -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, darktable_package_version, -1, SQLITE_TRANSIENT);
+    if(sqlite3_step(stmt) != SQLITE_DONE)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[init] can't insert/update new dt_version\n");
+    }
+  }
+
+  sqlite3_finalize(stmt);
 }
 
 void dt_database_destroy(const dt_database_t *db)
@@ -4622,18 +5209,24 @@ void dt_database_start_transaction(const struct dt_database_t *db)
   // if top level a simple unamed transaction is used BEGIN / COMMIT / ROLLBACK
   // otherwise we use a savepoint (named transaction).
 
-  if(trxid == 0 || TRUE)
+  if(trxid == 0)
   {
     // In theads application it may be safer to use an IMMEDIATE transaction:
     // "BEGIN IMMEDIATE TRANSACTION"
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "BEGIN TRANSACTION", NULL, NULL, NULL);
   }
-#ifdef USE_NESTED_TRANSACTIONS
   else
+#ifdef USE_NESTED_TRANSACTIONS
   {
     char SQLTRX[32] = { 0 };
     g_snprintf(SQLTRX, sizeof(SQLTRX), "SAVEPOINT trx%d", trxid);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#else
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_database_start_transaction] nested transaction detected (%d)\n",
+             trxid);
   }
 #endif
 
@@ -4651,16 +5244,22 @@ void dt_database_release_transaction(const struct dt_database_t *db)
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_database_release_transaction] COMMIT outside a transaction\n");
 
-  if(trxid == 1 || TRUE)
+  if(trxid == 1)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "COMMIT TRANSACTION", NULL, NULL, NULL);
   }
-#ifdef USE_NESTED_TRANSACTIONS
   else
+#ifdef USE_NESTED_TRANSACTIONS
   {
     char SQLTRX[64] = { 0 };
     g_snprintf(SQLTRX, sizeof(SQLTRX), "RELEASE SAVEPOINT trx%d", trxid - 1);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#else
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_database_end_transaction] nested transaction detected (%d)\n",
+             trxid);
   }
 #endif
 }
@@ -4673,16 +5272,22 @@ void dt_database_rollback_transaction(const struct dt_database_t *db)
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_database_rollback_transaction] ROLLBACK outside a transaction\n");
 
-  if(trxid == 1 || TRUE)
+  if(trxid == 1)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
-#ifdef USE_NESTED_TRANSACTIONS
   else
+#ifdef USE_NESTED_TRANSACTIONS
   {
     char SQLTRX[64] = { 0 };
     g_snprintf(SQLTRX, sizeof(SQLTRX), "ROLLBACK TRANSACTION TO SAVEPOINT trx%d", trxid - 1);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#else
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_database_rollback_transaction] nested transaction detected (%d)\n",
+             trxid);
   }
 #endif
 }

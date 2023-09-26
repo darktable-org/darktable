@@ -345,6 +345,16 @@ static int exif_datetime_taken_member(lua_State *L)
   }
 }
 
+static int change_timestamp_member(lua_State *L)
+{
+  const dt_image_t *my_image = checkreadimage(L, 1);
+  char sdt[50] = {0};
+  dt_datetime_gtimespan_to_local(sdt, sizeof(sdt), my_image->change_timestamp, FALSE, TRUE);
+  lua_pushstring(L, sdt);
+  releasereadimage(L, my_image);
+  return 1;
+}
+
 static int local_copy_member(lua_State *L)
 {
   if(lua_gettop(L) != 3)
@@ -584,6 +594,8 @@ int dt_lua_init_image(lua_State *L)
   }
   lua_pushcfunction(L, exif_datetime_taken_member);
   dt_lua_type_register(L, dt_lua_image_t, "exif_datetime_taken");
+  lua_pushcfunction(L, change_timestamp_member);
+  dt_lua_type_register(L, dt_lua_image_t, "change_timestamp");
   // metadata
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {

@@ -22,9 +22,9 @@ FILE(GLOB SOURCE_FILES
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
+  "common/custom_primaries.c"
   "common/splines.cpp"
   "common/curl_tools.c"
-  "common/cpuid.c"
   "common/darktable.c"
   "common/database.c"
   "common/datetime.c"
@@ -139,6 +139,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/thumbnail_btn.c"
   "dtgtk/thumbtable.c"
   "dtgtk/togglebutton.c"
+  "gui/about.c"
   "gui/accelerators.c"
   "gui/gtkentry.c"
   "gui/guides.c"
@@ -303,6 +304,7 @@ if(USE_CAMERA_SUPPORT)
     # and only variables ${CPACK_*} are correctly used.
     # so this needs to be saved by adding another variable with a name beginning with CPACK
     set(CPACK_NSIS_GPHOTO2_VERSION ${Gphoto2_VERSION_STRING} CACHE STRING "Gphoto2 version string")
+    set(CPACK_NSIS_GPHOTO2_PORT_VERSION ${Gphoto2_PORT_VERSION_STRING} CACHE STRING "Gphoto2 port version string")
   endif()
 endif(USE_CAMERA_SUPPORT)
 
@@ -352,17 +354,23 @@ if(USE_WEBP)
   endif(WebP_FOUND)
 endif(USE_WEBP)
 
-if (USE_AVIF)
-    find_package(libavif 0.8.2 CONFIG)
-    if (TARGET avif)
-        list(APPEND LIBS avif)
-        add_definitions(-DHAVE_LIBAVIF=1)
-        list(APPEND SOURCES "imageio/imageio_avif.c")
-        set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")
+if(USE_AVIF)
+  # no version check in config mode because of major only match policy
+  find_package(libavif CONFIG)
+  if(TARGET avif)
+    if(libavif_VERSION VERSION_GREATER_EQUAL 0.9.2)
+      list(APPEND LIBS avif)
+      add_definitions(-DHAVE_LIBAVIF=1)
+      list(APPEND SOURCES "imageio/imageio_avif.c")
+      set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")
+    else()
+      set(libavif_FOUND NOTFOUND)
     endif()
+  endif()
 endif()
 
 if(USE_HEIF)
+  # no version check in config mode because of exact match policy
   find_package(libheif CONFIG)
   if(NOT TARGET heif)
     find_package(libheif 1.13.0 MODULE)
@@ -373,7 +381,7 @@ if(USE_HEIF)
       add_definitions(-DHAVE_LIBHEIF=1)
       list(APPEND SOURCES "imageio/imageio_heif.c")
       set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} heif heic hif CACHE INTERNAL "")
-      if(NOT TARGET avif)
+      if(NOT libavif_FOUND)
         # libheif can handle avif, too
         set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")
       endif()
@@ -430,7 +438,7 @@ include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND Exiv2_VERSION VERSION_LESS "0.28.0")
-  set(CMAKE_CXX_STANDARD 14)
+  add_compile_definitions(_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR)
 endif()
 
 # Optionally enable ISOBMFF support in Exiv2
@@ -925,6 +933,7 @@ set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERAT
 add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
+add_dependencies(lib_darktable generate_authors_h)
 
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES MACOSX_RPATH TRUE)
@@ -957,7 +966,7 @@ target_link_libraries(lib_darktable PRIVATE lib_darktable_imageio_rawspeed)
 #
 if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
-  install(TARGETS lib_darktable DESTINATION bin COMPONENT DTApplication)
+  install(TARGETS lib_darktable RUNTIME DESTINATION bin COMPONENT DTApplication)
 else(WIN32)
   install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable)
 endif(WIN32)
@@ -1037,3 +1046,20 @@ if(USE_LIBRAW AND NOT (DONT_USE_INTERNAL_LIBRAW AND libraw_FOUND))
   add_subdirectory(external/LibRaw-cmake)
   target_link_libraries(lib_darktable PRIVATE libraw::libraw)
 endif()
+
+#
+# generate the authors file
+#
+add_custom_command(
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tools/
+  COMMAND bash ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMENT "Generating authors.h for about dialog."
+)
+
+add_custom_target(
+  generate_authors_h ALL
+  DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)

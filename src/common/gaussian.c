@@ -676,7 +676,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2),
     CLARG(height), CLARG(width), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
     CLARG(coefp), CLARG(coefn), CLFLARRAY(channels, Labmax), CLFLARRAY(channels, Labmin));
- 
+
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS)
   {
@@ -697,10 +697,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
     return err;
   }
   // finally produce output in dev_out
-  err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp1, dev_out, 0, origin, region);
-  if(err != CL_SUCCESS) return err;
-
-  return CL_SUCCESS;
+  return dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp1, dev_out, 0, origin, region);
 }
 
 

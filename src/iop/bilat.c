@@ -56,25 +56,7 @@ typedef struct dt_iop_bilat_params_t
   float sigma_s; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 shadows 100 & spatial 1 100 50
   float detail;  // $MIN: -1.0 $MAX: 4.0 $DEFAULT: 0.25
   float midtone; // $MIN: 0.001 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "midtone range"
-}
-dt_iop_bilat_params_t;
-
-typedef struct dt_iop_bilat_params_v2_t
-{
-  uint32_t mode;
-  float sigma_r;
-  float sigma_s;
-  float detail;
-}
-dt_iop_bilat_params_v2_t;
-
-typedef struct dt_iop_bilat_params_v1_t
-{
-  float sigma_r;
-  float sigma_s;
-  float detail;
-}
-dt_iop_bilat_params_v1_t;
+} dt_iop_bilat_params_t;
 
 typedef dt_iop_bilat_params_t dt_iop_bilat_data_t;
 
@@ -87,8 +69,7 @@ typedef struct dt_iop_bilat_gui_data_t
   GtkWidget *range;
   GtkWidget *detail;
   GtkWidget *mode;
-}
-dt_iop_bilat_gui_data_t;
+} dt_iop_bilat_gui_data_t;
 
 // this returns a translatable name
 const char *name()
@@ -117,9 +98,9 @@ int default_group()
   return IOP_GROUP_TONE | IOP_GROUP_EFFECTS;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -127,29 +108,65 @@ int default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 2 && new_version == 3)
+  typedef struct dt_iop_bilat_params_v3_t
   {
-    const dt_iop_bilat_params_v2_t *p2 = old_params;
-    dt_iop_bilat_params_t *p = new_params;
-    p->detail  = p2->detail;
-    p->sigma_r = p2->sigma_r;
-    p->sigma_s = p2->sigma_s;
-    p->midtone = 0.2f;
-    p->mode    = p2->mode;
+    dt_iop_bilat_mode_t mode;
+    float sigma_r;
+    float sigma_s;
+    float detail;
+    float midtone;
+  } dt_iop_bilat_params_v3_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_bilat_params_v1_t
+    {
+      float sigma_r;
+      float sigma_s;
+      float detail;
+    } dt_iop_bilat_params_v1_t;
+
+    const dt_iop_bilat_params_v1_t *o = old_params;
+    dt_iop_bilat_params_v3_t *n =
+      (dt_iop_bilat_params_v3_t *)malloc(sizeof(dt_iop_bilat_params_v3_t));
+    n->detail  = o->detail;
+    n->sigma_r = o->sigma_r;
+    n->sigma_s = o->sigma_s;
+    n->midtone = 0.2f;
+    n->mode    = s_mode_bilateral;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_bilat_params_v3_t);
+    *new_version = 3;
     return 0;
   }
-  else if(old_version == 1 && new_version == 3)
+
+  if(old_version == 2)
   {
-    const dt_iop_bilat_params_v1_t *p1 = old_params;
-    dt_iop_bilat_params_t *p = new_params;
-    p->detail  = p1->detail;
-    p->sigma_r = p1->sigma_r;
-    p->sigma_s = p1->sigma_s;
-    p->midtone = 0.2f;
-    p->mode    = s_mode_bilateral;
+    typedef struct dt_iop_bilat_params_v2_t
+    {
+      uint32_t mode;
+      float sigma_r;
+      float sigma_s;
+      float detail;
+    } dt_iop_bilat_params_v2_t;
+
+    const dt_iop_bilat_params_v2_t *o = old_params;
+    dt_iop_bilat_params_v3_t *n =
+      (dt_iop_bilat_params_v3_t *)malloc(sizeof(dt_iop_bilat_params_v3_t));
+    n->detail  = o->detail;
+    n->sigma_r = o->sigma_r;
+    n->sigma_s = o->sigma_s;
+    n->midtone = 0.2f;
+    n->mode    = o->mode;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_bilat_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -190,6 +207,7 @@ int process_cl(struct dt_iop_module_t *self,
 {
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
 
+  cl_int err = DT_OPENCL_PROCESS_CL;
   if(d->mode == s_mode_bilateral)
   {
     // the total scale is composed of scale before input to the pipeline (iscale),
@@ -197,7 +215,6 @@ int process_cl(struct dt_iop_module_t *self,
     const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
     const float sigma_r = d->sigma_r; // does not depend on scale
     const float sigma_s = d->sigma_s / scale;
-    cl_int err = -666;
 
     dt_bilateral_cl_t *b
       = dt_bilateral_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
@@ -208,14 +225,9 @@ int process_cl(struct dt_iop_module_t *self,
     err = dt_bilateral_blur_cl(b);
     if(err != CL_SUCCESS) goto error;
     err = dt_bilateral_slice_cl(b, dev_in, dev_out, d->detail);
-    if(err != CL_SUCCESS) goto error;
-    dt_bilateral_free_cl(b);
-    return TRUE;
 error:
     dt_bilateral_free_cl(b);
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_bilateral] couldn't enqueue kernel! %s\n", cl_errstr(err));
-    return FALSE;
+    return err;
   }
   else // mode == s_mode_local_laplacian
   {
@@ -223,12 +235,10 @@ error:
       dt_local_laplacian_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
         d->midtone, d->sigma_s, d->sigma_r, d->detail);
     if(!b) goto error_ll;
-    if(dt_local_laplacian_cl(b, dev_in, dev_out) != CL_SUCCESS) goto error_ll;
-    dt_local_laplacian_free_cl(b);
-    return TRUE;
+    err = dt_local_laplacian_cl(b, dev_in, dev_out);
 error_ll:
-    dt_local_laplacian_free_cl(b);
-    return FALSE;
+    if(b) dt_local_laplacian_free_cl(b);
+    return err;
   }
 }
 #endif

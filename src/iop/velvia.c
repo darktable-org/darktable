@@ -46,15 +46,6 @@ typedef struct dt_iop_velvia_params_t
   float bias;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "mid-tones bias"
 } dt_iop_velvia_params_t;
 
-/* legacy version 1 params */
-typedef struct dt_iop_velvia_params1_t
-{
-  float saturation;
-  float vibrance;
-  float luminance;
-  float clarity;
-} dt_iop_velvia_params1_t;
-
 typedef struct dt_iop_velvia_gui_data_t
 {
   GtkBox *vbox;
@@ -94,7 +85,9 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -108,15 +101,38 @@ const char **description(struct dt_iop_module_t *self)
                                       _("linear, RGB, scene-referred"));
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_velvia_params_v2_t
   {
-    const dt_iop_velvia_params1_t *old = old_params;
-    dt_iop_velvia_params_t *new = new_params;
-    new->strength = old->saturation * old->vibrance / 100.0f;
-    new->bias = old->luminance;
+    float strength;
+    float bias;
+  } dt_iop_velvia_params_v2_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_velvia_params_v1_t
+    {
+      float saturation;
+      float vibrance;
+      float luminance;
+      float clarity;
+    } dt_iop_velvia_params_v1_t;
+
+    const dt_iop_velvia_params_v1_t *o = old_params;
+    dt_iop_velvia_params_v2_t *n =
+      (dt_iop_velvia_params_v2_t *)malloc(sizeof(dt_iop_velvia_params_v2_t));
+    n->strength = o->saturation * o->vibrance / 100.0f;
+    n->bias = o->luminance;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_velvia_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -209,20 +225,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if(err != CL_SUCCESS) goto error;
   }
   else
   {
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_velvia, width, height,
       CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(strength), CLARG(bias));
-    if(err != CL_SUCCESS) goto error;
   }
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_velvia] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -289,4 +298,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

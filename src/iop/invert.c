@@ -60,35 +60,49 @@ typedef struct dt_iop_invert_data_t
   float color[4]; // color of film material
 } dt_iop_invert_data_t;
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
-                  const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_invert_params_v2_t
+  {
+    float color[4];
+  } dt_iop_invert_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_invert_params_v1_t
     {
       float color[3]; // color of film material
     } dt_iop_invert_params_v1_t;
 
-    dt_iop_invert_params_v1_t *o = (dt_iop_invert_params_v1_t *)old_params;
-    dt_iop_invert_params_t *n = (dt_iop_invert_params_t *)new_params;
+    const dt_iop_invert_params_v1_t *o = (dt_iop_invert_params_v1_t *)old_params;
+    dt_iop_invert_params_v2_t *n =
+      (dt_iop_invert_params_v2_t *)malloc(sizeof(dt_iop_invert_params_v2_t));
 
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
     n->color[2] = o->color[2];
     n->color[3] = NAN;
 
-    if(self->dev && self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+    if(self->dev
+       && self->dev->image_storage.flags & DT_IMAGE_4BAYER)
     {
       double RGB_to_CAM[4][3];
 
-      // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-      if(!dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.adobe_XYZ_to_CAM,
-                                                 RGB_to_CAM, NULL,
-                                                 self->dev->image_storage.d65_color_matrix, NULL))
+      // Get and store the matrix to go from camera to RGB for 4Bayer
+      // images (used for spot WB)
+      if(!dt_colorspaces_conversion_matrices_rgb
+         (self->dev->image_storage.adobe_XYZ_to_CAM,
+          RGB_to_CAM, NULL,
+          self->dev->image_storage.d65_color_matrix, NULL))
       {
         const char *camera = self->dev->image_storage.camera_makermodel;
-        dt_print(DT_DEBUG_ALWAYS, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[invert] `%s' color matrix not found for 4bayer image\n", camera);
         dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
       }
       else
@@ -97,6 +111,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       }
     }
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_invert_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -133,7 +150,9 @@ int flags()
   return IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_DEPRECATED;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RAW;
 }
@@ -161,7 +180,8 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   static dt_aligned_pixel_t old = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -378,7 +398,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   dev_color = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, film_rgb_f);
-  if(dev_color == NULL) goto error;
+  if(dev_color == NULL) goto finish;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -386,16 +406,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_color), CLARG(filters), CLARG(roi_out->x),
     CLARG(roi_out->y));
-  if(err != CL_SUCCESS) goto error;
 
+finish:
   dt_opencl_release_mem_object(dev_color);
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
-  return TRUE;
-
-error:
-  dt_opencl_release_mem_object(dev_color);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_invert] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -511,4 +526,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

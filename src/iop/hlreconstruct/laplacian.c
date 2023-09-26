@@ -637,7 +637,7 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self,
                                  4 | DT_IMGSZ_INPUT, &clipping_mask,
                                  0, NULL))
   {
-    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
 
@@ -653,7 +653,7 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self,
   {
     dt_free_align(interpolated);
     dt_free_align(clipping_mask);
-    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
 
@@ -898,30 +898,18 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self,
     CLARG(dev_in), CLARG(interpolated), CLARG(clipping_mask), CLARG(dev_out),
     CLARG(wb_cl), CLARG(filters), CLARG(width), CLARG(height));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_remosaic_and_replace, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  // cleanup and exit on success
-  if(wb_cl) dt_opencl_release_mem_object(wb_cl);
-  if(interpolated) dt_opencl_release_mem_object(interpolated);
-  if(clipping_mask) dt_opencl_release_mem_object(clipping_mask);
-  if(temp) dt_opencl_release_mem_object(temp);
-  if(LF_even) dt_opencl_release_mem_object(LF_even);
-  if(LF_odd) dt_opencl_release_mem_object(LF_odd);
-  if(HF) dt_opencl_release_mem_object(HF);
-  dt_opencl_release_mem_object(ds_clipping_mask);
-  dt_opencl_release_mem_object(ds_interpolated);
-  return err;
 
 error:
-  if(wb_cl) dt_opencl_release_mem_object(wb_cl);
-  if(interpolated) dt_opencl_release_mem_object(interpolated);
-  if(clipping_mask) dt_opencl_release_mem_object(clipping_mask);
-  if(temp) dt_opencl_release_mem_object(temp);
-  if(LF_even) dt_opencl_release_mem_object(LF_even);
-  if(LF_odd) dt_opencl_release_mem_object(LF_odd);
-  if(HF) dt_opencl_release_mem_object(HF);
+  dt_opencl_release_mem_object(wb_cl);
+  dt_opencl_release_mem_object(interpolated);
+  dt_opencl_release_mem_object(ds_clipping_mask);
+  dt_opencl_release_mem_object(ds_interpolated);
+  dt_opencl_release_mem_object(clipping_mask);
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  dt_opencl_release_mem_object(temp);
+  dt_opencl_release_mem_object(LF_even);
+  dt_opencl_release_mem_object(LF_odd);
+  dt_opencl_release_mem_object(HF);
   return err;
 }
 

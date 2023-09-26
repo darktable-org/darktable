@@ -82,9 +82,9 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS | IOP_FLAGS_DEPRECATED;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -92,10 +92,17 @@ int default_colorspace(dt_iop_module_t *self,
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
-                  void *new_params,
-                  const int new_version)
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_spots_params_v2_t
+  {
+    int clone_id[64];
+    int clone_algo[64];
+  } dt_iop_spots_params_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_iop_spots_v1_t
     {
@@ -109,11 +116,12 @@ int legacy_params(dt_iop_module_t *self,
       dt_iop_spots_v1_t spot[32];
     } dt_iop_spots_params_v1_t;
 
-    dt_iop_spots_params_v1_t *o = (dt_iop_spots_params_v1_t *)old_params;
-    dt_iop_spots_params_t *n = (dt_iop_spots_params_t *)new_params;
-    dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)self->default_params;
+    const dt_iop_spots_params_v1_t *o = (dt_iop_spots_params_v1_t *)old_params;
+    dt_iop_spots_params_v2_t *n =
+      (dt_iop_spots_params_v2_t *)malloc(sizeof(dt_iop_spots_params_v2_t));
 
-    *n = *d; // start with a fresh copy of default parameters
+    memset(n, 0, sizeof(dt_iop_spots_params_v2_t));
+
     for(int i = 0; i < o->num_spots; i++)
     {
       // we have to register a new circle mask
@@ -122,7 +130,8 @@ int legacy_params(dt_iop_module_t *self,
       // spots v1 was before raw orientation changes
       form->version = 1;
 
-      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
+      dt_masks_point_circle_t *circle =
+        (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
       circle->center[0] = o->spot[i].x;
       circle->center[1] = o->spot[i].y;
       circle->radius = o->spot[i].radius;
@@ -169,6 +178,9 @@ int legacy_params(dt_iop_module_t *self,
       dt_masks_write_masks_history_item(self->dev->image_storage.id, last_spot_num, form);
     }
 
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_spots_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -441,8 +453,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
   int roix = roi_in->x;
   int roiy = roi_in->y;
 
-  // dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
   // We iterate through all spots or polygons
   dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
@@ -568,10 +579,10 @@ void _process(struct dt_iop_module_t *self,
               const int ch)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = piece->blendop_data;
 
 // we don't modify most of the image:
-  dt_iop_copy_image_roi(out, in, ch, roi_in, roi_out, 0);
+  dt_iop_copy_image_roi(out, in, ch, roi_in, roi_out);
 
   // iterate through all forms
   dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
@@ -796,15 +807,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       dt_masks_set_edit_mode(self, DT_MASKS_EDIT_OFF);
     }
   }
-}
-
-/** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self,
-                   dt_iop_params_t *params,
-                   dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
-{
-  memcpy(piece->data, params, sizeof(dt_iop_spots_params_t));
 }
 
 void init_pipe(struct dt_iop_module_t *self,

@@ -50,9 +50,9 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -104,23 +104,14 @@ int process_cl(struct dt_iop_module_t *self,
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_finalscale] upscaling not yet supported by opencl code\n");
-    return FALSE;
+    return DT_OPENCL_PROCESS_CL;
   }
 
   const int devid = piece->pipe->devid;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO,
                 "clip_and_zoom_roi CL",
                 piece->pipe, self, roi_in, roi_out, "device=%i\n", devid);
-  const cl_int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
-  if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_finalscale] couldn't `dt_iop_clip_and_zoom_roi_cl`: %s\n",
-             cl_errstr(err));
-    return FALSE;
-  }
-
-  return TRUE;
+  return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
 }
 #endif
 

@@ -83,7 +83,9 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -146,7 +148,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   // special case handling: very small image with one or two dimensions below 2*rad+1 => no sharpening,
@@ -157,7 +159,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (d->radius * roi_in->scale / piece->iscale)
@@ -232,19 +234,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_mix, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
     CLARG(width), CLARG(height), CLARG(d->amount), CLARG(d->threshold));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen_mix, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_tmp);
-  dt_free_align(mat);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_tmp);
   dt_free_align(mat);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_sharpen] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -289,7 +284,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                   1 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &tmp, &padded_size,
                                   0))
   {
-    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
     return;
   }
 
@@ -303,7 +298,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(!mat)
   {
     dt_print(DT_DEBUG_ALWAYS,"[sharpen] out of memory\n");
-    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
     return;
   }
   const float *const restrict in = (float*)ivoid;

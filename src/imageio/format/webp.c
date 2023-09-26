@@ -255,11 +255,22 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_webp_t);
 }
 
-void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
-                    const size_t old_params_size, const int old_version, const int new_version,
+void *legacy_params(dt_imageio_module_format_t *self,
+                    const void *const old_params,
+                    const size_t old_params_size,
+                    const int old_version,
+                    int *new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_imageio_webp_v2_t
+  {
+    dt_imageio_module_data_t global;
+    int comp_type;
+    int quality;
+    int hint;
+  } dt_imageio_webp_v2_t;
+
+  if(old_version == 1)
   {
     typedef struct dt_imageio_webp_v1_t
     {
@@ -271,8 +282,8 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       int hint;
     } dt_imageio_webp_v1_t;
 
-    dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
-    dt_imageio_webp_t *n = (dt_imageio_webp_t *)malloc(sizeof(dt_imageio_webp_t));
+    const dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
+    dt_imageio_webp_v2_t *n = (dt_imageio_webp_v2_t *)malloc(sizeof(dt_imageio_webp_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -283,9 +294,29 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     n->comp_type = o->comp_type;
     n->quality = o->quality;
     n->hint = o->hint;
-    *new_size = self->params_size(self);
+
+    *new_version = 2;
+    *new_size = sizeof(dt_imageio_webp_v2_t);
     return n;
   }
+
+  // incremental update supported:
+  /*
+  typedef struct dt_imageio_webp_v3_t
+  {
+    ...
+  } dt_imageio_webp_v3_t;
+
+  if(old_version == 2)
+  {
+    // let's update from 2 to 3
+
+    ...
+    *new_size = sizeof(dt_imageio_webp_v3_t);
+    *new_version = 3;
+    return n;
+  }
+  */
   return NULL;
 }
 
@@ -380,7 +411,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("compression type"), NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("compression"), NULL,
                                comp_type, compression_changed, self,
                                N_("lossy"), N_("lossless"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
@@ -392,12 +423,10 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT),
                                                   0);
   dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
-  dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT));
-  dt_bauhaus_slider_set_format(gui->quality, "%");
   gtk_widget_set_tooltip_text(gui->quality, _("for lossy, 0 gives the smallest size and 100 the best quality.\n"
                                               "for lossless, 0 is the fastest but gives larger files compared\n"
                                               "to the slowest 100."));
-  if(quality >= 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
+  dt_bauhaus_slider_set(gui->quality, quality);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
 

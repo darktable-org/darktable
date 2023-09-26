@@ -81,6 +81,7 @@ typedef enum _preset_save_type_t
   _PRESET_FILTERS = 1 << 0,
   _PRESET_SORT = 1 << 1,
   _PRESET_ERASE_TOPBAR = 1 << 2,
+  _PRESET_TOPBAR = 1 << 3,
   _PRESET_ALL = _PRESET_FILTERS | _PRESET_SORT | _PRESET_ERASE_TOPBAR
 } _preset_save_type_t;
 
@@ -133,6 +134,7 @@ typedef struct dt_lib_filtering_t
 
   GtkWidget *rules_box;
   GtkWidget *rules_sw;
+  GtkWidget *topbar_popup;
 
   _widgets_sort_t sort[DT_COLLECTION_MAX_RULES];
   int nb_sort;
@@ -212,6 +214,7 @@ typedef struct _filter_t
 
 // filters definitions
 #include "libs/filters/aperture.c"
+#include "libs/filters/camera.c"
 #include "libs/filters/colors.c"
 #include "libs/filters/date.c"
 #include "libs/filters/exposure.c"
@@ -220,10 +223,11 @@ typedef struct _filter_t
 #include "libs/filters/grouping.c"
 #include "libs/filters/history.c"
 #include "libs/filters/iso.c"
+#include "libs/filters/lens.c"
 #include "libs/filters/local_copy.c"
 #include "libs/filters/module_order.c"
-#include "libs/filters/rating_range.c"
 #include "libs/filters/rating.c"
+#include "libs/filters/rating_range.c"
 #include "libs/filters/ratio.c"
 #include "libs/filters/search.c"
 
@@ -246,7 +250,9 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
         { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
         { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
-        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update } };
+        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
+        { DT_COLLECTION_PROP_LENS, _lens_widget_init, _lens_update },
+        { DT_COLLECTION_PROP_CAMERA, _camera_widget_init, _camera_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -394,6 +400,26 @@ static void _filtering_reset(const _preset_save_type_t reset)
       }
     }
     dt_conf_set_int("plugins/lighttable/filtering/num_rules", nb_rules - nb_removed);
+  }
+  else if(reset & _PRESET_TOPBAR)
+  {
+    // let's reset only topbar filters
+    const int nb_rules
+        = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
+    for(int i = 0; i < nb_rules; i++)
+    {
+      char confname[200] = { 0 };
+      // read the topbar state
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
+      if(dt_conf_get_int(confname))
+      {
+        // we "just" reset the filter
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
+        dt_conf_set_int(confname, 0);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
+        dt_conf_set_string(confname, "");
+      }
+    }
   }
 
   if(reset & _PRESET_SORT)
@@ -1003,6 +1029,39 @@ static void _event_rule_append(GtkWidget *widget, gpointer user_data)
   _rule_show_popup(widget, NULL, (dt_lib_module_t *)user_data);
 }
 
+static void _topbar_reset(dt_lib_module_t *self)
+{
+  _filtering_reset(_PRESET_TOPBAR);
+
+  _filters_gui_update(self);
+
+  dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
+}
+
+static gboolean _topbar_reset_press(GtkWidget *w,
+                                    GdkEventButton *e,
+                                    dt_lib_module_t *self)
+{
+  //reset the filters
+  _topbar_reset(self);
+  //close the popup
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  gtk_widget_destroy(d->topbar_popup);
+
+  return FALSE;
+}
+
+static gboolean _topbar_label_press(GtkWidget *w,
+                                    GdkEventButton *e,
+                                    dt_lib_module_t *self)
+{
+  //reset on double-click
+  if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+    _topbar_reset(self);
+  return FALSE;
+}
+
 static void _topbar_update(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
@@ -1032,9 +1091,12 @@ static void _topbar_update(dt_lib_module_t *self)
       // we add the filter label if it's the first filter
       if(nb == 0)
       {
+        GtkWidget *evtb = gtk_event_box_new();
         GtkWidget *label = gtk_label_new(C_("quickfilter", "filter"));
-        gtk_box_pack_start(GTK_BOX(fbox), label, TRUE, TRUE, 0);
-        gtk_widget_show(label);
+        gtk_container_add(GTK_CONTAINER(evtb), label);
+        g_signal_connect(G_OBJECT(evtb), "button-press-event", G_CALLBACK(_topbar_label_press), self);
+        gtk_box_pack_start(GTK_BOX(fbox), evtb, TRUE, TRUE, 0);
+        gtk_widget_show_all(evtb);
       }
       gtk_box_pack_start(GTK_BOX(fbox), d->rule[i].w_special_box_top, FALSE, TRUE, 0);
       gtk_widget_show_all(d->rule[i].w_special_box_top);
@@ -1686,22 +1748,23 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
 
   // initialize the popover
-  GtkWidget *pop = gtk_popover_new(bt);
-  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
+  d->topbar_popup = gtk_popover_new(bt);
+  g_object_set(G_OBJECT(d->topbar_popup), "transitions-enabled", FALSE, NULL);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(pop), vbox);
+  gtk_container_add(GTK_CONTAINER(d->topbar_popup), vbox);
 
   // fill the popover with all pinned rules
+  GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *lb = gtk_label_new(_("shown filters"));
   dt_gui_add_class(lb, "dt_section_label");
-  gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox2), lb, TRUE, TRUE, 0);
 
   for(int i = 0; i < d->nb_rules; i++)
   {
     if(d->rule[i].topbar)
     {
-      gtk_box_pack_start(GTK_BOX(vbox), _topbar_menu_new_rule(&d->rule[i], self), TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(vbox2), _topbar_menu_new_rule(&d->rule[i], self), TRUE, TRUE, 0);
     }
   }
 
@@ -1711,7 +1774,17 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   dt_bauhaus_widget_set_label(nr, NULL, _("new filter"));
   _topbar_populate_rules_combo(nr, d);
   g_signal_connect(G_OBJECT(nr), "value-changed", G_CALLBACK(_topbar_rule_add), self);
-  gtk_box_pack_end(GTK_BOX(vbox), nr, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(vbox2), nr, TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(vbox), vbox2, TRUE, TRUE, 0);
+  // the actions part of the popover
+  lb = gtk_label_new(_("actions"));
+  dt_gui_add_class(lb, "dt_section_label");
+  gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
+  GtkWidget *btr = gtk_button_new_with_label(_("reset quickfilters"));
+  dt_gui_add_class(btr, "dt_transparent_background");
+  g_signal_connect(G_OBJECT(btr), "button-press-event", G_CALLBACK(_topbar_reset_press), self);
+  gtk_box_pack_start(GTK_BOX(vbox), btr, TRUE, TRUE, 0);
 
   // show the popover
   GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
@@ -1726,9 +1799,9 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   if(pointer_widget && bt != pointer_widget)
     gtk_widget_translate_coordinates(pointer_widget, bt, x, y, &rect.x, &rect.y);
 
-  gtk_popover_set_pointing_to(GTK_POPOVER(pop), &rect);
+  gtk_popover_set_pointing_to(GTK_POPOVER(d->topbar_popup), &rect);
 
-  gtk_widget_show_all(pop);
+  gtk_widget_show_all(d->topbar_popup);
 }
 
 // save a sort rule inside the conf
@@ -1882,7 +1955,8 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     else
       sort->sort = dt_bauhaus_combobox_new(NULL);
     dt_action_t *ac = dt_bauhaus_widget_set_label(sort->sort, NULL, _("sort order"));
-    DT_BAUHAUS_WIDGET(sort->sort)->show_label = FALSE;
+    dt_bauhaus_widget_hide_label(sort->sort);
+    dt_bauhaus_combobox_mute_scrolling(sort->sort);
     gtk_widget_set_tooltip_text(sort->sort, _("determine the sort order of shown images"));
     g_signal_connect(G_OBJECT(sort->sort), "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
     gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);
@@ -2157,10 +2231,10 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  GtkWidget *btn = dt_action_button_new(self, _("new rule"), G_CALLBACK(_event_rule_append), self,
+  GtkWidget *btn = dt_action_button_new(self, N_("new rule"), G_CALLBACK(_event_rule_append), self,
                                         _("append new rule to collect images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("history"), G_CALLBACK(_event_history_show), self,
+  btn = dt_action_button_new(self, N_("history"), G_CALLBACK(_event_history_show), self,
                              _("revert to a previous set of rules"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
@@ -2177,10 +2251,10 @@ void gui_init(dt_lib_module_t *self)
   bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("new sort"), G_CALLBACK(_sort_show_add_popup), self,
+  btn = dt_action_button_new(self, N_("new sort"), G_CALLBACK(_sort_show_add_popup), self,
                              _("append new sort to order images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("history"), G_CALLBACK(_sort_history_show), self,
+  btn = dt_action_button_new(self, N_("history"), G_CALLBACK(_sort_history_show), self,
                              _("revert to a previous set of sort orders"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);

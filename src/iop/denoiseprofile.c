@@ -231,11 +231,16 @@ static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece,
   dt_dump_pfm(name, buf, width, height,  4 * sizeof(float), "denoiseprofile");
 }
 
-int legacy_params(dt_iop_module_t *self,
-                  const void *const old_params,
-                  const int old_version,
-                  void *new_params,
-                  const int new_version)
+/* old legacy_params routine used up to v11
+   this is now called into the legacy_params supporting incremental
+   updates. It was too risky to rewrite the old legacy params support
+   as it is a very tricky code.
+*/
+int legacy_params_to11(dt_iop_module_t *self,
+                       const void *const old_params,
+                       const int old_version,
+                       void *new_params,
+                       const int new_version)
 {
   typedef struct dt_iop_denoiseprofile_params_v1_t
   {
@@ -424,7 +429,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 4)
     {
       // first update to v4
-      if(legacy_params(self, old_params, old_version, &v4, 4))
+      if(legacy_params_to11(self, old_params, old_version, &v4, 4))
         return 1;
     }
     else
@@ -456,7 +461,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 5)
     {
       // first update to v5
-      if(legacy_params(self, old_params, old_version, &v5, 5)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v5, 5)) return 1;
     }
     else
       memcpy(&v5, old_params, sizeof(v5)); // was v5 already
@@ -488,7 +493,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 6)
     {
       // first update to v6
-      if(legacy_params(self, old_params, old_version, &v6, 6)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v6, 6)) return 1;
     }
     else
       memcpy(&v6, old_params, sizeof(v6)); // was v6 already
@@ -525,7 +530,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 7)
     {
       // first update to v7
-      if(legacy_params(self, old_params, old_version, &v7, 7)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v7, 7)) return 1;
     }
     else
       memcpy(&v7, old_params, sizeof(v7)); // was v7 already
@@ -563,7 +568,7 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 8)
     {
       // first update to v8
-      if(legacy_params(self, old_params, old_version, &v8, 8)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v8, 8)) return 1;
     }
     else
       memcpy(&v8, old_params, sizeof(v8)); // was v8 already
@@ -609,14 +614,14 @@ int legacy_params(dt_iop_module_t *self,
     if(old_version < 9)
     {
       // first update to v9
-      if(legacy_params(self, old_params, old_version, &v9, 9)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, &v9, 9)) return 1;
     }
     else
       memcpy(&v9, old_params, sizeof(v9)); // was v9 already
     dt_iop_denoiseprofile_params_t *v10 = new_params;
 
     // start with a clean default
-    dt_iop_denoiseprofile_params_t *d = self->default_params;
+    const dt_iop_denoiseprofile_params_t *const d = self->default_params;
     *v10 = *d;
 
     v10->radius = v9.radius;
@@ -658,7 +663,7 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_denoiseprofile_params_t *v11 = new_params;
     if(old_version < 10)
     {
-      if(legacy_params(self, old_params, old_version, v11, 10)) return 1;
+      if(legacy_params_to11(self, old_params, old_version, v11, 10)) return 1;
     }
     else
       memcpy(v11, old_params, sizeof(*v11)); // was v10 already
@@ -676,6 +681,53 @@ int legacy_params(dt_iop_module_t *self,
   }
   return 1;
 }
+
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
+{
+  typedef struct dt_iop_denoiseprofile_params_v11_t
+  {
+    float radius;
+    float nbhood;
+    float strength;
+    float shadows;
+    float bias;
+    float scattering;
+    float central_pixel_weight;
+    float overshooting;
+    float a[3], b[3];
+    dt_iop_denoiseprofile_mode_t mode;
+    float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+    gboolean wb_adaptive_anscombe;
+    gboolean fix_anscombe_and_nlmeans_norm;
+    gboolean use_new_vst;
+    dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode;
+  } dt_iop_denoiseprofile_params_v11_t;
+
+  if(old_version < 11)
+  {
+    *new_params = (dt_iop_denoiseprofile_params_v11_t *)
+      malloc(sizeof(dt_iop_denoiseprofile_params_v11_t));
+
+    const int ret = legacy_params_to11(self,
+                                       old_params,
+                                       old_version,
+                                       *new_params,
+                                       11);
+
+    *new_params_size = sizeof(dt_iop_denoiseprofile_params_v11_t);
+    *new_version = 11;
+    return ret;
+  }
+
+  return 1;
+}
+
 
 void init_presets(dt_iop_module_so_t *self)
 {
@@ -740,9 +792,9 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(dt_iop_module_t *self,
-                       dt_dev_pixelpipe_t *pipe,
-                       dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
@@ -1411,7 +1463,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
 
   if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
   {
-    dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out);
     return;
   }
 
@@ -1458,7 +1510,7 @@ static void process_wavelets(struct dt_iop_module_t *self,
   dt_colormatrix_transpose(toY0U0V0_trans,toY0U0V0);
   dt_colormatrix_t toRGB_trans;
   dt_colormatrix_transpose(toRGB_trans,toRGB);
-  
+
   for_each_channel(i)
     wb[i] *= d->strength * compensate_strength * in_scale;
 
@@ -1936,12 +1988,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
   // allocate a buffer for a preconditioned copy of the image
   const int devid = piece->pipe->devid;
   cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-  if(dev_tmp == NULL)
-  {
-    dt_print(DT_DEBUG_OPENCL,
-             "[opencl_denoiseprofile] couldn't allocate GPU buffer\n");
-    return FALSE;
-  }
+  if(dev_tmp == NULL) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]),
@@ -1967,7 +2014,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
 
   // allocate a buffer to receive the denoised image
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
-  if(dev_U2 == NULL) err = DT_OPENCL_DEFAULT_ERROR;
+  if(dev_U2 == NULL) err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   if(err == CL_SUCCESS)
   {
@@ -2015,17 +2062,13 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  if(err == CL_SUCCESS)
-    return TRUE;
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 
 #else
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const float scale = fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
@@ -2207,7 +2250,6 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
                               CLARG(dev_out), CLARG(width), CLARG(height),
                               CLARG(aa), CLARG(sigma2));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
   else
   {
@@ -2217,27 +2259,16 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
                               CLARG(dev_out), CLARG(width), CLARG(height),
                               CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish_v2, sizes);
-    if(err != CL_SUCCESS) goto error;
   }
 
+ error:
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
     dt_opencl_release_mem_object(buckets[k]);
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  return TRUE;
-
-error:
-  for(int k = 0; k < NUM_BUCKETS; k++)
-  {
-    dt_opencl_release_mem_object(buckets[k]);
-  }
-  dt_opencl_release_mem_object(dev_U2);
-  dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 #endif /* USE_NEW_IMPL_CL */
 }
 
@@ -2300,7 +2331,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
     free(dev_detail);
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   dt_opencl_local_buffer_t flocopt
@@ -2335,7 +2366,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
     goto error;
 
   const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
-
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * bufsize);
   if(dev_m == NULL) goto error;
 
@@ -2443,25 +2474,18 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
   }
   else
   {
-    cl_mem dev_Y0U0V0 = NULL;
-    dev_Y0U0V0 = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toY0U0V0);
-    if(dev_Y0U0V0 != NULL)
-    {
-      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0,
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    cl_mem dev_Y0U0V0 = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toY0U0V0);
+    if(dev_Y0U0V0 == NULL) goto error;
+
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0,
                                 0, CLARG(dev_in),
                                 CLARG(dev_out), CLARG(width), CLARG(height),
                                 CLARG(aa), CLARG(p), CLARG(bb), CLARG(dev_Y0U0V0));
-      err = dt_opencl_enqueue_kernel_2d(devid,
-                                        gd->kernel_denoiseprofile_precondition_Y0U0V0,
-                                        sizes);
-      dt_opencl_release_mem_object(dev_Y0U0V0);
-      if(err != CL_SUCCESS) goto error;
-    }
-    else
-    {
-      dt_opencl_release_mem_object(dev_Y0U0V0);
-      goto error;
-    }
+    err = dt_opencl_enqueue_kernel_2d(devid,
+                                      gd->kernel_denoiseprofile_precondition_Y0U0V0,
+                                      sizes);
+    dt_opencl_release_mem_object(dev_Y0U0V0);
   }
 
   dev_buf1 = dev_out;
@@ -2669,41 +2693,24 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
   }
   else
   {
-    cl_mem dev_RGB = NULL;
-    dev_RGB = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toRGB);
-    if(dev_RGB != NULL)
-    {
-      const float bias = d->bias - 0.5 * logf(scale);
-      dt_opencl_set_kernel_args(devid,
-                                gd->kernel_denoiseprofile_backtransform_Y0U0V0, 0,
-                                CLARG(dev_tmp),
-                                CLARG(dev_out), CLARG(width), CLARG(height),
-                                CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb),
-        CLARG(dev_RGB));
-      err = dt_opencl_enqueue_kernel_2d(devid,
+    cl_mem dev_RGB = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toRGB);
+    if(dev_RGB == NULL) goto error;
+
+    const float bias = d->bias - 0.5 * logf(scale);
+    dt_opencl_set_kernel_args(devid,
+                              gd->kernel_denoiseprofile_backtransform_Y0U0V0, 0,
+                              CLARG(dev_tmp),
+                              CLARG(dev_out), CLARG(width), CLARG(height),
+                              CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb),
+                              CLARG(dev_RGB));
+    err = dt_opencl_enqueue_kernel_2d(devid,
                                         gd->kernel_denoiseprofile_backtransform_Y0U0V0,
                                         sizes);
-      dt_opencl_release_mem_object(dev_RGB);
-      if(err != CL_SUCCESS) goto error;
-    }
-    else
-    {
-      dt_opencl_release_mem_object(dev_RGB);
-      goto error;
-    }
+    dt_opencl_release_mem_object(dev_RGB);
+    if(err != CL_SUCCESS) goto error;
   }
 
   dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
-
-  dt_opencl_release_mem_object(dev_r);
-  dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_tmp);
-  dt_opencl_release_mem_object(dev_filter);
-  for(int k = 0; k < max_scale; k++)
-    dt_opencl_release_mem_object(dev_detail[k]);
-  free(dev_detail);
-  dt_free_align(sumsum);
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_r);
@@ -2714,10 +2721,7 @@ error:
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
   dt_free_align(sumsum);
-  dt_print(DT_DEBUG_OPENCL,
-           "[opencl_denoiseprofile] couldn't enqueue kernel! %s, devid %d\n",
-           cl_errstr(err), devid);
-  return FALSE;
+  return err;
 }
 
 int process_cl(struct dt_iop_module_t *self,
@@ -2741,7 +2745,7 @@ int process_cl(struct dt_iop_module_t *self,
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_denoiseprofile] compute variance not yet supported by opencl code\n");
-    return FALSE;
+    return DT_OPENCL_PROCESS_CL;
   }
 }
 #endif // HAVE_OPENCL
@@ -3540,7 +3544,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean denoiseprofile_motion_notify(GtkWidget *widget,
@@ -3586,7 +3590,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
   {
     // reset current curve
     dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-    dt_iop_denoiseprofile_params_t *d =
+    const dt_iop_denoiseprofile_params_t *const d =
       (dt_iop_denoiseprofile_params_t *)self->default_params;
 
     for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -3679,7 +3683,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook,
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_gui_data_t *g = IOP_GUI_ALLOC(denoiseprofile);
-  dt_iop_denoiseprofile_params_t *p =
+  const dt_iop_denoiseprofile_params_t *const p =
     (dt_iop_denoiseprofile_params_t *)self->default_params;
 
   g->profiles = NULL;

@@ -1124,3 +1124,20 @@ colorchecker (read_only image2d_t in, write_only image2d_t out, const int width,
 
   write_imagef (out, (int2)(x, y), opixel);
 }
+
+kernel void
+primaries(read_only image2d_t in,
+          write_only image2d_t out,
+          const int width,
+          const int height,
+          constant const float *const matrix)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 ipixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 opixel = matrix_product_float4(ipixel, matrix);
+  opixel.w = ipixel.w;
+  write_imagef(out, (int2)(x, y), opixel);
+}

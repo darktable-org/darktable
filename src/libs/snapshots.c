@@ -49,6 +49,7 @@ typedef struct dt_lib_snapshot_t
   /* snapshot cairo surface */
   cairo_surface_t *surface;
   uint32_t width, height;
+  float zoom_x, zoom_y;
 } dt_lib_snapshot_t;
 
 typedef struct dt_lib_snapshot_params_t
@@ -186,9 +187,7 @@ void gui_post_expose(dt_lib_module_t *self,
       // export image with proper size
       dt_dev_image_ext(snap->imgid, width, height, snap->history_end,
                        &d->params.buf, &d->params.width, &d->params.height,
-                       darktable.develop->border_size,
-                       darktable.develop->iso_12646.enabled,
-                       snap->id);
+                       dev->border_size, dev->iso_12646.enabled, snap->id);
 
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = dt_view_create_surface(d->params.buf,
@@ -196,6 +195,8 @@ void gui_post_expose(dt_lib_module_t *self,
 
       snap->width  = d->params.width;
       snap->height = d->params.height;
+      snap->zoom_x = dev->pipe->backbuf_zoom_x;
+      snap->zoom_y = dev->pipe->backbuf_zoom_y;
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = -1;
     }
@@ -215,8 +216,6 @@ void gui_post_expose(dt_lib_module_t *self,
       snap->ctx = ctx;
       if(!d->panning && dev->darkroom_mouse_in_center_area) d->snap_requested = TRUE;
       if(d->expose_again_timeout_id != -1) g_source_remove(d->expose_again_timeout_id);
-      if(snap->surface) cairo_surface_destroy(snap->surface);
-      snap->surface = NULL;
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
     }
 
@@ -252,11 +251,12 @@ void gui_post_expose(dt_lib_module_t *self,
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(snap->surface && !d->snap_requested)
+    if(snap->surface)
     {
       // display snapshot image surface
       dt_view_paint_surface(cri, width, height,
-                            snap->surface, snap->width, snap->height, DT_WINDOW_MAIN);
+                            snap->surface, snap->width, snap->height, DT_WINDOW_MAIN,
+                            dev->pipe->backbuf_scale, snap->zoom_x, snap->zoom_y);
     }
 
     cairo_reset_clip(cri);
@@ -437,7 +437,7 @@ int mouse_moved(dt_lib_module_t *self,
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  // if panning, do not hanlde here, let darkroom do the job
+  // if panning, do not handle here, let darkroom do the job
   if(d->panning) return 0;
 
   if(d->selected >= 0)
@@ -671,7 +671,7 @@ void gui_init(dt_lib_module_t *self)
   char localtmpdir[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(localtmpdir, sizeof(localtmpdir));
 
-  for(int k = MAX_SNAPSHOT-1; k >= 0; k--)
+  for(int k = 0; k < MAX_SNAPSHOT; k++)
   {
     _clear_snapshot_entry(&d->snapshot[k]);
 
@@ -718,7 +718,7 @@ void gui_init(dt_lib_module_t *self)
                      G_CALLBACK(_lib_button_button_pressed_callback), self);
 
     /* add button to snapshot box */
-    gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
 
     /* prevent widget to show on external show all */
     gtk_widget_set_no_show_all(d->snapshot[k].button, TRUE);

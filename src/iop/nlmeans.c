@@ -43,12 +43,6 @@
 // and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(2, dt_iop_nlmeans_params_t)
 
-typedef struct dt_iop_nlmeans_params_v1_t
-{
-  float luma;
-  float chroma;
-} dt_iop_nlmeans_params_v1_t;
-
 typedef struct dt_iop_nlmeans_params_t
 {
   // these are stored in db.
@@ -98,22 +92,48 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, Lab, display-referred"));
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  typedef struct dt_iop_nlmeans_params_v2_t
   {
-    dt_iop_nlmeans_params_v1_t *o = (dt_iop_nlmeans_params_v1_t *)old_params;
-    dt_iop_nlmeans_params_t *n = (dt_iop_nlmeans_params_t *)new_params;
+    float radius;
+    float strength;
+    float luma;
+    float chroma;
+  } dt_iop_nlmeans_params_v2_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_nlmeans_params_v1_t
+    {
+      float luma;
+      float chroma;
+    } dt_iop_nlmeans_params_v1_t;
+
+    const dt_iop_nlmeans_params_v1_t *o = (dt_iop_nlmeans_params_v1_t *)old_params;
+    dt_iop_nlmeans_params_v2_t *n =
+      (dt_iop_nlmeans_params_v2_t *)malloc(sizeof(dt_iop_nlmeans_params_v2_t));
+
     n->luma = o->luma;
     n->chroma = o->chroma;
     n->strength = 100.0f;
     n->radius = 3;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_nlmeans_params_v2_t);
+    *new_version = 2;
     return 0;
   }
   return 1;
@@ -163,10 +183,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
   if(dev_U2 == NULL)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't allocate GPU buffer\n");
-    return FALSE;
-  }
+     return DT_OPENCL_SYSMEM_ALLOCATION;
 
   const dt_nlmeans_param_t params =
   {
@@ -197,10 +214,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   // clean up and check whether all kernels ran successfully
   dt_opencl_release_mem_object(dev_U2);
-  if(err == CL_SUCCESS)
-    return TRUE;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 
 #else // old code
   const int width = roi_in->width;
@@ -317,24 +331,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_args(devid, gd->kernel_nlmeans_finish, 0, CLARG(dev_in), CLARG(dev_U2), CLARG(dev_out),
     CLARG(width), CLARG(height), CLARG(weight));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_finish, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  dt_opencl_release_mem_object(dev_U2);
-  for(int k = 0; k < NUM_BUCKETS; k++)
-  {
-    dt_opencl_release_mem_object(buckets[k]);
-  }
-  return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_U2);
   for(int k = 0; k < NUM_BUCKETS; k++)
-  {
-    dt_opencl_release_mem_object(buckets[k]);
-  }
+     dt_opencl_release_mem_object(buckets[k]);
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 #endif /* USE_NEW_IMPL_CL */
 }
 #endif
@@ -475,4 +478,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

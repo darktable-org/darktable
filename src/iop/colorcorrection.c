@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,7 +90,9 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -162,22 +164,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
   dt_iop_colorcorrection_global_data_t *gd = (dt_iop_colorcorrection_global_data_t *)self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
-
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcorrection, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcorrection, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->saturation), CLARG(d->a_scale),
     CLARG(d->a_base), CLARG(d->b_scale), CLARG(d->b_base));
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcorrection] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 
@@ -430,7 +423,8 @@ static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventB
         break;
       default: // reset everything
       {
-        dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->default_params;
+        const dt_iop_colorcorrection_params_t *const d =
+          (dt_iop_colorcorrection_params_t *)self->default_params;
         memcpy(p, d, sizeof(*p));
         dt_dev_add_history_item(darktable.develop, self, TRUE);
       }

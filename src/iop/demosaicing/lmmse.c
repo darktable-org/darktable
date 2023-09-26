@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,49 +104,6 @@ static inline float _median3f(float x0, float x1, float x2)
   return fmaxf(fminf(x0,x1), fminf(x2, fmaxf(x0,x1)));
 }
 
-static inline float _median9f(float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8)
-{
-  float tmp;
-  tmp = fminf(a1, a2);
-  a2  = fmaxf(a1, a2);
-  a1  = tmp;
-  tmp = fminf(a4, a5);
-  a5  = fmaxf(a4, a5);
-  a4  = tmp;
-  tmp = fminf(a7, a8);
-  a8  = fmaxf(a7, a8);
-  a7  = tmp;
-  tmp = fminf(a0, a1);
-  a1  = fmaxf(a0, a1);
-  a0  = tmp;
-  tmp = fminf(a3, a4);
-  a4  = fmaxf(a3, a4);
-  a3  = tmp;
-  tmp = fminf(a6, a7);
-  a7  = fmaxf(a6, a7);
-  a6  = tmp;
-  tmp = fminf(a1, a2);
-  a2  = fmaxf(a1, a2);
-  a1  = tmp;
-  tmp = fminf(a4, a5);
-  a5  = fminf(a4, a5);
-  a4  = tmp;
-  tmp = fminf(a7, a8);
-  a8  = fmaxf(a7, a8);
-  a3  = fmaxf(a0, a3);
-  a5  = fminf(a5, a8);
-  a7  = fmaxf(a4, tmp);
-  tmp = fminf(a4, tmp);
-  a6  = fmaxf(a3, a6);
-  a4  = fmaxf(a1, tmp);
-  a2  = fminf(a2, a5);
-  a4  = fminf(a4, a7);
-  tmp = fminf(a4, a2);
-  a2  = fmaxf(a4, a2);
-  a4  = fmaxf(a6, tmp);
-  return fminf(a4, a2);
-}
-
 static inline float _calc_gamma(float val, float *table)
 {
   if(table == NULL) return val;
@@ -176,11 +133,9 @@ static void lmmse_demosaic(
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  if((width < 16) || (height < 16))
-  {
-    dt_control_log(_("[lmmse_demosaic] too small area"));
+  rcd_ppg_border(out, in, width, height, filters, BORDER_AROUND);
+  if((width < 2 * BORDER_AROUND) || (height < 2 * BORDER_AROUND))
     return;
-  }
 
   if(!lmmse_gamma_in) _init_lmmse_gamma();
 
@@ -225,7 +180,7 @@ static void lmmse_demosaic(
     memset(buffer, 0, sizeof(float) * DT_LMMSE_TILESIZE * DT_LMMSE_TILESIZE * 6);
 
 #ifdef _OPENMP
-  #pragma omp for schedule(simd:dynamic, 6) collapse(2)
+  #pragma omp for schedule(simd:static) collapse(2)
 #endif
     for(int tile_vertical = 0; tile_vertical < num_vertical; tile_vertical++)
     {
@@ -440,15 +395,16 @@ static void lmmse_demosaic(
                 float *colc = qix[c] + rr * DT_LMMSE_TILESIZE + cc;
                 float *col1 = qix[1] + rr * DT_LMMSE_TILESIZE + cc;
                 // Assign 3x3 differential color values
-                corr[0] = _median9f(colc[-w1-1] - col1[-w1-1],
-                                   colc[-w1  ] - col1[-w1  ],
-                                   colc[-w1+1] - col1[-w1+1],
-                                   colc[   -1] - col1[   -1],
-                                   colc[    0] - col1[    0],
-                                   colc[    1] - col1[    1],
-                                   colc[ w1-1] - col1[ w1-1],
-                                   colc[ w1  ] - col1[ w1  ],
-                                   colc[ w1+1] - col1[ w1+1]);
+                const float p[9] = {colc[-w1-1] - col1[-w1-1],
+                                    colc[-w1  ] - col1[-w1  ],
+                                    colc[-w1+1] - col1[-w1+1],
+                                    colc[   -1] - col1[   -1],
+                                    colc[    0] - col1[    0],
+                                    colc[    1] - col1[    1],
+                                    colc[ w1-1] - col1[ w1-1],
+                                    colc[ w1  ] - col1[ w1  ],
+                                    colc[ w1+1] - col1[ w1+1]};
+                corr[0] = median9f(p);
               }
             }
           }
@@ -605,10 +561,10 @@ static void lmmse_demosaic(
 
         // write result to out
         // For the outermost tiles in all directions we also write the otherwise overlapped area
-        const int first_vertical =   rowStart + ((tile_vertical == 0)                    ? 0 : LMMSE_OVERLAP);
-        const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? 0 : LMMSE_OVERLAP);
-        const int first_horizontal = colStart + ((tile_horizontal == 0)                  ? 0 : LMMSE_OVERLAP);
-        const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? 0 : LMMSE_OVERLAP);
+        const int first_vertical =   rowStart + ((tile_vertical == 0)                    ? BORDER_AROUND : LMMSE_OVERLAP);
+        const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? BORDER_AROUND : LMMSE_OVERLAP);
+        const int first_horizontal = colStart + ((tile_horizontal == 0)                  ? BORDER_AROUND : LMMSE_OVERLAP);
+        const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? BORDER_AROUND : LMMSE_OVERLAP);
         for(int row = first_vertical, rr = row - rowStart + BORDER_AROUND; row < last_vertical; row++, rr++)
         {
           float *dest = out + 4 * (row * width + first_horizontal);

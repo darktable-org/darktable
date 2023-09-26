@@ -922,8 +922,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   // FIXME: only need to do colorspace conversion below on roi
   // FIXME: if the only time we use roi in histogram to limit area is here, and whenever we use tether there is no colorpicker (true?), and if we're always doing a colorspace transform in darkroom and clip to roi during conversion, then can get rid of all roi code for common/histogram?
   // when darkroom colorpicker is active, gui_module is set to colorout
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_DARKROOM && darktable.lib->proxy.colorpicker.restrict_histogram)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
     const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
     dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
@@ -1452,8 +1451,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   dt_pthread_mutex_lock(&d->lock);
   // darkroom view: draw scope so long as preview pipe is finished
   // tether view: draw whatever has come in from tether
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_TETHERING || dev->image_storage.id == dev->preview_pipe->output_imgid)
+  if(dt_view_get_current() == DT_VIEW_TETHERING || dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     const uint8_t mask[3] = { d->red, d->green, d->blue };
     switch(d->scope_type)
@@ -1490,7 +1488,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   cairo_surface_destroy(cst);
 
   dt_show_times_f(&start, "[histogram]", "scope draw");
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
@@ -1527,8 +1525,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     const float posx = x / (float)(allocation.width);
     const float posy = y / (float)(allocation.height);
     const dt_lib_histogram_highlight_t prior_highlight = d->highlight;
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    const gboolean hooks_available = (cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
+    const gboolean hooks_available = (dt_view_get_current() == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
 
     // FIXME: make just one tooltip for the widget depending on whether it is draggable or not, and set it when enter the view
     gchar *tip = g_strdup_printf("%s\n", _(dt_lib_histogram_scope_type_names[d->scope_type]));
@@ -1843,8 +1840,7 @@ static void _scope_type_changed(dt_lib_histogram_t *d)
   else
   {
     // generate data for changed scope and trigger widget redraw
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    if(cv->view(cv) == DT_VIEW_DARKROOM)
+    if(dt_view_get_current() == DT_VIEW_DARKROOM)
       dt_dev_process_preview(darktable.develop);
     else
       dt_control_queue_redraw_center();
@@ -1902,8 +1898,7 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
       dt_unreachable_codepath();
   }
   // trigger new process from scratch
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
     dt_dev_process_preview(darktable.develop);
   else
     dt_control_queue_redraw_center();
@@ -1917,8 +1912,7 @@ static void _colorspace_clicked(GtkWidget *button, dt_lib_histogram_t *d)
   _vectorscope_view_update(d);
   // trigger new process from scratch depending on whether CIELuv or JzAzBz
   // FIXME: it would be nice as with other scopes to make the initial processing independent of the view
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_DARKROOM)
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
     dt_dev_process_preview(darktable.develop);
   else
     dt_control_queue_redraw_center();

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,12 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "dtwin.h"
 #include <setjmp.h>
 #include <windows.h>
 
 // Required by (at least) clang 10.0 as packaged by MSYS2 MinGW64.
-// This platform combination is needed for dt appveyor build.
 #ifdef __clang__
 #ifdef __MINGW32__ // 64-bit subsystem also sets this symbol
 #include <errno.h>
@@ -338,15 +338,16 @@ void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName)
   info.dwThreadID = dwThreadID;
   info.dwFlags = 0;
 
-  // Yes, don't get heart attack, naming of thread is done by raising a special exception on Windows
-  // https://msdn.microsoft.com/en-us/library/xcb2z8hs(v=vs.71).aspx
+  // We set the thread name by raising an exception.
+  // Regarding the alternative method and their comparison, see:
+  // https://learn.microsoft.com/en-us/visualstudio/debugger/how-to-set-a-thread-name-in-native-code
   RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(DWORD), (const ULONG_PTR *)&info);
 }
 
-// This is taken from: https://git.gnome.org/browse/glib/tree/gio/glocalfile.c#n2269
-// The glib version of this function unfortunately shows always confirmation dialog boxes
-// This version does thrashing silently, without dialog boxes: FOF_SILENT | FOF_NOCONFIRMATION
-// When glib version on Windows will do silent trashing we can remove this function
+// This is taken from: https://gitlab.gnome.org/GNOME/glib/blob/main/gio/glocalfile.c#L2357
+// The GLib version of this function always shows confirmation dialog boxes, unfortunately.
+// This replacement does trashing without dialogs using "FOF_SILENT | FOF_NOCONFIRMATION".
+// When GLib version on Windows will be able to trash silently we can remove this function.
 boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error)
 {
   SHFILEOPSTRUCTW op = { 0 };
@@ -379,9 +380,9 @@ boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error
   g_free(wfilename);
   return success;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

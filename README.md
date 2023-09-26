@@ -89,11 +89,11 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.4.1 (stable)
+4.4.2 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.4.1/darktable-4.4.1-win64.exe)
-* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.4.1/darktable-4.4.1-x86_64.dmg)
-* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.4.1/darktable-4.4.1-arm64.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.4.2/darktable-4.4.2-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.4.2/darktable-4.4.2-x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.4.2/darktable-4.4.2-arm64.dmg)
 * [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -175,7 +175,7 @@ Optional dependencies (minimum version):
 * Lua 5.4 *(for plugins and extension scripting)*
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
-* libavif 0.8.2 *(for AVIF import & export)*
+* libavif 0.9.2 *(for AVIF import & export)*
 * libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
@@ -264,7 +264,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.4.1
+4.4.2
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
 Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
@@ -274,7 +274,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.4.1
+git checkout tags/release-4.4.2
 ```
 
 ### Get submodules
@@ -354,7 +354,7 @@ To use a test version of darktable without damaging your regular/stable version'
 /opt/darktable-test/bin/darktable --configdir "~/.config/darktable-test"
 ```
 
-and ensure that you set the option "write sidecar file for each image" to "never" in preferences -> storage -> XMP. This way,
+and ensure that you set the option "create sidecar file for each image" to "never" in preferences -> storage -> XMP. This way,
 your regular/stable version will save its configuration files in `~/.config/darktable`, as usual,
 the test/unstable one will save in `~/.config/darktable-test`, and the two versions will not produce database conflicts.
 

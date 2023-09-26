@@ -133,7 +133,7 @@ const char *dt_confgen_get_tooltip(const char *name);
 gboolean dt_conf_is_default(const char *name);
 gchar* dt_conf_expand_default_dir(const char *dir);
 
-/** read filename and call callback() for every key/valye pair. if callback() returns non
+/** read filename and call callback() for every key/value pair. if callback() returns non
     NULL, the value is returned by dt_conf_read_values. This may be used to look for a
     a specific value in filename */
 gchar *dt_conf_read_values(const char *filename,

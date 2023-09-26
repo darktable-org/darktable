@@ -54,21 +54,6 @@ typedef enum dt_iop_colorreconstruct_precedence_t
   COLORRECONSTRUCT_PRECEDENCE_HUE     // $DESCRIPTION: "hue" use a specific hue as weighting factor
 } dt_iop_colorreconstruct_precedence_t;
 
-typedef struct dt_iop_colorreconstruct_params1_t
-{
-  float threshold;
-  float spatial;
-  float range;
-} dt_iop_colorreconstruct_params1_t;
-
-typedef struct dt_iop_colorreconstruct_params2_t
-{
-  float threshold;
-  float spatial;
-  float range;
-  dt_iop_colorreconstruct_precedence_t precedence;
-} dt_iop_colorreconstruct_params2_t;
-
 typedef struct dt_iop_colorreconstruct_params_t
 {
   float threshold; // $MIN: 50.0 $MAX: 150.0 $DEFAULT: 100.0
@@ -150,34 +135,74 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  typedef struct dt_iop_colorreconstruct_params_v3_t
   {
-    const dt_iop_colorreconstruct_params1_t *old = old_params;
-    dt_iop_colorreconstruct_params_t *new = new_params;
+    float threshold;
+    float spatial;
+    float range;
+    float hue;
+    dt_iop_colorreconstruct_precedence_t precedence;
+  } dt_iop_colorreconstruct_params_v3_t;
+
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_colorreconstruct_params_v1_t
+    {
+      float threshold;
+      float spatial;
+      float range;
+    } dt_iop_colorreconstruct_params_v1_t;
+
+    const dt_iop_colorreconstruct_params_v1_t *old = old_params;
+    dt_iop_colorreconstruct_params_v3_t *new =
+      (dt_iop_colorreconstruct_params_v3_t *)malloc(sizeof(dt_iop_colorreconstruct_params_v3_t));
     new->threshold = old->threshold;
     new->spatial = old->spatial;
     new->range = old->range;
     new->precedence = COLORRECONSTRUCT_PRECEDENCE_NONE;
     new->hue = 0.66f;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorreconstruct_params_v3_t);
+    *new_version = 3;
     return 0;
   }
-  else if(old_version == 2 && new_version == 3)
+  else if(old_version == 2)
   {
-    const dt_iop_colorreconstruct_params2_t *old = old_params;
-    dt_iop_colorreconstruct_params_t *new = new_params;
+    typedef struct dt_iop_colorreconstruct_params_v2_t
+    {
+      float threshold;
+      float spatial;
+      float range;
+      dt_iop_colorreconstruct_precedence_t precedence;
+    } dt_iop_colorreconstruct_params_v2_t;
+
+    const dt_iop_colorreconstruct_params_v2_t *old = old_params;
+    dt_iop_colorreconstruct_params_v3_t *new =
+      (dt_iop_colorreconstruct_params_v3_t *)malloc(sizeof(dt_iop_colorreconstruct_params_v3_t));
     new->threshold = old->threshold;
     new->spatial = old->spatial;
     new->range = old->range;
     new->precedence = old->precedence;
     new->hue = 0.66f;
+
+    *new_params = new;
+    *new_params_size = sizeof(dt_iop_colorreconstruct_params_v3_t);
+    *new_version = 3;
     return 0;
   }
   return 1;
@@ -1073,13 +1098,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_iop_gui_leave_critical_section(self);
   }
 
-  dt_iop_colorreconstruct_bilateral_free_cl(b);
-  return TRUE;
-
 error:
   dt_iop_colorreconstruct_bilateral_free_cl(b);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
+  return err;
 }
 #endif
 
@@ -1280,4 +1301,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

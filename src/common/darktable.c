@@ -41,7 +41,6 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/action.h"
-#include "common/cpuid.h"
 #include "common/file_location.h"
 #include "common/film.h"
 #include "common/grealpath.h"
@@ -131,7 +130,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {act_on,cache,camctl,camsupport,control,dev,imageio,\n");
   printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
-  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe,\n");
+  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe,expose\n");
   printf("      all,common (-d dev,imageio,masks,opencl,params,pipe)}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
@@ -148,6 +147,7 @@ static int usage(const char *argv0)
   printf("  --dump-pfm <modulea,moduleb>\n");
   printf("  --dump-pipe <modulea,moduleb>\n");
   printf("  --bench-module <modulea,moduleb>\n");
+  printf("  --dumpdir <directory to hold dumped files>\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
@@ -309,37 +309,14 @@ int dt_load_from_string(const gchar *input,
 
 static void dt_codepaths_init()
 {
-#ifdef HAVE_BUILTIN_CPU_SUPPORTS
-  __builtin_cpu_init();
-#endif
+  // we no longer do explicit runtime selection of code paths, so initialize to "none"
+  // (there are still functions where the compiler creates runtime selection due to "target_clones"
+  // directives, but those are not affected by this code)
 
   memset(&(darktable.codepath), 0, sizeof(darktable.codepath));
 
-  // first, enable whatever codepath this CPU supports
-  {
-#ifdef HAVE_BUILTIN_CPU_SUPPORTS
-    darktable.codepath.SSE2 = (__builtin_cpu_supports("sse")
-                               && __builtin_cpu_supports("sse2"));
-#else
-    dt_cpu_flags_t flags = dt_detect_cpu_features();
-    darktable.codepath.SSE2 = ((flags & (CPU_FLAG_SSE)) && (flags & (CPU_FLAG_SSE2)));
-#endif
-  }
-
-  // second, apply overrides from conf
-  // NOTE: all intrinsics sets can only be overridden to OFF
-  if(!dt_conf_get_bool("codepaths/sse2")) darktable.codepath.SSE2 = 0;
-
-  // last: do we have any intrinsics sets enabled?
-  darktable.codepath._no_intrinsics = !(darktable.codepath.SSE2);
-
-#if defined(__SSE__)
-  if(darktable.codepath._no_intrinsics)
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
-  }
-#endif
+  // do we have any intrinsics sets enabled? (nope)
+  darktable.codepath._no_intrinsics = 1;
 }
 
 static inline size_t _get_total_memory()
@@ -435,7 +412,7 @@ void dt_dump_pfm_file(
   snprintf(path, sizeof(path), "%s/%s", darktable.tmp_directory, pipe);
   if(!dt_util_test_writable_dir(path))
   {
-    if(g_mkdir(path, 0750))
+    if(g_mkdir_with_parents(path, 0750))
     {
       dt_print(DT_DEBUG_ALWAYS, "%20s can't create directory '%s'\n", head, path);
       return;
@@ -512,6 +489,142 @@ void dt_dump_pipe_pfm(
   dt_dump_pfm_file(pipe, data, width, height, bpp, mod, "[dt_dump_pipe_pfm]", input, !input, TRUE);
 }
 
+static int32_t _detect_opencl_job_run(dt_job_t *job)
+{
+  darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
+  dt_opencl_init(darktable.opencl, GPOINTER_TO_INT(dt_control_job_get_params(job)), TRUE);
+  return 0;
+}
+
+static dt_job_t *_detect_opencl_job_create(gboolean exclude_opencl)
+{
+  dt_job_t *job = dt_control_job_create(&_detect_opencl_job_run, "detect opencl devices");
+  if(!job) return NULL;
+  dt_control_job_set_params(job, GINT_TO_POINTER(exclude_opencl), NULL);
+  return job;
+}
+
+static char *_get_version_string(void)
+{
+#ifdef USE_LUA
+        const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
+                                      STR(LUA_API_VERSION_MAJOR) "."
+                                      STR(LUA_API_VERSION_MINOR) "."
+                                      STR(LUA_API_VERSION_PATCH) "-"
+                                      LUA_API_VERSION_SUFFIX :
+                                      STR(LUA_API_VERSION_MAJOR) "."
+                                      STR(LUA_API_VERSION_MINOR) "."
+                                      STR(LUA_API_VERSION_PATCH) "\n";
+#endif
+  char *version = g_strdup_printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n"
+               "%s\n\ncompile options:\n"
+               "  bit depth is %zu bit\n"
+               "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+               darktable_package_string,
+               darktable_last_commit_year,
+               PACKAGE_BUGREPORT,
+               CHAR_BIT * sizeof(void *),
+#ifdef _DEBUG
+               "  debug build\n",
+#else
+               "  normal build\n",
+#endif
+
+#if defined(__SSE2__) && defined(__SSE__)
+               "  SSE2 optimizations enabled\n",
+#else
+               "  SSE2 optimizations unavailable\n",
+#endif
+
+#ifdef _OPENMP
+               "  OpenMP support enabled\n",
+#else
+               "  OpenMP support disabled\n",
+#endif
+
+#ifdef HAVE_OPENCL
+               "  OpenCL support enabled\n",
+#else
+               "  OpenCL support disabled\n",
+#endif
+
+#ifdef USE_LUA
+               "  Lua support enabled, API version ",
+               lua_api_version,
+#else
+               "  Lua support disabled\n", "",
+#endif
+
+#ifdef USE_COLORDGTK
+               "  Colord support enabled\n",
+#else
+               "  Colord support disabled\n",
+#endif
+
+#ifdef HAVE_GPHOTO2
+               "  gPhoto2 support enabled\n",
+#else
+               "  gPhoto2 support disabled\n",
+#endif
+
+#ifdef HAVE_GMIC
+               "  G'MIC support enabled (compressed LUTs will be supported)\n",
+#else
+               "  G'MIC support disabled (compressed LUTs will not be supported)\n",
+#endif
+
+#ifdef HAVE_GRAPHICSMAGICK
+               "  GraphicsMagick support enabled\n",
+#else
+               "  GraphicsMagick support disabled\n",
+#endif
+
+#ifdef HAVE_IMAGEMAGICK
+               "  ImageMagick support enabled\n",
+#else
+               "  ImageMagick support disabled\n",
+#endif
+
+#ifdef HAVE_LIBAVIF
+               "  libavif support enabled\n",
+#else
+               "  libavif support disabled\n",
+#endif
+
+#ifdef HAVE_LIBHEIF
+               "  libheif support enabled\n",
+#else
+               "  libheif support disabled\n",
+#endif
+
+#ifdef HAVE_LIBJXL
+               "  libjxl support enabled\n",
+#else
+               "  libjxl support disabled\n",
+#endif
+
+#ifdef HAVE_OPENJPEG
+               "  OpenJPEG support enabled\n",
+#else
+               "  OpenJPEG support disabled\n",
+#endif
+
+#ifdef HAVE_OPENEXR
+               "  OpenEXR support enabled\n",
+#else
+               "  OpenEXR support disabled\n",
+#endif
+
+#ifdef HAVE_WEBP
+               "  WebP support enabled\n",
+#else
+               "  WebP support disabled\n",
+#endif
+
+      "");
+
+  return version;
+}
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
@@ -528,15 +641,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_set_signal_handlers();
 
-  gboolean sse2_supported = FALSE;
-#ifdef HAVE_BUILTIN_CPU_SUPPORTS
-  // NOTE: _may_i_use_cpu_feature() looks better, but only available in ICC
-  __builtin_cpu_init();
-  sse2_supported = __builtin_cpu_supports("sse2");
-#else
-  sse2_supported = dt_detect_cpu_features() & CPU_FLAG_SSE2;
-#endif
-
 #ifdef M_MMAP_THRESHOLD
   mallopt(M_MMAP_THRESHOLD, 128 * 1024); /* use mmap() for large allocations */
 #endif
@@ -548,10 +652,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   memset(&darktable, 0, sizeof(darktable_t));
 
   darktable.start_wtime = start_wtime;
-  if(!sse2_supported)
-    dt_print
-      (DT_DEBUG_ALWAYS,
-       "[dt_init] SSE2 is unavailable, some functions will be noticeably slower.\n");
 
   darktable.progname = argv[0];
 
@@ -616,114 +716,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if(!strcmp(argv[k], "--version"))
       {
-#ifdef USE_LUA
-        const char *lua_api_version = strcmp(LUA_API_VERSION_SUFFIX, "") ?
-                                      STR(LUA_API_VERSION_MAJOR) "."
-                                      STR(LUA_API_VERSION_MINOR) "."
-                                      STR(LUA_API_VERSION_PATCH) "-"
-                                      LUA_API_VERSION_SUFFIX :
-                                      STR(LUA_API_VERSION_MAJOR) "."
-                                      STR(LUA_API_VERSION_MINOR) "."
-                                      STR(LUA_API_VERSION_PATCH);
-#endif
-        printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
-               "  bit depth is %zu bit\n"
-#ifdef _DEBUG
-               "  debug build\n"
-#else
-               "  normal build\n"
-#endif
-#if defined(__SSE2__) && defined(__SSE__)
-               "  SSE2 optimized codepath enabled\n"
-#else
-               "  SSE2 optimized codepath disabled\n"
-#endif
-#ifdef _OPENMP
-               "  OpenMP support enabled\n"
-#else
-               "  OpenMP support disabled\n"
-#endif
-
-#ifdef HAVE_OPENCL
-               "  OpenCL support enabled\n"
-#else
-               "  OpenCL support disabled\n"
-#endif
-
-#ifdef USE_LUA
-               "  Lua support enabled, API version %s\n"
-#else
-               "  Lua support disabled\n"
-#endif
-
-#ifdef USE_COLORDGTK
-               "  Colord support enabled\n"
-#else
-               "  Colord support disabled\n"
-#endif
-
-#ifdef HAVE_GPHOTO2
-               "  gPhoto2 support enabled\n"
-#else
-               "  gPhoto2 support disabled\n"
-#endif
-
-#ifdef HAVE_GRAPHICSMAGICK
-               "  GraphicsMagick support enabled\n"
-#else
-               "  GraphicsMagick support disabled\n"
-#endif
-
-#ifdef HAVE_IMAGEMAGICK
-               "  ImageMagick support enabled\n"
-#else
-               "  ImageMagick support disabled\n"
-#endif
-
-#ifdef HAVE_LIBAVIF
-               "  libavif support enabled\n"
-#else
-               "  libavif support disabled\n"
-#endif
-
-#ifdef HAVE_LIBHEIF
-               "  libheif support enabled\n"
-#else
-               "  libheif support disabled\n"
-#endif
-
-#ifdef HAVE_LIBJXL
-               "  libjxl support enabled\n"
-#else
-               "  libjxl support disabled\n"
-#endif
-
-#ifdef HAVE_OPENJPEG
-               "  OpenJPEG support enabled\n"
-#else
-               "  OpenJPEG support disabled\n"
-#endif
-
-#ifdef HAVE_OPENEXR
-               "  OpenEXR support enabled\n"
-#else
-               "  OpenEXR support disabled\n"
-#endif
-
-#ifdef HAVE_WEBP
-               "  WebP support enabled\n"
-#else
-               "  WebP support disabled\n"
-#endif
-               ,
-               darktable_package_string,
-               darktable_last_commit_year,
-               CHAR_BIT * sizeof(void *)
-#if USE_LUA
-                   ,
-               lua_api_version
-#endif
-               );
+        char *theversion = _get_version_string();
+        printf("%s", theversion);
+        g_free(theversion);
         return 1;
       }
       else if(!strcmp(argv[k], "--dump-pfm") && argc > k + 1)
@@ -780,7 +775,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
-      else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
+      else if(!strcmp(argv[k], "--dumpdir") && argc > k + 1)
+      {
+        darktable.tmp_directory = g_strdup(argv[++k]);
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+     else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
         localedir_from_command = argv[++k];
         argv[k-1] = NULL;
@@ -842,6 +843,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_VERBOSE;
         else if(!strcmp(argv[k + 1], "pipe"))
           darktable.unmuted |= DT_DEBUG_PIPE;
+        else if(!strcmp(argv[k + 1], "expose"))
+          darktable.unmuted |= DT_DEBUG_EXPOSE;
         else
           return usage(argv[0]);
         k++;
@@ -1034,9 +1037,17 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
   }
 
+  if(darktable.unmuted)
+  {
+    char *theversion = _get_version_string();
+    dt_print_nts(DT_DEBUG_ALWAYS, "%s\n", theversion);
+    dt_free_align(theversion);
+  }
+
   if(darktable.dump_pfm_module || darktable.dump_pfm_pipe)
   {
-    darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
+    if(darktable.tmp_directory == NULL)
+      darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
     dt_print(DT_DEBUG_ALWAYS, "[init] darktable dump directory is '%s'\n",
     (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
   }
@@ -1220,6 +1231,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  dt_upgrade_maker_model(darktable.db);
+
   // init darktable tags table
   dt_set_darktable_tags();
 
@@ -1338,10 +1351,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
-  dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
-#ifdef HAVE_OPENCL
-  dt_opencl_update_settings();
-#endif
+  if(init_gui)
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
+                       _detect_opencl_job_create(exclude_opencl));
+  else
+    dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
@@ -1508,7 +1522,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       not_again = dt_gui_show_standalone_yes_no_dialog
         (_("configuration information"),
          config_info,
-         _("show this information again"), _("understood"));
+         _("_show this information again"), _("_understood"));
 
     if(not_again || (last_configure_version == 0))
       dt_conf_set_int("performance_configuration_version_completed",
@@ -1523,19 +1537,31 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
 
+#if defined(WIN32)
+  dt_capabilities_add("windows");
+  dt_capabilities_add("nonapple");
+#elif defined(__APPLE__)
+  dt_capabilities_add("apple");
+#else
+  dt_capabilities_add("linux");
+  dt_capabilities_add("nonapple");
+#endif
+
+
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
 
   return 0;
 }
 
+
 void dt_get_sysresource_level()
 {
   static int oldlevel = -999;
-  static int oldtunecl = -999;
+  static int oldtunehead = -999;
 
   dt_sys_resources_t *res = &darktable.dtresources;
-  const int tunecl = dt_opencl_get_tuning_mode();
+  const gboolean tunehead = dt_conf_get_bool("opencl_tune_headroom");
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1556,10 +1582,10 @@ void dt_get_sysresource_level()
     else if(!strcmp(config, "mini"))         level = -2;
     else if(!strcmp(config, "notebook"))     level = -3;
   }
-  const gboolean mod = ((level != oldlevel) || (oldtunecl != tunecl));
+  const gboolean mod = ((level != oldlevel) || (oldtunehead != tunehead));
   res->level = oldlevel = level;
-  oldtunecl = tunecl;
-  res->tunemode = tunecl;
+  oldtunehead = tunehead;
+  res->tunehead = tunehead;
   if(mod && (darktable.unmuted & (DT_DEBUG_MEMORY | DT_DEBUG_OPENCL | DT_DEBUG_DEV)))
   {
     const int oldgrp = res->group;
@@ -1579,14 +1605,7 @@ void dt_get_sysresource_level()
     dt_print(DT_DEBUG_ALWAYS,
              "  singlebuff:      %luMB\n",
              dt_get_singlebuffer_mem() / 1024lu / 1024lu);
-#ifdef HAVE_OPENCL
-    dt_print(DT_DEBUG_ALWAYS,
-             "  OpenCL tune mem: %s\n",
-             ((tunecl & DT_OPENCL_TUNE_MEMSIZE) && (level >= 0)) ? "WANTED" : "OFF");
-    dt_print(DT_DEBUG_ALWAYS,
-             "  OpenCL pinned:   %s\n",
-             ((tunecl & DT_OPENCL_TUNE_PINNED) && (level >= 0)) ? "WANTED" : "OFF");
-#endif
+
     res->group = oldgrp;
   }
 }
@@ -1988,9 +2007,9 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("some global config parameters relevant for OpenCL performance are not used any longer."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("instead you will find 'per device' data in 'cl_device_v4_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("instead you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
-    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
@@ -2002,14 +2021,14 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
-  if(old < 14)
+  else if(old < 14)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("OpenCL global config parameters 'per device' data has been recreated with an updated name."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("you will find 'per device' data in 'cl_device_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
-    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
@@ -2017,6 +2036,16 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
+  else if(old < 15)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("OpenCL 'per device' config data have been automatically extended by 'unified-rate'."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
   #undef INFO_HEADER
 }
 

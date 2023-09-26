@@ -207,22 +207,22 @@ static const struct
 } loaders_info[LOADER_COUNT] =
 {
   { N_("unknown"),         '.'}, // EMPTY_FIELD
-  { N_("tiff"),            't'},
-  { N_("png"),             'p'},
-  { N_("j2k"),             'J'},
-  { N_("jpeg"),            'j'},
-  { N_("exr"),             'e'},
-  { N_("rgbe"),            'R'},
-  { N_("pfm"),             'P'},
+  { N_("TIFF"),            't'},
+  { N_("PNG"),             'p'},
+  { N_("JPEG 2000"),       'J'},
+  { N_("JPEG"),            'j'},
+  { N_("EXR"),             'e'},
+  { N_("RGBE"),            'R'},
+  { N_("PFM"),             'P'},
   { N_("GraphicsMagick"),  'g'},
-  { N_("rawspeed"),        'r'},
-  { N_("netpnm"),          'n'},
-  { N_("avif"),            'a'},
+  { N_("RawSpeed"),        'r'},
+  { N_("Netpbm"),          'n'},
+  { N_("AVIF"),            'a'},
   { N_("ImageMagick"),     'i'},
-  { N_("heif"),            'h'},
-  { N_("libraw"),          'l'},
-  { N_("webp"),            'w'},
-  { N_("jpeg xl"),         'L'},
+  { N_("HEIF"),            'h'},
+  { N_("LibRaw"),          'l'},
+  { N_("WebP"),            'w'},
+  { N_("JPEG XL"),         'L'},
   { N_("QOI"),             'q'}
 };
 
@@ -259,7 +259,6 @@ typedef struct dt_image_t
   char camera_model[64];
   char camera_alias[64];
   char camera_makermodel[128];
-  char camera_legacy_makermodel[128];
   gboolean camera_missing_sample;
 
   char filename[DT_MAX_FILENAME_LEN];
@@ -496,6 +495,32 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
   }
 }
 
+/** return the raw orientation from heif transforms */
+static inline dt_image_orientation_t dt_image_transformation_to_flip_bits(const int angle, const int flip)
+{
+  if(angle == 1)
+  {
+    if(flip == 1) return ORIENTATION_TRANSVERSE;
+    if(flip == 0) return ORIENTATION_TRANSPOSE;
+    return ORIENTATION_ROTATE_CCW_90_DEG;
+  }
+  if(angle == 2)
+  {
+    if(flip == 1) return ORIENTATION_FLIP_VERTICALLY;
+    if(flip == 0) return ORIENTATION_FLIP_HORIZONTALLY;
+    return ORIENTATION_ROTATE_180_DEG;
+  }
+  if(angle == 3)
+  {
+    if(flip == 1) return ORIENTATION_TRANSPOSE;
+    if(flip == 0) return ORIENTATION_TRANSVERSE;
+    return ORIENTATION_ROTATE_CW_90_DEG;
+  }
+  if(flip == 1) return ORIENTATION_FLIP_HORIZONTALLY;
+  if(flip == 0) return ORIENTATION_FLIP_VERTICALLY;
+  return ORIENTATION_NONE;
+}
+
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid. returns -1 on error, 0 on success. */
 int32_t dt_image_move(const dt_imgid_t imgid, const int32_t filmid);
@@ -553,6 +578,13 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage);
 char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
                                              const gboolean logmsg);
 void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
+
+/**   insert the new maker/model/lens if it does not exists.
+      returns the corresponding id for the maker/model/lens */
+int32_t dt_image_get_camera_maker_id(const char *name);
+int32_t dt_image_get_camera_model_id(const char *name);
+int32_t dt_image_get_camera_lens_id(const char *name);
+int32_t dt_image_get_camera_id(const char *maker, const char *model);
 
 #ifdef __cplusplus
 } // extern "C"

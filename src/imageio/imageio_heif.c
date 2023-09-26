@@ -118,6 +118,32 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     }
   }
 
+#if LIBHEIF_HAVE_VERSION(1, 16, 0)
+  // Override any Exif orientation from HEIF irot/imir transformations.
+  // TODO: Add user crop from HEIF clap transformation.
+  heif_item_id id;
+  heif_context_get_primary_image_ID(ctx, &id);
+  heif_property_id transforms[3];
+  int num_transforms = heif_item_get_transformation_properties(ctx, id, transforms, 3);
+  int angle = 0;
+  int flip = -1;
+  for(int i = 0; i < num_transforms; ++i)
+  {
+    switch(heif_item_get_property_type(ctx, id, transforms[i]))
+    {
+      case heif_item_property_type_transform_rotation:
+        angle = heif_item_get_property_transform_rotation_ccw(ctx, id, transforms[i]) / 90;
+        break;
+      case heif_item_property_type_transform_mirror:
+        flip = heif_item_get_property_transform_mirror(ctx, id, transforms[i]);
+        break;
+      default:
+        break;
+    }
+  }
+  img->orientation = dt_image_transformation_to_flip_bits(angle, flip);
+#endif
+
   struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
   decode_options->ignore_transformations = TRUE;
   // Darktable only supports LITTLE_ENDIAN systems, so RRGGBB_LE should be fine
@@ -163,7 +189,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
 
-  // Get decoded pixel values bit depth (ths is used to scale values to [0..1] range)
+  // Get decoded pixel values bit depth (this is used to scale values to [0..1] range)
   const int decoded_values_bit_depth = heif_image_get_bits_per_pixel_range(heif_img, heif_channel_interleaved);
   // Get original pixel values bit depth by querying the luma channel depth (this may differ from decoded values bit depth)
   const int original_values_bit_depth = heif_image_handle_get_luma_bits_per_pixel(handle);

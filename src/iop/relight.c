@@ -101,7 +101,9 @@ int default_group()
   return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
+                                            dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
@@ -159,7 +161,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
   dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -168,14 +169,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float wings = data->width;
   const float ev = data->ev;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_relight, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_relight, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(center), CLARG(wings), CLARG(ev));
-  if(err != CL_SUCCESS) goto error;
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_relight] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 
@@ -235,7 +230,8 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_set_value(g->center, p->center);
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
+                        dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   float mean, min, max;
