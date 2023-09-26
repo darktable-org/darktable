@@ -2297,8 +2297,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   {
     dt_dev_pixelpipe_rebuild(dev);
     // don't use previous image as overlay
-    if(dev->pipe) dev->pipe->backbuf_zoom_x = 1000;
-    if(dev->preview2_pipe) dev->preview2_pipe->backbuf_zoom_x = 1000;
+    // if(dev->pipe) dev->pipe->backbuf_zoom_x = 1000;
+    // if(dev->preview2_pipe) dev->preview2_pipe->backbuf_zoom_x = 1000;
   }
 
   // update guides button state
