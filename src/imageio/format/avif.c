@@ -866,8 +866,6 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_tooltip_text(gui->quality,
           _("the quality of an image, less quality means fewer details.\n"
             "\n"
-            "the following applies only to lossy setting.\n"
-            "\n"
             "pixel format based on quality:\n"
             "\n"
             "    91 - 100 -> YUV444\n"
