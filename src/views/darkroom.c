@@ -673,7 +673,11 @@ void expose(
     }
   }
 
-  _module_gui_post_expose(dev->proxy.rotate, cri, width, height, pzx, pzy, zoom_scale);
+  if(dev->proxy.rotate)
+  {
+    dt_print(DT_DEBUG_EXPOSE, "[darkroom expose] proxy rotate gui_post_expose [%s]\n", dev->proxy.rotate->op);
+    _module_gui_post_expose(dev->proxy.rotate, cri, width, height, pzx, pzy, zoom_scale);
+  }
 
   cairo_restore(cri);
 
