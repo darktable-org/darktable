@@ -2199,6 +2199,14 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
                                   /* xgettext:no-c-format */
                                   "ctrl+click to include only sub-folders (suffix `|%')"));
   }
+  else if(property >= DT_COLLECTION_PROP_METADATA
+         && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER){
+    gtk_widget_set_tooltip_text(d->text,
+                                /* xgettext:no-c-format */
+                                _("use `%' as wildcard\n"
+                                /* xgettext:no-c-format */
+                                "use `=' operator for an exact match"));
+  }
   else
   {
     /* xgettext:no-c-format */
